@@ -146,3 +146,7 @@ userstory_map
 userstory_detail
 repositories.json
 .gradle
+.gradle
+.idea
+.qodana
+build
