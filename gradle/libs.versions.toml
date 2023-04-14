@@ -1,0 +1,22 @@
+[versions]
+# libraries
+annotations = "24.0.1"
+
+# plugins
+dokka = "1.8.10"
+kotlin = "1.8.10"
+changelog = "2.0.0"
+gradleIntelliJPlugin = "1.13.3"
+qodana = "0.1.13"
+kover = "0.6.1"
+
+[libraries]
+annotations = { group = "org.jetbrains", name = "annotations", version.ref = "annotations" }
+
+[plugins]
+changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+gradleIntelliJPlugin = { id = "org.jetbrains.intellij", version.ref = "gradleIntelliJPlugin" }
+kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
+qodana = { id = "org.jetbrains.qodana", version.ref = "qodana" }
