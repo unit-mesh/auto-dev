@@ -7,4 +7,3 @@
 5. generate code with AutoComplete
 
 Index in Server side.
-
