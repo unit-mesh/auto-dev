@@ -43,4 +43,4 @@ Local Index:
 
 ## License
 
-@Thoughtworks AI EE+ Lab, with MPL 2.0
+@Thoughtworks AIEEL Team. This code is distributed under the MPL 2.0 license. See `LICENSE` in this directory.

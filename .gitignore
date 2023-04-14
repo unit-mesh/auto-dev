@@ -145,3 +145,4 @@ userstory_map
 *.jsonl
 userstory_detail
 repositories.json
+.gradle
