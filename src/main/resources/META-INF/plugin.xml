@@ -18,6 +18,8 @@
                 implementation="cc.unitmesh.devti.runconfig.command.CreateStoryConfigurationProducer"/>
 
         <configurationType implementation="cc.unitmesh.devti.runconfig.DtCommandConfigurationType"/>
+
+        <programRunner implementation="cc.unitmesh.devti.runconfig.DtCommandRunner"/>
     </extensions>
 
     <applicationListeners>
