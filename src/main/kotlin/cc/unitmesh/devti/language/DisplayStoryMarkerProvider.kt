@@ -20,7 +20,7 @@ class DisplayStoryMarkerProvider : RelatedItemLineMarkerProvider() {
             val regex = DevtiAnnotator.DEVTI_REGEX
             val matchResult = regex.find(commentText)
             if (matchResult != null) {
-                val builder = NavigationGutterIconBuilder.create(DevtiIcons.FILE).setTargets(element)
+                val builder = NavigationGutterIconBuilder.create(DevtiIcons.STORY).setTargets(element)
                     .setTooltipText("Display Story")
                 result.add(builder.createLineMarkerInfo(element))
             }

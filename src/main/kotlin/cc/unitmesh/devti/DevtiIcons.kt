@@ -5,7 +5,7 @@ import javax.swing.Icon
 
 class DevtiIcons {
     companion object {
-        val FILE: Icon = IconLoader.getIcon("/icons/jar-gray.png", DevtiIcons::class.java)
+        val STORY: Icon = IconLoader.getIcon("/icons/clickprompt-light.svg", DevtiIcons::class.java)
     }
 
 }
