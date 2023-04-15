@@ -8,15 +8,23 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
+import org.jdom.Element
 
 class DtCommandConfiguration(project: Project, name: String, factory: ConfigurationFactory) :
     LocatableConfigurationBase<RunProfileState>(project, factory, name) {
-    override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState? {
-        TODO("Not yet implemented")
+
+    private lateinit var runConfigure: DtAiConfigure
+
+    override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
+        return DtRunState(environment, this, runConfigure)
     }
 
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
-        TODO("Not yet implemented")
+        return DtSettingsEditor(project)
     }
 
+    override fun writeExternal(element: Element) {
+        super.writeExternal(element)
+        // todos
+    }
 }

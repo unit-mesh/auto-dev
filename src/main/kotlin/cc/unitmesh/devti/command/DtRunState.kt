@@ -7,7 +7,11 @@ import com.intellij.execution.configurations.RemoteState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 
-class DtRunState(environment: ExecutionEnvironment): RemoteState {
+class DtRunState(
+    environment: ExecutionEnvironment,
+    configuration: DtCommandConfiguration,
+    aiConfig: DtAiConfigure
+): RemoteState {
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
         return null
     }
