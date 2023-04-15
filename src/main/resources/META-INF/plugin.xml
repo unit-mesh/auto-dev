@@ -21,9 +21,4 @@
 
         <programRunner implementation="cc.unitmesh.devti.runconfig.DtCommandRunner"/>
     </extensions>
-
-    <applicationListeners>
-        <listener class="cc.unitmesh.devti.listeners.MyFrameStateListener"
-                  topic="com.intellij.ide.FrameStateListener"/>
-    </applicationListeners>
 </idea-plugin>
