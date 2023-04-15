@@ -1,11 +1,11 @@
 package cc.unitmesh.devti.runconfig
 
 class DevtiConfigure(
-    val githubToken: String,
-    val openAiApiKey: String,
-    val openAiEngine: String,
-    val openAiMaxTokens: Int,
-    val openAiTemperature: Float,
+    var githubToken: String,
+    var openAiApiKey: String,
+    var openAiEngine: String,
+    var openAiMaxTokens: Int,
+    var openAiTemperature: Float,
 ) {
 
     companion object {

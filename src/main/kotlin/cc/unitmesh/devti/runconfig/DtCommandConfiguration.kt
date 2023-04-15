@@ -14,7 +14,7 @@ import org.jdom.Element
 class DtCommandConfiguration(project: Project, name: String, factory: ConfigurationFactory) :
     LocatableConfigurationBase<RunProfileState>(project, factory, name) {
 
-    private var runConfigure: DevtiConfigure = DevtiConfigure.getDefault()
+    var runConfigure: DevtiConfigure = DevtiConfigure.getDefault()
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
         return DtRunState(environment, this, runConfigure)
@@ -26,6 +26,5 @@ class DtCommandConfiguration(project: Project, name: String, factory: Configurat
 
     override fun writeExternal(element: Element) {
         super.writeExternal(element)
-        // todos
     }
 }
