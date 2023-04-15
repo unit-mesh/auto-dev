@@ -31,6 +31,6 @@ class DtConfigurationFactory(type: DtRunConfigurationType) : ConfigurationFactor
     override fun getOptionsClass(): Class<out BaseState?> = DtRunConfigurationOptions::class.java
 
     companion object {
-        const val ID: String = "DevTi Run Config"
+        const val ID: String = "DtRunConfiguration"
     }
 }

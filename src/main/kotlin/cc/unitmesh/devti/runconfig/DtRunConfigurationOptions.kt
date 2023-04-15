@@ -2,8 +2,9 @@ package cc.unitmesh.devti.runconfig
 
 import com.intellij.execution.configurations.RunConfigurationOptions
 import com.intellij.openapi.components.StoredProperty
+import com.intellij.openapi.diagnostic.Logger
 
-
+// ModuleBasedConfigurationOptions
 class DtRunConfigurationOptions : RunConfigurationOptions() {
     private val githubToken: StoredProperty<String?> = string("").provideDelegate(this, "githubToken")
     private val openAiApiKey: StoredProperty<String?> = string("").provideDelegate(this, "openAiApiKey")
@@ -25,5 +26,9 @@ class DtRunConfigurationOptions : RunConfigurationOptions() {
             openAiMaxTokens.getValue(this) ?: 4096,
             0.0f
         )
+    }
+
+    companion object {
+       val logger = Logger.getInstance(DtRunConfigurationOptions::class.java)
     }
 }

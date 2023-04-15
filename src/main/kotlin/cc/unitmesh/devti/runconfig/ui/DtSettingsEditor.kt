@@ -2,6 +2,8 @@ package cc.unitmesh.devti.runconfig.ui
 
 import cc.unitmesh.devti.runconfig.DevtiConfigure
 import cc.unitmesh.devti.runconfig.DtRunConfiguration
+import cc.unitmesh.devti.runconfig.DtRunConfigurationOptions
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.ui.dsl.builder.bindIntText
@@ -17,8 +19,22 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
     private var openAiEngine: String = "gpt-3.5-turbo"
     private var openAiMaxTokens: Int = 4096
 
-    @Suppress("UnstableApiUsage")
-    private val myPanel = panel {
+    private lateinit var myPanel: JComponent
+
+    override fun applyEditorTo(configuration: DtRunConfiguration) {
+        logger.warn("github:$githubToken")
+        configuration.setOptions(
+            DevtiConfigure(
+                githubToken,
+                openAiApiKey,
+                openAiEngine,
+                openAiMaxTokens,
+                0.0f
+            )
+        )
+    }
+
+    override fun createEditor(): JComponent = panel {
         row("Github Token:") {
             textField()
                 .bindText(::githubToken)
@@ -38,6 +54,8 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
         row("Max Token") {
             intTextField(0..32768).bindIntText(::openAiMaxTokens)
         }
+    }.apply {
+        myPanel = this
     }
 
     override fun resetEditorFrom(configuration: DtRunConfiguration) {
@@ -46,19 +64,9 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
         openAiApiKey = configure.openAiApiKey
         openAiEngine = configure.openAiEngine
         openAiMaxTokens = configure.openAiMaxTokens
-    }
+    };
 
-    override fun applyEditorTo(configuration: DtRunConfiguration) {
-        configuration.setOptions(
-            DevtiConfigure(
-                githubToken,
-                openAiApiKey,
-                openAiEngine,
-                openAiMaxTokens,
-                0.0f
-            )
-        )
+    companion object {
+        val logger = Logger.getInstance(DtRunConfigurationOptions::class.java)
     }
-
-    override fun createEditor(): JComponent = myPanel
 }
