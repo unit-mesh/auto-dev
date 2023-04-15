@@ -14,7 +14,7 @@ import org.jdom.Element
 class DtCommandConfiguration(project: Project, name: String, factory: ConfigurationFactory) :
     LocatableConfigurationBase<RunProfileState>(project, factory, name) {
 
-    private lateinit var runConfigure: DtAiConfigure
+    private var runConfigure: DtAiConfigure = DtAiConfigure.getDefault()
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
         return DtRunState(environment, this, runConfigure)

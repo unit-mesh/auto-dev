@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.language
 
 import cc.unitmesh.devti.DevtiIcons
+import cc.unitmesh.devti.runconfig.command.CreateStoryConfigurationProducer
 import com.intellij.execution.lineMarker.ExecutorAction
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.psi.PsiComment
@@ -14,10 +15,12 @@ class DisplayStoryLineMarkerContributor : RunLineMarkerContributor() {
         val regex = DevtiAnnotator.DEVTI_REGEX
         val matchResult = regex.find(commentText) ?: return null
 
+        val state = CreateStoryConfigurationProducer()
+
         val actions = ExecutorAction.getActions(0)
         return Info(
             DevtiIcons.STORY,
-            { "Display Story" },
+            { state.configurationName },
             *actions
         )
     }
