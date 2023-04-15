@@ -9,7 +9,8 @@ class DevtiConfigure(
     var openAiMaxTokens: Int,
     var openAiTemperature: Float,
 ) : BaseConfig() {
-    override val configurationName = "DevTi: Create User story"
+    // match configure name for story name
+    override val configurationName = "DevTi"
 
     companion object {
         val DEFAULT_GITHUB_TOKEN = ""
