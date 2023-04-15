@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.command
+package cc.unitmesh.devti.runconfig
 
 class DtAiConfigure(
     val githubToken: String,

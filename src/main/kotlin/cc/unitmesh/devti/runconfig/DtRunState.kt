@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.command
+package cc.unitmesh.devti.runconfig
 
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
