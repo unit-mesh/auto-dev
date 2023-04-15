@@ -1,5 +1,12 @@
 import org.jetbrains.changelog.Changelog
-import org.jetbrains.changelog.markdownToHTML
+
+buildscript {
+    repositories {
+        maven {
+            url = uri("https://plugins.gradle.org/m2/")
+        }
+    }
+}
 
 fun properties(key: String) = providers.gradleProperty(key)
 fun environment(key: String) = providers.environmentVariable(key)
@@ -11,6 +18,8 @@ plugins {
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
     alias(libs.plugins.qodana) // Gradle Qodana Plugin
     alias(libs.plugins.kover) // Gradle Kover Plugin
+//    alias(libs.plugins.grammarKit) // Grammar Kit Plugin
+    id("org.jetbrains.grammarkit") version "2021.2.2"
 }
 
 group = properties("pluginGroup").get()
@@ -64,6 +73,33 @@ tasks {
     wrapper {
         gradleVersion = properties("gradleVersion").get()
     }
+
+//    val generateDevtiLexer = task<GenerateLexerTask>("generateFeakinLexer") {
+//        source.set("src/main/grammars/DevtiLexer.flex")
+//        targetDir.set("cc/unitmesh/devti/lexer")
+//        targetClass.set("_FeakinLexer")
+//        purgeOldFiles.set(true)
+//    }
+//
+//    val generateDevtiParser = task<GenerateParserTask>("generateFeakinParser") {
+//        source.set("src/main/grammars/DevtiParser.bnf")
+//        targetRoot.set("src/gen")
+//        pathToParser.set("cc/unitmesh/devti/parser/FeakinParser.java")
+//        pathToPsiRoot.set("ccc/unitmesh/devti/psi")
+//        purgeOldFiles.set(true)
+//    }
+//
+//    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+//        kotlinOptions {
+//            jvmTarget = properties("javaVersion")
+//            apiVersion = properties("kotlinApiVersion")
+//        }
+//
+//        dependsOn(
+//            generateDevtiLexer,
+//            generateDevtiParser
+//        )
+//    }
 
     patchPluginXml {
         version = properties("pluginVersion")
