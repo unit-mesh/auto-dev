@@ -15,7 +15,7 @@
         <runConfigurationProducer
                 implementation="cc.unitmesh.devti.runconfig.command.CreateStoryConfigurationProducer"/>
 
-        <configurationType implementation="cc.unitmesh.devti.runconfig.DtCommandConfigurationType"/>
+        <configurationType implementation="cc.unitmesh.devti.runconfig.DtRunConfigurationType"/>
 
         <programRunner implementation="cc.unitmesh.devti.runconfig.DtCommandRunner"/>
     </extensions>

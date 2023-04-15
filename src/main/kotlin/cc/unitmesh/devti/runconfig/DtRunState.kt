@@ -11,7 +11,7 @@ import com.intellij.openapi.diagnostic.logger
 
 class DtRunState(
     val environment: ExecutionEnvironment,
-    val configuration: DtCommandConfiguration,
+    val configuration: DtRunConfiguration,
     private val aiConfig: DevtiConfigure
 ) : RemoteState {
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {

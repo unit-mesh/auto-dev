@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.runconfig.command
 
-import cc.unitmesh.devti.runconfig.DtCommandConfiguration
-import cc.unitmesh.devti.runconfig.DtCommandConfigurationType
+import cc.unitmesh.devti.runconfig.DtRunConfiguration
+import cc.unitmesh.devti.runconfig.DtRunConfigurationType
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.LazyRunConfigurationProducer
 import com.intellij.execution.configurations.ConfigurationFactory
@@ -9,15 +9,15 @@ import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 
 
-abstract class BaseLazyRunConfigurationProducer<T: BaseConfig> : LazyRunConfigurationProducer<DtCommandConfiguration>() {
+abstract class BaseLazyRunConfigurationProducer<T: BaseConfig> : LazyRunConfigurationProducer<DtRunConfiguration>() {
     val runConfigProviders: MutableList<(List<PsiElement>) -> T?> = mutableListOf()
 
     override fun getConfigurationFactory(): ConfigurationFactory {
-        return DtCommandConfigurationType.getInstance().factory
+        return DtRunConfigurationType.getInstance().factory
     }
 
     override fun setupConfigurationFromContext(
-        configuration: DtCommandConfiguration,
+        configuration: DtRunConfiguration,
         context: ConfigurationContext,
         sourceElement: Ref<PsiElement>
     ): Boolean {
@@ -42,7 +42,7 @@ abstract class BaseLazyRunConfigurationProducer<T: BaseConfig> : LazyRunConfigur
     }
 
     override fun isConfigurationFromContext(
-        configuration: DtCommandConfiguration,
+        configuration: DtRunConfiguration,
         context: ConfigurationContext
     ): Boolean {
         val implConfig = findIEndpointByContext(context) ?: return false
