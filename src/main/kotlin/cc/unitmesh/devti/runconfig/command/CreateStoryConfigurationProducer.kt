@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.runconfig.command
 
-import cc.unitmesh.devti.runconfig.DtAiConfigure
+import cc.unitmesh.devti.runconfig.DevtiConfigure
 import cc.unitmesh.devti.runconfig.DtCommandConfiguration
 import cc.unitmesh.devti.runconfig.DtCommandConfigurationType
 import com.intellij.execution.actions.ConfigurationContext
@@ -8,7 +8,7 @@ import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 
-class CreateStoryConfigurationProducer : BaseLazyRunConfigurationProducer<DtAiConfigure>() {
+class CreateStoryConfigurationProducer : BaseLazyRunConfigurationProducer<DevtiConfigure>() {
     val configurationName: String = "DevTi Create Story"
     override fun getConfigurationFactory(): ConfigurationFactory {
         return DtCommandConfigurationType.getInstance().factory

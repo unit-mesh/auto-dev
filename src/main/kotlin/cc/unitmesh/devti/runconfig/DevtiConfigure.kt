@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.runconfig
 
-class DtAiConfigure(
+class DevtiConfigure(
     val githubToken: String,
     val openAiApiKey: String,
     val openAiEngine: String,
@@ -15,8 +15,8 @@ class DtAiConfigure(
         val DEFAULT_OPEN_AI_MAX_TOKENS = 4096
         val DEFAULT_OPEN_AI_TEMPERATURE = 0.5f
 
-        fun getDefault(): DtAiConfigure {
-            return DtAiConfigure(
+        fun getDefault(): DevtiConfigure {
+            return DevtiConfigure(
                 DEFAULT_GITHUB_TOKEN,
                 DEFAULT_OPEN_AI_API_KEY,
                 DEFAULT_OPEN_AI_ENGINE,
