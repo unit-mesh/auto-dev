@@ -10,7 +10,7 @@
     <resource-bundle>messages.DevtiBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="cc.unitmesh.devti.toolWindow.DevtiToolWindowFactory" id="MyToolWindow"/>
+        <toolWindow factoryClass="cc.unitmesh.devti.toolWindow.DevtiToolWindowFactory" id="DevTi"/>
 
         <codeInsight.lineMarkerProvider language="JAVA"
                                         implementationClass="cc.unitmesh.devti.language.DisplayStoryMarkerProvider"/>
