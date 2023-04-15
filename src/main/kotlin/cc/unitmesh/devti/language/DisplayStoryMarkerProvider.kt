@@ -17,7 +17,7 @@ class DisplayStoryMarkerProvider : RelatedItemLineMarkerProvider() {
         if (element is PsiComment) {
             val commentText = element.text
             // use regex to match devti://story/1102/{AC1,AC2}
-            val regex = Regex("devti://story/\\d+/\\{[A-Z]+(,[A-Z]+)*\\}")
+            val regex = DevtiAnnotator.DEVTI_REGEX
             val matchResult = regex.find(commentText)
             if (matchResult != null) {
                 val builder = NavigationGutterIconBuilder.create(DevtiIcons.FILE).setTargets(element)
