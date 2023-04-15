@@ -12,8 +12,8 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow factoryClass="cc.unitmesh.devti.toolWindow.DevtiToolWindowFactory" id="DevTi"/>
 
-        <codeInsight.lineMarkerProvider language="JAVA"
-                                        implementationClass="cc.unitmesh.devti.language.DisplayStoryMarkerProvider"/>
+        <runLineMarkerContributor language="JAVA"
+                                  implementationClass="cc.unitmesh.devti.language.DisplayStoryLineMarkerContributor"/>
     </extensions>
 
     <applicationListeners>
