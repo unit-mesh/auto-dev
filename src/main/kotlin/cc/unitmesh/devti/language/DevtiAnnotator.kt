@@ -4,7 +4,7 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.psi.PsiElement
 
-class DevtiAnnotator: Annotator {
+class DevtiAnnotator : Annotator {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
 
 
@@ -14,6 +14,6 @@ class DevtiAnnotator: Annotator {
         val DEVTI_PREFIX_STR = "devti"
         val DEVTI_SEPARATOR_STR = ":"
 
-        val DEVTI_REGEX = Regex("^\\/\\/\\sdevti:\\/\\/story\\/1102\\/\\{([^,]+),([^\\}]+)\\}$")
+        val DEVTI_REGEX = Regex("^//\\sdevti://story/\\d+/.*$")
     }
 }
