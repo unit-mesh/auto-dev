@@ -1,9 +1,9 @@
-package com.github.phodal.autocrud.services
+package cc.unitmesh.silvery.services
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
-import com.github.phodal.autocrud.MyBundle
+import cc.unitmesh.silvery.MyBundle
 
 @Service(Service.Level.PROJECT)
 class MyProjectService(project: Project) {

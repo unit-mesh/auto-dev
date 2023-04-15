@@ -5,14 +5,19 @@
     <vendor>phodal</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.java</depends>
+    <depends>com.intellij.kotlin</depends>
 
-    <resource-bundle>messages.MyBundle</resource-bundle>
+    <resource-bundle>messages.SilveryBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.phodal.autocrud.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
+        <toolWindow factoryClass="cc.unitmesh.silvery.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
+
+        <codeInsight.lineMarkerProvider language="JAVA"
+                                        implementationClass="cc.unitmesh.silvery.language.AnalysiStoryMarkerProvider"/>
     </extensions>
 
     <applicationListeners>
-        <listener class="com.github.phodal.autocrud.listeners.MyFrameStateListener" topic="com.intellij.ide.FrameStateListener"/>
+        <listener class="cc.unitmesh.silvery.listeners.MyFrameStateListener" topic="com.intellij.ide.FrameStateListener"/>
     </applicationListeners>
 </idea-plugin>
