@@ -6,6 +6,7 @@ import com.intellij.util.TextFieldCompletionProvider
 import com.intellij.util.textCompletion.TextFieldWithCompletion
 import java.awt.BorderLayout
 import javax.swing.JPanel
+
 class DtCommandLineEditor(private val project: Project, private val completionProvider: TextFieldCompletionProvider) :
     JPanel(BorderLayout()), TextAccessor {
     private val textField = createTextField("")

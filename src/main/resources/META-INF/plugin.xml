@@ -14,7 +14,6 @@
 
         <runLineMarkerContributor language="JAVA"
                                   implementationClass="cc.unitmesh.devti.language.DisplayStoryLineMarkerContributor"/>
-
         <runConfigurationProducer
                 implementation="cc.unitmesh.devti.runconfig.command.CreateStoryConfigurationProducer"/>
 
