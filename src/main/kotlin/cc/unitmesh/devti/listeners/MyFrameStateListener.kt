@@ -1,4 +1,4 @@
-package cc.unitmesh.silvery.listeners
+package cc.unitmesh.devti.listeners
 
 import com.intellij.ide.FrameStateListener
 import com.intellij.openapi.diagnostic.thisLogger

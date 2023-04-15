@@ -1,4 +1,4 @@
-package cc.unitmesh.silvery.language
+package cc.unitmesh.devti.language
 
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator

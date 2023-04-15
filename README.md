@@ -34,7 +34,7 @@ Deploy yourself:
 
 protocol example:
 
-- [ ] devti://story/1102/{AC1,AC2}
+- [ ] // devti://story/1102/{AC1,AC2}
 - [ ] devti://story/1102
 
 Local Index:

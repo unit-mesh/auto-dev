@@ -1,11 +1,11 @@
-package cc.unitmesh.silvery
+package cc.unitmesh.devti
 
 import com.intellij.DynamicBundle
 import org.jetbrains.annotations.NonNls
 import org.jetbrains.annotations.PropertyKey
 
 @NonNls
-private const val BUNDLE = "messages.SilveryBundle"
+private const val BUNDLE = "messages.DevtiBundle"
 
 object MyBundle : DynamicBundle(BUNDLE) {
 

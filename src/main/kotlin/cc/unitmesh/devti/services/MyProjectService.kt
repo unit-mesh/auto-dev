@@ -1,9 +1,9 @@
-package cc.unitmesh.silvery.services
+package cc.unitmesh.devti.services
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
-import cc.unitmesh.silvery.MyBundle
+import cc.unitmesh.devti.MyBundle
 
 @Service(Service.Level.PROJECT)
 class MyProjectService(project: Project) {

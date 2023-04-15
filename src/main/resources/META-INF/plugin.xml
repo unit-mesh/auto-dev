@@ -1,23 +1,23 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <id>com.github.phodal.autocrud</id>
-    <name>autocrud Template</name>
+    <id>cc.unitmesh.devti</id>
+    <name>AutoCRUD</name>
     <vendor>phodal</vendor>
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.java</depends>
-    <depends>com.intellij.kotlin</depends>
 
-    <resource-bundle>messages.SilveryBundle</resource-bundle>
+    <resource-bundle>messages.DevtiBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="cc.unitmesh.silvery.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
+        <toolWindow factoryClass="cc.unitmesh.devti.toolWindow.DevtiToolWindowFactory" id="MyToolWindow"/>
 
         <codeInsight.lineMarkerProvider language="JAVA"
-                                        implementationClass="cc.unitmesh.silvery.language.AnalysiStoryMarkerProvider"/>
+                                        implementationClass="cc.unitmesh.devti.language.DisplayStoryMarkerProvider"/>
     </extensions>
 
     <applicationListeners>
-        <listener class="cc.unitmesh.silvery.listeners.MyFrameStateListener" topic="com.intellij.ide.FrameStateListener"/>
+        <listener class="cc.unitmesh.devti.listeners.MyFrameStateListener"
+                  topic="com.intellij.ide.FrameStateListener"/>
     </applicationListeners>
 </idea-plugin>

@@ -1,4 +1,4 @@
-package cc.unitmesh.silvery.toolWindow
+package cc.unitmesh.devti.toolWindow
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
@@ -8,13 +8,11 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.content.ContentFactory
-import cc.unitmesh.silvery.MyBundle
-import cc.unitmesh.silvery.services.MyProjectService
+import cc.unitmesh.devti.MyBundle
+import cc.unitmesh.devti.services.MyProjectService
 import javax.swing.JButton
 
-
-class MyToolWindowFactory : ToolWindowFactory {
-
+class DevtiToolWindowFactory : ToolWindowFactory {
     init {
         thisLogger().warn("Don't forget to remove all non-needed sample code files with their corresponding registration entries in `plugin.xml`.")
     }
