@@ -15,7 +15,7 @@ class DisplayStoryLineMarkerContributor : RunLineMarkerContributor() {
         val regex = DevtiAnnotator.DEVTI_REGEX
         val matchResult = regex.find(commentText) ?: return null
 
-        val state = CreateStoryConfigurationProducer()
+        val state = CreateStoryConfigurationProducer().findConfig(listOf(element)) ?: return null
 
         val actions = ExecutorAction.getActions(0)
         return Info(

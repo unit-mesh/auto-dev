@@ -4,18 +4,16 @@ import cc.unitmesh.devti.runconfig.DevtiConfigure
 import cc.unitmesh.devti.runconfig.DtCommandConfiguration
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
+import com.intellij.ui.dsl.builder.bindIntText
+import com.intellij.ui.dsl.builder.bindItem
+import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
-import java.awt.TextField
 import javax.swing.JComponent
-import com.intellij.ui.dsl.builder.bind
-import com.intellij.ui.dsl.builder.bindSelected
-import com.intellij.ui.dsl.builder.bindText
-import com.intellij.ui.dsl.builder.bindItem
-import com.intellij.ui.dsl.builder.bindIntText
 
 class DtSettingsEditor(project: Project) : SettingsEditor<DtCommandConfiguration>() {
-    var configure = DevtiConfigure.getDefault()
+    private var configure = DevtiConfigure.getDefault()
+
     override fun resetEditorFrom(configuration: DtCommandConfiguration) {
         configure = configuration.runConfigure
     }

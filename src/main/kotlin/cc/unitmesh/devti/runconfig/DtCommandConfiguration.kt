@@ -14,13 +14,9 @@ import org.jdom.Element
 class DtCommandConfiguration(project: Project, name: String, factory: ConfigurationFactory) :
     LocatableConfigurationBase<RunProfileState>(project, factory, name) {
 
-    lateinit var runConfigure: DevtiConfigure
+    var runConfigure: DevtiConfigure = DevtiConfigure.getDefault()
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
-        if (!this::runConfigure.isInitialized) {
-            runConfigure = DevtiConfigure.getDefault()
-        }
-
         return DtRunState(environment, this, runConfigure)
     }
 
@@ -31,23 +27,19 @@ class DtCommandConfiguration(project: Project, name: String, factory: Configurat
     override fun writeExternal(element: Element) {
         super.writeExternal(element)
 
-        if (this::runConfigure.isInitialized) {
-            element.writeString("githubToken", runConfigure.githubToken)
-            element.writeString("openAiApiKey", runConfigure.openAiApiKey)
-            element.writeString("openAiEngine", runConfigure.openAiEngine)
-            element.writeString("openAiMaxTokens", runConfigure.openAiMaxTokens.toString())
-        }
+        element.writeString("githubToken", runConfigure.githubToken)
+        element.writeString("openAiApiKey", runConfigure.openAiApiKey)
+        element.writeString("openAiEngine", runConfigure.openAiEngine)
+        element.writeString("openAiMaxTokens", runConfigure.openAiMaxTokens.toString())
     }
 
     override fun readExternal(element: Element) {
         super.readExternal(element)
 
-        if (this::runConfigure.isInitialized) {
-            element.readString("githubToken")?.let { runConfigure.githubToken = it }
-            element.readString("openAiApiKey")?.let { runConfigure.openAiApiKey = it }
-            element.readString("openAiEngine")?.let { runConfigure.openAiEngine = it }
-            element.readString("openAiMaxTokens")?.let { runConfigure.openAiMaxTokens = it.toInt() }
-        }
+        element.readString("githubToken")?.let { runConfigure.githubToken = it }
+        element.readString("openAiApiKey")?.let { runConfigure.openAiApiKey = it }
+        element.readString("openAiEngine")?.let { runConfigure.openAiEngine = it }
+        element.readString("openAiMaxTokens")?.let { runConfigure.openAiMaxTokens = it.toInt() }
     }
 }
 

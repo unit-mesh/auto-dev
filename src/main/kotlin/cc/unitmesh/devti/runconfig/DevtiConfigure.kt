@@ -1,12 +1,15 @@
 package cc.unitmesh.devti.runconfig
 
+import cc.unitmesh.devti.runconfig.command.BaseConfig
+
 class DevtiConfigure(
     var githubToken: String,
     var openAiApiKey: String,
     var openAiEngine: String,
     var openAiMaxTokens: Int,
     var openAiTemperature: Float,
-) {
+) : BaseConfig() {
+    override val configurationName = "DevTi: Create User story"
 
     companion object {
         val DEFAULT_GITHUB_TOKEN = ""

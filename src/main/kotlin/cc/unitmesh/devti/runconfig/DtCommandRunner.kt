@@ -19,8 +19,7 @@ class DtCommandRunner : GenericProgramRunner<RunnerSettings>() {
     override fun getRunnerId(): @NonNls String = "DtCommandRunner"
 
     override fun canRun(executorId: String, profile: RunProfile): Boolean {
-        if (executorId != DefaultRunExecutor.EXECUTOR_ID || profile !is DtCommandConfiguration) return false
-        return true
+        return !(executorId != DefaultRunExecutor.EXECUTOR_ID || profile !is DtCommandConfiguration)
     }
 
     override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor? {
