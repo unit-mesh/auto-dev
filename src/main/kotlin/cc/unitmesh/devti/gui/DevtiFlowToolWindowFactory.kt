@@ -17,9 +17,11 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 
 class DevtiFlowToolWindowFactory : ToolWindowFactory, DumbAware {
+    private val contentFactory = ContentFactory.SERVICE.getInstance()
+
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val toolWindowContent = CalendarToolWindowContent(toolWindow)
-        val content = ContentFactory.getInstance().createContent(toolWindowContent.contentPanel, "", false)
+        val content = contentFactory.createContent(toolWindowContent.contentPanel, "", false)
         toolWindow.contentManager.addContent(content)
     }
 

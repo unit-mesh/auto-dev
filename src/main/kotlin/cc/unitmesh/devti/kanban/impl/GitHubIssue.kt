@@ -19,14 +19,6 @@ class GitHubIssue(val repoUrl: String, val token: String) : Kanban {
         }
     }
 
-    private fun fetchIssueById(id: String): String {
-        return gitHub.getRepository(repoUrl).getIssue(Integer.parseInt(id)).body
-    }
-
-    override fun isValidStory(id: String): Boolean {
-        return super.isValidStory(fetchIssueById(id))
-    }
-
     override fun getProjectInfo(): SimpleProjectInfo {
         val repo = gitHub.getRepository(repoUrl)
         return SimpleProjectInfo(repo.nodeId, repo.name, repo.description)
@@ -37,7 +29,8 @@ class GitHubIssue(val repoUrl: String, val token: String) : Kanban {
     }
 
     override fun getStoryById(storyId: String): SimpleStory {
-        TODO("Not yet implemented")
+        val issue = gitHub.getRepository(repoUrl).getIssue(Integer.parseInt(storyId))
+        return SimpleStory(issue.nodeId, issue.title, issue.body)
     }
 
     override fun updateStoryDetail(simpleStory: SimpleStory) {

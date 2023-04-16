@@ -38,6 +38,8 @@ dependencies {
 //    implementation(libs.annotations)
     implementation("org.kohsuke:github-api:1.314")
     implementation("com.aallam.openai:openai-client:3.2.0")
+
+    implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
 }
 
 // Configure Gradle IntelliJ Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
@@ -76,16 +78,16 @@ tasks {
 
     val generateDevtiLexer = task<GenerateLexerTask>("generateFeakinLexer") {
         source.set("src/main/grammars/SilveryLexer.flex")
-        targetDir.set("cc/unitmesh/devti/lexer")
-        targetClass.set("_FeakinLexer")
+        targetDir.set("src/main/gen/cc/unitmesh/devti/lexer")
+        targetClass.set("SilveryLexer")
         purgeOldFiles.set(true)
     }
 
     val generateDevtiParser = task<GenerateParserTask>("generateFeakinParser") {
         source.set("src/main/grammars/SilveryParser.bnf")
         targetRoot.set("src/main/gen")
-        pathToParser.set("cc/unitmesh/devti/parser/SilveryParser.java")
-        pathToPsiRoot.set("cc/unitmesh/devti/psi")
+        pathToParser.set("src/main/cc/unitmesh/devti/parser/SilveryParser.java")
+        pathToPsiRoot.set("src/main/cc/unitmesh/devti/psi")
         purgeOldFiles.set(true)
     }
 
