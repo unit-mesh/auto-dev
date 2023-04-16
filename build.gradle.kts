@@ -91,6 +91,11 @@ tasks {
         purgeOldFiles.set(true)
     }
 
+    configure<JavaPluginExtension> {
+        sourceCompatibility = VERSION_17
+        targetCompatibility = VERSION_17
+    }
+
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions {
             jvmTarget = VERSION_17.toString()
