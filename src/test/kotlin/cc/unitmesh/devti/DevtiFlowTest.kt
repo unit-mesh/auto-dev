@@ -1,16 +1,12 @@
 package cc.unitmesh.devti
 
-import cc.unitmesh.devti.analysis.JavaCrudProcessor
 import cc.unitmesh.devti.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.prompt.openai.OpenAIAction
-import com.intellij.psi.JavaPsiFacade
-import com.intellij.psi.PsiElementFactory
-import com.intellij.testFramework.LightPlatformTestCase
 import org.junit.Test
 import io.github.cdimascio.dotenv.dotenv
 import org.junit.Ignore
 
-class DevtiFlowTest: LightPlatformTestCase() {
+class DevtiFlowTest {
 
     @Test
     @Ignore
