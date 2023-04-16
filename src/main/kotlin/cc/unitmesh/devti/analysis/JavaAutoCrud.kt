@@ -14,7 +14,7 @@ import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.util.PsiTreeUtil
 
 
-class JavaModifier(val project: Project) {
+class JavaAutoCrud(val project: Project) {
     private val psiElementFactory = JavaPsiFacade.getElementFactory(project)
     private val controllers = getAllControllerFiles()
 
@@ -34,12 +34,19 @@ class JavaModifier(val project: Project) {
     ) = javaFiles
         .mapNotNull { virtualFile -> psiManager.findFile(virtualFile) }
         .filter { psiFile ->
-            val javaClasses = PsiTreeUtil.findChildrenOfType(psiFile, PsiClass::class.java)
-            javaClasses.any(filter)
+            psiFile.name.endsWith("Controller.java")
+        }
+        .filter { psiFile ->
+            val psiClass = PsiTreeUtil.findChildrenOfType(psiFile, PsiClass::class.java)
+                .firstOrNull()
+            psiClass != null && filter(psiClass)
         }
 
-    private fun controllerFilter(clazz: PsiClass) =
-        clazz.hasAnnotation("Controller") || clazz.hasAnnotation("RestController")
+    private fun controllerFilter(clazz: PsiClass) : Boolean = clazz.annotations
+        .map { it.qualifiedName }.any {
+            it == "org.springframework.stereotype.Controller" ||
+                    it == "org.springframework.web.bind.annotation.RestController"
+        }
 
     fun addMethodToClass(psiClass: PsiClass, method: String): PsiClass {
         val methodFromText = psiElementFactory.createMethodFromText(method, psiClass)
@@ -57,5 +64,15 @@ class JavaModifier(val project: Project) {
         }
 
         return psiClass
+    }
+
+    fun controllerList(): List<DtFile> {
+        return this.controllers.map {
+            DtFile(
+                name = it.name,
+                className = PsiTreeUtil.findChildrenOfType(it, PsiClass::class.java)
+                    .firstOrNull()?.name ?: "",
+            )
+        }
     }
 }

@@ -4,7 +4,7 @@ import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiElementFactory
 import com.intellij.testFramework.LightPlatformTestCase
 
-class JavaModifierTest : LightPlatformTestCase() {
+class JavaAutoCrudTest : LightPlatformTestCase() {
     private val javaFactory: PsiElementFactory get() = JavaPsiFacade.getElementFactory(project)
 
     fun testShould_fetch_java_endpoints() {
@@ -17,7 +17,7 @@ class JavaModifierTest : LightPlatformTestCase() {
         psiClass.setName("HelloController")
         psiClass.addBefore(javaFactory.createAnnotationFromText("@Controller", null), psiClass.firstChild)
 
-        val endpoints = JavaModifier(project)
+        val endpoints = JavaAutoCrud(project)
         val newClasses =
             endpoints.addMethodToClass(psiClass, """
     public String hello2() { 
