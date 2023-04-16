@@ -16,13 +16,26 @@ class DtClass(
     // - method1(a: Int, b: String): String, method2(a: Int, b: String): String
     //```
     fun format(): String {
-        val constructor = methods.find { it.name == "<init>" }
-        val constructorParams = constructor?.parameters?.joinToString(", ") { "${it.name}: ${it.type}" } ?: ""
-        val methodsStr = methods.filter { it.name != "<init>" }
-            .joinToString(", ") { "${it.name}(${it.parameters.joinToString(", ") { "${it.name}: ${it.type}" }}): ${it.returnType}" }
-        val output = "class $name\nconstructor($constructorParams)\n- $methodsStr"
-        return output
+        val output = StringBuilder()
+        output.append("class $name ")
+
+        val constructor = methods.find { it.name == this.name }
+        if (constructor != null) {
+            output.append("constructor(")
+            output.append(constructor.parameters.joinToString(", ") { "${it.name}: ${it.type}" })
+            output.append(")\n")
+        }
+
+        output.append("- ")
+        // filter out constructor
+        output.append(methods.filter { it.name != this.name }.joinToString(", ") { method ->
+            "${method.name}(${method.parameters.joinToString(", ") { parameter -> "${parameter.name}: ${parameter.type}" }}): ${method.returnType}"
+        })
+
+        return output.toString()
     }
+
+    companion object
 }
 
 class DtMethod(

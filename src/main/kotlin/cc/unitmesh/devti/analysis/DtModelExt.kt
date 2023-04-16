@@ -4,7 +4,7 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 
-fun DtClass.fromPsiClass(psiClass: PsiClass): DtClass {
+fun DtClass.Companion.fromPsiClass(psiClass: PsiClass): DtClass {
     val methods = psiClass.methods.map { method ->
         DtMethod(
             name = method.name,
@@ -23,7 +23,7 @@ fun DtClass.fromPsiClass(psiClass: PsiClass): DtClass {
     )
 }
 
-fun DtClass.fromPsiFile(psiFile: PsiFile): DtClass? {
+fun DtClass.Companion.fromPsiFile(psiFile: PsiFile): DtClass? {
     val psiClass = PsiTreeUtil.findChildrenOfType(psiFile, PsiClass::class.java)
         .firstOrNull()
 
