@@ -5,11 +5,10 @@
 ## Todos
 
 - [ ] Languages Support
+    - [ ] Java
     - [ ] Kotlin
     - [ ] TypeScript
-- [ ] DevTi Protocol
-    - [ ] User story fetch Schema
-    - [ ] User story create Schema
+- [x] DevTi Protocol
 - [ ] Intelli code change
     - [ ] Swagger annotation Analysis
     - [ ] Endpoint modify suggestions / Controller Suggestion
@@ -42,12 +41,8 @@ GITHUB_TOKEN=YOUR_KEY
 
 protocol example:
 
+- [x] devti://story/github/1102
 - [ ] // devti://story/1102/{AC1,AC2}
-- [ ] devti://story/1102
-
-Local Index:
-
-- [ ] Smart suggestions
 
 ## License
 
