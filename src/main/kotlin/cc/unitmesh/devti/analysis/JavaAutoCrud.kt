@@ -34,9 +34,6 @@ class JavaAutoCrud(val project: Project) {
     ) = javaFiles
         .mapNotNull { virtualFile -> psiManager.findFile(virtualFile) }
         .filter { psiFile ->
-            psiFile.name.endsWith("Controller.java")
-        }
-        .filter { psiFile ->
             val psiClass = PsiTreeUtil.findChildrenOfType(psiFile, PsiClass::class.java)
                 .firstOrNull()
             psiClass != null && filter(psiClass)
@@ -46,6 +43,16 @@ class JavaAutoCrud(val project: Project) {
         .map { it.qualifiedName }.any {
             it == "org.springframework.stereotype.Controller" ||
                     it == "org.springframework.web.bind.annotation.RestController"
+        }
+
+    private fun serviceFilter(clazz: PsiClass) : Boolean = clazz.annotations
+        .map { it.qualifiedName }.any {
+            it == "org.springframework.stereotype.Service"
+        }
+
+    private fun repositoryFilter(clazz: PsiClass) : Boolean = clazz.annotations
+        .map { it.qualifiedName }.any {
+            it == "org.springframework.stereotype.Repository"
         }
 
     fun addMethodToClass(psiClass: PsiClass, method: String): PsiClass {
