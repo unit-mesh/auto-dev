@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.runconfig.ui
 
-import cc.unitmesh.devti.ai.OpenAI.DEFAULT_OPEN_AI_MAX_TOKENS
-import cc.unitmesh.devti.ai.OpenAIVersion
+import cc.unitmesh.devti.prompt.openai.OpenAI.DEFAULT_OPEN_AI_MAX_TOKENS
+import cc.unitmesh.devti.prompt.openai.OpenAIVersion
 import cc.unitmesh.devti.runconfig.DtRunConfiguration
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.options.SettingsEditor

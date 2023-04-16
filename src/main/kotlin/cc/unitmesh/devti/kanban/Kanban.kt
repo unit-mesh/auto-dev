@@ -3,7 +3,7 @@ package cc.unitmesh.devti.kanban
 interface Kanban {
     fun getProjectInfo(): SimpleProjectInfo
     fun getStories(): List<SimpleStory>
-    fun getStory(storyId: String): SimpleStory
+    fun getStoryById(storyId: String): SimpleStory
 
     /**
      * update story details
@@ -29,8 +29,9 @@ interface SimpleStory {
  * phodal.com (A Growth Engineering Blog)
  * """
  */
-interface SimpleProjectInfo {
-    val id: String
-    val name: String
+class SimpleProjectInfo(
+    val id: String,
+    val name: String,
     val description: String
+) {
 }

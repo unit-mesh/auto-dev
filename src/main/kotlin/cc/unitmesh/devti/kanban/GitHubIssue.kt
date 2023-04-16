@@ -16,15 +16,20 @@ class GitHubIssue(val repoUrl: String, val token: String) : Kanban {
         }
     }
 
+    fun fetchIssueById(id: String): String {
+        return gitHub.getRepository(repoUrl).getIssue(Integer.parseInt(id)).body
+    }
+
     override fun getProjectInfo(): SimpleProjectInfo {
-        TODO("Not yet implemented")
+        val repo = gitHub.getRepository(repoUrl)
+        return SimpleProjectInfo(repo.nodeId, repo.name, repo.description)
     }
 
     override fun getStories(): List<SimpleStory> {
         TODO("Not yet implemented")
     }
 
-    override fun getStory(storyId: String): SimpleStory {
+    override fun getStoryById(storyId: String): SimpleStory {
         TODO("Not yet implemented")
     }
 

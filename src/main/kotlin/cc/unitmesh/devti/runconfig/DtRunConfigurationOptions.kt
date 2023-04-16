@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.runconfig
 
-import cc.unitmesh.devti.ai.OpenAI.DEFAULT_OPEN_AI_MAX_TOKENS
+import cc.unitmesh.devti.prompt.openai.OpenAI.DEFAULT_OPEN_AI_MAX_TOKENS
 import com.intellij.execution.configurations.ModuleBasedConfigurationOptions
 import com.intellij.openapi.components.StoredProperty
 

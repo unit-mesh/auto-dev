@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.ai
+package cc.unitmesh.devti.prompt
 
 class GptPromptText {
     fun fillStoryDetail(story: String): String {

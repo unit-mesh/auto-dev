@@ -16,7 +16,7 @@ import javax.swing.JButton
 import javax.swing.JLabel
 import javax.swing.JPanel
 
-class CalendarToolWindowFactory : ToolWindowFactory, DumbAware {
+class DevtiFlowToolWindowFactory : ToolWindowFactory, DumbAware {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val toolWindowContent = CalendarToolWindowContent(toolWindow)
         val content = ContentFactory.getInstance().createContent(toolWindowContent.contentPanel, "", false)

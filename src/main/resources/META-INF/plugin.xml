@@ -18,6 +18,6 @@
         <configurationType implementation="cc.unitmesh.devti.runconfig.DtRunConfigurationType"/>
 
         <toolWindow id="DevTi Flow" secondary="true" icon="AllIcons.Toolwindows.WebToolWindow" anchor="right"
-                    factoryClass="cc.unitmesh.devti.gui.CalendarToolWindowFactory"/>
+                    factoryClass="cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory"/>
     </extensions>
 </idea-plugin>
