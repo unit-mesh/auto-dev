@@ -43,7 +43,7 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
         }
 
         row("API Engine:") {
-            cell(engineVersion)
+            engineVersion
         }
 
         row("Max Tokens") {
