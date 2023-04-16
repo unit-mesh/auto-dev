@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.analysis
 
 import com.intellij.psi.JavaPsiFacade
-import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElementFactory
 import com.intellij.testFramework.LightPlatformTestCase
 

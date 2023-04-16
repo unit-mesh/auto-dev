@@ -1,16 +1,20 @@
 package cc.unitmesh.devti
 
+import cc.unitmesh.devti.analysis.JavaCrudProcessor
 import cc.unitmesh.devti.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.prompt.openai.OpenAIAction
+import com.intellij.psi.JavaPsiFacade
+import com.intellij.psi.PsiElementFactory
+import com.intellij.testFramework.LightPlatformTestCase
 import org.junit.Test
 import io.github.cdimascio.dotenv.dotenv
 import org.junit.Ignore
 
-class DevtiFlowTest {
+class DevtiFlowTest: LightPlatformTestCase() {
 
     @Test
     @Ignore
-    fun should_fetch_github_story() {
+    fun testShould_fetch_github_story() {
         val dotenv = dotenv()
         val githubToken = dotenv["GITHUB_TOKEN"]
         val openAIKey = dotenv["OPENAI_KEY"]

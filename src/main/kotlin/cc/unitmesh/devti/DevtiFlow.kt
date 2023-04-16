@@ -1,5 +1,6 @@
 package cc.unitmesh.devti
 
+import cc.unitmesh.devti.analysis.CrudProcessor
 import cc.unitmesh.devti.kanban.Kanban
 import cc.unitmesh.devti.kanban.SimpleStory
 import cc.unitmesh.devti.prompt.DevtiFlowAction
@@ -9,7 +10,8 @@ import com.intellij.openapi.diagnostic.logger
 
 class DevtiFlow(
     private val kanban: Kanban,
-    private val flowAction: DevtiFlowAction
+    private val flowAction: DevtiFlowAction,
+    private val analyser: CrudProcessor? = null
 ) {
     fun start(id: String) {
         val project = kanban.getProjectInfo()

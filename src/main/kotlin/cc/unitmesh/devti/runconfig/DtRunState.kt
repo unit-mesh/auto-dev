@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.runconfig
 
-import cc.unitmesh.devti.analysis.JavaAutoCrud
+import cc.unitmesh.devti.analysis.JavaCrudProcessor
 import cc.unitmesh.devti.runconfig.config.DevtiCreateStoryConfigure
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
@@ -22,7 +22,7 @@ class DtRunState(
     }
 
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
-        val javaAuto = JavaAutoCrud(project)
+        val javaAuto = JavaCrudProcessor(project)
         val controllerList = javaAuto.controllerList()
 
         log.warn(controllerList.toString())

@@ -14,7 +14,7 @@ import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.util.PsiTreeUtil
 
 
-class JavaAutoCrud(val project: Project) : AutoCurdData {
+class JavaCrudProcessor(val project: Project) : CrudProcessor {
     private val psiElementFactory = JavaPsiFacade.getElementFactory(project)
     private val controllers = getAllControllerFiles()
 
