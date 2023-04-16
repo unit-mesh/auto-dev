@@ -4,11 +4,20 @@ import cc.unitmesh.devti.language.StoryConfig
 import cc.unitmesh.devti.runconfig.command.BaseConfig
 
 class DevtiCreateStoryConfigure(
-    val storyId: Int,
-    val storySource: String,
-    val acs: List<String> = listOf()
+    private val storyId: Int,
+    private val storySource: String,
+    private val acs: List<String> = listOf()
 ) : BaseConfig() {
-    override val configurationName = "DevTi Create Story"
+    override var configurationName = "DevTi Create Story"
+
+    init {
+        if (storyId <= 0) {
+            throw IllegalArgumentException("Story id must be greater than 0")
+        }
+
+        // update configure name by story id
+        configurationName += " $storyId"
+    }
 
     companion object {
         fun fromStoryConfig(storyConfig: StoryConfig): DevtiCreateStoryConfigure {
