@@ -31,7 +31,30 @@ class DevtiFlow(
 
         val files: List<DtClass> = analyser?.controllerList() ?: emptyList()
         logger.info("start devti flow")
-        flowAction.analysisEndpoint(storyDetail, files)
+        val targetEndpoint = flowAction.analysisEndpoint(storyDetail, files)
+        // use regex match *Controller from targetEndpoint
+        val controller = getController(targetEndpoint)
+        if (controller == null) {
+            logger.info("no controller found from: $targetEndpoint")
+            return
+        }
+
+        logger.info("target endpoint: $targetEndpoint")
+        val targetController = files.find { it.name == targetEndpoint }
+        if (targetController == null) {
+            logger.info("no controller found from: $targetEndpoint")
+            return
+        }
+
+        val code = flowAction.needUpdateMethodForController(targetEndpoint, targetController)
+        logger.info("update method code: $code")
+    }
+
+    private fun getController(targetEndpoint: String): String? {
+        val regex = Regex("""\s+(\w+Controller)""")
+        val matchResult = regex.find(targetEndpoint)
+        val controller = matchResult?.groupValues?.get(1)
+        return controller
     }
 
     companion object {

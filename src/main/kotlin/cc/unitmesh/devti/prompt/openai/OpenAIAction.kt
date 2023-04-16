@@ -41,8 +41,16 @@ class OpenAIAction(val openAIKey: String, val version: String) : AiAction, Devti
         }
     }
 
-    override fun analysisEndpoint(storyDetail: String, files: List<DtClass>): String {
-        val promptText = gptPromptText.fillEndpoint(storyDetail, files)
+    override fun analysisEndpoint(storyDetail: String, classes: List<DtClass>): String {
+        val promptText = gptPromptText.fillEndpoint(storyDetail, classes)
+        return runBlocking {
+            val prompt = prompt(promptText)
+            return@runBlocking prompt
+        }
+    }
+
+    override fun needUpdateMethodForController(targetEndpoint: String, clazz: DtClass): String {
+        val promptText = gptPromptText.fillUpdateMethod(targetEndpoint, clazz)
         return runBlocking {
             val prompt = prompt(promptText)
             return@runBlocking prompt
