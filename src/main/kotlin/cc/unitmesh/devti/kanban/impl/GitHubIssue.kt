@@ -1,5 +1,8 @@
-package cc.unitmesh.devti.kanban
+package cc.unitmesh.devti.kanban.impl
 
+import cc.unitmesh.devti.kanban.Kanban
+import cc.unitmesh.devti.kanban.SimpleProjectInfo
+import cc.unitmesh.devti.kanban.SimpleStory
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
 
@@ -16,8 +19,12 @@ class GitHubIssue(val repoUrl: String, val token: String) : Kanban {
         }
     }
 
-    fun fetchIssueById(id: String): String {
+    private fun fetchIssueById(id: String): String {
         return gitHub.getRepository(repoUrl).getIssue(Integer.parseInt(id)).body
+    }
+
+    override fun isValidStory(id: String): Boolean {
+        return super.isValidStory(fetchIssueById(id))
     }
 
     override fun getProjectInfo(): SimpleProjectInfo {

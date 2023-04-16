@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.runconfig
 
-import cc.unitmesh.devti.prompt.openai.OpenAIVersion
+import cc.unitmesh.devti.prompt.openai.DtOpenAIVersion
 import cc.unitmesh.devti.runconfig.config.DevtiCreateStoryConfigure
 import cc.unitmesh.devti.runconfig.ui.DtSettingsEditor
 import com.intellij.execution.Executor
@@ -60,7 +60,7 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
         this.options.setOpenAiApiKey(text)
     }
 
-    fun setAiVersion(fromIndex: OpenAIVersion) {
+    fun setAiVersion(fromIndex: DtOpenAIVersion) {
         this.options.setAiVersion(fromIndex.ordinal)
     }
 

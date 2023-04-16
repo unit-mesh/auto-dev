@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.runconfig.ui
 
-import cc.unitmesh.devti.prompt.openai.OpenAI.DEFAULT_OPEN_AI_MAX_TOKENS
-import cc.unitmesh.devti.prompt.openai.OpenAIVersion
+import cc.unitmesh.devti.prompt.openai.DtOpenAIConfig.DEFAULT_OPEN_AI_MAX_TOKENS
+import cc.unitmesh.devti.prompt.openai.DtOpenAIVersion
 import cc.unitmesh.devti.runconfig.DtRunConfiguration
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.options.SettingsEditor
@@ -21,8 +21,8 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
 
     private val githubInput = DtCommandLineEditor(project, completionProvider)
     private val aiApiToken = DtCommandLineEditor(project, completionProvider)
-    private var engineVersion = ComboBox<OpenAIVersion>().apply {
-        OpenAIVersion.values()
+    private var engineVersion = ComboBox<DtOpenAIVersion>().apply {
+        DtOpenAIVersion.values()
             .sortedBy { it.index }
             .forEach { addItem(it) }
     }
@@ -64,7 +64,7 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
     override fun applyEditorTo(configuration: DtRunConfiguration) {
         configuration.setGithubToken(githubInput.text)
         configuration.setOpenAiApiKey(aiApiToken.text)
-        configuration.setAiVersion(OpenAIVersion.fromIndex(engineVersion.selectedIndex))
+        configuration.setAiVersion(DtOpenAIVersion.fromIndex(engineVersion.selectedIndex))
         configuration.setAiMaxTokens(openAiMaxTokens)
     }
 

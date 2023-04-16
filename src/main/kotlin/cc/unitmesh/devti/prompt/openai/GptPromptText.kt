@@ -1,8 +1,11 @@
-package cc.unitmesh.devti.prompt
+package cc.unitmesh.devti.prompt.openai
 
-class GptPromptText {
-    fun fillStoryDetail(story: String): String {
-        return "This is a story about a ${story}"
+import cc.unitmesh.devti.kanban.SimpleProjectInfo
+import cc.unitmesh.devti.prompt.DevtiFlowAction
+
+class GptPromptText(val project: SimpleProjectInfo): DevtiFlowAction {
+    override fun fillStoryDetail(story: String): String {
+        return ""
     }
 
     fun generateControllerCode(story: String): String {
