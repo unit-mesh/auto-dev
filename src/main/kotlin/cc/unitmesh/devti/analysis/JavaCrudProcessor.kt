@@ -87,4 +87,14 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
     override fun modelList(): List<DtClass> {
         TODO("Not yet implemented")
     }
+
+    override fun updateMethod(targetController: String, code: String) {
+        val targetControllerFile = controllers.first { it.name == "$targetController.java" }
+        val targetControllerClass = PsiTreeUtil.findChildrenOfType(targetControllerFile, PsiClass::class.java)
+            .firstOrNull() ?: return
+
+        val updatedClass = addMethodToClass(targetControllerClass, code)
+        val updatedFile = updatedClass.containingFile
+        updatedFile.add(updatedClass)
+    }
 }

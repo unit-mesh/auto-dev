@@ -4,7 +4,7 @@ import cc.unitmesh.devti.language.StoryConfig
 import cc.unitmesh.devti.runconfig.command.BaseConfig
 
 class DevtiCreateStoryConfigure(
-    private val storyId: Int,
+    val storyId: Int,
     private val storySource: String,
     private val acs: List<String> = listOf()
 ) : BaseConfig() {

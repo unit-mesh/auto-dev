@@ -27,7 +27,7 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
     }
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
-        return DtRunState(environment, this, storyConfig, project)
+        return DtRunState(environment, this, storyConfig, project, options)
     }
 
     override fun writeExternal(element: Element) {

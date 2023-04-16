@@ -18,6 +18,7 @@ class DevtiFlow(
         val project = kanban.getProjectInfo()
         val story = kanban.getStoryById(id)
 
+        // 1. check story detail is valid, if not, fill story detail
         var storyDetail = story.description
         if (!kanban.isValidStory(storyDetail)) {
             logger.info("story detail is not valid, fill story detail")
@@ -29,6 +30,7 @@ class DevtiFlow(
             kanban.updateStoryDetail(newStory)
         }
 
+        // 2. get suggest endpoint
         val files: List<DtClass> = analyser?.controllerList() ?: emptyList()
         logger.info("start devti flow")
         val targetEndpoint = flowAction.analysisEndpoint(storyDetail, files)
@@ -46,7 +48,9 @@ class DevtiFlow(
             return
         }
 
+        // 3. update endpoint method
         val code = flowAction.needUpdateMethodForController(targetEndpoint, targetController)
+        analyser?.updateMethod(targetController.name, code)
         logger.info("update method code: $code")
     }
 

@@ -40,6 +40,7 @@ dependencies {
     implementation("com.aallam.openai:openai-client:3.2.0")
     implementation("org.jetbrains:markdown:0.4.1")
 
+    implementation("org.slf4j:slf4j-api:2.0.7")
     // for local testting
     implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
     implementation(libs.ktor.client.apache)

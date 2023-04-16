@@ -1,6 +1,9 @@
 package cc.unitmesh.devti.runconfig
 
+import cc.unitmesh.devti.DevtiFlow
 import cc.unitmesh.devti.analysis.JavaCrudProcessor
+import cc.unitmesh.devti.kanban.impl.GitHubIssue
+import cc.unitmesh.devti.prompt.openai.OpenAIAction
 import cc.unitmesh.devti.runconfig.config.DevtiCreateStoryConfigure
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
@@ -15,20 +18,27 @@ class DtRunState(
     val environment: ExecutionEnvironment,
     private val configuration: DtRunConfiguration,
     private val createStory: DevtiCreateStoryConfigure?,
-    val project: Project
+    val project: Project,
+    val options: DtRunConfigurationOptions
 ) : RunProfileState {
-    init {
-        log.warn("init")
-    }
 
+    // check configuration
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
         val javaAuto = JavaCrudProcessor(project)
-        val controllerList = javaAuto.controllerList()
-
-        log.warn(controllerList.toString())
+        val gitHubIssue = GitHubIssue("unit-mesh/untitled", options.githubToken())
+        val openAIAction = OpenAIAction(options.openAiApiKey(), "gpt-3.5-turbo")
+        val devtiFlow = DevtiFlow(gitHubIssue, openAIAction, javaAuto)
 
         log.warn(configuration.toString())
         log.warn(createStory.toString())
+        log.warn(options.toString())
+
+        if (createStory == null) {
+            return null
+        }
+
+        devtiFlow.start(createStory.storyId.toString())
+
         return null
     }
 
