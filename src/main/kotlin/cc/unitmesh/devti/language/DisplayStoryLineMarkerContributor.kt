@@ -12,10 +12,11 @@ class DisplayStoryLineMarkerContributor : RunLineMarkerContributor() {
         if (element !is PsiComment) return null
 
         val commentText = element.text
-//        val regex = DevtiAnnotator.DEVTI_REGEX
-//        val matchResult = regex.find(commentText) ?: return null
+        if (!commentText.startsWith("// devti://")) return null
+        // remove //\s+ with regex
+        val commentTextWithoutPrefix = commentText.replace(Regex("^//\\s+"), "")
 
-        val storyConfig = DevtiAnnotator.matchByString(commentText) ?: return null
+        val storyConfig = DevtiAnnotator.matchByString(commentTextWithoutPrefix) ?: return null
 
         val state = CreateStoryConfigurationProducer().findConfig(listOf(element)) ?: return null
         state.storyConfig = storyConfig

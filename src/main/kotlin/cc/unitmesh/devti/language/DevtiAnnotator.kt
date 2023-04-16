@@ -10,9 +10,8 @@ class DevtiAnnotator : Annotator {
     }
 
     companion object {
-        val DEVTI_REGEX = Regex("^//\\sdevti://story/(github)/(\\d+)(/.*)?$")
+        val DEVTI_REGEX = Regex("^devti://story/(github)/(\\d+)(/.*)?$")
 
-        // examples: // devti://story/github/1234
         fun matchByString(input: String): StoryConfig? {
             val matchResult = DEVTI_REGEX.find(input)
             if (matchResult != null) {
