@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.analysis
 
 import com.intellij.ide.highlighter.JavaFileType
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.JavaPsiFacade
@@ -8,10 +9,12 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiMethod
+import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.util.ThrowableRunnable
 
 
 class JavaCrudProcessor(val project: Project) : CrudProcessor {
@@ -93,15 +96,18 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         val targetControllerClass = PsiTreeUtil.findChildrenOfType(targetControllerFile, PsiClass::class.java)
             .firstOrNull() ?: return
 
-        var method = code;
-        // parse method from code
-        if (code.contains("class " + targetController)) {
-            // remove first line and last line
+        var method = code
+        if (code.contains("class $targetController")) {
             method = code.substring(code.indexOf("{") + 1, code.lastIndexOf("}"))
         }
 
-        val updatedClass = addMethodToClass(targetControllerClass, method)
-        val updatedFile = updatedClass.containingFile
-        updatedFile.add(updatedClass)
+        method = method.trimIndent()
+
+        WriteCommandAction.writeCommandAction(project)
+            .run<RuntimeException> {
+                // add method to class
+                addMethodToClass(targetControllerClass, method)
+                CodeStyleManager.getInstance(project).reformat(targetControllerFile)
+            }
     }
 }
