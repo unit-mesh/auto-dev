@@ -1,14 +1,20 @@
 package cc.unitmesh.devti.analysis
 
-import org.junit.Test
+import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import kotlin.io.path.Path
 
 
-class JavaEndpointFetcherTest {
-
-    @Test
-    fun should_success_filter_all_controller() {
-//        val javaEndpointFetcher = JavaEndpointFetcher()
-//        val result = javaEndpointFetcher.fetch("src/test/resources/JavaEndpointFetcherTest.java")
-//        assert(result.size == 2)
-    }
+class JavaEndpointFetcherTest : BasePlatformTestCase() {
+    override fun getTestDataPath(): String = Path("resources").resolve("java")
+        .resolve("endpoint")
+        .toString()
+//
+//    fun testShould_success_filter_all_controller() {
+//        myFixture.testDataPath = testDataPath
+//
+//        val javaEndpointFetcher = JavaEndpointFetcher(myFixture.project)
+//        val controllerFiles = javaEndpointFetcher.getAllControllerFiles()
+//        assertEquals(controllerFiles.size, 1)
+//        assertEquals(controllerFiles[0].name, "Controller1.java")
+//    }
 }

@@ -4,7 +4,6 @@ import cc.unitmesh.devti.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.prompt.openai.OpenAIAction
 import org.junit.Test
 import io.github.cdimascio.dotenv.dotenv
-import org.junit.Ignore
 
 class DevtiFlowTest {
 
