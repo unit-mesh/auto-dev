@@ -53,8 +53,7 @@ class DevtiFlow(
     private fun getController(targetEndpoint: String): String? {
         val regex = Regex("""\s+(\w+Controller)""")
         val matchResult = regex.find(targetEndpoint)
-        val controller = matchResult?.groupValues?.get(1)
-        return controller
+        return matchResult?.groupValues?.get(1)
     }
 
     companion object {
