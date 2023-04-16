@@ -14,7 +14,7 @@ class DtRunConfigurationOptions : RunConfigurationOptions() {
     fun setFrom(configure: DevtiConfigure) {
         this.githubToken.setValue(this, configure.githubToken)
         this.openAiApiKey.setValue(this, configure.openAiApiKey)
-        this.openAiEngine.setValue(this, configure.openAiEngine)
+        this.openAiEngine.setValue(this, configure.aiVersions)
         this.openAiMaxTokens.setValue(this, configure.openAiMaxTokens)
     }
 
