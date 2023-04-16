@@ -9,7 +9,7 @@ import com.intellij.openapi.diagnostic.logger
 
 class DevtiFlow(
     private val kanban: Kanban,
-    private val devtiFlowAction: DevtiFlowAction
+    private val flowAction: DevtiFlowAction
 ) {
     fun start(id: String) {
         val project = kanban.getProjectInfo()
@@ -17,11 +17,14 @@ class DevtiFlow(
 
         var storyDetail = story.description
         if (!kanban.isValidStory(storyDetail)) {
-            storyDetail = devtiFlowAction.fillStoryDetail(project, story.description)
+            storyDetail = flowAction.fillStoryDetail(project, story.description)
             logger.info("fill story detail: $storyDetail")
             val newStory = SimpleStory(story.id, story.title, storyDetail)
             kanban.updateStoryDetail(newStory)
         }
+
+        logger.info("start devti flow")
+        flowAction.analysisEndpoint(project, storyDetail)
     }
 
     companion object {

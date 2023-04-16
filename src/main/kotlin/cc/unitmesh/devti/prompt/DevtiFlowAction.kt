@@ -4,4 +4,5 @@ import cc.unitmesh.devti.kanban.SimpleProjectInfo
 
 interface DevtiFlowAction {
     fun fillStoryDetail(project: SimpleProjectInfo, story: String): String
+    fun analysisEndpoint(project: SimpleProjectInfo, storyDetail: String)
 }

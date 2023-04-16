@@ -29,4 +29,12 @@ class GptPromptText() {
     fun generateRepositoryCode(story: String): String {
         return "This is a repository code about a ${story}"
     }
+
+    fun fillEndpoint(project: SimpleProjectInfo, storyDetail: String): String {
+        val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/create_endpoint.txt")!!
+        val promptTextString = promptText.bufferedReader().use { it.readText() }
+        return promptTextString
+            .replace("{project}", project.name + ":" + project.description)
+            .replace("{storyDetail}", storyDetail)
+    }
 }

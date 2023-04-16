@@ -9,7 +9,6 @@ import org.junit.Ignore
 class DevtiFlowTest {
 
     @Test
-    @Ignore
     fun should_fetch_github_story() {
         val dotenv = dotenv()
         val githubToken = dotenv["GITHUB_TOKEN"]

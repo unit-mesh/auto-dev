@@ -39,4 +39,12 @@ class OpenAIAction(val openAIKey: String, val version: String) : AiAction, Devti
             return@runBlocking prompt
         }
     }
+
+    override fun analysisEndpoint(project: SimpleProjectInfo, storyDetail: String) {
+        val promptText = gptPromptText.fillEndpoint(project, storyDetail)
+        runBlocking {
+            val prompt = prompt(promptText)
+            println(prompt)
+        }
+    }
 }
