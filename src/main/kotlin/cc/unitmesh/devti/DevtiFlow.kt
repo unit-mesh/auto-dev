@@ -21,41 +21,41 @@ class DevtiFlow(
         // 1. check story detail is valid, if not, fill story detail
         var storyDetail = story.description
         if (!kanban.isValidStory(storyDetail)) {
-            logger.info("story detail is not valid, fill story detail")
+            logger.warn("story detail is not valid, fill story detail")
 
             storyDetail = flowAction.fillStoryDetail(project, story.description)
 
-            logger.info("fill story detail: $storyDetail")
             val newStory = SimpleStory(story.id, story.title, storyDetail)
             kanban.updateStoryDetail(newStory)
         }
+        logger.warn("user story detail: $storyDetail")
 
         // 2. get suggest endpoint
         val files: List<DtClass> = analyser?.controllerList() ?: emptyList()
-        logger.info("start devti flow")
+        logger.warn("start devti flow")
         val targetEndpoint = flowAction.analysisEndpoint(storyDetail, files)
         // use regex match *Controller from targetEndpoint
         val controller = getController(targetEndpoint)
         if (controller == null) {
-            logger.info("no controller found from: $targetEndpoint")
+            logger.warn("no controller found from: $targetEndpoint")
             return
         }
 
-        logger.info("target endpoint: $targetEndpoint")
+        logger.warn("target endpoint: $targetEndpoint")
         val targetController = files.find { it.name == targetEndpoint }
         if (targetController == null) {
-            logger.info("no controller found from: $targetEndpoint")
+            logger.warn("no controller found from: $targetEndpoint")
             return
         }
 
         // 3. update endpoint method
         val code = flowAction.needUpdateMethodForController(targetEndpoint, targetController)
+        logger.warn("update method code: $code")
         analyser?.updateMethod(targetController.name, code)
-        logger.info("update method code: $code")
     }
 
     private fun getController(targetEndpoint: String): String? {
-        val regex = Regex("""\s+(\w+Controller)""")
+        val regex = Regex("""(\w+Controller)""")
         val matchResult = regex.find(targetEndpoint)
         return matchResult?.groupValues?.get(1)
     }

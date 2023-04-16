@@ -1,8 +1,7 @@
-请根据下面的用户故事以及 BlogController 的相关信息，编写代码。要求如下：
+请根据下面的用户故事以及 {controllerName} 的相关信息，修改代码。要求如下：
 
-1. 使用 Java + Spring 编写，只返回 Controller 对应方法的代码，不需要编写 Service 层的代码。
-2. 只返回代码，不需要编写测试代码。
-3. 不做解释，只返回代码。
+1. 使用 Java + Spring 编写，只返回 Controller 对应方法的代码。
+2. 不做解释，只返回修改完的函数代码。
 
 ```
 {controllers}

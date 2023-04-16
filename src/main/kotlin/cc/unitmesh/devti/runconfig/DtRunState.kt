@@ -33,11 +33,10 @@ class DtRunState(
         log.warn(createStory.toString())
         log.warn(options.toString())
 
-        if (createStory == null) {
-            return null
-        }
+        // todo: check create story
+        val storyId = createStory?.storyId ?: 1
 
-        devtiFlow.start(createStory.storyId.toString())
+        devtiFlow.start(storyId.toString())
 
         return null
     }
