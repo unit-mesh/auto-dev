@@ -8,6 +8,9 @@ import cc.unitmesh.devti.prompt.DevtiFlowAction
 import cc.unitmesh.devti.runconfig.DtRunState
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
+import org.commonmark.node.*
+import org.commonmark.parser.Parser
+
 
 class DevtiFlow(
     private val kanban: Kanban,
@@ -49,9 +52,35 @@ class DevtiFlow(
         }
 
         // 3. update endpoint method
-        val code = flowAction.needUpdateMethodForController(targetEndpoint, targetController)
+        val code = fetchCode(targetEndpoint, targetController, storyDetail)
+        try {
+            analyser?.updateMethod(targetController.name, code)
+        } catch (e: Exception) {
+            logger.warn("update method failed: $e")
+            logger.warn("try to fill update method 2nd")
+
+            val code = fetchCode(targetEndpoint, targetController, storyDetail)
+            analyser?.updateMethod(targetController.name, code)
+        }
+    }
+
+    private fun fetchCode(
+        targetEndpoint: String,
+        targetController: DtClass,
+        storyDetail: String
+    ): String {
+        val content = flowAction.needUpdateMethodForController(targetEndpoint, targetController, storyDetail)
+        val code = parseCodeFromString(content)
         logger.warn("update method code: $code")
-        analyser?.updateMethod(targetController.name, code)
+        return code
+    }
+
+    private fun parseCodeFromString(markdown: String): String {
+        val parser: Parser = Parser.builder().build()
+        val node: Node = parser.parse(markdown)
+        val visitor = CodeVisitor()
+        node.accept(visitor)
+        return visitor.code
     }
 
     private fun getController(targetEndpoint: String): String? {
@@ -62,5 +91,18 @@ class DevtiFlow(
 
     companion object {
         private val logger: Logger = logger<DtRunState>()
+    }
+}
+
+
+internal class CodeVisitor : AbstractVisitor() {
+    var code = ""
+
+    override fun visit(fencedCodeBlock: FencedCodeBlock?) {
+        this.code = fencedCodeBlock?.literal ?: ""
+    }
+
+    override fun visit(indentedCodeBlock: IndentedCodeBlock?) {
+        super.visit(indentedCodeBlock)
     }
 }

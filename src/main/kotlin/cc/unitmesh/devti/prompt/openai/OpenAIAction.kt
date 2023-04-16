@@ -4,7 +4,6 @@ import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.kanban.SimpleProjectInfo
 import cc.unitmesh.devti.prompt.AiAction
 import cc.unitmesh.devti.prompt.DevtiFlowAction
-import cc.unitmesh.devti.runconfig.DtRunState
 import com.aallam.openai.api.BetaOpenAI
 import com.aallam.openai.api.chat.ChatCompletion
 import com.aallam.openai.api.chat.ChatCompletionRequest
@@ -52,9 +51,9 @@ class OpenAIAction(val openAIKey: String, val version: String) : AiAction, Devti
         }
     }
 
-    override fun needUpdateMethodForController(targetEndpoint: String, clazz: DtClass): String {
-        val promptText = gptPromptText.fillUpdateMethod(targetEndpoint, clazz)
-        logger.info("needUpdateMethodForController prompt text: $promptText")
+    override fun needUpdateMethodForController(targetEndpoint: String, clazz: DtClass, storyDetail: String): String {
+        val promptText = gptPromptText.fillUpdateMethod(targetEndpoint, clazz, storyDetail)
+        logger.warn("needUpdateMethodForController prompt text: $promptText")
         return runBlocking {
             val prompt = prompt(promptText)
             return@runBlocking prompt

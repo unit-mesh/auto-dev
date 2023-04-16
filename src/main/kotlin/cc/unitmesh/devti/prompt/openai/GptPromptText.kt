@@ -40,12 +40,12 @@ class GptPromptText() {
             .replace("{storyDetail}", storyDetail)
     }
 
-    fun fillUpdateMethod(targetEndpoint: String, targetClazz: DtClass): String {
+    fun fillUpdateMethod(targetEndpoint: String, targetClazz: DtClass, storyDetail: String): String {
         val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/update_controller_method.txt")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         return promptTextString
             .replace("{controllerName}", targetClazz.name)
             .replace("{controllers}", targetClazz.format())
-            .replace("{targetEndpoint}", targetEndpoint)
+            .replace("{storyDetail}", storyDetail)
     }
 }

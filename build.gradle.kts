@@ -38,7 +38,8 @@ dependencies {
 //    implementation(libs.annotations)
     implementation("org.kohsuke:github-api:1.314")
     implementation("com.aallam.openai:openai-client:3.2.0")
-    implementation("org.jetbrains:markdown:0.4.1")
+//    implementation("org.jetbrains:markdown:0.4.1")
+    implementation("org.commonmark:commonmark:0.21.0")
 
     implementation("org.slf4j:slf4j-api:2.0.7")
     // for local testting
