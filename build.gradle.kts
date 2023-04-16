@@ -38,7 +38,9 @@ dependencies {
 //    implementation(libs.annotations)
     implementation("org.kohsuke:github-api:1.314")
     implementation("com.aallam.openai:openai-client:3.2.0")
+    implementation("org.jetbrains:markdown:0.4.1")
 
+    // for local testting
     implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
 }
 
