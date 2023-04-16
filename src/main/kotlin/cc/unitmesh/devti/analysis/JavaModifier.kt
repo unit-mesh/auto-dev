@@ -14,10 +14,11 @@ import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.util.PsiTreeUtil
 
 
-class JavaEndpointFetcher(val project: Project) {
+class JavaModifier(val project: Project) {
     private val psiElementFactory = JavaPsiFacade.getElementFactory(project)
+    private val controllers = getAllControllerFiles()
 
-    fun getAllControllerFiles(): List<PsiFile> {
+    private fun getAllControllerFiles(): List<PsiFile> {
         val psiManager = PsiManager.getInstance(project)
 
         val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
@@ -26,7 +27,7 @@ class JavaEndpointFetcher(val project: Project) {
         return filterFiles(javaFiles, psiManager, ::controllerFilter)
     }
 
-    fun filterFiles(
+    private fun filterFiles(
         javaFiles: Collection<VirtualFile>,
         psiManager: PsiManager,
         filter: (PsiClass) -> Boolean
@@ -39,7 +40,6 @@ class JavaEndpointFetcher(val project: Project) {
 
     private fun controllerFilter(clazz: PsiClass) =
         clazz.hasAnnotation("Controller") || clazz.hasAnnotation("RestController")
-
 
     fun addMethodToClass(psiClass: PsiClass, method: String): PsiClass {
         val methodFromText = psiElementFactory.createMethodFromText(method, psiClass)

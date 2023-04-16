@@ -4,7 +4,7 @@ import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiElementFactory
 import com.intellij.testFramework.LightPlatformTestCase
 
-class JavaEndpointFetcherTest : LightPlatformTestCase() {
+class JavaModifierTest : LightPlatformTestCase() {
     private val javaFactory: PsiElementFactory get() = JavaPsiFacade.getElementFactory(project)
 
     fun testShould_fetch_java_endpoints() {
@@ -14,8 +14,9 @@ public String hello() {
 }
             """.trimIndent()
         val psiClass = javaFactory.createClassFromText(originCode, null)
+        psiClass.setName("HelloController")
 
-        val endpoints = JavaEndpointFetcher(project)
+        val endpoints = JavaModifier(project)
         val newClasses =
             endpoints.addMethodToClass(psiClass, "public String hello2() { return \"Greetings from Spring Boot!\"; }")
 
