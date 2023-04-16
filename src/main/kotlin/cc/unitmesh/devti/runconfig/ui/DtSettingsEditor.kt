@@ -2,10 +2,11 @@ package cc.unitmesh.devti.runconfig.ui
 
 import cc.unitmesh.devti.runconfig.DevtiConfigure
 import cc.unitmesh.devti.runconfig.DtRunConfiguration
-import cc.unitmesh.devti.runconfig.DtRunConfigurationOptions
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
+import com.intellij.ui.dsl.builder.Cell
+import com.intellij.ui.dsl.builder.Row
 import com.intellij.ui.dsl.builder.bindIntText
 import com.intellij.ui.dsl.builder.bindItem
 import com.intellij.ui.dsl.builder.bindText
@@ -14,37 +15,24 @@ import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import javax.swing.JComponent
 
 class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() {
-    private var githubToken: String = ""
+    private var completionProvider = DtCommandCompletionProvider()
     private var openAiApiKey: String = ""
     private var openAiEngine: String = "gpt-3.5-turbo"
     private var openAiMaxTokens: Int = 4096
 
-    private lateinit var myPanel: JComponent
+    private var panel: JComponent? = null
 
-    override fun applyEditorTo(configuration: DtRunConfiguration) {
-        logger.warn("github:$githubToken")
-        configuration.setOptions(
-            DevtiConfigure(
-                githubToken,
-                openAiApiKey,
-                openAiEngine,
-                openAiMaxTokens,
-                0.0f
-            )
-        )
-    }
-
+    private val githubInput = DtCommandLineEditor(project, completionProvider)
     override fun createEditor(): JComponent = panel {
-        row("Github Token:") {
-            textField()
-                .bindText(::githubToken)
-                .horizontalAlign(HorizontalAlign.FILL).resizableColumn()
+        row {
+            label("Github Token:")
+            fullWidthCell(githubInput)
         }
 
         row("OpenAI API Key:") {
             textField()
-                .bindText(::openAiApiKey)
                 .horizontalAlign(HorizontalAlign.FILL).resizableColumn()
+                .bindText(::openAiApiKey)
         }
 
         row("API Engine:") {
@@ -54,19 +42,37 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
         row("Max Token") {
             intTextField(0..32768).bindIntText(::openAiMaxTokens)
         }
-    }.apply {
-        myPanel = this
+    }.also {
+        panel = it
     }
 
     override fun resetEditorFrom(configuration: DtRunConfiguration) {
         val configure = configuration.options.toConfigure()
-        githubToken = configure.githubToken
+        githubInput.text = configure.githubToken
         openAiApiKey = configure.openAiApiKey
         openAiEngine = configure.openAiEngine
         openAiMaxTokens = configure.openAiMaxTokens
-    };
+    }
+
+    override fun applyEditorTo(configuration: DtRunConfiguration) {
+        logger.warn("github text:${githubInput.text}")
+        configuration.setOptions(
+            DevtiConfigure(
+                githubInput.text,
+                openAiApiKey,
+                openAiEngine,
+                openAiMaxTokens,
+                0.0f
+            )
+        )
+    }
 
     companion object {
-        val logger = Logger.getInstance(DtRunConfigurationOptions::class.java)
+        val logger = Logger.getInstance(DtSettingsEditor::class.java)
     }
+}
+
+fun <T : JComponent> Row.fullWidthCell(component: T): Cell<T> {
+    return cell(component)
+        .horizontalAlign(HorizontalAlign.FILL)
 }

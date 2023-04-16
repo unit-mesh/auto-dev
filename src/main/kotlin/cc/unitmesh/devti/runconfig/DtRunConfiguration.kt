@@ -20,7 +20,6 @@ import org.jdom.Element
 class DtRunConfiguration(project: Project, name: String, factory: ConfigurationFactory) :
     RunConfigurationBase<DtRunConfigurationOptions>(project, factory, name) {
 
-
     public override fun getOptions(): DtRunConfigurationOptions {
         return super.getOptions() as DtRunConfigurationOptions
     }
@@ -56,18 +55,18 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
         element.writeString("openAiMaxTokens", runConfigure.openAiMaxTokens.toString())
     }
 
-//    override fun readExternal(element: Element) {
-//        super.readExternal(element)
-//
-//        val runConfigure = DevtiConfigure("", "", "", 4096, 0.0f)
-//
-//        element.readString("githubToken")?.let { runConfigure.githubToken = it }
-//        element.readString("openAiApiKey")?.let { runConfigure.openAiApiKey = it }
-//        element.readString("openAiEngine")?.let { runConfigure.openAiEngine = it }
-//        element.readString("openAiMaxTokens")?.let { runConfigure.openAiMaxTokens = it.toInt() }
-//
-//        this.options.fromConfigure(runConfigure)
-//    }
+    override fun readExternal(element: Element) {
+        super.readExternal(element)
+
+        val runConfigure = DevtiConfigure("", "", "", 4096, 0.0f)
+
+        element.readString("githubToken")?.let { runConfigure.githubToken = it }
+        element.readString("openAiApiKey")?.let { runConfigure.openAiApiKey = it }
+        element.readString("openAiEngine")?.let { runConfigure.openAiEngine = it }
+        element.readString("openAiMaxTokens")?.let { runConfigure.openAiMaxTokens = it.toInt() }
+
+        this.options.setFrom(runConfigure)
+    }
 }
 
 fun Element.writeString(name: String, value: String) {
