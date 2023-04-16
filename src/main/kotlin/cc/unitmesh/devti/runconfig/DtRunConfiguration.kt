@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.runconfig
 
+import cc.unitmesh.devti.ai.OpenAIVersion
 import cc.unitmesh.devti.runconfig.ui.DtSettingsEditor
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
@@ -51,19 +52,19 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
 
         element.writeString("githubToken", runConfigure.githubToken)
         element.writeString("openAiApiKey", runConfigure.openAiApiKey)
-        element.writeString("openAiEngine", runConfigure.aiVersions)
-        element.writeString("openAiMaxTokens", runConfigure.openAiMaxTokens.toString())
+        element.writeString("aiEngineVersion", runConfigure.aiVersion.index.toString())
+        element.writeString("aiMaxTokens", runConfigure.aiMaxTokens.toString())
     }
 
     override fun readExternal(element: Element) {
         super.readExternal(element)
 
-        val runConfigure = DevtiConfigure("", "", "", 4096, 0.0f)
+        val runConfigure = DevtiConfigure.getDefault()
 
         element.readString("githubToken")?.let { runConfigure.githubToken = it }
         element.readString("openAiApiKey")?.let { runConfigure.openAiApiKey = it }
-        element.readString("openAiEngine")?.let { runConfigure.aiVersions = it }
-        element.readString("openAiMaxTokens")?.let { runConfigure.openAiMaxTokens = it.toInt() }
+        element.readString("aiEngineVersion")?.let { runConfigure.aiVersion = OpenAIVersion.values()[it.toInt()] }
+        element.readString("aiMaxTokens")?.let { runConfigure.aiMaxTokens = it.toInt() }
 
         this.options.setFrom(runConfigure)
     }
