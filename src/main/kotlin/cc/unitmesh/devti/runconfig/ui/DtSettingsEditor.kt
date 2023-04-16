@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.runconfig.ui
 
+import cc.unitmesh.devti.ai.OpenAI.DEFAULT_OPEN_AI_MAX_TOKENS
 import cc.unitmesh.devti.ai.OpenAIVersion
-import cc.unitmesh.devti.runconfig.config.DevtiCreateStoryConfigure
 import cc.unitmesh.devti.runconfig.DtRunConfiguration
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.options.SettingsEditor
@@ -15,7 +15,7 @@ import javax.swing.JComponent
 
 class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() {
     private var completionProvider = DtCommandCompletionProvider()
-    private var openAiMaxTokens: Int = DevtiCreateStoryConfigure.DEFAULT_OPEN_AI_MAX_TOKENS
+    private var openAiMaxTokens: Int = DEFAULT_OPEN_AI_MAX_TOKENS
 
     private var panel: JComponent? = null
 
@@ -55,22 +55,17 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
     }
 
     override fun resetEditorFrom(configuration: DtRunConfiguration) {
-        val configure = configuration.options.toConfigure()
-        githubInput.text = configure.githubToken
-        aiApiToken.text = configure.openAiApiKey
-        engineVersion.selectedIndex = configure.aiVersion.index
-        openAiMaxTokens = configure.aiMaxTokens
+        githubInput.text = configuration.options.githubToken()
+        aiApiToken.text = configuration.options.openAiApiKey()
+        engineVersion.selectedIndex = configuration.options.aiVersion()
+        openAiMaxTokens = configuration.options.aiMaxTokens()
     }
 
     override fun applyEditorTo(configuration: DtRunConfiguration) {
-        configuration.setOptions(
-            DevtiCreateStoryConfigure(
-                githubInput.text,
-                aiApiToken.text,
-                OpenAIVersion.fromIndex(engineVersion.selectedIndex),
-                openAiMaxTokens
-            )
-        )
+        configuration.setGithubToken(githubInput.text)
+        configuration.setOpenAiApiKey(aiApiToken.text)
+        configuration.setAiVersion(OpenAIVersion.fromIndex(engineVersion.selectedIndex))
+        configuration.setAiMaxTokens(openAiMaxTokens)
     }
 
     companion object {

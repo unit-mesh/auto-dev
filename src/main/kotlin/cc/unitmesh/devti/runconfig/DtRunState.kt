@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.runconfig
 
-import cc.unitmesh.devti.runconfig.config.DevtiCreateStoryConfigure
+import cc.unitmesh.devti.language.StoryConfig
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
@@ -11,10 +11,11 @@ import com.intellij.openapi.diagnostic.logger
 
 class DtRunState(
     val environment: ExecutionEnvironment,
-    val configuration: DtRunConfiguration,
-    private val createStory: DevtiCreateStoryConfigure
+    private val configuration: DtRunConfiguration,
+    private val createStory: StoryConfig?
 ) : RunProfileState {
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
+        log.warn(configuration.toString())
         log.warn(createStory.toString())
         return null
     }

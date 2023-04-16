@@ -2,7 +2,6 @@ package cc.unitmesh.devti.runconfig
 
 import cc.unitmesh.devti.ai.OpenAIVersion
 import cc.unitmesh.devti.language.StoryConfig
-import cc.unitmesh.devti.runconfig.config.DevtiCreateStoryConfigure
 import cc.unitmesh.devti.runconfig.ui.DtSettingsEditor
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.ConfigurationFactory
@@ -27,42 +26,47 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
         return DtSettingsEditor(project)
     }
 
-    fun setOptions(configure: DevtiCreateStoryConfigure) {
-        this.options.setFrom(configure)
-    }
-
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
-        val createStoryConfigure = this.options.toConfigure()
-        createStoryConfigure.storyConfig = this.storyConfig
-        return DtRunState(environment, this, createStoryConfigure)
+        return DtRunState(environment, this, storyConfig)
     }
 
     override fun writeExternal(element: Element) {
         super.writeExternal(element)
 
-        val runConfigure = this.options.toConfigure()
-
-        element.writeString("githubToken", runConfigure.githubToken)
-        element.writeString("openAiApiKey", runConfigure.openAiApiKey)
-        element.writeString("aiEngineVersion", runConfigure.aiVersion.index.toString())
-        element.writeString("aiMaxTokens", runConfigure.aiMaxTokens.toString())
+        element.writeString("githubToken", options.githubToken())
+        element.writeString("openAiApiKey", options.openAiApiKey())
+        element.writeString("aiEngineVersion", options.aiVersion().toString())
+        element.writeString("aiMaxTokens", options.aiMaxTokens().toString())
     }
 
     override fun readExternal(element: Element) {
         super.readExternal(element)
 
-        val runConfigure = DevtiCreateStoryConfigure.getDefault()
+        element.readString("githubToken")?.let { this.options.setGithubToken(it) }
+        element.readString("openAiApiKey")?.let { this.options.setOpenAiApiKey(it) }
+        element.readString("aiEngineVersion")?.let { this.options.setAiVersion(it.toInt()) }
+        element.readString("aiMaxTokens")?.let { this.options.setAiMaxTokens(it.toInt()) }
 
-        element.readString("githubToken")?.let { runConfigure.githubToken = it }
-        element.readString("openAiApiKey")?.let { runConfigure.openAiApiKey = it }
-        element.readString("aiEngineVersion")?.let { runConfigure.aiVersion = OpenAIVersion.values()[it.toInt()] }
-        element.readString("aiMaxTokens")?.let { runConfigure.aiMaxTokens = it.toInt() }
-
-        this.options.setFrom(runConfigure)
     }
 
     fun setStoryConfig(storyConfig: StoryConfig?) {
         this.storyConfig = storyConfig
+    }
+
+    fun setGithubToken(text: String) {
+        this.options.setGithubToken(text)
+    }
+
+    fun setOpenAiApiKey(text: String) {
+        this.options.setOpenAiApiKey(text)
+    }
+
+    fun setAiVersion(fromIndex: OpenAIVersion) {
+        this.options.setAiVersion(fromIndex.ordinal)
+    }
+
+    fun setAiMaxTokens(openAiMaxTokens: Int) {
+        this.options.setAiMaxTokens(openAiMaxTokens)
     }
 }
 
