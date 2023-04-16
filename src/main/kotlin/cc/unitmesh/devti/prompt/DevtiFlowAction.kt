@@ -1,5 +1,7 @@
 package cc.unitmesh.devti.prompt
 
+import cc.unitmesh.devti.kanban.SimpleProjectInfo
+
 interface DevtiFlowAction {
-    fun fillStoryDetail(story: String): String
+    fun fillStoryDetail(project: SimpleProjectInfo, story: String): String
 }

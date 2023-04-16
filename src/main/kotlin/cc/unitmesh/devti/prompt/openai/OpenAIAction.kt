@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.prompt.openai
 
+import cc.unitmesh.devti.kanban.SimpleProjectInfo
 import cc.unitmesh.devti.prompt.AiAction
 import cc.unitmesh.devti.prompt.DevtiFlowAction
 import com.aallam.openai.api.BetaOpenAI
@@ -30,7 +31,7 @@ class OpenAIAction(val openAIKey: String, val version: String) : AiAction, Devti
         return completion.choices.first().message?.content ?: ""
     }
 
-    override fun fillStoryDetail(story: String): String {
+    override fun fillStoryDetail(project: SimpleProjectInfo, story: String): String {
         return ""
     }
 }

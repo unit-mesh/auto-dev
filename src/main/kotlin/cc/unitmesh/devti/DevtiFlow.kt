@@ -9,11 +9,12 @@ class DevtiFlow(
     private val devtiFlowAction: DevtiFlowAction
 ) {
     fun start(id: String) {
+        val project = kanban.getProjectInfo()
         val story = kanban.getStoryById(id)
 
         var storyDetail = story.description
         if (!kanban.isValidStory(storyDetail)) {
-            storyDetail = devtiFlowAction.fillStoryDetail(story.description)
+            storyDetail = devtiFlowAction.fillStoryDetail(project, story.description)
             val newStory = SimpleStory(story.id, story.title, storyDetail)
             kanban.updateStoryDetail(newStory)
         }
