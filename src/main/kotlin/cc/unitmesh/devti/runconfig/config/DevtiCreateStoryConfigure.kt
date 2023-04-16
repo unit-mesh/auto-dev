@@ -4,19 +4,19 @@ import cc.unitmesh.devti.language.StoryConfig
 import cc.unitmesh.devti.runconfig.command.BaseConfig
 
 class DevtiCreateStoryConfigure(
-    var storyConfig: StoryConfig? = null
+    val storyId: Int,
+    val storySource: String,
+    val acs: List<String> = listOf()
 ) : BaseConfig() {
-    override val configurationName = "DevTi Configure"
+    override val configurationName = "DevTi Create Story"
 
     companion object {
-        fun getDefault(): DevtiCreateStoryConfigure {
-            return DevtiCreateStoryConfigure(
-
-            )
+        fun fromStoryConfig(storyConfig: StoryConfig): DevtiCreateStoryConfigure {
+            return DevtiCreateStoryConfigure(storyConfig.storyId, storyConfig.storySource, storyConfig.acs)
         }
     }
 
     override fun toString(): String {
-        return "DevtiCreateStoryConfigure(storyConfig=$storyConfig)"
+        return "DevtiCreateStoryConfigure(storyId=$storyId, storySource='$storySource', acs=$acs)"
     }
 }

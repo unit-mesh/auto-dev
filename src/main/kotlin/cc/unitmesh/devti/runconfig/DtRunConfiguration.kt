@@ -2,6 +2,7 @@ package cc.unitmesh.devti.runconfig
 
 import cc.unitmesh.devti.ai.OpenAIVersion
 import cc.unitmesh.devti.language.StoryConfig
+import cc.unitmesh.devti.runconfig.config.DevtiCreateStoryConfigure
 import cc.unitmesh.devti.runconfig.ui.DtSettingsEditor
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.ConfigurationFactory
@@ -16,7 +17,7 @@ import org.jdom.Element
 class DtRunConfiguration(project: Project, name: String, factory: ConfigurationFactory) :
     RunConfigurationBase<DtRunConfigurationOptions>(project, factory, name) {
 
-    private var storyConfig: StoryConfig? = null
+    private var storyConfig: DevtiCreateStoryConfigure? = null
 
     public override fun getOptions(): DtRunConfigurationOptions {
         return super.getOptions() as DtRunConfigurationOptions
@@ -46,10 +47,9 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
         element.readString("openAiApiKey")?.let { this.options.setOpenAiApiKey(it) }
         element.readString("aiEngineVersion")?.let { this.options.setAiVersion(it.toInt()) }
         element.readString("aiMaxTokens")?.let { this.options.setAiMaxTokens(it.toInt()) }
-
     }
 
-    fun setStoryConfig(storyConfig: StoryConfig?) {
+    fun setStoryConfig(storyConfig: DevtiCreateStoryConfigure) {
         this.storyConfig = storyConfig
     }
 
