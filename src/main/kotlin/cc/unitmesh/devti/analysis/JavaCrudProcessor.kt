@@ -93,7 +93,14 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         val targetControllerClass = PsiTreeUtil.findChildrenOfType(targetControllerFile, PsiClass::class.java)
             .firstOrNull() ?: return
 
-        val updatedClass = addMethodToClass(targetControllerClass, code)
+        var method = code;
+        // parse method from code
+        if (code.contains("class " + targetController)) {
+            // remove first line and last line
+            method = code.substring(code.indexOf("{") + 1, code.lastIndexOf("}"))
+        }
+
+        val updatedClass = addMethodToClass(targetControllerClass, method)
         val updatedFile = updatedClass.containingFile
         updatedFile.add(updatedClass)
     }
