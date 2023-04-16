@@ -1,19 +1,14 @@
 package cc.unitmesh.devti.runconfig
 
 import cc.unitmesh.devti.ai.OpenAIVersion
+import cc.unitmesh.devti.language.StoryConfig
 import cc.unitmesh.devti.runconfig.config.DevtiCreateStoryConfigure
 import cc.unitmesh.devti.runconfig.ui.DtSettingsEditor
-import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
-import com.intellij.execution.configurations.CommandLineState
 import com.intellij.execution.configurations.ConfigurationFactory
-import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.configurations.RunProfileState
-import com.intellij.execution.process.ProcessHandler
-import com.intellij.execution.process.ProcessHandlerFactory
-import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
@@ -21,6 +16,8 @@ import org.jdom.Element
 
 class DtRunConfiguration(project: Project, name: String, factory: ConfigurationFactory) :
     RunConfigurationBase<DtRunConfigurationOptions>(project, factory, name) {
+
+    private var storyConfig: StoryConfig? = null
 
     public override fun getOptions(): DtRunConfigurationOptions {
         return super.getOptions() as DtRunConfigurationOptions
@@ -35,7 +32,9 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
     }
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
-        return DtRunState(environment, this, this.options.toConfigure())
+        val createStoryConfigure = this.options.toConfigure()
+        createStoryConfigure.storyConfig = this.storyConfig
+        return DtRunState(environment, this, createStoryConfigure)
     }
 
     override fun writeExternal(element: Element) {
@@ -60,6 +59,10 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
         element.readString("aiMaxTokens")?.let { runConfigure.aiMaxTokens = it.toInt() }
 
         this.options.setFrom(runConfigure)
+    }
+
+    fun setStoryConfig(storyConfig: StoryConfig?) {
+        this.storyConfig = storyConfig
     }
 }
 

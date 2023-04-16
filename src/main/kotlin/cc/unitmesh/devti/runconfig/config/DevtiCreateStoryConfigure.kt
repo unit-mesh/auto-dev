@@ -27,4 +27,8 @@ class DevtiCreateStoryConfigure(
             )
         }
     }
+
+    override fun toString(): String {
+        return "DevtiCreateStoryConfigure(githubToken='$githubToken', openAiApiKey='$openAiApiKey', aiVersion=$aiVersion, aiMaxTokens=$aiMaxTokens, storyConfig=$storyConfig, configurationName='$configurationName')"
+    }
 }

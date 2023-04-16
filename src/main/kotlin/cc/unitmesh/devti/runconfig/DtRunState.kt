@@ -12,10 +12,10 @@ import com.intellij.openapi.diagnostic.logger
 class DtRunState(
     val environment: ExecutionEnvironment,
     val configuration: DtRunConfiguration,
-    private val aiConfig: DevtiCreateStoryConfigure
+    private val createStory: DevtiCreateStoryConfigure
 ) : RunProfileState {
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
-        log.warn(aiConfig.toString())
+        log.warn(createStory.toString())
         return null
     }
 

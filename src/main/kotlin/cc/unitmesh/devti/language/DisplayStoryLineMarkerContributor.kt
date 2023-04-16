@@ -13,13 +13,10 @@ class DisplayStoryLineMarkerContributor : RunLineMarkerContributor() {
 
         val commentText = element.text
         if (!commentText.startsWith("// devti://")) return null
-        // remove //\s+ with regex
-        val commentTextWithoutPrefix = commentText.replace(Regex("^//\\s+"), "")
 
-        val storyConfig = DevtiAnnotator.matchByString(commentTextWithoutPrefix) ?: return null
+        if (!DevtiAnnotator.isDevtiComment(commentText)) return null
 
         val state = CreateStoryConfigurationProducer().findConfig(listOf(element)) ?: return null
-        state.storyConfig = storyConfig
 
         val actions = ExecutorAction.getActions(0)
         return Info(
