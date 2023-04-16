@@ -73,21 +73,18 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         return psiClass
     }
 
-    override fun controllerList(): List<DtFile> {
+    override fun controllerList(): List<DtClass> {
         return this.controllers.map {
-            DtFile(
-                name = it.name,
-                className = PsiTreeUtil.findChildrenOfType(it, PsiClass::class.java)
-                    .firstOrNull()?.name ?: "",
-            )
+            val className = it.name.substring(0, it.name.length - ".java".length)
+            DtClass.fromPsiFile(it) ?: DtClass(className, emptyList())
         }
     }
 
-    override fun serviceList(): List<DtFile> {
+    override fun serviceList(): List<DtClass> {
         TODO("Not yet implemented")
     }
 
-    override fun modelList(): List<DtFile> {
+    override fun modelList(): List<DtClass> {
         TODO("Not yet implemented")
     }
 }

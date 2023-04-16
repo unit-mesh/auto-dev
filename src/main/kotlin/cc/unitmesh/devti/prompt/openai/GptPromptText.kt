@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.prompt.openai
 
+import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.kanban.SimpleProjectInfo
 import java.io.InputStream
 
@@ -7,7 +8,8 @@ class GptPromptText() {
     // 1. read resources/prompts/create_story_detail.txt
     // 2. replace {project} with project name
     fun fillStoryDetail(project: SimpleProjectInfo, story: String): String {
-        val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/create_story_detail.txt")!!
+        val promptText: InputStream =
+            this::class.java.classLoader.getResourceAsStream("prompts/create_story_detail.txt")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         return promptTextString
             .replace("{project}", project.name + ":" + project.description)
@@ -30,11 +32,11 @@ class GptPromptText() {
         return "This is a repository code about a ${story}"
     }
 
-    fun fillEndpoint(project: SimpleProjectInfo, storyDetail: String): String {
+    fun fillEndpoint(storyDetail: String, files: List<DtClass>): String {
         val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/create_endpoint.txt")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         return promptTextString
-            .replace("{project}", project.name + ":" + project.description)
+            .replace("{controllers}", files.map { it.name }.joinToString(","))
             .replace("{storyDetail}", storyDetail)
     }
 }

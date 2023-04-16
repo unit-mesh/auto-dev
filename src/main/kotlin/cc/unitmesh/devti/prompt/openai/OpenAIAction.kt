@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.prompt.openai
 
+import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.kanban.SimpleProjectInfo
 import cc.unitmesh.devti.prompt.AiAction
 import cc.unitmesh.devti.prompt.DevtiFlowAction
@@ -40,11 +41,11 @@ class OpenAIAction(val openAIKey: String, val version: String) : AiAction, Devti
         }
     }
 
-    override fun analysisEndpoint(project: SimpleProjectInfo, storyDetail: String) {
-        val promptText = gptPromptText.fillEndpoint(project, storyDetail)
-        runBlocking {
+    override fun analysisEndpoint(storyDetail: String, files: List<DtClass>): String {
+        val promptText = gptPromptText.fillEndpoint(storyDetail, files)
+        return runBlocking {
             val prompt = prompt(promptText)
-            println(prompt)
+            return@runBlocking prompt
         }
     }
 }

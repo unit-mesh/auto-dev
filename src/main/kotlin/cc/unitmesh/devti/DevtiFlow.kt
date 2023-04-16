@@ -1,6 +1,7 @@
 package cc.unitmesh.devti
 
 import cc.unitmesh.devti.analysis.CrudProcessor
+import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.kanban.Kanban
 import cc.unitmesh.devti.kanban.SimpleStory
 import cc.unitmesh.devti.prompt.DevtiFlowAction
@@ -28,8 +29,9 @@ class DevtiFlow(
             kanban.updateStoryDetail(newStory)
         }
 
+        val files: List<DtClass> = analyser?.controllerList() ?: emptyList()
         logger.info("start devti flow")
-        flowAction.analysisEndpoint(project, storyDetail)
+        flowAction.analysisEndpoint(storyDetail, files)
     }
 
     companion object {
