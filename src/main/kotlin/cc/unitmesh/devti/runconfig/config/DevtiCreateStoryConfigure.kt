@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.runconfig.config
 
 import cc.unitmesh.devti.ai.OpenAIVersion
+import cc.unitmesh.devti.language.StoryConfig
 import cc.unitmesh.devti.runconfig.command.BaseConfig
 
 class DevtiCreateStoryConfigure(
@@ -8,6 +9,7 @@ class DevtiCreateStoryConfigure(
     var openAiApiKey: String,
     var aiVersion: OpenAIVersion,
     var aiMaxTokens: Int,
+    var storyConfig: StoryConfig? = null
 ) : BaseConfig() {
     override val configurationName = "DevTi Configure"
 

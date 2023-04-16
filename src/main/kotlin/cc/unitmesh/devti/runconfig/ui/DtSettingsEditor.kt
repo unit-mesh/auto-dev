@@ -63,7 +63,6 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
     }
 
     override fun applyEditorTo(configuration: DtRunConfiguration) {
-        logger.warn("github text:${githubInput.text}")
         configuration.setOptions(
             DevtiCreateStoryConfigure(
                 githubInput.text,
