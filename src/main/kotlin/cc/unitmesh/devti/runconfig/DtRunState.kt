@@ -8,11 +8,13 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 
 class DtRunState(
     val environment: ExecutionEnvironment,
     private val configuration: DtRunConfiguration,
-    private val createStory: DevtiCreateStoryConfigure?
+    private val createStory: DevtiCreateStoryConfigure?,
+    val project: Project
 ) : RunProfileState {
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
         log.warn(configuration.toString())
