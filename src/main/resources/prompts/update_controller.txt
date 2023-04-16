@@ -1,14 +1,14 @@
-请根据下面的 用户故事 和 Controller 列表，返回最合适的 Controller 名字。要求：
+请根据下面的用户故事以及 BlogController 的相关信息，编写代码。要求如下：
 
-1. 只返回最合适的 Controller 名字，不需要返回所有可能的 Controller 名字。
+1. 使用 Java + Spring 编写，只返回 Controller 对应方法的代码，不需要编写 Service 层的代码。
+2. 只返回代码，不需要编写测试代码。
+3. 不做解释，只返回代码。
 
-Controller 列表：
-
-###
+```
 BlogController
-CommentController
-UserController
-###
+constructor(blogService: BlogService)
+@PostMapping(/blog) createBlog(@RequestBody Blog blog)
+```
 
 ###
 用户故事：创建博客
@@ -30,3 +30,4 @@ AC 3: 用户创建博客时，如果出现其他未知错误，系统应该返�
 当用户点击“创建博客”按钮
 于是系统返回“创建博客失败，请稍后重试”的错误信息
 ###
+

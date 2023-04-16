@@ -1,14 +1,15 @@
-请根据下面的 用户故事 和 Controller 列表，返回最合适的 Controller 名字。要求：
+请将下面的用户故事转换为操作步骤。要求如下：
 
-1. 只返回最合适的 Controller 名字，不需要返回所有可能的 Controller 名字。
-
-Controller 列表：
+1. 按格式返回，不做解释。
+2. 你返回的内容格式 如下：
 
 ###
-BlogController
-CommentController
-UserController
+controller: 1.xxx 2.xxx 3.xxx
+service: 1.xxx 2.xxx 3.xxx
+dao: 1.xxx 2.xxx 3.xxx
 ###
+
+用户故事：
 
 ###
 用户故事：创建博客
