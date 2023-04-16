@@ -14,7 +14,7 @@ import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.util.PsiTreeUtil
 
 
-class JavaAutoCrud(val project: Project) {
+class JavaAutoCrud(val project: Project) : AutoCurdData {
     private val psiElementFactory = JavaPsiFacade.getElementFactory(project)
     private val controllers = getAllControllerFiles()
 
@@ -39,18 +39,18 @@ class JavaAutoCrud(val project: Project) {
             psiClass != null && filter(psiClass)
         }
 
-    private fun controllerFilter(clazz: PsiClass) : Boolean = clazz.annotations
+    private fun controllerFilter(clazz: PsiClass): Boolean = clazz.annotations
         .map { it.qualifiedName }.any {
             it == "org.springframework.stereotype.Controller" ||
                     it == "org.springframework.web.bind.annotation.RestController"
         }
 
-    private fun serviceFilter(clazz: PsiClass) : Boolean = clazz.annotations
+    private fun serviceFilter(clazz: PsiClass): Boolean = clazz.annotations
         .map { it.qualifiedName }.any {
             it == "org.springframework.stereotype.Service"
         }
 
-    private fun repositoryFilter(clazz: PsiClass) : Boolean = clazz.annotations
+    private fun repositoryFilter(clazz: PsiClass): Boolean = clazz.annotations
         .map { it.qualifiedName }.any {
             it == "org.springframework.stereotype.Repository"
         }
@@ -73,7 +73,7 @@ class JavaAutoCrud(val project: Project) {
         return psiClass
     }
 
-    fun controllerList(): List<DtFile> {
+    override fun controllerList(): List<DtFile> {
         return this.controllers.map {
             DtFile(
                 name = it.name,
@@ -81,5 +81,13 @@ class JavaAutoCrud(val project: Project) {
                     .firstOrNull()?.name ?: "",
             )
         }
+    }
+
+    override fun serviceList(): List<DtFile> {
+        TODO("Not yet implemented")
+    }
+
+    override fun modelList(): List<DtFile> {
+        TODO("Not yet implemented")
     }
 }

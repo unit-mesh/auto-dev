@@ -17,6 +17,10 @@ class DtRunState(
     private val createStory: DevtiCreateStoryConfigure?,
     val project: Project
 ) : RunProfileState {
+    init {
+        log.warn("init")
+    }
+
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
         val javaAuto = JavaAutoCrud(project)
         val controllerList = javaAuto.controllerList()

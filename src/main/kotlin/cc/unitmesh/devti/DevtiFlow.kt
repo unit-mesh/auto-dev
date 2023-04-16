@@ -17,7 +17,10 @@ class DevtiFlow(
 
         var storyDetail = story.description
         if (!kanban.isValidStory(storyDetail)) {
+            logger.info("story detail is not valid, fill story detail")
+
             storyDetail = flowAction.fillStoryDetail(project, story.description)
+
             logger.info("fill story detail: $storyDetail")
             val newStory = SimpleStory(story.id, story.title, storyDetail)
             kanban.updateStoryDetail(newStory)
