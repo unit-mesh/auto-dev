@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.runconfig.ui
 
 import cc.unitmesh.devti.ai.OpenAIVersion
-import cc.unitmesh.devti.runconfig.DevtiConfigure
+import cc.unitmesh.devti.runconfig.config.DevtiCreateStoryConfigure
 import cc.unitmesh.devti.runconfig.DtRunConfiguration
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.options.SettingsEditor
@@ -15,7 +15,7 @@ import javax.swing.JComponent
 
 class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() {
     private var completionProvider = DtCommandCompletionProvider()
-    private var openAiMaxTokens: Int = 4096
+    private var openAiMaxTokens: Int = DevtiCreateStoryConfigure.DEFAULT_OPEN_AI_MAX_TOKENS
 
     private var panel: JComponent? = null
 
@@ -26,7 +26,9 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
             .sortedBy { it.index }
             .forEach { addItem(it) }
     }
-    private val maxTokens = DtCommandLineEditor(project, completionProvider)
+    private val maxTokens = DtCommandLineEditor(project, completionProvider).apply {
+        setText(openAiMaxTokens.toString())
+    }
 
     override fun createEditor(): JComponent = panel {
         row {
@@ -64,7 +66,7 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
     override fun applyEditorTo(configuration: DtRunConfiguration) {
         logger.warn("github text:${githubInput.text}")
         configuration.setOptions(
-            DevtiConfigure(
+            DevtiCreateStoryConfigure(
                 githubInput.text,
                 aiApiToken.text,
                 OpenAIVersion.fromIndex(engineVersion.selectedIndex),

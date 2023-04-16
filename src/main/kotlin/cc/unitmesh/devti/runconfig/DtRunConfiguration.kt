@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.runconfig
 
 import cc.unitmesh.devti.ai.OpenAIVersion
+import cc.unitmesh.devti.runconfig.config.DevtiCreateStoryConfigure
 import cc.unitmesh.devti.runconfig.ui.DtSettingsEditor
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
@@ -29,7 +30,7 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
         return DtSettingsEditor(project)
     }
 
-    fun setOptions(configure: DevtiConfigure) {
+    fun setOptions(configure: DevtiCreateStoryConfigure) {
         this.options.setFrom(configure)
     }
 
@@ -59,7 +60,7 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
     override fun readExternal(element: Element) {
         super.readExternal(element)
 
-        val runConfigure = DevtiConfigure.getDefault()
+        val runConfigure = DevtiCreateStoryConfigure.getDefault()
 
         element.readString("githubToken")?.let { runConfigure.githubToken = it }
         element.readString("openAiApiKey")?.let { runConfigure.openAiApiKey = it }

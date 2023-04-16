@@ -1,20 +1,20 @@
 package cc.unitmesh.devti.runconfig.command
 
-import cc.unitmesh.devti.runconfig.DevtiConfigure
+import cc.unitmesh.devti.runconfig.config.DevtiCreateStoryConfigure
 import com.intellij.psi.PsiElement
 
-class CreateStoryConfigurationProducer : BaseLazyRunConfigurationProducer<DevtiConfigure>() {
+class CreateStoryConfigurationProducer : BaseLazyRunConfigurationProducer<DevtiCreateStoryConfigure>() {
     init {
         registerConfigProvider { elements -> createConfigFor(elements) }
     }
 
     private fun createConfigFor(
         elements: List<PsiElement>
-    ): DevtiConfigure {
-        return DevtiConfigure.getDefault()
+    ): DevtiCreateStoryConfigure {
+        return DevtiCreateStoryConfigure.getDefault()
     }
 
-    private fun registerConfigProvider(provider: (List<PsiElement>) -> DevtiConfigure?) {
+    private fun registerConfigProvider(provider: (List<PsiElement>) -> DevtiCreateStoryConfigure?) {
         runConfigProviders.add(provider)
     }
 }
