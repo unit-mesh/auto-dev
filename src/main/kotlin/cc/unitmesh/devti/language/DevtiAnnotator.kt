@@ -11,9 +11,6 @@ class DevtiAnnotator : Annotator {
     }
 
     companion object {
-        val DEVTI_PREFIX_STR = "devti"
-        val DEVTI_SEPARATOR_STR = ":"
-
-        val DEVTI_REGEX = Regex("^//\\sdevti://story/\\d+/.*$")
+        val DEVTI_REGEX = Regex("^//\\sdevti://story/github/\\d+(/.*)?$")
     }
 }

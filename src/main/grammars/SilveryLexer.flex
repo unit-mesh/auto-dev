@@ -1,22 +1,22 @@
-package ;
+package cc.unitmesh.devti.language.parser;
 
 import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
 
 import static com.intellij.psi.TokenType.BAD_CHARACTER;
 import static com.intellij.psi.TokenType.WHITE_SPACE;
-import static generated.GeneratedTypes.*;
+import static cc.unitmesh.devti.language.psi.SilveryTypes.*;
 
 %%
 
 %{
-  public _DevtiLexer() {
+  public _SilveryLexer() {
     this((java.io.Reader)null);
   }
 %}
 
 %public
-%class _DevtiLexer
+%class _SilveryLexer
 %implements FlexLexer
 %function advance
 %type IElementType

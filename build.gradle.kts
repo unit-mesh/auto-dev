@@ -1,4 +1,7 @@
 import org.jetbrains.changelog.Changelog
+import org.jetbrains.grammarkit.tasks.GenerateLexerTask
+import org.jetbrains.grammarkit.tasks.GenerateParserTask
+import org.gradle.api.JavaVersion.VERSION_17
 
 buildscript {
     repositories {
@@ -76,32 +79,35 @@ tasks {
         gradleVersion = properties("gradleVersion").get()
     }
 
-//    val generateDevtiLexer = task<GenerateLexerTask>("generateFeakinLexer") {
-//        source.set("src/main/grammars/DevtiLexer.flex")
-//        targetDir.set("cc/unitmesh/devti/lexer")
-//        targetClass.set("_FeakinLexer")
-//        purgeOldFiles.set(true)
-//    }
-//
-//    val generateDevtiParser = task<GenerateParserTask>("generateFeakinParser") {
-//        source.set("src/main/grammars/DevtiParser.bnf")
-//        targetRoot.set("src/gen")
-//        pathToParser.set("cc/unitmesh/devti/parser/FeakinParser.java")
-//        pathToPsiRoot.set("ccc/unitmesh/devti/psi")
-//        purgeOldFiles.set(true)
-//    }
-//
-//    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-//        kotlinOptions {
-//            jvmTarget = properties("javaVersion")
-//            apiVersion = properties("kotlinApiVersion")
-//        }
-//
-//        dependsOn(
-//            generateDevtiLexer,
-//            generateDevtiParser
-//        )
-//    }
+    val generateDevtiLexer = task<GenerateLexerTask>("generateFeakinLexer") {
+        source.set("src/main/grammars/SilveryLexer.flex")
+        targetDir.set("cc/unitmesh/devti/lexer")
+        targetClass.set("_FeakinLexer")
+        purgeOldFiles.set(true)
+    }
+
+    val generateDevtiParser = task<GenerateParserTask>("generateFeakinParser") {
+        source.set("src/main/grammars/SilveryParser.bnf")
+        targetRoot.set("src/main/gen")
+        pathToParser.set("cc/unitmesh/devti/parser/SilveryParser.java")
+        pathToPsiRoot.set("cc/unitmesh/devti/psi")
+        purgeOldFiles.set(true)
+    }
+
+    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+        kotlinOptions {
+            jvmTarget = VERSION_17.toString()
+            languageVersion = "1.8"
+            // see https://plugins.jetbrains.com/docs/intellij/using-kotlin.html#kotlin-standard-library
+            apiVersion = "1.7"
+            freeCompilerArgs = listOf("-Xjvm-default=all")
+        }
+
+        dependsOn(
+            generateDevtiLexer,
+            generateDevtiParser
+        )
+    }
 
     patchPluginXml {
         version = properties("pluginVersion")

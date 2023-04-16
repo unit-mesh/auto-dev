@@ -150,3 +150,4 @@ repositories.json
 .idea
 .qodana
 build
+src/main/gen
