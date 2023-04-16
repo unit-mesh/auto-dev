@@ -10,6 +10,7 @@ import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.model.ModelId
 import com.aallam.openai.client.OpenAI
+import kotlinx.coroutines.runBlocking
 
 class OpenAIAction(val openAIKey: String, val version: String) : AiAction, DevtiFlowAction {
     private val openAI: OpenAI = OpenAI(openAIKey)
@@ -33,6 +34,9 @@ class OpenAIAction(val openAIKey: String, val version: String) : AiAction, Devti
 
     override fun fillStoryDetail(project: SimpleProjectInfo, story: String): String {
         val promptText = gptPromptText.fillStoryDetail(project, story)
-        return promptText
+        return runBlocking {
+            val prompt = prompt(promptText)
+            return@runBlocking prompt
+        }
     }
 }

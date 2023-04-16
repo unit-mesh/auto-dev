@@ -21,7 +21,7 @@ class GitHubIssue(val repoUrl: String, val token: String) : Kanban {
 
     override fun getProjectInfo(): SimpleProjectInfo {
         val repo = gitHub.getRepository(repoUrl)
-        return SimpleProjectInfo(repo.nodeId, repo.name, repo.description)
+        return SimpleProjectInfo(repo.fullName, repo.name, repo.description)
     }
 
     override fun getStories(): List<SimpleStory> {
@@ -30,7 +30,18 @@ class GitHubIssue(val repoUrl: String, val token: String) : Kanban {
 
     override fun getStoryById(storyId: String): SimpleStory {
         val issue = gitHub.getRepository(repoUrl).getIssue(Integer.parseInt(storyId))
-        return SimpleStory(issue.nodeId, issue.title, issue.body)
+        if (issue.comments.size == 0) {
+            return SimpleStory(issue.number.toString(), issue.title, issue.body)
+        }
+
+        // get all comments and filter body contains "用户故事"
+        val comments = issue.comments
+        val comment = comments.find { it.body.contains("用户故事") }
+        if (comment != null) {
+            return SimpleStory(issue.number.toString(), issue.title, comment.body)
+        }
+
+        return SimpleStory(issue.number.toString(), issue.title, issue.body)
     }
 
     override fun updateStoryDetail(simpleStory: SimpleStory) {
