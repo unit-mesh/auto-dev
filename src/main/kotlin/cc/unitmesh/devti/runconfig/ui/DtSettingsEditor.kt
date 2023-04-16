@@ -27,12 +27,11 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
             .forEach { addItem(it) }
     }
     private val maxTokens = DtCommandLineEditor(project, completionProvider).apply {
-        setText(openAiMaxTokens.toString())
+        text = openAiMaxTokens.toString()
     }
 
     override fun createEditor(): JComponent = panel {
-        row {
-            label("Github Token:")
+        row("Github Token:") {
             fullWidthCell(githubInput)
         }
 

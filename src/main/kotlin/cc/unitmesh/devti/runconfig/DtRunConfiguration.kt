@@ -35,15 +35,7 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
     }
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
-        return object : CommandLineState(environment) {
-            @Throws(ExecutionException::class)
-            override fun startProcess(): ProcessHandler {
-                val commandLine = GeneralCommandLine("echo", "hello world")
-                val processHandler = ProcessHandlerFactory.getInstance().createColoredProcessHandler(commandLine)
-                ProcessTerminatedListener.attach(processHandler)
-                return processHandler
-            }
-        }
+        return DtRunState(environment, this, this.options.toConfigure())
     }
 
     override fun writeExternal(element: Element) {
