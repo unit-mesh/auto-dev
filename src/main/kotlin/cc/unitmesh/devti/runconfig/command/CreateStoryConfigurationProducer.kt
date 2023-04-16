@@ -17,7 +17,10 @@ class CreateStoryConfigurationProducer : BaseLazyRunConfigurationProducer<DevtiC
         elements: List<PsiElement>
     ): DevtiCreateStoryConfigure? {
         if (elements.isEmpty()) return null
-        val commentText = elements.filterIsInstance<PsiComment>().first().text
+        val comments = elements.filterIsInstance<PsiComment>()
+        if (comments.isEmpty()) return null
+
+        val commentText = comments.first().text
         val storyConfig = DevtiAnnotator.matchByString(commentText) ?: return null
         return DevtiCreateStoryConfigure.fromStoryConfig(storyConfig)
     }
