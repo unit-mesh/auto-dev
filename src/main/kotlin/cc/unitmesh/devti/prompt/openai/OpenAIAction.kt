@@ -13,7 +13,7 @@ import com.aallam.openai.client.OpenAI
 
 class OpenAIAction(val openAIKey: String, val version: String) : AiAction, DevtiFlowAction {
     private val openAI: OpenAI = OpenAI(openAIKey)
-//    private val gptPromptText = GptPromptText()
+    private val gptPromptText = GptPromptText()
 
     @OptIn(BetaOpenAI::class)
     override suspend fun prompt(prompt: String): String {
@@ -32,6 +32,7 @@ class OpenAIAction(val openAIKey: String, val version: String) : AiAction, Devti
     }
 
     override fun fillStoryDetail(project: SimpleProjectInfo, story: String): String {
-        return ""
+        val promptText = gptPromptText.fillStoryDetail(project, story)
+        return promptText
     }
 }

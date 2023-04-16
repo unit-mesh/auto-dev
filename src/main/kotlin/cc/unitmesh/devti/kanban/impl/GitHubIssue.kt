@@ -34,6 +34,8 @@ class GitHubIssue(val repoUrl: String, val token: String) : Kanban {
     }
 
     override fun updateStoryDetail(simpleStory: SimpleStory) {
-        TODO("Not yet implemented")
+        // add comments to issues
+        val issue = gitHub.getRepository(repoUrl).getIssue(Integer.parseInt(simpleStory.id))
+        issue.comment(simpleStory.description)
     }
 }

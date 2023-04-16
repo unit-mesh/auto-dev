@@ -1,10 +1,17 @@
 package cc.unitmesh.devti.prompt.openai
 
 import cc.unitmesh.devti.kanban.SimpleProjectInfo
+import java.io.InputStream
 
-class GptPromptText(val project: SimpleProjectInfo) {
-    fun fillStoryDetail(story: String): String {
-        return ""
+class GptPromptText() {
+    // 1. read resources/prompts/create_story_detail.txt
+    // 2. replace {project} with project name
+    fun fillStoryDetail(project: SimpleProjectInfo, story: String): String {
+        val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/create_story_detail.txt")!!
+        val promptTextString = promptText.bufferedReader().use { it.readText() }
+        return promptTextString
+            .replace("{project}", project.name + ":" + project.description)
+            .replace("{story}", story)
     }
 
     fun generateControllerCode(story: String): String {
