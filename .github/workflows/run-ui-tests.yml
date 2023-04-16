@@ -35,12 +35,12 @@ jobs:
       - name: Fetch Sources
         uses: actions/checkout@v3
 
-      # Setup Java 11 environment for the next steps
+      # Setup Java 17 environment for the next steps
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
           distribution: zulu
-          java-version: 11
+          java-version: 17
 
       # Run IDEA prepared for UI testing
       - name: Run IDE
