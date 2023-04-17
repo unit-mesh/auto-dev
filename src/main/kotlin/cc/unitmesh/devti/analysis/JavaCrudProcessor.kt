@@ -1,12 +1,18 @@
 package cc.unitmesh.devti.analysis
 
+import cc.unitmesh.devti.runconfig.DtRunState
 import com.intellij.ide.highlighter.JavaFileType
+import com.intellij.lang.java.JavaLanguage
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiPackage
@@ -112,10 +118,37 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
     }
 
     override fun createController(endpoint: String): DtClass {
-        val controller = controllers.first()
-        val packageName = PsiTreeUtil.findChildrenOfType(controller, PsiPackage::class.java)
-            .firstOrNull() ?: return DtClass("", emptyList())
+        if (controllers.isEmpty()) {
+            return DtClass("", emptyList())
+        }
 
-        return DtClass("", emptyList())
+        val randomController = controllers.first()
+
+        return runReadAction {
+            val packageName = PsiTreeUtil.findChildrenOfType(randomController, PsiPackage::class.java)
+                .firstOrNull() ?: return@runReadAction DtClass("", emptyList())
+
+
+            val newController = PsiFileFactory.getInstance(project).createFileFromText(
+                "$endpoint.java", JavaLanguage.INSTANCE,
+                """
+            |package ${packageName.qualifiedName};
+            |
+            |@Controller
+            |class $endpoint {
+            |
+            |}""".trimMargin()
+            )
+
+            log.info("newController: $newController")
+
+//        newController
+//            .add(newController)
+            return@runReadAction DtClass("", emptyList())
+        }
+    }
+
+    companion object {
+        private val log: Logger = logger<JavaCrudProcessor>()
     }
 }
