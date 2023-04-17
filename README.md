@@ -56,8 +56,11 @@ AutoCRUD 处理过程：
     - [ ] Service Suggestion
     - [ ] Repository Suggestion
     - [ ] Model Suggestion
-- [ ] Code AutoComplete
-    - [ ] Smart suggestion
+- [ ] Code AI (ToBeContinue)
+    - [ ] Analysis code
+    - [ ] Auto generate code
+    - [ ] Auto generate test
+    - [ ] Auto generate document
     - [ ] Fix bug...
 
 ### DevTi Todos:
