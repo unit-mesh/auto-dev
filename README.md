@@ -1,6 +1,7 @@
 # AutoCRUD
 
-> AutoCRUD 是一个全自动化 AI 辅助编程工具，也是一个在大气层中（飞机上）设计的 DevTi 的 Intellij IDE 实现。
+> AutoCRUD 是一个全自动化 AI 辅助编程工具，也是一个在大气层设计的 DevTi 的 Jetbrains IDE 实现。AutoCRUD 直接对接到您的需求系统
+> （如 Jira、Trello、Github Issue 等）中，您只需要在 IDE 中点击一下，AutoCRUD 将根据您的需求，自动生成代码，您只需要做好代码质检即可。
 
 AutoCRUD 处理过程：
 
@@ -10,8 +11,6 @@ AutoCRUD 处理过程：
 4. 根据 Endpoint，自动生成 Controller 代码
 5. 根据 Controller 代码，自动生成 Service 代码
 6. 根据 Service 代码，自动生成 Repository 代码
-
-
 
 ## Todos
 
