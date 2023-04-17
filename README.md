@@ -51,6 +51,8 @@ AutoCRUD 处理过程：
 - [ ] Intelli code change
     - [x] Endpoint modify suggestions
     - [x] Controller Suggestion
+      - [ ] import all Spring Controller imports
+      - [ ] auto update imports
     - [ ] Service Suggestion
     - [ ] Repository Suggestion
     - [ ] Model Suggestion
