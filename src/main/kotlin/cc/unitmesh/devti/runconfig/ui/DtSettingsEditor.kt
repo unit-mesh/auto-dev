@@ -48,7 +48,7 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
         }
 
         row("API Engine:") {
-            aiEngineVersion
+            cell(aiEngineVersion)
         }
 
         row("Max Tokens") {
