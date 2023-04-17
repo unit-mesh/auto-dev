@@ -18,20 +18,7 @@ class DevtiFlow(
     private val analyser: CrudProcessor? = null
 ) {
     fun start(id: String) {
-        val project = kanban.getProjectInfo()
-        val story = kanban.getStoryById(id)
-
-        // 1. check story detail is valid, if not, fill story detail
-        var storyDetail = story.description
-        if (!kanban.isValidStory(storyDetail)) {
-            logger.warn("story detail is not valid, fill story detail")
-
-            storyDetail = flowAction.fillStoryDetail(project, story.description)
-
-            val newStory = SimpleStory(story.id, story.title, storyDetail)
-            kanban.updateStoryDetail(newStory)
-        }
-        logger.warn("user story detail: $storyDetail")
+        val storyDetail = processStoryDetail(id)
 
         // 2. get suggest endpoint
         val files: List<DtClass> = analyser?.controllerList() ?: emptyList()
@@ -41,14 +28,12 @@ class DevtiFlow(
         val controller = getController(targetEndpoint)
         if (controller == null) {
             logger.warn("no controller found from: $targetEndpoint")
-            return
         }
 
         logger.warn("target endpoint: $targetEndpoint")
         val targetController = files.find { it.name == targetEndpoint }
         if (targetController == null) {
             logger.warn("no controller found from: $targetEndpoint")
-            return
         }
 
         // 3. update endpoint method
@@ -62,6 +47,24 @@ class DevtiFlow(
             val code = fetchCode(targetEndpoint, targetController, storyDetail)
             analyser?.updateMethod(targetController.name, code)
         }
+    }
+
+    fun processStoryDetail(id: String): String {
+        val simpleProject = kanban.getProjectInfo()
+        val story = kanban.getStoryById(id)
+
+        // 1. check story detail is valid, if not, fill story detail
+        var storyDetail = story.description
+        if (!kanban.isValidStory(storyDetail)) {
+            logger.warn("story detail is not valid, fill story detail")
+
+            storyDetail = flowAction.fillStoryDetail(simpleProject, story.description)
+
+            val newStory = SimpleStory(story.id, story.title, storyDetail)
+            kanban.updateStoryDetail(newStory)
+        }
+        logger.warn("user story detail: $storyDetail")
+        return storyDetail
     }
 
     private fun fetchCode(

@@ -12,6 +12,9 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 
 class DtRunState(
@@ -21,22 +24,33 @@ class DtRunState(
     val project: Project,
     val options: DtRunConfigurationOptions
 ) : RunProfileState {
-
-    // check configuration
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
         val javaAuto = JavaCrudProcessor(project)
         val gitHubIssue = GitHubIssue("unit-mesh/untitled", options.githubToken())
         val openAIAction = OpenAIAction(options.openAiApiKey(), "gpt-3.5-turbo")
         val devtiFlow = DevtiFlow(gitHubIssue, openAIAction, javaAuto)
 
+        // check configuration
+
         log.warn(configuration.toString())
         log.warn(createStory.toString())
         log.warn(options.toString())
 
-        // todo: check create story
-        val storyId = createStory?.storyId ?: 1
+        ProgressManager.getInstance().run(
+            object : Task.Backgroundable(project, "Loading retained test failure", true) {
+                override fun run(indicator: ProgressIndicator) {
+                    indicator.isIndeterminate = false
+                    indicator.fraction = 0.0
 
-        devtiFlow.start(storyId.toString())
+
+                    // todo: check create story
+                    val storyId = createStory?.storyId ?: 1
+                    devtiFlow.start(storyId.toString())
+
+
+                }
+            }
+        )
 
         return null
     }
