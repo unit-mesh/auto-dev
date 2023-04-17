@@ -1,10 +1,15 @@
 # AutoCRUD
 
 > AutoCRUD 是一个全自动化 AI 辅助编程工具，也是一个在大气层设计的 DevTi 的 Jetbrains IDE 实现。AutoCRUD 直接对接到您的需求系统
-（如 Jira、Trello、Github Issue 等）中，您只需要在 IDE 中点击一下，AutoCRUD 将根据您的需求，自动生成代码，您只需要做好代码质检即可。
-
+> （如 Jira、Trello、Github Issue 等）中，您只需要在 IDE 中点击一下，AutoCRUD 将根据您的需求，自动生成代码，您只需要做好代码质检即可。
 
 ## Usage
+
+Install:
+
+method 1. Download plugin from release page: [release](https://github.com/phodal/autocrud/releases)
+
+method 2. Install plugin in your IDE
 
 ### Steps
 
@@ -42,7 +47,7 @@ AutoCRUD 处理过程：
     - [ ] Kotlin
     - [ ] TypeScript
 - [x] DevTi Protocol
-  - [x] format 1: `devti://story/github/1102`
+    - [x] format 1: `devti://story/github/1102`
 - [ ] Intelli code change
     - [x] Endpoint modify suggestions
     - [x] Controller Suggestion
@@ -68,7 +73,7 @@ LoRA Training
 ## Development
 
 1. `git clone https://github.com/unit-mesh/autocrud.git`
-2. open in Intellij IDEA
+2. open in IntelliJ IDEA
 
 ## License
 
