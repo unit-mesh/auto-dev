@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.analysis
 
 import com.intellij.ide.highlighter.JavaFileType
-import com.intellij.lang.java.JavaLanguage
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.application.runWriteAction
@@ -14,7 +13,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiPackageStatement
@@ -99,7 +97,12 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         TODO("Not yet implemented")
     }
 
-    override fun updateMethod(targetController: String, code: String) {
+    override fun createControllerOrUpdateMethod(targetController: String, code: String, isControllerExist: Boolean) {
+        if (controllers.isEmpty()) {
+            this.createController(targetController, code)
+            return
+        }
+
         val targetControllerFile = controllers.first { it.name == "$targetController.java" }
         val targetControllerClass = PsiTreeUtil.findChildrenOfType(targetControllerFile, PsiClass::class.java)
             .firstOrNull() ?: return
@@ -119,7 +122,7 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
             }
     }
 
-    override fun createController(endpoint: String): DtClass? {
+    override fun createController(endpoint: String, code: String): DtClass? {
         if (controllers.isEmpty()) {
             return DtClass("", emptyList())
         }
@@ -144,7 +147,7 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
             |
             |@Controller
             |class $endpoint {
-            |
+            |$code
             |}""".trimMargin()
 
         val parentDirectory = randomController.virtualFile?.parent ?: return null
