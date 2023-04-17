@@ -127,7 +127,7 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         val randomController = controllers.first()
 
         val packageStatement = runReadAction {
-             PsiTreeUtil.findChildrenOfType(randomController, PsiPackageStatement::class.java)
+            PsiTreeUtil.findChildrenOfType(randomController, PsiPackageStatement::class.java)
                 .firstOrNull() ?: return@runReadAction null
         }
 
@@ -142,28 +142,22 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
             |@Controller
             |class $endpoint {
             |
-            |}"""
+            |}""".trimMargin()
 
         val parentDirectory = randomController.virtualFile?.parent ?: return null
         val fileSystem = randomController.virtualFile?.fileSystem
 
-        return runWriteAction {
-            try {
-                val virtualFile = parentDirectory.createChildData(fileSystem, endpoint)
+        ApplicationManager.getApplication().invokeLater {
+            runWriteAction {
+                val virtualFile = parentDirectory.createChildData(fileSystem, "$endpoint.java")
                 VfsUtil.saveText(virtualFile, templateCode)
 
                 log.warn("Created file ${virtualFile.path}")
-                ApplicationManager.getApplication().invokeLater {
-                    parentDirectory.refresh(false, true)
-                }
-
-                return@runWriteAction DtClass(endpoint, emptyList())
-            } catch (e: Exception) {
-                log.error("Error creating file", e)
+                parentDirectory.refresh(false, true)
             }
-
-            return@runWriteAction null
         }
+
+        return DtClass(endpoint, emptyList())
     }
 
     companion object {
