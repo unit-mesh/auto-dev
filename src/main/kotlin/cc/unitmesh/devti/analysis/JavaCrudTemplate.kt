@@ -1,37 +1,21 @@
 package cc.unitmesh.devti.analysis
 
+import com.intellij.ide.fileTemplates.FileTemplateDescriptor
 import com.intellij.ide.fileTemplates.FileTemplateManager
+import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.project.Project
 import java.util.*
 
 class JavaCrudTemplate(val project: Project) {
-    private val fileTemplateManager = FileTemplateManager.getInstance(project)
+    private val fileTemplateManager = FileTemplateManager.getDefaultInstance()
+    val controllerTemplate = FileTemplateDescriptor("Java Controller.java", JavaFileType.INSTANCE.icon)
 
     fun controller(
-        endpoint: String,
-        code: String,
-        packageName: String?
-    ): String {
-        val templateCode = """
-                |package $packageName;
-                |
-                |import org.springframework.stereotype.Controller;
-                |import org.springframework.web.bind.annotation.RequestMapping;
-                |
-                |@Controller
-                |class $endpoint {
-                |$code
-                |}""".trimMargin()
-        return templateCode
-    }
-
-    // todo: make it works
-    fun templateController(
         controllerName: String,
         code: String,
         packageName: String?
     ): String {
-        val template = fileTemplateManager.getTemplate("Java Controller")
+        val template = fileTemplateManager.getCodeTemplate(controllerTemplate.fileName)
 
         val properties = Properties()
         properties.setProperty("packageName", packageName)
