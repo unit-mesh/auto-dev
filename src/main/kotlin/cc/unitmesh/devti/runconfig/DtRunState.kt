@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.runconfig
 
+import cc.unitmesh.devti.DevtiBundle
 import cc.unitmesh.devti.DevtiFlow
 import cc.unitmesh.devti.analysis.JavaCrudProcessor
 import cc.unitmesh.devti.kanban.impl.GitHubIssue
@@ -42,7 +43,7 @@ class DtRunState(
                     indicator.isIndeterminate = false
                     indicator.fraction = 0.0
 
-                    indicator.text = "Processing story detail (1/3)"
+                    indicator.text = DevtiBundle.message("devti.runconfig.progress.creatingStory")
 
                     // todo: check create story
                     val storyId = createStory?.storyId ?: 1
@@ -50,7 +51,7 @@ class DtRunState(
 
                     indicator.fraction = 0.3
 
-                    indicator.text = "Finding suggest endpoint (2/3)"
+                    indicator.text = DevtiBundle.message("devti.runconfig.progress.fetchingSuggestEndpoint")
                     val target = devtiFlow.fetchSuggestEndpoint(storyDetail)
                     if (target == null) {
                         log.error("no suggest endpoint found")
@@ -59,7 +60,7 @@ class DtRunState(
 
                     indicator.fraction = 0.6
 
-                    indicator.text = "Updating endpoint method (3/3)"
+                    indicator.text = DevtiBundle.message("devti.runconfig.progress.updatingEndpointMethod")
                     devtiFlow.updateEndpointMethod(target, storyDetail)
 
                     indicator.fraction = 0.9
