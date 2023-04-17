@@ -5,25 +5,28 @@
 ## Todos
 
 - [ ] Languages Support
-    - [ ] Java
+    - [x] Java
     - [ ] Kotlin
     - [ ] TypeScript
 - [x] DevTi Protocol
+  - [x] format 1: `devti://story/github/1102`
 - [ ] Intelli code change
-    - [ ] Swagger annotation Analysis
-    - [ ] Endpoint modify suggestions / Controller Suggestion
+    - [x] Endpoint modify suggestions
+    - [x] Controller Suggestion
+    - [ ] Service Suggestion
+    - [ ] Repository Suggestion
+    - [ ] Model Suggestion
 - [ ] Code AutoComplete
     - [ ] Smart suggestion
     - [ ] Fix bug...
-- [ ] Explain code
 
-### DevTi Support
+### DevTi Todos:
 
-Deploy yourself:
+LoRA Training
 
-- [ ] Code Suggestion
-- [ ] Controller Suggestion
-- [ ] UserStory Analysis
+- UserStory Analysis
+- Endpoint Suggestion
+- Code Suggestion
 
 ### DevTi Server
 
@@ -38,11 +41,6 @@ Deploy yourself:
 OPENAI_KEY=YOUR_KEY
 GITHUB_TOKEN=YOUR_KEY
 ```
-
-protocol example:
-
-- [x] devti://story/github/1102
-- [ ] // devti://story/1102/{AC1,AC2}
 
 ## License
 
