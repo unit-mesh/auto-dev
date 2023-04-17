@@ -139,6 +139,9 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         val templateCode = """
             |package ${packageStatement.packageName};
             |
+            |import org.springframework.stereotype.Controller;
+            |import org.springframework.web.bind.annotation.RequestMapping;
+            |
             |@Controller
             |class $endpoint {
             |
