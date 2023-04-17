@@ -32,6 +32,7 @@ class CreateStoryConfigurationProducer : BaseLazyRunConfigurationProducer<DevtiC
     ): Boolean {
         val config = findConfig(context.location?.psiElement?.let { listOf(it) } ?: return false) ?: return false
         configuration.name = config.configurationName
+        configuration.setStoryConfig(config)
 
         return true
     }

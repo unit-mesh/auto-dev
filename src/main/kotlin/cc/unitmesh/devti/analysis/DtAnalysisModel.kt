@@ -26,7 +26,7 @@ class DtClass(
             output.append(")\n")
         }
 
-        output.append("- ")
+        output.append("- methods: ")
         // filter out constructor
         output.append(methods.filter { it.name != this.name }.joinToString(", ") { method ->
             "${method.name}(${method.parameters.joinToString(", ") { parameter -> "${parameter.name}: ${parameter.type}" }}): ${method.returnType}"

@@ -24,6 +24,6 @@ class DtModelExtKtTest: LightPlatformTestCase() {
 
         val dtClass = DtClass.fromPsiClass(psiClass)
         assertEquals("""class HelloController constructor(blogService: PsiType:BlogService)
-- hello(): PsiType:String""", dtClass.format())
+- methods: hello(): PsiType:String""", dtClass.format())
     }
 }

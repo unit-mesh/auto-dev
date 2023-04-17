@@ -73,6 +73,10 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
     fun setStoryId(text: String) {
         this.options.setStoryId(text)
     }
+
+    fun setStoryConfig(config: DevtiCreateStoryConfigure) {
+        this.options.setStoryId(config.storyId.toString())
+    }
 }
 
 fun Element.writeString(name: String, value: String) {
