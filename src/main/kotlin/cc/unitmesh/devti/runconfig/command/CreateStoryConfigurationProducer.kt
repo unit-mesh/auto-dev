@@ -25,6 +25,14 @@ class CreateStoryConfigurationProducer : BaseLazyRunConfigurationProducer<DevtiC
         return DevtiCreateStoryConfigure.fromStoryConfig(storyConfig)
     }
 
+    override fun isConfigurationFromContext(configuration: DtRunConfiguration, context: ConfigurationContext): Boolean {
+        val config = findConfig(context.location?.psiElement?.let { listOf(it) } ?: return false) ?: return false
+        configuration.name = config.configurationName
+        configuration.setStoryConfig(config)
+
+        return true
+    }
+
     override fun setupConfigurationFromContext(
         configuration: DtRunConfiguration,
         context: ConfigurationContext,
