@@ -13,7 +13,8 @@ import org.commonmark.parser.Parser
 
 data class TargetEndpoint(
     val endpoint: String,
-    val controller: DtClass
+    val controller: DtClass,
+    val hasMatchedController: Boolean = true
 )
 
 class DevtiFlow(
@@ -21,17 +22,17 @@ class DevtiFlow(
     private val flowAction: DevtiFlowAction,
     private val analyser: CrudProcessor? = null
 ) {
-    fun processAll(id: String) {
-        val storyDetail = fillStoryDetail(id)
-
-        val target = fetchSuggestEndpoint(storyDetail)
-        if (target == null) {
-            logger.warn("no suggest endpoint found")
-            return
-        }
-
-        updateEndpointMethod(target, storyDetail)
-    }
+//    fun processAll(id: String) {
+//        val storyDetail = fillStoryDetail(id)
+//
+//        val target = fetchSuggestEndpoint(storyDetail)
+//        if (target == null) {
+//            logger.warn("no suggest endpoint found")
+//            return
+//        }
+//
+//        updateEndpointMethod(target, storyDetail)
+//    }
 
     /**
      * Step 3: update endpoint method
@@ -53,22 +54,22 @@ class DevtiFlow(
     /**
      * Step 2: fetch suggest endpoint, if not found, return null
      */
-    fun fetchSuggestEndpoint(storyDetail: String): TargetEndpoint? {
+    fun fetchSuggestEndpoint(storyDetail: String): TargetEndpoint {
         val files: List<DtClass> = analyser?.controllerList() ?: emptyList()
         logger.warn("start devti flow")
         val targetEndpoint = flowAction.analysisEndpoint(storyDetail, files)
         // use regex match *Controller from targetEndpoint
-        val controller = Companion.getController(targetEndpoint)
+        val controller = getController(targetEndpoint)
         if (controller == null) {
             logger.warn("no controller found from: $targetEndpoint")
-            return null
+            return TargetEndpoint(targetEndpoint, DtClass("", listOf()), false)
         }
 
         logger.warn("target endpoint: $targetEndpoint")
         val targetController = files.find { it.name == targetEndpoint }
         if (targetController == null) {
             logger.warn("no controller found from: $targetEndpoint")
-            return null
+            return TargetEndpoint(targetEndpoint, DtClass("", listOf()), false)
         }
 
         return TargetEndpoint(targetEndpoint, targetController)
@@ -112,6 +113,11 @@ class DevtiFlow(
         val visitor = CodeVisitor()
         node.accept(visitor)
         return visitor.code
+    }
+
+    fun createNewEndpoint(endpoint: String) {
+        // create new psi file
+        val controller = analyser?.createController(endpoint)
     }
 
     companion object {

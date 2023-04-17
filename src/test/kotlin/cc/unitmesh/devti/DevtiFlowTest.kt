@@ -7,19 +7,19 @@ import io.github.cdimascio.dotenv.dotenv
 import org.junit.Ignore
 
 class DevtiFlowTest {
-
-    @Test
-    @Ignore
-    fun testShould_fetch_github_story() {
-        val dotenv = dotenv()
-        val githubToken = dotenv["GITHUB_TOKEN"]
-        val openAIKey = dotenv["OPENAI_KEY"]
-
-        val gitHubIssue = GitHubIssue("unit-mesh/untitled", githubToken!!)
-        val openAIAction = OpenAIAction(openAIKey!!, "gpt-3.5-turbo")
-        val devtiFlow = DevtiFlow(gitHubIssue, openAIAction)
-        devtiFlow.processAll("1")
-    }
+//
+//    @Test
+//    @Ignore
+//    fun testShould_fetch_github_story() {
+//        val dotenv = dotenv()
+//        val githubToken = dotenv["GITHUB_TOKEN"]
+//        val openAIKey = dotenv["OPENAI_KEY"]
+//
+//        val gitHubIssue = GitHubIssue("unit-mesh/untitled", githubToken!!)
+//        val openAIAction = OpenAIAction(openAIKey!!, "gpt-3.5-turbo")
+//        val devtiFlow = DevtiFlow(gitHubIssue, openAIAction)
+//        devtiFlow.processAll("1")
+//    }
 
     // input: """返回最合适的 Controller 名字：BlogController""", output: BlogController
     // input: """BlogController""", output: BlogController

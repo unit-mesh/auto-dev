@@ -5,7 +5,6 @@ import cc.unitmesh.devti.DevtiFlow
 import cc.unitmesh.devti.analysis.JavaCrudProcessor
 import cc.unitmesh.devti.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.prompt.openai.OpenAIAction
-import cc.unitmesh.devti.runconfig.config.DevtiCreateStoryConfigure
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
@@ -51,8 +50,9 @@ class DtRunState(
 
                     indicator.text = DevtiBundle.message("devti.runconfig.progress.fetchingSuggestEndpoint")
                     val target = devtiFlow.fetchSuggestEndpoint(storyDetail)
-                    if (target == null) {
-                        log.error("no suggest endpoint found")
+                    if (!target.hasMatchedController) {
+                        log.warn("no suggest endpoint found, create new endpoint")
+                        devtiFlow.createNewEndpoint(target.endpoint)
                         return
                     }
 

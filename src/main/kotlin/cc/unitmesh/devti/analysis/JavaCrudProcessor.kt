@@ -9,6 +9,7 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiMethod
+import com.intellij.psi.PsiPackage
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
@@ -108,5 +109,13 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
                 addMethodToClass(targetControllerClass, method)
                 CodeStyleManager.getInstance(project).reformat(targetControllerFile)
             }
+    }
+
+    override fun createController(endpoint: String): DtClass {
+        val controller = controllers.first()
+        val packageName = PsiTreeUtil.findChildrenOfType(controller, PsiPackage::class.java)
+            .firstOrNull() ?: return DtClass("", emptyList())
+
+        return DtClass("", emptyList())
     }
 }

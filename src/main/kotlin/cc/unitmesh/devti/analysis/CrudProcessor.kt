@@ -5,4 +5,5 @@ interface CrudProcessor {
     fun serviceList(): List<DtClass>
     fun modelList(): List<DtClass>
     fun updateMethod(targetController: String, code: String)
+    fun createController(endpoint: String): DtClass
 }
