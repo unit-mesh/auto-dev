@@ -11,16 +11,49 @@ import com.intellij.openapi.diagnostic.logger
 import org.commonmark.node.*
 import org.commonmark.parser.Parser
 
+data class TargetEndpoint(
+    val endpoint: String,
+    val controller: DtClass
+)
 
 class DevtiFlow(
     private val kanban: Kanban,
     private val flowAction: DevtiFlowAction,
     private val analyser: CrudProcessor? = null
 ) {
-    fun start(id: String) {
-        val storyDetail = processStoryDetail(id)
+    fun processAll(id: String) {
+        val storyDetail = fillStoryDetail(id)
 
-        // 2. get suggest endpoint
+        val target = fetchSuggestEndpoint(storyDetail)
+        if (target == null) {
+            logger.warn("no suggest endpoint found")
+            return
+        }
+
+        updateEndpointMethod(target, storyDetail)
+    }
+
+    /**
+     * Step 3: update endpoint method
+     */
+    fun updateEndpointMethod(target: TargetEndpoint, storyDetail: String) {
+        // 3. update endpoint method
+        val code = fetchCode(target.endpoint, target.controller, storyDetail)
+        try {
+            analyser?.updateMethod(target.controller.name, code)
+        } catch (e: Exception) {
+            logger.warn("update method failed: $e")
+            logger.warn("try to fill update method 2nd")
+
+            val code = fetchCode(target.endpoint, target.controller, storyDetail)
+            analyser?.updateMethod(target.controller.name, code)
+        }
+    }
+
+    /**
+     * Step 2: fetch suggest endpoint, if not found, return null
+     */
+    fun fetchSuggestEndpoint(storyDetail: String): TargetEndpoint? {
         val files: List<DtClass> = analyser?.controllerList() ?: emptyList()
         logger.warn("start devti flow")
         val targetEndpoint = flowAction.analysisEndpoint(storyDetail, files)
@@ -28,28 +61,23 @@ class DevtiFlow(
         val controller = getController(targetEndpoint)
         if (controller == null) {
             logger.warn("no controller found from: $targetEndpoint")
+            return null
         }
 
         logger.warn("target endpoint: $targetEndpoint")
         val targetController = files.find { it.name == targetEndpoint }
         if (targetController == null) {
             logger.warn("no controller found from: $targetEndpoint")
+            return null
         }
 
-        // 3. update endpoint method
-        val code = fetchCode(targetEndpoint, targetController, storyDetail)
-        try {
-            analyser?.updateMethod(targetController.name, code)
-        } catch (e: Exception) {
-            logger.warn("update method failed: $e")
-            logger.warn("try to fill update method 2nd")
-
-            val code = fetchCode(targetEndpoint, targetController, storyDetail)
-            analyser?.updateMethod(targetController.name, code)
-        }
+        return TargetEndpoint(targetEndpoint, targetController)
     }
 
-    fun processStoryDetail(id: String): String {
+    /**
+     * Step 1: check story detail is valid, if not, fill story detail
+     */
+    fun fillStoryDetail(id: String): String {
         val simpleProject = kanban.getProjectInfo()
         val story = kanban.getStoryById(id)
 

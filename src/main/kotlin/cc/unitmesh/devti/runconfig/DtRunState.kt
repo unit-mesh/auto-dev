@@ -42,12 +42,27 @@ class DtRunState(
                     indicator.isIndeterminate = false
                     indicator.fraction = 0.0
 
+                    indicator.text = "Fetching story detail"
 
                     // todo: check create story
                     val storyId = createStory?.storyId ?: 1
-                    devtiFlow.start(storyId.toString())
+                    val storyDetail = devtiFlow.fillStoryDetail(storyId.toString())
 
+                    indicator.fraction = 0.3
 
+                    indicator.text = "Finding suggest endpoint"
+                    val target = devtiFlow.fetchSuggestEndpoint(storyDetail)
+                    if (target == null) {
+                        log.error("no suggest endpoint found")
+                        return
+                    }
+
+                    indicator.fraction = 0.6
+
+                    indicator.text = "Updating endpoint method"
+                    devtiFlow.updateEndpointMethod(target, storyDetail)
+
+                    indicator.fraction = 0.9
                 }
             }
         )

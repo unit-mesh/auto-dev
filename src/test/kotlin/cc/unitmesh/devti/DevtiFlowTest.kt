@@ -18,6 +18,6 @@ class DevtiFlowTest {
         val gitHubIssue = GitHubIssue("unit-mesh/untitled", githubToken!!)
         val openAIAction = OpenAIAction(openAIKey!!, "gpt-3.5-turbo")
         val devtiFlow = DevtiFlow(gitHubIssue, openAIAction)
-        devtiFlow.start("1")
+        devtiFlow.processAll("1")
     }
 }
