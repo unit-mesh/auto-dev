@@ -21,7 +21,7 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
     private val githubInput = DtCommandLineEditor(project, completionProvider)
     private val aiApiToken = DtCommandLineEditor(project, completionProvider)
     private val githubRepo = DtCommandLineEditor(project, completionProvider)
-    private var engineVersion = ComboBox<DtOpenAIVersion>().apply {
+    private var aiEngineVersion = ComboBox<DtOpenAIVersion>().apply {
         DtOpenAIVersion.values()
             .sortedBy { it.index }
             .forEach { addItem(it) }
@@ -48,7 +48,7 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
         }
 
         row("API Engine:") {
-            engineVersion
+            aiEngineVersion
         }
 
         row("Max Tokens") {
@@ -61,7 +61,7 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
     override fun resetEditorFrom(configuration: DtRunConfiguration) {
         githubInput.text = configuration.options.githubToken()
         aiApiToken.text = configuration.options.openAiApiKey()
-        engineVersion.selectedIndex = configuration.options.aiVersion()
+        aiEngineVersion.selectedIndex = configuration.options.aiEngineVersion()
         openAiMaxTokens = configuration.options.aiMaxTokens()
         maxTokens.text = openAiMaxTokens.toString()
     }
@@ -69,7 +69,7 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
     override fun applyEditorTo(configuration: DtRunConfiguration) {
         configuration.setGithubToken(githubInput.text)
         configuration.setOpenAiApiKey(aiApiToken.text)
-        configuration.setAiVersion(DtOpenAIVersion.fromIndex(engineVersion.selectedIndex))
+        configuration.setAiVersion(DtOpenAIVersion.fromIndex(aiEngineVersion.selectedIndex))
         configuration.setAiMaxTokens(openAiMaxTokens)
         configuration.setGithubRepo(githubRepo.text)
     }

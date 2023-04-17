@@ -3,7 +3,6 @@ package cc.unitmesh.devti.runconfig
 import cc.unitmesh.devti.prompt.openai.DtOpenAIVersion
 import cc.unitmesh.devti.runconfig.config.DevtiCreateStoryConfigure
 import cc.unitmesh.devti.runconfig.ui.DtSettingsEditor
-import com.intellij.execution.BeforeRunTask
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.RunConfiguration
@@ -36,7 +35,7 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
 
         element.writeString("githubToken", options.githubToken())
         element.writeString("openAiApiKey", options.openAiApiKey())
-        element.writeString("aiEngineVersion", options.aiVersion().toString())
+        element.writeString("aiEngineVersion", options.aiEngineVersion().toString())
         element.writeString("aiMaxTokens", options.aiMaxTokens().toString())
         element.writeString("githubRepo", options.githubRepo())
     }
@@ -46,7 +45,7 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
 
         element.readString("githubToken")?.let { this.options.setGithubToken(it) }
         element.readString("openAiApiKey")?.let { this.options.setOpenAiApiKey(it) }
-        element.readString("aiEngineVersion")?.let { this.options.setAiVersion(it.toInt()) }
+        element.readString("aiEngineVersion")?.let { this.options.setAiEngineVersion(it.toInt()) }
         element.readString("aiMaxTokens")?.let { this.options.setAiMaxTokens(it.toInt()) }
         element.readString("githubRepo")?.let { this.options.setGithubRepo(it) }
     }
@@ -64,7 +63,7 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
     }
 
     fun setAiVersion(fromIndex: DtOpenAIVersion) {
-        this.options.setAiVersion(fromIndex.ordinal)
+        this.options.setAiEngineVersion(fromIndex.ordinal)
     }
 
     fun setAiMaxTokens(openAiMaxTokens: Int) {

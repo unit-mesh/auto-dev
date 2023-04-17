@@ -8,7 +8,7 @@ class DtRunConfigurationOptions : ModuleBasedConfigurationOptions() {
     private var githubToken: StoredProperty<String?> = string("").provideDelegate(this, "githubToken")
 
     private val openAiApiKey: StoredProperty<String?> = string("").provideDelegate(this, "openAiApiKey")
-    private val aiVersion: StoredProperty<Int> = property(0).provideDelegate(this, "aiVersion")
+    private val aiEngineVersion: StoredProperty<Int> = property(0).provideDelegate(this, "aiEngineVersion")
     private val maxTokens: StoredProperty<Int> =
         property(DEFAULT_OPEN_AI_MAX_TOKENS).provideDelegate(this, "aiMaxTokens")
     private val githubRepo: StoredProperty<String?> = string("unit-mesh/untitled").provideDelegate(this, "githubRepo")
@@ -23,9 +23,9 @@ class DtRunConfigurationOptions : ModuleBasedConfigurationOptions() {
         openAiApiKey.setValue(this, token)
     }
 
-    fun aiVersion(): Int = aiVersion.getValue(this)
-    fun setAiVersion(version: Int) {
-        aiVersion.setValue(this, version)
+    fun aiEngineVersion(): Int = aiEngineVersion.getValue(this)
+    fun setAiEngineVersion(version: Int) {
+        aiEngineVersion.setValue(this, version)
     }
 
     fun aiMaxTokens(): Int = maxTokens.getValue(this)
