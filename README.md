@@ -20,6 +20,10 @@ Run Screenshots:
 
 ![AutoCRUD](https://unitmesh.cc/autocrud/init-instruction.png)
 
+Output Screenshots:
+
+![AutoCRUD](https://unitmesh.cc/autocrud/blog-controller.png)
+
 ### 原理
 
 AutoCRUD 处理过程：
