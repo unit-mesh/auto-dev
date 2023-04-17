@@ -65,20 +65,20 @@ class DevtiFlow(
         logger.warn("start devti flow")
         val targetEndpoint = flowAction.analysisEndpoint(storyDetail, files)
         // use regex match *Controller from targetEndpoint
-        val controller = getController(targetEndpoint)
+        val controller = matchControllerName(targetEndpoint)
         if (controller == null) {
-            logger.warn("no controller found from: $targetEndpoint")
-            return TargetEndpoint(targetEndpoint, DtClass(targetEndpoint, listOf()), false)
+            logger.warn("no controller found from: $controller")
+            return TargetEndpoint("", DtClass("", listOf()), false)
         }
 
-        logger.warn("target endpoint: $targetEndpoint")
-        val targetController = files.find { it.name == targetEndpoint }
+        logger.warn("target endpoint: $controller")
+        val targetController = files.find { it.name == controller }
         if (targetController == null) {
-            logger.warn("no controller found from: $targetEndpoint")
-            return TargetEndpoint(targetEndpoint, DtClass(targetEndpoint, listOf()), false)
+            logger.warn("no controller found from: $controller")
+            return TargetEndpoint(controller, DtClass(controller, listOf()), false)
         }
 
-        return TargetEndpoint(targetEndpoint, targetController)
+        return TargetEndpoint(controller, targetController)
     }
 
     /**
@@ -123,8 +123,9 @@ class DevtiFlow(
 
     companion object {
         private val logger: Logger = logger<DtRunState>()
-        fun getController(targetEndpoint: String): String? {
-            val regex = Regex("""(\w+Controller)""")
+        private val regex = Regex("""(\w+Controller)""")
+
+        fun matchControllerName(targetEndpoint: String): String? {
             val matchResult = regex.find(targetEndpoint)
             return matchResult?.groupValues?.get(1)
         }

@@ -43,9 +43,9 @@ AC 1:  xxx
         val storyDetail = "用户故事：可以选择宝贝出行服务"
         val files: List<DtClass> = listOf(DtClass("TaxiController", emptyList()), DtClass("GpsController", emptyList()))
         val result = gptPromptText.fillEndpoint(storyDetail, files)
-        assertEquals("""请根据下面的用户故事 和 Controller 列表，返回最合适的 Controller 名字。要求：
+        assertEquals("""请根据下面的用户故事 和 Controller 列表。要求：
 
-1. 只返回最合适的 Controller 名字，不需要返回所有可能的 Controller 名字。
+1. 返回最合适的 Controller 名字
 2. 如果不存在合适的 Controller 名字，请返回适合的 Controller 名字。
 
 Controller 列表：
