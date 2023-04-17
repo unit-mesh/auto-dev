@@ -18,7 +18,7 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
 
     private var panel: JComponent? = null
 
-    private val githubInput = DtCommandLineEditor(project, completionProvider)
+    private val githubToken = DtCommandLineEditor(project, completionProvider)
     private val aiApiToken = DtCommandLineEditor(project, completionProvider)
     private val githubRepo = DtCommandLineEditor(project, completionProvider)
     private val storyId = DtCommandLineEditor(project, completionProvider)
@@ -34,7 +34,7 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
 
     override fun createEditor(): JComponent = panel {
         row("Github Token:") {
-            fullWidthCell(githubInput)
+            fullWidthCell(githubToken)
         }
 
         row ("GitHub Project (owner/repo)") {
@@ -66,7 +66,8 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
     }
 
     override fun resetEditorFrom(configuration: DtRunConfiguration) {
-        githubInput.text = configuration.options.githubToken()
+        githubToken.text = configuration.options.githubToken()
+        githubRepo.text = configuration.options.githubRepo()
         aiApiToken.text = configuration.options.openAiApiKey()
         aiEngineVersion.selectedIndex = configuration.options.aiEngineVersion()
         openAiMaxTokens = configuration.options.aiMaxTokens()
@@ -75,11 +76,11 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
     }
 
     override fun applyEditorTo(configuration: DtRunConfiguration) {
-        configuration.setGithubToken(githubInput.text)
+        configuration.setGithubToken(githubToken.text)
+        configuration.setGithubRepo(githubRepo.text)
         configuration.setOpenAiApiKey(aiApiToken.text)
         configuration.setAiVersion(DtOpenAIVersion.fromIndex(aiEngineVersion.selectedIndex))
         configuration.setAiMaxTokens(openAiMaxTokens)
-        configuration.setGithubRepo(githubRepo.text)
         configuration.setStoryId(storyId.text)
     }
 }

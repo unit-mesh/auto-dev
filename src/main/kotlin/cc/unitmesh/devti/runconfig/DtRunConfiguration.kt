@@ -32,10 +32,11 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
         super.writeExternal(element)
 
         element.writeString("githubToken", options.githubToken())
+        element.writeString("githubRepo", options.githubRepo())
         element.writeString("openAiApiKey", options.openAiApiKey())
         element.writeString("aiEngineVersion", options.aiEngineVersion().toString())
         element.writeString("aiMaxTokens", options.aiMaxTokens().toString())
-        element.writeString("githubRepo", options.githubRepo())
+        element.writeString("storyId", options.storyId())
     }
 
     override fun readExternal(element: Element) {
@@ -46,6 +47,7 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
         element.readString("aiEngineVersion")?.let { this.options.setAiEngineVersion(it.toInt()) }
         element.readString("aiMaxTokens")?.let { this.options.setAiMaxTokens(it.toInt()) }
         element.readString("githubRepo")?.let { this.options.setGithubRepo(it) }
+        element.readString("storyId")?.let { this.options.setStoryId(it) }
     }
 
     fun setGithubToken(text: String) {
