@@ -23,6 +23,7 @@ class OpenAIAction(val openAIKey: String, val version: String) : AiAction, Devti
     override suspend fun prompt(prompt: String): String {
         val chatCompletionRequest = ChatCompletionRequest(
             model = ModelId(version),
+            temperature = 0.0,
             messages = listOf(
                 ChatMessage(
                     role = ChatRole.User,
