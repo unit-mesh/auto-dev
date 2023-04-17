@@ -7,7 +7,7 @@ import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 
-class DisplayStoryLineMarkerContributor : RunLineMarkerContributor() {
+class AutoCRUDLineMarkerContributor : RunLineMarkerContributor() {
     override fun getInfo(element: PsiElement): Info? {
         if (element !is PsiComment) return null
 

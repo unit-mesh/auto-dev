@@ -13,7 +13,12 @@
         <runLineMarkerContributor language="JAVA"
                                   implementationClass="cc.unitmesh.devti.language.DisplayStoryLineMarkerContributor"/>
         <runConfigurationProducer
-                implementation="cc.unitmesh.devti.runconfig.command.CreateStoryConfigurationProducer"/>
+                implementation="cc.unitmesh.devti.runconfig.command.AutoCRUDConfigurationProducer"/>
+
+        <runLineMarkerContributor language="JAVA"
+                                  implementationClass="cc.unitmesh.devti.language.AutoCRUDLineMarkerContributor"/>
+        <runConfigurationProducer
+                implementation="cc.unitmesh.devti.runconfig.command.AutoCRUDConfigurationProducer"/>
 
         <configurationType implementation="cc.unitmesh.devti.runconfig.DtRunConfigurationType"/>
 

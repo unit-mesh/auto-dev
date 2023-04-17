@@ -1,7 +1,5 @@
 package cc.unitmesh.devti.language
 
-import cc.unitmesh.devti.runconfig.DtRunConfiguration
-import cc.unitmesh.devti.runconfig.config.DevtiCreateStoryConfigure
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.psi.PsiElement
@@ -13,14 +11,15 @@ class DevtiAnnotator : Annotator {
     }
 
     companion object {
-        val DEVTI_REGEX = Regex("^//\\s+devti://story/(github)/(\\d+)(/.*)?$")
+        val AutoCRUDRegex = Regex("^//\\s+devti://story/(github)/(\\d+)(/.*)?$")
+        val AnalysisStory = Regex("^//\\s+devti://analysis/(github)/(\\d+)(/.*)?$")
 
-        fun isDevtiComment(comment: String): Boolean {
-            return DEVTI_REGEX.matches(comment)
+        fun isAutoCRUD(comment: String): Boolean {
+            return AutoCRUDRegex.matches(comment)
         }
 
         fun matchByString(input: String): StoryConfig? {
-            val matchResult = DEVTI_REGEX.find(input)
+            val matchResult = AutoCRUDRegex.find(input)
             if (matchResult != null) {
                 val (storySource, storyIdStr, acs) = matchResult.destructured
                 val storyId = storyIdStr.toIntOrNull()

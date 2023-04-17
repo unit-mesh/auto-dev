@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.runconfig
 
 import cc.unitmesh.devti.prompt.openai.DtOpenAIVersion
-import cc.unitmesh.devti.runconfig.config.DevtiCreateStoryConfigure
+import cc.unitmesh.devti.runconfig.config.DevtiAutoCRUDConfigure
 import cc.unitmesh.devti.runconfig.ui.DtSettingsEditor
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.ConfigurationFactory
@@ -74,7 +74,7 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
         this.options.setStoryId(text)
     }
 
-    fun setStoryConfig(config: DevtiCreateStoryConfigure) {
+    fun setStoryConfig(config: DevtiAutoCRUDConfigure) {
         this.options.setStoryId(config.storyId.toString())
     }
 }
