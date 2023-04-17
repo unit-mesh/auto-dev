@@ -139,16 +139,7 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
             return DtClass("", emptyList())
         }
 
-        val templateCode = """
-            |package ${packageStatement.packageName};
-            |
-            |import org.springframework.stereotype.Controller;
-            |import org.springframework.web.bind.annotation.RequestMapping;
-            |
-            |@Controller
-            |class $endpoint {
-            |$code
-            |}""".trimMargin()
+        val templateCode = wrapperController(endpoint, code, packageStatement.packageName)
 
         val parentDirectory = randomController.virtualFile?.parent ?: return null
         val fileSystem = randomController.virtualFile?.fileSystem
@@ -164,6 +155,24 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         }
 
         return DtClass(endpoint, emptyList())
+    }
+
+    private fun wrapperController(
+        endpoint: String,
+        code: String,
+        packageName: String?
+    ): String {
+        val templateCode = """
+                |package $packageName;
+                |
+                |import org.springframework.stereotype.Controller;
+                |import org.springframework.web.bind.annotation.RequestMapping;
+                |
+                |@Controller
+                |class $endpoint {
+                |$code
+                |}""".trimMargin()
+        return templateCode
     }
 
     companion object {
