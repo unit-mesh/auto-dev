@@ -68,12 +68,7 @@ LoRA Training
 ## Development
 
 1. `git clone https://github.com/unit-mesh/autocrud.git`
-2. create `.env` file in root directory and add the following content:
-
-```bash
-OPENAI_KEY=YOUR_KEY
-GITHUB_TOKEN=YOUR_KEY
-```
+2. open in Intellij IDEA
 
 ## License
 
