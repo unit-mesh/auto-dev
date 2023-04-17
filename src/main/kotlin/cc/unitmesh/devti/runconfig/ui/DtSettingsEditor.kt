@@ -20,6 +20,7 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
 
     private val githubInput = DtCommandLineEditor(project, completionProvider)
     private val aiApiToken = DtCommandLineEditor(project, completionProvider)
+    private val githubRepo = DtCommandLineEditor(project, completionProvider)
     private var engineVersion = ComboBox<DtOpenAIVersion>().apply {
         DtOpenAIVersion.values()
             .sortedBy { it.index }
@@ -32,6 +33,10 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
     override fun createEditor(): JComponent = panel {
         row("Github Token:") {
             fullWidthCell(githubInput)
+        }
+
+        row ("GitHub Project (owner/repo)") {
+            fullWidthCell(githubRepo)
         }
 
         row("API Engine:") {
@@ -58,6 +63,7 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
         aiApiToken.text = configuration.options.openAiApiKey()
         engineVersion.selectedIndex = configuration.options.aiVersion()
         openAiMaxTokens = configuration.options.aiMaxTokens()
+        maxTokens.text = openAiMaxTokens.toString()
     }
 
     override fun applyEditorTo(configuration: DtRunConfiguration) {
@@ -65,6 +71,7 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
         configuration.setOpenAiApiKey(aiApiToken.text)
         configuration.setAiVersion(DtOpenAIVersion.fromIndex(engineVersion.selectedIndex))
         configuration.setAiMaxTokens(openAiMaxTokens)
+        configuration.setGithubRepo(githubRepo.text)
     }
 }
 

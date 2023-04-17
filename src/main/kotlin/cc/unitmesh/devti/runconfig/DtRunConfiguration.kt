@@ -38,6 +38,7 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
         element.writeString("openAiApiKey", options.openAiApiKey())
         element.writeString("aiEngineVersion", options.aiVersion().toString())
         element.writeString("aiMaxTokens", options.aiMaxTokens().toString())
+        element.writeString("githubRepo", options.githubRepo())
     }
 
     override fun readExternal(element: Element) {
@@ -47,6 +48,7 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
         element.readString("openAiApiKey")?.let { this.options.setOpenAiApiKey(it) }
         element.readString("aiEngineVersion")?.let { this.options.setAiVersion(it.toInt()) }
         element.readString("aiMaxTokens")?.let { this.options.setAiMaxTokens(it.toInt()) }
+        element.readString("githubRepo")?.let { this.options.setGithubRepo(it) }
     }
 
     fun setStoryConfig(storyConfig: DevtiCreateStoryConfigure) {
@@ -67,6 +69,10 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
 
     fun setAiMaxTokens(openAiMaxTokens: Int) {
         this.options.setAiMaxTokens(openAiMaxTokens)
+    }
+
+    fun setGithubRepo(text: String) {
+        this.options.setGithubRepo(text)
     }
 }
 
