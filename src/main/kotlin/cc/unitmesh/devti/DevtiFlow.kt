@@ -38,7 +38,6 @@ class DevtiFlow(
      * Step 3: update endpoint method
      */
     fun updateEndpointMethod(target: TargetEndpoint, storyDetail: String) {
-        // 3. update endpoint method
         try {
             val code = fetchCode(target.endpoint, target.controller, storyDetail)
             processor?.createControllerOrUpdateMethod(target.controller.name, code, target.hasMatchedController)
@@ -61,14 +60,14 @@ class DevtiFlow(
         val controller = getController(targetEndpoint)
         if (controller == null) {
             logger.warn("no controller found from: $targetEndpoint")
-            return TargetEndpoint(targetEndpoint, DtClass("", listOf()), false)
+            return TargetEndpoint(targetEndpoint, DtClass(targetEndpoint, listOf()), false)
         }
 
         logger.warn("target endpoint: $targetEndpoint")
         val targetController = files.find { it.name == targetEndpoint }
         if (targetController == null) {
             logger.warn("no controller found from: $targetEndpoint")
-            return TargetEndpoint(targetEndpoint, DtClass("", listOf()), false)
+            return TargetEndpoint(targetEndpoint, DtClass(targetEndpoint, listOf()), false)
         }
 
         return TargetEndpoint(targetEndpoint, targetController)

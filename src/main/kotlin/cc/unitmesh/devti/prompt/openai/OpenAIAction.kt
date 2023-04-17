@@ -53,7 +53,7 @@ class OpenAIAction(val openAIKey: String, val version: String) : AiAction, Devti
     }
 
     override fun needUpdateMethodForController(targetEndpoint: String, clazz: DtClass, storyDetail: String): String {
-        val promptText = gptPromptText.fillUpdateMethod(targetEndpoint, clazz, storyDetail)
+        val promptText = gptPromptText.fillUpdateMethod(clazz, storyDetail)
         logger.warn("needUpdateMethodForController prompt text: $promptText")
         return runBlocking {
             val prompt = prompt(promptText)

@@ -51,16 +51,13 @@ class DtRunState(
 
                     indicator.text = DevtiBundle.message("devti.runconfig.progress.fetchingSuggestEndpoint")
                     val target = devtiFlow.fetchSuggestEndpoint(storyDetail)
-                    if (!target.hasMatchedController) {
-                        target.controller = DtClass(target.controller.name, emptyList())
-                    }
 
                     indicator.fraction = 0.6
 
                     indicator.text = DevtiBundle.message("devti.runconfig.progress.updatingEndpointMethod")
                     devtiFlow.updateEndpointMethod(target, storyDetail)
 
-                    indicator.fraction = 0.9
+                    indicator.fraction = 1.0
                 }
             }
         )
