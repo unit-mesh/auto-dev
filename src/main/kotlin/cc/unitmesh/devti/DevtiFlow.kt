@@ -115,10 +115,6 @@ class DevtiFlow(
         return visitor.code
     }
 
-    fun createNewEndpoint(endpoint: String): DtClass? {
-        return processor?.createController(endpoint, code)
-    }
-
     companion object {
         private val logger: Logger = logger<DtRunState>()
         fun getController(targetEndpoint: String): String? {
