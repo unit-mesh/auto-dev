@@ -26,7 +26,7 @@ class DtRunState(
 ) : RunProfileState {
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
         val javaAuto = JavaCrudProcessor(project)
-        val gitHubIssue = GitHubIssue("unit-mesh/untitled", options.githubToken())
+        val gitHubIssue = GitHubIssue(options.githubRepo(), options.githubToken())
         val openAIAction = OpenAIAction(options.openAiApiKey(), "gpt-3.5-turbo")
         val devtiFlow = DevtiFlow(gitHubIssue, openAIAction, javaAuto)
 
