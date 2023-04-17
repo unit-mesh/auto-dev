@@ -27,7 +27,7 @@ class CreateStoryConfigurationProducer : BaseLazyRunConfigurationProducer<DevtiC
 
     override fun isConfigurationFromContext(configuration: DtRunConfiguration, context: ConfigurationContext): Boolean {
         val config = findConfig(context.location?.psiElement?.let { listOf(it) } ?: return false) ?: return false
-        configuration.name = config.configurationName
+        configuration.name = config.configurationName + "(Create)"
         configuration.setStoryConfig(config)
 
         return true
@@ -39,7 +39,7 @@ class CreateStoryConfigurationProducer : BaseLazyRunConfigurationProducer<DevtiC
         sourceElement: Ref<PsiElement>
     ): Boolean {
         val config = findConfig(context.location?.psiElement?.let { listOf(it) } ?: return false) ?: return false
-        configuration.name = config.configurationName
+        configuration.name = config.configurationName + "(Create)"
         configuration.setStoryConfig(config)
 
         return true
