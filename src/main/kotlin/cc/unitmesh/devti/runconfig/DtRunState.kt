@@ -52,8 +52,10 @@ class DtRunState(
                     val target = devtiFlow.fetchSuggestEndpoint(storyDetail)
                     if (!target.hasMatchedController) {
                         log.warn("no suggest endpoint found, create new endpoint")
-                        devtiFlow.createNewEndpoint(target.endpoint)
-                        return
+                        val newEndpoint = devtiFlow.createNewEndpoint(target.endpoint) ?: return
+
+                        target.controller = newEndpoint
+                        log.warn("created new endpoint: $newEndpoint")
                     }
 
                     indicator.fraction = 0.6

@@ -13,7 +13,7 @@ import org.commonmark.parser.Parser
 
 data class TargetEndpoint(
     val endpoint: String,
-    val controller: DtClass,
+    var controller: DtClass,
     val hasMatchedController: Boolean = true
 )
 
@@ -115,9 +115,8 @@ class DevtiFlow(
         return visitor.code
     }
 
-    fun createNewEndpoint(endpoint: String) {
-        // create new psi file
-        val controller = processor?.createController(endpoint)
+    fun createNewEndpoint(endpoint: String): DtClass? {
+        return processor?.createController(endpoint)
     }
 
     companion object {
