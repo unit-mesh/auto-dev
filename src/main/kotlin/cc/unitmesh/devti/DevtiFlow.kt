@@ -58,7 +58,7 @@ class DevtiFlow(
         logger.warn("start devti flow")
         val targetEndpoint = flowAction.analysisEndpoint(storyDetail, files)
         // use regex match *Controller from targetEndpoint
-        val controller = getController(targetEndpoint)
+        val controller = Companion.getController(targetEndpoint)
         if (controller == null) {
             logger.warn("no controller found from: $targetEndpoint")
             return null
@@ -114,14 +114,13 @@ class DevtiFlow(
         return visitor.code
     }
 
-    private fun getController(targetEndpoint: String): String? {
-        val regex = Regex("""(\w+Controller)""")
-        val matchResult = regex.find(targetEndpoint)
-        return matchResult?.groupValues?.get(1)
-    }
-
     companion object {
         private val logger: Logger = logger<DtRunState>()
+        fun getController(targetEndpoint: String): String? {
+            val regex = Regex("""(\w+Controller)""")
+            val matchResult = regex.find(targetEndpoint)
+            return matchResult?.groupValues?.get(1)
+        }
     }
 }
 

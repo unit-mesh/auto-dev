@@ -20,4 +20,15 @@ class DevtiFlowTest {
         val devtiFlow = DevtiFlow(gitHubIssue, openAIAction)
         devtiFlow.processAll("1")
     }
+
+    // input: """返回最合适的 Controller 名字：BlogController""", output: BlogController
+    // input: """BlogController""", output: BlogController
+    @Test
+    fun testShould_extract_controller_name() {
+        val controllerName = DevtiFlow.getController("返回最合适的 Controller 名字：BlogController")
+        assert(controllerName == "BlogController")
+
+        val controllerName2 = DevtiFlow.getController("BlogController")
+        assert(controllerName2 == "BlogController")
+    }
 }
