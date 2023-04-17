@@ -46,6 +46,7 @@ AC 1:  xxx
         assertEquals("""请根据下面的用户故事 和 Controller 列表，返回最合适的 Controller 名字。要求：
 
 1. 只返回最合适的 Controller 名字，不需要返回所有可能的 Controller 名字。
+2. 如果不存在合适的 Controller 名字，请返回适合的 Controller 名字。
 
 Controller 列表：
 

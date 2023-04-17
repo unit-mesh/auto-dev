@@ -20,7 +20,7 @@ data class TargetEndpoint(
 class DevtiFlow(
     private val kanban: Kanban,
     private val flowAction: DevtiFlowAction,
-    private val analyser: CrudProcessor? = null
+    private val processor: CrudProcessor? = null
 ) {
 //    fun processAll(id: String) {
 //        val storyDetail = fillStoryDetail(id)
@@ -41,13 +41,13 @@ class DevtiFlow(
         // 3. update endpoint method
         val code = fetchCode(target.endpoint, target.controller, storyDetail)
         try {
-            analyser?.updateMethod(target.controller.name, code)
+            processor?.updateMethod(target.controller.name, code)
         } catch (e: Exception) {
             logger.warn("update method failed: $e")
             logger.warn("try to fill update method 2nd")
 
             val code = fetchCode(target.endpoint, target.controller, storyDetail)
-            analyser?.updateMethod(target.controller.name, code)
+            processor?.updateMethod(target.controller.name, code)
         }
     }
 
@@ -55,7 +55,7 @@ class DevtiFlow(
      * Step 2: fetch suggest endpoint, if not found, return null
      */
     fun fetchSuggestEndpoint(storyDetail: String): TargetEndpoint {
-        val files: List<DtClass> = analyser?.controllerList() ?: emptyList()
+        val files: List<DtClass> = processor?.controllerList() ?: emptyList()
         logger.warn("start devti flow")
         val targetEndpoint = flowAction.analysisEndpoint(storyDetail, files)
         // use regex match *Controller from targetEndpoint
@@ -117,7 +117,7 @@ class DevtiFlow(
 
     fun createNewEndpoint(endpoint: String) {
         // create new psi file
-        val controller = analyser?.createController(endpoint)
+        val controller = processor?.createController(endpoint)
     }
 
     companion object {
