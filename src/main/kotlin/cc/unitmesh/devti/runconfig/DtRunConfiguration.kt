@@ -16,8 +16,6 @@ import org.jdom.Element
 class DtRunConfiguration(project: Project, name: String, factory: ConfigurationFactory) :
     RunConfigurationBase<DtRunConfigurationOptions>(project, factory, name) {
 
-    private var storyConfig: DevtiCreateStoryConfigure? = null
-
     public override fun getOptions(): DtRunConfigurationOptions {
         return super.getOptions() as DtRunConfigurationOptions
     }
@@ -27,7 +25,7 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
     }
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
-        return DtRunState(environment, this, storyConfig, project, options)
+        return DtRunState(environment, this, project, options)
     }
 
     override fun writeExternal(element: Element) {
@@ -50,10 +48,6 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
         element.readString("githubRepo")?.let { this.options.setGithubRepo(it) }
     }
 
-    fun setStoryConfig(storyConfig: DevtiCreateStoryConfigure) {
-        this.storyConfig = storyConfig
-    }
-
     fun setGithubToken(text: String) {
         this.options.setGithubToken(text)
     }
@@ -72,6 +66,10 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
 
     fun setGithubRepo(text: String) {
         this.options.setGithubRepo(text)
+    }
+
+    fun setStoryId(text: String) {
+        this.options.setStoryId(text)
     }
 }
 

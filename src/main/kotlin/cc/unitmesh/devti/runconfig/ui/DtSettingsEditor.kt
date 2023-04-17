@@ -21,6 +21,8 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
     private val githubInput = DtCommandLineEditor(project, completionProvider)
     private val aiApiToken = DtCommandLineEditor(project, completionProvider)
     private val githubRepo = DtCommandLineEditor(project, completionProvider)
+    private val storyId = DtCommandLineEditor(project, completionProvider)
+
     private var aiEngineVersion = ComboBox<DtOpenAIVersion>().apply {
         DtOpenAIVersion.values()
             .sortedBy { it.index }
@@ -37,6 +39,11 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
 
         row ("GitHub Project (owner/repo)") {
             fullWidthCell(githubRepo)
+        }
+
+        // story id
+        row ("Story ID:") {
+            fullWidthCell(storyId)
         }
 
         row("API Engine:") {
@@ -64,6 +71,7 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
         aiEngineVersion.selectedIndex = configuration.options.aiEngineVersion()
         openAiMaxTokens = configuration.options.aiMaxTokens()
         maxTokens.text = openAiMaxTokens.toString()
+        storyId.text = configuration.options.storyId()
     }
 
     override fun applyEditorTo(configuration: DtRunConfiguration) {
@@ -72,6 +80,7 @@ class DtSettingsEditor(project: Project) : SettingsEditor<DtRunConfiguration>() 
         configuration.setAiVersion(DtOpenAIVersion.fromIndex(aiEngineVersion.selectedIndex))
         configuration.setAiMaxTokens(openAiMaxTokens)
         configuration.setGithubRepo(githubRepo.text)
+        configuration.setStoryId(storyId.text)
     }
 }
 

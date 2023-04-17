@@ -21,7 +21,6 @@ import com.intellij.openapi.project.Project
 class DtRunState(
     val environment: ExecutionEnvironment,
     private val configuration: DtRunConfiguration,
-    private val createStory: DevtiCreateStoryConfigure?,
     val project: Project,
     val options: DtRunConfigurationOptions
 ) : RunProfileState {
@@ -34,7 +33,6 @@ class DtRunState(
         // check configuration
 
         log.warn(configuration.toString())
-        log.warn(createStory.toString())
         log.warn(options.toString())
 
         ProgressManager.getInstance().run(
@@ -46,8 +44,8 @@ class DtRunState(
                     indicator.text = DevtiBundle.message("devti.runconfig.progress.creatingStory")
 
                     // todo: check create story
-                    val storyId = createStory?.storyId ?: 1
-                    val storyDetail = devtiFlow.fillStoryDetail(storyId.toString())
+                    val storyId = options.storyId()
+                    val storyDetail = devtiFlow.fillStoryDetail(storyId)
 
                     indicator.fraction = 0.3
 
