@@ -26,11 +26,13 @@ class DtClass(
             output.append(")\n")
         }
 
-        output.append("- methods: ")
-        // filter out constructor
-        output.append(methods.filter { it.name != this.name }.joinToString(", ") { method ->
-            "${method.name}(${method.parameters.joinToString(", ") { parameter -> "${parameter.name}: ${parameter.type}" }}): ${method.returnType}"
-        })
+        if (methods.isNotEmpty()) {
+            output.append("- methods: ")
+            // filter out constructor
+            output.append(methods.filter { it.name != this.name }.joinToString(", ") { method ->
+                "${method.name}(${method.parameters.joinToString(", ") { parameter -> "${parameter.name}: ${parameter.type}" }}): ${method.returnType}"
+            })
+        }
 
         return output.toString()
     }

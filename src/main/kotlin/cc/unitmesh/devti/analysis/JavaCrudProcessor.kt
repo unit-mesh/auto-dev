@@ -98,7 +98,7 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
     }
 
     override fun createControllerOrUpdateMethod(targetController: String, code: String, isControllerExist: Boolean) {
-        if (controllers.isEmpty()) {
+        if (!isControllerExist) {
             this.createController(targetController, code)
             return
         }

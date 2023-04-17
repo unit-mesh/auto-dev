@@ -39,12 +39,11 @@ class DevtiFlow(
      */
     fun updateEndpointMethod(target: TargetEndpoint, storyDetail: String) {
         // 3. update endpoint method
-        val code = fetchCode(target.endpoint, target.controller, storyDetail)
         try {
+            val code = fetchCode(target.endpoint, target.controller, storyDetail)
             processor?.createControllerOrUpdateMethod(target.controller.name, code, target.hasMatchedController)
         } catch (e: Exception) {
-            logger.warn("update method failed: $e")
-            logger.warn("try to fill update method 2nd")
+            logger.warn("update method failed: $e, try to fill update method 2nd")
 
             val code = fetchCode(target.endpoint, target.controller, storyDetail)
             processor?.createControllerOrUpdateMethod(target.controller.name, code, target.hasMatchedController)

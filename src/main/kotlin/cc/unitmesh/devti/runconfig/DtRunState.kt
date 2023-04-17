@@ -2,6 +2,7 @@ package cc.unitmesh.devti.runconfig
 
 import cc.unitmesh.devti.DevtiBundle
 import cc.unitmesh.devti.DevtiFlow
+import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.analysis.JavaCrudProcessor
 import cc.unitmesh.devti.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.prompt.openai.OpenAIAction
@@ -50,6 +51,9 @@ class DtRunState(
 
                     indicator.text = DevtiBundle.message("devti.runconfig.progress.fetchingSuggestEndpoint")
                     val target = devtiFlow.fetchSuggestEndpoint(storyDetail)
+                    if (!target.hasMatchedController) {
+                        target.controller = DtClass(target.controller.name, emptyList())
+                    }
 
                     indicator.fraction = 0.6
 
