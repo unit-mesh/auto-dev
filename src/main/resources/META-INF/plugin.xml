@@ -10,6 +10,7 @@
     <resource-bundle>messages.DevtiBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
+        <internalFileTemplate name="Java Controller"/>
         <runLineMarkerContributor language="JAVA"
                                   implementationClass="cc.unitmesh.devti.language.DisplayStoryLineMarkerContributor"/>
         <runConfigurationProducer

@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.analysis
 
+import com.intellij.ide.fileTemplates.FileTemplateManager
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
@@ -21,11 +22,13 @@ import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.util.PsiTreeUtil
+import java.util.*
 
 
 class JavaCrudProcessor(val project: Project) : CrudProcessor {
     private val psiElementFactory = JavaPsiFacade.getElementFactory(project)
     private val controllers = getAllControllerFiles()
+    private val codeTemplate = JavaCrudTemplate(project)
 
     private fun getAllControllerFiles(): List<PsiFile> {
         val psiManager = PsiManager.getInstance(project)
@@ -139,7 +142,7 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
             return DtClass("", emptyList())
         }
 
-        val templateCode = wrapperController(endpoint, code, packageStatement.packageName)
+        val templateCode = codeTemplate.controller(endpoint, code, packageStatement.packageName)
 
         val parentDirectory = randomController.virtualFile?.parent ?: return null
         val fileSystem = randomController.virtualFile?.fileSystem
@@ -155,24 +158,6 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         }
 
         return DtClass(endpoint, emptyList())
-    }
-
-    private fun wrapperController(
-        endpoint: String,
-        code: String,
-        packageName: String?
-    ): String {
-        val templateCode = """
-                |package $packageName;
-                |
-                |import org.springframework.stereotype.Controller;
-                |import org.springframework.web.bind.annotation.RequestMapping;
-                |
-                |@Controller
-                |class $endpoint {
-                |$code
-                |}""".trimMargin()
-        return templateCode
     }
 
     companion object {
