@@ -10,6 +10,11 @@
     <resource-bundle>messages.DevtiBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
+        <applicationConfigurable parentId="tools" instance="cc.unitmesh.devti.settings.DevtiSettingsConfigurable"
+                                 id="cc.unitmesh.devti.settings.DevtiSettingsConfigurable"
+                                 displayName="DevTi"/>
+        <applicationService serviceImplementation="cc.unitmesh.devti.settings.DevtiSettingsState"/>
+        
         <!-- show find bug -->
         <runLineMarkerContributor language="JAVA"
                                   implementationClass="cc.unitmesh.devti.language.AiCopilotMarkerContributor"/>
@@ -25,7 +30,7 @@
                 implementation="cc.unitmesh.devti.runconfig.command.AutoCRUDConfigurationProducer"/>
         <configurationType implementation="cc.unitmesh.devti.runconfig.AutoCRUDConfigurationType"/>
 
-        <toolWindow id="DevTi Flow" secondary="true" icon="AllIcons.Toolwindows.WebToolWindow" anchor="right"
-                    factoryClass="cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory"/>
+<!--        <toolWindow id="DevTi Flow" secondary="true" icon="AllIcons.Toolwindows.WebToolWindow" anchor="right"-->
+<!--                    factoryClass="cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory"/>-->
     </extensions>
 </idea-plugin>
