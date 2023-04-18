@@ -13,12 +13,13 @@
         <!-- show find bug -->
         <runLineMarkerContributor language="JAVA"
                                   implementationClass="cc.unitmesh.devti.language.AiCopilotMarkerContributor"/>
+        <runConfigurationProducer
+                implementation="cc.unitmesh.devti.runconfig.command.AiCopilotConfigurationProducer"/>
+        <configurationType implementation="cc.unitmesh.devti.runconfig.AiCopilotConfigurationType"/>
 
         <!-- analysis story, and    -->
         <runLineMarkerContributor language="JAVA"
                                   implementationClass="cc.unitmesh.devti.language.AutoCRUDLineMarkerContributor"/>
-        <configurationType implementation="cc.unitmesh.devti.runconfig.AiCopilotConfigurationType"/>
-
         <runConfigurationProducer
                 implementation="cc.unitmesh.devti.runconfig.command.AutoCRUDConfigurationProducer"/>
 
