@@ -5,6 +5,7 @@ import cc.unitmesh.devti.DevtiFlow
 import cc.unitmesh.devti.analysis.JavaCrudProcessor
 import cc.unitmesh.devti.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.prompt.openai.OpenAIAction
+import cc.unitmesh.devti.runconfig.options.AutoCRUDConfigurationOptions
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
@@ -28,8 +29,6 @@ class DtRunState(
         val gitHubIssue = GitHubIssue(options.githubRepo(), options.githubToken())
         val openAIAction = OpenAIAction(options.openAiApiKey(), "gpt-3.5-turbo")
         val devtiFlow = DevtiFlow(gitHubIssue, openAIAction, javaAuto)
-
-        // check configuration
 
         log.warn(configuration.toString())
         log.warn(options.toString())

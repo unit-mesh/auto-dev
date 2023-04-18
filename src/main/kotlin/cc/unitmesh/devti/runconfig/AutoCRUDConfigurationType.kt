@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.runconfig
 
 import cc.unitmesh.devti.DevtiIcons
+import cc.unitmesh.devti.runconfig.options.AutoCRUDConfigurationOptions
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationTypeBase
 import com.intellij.execution.configurations.ConfigurationTypeUtil

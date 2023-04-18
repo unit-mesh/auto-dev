@@ -2,6 +2,7 @@ package cc.unitmesh.devti.runconfig
 
 import cc.unitmesh.devti.prompt.openai.DtOpenAIVersion
 import cc.unitmesh.devti.runconfig.config.DevtiStoryConfigure
+import cc.unitmesh.devti.runconfig.options.AutoCRUDConfigurationOptions
 import cc.unitmesh.devti.runconfig.ui.DtSettingsEditor
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.ConfigurationFactory
