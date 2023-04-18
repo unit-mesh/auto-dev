@@ -5,29 +5,33 @@
 
 ## Usage
 
-Install:
+1. Install
+    - method 1. Download plugin from release page: [release](https://github.com/phodal/auto-dev/releases)
+    - method 2. Install plugin in your IDE
+2. configure GitHub and OpenAI config
 
-method 1. Download plugin from release page: [release](https://github.com/phodal/auto-dev/releases)
+### Copilot mode
 
-method 2. Install plugin in your IDE
+Click as you want:
 
-### Steps
+![Copilot Mode](https://unitmesh.cc/auto-dev/copilot-mode.png)
+
+### AutoCRUD mode
 
 1. add `// devti://story/github/1` comments in your code
-2. configure GitHub and OpenAI config
 3. click `AutoDev` button in the right top corner of the IDE
 
 Token Configure:
 
-![Token Configure](https://unitmesh.cc/AutoDev/configure-token.png)
+![Token Configure](https://unitmesh.cc/auto-dev/configure-token.png)
 
 Run Screenshots:
 
-![AutoDev](https://unitmesh.cc/AutoDev/init-instruction.png)
+![AutoDev](https://unitmesh.cc/auto-dev/init-instruction.png)
 
 Output Screenshots:
 
-![AutoDev](https://unitmesh.cc/AutoDev/blog-controller.png)
+![AutoDev](https://unitmesh.cc/auto-dev/blog-controller.png)
 
 ### 原理
 
