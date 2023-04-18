@@ -53,8 +53,9 @@ class CodeCompleteMarkerContributor : RunLineMarkerContributor() {
                     log.warn("newMethodCode: $newMethodCode")
 
                     WriteCommandAction.runWriteCommandAction(project) {
-                        psiElementFactory?.createStatementFromText(newMethodCode, method)?.let {
-                            method.body?.add(it)
+                        psiElementFactory?.createMethodFromText(newMethodCode, method)?.let {
+//                            method.body?.add(it)
+                            method.replace(it)
                         }
                     }
                 }
