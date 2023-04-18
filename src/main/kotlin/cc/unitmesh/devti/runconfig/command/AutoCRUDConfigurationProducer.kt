@@ -2,27 +2,27 @@ package cc.unitmesh.devti.runconfig.command
 
 import cc.unitmesh.devti.language.DevtiAnnotator
 import cc.unitmesh.devti.runconfig.config.AutoCRUDConfiguration
-import cc.unitmesh.devti.runconfig.config.DevtiStoryConfigure
+import cc.unitmesh.devti.runconfig.config.DevtiStory
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 
-class AutoCRUDConfigurationProducer : BaseLazyRunConfigurationProducer<DevtiStoryConfigure>() {
+class AutoCRUDConfigurationProducer : BaseLazyRunConfigurationProducer<DevtiStory>() {
     init {
         registerConfigProvider { elements -> createConfigFor(elements) }
     }
 
     private fun createConfigFor(
         elements: List<PsiElement>
-    ): DevtiStoryConfigure? {
+    ): DevtiStory? {
         if (elements.isEmpty()) return null
         val comments = elements.filterIsInstance<PsiComment>()
         if (comments.isEmpty()) return null
 
         val commentText = comments.first().text
         val storyConfig = DevtiAnnotator.matchByString(commentText) ?: return null
-        return DevtiStoryConfigure.fromStoryConfig(storyConfig)
+        return DevtiStory.fromStoryConfig(storyConfig)
     }
 
     override fun isConfigurationFromContext(configuration: AutoCRUDConfiguration, context: ConfigurationContext): Boolean {
@@ -45,7 +45,7 @@ class AutoCRUDConfigurationProducer : BaseLazyRunConfigurationProducer<DevtiStor
         return true
     }
 
-    private fun registerConfigProvider(provider: (List<PsiElement>) -> DevtiStoryConfigure?) {
+    private fun registerConfigProvider(provider: (List<PsiElement>) -> DevtiStory?) {
         runConfigProviders.add(provider)
     }
 }

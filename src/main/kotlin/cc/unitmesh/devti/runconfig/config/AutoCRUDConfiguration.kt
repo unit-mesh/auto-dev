@@ -86,7 +86,7 @@ class AutoCRUDConfiguration(project: Project, name: String, factory: Configurati
         this.options.setStoryId(text)
     }
 
-    fun setStoryConfig(config: DevtiStoryConfigure) {
+    fun setStoryConfig(config: DevtiStory) {
         this.options.setStoryId(config.storyId.toString())
     }
 }
