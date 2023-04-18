@@ -20,7 +20,8 @@
         <runConfigurationProducer
                 implementation="cc.unitmesh.devti.runconfig.command.AutoCRUDConfigurationProducer"/>
 
-        <configurationType implementation="cc.unitmesh.devti.runconfig.DtRunConfigurationType"/>
+        <configurationType implementation="cc.unitmesh.devti.runconfig.AutoCRUDConfigurationType"/>
+<!--        <configurationType implementation="cc.unitmesh.devti.runconfig.AiCodeCommandConfigurationType"/>-->
 
         <toolWindow id="DevTi Flow" secondary="true" icon="AllIcons.Toolwindows.WebToolWindow" anchor="right"
                     factoryClass="cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory"/>

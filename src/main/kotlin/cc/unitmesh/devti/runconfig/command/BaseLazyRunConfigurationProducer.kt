@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.runconfig.command
 
 import cc.unitmesh.devti.runconfig.DtRunConfiguration
-import cc.unitmesh.devti.runconfig.DtRunConfigurationType
+import cc.unitmesh.devti.runconfig.AutoCRUDConfigurationType
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.LazyRunConfigurationProducer
 import com.intellij.execution.configurations.ConfigurationFactory
@@ -13,7 +13,7 @@ abstract class BaseLazyRunConfigurationProducer<T: BaseConfig> : LazyRunConfigur
     val runConfigProviders: MutableList<(List<PsiElement>) -> T?> = mutableListOf()
 
     override fun getConfigurationFactory(): ConfigurationFactory {
-        return DtRunConfigurationType.getInstance().factory
+        return AutoCRUDConfigurationType.getInstance().factory
     }
 
     override fun setupConfigurationFromContext(

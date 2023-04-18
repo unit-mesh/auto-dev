@@ -2,7 +2,6 @@ package cc.unitmesh.devti.runconfig
 
 import cc.unitmesh.devti.DevtiBundle
 import cc.unitmesh.devti.DevtiFlow
-import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.analysis.JavaCrudProcessor
 import cc.unitmesh.devti.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.prompt.openai.OpenAIAction
@@ -22,7 +21,7 @@ class DtRunState(
     val environment: ExecutionEnvironment,
     private val configuration: DtRunConfiguration,
     val project: Project,
-    val options: DtRunConfigurationOptions
+    val options: AutoCRUDConfigurationOptions
 ) : RunProfileState {
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
         val javaAuto = JavaCrudProcessor(project)

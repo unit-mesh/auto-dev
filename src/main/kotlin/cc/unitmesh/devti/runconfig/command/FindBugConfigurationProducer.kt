@@ -25,7 +25,6 @@ class FindBugConfigurationProducer : BaseLazyRunConfigurationProducer<FindBugCon
         val parent = identifier.parent
         if (parent !is PsiMethod) return null
 
-
         return FindBugConfigure(identifier.text)
     }
 

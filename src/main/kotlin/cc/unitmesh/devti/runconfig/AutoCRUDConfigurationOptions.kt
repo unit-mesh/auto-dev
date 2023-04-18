@@ -4,7 +4,7 @@ import cc.unitmesh.devti.prompt.openai.DtOpenAIConfig.DEFAULT_OPEN_AI_MAX_TOKENS
 import com.intellij.execution.configurations.ModuleBasedConfigurationOptions
 import com.intellij.openapi.components.StoredProperty
 
-class DtRunConfigurationOptions : ModuleBasedConfigurationOptions() {
+class AutoCRUDConfigurationOptions : ModuleBasedConfigurationOptions() {
     private var githubToken: StoredProperty<String?> = string("").provideDelegate(this, "githubToken")
 
     private val openAiApiKey: StoredProperty<String?> = string("").provideDelegate(this, "openAiApiKey")

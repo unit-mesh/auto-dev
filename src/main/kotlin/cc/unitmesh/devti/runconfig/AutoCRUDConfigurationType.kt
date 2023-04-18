@@ -8,27 +8,27 @@ import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.components.BaseState
 import com.intellij.openapi.project.Project
 
-class DtRunConfigurationType :
-    ConfigurationTypeBase("DtRunConfiguration", "DevTi", "DevTi generator", DevtiIcons.STORY) {
+class AutoCRUDConfigurationType :
+    ConfigurationTypeBase("AutoCRUDConfiguration", "DevTi", "DevTi generator", DevtiIcons.STORY) {
     val factory: ConfigurationFactory get() = configurationFactories.single()
 
     init {
-        addFactory(DtConfigurationFactory(this))
+        addFactory(AutoCRUDConfigurationFactory(this))
     }
 
     companion object {
-        fun getInstance(): DtRunConfigurationType =
-            ConfigurationTypeUtil.findConfigurationType(DtRunConfigurationType::class.java)
+        fun getInstance(): AutoCRUDConfigurationType =
+            ConfigurationTypeUtil.findConfigurationType(AutoCRUDConfigurationType::class.java)
     }
 }
 
-class DtConfigurationFactory(type: DtRunConfigurationType) : ConfigurationFactory(type) {
+class AutoCRUDConfigurationFactory(type: AutoCRUDConfigurationType) : ConfigurationFactory(type) {
     override fun getId(): String = ID
 
     override fun createTemplateConfiguration(project: Project): RunConfiguration =
         DtRunConfiguration(project, "DevTi", this)
 
-    override fun getOptionsClass(): Class<out BaseState?> = DtRunConfigurationOptions::class.java
+    override fun getOptionsClass(): Class<out BaseState?> = AutoCRUDConfigurationOptions::class.java
 
     companion object {
         const val ID: String = "DtRunConfiguration"

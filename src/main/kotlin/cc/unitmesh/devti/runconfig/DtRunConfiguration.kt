@@ -14,10 +14,10 @@ import com.intellij.openapi.project.Project
 import org.jdom.Element
 
 class DtRunConfiguration(project: Project, name: String, factory: ConfigurationFactory) :
-    RunConfigurationBase<DtRunConfigurationOptions>(project, factory, name) {
+    RunConfigurationBase<AutoCRUDConfigurationOptions>(project, factory, name) {
 
-    public override fun getOptions(): DtRunConfigurationOptions {
-        return super.getOptions() as DtRunConfigurationOptions
+    public override fun getOptions(): AutoCRUDConfigurationOptions {
+        return super.getOptions() as AutoCRUDConfigurationOptions
     }
 
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
