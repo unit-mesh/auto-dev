@@ -14,12 +14,12 @@ class DevtiSettingsConfigurable : Configurable {
         return "Devti"
     }
 
-    override fun getPreferredFocusedComponent(): JComponent? {
+    override fun getPreferredFocusedComponent(): JComponent {
         return mySettingsComponent!!.preferredFocusedComponent
     }
 
     @Nullable
-    override fun createComponent(): JComponent? {
+    override fun createComponent(): JComponent {
         mySettingsComponent = AppSettingsComponent()
         return mySettingsComponent!!.panel
     }

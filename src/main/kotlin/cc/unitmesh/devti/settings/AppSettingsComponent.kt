@@ -11,7 +11,7 @@ class AppSettingsComponent {
     val panel: JPanel
     val openAiKey = JBTextField()
     val githubToken = JBTextField()
-    val openAiVersion = ComboBox(arrayOf("text-davinci-003", "gpt-3.5-turbo", "gpt-4.0"))
+    val openAiVersion = ComboBox(arrayOf("gpt-3.5-turbo", "text-davinci-003", "gpt-4.0"))
 
     init {
         panel = FormBuilder.createFormBuilder()

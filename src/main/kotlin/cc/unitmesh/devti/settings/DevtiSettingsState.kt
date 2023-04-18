@@ -13,7 +13,7 @@ class DevtiSettingsState : PersistentStateComponent<DevtiSettingsState> {
     var openAiEngine = ""
     var githubToken = ""
 
-    override fun getState(): DevtiSettingsState? {
+    override fun getState(): DevtiSettingsState {
         return this
     }
 
