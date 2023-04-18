@@ -1,7 +1,6 @@
 # AutoDev
 
-> AutoDev 是一个全自动化 AI 辅助编程工具，也是一个在大气层设计的 DevTi 的 Jetbrains IDE 实现。AutoDev 直接对接到您的需求系统
-> （如 Jira、Trello、Github Issue 等）中，您只需要在 IDE 中点击一下，AutoDev 将根据您的需求，自动生成代码，您只需要做好代码质检即可。
+> AutoDev 是一款高度自动化的 AI 辅助编程工具。AutoDev 能够与您的需求管理系统（例如 Jira、Trello、Github Issue 等）直接对接。在 IDE 中，您只需简单点击，AutoDev 会根据您的需求自动为您生成代码。您所需做的，仅仅是对生成的代码进行质量检查。
 
 ## Usage
 
