@@ -21,7 +21,7 @@
         <runConfigurationProducer
                 implementation="cc.unitmesh.devti.runconfig.command.AiCopilotConfigurationProducer"/>
 
-        <configurationType implementation="cc.unitmesh.devti.runconfig.AiCopilotConfigurationType"/>
+<!--        <configurationType implementation="cc.unitmesh.devti.runconfig.AiCopilotConfigurationType"/>-->
 
         <!-- analysis story, and    -->
         <runLineMarkerContributor language="JAVA"
