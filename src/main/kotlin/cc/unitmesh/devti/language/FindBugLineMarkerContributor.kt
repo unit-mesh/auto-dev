@@ -5,6 +5,7 @@ import cc.unitmesh.devti.runconfig.command.FindBugConfigurationProducer
 import com.intellij.execution.lineMarker.ExecutorAction
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiIdentifier
 import com.intellij.psi.PsiMethod
 
 class FindBugLineMarkerContributor : RunLineMarkerContributor() {
@@ -13,7 +14,7 @@ class FindBugLineMarkerContributor : RunLineMarkerContributor() {
         val actions = ExecutorAction.getActions(0)
         val state = FindBugConfigurationProducer().findConfig(listOf(element)) ?: return null
         return Info(
-            DevtiIcons.STORY,
+            DevtiIcons.FIND_BUG,
             { state.configurationName },
             *actions
         )
