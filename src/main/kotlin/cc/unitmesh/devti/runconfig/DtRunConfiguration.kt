@@ -1,14 +1,17 @@
 package cc.unitmesh.devti.runconfig
 
 import cc.unitmesh.devti.prompt.openai.DtOpenAIVersion
-import cc.unitmesh.devti.runconfig.config.DevtiAutoCRUDConfigure
+import cc.unitmesh.devti.runconfig.config.DevtiStoryConfigure
 import cc.unitmesh.devti.runconfig.ui.DtSettingsEditor
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.ConfigurationFactory
+import com.intellij.execution.configurations.ConfigurationPerRunnerSettings
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.configurations.RunProfileState
+import com.intellij.execution.configurations.RunnerSettings
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import org.jdom.Element
@@ -26,6 +29,14 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
         return DtRunState(environment, this, project, options)
+    }
+
+    override fun checkRunnerSettings(
+        runner: ProgramRunner<*>,
+        runnerSettings: RunnerSettings?,
+        configurationPerRunnerSettings: ConfigurationPerRunnerSettings?
+    ) {
+        super.checkRunnerSettings(runner, runnerSettings, configurationPerRunnerSettings)
     }
 
     override fun writeExternal(element: Element) {
@@ -74,7 +85,7 @@ class DtRunConfiguration(project: Project, name: String, factory: ConfigurationF
         this.options.setStoryId(text)
     }
 
-    fun setStoryConfig(config: DevtiAutoCRUDConfigure) {
+    fun setStoryConfig(config: DevtiStoryConfigure) {
         this.options.setStoryId(config.storyId.toString())
     }
 }
