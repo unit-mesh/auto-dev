@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.psi.JavaPsiFacade
@@ -26,22 +27,26 @@ class CodeCompleteMarkerContributor : RunLineMarkerContributor() {
 
         val runAction = object : AnAction({ "Code Complete for $methodName" }, DevtiIcons.AI_COPILOT) {
             override fun actionPerformed(e: AnActionEvent) {
-                val psiElementFactory = e.project?.let { JavaPsiFacade.getElementFactory(it) }
+                val project = e.project ?: return
+                val psiElementFactory = project.let { JavaPsiFacade.getElementFactory(it) }
 
                 ApplicationManager.getApplication().invokeLater {
-                    val openAiVersion = DevtiSettingsState.getInstance()?.openAiVersion?: return@invokeLater
-                    val openAiKey = DevtiSettingsState.getInstance()?.openAiKey?: return@invokeLater
+                    val openAiVersion = DevtiSettingsState.getInstance()?.openAiVersion ?: return@invokeLater
+                    val openAiKey = DevtiSettingsState.getInstance()?.openAiKey ?: return@invokeLater
 
                     val apiExecutor = OpenAIExecutor(openAiKey, openAiVersion)
+
                     val newMethodCode = apiExecutor.codeCompleteFor(method.text).trimIndent()
 
                     if (newMethodCode.isEmpty()) {
-                        log.warn("no code complete result")
+                        log.error("no code complete result")
+                        return@invokeLater
                     }
+                    log.warn("newMethodCode: $newMethodCode")
 
-                    runWriteAction {
-                        psiElementFactory?.createMethodFromText(newMethodCode, method.parent)?.let {
-                            method.replace(it)
+                    WriteCommandAction.runWriteCommandAction(project) {
+                        psiElementFactory?.createStatementFromText(newMethodCode, method)?.let {
+                            method.body?.add(it)
                         }
                     }
                 }

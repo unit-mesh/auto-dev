@@ -1,7 +1,6 @@
-Please help me finish follow funcitons. Here are requirements:
+Please help me finish follow method of {class}. We use Java + Spring + JDBC. Here are requirements:
 
-1. use Java
-2. only return code, not explaination
+1. only return for follow function, not extends, not explanation.
 
 ###
 {code}
