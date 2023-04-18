@@ -5,6 +5,7 @@ import cc.unitmesh.devti.runconfig.config.FindBugConfigure
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiIdentifier
 import com.intellij.psi.PsiMethod
 
 class FindBugConfigurationProducer : BaseLazyRunConfigurationProducer<FindBugConfigure>() {
@@ -16,12 +17,16 @@ class FindBugConfigurationProducer : BaseLazyRunConfigurationProducer<FindBugCon
         elements: List<PsiElement>
     ): FindBugConfigure? {
         if (elements.isEmpty()) return null
-        val methods = elements.filterIsInstance<PsiMethod>()
-        if (methods.isEmpty()) return null
+        val identifiers = elements.filterIsInstance<PsiIdentifier>()
+        if (identifiers.isEmpty()) return null
 
-        val method = methods.first()
+        val identifier = identifiers.first()
 
-        return FindBugConfigure(method.name)
+        val parent = identifier.parent
+        if (parent !is PsiMethod) return null
+
+
+        return FindBugConfigure(identifier.text)
     }
 
     override fun isConfigurationFromContext(configuration: DtRunConfiguration, context: ConfigurationContext): Boolean {
