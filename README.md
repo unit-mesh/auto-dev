@@ -48,23 +48,21 @@ AutoDev 处理过程：
 
 - [ ] Languages Support
     - [x] Java
-    - [ ] Kotlin
-    - [ ] TypeScript
 - [x] DevTi Protocol
     - [x] format 1: `devti://story/github/1102`
 - [ ] Intelli code change
     - [x] Endpoint modify suggestions
     - [x] Controller Suggestion
-      - [ ] import all Spring Controller imports
+      - [x] import all Spring Controller imports
       - [ ] auto update imports
     - [ ] Service Suggestion
     - [ ] Repository Suggestion
     - [ ] Model Suggestion
-- [ ] Code AI (ToBeContinue)
-    - [ ] Analysis code
-    - [ ] Auto generate code
-    - [ ] Auto generate test
-    - [ ] Auto generate document
+- [ ] Code AI
+    - [x] Generate code
+    - [ ] Generate test
+    - [ ] Add comments
+    - [ ] Generate document
     - [ ] Fix bug...
 
 ### DevTi Todos:
