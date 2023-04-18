@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.runconfig.config
 
-import cc.unitmesh.devti.runconfig.options.OpenAIConfigureOptions
 import com.intellij.execution.configurations.CommandLineState
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.ProcessHandler
@@ -12,8 +11,7 @@ import com.intellij.openapi.project.Project
 class CopilotState(
     environment: ExecutionEnvironment,
     aiCopilotConfiguration: AiCopilotConfiguration,
-    project: Project,
-    options: OpenAIConfigureOptions
+    project: Project
 ) : CommandLineState(environment) {
     override fun startProcess(): ProcessHandler {
         val commandLine = GeneralCommandLine("echo", "hello")

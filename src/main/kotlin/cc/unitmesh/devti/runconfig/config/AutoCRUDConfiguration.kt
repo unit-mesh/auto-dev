@@ -43,39 +43,15 @@ class AutoCRUDConfiguration(project: Project, name: String, factory: Configurati
     override fun writeExternal(element: Element) {
         super.writeExternal(element)
 
-        element.writeString("githubToken", options.githubToken())
         element.writeString("githubRepo", options.githubRepo())
-        element.writeString("openAiApiKey", options.openAiApiKey())
-        element.writeString("aiEngineVersion", options.aiEngineVersion().toString())
-        element.writeString("aiMaxTokens", options.aiMaxTokens().toString())
         element.writeString("storyId", options.storyId())
     }
 
     override fun readExternal(element: Element) {
         super.readExternal(element)
 
-        element.readString("githubToken")?.let { this.options.setGithubToken(it) }
-        element.readString("openAiApiKey")?.let { this.options.setOpenAiApiKey(it) }
-        element.readString("aiEngineVersion")?.let { this.options.setAiEngineVersion(it.toInt()) }
-        element.readString("aiMaxTokens")?.let { this.options.setAiMaxTokens(it.toInt()) }
         element.readString("githubRepo")?.let { this.options.setGithubRepo(it) }
         element.readString("storyId")?.let { this.options.setStoryId(it) }
-    }
-
-    fun setGithubToken(text: String) {
-        this.options.setGithubToken(text)
-    }
-
-    fun setOpenAiApiKey(text: String) {
-        this.options.setOpenAiApiKey(text)
-    }
-
-    fun setAiVersion(fromIndex: DtOpenAIVersion) {
-        this.options.setAiEngineVersion(fromIndex.ordinal)
-    }
-
-    fun setAiMaxTokens(openAiMaxTokens: Int) {
-        this.options.setAiMaxTokens(openAiMaxTokens)
     }
 
     fun setGithubRepo(text: String) {

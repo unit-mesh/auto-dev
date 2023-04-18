@@ -6,7 +6,6 @@ import org.jetbrains.annotations.Nullable
 import javax.swing.JComponent
 
 class DevtiSettingsConfigurable : Configurable {
-
     private var mySettingsComponent: AppSettingsComponent? = null
 
     @Nls(capitalization = Nls.Capitalization.Title)
@@ -28,7 +27,7 @@ class DevtiSettingsConfigurable : Configurable {
         val settings: DevtiSettingsState = DevtiSettingsState.getInstance()!!
         var modified = !mySettingsComponent!!.openAiKey.equals(settings.openAiKey)
         modified = modified or (!mySettingsComponent!!.githubToken.equals(settings.githubToken))
-        modified = modified or (!mySettingsComponent!!.openAiVersion.equals(settings.openAiEngine))
+        modified = modified or (!mySettingsComponent!!.openAiVersion.equals(settings.openAiVersion))
         return modified
     }
 
@@ -36,14 +35,14 @@ class DevtiSettingsConfigurable : Configurable {
         val settings: DevtiSettingsState = DevtiSettingsState.getInstance()!!
         settings.openAiKey = mySettingsComponent!!.getOpenAiKey()
         settings.githubToken = mySettingsComponent!!.getGithubToken()
-        settings.openAiEngine = mySettingsComponent!!.getOpenAiVersion()
+        settings.openAiVersion = mySettingsComponent!!.getOpenAiVersion()
     }
 
     override fun reset() {
         val settings: DevtiSettingsState = DevtiSettingsState.getInstance()!!
         mySettingsComponent!!.setOpenAiKey(settings.openAiKey)
         mySettingsComponent!!.setGithubToken(settings.githubToken)
-        mySettingsComponent!!.setOpenAiVersion(settings.openAiEngine)
+        mySettingsComponent!!.setOpenAiVersion(settings.openAiVersion)
     }
 
     override fun disposeUIResources() {

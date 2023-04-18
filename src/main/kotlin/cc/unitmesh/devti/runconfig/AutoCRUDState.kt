@@ -7,6 +7,7 @@ import cc.unitmesh.devti.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.prompt.openai.OpenAIAction
 import cc.unitmesh.devti.runconfig.config.AutoCRUDConfiguration
 import cc.unitmesh.devti.runconfig.options.AutoCRUDConfigurationOptions
+import cc.unitmesh.devti.settings.DevtiSettingsState
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
@@ -25,10 +26,22 @@ class AutoCRUDState(
     val project: Project,
     val options: AutoCRUDConfigurationOptions
 ) : RunProfileState {
+
+    private val openAiApiKey: String
+    private val githubToken: String
+    private val openAiVersion: String
+
+    init {
+        val instance = DevtiSettingsState.getInstance()
+        openAiApiKey = instance?.openAiKey ?: ""
+        githubToken = instance?.githubToken ?: ""
+        openAiVersion = instance?.openAiVersion ?: ""
+    }
+
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
         val javaAuto = JavaCrudProcessor(project)
-        val gitHubIssue = GitHubIssue(options.githubRepo(), options.githubToken())
-        val openAIAction = OpenAIAction(options.openAiApiKey(), "gpt-3.5-turbo")
+        val gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)
+        val openAIAction = OpenAIAction(openAiApiKey, openAiVersion)
         val devtiFlow = DevtiFlow(gitHubIssue, openAIAction, javaAuto)
 
         log.warn(configuration.toString())

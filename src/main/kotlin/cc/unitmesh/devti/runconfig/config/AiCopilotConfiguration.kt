@@ -28,7 +28,7 @@ class AiCopilotConfiguration(project: Project, name: String, factory: Configurat
     }
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
-        return CopilotState(environment, this, project, options)
+        return CopilotState(environment, this, project)
     }
 
     override fun checkRunnerSettings(

@@ -10,7 +10,7 @@ import com.intellij.util.xmlb.XmlSerializerUtil
 class DevtiSettingsState : PersistentStateComponent<DevtiSettingsState> {
 
     var openAiKey = ""
-    var openAiEngine = ""
+    var openAiVersion = ""
     var githubToken = ""
 
     override fun getState(): DevtiSettingsState {

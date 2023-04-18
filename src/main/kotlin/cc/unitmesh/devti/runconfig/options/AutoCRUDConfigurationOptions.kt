@@ -1,16 +1,11 @@
 package cc.unitmesh.devti.runconfig.options
 
+import com.intellij.execution.configurations.ModuleBasedConfigurationOptions
 import com.intellij.openapi.components.StoredProperty
 
-class AutoCRUDConfigurationOptions : OpenAIConfigureOptions() {
-    private var githubToken: StoredProperty<String?> = string("").provideDelegate(this, "githubToken")
+class AutoCRUDConfigurationOptions : ModuleBasedConfigurationOptions() {
     private val githubRepo: StoredProperty<String?> = string("unit-mesh/untitled").provideDelegate(this, "githubRepo")
     private val storyId: StoredProperty<String?> = string("1").provideDelegate(this, "storyId")
-
-    fun githubToken(): String = githubToken.getValue(this) ?: ""
-    fun setGithubToken(token: String) {
-        githubToken.setValue(this, token)
-    }
 
     fun githubRepo(): String = githubRepo.getValue(this) ?: ""
     fun setGithubRepo(repo: String) {
