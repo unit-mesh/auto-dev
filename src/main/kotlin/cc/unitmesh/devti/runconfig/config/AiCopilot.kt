@@ -5,9 +5,5 @@ import cc.unitmesh.devti.runconfig.command.BaseConfig
 class AiCopilot(
     private val methodName: String,
 ) : BaseConfig() {
-    override var configurationName = "Find Bug"
-
-    init {
-        configurationName += " $methodName"
-    }
+    override var configurationName = "Copilot for method <b>$methodName</b>"
 }
