@@ -5,11 +5,10 @@ import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.kanban.Kanban
 import cc.unitmesh.devti.kanban.SimpleStory
 import cc.unitmesh.devti.prompt.DevtiFlowAction
+import cc.unitmesh.devti.prompt.parseCodeFromString
 import cc.unitmesh.devti.runconfig.AutoCRUDState
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
-import org.commonmark.node.*
-import org.commonmark.parser.Parser
 
 data class TargetEndpoint(
     val endpoint: String,
@@ -113,14 +112,6 @@ class DevtiFlow(
         return code
     }
 
-    private fun parseCodeFromString(markdown: String): String {
-        val parser: Parser = Parser.builder().build()
-        val node: Node = parser.parse(markdown)
-        val visitor = CodeVisitor()
-        node.accept(visitor)
-        return visitor.code
-    }
-
     companion object {
         private val logger: Logger = logger<AutoCRUDState>()
         private val regex = Regex("""(\w+Controller)""")
@@ -132,15 +123,3 @@ class DevtiFlow(
     }
 }
 
-
-internal class CodeVisitor : AbstractVisitor() {
-    var code = ""
-
-    override fun visit(fencedCodeBlock: FencedCodeBlock?) {
-        this.code = fencedCodeBlock?.literal ?: ""
-    }
-
-    override fun visit(indentedCodeBlock: IndentedCodeBlock?) {
-        super.visit(indentedCodeBlock)
-    }
-}

@@ -2,8 +2,9 @@ package cc.unitmesh.devti.prompt.openai
 
 import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.kanban.SimpleProjectInfo
-import cc.unitmesh.devti.prompt.AiAction
+import cc.unitmesh.devti.prompt.AiExecutor
 import cc.unitmesh.devti.prompt.DevtiFlowAction
+import cc.unitmesh.devti.prompt.parseCodeFromString
 import com.aallam.openai.api.BetaOpenAI
 import com.aallam.openai.api.chat.ChatCompletion
 import com.aallam.openai.api.chat.ChatCompletionRequest
@@ -13,9 +14,10 @@ import com.aallam.openai.api.model.ModelId
 import com.aallam.openai.client.OpenAI
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.util.NlsSafe
 import kotlinx.coroutines.runBlocking
 
-class OpenAIAction(val openAIKey: String, val version: String) : AiAction, DevtiFlowAction {
+class OpenAIExecutor(val openAIKey: String, val version: String) : AiExecutor, DevtiFlowAction {
     private val openAI: OpenAI = OpenAI(openAIKey)
     private val gptPromptText = GptPromptText()
 
@@ -61,7 +63,17 @@ class OpenAIAction(val openAIKey: String, val version: String) : AiAction, Devti
         }
     }
 
+    fun codeCompleteFor(text: @NlsSafe String): String {
+        val promptText = gptPromptText.fillCodeComplete(text)
+        logger.warn("codeCompleteFor prompt text: $promptText")
+        return runBlocking {
+            val prompt = prompt(promptText)
+            val code = parseCodeFromString(prompt)
+            return@runBlocking prompt
+        }
+    }
+
     companion object {
-        private val logger: Logger = logger<OpenAIAction>()
+        private val logger: Logger = logger<OpenAIExecutor>()
     }
 }

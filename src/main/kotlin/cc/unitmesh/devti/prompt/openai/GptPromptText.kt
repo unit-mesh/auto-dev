@@ -48,4 +48,12 @@ class GptPromptText() {
             .replace("{controllers}", targetClazz.format())
             .replace("{storyDetail}", storyDetail)
     }
+
+    // code complete
+    fun fillCodeComplete(methodCode: String): String {
+        val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/code_complete.txt")!!
+        val promptTextString = promptText.bufferedReader().use { it.readText() }
+        return promptTextString
+            .replace("{code}", methodCode)
+    }
 }

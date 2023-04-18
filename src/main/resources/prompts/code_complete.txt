@@ -1,0 +1,8 @@
+Please help me finish follow funcitons. Here are requirements:
+
+1. use Java
+2. only return code, not explaination
+
+###
+{code}
+###
