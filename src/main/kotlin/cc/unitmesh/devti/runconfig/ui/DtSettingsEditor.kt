@@ -1,14 +1,9 @@
 package cc.unitmesh.devti.runconfig.ui
 
-import cc.unitmesh.devti.prompt.openai.DtOpenAIConfig.DEFAULT_OPEN_AI_MAX_TOKENS
 import cc.unitmesh.devti.prompt.openai.DtOpenAIVersion
 import cc.unitmesh.devti.runconfig.DtRunConfiguration
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.ComboBox
-import com.intellij.ui.dsl.builder.Cell
-import com.intellij.ui.dsl.builder.Row
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import javax.swing.JComponent
 
 class DtSettingsEditor(project: Project) : BaseSettingsEditor<DtRunConfiguration>(project) {
