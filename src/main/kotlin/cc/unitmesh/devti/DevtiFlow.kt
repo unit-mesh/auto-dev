@@ -5,7 +5,7 @@ import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.kanban.Kanban
 import cc.unitmesh.devti.kanban.SimpleStory
 import cc.unitmesh.devti.prompt.DevtiFlowAction
-import cc.unitmesh.devti.runconfig.DtRunState
+import cc.unitmesh.devti.runconfig.AutoCRUDState
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import org.commonmark.node.*
@@ -122,7 +122,7 @@ class DevtiFlow(
     }
 
     companion object {
-        private val logger: Logger = logger<DtRunState>()
+        private val logger: Logger = logger<AutoCRUDState>()
         private val regex = Regex("""(\w+Controller)""")
 
         fun matchControllerName(targetEndpoint: String): String? {

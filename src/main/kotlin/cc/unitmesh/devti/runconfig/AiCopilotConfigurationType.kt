@@ -10,12 +10,11 @@ import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.components.BaseState
 import com.intellij.openapi.project.Project
 
-class AutoCRUDConfigurationType :
-    ConfigurationTypeBase("AutoCRUDConfiguration", "DevTi", "DevTi generator", DevtiIcons.STORY) {
+class AiCopilotConfigurationType : ConfigurationTypeBase("AiCopilotConfiguration", "Devti Copilot", "AI Coding", DevtiIcons.AI_COPILOT) {
     val factory: ConfigurationFactory get() = configurationFactories.single()
 
     init {
-        addFactory(AutoCRUDConfigurationFactory(this))
+        addFactory(CopilotConfigurationFactory(this))
     }
 
     companion object {
@@ -24,11 +23,11 @@ class AutoCRUDConfigurationType :
     }
 }
 
-class AutoCRUDConfigurationFactory(type: AutoCRUDConfigurationType) : ConfigurationFactory(type) {
+class CopilotConfigurationFactory(type: AiCopilotConfigurationType) : ConfigurationFactory(type) {
     override fun getId(): String = ID
 
     override fun createTemplateConfiguration(project: Project): RunConfiguration =
-        AutoCRUDConfiguration(project, "DevTi", this)
+        AutoCRUDConfiguration(project, "DevTi Copilot", this)
 
     override fun getOptionsClass(): Class<out BaseState?> = AutoCRUDConfigurationOptions::class.java
 

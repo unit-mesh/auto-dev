@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.runconfig.command
 
-import cc.unitmesh.devti.runconfig.DtRunConfiguration
+import cc.unitmesh.devti.runconfig.config.AutoCRUDConfiguration
 import cc.unitmesh.devti.runconfig.AutoCRUDConfigurationType
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.LazyRunConfigurationProducer
@@ -9,7 +9,7 @@ import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 
 
-abstract class BaseLazyRunConfigurationProducer<T: BaseConfig> : LazyRunConfigurationProducer<DtRunConfiguration>() {
+abstract class BaseLazyRunConfigurationProducer<T: BaseConfig> : LazyRunConfigurationProducer<AutoCRUDConfiguration>() {
     val runConfigProviders: MutableList<(List<PsiElement>) -> T?> = mutableListOf()
 
     override fun getConfigurationFactory(): ConfigurationFactory {
@@ -17,7 +17,7 @@ abstract class BaseLazyRunConfigurationProducer<T: BaseConfig> : LazyRunConfigur
     }
 
     override fun setupConfigurationFromContext(
-        configuration: DtRunConfiguration,
+        configuration: AutoCRUDConfiguration,
         context: ConfigurationContext,
         sourceElement: Ref<PsiElement>
     ): Boolean {
@@ -42,7 +42,7 @@ abstract class BaseLazyRunConfigurationProducer<T: BaseConfig> : LazyRunConfigur
     }
 
     override fun isConfigurationFromContext(
-        configuration: DtRunConfiguration,
+        configuration: AutoCRUDConfiguration,
         context: ConfigurationContext
     ): Boolean {
         val implConfig = findIEndpointByContext(context) ?: return false

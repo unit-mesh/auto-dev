@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.runconfig.command
 
 import cc.unitmesh.devti.language.DevtiAnnotator
-import cc.unitmesh.devti.runconfig.DtRunConfiguration
+import cc.unitmesh.devti.runconfig.config.AutoCRUDConfiguration
 import cc.unitmesh.devti.runconfig.config.DevtiStoryConfigure
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.openapi.util.Ref
@@ -25,7 +25,7 @@ class AutoCRUDConfigurationProducer : BaseLazyRunConfigurationProducer<DevtiStor
         return DevtiStoryConfigure.fromStoryConfig(storyConfig)
     }
 
-    override fun isConfigurationFromContext(configuration: DtRunConfiguration, context: ConfigurationContext): Boolean {
+    override fun isConfigurationFromContext(configuration: AutoCRUDConfiguration, context: ConfigurationContext): Boolean {
         val config = findConfig(context.location?.psiElement?.let { listOf(it) } ?: return false) ?: return false
         configuration.name = config.configurationName + "(Create)"
         configuration.setStoryConfig(config)
@@ -34,7 +34,7 @@ class AutoCRUDConfigurationProducer : BaseLazyRunConfigurationProducer<DevtiStor
     }
 
     override fun setupConfigurationFromContext(
-        configuration: DtRunConfiguration,
+        configuration: AutoCRUDConfiguration,
         context: ConfigurationContext,
         sourceElement: Ref<PsiElement>
     ): Boolean {

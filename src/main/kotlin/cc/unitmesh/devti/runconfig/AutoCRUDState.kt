@@ -5,6 +5,7 @@ import cc.unitmesh.devti.DevtiFlow
 import cc.unitmesh.devti.analysis.JavaCrudProcessor
 import cc.unitmesh.devti.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.prompt.openai.OpenAIAction
+import cc.unitmesh.devti.runconfig.config.AutoCRUDConfiguration
 import cc.unitmesh.devti.runconfig.options.AutoCRUDConfigurationOptions
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
@@ -18,9 +19,9 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 
-class DtRunState(
+class AutoCRUDState(
     val environment: ExecutionEnvironment,
-    private val configuration: DtRunConfiguration,
+    private val configuration: AutoCRUDConfiguration,
     val project: Project,
     val options: AutoCRUDConfigurationOptions
 ) : RunProfileState {
@@ -64,6 +65,6 @@ class DtRunState(
     }
 
     companion object {
-        private val log: Logger = logger<DtRunState>()
+        private val log: Logger = logger<AutoCRUDState>()
     }
 }

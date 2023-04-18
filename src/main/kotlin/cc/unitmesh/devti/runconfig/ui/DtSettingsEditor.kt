@@ -1,12 +1,12 @@
 package cc.unitmesh.devti.runconfig.ui
 
 import cc.unitmesh.devti.prompt.openai.DtOpenAIVersion
-import cc.unitmesh.devti.runconfig.DtRunConfiguration
+import cc.unitmesh.devti.runconfig.config.AutoCRUDConfiguration
 import com.intellij.openapi.project.Project
 import com.intellij.ui.dsl.builder.panel
 import javax.swing.JComponent
 
-class DtSettingsEditor(project: Project) : BaseSettingsEditor<DtRunConfiguration>(project) {
+class DtSettingsEditor(project: Project) : BaseSettingsEditor<AutoCRUDConfiguration>(project) {
     private val githubToken = DtCommandLineEditor(project, completionProvider)
     private val githubRepo = DtCommandLineEditor(project, completionProvider)
     private val storyId = DtCommandLineEditor(project, completionProvider)
@@ -44,7 +44,7 @@ class DtSettingsEditor(project: Project) : BaseSettingsEditor<DtRunConfiguration
         panel = it
     }
 
-    override fun resetEditorFrom(configuration: DtRunConfiguration) {
+    override fun resetEditorFrom(configuration: AutoCRUDConfiguration) {
         githubToken.text = configuration.options.githubToken()
         githubRepo.text = configuration.options.githubRepo()
         aiApiToken.text = configuration.options.openAiApiKey()
@@ -54,7 +54,7 @@ class DtSettingsEditor(project: Project) : BaseSettingsEditor<DtRunConfiguration
         storyId.text = configuration.options.storyId()
     }
 
-    override fun applyEditorTo(configuration: DtRunConfiguration) {
+    override fun applyEditorTo(configuration: AutoCRUDConfiguration) {
         configuration.setGithubToken(githubToken.text)
         configuration.setGithubRepo(githubRepo.text)
         configuration.setOpenAiApiKey(aiApiToken.text)

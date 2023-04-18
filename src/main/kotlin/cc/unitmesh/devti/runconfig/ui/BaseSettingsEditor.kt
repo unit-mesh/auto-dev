@@ -2,7 +2,6 @@ package cc.unitmesh.devti.runconfig.ui
 
 import cc.unitmesh.devti.prompt.openai.DtOpenAIConfig.DEFAULT_OPEN_AI_MAX_TOKENS
 import cc.unitmesh.devti.prompt.openai.DtOpenAIVersion
-import cc.unitmesh.devti.runconfig.DtRunConfiguration
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
