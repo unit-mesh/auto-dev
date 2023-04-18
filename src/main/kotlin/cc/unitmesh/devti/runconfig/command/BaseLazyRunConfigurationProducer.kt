@@ -24,5 +24,4 @@ abstract class BaseLazyRunConfigurationProducer<T: BaseConfig, C: RunConfigurati
 
         return null
     }
-
 }

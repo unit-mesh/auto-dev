@@ -10,9 +10,24 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiIdentifier
 import com.intellij.psi.PsiMethod
 
+sealed class AiCopilotType {
+    object CodeComments : AiCopilotType()
+    object CodeComplete : AiCopilotType()
+    object FindBugs : AiCopilotType()
+
+    override fun toString(): String {
+        return when (this) {
+            is CodeComments -> "CodeComments"
+            is CodeComplete -> "CodeComplete"
+            is FindBugs -> "FindBugs"
+        }
+    }
+}
+
 class AiCopilotConfigurationProducer : BaseLazyRunConfigurationProducer<AiCopilot, AiCopilotConfiguration>() {
     init {
-        registerConfigProvider { elements -> createConfigFor(elements) }
+        registerConfigProvider { elements -> createConfigFor(elements, AiCopilotType.CodeComplete) }
+        registerConfigProvider { elements -> createConfigFor(elements, AiCopilotType.CodeComments) }
     }
 
     override fun getConfigurationFactory(): ConfigurationFactory {
@@ -20,7 +35,8 @@ class AiCopilotConfigurationProducer : BaseLazyRunConfigurationProducer<AiCopilo
     }
 
     private fun createConfigFor(
-        elements: List<PsiElement>
+        elements: List<PsiElement>,
+        copilotType: AiCopilotType
     ): AiCopilot? {
         if (elements.isEmpty()) return null
         val identifiers = elements.filterIsInstance<PsiIdentifier>()
@@ -31,7 +47,7 @@ class AiCopilotConfigurationProducer : BaseLazyRunConfigurationProducer<AiCopilo
         val parent = identifier.parent
         if (parent !is PsiMethod) return null
 
-        return AiCopilot(identifier.text)
+        return AiCopilot(identifier.text, copilotType)
     }
 
     override fun isConfigurationFromContext(

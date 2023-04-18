@@ -13,12 +13,9 @@
         <!-- show find bug -->
         <runLineMarkerContributor language="JAVA"
                                   implementationClass="cc.unitmesh.devti.language.AiCopilotMarkerContributor"/>
-        <!-- show find bug -->
-        <runLineMarkerContributor language="JAVA"
-                                  implementationClass="cc.unitmesh.devti.language.CodeCommentsMarkerContributor"/>
-
         <runConfigurationProducer
                 implementation="cc.unitmesh.devti.runconfig.command.AiCopilotConfigurationProducer"/>
+
         <configurationType implementation="cc.unitmesh.devti.runconfig.AiCopilotConfigurationType"/>
 
         <!-- analysis story, and    -->

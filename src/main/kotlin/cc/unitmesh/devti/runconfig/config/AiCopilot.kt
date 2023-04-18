@@ -1,9 +1,11 @@
 package cc.unitmesh.devti.runconfig.config
 
+import cc.unitmesh.devti.runconfig.command.AiCopilotType
 import cc.unitmesh.devti.runconfig.command.BaseConfig
 
 class AiCopilot(
-    private val methodName: String,
+    methodName: String,
+    copilotType: AiCopilotType,
 ) : BaseConfig() {
-    override var configurationName = "Copilot for $methodName"
+    override var configurationName = "Run $copilotType for $methodName"
 }
