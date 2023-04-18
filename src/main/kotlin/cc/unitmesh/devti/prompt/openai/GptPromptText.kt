@@ -2,6 +2,7 @@ package cc.unitmesh.devti.prompt.openai
 
 import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.kanban.SimpleProjectInfo
+import com.intellij.openapi.util.NlsSafe
 import java.io.InputStream
 
 class GptPromptText() {
@@ -50,10 +51,11 @@ class GptPromptText() {
     }
 
     // code complete
-    fun fillCodeComplete(methodCode: String): String {
+    fun fillCodeComplete(methodCode: String, className: @NlsSafe String?): String {
         val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/code_complete.txt")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         return promptTextString
             .replace("{code}", methodCode)
+            .replace("{className}", className ?: "")
     }
 }

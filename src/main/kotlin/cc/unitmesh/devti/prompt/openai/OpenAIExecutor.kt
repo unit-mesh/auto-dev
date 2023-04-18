@@ -63,8 +63,8 @@ class OpenAIExecutor(val openAIKey: String, val version: String) : AiExecutor, D
         }
     }
 
-    fun codeCompleteFor(text: @NlsSafe String): String {
-        val promptText = gptPromptText.fillCodeComplete(text)
+    fun codeCompleteFor(text: @NlsSafe String, className: @NlsSafe String?): String {
+        val promptText = gptPromptText.fillCodeComplete(text, className)
         logger.warn("codeCompleteFor prompt text: $promptText")
         return runBlocking {
             val prompt = prompt(promptText)

@@ -8,12 +8,14 @@ import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.JavaPsiFacade
+import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiIdentifier
 import com.intellij.psi.PsiMethod
 
@@ -36,7 +38,13 @@ class CodeCompleteMarkerContributor : RunLineMarkerContributor() {
 
                     val apiExecutor = OpenAIExecutor(openAiKey, openAiVersion)
 
-                    val newMethodCode = apiExecutor.codeCompleteFor(method.text).trimIndent()
+                    val className = if (method.parent is PsiClass) {
+                        (method.parent as PsiClass).name
+                    } else {
+                        method.containingFile?.name?.replace(".java", "")
+                    }
+
+                    val newMethodCode = apiExecutor.codeCompleteFor(method.text, className).trimIndent()
 
                     if (newMethodCode.isEmpty()) {
                         log.error("no code complete result")

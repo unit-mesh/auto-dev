@@ -1,6 +1,6 @@
-Please help me finish follow method of {class}. We use Java + Spring + JDBC. Here are requirements:
+Code complete follow function of {className}. Here are your requirements:
 
-1. only return for follow function, not extends, not explanation.
+1. should only return one function, not explanation.
 
 ###
 {code}
