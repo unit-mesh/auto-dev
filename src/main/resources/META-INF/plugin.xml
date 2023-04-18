@@ -12,7 +12,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <!-- show find bug -->
         <runLineMarkerContributor language="JAVA"
-                                  implementationClass="cc.unitmesh.devti.language.FindBugLineMarkerContributor"/>
+                                  implementationClass="cc.unitmesh.devti.language.AiCopilotMarkerContributor"/>
 
         <!-- analysis story, and    -->
         <runLineMarkerContributor language="JAVA"

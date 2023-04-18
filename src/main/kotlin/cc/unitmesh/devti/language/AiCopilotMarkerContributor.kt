@@ -8,7 +8,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiIdentifier
 import com.intellij.psi.PsiMethod
 
-class FindBugLineMarkerContributor : RunLineMarkerContributor() {
+class AiCopilotMarkerContributor : RunLineMarkerContributor() {
     override fun getInfo(element: PsiElement): Info? {
         if (element !is PsiIdentifier) return null
         val parent = element.parent
@@ -22,5 +22,4 @@ class FindBugLineMarkerContributor : RunLineMarkerContributor() {
             *actions
         )
     }
-
 }
