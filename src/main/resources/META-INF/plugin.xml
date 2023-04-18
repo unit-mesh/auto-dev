@@ -18,10 +18,8 @@
         <!-- show find bug -->
         <runLineMarkerContributor language="JAVA"
                                   implementationClass="cc.unitmesh.devti.language.AiCopilotMarkerContributor"/>
-        <runConfigurationProducer
-                implementation="cc.unitmesh.devti.runconfig.command.AiCopilotConfigurationProducer"/>
-
-<!--        <configurationType implementation="cc.unitmesh.devti.runconfig.AiCopilotConfigurationType"/>-->
+        <runLineMarkerContributor language="JAVA"
+                                  implementationClass="cc.unitmesh.devti.language.CodeCommentsMarkerContributor"/>
 
         <!-- analysis story, and    -->
         <runLineMarkerContributor language="JAVA"

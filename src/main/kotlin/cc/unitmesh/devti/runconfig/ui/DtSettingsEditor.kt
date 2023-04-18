@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.runconfig.ui
 
-import cc.unitmesh.devti.prompt.openai.DtOpenAIVersion
 import cc.unitmesh.devti.runconfig.config.AutoCRUDConfiguration
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
@@ -13,17 +12,12 @@ import javax.swing.JComponent
 class DtSettingsEditor(project: Project) : SettingsEditor<AutoCRUDConfiguration>() {
     protected var completionProvider = DtCommandCompletionProvider()
 
-    private val githubToken = DtCommandLineEditor(project, completionProvider)
     private val githubRepo = DtCommandLineEditor(project, completionProvider)
     private val storyId = DtCommandLineEditor(project, completionProvider)
 
     protected var panel: JComponent? = null
 
     override fun createEditor(): JComponent = panel {
-        row("Github Token:") {
-            fullWidthCell(githubToken)
-        }
-
         row("GitHub Project (owner/repo)") {
             fullWidthCell(githubRepo)
         }
@@ -31,10 +25,6 @@ class DtSettingsEditor(project: Project) : SettingsEditor<AutoCRUDConfiguration>
         // story id
         row("Story ID:") {
             fullWidthCell(storyId)
-        }
-
-        row("API Engine:") {
-            comboBox(listOf("OpenAI"))
         }
     }.also {
         panel = it

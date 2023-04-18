@@ -2,9 +2,7 @@ package cc.unitmesh.devti.language
 
 import cc.unitmesh.devti.DevtiIcons
 import cc.unitmesh.devti.runconfig.AutoCRUDState
-import cc.unitmesh.devti.runconfig.command.AiCopilotConfigurationProducer
 import com.intellij.execution.executors.DefaultRunExecutor
-import com.intellij.execution.lineMarker.ExecutorAction
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -22,13 +20,29 @@ class AiCopilotMarkerContributor : RunLineMarkerContributor() {
         val parent = element.parent
         if (parent !is PsiMethod) return null
 
-        val actions = ExecutorAction.getActions(0)
-        val state = AiCopilotConfigurationProducer().findConfig(listOf(element)) ?: return null
+        val runAction = object : AnAction({ "Auto Compilot" }, DevtiIcons.AI_COPILOT) {
+            override fun actionPerformed(e: AnActionEvent) {
+                ApplicationManager.getApplication().invokeLater {
+                    execute("devti://comments", DefaultRunExecutor.EXECUTOR_ID)
+                }
+            }
+        }
 
         return Info(
             DevtiIcons.AI_COPILOT,
-            { state.configurationName },
-            *actions
+            { "Auto Comments" },
+            runAction
         )
+    }
+
+    private fun execute(command: String, executorId: String) {
+        log.warn("execute: $command, $executorId")
+        runReadAction {
+            // todo: modify files
+        }
+    }
+
+    companion object {
+        private val log: Logger = logger<AutoCRUDState>()
     }
 }
