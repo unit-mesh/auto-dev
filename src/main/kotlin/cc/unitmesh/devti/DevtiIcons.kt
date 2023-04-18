@@ -8,5 +8,6 @@ class DevtiIcons {
         val STORY: Icon = IconLoader.getIcon("/icons/story.svg", DevtiIcons::class.java)
         val FIND_BUG: Icon = IconLoader.getIcon("/icons/find-bug.svg", DevtiIcons::class.java)
         val AI_COPILOT: Icon = IconLoader.getIcon("/icons/ai-copilot.svg", DevtiIcons::class.java)
+        val COMMENTS: Icon = IconLoader.getIcon("/icons/comments.svg", DevtiIcons::class.java)
     }
 }

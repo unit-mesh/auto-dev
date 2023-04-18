@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.runconfig.command
 
 import cc.unitmesh.devti.runconfig.AiCopilotConfigurationType
-import cc.unitmesh.devti.runconfig.config.AutoCRUDConfiguration
 import cc.unitmesh.devti.runconfig.config.AiCopilot
 import cc.unitmesh.devti.runconfig.config.AiCopilotConfiguration
 import com.intellij.execution.actions.ConfigurationContext
