@@ -20,7 +20,8 @@ class CodeCommentsMarkerContributor : RunLineMarkerContributor() {
         val parent = element.parent
         if (parent !is PsiMethod) return null
 
-        val runAction = object : AnAction({ "Auto Comments" }, DevtiIcons.AI_COPILOT) {
+        val methodName = parent.name
+        val runAction = object : AnAction({ "Auto Comments for $methodName" }, DevtiIcons.AI_COPILOT) {
             override fun actionPerformed(e: AnActionEvent) {
                 ApplicationManager.getApplication().invokeLater {
                     execute("devti://comments", DefaultRunExecutor.EXECUTOR_ID)

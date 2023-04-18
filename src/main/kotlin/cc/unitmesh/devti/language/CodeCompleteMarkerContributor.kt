@@ -14,13 +14,15 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiIdentifier
 import com.intellij.psi.PsiMethod
 
-class AiCopilotMarkerContributor : RunLineMarkerContributor() {
+class CodeCompleteMarkerContributor : RunLineMarkerContributor() {
     override fun getInfo(element: PsiElement): Info? {
         if (element !is PsiIdentifier) return null
         val parent = element.parent
         if (parent !is PsiMethod) return null
 
-        val runAction = object : AnAction({ "Auto Compilot" }, DevtiIcons.AI_COPILOT) {
+        val methodName = parent.name
+
+        val runAction = object : AnAction({ "Code Complete for $methodName" }, DevtiIcons.AI_COPILOT) {
             override fun actionPerformed(e: AnActionEvent) {
                 ApplicationManager.getApplication().invokeLater {
                     execute("devti://comments", DefaultRunExecutor.EXECUTOR_ID)
