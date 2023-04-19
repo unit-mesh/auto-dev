@@ -21,10 +21,10 @@ class FindBugMarkerContributor : RunLineMarkerContributor() {
         if (parent !is PsiMethod) return null
 
         val methodName = parent.name
-        val runAction = object : AnAction({ "Auto Comments for $methodName" }, DevtiIcons.AI_COPILOT) {
+        val runAction = object : AnAction({ "Find Bug for $methodName" }, DevtiIcons.AI_COPILOT) {
             override fun actionPerformed(e: AnActionEvent) {
                 ApplicationManager.getApplication().invokeLater {
-                    execute("devti://comments", DefaultRunExecutor.EXECUTOR_ID)
+                    execute("devti://find-bug", DefaultRunExecutor.EXECUTOR_ID)
                 }
             }
         }
