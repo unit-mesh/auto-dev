@@ -39,7 +39,7 @@ class OpenAIExecutor(val openAIKey: String, val version: String) : AiExecutor, D
     }
 
     override fun fillStoryDetail(project: SimpleProjectInfo, story: String): String {
-        val promptText = promptGenerator.fillStoryDetail(project, story)
+        val promptText = promptGenerator.storyDetail(project, story)
         return runBlocking {
             val prompt = prompt(promptText)
             return@runBlocking prompt
@@ -47,7 +47,7 @@ class OpenAIExecutor(val openAIKey: String, val version: String) : AiExecutor, D
     }
 
     override fun analysisEndpoint(storyDetail: String, classes: List<DtClass>): String {
-        val promptText = promptGenerator.fillEndpoint(storyDetail, classes)
+        val promptText = promptGenerator.createEndpoint(storyDetail, classes)
         return runBlocking {
             val prompt = prompt(promptText)
             return@runBlocking prompt
@@ -55,7 +55,7 @@ class OpenAIExecutor(val openAIKey: String, val version: String) : AiExecutor, D
     }
 
     override fun needUpdateMethodForController(targetEndpoint: String, clazz: DtClass, storyDetail: String): String {
-        val promptText = promptGenerator.fillUpdateMethod(clazz, storyDetail)
+        val promptText = promptGenerator.updateControllerMethod(clazz, storyDetail)
         logger.warn("needUpdateMethodForController prompt text: $promptText")
         return runBlocking {
             return@runBlocking prompt(promptText)
@@ -63,7 +63,7 @@ class OpenAIExecutor(val openAIKey: String, val version: String) : AiExecutor, D
     }
 
     fun codeCompleteFor(text: @NlsSafe String, className: @NlsSafe String?): String {
-        val promptText = promptGenerator.fillCodeComplete(text, className)
+        val promptText = promptGenerator.codeComplete(text, className)
         logger.warn("codeCompleteFor prompt text: $promptText")
         return runBlocking {
             val prompt = prompt(promptText)

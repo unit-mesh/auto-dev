@@ -8,7 +8,7 @@ import java.io.InputStream
 class PromptGenerator() {
     // 1. read resources/prompts/create_story_detail.txt
     // 2. replace {project} with project name
-    fun fillStoryDetail(project: SimpleProjectInfo, story: String): String {
+    fun storyDetail(project: SimpleProjectInfo, story: String): String {
         val promptText: InputStream =
             this::class.java.classLoader.getResourceAsStream("prompts/create_story_detail.txt")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
@@ -17,7 +17,7 @@ class PromptGenerator() {
             .replace("{story}", story)
     }
 
-    fun fillEndpoint(storyDetail: String, files: List<DtClass>): String {
+    fun createEndpoint(storyDetail: String, files: List<DtClass>): String {
         val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/create_endpoint.txt")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         return promptTextString
@@ -25,7 +25,7 @@ class PromptGenerator() {
             .replace("{storyDetail}", storyDetail)
     }
 
-    fun fillUpdateMethod(targetClazz: DtClass, storyDetail: String): String {
+    fun updateControllerMethod(targetClazz: DtClass, storyDetail: String): String {
         val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/update_controller_method.txt")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         return promptTextString
@@ -34,8 +34,7 @@ class PromptGenerator() {
             .replace("{storyDetail}", storyDetail)
     }
 
-    // code complete
-    fun fillCodeComplete(methodCode: String, className: @NlsSafe String?): String {
+    fun codeComplete(methodCode: String, className: @NlsSafe String?): String {
         val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/code_complete.txt")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         return promptTextString
