@@ -27,46 +27,50 @@ class CodeCompleteMarkerContributor : RunLineMarkerContributor() {
 
         val methodName = method.name
 
-        val runAction = object : AnAction({ "Code Complete for $methodName" }, DevtiIcons.AI_COPILOT) {
-            override fun actionPerformed(e: AnActionEvent) {
-                val project = e.project ?: return
-                val psiElementFactory = project.let { JavaPsiFacade.getElementFactory(it) }
-
-                ApplicationManager.getApplication().invokeLater {
-                    val openAiVersion = DevtiSettingsState.getInstance()?.openAiVersion ?: return@invokeLater
-                    val openAiKey = DevtiSettingsState.getInstance()?.openAiKey ?: return@invokeLater
-
-                    val apiExecutor = OpenAIExecutor(openAiKey, openAiVersion)
-
-                    val className = if (method.parent is PsiClass) {
-                        (method.parent as PsiClass).name
-                    } else {
-                        method.containingFile?.name?.replace(".java", "")
-                    }
-
-                    val newMethodCode = apiExecutor.codeCompleteFor(method.text, className).trimIndent()
-
-                    if (newMethodCode.isEmpty()) {
-                        log.error("no code complete result")
-                        return@invokeLater
-                    }
-                    log.warn("newMethodCode: $newMethodCode")
-
-                    WriteCommandAction.runWriteCommandAction(project) {
-                        psiElementFactory?.createMethodFromText(newMethodCode, method)?.let {
-//                            method.body?.add(it)
-                            method.replace(it)
-                        }
-                    }
-                }
-            }
-        }
+        val runAction = CodeCompleteAction(methodName, method)
 
         return Info(
             DevtiIcons.AI_COPILOT,
             { "Code Complete " },
             runAction
         )
+    }
+}
+
+class CodeCompleteAction(
+    private val methodName: @NlsSafe String,
+    private val method: PsiMethod
+) : AnAction({ "Code Complete for $methodName" }, DevtiIcons.AI_COPILOT) {
+    override fun actionPerformed(e: AnActionEvent) {
+        val project = e.project ?: return
+        val psiElementFactory = project.let { JavaPsiFacade.getElementFactory(it) }
+
+        ApplicationManager.getApplication().invokeLater {
+            val openAiVersion = DevtiSettingsState.getInstance()?.openAiVersion ?: return@invokeLater
+            val openAiKey = DevtiSettingsState.getInstance()?.openAiKey ?: return@invokeLater
+
+            val apiExecutor = OpenAIExecutor(openAiKey, openAiVersion)
+
+            val className = if (method.parent is PsiClass) {
+                (method.parent as PsiClass).name
+            } else {
+                method.containingFile?.name?.replace(".java", "")
+            }
+
+            val newMethodCode = apiExecutor.codeCompleteFor(method.text, className).trimIndent()
+
+            if (newMethodCode.isEmpty()) {
+                log.error("no code complete result")
+                return@invokeLater
+            }
+            log.warn("newMethodCode: $newMethodCode")
+
+            WriteCommandAction.runWriteCommandAction(project) {
+                psiElementFactory?.createMethodFromText(newMethodCode, method)?.let {
+                    method.replace(it)
+                }
+            }
+        }
     }
 
     companion object {

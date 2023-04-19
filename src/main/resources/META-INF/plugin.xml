@@ -20,6 +20,10 @@
                                   implementationClass="cc.unitmesh.devti.language.CodeCompleteMarkerContributor"/>
         <runLineMarkerContributor language="JAVA"
                                   implementationClass="cc.unitmesh.devti.language.CodeCommentsMarkerContributor"/>
+        <runLineMarkerContributor language="JAVA"
+                                  implementationClass="cc.unitmesh.devti.language.FindBugMarkerContributor"/>
+        <runLineMarkerContributor language="JAVA"
+                                  implementationClass="cc.unitmesh.devti.language.RefactorCodeMarkerContributor"/>
 
         <!-- analysis story, and    -->
         <runLineMarkerContributor language="JAVA"
