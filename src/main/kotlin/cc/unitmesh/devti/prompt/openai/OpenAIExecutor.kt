@@ -32,8 +32,12 @@ class OpenAIExecutor(val openAIKey: String, val version: String) : AiExecutor, D
 
 
         val completion = service.createChatCompletion(completionRequest)
-        return completion
+        val output = completion
             .choices[0].message.content
+
+        logger.warn("output: $output")
+
+        return output
     }
 
     override fun fillStoryDetail(project: SimpleProjectInfo, story: String): String {

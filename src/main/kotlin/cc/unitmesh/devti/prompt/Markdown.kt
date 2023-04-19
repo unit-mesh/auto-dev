@@ -11,6 +11,16 @@ fun parseCodeFromString(markdown: String): String {
     val node: Node = parser.parse(markdown)
     val visitor = CodeVisitor()
     node.accept(visitor)
+
+    if (visitor.code.isEmpty()) {
+        // is still a code block
+        if (markdown.contains("public") || markdown.contains("private")) {
+            return markdown
+        }
+
+        return markdown
+    }
+
     return visitor.code
 }
 
