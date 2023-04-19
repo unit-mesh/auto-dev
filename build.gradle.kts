@@ -38,7 +38,7 @@ dependencies {
 //    implementation(libs.annotations)
     implementation("org.kohsuke:github-api:1.314")
     implementation("com.aallam.openai:openai-client:3.2.0")
-    runtimeOnly("io.ktor:ktor-client-okhttp:2.2.4")
+    runtimeOnly("io.ktor:ktor-client-apache:2.2.4")
 
     implementation("org.commonmark:commonmark:0.21.0")
     implementation("org.slf4j:slf4j-api:2.0.7")
