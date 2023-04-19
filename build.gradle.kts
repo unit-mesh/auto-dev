@@ -11,6 +11,19 @@ buildscript {
     }
 }
 
+//configurations.all {
+//    resolutionStrategy.force("com.squareup.okio:okio:3.3.0")
+//
+//    resolutionStrategy.force("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+//    resolutionStrategy.force("org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.0")
+//
+//    resolutionStrategy.force("org.jetbrains.kotlin:kotlin-stdlib:1.8.20")
+//    resolutionStrategy.force("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.20")
+//    resolutionStrategy.force("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.20")
+//    resolutionStrategy.force("org.jetbrains.kotlin:kotlin-stdlib-common:1.8.20")
+////    resolutionStrategy.failOnVersionConflict()
+//}
+
 fun properties(key: String) = providers.gradleProperty(key)
 fun environment(key: String) = providers.environmentVariable(key)
 
@@ -37,13 +50,12 @@ repositories {
 dependencies {
 //    implementation(libs.annotations)
     implementation("org.kohsuke:github-api:1.314")
-    implementation("com.aallam.openai:openai-client:3.2.0")
-    implementation("io.ktor:ktor-client-apache:2.2.4")
+    implementation("com.aallam.openai:openai-client:3.2.1")
+    implementation("io.ktor:ktor-client-cio:2.2.4")
+    implementation("io.ktor:ktor-client-okhttp:2.2.4")
 
     implementation("org.commonmark:commonmark:0.21.0")
-    implementation("org.slf4j:slf4j-api:2.0.7")
     implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
-    implementation(libs.ktor.client.apache)
 }
 
 // Configure Gradle IntelliJ Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
