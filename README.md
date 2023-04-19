@@ -4,6 +4,10 @@
 
 > AutoDev 是一款高度自动化的 AI 辅助编程工具。AutoDev 能够与您的需求管理系统（例如 Jira、Trello、Github Issue 等）直接对接。在 IDE 中，您只需简单点击，AutoDev 会根据您的需求自动为您生成代码。您所需做的，仅仅是对生成的代码进行质量检查。
 
+<p align="center">
+  <img src="src/main/resources/META-INF/pluginIcon.svg" />
+</p>
+
 ## Usage
 
 1. Install
