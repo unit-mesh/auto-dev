@@ -5,7 +5,7 @@
 ## Usage
 
 1. Install
-    - method 1. Download plugin from release page: [release](https://github.com/phodal/auto-dev/releases)
+    - method 1. Download plugin from release page: [release](https://github.com/unit-mesh/auto-dev/releases)
     - method 2. Install plugin in your IDE
 2. configure GitHub and OpenAI config
 
