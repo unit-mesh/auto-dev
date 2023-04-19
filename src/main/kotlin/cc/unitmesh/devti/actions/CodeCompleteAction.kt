@@ -10,6 +10,10 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.progress.EmptyProgressIndicator
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
@@ -23,35 +27,50 @@ class CodeCompleteAction(
         val project = e.project ?: return
         val psiElementFactory = project.let { JavaPsiFacade.getElementFactory(it) }
 
-        ApplicationManager.getApplication().invokeLater {
-            // 1. get openai key and version
-            val openAiVersion = DevtiSettingsState.getInstance()?.openAiVersion ?: return@invokeLater
-            val openAiKey = DevtiSettingsState.getInstance()?.openAiKey ?: return@invokeLater
+        val task = object : Task.Backgroundable(project, "Code completing", true) {
+            override fun run(indicator: ProgressIndicator) {
+                // 1. get openai key and version
+                val openAiVersion = DevtiSettingsState.getInstance()?.openAiVersion ?: return
+                val openAiKey = DevtiSettingsState.getInstance()?.openAiKey ?: return
 
+                indicator.fraction = 0.2
+                indicator.text = "Preparing code complete prompt"
 
-            // 2. get code complete result
-            val apiExecutor = OpenAIExecutor(openAiKey, openAiVersion)
+                // 2. get code complete result
+                val apiExecutor = OpenAIExecutor(openAiKey, openAiVersion)
 
-            val className = if (method.parent is PsiClass) {
-                (method.parent as PsiClass).name
-            } else {
-                method.containingFile?.name?.replace(".java", "")
-            }
+                indicator.fraction = 0.5
+                indicator.text = "Call OpenAI API..."
 
-            // 3. replace method
-            val newMethodCode = apiExecutor.codeCompleteFor(method.text, className).trimIndent()
-
-            if (newMethodCode.isEmpty()) {
-                log.error("no code complete result")
-                return@invokeLater
-            }
-            log.warn("newMethodCode: $newMethodCode")
-
-            WriteCommandAction.runWriteCommandAction(project) {
-                psiElementFactory?.createMethodFromText(newMethodCode, method)?.let {
-                    method.replace(it)
+                val className = if (method.parent is PsiClass) {
+                    (method.parent as PsiClass).name
+                } else {
+                    method.containingFile?.name?.replace(".java", "")
                 }
+
+                val newMethodCode = apiExecutor.codeCompleteFor(method.text, className).trimIndent()
+
+                indicator.fraction = 0.8
+                indicator.text = "Start replacing method"
+
+                if (newMethodCode.isEmpty()) {
+                    log.error("no code complete result")
+                    return
+                }
+                log.warn("newMethodCode: $newMethodCode")
+
+                WriteCommandAction.runWriteCommandAction(project) {
+                    psiElementFactory?.createMethodFromText(newMethodCode, method)?.let {
+                        method.replace(it)
+                    }
+                }
+
+                indicator.fraction = 1.0
             }
+        }
+
+        ApplicationManager.getApplication().invokeLater {
+            ProgressManager.getInstance().run(task)
         }
     }
 
