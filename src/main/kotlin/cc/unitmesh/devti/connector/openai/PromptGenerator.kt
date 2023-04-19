@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.prompt.openai
+package cc.unitmesh.devti.connector.openai
 
 import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.kanban.SimpleProjectInfo

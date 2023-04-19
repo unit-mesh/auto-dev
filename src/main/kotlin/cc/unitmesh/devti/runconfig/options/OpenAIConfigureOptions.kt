@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.runconfig.options
 
-import cc.unitmesh.devti.prompt.openai.DtOpenAIConfig
+import cc.unitmesh.devti.connector.openai.DtOpenAIConfig
 import com.intellij.execution.configurations.ModuleBasedConfigurationOptions
 import com.intellij.openapi.components.StoredProperty
 

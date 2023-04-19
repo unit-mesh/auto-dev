@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.prompt.openai
+package cc.unitmesh.devti.connector.openai
 
 enum class DtOpenAIVersion(val index: Int, val title: String) {
     GPT35TURBO(0, "gpt-3.5-turbo"),

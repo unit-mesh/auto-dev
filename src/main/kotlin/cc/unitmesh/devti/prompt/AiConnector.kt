@@ -1,5 +1,5 @@
 package cc.unitmesh.devti.prompt
 
-interface AiExecutor {
+interface AiConnector {
     suspend fun prompt(prompt: String): String
 }

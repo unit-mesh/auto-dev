@@ -4,7 +4,7 @@ import cc.unitmesh.devti.DevtiBundle
 import cc.unitmesh.devti.DevtiFlow
 import cc.unitmesh.devti.analysis.JavaCrudProcessor
 import cc.unitmesh.devti.kanban.impl.GitHubIssue
-import cc.unitmesh.devti.prompt.openai.OpenAIExecutor
+import cc.unitmesh.devti.connector.openai.OpenAIConnector
 import cc.unitmesh.devti.runconfig.config.AutoCRUDConfiguration
 import cc.unitmesh.devti.runconfig.options.AutoCRUDConfigurationOptions
 import cc.unitmesh.devti.settings.DevtiSettingsState
@@ -41,7 +41,7 @@ class AutoCRUDState(
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
         val javaAuto = JavaCrudProcessor(project)
         val gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)
-        val openAIRunner = OpenAIExecutor(openAiApiKey, openAiVersion)
+        val openAIRunner = OpenAIConnector(openAiApiKey, openAiVersion)
         val devtiFlow = DevtiFlow(gitHubIssue, openAIRunner, javaAuto)
 
         log.warn(configuration.toString())

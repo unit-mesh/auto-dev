@@ -1,8 +1,8 @@
-package cc.unitmesh.devti.prompt.openai
+package cc.unitmesh.devti.connector.openai
 
 import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.kanban.SimpleProjectInfo
-import cc.unitmesh.devti.prompt.AiExecutor
+import cc.unitmesh.devti.prompt.AiConnector
 import cc.unitmesh.devti.prompt.DevtiFlowAction
 import cc.unitmesh.devti.prompt.parseCodeFromString
 import com.intellij.openapi.diagnostic.Logger
@@ -15,7 +15,7 @@ import com.theokanning.openai.service.OpenAiService
 import kotlinx.coroutines.runBlocking
 
 
-class OpenAIExecutor(val openAIKey: String, val version: String) : AiExecutor, DevtiFlowAction {
+class OpenAIConnector(val openAIKey: String, val version: String) : AiConnector, DevtiFlowAction {
     private val promptGenerator = PromptGenerator()
     var service: OpenAiService = OpenAiService(openAIKey)
 
@@ -83,6 +83,6 @@ class OpenAIExecutor(val openAIKey: String, val version: String) : AiExecutor, D
     }
 
     companion object {
-        private val logger: Logger = logger<OpenAIExecutor>()
+        private val logger: Logger = logger<OpenAIConnector>()
     }
 }

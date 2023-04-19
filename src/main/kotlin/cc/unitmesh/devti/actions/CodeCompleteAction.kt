@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.actions
 
 import cc.unitmesh.devti.DevtiIcons
-import cc.unitmesh.devti.prompt.openai.OpenAIExecutor
+import cc.unitmesh.devti.connector.openai.OpenAIConnector
 import cc.unitmesh.devti.runconfig.AutoCRUDState
 import cc.unitmesh.devti.settings.DevtiSettingsState
 import com.intellij.openapi.actionSystem.AnAction
@@ -10,7 +10,6 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.progress.EmptyProgressIndicator
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -37,7 +36,7 @@ class CodeCompleteAction(
                 indicator.text = "Preparing code complete prompt"
 
                 // 2. get code complete result
-                val apiExecutor = OpenAIExecutor(openAiKey, openAiVersion)
+                val apiExecutor = OpenAIConnector(openAiKey, openAiVersion)
 
                 indicator.fraction = 0.5
                 indicator.text = "Call OpenAI API..."
