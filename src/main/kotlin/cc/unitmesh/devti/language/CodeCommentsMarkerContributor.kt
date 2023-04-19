@@ -54,7 +54,6 @@ class AutoCommentAction(
 
             // 2. get code complete result
             val apiExecutor = OpenAIExecutor(openAiKey, openAiVersion)
-
             val newMethodCode = apiExecutor.autoComment(method.text).trimIndent()
 
             if (newMethodCode.isEmpty()) {

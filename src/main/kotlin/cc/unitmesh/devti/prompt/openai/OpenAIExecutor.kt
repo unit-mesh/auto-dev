@@ -58,8 +58,7 @@ class OpenAIExecutor(val openAIKey: String, val version: String) : AiExecutor, D
         val promptText = gptPromptText.fillUpdateMethod(clazz, storyDetail)
         logger.warn("needUpdateMethodForController prompt text: $promptText")
         return runBlocking {
-            val prompt = prompt(promptText)
-            return@runBlocking prompt
+            return@runBlocking prompt(promptText)
         }
     }
 
@@ -68,8 +67,7 @@ class OpenAIExecutor(val openAIKey: String, val version: String) : AiExecutor, D
         logger.warn("codeCompleteFor prompt text: $promptText")
         return runBlocking {
             val prompt = prompt(promptText)
-            val code = parseCodeFromString(prompt)
-            return@runBlocking code
+            return@runBlocking parseCodeFromString(prompt)
         }
     }
 
@@ -78,8 +76,7 @@ class OpenAIExecutor(val openAIKey: String, val version: String) : AiExecutor, D
         logger.warn("autoComponent prompt text: $promptText")
         return runBlocking {
             val prompt = prompt(promptText)
-            val code = parseCodeFromString(prompt)
-            return@runBlocking code
+            return@runBlocking parseCodeFromString(prompt)
         }
     }
 
