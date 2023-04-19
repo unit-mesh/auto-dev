@@ -58,4 +58,11 @@ class GptPromptText() {
             .replace("{code}", methodCode)
             .replace("{className}", className ?: "")
     }
+
+    fun autoComment(methodCode: String): String {
+        val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/code_comments.txt")!!
+        val promptTextString = promptText.bufferedReader().use { it.readText() }
+        return promptTextString
+            .replace("{code}", methodCode)
+    }
 }

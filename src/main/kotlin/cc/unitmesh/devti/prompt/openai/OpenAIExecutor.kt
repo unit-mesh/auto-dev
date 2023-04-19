@@ -69,7 +69,17 @@ class OpenAIExecutor(val openAIKey: String, val version: String) : AiExecutor, D
         return runBlocking {
             val prompt = prompt(promptText)
             val code = parseCodeFromString(prompt)
-            return@runBlocking prompt
+            return@runBlocking code
+        }
+    }
+
+    fun autoComment(text: @NlsSafe String): String {
+        val promptText = gptPromptText.autoComment(text)
+        logger.warn("autoComponent prompt text: $promptText")
+        return runBlocking {
+            val prompt = prompt(promptText)
+            val code = parseCodeFromString(prompt)
+            return@runBlocking code
         }
     }
 
