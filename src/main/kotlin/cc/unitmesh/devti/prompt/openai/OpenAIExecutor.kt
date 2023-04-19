@@ -5,37 +5,35 @@ import cc.unitmesh.devti.kanban.SimpleProjectInfo
 import cc.unitmesh.devti.prompt.AiExecutor
 import cc.unitmesh.devti.prompt.DevtiFlowAction
 import cc.unitmesh.devti.prompt.parseCodeFromString
-import com.aallam.openai.api.BetaOpenAI
-import com.aallam.openai.api.chat.ChatCompletion
-import com.aallam.openai.api.chat.ChatCompletionRequest
-import com.aallam.openai.api.chat.ChatMessage
-import com.aallam.openai.api.chat.ChatRole
-import com.aallam.openai.api.model.ModelId
-import com.aallam.openai.client.OpenAI
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.NlsSafe
+import com.theokanning.openai.completion.chat.ChatCompletionRequest
+import com.theokanning.openai.completion.chat.ChatMessage
+import com.theokanning.openai.completion.chat.ChatMessageRole
+import com.theokanning.openai.service.OpenAiService
 import kotlinx.coroutines.runBlocking
 
+
 class OpenAIExecutor(val openAIKey: String, val version: String) : AiExecutor, DevtiFlowAction {
-    private val openAI: OpenAI = OpenAI(openAIKey)
     private val promptGenerator = PromptGenerator()
+    var service: OpenAiService = OpenAiService(openAIKey)
 
-    @OptIn(BetaOpenAI::class)
     override suspend fun prompt(prompt: String): String {
-        val chatCompletionRequest = ChatCompletionRequest(
-            model = ModelId(version),
-            temperature = 0.0,
-            messages = listOf(
-                ChatMessage(
-                    role = ChatRole.User,
-                    content = prompt
-                )
-            )
-        )
+        val messages: MutableList<ChatMessage> = ArrayList()
+        val systemMessage = ChatMessage(ChatMessageRole.USER.value(), prompt)
+        messages.add(systemMessage)
 
-        val completion: ChatCompletion = openAI.chatCompletion(chatCompletionRequest)
-        return completion.choices.first().message?.content ?: ""
+        val completionRequest = ChatCompletionRequest.builder()
+            .model(version)
+            .temperature(0.0)
+            .messages(messages)
+            .build()
+
+
+        val completion = service.createChatCompletion(completionRequest)
+        return completion
+            .choices[0].message.content
     }
 
     override fun fillStoryDetail(project: SimpleProjectInfo, story: String): String {

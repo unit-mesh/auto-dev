@@ -50,9 +50,7 @@ repositories {
 dependencies {
 //    implementation(libs.annotations)
     implementation("org.kohsuke:github-api:1.314")
-    implementation("com.aallam.openai:openai-client:3.2.1")
-    implementation("io.ktor:ktor-client-cio:2.2.4")
-    implementation("io.ktor:ktor-client-okhttp:2.2.4")
+    implementation("com.theokanning.openai-gpt3-java:service:0.12.0")
 
     implementation("org.commonmark:commonmark:0.21.0")
     implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
