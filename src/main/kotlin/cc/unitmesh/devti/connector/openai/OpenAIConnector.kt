@@ -2,8 +2,8 @@ package cc.unitmesh.devti.connector.openai
 
 import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.kanban.SimpleProjectInfo
-import cc.unitmesh.devti.prompt.AiConnector
-import cc.unitmesh.devti.prompt.DevtiFlowAction
+import cc.unitmesh.devti.connector.AiConnector
+import cc.unitmesh.devti.connector.DevtiFlowAction
 import cc.unitmesh.devti.prompt.parseCodeFromString
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger

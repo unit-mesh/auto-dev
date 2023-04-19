@@ -4,7 +4,7 @@ import cc.unitmesh.devti.analysis.CrudProcessor
 import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.kanban.Kanban
 import cc.unitmesh.devti.kanban.SimpleStory
-import cc.unitmesh.devti.prompt.DevtiFlowAction
+import cc.unitmesh.devti.connector.DevtiFlowAction
 import cc.unitmesh.devti.prompt.parseCodeFromString
 import cc.unitmesh.devti.runconfig.AutoCRUDState
 import com.intellij.openapi.diagnostic.Logger

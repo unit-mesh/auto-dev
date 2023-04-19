@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.prompt
+package cc.unitmesh.devti.connector
 
 import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.kanban.SimpleProjectInfo
