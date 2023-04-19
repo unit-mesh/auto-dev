@@ -21,6 +21,7 @@ import com.intellij.psi.PsiMethod
 
 class CodeCompleteMarkerContributor : RunLineMarkerContributor() {
     override fun getInfo(element: PsiElement): Info? {
+        // should be search from leaf element
         if (element !is PsiIdentifier) return null
         val method = element.parent
         if (method !is PsiMethod) return null
@@ -46,9 +47,12 @@ class CodeCompleteAction(
         val psiElementFactory = project.let { JavaPsiFacade.getElementFactory(it) }
 
         ApplicationManager.getApplication().invokeLater {
+            // 1. get openai key and version
             val openAiVersion = DevtiSettingsState.getInstance()?.openAiVersion ?: return@invokeLater
             val openAiKey = DevtiSettingsState.getInstance()?.openAiKey ?: return@invokeLater
 
+
+            // 2. get code complete result
             val apiExecutor = OpenAIExecutor(openAiKey, openAiVersion)
 
             val className = if (method.parent is PsiClass) {
@@ -57,6 +61,7 @@ class CodeCompleteAction(
                 method.containingFile?.name?.replace(".java", "")
             }
 
+            // 3. replace method
             val newMethodCode = apiExecutor.codeCompleteFor(method.text, className).trimIndent()
 
             if (newMethodCode.isEmpty()) {
