@@ -1,9 +1,9 @@
 package cc.unitmesh.devti.connector.openai
 
 import cc.unitmesh.devti.analysis.DtClass
-import cc.unitmesh.devti.kanban.SimpleProjectInfo
-import cc.unitmesh.devti.connector.AiConnector
+import cc.unitmesh.devti.connector.CodeCopilot
 import cc.unitmesh.devti.connector.DevtiFlowAction
+import cc.unitmesh.devti.kanban.SimpleProjectInfo
 import cc.unitmesh.devti.prompt.parseCodeFromString
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
@@ -15,13 +15,13 @@ import com.theokanning.openai.service.OpenAiService
 import kotlinx.coroutines.runBlocking
 
 
-class OpenAIConnector(val openAIKey: String, val version: String) : AiConnector, DevtiFlowAction {
+class OpenCodeCopilot(val openAIKey: String, val version: String) : CodeCopilot, DevtiFlowAction {
     private val promptGenerator = PromptGenerator()
     var service: OpenAiService = OpenAiService(openAIKey)
 
-    override suspend fun prompt(prompt: String): String {
+    private fun prompt(instruction: String): String {
         val messages: MutableList<ChatMessage> = ArrayList()
-        val systemMessage = ChatMessage(ChatMessageRole.USER.value(), prompt)
+        val systemMessage = ChatMessage(ChatMessageRole.USER.value(), instruction)
         messages.add(systemMessage)
 
         val completionRequest = ChatCompletionRequest.builder()
@@ -64,7 +64,7 @@ class OpenAIConnector(val openAIKey: String, val version: String) : AiConnector,
         }
     }
 
-    fun codeCompleteFor(text: @NlsSafe String, className: @NlsSafe String?): String {
+    override fun codeCompleteFor(text: @NlsSafe String, className: @NlsSafe String): String {
         val promptText = promptGenerator.codeComplete(text, className)
         logger.warn("codeCompleteFor prompt text: $promptText")
         return runBlocking {
@@ -73,7 +73,7 @@ class OpenAIConnector(val openAIKey: String, val version: String) : AiConnector,
         }
     }
 
-    fun autoComment(text: @NlsSafe String): String {
+    override fun autoComment(text: @NlsSafe String): String {
         val promptText = promptGenerator.autoComment(text)
         logger.warn("autoComponent prompt text: $promptText")
         return runBlocking {
@@ -83,6 +83,6 @@ class OpenAIConnector(val openAIKey: String, val version: String) : AiConnector,
     }
 
     companion object {
-        private val logger: Logger = logger<OpenAIConnector>()
+        private val logger: Logger = logger<OpenCodeCopilot>()
     }
 }

@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.actions
 
 import cc.unitmesh.devti.DevtiIcons
-import cc.unitmesh.devti.connector.openai.OpenAIConnector
+import cc.unitmesh.devti.connector.openai.OpenCodeCopilot
 import cc.unitmesh.devti.runconfig.AutoCRUDState
 import cc.unitmesh.devti.settings.DevtiSettingsState
 import com.intellij.openapi.actionSystem.AnAction
@@ -36,7 +36,7 @@ class CodeCompleteAction(
                 indicator.text = "Preparing code complete prompt"
 
                 // 2. get code complete result
-                val apiExecutor = OpenAIConnector(openAiKey, openAiVersion)
+                val apiExecutor = OpenCodeCopilot(openAiKey, openAiVersion)
 
                 indicator.fraction = 0.5
                 indicator.text = "Call OpenAI API..."
@@ -47,7 +47,7 @@ class CodeCompleteAction(
                     method.containingFile?.name?.replace(".java", "")
                 }
 
-                val newMethodCode = apiExecutor.codeCompleteFor(method.text, className).trimIndent()
+                val newMethodCode = apiExecutor.codeCompleteFor(method.text, className!!).trimIndent()
 
                 indicator.fraction = 0.8
                 indicator.text = "Start replacing method"
