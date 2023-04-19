@@ -19,7 +19,7 @@ import kotlinx.coroutines.runBlocking
 
 class OpenAIExecutor(val openAIKey: String, val version: String) : AiExecutor, DevtiFlowAction {
     private val openAI: OpenAI = OpenAI(openAIKey)
-    private val gptPromptText = GptPromptText()
+    private val promptGenerator = PromptGenerator()
 
     @OptIn(BetaOpenAI::class)
     override suspend fun prompt(prompt: String): String {
@@ -39,7 +39,7 @@ class OpenAIExecutor(val openAIKey: String, val version: String) : AiExecutor, D
     }
 
     override fun fillStoryDetail(project: SimpleProjectInfo, story: String): String {
-        val promptText = gptPromptText.fillStoryDetail(project, story)
+        val promptText = promptGenerator.fillStoryDetail(project, story)
         return runBlocking {
             val prompt = prompt(promptText)
             return@runBlocking prompt
@@ -47,7 +47,7 @@ class OpenAIExecutor(val openAIKey: String, val version: String) : AiExecutor, D
     }
 
     override fun analysisEndpoint(storyDetail: String, classes: List<DtClass>): String {
-        val promptText = gptPromptText.fillEndpoint(storyDetail, classes)
+        val promptText = promptGenerator.fillEndpoint(storyDetail, classes)
         return runBlocking {
             val prompt = prompt(promptText)
             return@runBlocking prompt
@@ -55,7 +55,7 @@ class OpenAIExecutor(val openAIKey: String, val version: String) : AiExecutor, D
     }
 
     override fun needUpdateMethodForController(targetEndpoint: String, clazz: DtClass, storyDetail: String): String {
-        val promptText = gptPromptText.fillUpdateMethod(clazz, storyDetail)
+        val promptText = promptGenerator.fillUpdateMethod(clazz, storyDetail)
         logger.warn("needUpdateMethodForController prompt text: $promptText")
         return runBlocking {
             return@runBlocking prompt(promptText)
@@ -63,7 +63,7 @@ class OpenAIExecutor(val openAIKey: String, val version: String) : AiExecutor, D
     }
 
     fun codeCompleteFor(text: @NlsSafe String, className: @NlsSafe String?): String {
-        val promptText = gptPromptText.fillCodeComplete(text, className)
+        val promptText = promptGenerator.fillCodeComplete(text, className)
         logger.warn("codeCompleteFor prompt text: $promptText")
         return runBlocking {
             val prompt = prompt(promptText)
@@ -72,7 +72,7 @@ class OpenAIExecutor(val openAIKey: String, val version: String) : AiExecutor, D
     }
 
     fun autoComment(text: @NlsSafe String): String {
-        val promptText = gptPromptText.autoComment(text)
+        val promptText = promptGenerator.autoComment(text)
         logger.warn("autoComponent prompt text: $promptText")
         return runBlocking {
             val prompt = prompt(promptText)

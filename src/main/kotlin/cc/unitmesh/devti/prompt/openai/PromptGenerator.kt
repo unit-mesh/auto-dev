@@ -5,7 +5,7 @@ import cc.unitmesh.devti.kanban.SimpleProjectInfo
 import com.intellij.openapi.util.NlsSafe
 import java.io.InputStream
 
-class GptPromptText() {
+class PromptGenerator() {
     // 1. read resources/prompts/create_story_detail.txt
     // 2. replace {project} with project name
     fun fillStoryDetail(project: SimpleProjectInfo, story: String): String {
@@ -15,22 +15,6 @@ class GptPromptText() {
         return promptTextString
             .replace("{project}", project.name + ":" + project.description)
             .replace("{story}", story)
-    }
-
-    fun generateControllerCode(story: String): String {
-        return "This is a controller code about a ${story}"
-    }
-
-    fun generateServiceCode(story: String): String {
-        return "This is a service code about a ${story}"
-    }
-
-    fun generateModelCode(story: String): String {
-        return "This is a model code about a ${story}"
-    }
-
-    fun generateRepositoryCode(story: String): String {
-        return "This is a repository code about a ${story}"
     }
 
     fun fillEndpoint(storyDetail: String, files: List<DtClass>): String {

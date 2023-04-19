@@ -5,15 +5,15 @@ import cc.unitmesh.devti.kanban.SimpleProjectInfo
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class GptPromptTextTest {
+class PromptGeneratorTest {
 
     @Test
     fun should_fill_story_detail() {
-        val gptPromptText = GptPromptText()
+        val promptGenerator = PromptGenerator()
         val projectInfo = SimpleProjectInfo("", "DevTi", "description")
         val story = "story information"
 
-        val result = gptPromptText.fillStoryDetail(projectInfo, story)
+        val result = promptGenerator.fillStoryDetail(projectInfo, story)
         assertEquals(
             """你是一个敏捷项目的 BA，请根据如下的信息，编写用户故事。
 
@@ -39,10 +39,10 @@ AC 1:  xxx
 
     @Test
     fun should_fill_end_point_prompt() {
-        val gptPromptText = GptPromptText()
+        val promptGenerator = PromptGenerator()
         val storyDetail = "用户故事：可以选择宝贝出行服务"
         val files: List<DtClass> = listOf(DtClass("TaxiController", emptyList()), DtClass("GpsController", emptyList()))
-        val result = gptPromptText.fillEndpoint(storyDetail, files)
+        val result = promptGenerator.fillEndpoint(storyDetail, files)
         assertEquals("""请根据下面的用户故事 和 Controller 列表。要求：
 
 1. 返回最合适的 Controller 名字
