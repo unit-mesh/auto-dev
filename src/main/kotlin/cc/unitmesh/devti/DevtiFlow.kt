@@ -21,39 +21,25 @@ class DevtiFlow(
     private val flowAction: DevtiFlowAction,
     private val processor: CrudProcessor? = null
 ) {
-//    fun processAll(id: String) {
-//        val storyDetail = fillStoryDetail(id)
-//
-//        val target = fetchSuggestEndpoint(storyDetail)
-//        if (target == null) {
-//            logger.warn("no suggest endpoint found")
-//            return
-//        }
-//
-//        updateEndpointMethod(target, storyDetail)
-//    }
-
     /**
-     * Step 3: update endpoint method
+     * Step 1: check story detail is valid, if not, fill story detail
      */
-    fun updateEndpointMethod(target: TargetEndpoint, storyDetail: String) {
-        try {
-            val code = fetchCode(target.endpoint, target.controller, storyDetail).trimIndent()
-            if (code.isEmpty()) {
-                logger.warn("update method code is empty, skip")
-            } else {
-                processor?.createControllerOrUpdateMethod(target.controller.name, code, target.hasMatchedController)
-            }
-        } catch (e: Exception) {
-            logger.warn("update method failed: $e, try to fill update method 2nd")
+    fun fillStoryDetail(id: String): String {
+        val simpleProject = kanban.getProjectInfo()
+        val story = kanban.getStoryById(id)
 
-            val code = fetchCode(target.endpoint, target.controller, storyDetail).trimIndent()
-            if (code.isEmpty()) {
-                logger.warn("update method code is empty, skip")
-            } else {
-                processor?.createControllerOrUpdateMethod(target.controller.name, code, target.hasMatchedController)
-            }
+        // 1. check story detail is valid, if not, fill story detail
+        var storyDetail = story.description
+        if (!kanban.isValidStory(storyDetail)) {
+            logger.warn("story detail is not valid, fill story detail")
+
+            storyDetail = flowAction.fillStoryDetail(simpleProject, story.description)
+
+            val newStory = SimpleStory(story.id, story.title, storyDetail)
+            kanban.updateStoryDetail(newStory)
         }
+        logger.warn("user story detail: $storyDetail")
+        return storyDetail
     }
 
     /**
@@ -81,32 +67,34 @@ class DevtiFlow(
     }
 
     /**
-     * Step 1: check story detail is valid, if not, fill story detail
+     * Step 3: update endpoint method
      */
-    fun fillStoryDetail(id: String): String {
-        val simpleProject = kanban.getProjectInfo()
-        val story = kanban.getStoryById(id)
+    fun updateEndpointMethod(target: TargetEndpoint, storyDetail: String) {
+        try {
+            val code = fetchEndpoint(target.endpoint, target.controller, storyDetail).trimIndent()
+            if (code.isEmpty()) {
+                logger.warn("update method code is empty, skip")
+            } else {
+                processor?.createControllerOrUpdateMethod(target.controller.name, code, target.hasMatchedController)
+            }
+        } catch (e: Exception) {
+            logger.warn("update method failed: $e, try to fill update method 2nd")
 
-        // 1. check story detail is valid, if not, fill story detail
-        var storyDetail = story.description
-        if (!kanban.isValidStory(storyDetail)) {
-            logger.warn("story detail is not valid, fill story detail")
-
-            storyDetail = flowAction.fillStoryDetail(simpleProject, story.description)
-
-            val newStory = SimpleStory(story.id, story.title, storyDetail)
-            kanban.updateStoryDetail(newStory)
+            val code = fetchEndpoint(target.endpoint, target.controller, storyDetail).trimIndent()
+            if (code.isEmpty()) {
+                logger.warn("update method code is empty, skip")
+            } else {
+                processor?.createControllerOrUpdateMethod(target.controller.name, code, target.hasMatchedController)
+            }
         }
-        logger.warn("user story detail: $storyDetail")
-        return storyDetail
     }
 
-    private fun fetchCode(
+    private fun fetchEndpoint(
         targetEndpoint: String,
         targetController: DtClass,
         storyDetail: String
     ): String {
-        val content = flowAction.needUpdateMethodForController(targetEndpoint, targetController, storyDetail)
+        val content = flowAction.needUpdateMethodOfController(targetEndpoint, targetController, storyDetail)
         val code = parseCodeFromString(content)
         logger.warn("update method code: $code")
         return code

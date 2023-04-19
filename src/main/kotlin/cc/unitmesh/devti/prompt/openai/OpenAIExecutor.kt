@@ -54,7 +54,7 @@ class OpenAIExecutor(val openAIKey: String, val version: String) : AiExecutor, D
         }
     }
 
-    override fun needUpdateMethodForController(targetEndpoint: String, clazz: DtClass, storyDetail: String): String {
+    override fun needUpdateMethodOfController(targetEndpoint: String, clazz: DtClass, storyDetail: String): String {
         val promptText = promptGenerator.updateControllerMethod(clazz, storyDetail)
         logger.warn("needUpdateMethodForController prompt text: $promptText")
         return runBlocking {
