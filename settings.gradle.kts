@@ -1,1 +1,1 @@
-rootProject.name = "autocrud"
+rootProject.name = "AutoDev"
