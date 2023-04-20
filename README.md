@@ -8,25 +8,28 @@
 [![Version](https://img.shields.io/jetbrains/plugin/v/21520-autodev.svg)](https://plugins.jetbrains.com/plugin/21520-autodev)
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/21520-autodev.svg)](https://plugins.jetbrains.com/plugin/21520-autodev)
 
-> AutoDev 是一款高度自动化的 AI 辅助编程工具。AutoDev 能够与您的需求管理系统（例如 Jira、Trello、Github Issue 等）直接对接。在 IDE 中，您只需简单点击，AutoDev 会根据您的需求自动为您生成代码。您所需做的，仅仅是对生成的代码进行质量检查。
+> AutoDev 是一款高度自动化的 AI 辅助编程工具。AutoDev 能够与您的需求管理系统（例如 Jira、Trello、Github Issue 等）直接对接。在
+> IDE 中，您只需简单点击，AutoDev 会根据您的需求自动为您生成代码。您所需做的，仅仅是对生成的代码进行质量检查。
 
 ## Usage
 
 1. Install
-    - method 1. Download plugin from release page: [release](https://github.com/unit-mesh/auto-dev/releases)
-    - method 2. Install plugin in your IDE
-2. configure GitHub and OpenAI config
+    - method 1. Install from JetBrains Plugin Repository: [AutoDev](https://plugins.jetbrains.com/plugin/21520-autodev)
+    - method 2. Download plugin from release page: [release](https://github.com/unit-mesh/auto-dev/releases) and install
+      plugin in your IDE
+2. configure GitHub Token (optional) and OpenAI config in `Settings` -> `Tools` -> `DevTi`
 
 ### Copilot mode
 
-Click as you want:
+1. click as you want:
 
 ![Copilot Mode](https://unitmesh.cc/auto-dev/copilot-mode.png)
 
 ### AutoCRUD mode
 
-1. add `// devti://story/github/1` comments in your code
-2. click `AutoDev` button in the right top corner of the IDE
+1. add `// devti://story/github/1` comments in your code.
+2. configure GitHub repository for Run Configuration.
+3. click `AutoDev` button in the comments' left.
 
 Token Configure:
 
@@ -55,39 +58,31 @@ AutoDev 处理过程：
 
 - [ ] Languages Support
     - [x] Java
+    - [ ] Kotlin
+    - [ ] TypeScript
 - [x] DevTi Protocol
     - [x] format 1: `devti://story/github/1102`
 - [ ] Intelli code change
     - [x] Endpoint modify suggestions
     - [x] Controller Suggestion
-      - [x] import all Spring Controller imports
-      - [ ] auto update imports
+        - [x] import all common imports
+        - [ ] auto update imports
     - [ ] Service Suggestion
     - [ ] Repository Suggestion
     - [ ] Model Suggestion
 - [ ] Code AI
     - [x] Generate code
     - [ ] Generate test
-    - [ ] Add comments
+    - [x] Add comments
     - [ ] Generate document
     - [ ] Fix bug...
-
-### DevTi Todos:
-
-LoRA Training
-
-- UserStory Analysis
-- Endpoint Suggestion
-- Code Suggestion
-
-### DevTi Server
-
-- [ ] OpenAI Proxy ?
+- [ ] Custom LLM Server
 
 ## Development
 
 1. `git clone https://github.com/unit-mesh/AutoDev.git`
 2. open in IntelliJ IDEA
+3. `./gradlew runIde`
 
 ## License
 
