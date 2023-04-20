@@ -10,7 +10,7 @@ import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 
-open class AutoCRUDConfigurationProducer : DevtiConfigurationProducer() {
+open class AutoReviewConfigureProducer : DevtiConfigurationProducer() {
     init {
         registerConfigProvider { elements -> createConfigFor(elements) }
     }
@@ -33,7 +33,7 @@ open class AutoCRUDConfigurationProducer : DevtiConfigurationProducer() {
 
     override fun isConfigurationFromContext(configuration: AutoCRUDConfiguration, context: ConfigurationContext): Boolean {
         val config = findConfig(context.location?.psiElement?.let { listOf(it) } ?: return false) ?: return false
-        configuration.name = config.configurationName + "(Create)"
+        configuration.name = config.configurationName + "(Review)"
         configuration.setStoryConfig(config)
 
         return true
@@ -45,7 +45,7 @@ open class AutoCRUDConfigurationProducer : DevtiConfigurationProducer() {
         sourceElement: Ref<PsiElement>
     ): Boolean {
         val config = findConfig(context.location?.psiElement?.let { listOf(it) } ?: return false) ?: return false
-        configuration.name = config.configurationName + "(Create)"
+        configuration.name = config.configurationName + "(Review)"
         configuration.setStoryConfig(config)
 
         return true

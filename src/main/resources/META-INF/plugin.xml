@@ -28,8 +28,12 @@
         <!-- analysis story, and    -->
         <runLineMarkerContributor language="JAVA"
                                   implementationClass="cc.unitmesh.devti.language.AutoCRUDLineMarkerContributor"/>
+<!--        <runLineMarkerContributor language="JAVA"-->
+<!--                                  implementationClass="cc.unitmesh.devti.language.AutoReviewLineMarkerContributor"/>-->
         <runConfigurationProducer
                 implementation="cc.unitmesh.devti.runconfig.command.AutoCRUDConfigurationProducer"/>
+        <runConfigurationProducer
+                implementation="cc.unitmesh.devti.runconfig.command.CompositeDevtiRunConfigurationProducer"/>
         <configurationType implementation="cc.unitmesh.devti.runconfig.AutoCRUDConfigurationType"/>
 
 <!--        <toolWindow id="DevTi Flow" secondary="true" icon="AllIcons.Toolwindows.WebToolWindow" anchor="right"-->
