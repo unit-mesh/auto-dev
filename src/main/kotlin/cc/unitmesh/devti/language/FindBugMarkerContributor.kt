@@ -4,7 +4,6 @@ import cc.unitmesh.devti.DevtiIcons
 import cc.unitmesh.devti.actions.FindBugAction
 import cc.unitmesh.devti.runconfig.AutoCRUDState
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
-import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.psi.PsiElement

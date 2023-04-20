@@ -10,5 +10,4 @@ class FindBugAction(methodName: @NlsSafe String, method: PsiMethod) : AnAction({
     override fun actionPerformed(e: AnActionEvent) {
 
     }
-
 }
