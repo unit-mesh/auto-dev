@@ -71,25 +71,23 @@ class DevtiFlow(
      */
     fun updateEndpointMethod(target: TargetEndpoint, storyDetail: String) {
         try {
-            val codes = fetchEndpoint(target.endpoint, target.controller, storyDetail)
-            if (codes.isEmpty()) {
-                logger.warn("update method code is empty, skip")
-            } else {
-                processor?.createControllerOrUpdateMethod(target.controller.name, codes[0], target.hasMatchedController)
-            }
+            doExecuteUpdateEndpoint(target, storyDetail)
         } catch (e: Exception) {
             logger.warn("update method failed: $e, try to fill update method 2nd")
-
-            val codes = fetchEndpoint(target.endpoint, target.controller, storyDetail)
-            if (codes.isEmpty()) {
-                logger.warn("update method code is empty, skip")
-            } else {
-                processor?.createControllerOrUpdateMethod(target.controller.name, codes[0], target.hasMatchedController)
-            }
+            doExecuteUpdateEndpoint(target, storyDetail)
         }
     }
 
-    private fun fetchEndpoint(
+    private fun doExecuteUpdateEndpoint(target: TargetEndpoint, storyDetail: String) {
+        val codes = fetchForEndpoint(target.endpoint, target.controller, storyDetail)
+        if (codes.isEmpty()) {
+            logger.warn("update method code is empty, skip")
+        } else {
+            processor?.createControllerOrUpdateMethod(target.controller.name, codes[0], target.hasMatchedController)
+        }
+    }
+
+    private fun fetchForEndpoint(
         targetEndpoint: String,
         targetController: DtClass,
         storyDetail: String
