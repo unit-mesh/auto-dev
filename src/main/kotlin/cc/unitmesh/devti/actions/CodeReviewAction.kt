@@ -6,7 +6,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiMethod
 
-class CodeReviewAction(methodName: @NlsSafe String, method: PsiMethod) : AnAction({ "Find bug for $methodName" }, DevtiIcons.AI_COPILOT) {
+class CodeReviewAction(methodName: @NlsSafe String, method: PsiMethod) : AnAction({ "Code Review for $methodName" }, DevtiIcons.AI_COPILOT) {
     override fun actionPerformed(e: AnActionEvent) {
 
     }
