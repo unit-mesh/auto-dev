@@ -25,10 +25,5 @@ class CodeCommentsMarkerContributor : RunLineMarkerContributor() {
             runAction
         )
     }
-
-
-    companion object {
-        private val log: Logger = logger<AutoCRUDState>()
-    }
 }
 

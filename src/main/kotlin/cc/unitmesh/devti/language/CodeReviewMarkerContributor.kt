@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.language
 
 import cc.unitmesh.devti.DevtiIcons
-import cc.unitmesh.devti.actions.FindBugAction
+import cc.unitmesh.devti.actions.CodeReviewAction
 import cc.unitmesh.devti.runconfig.AutoCRUDState
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.openapi.diagnostic.Logger
@@ -17,16 +17,12 @@ class CodeReviewMarkerContributor : RunLineMarkerContributor() {
         if (method !is PsiMethod) return null
 
         val methodName = method.name
-        val runAction = FindBugAction(methodName, method)
+        val runAction = CodeReviewAction(methodName, method)
 
         return Info(
             DevtiIcons.AI_COPILOT,
             { "Find Bug" },
             runAction
         )
-    }
-
-    companion object {
-        private val log: Logger = logger<AutoCRUDState>()
     }
 }
