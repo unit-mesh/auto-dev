@@ -13,11 +13,12 @@ import com.theokanning.openai.completion.chat.ChatMessage
 import com.theokanning.openai.completion.chat.ChatMessageRole
 import com.theokanning.openai.service.OpenAiService
 import kotlinx.coroutines.runBlocking
+import java.time.Duration
 
 
 class OpenCodeCopilot(val openAIKey: String, val version: String) : CodeCopilot, DevtiFlowAction {
     private val promptGenerator = PromptGenerator()
-    var service: OpenAiService = OpenAiService(openAIKey)
+    var service: OpenAiService = OpenAiService(openAIKey, Duration.ofSeconds(300))
 
     private fun prompt(instruction: String): String {
         val messages: MutableList<ChatMessage> = ArrayList()
@@ -29,7 +30,6 @@ class OpenCodeCopilot(val openAIKey: String, val version: String) : CodeCopilot,
             .temperature(0.0)
             .messages(messages)
             .build()
-
 
         val completion = service.createChatCompletion(completionRequest)
         val output = completion
