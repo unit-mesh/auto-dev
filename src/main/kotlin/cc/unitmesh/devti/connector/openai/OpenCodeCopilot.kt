@@ -98,7 +98,7 @@ class OpenCodeCopilot(val openAIKey: String, val version: String) : CodeCopilot,
         logger.warn("codeCompleteFor prompt text: $promptText")
         return runBlocking {
             val prompt = prompt(promptText)
-            return@runBlocking parseCodeFromString(prompt)
+            return@runBlocking parseCodeFromString(prompt)[0]
         }
     }
 
@@ -107,7 +107,7 @@ class OpenCodeCopilot(val openAIKey: String, val version: String) : CodeCopilot,
         logger.warn("autoComponent prompt text: $promptText")
         return runBlocking {
             val prompt = prompt(promptText)
-            return@runBlocking parseCodeFromString(prompt)
+            return@runBlocking parseCodeFromString(prompt)[0]
         }
     }
 

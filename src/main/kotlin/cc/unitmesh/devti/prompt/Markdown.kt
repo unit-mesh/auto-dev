@@ -6,29 +6,31 @@ import org.commonmark.node.IndentedCodeBlock
 import org.commonmark.node.Node
 import org.commonmark.parser.Parser
 
-fun parseCodeFromString(markdown: String): String {
+fun parseCodeFromString(markdown: String): List<String> {
     val parser: Parser = Parser.builder().build()
     val node: Node = parser.parse(markdown)
     val visitor = CodeVisitor()
     node.accept(visitor)
 
     if (visitor.code.isEmpty()) {
-        // is still a code block
-        if (markdown.contains("public") || markdown.contains("private")) {
-            return markdown
+        val isJavaMethod = markdown.contains("public ") || markdown.contains("private ") || markdown.contains("protected ")
+        if (isJavaMethod) {
+            return listOf(markdown)
         }
 
-        return markdown
+        return listOf(markdown)
     }
 
     return visitor.code
 }
 
 internal class CodeVisitor : AbstractVisitor() {
-    var code = ""
+    var code = listOf<String>()
 
     override fun visit(fencedCodeBlock: FencedCodeBlock?) {
-        this.code = fencedCodeBlock?.literal ?: ""
+        if (fencedCodeBlock?.literal != null) {
+            this.code += fencedCodeBlock.literal
+        }
     }
 
     override fun visit(indentedCodeBlock: IndentedCodeBlock?) {

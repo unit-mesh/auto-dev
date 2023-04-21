@@ -97,7 +97,7 @@ class DevtiFlow(
         val content = flowAction.needUpdateMethodOfController(targetEndpoint, targetController, storyDetail)
         val code = parseCodeFromString(content)
         logger.warn("update method code: $code")
-        return code
+        return code[0]
     }
 
     companion object {
