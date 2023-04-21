@@ -1,0 +1,8 @@
+package ${packageName};
+
+import org.springframework.stereotype.Service;
+
+@@Service
+class ${serviceName} {
+${code}
+}

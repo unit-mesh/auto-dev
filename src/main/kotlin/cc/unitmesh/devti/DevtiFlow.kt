@@ -84,6 +84,12 @@ class DevtiFlow(
             logger.warn("update method code is empty, skip")
         } else {
             processor?.createControllerOrUpdateMethod(target.controller.name, codes[0], target.hasMatchedController)
+            // update rest codes
+            for (i in 1 until codes.size) {
+//                if (!target.hasMatchedController && codes) {
+//                    processor?.createController(target.endpoint, codes[i])
+//                }
+            }
         }
     }
 

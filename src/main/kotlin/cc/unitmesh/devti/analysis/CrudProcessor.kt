@@ -6,4 +6,6 @@ interface CrudProcessor {
     fun modelList(): List<DtClass>
     fun createControllerOrUpdateMethod(targetController: String, code: String, isControllerExist: Boolean)
     fun createController(endpoint: String, code: String): DtClass?
+    fun isService(code: String): Boolean
+    fun createService(serviceName: String, code: String): DtClass?
 }

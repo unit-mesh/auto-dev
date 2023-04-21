@@ -24,4 +24,15 @@ class JavaCrudTemplate(val project: Project) {
 
         return template.getText(properties)
     }
+
+    fun service(serviceName: String, code: String, packageName: String): String {
+        val template = fileTemplateManager.getCodeTemplate("Java Service.java")
+
+        val properties = Properties()
+        properties.setProperty("packageName", packageName)
+        properties.setProperty("serviceName", serviceName)
+        properties.setProperty("code", code)
+
+        return template.getText(properties)
+    }
 }
