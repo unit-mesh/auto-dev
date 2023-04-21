@@ -35,7 +35,7 @@ class PromptGenerator() {
     }
 
     fun codeComplete(methodCode: String, className: @NlsSafe String?): String {
-        val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/code_complete.txt")!!
+        val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/copilot/code_complete.txt")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         return promptTextString
             .replace("{code}", methodCode)
@@ -43,7 +43,7 @@ class PromptGenerator() {
     }
 
     fun autoComment(methodCode: String): String {
-        val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/code_comments.txt")!!
+        val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/copilot/code_comments.txt")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         return promptTextString
             .replace("{code}", methodCode)
