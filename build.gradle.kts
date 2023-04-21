@@ -50,6 +50,8 @@ repositories {
 dependencies {
 //    implementation(libs.annotations)
     implementation("org.kohsuke:github-api:1.314")
+
+    implementation("com.squareup.retrofit2:converter-jackson:2.9.0")
     implementation("com.theokanning.openai-gpt3-java:service:0.12.0")
 
     implementation("org.commonmark:commonmark:0.21.0")

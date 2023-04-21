@@ -11,7 +11,7 @@ class DevtiSettingsState : PersistentStateComponent<DevtiSettingsState> {
 
     var openAiKey = ""
     var openAiVersion = ""
-    var openAiProxy = ""
+    var customOpenAiHost = ""
     var githubToken = ""
 
     override fun getState(): DevtiSettingsState {

@@ -28,7 +28,7 @@ class DevtiSettingsConfigurable : Configurable {
         var modified = !mySettingsComponent!!.openAiKey.equals(settings.openAiKey)
         modified = modified or (!mySettingsComponent!!.githubToken.equals(settings.githubToken))
         modified = modified or (!mySettingsComponent!!.openAiVersion.equals(settings.openAiVersion))
-        modified = modified or (!mySettingsComponent!!.openAiProxy.equals(settings.openAiProxy))
+        modified = modified or (!mySettingsComponent!!.customOpenAiHost.equals(settings.customOpenAiHost))
         return modified
     }
 
@@ -37,7 +37,7 @@ class DevtiSettingsConfigurable : Configurable {
         settings.openAiKey = mySettingsComponent!!.getOpenAiKey()
         settings.githubToken = mySettingsComponent!!.getGithubToken()
         settings.openAiVersion = mySettingsComponent!!.getOpenAiVersion()
-        settings.openAiProxy = mySettingsComponent!!.getOpenAiProxy()
+        settings.customOpenAiHost = mySettingsComponent!!.getOpenAiHost()
     }
 
     override fun reset() {
@@ -45,7 +45,7 @@ class DevtiSettingsConfigurable : Configurable {
         mySettingsComponent!!.setOpenAiKey(settings.openAiKey)
         mySettingsComponent!!.setGithubToken(settings.githubToken)
         mySettingsComponent!!.setOpenAiVersion(settings.openAiVersion)
-        mySettingsComponent!!.setOpenAiProxy(settings.openAiProxy)
+        mySettingsComponent!!.setOpenAiHost(settings.customOpenAiHost)
     }
 
     override fun disposeUIResources() {

@@ -11,7 +11,7 @@ class AppSettingsComponent {
     val panel: JPanel
     val openAiKey = JBTextField()
     val githubToken = JBTextField()
-    val openAiProxy = JBTextField()
+    val customOpenAiHost = JBTextField()
     val openAiVersion = ComboBox(arrayOf("gpt-3.5-turbo", "text-davinci-003", "gpt-4.0"))
 
     init {
@@ -19,7 +19,7 @@ class AppSettingsComponent {
             .addLabeledComponent(JBLabel("OpenAI Key: "), openAiKey, 1, false)
             .addLabeledComponent(JBLabel("GitHub Token: "), githubToken, 1, false)
             .addLabeledComponent(JBLabel("OpenAI Version: "), openAiVersion, 1, false)
-            .addLabeledComponent(JBLabel("OpenAI Proxy: "), openAiProxy, 1, false)
+            .addLabeledComponent(JBLabel("Custom OpenAI Host: "), customOpenAiHost, 1, false)
             .addComponentFillVertically(JPanel(), 0)
             .panel
     }
@@ -51,11 +51,11 @@ class AppSettingsComponent {
         openAiVersion.selectedItem = newText
     }
 
-    fun getOpenAiProxy(): String {
-        return openAiProxy.text
+    fun getOpenAiHost(): String {
+        return customOpenAiHost.text
     }
 
-    fun setOpenAiProxy(newText: String) {
-        openAiProxy.text = newText
+    fun setOpenAiHost(newText: String) {
+        customOpenAiHost.text = newText
     }
 }
