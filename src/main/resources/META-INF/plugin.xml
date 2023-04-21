@@ -24,21 +24,18 @@
                                   implementationClass="cc.unitmesh.devti.language.FindBugMarkerContributor"/>
         <runLineMarkerContributor language="JAVA"
                                   implementationClass="cc.unitmesh.devti.language.CodeReviewMarkerContributor"/>
-<!--        <runLineMarkerContributor language="JAVA"-->
-<!--                                  implementationClass="cc.unitmesh.devti.language.RefactorCodeMarkerContributor"/>-->
 
         <!-- analysis story, and    -->
         <runLineMarkerContributor language="JAVA"
                                   implementationClass="cc.unitmesh.devti.language.AutoCRUDLineMarkerContributor"/>
-<!--        <runLineMarkerContributor language="JAVA"-->
-<!--                                  implementationClass="cc.unitmesh.devti.language.AutoReviewLineMarkerContributor"/>-->
+
         <runConfigurationProducer
                 implementation="cc.unitmesh.devti.runconfig.command.AutoCRUDConfigurationProducer"/>
         <runConfigurationProducer
                 implementation="cc.unitmesh.devti.runconfig.command.CompositeDevtiRunConfigurationProducer"/>
         <configurationType implementation="cc.unitmesh.devti.runconfig.AutoCRUDConfigurationType"/>
 
-<!--        <toolWindow id="DevTi Flow" secondary="true" icon="AllIcons.Toolwindows.WebToolWindow" anchor="right"-->
-<!--                    factoryClass="cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory"/>-->
+        <toolWindow id="DevTi Flow" secondary="true" icon="AllIcons.Toolwindows.WebToolWindow" anchor="right"
+                    factoryClass="cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory"/>
     </extensions>
 </idea-plugin>
