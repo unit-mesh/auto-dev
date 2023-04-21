@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.analysis
 
-import com.intellij.ide.fileTemplates.FileTemplateManager
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
@@ -22,7 +21,6 @@ import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.util.PsiTreeUtil
-import java.util.*
 
 
 class JavaCrudProcessor(val project: Project) : CrudProcessor {
