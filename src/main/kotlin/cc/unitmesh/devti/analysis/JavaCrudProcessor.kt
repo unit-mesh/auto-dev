@@ -140,7 +140,7 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
             return DtClass("", emptyList())
         }
 
-        val randomController = controllers.first()
+        val randomController = firstController()
         val packageStatement = randomController.lookupPackageName()
 
         if (packageStatement == null) {
@@ -153,7 +153,7 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         val parentDirectory = randomController.virtualFile?.parent ?: return null
         val fileSystem = randomController.virtualFile?.fileSystem
 
-        createClass(parentDirectory, fileSystem, endpoint, templateCode)
+        createClassByTemplate(parentDirectory, fileSystem, endpoint, templateCode)
 
         return DtClass(endpoint, emptyList())
     }
@@ -167,12 +167,12 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         return createClassFromText.name?.contains("Service") ?: false
     }
 
-    override fun createService(serviceName: String, code: String): DtClass? {
+    override fun createService(code: String): DtClass? {
         val firstService = services.first()
         val packageName = if (services.isNotEmpty()) {
             firstService.lookupPackageName()?.packageName
         } else {
-            controllers.first().lookupPackageName()?.packageName
+            defaultPackageByController()
         }
 
         if (packageName == null) {
@@ -180,17 +180,34 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
             return DtClass("", emptyList())
         }
 
-        val templateCode = codeTemplate.service(serviceName, code, packageName)
-
-        val parentDirectory = firstService.virtualFile?.parent ?: return null
-        val fileSystem = firstService.virtualFile?.fileSystem
-
-        createClass(parentDirectory, fileSystem, serviceName, templateCode)
-
-        return DtClass(serviceName, emptyList())
+        return createClass(code, packageName)
     }
 
-    private fun createClass(
+    override fun createClass(code: String, packageName: String?): DtClass? {
+        val parentDirectory = firstController().virtualFile?.parent ?: return null
+        val fileSystem = firstController().virtualFile?.fileSystem
+
+        val newClass = psiElementFactory.createClassFromText(code, null)
+        val className = newClass.identifyingElement?.text ?: "DummyClass"
+
+        ApplicationManager.getApplication().invokeLater {
+            runWriteAction {
+                val virtualFile = parentDirectory.createChildData(fileSystem, "$className.java")
+                VfsUtil.saveText(virtualFile, code)
+
+                log.warn("Created file ${virtualFile.path}")
+                parentDirectory.refresh(false, true)
+            }
+        }
+
+        return null
+    }
+
+    private fun defaultPackageByController() = firstController().lookupPackageName()?.packageName
+
+    private fun firstController() = controllers.first()
+
+    private fun createClassByTemplate(
         parentDirectory: VirtualFile,
         fileSystem: VirtualFileSystem?,
         serviceName: String,

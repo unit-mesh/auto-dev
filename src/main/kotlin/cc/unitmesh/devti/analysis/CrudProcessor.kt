@@ -7,5 +7,6 @@ interface CrudProcessor {
     fun createControllerOrUpdateMethod(targetController: String, code: String, isControllerExist: Boolean)
     fun createController(endpoint: String, code: String): DtClass?
     fun isService(code: String): Boolean
-    fun createService(serviceName: String, code: String): DtClass?
+    fun createService(code: String): DtClass?
+    fun createClass(string: String, packageName: String?): DtClass?
 }
