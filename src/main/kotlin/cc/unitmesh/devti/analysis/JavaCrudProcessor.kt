@@ -10,6 +10,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileSystem
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiFile
@@ -140,11 +141,7 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         }
 
         val randomController = controllers.first()
-
-        val packageStatement = runReadAction {
-            PsiTreeUtil.findChildrenOfType(randomController, PsiPackageStatement::class.java)
-                .firstOrNull() ?: return@runReadAction null
-        }
+        val packageStatement = randomController.lookupPackageName()
 
         if (packageStatement == null) {
             log.warn("No package statement found in file ${randomController.name}")
@@ -156,15 +153,7 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         val parentDirectory = randomController.virtualFile?.parent ?: return null
         val fileSystem = randomController.virtualFile?.fileSystem
 
-        ApplicationManager.getApplication().invokeLater {
-            runWriteAction {
-                val virtualFile = parentDirectory.createChildData(fileSystem, "$endpoint.java")
-                VfsUtil.saveText(virtualFile, templateCode)
-
-                log.warn("Created file ${virtualFile.path}")
-                parentDirectory.refresh(false, true)
-            }
-        }
+        createClass(parentDirectory, fileSystem, endpoint, templateCode)
 
         return DtClass(endpoint, emptyList())
     }
@@ -179,37 +168,34 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
     }
 
     override fun createService(serviceName: String, code: String): DtClass? {
-        val packageName = if (!services.isEmpty()) {
-            val randomService = services.first()
-
-            val packageStatement = runReadAction {
-                PsiTreeUtil.findChildrenOfType(randomService, PsiPackageStatement::class.java)
-                    .firstOrNull() ?: return@runReadAction null
-            }
-
-            packageStatement?.packageName
+        val firstService = services.first()
+        val packageName = if (services.isNotEmpty()) {
+            firstService.lookupPackageName()?.packageName
         } else {
-            // use controller class
-            val randomController = controllers.first()
-
-            val packageStatement = runReadAction {
-                PsiTreeUtil.findChildrenOfType(randomController, PsiPackageStatement::class.java)
-                    .firstOrNull() ?: return@runReadAction null
-            }
-
-            packageStatement?.packageName
+            controllers.first().lookupPackageName()?.packageName
         }
 
         if (packageName == null) {
-            log.warn("No package statement found in file ${services.first().name}")
+            log.warn("No package statement found in file ${firstService.name}")
             return DtClass("", emptyList())
         }
 
         val templateCode = codeTemplate.service(serviceName, code, packageName)
 
-        val parentDirectory = services.first().virtualFile?.parent ?: return null
-        val fileSystem = services.first().virtualFile?.fileSystem
+        val parentDirectory = firstService.virtualFile?.parent ?: return null
+        val fileSystem = firstService.virtualFile?.fileSystem
 
+        createClass(parentDirectory, fileSystem, serviceName, templateCode)
+
+        return DtClass(serviceName, emptyList())
+    }
+
+    private fun createClass(
+        parentDirectory: VirtualFile,
+        fileSystem: VirtualFileSystem?,
+        serviceName: String,
+        templateCode: String
+    ) {
         ApplicationManager.getApplication().invokeLater {
             runWriteAction {
                 val virtualFile = parentDirectory.createChildData(fileSystem, "$serviceName.java")
@@ -219,11 +205,17 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
                 parentDirectory.refresh(false, true)
             }
         }
-
-        return DtClass(serviceName, emptyList())
     }
 
     companion object {
         private val log: Logger = logger<JavaCrudProcessor>()
     }
+}
+
+private fun PsiFile.lookupPackageName(): PsiPackageStatement? {
+    val packageStatement = runReadAction {
+        PsiTreeUtil.findChildrenOfType(this, PsiPackageStatement::class.java)
+            .firstOrNull() ?: return@runReadAction null
+    }
+    return packageStatement
 }
