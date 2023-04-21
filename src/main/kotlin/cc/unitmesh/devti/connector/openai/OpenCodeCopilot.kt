@@ -18,7 +18,11 @@ import java.time.Duration
 
 class OpenCodeCopilot(val openAIKey: String, val version: String) : CodeCopilot, DevtiFlowAction {
     private val promptGenerator = PromptGenerator()
-    var service: OpenAiService = OpenAiService(openAIKey, Duration.ofSeconds(600))
+    private lateinit var service: OpenAiService
+
+    init {
+        service = OpenAiService(openAIKey, Duration.ofSeconds(600))
+    }
 
     private fun prompt(instruction: String): String {
         val messages: MutableList<ChatMessage> = ArrayList()
