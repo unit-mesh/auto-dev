@@ -18,7 +18,7 @@ class PromptGenerator() {
     }
 
     fun createEndpoint(storyDetail: String, files: List<DtClass>): String {
-        val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/create_endpoint.txt")!!
+        val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/lookup_or_create_endpoint.txt")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         return promptTextString
             .replace("{controllers}", files.map { it.name }.joinToString(","))
