@@ -23,19 +23,29 @@ import retrofit2.converter.jackson.JacksonConverterFactory
 import java.time.Duration
 
 
-class OpenCodeCopilot(val openAIKey: String, val version: String) : CodeCopilot, DevtiFlowAction {
+class OpenCodeCopilot : CodeCopilot, DevtiFlowAction {
     private val promptGenerator = PromptGenerator()
     private var service: OpenAiService
 
     private val timeout = Duration.ofSeconds(600)
+    private val openAiVersion: String
+    private val openAiKey: String
 
     init {
+        openAiVersion = DevtiSettingsState.getInstance()?.openAiVersion ?: ""
+        openAiKey = DevtiSettingsState.getInstance()?.openAiKey ?: ""
+
+        if (openAiKey.isNullOrEmpty()) {
+            logger.error("openAiKey is empty")
+            throw Exception("openAiKey is empty")
+        }
+
         val openAiProxy = DevtiSettingsState.getInstance()?.customOpenAiHost
         if (openAiProxy.isNullOrEmpty()) {
-            service = OpenAiService(openAIKey, timeout)
+            service = OpenAiService(openAiKey, timeout)
         } else {
             val mapper = defaultObjectMapper()
-            val client = defaultClient(openAIKey, timeout)
+            val client = defaultClient(openAiKey, timeout)
 
             val retrofit = Retrofit.Builder()
                 .baseUrl(openAiProxy)
@@ -55,7 +65,7 @@ class OpenCodeCopilot(val openAIKey: String, val version: String) : CodeCopilot,
         messages.add(systemMessage)
 
         val completionRequest = ChatCompletionRequest.builder()
-            .model(version)
+            .model(openAiVersion)
             .temperature(0.0)
             .messages(messages)
             .build()

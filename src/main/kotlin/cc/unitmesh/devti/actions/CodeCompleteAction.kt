@@ -28,15 +28,11 @@ class CodeCompleteAction(
 
         val task = object : Task.Backgroundable(project, "Code completing", true) {
             override fun run(indicator: ProgressIndicator) {
-                // 1. get openai key and version
-                val openAiVersion = DevtiSettingsState.getInstance()?.openAiVersion ?: return
-                val openAiKey = DevtiSettingsState.getInstance()?.openAiKey ?: return
-
                 indicator.fraction = 0.2
                 indicator.text = "Preparing code complete prompt"
 
                 // 2. get code complete result
-                val apiExecutor = OpenCodeCopilot(openAiKey, openAiVersion)
+                val apiExecutor = OpenCodeCopilot()
 
                 indicator.fraction = 0.5
                 indicator.text = "Call OpenAI API..."

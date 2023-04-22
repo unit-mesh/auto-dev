@@ -26,22 +26,18 @@ class AutoCRUDState(
     val project: Project,
     val options: AutoCRUDConfigurationOptions
 ) : RunProfileState {
-
-    private val openAiApiKey: String
     private val githubToken: String
-    private val openAiVersion: String
 
     init {
         val instance = DevtiSettingsState.getInstance()
-        openAiApiKey = instance?.openAiKey ?: ""
         githubToken = instance?.githubToken ?: ""
-        openAiVersion = instance?.openAiVersion ?: ""
     }
 
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
         val javaAuto = JavaCrudProcessor(project)
         val gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)
-        val openAIRunner = OpenCodeCopilot(openAiApiKey, openAiVersion)
+
+        val openAIRunner = OpenCodeCopilot()
         val devtiFlow = DevtiFlow(gitHubIssue, openAIRunner, javaAuto)
 
         log.warn(configuration.toString())

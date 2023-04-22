@@ -23,12 +23,8 @@ class AutoCommentAction(
         val psiElementFactory = project.let { JavaPsiFacade.getElementFactory(it) }
 
         ApplicationManager.getApplication().invokeLater {
-            // 1. get openai key and version
-            val openAiVersion = DevtiSettingsState.getInstance()?.openAiVersion ?: return@invokeLater
-            val openAiKey = DevtiSettingsState.getInstance()?.openAiKey ?: return@invokeLater
-
-            // 2. get code complete result
-            val apiExecutor = OpenCodeCopilot(openAiKey, openAiVersion)
+            // 1. get code complete result
+            val apiExecutor = OpenCodeCopilot()
             val newMethodCode = apiExecutor.autoComment(method.text).trimIndent()
 
             if (newMethodCode.isEmpty()) {
@@ -37,7 +33,7 @@ class AutoCommentAction(
             }
             log.warn("newMethodCode: $newMethodCode")
 
-            // 3. replace method
+            // 2. replace method
             WriteCommandAction.runWriteCommandAction(project) {
                 psiElementFactory?.createMethodFromText(newMethodCode, method)?.let {
                     method.replace(it)
