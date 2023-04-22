@@ -8,8 +8,8 @@
 // {match to AC content}
 // {API Action} {API URI}
 // {DTO Name}: {DTO in JSONL}
-// 200: {Response name}: {Response in one-line JSON}
-// xxx:  {Response name}: {Response in one-line JSONL}
+// 200: {Response name}: {Response in JSONL}
+// xxx: {XXX Error Response}: {Response in JSONL}
 ###
 
 ###
