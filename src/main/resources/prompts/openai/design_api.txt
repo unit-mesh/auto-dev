@@ -1,0 +1,17 @@
+请根据下面的用户故事，按业内的最佳实践设计 API。要求
+
+1. 如果不存在对应的 API，请不要设计。
+2. 如果你知道是不是 API，请不要猜测。
+3. 你返回的格式应该是：
+
+###
+// {match to AC content}
+// {API Action} {API URI}
+// {DTO Name}: {DTO in JSONL}
+// 200: {Response name}: {Response in one-line JSON}
+// xxx:  {Response name}: {Response in one-line JSONL}
+###
+
+###
+{storyDetail}
+###
