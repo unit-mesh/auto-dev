@@ -76,6 +76,8 @@ AutoDev 处理过程：
     - [x] Add comments
     - [ ] Generate document
     - [ ] Fix bug...
+    - [ ] Check API quality
+        - [ ] API Specs for LLM
 - [ ] Custom LLM Server
 
 ## Development
