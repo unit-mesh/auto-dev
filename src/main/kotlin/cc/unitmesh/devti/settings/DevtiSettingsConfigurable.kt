@@ -27,7 +27,7 @@ class DevtiSettingsConfigurable : Configurable {
         val settings: DevtiSettingsState = DevtiSettingsState.getInstance()!!
         var modified = !mySettingsComponent!!.openAiKey.equals(settings.openAiKey)
         modified = modified or (!mySettingsComponent!!.githubToken.equals(settings.githubToken))
-        modified = modified or (!mySettingsComponent!!.openAiVersion.equals(settings.openAiVersion))
+        modified = modified or (!mySettingsComponent!!.openAiModel.equals(settings.openAiModel))
         modified = modified or (!mySettingsComponent!!.customOpenAiHost.equals(settings.customOpenAiHost))
         return modified
     }
@@ -36,7 +36,7 @@ class DevtiSettingsConfigurable : Configurable {
         val settings: DevtiSettingsState = DevtiSettingsState.getInstance()!!
         settings.openAiKey = mySettingsComponent!!.getOpenAiKey()
         settings.githubToken = mySettingsComponent!!.getGithubToken()
-        settings.openAiVersion = mySettingsComponent!!.getOpenAiVersion()
+        settings.openAiModel = mySettingsComponent!!.getOpenAiModel()
         settings.customOpenAiHost = mySettingsComponent!!.getOpenAiHost()
     }
 
@@ -44,7 +44,7 @@ class DevtiSettingsConfigurable : Configurable {
         val settings: DevtiSettingsState = DevtiSettingsState.getInstance()!!
         mySettingsComponent!!.setOpenAiKey(settings.openAiKey)
         mySettingsComponent!!.setGithubToken(settings.githubToken)
-        mySettingsComponent!!.setOpenAiVersion(settings.openAiVersion)
+        mySettingsComponent!!.setOpenAiModel(settings.openAiModel)
         mySettingsComponent!!.setOpenAiHost(settings.customOpenAiHost)
     }
 

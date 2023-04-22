@@ -6,6 +6,7 @@ import cc.unitmesh.devti.connector.DevtiFlowAction
 import cc.unitmesh.devti.kanban.SimpleProjectInfo
 import cc.unitmesh.devti.prompt.parseCodeFromString
 import cc.unitmesh.devti.settings.DevtiSettingsState
+import cc.unitmesh.devti.settings.OPENAI_MODEL
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.NlsSafe
@@ -32,10 +33,10 @@ class OpenCodeCopilot : CodeCopilot, DevtiFlowAction {
     private val openAiKey: String
 
     init {
-        openAiVersion = DevtiSettingsState.getInstance()?.openAiVersion ?: ""
+        openAiVersion = DevtiSettingsState.getInstance()?.openAiModel ?: OPENAI_MODEL[0]
         openAiKey = DevtiSettingsState.getInstance()?.openAiKey ?: ""
 
-        if (openAiKey.isNullOrEmpty()) {
+        if (openAiKey.isEmpty()) {
             logger.error("openAiKey is empty")
             throw Exception("openAiKey is empty")
         }

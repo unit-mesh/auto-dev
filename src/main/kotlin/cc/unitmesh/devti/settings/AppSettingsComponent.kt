@@ -7,18 +7,21 @@ import com.intellij.util.ui.FormBuilder
 import javax.swing.JComponent
 import javax.swing.JPanel
 
+val OPENAI_MODEL = arrayOf("gpt-3.5-turbo", "gpt-4.0")
+
 class AppSettingsComponent {
     val panel: JPanel
     val openAiKey = JBTextField()
     val githubToken = JBTextField()
     val customOpenAiHost = JBTextField()
-    val openAiVersion = ComboBox(arrayOf("gpt-3.5-turbo", "text-davinci-003", "gpt-4.0"))
+
+    val openAiModel = ComboBox(OPENAI_MODEL)
 
     init {
         panel = FormBuilder.createFormBuilder()
             .addLabeledComponent(JBLabel("OpenAI Key: "), openAiKey, 1, false)
             .addLabeledComponent(JBLabel("GitHub Token: "), githubToken, 1, false)
-            .addLabeledComponent(JBLabel("OpenAI Version: "), openAiVersion, 1, false)
+            .addLabeledComponent(JBLabel("OpenAI Model: "), openAiModel, 1, false)
             .addLabeledComponent(JBLabel("Custom OpenAI Host: "), customOpenAiHost, 1, false)
             .addComponentFillVertically(JPanel(), 0)
             .panel
@@ -43,12 +46,12 @@ class AppSettingsComponent {
         githubToken.text = newText
     }
 
-    fun getOpenAiVersion(): String {
-        return openAiVersion.selectedItem.toString()
+    fun getOpenAiModel(): String {
+        return openAiModel.selectedItem?.toString() ?: "gpt-3.5-turbo"
     }
 
-    fun setOpenAiVersion(newText: String) {
-        openAiVersion.selectedItem = newText
+    fun setOpenAiModel(newText: String) {
+        openAiModel.selectedItem = newText
     }
 
     fun getOpenAiHost(): String {
