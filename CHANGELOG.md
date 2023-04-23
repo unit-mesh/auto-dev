@@ -1,12 +1,18 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v0.0.9...v) (2023-04-21)
+# [](https://github.com/unit-mesh/auto-dev/compare/v0.2.0...v) (2023-04-23)
 
 ## [Unreleased]
 
-## [0.0.9](https://github.com/unit-mesh/auto-dev/compare/v0.0.8...v[0.0.9]) (2023-04-21)
+## [0.2.0] - 2023-04-23
+
+### Bug Fixes
+- remove unused parameters ([fb68b71](https://github.com/unit-mesh/auto-dev/commit/fb68b71cf8d0bd75603fba9b2329d9cfc6718f97))
 
 ### Features
+- add find bug support ([f971135](https://github.com/unit-mesh/auto-dev/commit/f971135f59f98cc3665bc7516edbab5f3aed8926))
 - add proxy ([e6ef839](https://github.com/unit-mesh/auto-dev/commit/e6ef8399fec5d921564e0b154f2b0c6970fcb097))
 - add proxy for items ([ddb5c20](https://github.com/unit-mesh/auto-dev/commit/ddb5c20a0c163ae8348d069430a114d824b06d54))
+- add simple suggestion ([7fd8aaa](https://github.com/unit-mesh/auto-dev/commit/7fd8aaa3a64b83bf6358e4d144823100c58daca6))
+- init for service template ([a0a1b8a](https://github.com/unit-mesh/auto-dev/commit/a0a1b8aff8970131ffb6aef5f6304b9cee07cb61))
 - make custom open api host works ([f4861ce](https://github.com/unit-mesh/auto-dev/commit/f4861ce82e93b3e3614b435da2b93b7305f046d1))
 
 ## [0.0.8](https://github.com/unit-mesh/auto-dev/compare/v0.0.7...v[0.0.8]) (2023-04-21)
@@ -124,8 +130,8 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v0.0.9...HEAD
-[0.0.9]: https://github.com/unit-mesh/auto-dev/compare/v0.0.8...v0.0.9
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/unit-mesh/auto-dev/compare/v0.0.8...v0.2.0
 [0.0.8]: https://github.com/unit-mesh/auto-dev/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/unit-mesh/auto-dev/compare/v0.0.3...v0.0.7
 [0.0.3]: https://github.com/unit-mesh/auto-dev/compare/v0.0.2...v0.0.3
