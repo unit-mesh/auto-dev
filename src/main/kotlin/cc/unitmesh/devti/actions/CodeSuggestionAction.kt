@@ -2,6 +2,7 @@ package cc.unitmesh.devti.actions
 
 import cc.unitmesh.devti.DevtiIcons
 import cc.unitmesh.devti.connector.openai.OpenCodeCopilot
+import cc.unitmesh.devti.gui.createSuggestionPopup
 import cc.unitmesh.devti.runconfig.AutoCRUDState
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -11,17 +12,13 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
-import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiMethod
-import com.intellij.ui.EditorTextField
-import java.awt.BorderLayout
-import java.awt.Dimension
-import javax.swing.JPanel
 
 
-class CodeSuggestionAction(methodName: @NlsSafe String, val method: PsiMethod) : AnAction({ "Code Suggestion for $methodName" }, DevtiIcons.AI_COPILOT) {
+class CodeSuggestionAction(methodName: @NlsSafe String, val method: PsiMethod) :
+    AnAction({ "Code Suggestion for $methodName" }, DevtiIcons.AI_COPILOT) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
 
@@ -46,16 +43,7 @@ class CodeSuggestionAction(methodName: @NlsSafe String, val method: PsiMethod) :
                 indicator.fraction = 0.8
                 indicator.text = "Start replacing method"
 
-                val myTextField = EditorTextField(suggestion)
-
-                val panel = JPanel(BorderLayout(0, 20))
-                panel.add(myTextField, BorderLayout.CENTER)
-
-                val builder = JBPopupFactory.getInstance().createComponentPopupBuilder(panel, myTextField)
-
-
-                val popup = builder.createPopup()
-                popup.setMinimumSize(Dimension(320, 240))
+                val popup = createSuggestionPopup(suggestion)
                 ApplicationManager.getApplication().invokeLater() {
                     popup.showCenteredInCurrentWindow(project)
                 }
@@ -73,3 +61,4 @@ class CodeSuggestionAction(methodName: @NlsSafe String, val method: PsiMethod) :
         private val log: Logger = logger<AutoCRUDState>()
     }
 }
+
