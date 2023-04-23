@@ -4,8 +4,10 @@ package cc.unitmesh.devti.gui
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.LabeledComponent
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
+import com.intellij.ui.components.JBTextField
 import com.intellij.ui.content.ContentFactory
 import org.apache.commons.lang3.StringUtils
 import java.awt.BorderLayout
@@ -28,6 +30,7 @@ class DevtiFlowToolWindowFactory : ToolWindowFactory, DumbAware {
     private class CalendarToolWindowContent(toolWindow: ToolWindow) {
         val contentPanel = JPanel()
         private val currentTime = JLabel()
+        val storyId = JBTextField()
 
         init {
             contentPanel.layout = BorderLayout(0, 20)
@@ -39,6 +42,10 @@ class DevtiFlowToolWindowFactory : ToolWindowFactory, DumbAware {
 
         private fun createCalendarPanel(): JPanel {
             val calendarPanel = JPanel()
+            LabeledComponent.create(storyId, "Story ID").apply {
+                calendarPanel.add(this)
+            }
+            // code review button
             return calendarPanel
         }
 
