@@ -122,6 +122,15 @@ class OpenCodeCopilot : CodeCopilot, DevtiFlowAction {
         }
     }
 
+    override fun codeReviewFor(text: String, className: String): String {
+        val promptText = promptGenerator.codeReview(text, className)
+        logger.warn("codeReviewFor prompt text: $promptText")
+        return runBlocking {
+            val result = prompt(promptText)
+            return@runBlocking result
+        }
+    }
+
     companion object {
         private val logger: Logger = logger<OpenCodeCopilot>()
     }

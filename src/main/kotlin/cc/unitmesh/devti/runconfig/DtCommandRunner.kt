@@ -44,5 +44,6 @@ class DtCommandRunner : GenericProgramRunner<RunnerSettings>() {
 
     companion object {
         private val log: Logger = logger<AutoCRUDState>()
+        const val RUNNER_ID: String = "DtCommandRunner"
     }
 }
