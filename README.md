@@ -74,8 +74,9 @@ AutoDev 处理过程：
     - [x] Generate code
     - [ ] Generate test
     - [x] Add comments
+    - [x] Code Suggestions
     - [ ] Generate document
-    - [ ] Fix bug...
+    - [x] Find bug...
     - [ ] Explain code by selection
     - [ ] Check API quality
         - [ ] API Specs for LLM
