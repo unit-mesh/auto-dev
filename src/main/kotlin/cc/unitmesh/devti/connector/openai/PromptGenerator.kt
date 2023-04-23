@@ -56,4 +56,11 @@ class PromptGenerator() {
             .replace("{code}", text)
             .replace("{className}", className)
     }
+
+    fun findBug(text: String): String {
+        val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/openai/copilot/find_bug.txt")!!
+        val promptTextString = promptText.bufferedReader().use { it.readText() }
+        return promptTextString
+            .replace("{code}", text)
+    }
 }

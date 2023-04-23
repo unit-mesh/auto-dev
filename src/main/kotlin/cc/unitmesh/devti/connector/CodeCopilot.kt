@@ -5,4 +5,5 @@ interface CodeCopilot {
 
     fun autoComment(text: String): String
     fun codeReviewFor(text: String, className: String): String
+    fun findBug(text: String): String
 }

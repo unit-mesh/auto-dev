@@ -19,4 +19,8 @@ class CustomConnector(val url: String, val key: String) : CodeCopilot {
         return ""
     }
 
+    override fun findBug(text: String): String {
+        return ""
+    }
+
 }

@@ -131,6 +131,15 @@ class OpenCodeCopilot : CodeCopilot, DevtiFlowAction {
         }
     }
 
+    override fun findBug(text: String): String {
+        val promptText = promptGenerator.findBug(text)
+        logger.warn("findBug prompt text: $promptText")
+        return runBlocking {
+            val result = prompt(promptText)
+            return@runBlocking result
+        }
+    }
+
     companion object {
         private val logger: Logger = logger<OpenCodeCopilot>()
     }
