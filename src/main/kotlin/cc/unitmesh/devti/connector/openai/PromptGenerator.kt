@@ -49,12 +49,11 @@ class PromptGenerator() {
             .replace("{code}", methodCode)
     }
 
-    fun codeReview(text: String, className: String): String {
+    fun codeReview(text: String): String {
         val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/openai/copilot/code_review.txt")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         return promptTextString
             .replace("{code}", text)
-            .replace("{className}", className)
     }
 
     fun findBug(text: String): String {

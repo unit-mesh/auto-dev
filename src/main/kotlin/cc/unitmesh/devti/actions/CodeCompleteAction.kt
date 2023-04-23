@@ -25,6 +25,7 @@ class CodeCompleteAction(
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val psiElementFactory = project.let { JavaPsiFacade.getElementFactory(it) }
+        val code = method.text
 
         val task = object : Task.Backgroundable(project, "Code completing", true) {
             override fun run(indicator: ProgressIndicator) {
@@ -43,7 +44,7 @@ class CodeCompleteAction(
                     method.containingFile?.name?.replace(".java", "")
                 }
 
-                val newMethodCode = apiExecutor.codeCompleteFor(method.text, className!!).trimIndent()
+                val newMethodCode = apiExecutor.codeCompleteFor(code, className!!).trimIndent()
 
                 indicator.fraction = 0.8
                 indicator.text = "Start replacing method"

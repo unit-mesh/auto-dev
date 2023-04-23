@@ -15,7 +15,7 @@ class CustomConnector(val url: String, val key: String) : CodeCopilot {
         return ""
     }
 
-    override fun codeReviewFor(text: String, className: String): String {
+    override fun codeReviewFor(text: String): String {
         return ""
     }
 

@@ -13,7 +13,6 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.util.NlsSafe
-import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiMethod
 
 
@@ -21,6 +20,7 @@ class CodeSuggestionAction(methodName: @NlsSafe String, val method: PsiMethod) :
     AnAction({ "Code Suggestion for $methodName" }, DevtiIcons.AI_COPILOT) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
+        val code = method.text
 
         val task = object : Task.Backgroundable(project, "Code completing", true) {
             override fun run(indicator: ProgressIndicator) {
@@ -32,13 +32,7 @@ class CodeSuggestionAction(methodName: @NlsSafe String, val method: PsiMethod) :
                 indicator.fraction = 0.5
                 indicator.text = "Call OpenAI API..."
 
-                val className = if (method.parent is PsiClass) {
-                    (method.parent as PsiClass).name
-                } else {
-                    method.containingFile?.name?.replace(".java", "")
-                }
-
-                val suggestion = apiExecutor.codeReviewFor(method.text, className!!).trimIndent()
+                val suggestion = apiExecutor.codeReviewFor(code).trimIndent()
 
                 indicator.fraction = 0.8
                 indicator.text = "Start replacing method"

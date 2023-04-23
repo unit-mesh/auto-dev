@@ -122,8 +122,8 @@ class OpenCodeCopilot : CodeCopilot, DevtiFlowAction {
         }
     }
 
-    override fun codeReviewFor(text: String, className: String): String {
-        val promptText = promptGenerator.codeReview(text, className)
+    override fun codeReviewFor(text: String): String {
+        val promptText = promptGenerator.codeReview(text)
         logger.warn("codeReviewFor prompt text: $promptText")
         return runBlocking {
             val result = prompt(promptText)

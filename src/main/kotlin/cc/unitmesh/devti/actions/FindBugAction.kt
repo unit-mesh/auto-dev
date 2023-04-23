@@ -20,6 +20,7 @@ class FindBugAction(methodName: @NlsSafe String, val method: PsiMethod) :
     AnAction({ "Find bug for $methodName" }, DevtiIcons.AI_COPILOT) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
+        val code = method.text
 
         val task = object : Task.Backgroundable(project, "Find bug", true) {
             override fun run(indicator: ProgressIndicator) {
@@ -31,7 +32,7 @@ class FindBugAction(methodName: @NlsSafe String, val method: PsiMethod) :
                 indicator.fraction = 0.5
                 indicator.text = "Call OpenAI API..."
 
-                val suggestion = apiExecutor.findBug(method.text).trimIndent()
+                val suggestion = apiExecutor.findBug(code).trimIndent()
 
                 indicator.fraction = 0.8
                 indicator.text = "Start replacing method"
