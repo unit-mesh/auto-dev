@@ -55,7 +55,7 @@ class CodeSuggestionAction(methodName: @NlsSafe String, val method: PsiMethod) :
 
 
                 val popup = builder.createPopup()
-                popup.setMinimumSize(Dimension(400, 20))
+                popup.setMinimumSize(Dimension(320, 240))
                 ApplicationManager.getApplication().invokeLater() {
                     popup.showCenteredInCurrentWindow(project)
                 }
