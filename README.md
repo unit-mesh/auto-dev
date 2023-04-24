@@ -80,17 +80,21 @@ AutoDev 处理过程：
         - [ ] API Specs for LLM
 - [ ] Custom LLM Server
 
-## Architecture for RealWorld
-
-- [ ] use TreeSitter as parser for Cross-Languages
-- [ ] InlaysAction (extends EditorAction)
-- [ ] RPC to VSCode JSON RPC
-
 ## Development
 
 1. `git clone https://github.com/unit-mesh/AutoDev.git`
 2. open in IntelliJ IDEA
 3. `./gradlew runIde`
+
+### How Copilot works?
+
+
+- IDE with InlaysAction (extends EditorAction)
+- send RPC to JSON RPC
+- WASM with TreeSitter
+- Return to IDE
+
+
 
 ## License
 
