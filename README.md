@@ -80,6 +80,12 @@ AutoDev 处理过程：
         - [ ] API Specs for LLM
 - [ ] Custom LLM Server
 
+## Architecture for RealWorld
+
+- [ ] use TreeSitter as parser for Cross-Languages
+- [ ] InlaysAction (extends EditorAction)
+- [ ] RPC to VSCode JSON RPC
+
 ## Development
 
 1. `git clone https://github.com/unit-mesh/AutoDev.git`
