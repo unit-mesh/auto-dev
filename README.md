@@ -66,8 +66,7 @@ AutoDev 处理过程：
     - [x] Endpoint modify suggestions
     - [x] Controller Suggestion
         - [x] import all common imports
-        - [ ] auto update imports
-    - [ ] Service Suggestion
+    - [x] Service Suggestion
     - [ ] Repository Suggestion
     - [ ] Model Suggestion
 - [ ] Code AI
@@ -75,7 +74,6 @@ AutoDev 处理过程：
     - [ ] Generate test
     - [x] Add comments
     - [x] Code Suggestions
-    - [ ] Generate document
     - [x] Find bug...
     - [ ] Explain code by selection
     - [ ] Check API quality
