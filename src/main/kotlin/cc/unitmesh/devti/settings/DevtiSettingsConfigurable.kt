@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable
 import javax.swing.JComponent
 
 class DevtiSettingsConfigurable : Configurable {
-    private var mySettingsComponent: AppSettingsComponent? = null
+    private var component: AppSettingsComponent? = null
 
     @Nls(capitalization = Nls.Capitalization.Title)
     override fun getDisplayName(): String {
@@ -14,41 +14,53 @@ class DevtiSettingsConfigurable : Configurable {
     }
 
     override fun getPreferredFocusedComponent(): JComponent {
-        return mySettingsComponent!!.preferredFocusedComponent
+        return component!!.preferredFocusedComponent
     }
 
     @Nullable
     override fun createComponent(): JComponent {
-        mySettingsComponent = AppSettingsComponent()
-        return mySettingsComponent!!.panel
+        component = AppSettingsComponent()
+        return component!!.panel
     }
 
     override fun isModified(): Boolean {
         val settings: DevtiSettingsState = DevtiSettingsState.getInstance()!!
-        var modified = !mySettingsComponent!!.openAiKey.equals(settings.openAiKey)
-        modified = modified or (!mySettingsComponent!!.githubToken.equals(settings.githubToken))
-        modified = modified or (!mySettingsComponent!!.openAiModel.equals(settings.openAiModel))
-        modified = modified or (!mySettingsComponent!!.customOpenAiHost.equals(settings.customOpenAiHost))
+        var modified = !component!!.openAiKey.equals(settings.openAiKey)
+        modified = modified or (!component!!.githubToken.equals(settings.githubToken))
+        modified = modified or (!component!!.openAiModel.equals(settings.openAiModel))
+        modified = modified or (!component!!.customOpenAiHost.equals(settings.customOpenAiHost))
+        modified = modified or (!component!!.aiEngine.equals(settings.aiEngine))
+        modified = modified or (!component!!.customEngineServer.equals(settings.customEngineServer))
+        modified = modified or (!component!!.customEngineToken.equals(settings.customEngineToken))
+        modified = modified or (!component!!.customEnginePrompt.equals(settings.customEnginePrompt))
         return modified
     }
 
     override fun apply() {
         val settings: DevtiSettingsState = DevtiSettingsState.getInstance()!!
-        settings.openAiKey = mySettingsComponent!!.getOpenAiKey()
-        settings.githubToken = mySettingsComponent!!.getGithubToken()
-        settings.openAiModel = mySettingsComponent!!.getOpenAiModel()
-        settings.customOpenAiHost = mySettingsComponent!!.getOpenAiHost()
+        settings.openAiKey = component!!.getOpenAiKey()
+        settings.githubToken = component!!.getGithubToken()
+        settings.openAiModel = component!!.getOpenAiModel()
+        settings.customOpenAiHost = component!!.getOpenAiHost()
+        settings.aiEngine = component!!.getAiEngine()
+        settings.customEngineServer = component!!.getCustomEngineServer()
+        settings.customEngineToken = component!!.getCustomEngineToken()
+        settings.customEnginePrompt = component!!.getCustomEnginePrompt()
     }
 
     override fun reset() {
         val settings: DevtiSettingsState = DevtiSettingsState.getInstance()!!
-        mySettingsComponent!!.setOpenAiKey(settings.openAiKey)
-        mySettingsComponent!!.setGithubToken(settings.githubToken)
-        mySettingsComponent!!.setOpenAiModel(settings.openAiModel)
-        mySettingsComponent!!.setOpenAiHost(settings.customOpenAiHost)
+        component!!.setOpenAiKey(settings.openAiKey)
+        component!!.setGithubToken(settings.githubToken)
+        component!!.setOpenAiModel(settings.openAiModel)
+        component!!.setOpenAiHost(settings.customOpenAiHost)
+        component!!.setAiEngine(settings.aiEngine)
+        component!!.setCustomEngineServer(settings.customEngineServer)
+        component!!.setCustomEngineToken(settings.customEngineToken)
+        component!!.setCustomEnginePrompt(settings.customEnginePrompt)
     }
 
     override fun disposeUIResources() {
-        mySettingsComponent = null
+        component = null
     }
 }
