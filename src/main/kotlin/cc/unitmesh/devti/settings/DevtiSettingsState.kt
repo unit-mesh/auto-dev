@@ -9,20 +9,24 @@ import com.intellij.util.xmlb.XmlSerializerUtil
 @State(name = "cc.unitmesh.devti.settings.DevtiSettingsState", storages = [Storage("DevtiSettings.xml")])
 class DevtiSettingsState : PersistentStateComponent<DevtiSettingsState> {
 
-    var customEnginePrompt = ""
+    var githubToken = ""
     var openAiKey = ""
     var openAiModel = ""
     var customOpenAiHost = ""
-    var githubToken = ""
     var aiEngine = "openai"
     var customEngineServer = ""
     var customEngineToken = ""
+    var customEnginePrompt = ""
 
     override fun getState(): DevtiSettingsState {
         return this
     }
 
     override fun loadState(state: DevtiSettingsState) {
+        if (customEnginePrompt == "") {
+            customEnginePrompt = DEFAULT_PROMPTS.trimIndent()
+        }
+
         XmlSerializerUtil.copyBean(state, this)
     }
 
