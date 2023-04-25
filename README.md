@@ -86,15 +86,35 @@ AutoDev 处理过程：
 2. open in IntelliJ IDEA
 3. `./gradlew runIde`
 
-### How Copilot works?
+### API Spec for LLM Server
 
+#### 1. `POST /api`
+
+authorization: `Bearer ${token}`
+
+```json
+{
+  "instruction": "implementation the method",
+  "input": "xxxx"
+}
+```
+
+then return:
+
+```json
+{
+  "instruction": "implementation the method",
+  "input": "xxxx",
+  "output": "xxxx"
+}
+```
+
+### How Copilot works?
 
 - IDE with InlaysAction (extends EditorAction)
 - send RPC to JSON RPC
 - WASM with TreeSitter
 - Return to IDE
-
-
 
 ## License
 
