@@ -1,12 +1,14 @@
 package cc.unitmesh.devti.settings
 
+import com.intellij.json.JsonLanguage
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.ui.LanguageTextField
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.FormBuilder
+import java.awt.FontMetrics
 import javax.swing.JComponent
 import javax.swing.JPanel
-import javax.swing.JTextArea
 
 val OPENAI_MODEL = arrayOf("gpt-3.5-turbo", "gpt-4.0")
 
@@ -20,15 +22,21 @@ class AppSettingsComponent {
     val aiEngine = ComboBox(arrayOf("OpenAI", "Custom"))
     val customEngineServer = JBTextField()
     val customEngineToken = JBTextField()
-    val customEnginePrompt = JTextArea(20, 1)
+    val customEnginePrompt = LanguageTextField(JsonLanguage.INSTANCE, null, "{}")
 
     init {
+        val metrics: FontMetrics = customEnginePrompt.getFontMetrics(customEnginePrompt.font)
+        val columnWidth = metrics.charWidth('m')
+        customEnginePrompt.setPreferredWidth(25 * columnWidth)
+
         panel = FormBuilder.createFormBuilder()
             .addLabeledComponent(JBLabel("GitHub Token: "), githubToken, 1, false)
             .addLabeledComponent(JBLabel("AI Engine: "), aiEngine, 1, false)
+            .addSeparator()
             .addLabeledComponent(JBLabel("OpenAI Key: "), openAiKey, 1, false)
             .addLabeledComponent(JBLabel("OpenAI Model: "), openAiModel, 1, false)
             .addLabeledComponent(JBLabel("Custom OpenAI Host: "), customOpenAiHost, 1, false)
+            .addSeparator()
             .addLabeledComponent(JBLabel("Custom Engine Server: "), customEngineServer, 1, false)
             .addLabeledComponent(JBLabel("Custom Engine Token: "), customEngineToken, 1, false)
             .addLabeledComponent(JBLabel("Custom Engine Prompt (Json): "), customEnginePrompt, 1, false)
