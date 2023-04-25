@@ -11,9 +11,17 @@ qodana = "0.1.13"
 kover = "0.6.1"
 ktor = "2.2.4"
 
+chapi = "2.1.2"
+
 [libraries]
 annotations = { group = "org.jetbrains", name = "annotations", version.ref = "annotations" }
 ktor-client-apache = { group = "io.ktor", name = "ktor-client-apache", version.ref = "ktor" }
+
+# chapi
+chapi-domain = { group = "com.phodal.chapi", name = "chapi-domain", version.ref = "chapi" }
+chapi-java = { group = "com.phodal.chapi", name = "chapi-ast-java", version.ref = "chapi" }
+chapi-kotlin = { group = "com.phodal.chapi", name = "chapi-ast-kotlin", version.ref = "chapi" }
+chapi-typescript = { group = "com.phodal.chapi", name = "chapi-ast-typescript", version.ref = "chapi" }
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }

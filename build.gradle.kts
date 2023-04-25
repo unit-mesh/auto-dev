@@ -48,7 +48,6 @@ repositories {
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
-//    implementation(libs.annotations)
     implementation("org.kohsuke:github-api:1.314")
 
     implementation("com.squareup.retrofit2:converter-jackson:2.9.0")
