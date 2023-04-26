@@ -17,15 +17,15 @@ class DevtiSettingsState : PersistentStateComponent<DevtiSettingsState> {
     var customOpenAiHost = ""
     var customEngineServer = ""
     var customEngineToken = ""
-    var customEnginePrompt = ""
+    var customEnginePrompts = ""
 
     override fun getState(): DevtiSettingsState {
         return this
     }
 
     override fun loadState(state: DevtiSettingsState) {
-        if (customEnginePrompt == "") {
-            customEnginePrompt = DEFAULT_PROMPTS.trimIndent()
+        if (customEnginePrompts == "") {
+            customEnginePrompts = DEFAULT_PROMPTS.trimIndent()
         }
 
         XmlSerializerUtil.copyBean(state, this)

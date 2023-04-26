@@ -32,7 +32,7 @@ class DevtiSettingsConfigurable : Configurable {
         modified = modified or (!component!!.aiEngine.equals(settings.aiEngine))
         modified = modified or (!component!!.customEngineServer.equals(settings.customEngineServer))
         modified = modified or (!component!!.customEngineToken.equals(settings.customEngineToken))
-        modified = modified or (!component!!.customEnginePrompt.equals(settings.customEnginePrompt))
+        modified = modified or (!component!!.customEnginePrompt.equals(settings.customEnginePrompts))
         return modified
     }
 
@@ -45,7 +45,7 @@ class DevtiSettingsConfigurable : Configurable {
         settings.aiEngine = component!!.getAiEngine()
         settings.customEngineServer = component!!.getCustomEngineServer()
         settings.customEngineToken = component!!.getCustomEngineToken()
-        settings.customEnginePrompt = component!!.getCustomEnginePrompt()
+        settings.customEnginePrompts = component!!.getCustomEnginePrompt()
     }
 
     override fun reset() {
@@ -57,7 +57,7 @@ class DevtiSettingsConfigurable : Configurable {
         component!!.setAiEngine(settings.aiEngine)
         component!!.setCustomEngineServer(settings.customEngineServer)
         component!!.setCustomEngineToken(settings.customEngineToken)
-        component!!.setCustomEnginePrompt(settings.customEnginePrompt)
+        component!!.setCustomEnginePrompt(settings.customEnginePrompts)
     }
 
     override fun disposeUIResources() {
