@@ -11,19 +11,6 @@ buildscript {
     }
 }
 
-//configurations.all {
-//    resolutionStrategy.force("com.squareup.okio:okio:3.3.0")
-//
-//    resolutionStrategy.force("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
-//    resolutionStrategy.force("org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.0")
-//
-//    resolutionStrategy.force("org.jetbrains.kotlin:kotlin-stdlib:1.8.20")
-//    resolutionStrategy.force("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.20")
-//    resolutionStrategy.force("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.20")
-//    resolutionStrategy.force("org.jetbrains.kotlin:kotlin-stdlib-common:1.8.20")
-////    resolutionStrategy.failOnVersionConflict()
-//}
-
 fun properties(key: String) = providers.gradleProperty(key)
 fun environment(key: String) = providers.environmentVariable(key)
 
@@ -34,6 +21,7 @@ plugins {
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
     alias(libs.plugins.qodana) // Gradle Qodana Plugin
     alias(libs.plugins.kover) // Gradle Kover Plugin
+    alias(libs.plugins.serialization)
 //    alias(libs.plugins.grammarKit) // Grammar Kit Plugin
     id("org.jetbrains.grammarkit") version "2021.2.2"
 }
@@ -55,6 +43,8 @@ dependencies {
 
     implementation("org.commonmark:commonmark:0.21.0")
     implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
 }
 
 // Configure Gradle IntelliJ Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
