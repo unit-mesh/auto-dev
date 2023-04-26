@@ -13,8 +13,8 @@
         <applicationConfigurable parentId="tools" instance="cc.unitmesh.devti.settings.DevtiSettingsConfigurable"
                                  id="cc.unitmesh.devti.settings.DevtiSettingsConfigurable"
                                  displayName="DevTi"/>
+
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.DevtiSettingsState"/>
-        
         <!-- show find bug -->
         <runLineMarkerContributor language="JAVA"
                                   implementationClass="cc.unitmesh.devti.language.CodeCompleteMarkerContributor"/>
@@ -41,5 +41,9 @@
 
         <toolWindow id="DevTi Flow" secondary="true" icon="AllIcons.Toolwindows.WebToolWindow" anchor="right"
                     factoryClass="cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory"/>
+
+        <!-- LSP -->
+        <applicationService serviceImplementation="cc.unitmesh.devti.lsp.DevtiLSPManager"/>
+        <editorFactoryDocumentListener implementation="cc.unitmesh.devti.lsp.DevtiDocumentListener"/>
     </extensions>
 </idea-plugin>
