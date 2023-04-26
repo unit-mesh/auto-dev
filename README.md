@@ -106,9 +106,24 @@ AutoDev 处理过程：
 authorization: `Bearer ${token}`
 
 ```json
+
 {
-  "instruction": "implementation the method",
-  "input": "xxxx"
+  "auto_complete": {
+    "instruction": "",
+    "input": ""
+  },
+  "auto_comment": {
+    "instruction": "",
+    "input": ""
+  },
+  "code_review": {
+    "instruction": "",
+    "input": ""
+  },
+  "find_bug": {
+    "instruction": "",
+    "input": ""
+  }
 }
 ```
 
