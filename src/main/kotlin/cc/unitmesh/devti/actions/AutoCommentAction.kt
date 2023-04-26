@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.actions
 
 import cc.unitmesh.devti.DevtiIcons
+import cc.unitmesh.devti.connector.ConnectorService
 import cc.unitmesh.devti.connector.openai.OpenAIConnector
 import cc.unitmesh.devti.runconfig.AutoCRUDState
 import com.intellij.openapi.actionSystem.AnAction
@@ -19,11 +20,11 @@ class AutoCommentAction(
 ) : AnAction({ "Auto Comment for $methodName" }, DevtiIcons.AI_COPILOT) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
+        val apiExecutor = ConnectorService.getInstance().connector()
+
         val psiElementFactory = project.let { JavaPsiFacade.getElementFactory(it) }
 
         ApplicationManager.getApplication().invokeLater {
-            // 1. get code complete result
-            val apiExecutor = OpenAIConnector()
             val newMethodCode = apiExecutor.autoComment(method.text).trimIndent()
 
             if (newMethodCode.isEmpty()) {

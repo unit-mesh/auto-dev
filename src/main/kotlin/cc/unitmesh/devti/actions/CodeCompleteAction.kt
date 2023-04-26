@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.actions
 
 import cc.unitmesh.devti.DevtiIcons
+import cc.unitmesh.devti.connector.ConnectorService
 import cc.unitmesh.devti.connector.openai.OpenAIConnector
 import cc.unitmesh.devti.runconfig.AutoCRUDState
 import com.intellij.openapi.actionSystem.AnAction
@@ -25,15 +26,10 @@ class CodeCompleteAction(
         val project = e.project ?: return
         val psiElementFactory = project.let { JavaPsiFacade.getElementFactory(it) }
         val code = method.text
+        val apiExecutor = ConnectorService.getInstance().connector()
 
         val task = object : Task.Backgroundable(project, "Code completing", true) {
             override fun run(indicator: ProgressIndicator) {
-                indicator.fraction = 0.2
-                indicator.text = "Preparing code complete prompt"
-
-                // 2. get code complete result
-                val apiExecutor = OpenAIConnector()
-
                 indicator.fraction = 0.5
                 indicator.text = "Call OpenAI API..."
 

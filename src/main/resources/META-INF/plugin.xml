@@ -44,6 +44,7 @@
 
         <!-- LSP -->
         <applicationService serviceImplementation="cc.unitmesh.devti.lsp.DevtiLSPManager"/>
+        <applicationService serviceImplementation="cc.unitmesh.devti.connector.ConnectorService"/>
         <editorFactoryDocumentListener implementation="cc.unitmesh.devti.lsp.DevtiDocumentListener"/>
     </extensions>
 </idea-plugin>
