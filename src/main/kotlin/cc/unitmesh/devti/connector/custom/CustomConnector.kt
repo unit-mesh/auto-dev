@@ -4,6 +4,11 @@ import cc.unitmesh.devti.connector.CodeCopilot
 
 class CustomConnector(val url: String, val key: String) : CodeCopilot {
     private fun prompt(instruction: String, input: String): String {
+//        val retrofit = Retrofit.Builder()
+//            .baseUrl(url)
+//            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+//            .build()
+
         return ""
     }
 
