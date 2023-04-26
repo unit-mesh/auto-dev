@@ -91,7 +91,7 @@ AutoDev 处理过程：
     - [ ] Explain code by selection
     - [ ] Check API quality
         - [ ] API Specs for LLM
-- [ ] Custom LLM Server
+- [x] Custom LLM Server
 
 ## Development
 

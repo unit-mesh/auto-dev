@@ -39,7 +39,7 @@ class CustomConnector : CodeCopilot {
 
     private val logger = Logger.getInstance(CustomConnector::class.java)
 
-    fun prompt(instruction: String, input: String): String {
+    private fun prompt(instruction: String, input: String): String {
         val body = okhttp3.RequestBody.create(
             okhttp3.MediaType.parse("application/json; charset=utf-8"),
             """
