@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.actions
 
 import cc.unitmesh.devti.DevtiIcons
-import cc.unitmesh.devti.connector.openai.OpenCodeCopilot
+import cc.unitmesh.devti.connector.openai.OpenAIConnector
 import cc.unitmesh.devti.gui.createSuggestionPopup
 import cc.unitmesh.devti.runconfig.AutoCRUDState
 import com.intellij.openapi.actionSystem.AnAction
@@ -13,7 +13,6 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.util.NlsSafe
-import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiMethod
 
 class FindBugAction(methodName: @NlsSafe String, val method: PsiMethod) :
@@ -27,7 +26,7 @@ class FindBugAction(methodName: @NlsSafe String, val method: PsiMethod) :
                 indicator.fraction = 0.2
                 indicator.text = "Preparing code complete prompt"
 
-                val apiExecutor = OpenCodeCopilot()
+                val apiExecutor = OpenAIConnector()
 
                 indicator.fraction = 0.5
                 indicator.text = "Call OpenAI API..."

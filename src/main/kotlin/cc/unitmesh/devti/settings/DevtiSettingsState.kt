@@ -12,8 +12,9 @@ class DevtiSettingsState : PersistentStateComponent<DevtiSettingsState> {
     var githubToken = ""
     var openAiKey = ""
     var openAiModel = ""
+
+    var aiEngine = DEFAULT_AI_ENGINE
     var customOpenAiHost = ""
-    var aiEngine = "openai"
     var customEngineServer = ""
     var customEngineToken = ""
     var customEnginePrompt = ""

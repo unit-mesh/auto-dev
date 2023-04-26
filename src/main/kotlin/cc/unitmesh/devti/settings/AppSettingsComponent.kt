@@ -26,6 +26,9 @@ val DEFAULT_PROMPTS = """
 }
     """
 
+val AI_ENGINES = arrayOf("OpenAI", "Custom")
+val DEFAULT_AI_ENGINE = AI_ENGINES[0]
+
 class AppSettingsComponent {
     val panel: JPanel
     val openAiKey = JBTextField()
@@ -33,7 +36,7 @@ class AppSettingsComponent {
     val customOpenAiHost = JBTextField()
     val openAiModel = ComboBox(OPENAI_MODEL)
 
-    val aiEngine = ComboBox(arrayOf("OpenAI", "Custom"))
+    val aiEngine = ComboBox(AI_ENGINES)
     val customEngineServer = JBTextField()
     val customEngineToken = JBTextField()
     var customEnginePrompt = LanguageTextField(JsonLanguage.INSTANCE, null, DEFAULT_PROMPTS.trimIndent())

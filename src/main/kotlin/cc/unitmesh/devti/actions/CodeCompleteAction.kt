@@ -1,9 +1,8 @@
 package cc.unitmesh.devti.actions
 
 import cc.unitmesh.devti.DevtiIcons
-import cc.unitmesh.devti.connector.openai.OpenCodeCopilot
+import cc.unitmesh.devti.connector.openai.OpenAIConnector
 import cc.unitmesh.devti.runconfig.AutoCRUDState
-import cc.unitmesh.devti.settings.DevtiSettingsState
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
@@ -33,7 +32,7 @@ class CodeCompleteAction(
                 indicator.text = "Preparing code complete prompt"
 
                 // 2. get code complete result
-                val apiExecutor = OpenCodeCopilot()
+                val apiExecutor = OpenAIConnector()
 
                 indicator.fraction = 0.5
                 indicator.text = "Call OpenAI API..."

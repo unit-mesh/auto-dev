@@ -24,7 +24,7 @@ import retrofit2.converter.jackson.JacksonConverterFactory
 import java.time.Duration
 
 
-class OpenCodeCopilot : CodeCopilot, DevtiFlowAction {
+class OpenAIConnector : CodeCopilot, DevtiFlowAction {
     private val promptGenerator = PromptGenerator()
     private var service: OpenAiService
 
@@ -141,6 +141,6 @@ class OpenCodeCopilot : CodeCopilot, DevtiFlowAction {
     }
 
     companion object {
-        private val logger: Logger = logger<OpenCodeCopilot>()
+        private val logger: Logger = logger<OpenAIConnector>()
     }
 }

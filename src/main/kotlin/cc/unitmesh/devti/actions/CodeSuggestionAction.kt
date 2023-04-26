@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.actions
 
 import cc.unitmesh.devti.DevtiIcons
-import cc.unitmesh.devti.connector.openai.OpenCodeCopilot
+import cc.unitmesh.devti.connector.openai.OpenAIConnector
 import cc.unitmesh.devti.gui.createSuggestionPopup
 import cc.unitmesh.devti.runconfig.AutoCRUDState
 import com.intellij.openapi.actionSystem.AnAction
@@ -27,7 +27,7 @@ class CodeSuggestionAction(methodName: @NlsSafe String, val method: PsiMethod) :
                 indicator.fraction = 0.2
                 indicator.text = "Preparing code complete prompt"
 
-                val apiExecutor = OpenCodeCopilot()
+                val apiExecutor = OpenAIConnector()
 
                 indicator.fraction = 0.5
                 indicator.text = "Call OpenAI API..."

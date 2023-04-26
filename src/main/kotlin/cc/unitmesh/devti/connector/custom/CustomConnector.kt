@@ -1,8 +1,12 @@
 package cc.unitmesh.devti.connector.custom
 
 import cc.unitmesh.devti.connector.CodeCopilot
+import cc.unitmesh.devti.settings.DevtiSettingsState
 
-class CustomConnector(val url: String, val key: String) : CodeCopilot {
+class CustomConnector : CodeCopilot {
+    val url = DevtiSettingsState.getInstance()?.customEngineServer ?: ""
+    val key = DevtiSettingsState.getInstance()?.customEngineToken ?: ""
+
     private fun prompt(instruction: String, input: String): String {
 //        val retrofit = Retrofit.Builder()
 //            .baseUrl(url)
