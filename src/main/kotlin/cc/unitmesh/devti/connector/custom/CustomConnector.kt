@@ -4,14 +4,16 @@ import cc.unitmesh.devti.connector.CodeCopilot
 import cc.unitmesh.devti.settings.DevtiSettingsState
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import okhttp3.OkHttpClient
+import okhttp3.Request
 
 
 class CustomConnector : CodeCopilot {
-    val devtiSettingsState = DevtiSettingsState.getInstance()
-
-    val url = devtiSettingsState?.customEngineServer ?: ""
-    val key = devtiSettingsState?.customEngineToken ?: ""
-    var promptConfig: PromptConfig? = null
+    private val devtiSettingsState = DevtiSettingsState.getInstance()
+    private val url = devtiSettingsState?.customEngineServer ?: ""
+    private val key = devtiSettingsState?.customEngineToken ?: ""
+    private var promptConfig: PromptConfig? = null
+    private var client = OkHttpClient()
 
     init {
         val prompts = devtiSettingsState?.customEnginePrompts
@@ -33,13 +35,30 @@ class CustomConnector : CodeCopilot {
         }
     }
 
-    private fun prompt(instruction: String, input: String): String {
-//        val retrofit = Retrofit.Builder()
-//            .baseUrl(url)
-//            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-//            .build()
+    fun prompt(instruction: String, input: String): String {
+        val body = okhttp3.RequestBody.create(
+            okhttp3.MediaType.parse("application/json; charset=utf-8"),
+            """
+                {
+                    "instruction": "$instruction",
+                    "input": "$input",
+                }
+            """.trimIndent()
+        )
 
-        return ""
+        val builder = Request.Builder()
+        if (key.isNotEmpty()) {
+            builder.addHeader("Authorization", "Bearer $key")
+        }
+
+        val request = builder
+            .url(url)
+            .post(body)
+            .build()
+
+        val response = client.newCall(request).execute()
+
+        return response.body()?.string() ?: ""
     }
 
     override fun codeCompleteFor(text: String, className: String): String {
