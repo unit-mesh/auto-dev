@@ -89,8 +89,6 @@ AutoDev 处理过程：
     - [x] Code Suggestions
     - [x] Find bug...
     - [ ] Explain code by selection
-    - [ ] Check API quality
-        - [ ] API Specs for LLM
 - [x] Custom LLM Server
 
 ## Development
