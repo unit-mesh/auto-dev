@@ -5,6 +5,7 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.LanguageTextField
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
+import com.intellij.ui.components.JBPasswordField
 import com.intellij.util.ui.FormBuilder
 import java.awt.Dimension
 import java.awt.FontMetrics
@@ -31,8 +32,8 @@ val DEFAULT_AI_ENGINE = AI_ENGINES[0]
 
 class AppSettingsComponent {
     val panel: JPanel
-    val openAiKey = JBTextField()
-    val githubToken = JBTextField()
+    val openAiKey = JBPasswordField()
+    val githubToken = JBPasswordField()
     val customOpenAiHost = JBTextField()
     val openAiModel = ComboBox(OPENAI_MODEL)
 
