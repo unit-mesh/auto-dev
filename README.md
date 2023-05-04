@@ -69,8 +69,9 @@ AutoDev 处理过程：
 
 ## Todos
 
-- [ ] Languages Support
+- [X] Languages Support by PSI
     - [x] Java
+- [ ] Languages Support by LSP
     - [ ] Kotlin
     - [ ] TypeScript
 - [x] DevTi Protocol
