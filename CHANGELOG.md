@@ -2,6 +2,8 @@
 
 # AutoDev Changelog
 
+## [Unreleased]
+
 ## [0.3.0](https://github.com/unit-mesh/auto-dev/compare/v0.2.0...v0.3.0) (2023-04-26)
 
 ### Features
