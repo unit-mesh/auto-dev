@@ -8,6 +8,7 @@ class ChatCodingService(private var actionType: ChatBotActionType) {
         ChatBotActionType.EXPLAIN -> "explain"
         ChatBotActionType.REVIEW -> "review"
         ChatBotActionType.REFACTOR -> "refactor"
+        ChatBotActionType.CODE_COMPLETE -> "complete"
     }
 
     fun setActionType(actionType: ChatBotActionType) {
@@ -35,6 +36,10 @@ class ChatCodingService(private var actionType: ChatBotActionType) {
                         replaceSelectedText?.invoke(getCodeSection(response))
                     }
 
+                    actionType === ChatBotActionType.CODE_COMPLETE -> ui.updateReplaceableContent(response) {
+                        replaceSelectedText?.invoke(getCodeSection(response))
+                    }
+
                     else -> ui.updateMessage(response)
                 }
             }
@@ -58,5 +63,6 @@ class ChatCodingService(private var actionType: ChatBotActionType) {
 enum class ChatBotActionType {
     REFACTOR,
     EXPLAIN,
-    REVIEW
+    REVIEW,
+    CODE_COMPLETE
 }
