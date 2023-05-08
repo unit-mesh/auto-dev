@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.actions
+package cc.unitmesh.devti.actions.chat
 
 import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import com.intellij.openapi.actionSystem.AnActionEvent

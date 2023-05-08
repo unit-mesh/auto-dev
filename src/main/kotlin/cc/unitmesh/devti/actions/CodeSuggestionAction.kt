@@ -50,9 +50,5 @@ class CodeSuggestionAction(methodName: @NlsSafe String, val method: PsiMethod) :
             ProgressManager.getInstance().run(task)
         }
     }
-
-    companion object {
-        private val log: Logger = logger<AutoCRUDState>()
-    }
 }
 

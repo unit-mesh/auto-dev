@@ -66,6 +66,6 @@ class CodeCompleteAction(
     }
 
     companion object {
-        private val log: Logger = logger<AutoCRUDState>()
+        private val log: Logger = logger<CodeCompleteAction>()
     }
 }
