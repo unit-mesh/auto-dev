@@ -82,7 +82,7 @@ AutoDev 处理过程：
         - [x] import all common imports
     - [x] Service Suggestion
     - [ ] Repository Suggestion
-    - [ ] Model Suggestion
+        - [ ] parse Gradle for dependencies
 - [ ] Code AI
     - [x] Generate code
     - [ ] Generate test
