@@ -40,7 +40,6 @@
         <programRunner implementation="cc.unitmesh.devti.runconfig.DtCommandRunner"/>
 
         <toolWindow id="DevTiFlow" secondary="true" icon="AllIcons.Toolwindows.WebToolWindow" anchor="right"
-                    canCloseContents="true"
                     factoryClass="cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory"/>
 
         <!-- LSP -->
