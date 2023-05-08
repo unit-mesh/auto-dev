@@ -50,7 +50,7 @@
 
     <actions>
         <action id="cc.unitmesh.devti.actions.ChatBotExplainAction"
-                class="cc.unitmesh.devti.actions.ChatBotExplainAction" text="Ask ChatBot To Explain"
+                class="cc.unitmesh.devti.actions.ChatBotExplainAction" text="Explain This (DevTi)"
                 description="Ask Chatbot about this code">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
