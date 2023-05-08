@@ -12,8 +12,13 @@ class ActionPromptFormatter(private val action: String, private val lang: String
     override fun getUIPrompt(): String {
         var prompt = """$action this $lang code"""
 
-        if (action == "explain") {
-            prompt = "解释如下的 $lang 代码"
+        when (action) {
+            "review" -> {
+                prompt = "检查如下的 $lang 代码"
+            }
+            "explain" -> {
+                prompt = "解释如下的 $lang 代码"
+            }
         }
 
         return """$prompt:
@@ -24,8 +29,13 @@ class ActionPromptFormatter(private val action: String, private val lang: String
     override fun getRequestPrompt(): String {
         var prompt = """$action this $lang code"""
 
-        if (action == "explain") {
-            prompt = "解释如下的 $lang 代码"
+        when (action) {
+            "review" -> {
+                prompt = "检查如下的 $lang 代码"
+            }
+            "explain" -> {
+                prompt = "解释如下的 $lang 代码"
+            }
         }
 
         return """$prompt:

@@ -4,7 +4,11 @@ import cc.unitmesh.devti.connector.ConnectorService
 import com.intellij.openapi.application.ApplicationManager
 
 class ChatCodingService(private var actionType: ChatBotActionType) {
-    val action = if (actionType == ChatBotActionType.EXPLAIN) "explain" else "refactor"
+    val action = when (actionType) {
+        ChatBotActionType.EXPLAIN -> "explain"
+        ChatBotActionType.REVIEW -> "review"
+        ChatBotActionType.REFACTOR -> "refactor"
+    }
 
     fun setActionType(actionType: ChatBotActionType) {
         this.actionType = actionType
@@ -53,5 +57,6 @@ class ChatCodingService(private var actionType: ChatBotActionType) {
 
 enum class ChatBotActionType {
     REFACTOR,
-    EXPLAIN
+    EXPLAIN,
+    REVIEW
 }
