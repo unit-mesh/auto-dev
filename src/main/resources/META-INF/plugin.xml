@@ -55,5 +55,12 @@
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
         </action>
+
+        <action id="cc.unitmesh.devti.actions.ChatBotRefactorAction"
+                class="cc.unitmesh.devti.actions.ChatBotRefactorAction" text="Refactor This (DevTi)"
+                description="Ask Chatbot about this code">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+            <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
+        </action>
     </actions>
 </idea-plugin>

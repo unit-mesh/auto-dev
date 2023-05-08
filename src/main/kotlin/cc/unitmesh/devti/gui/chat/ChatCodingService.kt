@@ -47,7 +47,7 @@ class ChatCodingService(private var actionType: ChatBotActionType) {
         val match = pattern.find(content)
 
         if (match != null) return match.groupValues[1].trim()
-        return ""
+        return content
     }
 }
 
