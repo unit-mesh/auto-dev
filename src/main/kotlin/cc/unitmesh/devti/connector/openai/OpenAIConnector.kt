@@ -60,9 +60,9 @@ class OpenAIConnector : CodeCopilot, DevtiFlowAction {
         }
     }
 
-    private fun prompt(instruction: String): String {
+    override fun prompt(promptText: String): String {
         val messages: MutableList<ChatMessage> = ArrayList()
-        val systemMessage = ChatMessage(ChatMessageRole.USER.value(), instruction)
+        val systemMessage = ChatMessage(ChatMessageRole.USER.value(), promptText)
         messages.add(systemMessage)
 
         val completionRequest = ChatCompletionRequest.builder()
