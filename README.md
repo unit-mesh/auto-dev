@@ -89,7 +89,7 @@ AutoDev 处理过程：
     - [x] Add comments
     - [x] Code Suggestions
     - [x] Find bug...
-    - [ ] Explain code by selection
+    - [x] Explain code by selection
     - [ ] Trace Exception
 - [x] Custom LLM Server
 
