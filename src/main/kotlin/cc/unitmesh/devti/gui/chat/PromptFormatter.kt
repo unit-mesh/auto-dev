@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.gui
+package cc.unitmesh.devti.gui.chat
 
 
 interface PromptFormatter {
@@ -10,13 +10,17 @@ interface PromptFormatter {
 class ActionPromptFormatter(private val action: String, private val lang: String, private val selectedText: String) :
     PromptFormatter {
     override fun getUIPrompt(): String {
-        return """$action this $lang code:
+        val prompt = """$action this $lang code"""
+
+        return """$prompt:
          <pre><code>$selectedText</pre></code>
         """.trimMargin()
     }
 
     override fun getRequestPrompt(): String {
-        return """$action this $lang code:
+        val prompt = """$action this $lang code"""
+
+        return """$prompt:
             $selectedText
         """.trimMargin()
     }

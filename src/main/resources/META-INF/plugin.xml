@@ -39,7 +39,8 @@
         <!-- Run Configurations -->
         <programRunner implementation="cc.unitmesh.devti.runconfig.DtCommandRunner"/>
 
-        <toolWindow id="DevTi Flow" secondary="true" icon="AllIcons.Toolwindows.WebToolWindow" anchor="right"
+        <toolWindow id="DevTiFlow" secondary="true" icon="AllIcons.Toolwindows.WebToolWindow" anchor="right"
+                    canCloseContents="true"
                     factoryClass="cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory"/>
 
         <!-- LSP -->
@@ -47,4 +48,12 @@
         <applicationService serviceImplementation="cc.unitmesh.devti.connector.ConnectorService"/>
         <editorFactoryDocumentListener implementation="cc.unitmesh.devti.lsp.DevtiDocumentListener"/>
     </extensions>
+
+    <actions>
+        <action id="cc.unitmesh.devti.actions.ChatBotExplainAction"
+                class="cc.unitmesh.devti.actions.ChatBotExplainAction" text="Ask ChatBot To Explain"
+                description="Ask Chatbot about this code">
+            <add-to-group group-id="ToolWindowContextMenu" anchor="first"/>
+        </action>
+    </actions>
 </idea-plugin>

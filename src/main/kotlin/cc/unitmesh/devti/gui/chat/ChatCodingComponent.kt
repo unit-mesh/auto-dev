@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.gui
+package cc.unitmesh.devti.gui.chat
 
 import com.intellij.openapi.ui.NullableComponent
 import com.intellij.ui.Gray
@@ -105,7 +105,7 @@ class ChatCodingComponent(val chatCodingService: ChatCodingService) : JBPanel<Ch
         val listener: (ActionEvent) -> Unit = {
             val prompt = searchTextArea.text
             searchTextArea.text = ""
-            chatCodingService.actionType = ChatBotActionType.REFACTOR
+            chatCodingService.setActionType(ChatBotActionType.REFACTOR)
             chatCodingService.handlePromptAndResponse(this, object : PromptFormatter {
                 override fun getUIPrompt() = prompt
                 override fun getRequestPrompt() = prompt

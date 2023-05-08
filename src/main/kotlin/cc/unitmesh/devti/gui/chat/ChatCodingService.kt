@@ -1,10 +1,19 @@
-package cc.unitmesh.devti.gui
+package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.connector.ConnectorService
 import com.intellij.openapi.application.ApplicationManager
 
-class ChatCodingService {
-    var actionType: ChatBotActionType = ChatBotActionType.EXPLAIN
+class ChatCodingService(private var actionType: ChatBotActionType) {
+    val action = if (actionType == ChatBotActionType.EXPLAIN) "explain" else "refactor"
+
+    fun setActionType(actionType: ChatBotActionType) {
+        this.actionType = actionType
+    }
+
+    fun getLabel(): String {
+        val capitalizedAction = action.capitalize()
+        return "$capitalizedAction Code"
+    }
 
     fun handlePromptAndResponse(
         ui: ChatCodingComponent,
