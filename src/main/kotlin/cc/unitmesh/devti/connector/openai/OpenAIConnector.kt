@@ -60,9 +60,19 @@ class OpenAIConnector : CodeCopilot, DevtiFlowAction {
         }
     }
 
+    val messages: MutableList<ChatMessage> = ArrayList()
+    var historyMessageLength: Int = 0
+
     override fun prompt(promptText: String): String {
-        val messages: MutableList<ChatMessage> = ArrayList()
         val systemMessage = ChatMessage(ChatMessageRole.USER.value(), promptText)
+
+        historyMessageLength += promptText.length
+
+        // todo: 4096 is the max length of history message, need to find a better way to handle thiss
+        if (historyMessageLength > 4096) {
+            messages.clear()
+        }
+
         messages.add(systemMessage)
 
         val completionRequest = ChatCompletionRequest.builder()

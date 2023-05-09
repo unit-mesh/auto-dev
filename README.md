@@ -91,6 +91,10 @@ AutoDev 处理过程：
     - [x] Find bug...
     - [x] Explain code by selection
     - [x] Trace Exception
+- [ ] Chat with IDE
+    - [ ] 重构：`重构 xx 方法`
+    - [ ] 重构：`重构 xx 类`
+    - [ ] 替换：`替换 xx 方法`，`devti:
 - [x] Custom LLM Server
 
 ## Development

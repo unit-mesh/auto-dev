@@ -47,8 +47,10 @@ class ChatCodingService(private var actionType: ChatBotActionType) {
         }
     }
 
+    private val codeCopilot = ConnectorService.getInstance().connector()
+
     private fun makeChatBotRequest(requestPrompt: String): String {
-        val connector = ConnectorService.getInstance().connector()
+        val connector = codeCopilot
         return connector.prompt(requestPrompt)
     }
 
