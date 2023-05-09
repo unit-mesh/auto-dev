@@ -39,6 +39,7 @@ class MessageComponent(question: String, isPrompt: Boolean = false) : JEditorPan
         }
 
         this.border = JBEmptyBorder(10)
-        this.text = if (isPrompt) question else parseMarkdown(question)
+//        this.text = if (isPrompt) question else parseMarkdown(question)
+        this.text = question
     }
 }
