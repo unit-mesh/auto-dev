@@ -27,7 +27,7 @@ fun parseMarkdown(markdown: String): String {
 
 class MessageComponent(question: String, isPrompt: Boolean = false) : JEditorPane() {
     init {
-        this.contentType = "text/html;charset=UTF-8"
+        this.contentType = "text/plain;charset=UTF-8"
         this.putClientProperty(HONOR_DISPLAY_PROPERTIES, true)
         this.font = UIUtil.getMenuFont()
         this.isEditable = false

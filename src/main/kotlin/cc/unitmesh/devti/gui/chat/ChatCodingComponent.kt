@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.gui.chat
 
 import com.intellij.openapi.ui.NullableComponent
+import com.intellij.ui.EditorTextField
 import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
 import com.intellij.ui.OnePixelSplitter
@@ -14,13 +15,11 @@ import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
+import java.awt.event.*
 import javax.swing.*
 
-class ChatCodingComponent(val chatCodingService: ChatCodingService) : JBPanel<ChatCodingComponent>(), NullableComponent {
+class ChatCodingComponent(val chatCodingService: ChatCodingService) : JBPanel<ChatCodingComponent>(),
+    NullableComponent {
     private var progressBar: JProgressBar
     private val myTitle = JBLabel("Conversation")
     private val myList = JPanel(VerticalLayout(JBUI.scale(10)))
@@ -102,7 +101,8 @@ class ChatCodingComponent(val chatCodingService: ChatCodingService) : JBPanel<Ch
     private fun addQuestionArea() {
         val actionPanel = JPanel(BorderLayout())
 
-        val searchTextArea = JTextField()
+        val searchTextArea = EditorTextField()
+        searchTextArea.setOneLineMode(false)
 
         val listener: (ActionEvent) -> Unit = {
             val prompt = searchTextArea.text
@@ -114,7 +114,14 @@ class ChatCodingComponent(val chatCodingService: ChatCodingService) : JBPanel<Ch
             })
         }
 
-        searchTextArea.addActionListener(listener)
+        searchTextArea.addKeyListener(object : KeyAdapter() {
+            override fun keyPressed(e: KeyEvent?) {
+                if (e?.keyCode == KeyEvent.VK_ENTER) {
+                    listener.invoke(ActionEvent(e.source, e.id, e.paramString()))
+                }
+            }
+        })
+
         actionPanel.add(searchTextArea, BorderLayout.CENTER)
 
         val actionButtons = JPanel(BorderLayout())
