@@ -3,6 +3,7 @@ package cc.unitmesh.devti.gui.chat
 import com.intellij.ui.JBColor
 import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.UIUtil
+import com.petebevin.markdown.TextEditor
 import org.commonmark.Extension
 import org.commonmark.ext.gfm.tables.TablesExtension
 import org.commonmark.node.Node
@@ -11,13 +12,16 @@ import org.commonmark.renderer.html.HtmlRenderer
 import javax.swing.JEditorPane
 
 fun parseMarkdown(markdown: String): String {
-//    val extensions: List<Extension> = listOf(TablesExtension.create())
+    val extensions: List<Extension> = listOf(TablesExtension.create())
     val parser = Parser.builder()
-//        .extensions(extensions)
+        .extensions(extensions)
         .build()
 
     val document: Node = parser.parse(markdown)
-    val htmlRenderer = HtmlRenderer.builder().build()
+    val htmlRenderer = HtmlRenderer
+        .builder()
+        .extensions(extensions)
+        .build()
     return htmlRenderer.render(document)
 }
 
