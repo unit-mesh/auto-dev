@@ -89,9 +89,11 @@ class ChatCodingComponent(val chatCodingService: ChatCodingService) : JBPanel<Ch
             replaceSelectedText()
             myList.remove(myList.componentCount - 1)
         }
+
         jButton.addActionListener(listener)
         myList.add(messageComponent)
         myList.add(jButton)
+
         progressBar.isIndeterminate = false
         progressBar.isVisible = false
         updateUI()
