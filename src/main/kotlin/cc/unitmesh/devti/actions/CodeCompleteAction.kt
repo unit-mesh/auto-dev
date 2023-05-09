@@ -48,7 +48,7 @@ class CodeCompleteAction(
                     log.error("no code complete result")
                     return
                 }
-                log.warn("newMethodCode: $newMethodCode")
+                log.info("newMethodCode: $newMethodCode")
 
                 WriteCommandAction.runWriteCommandAction(project) {
                     psiElementFactory?.createMethodFromText(newMethodCode, method)?.let {

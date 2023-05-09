@@ -2,14 +2,10 @@ package cc.unitmesh.devti.actions
 
 import cc.unitmesh.devti.DevtiIcons
 import cc.unitmesh.devti.connector.ConnectorService
-import cc.unitmesh.devti.connector.openai.OpenAIConnector
 import cc.unitmesh.devti.gui.createSuggestionPopup
-import cc.unitmesh.devti.runconfig.AutoCRUDState
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task

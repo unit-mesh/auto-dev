@@ -2,7 +2,6 @@ package cc.unitmesh.devti.actions
 
 import cc.unitmesh.devti.DevtiIcons
 import cc.unitmesh.devti.connector.ConnectorService
-import cc.unitmesh.devti.connector.openai.OpenAIConnector
 import cc.unitmesh.devti.runconfig.AutoCRUDState
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -22,7 +21,9 @@ class AutoCommentAction(
         val project = e.project ?: return
         val apiExecutor = ConnectorService.getInstance().connector()
 
-        val psiElementFactory = project.let { JavaPsiFacade.getElementFactory(it) }
+        val psiElementFactory = project.let {
+            JavaPsiFacade.getElementFactory(it)
+        }
 
         ApplicationManager.getApplication().invokeLater {
             val newMethodCode = apiExecutor.autoComment(method.text).trimIndent()
