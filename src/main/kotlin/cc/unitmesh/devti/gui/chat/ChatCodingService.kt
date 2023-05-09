@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.gui.chat
 
+import cc.unitmesh.devti.DevtiBundle
 import cc.unitmesh.devti.connector.ConnectorService
 import com.intellij.openapi.application.ApplicationManager
 
@@ -26,7 +27,7 @@ class ChatCodingService(private var actionType: ChatBotActionType) {
         replaceSelectedText: ((response: String) -> Unit)? = null
     ) {
         ui.add(prompt.getUIPrompt(), true)
-        ui.add("Loading...")
+        ui.add(DevtiBundle.message("devti.loading"))
 
         ApplicationManager.getApplication().executeOnPooledThread {
             val response = this.makeChatBotRequest(prompt.getRequestPrompt())

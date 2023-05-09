@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.gui.chat
 
+import cc.unitmesh.devti.DevtiBundle
 import com.intellij.openapi.ui.NullableComponent
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.Gray
@@ -18,7 +19,7 @@ import java.awt.BorderLayout
 import java.awt.event.*
 import javax.swing.*
 
-class ChatCodingComponent(val chatCodingService: ChatCodingService) : JBPanel<ChatCodingComponent>(),
+class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JBPanel<ChatCodingComponent>(),
     NullableComponent {
     private var progressBar: JProgressBar
     private val myTitle = JBLabel("Conversation")
@@ -83,7 +84,7 @@ class ChatCodingComponent(val chatCodingService: ChatCodingService) : JBPanel<Ch
         myList.remove(myList.componentCount - 1)
         val messageComponent = MessageComponent(content, false)
 
-        val jButton = JButton("Replace Selection")
+        val jButton = JButton(DevtiBundle.message("devti.chat.replaceSelection"))
         val listener = ActionListener {
             replaceSelectedText()
             myList.remove(myList.componentCount - 1)
@@ -125,7 +126,7 @@ class ChatCodingComponent(val chatCodingService: ChatCodingService) : JBPanel<Ch
         actionPanel.add(searchTextArea, BorderLayout.CENTER)
 
         val actionButtons = JPanel(BorderLayout())
-        val clearChat = LinkLabel<String>("Clear Chat", null)
+        val clearChat = LinkLabel<String>(DevtiBundle.message("devti.chat.clear"), null)
         clearChat.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
                 myList.removeAll()
@@ -135,7 +136,7 @@ class ChatCodingComponent(val chatCodingService: ChatCodingService) : JBPanel<Ch
 
         clearChat.border = JBEmptyBorder(5, 5, 5, 5)
 
-        val button = JButton("Send")
+        val button = JButton(DevtiBundle.message("devti.chat.send"))
         button.addActionListener(listener)
 
         actionButtons.add(button, BorderLayout.NORTH)
