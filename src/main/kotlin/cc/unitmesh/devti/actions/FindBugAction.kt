@@ -21,9 +21,6 @@ class FindBugAction(methodName: @NlsSafe String, val method: PsiMethod) :
 
         val task = object : Task.Backgroundable(project, "Find bug", true) {
             override fun run(indicator: ProgressIndicator) {
-                indicator.fraction = 0.2
-                indicator.text = "Preparing code complete prompt"
-
                 indicator.fraction = 0.5
                 indicator.text = "Call OpenAI API..."
 

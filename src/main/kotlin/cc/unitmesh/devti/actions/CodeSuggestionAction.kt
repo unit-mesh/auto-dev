@@ -22,9 +22,6 @@ class CodeSuggestionAction(methodName: @NlsSafe String, val method: PsiMethod) :
 
         val task = object : Task.Backgroundable(project, "Code completing", true) {
             override fun run(indicator: ProgressIndicator) {
-                indicator.fraction = 0.2
-                indicator.text = "Preparing code complete prompt"
-
                 indicator.fraction = 0.5
                 indicator.text = "Call OpenAI API..."
 

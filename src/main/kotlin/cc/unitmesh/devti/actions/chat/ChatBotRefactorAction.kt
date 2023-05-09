@@ -6,9 +6,6 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.command.WriteCommandAction
 
 class ChatBotRefactorAction : ChatBaseAction() {
-    override fun actionPerformed(event: AnActionEvent) {
-        super.actionPerformed(event)
-    }
 
     override fun getActionType(): ChatBotActionType {
         return ChatBotActionType.REFACTOR
