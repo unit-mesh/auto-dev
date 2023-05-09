@@ -94,7 +94,7 @@ AutoDev 处理过程：
 - [ ] Chat with IDE
     - [ ] 重构：`重构 xx 方法`
     - [ ] 重构：`重构 xx 类`
-    - [ ] 替换：`替换 xx 方法`，`devti:
+    - [ ] 替换：`替换 xx 方法`，`devti:/refactor/method`
 - [x] Custom LLM Server
 
 ## Development
