@@ -103,9 +103,27 @@ AutoDev 处理过程：
 2. open in IntelliJ IDEA
 3. `./gradlew runIde`
 
-### API Spec for LLM Server
+### LSP Json RPC
 
-#### 1. `POST /api`
+```json
+{
+  "range": {
+    "start": {
+      "line": 0,
+      "column": 0
+    },
+    "end": {
+      "line": 0,
+      "column": 0
+    }
+  },
+  "text": "",
+  "language": "xxx",
+  "uuid": "xxx"
+}
+```
+
+### API Spec
 
 authorization: `Bearer ${token}`
 
@@ -150,6 +168,7 @@ then return:
 
 ## License
 
-ChatUI based on: [https://github.com/Cspeisman/chatgpt-intellij-plugin](https://github.com/Cspeisman/chatgpt-intellij-plugin)
+ChatUI based
+on: [https://github.com/Cspeisman/chatgpt-intellij-plugin](https://github.com/Cspeisman/chatgpt-intellij-plugin)
 
 @Thoughtworks AIEEL Team. This code is distributed under the MPL 2.0 license. See `LICENSE` in this directory.
