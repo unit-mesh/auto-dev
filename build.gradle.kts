@@ -23,7 +23,7 @@ plugins {
     alias(libs.plugins.kover) // Gradle Kover Plugin
     alias(libs.plugins.serialization)
 //    alias(libs.plugins.grammarKit) // Grammar Kit Plugin
-    id("org.jetbrains.grammarkit") version "2021.2.2"
+//    id("org.jetbrains.grammarkit") version "2021.2.2"
 }
 
 group = properties("pluginGroup").get()
@@ -81,21 +81,21 @@ tasks {
     wrapper {
         gradleVersion = properties("gradleVersion").get()
     }
-
-    val generateDevtiLexer = task<GenerateLexerTask>("generateFeakinLexer") {
-        source.set("src/main/grammars/SilveryLexer.flex")
-        targetDir.set("src/main/gen/cc/unitmesh/devti/lexer")
-        targetClass.set("SilveryLexer")
-        purgeOldFiles.set(true)
-    }
-
-    val generateDevtiParser = task<GenerateParserTask>("generateFeakinParser") {
-        source.set("src/main/grammars/SilveryParser.bnf")
-        targetRoot.set("src/main/gen")
-        pathToParser.set("src/main/cc/unitmesh/devti/parser/SilveryParser.java")
-        pathToPsiRoot.set("src/main/cc/unitmesh/devti/psi")
-        purgeOldFiles.set(true)
-    }
+//
+//    val generateDevtiLexer = task<GenerateLexerTask>("generateFeakinLexer") {
+//        source.set("src/main/grammars/SilveryLexer.flex")
+//        targetDir.set("src/main/gen/cc/unitmesh/devti/lexer")
+//        targetClass.set("SilveryLexer")
+//        purgeOldFiles.set(true)
+//    }
+//
+//    val generateDevtiParser = task<GenerateParserTask>("generateFeakinParser") {
+//        source.set("src/main/grammars/SilveryParser.bnf")
+//        targetRoot.set("src/main/gen")
+//        pathToParser.set("src/main/cc/unitmesh/devti/parser/SilveryParser.java")
+//        pathToPsiRoot.set("src/main/cc/unitmesh/devti/psi")
+//        purgeOldFiles.set(true)
+//    }
 
     configure<JavaPluginExtension> {
         sourceCompatibility = VERSION_17
@@ -110,11 +110,11 @@ tasks {
             apiVersion = "1.7"
             freeCompilerArgs = listOf("-Xjvm-default=all")
         }
-
-        dependsOn(
-            generateDevtiLexer,
-            generateDevtiParser
-        )
+//
+//        dependsOn(
+//            generateDevtiLexer,
+//            generateDevtiParser
+//        )
     }
 
     patchPluginXml {
