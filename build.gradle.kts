@@ -1,6 +1,4 @@
 import org.jetbrains.changelog.Changelog
-import org.jetbrains.grammarkit.tasks.GenerateLexerTask
-import org.jetbrains.grammarkit.tasks.GenerateParserTask
 import org.gradle.api.JavaVersion.VERSION_17
 
 buildscript {
