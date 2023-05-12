@@ -1,21 +1,20 @@
 package cc.unitmesh.devti.editor
 
 import com.intellij.ide.ui.AntialiasingType
-import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.EditorCustomElementRenderer
-import com.intellij.openapi.editor.Inlay
+import com.intellij.openapi.editor.*
 import com.intellij.openapi.editor.colors.EditorFontType
 import com.intellij.openapi.editor.event.*
 import com.intellij.openapi.editor.ex.util.EditorUtil
 import com.intellij.openapi.editor.impl.FontInfo
+import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
+import com.intellij.util.ui.GraphicsUtil
 import com.intellij.util.ui.UIUtil
-import java.awt.Font
-import java.awt.FontMetrics
+import java.awt.*
 import java.awt.font.FontRenderContext
+import java.awt.geom.Rectangle2D
 
 class AutoDevEditorListener : EditorFactoryListener {
     override fun editorCreated(event: EditorFactoryEvent) {
@@ -33,9 +32,9 @@ class AutoDevEditorListener : EditorFactoryListener {
             val project = editor.project
             if (project == null || project.isDisposed) return
 
-            val commandProcessor = CommandProcessor.getInstance()
-            if (commandProcessor.isUndoTransparentActionInProgress) return
-            if (commandProcessor.currentCommandName != null) return
+//            val commandProcessor = CommandProcessor.getInstance()
+//            if (commandProcessor.isUndoTransparentActionInProgress) return
+//            if (commandProcessor.currentCommandName != null) return
 
             val changeOffset = event.offset + event.newLength
             if (editor.caretModel.offset != changeOffset) return
@@ -45,7 +44,7 @@ class AutoDevEditorListener : EditorFactoryListener {
             LOG.warn("changeOffset: $changeOffset")
 
             val render = DevtiDefaultInlayRenderer(lines = listOf("Hello, world!"))
-            editor.inlayModel.addInlineElement(changeOffset, true, 1, render)
+//            editor.inlayModel.addInlineElement(changeOffset, true, 9999, render)
         }
     }
 
@@ -63,9 +62,68 @@ class DevtiDefaultInlayRenderer(val lines: List<String>) : EditorCustomElementRe
     override fun calcHeightInPixels(inlay: Inlay<*>): Int {
         return inlay.editor.lineHeight * lines.size.also { cachedHeight = it }
     }
+
     override fun calcWidthInPixels(inlay: Inlay<*>): Int {
         val width = calculateWidth(inlay.editor, content, lines)
         return Math.max(1, width).also { cachedWidth = it }
+    }
+
+    override fun paint(inlay: Inlay<*>, g: Graphics, region: Rectangle, surroundingTextAttributes: TextAttributes) {
+        val editor = inlay.editor
+        if (editor.isDisposed) return
+
+        val attributes =
+            editor.colorsScheme.getAttributes(DefaultLanguageHighlighterColors.INLAY_TEXT_WITHOUT_BACKGROUND)
+
+        renderCodeBlock(editor, content, lines, g, region, attributes)
+    }
+
+    private fun renderCodeBlock(
+        editor: Editor,
+        content: String,
+        contentLines: List<String>,
+        g: Graphics,
+        region: Rectangle2D,
+        attributes: TextAttributes
+    ) {
+        if (content.isEmpty() || contentLines.isEmpty()) {
+            return
+        }
+        val clipBounds = g.clipBounds
+        val g2 = g.create() as Graphics2D
+        GraphicsUtil.setupAAPainting(g2)
+        val font = getFont(editor, content)
+        g2.font = font
+        val metrics = fontMetrics(editor, font)
+        val lineHeight = editor.lineHeight.toDouble()
+        val fontBaseline = Math.ceil(font.createGlyphVector(metrics.fontRenderContext, "Alb").visualBounds.height)
+        val linePadding = (lineHeight - fontBaseline) / 2.0
+        val offsetX = region.x
+        val offsetY = region.y + fontBaseline + linePadding
+        var lineOffset = 0
+        g2.clip = if (clipBounds != null && clipBounds != region) region.createIntersection(clipBounds) else region
+        for (line in contentLines) {
+            renderBackground(g2, attributes, offsetX, region.y + lineOffset, region.width, lineHeight)
+            g2.color = attributes.foregroundColor
+            g2.drawString(line, offsetX.toFloat(), (offsetY + lineOffset).toFloat())
+            lineOffset = (lineOffset + lineHeight).toInt()
+        }
+        g2.dispose()
+    }
+
+    private fun renderBackground(
+        g: Graphics2D,
+        attributes: TextAttributes,
+        x: Double,
+        y: Double,
+        width: Double,
+        height: Double
+    ) {
+        val color = attributes.backgroundColor
+        if (color != null) {
+            g.color = color
+            g.fillRoundRect(x.toInt(), y.toInt(), width.toInt(), height.toInt(), 1, 1)
+        }
     }
 
     private fun calculateWidth(editor: Editor, text: String, textLines: List<String>): Int {
@@ -84,7 +142,6 @@ class DevtiDefaultInlayRenderer(val lines: List<String>) : EditorCustomElementRe
         val scheme = editor.colorsScheme
         return fallbackFont.deriveFont(scheme.editorFontSize.toFloat())
     }
-
 
     private fun fontMetrics(editor: Editor, font: Font): FontMetrics {
         val editorContext = FontInfo.getFontRenderContext(editor.contentComponent)
