@@ -56,6 +56,10 @@ Output Screenshots:
 
 ![AutoDev](https://unitmesh.cc/auto-dev/blog-controller.png)
 
+### Custom OpenAI proxy example
+
+![Custom Config](https://unitmesh.cc/auto-dev/autodev-config.png)
+
 ### 原理
 
 AutoDev 处理过程：
