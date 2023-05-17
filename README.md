@@ -100,6 +100,10 @@ AutoDev 处理过程：
     - [ ] 重构：`重构 xx 类`
     - [ ] 替换：`替换 xx 方法`，`devti:/refactor/method`
 - [x] Custom LLM Server
+- [ ] Telemetry
+- [ ] Context Engineering
+    - [ ] Open Tabs
+    - [ ] Related Files
 
 ## Development
 
