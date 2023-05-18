@@ -49,12 +49,12 @@
                     factoryClass="cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory"/>
 
         <!-- editor -->
-        <editorFactoryListener implementation="cc.unitmesh.devti.editor.AutoDevEditorListener"/>
+<!--        <editorFactoryListener implementation="cc.unitmesh.devti.editor.AutoDevEditorListener"/>-->
 
         <!-- LSP -->
-        <applicationService serviceImplementation="cc.unitmesh.devti.lsp.DevtiLSPManager"/>
         <applicationService serviceImplementation="cc.unitmesh.devti.connector.ConnectorService"/>
-        <editorFactoryDocumentListener implementation="cc.unitmesh.devti.lsp.DevtiLspDocumentListener"/>
+        <!--        <applicationService serviceImplementation="cc.unitmesh.devti.lsp.DevtiLSPManager"/>-->
+        <!--        <editorFactoryDocumentListener implementation="cc.unitmesh.devti.lsp.DevtiLspDocumentListener"/>-->
     </extensions>
 
     <actions>
