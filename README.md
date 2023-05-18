@@ -39,7 +39,6 @@
         - [x] import all common imports
     - [x] Service Suggestion
     - [ ] Repository Suggestion
-        - [ ] parse Gradle for dependencies
 - [ ] Code AI
     - [x] Generate code
     - [ ] Generate test
@@ -57,6 +56,8 @@
 - [ ] Context Engineering
     - [ ] Open Tabs
     - [ ] Related Files
+- [ ]  with DependencyContext
+    - [ ] parse Gradle for dependencies
 
 
 ## Usage
