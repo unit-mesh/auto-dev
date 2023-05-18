@@ -24,6 +24,41 @@
 
 结论：AutoDev 的唯一优势是开源，GitHub Copilot 完胜。
 
+## Todos
+
+- [X] Languages Support by PSI
+    - [x] Java
+- [ ] Languages Support by LSP
+    - [ ] Kotlin
+    - [ ] TypeScript
+- [x] DevTi Protocol
+    - [x] format 1: `devti://story/github/1102`
+- [ ] Intelli code change
+    - [x] Endpoint modify suggestions
+    - [x] Controller Suggestion
+        - [x] import all common imports
+    - [x] Service Suggestion
+    - [ ] Repository Suggestion
+        - [ ] parse Gradle for dependencies
+- [ ] Code AI
+    - [x] Generate code
+    - [ ] Generate test
+    - [x] Add comments
+    - [x] Code Suggestions
+    - [x] Find bug...
+    - [x] Explain code by selection
+    - [x] Trace Exception
+- [ ] Chat with IDE
+    - [ ] 重构：`重构 xx 方法`
+    - [ ] 重构：`重构 xx 类`
+    - [ ] 替换：`替换 xx 方法`，`devti:/refactor/method`
+- [x] Custom LLM Server
+- [ ] Telemetry
+- [ ] Context Engineering
+    - [ ] Open Tabs
+    - [ ] Related Files
+
+
 ## Usage
 
 1. Install
@@ -70,40 +105,6 @@ AutoDev 处理过程：
 4. 根据 Endpoint，自动生成 Controller 代码
 5. 根据 Controller 代码，自动生成 Service 代码
 6. 根据 Service 代码，自动生成 Repository 代码
-
-## Todos
-
-- [X] Languages Support by PSI
-    - [x] Java
-- [ ] Languages Support by LSP
-    - [ ] Kotlin
-    - [ ] TypeScript
-- [x] DevTi Protocol
-    - [x] format 1: `devti://story/github/1102`
-- [ ] Intelli code change
-    - [x] Endpoint modify suggestions
-    - [x] Controller Suggestion
-        - [x] import all common imports
-    - [x] Service Suggestion
-    - [ ] Repository Suggestion
-        - [ ] parse Gradle for dependencies
-- [ ] Code AI
-    - [x] Generate code
-    - [ ] Generate test
-    - [x] Add comments
-    - [x] Code Suggestions
-    - [x] Find bug...
-    - [x] Explain code by selection
-    - [x] Trace Exception
-- [ ] Chat with IDE
-    - [ ] 重构：`重构 xx 方法`
-    - [ ] 重构：`重构 xx 类`
-    - [ ] 替换：`替换 xx 方法`，`devti:/refactor/method`
-- [x] Custom LLM Server
-- [ ] Telemetry
-- [ ] Context Engineering
-    - [ ] Open Tabs
-    - [ ] Related Files
 
 ## Development
 
