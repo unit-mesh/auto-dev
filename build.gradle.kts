@@ -20,8 +20,6 @@ plugins {
     alias(libs.plugins.qodana) // Gradle Qodana Plugin
     alias(libs.plugins.kover) // Gradle Kover Plugin
     alias(libs.plugins.serialization)
-//    alias(libs.plugins.grammarKit) // Grammar Kit Plugin
-//    id("org.jetbrains.grammarkit") version "2021.2.2"
 }
 
 group = properties("pluginGroup").get()
@@ -34,16 +32,13 @@ repositories {
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
-    implementation("org.kohsuke:github-api:1.314")
+    implementation(libs.github.api)
+    implementation(libs.dotenv)
 
-    implementation("com.squareup.retrofit2:converter-jackson:2.9.0")
-    implementation("com.theokanning.openai-gpt3-java:service:0.12.0")
+    implementation(libs.bundles.openai)
+    implementation(libs.bundles.markdown)
 
-    implementation("org.commonmark:commonmark:0.21.0")
-    implementation("org.commonmark:commonmark-ext-gfm-tables:0.21.0")
-    implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
-
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+    implementation(libs.kotlinx.serialization.json)
 }
 
 // Configure Gradle IntelliJ Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
@@ -79,21 +74,6 @@ tasks {
     wrapper {
         gradleVersion = properties("gradleVersion").get()
     }
-//
-//    val generateDevtiLexer = task<GenerateLexerTask>("generateFeakinLexer") {
-//        source.set("src/main/grammars/SilveryLexer.flex")
-//        targetDir.set("src/main/gen/cc/unitmesh/devti/lexer")
-//        targetClass.set("SilveryLexer")
-//        purgeOldFiles.set(true)
-//    }
-//
-//    val generateDevtiParser = task<GenerateParserTask>("generateFeakinParser") {
-//        source.set("src/main/grammars/SilveryParser.bnf")
-//        targetRoot.set("src/main/gen")
-//        pathToParser.set("src/main/cc/unitmesh/devti/parser/SilveryParser.java")
-//        pathToPsiRoot.set("src/main/cc/unitmesh/devti/psi")
-//        purgeOldFiles.set(true)
-//    }
 
     configure<JavaPluginExtension> {
         sourceCompatibility = VERSION_17
@@ -108,11 +88,6 @@ tasks {
             apiVersion = "1.7"
             freeCompilerArgs = listOf("-Xjvm-default=all")
         }
-//
-//        dependsOn(
-//            generateDevtiLexer,
-//            generateDevtiParser
-//        )
     }
 
     patchPluginXml {
