@@ -41,24 +41,26 @@
     - [ ] Repository Suggestion
 - [ ] Code AI
     - [x] Generate code
-    - [ ] Generate test
     - [x] Add comments
     - [x] Code Suggestions
     - [x] Find bug...
     - [x] Explain code by selection
     - [x] Trace Exception
 - [ ] Chat with IDE
+    - [ ] Generate test
+    - [ ] 实现：`重现 xx 功能`, `devti:/chat/feature`
     - [ ] 重构：`重构 xx 方法`
-    - [ ] 重构：`重构 xx 类`
     - [ ] 替换：`替换 xx 方法`，`devti:/refactor/method`
 - [x] Custom LLM Server
-- [ ] Telemetry
+- [ ] Telemetry Server
+    - [ ] Accept
+    - [ ] Reject
+    - [ ] Feedback
 - [ ] Context Engineering
     - [ ] Open Tabs
     - [ ] Related Files
-- [ ]  with DependencyContext
-    - [ ] parse Gradle for dependencies
-
+    - [ ]  with DependencyContext
+        - [ ] parse Gradle for dependencies
 
 ## Usage
 
