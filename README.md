@@ -31,6 +31,9 @@
 - [ ] Languages Support by LSP
     - [ ] Kotlin
     - [ ] TypeScript
+- [ ] Integration with Co-mate DSL
+    - [ ] Assistant architecture DSL
+    - [ ] Assistant API Design
 - [x] DevTi Protocol
     - [x] format 1: `devti://story/github/1102`
 - [ ] Intelli code change
