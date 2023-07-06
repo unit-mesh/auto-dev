@@ -27,7 +27,7 @@ val DEFAULT_PROMPTS = """
 }
     """
 
-val AI_ENGINES = arrayOf("OpenAI", "Custom")
+val AI_ENGINES = arrayOf("OpenAI", "Custom", "Azure")
 val DEFAULT_AI_ENGINE = AI_ENGINES[0]
 
 class AppSettingsComponent {

@@ -1,15 +1,21 @@
-package cc.unitmesh.devti.connector.custom
+package cc.unitmesh.devti.connector.azure
 
 import cc.unitmesh.devti.connector.CodeCopilot
+import cc.unitmesh.devti.connector.custom.PromptConfig
+import cc.unitmesh.devti.connector.custom.PromptItem
 import cc.unitmesh.devti.settings.DevtiSettingsState
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.diagnostic.Logger
+import com.theokanning.openai.completion.chat.ChatCompletionResult
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
 
-class CustomConnector : CodeCopilot {
+class AzureConnector : CodeCopilot {
+    private val logger = Logger.getInstance(AzureConnector::class.java)
+
     private val devtiSettingsState = DevtiSettingsState.getInstance()
     private val url = devtiSettingsState?.customEngineServer ?: ""
     private var promptConfig: PromptConfig? = null
@@ -35,9 +41,6 @@ class CustomConnector : CodeCopilot {
         }
     }
 
-    private val logger = Logger.getInstance(CustomConnector::class.java)
-
-
     override fun prompt(promptText: String): String {
         return this.prompt(promptText, "")
     }
@@ -54,9 +57,6 @@ class CustomConnector : CodeCopilot {
         )
 
         val builder = Request.Builder()
-        if (key.isNotEmpty()) {
-            builder.addHeader("Authorization", "Bearer $key")
-        }
 
         val request = builder
             .url(url)
@@ -70,8 +70,16 @@ class CustomConnector : CodeCopilot {
             return ""
         }
 
-        logger.info("$response")
-        return response.body()?.string() ?: ""
+        val objectMapper = ObjectMapper()
+        val completion: ChatCompletionResult =
+            objectMapper.readValue(response.body()?.string(), ChatCompletionResult::class.java)
+
+        val output = completion
+            .choices[0].message.content
+
+        logger.warn("output: $output")
+
+        return output
     }
 
     override fun codeCompleteFor(text: String, className: String): String {
@@ -93,5 +101,4 @@ class CustomConnector : CodeCopilot {
         val bug = promptConfig!!.findBug
         return prompt(bug.instruction, bug.input.replace("{code}", text))
     }
-
 }

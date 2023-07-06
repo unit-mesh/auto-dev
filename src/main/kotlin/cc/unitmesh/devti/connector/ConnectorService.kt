@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.connector
 
+import cc.unitmesh.devti.connector.azure.AzureConnector
 import cc.unitmesh.devti.connector.custom.CustomConnector
 import cc.unitmesh.devti.connector.openai.OpenAIConnector
 import cc.unitmesh.devti.settings.DEFAULT_AI_ENGINE
@@ -12,6 +13,7 @@ class ConnectorService {
         return when (aiEngine) {
             "OpenAI" -> OpenAIConnector()
             "Custom" -> CustomConnector()
+            "Azure" -> AzureConnector()
             else -> OpenAIConnector()
         }
     }
