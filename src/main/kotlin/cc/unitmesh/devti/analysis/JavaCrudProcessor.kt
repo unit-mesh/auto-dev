@@ -84,11 +84,6 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
 
     private fun dtoFilter(clazz: PsiClass): Boolean = clazz.name?.lowercase()?.endsWith("dto") ?: false
 
-    private fun repositoryFilter(clazz: PsiClass): Boolean = clazz.annotations
-        .map { it.qualifiedName }.any {
-            it == "org.springframework.stereotype.Repository"
-        }
-
     fun addMethodToClass(psiClass: PsiClass, method: String): PsiClass {
         val methodFromText = psiElementFactory.createMethodFromText(method, psiClass)
         var lastMethod: PsiMethod? = null
@@ -203,7 +198,7 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         val packageName = if (services.isNotEmpty()) {
             firstService.lookupPackageName()?.packageName
         } else {
-            defaultPackageByController()
+            packageCloseToController("service")
         }
 
         if (packageName == null) {
@@ -219,26 +214,32 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         val packageName = if (dto.isNotEmpty()) {
             firstService.lookupPackageName()?.packageName
         } else {
-            defaultPackageByController()
+            packageCloseToController("dto")
         }
+
+        // add packageName to code
+        val newCode = "package $packageName;\n\n$code"
 
         if (packageName == null) {
             log.warn("No package statement found in file ${firstService.name}")
             return DtClass("", emptyList())
         }
 
-        return createClass(code, packageName)
+        return createClass(newCode, packageName)
     }
 
     override fun createClass(code: String, packageName: String?): DtClass? {
         val parentDirectory = firstController().virtualFile?.parent ?: return null
-        val fileSystem = firstController().virtualFile?.fileSystem
+        val fileSystem = firstController().virtualFile?.parent!!.fileSystem
         ApplicationManager.getApplication().invokeLater {
             runWriteAction {
-                val newClass = psiElementFactory.createClassFromText(code, null)
+                // add packageName to code
+                val newCode = "package $packageName;\n\n$code"
+
+                val newClass = psiElementFactory.createClassFromText(newCode, null)
 
                 val regex = Regex("public\\s+class\\s+(\\w+)")
-                val matchResult = regex.find(code)
+                val matchResult = regex.find(newCode)
 
                 val className = if (matchResult?.groupValues?.get(1) != null) {
                     matchResult.groupValues[1]
@@ -249,7 +250,7 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
                 }
 
                 val virtualFile = parentDirectory.createChildData(fileSystem, "$className.java")
-                VfsUtil.saveText(virtualFile, code)
+                VfsUtil.saveText(virtualFile, newCode)
 
                 log.warn("Created file ${virtualFile.path}")
                 parentDirectory.refresh(false, true)
@@ -259,7 +260,17 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         return null
     }
 
-    private fun defaultPackageByController() = firstController().lookupPackageName()?.packageName
+    private fun packageCloseToController(subpackage: String): String? {
+        val firstControllerPkg = firstController().lookupPackageName()?.packageName
+        if (firstControllerPkg != null) {
+            val lastDotIndex = firstControllerPkg.lastIndexOf(".")
+            if (lastDotIndex != -1) {
+                return firstControllerPkg.substring(0, lastDotIndex) + "." + subpackage
+            }
+        }
+
+        return firstControllerPkg
+    }
 
     private fun firstController() = controllers.first()
 

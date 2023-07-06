@@ -1,10 +1,9 @@
 请根据下面的用户故事以及 {controllerName} 的相关信息，编写 Java 代码。要求如下：
 
 1. 使用 Java 语言 + Spring 编写
-2. 只返回 Controller 对应方法的代码。
-3. 项目的分层结构请参考：DTO - Controller - Service - Repository
-4. 如果代码里包含了其它类（如：Request、Response），请使用新的 markdown 代码块包裹。
-5. 不做解释，只返回修改完的函数代码。
+2. 项目的分层结构请参考：DTO - Controller - Service - Repository
+3. 如果代码里包含了其它类（如：Request、Response），请使用新的 markdown 代码块包裹。
+4. 不做解释，只返回修改完的函数代码。
 
 {controllerName} 相关信息如下：
 
