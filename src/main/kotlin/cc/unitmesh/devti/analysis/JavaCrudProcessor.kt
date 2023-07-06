@@ -169,6 +169,20 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         return DtClass(endpoint, emptyList())
     }
 
+    override fun isController(code: String): Boolean {
+        if (code.contains("@Controller")) {
+            return true
+        }
+
+        if (code.contains("import org.springframework.stereotype.Controller")) {
+            return true
+        }
+
+        // regex to match `public class xxController`
+        val regex = Regex("public\\s+class\\s+\\w+Controller")
+        return regex.containsMatchIn(code)
+    }
+
     override fun isService(code: String): Boolean {
         if (code.contains("@Service")) {
             return true
@@ -230,7 +244,7 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
 
     override fun createClass(code: String, packageName: String?): DtClass? {
         val parentDirectory = firstController().virtualFile?.parent ?: return null
-        val fileSystem = firstController().virtualFile?.parent!!.fileSystem
+        val fileSystem = firstController().virtualFile?.fileSystem
         ApplicationManager.getApplication().invokeLater {
             runWriteAction {
                 // add packageName to code
