@@ -141,7 +141,7 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
 
             method = method.trimIndent()
 
-            ApplicationManager.getApplication().invokeAndWait {
+            ApplicationManager.getApplication().invokeLater {
                 WriteCommandAction.writeCommandAction(project)
                     .run<RuntimeException> {
                         addMethodToClass(targetControllerClass, method)
@@ -175,22 +175,27 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
     }
 
     override fun isService(code: String): Boolean {
-        if (code.contains("class ")) {
+        if (code.contains("@Service")) {
             return true
         }
 
-        val createClassFromText = psiElementFactory.createClassFromText(code, null)
-        val lowercase = createClassFromText.name?.lowercase() ?: return false
-        return lowercase.endsWith("service") || lowercase.endsWith("services")
+        if (code.contains("import org.springframework.stereotype.Service")) {
+            return true
+        }
+
+        // regex to match `public class xxService`
+        val regex = Regex("public\\s+class\\s+\\w+Service")
+        return regex.containsMatchIn(code)
     }
 
     override fun isDto(code: String): Boolean {
-        if (code.contains("class ")) {
+        if (code.contains("import lombok.Data")) {
             return true
         }
 
-        val createClassFromText = psiElementFactory.createClassFromText(code, null)
-        return createClassFromText.name?.lowercase()?.endsWith("dto") ?: false
+        // regex to match `public class xxDto`
+        val regex = Regex("public\\s+class\\s+\\w+Dto")
+        return regex.containsMatchIn(code)
     }
 
     override fun createService(code: String): DtClass? {
@@ -231,7 +236,17 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         ApplicationManager.getApplication().invokeLater {
             runWriteAction {
                 val newClass = psiElementFactory.createClassFromText(code, null)
-                val className = newClass.identifyingElement?.text ?: "DummyClass"
+
+                val regex = Regex("public\\s+class\\s+(\\w+)")
+                val matchResult = regex.find(code)
+
+                val className = if (matchResult?.groupValues?.get(1) != null) {
+                    matchResult.groupValues[1]
+                } else if (newClass.identifyingElement?.text != null) {
+                    newClass.identifyingElement?.text
+                } else {
+                    "DummyClass"
+                }
 
                 val virtualFile = parentDirectory.createChildData(fileSystem, "$className.java")
                 VfsUtil.saveText(virtualFile, code)

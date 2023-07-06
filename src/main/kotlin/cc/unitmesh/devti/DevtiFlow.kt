@@ -13,13 +13,13 @@ import com.intellij.openapi.diagnostic.logger
 data class TargetEndpoint(
     val endpoint: String,
     var controller: DtClass,
-    val hasMatchedController: Boolean = true
+    val hasMatchedController: Boolean = true,
 )
 
 class DevtiFlow(
     private val kanban: Kanban,
     private val flowAction: DevtiFlowAction,
-    private val processor: CrudProcessor? = null
+    private val processor: CrudProcessor? = null,
 ) {
     /**
      * Step 1: check story detail is valid, if not, fill story detail
@@ -88,6 +88,8 @@ class DevtiFlow(
             for (i in 1 until codes.size) {
                 if (processor?.isService(codes[i]) == true) {
                     processor.createService(codes[i])
+                } else if (processor?.isDto(codes[i]) == true) {
+                    processor.createDto(codes[i])
                 } else {
                     processor?.createClass(codes[i], null)
                 }
@@ -98,7 +100,7 @@ class DevtiFlow(
     private fun fetchForEndpoint(
         targetEndpoint: String,
         targetController: DtClass,
-        storyDetail: String
+        storyDetail: String,
     ): List<String> {
         val content = flowAction.needUpdateMethodOfController(targetEndpoint, targetController, storyDetail)
         val code = parseCodeFromString(content)
