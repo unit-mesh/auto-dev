@@ -3,6 +3,7 @@ package cc.unitmesh.devti.connector.custom
 import cc.unitmesh.devti.connector.CodeCopilot
 import cc.unitmesh.devti.settings.DevtiSettingsState
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
@@ -12,6 +13,7 @@ import okhttp3.Request
 class CustomConnector : CodeCopilot {
     private val devtiSettingsState = DevtiSettingsState.getInstance()
     private val url = devtiSettingsState?.customEngineServer ?: ""
+    private val key = devtiSettingsState?.customEngineToken ?: ""
     private var promptConfig: PromptConfig? = null
     private var client = OkHttpClient()
 
@@ -70,7 +72,6 @@ class CustomConnector : CodeCopilot {
             return ""
         }
 
-        logger.info("$response")
         return response.body()?.string() ?: ""
     }
 
