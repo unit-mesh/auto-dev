@@ -203,7 +203,7 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         }
 
         // regex to match `public class xxDto`
-        val regex = Regex("public\\s+class\\s+\\w+Dto")
+        val regex = Regex("public\\s+class\\s+\\w+[Dto|DTO|Request|Response|Res|Req]")
         return regex.containsMatchIn(code)
     }
 
