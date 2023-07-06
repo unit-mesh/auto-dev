@@ -75,9 +75,11 @@ class AzureConnector : CodeCopilot {
         val builder = Request.Builder()
 
         val mapper = ObjectMapper().registerKotlinModule()
+        val requestText = mapper.writeValueAsString(chatCompletionRequest)
+        logger.warn("requestText: $requestText")
         val body = okhttp3.RequestBody.create(
             okhttp3.MediaType.parse("application/json; charset=utf-8"),
-            mapper.writeValueAsString(chatCompletionRequest)
+            requestText
         )
 
         val request = builder
