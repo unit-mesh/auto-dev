@@ -2,8 +2,6 @@ package cc.unitmesh.devti.actions
 
 import cc.unitmesh.devti.DevtiIcons
 import cc.unitmesh.devti.connector.ConnectorService
-import cc.unitmesh.devti.connector.openai.OpenAIConnector
-import cc.unitmesh.devti.runconfig.AutoCRUDState
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager

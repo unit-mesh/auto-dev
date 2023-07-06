@@ -52,7 +52,7 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
     private fun filterFiles(
         javaFiles: Collection<VirtualFile>,
         psiManager: PsiManager,
-        filter: (PsiClass) -> Boolean
+        filter: (PsiClass) -> Boolean,
     ) = javaFiles
         .mapNotNull { virtualFile -> psiManager.findFile(virtualFile) }
         .filter { psiFile ->
@@ -117,22 +117,26 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         }
 
         val targetControllerFile = controllers.first { it.name == "$targetController.java" }
-        val targetControllerClass = PsiTreeUtil.findChildrenOfType(targetControllerFile, PsiClass::class.java)
-            .firstOrNull() ?: return
 
-        var method = code
-        if (code.contains("class $targetController")) {
-            method = code.substring(code.indexOf("{") + 1, code.lastIndexOf("}"))
-        }
+        ApplicationManager.getApplication().runReadAction {
+            val targetControllerClass = PsiTreeUtil.findChildrenOfType(targetControllerFile, PsiClass::class.java)
+                .firstOrNull() ?: return@runReadAction // Return from the lambda if the class is not found
 
-        method = method.trimIndent()
 
-        WriteCommandAction.writeCommandAction(project)
-            .run<RuntimeException> {
-                // add method to class
-                addMethodToClass(targetControllerClass, method)
-                CodeStyleManager.getInstance(project).reformat(targetControllerFile)
+            var method = code
+            if (code.contains("class $targetController")) {
+                method = code.substring(code.indexOf("{") + 1, code.lastIndexOf("}"))
             }
+
+            method = method.trimIndent()
+
+            WriteCommandAction.writeCommandAction(project)
+                .run<RuntimeException> {
+                    // add method to class
+                    addMethodToClass(targetControllerClass, method)
+                    CodeStyleManager.getInstance(project).reformat(targetControllerFile)
+                }
+        }
     }
 
     override fun createController(endpoint: String, code: String): DtClass? {
@@ -211,7 +215,7 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         parentDirectory: VirtualFile,
         fileSystem: VirtualFileSystem?,
         serviceName: String,
-        templateCode: String
+        templateCode: String,
     ) {
         ApplicationManager.getApplication().invokeLater {
             runWriteAction {
