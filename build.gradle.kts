@@ -39,6 +39,8 @@ dependencies {
     implementation(libs.bundles.markdown)
 
     implementation(libs.kotlinx.serialization.json)
+    // jackson-module-kotlin
+    implementation(libs.jackson.module.kotlin)
 }
 
 // Configure Gradle IntelliJ Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html

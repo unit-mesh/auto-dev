@@ -4,10 +4,16 @@ import cc.unitmesh.devti.connector.CodeCopilot
 import cc.unitmesh.devti.connector.custom.PromptConfig
 import cc.unitmesh.devti.connector.custom.PromptItem
 import cc.unitmesh.devti.settings.DevtiSettingsState
+import cc.unitmesh.devti.settings.OPENAI_MODEL
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.intellij.openapi.diagnostic.Logger
+import com.theokanning.openai.completion.chat.ChatCompletionRequest
 import com.theokanning.openai.completion.chat.ChatCompletionResult
+import com.theokanning.openai.completion.chat.ChatMessage
+import com.theokanning.openai.completion.chat.ChatMessageRole
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -20,9 +26,11 @@ class AzureConnector : CodeCopilot {
     private val url = devtiSettingsState?.customEngineServer ?: ""
     private var promptConfig: PromptConfig? = null
     private var client = OkHttpClient()
+    private val openAiVersion: String
 
     init {
         val prompts = devtiSettingsState?.customEnginePrompts
+        openAiVersion = DevtiSettingsState.getInstance()?.openAiModel ?: OPENAI_MODEL[0]
         try {
             if (prompts != null) {
                 promptConfig = Json.decodeFromString(prompts)
@@ -45,18 +53,32 @@ class AzureConnector : CodeCopilot {
         return this.prompt(promptText, "")
     }
 
+    val messages: MutableList<ChatMessage> = ArrayList()
+    var historyMessageLength: Int = 0
+
     fun prompt(instruction: String, input: String): String {
-        val body = okhttp3.RequestBody.create(
-            okhttp3.MediaType.parse("application/json; charset=utf-8"),
-            """
-                {
-                    "instruction": "$instruction",
-                    "input": "$input",
-                }
-            """.trimIndent()
-        )
+        val promptText = "$instruction\n$input"
+        val systemMessage = ChatMessage(ChatMessageRole.USER.value(), promptText)
+
+        if (historyMessageLength > 8192) {
+            messages.clear()
+        }
+
+        messages.add(systemMessage)
+
+        val chatCompletionRequest = ChatCompletionRequest.builder()
+            .model(openAiVersion)
+            .temperature(0.0)
+            .messages(messages)
+            .build()
 
         val builder = Request.Builder()
+
+        val mapper = ObjectMapper().registerKotlinModule()
+        val body = okhttp3.RequestBody.create(
+            okhttp3.MediaType.parse("application/json; charset=utf-8"),
+            mapper.writeValueAsString(chatCompletionRequest)
+        )
 
         val request = builder
             .url(url)

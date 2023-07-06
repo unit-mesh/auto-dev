@@ -38,6 +38,9 @@ github-api = "org.kohsuke:github-api:1.314"
 # org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0
 kotlinx-serialization-json = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0"
 
+# implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.15.+"
+jackson-module-kotlin = "com.fasterxml.jackson.module:jackson-module-kotlin:2.15.+"
+
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }

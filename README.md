@@ -143,7 +143,6 @@ AutoDev 处理过程：
 authorization: `Bearer ${token}`
 
 ```json
-
 {
   "auto_complete": {
     "instruction": "",
