@@ -30,6 +30,7 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
 
     private val controllers = getAllControllerFiles()
     private val services = getAllServiceFiles()
+    private val dto = getAllDtoFiles()
 
     private fun getAllControllerFiles(): List<PsiFile> {
         val psiManager = PsiManager.getInstance(project)
@@ -38,6 +39,15 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
 
         return filterFiles(javaFiles, psiManager, ::controllerFilter)
+    }
+
+    private fun getAllDtoFiles(): List<PsiFile> {
+        val psiManager = PsiManager.getInstance(project)
+
+        val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
+        val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
+
+        return filterFiles(javaFiles, psiManager, ::dtoFilter)
     }
 
     private fun getAllServiceFiles(): List<PsiFile> {
@@ -71,6 +81,8 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         .map { it.qualifiedName }.any {
             it == "org.springframework.stereotype.Service"
         }
+
+    private fun dtoFilter(clazz: PsiClass): Boolean = clazz.name?.lowercase()?.endsWith("dto") ?: false
 
     private fun repositoryFilter(clazz: PsiClass): Boolean = clazz.annotations
         .map { it.qualifiedName }.any {
@@ -122,7 +134,6 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
             val targetControllerClass = PsiTreeUtil.findChildrenOfType(targetControllerFile, PsiClass::class.java)
                 .firstOrNull() ?: return@runReadAction // Return from the lambda if the class is not found
 
-
             var method = code
             if (code.contains("class $targetController")) {
                 method = code.substring(code.indexOf("{") + 1, code.lastIndexOf("}"))
@@ -130,12 +141,13 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
 
             method = method.trimIndent()
 
-            WriteCommandAction.writeCommandAction(project)
-                .run<RuntimeException> {
-                    // add method to class
-                    addMethodToClass(targetControllerClass, method)
-                    CodeStyleManager.getInstance(project).reformat(targetControllerFile)
-                }
+            ApplicationManager.getApplication().invokeAndWait {
+                WriteCommandAction.writeCommandAction(project)
+                    .run<RuntimeException> {
+                        addMethodToClass(targetControllerClass, method)
+                        CodeStyleManager.getInstance(project).reformat(targetControllerFile)
+                    }
+            }
         }
     }
 
@@ -168,7 +180,17 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         }
 
         val createClassFromText = psiElementFactory.createClassFromText(code, null)
-        return createClassFromText.name?.contains("Service") ?: false
+        val lowercase = createClassFromText.name?.lowercase() ?: return false
+        return lowercase.endsWith("service") || lowercase.endsWith("services")
+    }
+
+    override fun isDto(code: String): Boolean {
+        if (code.contains("class ")) {
+            return true
+        }
+
+        val createClassFromText = psiElementFactory.createClassFromText(code, null)
+        return createClassFromText.name?.lowercase()?.endsWith("dto") ?: false
     }
 
     override fun createService(code: String): DtClass? {
@@ -187,15 +209,30 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         return createClass(code, packageName)
     }
 
+    override fun createDto(code: String): DtClass? {
+        val firstService = dto.first()
+        val packageName = if (dto.isNotEmpty()) {
+            firstService.lookupPackageName()?.packageName
+        } else {
+            defaultPackageByController()
+        }
+
+        if (packageName == null) {
+            log.warn("No package statement found in file ${firstService.name}")
+            return DtClass("", emptyList())
+        }
+
+        return createClass(code, packageName)
+    }
+
     override fun createClass(code: String, packageName: String?): DtClass? {
         val parentDirectory = firstController().virtualFile?.parent ?: return null
         val fileSystem = firstController().virtualFile?.fileSystem
-
-        val newClass = psiElementFactory.createClassFromText(code, null)
-        val className = newClass.identifyingElement?.text ?: "DummyClass"
-
         ApplicationManager.getApplication().invokeLater {
             runWriteAction {
+                val newClass = psiElementFactory.createClassFromText(code, null)
+                val className = newClass.identifyingElement?.text ?: "DummyClass"
+
                 val virtualFile = parentDirectory.createChildData(fileSystem, "$className.java")
                 VfsUtil.saveText(virtualFile, code)
 
