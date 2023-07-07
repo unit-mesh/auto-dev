@@ -7,7 +7,7 @@
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.java</depends>
 
-    <resource-bundle>messages.DevtiBundle</resource-bundle>
+    <resource-bundle>messages.AutoDevBundle</resource-bundle>
 
     <description><![CDATA[
     <a href="https://plugins.jetbrains.com/plugin/21520-autodev">Homepage</a> | <a href="https://github.com/unit-mesh/auto-dev">Github</a> | <a href="https://github.com/unit-mesh/auto-dev/issues">Issues</a>.<br />
