@@ -6,6 +6,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
@@ -46,7 +47,7 @@ class CustomConnector : CodeCopilot {
 
     fun prompt(instruction: String, input: String): String {
         val body = okhttp3.RequestBody.create(
-            okhttp3.MediaType.parse("application/json; charset=utf-8"),
+            "application/json; charset=utf-8".toMediaTypeOrNull(),
             """
                 {
                     "instruction": "$instruction",
@@ -72,7 +73,7 @@ class CustomConnector : CodeCopilot {
             return ""
         }
 
-        return response.body()?.string() ?: ""
+        return response.body?.string() ?: ""
     }
 
     override fun codeCompleteFor(text: String, className: String): String {

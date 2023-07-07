@@ -8,7 +8,6 @@ import com.intellij.execution.configurations.RunnerSettings
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.GenericProgramRunner
-import com.intellij.execution.ui.ExecutionUiService
 import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
@@ -33,13 +32,14 @@ class DtCommandRunner : GenericProgramRunner<RunnerSettings>() {
     @Suppress("UnstableApiUsage")
     private fun showRunContent(
         executionResult: ExecutionResult?,
-        environment: ExecutionEnvironment
+        environment: ExecutionEnvironment,
     ): RunContentDescriptor? {
         log.debug("showRunContent")
 
-        return executionResult?.let {
-            ExecutionUiService.getInstance().showRunContent(it, environment)
-        }
+//        return executionResult?.let {
+//            ExecutionUiService.getInstance().showRunContent(it, environment)
+//        }
+        return null
     }
 
     companion object {
