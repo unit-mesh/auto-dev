@@ -22,7 +22,7 @@
 
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.DevtiSettingsState"/>
 
-        <toolWindow id="AutoDev Ai Flow" secondary="true" icon="AllIcons.Toolwindows.WebToolWindow" anchor="right"
+        <toolWindow id="DevTiFlow" secondary="true" icon="AllIcons.Toolwindows.WebToolWindow" anchor="right"
                     factoryClass="cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory"/>
 
         <!-- LSP -->
