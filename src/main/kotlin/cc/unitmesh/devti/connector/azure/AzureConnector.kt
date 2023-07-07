@@ -53,8 +53,10 @@ class AzureConnector : CodeCopilot {
         return this.prompt(promptText, "")
     }
 
-    val messages: MutableList<ChatMessage> = ArrayList()
-    var historyMessageLength: Int = 0
+    private val messages: MutableList<ChatMessage> = ArrayList()
+    private var historyMessageLength: Int = 0
+
+    val mapper = ObjectMapper().registerKotlinModule()
 
     fun prompt(instruction: String, input: String): String {
         val promptText = "$instruction\n$input"
@@ -66,16 +68,12 @@ class AzureConnector : CodeCopilot {
 
         messages.add(systemMessage)
 
-        val chatCompletionRequest = ChatCompletionRequest.builder()
-            .model(openAiVersion)
-            .temperature(0.0)
-            .messages(messages)
-            .build()
-
         val builder = Request.Builder()
+        val requestText = """{
+            |"messages": ${mapper.writeValueAsString(messages)},
+            |"temperature": 0.0
+            }""".trimMargin()
 
-        val mapper = ObjectMapper().registerKotlinModule()
-        val requestText = mapper.writeValueAsString(chatCompletionRequest)
         logger.warn("requestText: $requestText")
         val body = okhttp3.RequestBody.create(
             okhttp3.MediaType.parse("application/json; charset=utf-8"),
