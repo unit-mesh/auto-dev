@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.runconfig.config
 
-import cc.unitmesh.devti.connector.openai.DtOpenAIVersion
 import cc.unitmesh.devti.runconfig.AutoCRUDState
 import cc.unitmesh.devti.runconfig.options.AutoCRUDConfigurationOptions
 import cc.unitmesh.devti.runconfig.ui.DtSettingsEditor
