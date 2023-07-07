@@ -21,17 +21,7 @@
                                  displayName="DevTi"/>
 
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.DevtiSettingsState"/>
-        <!-- show find bug -->
-        <runLineMarkerContributor language="JAVA"
-                                  implementationClass="cc.unitmesh.devti.language.CodeCompleteMarkerContributor"/>
-        <runLineMarkerContributor language="JAVA"
-                                  implementationClass="cc.unitmesh.devti.language.CodeCommentsMarkerContributor"/>
-        <runLineMarkerContributor language="JAVA"
-                                  implementationClass="cc.unitmesh.devti.language.FindBugMarkerContributor"/>
-        <runLineMarkerContributor language="JAVA"
-                                  implementationClass="cc.unitmesh.devti.language.CodeReviewMarkerContributor"/>
 
-        <!-- analysis story, and    -->
         <runLineMarkerContributor language="JAVA"
                                   implementationClass="cc.unitmesh.devti.language.AutoCRUDLineMarkerContributor"/>
 
@@ -45,7 +35,7 @@
         <!-- Run Configurations -->
         <programRunner implementation="cc.unitmesh.devti.runconfig.DtCommandRunner"/>
 
-        <toolWindow id="DevTiFlow" secondary="true" icon="AllIcons.Toolwindows.WebToolWindow" anchor="right"
+        <toolWindow id="AutoDev Ai Flow" secondary="true" icon="AllIcons.Toolwindows.WebToolWindow" anchor="right"
                     factoryClass="cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory"/>
 
         <!-- LSP -->
