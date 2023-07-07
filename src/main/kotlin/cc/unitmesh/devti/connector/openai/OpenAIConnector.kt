@@ -1,9 +1,6 @@
 package cc.unitmesh.devti.connector.openai
 
-import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.connector.CodeCopilot
-import cc.unitmesh.devti.connector.DevtiFlowAction
-import cc.unitmesh.devti.kanban.SimpleProjectInfo
 import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.settings.DevtiSettingsState
 import cc.unitmesh.devti.settings.OPENAI_MODEL
@@ -24,7 +21,7 @@ import retrofit2.converter.jackson.JacksonConverterFactory
 import java.time.Duration
 
 
-class OpenAIConnector : CodeCopilot, DevtiFlowAction {
+class OpenAIConnector : CodeCopilot {
     private val promptGenerator = PromptGenerator()
     private var service: OpenAiService
 
@@ -88,30 +85,6 @@ class OpenAIConnector : CodeCopilot, DevtiFlowAction {
         logger.warn("output: $output")
 
         return output
-    }
-
-    override fun fillStoryDetail(project: SimpleProjectInfo, story: String): String {
-        val promptText = promptGenerator.storyDetail(project, story)
-        return runBlocking {
-            val prompt = prompt(promptText)
-            return@runBlocking prompt
-        }
-    }
-
-    override fun analysisEndpoint(storyDetail: String, classes: List<DtClass>): String {
-        val promptText = promptGenerator.createEndpoint(storyDetail, classes)
-        return runBlocking {
-            val prompt = prompt(promptText)
-            return@runBlocking prompt
-        }
-    }
-
-    override fun needUpdateMethodOfController(targetEndpoint: String, clazz: DtClass, storyDetail: String): String {
-        val promptText = promptGenerator.updateControllerMethod(clazz, storyDetail)
-        logger.warn("needUpdateMethodForController prompt text: $promptText")
-        return runBlocking {
-            return@runBlocking prompt(promptText)
-        }
     }
 
     override fun codeCompleteFor(text: @NlsSafe String, className: @NlsSafe String): String {

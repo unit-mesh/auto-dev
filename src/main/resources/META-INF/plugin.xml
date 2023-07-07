@@ -22,19 +22,6 @@
 
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.DevtiSettingsState"/>
 
-        <runLineMarkerContributor language="JAVA"
-                                  implementationClass="cc.unitmesh.devti.language.AutoCRUDLineMarkerContributor"/>
-
-        <runConfigurationProducer
-                implementation="cc.unitmesh.devti.runconfig.command.AutoCRUDConfigurationProducer"/>
-        <runConfigurationProducer
-                implementation="cc.unitmesh.devti.runconfig.command.CompositeDevtiRunConfigurationProducer"/>
-        <configurationType implementation="cc.unitmesh.devti.runconfig.AutoCRUDConfigurationType"/>
-
-
-        <!-- Run Configurations -->
-        <programRunner implementation="cc.unitmesh.devti.runconfig.DtCommandRunner"/>
-
         <toolWindow id="AutoDev Ai Flow" secondary="true" icon="AllIcons.Toolwindows.WebToolWindow" anchor="right"
                     factoryClass="cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory"/>
 
