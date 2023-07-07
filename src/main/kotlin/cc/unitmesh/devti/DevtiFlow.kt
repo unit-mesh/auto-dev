@@ -83,21 +83,37 @@ class DevtiFlow(
         if (codes.isEmpty()) {
             logger.warn("update method code is empty, skip")
         } else {
+            if (processor == null) {
+                return
+            }
             // update rest codes
-            for (i in 0 until codes.size) {
-                if (processor?.isController(codes[i]) == true) {
-                    processor?.createControllerOrUpdateMethod(
-                        target.controller.name,
-                        codes[i],
-                        target.hasMatchedController
-                    )
-                } else if (processor?.isService(codes[i]) == true) {
-                    processor.createService(codes[i])
-                } else if (processor?.isDto(codes[i]) == true) {
-                    processor.createDto(codes[i])
-                } else {
-                    processor?.createClass(codes[i], null)
-                }
+            codes.indices.forEach { i ->
+                val code = codes[i]
+                createCodeByType(code, processor, target)
+            }
+        }
+    }
+
+    private fun createCodeByType(code: String, processor: CrudProcessor, target: TargetEndpoint) {
+        when {
+            processor.isController(code) -> {
+                processor.createControllerOrUpdateMethod(
+                    target.controller.name,
+                    code,
+                    target.hasMatchedController
+                )
+            }
+
+            processor.isService(code) -> {
+                processor.createService(code)
+            }
+
+            processor.isDto(code) -> {
+                processor.createDto(code)
+            }
+
+            else -> {
+                processor.createClass(code, null)
             }
         }
     }
