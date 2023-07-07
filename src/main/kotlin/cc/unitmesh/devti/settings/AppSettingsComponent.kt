@@ -12,7 +12,7 @@ import java.awt.FontMetrics
 import javax.swing.JComponent
 import javax.swing.JPanel
 
-val OPENAI_MODEL = arrayOf("gpt-3.5-turbo", "gpt-4.0")
+val OPENAI_MODEL = arrayOf("gpt-3.5-turbo", "gpt-4")
 
 val DEFAULT_PROMPTS = """
 {
