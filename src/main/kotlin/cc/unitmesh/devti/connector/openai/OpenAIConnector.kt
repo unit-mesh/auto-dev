@@ -29,12 +29,10 @@ class OpenAIConnector : CodeCopilot, DevtiFlowAction {
     private var service: OpenAiService
 
     private val timeout = Duration.ofSeconds(600)
-    private val openAiVersion: String
-    private val openAiKey: String
+    private val openAiVersion: String = DevtiSettingsState.getInstance()?.openAiModel ?: OPENAI_MODEL[0]
+    private val openAiKey: String = DevtiSettingsState.getInstance()?.openAiKey ?: ""
 
     init {
-        openAiVersion = DevtiSettingsState.getInstance()?.openAiModel ?: OPENAI_MODEL[0]
-        openAiKey = DevtiSettingsState.getInstance()?.openAiKey ?: ""
 
         if (openAiKey.isEmpty()) {
             logger.error("openAiKey is empty")
