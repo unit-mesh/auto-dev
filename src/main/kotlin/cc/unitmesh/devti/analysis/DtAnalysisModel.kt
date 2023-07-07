@@ -9,12 +9,6 @@ class DtClass(
     val name: String,
     val methods: List<DtMethod>
 ) {
-    // output examples:
-    // ```
-    // class A
-    // constructor(a: Int, b: String)
-    // - method1(a: Int, b: String): String, method2(a: Int, b: String): String
-    //```
     fun format(): String {
         val output = StringBuilder()
         output.append("class $name ")
