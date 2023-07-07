@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language
 
-import cc.unitmesh.devti.DevtiIcons
+import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.actions.FindBugAction
 import cc.unitmesh.devti.runconfig.AutoCRUDState
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
@@ -20,7 +20,7 @@ class FindBugMarkerContributor : RunLineMarkerContributor() {
         val runAction = FindBugAction(methodName, method)
 
         return Info(
-            DevtiIcons.AI_COPILOT,
+            AutoDevIcons.AI_COPILOT,
             { "Find Bug" },
             runAction
         )

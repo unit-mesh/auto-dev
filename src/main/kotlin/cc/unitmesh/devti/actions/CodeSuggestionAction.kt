@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.actions
 
-import cc.unitmesh.devti.DevtiIcons
+import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.connector.ConnectorService
 import cc.unitmesh.devti.gui.createSuggestionPopup
 import com.intellij.openapi.actionSystem.AnAction
@@ -14,7 +14,7 @@ import com.intellij.psi.PsiMethod
 
 
 class CodeSuggestionAction(methodName: @NlsSafe String, val method: PsiMethod) :
-    AnAction({ "Code Suggestion for $methodName" }, DevtiIcons.AI_COPILOT) {
+    AnAction({ "Code Suggestion for $methodName" }, AutoDevIcons.AI_COPILOT) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val code = method.text

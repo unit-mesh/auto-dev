@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.runconfig
 
-import cc.unitmesh.devti.DevtiBundle
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.DevtiFlow
 import cc.unitmesh.devti.analysis.JavaCrudProcessor
 import cc.unitmesh.devti.kanban.impl.GitHubIssue
@@ -49,7 +49,7 @@ class AutoCRUDState(
                     indicator.isIndeterminate = false
                     indicator.fraction = 0.0
 
-                    indicator.text = DevtiBundle.message("devti.runconfig.progress.creatingStory")
+                    indicator.text = AutoDevBundle.message("devti.runconfig.progress.creatingStory")
 
                     // todo: check create story
                     val storyId = options.storyId()
@@ -57,12 +57,12 @@ class AutoCRUDState(
 
                     indicator.fraction = 0.3
 
-                    indicator.text = DevtiBundle.message("devti.runconfig.progress.fetchingSuggestEndpoint")
+                    indicator.text = AutoDevBundle.message("devti.runconfig.progress.fetchingSuggestEndpoint")
                     val target = devtiFlow.fetchSuggestEndpoint(storyDetail)
 
                     indicator.fraction = 0.6
 
-                    indicator.text = DevtiBundle.message("devti.runconfig.progress.updatingEndpointMethod")
+                    indicator.text = AutoDevBundle.message("devti.runconfig.progress.updatingEndpointMethod")
                     devtiFlow.updateEndpointMethod(target, storyDetail)
 
                     indicator.fraction = 1.0

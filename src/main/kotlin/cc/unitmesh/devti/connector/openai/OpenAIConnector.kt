@@ -4,7 +4,7 @@ import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.connector.CodeCopilot
 import cc.unitmesh.devti.connector.DevtiFlowAction
 import cc.unitmesh.devti.kanban.SimpleProjectInfo
-import cc.unitmesh.devti.prompt.parseCodeFromString
+import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.settings.DevtiSettingsState
 import cc.unitmesh.devti.settings.OPENAI_MODEL
 import com.intellij.openapi.diagnostic.Logger

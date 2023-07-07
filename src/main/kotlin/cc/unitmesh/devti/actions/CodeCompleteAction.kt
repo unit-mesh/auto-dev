@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.actions
 
-import cc.unitmesh.devti.DevtiIcons
+import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.connector.ConnectorService
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -19,7 +19,7 @@ import com.intellij.psi.PsiMethod
 class CodeCompleteAction(
     private val methodName: @NlsSafe String,
     private val method: PsiMethod
-) : AnAction({ "Code Complete for $methodName" }, DevtiIcons.AI_COPILOT) {
+) : AnAction({ "Code Complete for $methodName" }, AutoDevIcons.AI_COPILOT) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val psiElementFactory = project.let { JavaPsiFacade.getElementFactory(it) }

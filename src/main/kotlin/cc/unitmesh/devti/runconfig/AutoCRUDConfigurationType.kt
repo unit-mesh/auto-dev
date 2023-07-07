@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.runconfig
 
-import cc.unitmesh.devti.DevtiIcons
+import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.runconfig.config.AutoCRUDConfiguration
 import cc.unitmesh.devti.runconfig.options.AutoCRUDConfigurationOptions
 import com.intellij.execution.configurations.ConfigurationFactory
@@ -11,7 +11,7 @@ import com.intellij.openapi.components.BaseState
 import com.intellij.openapi.project.Project
 
 class AutoCRUDConfigurationType :
-    ConfigurationTypeBase("AutoCRUDConfiguration", "DevTi", "DevTi generator", DevtiIcons.STORY) {
+    ConfigurationTypeBase("AutoCRUDConfiguration", "DevTi", "DevTi generator", AutoDevIcons.STORY) {
     val factory: ConfigurationFactory get() = configurationFactories.single()
 
     init {

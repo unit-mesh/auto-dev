@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.prompt
+package cc.unitmesh.devti.parser
 
 import org.commonmark.node.AbstractVisitor
 import org.commonmark.node.FencedCodeBlock

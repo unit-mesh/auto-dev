@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.actions
 
-import cc.unitmesh.devti.DevtiIcons
+import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.connector.ConnectorService
 import cc.unitmesh.devti.gui.createSuggestionPopup
 import com.intellij.openapi.actionSystem.AnAction
@@ -13,7 +13,7 @@ import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiMethod
 
 class FindBugAction(methodName: @NlsSafe String, val method: PsiMethod) :
-    AnAction({ "Find bug for $methodName" }, DevtiIcons.AI_COPILOT) {
+    AnAction({ "Find bug for $methodName" }, AutoDevIcons.AI_COPILOT) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val code = method.text

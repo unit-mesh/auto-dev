@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language
 
-import cc.unitmesh.devti.DevtiIcons
+import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.runconfig.command.AutoCRUDConfigurationProducer
 import com.intellij.execution.lineMarker.ExecutorAction
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
@@ -20,7 +20,7 @@ class AutoCRUDLineMarkerContributor : RunLineMarkerContributor() {
 
         val actions = ExecutorAction.getActions(0)
         return Info(
-            DevtiIcons.STORY,
+            AutoDevIcons.STORY,
             { state.configurationName },
             *actions
         )

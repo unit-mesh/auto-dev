@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.actions
 
-import cc.unitmesh.devti.DevtiIcons
+import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.connector.ConnectorService
 import cc.unitmesh.devti.runconfig.AutoCRUDState
 import com.intellij.openapi.actionSystem.AnAction
@@ -16,7 +16,7 @@ import com.intellij.psi.PsiMethod
 class AutoCommentAction(
     private val methodName: @NlsSafe String,
     private val method: PsiMethod
-) : AnAction({ "Auto Comment for $methodName" }, DevtiIcons.AI_COPILOT) {
+) : AnAction({ "Auto Comment for $methodName" }, AutoDevIcons.AI_COPILOT) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val apiExecutor = ConnectorService.getInstance().connector()

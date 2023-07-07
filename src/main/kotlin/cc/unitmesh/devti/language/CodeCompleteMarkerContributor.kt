@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language
 
-import cc.unitmesh.devti.DevtiIcons
+import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.actions.CodeCompleteAction
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.psi.PsiElement
@@ -19,7 +19,7 @@ class CodeCompleteMarkerContributor : RunLineMarkerContributor() {
         val runAction = CodeCompleteAction(methodName, method)
 
         return Info(
-            DevtiIcons.AI_COPILOT,
+            AutoDevIcons.AI_COPILOT,
             { "Code Complete " },
             runAction
         )
