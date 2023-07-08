@@ -12,10 +12,6 @@ class ChatCodingService(var actionType: ChatBotActionType) {
         ChatBotActionType.CODE_COMPLETE -> "complete"
     }
 
-    fun setActionType(actionType: ChatBotActionType) {
-        this.actionType = actionType
-    }
-
     fun getLabel(): String {
         val capitalizedAction = action.capitalize()
         return "$capitalizedAction Code"

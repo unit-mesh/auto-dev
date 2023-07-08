@@ -44,6 +44,19 @@ class ActionPromptFormatter(
                 prompt = "解释如下的 $lang 代码"
             }
 
+            ChatBotActionType.CODE_COMPLETE -> {
+                prompt = "补全如下的 $lang 代码"
+
+                if (fileName.endsWith("Controller.java")) {
+                    prompt = """代码补全 $lang 要求：
+                                |1. 在 Controller 中使用 BeanUtils 完成 DTO 的转换
+                                |2. 不允许把 json，map 这类对象传到 service 中
+                                |3. 不允许在 Controller 中使用 @Autowired
+                            """.trimMargin()
+                }
+
+            }
+
             else -> {}
         }
 
