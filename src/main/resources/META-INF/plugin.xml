@@ -54,28 +54,28 @@
 
     <actions>
         <action id="cc.unitmesh.devti.actions.chat.ChatBotExplainAction"
-                class="cc.unitmesh.devti.actions.chat.ChatBotExplainAction" text="Explain This (DevTi)"
+                class="cc.unitmesh.devti.actions.chat.ChatBotExplainAction" text="Explain This (AutoDev)"
                 description="Ask Chatbot about this code">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
         </action>
 
         <action id="cc.unitmesh.devti.actions.chat.ChatBotRefactorAction"
-                class="cc.unitmesh.devti.actions.chat.ChatBotRefactorAction" text="Refactor This (DevTi)"
+                class="cc.unitmesh.devti.actions.chat.ChatBotRefactorAction" text="Refactor This (AutoDev)"
                 description="Ask Chatbot about this code">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
         </action>
 
         <action id="cc.unitmesh.devti.actions.chat.ChatBotReviewAction"
-                class="cc.unitmesh.devti.actions.chat.ChatBotReviewAction" text="Review This (DevTi)"
+                class="cc.unitmesh.devti.actions.chat.ChatBotReviewAction" text="Review This (AutoDev)"
                 description="Ask Chatbot about this code">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
         </action>
 
         <action id="cc.unitmesh.devti.actions.chat.ChatBotCodeCompleteAction"
-                class="cc.unitmesh.devti.actions.chat.ChatBotCodeCompleteAction" text="Code Complete (DevTi)"
+                class="cc.unitmesh.devti.actions.chat.ChatBotCodeCompleteAction" text="Code Complete (AutoDev)"
                 description="Ask Chatbot about this code">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
