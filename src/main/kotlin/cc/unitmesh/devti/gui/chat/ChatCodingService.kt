@@ -4,7 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.connector.ConnectorService
 import com.intellij.openapi.application.ApplicationManager
 
-class ChatCodingService(private var actionType: ChatBotActionType) {
+class ChatCodingService(var actionType: ChatBotActionType) {
     val action = when (actionType) {
         ChatBotActionType.EXPLAIN -> "explain"
         ChatBotActionType.REVIEW -> "review"

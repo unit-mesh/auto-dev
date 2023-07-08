@@ -74,8 +74,8 @@
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
         </action>
 
-        <action id="cc.unitmesh.devti.actions.chat.CodeCompleteAction"
-                class="cc.unitmesh.devti.actions.chat.CodeCompleteAction" text="Code Complete (DevTi)"
+        <action id="cc.unitmesh.devti.actions.chat.ChatBotCodeCompleteAction"
+                class="cc.unitmesh.devti.actions.chat.ChatBotCodeCompleteAction" text="Code Complete (DevTi)"
                 description="Ask Chatbot about this code">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
