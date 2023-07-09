@@ -9,14 +9,14 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.wm.ToolWindowManager
 
-abstract class ChatBaseAction: AnAction() {
+abstract class ChatBaseAction : AnAction() {
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project
         val toolWindowManager = ToolWindowManager.getInstance(project!!).getToolWindow("DevTiFlow")
         val contentManager = toolWindowManager?.contentManager
 
         val caretModel = event.getData(CommonDataKeys.EDITOR)?.caretModel
-        val selectedText = caretModel?.currentCaret?.selectedText ?: ""
+        var selectedText = caretModel?.currentCaret?.selectedText ?: ""
         val lang = event.getData(CommonDataKeys.PSI_FILE)?.language?.displayName ?: ""
         val file = event.getData(CommonDataKeys.PSI_FILE)
 
@@ -27,6 +27,13 @@ abstract class ChatBaseAction: AnAction() {
         contentManager?.removeAllContents(true)
         contentManager?.addContent(content!!)
         toolWindowManager?.activate(null)
+
+        // if selectedText is empty, then we use curosr position to get the text
+        if (selectedText.isEmpty()) {
+            val caretOffset = caretModel?.offset ?: 0
+            val document = event.getData(CommonDataKeys.EDITOR)?.document
+            selectedText = document?.text?.substring(caretOffset) ?: ""
+        }
 
         chatCodingService.handlePromptAndResponse(
             contentPanel,
