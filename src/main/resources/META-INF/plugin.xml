@@ -65,11 +65,16 @@
                     class="cc.unitmesh.devti.actions.chat.ChatBotReviewAction" text="Review This"
                     description="Ask Chatbot about this code">
             </action>
+
+            <action id="cc.unitmesh.devti.actions.chat.WriteTestAction"
+                    class="cc.unitmesh.devti.actions.chat.WriteTestAction" text="Write test for This"
+                    description="Ask Chatbot about this code">
+            </action>
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </group>
 
-        <action id="cc.unitmesh.devti.actions.chat.ChatBotCodeCompleteAction"
-                class="cc.unitmesh.devti.actions.chat.ChatBotCodeCompleteAction" text="Code Complete (AutoDev)"
+        <action id="cc.unitmesh.devti.actions.chat.CodeCompleteAction"
+                class="cc.unitmesh.devti.actions.chat.CodeCompleteAction" text="Code Complete (AutoDev)"
                 description="Ask Chatbot about this code">
 
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>

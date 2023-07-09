@@ -10,6 +10,7 @@ class ChatCodingService(var actionType: ChatBotActionType) {
         ChatBotActionType.REVIEW -> "review"
         ChatBotActionType.REFACTOR -> "refactor"
         ChatBotActionType.CODE_COMPLETE -> "complete"
+        ChatBotActionType.WRITE_TEST -> "write test"
     }
 
     fun getLabel(): String {
@@ -63,5 +64,6 @@ enum class ChatBotActionType {
     REFACTOR,
     EXPLAIN,
     REVIEW,
-    CODE_COMPLETE
+    CODE_COMPLETE,
+    WRITE_TEST
 }

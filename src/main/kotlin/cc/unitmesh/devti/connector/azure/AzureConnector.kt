@@ -43,7 +43,8 @@ class AzureConnector : CodeCopilot {
                 PromptItem("Auto complete", "{code}"),
                 PromptItem("Auto comment", "{code}"),
                 PromptItem("Code review", "{code}"),
-                PromptItem("Find bug", "{code}")
+                PromptItem("Find bug", "{code}"),
+                PromptItem("Write test", "{code}")
             )
         }
     }

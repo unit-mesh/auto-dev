@@ -15,5 +15,7 @@ data class PromptConfig(
     @SerialName("code_review")
     val codeReview: PromptItem,
     @SerialName("refactor")
-    val refactor: PromptItem
+    val refactor: PromptItem,
+    @SerialName("write_test")
+    val writeTest: PromptItem
 )

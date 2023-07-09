@@ -58,7 +58,8 @@ class BotActionPrompting(
                 PromptItem("Auto complete", "{code}"),
                 PromptItem("Auto comment", "{code}"),
                 PromptItem("Code review", "{code}"),
-                PromptItem("Find bug", "{code}")
+                PromptItem("Find bug", "{code}"),
+                PromptItem("Write test", "{code}")
             )
         }
     }
@@ -111,6 +112,10 @@ class BotActionPrompting(
     private fun createPrompt(): String {
         var prompt = """$action this $lang code"""
 
+
+        val isController = fileName.endsWith("Controller.java")
+        val isService = fileName.endsWith("Service.java") || fileName.endsWith("ServiceImpl.java")
+
         when (action) {
             ChatBotActionType.REVIEW -> {
                 val codeReview = promptConfig?.codeReview
@@ -148,10 +153,6 @@ class BotActionPrompting(
                 }
 
                 var additional = "";
-
-                val isController = fileName.endsWith("Controller.java")
-                val isService = fileName.endsWith("Service.java") || fileName.endsWith("ServiceImpl.java")
-
                 when {
                     isController -> {
                         additional = createControllerPrompt()
@@ -163,6 +164,25 @@ class BotActionPrompting(
                 }
 
                 prompt = "$prompt $additional"
+            }
+
+            ChatBotActionType.WRITE_TEST -> {
+                val writeTest = promptConfig?.writeTest
+                prompt = if (writeTest?.instruction?.isNotEmpty() == true) {
+                    writeTest.instruction
+                } else {
+                    "请为如下的 $lang 代码编写测试"
+                }
+
+                when {
+                    isController -> {
+                        prompt = "$prompt。要求：1. 技术栈：MockMvc + Spring Boot Test + Mockito + AssertJ + JsonPath"
+                    }
+
+                    isService -> {
+                        prompt = "$prompt。要求：1. 技术栈：Mockito + AssertJ"
+                    }
+                }
             }
         }
 
