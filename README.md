@@ -99,29 +99,7 @@ Output Screenshots:
 2. open in IntelliJ IDEA
 3. `./gradlew runIde`
 
-### LSP Json RPC
-
-```json
-{
-  "range": {
-    "start": {
-      "line": 0,
-      "column": 0
-    },
-    "end": {
-      "line": 0,
-      "column": 0
-    }
-  },
-  "text": "",
-  "language": "xxx",
-  "uuid": "xxx"
-}
-```
-
-### API Spec
-
-authorization: `Bearer ${token}`
+### Custom prompt
 
 ```json
 {
