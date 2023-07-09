@@ -1,8 +1,14 @@
 package cc.unitmesh.devti.analysis
 
+import com.intellij.openapi.application.runReadAction
+import com.intellij.psi.PsiClass
+import com.intellij.psi.impl.source.PsiJavaFileImpl
+
 class DtClass(
     val name: String,
-    val methods: List<DtMethod>
+    val methods: List<DtMethod>,
+    val packageName: String = "",
+    val path: String = ""
 ) {
     fun format(): String {
         val output = StringBuilder()
@@ -26,7 +32,38 @@ class DtClass(
         return output.toString()
     }
 
-    companion object
+    companion object {
+        fun DtClass.Companion.fromPsiClass(psiClass: PsiClass): DtClass {
+            return runReadAction {
+                val methods = psiClass.methods.map { method ->
+                    DtMethod(
+                        name = method.name,
+                        returnType = method.returnType?.presentableText ?: "",
+                        parameters = method.parameters.map { parameter ->
+                            DtParameter(
+                                name = parameter.name ?: "",
+                                type = parameter.type.toString().replace(" PsiType:", "")
+                            )
+                        }
+                    )
+                }
+
+                return@runReadAction DtClass(
+                    packageName = psiClass.qualifiedName ?: "",
+                    path = psiClass.containingFile?.virtualFile?.path ?: "",
+                    name = psiClass.name ?: "",
+                    methods = methods
+                )
+            }
+        }
+
+        fun fromJavaFile(file: PsiJavaFileImpl?): DtClass {
+            return runReadAction {
+                val psiClass = file?.classes?.firstOrNull() ?: return@runReadAction DtClass("", emptyList())
+                return@runReadAction fromPsiClass(psiClass)
+            }
+        }
+    }
 }
 
 class DtMethod(

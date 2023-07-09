@@ -1,10 +1,8 @@
 package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.analysis.DtClass
-import cc.unitmesh.devti.analysis.fromPsiClass
+import cc.unitmesh.devti.analysis.DtClass.Companion.fromPsiClass
 import com.intellij.openapi.application.runReadAction
-import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
@@ -89,13 +87,14 @@ class ActionPromptFormatter(
                             DtClass.fromPsiClass(it).format()
                         }
 
+                        val clazz = DtClass.fromJavaFile(file)
                         prompt = """代码补全 $lang 要求：
                                             |1. 在 Controller 中使用 BeanUtils 完成 DTO 的转换
                                             |2. 不允许把 json，map 这类对象传到 service 中
                                             |3. 不允许在 Controller 中使用 @Autowired
                                             |4. 相关 Service 的信息如下：```$servicesList```
-                                            |5. // current package: ${file?.packageName}
-                                            |6. // current class: ${file?.name}
+                                            |5. // current package: ${clazz.packageName}
+                                            |6. // current class: ${clazz.name}
                                             |6. 需要补全的代码如下：
                                         """.trimMargin()
                     }
