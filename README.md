@@ -28,9 +28,6 @@
 
 - [X] Languages Support by PSI
     - [x] Java
-- [ ] Languages Support by LSP
-    - [ ] Kotlin
-    - [ ] TypeScript
 - [ ] Integration with Co-mate DSL
     - [ ] Assistant architecture DSL
     - [ ] Assistant API Design
@@ -49,20 +46,15 @@
     - [x] Find bug...
     - [x] Explain code by selection
     - [x] Trace Exception
-- [ ] Chat with IDE
+- [x] Chat with IDE
     - [ ] Generate test
     - [ ] 实现：`重现 xx 功能`, `devti:/chat/feature`
     - [ ] 重构：`重构 xx 方法`
     - [ ] 替换：`替换 xx 方法`，`devti:/refactor/method`
 - [x] Custom LLM Server
-- [ ] Telemetry Server
-    - [ ] Accept
-    - [ ] Reject
-    - [ ] Feedback
 - [ ] Context Engineering
-    - [ ] Open Tabs
-    - [ ] Related Files
-    - [ ]  with DependencyContext
+    - [x] Related Files
+    - [ ] with DependencyContext
         - [ ] parse Gradle for dependencies
 
 ## Usage
