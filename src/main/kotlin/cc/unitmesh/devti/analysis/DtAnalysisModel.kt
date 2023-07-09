@@ -40,9 +40,10 @@ class DtClass(
                         name = method.name,
                         returnType = method.returnType?.presentableText ?: "",
                         parameters = method.parameters.map { parameter ->
+                            parameter.type
                             DtParameter(
                                 name = parameter.name ?: "",
-                                type = parameter.type.toString().replace(" PsiType:", "")
+                                type = parameter.type.toString().replace("PsiType:", "")
                             )
                         }
                     )
