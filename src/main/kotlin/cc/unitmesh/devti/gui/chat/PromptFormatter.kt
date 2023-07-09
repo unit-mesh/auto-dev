@@ -1,6 +1,16 @@
 package cc.unitmesh.devti.gui.chat
 
-import com.intellij.openapi.util.NlsSafe
+import cc.unitmesh.devti.analysis.DtClass
+import cc.unitmesh.devti.analysis.fromPsiClass
+import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
+import com.intellij.psi.JavaPsiFacade
+import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiFile
+import com.intellij.psi.impl.source.PsiJavaFileImpl
+import com.intellij.psi.search.GlobalSearchScope
 
 
 interface PromptFormatter {
@@ -13,8 +23,18 @@ class ActionPromptFormatter(
     private val action: ChatBotActionType,
     private val lang: String,
     private val selectedText: String,
-    private val fileName: @NlsSafe String,
+    private val file: PsiFile?,
+    private val project: Project,
 ) : PromptFormatter {
+    companion object {
+        private val logger: Logger = logger<ActionPromptFormatter>()
+    }
+
+    private val searchScope = GlobalSearchScope.allScope(project)
+    private val javaPsiFacade = JavaPsiFacade.getInstance(project)
+
+    //    val psiManager = PsiManager.getInstance(project)
+    private val fileName = file?.name ?: ""
 
     override fun getUIPrompt(): String {
         val prompt = createPrompt()
@@ -30,6 +50,24 @@ class ActionPromptFormatter(
         return """$prompt:
             $selectedText
         """.trimMargin()
+    }
+
+
+    private fun calControllerRelatedService(controller: PsiFile?): List<PsiClass> {
+        return runReadAction {
+            if (controller == null) return@runReadAction emptyList()
+
+            val controllerFile = (controller as PsiJavaFileImpl)
+
+            val allImportStatements = controllerFile.importList?.allImportStatements
+
+            return@runReadAction allImportStatements?.filter {
+                it.importReference?.text?.endsWith("Service", true) ?: false
+            }?.mapNotNull {
+                val importText = it.importReference?.text ?: return@mapNotNull null
+                javaPsiFacade.findClass(importText, searchScope)
+            } ?: emptyList()
+        }
     }
 
     private fun createPrompt(): String {
@@ -52,10 +90,17 @@ class ActionPromptFormatter(
 
                 when {
                     isController -> {
+                        val services = calControllerRelatedService(file)
+                        val servicesList = services.map {
+                            DtClass.fromPsiClass(it).format()
+                        }
+
                         prompt = """代码补全 $lang 要求：
                                             |1. 在 Controller 中使用 BeanUtils 完成 DTO 的转换
                                             |2. 不允许把 json，map 这类对象传到 service 中
                                             |3. 不允许在 Controller 中使用 @Autowired
+                                            |4. 相关 Service 的信息如下：```$servicesList```
+                                            |5. 需要补全的代码如下：
                                         """.trimMargin()
                     }
 

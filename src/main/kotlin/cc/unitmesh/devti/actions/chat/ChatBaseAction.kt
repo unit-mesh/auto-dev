@@ -18,7 +18,7 @@ abstract class ChatBaseAction: AnAction() {
         val caretModel = event.getData(CommonDataKeys.EDITOR)?.caretModel
         val selectedText = caretModel?.currentCaret?.selectedText ?: ""
         val lang = event.getData(CommonDataKeys.PSI_FILE)?.language?.displayName ?: ""
-        val fileName =  event.getData(CommonDataKeys.PSI_FILE)?.name ?: ""
+        val file = event.getData(CommonDataKeys.PSI_FILE)
 
         val chatCodingService = ChatCodingService(getActionType())
         val contentPanel = ChatCodingComponent(chatCodingService)
@@ -30,7 +30,7 @@ abstract class ChatBaseAction: AnAction() {
 
         chatCodingService.handlePromptAndResponse(
             contentPanel,
-            ActionPromptFormatter(chatCodingService.actionType, lang, selectedText, fileName),
+            ActionPromptFormatter(chatCodingService.actionType, lang, selectedText, file, project),
             getReplaceableAction(event)
         )
 
