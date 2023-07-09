@@ -28,7 +28,7 @@ val DEFAULT_PROMPTS = """
     "instruction": "",
     "input": ""
   },
-  "find_bug": {
+  "refactor": {
     "instruction": "",
     "input": ""
   }

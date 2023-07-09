@@ -2,8 +2,6 @@ package cc.unitmesh.devti.connector.custom
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.decodeFromString
 
 @Serializable
 data class PromptItem(val instruction: String, val input: String)
@@ -16,12 +14,6 @@ data class PromptConfig(
     val autoComment: PromptItem,
     @SerialName("code_review")
     val codeReview: PromptItem,
-    @SerialName("find_bug")
-    val findBug: PromptItem
-) {
-    companion object {
-        fun fromString(json: String): PromptConfig {
-            return Json { ignoreUnknownKeys = true }.decodeFromString(json)
-        }
-    }
-}
+    @SerialName("refactor")
+    val refactor: PromptItem
+)

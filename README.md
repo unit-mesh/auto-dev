@@ -156,7 +156,7 @@ authorization: `Bearer ${token}`
     "instruction": "",
     "input": ""
   },
-  "find_bug": {
+  "refactor": {
     "instruction": "",
     "input": ""
   }

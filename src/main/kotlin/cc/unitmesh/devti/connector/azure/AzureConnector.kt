@@ -13,7 +13,6 @@ import com.theokanning.openai.completion.chat.ChatCompletionResult
 import com.theokanning.openai.completion.chat.ChatMessage
 import com.theokanning.openai.completion.chat.ChatMessageRole
 import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -122,7 +121,7 @@ class AzureConnector : CodeCopilot {
     }
 
     override fun findBug(text: String): String {
-        val bug = promptConfig!!.findBug
+        val bug = promptConfig!!.refactor
         return prompt(bug.instruction, bug.input.replace("{code}", text))
     }
 }

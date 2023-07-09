@@ -114,7 +114,6 @@ class BotActionPrompting(
         when (action) {
             ChatBotActionType.REVIEW -> {
                 val codeReview = promptConfig?.codeReview
-
                 prompt = if (codeReview?.instruction?.isNotEmpty() == true) {
                     codeReview.instruction
                 } else {
@@ -123,7 +122,21 @@ class BotActionPrompting(
             }
 
             ChatBotActionType.EXPLAIN -> {
-                prompt = "解释如下的 $lang 代码"
+                val autoComment = promptConfig?.autoComment
+                prompt = if (autoComment?.instruction?.isNotEmpty() == true) {
+                    autoComment.instruction
+                } else {
+                    "请解释如下的 $lang 代码"
+                }
+            }
+
+            ChatBotActionType.REFACTOR -> {
+                val refactor = promptConfig?.refactor
+                prompt = if (refactor?.instruction?.isNotEmpty() == true) {
+                    refactor.instruction
+                } else {
+                    "请重构如下的 $lang 代码"
+                }
             }
 
             ChatBotActionType.CODE_COMPLETE -> {
@@ -143,8 +156,6 @@ class BotActionPrompting(
                 }
 
             }
-
-            else -> {}
         }
 
         return prompt
