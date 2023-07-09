@@ -140,21 +140,29 @@ class BotActionPrompting(
             }
 
             ChatBotActionType.CODE_COMPLETE -> {
-                prompt = "补全如下的 $lang 代码"
+                val codeComplete = promptConfig?.autoComplete
+                prompt = if (codeComplete?.instruction?.isNotEmpty() == true) {
+                    codeComplete.instruction
+                } else {
+                    "请补全如下的 $lang 代码"
+                }
+
+                var additional = "";
 
                 val isController = fileName.endsWith("Controller.java")
                 val isService = fileName.endsWith("Service.java") || fileName.endsWith("ServiceImpl.java")
 
                 when {
                     isController -> {
-                        prompt = createControllerPrompt()
+                        additional = createControllerPrompt()
                     }
 
                     isService -> {
-                        prompt = createServicePrompt()
+                        additional = createServicePrompt()
                     }
                 }
 
+                prompt = "$prompt $additional"
             }
         }
 
@@ -165,13 +173,10 @@ class BotActionPrompting(
         val file = file as? PsiJavaFileImpl
         val clazz = DtClass.fromJavaFile(file)
 
-        return """代码补其 $lang 要求：
-                |- 直接调用 repository 的方法时，使用 get, find, count, delete, save, update 这类方法
-                |- Service 层应该捕获并处理可能出现的异常。通常情况下，应该将异常转换为应用程序自定义异常并抛出。
-                |- // current package: ${clazz.packageName}
-                |- // current class information: ${clazz.format()}
-                |- // current class: ${clazz.name}
-                """.trimMargin()
+        return """|- // current package: ${clazz.packageName}
+                  |- // current class information: ${clazz.format()}
+                  |- // current class: ${clazz.name}
+                  """.trimMargin()
     }
 
     private fun createControllerPrompt(): String {
