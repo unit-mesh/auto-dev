@@ -19,7 +19,7 @@ interface PromptFormatter {
 
 data class ControllerContext(
     val services: List<PsiClass>,
-    val entities: List<PsiClass>,
+    val models: List<PsiClass>,
 )
 
 class BotActionPrompting(
@@ -64,9 +64,17 @@ class BotActionPrompting(
                 javaPsiFacade.findClass(importText, searchScope)
             } ?: emptyList()
 
+            // filter out model, entity, dto, from import statements
+            val entities = allImportStatements?.filter {
+                it.importReference?.text?.matches(Regex(".*\\.(model|entity|dto)\\..*")) ?: false
+            }?.mapNotNull {
+                val importText = it.importReference?.text ?: return@mapNotNull null
+                javaPsiFacade.findClass(importText, searchScope)
+            } ?: emptyList()
+
             return@runReadAction ControllerContext(
                 services = services,
-                entities = emptyList()
+                models = entities
             )
         }
     }
@@ -119,9 +127,18 @@ class BotActionPrompting(
         }
 
         val servicePrompt = if (servicesList.isNullOrEmpty()) {
-            """|相关 Service 的信息如下： ```\n$servicesList```""".trimMargin()
-        } else {
             ""
+        } else {
+            """|相关 Service 的信息如下： ```\n$servicesList```""".trimMargin()
+        }
+        val models = services?.models?.map {
+            DtClass.fromPsiClass(it).format()
+        }
+
+        val modelsPrompt = if (models.isNullOrEmpty()) {
+            ""
+        } else {
+            """|相关 Model 的信息如下： ```\n$models```""".trimMargin()
         }
 
         val clazz = DtClass.fromJavaFile(file)
@@ -129,6 +146,7 @@ class BotActionPrompting(
                 |- 在 Controller 中使用 BeanUtils 完成 DTO 的转换
                 |- 不允许把 json，map 这类对象传到 service 中 
                 |$servicePrompt
+                |$modelsPrompt
                 |- // current package: ${clazz.packageName}
                 |- // current class: ${clazz.name}
                 |- 需要补全的代码如下：
