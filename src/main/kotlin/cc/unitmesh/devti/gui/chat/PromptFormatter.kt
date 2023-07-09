@@ -81,22 +81,7 @@ class ActionPromptFormatter(
 
                 when {
                     isController -> {
-                        val file = file as? PsiJavaFileImpl
-                        val services = calControllerRelatedService(file)
-                        val servicesList = services.map {
-                            DtClass.fromPsiClass(it).format()
-                        }
-
-                        val clazz = DtClass.fromJavaFile(file)
-                        prompt = """代码补全 $lang 要求：
-                                            |1. 在 Controller 中使用 BeanUtils 完成 DTO 的转换
-                                            |2. 不允许把 json，map 这类对象传到 service 中
-                                            |3. 不允许在 Controller 中使用 @Autowired
-                                            |4. 相关 Service 的信息如下：```$servicesList```
-                                            |5. // current package: ${clazz.packageName}
-                                            |6. // current class: ${clazz.name}
-                                            |6. 需要补全的代码如下：
-                                        """.trimMargin()
+                        prompt = createControllerPrompt()
                     }
 
                     isService -> {
@@ -114,5 +99,24 @@ class ActionPromptFormatter(
         }
 
         return prompt
+    }
+
+    private fun createControllerPrompt(): String {
+        val file = file as? PsiJavaFileImpl
+        val services = calControllerRelatedService(file)
+        val servicesList = services.map {
+            DtClass.fromPsiClass(it).format()
+        }
+
+        val clazz = DtClass.fromJavaFile(file)
+        return """代码补全 $lang 要求：
+                |1. 在 Controller 中使用 BeanUtils 完成 DTO 的转换
+                |2. 不允许把 json，map 这类对象传到 service 中
+                |3. 不允许在 Controller 中使用 @Autowired
+                |4. 相关 Service 的信息如下：```$servicesList```
+                |5. // current package: ${clazz.packageName}
+                |6. // current class: ${clazz.name}
+                |6. 需要补全的代码如下：
+            """.trimMargin()
     }
 }
