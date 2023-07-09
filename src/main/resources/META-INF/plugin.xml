@@ -23,15 +23,12 @@
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.DevtiSettingsState"/>
         <!-- show find bug -->
         <runLineMarkerContributor language="JAVA"
-                                  implementationClass="cc.unitmesh.devti.language.CodeCompleteMarkerContributor"/>
-        <runLineMarkerContributor language="JAVA"
                                   implementationClass="cc.unitmesh.devti.language.CodeCommentsMarkerContributor"/>
         <runLineMarkerContributor language="JAVA"
                                   implementationClass="cc.unitmesh.devti.language.FindBugMarkerContributor"/>
         <runLineMarkerContributor language="JAVA"
                                   implementationClass="cc.unitmesh.devti.language.CodeReviewMarkerContributor"/>
 
-        <!-- analysis story, and    -->
         <runLineMarkerContributor language="JAVA"
                                   implementationClass="cc.unitmesh.devti.language.AutoCRUDLineMarkerContributor"/>
 
