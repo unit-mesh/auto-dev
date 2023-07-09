@@ -17,6 +17,11 @@ interface PromptFormatter {
     fun getRequestPrompt(): String
 }
 
+data class ControllerContext(
+    val services: List<PsiClass>,
+    val entities: List<PsiClass>,
+)
+
 class ActionPromptFormatter(
     private val action: ChatBotActionType,
     private val lang: String,
@@ -46,18 +51,23 @@ class ActionPromptFormatter(
     }
 
 
-    private fun calControllerRelatedService(controllerFile: PsiJavaFileImpl?): List<PsiClass> {
+    private fun prepareControllerContext(controllerFile: PsiJavaFileImpl?): ControllerContext? {
         return runReadAction {
-            if (controllerFile == null) return@runReadAction emptyList()
+            if (controllerFile == null) return@runReadAction null
 
             val allImportStatements = controllerFile.importList?.allImportStatements
 
-            return@runReadAction allImportStatements?.filter {
+            val services = allImportStatements?.filter {
                 it.importReference?.text?.endsWith("Service", true) ?: false
             }?.mapNotNull {
                 val importText = it.importReference?.text ?: return@mapNotNull null
                 javaPsiFacade.findClass(importText, searchScope)
             } ?: emptyList()
+
+            return@runReadAction ControllerContext(
+                services = services,
+                entities = emptyList()
+            )
         }
     }
 
@@ -103,16 +113,22 @@ class ActionPromptFormatter(
 
     private fun createControllerPrompt(): String {
         val file = file as? PsiJavaFileImpl
-        val services = calControllerRelatedService(file)
-        val servicesList = services.map {
+        val services = prepareControllerContext(file)
+        val servicesList = services?.services?.map {
             DtClass.fromPsiClass(it).format()
+        }
+
+        val servicePrompt = if (servicesList.isNullOrEmpty()) {
+            """|相关 Service 的信息如下： ```\n$servicesList```""".trimMargin()
+        } else {
+            ""
         }
 
         val clazz = DtClass.fromJavaFile(file)
         return """代码补全 $lang 要求：
                 |- 在 Controller 中使用 BeanUtils 完成 DTO 的转换
-                |- 不允许把 json，map 这类对象传到 service 中
-                |- 相关 Service 的信息如下：```$servicesList```
+                |- 不允许把 json，map 这类对象传到 service 中 
+                |$servicePrompt
                 |- // current package: ${clazz.packageName}
                 |- // current class: ${clazz.name}
                 |- 需要补全的代码如下：
