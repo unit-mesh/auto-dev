@@ -22,7 +22,7 @@ data class ControllerContext(
     val entities: List<PsiClass>,
 )
 
-class ActionPromptFormatter(
+class BotActionPrompting(
     private val action: ChatBotActionType,
     private val lang: String,
     private val selectedText: String,
