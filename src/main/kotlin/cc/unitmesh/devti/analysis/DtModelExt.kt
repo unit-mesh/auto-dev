@@ -9,11 +9,11 @@ fun DtClass.Companion.fromPsiClass(psiClass: PsiClass): DtClass {
     val methods = psiClass.methods.map { method ->
         DtMethod(
             name = method.name,
-            returnType = method.returnType.toString(),
+            returnType = method.returnType?.presentableText ?: "",
             parameters = method.parameters.map { parameter ->
                 DtParameter(
                     name = parameter.name ?: "",
-                    type = parameter.type.toString()
+                    type = parameter.type.toString().replace(" PsiType:", "")
                 )
             }
         )

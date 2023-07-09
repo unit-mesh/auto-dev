@@ -1,10 +1,5 @@
 package cc.unitmesh.devti.analysis
 
-data class DtFile(
-    val name: String,
-    val className: String,
-)
-
 class DtClass(
     val name: String,
     val methods: List<DtMethod>

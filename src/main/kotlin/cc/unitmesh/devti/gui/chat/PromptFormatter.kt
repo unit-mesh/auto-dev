@@ -24,16 +24,11 @@ class ActionPromptFormatter(
     private val lang: String,
     private val selectedText: String,
     private val file: PsiFile?,
-    private val project: Project,
+    project: Project,
 ) : PromptFormatter {
-    companion object {
-        private val logger: Logger = logger<ActionPromptFormatter>()
-    }
-
     private val searchScope = GlobalSearchScope.allScope(project)
     private val javaPsiFacade = JavaPsiFacade.getInstance(project)
 
-    //    val psiManager = PsiManager.getInstance(project)
     private val fileName = file?.name ?: ""
 
     override fun getUIPrompt(): String {
@@ -53,11 +48,9 @@ class ActionPromptFormatter(
     }
 
 
-    private fun calControllerRelatedService(controller: PsiFile?): List<PsiClass> {
+    private fun calControllerRelatedService(controllerFile: PsiJavaFileImpl?): List<PsiClass> {
         return runReadAction {
-            if (controller == null) return@runReadAction emptyList()
-
-            val controllerFile = (controller as PsiJavaFileImpl)
+            if (controllerFile == null) return@runReadAction emptyList()
 
             val allImportStatements = controllerFile.importList?.allImportStatements
 
@@ -90,6 +83,7 @@ class ActionPromptFormatter(
 
                 when {
                     isController -> {
+                        val file = file as? PsiJavaFileImpl
                         val services = calControllerRelatedService(file)
                         val servicesList = services.map {
                             DtClass.fromPsiClass(it).format()
@@ -100,7 +94,9 @@ class ActionPromptFormatter(
                                             |2. 不允许把 json，map 这类对象传到 service 中
                                             |3. 不允许在 Controller 中使用 @Autowired
                                             |4. 相关 Service 的信息如下：```$servicesList```
-                                            |5. 需要补全的代码如下：
+                                            |5. // current package: ${file?.packageName}
+                                            |6. // current class: ${file?.name}
+                                            |6. 需要补全的代码如下：
                                         """.trimMargin()
                     }
 
