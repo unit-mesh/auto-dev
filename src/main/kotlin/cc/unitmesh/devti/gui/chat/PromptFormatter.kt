@@ -2,6 +2,9 @@ package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.analysis.DtClass.Companion.fromPsiClass
+import cc.unitmesh.devti.connector.custom.PromptConfig
+import cc.unitmesh.devti.connector.custom.PromptItem
+import cc.unitmesh.devti.settings.DevtiSettingsState
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.JavaPsiFacade
@@ -9,6 +12,8 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiFile
 import com.intellij.psi.impl.source.PsiJavaFileImpl
 import com.intellij.psi.search.GlobalSearchScope
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 
 
 interface PromptFormatter {
@@ -29,10 +34,34 @@ class BotActionPrompting(
     private val file: PsiFile?,
     project: Project,
 ) : PromptFormatter {
+    private val devtiSettingsState = DevtiSettingsState.getInstance()
+    private var promptConfig: PromptConfig? = null
+    val prompts = devtiSettingsState?.customEnginePrompts
+
     private val searchScope = GlobalSearchScope.allScope(project)
     private val javaPsiFacade = JavaPsiFacade.getInstance(project)
 
     private val fileName = file?.name ?: ""
+
+    init {
+        val prompts = devtiSettingsState?.customEnginePrompts
+        try {
+            if (prompts != null) {
+                promptConfig = Json.decodeFromString(prompts)
+            }
+        } catch (e: Exception) {
+            println("Error parsing prompts: $e")
+        }
+
+        if (promptConfig == null) {
+            promptConfig = PromptConfig(
+                PromptItem("Auto complete", "{code}"),
+                PromptItem("Auto comment", "{code}"),
+                PromptItem("Code review", "{code}"),
+                PromptItem("Find bug", "{code}")
+            )
+        }
+    }
 
     override fun getUIPrompt(): String {
         val prompt = createPrompt()
@@ -84,7 +113,13 @@ class BotActionPrompting(
 
         when (action) {
             ChatBotActionType.REVIEW -> {
-                prompt = "检查如下的 $lang 代码"
+                val codeReview = promptConfig?.codeReview
+
+                prompt = if (codeReview?.instruction?.isNotEmpty() == true) {
+                    codeReview.instruction
+                } else {
+                    "请检查如下的 $lang 代码"
+                }
             }
 
             ChatBotActionType.EXPLAIN -> {
