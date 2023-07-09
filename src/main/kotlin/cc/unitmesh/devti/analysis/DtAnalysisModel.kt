@@ -33,14 +33,13 @@ class DtClass(
     }
 
     companion object {
-        fun DtClass.Companion.fromPsiClass(psiClass: PsiClass): DtClass {
+        fun Companion.fromPsiClass(psiClass: PsiClass): DtClass {
             return runReadAction {
                 val methods = psiClass.methods.map { method ->
                     DtMethod(
                         name = method.name,
                         returnType = method.returnType?.presentableText ?: "",
                         parameters = method.parameters.map { parameter ->
-                            parameter.type
                             DtParameter(
                                 name = parameter.name ?: "",
                                 type = parameter.type.toString().replace("PsiType:", "")
