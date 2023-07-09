@@ -65,6 +65,14 @@
       plugin in your IDE
 2. configure GitHub Token (optional) and OpenAI config in `Settings` -> `Tools` -> `DevTi`
 
+![Token Configure](https://unitmesh.cc/auto-dev/config-token.png)
+
+### CodeCompletion mode
+
+Right click on the code editor, select `AutoDev` -> `CodeCompletion` -> `CodeComplete`
+
+![Code completion](https://unitmesh.cc/auto-dev/completion-mode.png)
+
 ### Copilot mode
 
 1. click as you want:
@@ -77,10 +85,6 @@
 2. configure GitHub repository for Run Configuration.
 3. click `AutoDev` button in the comments' left.
 
-Token Configure:
-
-![Token Configure](https://unitmesh.cc/auto-dev/configure-token.png)
-
 Run Screenshots:
 
 ![AutoDev](https://unitmesh.cc/auto-dev/init-instruction.png)
@@ -92,17 +96,6 @@ Output Screenshots:
 ### Custom OpenAI proxy example
 
 ![Custom Config](https://unitmesh.cc/auto-dev/autodev-config.png)
-
-### 原理
-
-AutoDev 处理过程：
-
-1. 对接了需求系统，从需求系统中获取到需求文档
-2. 根据需求文档，自动分析需求，并完善需求文档
-3. 根据完善后的需求，寻找最适合的 Endpoint，即 Controller
-4. 根据 Endpoint，自动生成 Controller 代码
-5. 根据 Controller 代码，自动生成 Service 代码
-6. 根据 Service 代码，自动生成 Repository 代码
 
 ## Development
 
@@ -151,30 +144,17 @@ authorization: `Bearer ${token}`
   "refactor": {
     "instruction": "",
     "input": ""
+  },
+  "write_test": {
+    "instruction": "",
+    "input": ""
   }
 }
 ```
-
-then return:
-
-```json
-{
-  "instruction": "implementation the method",
-  "input": "xxxx",
-  "output": "xxxx"
-}
-```
-
-### How Copilot works?
-
-- IDE with InlaysAction (extends EditorAction)
-- send RPC to JSON RPC
-- WASM with TreeSitter
-- Return to IDE
 
 ## License
 
 ChatUI based
 on: [https://github.com/Cspeisman/chatgpt-intellij-plugin](https://github.com/Cspeisman/chatgpt-intellij-plugin)
 
-@Thoughtworks AIEEL Team. This code is distributed under the MPL 2.0 license. See `LICENSE` in this directory.
+@Thoughtworks AIEE Team. This code is distributed under the MPL 2.0 license. See `LICENSE` in this directory.
