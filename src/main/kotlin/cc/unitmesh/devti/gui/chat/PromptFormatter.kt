@@ -103,11 +103,7 @@ class BotActionPrompting(
                     }
 
                     isService -> {
-                        prompt = """代码补其 $lang 要求：
-                                            |1. 不允许同时使用 BeanUtils 和 Map 转换 DTO
-                                            |2. 直接调用 repository 的方法时，使用 get, find, count, delete, save, update 这类方法
-                                            |3. Service 层应该捕获并处理可能出现的异常。通常情况下，应该将异常转换为应用程序自定义异常并抛出。
-                                            """.trimMargin()
+                        prompt = createServicePrompt()
                     }
                 }
 
@@ -117,6 +113,19 @@ class BotActionPrompting(
         }
 
         return prompt
+    }
+
+    private fun createServicePrompt(): String {
+        val file = file as? PsiJavaFileImpl
+        val clazz = DtClass.fromJavaFile(file)
+
+        return """代码补其 $lang 要求：
+                |- 直接调用 repository 的方法时，使用 get, find, count, delete, save, update 这类方法
+                |- Service 层应该捕获并处理可能出现的异常。通常情况下，应该将异常转换为应用程序自定义异常并抛出。
+                |- // current package: ${clazz.packageName}
+                |- // current class information: ${clazz.format()}
+                |- // current class: ${clazz.name}
+                """.trimMargin()
     }
 
     private fun createControllerPrompt(): String {
@@ -129,7 +138,7 @@ class BotActionPrompting(
         val servicePrompt = if (servicesList.isNullOrEmpty()) {
             ""
         } else {
-            """|相关 Service 的信息如下： ```\n$servicesList```""".trimMargin()
+            """|相关 Service 的信息如下： ```$servicesList```""".trimMargin()
         }
         val models = services?.models?.map {
             DtClass.fromPsiClass(it).format()
@@ -138,7 +147,7 @@ class BotActionPrompting(
         val modelsPrompt = if (models.isNullOrEmpty()) {
             ""
         } else {
-            """|相关 Model 的信息如下： ```\n$models```""".trimMargin()
+            """|相关 Model 的信息如下： ```$models```""".trimMargin()
         }
 
         val clazz = DtClass.fromJavaFile(file)
