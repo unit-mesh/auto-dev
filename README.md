@@ -65,7 +65,7 @@
       plugin in your IDE
 2. configure GitHub Token (optional) and OpenAI config in `Settings` -> `Tools` -> `DevTi`
 
-![Token Configure](https://unitmesh.cc/auto-dev/config-token.png)
+![Token Configure](https://unitmesh.cc/auto-dev/autodev-config.png)
 
 ### CodeCompletion mode
 
@@ -92,10 +92,6 @@ Run Screenshots:
 Output Screenshots:
 
 ![AutoDev](https://unitmesh.cc/auto-dev/blog-controller.png)
-
-### Custom OpenAI proxy example
-
-![Custom Config](https://unitmesh.cc/auto-dev/autodev-config.png)
 
 ## Development
 
