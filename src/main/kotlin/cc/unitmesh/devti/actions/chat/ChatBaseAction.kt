@@ -28,11 +28,12 @@ abstract class ChatBaseAction : AnAction() {
         contentManager?.addContent(content!!)
         toolWindowManager?.activate(null)
 
-        // if selectedText is empty, then we use curosr position to get the text
+        // if selectedText is empty, then we use the cursor position to get the text
         if (selectedText.isEmpty()) {
-            val caretOffset = caretModel?.offset ?: 0
+            val offset = caretModel?.offset ?: 0
             val document = event.getData(CommonDataKeys.EDITOR)?.document
-            selectedText = document?.text?.substring(caretOffset) ?: ""
+            val lineEndOffset = document?.getLineEndOffset(document.getLineNumber(offset)) ?: 0
+            selectedText = document?.text?.substring(0, lineEndOffset) ?: ""
         }
 
         chatCodingService.handlePromptAndResponse(
