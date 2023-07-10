@@ -81,6 +81,23 @@ class BotActionPrompting(
     }
 
 
+    private fun prepareServiceContext(serviceFile: PsiJavaFileImpl?): List<PsiClass>? {
+        return runReadAction {
+            if (serviceFile == null) return@runReadAction null
+
+            val allImportStatements = serviceFile.importList?.allImportStatements
+
+            val entities = allImportStatements?.filter {
+                it.importReference?.text?.matches(Regex(".*\\.(model|entity|domain)\\..*")) ?: false
+            }?.mapNotNull {
+                val importText = it.importReference?.text ?: return@mapNotNull null
+                javaPsiFacade.findClass(importText, searchScope)
+            } ?: emptyList()
+
+            return@runReadAction entities
+        }
+    }
+
     private fun prepareControllerContext(controllerFile: PsiJavaFileImpl?): ControllerContext? {
         return runReadAction {
             if (controllerFile == null) return@runReadAction null
@@ -96,7 +113,7 @@ class BotActionPrompting(
 
             // filter out model, entity, dto, from import statements
             val entities = allImportStatements?.filter {
-                it.importReference?.text?.matches(Regex(".*\\.(model|entity|dto)\\..*")) ?: false
+                it.importReference?.text?.matches(Regex(".*\\.(model|entity|domain|dto)\\..*")) ?: false
             }?.mapNotNull {
                 val importText = it.importReference?.text ?: return@mapNotNull null
                 javaPsiFacade.findClass(importText, searchScope)
@@ -191,12 +208,11 @@ class BotActionPrompting(
 
     private fun createServicePrompt(): String {
         val file = file as? PsiJavaFileImpl
-        val clazz = DtClass.fromJavaFile(file)
+        val relevantModel = prepareServiceContext(file)
 
-        return """|- // current package: ${clazz.packageName}
-                  |- // current class information: ${clazz.format()}
-                  |- // current class: ${clazz.name}
-                  """.trimMargin()
+        return """Complete java code, return rest code, no explaining.
+               ${relevantModel?.joinToString("\n")}
+               """.trimMargin()
     }
 
     private fun createControllerPrompt(): String {
@@ -214,7 +230,7 @@ class BotActionPrompting(
         val clazz = DtClass.fromJavaFile(file)
         return """Complete java code, return rest code, no explaining.
             ```java
-            $relevantModel
+            ${relevantModel.joinToString("\n")}
             // current path: ${clazz.path}
             """.trimMargin()
     }
