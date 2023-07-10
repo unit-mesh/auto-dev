@@ -201,35 +201,21 @@ class BotActionPrompting(
 
     private fun createControllerPrompt(): String {
         val file = file as? PsiJavaFileImpl
-        val services = prepareControllerContext(file)
-        val servicesList = services?.services?.map {
+        val context = prepareControllerContext(file)
+        val services = context?.services?.map {
+            DtClass.fromPsiClass(it).format()
+        }
+        val models = context?.models?.map {
             DtClass.fromPsiClass(it).format()
         }
 
-        val servicePrompt = if (servicesList.isNullOrEmpty()) {
-            ""
-        } else {
-            """|相关 Service 的信息如下： ```$servicesList```""".trimMargin()
-        }
-        val models = services?.models?.map {
-            DtClass.fromPsiClass(it).format()
-        }
-
-        val modelsPrompt = if (models.isNullOrEmpty()) {
-            ""
-        } else {
-            """|相关 Model 的信息如下： ```$models```""".trimMargin()
-        }
+        val relevantModel = (services ?: emptyList()) + (models ?: emptyList())
 
         val clazz = DtClass.fromJavaFile(file)
-        return """代码补全 $lang 要求：
-                |- 在 Controller 中使用 BeanUtils 完成 DTO 的转换
-                |- 不允许把 json，map 这类对象传到 service 中 
-                |$servicePrompt
-                |$modelsPrompt
-                |- // current package: ${clazz.packageName}
-                |- // current class: ${clazz.name}
-                |- 需要补全的代码如下：
+        return """Complete java code, return rest code, no explaining.
+            ```java
+            $relevantModel
+            // current path: ${clazz.path}
             """.trimMargin()
     }
 }

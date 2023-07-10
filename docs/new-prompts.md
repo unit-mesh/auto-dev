@@ -20,7 +20,7 @@ Strategy:
 
 ## Prompt
 
-Complete java code, return rest code, no explain.
+Complete java code, return rest code, no explaining.
 
 ```java
 // compare following uml
