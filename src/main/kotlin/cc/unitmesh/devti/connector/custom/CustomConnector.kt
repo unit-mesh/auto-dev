@@ -5,7 +5,6 @@ import cc.unitmesh.devti.settings.DevtiSettingsState
 import com.intellij.openapi.diagnostic.Logger
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
@@ -47,7 +46,7 @@ class CustomConnector : CodeCopilot {
 
     fun prompt(instruction: String, input: String): String {
         val body = okhttp3.RequestBody.create(
-            "application/json; charset=utf-8".toMediaTypeOrNull(),
+            okhttp3.MediaType.parse("application/json; charset=utf-8"),
             """
                 {
                     "instruction": "$instruction",
@@ -73,7 +72,7 @@ class CustomConnector : CodeCopilot {
             return ""
         }
 
-        return response.body?.string() ?: ""
+        return response.body()?.string() ?: ""
     }
 
     override fun codeCompleteFor(text: String, className: String): String {

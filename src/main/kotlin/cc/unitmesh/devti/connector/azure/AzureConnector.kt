@@ -14,7 +14,6 @@ import com.theokanning.openai.completion.chat.ChatMessage
 import com.theokanning.openai.completion.chat.ChatMessageRole
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
@@ -77,7 +76,7 @@ class AzureConnector : CodeCopilot {
 
         logger.warn("requestText: $requestText")
         val body = okhttp3.RequestBody.create(
-            "application/json; charset=utf-8".toMediaTypeOrNull(),
+            okhttp3.MediaType.parse("application/json; charset=utf-8"),
             requestText
         )
 
@@ -95,7 +94,7 @@ class AzureConnector : CodeCopilot {
 
         val objectMapper = ObjectMapper()
         val completion: ChatCompletionResult =
-            objectMapper.readValue(response.body?.string(), ChatCompletionResult::class.java)
+            objectMapper.readValue(response.body()?.string(), ChatCompletionResult::class.java)
 
         val output = completion
             .choices[0].message.content
