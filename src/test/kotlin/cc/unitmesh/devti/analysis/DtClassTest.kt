@@ -30,7 +30,7 @@ class DtClassTest : LightPlatformTestCase() {
 // class HelloController {
 //   blogService: BlogService
 //   + hello(): String
-// ' maybe some other methods
+// ' some getters and setters
 // }
 """
         )
@@ -93,7 +93,7 @@ public void setAttendees(List<String> attendees) {
 //   startTime: String
 //   endTime: String
 //   attendees: List<String>
-// ' maybe some other methods
+// ' some getters and setters
 // }
 """
         )

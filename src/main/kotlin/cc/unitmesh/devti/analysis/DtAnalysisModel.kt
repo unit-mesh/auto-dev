@@ -23,7 +23,6 @@ class DtClass(
      * // blogRepository: BlogRepository
      * //  + createBlog(blogDto: CreateBlogDto): BlogPost
      * //  + getAllBlogPosts(): List<BlogPost>
-     * //  ' some other methods
      * //}
      * ```
      */
@@ -65,7 +64,7 @@ class DtClass(
             output.append(methodCodes)
         }
 
-        output.append("\n// ' maybe some other methods\n")
+        output.append("\n// ' some getters and setters\n")
         output.append("// }\n")
 
         return output.toString()
