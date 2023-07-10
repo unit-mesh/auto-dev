@@ -41,6 +41,8 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     // jackson-module-kotlin
     implementation(libs.jackson.module.kotlin)
+
+    implementation(libs.comate.spec.lang)
 }
 
 // Configure Gradle IntelliJ Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html

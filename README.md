@@ -11,24 +11,14 @@
 > AutoDev 是一款高度自动化的 AI 辅助编程工具。AutoDev 能够与您的需求管理系统（例如 Jira、Trello、Github Issue 等）直接对接。在
 > IDE 中，您只需简单点击，AutoDev 会根据您的需求自动为您生成代码。您所需做的，仅仅是对生成的代码进行质量检查。
 
-与 GitHub Copilot 差异：
-
-| 特征    | GitHub Copilot    | AutoDev                   |
-|-------|-------------------|---------------------------|
-| LLM训练 | 经过大模型训练，结果更加准确    | 引入 ChatGPT 或自己训练，结果不是那么准确 |
-| 返回结果  | 一次返回多个结果          | 一次返回一个完整的方法               |
-| 返回类型  | 返回一个完整的类          | 返回一个完整的方法                 |
-| 支持语言  | 支持多种语言            | 仅支持Java                   |
-| 支持功能  | 生成代码、生成注释、生成测试用例等 | 生成代码、寻找bug、生成注释等          |
-| 开源    | 不开源               | 开源                        |
-
-结论：AutoDev 的唯一优势是开源，GitHub Copilot 完胜。
-
 ## Todos
 
 - [X] Languages Support by PSI
     - [x] Java
-- [ ] Integration with Co-mate DSL
+    - [x] Kotlin (I don't know why, but It can generate Kotlin code)
+- [ ] Integration with ArchGuard Co-mate DSL
+    - [x] integration co-mate
+    - [ ] Assistant requirement DSL
     - [ ] Assistant architecture DSL
     - [ ] Assistant API Design
 - [x] DevTi Protocol

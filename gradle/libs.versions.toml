@@ -44,6 +44,9 @@ jackson-databind = "com.fasterxml.jackson.core:jackson-databind:2.14.2"
 #implementation 'com.squareup.okhttp3:okhttp:3.12.2'
 okhttp = "com.squareup.okhttp3:okhttp:4.4.1"
 
+comate-spec-lang = "org.archguard.comate:spec-lang:0.2.0"
+
+
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
