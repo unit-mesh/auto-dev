@@ -26,7 +26,6 @@
 - [ ] Intelli code change
     - [x] Endpoint modify suggestions
     - [x] Controller Suggestion
-        - [x] import all common imports
     - [x] Service Suggestion
     - [ ] Repository Suggestion
 - [ ] Code AI
@@ -36,11 +35,6 @@
     - [x] Find bug...
     - [x] Explain code by selection
     - [x] Trace Exception
-- [x] Chat with IDE
-    - [ ] Generate test
-    - [ ] 实现：`重现 xx 功能`, `devti:/chat/feature`
-    - [ ] 重构：`重构 xx 方法`
-    - [ ] 替换：`替换 xx 方法`，`devti:/refactor/method`
 - [x] Custom LLM Server
 - [ ] Context Engineering
     - [x] Related Files
