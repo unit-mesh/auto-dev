@@ -32,24 +32,41 @@ class DtClass(
         output.append("// package: $packageName\n")
         output.append("// class $name {\n")
         output.append(fields.joinToString("\n") { field ->
-            "// ${field.name}: ${field.type}"
+            "//   ${field.name}: ${field.type}"
         })
 
-        // filter get setter
+        // remove getter and setter, and add them to getterSetter
+        var getterSetter: List<String> = listOf()
+        val methodsWithoutGetterSetter = methods
+            .filter { method ->
+                val isGetter = method.name.startsWith("get") && method.parameters.isEmpty()
+                val isSetter = method.name.startsWith("set") && method.parameters.size == 1
+                if (isGetter || isSetter) {
+                    getterSetter = listOf(method.name)
+                    return@filter false
+                }
 
-        output.append("\n")
-        val methodCodes = methods
+                return@filter true
+            }
+
+        if (getterSetter.isNotEmpty()) {
+            output.append("\n//   'getter/setter: ${getterSetter.joinToString(", ")}\n")
+        }
+
+        val methodCodes = methodsWithoutGetterSetter
             .filter { it.name != this.name }
             .joinToString("\n") { method ->
                 val params = method.parameters.joinToString("") { parameter -> "${parameter.name}: ${parameter.type}" }
-                "// + ${method.name}($params)" + if (method.returnType.isNotBlank()) ": ${method.returnType}" else ""
+                "//   + ${method.name}($params)" + if (method.returnType.isNotBlank()) ": ${method.returnType}" else ""
             }
 
-        println(methodCodes)
+        if (methodCodes.isNotBlank()) {
+            output.append("\n")
+            output.append(methodCodes)
+        }
 
-        output.append(methodCodes)
-        output.append("\n// }\n")
-        output.append("// ' some other methods\n")
+        output.append("\n// ' maybe some other methods\n")
+        output.append("// }\n")
 
         return output.toString()
     }
