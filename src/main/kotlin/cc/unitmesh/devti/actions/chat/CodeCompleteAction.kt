@@ -6,10 +6,8 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.command.WriteCommandAction
 
 class CodeCompleteAction : ChatBaseAction() {
-
     override fun getActionType(): ChatBotActionType {
         return ChatBotActionType.CODE_COMPLETE
-
     }
 
     override fun getReplaceableAction(event: AnActionEvent): (response: String) -> Unit {

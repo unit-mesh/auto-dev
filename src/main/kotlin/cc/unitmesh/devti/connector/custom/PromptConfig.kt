@@ -14,8 +14,8 @@ data class PromptConfig(
     val autoComment: PromptItem,
     @SerialName("code_review")
     val codeReview: PromptItem,
-    @SerialName("find_bug")
-    val findBug: PromptItem
-) {
-
-}
+    @SerialName("refactor")
+    val refactor: PromptItem,
+    @SerialName("write_test")
+    val writeTest: PromptItem
+)

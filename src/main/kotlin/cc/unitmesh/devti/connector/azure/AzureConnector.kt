@@ -13,7 +13,6 @@ import com.theokanning.openai.completion.chat.ChatCompletionResult
 import com.theokanning.openai.completion.chat.ChatMessage
 import com.theokanning.openai.completion.chat.ChatMessageRole
 import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
@@ -45,7 +44,8 @@ class AzureConnector : CodeCopilot {
                 PromptItem("Auto complete", "{code}"),
                 PromptItem("Auto comment", "{code}"),
                 PromptItem("Code review", "{code}"),
-                PromptItem("Find bug", "{code}")
+                PromptItem("Find bug", "{code}"),
+                PromptItem("Write test", "{code}")
             )
         }
     }
@@ -121,7 +121,7 @@ class AzureConnector : CodeCopilot {
     }
 
     override fun findBug(text: String): String {
-        val bug = promptConfig!!.findBug
+        val bug = promptConfig!!.refactor
         return prompt(bug.instruction, bug.input.replace("{code}", text))
     }
 }

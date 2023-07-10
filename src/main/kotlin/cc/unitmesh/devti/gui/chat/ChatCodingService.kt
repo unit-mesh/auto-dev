@@ -4,16 +4,13 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.connector.ConnectorService
 import com.intellij.openapi.application.ApplicationManager
 
-class ChatCodingService(private var actionType: ChatBotActionType) {
+class ChatCodingService(var actionType: ChatBotActionType) {
     val action = when (actionType) {
         ChatBotActionType.EXPLAIN -> "explain"
         ChatBotActionType.REVIEW -> "review"
         ChatBotActionType.REFACTOR -> "refactor"
         ChatBotActionType.CODE_COMPLETE -> "complete"
-    }
-
-    fun setActionType(actionType: ChatBotActionType) {
-        this.actionType = actionType
+        ChatBotActionType.WRITE_TEST -> "write test"
     }
 
     fun getLabel(): String {
@@ -67,5 +64,6 @@ enum class ChatBotActionType {
     REFACTOR,
     EXPLAIN,
     REVIEW,
-    CODE_COMPLETE
+    CODE_COMPLETE,
+    WRITE_TEST
 }

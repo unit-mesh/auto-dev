@@ -32,7 +32,8 @@ class CustomConnector : CodeCopilot {
                 PromptItem("Auto complete", "{code}"),
                 PromptItem("Auto comment", "{code}"),
                 PromptItem("Code review", "{code}"),
-                PromptItem("Find bug", "{code}")
+                PromptItem("Find bug", "{code}"),
+                PromptItem("Write test", "{code}"),
             )
         }
     }
@@ -91,7 +92,7 @@ class CustomConnector : CodeCopilot {
     }
 
     override fun findBug(text: String): String {
-        val bug = promptConfig!!.findBug
+        val bug = promptConfig!!.refactor
         return prompt(bug.instruction, bug.input.replace("{code}", text))
     }
 

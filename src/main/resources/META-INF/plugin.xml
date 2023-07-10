@@ -21,6 +21,26 @@
                                  displayName="DevTi"/>
 
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.DevtiSettingsState"/>
+        <!-- show find bug -->
+        <runLineMarkerContributor language="JAVA"
+                                  implementationClass="cc.unitmesh.devti.language.contributor.CodeCommentsMarkerContributor"/>
+        <runLineMarkerContributor language="JAVA"
+                                  implementationClass="cc.unitmesh.devti.language.contributor.FindBugMarkerContributor"/>
+        <runLineMarkerContributor language="JAVA"
+                                  implementationClass="cc.unitmesh.devti.language.contributor.CodeReviewMarkerContributor"/>
+
+        <runLineMarkerContributor language="JAVA"
+                                  implementationClass="cc.unitmesh.devti.language.contributor.AutoCRUDLineMarkerContributor"/>
+
+        <runConfigurationProducer
+                implementation="cc.unitmesh.devti.runconfig.command.AutoCRUDConfigurationProducer"/>
+        <runConfigurationProducer
+                implementation="cc.unitmesh.devti.runconfig.command.CompositeDevtiRunConfigurationProducer"/>
+        <configurationType implementation="cc.unitmesh.devti.runconfig.AutoCRUDConfigurationType"/>
+
+
+        <!-- Run Configurations -->
+        <programRunner implementation="cc.unitmesh.devti.runconfig.DtCommandRunner"/>
 
         <toolWindow id="DevTiFlow" secondary="true" icon="AllIcons.Toolwindows.WebToolWindow" anchor="right"
                     factoryClass="cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory"/>
@@ -30,32 +50,34 @@
     </extensions>
 
     <actions>
-        <action id="cc.unitmesh.devti.actions.chat.ChatBotExplainAction"
-                class="cc.unitmesh.devti.actions.chat.ChatBotExplainAction" text="Explain This (DevTi)"
-                description="Ask Chatbot about this code">
-            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
-            <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
-        </action>
+        <group id="org.intellij.sdk.action.GroupedActions" popup="true" text="AutoDev" description="AutoDev">
+            <action id="cc.unitmesh.devti.actions.chat.ChatBotExplainAction"
+                    class="cc.unitmesh.devti.actions.chat.ChatBotExplainAction" text="Explain This"
+                    description="Ask Chatbot about this code">
+            </action>
 
-        <action id="cc.unitmesh.devti.actions.chat.ChatBotRefactorAction"
-                class="cc.unitmesh.devti.actions.chat.ChatBotRefactorAction" text="Refactor This (DevTi)"
-                description="Ask Chatbot about this code">
-            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
-            <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
-        </action>
+            <action id="cc.unitmesh.devti.actions.chat.ChatBotRefactorAction"
+                    class="cc.unitmesh.devti.actions.chat.ChatBotRefactorAction" text="Refactor This"
+                    description="Ask Chatbot about this code">
+            </action>
 
-        <action id="cc.unitmesh.devti.actions.chat.ChatBotReviewAction"
-                class="cc.unitmesh.devti.actions.chat.ChatBotReviewAction" text="Review This (DevTi)"
-                description="Ask Chatbot about this code">
+            <action id="cc.unitmesh.devti.actions.chat.ChatBotReviewAction"
+                    class="cc.unitmesh.devti.actions.chat.ChatBotReviewAction" text="Review This"
+                    description="Ask Chatbot about this code">
+            </action>
+
+            <action id="cc.unitmesh.devti.actions.chat.WriteTestAction"
+                    class="cc.unitmesh.devti.actions.chat.WriteTestAction" text="Write test for This"
+                    description="Ask Chatbot about this code">
+            </action>
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
-            <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
-        </action>
+        </group>
 
         <action id="cc.unitmesh.devti.actions.chat.CodeCompleteAction"
-                class="cc.unitmesh.devti.actions.chat.CodeCompleteAction" text="Code Complete (DevTi)"
+                class="cc.unitmesh.devti.actions.chat.CodeCompleteAction" text="Code Complete (AutoDev)"
                 description="Ask Chatbot about this code">
+
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
-            <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
         </action>
     </actions>
 </idea-plugin>
