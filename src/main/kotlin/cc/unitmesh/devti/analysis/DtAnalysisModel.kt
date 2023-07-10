@@ -4,30 +4,52 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.PsiClass
 import com.intellij.psi.impl.source.PsiJavaFileImpl
 
+data class DtMethod(val name: String, val returnType: String, val parameters: List<DtParameter>)
+data class DtField(val name: String, val type: String)
+data class DtParameter(val name: String, val type: String)
+
 class DtClass(
     val name: String,
     val methods: List<DtMethod>,
     val packageName: String = "",
+    val fields: List<DtField> = listOf(),
     val path: String = ""
 ) {
+    /**
+     * Output:
+     * ```
+     * // package: cc.unitmesh.untitled.demo.service
+     * // class BlogService {
+     * // blogRepository: BlogRepository
+     * //  + createBlog(blogDto: CreateBlogDto): BlogPost
+     * //  + getAllBlogPosts(): List<BlogPost>
+     * //  ' some other methods
+     * //}
+     * ```
+     */
     fun format(): String {
         val output = StringBuilder()
-        output.append("class $name ")
+        output.append("// package: $packageName\n")
+        output.append("// class $name {\n")
+        output.append(fields.joinToString("\n") { field ->
+            "// ${field.name}: ${field.type}"
+        })
 
-        val constructor = methods.find { it.name == this.name }
-        if (constructor != null) {
-            output.append("constructor(")
-            output.append(constructor.parameters.joinToString(", ") { "${it.name}: ${it.type}" })
-            output.append(")\n")
-        }
+        // filter get setter
 
-        if (methods.isNotEmpty()) {
-            output.append("- methods: ")
-            // filter out constructor
-            output.append(methods.filter { it.name != this.name }.joinToString(", ") { method ->
-                "${method.name}(${method.parameters.joinToString(", ") { parameter -> "${parameter.name}: ${parameter.type}" }}): ${method.returnType}"
-            })
-        }
+        output.append("\n")
+        val methodCodes = methods
+            .filter { it.name != this.name }
+            .joinToString("\n") { method ->
+                val params = method.parameters.joinToString("") { parameter -> "${parameter.name}: ${parameter.type}" }
+                "// + ${method.name}($params)" + if (method.returnType.isNotBlank()) ": ${method.returnType}" else ""
+            }
+
+        println(methodCodes)
+
+        output.append(methodCodes)
+        output.append("\n// }\n")
+        output.append("// ' some other methods\n")
 
         return output.toString()
     }
@@ -35,6 +57,13 @@ class DtClass(
     companion object {
         fun Companion.fromPsiClass(psiClass: PsiClass): DtClass {
             return runReadAction {
+                val fields = psiClass.fields.map { field ->
+                    DtField(
+                        name = field.name,
+                        type = field.type.toString().replace("PsiType:", "")
+                    )
+                }
+
                 val methods = psiClass.methods.map { method ->
                     // if method is getter or setter, skip
                     if (method.name.startsWith("get") || method.name.startsWith("set")) {
@@ -57,7 +86,8 @@ class DtClass(
                     packageName = psiClass.qualifiedName ?: "",
                     path = psiClass.containingFile?.virtualFile?.path ?: "",
                     name = psiClass.name ?: "",
-                    methods = methods
+                    methods = methods,
+                    fields = fields
                 )
             }
         }
@@ -70,14 +100,3 @@ class DtClass(
         }
     }
 }
-
-class DtMethod(
-    val name: String,
-    val returnType: String,
-    val parameters: List<DtParameter>
-)
-
-class DtParameter(
-    val name: String,
-    val type: String
-)

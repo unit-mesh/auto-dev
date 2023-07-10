@@ -5,7 +5,7 @@ import cc.unitmesh.devti.kanban.SimpleProjectInfo
 import com.intellij.openapi.util.NlsSafe
 import java.io.InputStream
 
-class PromptGenerator() {
+class PromptGenerator {
     fun storyDetail(project: SimpleProjectInfo, story: String): String {
         val promptText: InputStream = getResource("create_story_detail")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
