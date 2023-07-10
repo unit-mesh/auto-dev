@@ -14,6 +14,7 @@ import com.theokanning.openai.completion.chat.ChatMessage
 import com.theokanning.openai.completion.chat.ChatMessageRole
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
@@ -30,23 +31,7 @@ class AzureConnector : CodeCopilot {
     init {
         val prompts = devtiSettingsState?.customEnginePrompts
         openAiVersion = DevtiSettingsState.getInstance()?.openAiModel ?: OPENAI_MODEL[0]
-        try {
-            if (prompts != null) {
-                promptConfig = Json.decodeFromString(prompts)
-            }
-        } catch (e: Exception) {
-            println("Error parsing prompts: $e")
-        }
-
-        if (promptConfig == null) {
-            promptConfig = PromptConfig(
-                PromptItem("Auto complete", "{code}"),
-                PromptItem("Auto comment", "{code}"),
-                PromptItem("Code review", "{code}"),
-                PromptItem("Find bug", "{code}"),
-                PromptItem("Write test", "{code}")
-            )
-        }
+        promptConfig = PromptConfig.tryParse(prompts)
     }
 
     override fun prompt(promptText: String): String {
@@ -78,7 +63,7 @@ class AzureConnector : CodeCopilot {
         val requestText = mapper.writeValueAsString(chatCompletionRequest)
         logger.warn("requestText: $requestText")
         val body = okhttp3.RequestBody.create(
-            okhttp3.MediaType.parse("application/json; charset=utf-8"),
+            "application/json; charset=utf-8".toMediaTypeOrNull(),
             requestText
         )
 
@@ -96,7 +81,7 @@ class AzureConnector : CodeCopilot {
 
         val objectMapper = ObjectMapper()
         val completion: ChatCompletionResult =
-            objectMapper.readValue(response.body()?.string(), ChatCompletionResult::class.java)
+            objectMapper.readValue(response.body?.string(), ChatCompletionResult::class.java)
 
         val output = completion
             .choices[0].message.content

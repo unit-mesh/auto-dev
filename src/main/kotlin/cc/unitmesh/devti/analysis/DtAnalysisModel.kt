@@ -36,6 +36,11 @@ class DtClass(
         fun Companion.fromPsiClass(psiClass: PsiClass): DtClass {
             return runReadAction {
                 val methods = psiClass.methods.map { method ->
+                    // if method is getter or setter, skip
+                    if (method.name.startsWith("get") || method.name.startsWith("set")) {
+                        return@map null
+                    }
+
                     DtMethod(
                         name = method.name,
                         returnType = method.returnType?.presentableText ?: "",
@@ -46,7 +51,7 @@ class DtClass(
                             )
                         }
                     )
-                }
+                }.filterNotNull()
 
                 return@runReadAction DtClass(
                     packageName = psiClass.qualifiedName ?: "",

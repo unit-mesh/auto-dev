@@ -123,7 +123,7 @@ class OpenAIConnector : CodeCopilot, DevtiFlowAction {
 
     override fun autoComment(text: @NlsSafe String): String {
         val promptText = promptGenerator.autoComment(text)
-        logger.warn("autoComponent prompt text: $promptText")
+        logger.warn("autoComment prompt text: $promptText")
         return runBlocking {
             val prompt = prompt(promptText)
             return@runBlocking parseCodeFromString(prompt)[0]
@@ -134,8 +134,7 @@ class OpenAIConnector : CodeCopilot, DevtiFlowAction {
         val promptText = promptGenerator.codeReview(text)
         logger.warn("codeReviewFor prompt text: $promptText")
         return runBlocking {
-            val result = prompt(promptText)
-            return@runBlocking result
+            return@runBlocking prompt(promptText)
         }
     }
 
@@ -143,8 +142,7 @@ class OpenAIConnector : CodeCopilot, DevtiFlowAction {
         val promptText = promptGenerator.findBug(text)
         logger.warn("findBug prompt text: $promptText")
         return runBlocking {
-            val result = prompt(promptText)
-            return@runBlocking result
+            return@runBlocking prompt(promptText)
         }
     }
 

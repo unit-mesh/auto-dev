@@ -3,8 +3,7 @@ package cc.unitmesh.devti.connector.custom
 import cc.unitmesh.devti.connector.CodeCopilot
 import cc.unitmesh.devti.settings.DevtiSettingsState
 import com.intellij.openapi.diagnostic.Logger
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
@@ -18,23 +17,7 @@ class CustomConnector : CodeCopilot {
 
     init {
         val prompts = devtiSettingsState?.customEnginePrompts
-        try {
-            if (prompts != null) {
-                promptConfig = Json.decodeFromString(prompts)
-            }
-        } catch (e: Exception) {
-            println("Error parsing prompts: $e")
-        }
-
-        if (promptConfig == null) {
-            promptConfig = PromptConfig(
-                PromptItem("Auto complete", "{code}"),
-                PromptItem("Auto comment", "{code}"),
-                PromptItem("Code review", "{code}"),
-                PromptItem("Find bug", "{code}"),
-                PromptItem("Write test", "{code}"),
-            )
-        }
+        promptConfig = PromptConfig.tryParse(prompts)
     }
 
     private val logger = Logger.getInstance(CustomConnector::class.java)
@@ -46,7 +29,7 @@ class CustomConnector : CodeCopilot {
 
     fun prompt(instruction: String, input: String): String {
         val body = okhttp3.RequestBody.create(
-            okhttp3.MediaType.parse("application/json; charset=utf-8"),
+            "application/json; charset=utf-8".toMediaTypeOrNull(),
             """
                 {
                     "instruction": "$instruction",
@@ -72,7 +55,7 @@ class CustomConnector : CodeCopilot {
             return ""
         }
 
-        return response.body()?.string() ?: ""
+        return response.body?.string() ?: ""
     }
 
     override fun codeCompleteFor(text: String, className: String): String {
