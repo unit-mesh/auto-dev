@@ -6,11 +6,8 @@ import com.intellij.openapi.util.NlsSafe
 import java.io.InputStream
 
 class PromptGenerator() {
-    // 1. read resources/prompts/create_story_detail.txt
-    // 2. replace {project} with project name
     fun storyDetail(project: SimpleProjectInfo, story: String): String {
-        val promptText: InputStream =
-            this::class.java.classLoader.getResourceAsStream("prompts/openai/create_story_detail.txt")!!
+        val promptText: InputStream = getResource("create_story_detail")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         return promptTextString
             .replace("{project}", project.name + ":" + project.description)
@@ -18,15 +15,18 @@ class PromptGenerator() {
     }
 
     fun createEndpoint(storyDetail: String, files: List<DtClass>): String {
-        val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/openai/lookup_or_create_endpoint.txt")!!
+        val promptText: InputStream = getResource("lookup_or_create_endpoint")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         return promptTextString
             .replace("{controllers}", files.map { it.name }.joinToString(","))
             .replace("{storyDetail}", storyDetail)
     }
 
+    private fun getResource(fileName: String): InputStream? =
+        this::class.java.classLoader.getResourceAsStream("prompts/openai/$fileName.txt")
+
     fun updateControllerMethod(targetClazz: DtClass, storyDetail: String): String {
-        val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/openai/update_controller_method.txt")!!
+        val promptText: InputStream = getResource("update_controller_method")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         return promptTextString
             .replace("{controllerName}", targetClazz.name)
@@ -35,7 +35,7 @@ class PromptGenerator() {
     }
 
     fun codeComplete(methodCode: String, className: @NlsSafe String?): String {
-        val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/openai/copilot/code_complete.txt")!!
+        val promptText: InputStream = getResource("copilot/code_complete")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         return promptTextString
             .replace("{code}", methodCode)
@@ -43,21 +43,21 @@ class PromptGenerator() {
     }
 
     fun autoComment(methodCode: String): String {
-        val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/openai/copilot/code_comments.txt")!!
+        val promptText: InputStream = getResource("copilot/code_comments")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         return promptTextString
             .replace("{code}", methodCode)
     }
 
     fun codeReview(text: String): String {
-        val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/openai/copilot/code_review.txt")!!
+        val promptText: InputStream = getResource("copilot/code_review")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         return promptTextString
             .replace("{code}", text)
     }
 
     fun findBug(text: String): String {
-        val promptText: InputStream = this::class.java.classLoader.getResourceAsStream("prompts/openai/copilot/find_bug.txt")!!
+        val promptText: InputStream = getResource("copilot/find_bug")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         return promptTextString
             .replace("{code}", text)
