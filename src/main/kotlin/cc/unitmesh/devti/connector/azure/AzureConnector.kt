@@ -2,18 +2,14 @@ package cc.unitmesh.devti.connector.azure
 
 import cc.unitmesh.devti.connector.CodeCopilot
 import cc.unitmesh.devti.connector.custom.PromptConfig
-import cc.unitmesh.devti.connector.custom.PromptItem
 import cc.unitmesh.devti.settings.DevtiSettingsState
 import cc.unitmesh.devti.settings.OPENAI_MODEL
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.intellij.openapi.diagnostic.Logger
-import com.theokanning.openai.completion.chat.ChatCompletionRequest
 import com.theokanning.openai.completion.chat.ChatCompletionResult
 import com.theokanning.openai.completion.chat.ChatMessage
 import com.theokanning.openai.completion.chat.ChatMessageRole
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -38,8 +34,10 @@ class AzureConnector : CodeCopilot {
         return this.prompt(promptText, "")
     }
 
-    val messages: MutableList<ChatMessage> = ArrayList()
-    var historyMessageLength: Int = 0
+    private val messages: MutableList<ChatMessage> = ArrayList()
+    private var historyMessageLength: Int = 0
+
+    private val mapper = ObjectMapper().registerKotlinModule()
 
     fun prompt(instruction: String, input: String): String {
         val promptText = "$instruction\n$input"
@@ -51,16 +49,12 @@ class AzureConnector : CodeCopilot {
 
         messages.add(systemMessage)
 
-        val chatCompletionRequest = ChatCompletionRequest.builder()
-            .model(openAiVersion)
-            .temperature(0.0)
-            .messages(messages)
-            .build()
-
         val builder = Request.Builder()
+        val requestText = """{
+            |"messages": ${mapper.writeValueAsString(messages)},
+            |"temperature": 0.0
+            }""".trimMargin()
 
-        val mapper = ObjectMapper().registerKotlinModule()
-        val requestText = mapper.writeValueAsString(chatCompletionRequest)
         logger.warn("requestText: $requestText")
         val body = okhttp3.RequestBody.create(
             "application/json; charset=utf-8".toMediaTypeOrNull(),
