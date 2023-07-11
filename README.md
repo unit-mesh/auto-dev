@@ -11,35 +11,17 @@
 > AutoDev 是一款高度自动化的 AI 辅助编程工具。AutoDev 能够与您的需求管理系统（例如 Jira、Trello、Github Issue 等）直接对接。在
 > IDE 中，您只需简单点击，AutoDev 会根据您的需求自动为您生成代码。您所需做的，仅仅是对生成的代码进行质量检查。
 
-## Todos
+features:
 
-- [X] Languages Support by PSI
+- languages support by PSI
     - [x] Java
     - [x] Kotlin (I don't know why, but It can generate Kotlin code)
-- [ ] Integration with ArchGuard Co-mate DSL
-    - [x] integration co-mate
-    - [ ] Assistant requirement DSL
-    - [ ] Assistant architecture DSL
-    - [ ] Assistant API Design
-- [x] DevTi Protocol
-    - [x] format 1: `devti://story/github/1102`
-- [ ] Intelli code change
-    - [x] Endpoint modify suggestions
-    - [x] Controller Suggestion
-    - [x] Service Suggestion
-    - [ ] Repository Suggestion
-- [ ] Code AI
-    - [x] Generate code
-    - [x] Add comments
-    - [x] Code Suggestions
-    - [x] Find bug...
-    - [x] Explain code by selection
-    - [x] Trace Exception
-- [x] Custom LLM Server
-- [ ] Context Engineering
-    - [x] Related Files
-    - [ ] with DependencyContext
-        - [ ] parse Gradle for dependencies
+- Auto development mode. With DevTi Protocol (like `devti://story/github/1102`) will auto generate Controller-Service-Model code.
+- Smart code completion. Based on your code context like (Controller, Service `import`), AutoDev will suggest you the best code.
+- AI assistant. AutoDev will help you find bug, explain code, trace exception, and more.
+- Custom prompt. You can custom your prompt in `Settings` -> `Tools` -> `DevTi`
+- Custom LLM Server. You can custom your LLM Server in `Settings` -> `Tools` -> `DevTi`
+- [ ] Smart architecture. With ArchGuard Co-mate DSL, AutoDev will help you design your architecture.
 
 ## Usage
 
