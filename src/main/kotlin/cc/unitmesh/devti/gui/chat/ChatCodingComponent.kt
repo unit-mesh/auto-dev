@@ -1,6 +1,9 @@
 package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.runconfig.AutoCRUDState
+import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.ui.NullableComponent
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.Gray
@@ -15,12 +18,19 @@ import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.runBlocking
 import java.awt.BorderLayout
 import java.awt.event.*
 import javax.swing.*
 
 class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JBPanel<ChatCodingComponent>(),
     NullableComponent {
+    companion object {
+        private val logger: Logger = logger<ChatCodingComponent>()
+    }
+
     private var progressBar: JProgressBar
     private val myTitle = JBLabel("Conversation")
     private val myList = JPanel(VerticalLayout(JBUI.scale(10)))
@@ -67,10 +77,19 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
         updateUI()
     }
 
-    fun updateMessage(message: String) {
+    fun updateMessage(message: Flow<String>) {
         myList.remove(myList.componentCount - 1)
-        val messageComponent = MessageComponent(message, false)
+        val messageComponent = MessageComponent("", false)
         myList.add(messageComponent)
+
+        runBlocking {
+            message.collect {
+                logger.info("updateMessage: $it")
+                messageComponent.text += it
+                messageComponent.updateUI()
+            }
+        }
+
         progressBar.isIndeterminate = false
         progressBar.isVisible = false
         updateUI()
@@ -80,18 +99,26 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
         return !isVisible
     }
 
-    fun updateReplaceableContent(content: String, replaceSelectedText: () -> Unit) {
+    fun updateReplaceableContent(content: Flow<String>, replaceSelectedText: (text: String) -> Unit) {
         myList.remove(myList.componentCount - 1)
-        val messageComponent = MessageComponent(content, false)
+        val messageComponent = MessageComponent("", false)
+        myList.add(messageComponent)
+
+        runBlocking {
+            content.collect {
+                logger.info("updateMessage: $it")
+                messageComponent.text += it
+            }
+        }
+
+        val finalText = messageComponent.text
 
         val jButton = JButton(AutoDevBundle.message("devti.chat.replaceSelection"))
         val listener = ActionListener {
-            replaceSelectedText()
+            replaceSelectedText(finalText)
             myList.remove(myList.componentCount - 1)
         }
-
         jButton.addActionListener(listener)
-        myList.add(messageComponent)
         myList.add(jButton)
 
         progressBar.isIndeterminate = false

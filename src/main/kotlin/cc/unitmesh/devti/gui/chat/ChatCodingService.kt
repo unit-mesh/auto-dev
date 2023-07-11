@@ -3,6 +3,7 @@ package cc.unitmesh.devti.gui.chat
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.connector.ConnectorService
 import com.intellij.openapi.application.ApplicationManager
+import kotlinx.coroutines.flow.Flow
 
 class ChatCodingService(var actionType: ChatBotActionType) {
     val action = when (actionType) {
@@ -31,11 +32,11 @@ class ChatCodingService(var actionType: ChatBotActionType) {
             ApplicationManager.getApplication().invokeLater {
                 when {
                     actionType === ChatBotActionType.REFACTOR -> ui.updateReplaceableContent(response) {
-                        replaceSelectedText?.invoke(getCodeSection(response))
+                        replaceSelectedText?.invoke(getCodeSection(it))
                     }
 
                     actionType === ChatBotActionType.CODE_COMPLETE -> ui.updateReplaceableContent(response) {
-                        replaceSelectedText?.invoke(getCodeSection(response))
+                        replaceSelectedText?.invoke(getCodeSection(it))
                     }
 
                     else -> ui.updateMessage(response)
@@ -46,9 +47,9 @@ class ChatCodingService(var actionType: ChatBotActionType) {
 
     private val codeCopilot = ConnectorService.getInstance().connector()
 
-    private fun makeChatBotRequest(requestPrompt: String): String {
+    private fun makeChatBotRequest(requestPrompt: String): Flow<String> {
         val connector = codeCopilot
-        return connector.prompt(requestPrompt)
+        return connector.stream(requestPrompt)
     }
 
     private fun getCodeSection(content: String): String {

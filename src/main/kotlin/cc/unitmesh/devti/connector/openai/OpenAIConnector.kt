@@ -17,7 +17,12 @@ import com.theokanning.openai.completion.chat.ChatMessageRole
 import com.theokanning.openai.service.OpenAiService
 import com.theokanning.openai.service.OpenAiService.defaultClient
 import com.theokanning.openai.service.OpenAiService.defaultObjectMapper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.jackson.JacksonConverterFactory
@@ -61,23 +66,9 @@ class OpenAIConnector : CodeCopilot, DevtiFlowAction {
     val messages: MutableList<ChatMessage> = ArrayList()
     var historyMessageLength: Int = 0
 
+
     override fun prompt(promptText: String): String {
-        val systemMessage = ChatMessage(ChatMessageRole.USER.value(), promptText)
-
-        historyMessageLength += promptText.length
-
-        // todo: 4096 is the max length of history message, need to find a better way to handle thiss
-        if (historyMessageLength > 4096) {
-            messages.clear()
-        }
-
-        messages.add(systemMessage)
-
-        val completionRequest = ChatCompletionRequest.builder()
-            .model(openAiVersion)
-            .temperature(0.0)
-            .messages(messages)
-            .build()
+        val completionRequest = prepareRequest(promptText)
 
         val completion = service.createChatCompletion(completionRequest)
         val output = completion
@@ -86,6 +77,44 @@ class OpenAIConnector : CodeCopilot, DevtiFlowAction {
         logger.warn("output: $output")
 
         return output
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun stream(promptText: String): Flow<String> {
+        val completionRequest = prepareRequest(promptText)
+
+        return callbackFlow {
+            withContext(Dispatchers.IO) {
+                service.streamChatCompletion(completionRequest)
+                    .doOnError(Throwable::printStackTrace)
+                    .blockingForEach { response ->
+                        val completion = response.choices[0].message
+                        if (completion != null && completion.content != null) {
+                            trySend(completion.content)
+                        }
+                    }
+
+                close()
+            }
+        }
+
+    }
+
+    private fun prepareRequest(promptText: String): ChatCompletionRequest? {
+        val systemMessage = ChatMessage(ChatMessageRole.USER.value(), promptText)
+
+        historyMessageLength += promptText.length
+        if (historyMessageLength > 16384) {
+            messages.clear()
+        }
+
+        messages.add(systemMessage)
+
+        return ChatCompletionRequest.builder()
+            .model(openAiVersion)
+            .temperature(0.0)
+            .messages(messages)
+            .build()
     }
 
     override fun fillStoryDetail(project: SimpleProjectInfo, story: String): String {
