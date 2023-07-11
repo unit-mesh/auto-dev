@@ -70,7 +70,7 @@ Output Screenshots:
 ```json
 {
   "auto_complete": {
-    "instruction": "补全如下的代码。要求：\n - 直接调用 repository 的方法时，使用 get, find, count, delete, save, update 这类方法。\nService 层应该捕获并处理可能出现的异常。通常情况下，应该将异常转换为应用程序自定义异常并抛出。",
+    "instruction": "",
     "input": ""
   },
   "auto_comment": {

@@ -1,6 +1,11 @@
 # [](https://github.com/unit-mesh/auto-dev/compare/v0.5.4...v) (2023-07-11)
 
 
+# AutoDev Changelog
+
+## [Unreleased]
+
+### Bug Fixes
 
 ## [0.5.4](https://github.com/unit-mesh/auto-dev/compare/v0.4.0...v0.5.4) (2023-07-11)
 
