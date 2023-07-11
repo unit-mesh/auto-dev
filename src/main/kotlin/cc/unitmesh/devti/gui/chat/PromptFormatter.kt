@@ -6,10 +6,13 @@ import cc.unitmesh.devti.connector.custom.PromptConfig
 import cc.unitmesh.devti.connector.custom.PromptItem
 import cc.unitmesh.devti.settings.DevtiSettingsState
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiManager
 import com.intellij.psi.impl.source.PsiJavaFileImpl
 import com.intellij.psi.search.GlobalSearchScope
 import kotlinx.serialization.decodeFromString
@@ -32,11 +35,16 @@ class BotActionPrompting(
     private val lang: String,
     private val selectedText: String,
     private val file: PsiFile?,
-    project: Project,
+    val project: Project,
 ) : PromptFormatter {
+    var additionInfo: String = ""
+
+    companion object {
+        private val logger = Logger.getInstance(BotActionPrompting::class.java)
+    }
+
     private val devtiSettingsState = DevtiSettingsState.getInstance()
     private var promptConfig: PromptConfig? = null
-    val prompts = devtiSettingsState?.customEnginePrompts
 
     private val searchScope = GlobalSearchScope.allScope(project)
     private val javaPsiFacade = JavaPsiFacade.getInstance(project)
@@ -65,18 +73,28 @@ class BotActionPrompting(
     }
 
     override fun getUIPrompt(): String {
-        val prompt = createPrompt()
+        val prompt = createPrompt(selectedText)
+        val finalPrompt = if (additionInfo.isNotEmpty()) {
+            "$selectedText\n\naddition info: ```java$additionInfo```"
+        } else {
+            selectedText
+        }
 
         return """$prompt:
-         <pre><code>$selectedText</pre></code>
+         <pre><code>$finalPrompt</pre></code>
         """.trimMargin()
     }
 
     override fun getRequestPrompt(): String {
-        val prompt = createPrompt()
+        val prompt = createPrompt(selectedText)
+        val finalPrompt = if (additionInfo.isNotEmpty()) {
+            "$selectedText\n\naddition info: ```java$additionInfo```"
+        } else {
+            selectedText
+        }
 
         return """$prompt:
-            $selectedText
+            $finalPrompt
         """.trimMargin()
     }
 
@@ -126,7 +144,7 @@ class BotActionPrompting(
         }
     }
 
-    private fun createPrompt(): String {
+    private fun createPrompt(selectedText: String): String {
         var prompt = """$action this $lang code"""
 
 
@@ -203,7 +221,27 @@ class BotActionPrompting(
             }
 
             ChatBotActionType.FixIssue -> {
-                prompt = "fix this"
+                prompt = "fix issue, and only submit the code changes."
+                val projectPath = project.basePath ?: ""
+                // if selectedText has text contains project path, match lookup file as context
+                runReadAction {
+                    val lookupFile = if (selectedText.contains(projectPath)) {
+                        // use projectPath + regex to match from selectedText
+                        val regex = Regex("$projectPath(.*\\.java)")
+                        val relativePath = regex.find(selectedText)?.groupValues?.get(1) ?: ""
+                        val file = LocalFileSystem.getInstance().findFileByPath(projectPath + relativePath)
+                        file?.let {
+                            PsiManager.getInstance(project).findFile(it)
+                        }
+                    } else {
+                        file
+                    }
+
+                    if (lookupFile != null) {
+                        additionInfo = lookupFile.text.toString()
+                    }
+                }
+
             }
         }
 
