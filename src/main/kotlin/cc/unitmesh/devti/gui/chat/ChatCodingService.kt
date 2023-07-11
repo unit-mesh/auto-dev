@@ -4,6 +4,9 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.connector.ConnectorService
 import com.intellij.openapi.application.ApplicationManager
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.runBlocking
+import org.apache.tools.ant.taskdefs.Execute.launch
+import kotlin.coroutines.suspendCoroutine
 
 class ChatCodingService(var actionType: ChatBotActionType) {
     val action = when (actionType) {
@@ -29,7 +32,8 @@ class ChatCodingService(var actionType: ChatBotActionType) {
 
         ApplicationManager.getApplication().executeOnPooledThread {
             val response = this.makeChatBotRequest(prompt.getRequestPrompt())
-            ApplicationManager.getApplication().invokeLater {
+            runBlocking {
+//                ApplicationManager.getApplication().invokeLater {
                 when {
                     actionType === ChatBotActionType.REFACTOR -> ui.updateReplaceableContent(response) {
                         replaceSelectedText?.invoke(getCodeSection(it))
@@ -41,6 +45,7 @@ class ChatCodingService(var actionType: ChatBotActionType) {
 
                     else -> ui.updateMessage(response)
                 }
+//                }
             }
         }
     }
@@ -48,8 +53,7 @@ class ChatCodingService(var actionType: ChatBotActionType) {
     private val codeCopilot = ConnectorService.getInstance().connector()
 
     private fun makeChatBotRequest(requestPrompt: String): Flow<String> {
-        val connector = codeCopilot
-        return connector.stream(requestPrompt)
+        return codeCopilot.stream(requestPrompt)
     }
 
     private fun getCodeSection(content: String): String {

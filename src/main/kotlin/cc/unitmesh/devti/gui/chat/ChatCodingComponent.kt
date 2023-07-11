@@ -21,6 +21,7 @@ import com.intellij.util.ui.UIUtil
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
+import org.apache.tools.ant.taskdefs.Execute
 import java.awt.BorderLayout
 import java.awt.event.*
 import javax.swing.*
@@ -99,16 +100,14 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
         return !isVisible
     }
 
-    fun updateReplaceableContent(content: Flow<String>, replaceSelectedText: (text: String) -> Unit) {
+    suspend fun updateReplaceableContent(content: Flow<String>, replaceSelectedText: (text: String) -> Unit) {
         myList.remove(myList.componentCount - 1)
         val messageComponent = MessageComponent("", false)
         myList.add(messageComponent)
 
-        runBlocking {
-            content.collect {
-                logger.info("updateMessage: $it")
-                messageComponent.text += it
-            }
+        content.collect {
+            logger.info("updateMessage: $it")
+            messageComponent.text += it
         }
 
         val finalText = messageComponent.text
