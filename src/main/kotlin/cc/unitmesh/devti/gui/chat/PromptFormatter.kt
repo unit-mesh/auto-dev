@@ -223,18 +223,17 @@ class BotActionPrompting(
             ChatBotActionType.FixIssue -> {
                 prompt = "fix issue, and only submit the code changes."
                 val projectPath = project.basePath ?: ""
-                // if selectedText has text contains project path, match lookup file as context
                 runReadAction {
                     val lookupFile = if (selectedText.contains(projectPath)) {
-                        // use projectPath + regex to match from selectedText
                         val regex = Regex("$projectPath(.*\\.java)")
                         val relativePath = regex.find(selectedText)?.groupValues?.get(1) ?: ""
                         val file = LocalFileSystem.getInstance().findFileByPath(projectPath + relativePath)
                         file?.let {
-                            PsiManager.getInstance(project).findFile(it)
+                            val psiFile = PsiManager.getInstance(project).findFile(it) as? PsiJavaFileImpl
+                            psiFile
                         }
                     } else {
-                        file
+                        null
                     }
 
                     if (lookupFile != null) {
