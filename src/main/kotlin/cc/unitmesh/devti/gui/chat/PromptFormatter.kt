@@ -211,8 +211,8 @@ class BotActionPrompting(
         val relevantModel = prepareServiceContext(file)
 
         return """Complete java code, return rest code, no explaining.
-               ${relevantModel?.joinToString("\n")}
-               """.trimMargin()
+${relevantModel?.joinToString("\n")}
+"""
     }
 
     private fun createControllerPrompt(): String {
@@ -228,10 +228,10 @@ class BotActionPrompting(
         val relevantModel = (services ?: emptyList()) + (models ?: emptyList())
 
         val clazz = DtClass.fromJavaFile(file)
-        return """Complete java code, return rest code, no explaining.
-            ```java
-            ${relevantModel.joinToString("\n")}
-            // current path: ${clazz.path}
-            """.trimMargin()
+        return """Complete java code, return rest code, no explaining. 
+```java
+${relevantModel.joinToString("\n")}\n
+// current path: ${clazz.path}
+"""
     }
 }
