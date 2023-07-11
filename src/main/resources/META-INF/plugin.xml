@@ -67,11 +67,18 @@
             </action>
 
             <action id="cc.unitmesh.devti.actions.chat.WriteTestAction"
-                    class="cc.unitmesh.devti.actions.chat.WriteTestAction" text="Write test for This"
+                    class="cc.unitmesh.devti.actions.chat.WriteTestAction" text="Write Test for This"
                     description="Ask Chatbot about this code">
             </action>
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </group>
+
+        <action id="cc.unitmesh.devti.actions.chat.FixThisBotAction"
+                class="cc.unitmesh.devti.actions.chat.FixThisBotAction" text="Fix This (AutoDev)"
+                description="Ask Chatbot about this code">
+            <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
+        </action>
+
 
         <action id="cc.unitmesh.devti.actions.chat.CodeCompleteAction"
                 class="cc.unitmesh.devti.actions.chat.CodeCompleteAction" text="Code Complete (AutoDev)"

@@ -5,8 +5,6 @@ import cc.unitmesh.devti.connector.ConnectorService
 import com.intellij.openapi.application.ApplicationManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
-import org.apache.tools.ant.taskdefs.Execute.launch
-import kotlin.coroutines.suspendCoroutine
 
 class ChatCodingService(var actionType: ChatBotActionType) {
     val action = when (actionType) {
@@ -15,6 +13,7 @@ class ChatCodingService(var actionType: ChatBotActionType) {
         ChatBotActionType.REFACTOR -> "refactor"
         ChatBotActionType.CODE_COMPLETE -> "complete"
         ChatBotActionType.WRITE_TEST -> "write test"
+        ChatBotActionType.FixIssue -> "help me fix this"
     }
 
     fun getLabel(): String {
@@ -70,5 +69,6 @@ enum class ChatBotActionType {
     EXPLAIN,
     REVIEW,
     CODE_COMPLETE,
-    WRITE_TEST
+    WRITE_TEST,
+    FixIssue
 }

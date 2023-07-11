@@ -201,6 +201,10 @@ class BotActionPrompting(
                     }
                 }
             }
+
+            ChatBotActionType.FixIssue -> {
+                prompt = "fix this"
+            }
         }
 
         return prompt
