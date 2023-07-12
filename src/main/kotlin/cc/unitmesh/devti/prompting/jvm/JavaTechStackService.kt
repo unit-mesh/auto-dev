@@ -60,7 +60,3 @@ class JavaTechStackService(private val project: Project) {
         return testStack
     }
 }
-
-fun prepareLibrary(project: Project): TestStack {
-    return project.service<JavaTechStackService>().prepareLibrary()
-}

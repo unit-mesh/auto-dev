@@ -9,7 +9,7 @@
     <depends>org.jetbrains.plugins.gradle</depends>
 <!--    <depends>org.intellij.groovy</depends>-->
 <!--    <depends>org.jetbrains.idea.gradle.dsl</depends>-->
-    <depends>com.intellij.modules.vcs</depends>
+    <depends>Git4Idea</depends>
 
     <resource-bundle>messages.AutoDevBundle</resource-bundle>
 
@@ -54,6 +54,7 @@
 
         <projectService serviceImplementation="cc.unitmesh.devti.prompting.jvm.MvcContextService"/>
         <projectService serviceImplementation="cc.unitmesh.devti.prompting.jvm.JavaTechStackService"/>
+        <projectService serviceImplementation="cc.unitmesh.devti.prompting.CommitPrompting"/>
     </extensions>
 
     <actions>

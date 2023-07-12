@@ -43,6 +43,8 @@ dependencies {
     implementation(libs.jackson.module.kotlin)
 
     implementation(libs.comate.spec.lang)
+
+    implementation("com.knuddels:jtokkit:0.6.1")
 }
 
 // Configure Gradle IntelliJ Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html

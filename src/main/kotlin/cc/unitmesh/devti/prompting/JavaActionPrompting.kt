@@ -6,15 +6,19 @@ import cc.unitmesh.devti.gui.chat.PromptFormatter
 import cc.unitmesh.devti.prompting.jvm.JavaTechStackService
 import cc.unitmesh.devti.prompting.jvm.MvcContextService
 import cc.unitmesh.devti.settings.DevtiSettingsState
+import cc.unitmesh.devti.settings.OPENAI_MODEL
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vcs.changes.ChangeListData
 import com.intellij.openapi.vcs.changes.ChangeListManagerImpl
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.impl.source.PsiJavaFileImpl
+import com.knuddels.jtokkit.Encodings
+import com.knuddels.jtokkit.api.ModelType
 
 class JavaActionPrompting(
     private val action: ChatBotActionType,
@@ -131,9 +135,18 @@ class JavaActionPrompting(
             }
 
             ChatBotActionType.GEN_COMMIT_MESSAGE -> {
-                prompt = "gen commit message"
+                prompt = """suggest 10 commit messages based on the following diff:
+commit messages should:
+ - follow conventional commits
+ - message format should be: <type>[scope]: <description>
+
+examples:
+ - fix(authentication): add password regex pattern
+ - feat(storage): add new test cases
+ 
+ {{diff}}
+ """
                 prepareVcsContext()
-                // todo: add context
             }
 
             ChatBotActionType.CREATE_DDL -> {
@@ -144,13 +157,14 @@ class JavaActionPrompting(
         return prompt
     }
 
-    // TODO: move all manager to services?
     private val changeListManager = ChangeListManagerImpl.getInstance(project)
     private fun prepareVcsContext() {
-        changeListManager.changeLists.forEach {
-            logger.warn(it.data.toString())
-            logger.warn(it.toString())
+        val changes = changeListManager.changeLists.flatMap {
+            it.changes
         }
+
+        val prompting = project.service<CommitPrompting>()
+        additionContext += prompting.computeDiff(changes)
     }
 
     private fun addTestContext() {
@@ -190,6 +204,5 @@ class JavaActionPrompting(
 
     companion object {
         private val logger = Logger.getInstance(JavaActionPrompting::class.java)
-
     }
 }
