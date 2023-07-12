@@ -33,20 +33,9 @@ class JavaActionPrompting(
     private val isController = fileName.endsWith("Controller.java")
     private val isService = fileName.endsWith("Service.java") || fileName.endsWith("ServiceImpl.java")
 
-
     init {
         val prompts = devtiSettingsState?.customEnginePrompts
-        try {
-            if (prompts != null) {
-                promptConfig = Json.decodeFromString(prompts)
-            }
-        } catch (e: Exception) {
-            println("Error parsing prompts: $e")
-        }
-
-        if (promptConfig == null) {
-            promptConfig = PromptConfig.default()
-        }
+        promptConfig = PromptConfig.tryParse(prompts)
     }
 
     override fun getUIPrompt(): String {
@@ -143,7 +132,7 @@ class JavaActionPrompting(
 
             ChatBotActionType.GEN_COMMIT_MESSAGE -> {
                 prompt = "gen commit message"
-                prepareVcsContext(selectedText)
+                prepareVcsContext()
                 // todo: add context
             }
 
@@ -157,7 +146,7 @@ class JavaActionPrompting(
 
     // TODO: move all manager to services?
     private val changeListManager = ChangeListManagerImpl(project)
-    private fun prepareVcsContext(selectedText: String) {
+    private fun prepareVcsContext() {
         changeListManager.changeLists.forEach {
             logger.warn(it.data.toString())
             logger.warn(it.toString())
