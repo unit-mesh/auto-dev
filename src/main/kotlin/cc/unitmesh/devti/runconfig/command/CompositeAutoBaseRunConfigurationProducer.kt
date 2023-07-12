@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.runconfig.command
 
-import cc.unitmesh.devti.runconfig.config.FeatureConfiguration
+import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
 import com.intellij.execution.PsiLocation
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
@@ -12,7 +12,7 @@ import com.intellij.psi.PsiElement
 
 class CompositeAutoBaseRunConfigurationProducer : BaseConfigurationProducer() {
     private val producers: List<BaseConfigurationProducer> =
-        listOf(FeatureConfigurationProducer())
+        listOf(AutoDevFeatureConfigurationProducer())
 
     override fun findExistingConfiguration(context: ConfigurationContext): RunnerAndConfigurationSettings? {
         val preferredConfig = createPreferredConfigurationFromContext(context) ?: return null
@@ -33,12 +33,12 @@ class CompositeAutoBaseRunConfigurationProducer : BaseConfigurationProducer() {
             .firstOrNull()
 
     override fun isConfigurationFromContext(
-        configuration: FeatureConfiguration,
+        configuration: AutoDevConfiguration,
         context: ConfigurationContext
     ): Boolean = producers.any { it.isConfigurationFromContext(configuration, context) }
 
     override fun setupConfigurationFromContext(
-        configuration: FeatureConfiguration,
+        configuration: AutoDevConfiguration,
         context: ConfigurationContext,
         sourceElement: Ref<PsiElement>
     ): Boolean = producers.any { it.setupConfigurationFromContext(configuration, context, sourceElement) }
@@ -65,7 +65,7 @@ class CompositeAutoBaseRunConfigurationProducer : BaseConfigurationProducer() {
 private fun RunConfiguration.isSame(other: RunConfiguration?): Boolean {
     return when {
         this === other -> true
-        this is FeatureConfiguration && other is FeatureConfiguration -> {
+        this is AutoDevConfiguration && other is AutoDevConfiguration -> {
             this.options == other.options
         }
 

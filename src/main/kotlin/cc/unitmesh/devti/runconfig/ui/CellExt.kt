@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.ui
+package cc.unitmesh.devti.runconfig.ui
 
 import com.intellij.ui.dsl.builder.Cell
 import com.intellij.ui.dsl.builder.Row

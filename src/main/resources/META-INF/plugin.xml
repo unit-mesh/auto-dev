@@ -33,10 +33,10 @@
                                   implementationClass="cc.unitmesh.devti.language.contributor.AutoDevFeatureMarkerContributor"/>
 
         <runConfigurationProducer
-                implementation="cc.unitmesh.devti.runconfig.command.FeatureConfigurationProducer"/>
+                implementation="cc.unitmesh.devti.runconfig.command.AutoDevFeatureConfigurationProducer"/>
         <runConfigurationProducer
                 implementation="cc.unitmesh.devti.runconfig.command.CompositeAutoBaseRunConfigurationProducer"/>
-        <configurationType implementation="cc.unitmesh.devti.runconfig.AutoCRUDConfigurationType"/>
+        <configurationType implementation="cc.unitmesh.devti.runconfig.AutoDevConfigurationType"/>
 
         <!-- Run Configurations -->
         <programRunner implementation="cc.unitmesh.devti.runconfig.AutoDevCommandRunner"/>

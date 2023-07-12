@@ -3,7 +3,7 @@ package cc.unitmesh.devti.runconfig.config
 import cc.unitmesh.devti.flow.model.StoryConfig
 import cc.unitmesh.devti.runconfig.command.BaseConfig
 
-class DevtiStory(
+class AutoDevStory(
     val storyId: Int,
     private val storySource: String,
     private val acs: List<String> = listOf()
@@ -20,8 +20,8 @@ class DevtiStory(
     }
 
     companion object {
-        fun fromStoryConfig(storyConfig: StoryConfig): DevtiStory {
-            return DevtiStory(storyConfig.storyId, storyConfig.storySource, storyConfig.acs)
+        fun fromStoryConfig(storyConfig: StoryConfig): AutoDevStory {
+            return AutoDevStory(storyConfig.storyId, storyConfig.storySource, storyConfig.acs)
         }
     }
 

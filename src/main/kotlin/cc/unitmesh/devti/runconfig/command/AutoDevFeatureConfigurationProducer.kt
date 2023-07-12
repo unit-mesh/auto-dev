@@ -1,57 +1,55 @@
 package cc.unitmesh.devti.runconfig.command
 
 import cc.unitmesh.devti.language.DevtiAnnotator
-import cc.unitmesh.devti.runconfig.AutoCRUDConfigurationType
-import cc.unitmesh.devti.runconfig.config.FeatureConfiguration
-import cc.unitmesh.devti.runconfig.config.DevtiStory
+import cc.unitmesh.devti.runconfig.AutoDevConfigurationType
+import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
+import cc.unitmesh.devti.runconfig.config.AutoDevStory
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 
-open class FeatureConfigurationProducer : BaseConfigurationProducer() {
+open class AutoDevFeatureConfigurationProducer : BaseConfigurationProducer() {
     init {
         registerConfigProvider { elements -> createConfigFor(elements) }
     }
 
     override fun getConfigurationFactory(): ConfigurationFactory {
-        return AutoCRUDConfigurationType.getInstance().factory
+        return AutoDevConfigurationType.getInstance().factory
     }
 
     private fun createConfigFor(
         elements: List<PsiElement>
-    ): DevtiStory? {
+    ): AutoDevStory? {
         if (elements.isEmpty()) return null
         val comments = elements.filterIsInstance<PsiComment>()
         if (comments.isEmpty()) return null
 
         val commentText = comments.first().text
         val storyConfig = DevtiAnnotator.matchByString(commentText) ?: return null
-        return DevtiStory.fromStoryConfig(storyConfig)
+        return AutoDevStory.fromStoryConfig(storyConfig)
     }
 
-    override fun isConfigurationFromContext(configuration: FeatureConfiguration, context: ConfigurationContext): Boolean {
+    override fun isConfigurationFromContext(configuration: AutoDevConfiguration, context: ConfigurationContext): Boolean {
         val config = findConfig(context.location?.psiElement?.let { listOf(it) } ?: return false) ?: return false
         configuration.name = config.configurationName + "(Create)"
         configuration.setStoryConfig(config)
-
         return true
     }
 
     override fun setupConfigurationFromContext(
-        configuration: FeatureConfiguration,
+        configuration: AutoDevConfiguration,
         context: ConfigurationContext,
         sourceElement: Ref<PsiElement>
     ): Boolean {
         val config = findConfig(context.location?.psiElement?.let { listOf(it) } ?: return false) ?: return false
         configuration.name = config.configurationName + "(Create)"
         configuration.setStoryConfig(config)
-
         return true
     }
 
-    private fun registerConfigProvider(provider: (List<PsiElement>) -> DevtiStory?) {
+    private fun registerConfigProvider(provider: (List<PsiElement>) -> AutoDevStory?) {
         runConfigProviders.add(provider)
     }
 }

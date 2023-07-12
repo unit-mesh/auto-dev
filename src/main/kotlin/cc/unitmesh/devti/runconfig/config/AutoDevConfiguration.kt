@@ -1,8 +1,8 @@
 package cc.unitmesh.devti.runconfig.config
 
 import cc.unitmesh.devti.runconfig.AutoDevState
-import cc.unitmesh.devti.runconfig.options.AutoCRUDConfigurationOptions
-import cc.unitmesh.devti.runconfig.ui.DtSettingsEditor
+import cc.unitmesh.devti.runconfig.options.AutoDevConfigurationOptions
+import cc.unitmesh.devti.runconfig.ui.AutoDevSettingsEditor
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationPerRunnerSettings
@@ -16,15 +16,15 @@ import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import org.jdom.Element
 
-class FeatureConfiguration(project: Project, name: String, factory: ConfigurationFactory) :
-    RunConfigurationBase<AutoCRUDConfigurationOptions>(project, factory, name) {
+class AutoDevConfiguration(project: Project, name: String, factory: ConfigurationFactory) :
+    RunConfigurationBase<AutoDevConfigurationOptions>(project, factory, name) {
 
-    public override fun getOptions(): AutoCRUDConfigurationOptions {
-        return super.getOptions() as AutoCRUDConfigurationOptions
+    public override fun getOptions(): AutoDevConfigurationOptions {
+        return super.getOptions() as AutoDevConfigurationOptions
     }
 
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
-        return DtSettingsEditor(project)
+        return AutoDevSettingsEditor(project)
     }
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
@@ -61,7 +61,7 @@ class FeatureConfiguration(project: Project, name: String, factory: Configuratio
         this.options.setStoryId(text)
     }
 
-    fun setStoryConfig(config: DevtiStory) {
+    fun setStoryConfig(config: AutoDevStory) {
         this.options.setStoryId(config.storyId.toString())
     }
 }

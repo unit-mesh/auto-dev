@@ -1,13 +1,12 @@
 package cc.unitmesh.devti.runconfig.ui
 
-import cc.unitmesh.devti.runconfig.config.FeatureConfiguration
-import cc.unitmesh.devti.ui.fullWidthCell
+import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.ui.dsl.builder.panel
 import javax.swing.JComponent
 
-class DtSettingsEditor(project: Project) : SettingsEditor<FeatureConfiguration>() {
+class AutoDevSettingsEditor(project: Project) : SettingsEditor<AutoDevConfiguration>() {
     protected var completionProvider = DtCommandCompletionProvider()
 
     private val githubRepo = DtCommandLineEditor(project, completionProvider)
@@ -28,12 +27,12 @@ class DtSettingsEditor(project: Project) : SettingsEditor<FeatureConfiguration>(
         panel = it
     }
 
-    override fun resetEditorFrom(configuration: FeatureConfiguration) {
+    override fun resetEditorFrom(configuration: AutoDevConfiguration) {
         githubRepo.text = configuration.options.githubRepo()
         storyId.text = configuration.options.storyId()
     }
 
-    override fun applyEditorTo(configuration: FeatureConfiguration) {
+    override fun applyEditorTo(configuration: AutoDevConfiguration) {
         configuration.setGithubRepo(githubRepo.text)
         configuration.setStoryId(storyId.text)
     }

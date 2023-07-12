@@ -1,20 +1,20 @@
 package cc.unitmesh.devti.runconfig.command
 
-import cc.unitmesh.devti.runconfig.AutoCRUDConfigurationType
-import cc.unitmesh.devti.runconfig.config.FeatureConfiguration
-import cc.unitmesh.devti.runconfig.config.DevtiStory
+import cc.unitmesh.devti.runconfig.AutoDevConfigurationType
+import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
+import cc.unitmesh.devti.runconfig.config.AutoDevStory
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 
-abstract class BaseConfigurationProducer : BaseLazyRunConfigurationProducer<DevtiStory, FeatureConfiguration>() {
+abstract class BaseConfigurationProducer : BaseLazyRunConfigurationProducer<AutoDevStory, AutoDevConfiguration>() {
     override fun getConfigurationFactory(): ConfigurationFactory {
-        return AutoCRUDConfigurationType.getInstance().factory
+        return AutoDevConfigurationType.getInstance().factory
     }
 
     public abstract override fun setupConfigurationFromContext(
-        configuration: FeatureConfiguration,
+        configuration: AutoDevConfiguration,
         context: ConfigurationContext,
         sourceElement: Ref<PsiElement>
     ): Boolean

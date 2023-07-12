@@ -5,8 +5,8 @@ import cc.unitmesh.devti.flow.DevtiFlow
 import cc.unitmesh.devti.flow.JavaCrudProcessor
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.connector.openai.OpenAIConnector
-import cc.unitmesh.devti.runconfig.config.FeatureConfiguration
-import cc.unitmesh.devti.runconfig.options.AutoCRUDConfigurationOptions
+import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
+import cc.unitmesh.devti.runconfig.options.AutoDevConfigurationOptions
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
@@ -22,9 +22,9 @@ import com.intellij.openapi.project.Project
 
 class AutoDevState(
     val environment: ExecutionEnvironment,
-    private val configuration: FeatureConfiguration,
+    private val configuration: AutoDevConfiguration,
     val project: Project,
-    val options: AutoCRUDConfigurationOptions
+    val options: AutoDevConfigurationOptions
 ) : RunProfileState {
     private val githubToken: String
 
