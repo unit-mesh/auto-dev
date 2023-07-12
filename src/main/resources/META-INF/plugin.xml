@@ -82,6 +82,13 @@
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
         </action>
 
+        <action id="cc.unitmesh.devti.actions.chat.CommitMessageSuggestionAction"
+                class="cc.unitmesh.devti.actions.chat.CommitMessageSuggestionAction" text="Commit message (AutoDev)"
+                description="Ask Chatbot about this code">
+            <add-to-group group-id="Vcs.Commit.PrimaryCommitActions" anchor="first"/>
+            <add-to-group group-id="Vcs.CommitExecutor.Actions" anchor="first"/>
+        </action>
+
 
         <action id="cc.unitmesh.devti.actions.chat.CodeCompleteAction"
                 class="cc.unitmesh.devti.actions.chat.CodeCompleteAction" text="Code Complete (AutoDev)"

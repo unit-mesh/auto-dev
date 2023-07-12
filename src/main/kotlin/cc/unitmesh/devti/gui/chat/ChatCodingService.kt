@@ -13,7 +13,8 @@ class ChatCodingService(var actionType: ChatBotActionType) {
         ChatBotActionType.REFACTOR -> "refactor"
         ChatBotActionType.CODE_COMPLETE -> "complete"
         ChatBotActionType.WRITE_TEST -> "write test"
-        ChatBotActionType.FixIssue -> "help me fix this"
+        ChatBotActionType.FIX_ISSUE -> "help me fix this"
+        ChatBotActionType.GEN_COMMIT_MESSAGE -> "generate commit message"
     }
 
     fun getLabel(): String {
@@ -70,5 +71,6 @@ enum class ChatBotActionType {
     REVIEW,
     CODE_COMPLETE,
     WRITE_TEST,
-    FixIssue
+    GEN_COMMIT_MESSAGE,
+    FIX_ISSUE;
 }

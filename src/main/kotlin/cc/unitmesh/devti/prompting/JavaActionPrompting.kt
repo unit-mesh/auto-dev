@@ -189,9 +189,14 @@ class JavaActionPrompting(
                 addTestContext()
             }
 
-            ChatBotActionType.FixIssue -> {
+            ChatBotActionType.FIX_ISSUE -> {
                 prompt = "fix issue, and only submit the code changes."
                 addFixIssueContext(selectedText)
+            }
+
+            ChatBotActionType.GEN_COMMIT_MESSAGE -> {
+                prompt = "gen commit message"
+                // todo: add context
             }
         }
 
