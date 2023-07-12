@@ -31,7 +31,7 @@ data class PromptConfig(
                 PromptItem("Auto comment code", "{code}"),
                 PromptItem("Code review code", "{code}"),
                 PromptItem("Find bug", "{code}"),
-                PromptItem("Write test", "{code}"),
+                PromptItem("Write test code for", "{code}"),
             )
         }
 

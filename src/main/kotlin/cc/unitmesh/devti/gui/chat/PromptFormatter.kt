@@ -9,10 +9,7 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.externalSystem.model.DataNode
 import com.intellij.openapi.externalSystem.model.project.LibraryData
-import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId
-import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskType
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
-import com.intellij.openapi.externalSystem.util.ExternalSystemUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.JavaPsiFacade
@@ -23,9 +20,6 @@ import com.intellij.psi.impl.source.PsiJavaFileImpl
 import com.intellij.psi.search.GlobalSearchScope
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import org.jetbrains.plugins.gradle.GradleManager
-import org.jetbrains.plugins.gradle.service.project.GradleProjectResolver
-import org.jetbrains.plugins.gradle.service.project.JavaGradleProjectResolver
 import org.jetbrains.plugins.gradle.util.GradleConstants
 
 
@@ -72,20 +66,14 @@ class BotActionPrompting(
         }
 
         if (promptConfig == null) {
-            promptConfig = PromptConfig(
-                PromptItem("Auto complete", "{code}"),
-                PromptItem("Auto comment", "{code}"),
-                PromptItem("Code review", "{code}"),
-                PromptItem("Find bug", "{code}"),
-                PromptItem("Write test", "{code}")
-            )
+            promptConfig = PromptConfig.default()
         }
     }
 
     override fun getUIPrompt(): String {
         val prompt = createPrompt(selectedText)
         val finalPrompt = if (additionContext.isNotEmpty()) {
-            "$selectedText\n\naddition info: ###$additionContext###"
+            "```java\n$additionContext\n$selectedText```"
         } else {
             selectedText
         }
@@ -98,7 +86,7 @@ class BotActionPrompting(
     override fun getRequestPrompt(): String {
         val prompt = createPrompt(selectedText)
         val finalPrompt = if (additionContext.isNotEmpty()) {
-            "$selectedText\n\naddition info: ###$additionContext###"
+            "```java\n$additionContext\n$selectedText```"
         } else {
             selectedText
         }
@@ -225,23 +213,71 @@ class BotActionPrompting(
         return prompt
     }
 
-    private fun addTestContext() {
+    data class TestStack(
+        val controller: MutableMap<String, Boolean> = mutableMapOf(),
+        val service: MutableMap<String, Boolean> = mutableMapOf()
+    )
+
+    private fun prepareLibrary(): TestStack {
         val projectDataManager = ProjectDataManager.getInstance()
         val projectData = projectDataManager.getExternalProjectData(
             project, GradleConstants.SYSTEM_ID, project.basePath!!
         )
-        val libraries = projectData?.externalProjectStructure?.children?.filter {
-            it.data is LibraryData
-        }
-        logger.warn("libraries: $libraries")
 
+        val testStack = TestStack()
+
+        projectData?.externalProjectStructure?.children?.filter {
+            it.data is LibraryData
+        }?.map {
+            it.data as LibraryData
+        }?.forEach {
+            val name = it.groupId + ":" + it.artifactId
+            when {
+                name.contains("spring-boot-starter-web") -> {
+                    testStack.controller.putIfAbsent("Spring Boot Starter", true)
+                }
+                //  org.springframework.boot:spring-boot-starter-jdbc
+                name.contains("org.springframework.boot:spring-boot-starter-jdbc") -> {
+                    testStack.controller.putIfAbsent("JDBC", true)
+                }
+
+                name.contains("org.springframework.boot:spring-boot-test") -> {
+                    testStack.service.putIfAbsent("Spring Boot Test", true)
+                }
+
+                name.contains("org.assertj:assertj-core") -> {
+                    testStack.controller.putIfAbsent("AssertJ", true)
+                    testStack.service.putIfAbsent("AssertJ", true)
+                }
+
+                name.contains("org.junit.jupiter:junit-jupiter") -> {
+                    testStack.controller.putIfAbsent("JUnit 5", true)
+                    testStack.service.putIfAbsent("JUnit 5", true)
+                }
+
+                name.contains("org.mockito:mockito-core") -> {
+                    testStack.controller.putIfAbsent("Mockito", true)
+                    testStack.service.putIfAbsent("Mockito", true)
+                }
+
+                name.contains("com.h2database:h2") -> {
+                    testStack.controller.putIfAbsent("H2", true)
+                }
+            }
+        }
+
+        return testStack
+    }
+
+    private fun addTestContext() {
+        val techStacks = prepareLibrary()
         when {
             isController -> {
-                additionContext = "要求：1. 技术栈：MockMvc + Spring Boot Test + Mockito + AssertJ + JsonPath"
+                additionContext = "// tech stacks: " + techStacks.controller.keys.joinToString(", ")
             }
 
             isService -> {
-                additionContext = "要求：1. 技术栈：Mockito + AssertJ"
+                additionContext = "// tech stacks: " + techStacks.service.keys.joinToString(", ")
             }
         }
     }
