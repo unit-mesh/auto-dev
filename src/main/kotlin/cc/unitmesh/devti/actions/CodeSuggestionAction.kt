@@ -15,10 +15,11 @@ import com.intellij.psi.PsiMethod
 
 class CodeSuggestionAction(methodName: @NlsSafe String, val method: PsiMethod) :
     AnAction({ "Code Suggestion for $methodName" }, AutoDevIcons.AI_COPILOT) {
+    val apiExecutor = ConnectorService.getInstance().connector()
+
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val code = method.text
-        val apiExecutor = ConnectorService.getInstance().connector()
 
         val task = object : Task.Backgroundable(project, "Code completing", true) {
             override fun run(indicator: ProgressIndicator) {

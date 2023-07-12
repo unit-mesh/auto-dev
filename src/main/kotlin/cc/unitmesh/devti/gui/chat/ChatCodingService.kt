@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 
 class ChatCodingService(var actionType: ChatBotActionType) {
+    private val connectorService = ConnectorService.getInstance()
+    
     val action = when (actionType) {
         ChatBotActionType.EXPLAIN -> "explain"
         ChatBotActionType.REVIEW -> "review"
@@ -49,10 +51,8 @@ class ChatCodingService(var actionType: ChatBotActionType) {
         }
     }
 
-    private val codeCopilot = ConnectorService.getInstance().connector()
-
     private fun makeChatBotRequest(requestPrompt: String): Flow<String> {
-        return codeCopilot.stream(requestPrompt)
+        return connectorService.connector().stream(requestPrompt)
     }
 
     private fun getCodeSection(content: String): String {

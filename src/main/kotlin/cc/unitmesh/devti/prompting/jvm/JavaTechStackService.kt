@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.prompting
+package cc.unitmesh.devti.prompting.jvm
 
 import cc.unitmesh.devti.prompting.model.TestStack
 import com.intellij.openapi.components.Service
