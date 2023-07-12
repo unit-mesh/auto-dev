@@ -5,6 +5,7 @@ import cc.unitmesh.devti.flow.AutoDevFlow
 import cc.unitmesh.devti.flow.JavaCrudProcessor
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.connector.openai.OpenAIConnector
+import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.gui.chat.ChatCodingService
@@ -22,6 +23,7 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.wm.ToolWindowManager
 
 class AutoDevRunProfileState(
     val environment: ExecutionEnvironment,
@@ -37,6 +39,9 @@ class AutoDevRunProfileState(
     }
 
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
+        val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(DevtiFlowToolWindowFactory.id)
+        val contentManager = toolWindowManager?.contentManager
+
         val javaAuto = JavaCrudProcessor(project)
         val gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)
 
@@ -47,8 +52,11 @@ class AutoDevRunProfileState(
 
         val autoDevFlow = AutoDevFlow(gitHubIssue, openAIRunner, javaAuto, contentPanel)
 
-        log.warn(configuration.toString())
-        log.warn(options.toString())
+        val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
+
+        contentManager?.removeAllContents(true)
+        contentManager?.addContent(content!!)
+        toolWindowManager?.activate(null)
 
         ProgressManager.getInstance().run(
             object : Task.Backgroundable(project, "Loading retained test failure", true) {

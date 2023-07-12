@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.analysis
 
-import cc.unitmesh.devti.analysis.DtClass.Companion.fromPsi
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiElementFactory
 import com.intellij.testFramework.LightPlatformTestCase
@@ -26,7 +25,7 @@ class DtClassTest : LightPlatformTestCase() {
 
         val dtClass = DtClass.fromPsi(psiClass)
         assertEquals(
-            dtClass.format(), """// package: HelloController
+            dtClass.commentFormat(), """// package: HelloController
 // class HelloController {
 //   blogService: BlogService
 //   + hello(): String
@@ -87,7 +86,7 @@ public void setAttendees(List<String> attendees) {
 
         val dtClass = DtClass.fromPsi(psiClass)
         assertEquals(
-            dtClass.format(), """// package: BookingDTO
+            dtClass.commentFormat(), """// package: BookingDTO
 // class BookingDTO {
 //   roomId: String
 //   startTime: String

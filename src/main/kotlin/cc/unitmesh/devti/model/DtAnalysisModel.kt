@@ -26,7 +26,7 @@ class DtClass(
      * //}
      * ```
      */
-    fun format(): String {
+    fun commentFormat(): String {
         val output = StringBuilder()
         output.append("// package: $packageName\n")
         output.append("// class $name {\n")
@@ -70,9 +70,31 @@ class DtClass(
         return output.toString()
     }
 
+    fun format(): String {
+        val output = StringBuilder()
+        output.append("class $name ")
+
+        val constructor = methods.find { it.name == this.name }
+        if (constructor != null) {
+            output.append("constructor(")
+            output.append(constructor.parameters.joinToString(", ") { "${it.name}: ${it.type}" })
+            output.append(")\n")
+        }
+
+        if (methods.isNotEmpty()) {
+            output.append("- methods: ")
+            // filter out constructor
+            output.append(methods.filter { it.name != this.name }.joinToString(", ") { method ->
+                "${method.name}(${method.parameters.joinToString(", ") { parameter -> "${parameter.name}: ${parameter.type}" }}): ${method.returnType}"
+            })
+        }
+
+        return output.toString()
+    }
+
     companion object {
         fun formatPsi(psiClass: PsiClass): String {
-            return fromPsi(psiClass).format()
+            return fromPsi(psiClass).commentFormat()
         }
 
         fun fromJavaFile(file: PsiJavaFileImpl?): DtClass {

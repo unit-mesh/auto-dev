@@ -2,7 +2,6 @@ package cc.unitmesh.devti.connector.openai
 
 import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.flow.model.SimpleProjectInfo
-import com.intellij.openapi.util.NlsSafe
 import java.io.InputStream
 
 class PromptGenerator {
@@ -34,26 +33,11 @@ class PromptGenerator {
             .replace("{storyDetail}", storyDetail)
     }
 
-    fun codeComplete(methodCode: String, className: @NlsSafe String?): String {
-        val promptText: InputStream = getResource("copilot/code_complete")!!
-        val promptTextString = promptText.bufferedReader().use { it.readText() }
-        return promptTextString
-            .replace("{code}", methodCode)
-            .replace("{className}", className ?: "")
-    }
-
     fun autoComment(methodCode: String): String {
         val promptText: InputStream = getResource("copilot/code_comments")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         return promptTextString
             .replace("{code}", methodCode)
-    }
-
-    fun codeReview(text: String): String {
-        val promptText: InputStream = getResource("copilot/code_review")!!
-        val promptTextString = promptText.bufferedReader().use { it.readText() }
-        return promptTextString
-            .replace("{code}", text)
     }
 
     fun findBug(text: String): String {

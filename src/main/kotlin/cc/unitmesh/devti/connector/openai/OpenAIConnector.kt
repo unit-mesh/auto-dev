@@ -30,6 +30,7 @@ import java.time.Duration
 
 
 class OpenAIConnector : CodeCopilot {
+    private val promptGenerator = PromptGenerator()
     private var service: OpenAiService
 
     private val timeout = Duration.ofSeconds(600)
