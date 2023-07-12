@@ -28,9 +28,7 @@ class JavaActionPrompting(
     private val devtiSettingsState = DevtiSettingsState.getInstance()
     private var promptConfig: PromptConfig? = null
 
-    private val searchScope = GlobalSearchScope.allScope(project)
-    private val javaPsiFacade = JavaPsiFacade.getInstance(project)
-    val factory = MvcContextFactory(project, javaPsiFacade, searchScope)
+    private val factory = MvcContextService(project)
 
     private val fileName = file?.name ?: ""
     private val isController = fileName.endsWith("Controller.java")
@@ -119,11 +117,11 @@ class JavaActionPrompting(
 
                 when {
                     isController -> {
-                        additionContext = factory.createControllerPrompt(file)
+                        additionContext = factory.controllerPrompt(file)
                     }
 
                     isService -> {
-                        additionContext = factory.createServicePrompt(file)
+                        additionContext = factory.servicePrompt(file)
                     }
                 }
             }

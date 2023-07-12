@@ -11,29 +11,31 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.impl.source.PsiJavaFileImpl
 import com.intellij.psi.search.GlobalSearchScope
 
-class MvcContextFactory(
-    val project: Project,
-    val javaPsiFacade: JavaPsiFacade,
-    val globalSearchScope: GlobalSearchScope
-) {
-    fun prepareControllerContext(controllerFile: PsiJavaFileImpl?): ControllerContext? {
+class MvcContextService(val project: Project) {
+    private val searchScope = GlobalSearchScope.allScope(project)
+    private val javaPsiFacade = JavaPsiFacade.getInstance(project)
+
+    private val domainRegex = Regex(".*\\.(model|entity|domain|dto)\\..*")
+    private val serviceRegex = Regex(".*(service|serviceimpl)")
+
+    private fun prepareControllerContext(controllerFile: PsiJavaFileImpl?): ControllerContext? {
         return runReadAction {
             if (controllerFile == null) return@runReadAction null
 
             val allImportStatements = controllerFile.importList?.allImportStatements
 
             val services = allImportStatements?.filter {
-                it.importReference?.text?.endsWith("Service", true) ?: false
+                it.importReference?.text?.lowercase()?.matches(serviceRegex) ?: false
             }?.mapNotNull {
                 val importText = it.importReference?.text ?: return@mapNotNull null
-                javaPsiFacade.findClass(importText, globalSearchScope)
+                javaPsiFacade.findClass(importText, searchScope)
             } ?: emptyList()
 
             val entities = allImportStatements?.filter {
-                it.importReference?.text?.matches(Regex(".*\\.(model|entity|domain|dto)\\..*")) ?: false
+                it.importReference?.text?.matches(domainRegex) ?: false
             }?.mapNotNull {
                 val importText = it.importReference?.text ?: return@mapNotNull null
-                javaPsiFacade.findClass(importText, globalSearchScope)
+                javaPsiFacade.findClass(importText, searchScope)
             } ?: emptyList()
 
             return@runReadAction ControllerContext(
@@ -43,7 +45,7 @@ class MvcContextFactory(
         }
     }
 
-    fun createServicePrompt(psiFile: PsiFile?): String {
+    fun servicePrompt(psiFile: PsiFile?): String {
         val file = psiFile as? PsiJavaFileImpl
         val relevantModel = prepareServiceContext(file)
 
@@ -52,24 +54,24 @@ ${relevantModel?.joinToString("\n")}
 """
     }
 
-    fun prepareServiceContext(serviceFile: PsiJavaFileImpl?): List<PsiClass>? {
+    private fun prepareServiceContext(serviceFile: PsiJavaFileImpl?): List<PsiClass>? {
         return runReadAction {
             if (serviceFile == null) return@runReadAction null
 
             val allImportStatements = serviceFile.importList?.allImportStatements
 
             val entities = allImportStatements?.filter {
-                it.importReference?.text?.matches(Regex(".*\\.(model|entity|domain)\\..*")) ?: false
+                it.importReference?.text?.matches(domainRegex) ?: false
             }?.mapNotNull {
                 val importText = it.importReference?.text ?: return@mapNotNull null
-                javaPsiFacade.findClass(importText, globalSearchScope)
+                javaPsiFacade.findClass(importText, searchScope)
             } ?: emptyList()
 
             return@runReadAction entities
         }
     }
 
-    fun createControllerPrompt(psiFile: PsiFile?): String {
+    fun controllerPrompt(psiFile: PsiFile?): String {
         val file = psiFile as? PsiJavaFileImpl
         val context = prepareControllerContext(file)
         val services = context?.services?.map {
