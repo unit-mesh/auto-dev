@@ -18,7 +18,7 @@ class PromptGeneratorTest {
         assertEquals(
             """你是一个敏捷项目的 BA，请根据如下的信息，编写用户故事。
 
-1. 你的项目是：### DevTi:description ###
+1. 你的项目是：### AutoDev:description ###
 2. 你的需求是： ### story information ###。
 3. 必须要考虑、尽可能考虑各种异常场景，添加更多的 AC（至少 3 个）。
 4. 你的返回模板如下所示：
@@ -44,7 +44,8 @@ AC 1:  xxx
         val storyDetail = "用户故事：可以选择宝贝出行服务"
         val files: List<DtClass> = listOf(DtClass("TaxiController", emptyList()), DtClass("GpsController", emptyList()))
         val result = promptGenerator.createEndpoint(storyDetail, files)
-        assertEquals("""请根据下面的用户故事 和 Controller 列表。要求：
+        assertEquals(
+            """请根据下面的用户故事 和 Controller 列表。要求：
 
 1. 返回最合适的 Controller 名字
 2. 如果不存在合适的 Controller 名字，请返回适合的 Controller 名字。
@@ -58,6 +59,7 @@ TaxiController,GpsController
 ###
 用户故事：可以选择宝贝出行服务
 ###
-""", result)
+""", result
+        )
     }
 }
