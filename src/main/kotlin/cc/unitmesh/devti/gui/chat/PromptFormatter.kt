@@ -37,7 +37,7 @@ class BotActionPrompting(
     private val file: PsiFile?,
     val project: Project,
 ) : PromptFormatter {
-    var additionInfo: String = ""
+    var additionContext: String = ""
 
     companion object {
         private val logger = Logger.getInstance(BotActionPrompting::class.java)
@@ -74,8 +74,8 @@ class BotActionPrompting(
 
     override fun getUIPrompt(): String {
         val prompt = createPrompt(selectedText)
-        val finalPrompt = if (additionInfo.isNotEmpty()) {
-            "$selectedText\n\naddition info: ```java$additionInfo```"
+        val finalPrompt = if (additionContext.isNotEmpty()) {
+            "$selectedText\n\naddition info: ###$additionContext###"
         } else {
             selectedText
         }
@@ -87,8 +87,8 @@ class BotActionPrompting(
 
     override fun getRequestPrompt(): String {
         val prompt = createPrompt(selectedText)
-        val finalPrompt = if (additionInfo.isNotEmpty()) {
-            "$selectedText\n\naddition info: ```java$additionInfo```"
+        val finalPrompt = if (additionContext.isNotEmpty()) {
+            "$selectedText\n\naddition info: ###$additionContext###"
         } else {
             selectedText
         }
@@ -184,18 +184,15 @@ class BotActionPrompting(
                     "请补全如下的 $lang 代码"
                 }
 
-                var additional = "";
                 when {
                     isController -> {
-                        additional = createControllerPrompt()
+                        additionContext = createControllerPrompt()
                     }
 
                     isService -> {
-                        additional = createServicePrompt()
+                        additionContext = createServicePrompt()
                     }
                 }
-
-                prompt = "$prompt $additional"
             }
 
             ChatBotActionType.WRITE_TEST -> {
@@ -206,27 +203,31 @@ class BotActionPrompting(
                     "请为如下的 $lang 代码编写测试"
                 }
 
-                when {
-                    isController -> {
-                        prompt = "$prompt。要求：1. 技术栈：MockMvc + Spring Boot Test + Mockito + AssertJ + JsonPath"
-                    }
-
-                    isService -> {
-                        prompt = "$prompt。要求：1. 技术栈：Mockito + AssertJ"
-                    }
-                }
+                addTestContext()
             }
 
             ChatBotActionType.FixIssue -> {
                 prompt = "fix issue, and only submit the code changes."
-                prepareFixIssueContext(selectedText)
+                addFixIssueContext(selectedText)
             }
         }
 
         return prompt
     }
 
-    private fun prepareFixIssueContext(selectedText: String) {
+    private fun addTestContext() {
+        when {
+            isController -> {
+                additionContext = "要求：1. 技术栈：MockMvc + Spring Boot Test + Mockito + AssertJ + JsonPath"
+            }
+
+            isService -> {
+                additionContext = "要求：1. 技术栈：Mockito + AssertJ"
+            }
+        }
+    }
+
+    private fun addFixIssueContext(selectedText: String) {
         val projectPath = project.basePath ?: ""
         runReadAction {
             val lookupFile = if (selectedText.contains(projectPath)) {
@@ -242,7 +243,7 @@ class BotActionPrompting(
             }
 
             if (lookupFile != null) {
-                additionInfo = lookupFile.text.toString()
+                additionContext = lookupFile.text.toString()
             }
         }
     }
