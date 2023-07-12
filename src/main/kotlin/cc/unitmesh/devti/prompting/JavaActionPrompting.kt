@@ -6,12 +6,9 @@ import cc.unitmesh.devti.connector.custom.PromptConfig
 import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import cc.unitmesh.devti.gui.chat.PromptFormatter
 import cc.unitmesh.devti.prompting.model.ControllerContext
-import cc.unitmesh.devti.prompting.model.TestStack
 import cc.unitmesh.devti.settings.DevtiSettingsState
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.externalSystem.model.project.LibraryData
-import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.ChangeListManagerImpl
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -23,7 +20,6 @@ import com.intellij.psi.impl.source.PsiJavaFileImpl
 import com.intellij.psi.search.GlobalSearchScope
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import org.jetbrains.plugins.gradle.util.GradleConstants
 
 class JavaActionPrompting(
     private val action: ChatBotActionType,
@@ -86,50 +82,6 @@ class JavaActionPrompting(
     }
 
 
-    private fun prepareServiceContext(serviceFile: PsiJavaFileImpl?): List<PsiClass>? {
-        return runReadAction {
-            if (serviceFile == null) return@runReadAction null
-
-            val allImportStatements = serviceFile.importList?.allImportStatements
-
-            val entities = allImportStatements?.filter {
-                it.importReference?.text?.matches(Regex(".*\\.(model|entity|domain)\\..*")) ?: false
-            }?.mapNotNull {
-                val importText = it.importReference?.text ?: return@mapNotNull null
-                javaPsiFacade.findClass(importText, searchScope)
-            } ?: emptyList()
-
-            return@runReadAction entities
-        }
-    }
-
-    private fun prepareControllerContext(controllerFile: PsiJavaFileImpl?): ControllerContext? {
-        return runReadAction {
-            if (controllerFile == null) return@runReadAction null
-
-            val allImportStatements = controllerFile.importList?.allImportStatements
-
-            val services = allImportStatements?.filter {
-                it.importReference?.text?.endsWith("Service", true) ?: false
-            }?.mapNotNull {
-                val importText = it.importReference?.text ?: return@mapNotNull null
-                javaPsiFacade.findClass(importText, searchScope)
-            } ?: emptyList()
-
-            val entities = allImportStatements?.filter {
-                it.importReference?.text?.matches(Regex(".*\\.(model|entity|domain|dto)\\..*")) ?: false
-            }?.mapNotNull {
-                val importText = it.importReference?.text ?: return@mapNotNull null
-                javaPsiFacade.findClass(importText, searchScope)
-            } ?: emptyList()
-
-            return@runReadAction ControllerContext(
-                services = services,
-                models = entities
-            )
-        }
-    }
-
     private fun createPrompt(selectedText: String): String {
         var prompt = """$action this $lang code"""
         when (action) {
@@ -170,11 +122,11 @@ class JavaActionPrompting(
 
                 when {
                     isController -> {
-                        additionContext = createControllerPrompt()
+                        additionContext = createControllerPrompt(this)
                     }
 
                     isService -> {
-                        additionContext = createServicePrompt()
+                        additionContext = Companion.createServicePrompt(this, file)
                     }
                 }
             }
@@ -218,58 +170,8 @@ class JavaActionPrompting(
         }
     }
 
-    private fun prepareLibrary(): TestStack {
-        val projectData = ProjectDataManager.getInstance().getExternalProjectData(
-            project, GradleConstants.SYSTEM_ID, project.basePath!!
-        )
-
-        val testStack = TestStack()
-
-        projectData?.externalProjectStructure?.children?.filter {
-            it.data is LibraryData
-        }?.map {
-            it.data as LibraryData
-        }?.forEach {
-            val name = it.groupId + ":" + it.artifactId
-            when {
-                name.contains("spring-boot-starter-web") -> {
-                    testStack.controller.putIfAbsent("Spring Boot Starter", true)
-                }
-                //  org.springframework.boot:spring-boot-starter-jdbc
-                name.contains("org.springframework.boot:spring-boot-starter-jdbc") -> {
-                    testStack.controller.putIfAbsent("JDBC", true)
-                }
-
-                name.contains("org.springframework.boot:spring-boot-test") -> {
-                    testStack.service.putIfAbsent("Spring Boot Test", true)
-                }
-
-                name.contains("org.assertj:assertj-core") -> {
-                    testStack.controller.putIfAbsent("AssertJ", true)
-                    testStack.service.putIfAbsent("AssertJ", true)
-                }
-
-                name.contains("org.junit.jupiter:junit-jupiter") -> {
-                    testStack.controller.putIfAbsent("JUnit 5", true)
-                    testStack.service.putIfAbsent("JUnit 5", true)
-                }
-
-                name.contains("org.mockito:mockito-core") -> {
-                    testStack.controller.putIfAbsent("Mockito", true)
-                    testStack.service.putIfAbsent("Mockito", true)
-                }
-
-                name.contains("com.h2database:h2") -> {
-                    testStack.controller.putIfAbsent("H2", true)
-                }
-            }
-        }
-
-        return testStack
-    }
-
     private fun addTestContext() {
-        val techStacks = prepareLibrary()
+        val techStacks = prepareLibrary(project)
         when {
             isController -> {
                 additionContext = "// tech stacks: " + techStacks.controller.keys.joinToString(", ")
@@ -302,36 +204,91 @@ class JavaActionPrompting(
         }
     }
 
-    private fun createServicePrompt(): String {
-        val file = file as? PsiJavaFileImpl
-        val relevantModel = prepareServiceContext(file)
-
-        return """Complete java code, return rest code, no explaining.
-${relevantModel?.joinToString("\n")}
-"""
-    }
-
-    private fun createControllerPrompt(): String {
-        val file = file as? PsiJavaFileImpl
-        val context = prepareControllerContext(file)
-        val services = context?.services?.map {
-            DtClass.fromPsiClass(it).format()
-        }
-        val models = context?.models?.map {
-            DtClass.fromPsiClass(it).format()
-        }
-
-        val relevantModel = (services ?: emptyList()) + (models ?: emptyList())
-
-        val clazz = DtClass.fromJavaFile(file)
-        return """Complete java code, return rest code, no explaining. 
-```java
-${relevantModel.joinToString("\n")}\n
-// current path: ${clazz.path}
-"""
-    }
-
     companion object {
         private val logger = Logger.getInstance(JavaActionPrompting::class.java)
+        fun createControllerPrompt(javaActionPrompting: JavaActionPrompting): String {
+            val file = javaActionPrompting.file as? PsiJavaFileImpl
+            val context = prepareControllerContext(
+                file,
+                javaActionPrompting.javaPsiFacade,
+                javaActionPrompting.searchScope
+            )
+            val services = context?.services?.map {
+                DtClass.fromPsiClass(it).format()
+            }
+            val models = context?.models?.map {
+                DtClass.fromPsiClass(it).format()
+            }
+
+            val relevantModel = (services ?: emptyList()) + (models ?: emptyList())
+
+            val clazz = DtClass.fromJavaFile(file)
+            return """Complete java code, return rest code, no explaining. 
+    ```java
+    ${relevantModel.joinToString("\n")}\n
+    // current path: ${clazz.path}
+    """
+        }
+
+        fun prepareControllerContext(
+            controllerFile: PsiJavaFileImpl?, javaPsiFacade: JavaPsiFacade, globalSearchScope: GlobalSearchScope
+        ): ControllerContext? {
+            return runReadAction {
+                if (controllerFile == null) return@runReadAction null
+
+                val allImportStatements = controllerFile.importList?.allImportStatements
+
+                val services = allImportStatements?.filter {
+                    it.importReference?.text?.endsWith("Service", true) ?: false
+                }?.mapNotNull {
+                    val importText = it.importReference?.text ?: return@mapNotNull null
+                    javaPsiFacade.findClass(importText, globalSearchScope)
+                } ?: emptyList()
+
+                val entities = allImportStatements?.filter {
+                    it.importReference?.text?.matches(Regex(".*\\.(model|entity|domain|dto)\\..*")) ?: false
+                }?.mapNotNull {
+                    val importText = it.importReference?.text ?: return@mapNotNull null
+                    javaPsiFacade.findClass(importText, globalSearchScope)
+                } ?: emptyList()
+
+                return@runReadAction ControllerContext(
+                    services = services,
+                    models = entities
+                )
+            }
+        }
+
+        fun createServicePrompt(javaActionPrompting: JavaActionPrompting, psiFile: PsiFile?): String {
+            val file = psiFile as? PsiJavaFileImpl
+            val relevantModel = Companion.prepareServiceContext(
+                file,
+                javaActionPrompting.javaPsiFacade,
+                javaActionPrompting.searchScope
+            )
+
+            return """Complete java code, return rest code, no explaining.
+    ${relevantModel?.joinToString("\n")}
+    """
+        }
+
+        fun prepareServiceContext(
+            serviceFile: PsiJavaFileImpl?, javaPsiFacade: JavaPsiFacade, globalSearchScope: GlobalSearchScope
+        ): List<PsiClass>? {
+            return runReadAction {
+                if (serviceFile == null) return@runReadAction null
+
+                val allImportStatements = serviceFile.importList?.allImportStatements
+
+                val entities = allImportStatements?.filter {
+                    it.importReference?.text?.matches(Regex(".*\\.(model|entity|domain)\\..*")) ?: false
+                }?.mapNotNull {
+                    val importText = it.importReference?.text ?: return@mapNotNull null
+                    javaPsiFacade.findClass(importText, globalSearchScope)
+                } ?: emptyList()
+
+                return@runReadAction entities
+            }
+        }
     }
 }
