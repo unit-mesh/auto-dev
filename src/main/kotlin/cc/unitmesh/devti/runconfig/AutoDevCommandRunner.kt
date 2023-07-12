@@ -16,8 +16,8 @@ import com.intellij.openapi.fileEditor.FileDocumentManager
 import org.jetbrains.annotations.NonNls
 
 
-class DtCommandRunner : GenericProgramRunner<RunnerSettings>() {
-    override fun getRunnerId(): @NonNls String = "DtCommandRunner"
+class AutoDevCommandRunner : GenericProgramRunner<RunnerSettings>() {
+    override fun getRunnerId(): @NonNls String = RUNNER_ID
 
     override fun canRun(executorId: String, profile: RunProfile): Boolean {
         return !(executorId != DefaultRunExecutor.EXECUTOR_ID || profile !is FeatureConfiguration)
@@ -44,6 +44,6 @@ class DtCommandRunner : GenericProgramRunner<RunnerSettings>() {
 
     companion object {
         private val log: Logger = logger<AutoDevState>()
-        const val RUNNER_ID: String = "DtCommandRunner"
+        const val RUNNER_ID: String = "AutoDevCommandRunner"
     }
 }

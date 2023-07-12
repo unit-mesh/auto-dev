@@ -7,8 +7,6 @@
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.java</depends>
     <depends>org.jetbrains.plugins.gradle</depends>
-<!--    <depends>org.intellij.groovy</depends>-->
-<!--    <depends>org.jetbrains.idea.gradle.dsl</depends>-->
     <depends>Git4Idea</depends>
 
     <resource-bundle>messages.AutoDevBundle</resource-bundle>
@@ -40,9 +38,8 @@
                 implementation="cc.unitmesh.devti.runconfig.command.CompositeAutoBaseRunConfigurationProducer"/>
         <configurationType implementation="cc.unitmesh.devti.runconfig.AutoCRUDConfigurationType"/>
 
-
         <!-- Run Configurations -->
-        <programRunner implementation="cc.unitmesh.devti.runconfig.DtCommandRunner"/>
+        <programRunner implementation="cc.unitmesh.devti.runconfig.AutoDevCommandRunner"/>
 
         <toolWindow id="DevTiFlow" secondary="true" icon="AllIcons.Toolwindows.WebToolWindow" anchor="right"
                     factoryClass="cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory"/>
