@@ -2,7 +2,7 @@ package cc.unitmesh.devti.connector.azure
 
 import cc.unitmesh.devti.connector.CodeCopilot
 import cc.unitmesh.devti.connector.custom.PromptConfig
-import cc.unitmesh.devti.settings.DevtiSettingsState
+import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.OPENAI_MODEL
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -18,15 +18,15 @@ import okhttp3.Request
 class AzureConnector : CodeCopilot {
     private val logger = Logger.getInstance(AzureConnector::class.java)
 
-    private val devtiSettingsState = DevtiSettingsState.getInstance()
-    private val url = devtiSettingsState?.customEngineServer ?: ""
+    private val autoDevSettingsState = AutoDevSettingsState.getInstance()
+    private val url = autoDevSettingsState?.customEngineServer ?: ""
     private var promptConfig: PromptConfig? = null
     private var client = OkHttpClient()
     private val openAiVersion: String
 
     init {
-        val prompts = devtiSettingsState?.customEnginePrompts
-        openAiVersion = DevtiSettingsState.getInstance()?.openAiModel ?: OPENAI_MODEL[0]
+        val prompts = autoDevSettingsState?.customEnginePrompts
+        openAiVersion = AutoDevSettingsState.getInstance()?.openAiModel ?: OPENAI_MODEL[0]
         promptConfig = PromptConfig.tryParse(prompts)
     }
 

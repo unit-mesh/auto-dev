@@ -7,7 +7,7 @@ import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.connector.openai.OpenAIConnector
 import cc.unitmesh.devti.runconfig.config.FeatureConfiguration
 import cc.unitmesh.devti.runconfig.options.AutoCRUDConfigurationOptions
-import cc.unitmesh.devti.settings.DevtiSettingsState
+import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
@@ -20,7 +20,7 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 
-class AutoCRUDState(
+class AutoDevState(
     val environment: ExecutionEnvironment,
     private val configuration: FeatureConfiguration,
     val project: Project,
@@ -29,7 +29,7 @@ class AutoCRUDState(
     private val githubToken: String
 
     init {
-        val instance = DevtiSettingsState.getInstance()
+        val instance = AutoDevSettingsState.getInstance()
         githubToken = instance?.githubToken ?: ""
     }
 
@@ -74,6 +74,6 @@ class AutoCRUDState(
     }
 
     companion object {
-        private val log: Logger = logger<AutoCRUDState>()
+        private val log: Logger = logger<AutoDevState>()
     }
 }

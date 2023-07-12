@@ -11,7 +11,7 @@ class PromptGeneratorTest {
     @Test
     fun should_fill_story_detail() {
         val promptGenerator = PromptGenerator()
-        val projectInfo = SimpleProjectInfo("", "DevTi", "description")
+        val projectInfo = SimpleProjectInfo("", "AutoDev", "description")
         val story = "story information"
 
         val result = promptGenerator.storyDetail(projectInfo, story)

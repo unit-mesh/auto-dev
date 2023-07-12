@@ -5,20 +5,16 @@ import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import cc.unitmesh.devti.gui.chat.PromptFormatter
 import cc.unitmesh.devti.prompting.jvm.JavaTechStackService
 import cc.unitmesh.devti.prompting.jvm.MvcContextService
-import cc.unitmesh.devti.settings.DevtiSettingsState
-import cc.unitmesh.devti.settings.OPENAI_MODEL
+import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vcs.changes.ChangeListData
 import com.intellij.openapi.vcs.changes.ChangeListManagerImpl
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.impl.source.PsiJavaFileImpl
-import com.knuddels.jtokkit.Encodings
-import com.knuddels.jtokkit.api.ModelType
 
 class JavaActionPrompting(
     private val action: ChatBotActionType,
@@ -28,7 +24,7 @@ class JavaActionPrompting(
     val project: Project,
 ) : PromptFormatter {
     private var additionContext: String = ""
-    private val devtiSettingsState = DevtiSettingsState.getInstance()
+    private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private var promptConfig: PromptConfig? = null
 
     private val mvcContextService = project.service<MvcContextService>()
@@ -38,7 +34,7 @@ class JavaActionPrompting(
     private val isService = fileName.endsWith("Service.java") || fileName.endsWith("ServiceImpl.java")
 
     init {
-        val prompts = devtiSettingsState?.customEnginePrompts
+        val prompts = autoDevSettingsState?.customEnginePrompts
         promptConfig = PromptConfig.tryParse(prompts)
     }
 

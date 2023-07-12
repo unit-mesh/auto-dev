@@ -20,11 +20,11 @@
     ]]></description>
 
     <extensions defaultExtensionNs="com.intellij">
-        <applicationConfigurable parentId="tools" instance="cc.unitmesh.devti.settings.DevtiSettingsConfigurable"
-                                 id="cc.unitmesh.devti.settings.DevtiSettingsConfigurable"
-                                 displayName="DevTi"/>
+        <applicationConfigurable parentId="tools" instance="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
+                                 id="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
+                                 displayName="AutoDev"/>
 
-        <applicationService serviceImplementation="cc.unitmesh.devti.settings.DevtiSettingsState"/>
+        <applicationService serviceImplementation="cc.unitmesh.devti.settings.AutoDevSettingsState"/>
         <!-- show find bug -->
         <runLineMarkerContributor language="JAVA"
                                   implementationClass="cc.unitmesh.devti.language.contributor.CodeCommentsMarkerContributor"/>

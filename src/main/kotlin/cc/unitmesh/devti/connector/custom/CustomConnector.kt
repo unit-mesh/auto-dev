@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.connector.custom
 
 import cc.unitmesh.devti.connector.CodeCopilot
-import cc.unitmesh.devti.settings.DevtiSettingsState
+import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.diagnostic.Logger
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
@@ -9,14 +9,14 @@ import okhttp3.Request
 
 
 class CustomConnector : CodeCopilot {
-    private val devtiSettingsState = DevtiSettingsState.getInstance()
-    private val url = devtiSettingsState?.customEngineServer ?: ""
-    private val key = devtiSettingsState?.customEngineToken ?: ""
+    private val autoDevSettingsState = AutoDevSettingsState.getInstance()
+    private val url = autoDevSettingsState?.customEngineServer ?: ""
+    private val key = autoDevSettingsState?.customEngineToken ?: ""
     private var promptConfig: PromptConfig? = null
     private var client = OkHttpClient()
 
     init {
-        val prompts = devtiSettingsState?.customEnginePrompts
+        val prompts = autoDevSettingsState?.customEnginePrompts
         promptConfig = PromptConfig.tryParse(prompts)
     }
 

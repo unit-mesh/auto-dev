@@ -5,12 +5,12 @@ import org.jetbrains.annotations.Nls
 import org.jetbrains.annotations.Nullable
 import javax.swing.JComponent
 
-class DevtiSettingsConfigurable : Configurable {
+class AutoDevSettingsConfigurable : Configurable {
     private var component: AppSettingsComponent? = null
 
     @Nls(capitalization = Nls.Capitalization.Title)
     override fun getDisplayName(): String {
-        return "Devti"
+        return "AutoDev"
     }
 
     override fun getPreferredFocusedComponent(): JComponent {
@@ -24,7 +24,7 @@ class DevtiSettingsConfigurable : Configurable {
     }
 
     override fun isModified(): Boolean {
-        val settings: DevtiSettingsState = DevtiSettingsState.getInstance()!!
+        val settings: AutoDevSettingsState = AutoDevSettingsState.getInstance()!!
         var modified = !component!!.openAiKey.equals(settings.openAiKey)
         modified = modified or (!component!!.githubToken.equals(settings.githubToken))
         modified = modified or (!component!!.openAiModel.equals(settings.openAiModel))
@@ -37,7 +37,7 @@ class DevtiSettingsConfigurable : Configurable {
     }
 
     override fun apply() {
-        val settings: DevtiSettingsState = DevtiSettingsState.getInstance()!!
+        val settings: AutoDevSettingsState = AutoDevSettingsState.getInstance()!!
         settings.openAiKey = component!!.getOpenAiKey()
         settings.githubToken = component!!.getGithubToken()
         settings.openAiModel = component!!.getOpenAiModel()
@@ -49,7 +49,7 @@ class DevtiSettingsConfigurable : Configurable {
     }
 
     override fun reset() {
-        val settings: DevtiSettingsState = DevtiSettingsState.getInstance()!!
+        val settings: AutoDevSettingsState = AutoDevSettingsState.getInstance()!!
         component!!.setOpenAiKey(settings.openAiKey)
         component!!.setGithubToken(settings.githubToken)
         component!!.setOpenAiModel(settings.openAiModel)

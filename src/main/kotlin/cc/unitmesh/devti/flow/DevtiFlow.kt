@@ -6,7 +6,7 @@ import cc.unitmesh.devti.flow.model.SimpleStory
 import cc.unitmesh.devti.connector.DevtiFlowAction
 import cc.unitmesh.devti.flow.model.TargetEndpoint
 import cc.unitmesh.devti.parser.parseCodeFromString
-import cc.unitmesh.devti.runconfig.AutoCRUDState
+import cc.unitmesh.devti.runconfig.AutoDevState
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 
@@ -124,7 +124,7 @@ class DevtiFlow(
     }
 
     companion object {
-        private val logger: Logger = logger<AutoCRUDState>()
+        private val logger: Logger = logger<AutoDevState>()
         private val regex = Regex("""(\w+Controller)""")
 
         fun matchControllerName(targetEndpoint: String): String? {

@@ -2,7 +2,7 @@ package cc.unitmesh.devti.actions
 
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.connector.ConnectorService
-import cc.unitmesh.devti.runconfig.AutoCRUDState
+import cc.unitmesh.devti.runconfig.AutoDevState
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
@@ -44,6 +44,6 @@ class AutoCommentAction(
     }
 
     companion object {
-        private val log: Logger = logger<AutoCRUDState>()
+        private val log: Logger = logger<AutoDevState>()
     }
 }

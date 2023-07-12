@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.runconfig.AutoCRUDState
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.ui.NullableComponent
@@ -21,7 +20,6 @@ import com.intellij.util.ui.UIUtil
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
-import org.apache.tools.ant.taskdefs.Execute
 import java.awt.BorderLayout
 import java.awt.event.*
 import javax.swing.*

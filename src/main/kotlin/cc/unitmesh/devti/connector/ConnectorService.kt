@@ -4,11 +4,11 @@ import cc.unitmesh.devti.connector.azure.AzureConnector
 import cc.unitmesh.devti.connector.custom.CustomConnector
 import cc.unitmesh.devti.connector.openai.OpenAIConnector
 import cc.unitmesh.devti.settings.DEFAULT_AI_ENGINE
-import cc.unitmesh.devti.settings.DevtiSettingsState
+import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.application.ApplicationManager
 
 class ConnectorService {
-    private val aiEngine: String = DevtiSettingsState.getInstance()?.aiEngine ?: DEFAULT_AI_ENGINE
+    private val aiEngine: String = AutoDevSettingsState.getInstance()?.aiEngine ?: DEFAULT_AI_ENGINE
     fun connector(): CodeCopilot {
         return when (aiEngine) {
             "OpenAI" -> OpenAIConnector()

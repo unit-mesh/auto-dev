@@ -7,8 +7,7 @@ import com.intellij.openapi.components.Storage
 import com.intellij.util.xmlb.XmlSerializerUtil
 
 @State(name = "cc.unitmesh.devti.settings.DevtiSettingsState", storages = [Storage("DevtiSettings.xml")])
-class DevtiSettingsState : PersistentStateComponent<DevtiSettingsState> {
-
+class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
     var githubToken = ""
     var openAiKey = ""
     var openAiModel = ""
@@ -19,11 +18,11 @@ class DevtiSettingsState : PersistentStateComponent<DevtiSettingsState> {
     var customEngineToken = ""
     var customEnginePrompts = ""
 
-    override fun getState(): DevtiSettingsState {
+    override fun getState(): AutoDevSettingsState {
         return this
     }
 
-    override fun loadState(state: DevtiSettingsState) {
+    override fun loadState(state: AutoDevSettingsState) {
         if (customEnginePrompts == "") {
             customEnginePrompts = DEFAULT_PROMPTS.trimIndent()
         }
@@ -32,8 +31,8 @@ class DevtiSettingsState : PersistentStateComponent<DevtiSettingsState> {
     }
 
     companion object {
-        fun getInstance(): DevtiSettingsState? {
-            return ApplicationManager.getApplication().getService(DevtiSettingsState::class.java)
+        fun getInstance(): AutoDevSettingsState? {
+            return ApplicationManager.getApplication().getService(AutoDevSettingsState::class.java)
         }
     }
 

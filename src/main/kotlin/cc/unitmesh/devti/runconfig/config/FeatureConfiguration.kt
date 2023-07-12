@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.runconfig.config
 
-import cc.unitmesh.devti.runconfig.AutoCRUDState
+import cc.unitmesh.devti.runconfig.AutoDevState
 import cc.unitmesh.devti.runconfig.options.AutoCRUDConfigurationOptions
 import cc.unitmesh.devti.runconfig.ui.DtSettingsEditor
 import com.intellij.execution.Executor
@@ -28,7 +28,7 @@ class FeatureConfiguration(project: Project, name: String, factory: Configuratio
     }
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
-        return AutoCRUDState(environment, this, project, options)
+        return AutoDevState(environment, this, project, options)
     }
 
     override fun checkRunnerSettings(

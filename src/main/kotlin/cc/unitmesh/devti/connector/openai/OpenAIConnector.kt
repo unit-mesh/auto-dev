@@ -5,7 +5,7 @@ import cc.unitmesh.devti.connector.CodeCopilot
 import cc.unitmesh.devti.connector.DevtiFlowAction
 import cc.unitmesh.devti.flow.model.SimpleProjectInfo
 import cc.unitmesh.devti.parser.parseCodeFromString
-import cc.unitmesh.devti.settings.DevtiSettingsState
+import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.OPENAI_MODEL
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
@@ -34,8 +34,8 @@ class OpenAIConnector : CodeCopilot, DevtiFlowAction {
     private var service: OpenAiService
 
     private val timeout = Duration.ofSeconds(600)
-    private val openAiVersion: String = DevtiSettingsState.getInstance()?.openAiModel ?: OPENAI_MODEL[0]
-    private val openAiKey: String = DevtiSettingsState.getInstance()?.openAiKey ?: ""
+    private val openAiVersion: String = AutoDevSettingsState.getInstance()?.openAiModel ?: OPENAI_MODEL[0]
+    private val openAiKey: String = AutoDevSettingsState.getInstance()?.openAiKey ?: ""
 
     init {
 
@@ -44,7 +44,7 @@ class OpenAIConnector : CodeCopilot, DevtiFlowAction {
             throw Exception("openAiKey is empty")
         }
 
-        val openAiProxy = DevtiSettingsState.getInstance()?.customOpenAiHost
+        val openAiProxy = AutoDevSettingsState.getInstance()?.customOpenAiHost
         if (openAiProxy.isNullOrEmpty()) {
             service = OpenAiService(openAiKey, timeout)
         } else {
