@@ -152,14 +152,15 @@ class JavaActionPrompting(
     }
 
     private fun addTestContext() {
-        val techStacks = prepareLibrary(project)
+        val techStackService = project.service<JavaTechStackService>()
+        val techStacks = techStackService.prepareLibrary()
         when {
             isController -> {
-                additionContext = "// tech stacks: " + techStacks.controller.keys.joinToString(", ")
+                additionContext = "// tech stacks: " + techStacks.controllerString()
             }
 
             isService -> {
-                additionContext = "// tech stacks: " + techStacks.service.keys.joinToString(", ")
+                additionContext = "// tech stacks: " + techStacks.serviceString()
             }
         }
     }

@@ -52,6 +52,7 @@
         <!-- LSP -->
         <applicationService serviceImplementation="cc.unitmesh.devti.connector.ConnectorService"/>
         <projectService serviceImplementation="cc.unitmesh.devti.prompting.MvcContextService"/>
+        <projectService serviceImplementation="cc.unitmesh.devti.prompting.JavaTechStackService"/>
     </extensions>
 
     <actions>
