@@ -144,13 +144,10 @@ class BotActionPrompting(
         }
     }
 
+    private val isController = fileName.endsWith("Controller.java")
+    private val isService = fileName.endsWith("Service.java") || fileName.endsWith("ServiceImpl.java")
     private fun createPrompt(selectedText: String): String {
         var prompt = """$action this $lang code"""
-
-
-        val isController = fileName.endsWith("Controller.java")
-        val isService = fileName.endsWith("Service.java") || fileName.endsWith("ServiceImpl.java")
-
         when (action) {
             ChatBotActionType.REVIEW -> {
                 val codeReview = promptConfig?.codeReview
@@ -222,29 +219,32 @@ class BotActionPrompting(
 
             ChatBotActionType.FixIssue -> {
                 prompt = "fix issue, and only submit the code changes."
-                val projectPath = project.basePath ?: ""
-                runReadAction {
-                    val lookupFile = if (selectedText.contains(projectPath)) {
-                        val regex = Regex("$projectPath(.*\\.java)")
-                        val relativePath = regex.find(selectedText)?.groupValues?.get(1) ?: ""
-                        val file = LocalFileSystem.getInstance().findFileByPath(projectPath + relativePath)
-                        file?.let {
-                            val psiFile = PsiManager.getInstance(project).findFile(it) as? PsiJavaFileImpl
-                            psiFile
-                        }
-                    } else {
-                        null
-                    }
-
-                    if (lookupFile != null) {
-                        additionInfo = lookupFile.text.toString()
-                    }
-                }
-
+                prepareFixIssueContext(selectedText)
             }
         }
 
         return prompt
+    }
+
+    private fun prepareFixIssueContext(selectedText: String) {
+        val projectPath = project.basePath ?: ""
+        runReadAction {
+            val lookupFile = if (selectedText.contains(projectPath)) {
+                val regex = Regex("$projectPath(.*\\.java)")
+                val relativePath = regex.find(selectedText)?.groupValues?.get(1) ?: ""
+                val file = LocalFileSystem.getInstance().findFileByPath(projectPath + relativePath)
+                file?.let {
+                    val psiFile = PsiManager.getInstance(project).findFile(it) as? PsiJavaFileImpl
+                    psiFile
+                }
+            } else {
+                null
+            }
+
+            if (lookupFile != null) {
+                additionInfo = lookupFile.text.toString()
+            }
+        }
     }
 
     private fun createServicePrompt(): String {
