@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.analysis
+package cc.unitmesh.devti.flow
 
 import com.intellij.ide.fileTemplates.FileTemplateDescriptor
 import com.intellij.ide.fileTemplates.FileTemplateManager
@@ -8,7 +8,7 @@ import java.util.*
 
 class JavaCrudTemplate(val project: Project) {
     private val fileTemplateManager = FileTemplateManager.getDefaultInstance()
-    val controllerTemplate = FileTemplateDescriptor("Java Controller.java", JavaFileType.INSTANCE.icon)
+    private val controllerTemplate = FileTemplateDescriptor("Java Controller.java", JavaFileType.INSTANCE.icon)
 
     fun controller(
         controllerName: String,

@@ -1,8 +1,8 @@
-package cc.unitmesh.devti.kanban.impl
+package cc.unitmesh.devti.flow.kanban.impl
 
-import cc.unitmesh.devti.kanban.Kanban
-import cc.unitmesh.devti.kanban.SimpleProjectInfo
-import cc.unitmesh.devti.kanban.SimpleStory
+import cc.unitmesh.devti.flow.kanban.Kanban
+import cc.unitmesh.devti.flow.model.SimpleProjectInfo
+import cc.unitmesh.devti.flow.model.SimpleStory
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
 

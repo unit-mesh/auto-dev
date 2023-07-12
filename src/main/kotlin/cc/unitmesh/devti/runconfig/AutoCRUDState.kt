@@ -1,9 +1,9 @@
 package cc.unitmesh.devti.runconfig
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.DevtiFlow
-import cc.unitmesh.devti.analysis.JavaCrudProcessor
-import cc.unitmesh.devti.kanban.impl.GitHubIssue
+import cc.unitmesh.devti.flow.DevtiFlow
+import cc.unitmesh.devti.flow.JavaCrudProcessor
+import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.connector.openai.OpenAIConnector
 import cc.unitmesh.devti.runconfig.config.AutoCRUDConfiguration
 import cc.unitmesh.devti.runconfig.options.AutoCRUDConfigurationOptions

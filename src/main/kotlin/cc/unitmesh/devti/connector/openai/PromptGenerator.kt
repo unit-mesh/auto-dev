@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.connector.openai
 
 import cc.unitmesh.devti.analysis.DtClass
-import cc.unitmesh.devti.kanban.SimpleProjectInfo
+import cc.unitmesh.devti.flow.model.SimpleProjectInfo
 import com.intellij.openapi.util.NlsSafe
 import java.io.InputStream
 

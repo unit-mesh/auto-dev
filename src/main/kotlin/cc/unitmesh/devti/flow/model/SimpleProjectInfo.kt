@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.kanban
+package cc.unitmesh.devti.flow.model
 
 /**
  * for GPT to generate stories, like:

@@ -1,5 +1,7 @@
-package cc.unitmesh.devti.analysis
+package cc.unitmesh.devti.flow
 
+import cc.unitmesh.devti.analysis.DtClass
+import cc.unitmesh.devti.analysis.fromPsiFile
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
@@ -310,7 +312,7 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
     }
 }
 
-private fun PsiFile.lookupPackageName(): PsiPackageStatement? {
+fun PsiFile.lookupPackageName(): PsiPackageStatement? {
     val packageStatement = runReadAction {
         PsiTreeUtil.findChildrenOfType(this, PsiPackageStatement::class.java)
             .firstOrNull() ?: return@runReadAction null

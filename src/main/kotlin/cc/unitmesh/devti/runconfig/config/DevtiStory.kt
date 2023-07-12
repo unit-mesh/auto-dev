@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.runconfig.config
 
-import cc.unitmesh.devti.language.StoryConfig
+import cc.unitmesh.devti.flow.model.StoryConfig
 import cc.unitmesh.devti.runconfig.command.BaseConfig
 
 class DevtiStory(

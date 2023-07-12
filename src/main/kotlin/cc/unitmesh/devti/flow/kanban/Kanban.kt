@@ -1,4 +1,7 @@
-package cc.unitmesh.devti.kanban
+package cc.unitmesh.devti.flow.kanban
+
+import cc.unitmesh.devti.flow.model.SimpleProjectInfo
+import cc.unitmesh.devti.flow.model.SimpleStory
 
 interface Kanban {
     fun isValidStory(content: String): Boolean {

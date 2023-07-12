@@ -1,4 +1,6 @@
-package cc.unitmesh.devti.analysis
+package cc.unitmesh.devti.flow
+
+import cc.unitmesh.devti.analysis.DtClass
 
 interface CrudProcessor {
     fun controllerList(): List<DtClass>

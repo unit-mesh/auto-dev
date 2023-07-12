@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.connector
 
 import cc.unitmesh.devti.analysis.DtClass
-import cc.unitmesh.devti.kanban.SimpleProjectInfo
+import cc.unitmesh.devti.flow.model.SimpleProjectInfo
 
 interface DevtiFlowAction {
     fun fillStoryDetail(project: SimpleProjectInfo, story: String): String

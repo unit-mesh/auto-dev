@@ -1,9 +1,9 @@
 package cc.unitmesh.devti.language
 
+import cc.unitmesh.devti.flow.model.StoryConfig
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.psi.PsiElement
-import kotlinx.serialization.Serializable
 
 class DevtiAnnotator : Annotator {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
@@ -33,13 +33,3 @@ class DevtiAnnotator : Annotator {
     }
 }
 
-@Serializable
-class StoryConfig(
-    val storyId: Int,
-    val storySource: String,
-    val acs: List<String> = listOf()
-) {
-    override fun toString(): String {
-        return "StoryConfig(storyId=$storyId, storySource='$storySource', acs=$acs)"
-    }
-}
