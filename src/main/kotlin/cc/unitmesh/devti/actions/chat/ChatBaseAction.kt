@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.actions.chat
 
+import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
 import cc.unitmesh.devti.prompting.JavaActionPrompting
 import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
@@ -11,8 +12,12 @@ import com.intellij.openapi.wm.ToolWindowManager
 
 abstract class ChatBaseAction : AnAction() {
     override fun actionPerformed(event: AnActionEvent) {
+        executeAction(event)
+    }
+
+    open fun executeAction(event: AnActionEvent) {
         val project = event.project
-        val toolWindowManager = ToolWindowManager.getInstance(project!!).getToolWindow("DevTiFlow")
+        val toolWindowManager = ToolWindowManager.getInstance(project!!).getToolWindow(DevtiFlowToolWindowFactory.id)
         val contentManager = toolWindowManager?.contentManager
 
         val caretModel = event.getData(CommonDataKeys.EDITOR)?.caretModel
@@ -41,7 +46,6 @@ abstract class ChatBaseAction : AnAction() {
             JavaActionPrompting(chatCodingService.actionType, lang, selectedText, file, project),
             getReplaceableAction(event)
         )
-
     }
 
     open fun getReplaceableAction(event: AnActionEvent): ((response: String) -> Unit)? {

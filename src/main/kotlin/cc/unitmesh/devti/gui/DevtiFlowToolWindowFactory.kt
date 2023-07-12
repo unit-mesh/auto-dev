@@ -12,6 +12,10 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
 
 class DevtiFlowToolWindowFactory : ToolWindowFactory, DumbAware {
+    companion object {
+        val id = "DevTiFlow"
+    }
+
     private val contentFactory = ApplicationManager.getApplication().getService(
         ContentFactory::class.java
     )
