@@ -7,6 +7,12 @@ import cc.unitmesh.devti.connector.custom.PromptItem
 import cc.unitmesh.devti.settings.DevtiSettingsState
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.externalSystem.model.DataNode
+import com.intellij.openapi.externalSystem.model.project.LibraryData
+import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId
+import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskType
+import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
+import com.intellij.openapi.externalSystem.util.ExternalSystemUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.JavaPsiFacade
@@ -17,6 +23,10 @@ import com.intellij.psi.impl.source.PsiJavaFileImpl
 import com.intellij.psi.search.GlobalSearchScope
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import org.jetbrains.plugins.gradle.GradleManager
+import org.jetbrains.plugins.gradle.service.project.GradleProjectResolver
+import org.jetbrains.plugins.gradle.service.project.JavaGradleProjectResolver
+import org.jetbrains.plugins.gradle.util.GradleConstants
 
 
 interface PromptFormatter {
@@ -216,6 +226,15 @@ class BotActionPrompting(
     }
 
     private fun addTestContext() {
+        val projectDataManager = ProjectDataManager.getInstance()
+        val projectData = projectDataManager.getExternalProjectData(
+            project, GradleConstants.SYSTEM_ID, project.basePath!!
+        )
+        val libraries = projectData?.externalProjectStructure?.children?.filter {
+            it.data is LibraryData
+        }
+        logger.warn("libraries: $libraries")
+
         when {
             isController -> {
                 additionContext = "要求：1. 技术栈：MockMvc + Spring Boot Test + Mockito + AssertJ + JsonPath"
