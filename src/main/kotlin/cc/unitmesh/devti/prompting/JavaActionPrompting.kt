@@ -13,8 +13,6 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.impl.source.PsiJavaFileImpl
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 
 class JavaActionPrompting(
     private val action: ChatBotActionType,
@@ -145,7 +143,7 @@ class JavaActionPrompting(
     }
 
     // TODO: move all manager to services?
-    private val changeListManager = ChangeListManagerImpl(project)
+    private val changeListManager = ChangeListManagerImpl.getInstance(project)
     private fun prepareVcsContext() {
         changeListManager.changeLists.forEach {
             logger.warn(it.data.toString())
