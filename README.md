@@ -13,9 +13,7 @@
 
 features:
 
-- languages support by PSI
-    - [x] Java
-    - [x] Kotlin (I don't know why, but It can generate Kotlin code)
+- languages support: Java, Kotlin (maybe ?)
 - Auto development mode. With DevTi Protocol (like `devti://story/github/1102`) will auto generate Controller-Service-Model code.
 - Smart code completion. Based on your code context like (Controller, Service `import`), AutoDev will suggest you the best code.
 - AI assistant. AutoDev will help you find bug, explain code, trace exception, and more.
