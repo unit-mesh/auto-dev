@@ -2,7 +2,7 @@ package cc.unitmesh.devti.runconfig.command
 
 import cc.unitmesh.devti.language.DevtiAnnotator
 import cc.unitmesh.devti.runconfig.AutoCRUDConfigurationType
-import cc.unitmesh.devti.runconfig.config.AutoCRUDConfiguration
+import cc.unitmesh.devti.runconfig.config.FeatureConfiguration
 import cc.unitmesh.devti.runconfig.config.DevtiStory
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.configurations.ConfigurationFactory
@@ -10,7 +10,7 @@ import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 
-open class AutoCRUDConfigurationProducer : DevtiConfigurationProducer() {
+open class FeatureConfigurationProducer : BaseConfigurationProducer() {
     init {
         registerConfigProvider { elements -> createConfigFor(elements) }
     }
@@ -31,7 +31,7 @@ open class AutoCRUDConfigurationProducer : DevtiConfigurationProducer() {
         return DevtiStory.fromStoryConfig(storyConfig)
     }
 
-    override fun isConfigurationFromContext(configuration: AutoCRUDConfiguration, context: ConfigurationContext): Boolean {
+    override fun isConfigurationFromContext(configuration: FeatureConfiguration, context: ConfigurationContext): Boolean {
         val config = findConfig(context.location?.psiElement?.let { listOf(it) } ?: return false) ?: return false
         configuration.name = config.configurationName + "(Create)"
         configuration.setStoryConfig(config)
@@ -40,7 +40,7 @@ open class AutoCRUDConfigurationProducer : DevtiConfigurationProducer() {
     }
 
     override fun setupConfigurationFromContext(
-        configuration: AutoCRUDConfiguration,
+        configuration: FeatureConfiguration,
         context: ConfigurationContext,
         sourceElement: Ref<PsiElement>
     ): Boolean {

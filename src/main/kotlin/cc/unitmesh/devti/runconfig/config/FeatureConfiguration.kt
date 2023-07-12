@@ -16,7 +16,7 @@ import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import org.jdom.Element
 
-class AutoCRUDConfiguration(project: Project, name: String, factory: ConfigurationFactory) :
+class FeatureConfiguration(project: Project, name: String, factory: ConfigurationFactory) :
     RunConfigurationBase<AutoCRUDConfigurationOptions>(project, factory, name) {
 
     public override fun getOptions(): AutoCRUDConfigurationOptions {

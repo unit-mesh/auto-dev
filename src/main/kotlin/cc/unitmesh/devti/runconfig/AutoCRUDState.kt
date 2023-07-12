@@ -5,7 +5,7 @@ import cc.unitmesh.devti.flow.DevtiFlow
 import cc.unitmesh.devti.flow.JavaCrudProcessor
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.connector.openai.OpenAIConnector
-import cc.unitmesh.devti.runconfig.config.AutoCRUDConfiguration
+import cc.unitmesh.devti.runconfig.config.FeatureConfiguration
 import cc.unitmesh.devti.runconfig.options.AutoCRUDConfigurationOptions
 import cc.unitmesh.devti.settings.DevtiSettingsState
 import com.intellij.execution.ExecutionResult
@@ -22,7 +22,7 @@ import com.intellij.openapi.project.Project
 
 class AutoCRUDState(
     val environment: ExecutionEnvironment,
-    private val configuration: AutoCRUDConfiguration,
+    private val configuration: FeatureConfiguration,
     val project: Project,
     val options: AutoCRUDConfigurationOptions
 ) : RunProfileState {

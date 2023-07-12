@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.runconfig
 
-import cc.unitmesh.devti.runconfig.config.AutoCRUDConfiguration
+import cc.unitmesh.devti.runconfig.config.FeatureConfiguration
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.configurations.RunProfileState
@@ -20,11 +20,11 @@ class DtCommandRunner : GenericProgramRunner<RunnerSettings>() {
     override fun getRunnerId(): @NonNls String = "DtCommandRunner"
 
     override fun canRun(executorId: String, profile: RunProfile): Boolean {
-        return !(executorId != DefaultRunExecutor.EXECUTOR_ID || profile !is AutoCRUDConfiguration)
+        return !(executorId != DefaultRunExecutor.EXECUTOR_ID || profile !is FeatureConfiguration)
     }
 
     override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor? {
-        if (environment.runProfile !is AutoCRUDConfiguration) return null
+        if (environment.runProfile !is FeatureConfiguration) return null
 
         FileDocumentManager.getInstance().saveAllDocuments()
         return showRunContent(state.execute(environment.executor, this), environment)

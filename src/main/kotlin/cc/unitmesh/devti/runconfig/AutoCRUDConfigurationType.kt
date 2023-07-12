@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.runconfig
 
 import cc.unitmesh.devti.AutoDevIcons
-import cc.unitmesh.devti.runconfig.config.AutoCRUDConfiguration
+import cc.unitmesh.devti.runconfig.config.FeatureConfiguration
 import cc.unitmesh.devti.runconfig.options.AutoCRUDConfigurationOptions
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationTypeBase
@@ -28,7 +28,7 @@ class AutoCRUDConfigurationFactory(type: AutoCRUDConfigurationType) : Configurat
     override fun getId(): String = ID
 
     override fun createTemplateConfiguration(project: Project): RunConfiguration =
-        AutoCRUDConfiguration(project, "DevTi", this)
+        FeatureConfiguration(project, "DevTi", this)
 
     override fun getOptionsClass(): Class<out BaseState?> = AutoCRUDConfigurationOptions::class.java
 

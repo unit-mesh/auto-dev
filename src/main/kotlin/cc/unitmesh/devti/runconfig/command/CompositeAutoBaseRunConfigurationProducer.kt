@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.runconfig.command
 
-import cc.unitmesh.devti.runconfig.config.AutoCRUDConfiguration
+import cc.unitmesh.devti.runconfig.config.FeatureConfiguration
 import com.intellij.execution.PsiLocation
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
@@ -10,12 +10,9 @@ import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 
-class CompositeDevtiRunConfigurationProducer: DevtiConfigurationProducer()  {
-    private val producers: List<DevtiConfigurationProducer> =
-        listOf(
-            AutoCRUDConfigurationProducer(),
-            AutoReviewConfigureProducer(),
-        )
+class CompositeAutoBaseRunConfigurationProducer : BaseConfigurationProducer() {
+    private val producers: List<BaseConfigurationProducer> =
+        listOf(FeatureConfigurationProducer())
 
     override fun findExistingConfiguration(context: ConfigurationContext): RunnerAndConfigurationSettings? {
         val preferredConfig = createPreferredConfigurationFromContext(context) ?: return null
@@ -36,12 +33,12 @@ class CompositeDevtiRunConfigurationProducer: DevtiConfigurationProducer()  {
             .firstOrNull()
 
     override fun isConfigurationFromContext(
-        configuration: AutoCRUDConfiguration,
+        configuration: FeatureConfiguration,
         context: ConfigurationContext
     ): Boolean = producers.any { it.isConfigurationFromContext(configuration, context) }
 
     override fun setupConfigurationFromContext(
-        configuration: AutoCRUDConfiguration,
+        configuration: FeatureConfiguration,
         context: ConfigurationContext,
         sourceElement: Ref<PsiElement>
     ): Boolean = producers.any { it.setupConfigurationFromContext(configuration, context, sourceElement) }
@@ -68,9 +65,10 @@ class CompositeDevtiRunConfigurationProducer: DevtiConfigurationProducer()  {
 private fun RunConfiguration.isSame(other: RunConfiguration?): Boolean {
     return when {
         this === other -> true
-        this is AutoCRUDConfiguration && other is AutoCRUDConfiguration -> {
+        this is FeatureConfiguration && other is FeatureConfiguration -> {
             this.options == other.options
         }
+
         else -> {
             false
         }

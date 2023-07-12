@@ -2,13 +2,13 @@ package cc.unitmesh.devti.language.contributor
 
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.language.DevtiAnnotator
-import cc.unitmesh.devti.runconfig.command.AutoCRUDConfigurationProducer
+import cc.unitmesh.devti.runconfig.command.FeatureConfigurationProducer
 import com.intellij.execution.lineMarker.ExecutorAction
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 
-class AutoCRUDLineMarkerContributor : RunLineMarkerContributor() {
+class AutoDevFeatureMarkerContributor : RunLineMarkerContributor() {
     override fun getInfo(element: PsiElement): Info? {
         if (element !is PsiComment) return null
 
@@ -17,7 +17,7 @@ class AutoCRUDLineMarkerContributor : RunLineMarkerContributor() {
 
         if (!DevtiAnnotator.isAutoCRUD(commentText)) return null
 
-        val state = AutoCRUDConfigurationProducer().findConfig(listOf(element)) ?: return null
+        val state = FeatureConfigurationProducer().findConfig(listOf(element)) ?: return null
 
         val actions = ExecutorAction.getActions(0)
         return Info(

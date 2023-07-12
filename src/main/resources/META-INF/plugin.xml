@@ -30,16 +30,14 @@
                                   implementationClass="cc.unitmesh.devti.language.contributor.CodeCommentsMarkerContributor"/>
         <runLineMarkerContributor language="JAVA"
                                   implementationClass="cc.unitmesh.devti.language.contributor.FindBugMarkerContributor"/>
-        <runLineMarkerContributor language="JAVA"
-                                  implementationClass="cc.unitmesh.devti.language.contributor.CodeReviewMarkerContributor"/>
 
         <runLineMarkerContributor language="JAVA"
-                                  implementationClass="cc.unitmesh.devti.language.contributor.AutoCRUDLineMarkerContributor"/>
+                                  implementationClass="cc.unitmesh.devti.language.contributor.AutoDevFeatureMarkerContributor"/>
 
         <runConfigurationProducer
-                implementation="cc.unitmesh.devti.runconfig.command.AutoCRUDConfigurationProducer"/>
+                implementation="cc.unitmesh.devti.runconfig.command.FeatureConfigurationProducer"/>
         <runConfigurationProducer
-                implementation="cc.unitmesh.devti.runconfig.command.CompositeDevtiRunConfigurationProducer"/>
+                implementation="cc.unitmesh.devti.runconfig.command.CompositeAutoBaseRunConfigurationProducer"/>
         <configurationType implementation="cc.unitmesh.devti.runconfig.AutoCRUDConfigurationType"/>
 
 
