@@ -5,7 +5,25 @@
 
 ## [Unreleased]
 
+## [0.5.5](https://github.com/unit-mesh/auto-dev/compare/v0.5.4...v0.5.5) (2023-07-12)
+
 ### Bug Fixes
+
+* fix usage issues ([9cff4fa](https://github.com/unit-mesh/auto-dev/commit/9cff4fa531e9b07e0047c4e62115fae4406e6205))
+
+### Features
+
+* add basic stacks ([c5bfc1b](https://github.com/unit-mesh/auto-dev/commit/c5bfc1bf809c2f0c06f2ca3febd5b74ca338676c))
+* add commit faeture ([afcaafa](https://github.com/unit-mesh/auto-dev/commit/afcaafae1f988d426c78cdc1aaf47ae58b3a72c2))
+* add fix this for issues ([12f418c](https://github.com/unit-mesh/auto-dev/commit/12f418caf7a20f2dc0e49beddaee4ba6d638c89c))
+* add gradle to deps ([025d85f](https://github.com/unit-mesh/auto-dev/commit/025d85fb9a012503345afae3e98c1f4c56330e28))
+* add simple fix issues ([5eb07f8](https://github.com/unit-mesh/auto-dev/commit/5eb07f869f35f8e4fd05829e824a8bd26a811b61))
+* init ddl action ([e76f7e5](https://github.com/unit-mesh/auto-dev/commit/e76f7e59597ce4ec953859842dbfd9a799133d3a))
+* init for generate commit message ([377df63](https://github.com/unit-mesh/auto-dev/commit/377df6356fe4f9655555ecb1bed863ac67731259))
+* init for sql ddl ([43970b1](https://github.com/unit-mesh/auto-dev/commit/43970b1af79cc45d4ad65e2d90f800b3906e4f62))
+* init library data ([60c5d6d](https://github.com/unit-mesh/auto-dev/commit/60c5d6dde6ade2d13ad149d9e5f9a7be5a1a9dfd))
+* init stream api ([7bc6889](https://github.com/unit-mesh/auto-dev/commit/7bc688996d2af994b1c9277a654736e9319ae3c3))
+* init vcs for detect cchange ([98261d7](https://github.com/unit-mesh/auto-dev/commit/98261d73e5761342a9c10481d84b1760c094a2d5))
 
 ## [0.5.4](https://github.com/unit-mesh/auto-dev/compare/v0.4.0...v0.5.4) (2023-07-11)
 
