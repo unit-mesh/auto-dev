@@ -141,29 +141,12 @@ class OpenAIConnector : CodeCopilot, DevtiFlowAction {
         }
     }
 
-    override fun codeCompleteFor(text: @NlsSafe String, className: @NlsSafe String): String {
-        val promptText = promptGenerator.codeComplete(text, className)
-        logger.warn("codeCompleteFor prompt text: $promptText")
-        return runBlocking {
-            val prompt = prompt(promptText)
-            return@runBlocking parseCodeFromString(prompt)[0]
-        }
-    }
-
     override fun autoComment(text: @NlsSafe String): String {
         val promptText = promptGenerator.autoComment(text)
         logger.warn("autoComment prompt text: $promptText")
         return runBlocking {
             val prompt = prompt(promptText)
             return@runBlocking parseCodeFromString(prompt)[0]
-        }
-    }
-
-    override fun codeReviewFor(text: String): String {
-        val promptText = promptGenerator.codeReview(text)
-        logger.warn("codeReviewFor prompt text: $promptText")
-        return runBlocking {
-            return@runBlocking prompt(promptText)
         }
     }
 

@@ -5,6 +5,7 @@ import cc.unitmesh.devti.flow.kanban.Kanban
 import cc.unitmesh.devti.flow.model.SimpleStory
 import cc.unitmesh.devti.connector.DevtiFlowAction
 import cc.unitmesh.devti.flow.model.TargetEndpoint
+import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.runconfig.AutoDevRunProfileState
 import com.intellij.openapi.diagnostic.Logger
@@ -14,6 +15,7 @@ class AutoDevFlow(
     private val kanban: Kanban,
     private val flowAction: DevtiFlowAction,
     private val processor: CrudProcessor? = null,
+    val ui: ChatCodingComponent,
 ) {
     /**
      * Step 1: check story detail is valid, if not, fill story detail
@@ -28,6 +30,8 @@ class AutoDevFlow(
             logger.warn("story detail is not valid, fill story detail")
 
             storyDetail = flowAction.fillStoryDetail(simpleProject, story.description)
+
+
 
             val newStory = SimpleStory(story.id, story.title, storyDetail)
             kanban.updateStoryDetail(newStory)
@@ -44,7 +48,7 @@ class AutoDevFlow(
         val files: List<DtClass> = processor?.controllerList() ?: emptyList()
         logger.warn("start devti flow")
         val targetEndpoint = flowAction.analysisEndpoint(storyDetail, files)
-        // use regex match *Controller from targetEndpoint
+
         val controller = matchControllerName(targetEndpoint)
         if (controller == null) {
             logger.warn("no controller found from: $controller")

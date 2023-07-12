@@ -5,6 +5,9 @@ import cc.unitmesh.devti.flow.AutoDevFlow
 import cc.unitmesh.devti.flow.JavaCrudProcessor
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.connector.openai.OpenAIConnector
+import cc.unitmesh.devti.gui.chat.ChatBotActionType
+import cc.unitmesh.devti.gui.chat.ChatCodingComponent
+import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
 import cc.unitmesh.devti.runconfig.options.AutoDevConfigurationOptions
 import cc.unitmesh.devti.settings.AutoDevSettingsState
@@ -38,7 +41,11 @@ class AutoDevRunProfileState(
         val gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)
 
         val openAIRunner = OpenAIConnector()
-        val autoDevFlow = AutoDevFlow(gitHubIssue, openAIRunner, javaAuto)
+
+        val chatCodingService = ChatCodingService(ChatBotActionType.REVIEW)
+        val contentPanel = ChatCodingComponent(chatCodingService)
+
+        val autoDevFlow = AutoDevFlow(gitHubIssue, openAIRunner, javaAuto, contentPanel)
 
         log.warn(configuration.toString())
         log.warn(options.toString())
