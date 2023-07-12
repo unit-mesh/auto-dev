@@ -2,7 +2,9 @@ package cc.unitmesh.devti.prompting
 
 import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.prompting.model.ControllerContext
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
@@ -11,7 +13,8 @@ import com.intellij.psi.PsiImportStatementBase
 import com.intellij.psi.impl.source.PsiJavaFileImpl
 import com.intellij.psi.search.GlobalSearchScope
 
-class MvcContextService(val project: Project) {
+@Service(Service.Level.PROJECT)
+class MvcContextService(private val project: Project) {
     private val searchScope = GlobalSearchScope.allScope(project)
     private val javaPsiFacade = JavaPsiFacade.getInstance(project)
 

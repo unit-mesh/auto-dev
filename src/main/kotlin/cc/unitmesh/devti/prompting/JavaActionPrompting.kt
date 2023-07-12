@@ -5,15 +5,14 @@ import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import cc.unitmesh.devti.gui.chat.PromptFormatter
 import cc.unitmesh.devti.settings.DevtiSettingsState
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.ChangeListManagerImpl
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.impl.source.PsiJavaFileImpl
-import com.intellij.psi.search.GlobalSearchScope
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
@@ -28,7 +27,7 @@ class JavaActionPrompting(
     private val devtiSettingsState = DevtiSettingsState.getInstance()
     private var promptConfig: PromptConfig? = null
 
-    private val factory = MvcContextService(project)
+    private val mvcContextService = project.service<MvcContextService>()
 
     private val fileName = file?.name ?: ""
     private val isController = fileName.endsWith("Controller.java")
@@ -117,11 +116,11 @@ class JavaActionPrompting(
 
                 when {
                     isController -> {
-                        additionContext = factory.controllerPrompt(file)
+                        additionContext = mvcContextService.controllerPrompt(file)
                     }
 
                     isService -> {
-                        additionContext = factory.servicePrompt(file)
+                        additionContext = mvcContextService.servicePrompt(file)
                     }
                 }
             }
