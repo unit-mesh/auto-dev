@@ -13,6 +13,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.externalSystem.model.project.LibraryData
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vcs.changes.ChangeListManagerImpl
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
@@ -196,11 +197,21 @@ class JavaActionPrompting(
 
             ChatBotActionType.GEN_COMMIT_MESSAGE -> {
                 prompt = "gen commit message"
+                prepareVcsContext(selectedText)
                 // todo: add context
             }
         }
 
         return prompt
+    }
+
+    // TODO: move all manager to services?
+    private val changeListManager = ChangeListManagerImpl(project)
+    private fun prepareVcsContext(selectedText: String) {
+        changeListManager.changeLists.forEach {
+            logger.warn(it.data.toString())
+            logger.warn(it.toString())
+        }
     }
 
     private fun prepareLibrary(): TestStack {

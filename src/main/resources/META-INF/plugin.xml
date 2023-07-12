@@ -9,6 +9,7 @@
     <depends>org.jetbrains.plugins.gradle</depends>
 <!--    <depends>org.intellij.groovy</depends>-->
 <!--    <depends>org.jetbrains.idea.gradle.dsl</depends>-->
+    <depends>com.intellij.modules.vcs</depends>
 
     <resource-bundle>messages.AutoDevBundle</resource-bundle>
 
