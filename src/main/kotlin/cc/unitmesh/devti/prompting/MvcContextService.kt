@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiImportStatementBase
 import com.intellij.psi.impl.source.PsiJavaFileImpl
 import com.intellij.psi.search.GlobalSearchScope
 
@@ -23,26 +24,20 @@ class MvcContextService(val project: Project) {
 
             val allImportStatements = controllerFile.importList?.allImportStatements
 
-            val services = allImportStatements?.filter {
-                it.importReference?.text?.lowercase()?.matches(serviceRegex) ?: false
-            }?.mapNotNull {
-                val importText = it.importReference?.text ?: return@mapNotNull null
-                javaPsiFacade.findClass(importText, searchScope)
-            } ?: emptyList()
-
-            val entities = allImportStatements?.filter {
-                it.importReference?.text?.matches(domainRegex) ?: false
-            }?.mapNotNull {
-                val importText = it.importReference?.text ?: return@mapNotNull null
-                javaPsiFacade.findClass(importText, searchScope)
-            } ?: emptyList()
-
             return@runReadAction ControllerContext(
-                services = services,
-                models = entities
+                services = filterImportByRegex(allImportStatements, serviceRegex),
+                models = filterImportByRegex(allImportStatements, domainRegex)
             )
         }
     }
+
+    private fun filterImportByRegex(allImportStatements: Array<out PsiImportStatementBase>?, regex: Regex) =
+        allImportStatements?.filter {
+            it.importReference?.text?.lowercase()?.matches(regex) ?: false
+        }?.mapNotNull {
+            val importText = it.importReference?.text ?: return@mapNotNull null
+            javaPsiFacade.findClass(importText, searchScope)
+        } ?: emptyList()
 
     fun servicePrompt(psiFile: PsiFile?): String {
         val file = psiFile as? PsiJavaFileImpl
@@ -59,13 +54,7 @@ ${relevantModel?.joinToString("\n")}
 
             val allImportStatements = serviceFile.importList?.allImportStatements
 
-            val entities = allImportStatements?.filter {
-                it.importReference?.text?.matches(domainRegex) ?: false
-            }?.mapNotNull {
-                val importText = it.importReference?.text ?: return@mapNotNull null
-                javaPsiFacade.findClass(importText, searchScope)
-            } ?: emptyList()
-
+            val entities = filterImportByRegex(allImportStatements, domainRegex)
             return@runReadAction entities
         }
     }
