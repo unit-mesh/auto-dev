@@ -2,7 +2,7 @@ package cc.unitmesh.devti.language.contributor
 
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.actions.FindBugAction
-import cc.unitmesh.devti.runconfig.AutoDevState
+import cc.unitmesh.devti.runconfig.AutoDevRunProfileState
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
@@ -27,6 +27,6 @@ class FindBugMarkerContributor : RunLineMarkerContributor() {
     }
 
     companion object {
-        private val log: Logger = logger<AutoDevState>()
+        private val log: Logger = logger<AutoDevRunProfileState>()
     }
 }

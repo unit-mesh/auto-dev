@@ -7,19 +7,17 @@ import com.intellij.ui.dsl.builder.panel
 import javax.swing.JComponent
 
 class AutoDevSettingsEditor(project: Project) : SettingsEditor<AutoDevConfiguration>() {
-    protected var completionProvider = DtCommandCompletionProvider()
+    private var completionProvider = DtCommandCompletionProvider()
+    private var panel: JComponent? = null
 
     private val githubRepo = DtCommandLineEditor(project, completionProvider)
     private val storyId = DtCommandLineEditor(project, completionProvider)
-
-    protected var panel: JComponent? = null
 
     override fun createEditor(): JComponent = panel {
         row("GitHub Project (owner/repo)") {
             fullWidthCell(githubRepo)
         }
 
-        // story id
         row("Story ID:") {
             fullWidthCell(storyId)
         }

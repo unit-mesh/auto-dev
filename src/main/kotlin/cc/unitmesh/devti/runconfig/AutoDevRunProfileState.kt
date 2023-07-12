@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.runconfig
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.flow.DevtiFlow
+import cc.unitmesh.devti.flow.AutoDevFlow
 import cc.unitmesh.devti.flow.JavaCrudProcessor
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.connector.openai.OpenAIConnector
@@ -20,7 +20,7 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 
-class AutoDevState(
+class AutoDevRunProfileState(
     val environment: ExecutionEnvironment,
     private val configuration: AutoDevConfiguration,
     val project: Project,
@@ -38,7 +38,7 @@ class AutoDevState(
         val gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)
 
         val openAIRunner = OpenAIConnector()
-        val devtiFlow = DevtiFlow(gitHubIssue, openAIRunner, javaAuto)
+        val autoDevFlow = AutoDevFlow(gitHubIssue, openAIRunner, javaAuto)
 
         log.warn(configuration.toString())
         log.warn(options.toString())
@@ -53,17 +53,17 @@ class AutoDevState(
 
                     // todo: check create story
                     val storyId = options.storyId()
-                    val storyDetail = devtiFlow.fillStoryDetail(storyId)
+                    val storyDetail = autoDevFlow.fillStoryDetail(storyId)
 
                     indicator.fraction = 0.3
 
                     indicator.text = AutoDevBundle.message("devti.runconfig.progress.fetchingSuggestEndpoint")
-                    val target = devtiFlow.fetchSuggestEndpoint(storyDetail)
+                    val target = autoDevFlow.fetchSuggestEndpoint(storyDetail)
 
                     indicator.fraction = 0.6
 
                     indicator.text = AutoDevBundle.message("devti.runconfig.progress.updatingEndpointMethod")
-                    devtiFlow.updateEndpointMethod(target, storyDetail)
+                    autoDevFlow.updateEndpointMethod(target, storyDetail)
 
                     indicator.fraction = 1.0
                 }
@@ -74,6 +74,6 @@ class AutoDevState(
     }
 
     companion object {
-        private val log: Logger = logger<AutoDevState>()
+        private val log: Logger = logger<AutoDevRunProfileState>()
     }
 }

@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.runconfig.config
 
-import cc.unitmesh.devti.runconfig.AutoDevState
+import cc.unitmesh.devti.runconfig.AutoDevRunProfileState
 import cc.unitmesh.devti.runconfig.options.AutoDevConfigurationOptions
 import cc.unitmesh.devti.runconfig.ui.AutoDevSettingsEditor
 import com.intellij.execution.Executor
@@ -28,7 +28,7 @@ class AutoDevConfiguration(project: Project, name: String, factory: Configuratio
     }
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
-        return AutoDevState(environment, this, project, options)
+        return AutoDevRunProfileState(environment, this, project, options)
     }
 
     override fun checkRunnerSettings(

@@ -6,11 +6,11 @@ import cc.unitmesh.devti.flow.model.SimpleStory
 import cc.unitmesh.devti.connector.DevtiFlowAction
 import cc.unitmesh.devti.flow.model.TargetEndpoint
 import cc.unitmesh.devti.parser.parseCodeFromString
-import cc.unitmesh.devti.runconfig.AutoDevState
+import cc.unitmesh.devti.runconfig.AutoDevRunProfileState
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 
-class DevtiFlow(
+class AutoDevFlow(
     private val kanban: Kanban,
     private val flowAction: DevtiFlowAction,
     private val processor: CrudProcessor? = null,
@@ -32,6 +32,7 @@ class DevtiFlow(
             val newStory = SimpleStory(story.id, story.title, storyDetail)
             kanban.updateStoryDetail(newStory)
         }
+
         logger.warn("user story detail: $storyDetail")
         return storyDetail
     }
@@ -124,7 +125,7 @@ class DevtiFlow(
     }
 
     companion object {
-        private val logger: Logger = logger<AutoDevState>()
+        private val logger: Logger = logger<AutoDevRunProfileState>()
         private val regex = Regex("""(\w+Controller)""")
 
         fun matchControllerName(targetEndpoint: String): String? {

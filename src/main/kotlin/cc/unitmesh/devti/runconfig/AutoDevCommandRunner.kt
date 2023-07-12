@@ -17,6 +17,11 @@ import org.jetbrains.annotations.NonNls
 
 
 class AutoDevCommandRunner : GenericProgramRunner<RunnerSettings>() {
+    companion object {
+        private val log: Logger = logger<AutoDevRunProfileState>()
+        const val RUNNER_ID: String = "AutoDevCommandRunner"
+    }
+
     override fun getRunnerId(): @NonNls String = RUNNER_ID
 
     override fun canRun(executorId: String, profile: RunProfile): Boolean {
@@ -25,25 +30,16 @@ class AutoDevCommandRunner : GenericProgramRunner<RunnerSettings>() {
 
     override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor? {
         if (environment.runProfile !is AutoDevConfiguration) return null
-
         FileDocumentManager.getInstance().saveAllDocuments()
         return showRunContent(state.execute(environment.executor, this), environment)
     }
 
     @Suppress("UnstableApiUsage")
-    private fun showRunContent(
-        executionResult: ExecutionResult?,
-        environment: ExecutionEnvironment
-    ): RunContentDescriptor? {
+    private fun showRunContent(result: ExecutionResult?, environment: ExecutionEnvironment): RunContentDescriptor? {
         log.debug("showRunContent")
 
-        return executionResult?.let {
+        return result?.let {
             ExecutionUiService.getInstance().showRunContent(it, environment)
         }
-    }
-
-    companion object {
-        private val log: Logger = logger<AutoDevState>()
-        const val RUNNER_ID: String = "AutoDevCommandRunner"
     }
 }
