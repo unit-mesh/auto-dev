@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.actions.chat
 
-import cc.unitmesh.devti.gui.chat.BotActionPrompting
+import cc.unitmesh.devti.prompting.JavaActionPrompting
 import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.gui.chat.ChatCodingService
@@ -38,7 +38,7 @@ abstract class ChatBaseAction : AnAction() {
 
         chatCodingService.handlePromptAndResponse(
             contentPanel,
-            BotActionPrompting(chatCodingService.actionType, lang, selectedText, file, project),
+            JavaActionPrompting(chatCodingService.actionType, lang, selectedText, file, project),
             getReplaceableAction(event)
         )
 
