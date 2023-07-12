@@ -30,6 +30,7 @@ class JavaActionPrompting(
 
     private val searchScope = GlobalSearchScope.allScope(project)
     private val javaPsiFacade = JavaPsiFacade.getInstance(project)
+    val factory = MvcContextFactory(project, javaPsiFacade, searchScope)
 
     private val fileName = file?.name ?: ""
     private val isController = fileName.endsWith("Controller.java")
@@ -118,11 +119,11 @@ class JavaActionPrompting(
 
                 when {
                     isController -> {
-                        additionContext = MvcContextFactory.createControllerPrompt(javaPsiFacade, searchScope, file)
+                        additionContext = factory.createControllerPrompt(file)
                     }
 
                     isService -> {
-                        additionContext = MvcContextFactory.createServicePrompt(file, javaPsiFacade, searchScope)
+                        additionContext = factory.createServicePrompt(file)
                     }
                 }
             }
