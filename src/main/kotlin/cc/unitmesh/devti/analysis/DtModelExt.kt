@@ -10,7 +10,7 @@ fun DtClass.Companion.fromPsiFile(psiFile: PsiFile): DtClass? {
         val psiClass = PsiTreeUtil.findChildrenOfType(psiFile, PsiClass::class.java)
             .firstOrNull()
 
-        return@runReadAction psiClass?.let { fromPsiClass(it) }
+        return@runReadAction psiClass?.let { fromPsi(it) }
     }
 }
 

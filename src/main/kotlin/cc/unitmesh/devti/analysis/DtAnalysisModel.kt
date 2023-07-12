@@ -71,7 +71,18 @@ class DtClass(
     }
 
     companion object {
-        fun Companion.fromPsiClass(psiClass: PsiClass): DtClass {
+        fun formatPsi(psiClass: PsiClass): String {
+            return fromPsi(psiClass).format()
+        }
+
+        fun fromJavaFile(file: PsiJavaFileImpl?): DtClass {
+            return runReadAction {
+                val psiClass = file?.classes?.firstOrNull() ?: return@runReadAction DtClass("", emptyList())
+                return@runReadAction fromPsi(psiClass)
+            }
+        }
+
+        fun fromPsi(psiClass: PsiClass): DtClass {
             return runReadAction {
                 val fields = psiClass.fields.map { field ->
                     DtField(
@@ -105,13 +116,6 @@ class DtClass(
                     methods = methods,
                     fields = fields
                 )
-            }
-        }
-
-        fun fromJavaFile(file: PsiJavaFileImpl?): DtClass {
-            return runReadAction {
-                val psiClass = file?.classes?.firstOrNull() ?: return@runReadAction DtClass("", emptyList())
-                return@runReadAction fromPsiClass(psiClass)
             }
         }
     }

@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.prompting
 
 import cc.unitmesh.devti.analysis.DtClass
-import cc.unitmesh.devti.analysis.DtClass.Companion.fromPsiClass
 import cc.unitmesh.devti.prompting.model.ControllerContext
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
@@ -74,12 +73,8 @@ ${relevantModel?.joinToString("\n")}
     fun controllerPrompt(psiFile: PsiFile?): String {
         val file = psiFile as? PsiJavaFileImpl
         val context = prepareControllerContext(file)
-        val services = context?.services?.map {
-            DtClass.fromPsiClass(it).format()
-        }
-        val models = context?.models?.map {
-            DtClass.fromPsiClass(it).format()
-        }
+        val services = context?.services?.map(DtClass.Companion::formatPsi)
+        val models = context?.models?.map(DtClass.Companion::formatPsi)
 
         val relevantModel = (services ?: emptyList()) + (models ?: emptyList())
 
