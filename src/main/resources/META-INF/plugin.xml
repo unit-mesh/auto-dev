@@ -6,6 +6,9 @@
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.java</depends>
+    <depends>org.jetbrains.plugins.gradle</depends>
+<!--    <depends>org.intellij.groovy</depends>-->
+<!--    <depends>org.jetbrains.idea.gradle.dsl</depends>-->
 
     <resource-bundle>messages.AutoDevBundle</resource-bundle>
 
