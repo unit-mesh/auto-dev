@@ -29,8 +29,7 @@ import retrofit2.converter.jackson.JacksonConverterFactory
 import java.time.Duration
 
 
-class OpenAIConnector : CodeCopilot, DevtiFlowAction {
-    private val promptGenerator = PromptGenerator()
+class OpenAIConnector : CodeCopilot {
     private var service: OpenAiService
 
     private val timeout = Duration.ofSeconds(600)
@@ -115,30 +114,6 @@ class OpenAIConnector : CodeCopilot, DevtiFlowAction {
             .temperature(0.0)
             .messages(messages)
             .build()
-    }
-
-    override fun fillStoryDetail(project: SimpleProjectInfo, story: String): String {
-        val promptText = promptGenerator.storyDetail(project, story)
-        return runBlocking {
-            val prompt = prompt(promptText)
-            return@runBlocking prompt
-        }
-    }
-
-    override fun analysisEndpoint(storyDetail: String, classes: List<DtClass>): String {
-        val promptText = promptGenerator.createEndpoint(storyDetail, classes)
-        return runBlocking {
-            val prompt = prompt(promptText)
-            return@runBlocking prompt
-        }
-    }
-
-    override fun needUpdateMethodOfController(targetEndpoint: String, clazz: DtClass, storyDetail: String): String {
-        val promptText = promptGenerator.updateControllerMethod(clazz, storyDetail)
-        logger.warn("needUpdateMethodForController prompt text: $promptText")
-        return runBlocking {
-            return@runBlocking prompt(promptText)
-        }
     }
 
     override fun autoComment(text: @NlsSafe String): String {
