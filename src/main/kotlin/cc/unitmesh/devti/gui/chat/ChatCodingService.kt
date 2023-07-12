@@ -15,6 +15,7 @@ class ChatCodingService(var actionType: ChatBotActionType) {
         ChatBotActionType.WRITE_TEST -> "write test"
         ChatBotActionType.FIX_ISSUE -> "help me fix this"
         ChatBotActionType.GEN_COMMIT_MESSAGE -> "generate commit message"
+        ChatBotActionType.CREATE_DDL -> "create ddl"
     }
 
     fun getLabel(): String {
@@ -33,7 +34,6 @@ class ChatCodingService(var actionType: ChatBotActionType) {
         ApplicationManager.getApplication().executeOnPooledThread {
             val response = this.makeChatBotRequest(prompt.getRequestPrompt())
             runBlocking {
-//                ApplicationManager.getApplication().invokeLater {
                 when {
                     actionType === ChatBotActionType.REFACTOR -> ui.updateReplaceableContent(response) {
                         replaceSelectedText?.invoke(getCodeSection(it))
@@ -45,7 +45,6 @@ class ChatCodingService(var actionType: ChatBotActionType) {
 
                     else -> ui.updateMessage(response)
                 }
-//                }
             }
         }
     }
@@ -72,5 +71,6 @@ enum class ChatBotActionType {
     CODE_COMPLETE,
     WRITE_TEST,
     GEN_COMMIT_MESSAGE,
-    FIX_ISSUE;
+    FIX_ISSUE,
+    CREATE_DDL;
 }

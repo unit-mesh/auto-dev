@@ -74,6 +74,12 @@
                     class="cc.unitmesh.devti.actions.chat.WriteTestAction" text="Write Test for This"
                     description="Ask Chatbot about this code">
             </action>
+
+            <action id="cc.unitmesh.devti.actions.chat.CreateDdlAction"
+                    class="cc.unitmesh.devti.actions.chat.CreateDdlAction" text="Create DDL"
+                    description="Ask Chatbot create DDL code">
+            </action>
+
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </group>
 

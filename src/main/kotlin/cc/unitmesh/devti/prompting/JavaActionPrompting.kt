@@ -200,6 +200,10 @@ class JavaActionPrompting(
                 prepareVcsContext(selectedText)
                 // todo: add context
             }
+
+            ChatBotActionType.CREATE_DDL -> {
+                prompt = "create ddl based on the follow info"
+            }
         }
 
         return prompt
