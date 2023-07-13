@@ -10,6 +10,7 @@ class JavaCodePostProcessor(
 ) {
     private val spaceRegex = Regex("\\s+")
 
+    // todo: find a better way to format code
     fun execute(): String {
         if (completeCode.isEmpty()) {
             return completeCode
@@ -48,8 +49,14 @@ class JavaCodePostProcessor(
 
         // if lastLineSpaceCount > 0, then remove the same space in a result begin if exists
         if (lastLineSpaceCount > 0) {
-            val spaceRegex = Regex("^\\s{$lastLineSpaceCount}")
+            val space = " ".repeat(lastLineSpaceCount)
+            val spaceRegex = Regex("^\\s${space}")
             result = result.replace(spaceRegex, "")
+        }
+
+        // if result endsWith "}" then add "\n" before it
+        if (result.endsWith("}")) {
+            result += "\n"
         }
 
         return result
