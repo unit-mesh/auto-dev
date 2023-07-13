@@ -2,7 +2,7 @@ package cc.unitmesh.devti.runconfig
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.flow.AutoDevFlow
-import cc.unitmesh.devti.flow.JavaCrudProcessor
+import cc.unitmesh.devti.flow.JavaSpringBaseCrud
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.connector.openai.OpenAIConnector
 import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
@@ -18,7 +18,6 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.components.service
-import com.intellij.openapi.components.services
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressIndicator
@@ -44,7 +43,7 @@ class AutoDevRunProfileState(
         val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(DevtiFlowToolWindowFactory.id)
         val contentManager = toolWindowManager?.contentManager
 
-        val javaAuto = project.service<JavaCrudProcessor>()
+        val javaAuto = project.service<JavaSpringBaseCrud>()
         val gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)
 
         val openAIRunner = OpenAIConnector()

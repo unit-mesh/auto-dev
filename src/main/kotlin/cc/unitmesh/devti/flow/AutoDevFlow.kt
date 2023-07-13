@@ -18,7 +18,7 @@ import kotlinx.coroutines.runBlocking
 class AutoDevFlow(
     private val kanban: Kanban,
     private val connector: OpenAIConnector,
-    private val processor: CrudProcessor? = null,
+    private val processor: SpringBaseCrud? = null,
     val ui: ChatCodingComponent,
 ) : DevtiFlowAction {
     private val promptGenerator = PromptGenerator()
@@ -95,7 +95,7 @@ class AutoDevFlow(
         }
     }
 
-    private fun createCodeByType(code: String, processor: CrudProcessor, target: TargetEndpoint) {
+    private fun createCodeByType(code: String, processor: SpringBaseCrud, target: TargetEndpoint) {
         when {
             processor.isController(code) -> {
                 processor.createControllerOrUpdateMethod(target.controller.name, code, target.isNeedToCreated)

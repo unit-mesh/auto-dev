@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.analysis
 
-import cc.unitmesh.devti.flow.JavaCrudProcessor
+import cc.unitmesh.devti.flow.JavaSpringBaseCrud
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiElementFactory
 import com.intellij.testFramework.LightPlatformTestCase
@@ -18,7 +18,7 @@ class JavaAutoProcessorTest : LightPlatformTestCase() {
         psiClass.setName("HelloController")
         psiClass.addBefore(javaFactory.createAnnotationFromText("@Controller", null), psiClass.firstChild)
 
-        val endpoints = JavaCrudProcessor(project)
+        val endpoints = JavaSpringBaseCrud(project)
         val newClasses =
             endpoints.addMethodToClass(psiClass, """
     public String hello2() { 

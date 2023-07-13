@@ -1,12 +1,12 @@
 package cc.unitmesh.devti.analysis
 
-import cc.unitmesh.devti.flow.JavaCrudProcessor
+import cc.unitmesh.devti.flow.JavaSpringBaseCrud
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiElementFactory
 import com.intellij.testFramework.LightPlatformTestCase
 import junit.framework.TestCase
 
-class JavaCrudProcessorTest : LightPlatformTestCase() {
+class JavaJavaBaseCrudTest : LightPlatformTestCase() {
     private val javaFactory: PsiElementFactory get() = JavaPsiFacade.getElementFactory(project)
 
     fun testShould_create_a_new_controller() {
@@ -21,7 +21,7 @@ class JavaCrudProcessorTest : LightPlatformTestCase() {
     }
 
     fun testShould_return_true_when_its_a_service() {
-        val processor = JavaCrudProcessor(project)
+        val processor = JavaSpringBaseCrud(project)
 
         val originCode = """@Service class HelloService {
 }

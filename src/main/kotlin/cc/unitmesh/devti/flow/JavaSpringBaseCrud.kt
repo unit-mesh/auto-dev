@@ -26,7 +26,7 @@ import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.util.PsiTreeUtil
 
 
-class JavaCrudProcessor(val project: Project) : CrudProcessor {
+class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
     private val psiElementFactory = JavaPsiFacade.getElementFactory(project)
     private val codeTemplate = JavaCrudTemplate(project)
 
@@ -83,24 +83,6 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
             psiClass != null && filter(psiClass)
         }
 
-    private fun controllerFilter(clazz: PsiClass): Boolean = clazz.annotations
-        .map { it.qualifiedName }.any {
-            it == "org.springframework.stereotype.Controller" ||
-                    it == "org.springframework.web.bind.annotation.RestController"
-        }
-
-    private fun serviceFilter(clazz: PsiClass): Boolean = clazz.annotations
-        .map { it.qualifiedName }.any {
-            it == "org.springframework.stereotype.Service"
-        }
-
-    private fun entityFilter(clazz: PsiClass): Boolean = clazz.annotations
-        .map { it.qualifiedName }.any {
-            it == "javax.persistence.Entity"
-        }
-
-    private fun dtoFilter(clazz: PsiClass): Boolean = clazz.name?.lowercase()?.endsWith("dto") ?: false
-
     fun addMethodToClass(psiClass: PsiClass, method: String): PsiClass {
         val methodFromText = psiElementFactory.createMethodFromText(method, psiClass)
         var lastMethod: PsiMethod? = null
@@ -127,11 +109,17 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
     }
 
     override fun serviceList(): List<DtClass> {
-        TODO("Not yet implemented")
+        return this.services.map {
+            val className = it.name.substring(0, it.name.length - ".java".length)
+            DtClass.fromPsiFile(it) ?: DtClass(className, emptyList())
+        }
     }
 
     override fun modelList(): List<DtClass> {
-        TODO("Not yet implemented")
+        return this.entities.map {
+            val className = it.name.substring(0, it.name.length - ".java".length)
+            DtClass.fromPsiFile(it) ?: DtClass(className, emptyList())
+        }
     }
 
     override fun createControllerOrUpdateMethod(targetController: String, code: String, isControllerExist: Boolean) {
@@ -188,7 +176,11 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
 
     override fun createService(code: String): DtClass? {
         val firstService = services.first()
-        val packageName = if (services.isNotEmpty()) {
+        return createClassByPackageName(firstService, code, services)
+    }
+
+    private fun createClassByPackageName(firstService: PsiFile, code: String, psiFiles: List<PsiFile>): DtClass? {
+        val packageName = if (psiFiles.isNotEmpty()) {
             firstService.lookupPackageName()?.packageName
         } else {
             packageCloseToController("service")
@@ -204,37 +196,12 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
 
     override fun createDto(code: String): DtClass? {
         val firstService = dto.first()
-        val packageName = if (dto.isNotEmpty()) {
-            firstService.lookupPackageName()?.packageName
-        } else {
-            packageCloseToController("dto")
-        }
-
-        // add packageName to code
-        val newCode = "package $packageName;\n\n$code"
-
-        if (packageName == null) {
-            log.warn("No package statement found in file ${firstService.name}")
-            return DtClass("", emptyList())
-        }
-
-        return createClass(newCode, packageName)
+        return createClassByPackageName(firstService, code, dto)
     }
 
     override fun createEntity(code: String): DtClass? {
         val firstService = entities.first()
-        val packageName = if (entities.isNotEmpty()) {
-            firstService.lookupPackageName()?.packageName
-        } else {
-            packageCloseToController("entity")
-        }
-
-        if (packageName == null) {
-            log.warn("No package statement found in file ${firstService.name}")
-            return DtClass("", emptyList())
-        }
-
-        return createClass(code, packageName)
+        return createClassByPackageName(firstService, code, entities)
     }
 
     override fun createClass(code: String, packageName: String?): DtClass? {
@@ -316,7 +283,7 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
     }
 
     companion object {
-        private val log: Logger = logger<JavaCrudProcessor>()
+        private val log: Logger = logger<JavaSpringBaseCrud>()
     }
 }
 

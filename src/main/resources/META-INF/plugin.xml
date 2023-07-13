@@ -47,7 +47,7 @@
         <!-- LSP -->
         <applicationService serviceImplementation="cc.unitmesh.devti.connector.ConnectorService"/>
 
-        <projectService serviceImplementation="cc.unitmesh.devti.flow.JavaCrudProcessor"/>
+        <projectService serviceImplementation="cc.unitmesh.devti.flow.JavaSpringBaseCrud"/>
         <projectService serviceImplementation="cc.unitmesh.devti.prompting.jvm.MvcContextService"/>
         <projectService serviceImplementation="cc.unitmesh.devti.prompting.jvm.JavaTechStackService"/>
         <projectService serviceImplementation="cc.unitmesh.devti.prompting.CommitPrompting"/>

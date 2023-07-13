@@ -1,8 +1,9 @@
 package cc.unitmesh.devti.flow
 
 import cc.unitmesh.devti.analysis.DtClass
+import com.intellij.psi.PsiClass
 
-interface CrudProcessor {
+interface SpringBaseCrud {
     fun controllerList(): List<DtClass>
     fun serviceList(): List<DtClass>
     fun modelList(): List<DtClass>
@@ -12,6 +13,24 @@ interface CrudProcessor {
     fun createService(code: String): DtClass?
     fun createDto(code: String): DtClass?
     fun createClass(code: String, packageName: String?): DtClass?
+
+    fun dtoFilter(clazz: PsiClass): Boolean = clazz.name?.lowercase()?.endsWith("dto") ?: false
+
+    fun controllerFilter(clazz: PsiClass): Boolean = clazz.annotations
+        .map { it.qualifiedName }.any {
+            it == "org.springframework.stereotype.Controller" ||
+                    it == "org.springframework.web.bind.annotation.RestController"
+        }
+
+    fun serviceFilter(clazz: PsiClass): Boolean = clazz.annotations
+        .map { it.qualifiedName }.any {
+            it == "org.springframework.stereotype.Service"
+        }
+
+    fun entityFilter(clazz: PsiClass): Boolean = clazz.annotations
+        .map { it.qualifiedName }.any {
+            it == "javax.persistence.Entity"
+        }
 
     fun isController(code: String): Boolean {
         if (code.contains("@Controller")) {
