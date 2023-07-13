@@ -1,7 +1,11 @@
 package cc.unitmesh.devti.settings
 
 import com.intellij.json.JsonLanguage
+import com.intellij.openapi.editor.SpellCheckingEditorCustomizationProvider
+import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.fileTypes.PlainTextLanguage
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.ui.HorizontalScrollBarEditorCustomization
 import com.intellij.ui.LanguageTextField
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
@@ -22,7 +26,20 @@ class AppSettingsComponent {
     val aiEngine = ComboBox(AI_ENGINES)
     val customEngineServer = JBTextField()
     val customEngineToken = JBTextField()
-    var customEnginePrompt = LanguageTextField(JsonLanguage.INSTANCE, null, DEFAULT_PROMPTS.trimIndent())
+
+    private var myEditor: EditorEx? = null
+    var customEnginePrompt = object : LanguageTextField(JsonLanguage.INSTANCE, null, "") {
+        override fun createEditor(): EditorEx {
+            myEditor = super.createEditor().apply {
+                setShowPlaceholderWhenFocused(true)
+                setHorizontalScrollbarVisible(true)
+                setVerticalScrollbarVisible(true)
+                setPlaceholder("Enter custom prompt here")
+                SpellCheckingEditorCustomizationProvider.getInstance().disabledCustomization?.customize(this)
+            }
+            return myEditor!!
+        }
+    }
 
     init {
         val metrics: FontMetrics = customEnginePrompt.getFontMetrics(customEnginePrompt.font)
