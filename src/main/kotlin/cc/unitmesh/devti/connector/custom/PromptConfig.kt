@@ -7,7 +7,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 @Serializable
-data class PromptItem(val instruction: String, val input: String)
+data class PromptItem(val instruction: String, val input: String, val requirements: String = "")
 
 @Serializable
 data class PromptConfig(
