@@ -36,8 +36,8 @@ public void test() {
         val postProcessor = JavaCodePostProcessor(prefix, suffix, complete)
         val result = postProcessor.execute()
 
-        assertEquals(
-            result, """    public void test() {"""
-        )
+        assertEquals(result, """    public void test() {
+            |
+        """.trimMargin())
     }
 }
