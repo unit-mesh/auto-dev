@@ -6,8 +6,12 @@ package cc.unitmesh.devti.parser
 class JavaCodePostProcessor(
     private val prefixCode: String,
     private val suffixCode: String,
-    private val completeCode: String
+    private val completeCode: String,
+    private val indentSize: Int = 4
 ) {
+    private val indent = " ".repeat(indentSize)
+    private val methodDeclLine = Regex("^(?:^|\\s+)(?:@[A-Z]\\w+|(?:(?:public|private|protected)\\s+)?.*\\{)")
+
     private val spaceRegex = Regex("\\s+")
 
     // todo: find a better way to format code
