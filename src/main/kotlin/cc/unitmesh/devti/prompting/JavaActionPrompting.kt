@@ -155,6 +155,10 @@ examples:
             }
 
             ChatBotActionType.CREATE_DDL -> {
+                val spec = PromptConfig.load().spec["ddl"]
+                if (!spec.isNullOrEmpty()) {
+                    additionContext = "requirements: \n$spec"
+                }
                 prompt = "create ddl based on the follow info"
             }
         }

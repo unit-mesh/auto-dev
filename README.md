@@ -94,7 +94,7 @@ Output Screenshots:
     "service": "1.  Service 层应该使用构造函数注入或者 setter 注入，不要使用 @Autowired 注解注入。",
     "entity": "1. Entity 类应该使用 JPA 注解进行数据库映射。2. 实体类名应该与对应的数据库表名相同。实体类应该使用注解标记主键和表名，例如：@Id、@GeneratedValue、@Table 等。",
     "repository": "1. Repository 接口应该继承 JpaRepository 接口，以获得基本的 CRUD 操作。",
-    "ddl": "1. 字段应该使用 NOT NULL 约束，确保数据的完整性。",
+    "ddl": "1. 字段应该使用 NOT NULL 约束，确保数据的完整性。"
   }
 }
 ```
