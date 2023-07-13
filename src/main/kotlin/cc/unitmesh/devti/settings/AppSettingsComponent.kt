@@ -12,32 +12,6 @@ import java.awt.FontMetrics
 import javax.swing.JComponent
 import javax.swing.JPanel
 
-val OPENAI_MODEL = arrayOf("gpt-3.5-turbo", "gpt-4")
-
-val DEFAULT_PROMPTS = """
-{
-  "auto_complete": {
-    "instruction": "",
-    "input": ""
-  },
-  "auto_comment": {
-    "instruction": "",
-    "input": ""
-  },
-  "code_review": {
-    "instruction": "",
-    "input": ""
-  },
-  "refactor": {
-    "instruction": "",
-    "input": ""
-  }
-}
-"""
-
-val AI_ENGINES = arrayOf("OpenAI", "Custom", "Azure")
-val DEFAULT_AI_ENGINE = AI_ENGINES[0]
-
 class AppSettingsComponent {
     val panel: JPanel
     val openAiKey = JBPasswordField()
@@ -59,7 +33,7 @@ class AppSettingsComponent {
         panel = FormBuilder.createFormBuilder()
             .addLabeledComponent(JBLabel("AI Engine: "), aiEngine, 1, false)
             .addSeparator()
-            .addTooltip("GitHub Token is for AutoCurd")
+            .addTooltip("GitHub Token is for AutoDev")
             .addLabeledComponent(JBLabel("GitHub Token: "), githubToken, 1, false)
             .addSeparator()
             .addLabeledComponent(JBLabel("OpenAI Model: "), openAiModel, 1, false)
