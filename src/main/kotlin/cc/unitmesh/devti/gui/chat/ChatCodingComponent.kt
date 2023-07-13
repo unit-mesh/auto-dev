@@ -19,10 +19,13 @@ import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.runBlocking
 import java.awt.BorderLayout
 import java.awt.event.*
-import javax.swing.*
+import javax.swing.JButton
+import javax.swing.JPanel
+import javax.swing.JProgressBar
+import javax.swing.ScrollPaneConstants
+
 
 class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JBPanel<ChatCodingComponent>(),
     NullableComponent {
@@ -66,29 +69,35 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
 
     fun add(message: String, isMe: Boolean = false) {
         val messageComponent = MessageComponent(message, isMe)
-        val jbScrollPane = JBScrollPane(
-            messageComponent, ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
-            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
-        )
 
-        myList.add(jbScrollPane)
+        myList.add(messageComponent)
+        updateLayout()
+        scrollToBottom()
         progressBar.isIndeterminate = true
         updateUI()
     }
 
-    suspend fun updateMessage(message: Flow<String>) {
-        myList.remove(myList.componentCount - 1)
-        val messageComponent = MessageComponent("", false)
-        myList.add(messageComponent)
-
-        message.collect {
-            messageComponent.text += it
-            messageComponent.updateUI()
+    private fun updateLayout() {
+        val layout = myList.layout
+        val componentCount = myList.componentCount
+        for (i in 0 until componentCount) {
+            layout.removeLayoutComponent(myList.getComponent(i))
+            layout.addLayoutComponent(null, myList.getComponent(i))
         }
+    }
+
+    suspend fun updateMessage(content: Flow<String>) {
+        myList.remove(myList.componentCount - 1)
+        updateMessageInUi(content)
 
         progressBar.isIndeterminate = false
         progressBar.isVisible = false
         updateUI()
+    }
+
+    private fun scrollToBottom() {
+        val verticalScrollBar = myScrollPane.verticalScrollBar
+        verticalScrollBar.value = verticalScrollBar.maximum
     }
 
     override fun isNull(): Boolean {
@@ -97,19 +106,11 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
 
     suspend fun updateReplaceableContent(content: Flow<String>, replaceSelectedText: (text: String) -> Unit) {
         myList.remove(myList.componentCount - 1)
-        val messageComponent = MessageComponent("", false)
-        myList.add(messageComponent)
-
-        content.collect {
-            messageComponent.text += it
-            messageComponent.updateUI()
-        }
-
-        val finalText = messageComponent.text
+        val text = updateMessageInUi(content)
 
         val jButton = JButton(AutoDevBundle.message("devti.chat.replaceSelection"))
         val listener = ActionListener {
-            replaceSelectedText(finalText)
+            replaceSelectedText(text)
             myList.remove(myList.componentCount - 1)
         }
         jButton.addActionListener(listener)
@@ -118,6 +119,21 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
         progressBar.isIndeterminate = false
         progressBar.isVisible = false
         updateUI()
+    }
+
+    private suspend fun updateMessageInUi(content: Flow<String>): String {
+        val messageComponent = MessageComponent("...", false)
+        myList.add(messageComponent)
+
+        var text = ""
+        content.collect {
+            text += it
+            messageComponent.updateSourceContent(text)
+            messageComponent.updateContent(text)
+            messageComponent.scrollToBottom()
+        }
+
+        return text
     }
 
     private fun addQuestionArea() {

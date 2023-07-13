@@ -37,6 +37,7 @@ class AppSettingsComponent {
                 setPlaceholder("Enter custom prompt here")
                 SpellCheckingEditorCustomizationProvider.getInstance().disabledCustomization?.customize(this)
             }
+
             return myEditor!!
         }
     }

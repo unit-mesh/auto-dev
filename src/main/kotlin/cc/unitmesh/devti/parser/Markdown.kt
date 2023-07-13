@@ -1,10 +1,34 @@
 package cc.unitmesh.devti.parser
 
+import org.commonmark.Extension
+import org.commonmark.ext.gfm.tables.TablesExtension
 import org.commonmark.node.AbstractVisitor
 import org.commonmark.node.FencedCodeBlock
 import org.commonmark.node.IndentedCodeBlock
 import org.commonmark.node.Node
 import org.commonmark.parser.Parser
+import org.commonmark.renderer.html.HtmlRenderer
+
+fun md2html(markdown: String): String {
+    val parser: Parser = Parser.builder().build()
+    val document: Node = parser.parse(markdown)
+    val htmlRenderer: HtmlRenderer = HtmlRenderer.builder().build()
+    return htmlRenderer.render(document)
+}
+
+fun parseMarkdown(markdown: String): String {
+    val extensions: List<Extension> = listOf(TablesExtension.create())
+    val parser = Parser.builder()
+        .extensions(extensions)
+        .build()
+
+    val document: Node = parser.parse(markdown)
+    val htmlRenderer = HtmlRenderer
+        .builder()
+        .extensions(extensions)
+        .build()
+    return htmlRenderer.render(document)
+}
 
 fun parseCodeFromString(markdown: String): List<String> {
     val parser: Parser = Parser.builder().build()
