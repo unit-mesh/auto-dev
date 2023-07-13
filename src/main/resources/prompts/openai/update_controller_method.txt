@@ -4,10 +4,14 @@
 - 如果代码里包含了其它类（如：Request、Response），请使用新的 markdown 代码块包裹。
 - 不做解释，只返回修改完的函数代码。
 
-{controllerName} 相关信息如下：
+###
+// {controllerName} 相关信息如下：
+{controllers}
+###
 
 ###
-{controllers}
+// 已有的相关 DTO 和 entity 类如下：
+{models}
 ###
 
 用户故事如下：

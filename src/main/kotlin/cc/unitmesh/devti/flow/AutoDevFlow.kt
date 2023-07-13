@@ -49,7 +49,7 @@ class AutoDevFlow(
      * Step 2: base on story detail, generate dto and entity
      */
     fun generateDtoAndEntity(storyDetail: String) {
-        val files: List<DtClass> = processor?.controllerList() ?: emptyList()
+        val files: List<DtClass> = processor?.modelList() ?: emptyList()
         val promptText = promptGenerator.createDtoAndEntity(storyDetail, files)
 
         logger.warn("needUpdateMethodForController prompt text: $promptText")
@@ -162,7 +162,8 @@ class AutoDevFlow(
     }
 
     override fun needUpdateMethodOfController(targetEndpoint: String, clazz: DtClass, storyDetail: String): String {
-        val promptText = promptGenerator.updateControllerMethod(clazz, storyDetail)
+        val models = processor?.modelList()?.map { it.name } ?: emptyList()
+        val promptText = promptGenerator.updateControllerMethod(clazz, storyDetail, models)
         logger.warn("needUpdateMethodForController prompt text: $promptText")
         return executePrompt(promptText)
     }

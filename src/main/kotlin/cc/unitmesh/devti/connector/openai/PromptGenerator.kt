@@ -33,7 +33,7 @@ class PromptGenerator {
             .replace("{storyDetail}", storyDetail)
     }
 
-    fun updateControllerMethod(targetClazz: DtClass, storyDetail: String): String {
+    fun updateControllerMethod(targetClazz: DtClass, storyDetail: String, models: List<String>): String {
         val promptText: InputStream = getResource("update_controller_method")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         val spec = PromptConfig.load().spec["controller"]
@@ -42,6 +42,7 @@ class PromptGenerator {
             .replace("{controllerName}", targetClazz.name)
             .replace("{controllers}", targetClazz.format())
             .replace("{storyDetail}", storyDetail)
+            .replace("{models}", models.joinToString(","))
             .replace("{spec}", spec ?: "")
     }
 
