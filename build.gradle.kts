@@ -45,6 +45,10 @@ dependencies {
     implementation(libs.comate.spec.lang)
 
     implementation("com.knuddels:jtokkit:0.6.1")
+
+    // junit
+    testImplementation("junit:junit:4.13.2")
+    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.9.3")
 }
 
 // Configure Gradle IntelliJ Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
