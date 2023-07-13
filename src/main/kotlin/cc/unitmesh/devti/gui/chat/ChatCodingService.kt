@@ -2,7 +2,7 @@ package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.connector.ConnectorService
-import cc.unitmesh.devti.parser.CodePostProcessor
+import cc.unitmesh.devti.parser.JavaCodePostProcessor
 import com.intellij.openapi.application.ApplicationManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
@@ -64,7 +64,7 @@ class ChatCodingService(var actionType: ChatBotActionType) {
 
         if (match != null) return match.groupValues[1].trim()
 
-        return CodePostProcessor(prefixText, suffixText, content).execute()
+        return JavaCodePostProcessor(prefixText, suffixText, content).execute()
     }
 }
 

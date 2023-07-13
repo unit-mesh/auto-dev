@@ -3,10 +3,10 @@ package cc.unitmesh.devti.parser
 /**
  * will format complete code by prefix code and suffix code
  */
-class CodePostProcessor(
-    val prefixCode: String,
-    val suffixCode: String,
-    val completeCode: String
+class JavaCodePostProcessor(
+    private val prefixCode: String,
+    private val suffixCode: String,
+    private val completeCode: String
 ) {
     private val spaceRegex = Regex("\\s+")
 
@@ -34,6 +34,11 @@ class CodePostProcessor(
         // if complete code starts with annotation, then also add 4 spaces for each line
         if (result.startsWith("@")) {
             result = result.split("\n").joinToString("\n") { "    $it" }
+        }
+
+        // if suffix ends with "}", and complete code ends with "}\n}", then remove complete code's last "}"
+        if (result.endsWith("}\n}") and suffixCode.endsWith("}")) {
+            result = result.substring(0, result.length - 1)
         }
 
         // if lastLineSpaceCount > 0, then remove same space in result begin if exists

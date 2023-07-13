@@ -16,8 +16,13 @@ class CodeCompleteAction : ChatBaseAction() {
         val document = editor.document
 
         val primaryCaret = editor.caretModel.primaryCaret;
-        val start = primaryCaret.selectionStart;
-        val end = primaryCaret.selectionEnd
+        val start = primaryCaret.selectionStart
+        var end = primaryCaret.selectionEnd
+
+        if (start == end) {
+            primaryCaret.setSelection(start, start + 1)
+            end = start + 1
+        }
 
         return { response ->
             WriteCommandAction.runWriteCommandAction(project) {
