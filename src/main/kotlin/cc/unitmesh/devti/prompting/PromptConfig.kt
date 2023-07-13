@@ -20,7 +20,9 @@ data class PromptConfig(
     @SerialName("refactor")
     val refactor: PromptItem,
     @SerialName("write_test")
-    val writeTest: PromptItem
+    val writeTest: PromptItem,
+    @SerialName("spec")
+    val spec: Map<String, String> = mapOf()
 ) {
     companion object {
         private val logger = Logger.getInstance(PromptConfig::class.java)
