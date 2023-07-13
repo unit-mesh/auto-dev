@@ -27,7 +27,7 @@ data class PromptConfig(
 
         fun default(): PromptConfig {
             return PromptConfig(
-                PromptItem("Auto complete code", "{code}"),
+                PromptItem("Complete java code, return rest code, no explaining.", "{code}"),
                 PromptItem("Auto comment code", "{code}"),
                 PromptItem("Code review code", "{code}"),
                 PromptItem("Find bug", "{code}"),

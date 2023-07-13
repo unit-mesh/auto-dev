@@ -41,7 +41,8 @@ class JavaActionPrompting(
     override fun getUIPrompt(): String {
         val prompt = createPrompt(selectedText)
         val finalPrompt = if (additionContext.isNotEmpty()) {
-            "```java\n$additionContext\n$selectedText```"
+            """$additionContext
+                |$selectedText""".trimMargin()
         } else {
             selectedText
         }
@@ -54,7 +55,8 @@ class JavaActionPrompting(
     override fun getRequestPrompt(): String {
         val prompt = createPrompt(selectedText)
         val finalPrompt = if (additionContext.isNotEmpty()) {
-            "```java\n$additionContext\n$selectedText```"
+            """$additionContext
+                |$selectedText""".trimMargin()
         } else {
             selectedText
         }

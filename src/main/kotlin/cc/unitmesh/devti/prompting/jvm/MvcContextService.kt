@@ -45,7 +45,7 @@ class MvcContextService(private val project: Project) {
         val file = psiFile as? PsiJavaFileImpl
         val relevantModel = prepareServiceContext(file)
 
-        return """Complete java code, return rest code, no explaining.
+        return """
 ${relevantModel?.joinToString("\n")}
 """
     }
@@ -70,8 +70,7 @@ ${relevantModel?.joinToString("\n")}
         val relevantModel = (services ?: emptyList()) + (models ?: emptyList())
 
         val clazz = DtClass.fromJavaFile(file)
-        return """Complete java code, return rest code, no explaining. 
-```java
+        return """ 
 ${relevantModel.joinToString("\n")}\n
 // current path: ${clazz.path}
 """
