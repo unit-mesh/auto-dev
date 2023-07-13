@@ -186,58 +186,6 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         return DtClass(endpoint, emptyList())
     }
 
-    override fun isController(code: String): Boolean {
-        if (code.contains("@Controller")) {
-            return true
-        }
-
-        if (code.contains("import org.springframework.stereotype.Controller")) {
-            return true
-        }
-
-        // regex to match `public class xxController`
-        val regex = Regex("public\\s+class\\s+\\w+Controller")
-        return regex.containsMatchIn(code)
-    }
-
-    override fun isService(code: String): Boolean {
-        if (code.contains("@Service")) {
-            return true
-        }
-
-        if (code.contains("import org.springframework.stereotype.Service")) {
-            return true
-        }
-
-        // regex to match `public class xxService`
-        val regex = Regex("public\\s+class\\s+\\w+Service")
-        return regex.containsMatchIn(code)
-    }
-
-    override fun isEntity(code: String): Boolean {
-        if (code.contains("@Entity")) {
-            return true
-        }
-
-        if (code.contains("import javax.persistence.Entity")) {
-            return true
-        }
-
-        // regex to match `public class xxEntity`
-        val regex = Regex("public\\s+class\\s+\\w+Entity")
-        return regex.containsMatchIn(code)
-    }
-
-    override fun isDto(code: String): Boolean {
-        if (code.contains("import lombok.Data")) {
-            return true
-        }
-
-        // regex to match `public class xxDto`
-        val regex = Regex("public\\s+class\\s+\\w+(Dto|DTO|Request|Response|Res|Req)")
-        return regex.containsMatchIn(code)
-    }
-
     override fun createService(code: String): DtClass? {
         val firstService = services.first()
         val packageName = if (services.isNotEmpty()) {

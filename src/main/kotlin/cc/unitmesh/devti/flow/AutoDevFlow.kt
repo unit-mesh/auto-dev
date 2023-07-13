@@ -98,7 +98,7 @@ class AutoDevFlow(
     private fun createCodeByType(code: String, processor: CrudProcessor, target: TargetEndpoint) {
         when {
             processor.isController(code) -> {
-                processor.createControllerOrUpdateMethod(target.controller.name, code, target.hasMatchedController)
+                processor.createControllerOrUpdateMethod(target.controller.name, code, target.isNeedToCreated)
             }
 
             processor.isService(code) -> {

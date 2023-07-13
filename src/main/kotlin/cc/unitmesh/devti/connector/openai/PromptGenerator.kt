@@ -17,7 +17,7 @@ class PromptGenerator {
         val promptText: InputStream = getResource("lookup_or_create_endpoint")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         return promptTextString
-            .replace("{controllers}", files.map { it.name }.joinToString(","))
+            .replace("{controllers}", files.joinToString(",") { it.name })
             .replace("{storyDetail}", storyDetail)
     }
 
