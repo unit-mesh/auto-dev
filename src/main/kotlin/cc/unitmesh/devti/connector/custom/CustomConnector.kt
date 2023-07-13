@@ -2,6 +2,7 @@ package cc.unitmesh.devti.connector.custom
 
 import cc.unitmesh.devti.connector.CodeCopilot
 import cc.unitmesh.devti.settings.AutoDevSettingsState
+import cc.unitmesh.devti.prompting.PromptConfig
 import com.intellij.openapi.diagnostic.Logger
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient

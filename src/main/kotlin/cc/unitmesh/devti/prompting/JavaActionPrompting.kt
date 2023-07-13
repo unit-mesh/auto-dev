@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.prompting
 
-import cc.unitmesh.devti.connector.custom.PromptConfig
 import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import cc.unitmesh.devti.gui.chat.PromptFormatter
 import cc.unitmesh.devti.prompting.jvm.JavaTechStackService

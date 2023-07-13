@@ -1,9 +1,6 @@
 package cc.unitmesh.devti.connector.openai
 
-import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.connector.CodeCopilot
-import cc.unitmesh.devti.connector.DevtiFlowAction
-import cc.unitmesh.devti.flow.model.SimpleProjectInfo
 import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.OPENAI_MODEL

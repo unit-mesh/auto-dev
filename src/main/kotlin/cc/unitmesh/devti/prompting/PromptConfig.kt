@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.connector.custom
+package cc.unitmesh.devti.prompting
 
 import com.intellij.openapi.diagnostic.Logger
 import kotlinx.serialization.SerialName
