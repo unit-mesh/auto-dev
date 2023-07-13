@@ -174,14 +174,22 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
         return DtClass(endpoint, emptyList())
     }
 
-    override fun createService(code: String): DtClass? {
-        val firstService = services.first()
-        return createClassByPackageName(firstService, code, services)
+    override fun createEntity(code: String): DtClass? {
+        return createClassByPackageName(code, entities)
     }
 
-    private fun createClassByPackageName(firstService: PsiFile, code: String, psiFiles: List<PsiFile>): DtClass? {
+    override fun createDto(code: String): DtClass? {
+        return createClassByPackageName(code, dto)
+    }
+
+    override fun createService(code: String): DtClass? {
+        return createClassByPackageName(code, services)
+    }
+
+    private fun createClassByPackageName(code: String, psiFiles: List<PsiFile>): DtClass? {
+        val firstFile = psiFiles.first()
         val packageName = if (psiFiles.isNotEmpty()) {
-            firstService.lookupPackageName()?.packageName
+            firstFile.lookupPackageName()?.packageName
         } else {
             packageCloseToController("service")
         }
@@ -189,21 +197,11 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
         val newCode = "package $packageName;\n\n$code"
 
         if (packageName == null) {
-            log.warn("No package statement found in file ${firstService.name}")
+            log.warn("No package statement found in file ${firstFile.name}")
             return DtClass("", emptyList())
         }
 
         return createClass(newCode, packageName)
-    }
-
-    override fun createDto(code: String): DtClass? {
-        val firstService = dto.first()
-        return createClassByPackageName(firstService, code, dto)
-    }
-
-    override fun createEntity(code: String): DtClass? {
-        val firstService = entities.first()
-        return createClassByPackageName(firstService, code, entities)
     }
 
     override fun createClass(code: String, packageName: String?): DtClass? {
