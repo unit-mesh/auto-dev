@@ -1,10 +1,13 @@
 package cc.unitmesh.devti.settings
 
+import cc.unitmesh.devti.prompting.PromptConfig
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.util.xmlb.XmlSerializerUtil
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 @State(name = "cc.unitmesh.devti.settings.DevtiSettingsState", storages = [Storage("DevtiSettings.xml")])
 class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
@@ -24,7 +27,7 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
 
     override fun loadState(state: AutoDevSettingsState) {
         if (customEnginePrompts == "") {
-            customEnginePrompts = DEFAULT_PROMPTS.trimIndent()
+            customEnginePrompts = Json.encodeToString(PromptConfig.default())
         }
 
         XmlSerializerUtil.copyBean(state, this)
@@ -36,4 +39,4 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
         }
     }
 
-} 
+}

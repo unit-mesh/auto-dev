@@ -28,12 +28,23 @@ data class PromptConfig(
         private val logger = Logger.getInstance(PromptConfig::class.java)
 
         fun default(): PromptConfig {
+            val spec = mapOf(
+                "controller" to "",
+                "service" to "",
+                "model" to "",
+                "repository" to "",
+                "ddl" to "",
+                "code_review" to "",
+                "auto_comment" to "",
+            )
+
             return PromptConfig(
                 PromptItem("Complete java code, return rest code, no explaining.", "{code}"),
                 PromptItem("Auto comment code", "{code}"),
                 PromptItem("Code review code", "{code}"),
                 PromptItem("Find bug", "{code}"),
                 PromptItem("Write test code for", "{code}"),
+                spec
             )
         }
 
