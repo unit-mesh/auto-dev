@@ -175,18 +175,18 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
     }
 
     override fun createEntity(code: String): DtClass? {
-        return createClassByPackageName(code, entities)
+        return createClassByCode(code, entities)
     }
 
     override fun createDto(code: String): DtClass? {
-        return createClassByPackageName(code, dto)
+        return createClassByCode(code, dto)
     }
 
     override fun createService(code: String): DtClass? {
-        return createClassByPackageName(code, services)
+        return createClassByCode(code, services)
     }
 
-    private fun createClassByPackageName(code: String, psiFiles: List<PsiFile>): DtClass? {
+    private fun createClassByCode(code: String, psiFiles: List<PsiFile>): DtClass? {
         val firstFile = psiFiles.first()
         val packageName = if (psiFiles.isNotEmpty()) {
             firstFile.lookupPackageName()?.packageName
