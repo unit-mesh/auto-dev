@@ -25,6 +25,14 @@ class PromptGenerator {
     private fun getResource(fileName: String): InputStream? =
         this::class.java.classLoader.getResourceAsStream("prompts/openai/$fileName.txt")
 
+    fun createDtoAndEntity(storyDetail: String, files: List<DtClass>): String {
+        val promptText: InputStream = getResource("create_dto_and_entity")!!
+        val promptTextString = promptText.bufferedReader().use { it.readText() }
+        return promptTextString
+            .replace("{entityList}", files.joinToString(",") { it.name })
+            .replace("{storyDetail}", storyDetail)
+    }
+
     fun updateControllerMethod(targetClazz: DtClass, storyDetail: String): String {
         val promptText: InputStream = getResource("update_controller_method")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }

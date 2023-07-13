@@ -1,0 +1,17 @@
+请根据下面的用户故事以及 {controllerName} 的相关信息，编写 DTO 和 Entity 的代码。要求如下：
+{spec}
+- 项目使用 Java 语言
+- 如果代码里包含了其它类（如：Request、Response），请使用新的 markdown 代码块包裹。
+-
+
+用户故事如下：
+
+###
+{storyDetail}
+###
+
+已有 Entity 列表如下：
+
+###
+{entityList}
+###

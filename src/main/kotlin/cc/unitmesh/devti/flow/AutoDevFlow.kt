@@ -46,7 +46,23 @@ class AutoDevFlow(
     }
 
     /**
-     * Step 2: fetch suggest endpoint, if not found, return null
+     * Step 2: base on story detail, generate dto and entity
+     */
+    fun generateDtoAndEntity(storyDetail: String) {
+        val files: List<DtClass> = processor?.controllerList() ?: emptyList()
+        val promptText = promptGenerator.createDtoAndEntity(storyDetail, files)
+
+        logger.warn("needUpdateMethodForController prompt text: $promptText")
+        val result = executePrompt(promptText)
+
+        val dtos = parseCodeFromString(result)
+        dtos.forEach { dto ->
+            processor?.let { createCodeByType(dto, it) }
+        }
+    }
+
+    /**
+     * Step 3: fetch suggest endpoint, if not found, return null
      */
     fun fetchSuggestEndpoint(storyDetail: String): TargetEndpoint {
         val files: List<DtClass> = processor?.controllerList() ?: emptyList()
@@ -90,15 +106,20 @@ class AutoDevFlow(
 
             codes.indices.forEach { i ->
                 val code = codes[i]
-                createCodeByType(code, processor, target)
+                createCodeByType(code, processor, target.isNeedToCreated, target.controller.name)
             }
         }
     }
 
-    private fun createCodeByType(code: String, processor: SpringBaseCrud, target: TargetEndpoint) {
+    private fun createCodeByType(
+        code: String,
+        processor: SpringBaseCrud,
+        isNeedCreateController: Boolean = false,
+        controllerName: String = "",
+    ) {
         when {
             processor.isController(code) -> {
-                processor.createControllerOrUpdateMethod(target.controller.name, code, target.isNeedToCreated)
+                processor.createControllerOrUpdateMethod(controllerName, code, isNeedCreateController)
             }
 
             processor.isService(code) -> {

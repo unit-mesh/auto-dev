@@ -73,10 +73,13 @@ class AutoDevRunProfileState(
 
                     indicator.fraction = 0.3
 
+                    indicator.text = AutoDevBundle.message("devti.runconfig.progress.generatingDtoAndEntity")
+                    autoDevFlow.generateDtoAndEntity(storyDetail)
+
                     indicator.text = AutoDevBundle.message("devti.runconfig.progress.fetchingSuggestEndpoint")
                     val target = autoDevFlow.fetchSuggestEndpoint(storyDetail)
 
-                    indicator.fraction = 0.6
+                    indicator.fraction = 0.7
 
                     indicator.text = AutoDevBundle.message("devti.runconfig.progress.updatingEndpointMethod")
                     autoDevFlow.updateEndpointMethod(target, storyDetail)
