@@ -245,17 +245,15 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
     }
 
     override fun createClass(code: String, packageName: String?): DtClass? {
-        val parentDirectory = firstController().virtualFile?.parent ?: return null
+        // controller parent will be ${package}.controller, ${package}.controller parent will be ${package}
+        var parentDirectory = firstController().virtualFile?.parent?.parent ?: return null
         val fileSystem = firstController().virtualFile?.fileSystem
         ApplicationManager.getApplication().invokeLater {
             runWriteAction {
-                // add packageName to code
-                val newCode = "package $packageName;\n\n$code"
-
-                val newClass = psiElementFactory.createClassFromText(newCode, null)
+                val newClass = psiElementFactory.createClassFromText(code, null)
 
                 val regex = Regex("public\\s+class\\s+(\\w+)")
-                val matchResult = regex.find(newCode)
+                val matchResult = regex.find(code)
 
                 val className = if (matchResult?.groupValues?.get(1) != null) {
                     matchResult.groupValues[1]
@@ -265,8 +263,19 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
                     "DummyClass"
                 }
 
+                val classDir = packageName?.split(".")?.lastOrNull()
+                parentDirectory = if (classDir != null) {
+                    if (parentDirectory.findChild(classDir) == null) {
+                        parentDirectory.createChildDirectory(fileSystem, classDir)
+                    } else {
+                        parentDirectory.findChild(classDir)!!
+                    }
+                } else {
+                    parentDirectory
+                }
+
                 val virtualFile = parentDirectory.createChildData(fileSystem, "$className.java")
-                VfsUtil.saveText(virtualFile, newCode)
+                VfsUtil.saveText(virtualFile, code)
 
                 log.warn("Created file ${virtualFile.path}")
                 parentDirectory.refresh(false, true)

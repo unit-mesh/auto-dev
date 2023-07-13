@@ -1,7 +1,7 @@
 请根据下面的用户故事以及 {controllerName} 的相关信息，编写 DTO 和 Controller 部分的 Java 代码。要求如下：
 
 1. 项目使用 Java 语言 + Spring 编写，项目的分层结构请参考：DTO - Controller - Service - Repository
-2. 只返回 Controller 对应方法的代码。
+2. 只返回 DTO 和 Controller 对应方法的代码。
 3. 如果代码里包含了其它类（如：Request、Response），请使用新的 markdown 代码块包裹。
 4. 不做解释，只返回修改完的函数代码。
 

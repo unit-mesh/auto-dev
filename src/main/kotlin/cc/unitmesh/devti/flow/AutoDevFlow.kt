@@ -142,7 +142,6 @@ class AutoDevFlow(
         return executePrompt(promptText)
     }
 
-    // todo: log in here
     private fun executePrompt(promptText: String): String {
         ui.add(promptText, true)
         return runBlocking {
