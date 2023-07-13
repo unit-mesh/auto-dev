@@ -186,12 +186,14 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
             packageCloseToController("service")
         }
 
+        val newCode = "package $packageName;\n\n$code"
+
         if (packageName == null) {
             log.warn("No package statement found in file ${firstService.name}")
             return DtClass("", emptyList())
         }
 
-        return createClass(code, packageName)
+        return createClass(newCode, packageName)
     }
 
     override fun createDto(code: String): DtClass? {
