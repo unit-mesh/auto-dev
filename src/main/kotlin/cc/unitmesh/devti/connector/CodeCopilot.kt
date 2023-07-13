@@ -11,7 +11,7 @@ interface CodeCopilot {
     fun stream(promptText: String): Flow<String> {
         return callbackFlow {
             val prompt = prompt(promptText)
-            offer(prompt)
+            trySend(prompt)
         }
     }
 }

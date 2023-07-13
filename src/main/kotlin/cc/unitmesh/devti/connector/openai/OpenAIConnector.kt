@@ -7,7 +7,7 @@ import cc.unitmesh.devti.settings.OPENAI_MODEL
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.NlsSafe
-import com.theokanning.openai.OpenAiApi
+import com.theokanning.openai.client.OpenAiApi
 import com.theokanning.openai.completion.chat.ChatCompletionRequest
 import com.theokanning.openai.completion.chat.ChatMessage
 import com.theokanning.openai.completion.chat.ChatMessageRole
@@ -16,7 +16,6 @@ import com.theokanning.openai.service.OpenAiService.defaultClient
 import com.theokanning.openai.service.OpenAiService.defaultObjectMapper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.runBlocking
@@ -61,9 +60,8 @@ class OpenAIConnector : CodeCopilot {
         }
     }
 
-    val messages: MutableList<ChatMessage> = ArrayList()
-    var historyMessageLength: Int = 0
-
+    private val messages: MutableList<ChatMessage> = ArrayList()
+    private var historyMessageLength: Int = 0
 
     override fun prompt(promptText: String): String {
         val completionRequest = prepareRequest(promptText)
@@ -71,8 +69,6 @@ class OpenAIConnector : CodeCopilot {
         val completion = service.createChatCompletion(completionRequest)
         val output = completion
             .choices[0].message.content
-
-        logger.warn("output: $output")
 
         return output
     }
@@ -88,7 +84,7 @@ class OpenAIConnector : CodeCopilot {
                     .blockingForEach { response ->
                         val completion = response.choices[0].message
                         if (completion != null && completion.content != null) {
-                            trySendBlocking(completion.content)
+                            trySend(completion.content)
                         }
                     }
 
