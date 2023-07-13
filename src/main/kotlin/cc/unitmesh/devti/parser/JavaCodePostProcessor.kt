@@ -15,6 +15,9 @@ class JavaCodePostProcessor(
             return completeCode
         }
 
+        // if prefix code endsWith "    ", then it should be an indent, the complete code should also be indented
+        val isNeedIndent = !prefixCode.endsWith("    ")
+
         var result = completeCode
 
         // if suffixCode includes "    }\n}", then remove completeCode's last "}\n}"
@@ -22,7 +25,7 @@ class JavaCodePostProcessor(
             result = result.substring(0, result.length - 4)
         }
 
-        // if prefixCode last line ends with same space, count the space number
+        // if prefixCode last line ends with the same space, count the space number
         val prefixLastLine = prefixCode.split("\n").last()
         val lastLineSpaceCount = spaceRegex.find(prefixLastLine)?.value?.length ?: 0
 
@@ -31,17 +34,19 @@ class JavaCodePostProcessor(
             result = result.substring(0, result.length - 1)
         }
 
-        // if complete Code is method, not start with tab/space, add 4 spaces for each line
-        if (result.startsWith("public ") || result.startsWith("private ") || result.startsWith("protected ")) {
-            result = result.split("\n").joinToString("\n") { "    $it" }
+        if (isNeedIndent) {
+            // if complete Code is method, not start with tab/space, add 4 spaces for each line
+            if (result.startsWith("public ") || result.startsWith("private ") || result.startsWith("protected ")) {
+                result = result.split("\n").joinToString("\n") { "    $it" }
+            }
+
+            // if complete code starts with annotation, then also add 4 spaces for each line
+            if (result.startsWith("@")) {
+                result = result.split("\n").joinToString("\n") { "    $it" }
+            }
         }
 
-        // if complete code starts with annotation, then also add 4 spaces for each line
-        if (result.startsWith("@")) {
-            result = result.split("\n").joinToString("\n") { "    $it" }
-        }
-
-        // if lastLineSpaceCount > 0, then remove same space in result begin if exists
+        // if lastLineSpaceCount > 0, then remove the same space in a result begin if exists
         if (lastLineSpaceCount > 0) {
             val spaceRegex = Regex("^\\s{$lastLineSpaceCount}")
             result = result.replace(spaceRegex, "")
