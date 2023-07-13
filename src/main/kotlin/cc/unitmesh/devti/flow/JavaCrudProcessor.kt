@@ -274,7 +274,13 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
                     parentDirectory
                 }
 
-                val virtualFile = parentDirectory.createChildData(fileSystem, "$className.java")
+                val targetClass = "$className.java"
+                if (parentDirectory.findChild(targetClass) != null) {
+                    log.warn("File $targetClass already exists")
+                    return@runWriteAction
+                }
+
+                val virtualFile = parentDirectory.createChildData(fileSystem, targetClass)
                 VfsUtil.saveText(virtualFile, code)
 
                 log.warn("Created file ${virtualFile.path}")
