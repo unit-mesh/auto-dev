@@ -19,6 +19,7 @@ import com.theokanning.openai.service.OpenAiService.defaultClient
 import com.theokanning.openai.service.OpenAiService.defaultObjectMapper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.runBlocking
@@ -90,7 +91,7 @@ class OpenAIConnector : CodeCopilot {
                     .blockingForEach { response ->
                         val completion = response.choices[0].message
                         if (completion != null && completion.content != null) {
-                            trySend(completion.content)
+                            trySendBlocking(completion.content)
                         }
                     }
 

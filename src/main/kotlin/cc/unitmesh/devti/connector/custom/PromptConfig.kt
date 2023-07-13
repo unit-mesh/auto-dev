@@ -43,7 +43,7 @@ data class PromptConfig(
             try {
                 return Json.decodeFromString(prompts)
             } catch (e: Exception) {
-                logger.error("Error parsing prompts: $e")
+                logger.warn("Error parsing prompts: $e")
             }
 
             return default()

@@ -76,17 +76,14 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
         updateUI()
     }
 
-    fun updateMessage(message: Flow<String>) {
+    suspend fun updateMessage(message: Flow<String>) {
         myList.remove(myList.componentCount - 1)
         val messageComponent = MessageComponent("", false)
         myList.add(messageComponent)
 
-        runBlocking {
-            message.collect {
-                logger.info("updateMessage: $it")
-                messageComponent.text += it
-                messageComponent.updateUI()
-            }
+        message.collect {
+            messageComponent.text += it
+            messageComponent.updateUI()
         }
 
         progressBar.isIndeterminate = false
@@ -104,8 +101,8 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
         myList.add(messageComponent)
 
         content.collect {
-            logger.info("updateMessage: $it")
             messageComponent.text += it
+            messageComponent.updateUI()
         }
 
         val finalText = messageComponent.text
