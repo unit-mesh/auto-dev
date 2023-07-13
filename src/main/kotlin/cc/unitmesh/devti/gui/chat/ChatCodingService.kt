@@ -2,13 +2,14 @@ package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.connector.ConnectorService
+import cc.unitmesh.devti.parser.CodePostProcessor
 import com.intellij.openapi.application.ApplicationManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 
 class ChatCodingService(var actionType: ChatBotActionType) {
     private val connectorService = ConnectorService.getInstance()
-    
+
     val action = when (actionType) {
         ChatBotActionType.EXPLAIN -> "explain"
         ChatBotActionType.REVIEW -> "review"
@@ -28,7 +29,9 @@ class ChatCodingService(var actionType: ChatBotActionType) {
     fun handlePromptAndResponse(
         ui: ChatCodingComponent,
         prompt: PromptFormatter,
-        replaceSelectedText: ((response: String) -> Unit)? = null
+        replaceSelectedText: ((response: String) -> Unit)? = null,
+        prefixText: String,
+        suffixText: String
     ) {
         ui.add(prompt.getUIPrompt(), true)
         ui.add(AutoDevBundle.message("devti.loading"))
@@ -38,11 +41,11 @@ class ChatCodingService(var actionType: ChatBotActionType) {
             runBlocking {
                 when {
                     actionType === ChatBotActionType.REFACTOR -> ui.updateReplaceableContent(response) {
-                        replaceSelectedText?.invoke(getCodeSection(it))
+                        replaceSelectedText?.invoke(getCodeSection(it, prefixText, suffixText))
                     }
 
                     actionType === ChatBotActionType.CODE_COMPLETE -> ui.updateReplaceableContent(response) {
-                        replaceSelectedText?.invoke(getCodeSection(it))
+                        replaceSelectedText?.invoke(getCodeSection(it, prefixText, suffixText))
                     }
 
                     else -> ui.updateMessage(response)
@@ -55,12 +58,13 @@ class ChatCodingService(var actionType: ChatBotActionType) {
         return connectorService.connector().stream(requestPrompt)
     }
 
-    private fun getCodeSection(content: String): String {
+    private fun getCodeSection(content: String, prefixText: String, suffixText: String): String {
         val pattern = "```(.+?)```".toRegex(RegexOption.DOT_MATCHES_ALL)
         val match = pattern.find(content)
 
         if (match != null) return match.groupValues[1].trim()
-        return content
+
+        return CodePostProcessor(prefixText, suffixText, content).execute()
     }
 }
 

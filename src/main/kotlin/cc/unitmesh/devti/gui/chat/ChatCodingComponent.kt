@@ -149,7 +149,7 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
             chatCodingService.handlePromptAndResponse(this, object : PromptFormatter {
                 override fun getUIPrompt() = prompt
                 override fun getRequestPrompt() = prompt
-            })
+            }, suffixText = "", prefixText = "")
         }
 
         searchTextArea.addKeyListener(object : KeyAdapter() {

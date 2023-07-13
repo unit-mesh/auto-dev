@@ -19,7 +19,7 @@ import com.intellij.psi.impl.source.PsiJavaFileImpl
 class JavaActionPrompting(
     private val action: ChatBotActionType,
     private val lang: String,
-    private val selectedText: String,
+    private val prefixText: String,
     private val file: PsiFile?,
     val project: Project,
 ) : PromptFormatter {
@@ -39,12 +39,12 @@ class JavaActionPrompting(
     }
 
     override fun getUIPrompt(): String {
-        val prompt = createPrompt(selectedText)
+        val prompt = createPrompt(prefixText)
         val finalPrompt = if (additionContext.isNotEmpty()) {
             """$additionContext
-                |$selectedText""".trimMargin()
+                |$prefixText""".trimMargin()
         } else {
-            selectedText
+            prefixText
         }
 
         return """$prompt:
@@ -53,12 +53,12 @@ class JavaActionPrompting(
     }
 
     override fun getRequestPrompt(): String {
-        val prompt = createPrompt(selectedText)
+        val prompt = createPrompt(prefixText)
         val finalPrompt = if (additionContext.isNotEmpty()) {
             """$additionContext
-                |$selectedText""".trimMargin()
+                |$prefixText""".trimMargin()
         } else {
-            selectedText
+            prefixText
         }
 
         return """$prompt:

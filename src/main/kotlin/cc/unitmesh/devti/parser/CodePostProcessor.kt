@@ -8,7 +8,9 @@ class CodePostProcessor(
     val suffixCode: String,
     val completeCode: String
 ) {
-    fun postProcess(): String {
+    private val spaceRegex = Regex("\\s+")
+
+    fun execute(): String {
         if (completeCode.isEmpty()) {
             return completeCode
         }
@@ -20,6 +22,10 @@ class CodePostProcessor(
             result = result.substring(0, result.length - 4)
         }
 
+        // if prefixCode last line ends with same space, count the space number
+        val prefixLastLine = prefixCode.split("\n").last()
+        val lastLineSpaceCount = spaceRegex.find(prefixLastLine)?.value?.length ?: 0
+
         // if complete Code is method, not start with tab/space, add 4 spaces for each line
         if (result.startsWith("public ") || result.startsWith("private ") || result.startsWith("protected ")) {
             result = result.split("\n").joinToString("\n") { "    $it" }
@@ -30,6 +36,11 @@ class CodePostProcessor(
             result = result.split("\n").joinToString("\n") { "    $it" }
         }
 
+        // if lastLineSpaceCount > 0, then remove same space in result begin if exists
+        if (lastLineSpaceCount > 0) {
+            val spaceRegex = Regex("^\\s{$lastLineSpaceCount}")
+            result = result.replace(spaceRegex, "")
+        }
 
         return result
     }

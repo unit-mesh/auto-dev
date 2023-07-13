@@ -19,9 +19,11 @@ abstract class ChatBaseAction : AnAction() {
         val project = event.project
         val toolWindowManager = ToolWindowManager.getInstance(project!!).getToolWindow(DevtiFlowToolWindowFactory.id)
         val contentManager = toolWindowManager?.contentManager
+        val document = event.getData(CommonDataKeys.EDITOR)?.document
 
         val caretModel = event.getData(CommonDataKeys.EDITOR)?.caretModel
-        var selectedText = caretModel?.currentCaret?.selectedText ?: ""
+        var prefixText = caretModel?.currentCaret?.selectedText ?: ""
+
         val lang = event.getData(CommonDataKeys.PSI_FILE)?.language?.displayName ?: ""
         val file = event.getData(CommonDataKeys.PSI_FILE)
 
@@ -33,18 +35,20 @@ abstract class ChatBaseAction : AnAction() {
         contentManager?.addContent(content!!)
         toolWindowManager?.activate(null)
 
+        val lineEndOffset = document?.getLineEndOffset(document.getLineNumber(caretModel?.offset ?: 0)) ?: 0
         // if selectedText is empty, then we use the cursor position to get the text
-        if (selectedText.isEmpty()) {
-            val offset = caretModel?.offset ?: 0
-            val document = event.getData(CommonDataKeys.EDITOR)?.document
-            val lineEndOffset = document?.getLineEndOffset(document.getLineNumber(offset)) ?: 0
-            selectedText = document?.text?.substring(0, lineEndOffset) ?: ""
+        if (prefixText.isEmpty()) {
+            prefixText = document?.text?.substring(0, lineEndOffset) ?: ""
         }
+        // suffixText is the text after the selectedText, which is the text after the cursor position
+        val suffixText = document?.text?.substring(lineEndOffset) ?: ""
 
         chatCodingService.handlePromptAndResponse(
             contentPanel,
-            JavaActionPrompting(chatCodingService.actionType, lang, selectedText, file, project),
-            getReplaceableAction(event)
+            JavaActionPrompting(chatCodingService.actionType, lang, prefixText, file, project),
+            getReplaceableAction(event),
+            prefixText,
+            suffixText
         )
     }
 

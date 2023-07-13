@@ -16,7 +16,7 @@ public void test() {
         """.trimIndent()
 
         val postProcessor = CodePostProcessor(prefix, suffix, complete)
-        val result = postProcessor.postProcess()
+        val result = postProcessor.execute()
 
         assertEquals(
             result, """    public void test() {
@@ -34,7 +34,7 @@ public void test() {
 }
 }"""
         val postProcessor = CodePostProcessor(prefix, suffix, complete)
-        val result = postProcessor.postProcess()
+        val result = postProcessor.execute()
 
         assertEquals(
             result, """    public void test() {"""
