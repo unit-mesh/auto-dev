@@ -31,11 +31,9 @@ data class PromptConfig(
             val spec = mapOf(
                 "controller" to "",
                 "service" to "",
-                "model" to "",
+                "entity" to "",
                 "repository" to "",
-                "ddl" to "",
-                "code_review" to "",
-                "auto_comment" to "",
+                "ddl" to ""
             )
 
             return PromptConfig(

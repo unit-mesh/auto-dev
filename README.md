@@ -90,13 +90,11 @@ Output Screenshots:
     "input": ""
   },
   "spec": {
-    "controller": "",
-    "service": "",
-    "model": "",
-    "repository": "",
-    "ddl": "",
-    "code_review": "",
-    "auto_comment": ""
+    "controller": "1. 在 Controller 中使用 BeanUtils.copyProperties 进行 DTO 转换 Entity ；2. 禁止使用 Autowired；3. 使用 Swagger Annotation 表明 API 含义。4. Controller 方法应该捕获并处理业务异常，不应该抛出系统异常。",
+    "service": "1.  Service 层应该使用构造函数注入或者 setter 注入，不要使用 @Autowired 注解注入。",
+    "entity": "1. Entity 类应该使用 JPA 注解进行数据库映射。2. 实体类名应该与对应的数据库表名相同。实体类应该使用注解标记主键和表名，例如：@Id、@GeneratedValue、@Table 等。",
+    "repository": "1. Repository 接口应该继承 JpaRepository 接口，以获得基本的 CRUD 操作。",
+    "ddl": "1. 字段应该使用 NOT NULL 约束，确保数据的完整性。",
   }
 }
 ```
