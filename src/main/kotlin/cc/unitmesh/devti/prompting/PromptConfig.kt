@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.prompting
 
+import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.diagnostic.Logger
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -26,6 +27,15 @@ data class PromptConfig(
 ) {
     companion object {
         private val logger = Logger.getInstance(PromptConfig::class.java)
+
+        /**
+         * Load prompt config from settings
+         */
+        fun load(): PromptConfig {
+            val config = tryParse(AutoDevSettingsState.getInstance().customEnginePrompts)
+            logger.info("Loaded prompt config: $config")
+            return config
+        }
 
         fun default(): PromptConfig {
             val spec = mapOf(

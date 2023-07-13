@@ -33,7 +33,7 @@ class JavaActionPrompting(
     private val isService = fileName.endsWith("Service.java") || fileName.endsWith("ServiceImpl.java")
 
     init {
-        val prompts = autoDevSettingsState?.customEnginePrompts
+        val prompts = autoDevSettingsState.customEnginePrompts
         promptConfig = PromptConfig.tryParse(prompts)
     }
 
@@ -101,16 +101,24 @@ class JavaActionPrompting(
                 prompt = if (codeComplete?.instruction?.isNotEmpty() == true) {
                     codeComplete.instruction
                 } else {
-                    "请补全如下的 $lang 代码"
+                    "Complete $lang code, return rest code, no explaining"
                 }
 
                 when {
                     isController -> {
-                        additionContext = mvcContextService.controllerPrompt(file)
+                        val spec = PromptConfig.load().spec["controller"]
+                        if (!spec.isNullOrEmpty()) {
+                            additionContext = "requirements: \n$spec"
+                        }
+                        additionContext += mvcContextService.controllerPrompt(file)
                     }
 
                     isService -> {
-                        additionContext = mvcContextService.servicePrompt(file)
+                        val spec = PromptConfig.load().spec["service"]
+                        if (!spec.isNullOrEmpty()) {
+                            additionContext = "requirements: \n$spec"
+                        }
+                        additionContext += mvcContextService.servicePrompt(file)
                     }
                 }
             }
