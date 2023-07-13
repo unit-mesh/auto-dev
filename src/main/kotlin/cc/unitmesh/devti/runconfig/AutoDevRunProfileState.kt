@@ -17,6 +17,8 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
+import com.intellij.openapi.components.service
+import com.intellij.openapi.components.services
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressIndicator
@@ -42,7 +44,7 @@ class AutoDevRunProfileState(
         val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(DevtiFlowToolWindowFactory.id)
         val contentManager = toolWindowManager?.contentManager
 
-        val javaAuto = JavaCrudProcessor(project)
+        val javaAuto = project.service<JavaCrudProcessor>()
         val gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)
 
         val openAIRunner = OpenAIConnector()
