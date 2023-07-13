@@ -2,6 +2,7 @@ package cc.unitmesh.devti.connector.openai
 
 import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.flow.model.SimpleProjectInfo
+import cc.unitmesh.devti.prompting.PromptConfig
 import java.io.InputStream
 
 class PromptGenerator {
@@ -27,10 +28,13 @@ class PromptGenerator {
     fun updateControllerMethod(targetClazz: DtClass, storyDetail: String): String {
         val promptText: InputStream = getResource("update_controller_method")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
+        val spec = PromptConfig.load().spec["controller"]
+
         return promptTextString
             .replace("{controllerName}", targetClazz.name)
             .replace("{controllers}", targetClazz.format())
             .replace("{storyDetail}", storyDetail)
+            .replace("{spec}", spec ?: "")
     }
 
     fun autoComment(methodCode: String): String {
