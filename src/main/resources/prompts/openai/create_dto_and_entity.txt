@@ -3,15 +3,28 @@
 - 项目使用 Java 语言
 - 如果代码里包含了其它类（如：Request、Response），请使用新的 markdown 代码块包裹。
 - 如果已经存在 Entity、DTO，不需要返回他们的代码。
-
-用户故事如下：
+- 只返回 DTO 和 entity 代码块，不需要解释。
+- 你的返回代码应该是完整的，可以直接编译通过的。
+- 返回示例如下：
+###
+// Request
+```java
+```
+// Response
+```java
+```
+// Entity
+```java
+```
+###
 
 ###
+// 用户故事：
 {storyDetail}
 ###
 
-已有 Entity 列表如下：
+###
+// 已有 Entity 列表如下：
+// {entityList}
+###
 
-###
-{entityList}
-###

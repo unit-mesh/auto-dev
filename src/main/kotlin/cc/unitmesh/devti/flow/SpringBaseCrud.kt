@@ -6,6 +6,10 @@ import com.intellij.psi.PsiClass
 interface SpringBaseCrud {
     fun controllerList(): List<DtClass>
     fun serviceList(): List<DtClass>
+
+    /**
+     * return all entity class + dto class
+     */
     fun modelList(): List<DtClass>
     fun createControllerOrUpdateMethod(targetController: String, code: String, isControllerExist: Boolean)
     fun createController(endpoint: String, code: String): DtClass?
@@ -14,7 +18,14 @@ interface SpringBaseCrud {
     fun createDto(code: String): DtClass?
     fun createClass(code: String, packageName: String?): DtClass?
 
-    fun dtoFilter(clazz: PsiClass): Boolean = clazz.name?.lowercase()?.endsWith("dto") ?: false
+    fun dtoFilter(clazz: PsiClass): Boolean {
+        val className = clazz.name?.lowercase()
+
+        // endsWith dto, request, response
+        return (className?.endsWith("dto") == true ||
+                className?.endsWith("request") == true
+                || className?.endsWith("response") == true)
+    }
 
     fun controllerFilter(clazz: PsiClass): Boolean = clazz.annotations
         .map { it.qualifiedName }.any {

@@ -32,8 +32,6 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
 
     private val controllers = getAllControllerFiles()
     private val services = getAllServiceFiles()
-    private val dto = getAllDtoFiles()
-    private val entities = getAllEntityFiles()
 
     private fun getAllEntityFiles(): List<PsiFile> {
         val psiManager = PsiManager.getInstance(project)
@@ -116,7 +114,8 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
     }
 
     override fun modelList(): List<DtClass> {
-        return this.entities.map {
+        val files = this.getAllEntityFiles() + this.getAllDtoFiles()
+        return files.map {
             val className = it.name.substring(0, it.name.length - ".java".length)
             DtClass.fromPsiFile(it) ?: DtClass(className, emptyList())
         }
@@ -175,11 +174,11 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
     }
 
     override fun createEntity(code: String): DtClass? {
-        return createClassByCode(code, entities)
+        return createClassByCode(code, getAllEntityFiles())
     }
 
     override fun createDto(code: String): DtClass? {
-        return createClassByCode(code, dto)
+        return createClassByCode(code, getAllDtoFiles())
     }
 
     override fun createService(code: String): DtClass? {
