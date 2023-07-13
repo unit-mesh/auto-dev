@@ -26,6 +26,11 @@ class JavaCodePostProcessor(
         val prefixLastLine = prefixCode.split("\n").last()
         val lastLineSpaceCount = spaceRegex.find(prefixLastLine)?.value?.length ?: 0
 
+        // if suffix ends with "}", and complete code ends with "}\n}", then remove complete code's last "}"
+        if (result.endsWith("}\n}") and (suffixCode.endsWith("}") || suffixCode.endsWith("}\n"))) {
+            result = result.substring(0, result.length - 1)
+        }
+
         // if complete Code is method, not start with tab/space, add 4 spaces for each line
         if (result.startsWith("public ") || result.startsWith("private ") || result.startsWith("protected ")) {
             result = result.split("\n").joinToString("\n") { "    $it" }
@@ -34,11 +39,6 @@ class JavaCodePostProcessor(
         // if complete code starts with annotation, then also add 4 spaces for each line
         if (result.startsWith("@")) {
             result = result.split("\n").joinToString("\n") { "    $it" }
-        }
-
-        // if suffix ends with "}", and complete code ends with "}\n}", then remove complete code's last "}"
-        if (result.endsWith("}\n}") and suffixCode.endsWith("}")) {
-            result = result.substring(0, result.length - 1)
         }
 
         // if lastLineSpaceCount > 0, then remove same space in result begin if exists
