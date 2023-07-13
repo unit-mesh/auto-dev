@@ -10,6 +10,8 @@ interface CrudProcessor {
     fun createController(endpoint: String, code: String): DtClass?
     fun isService(code: String): Boolean
     fun isDto(code: String): Boolean
+    fun isEntity(code: String): Boolean
+    fun createEntity(code: String): DtClass?
     fun createService(code: String): DtClass?
     fun createDto(code: String): DtClass?
     fun createClass(code: String, packageName: String?): DtClass?

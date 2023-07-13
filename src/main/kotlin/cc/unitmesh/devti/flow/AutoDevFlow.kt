@@ -105,6 +105,10 @@ class AutoDevFlow(
                 processor.createService(code)
             }
 
+            processor.isEntity(code) -> {
+                processor.createEntity(code)
+            }
+
             processor.isDto(code) -> {
                 processor.createDto(code)
             }

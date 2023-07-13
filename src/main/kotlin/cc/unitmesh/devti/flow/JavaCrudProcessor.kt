@@ -33,6 +33,16 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
     private val controllers = getAllControllerFiles()
     private val services = getAllServiceFiles()
     private val dto = getAllDtoFiles()
+    private val entities = getAllEntityFiles()
+
+    private fun getAllEntityFiles(): List<PsiFile> {
+        val psiManager = PsiManager.getInstance(project)
+
+        val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
+        val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
+
+        return filterFiles(javaFiles, psiManager, ::entityFilter)
+    }
 
     private fun getAllControllerFiles(): List<PsiFile> {
         val psiManager = PsiManager.getInstance(project)
@@ -82,6 +92,11 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
     private fun serviceFilter(clazz: PsiClass): Boolean = clazz.annotations
         .map { it.qualifiedName }.any {
             it == "org.springframework.stereotype.Service"
+        }
+
+    private fun entityFilter(clazz: PsiClass): Boolean = clazz.annotations
+        .map { it.qualifiedName }.any {
+            it == "javax.persistence.Entity"
         }
 
     private fun dtoFilter(clazz: PsiClass): Boolean = clazz.name?.lowercase()?.endsWith("dto") ?: false
@@ -199,6 +214,20 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         return regex.containsMatchIn(code)
     }
 
+    override fun isEntity(code: String): Boolean {
+        if (code.contains("@Entity")) {
+            return true
+        }
+
+        if (code.contains("import javax.persistence.Entity")) {
+            return true
+        }
+
+        // regex to match `public class xxEntity`
+        val regex = Regex("public\\s+class\\s+\\w+Entity")
+        return regex.containsMatchIn(code)
+    }
+
     override fun isDto(code: String): Boolean {
         if (code.contains("import lombok.Data")) {
             return true
@@ -242,6 +271,22 @@ class JavaCrudProcessor(val project: Project) : CrudProcessor {
         }
 
         return createClass(newCode, packageName)
+    }
+
+    override fun createEntity(code: String): DtClass? {
+        val firstService = entities.first()
+        val packageName = if (entities.isNotEmpty()) {
+            firstService.lookupPackageName()?.packageName
+        } else {
+            packageCloseToController("entity")
+        }
+
+        if (packageName == null) {
+            log.warn("No package statement found in file ${firstService.name}")
+            return DtClass("", emptyList())
+        }
+
+        return createClass(code, packageName)
     }
 
     override fun createClass(code: String, packageName: String?): DtClass? {
