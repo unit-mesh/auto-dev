@@ -182,7 +182,7 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
     }
 
     override fun createService(code: String): DtClass? {
-        return createClassByCode(code, services)
+        return createClassByCode(code, getAllServiceFiles())
     }
 
     private fun createClassByCode(code: String, psiFiles: List<PsiFile>): DtClass? {
