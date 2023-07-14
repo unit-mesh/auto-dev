@@ -2,8 +2,39 @@
 {spec}
 - 每个 Request，Response，Entity 请使用新的 markdown 代码块（```java）。
 - 每个 Request，Response，Entity 请使用独立的 markdown 代码块。
-- 如果已经存在 Entity、DTO，请不要返回新的。
+- 如果已经存在 Entity，请不要返回新的。
 - 你的返回代码应该是完整的，可以直接编译通过的。
+- 返回示例如下：
+###
+// {if not exist}
+```java
+import lombok.Data;
+
+@Data public class {requestName} {
+    {requestField}
+}
+```
+
+// {if not exist}
+```java
+import lombok.Data;
+
+@Data public class {responseName} {
+    {responseField}
+}
+```
+
+// {if not exist}
+```java
+import javax.persistence.*;
+
+@Entity
+@Table(name="tw_{tableName}")
+public class {entityName} {
+    {entityField}
+}
+```
+###
 
 ###
 // 用户故事：
