@@ -86,13 +86,15 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
         }
     }
 
-    suspend fun updateMessage(content: Flow<String>) {
+    suspend fun updateMessage(content: Flow<String>): String {
         myList.remove(myList.componentCount - 1)
-        updateMessageInUi(content)
+        val result = updateMessageInUi(content)
 
         progressBar.isIndeterminate = false
         progressBar.isVisible = false
         updateUI()
+
+        return result
     }
 
     private fun scrollToBottom() {

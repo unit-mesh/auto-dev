@@ -237,9 +237,9 @@ class AutoDevFlow(
     private fun executePrompt(promptText: String): String {
         ui.add(promptText, true)
         return runBlocking {
-            val prompt = connector.prompt(promptText)
-            ui.add(prompt, false)
-            return@runBlocking prompt
+            val prompt = connector.stream(promptText)
+            val result = ui.updateMessage(prompt)
+            return@runBlocking result
         }
     }
 
