@@ -6,7 +6,7 @@ import cc.unitmesh.devti.flow.kanban.Kanban
 import cc.unitmesh.devti.flow.model.SimpleStory
 import cc.unitmesh.devti.connector.DevtiFlowAction
 import cc.unitmesh.devti.connector.openai.OpenAIConnector
-import cc.unitmesh.devti.connector.openai.PromptGenerator
+import cc.unitmesh.devti.connector.openai.PromptTemplate
 import cc.unitmesh.devti.flow.model.SimpleProjectInfo
 import cc.unitmesh.devti.flow.model.TargetEndpoint
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
@@ -24,7 +24,7 @@ class AutoDevFlow(
     private val processor: SpringBaseCrud? = null,
     val ui: ChatCodingComponent,
 ) : DevtiFlowAction {
-    private val promptGenerator = PromptGenerator()
+    private val promptTemplate = PromptTemplate()
     private var selectedControllerName = ""
     private var selectedControllerCode = ""
 
@@ -55,7 +55,7 @@ class AutoDevFlow(
      */
     fun generateDtoAndEntity(storyDetail: String) {
         val files: List<DtClass> = processor?.modelList() ?: emptyList()
-        val promptText = promptGenerator.createDtoAndEntity(storyDetail, files)
+        val promptText = promptTemplate.createDtoAndEntity(storyDetail, files)
 
         logger.warn("needUpdateMethodForController prompt text: $promptText")
         val result = executePrompt(promptText)
@@ -118,7 +118,7 @@ class AutoDevFlow(
             }
         }
 
-        val promptText = promptGenerator.createServiceAndRepository(controllerCode)
+        val promptText = promptTemplate.createServiceAndRepository(controllerCode)
 
         logger.warn("createServiceAndController prompt text: $promptText")
         val result = executePrompt(promptText)
@@ -201,12 +201,12 @@ class AutoDevFlow(
     }
 
     override fun fillStoryDetail(project: SimpleProjectInfo, story: String): String {
-        val promptText = promptGenerator.storyDetail(project, story)
+        val promptText = promptTemplate.storyDetail(project, story)
         return executePrompt(promptText)
     }
 
     override fun analysisEndpoint(storyDetail: String, classes: List<DtClass>): String {
-        val promptText = promptGenerator.createEndpoint(storyDetail, classes)
+        val promptText = promptTemplate.createEndpoint(storyDetail, classes)
         return executePrompt(promptText)
     }
 
@@ -230,7 +230,7 @@ class AutoDevFlow(
 
         val services = processor?.serviceList()?.map { it } ?: emptyList()
 
-        val promptText = promptGenerator.updateControllerMethod(clazz, storyDetail, models, services)
+        val promptText = promptTemplate.updateControllerMethod(clazz, storyDetail, models, services)
         logger.warn("needUpdateMethodForController prompt text: $promptText")
         return executePrompt(promptText)
     }

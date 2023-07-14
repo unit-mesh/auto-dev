@@ -27,7 +27,7 @@ import java.time.Duration
 
 
 class OpenAIConnector : CodeCopilot {
-    private val promptGenerator = PromptGenerator()
+    private val promptTemplate = PromptTemplate()
     private var service: OpenAiService
 
     private val timeout = Duration.ofSeconds(600)
@@ -112,7 +112,7 @@ class OpenAIConnector : CodeCopilot {
     }
 
     override fun autoComment(text: @NlsSafe String): String {
-        val promptText = promptGenerator.autoComment(text)
+        val promptText = promptTemplate.autoComment(text)
         logger.warn("autoComment prompt text: $promptText")
         return runBlocking {
             val prompt = prompt(promptText)
@@ -121,7 +121,7 @@ class OpenAIConnector : CodeCopilot {
     }
 
     override fun findBug(text: String): String {
-        val promptText = promptGenerator.findBug(text)
+        val promptText = promptTemplate.findBug(text)
         logger.warn("findBug prompt text: $promptText")
         return runBlocking {
             return@runBlocking prompt(promptText)

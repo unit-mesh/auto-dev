@@ -1,20 +1,20 @@
 package cc.unitmesh.devti.prompt.openai
 
 import cc.unitmesh.devti.analysis.DtClass
-import cc.unitmesh.devti.connector.openai.PromptGenerator
+import cc.unitmesh.devti.connector.openai.PromptTemplate
 import cc.unitmesh.devti.flow.model.SimpleProjectInfo
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class PromptGeneratorTest {
+class PromptTemplateTest {
 
     @Test
     fun should_fill_story_detail() {
-        val promptGenerator = PromptGenerator()
+        val promptTemplate = PromptTemplate()
         val projectInfo = SimpleProjectInfo("", "AutoDev", "description")
         val story = "story information"
 
-        val result = promptGenerator.storyDetail(projectInfo, story)
+        val result = promptTemplate.storyDetail(projectInfo, story)
         assertEquals(
             """你是一个敏捷项目的 BA，请根据如下的信息，编写用户故事。
 
@@ -40,10 +40,10 @@ AC 1:  xxx
 
     @Test
     fun should_fill_end_point_prompt() {
-        val promptGenerator = PromptGenerator()
+        val promptTemplate = PromptTemplate()
         val storyDetail = "用户故事：可以选择宝贝出行服务"
         val files: List<DtClass> = listOf(DtClass("TaxiController", emptyList()), DtClass("GpsController", emptyList()))
-        val result = promptGenerator.createEndpoint(storyDetail, files)
+        val result = promptTemplate.createEndpoint(storyDetail, files)
         assertEquals(
             """你是一个资深的后端 CRUD 工程师，请根据下面的用户故事 和 Controller 列表。要求：
 

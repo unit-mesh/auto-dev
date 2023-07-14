@@ -6,7 +6,7 @@ import cc.unitmesh.devti.prompting.PromptConfig
 import com.intellij.openapi.util.NlsSafe
 import java.io.InputStream
 
-class PromptGenerator {
+class PromptTemplate {
     fun storyDetail(project: SimpleProjectInfo, story: String): String {
         val promptText: InputStream = getResource("create_story_detail")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
