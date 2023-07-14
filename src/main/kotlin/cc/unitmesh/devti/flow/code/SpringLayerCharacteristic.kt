@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.flow
+package cc.unitmesh.devti.flow.code
 
 import com.intellij.psi.PsiClass
 import kotlinx.serialization.Serializable

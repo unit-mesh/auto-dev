@@ -2,7 +2,7 @@ package cc.unitmesh.devti.runconfig
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.flow.AutoDevFlow
-import cc.unitmesh.devti.flow.JavaSpringCodeCreator
+import cc.unitmesh.devti.flow.code.JavaSpringCodeCreator
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.connector.openai.OpenAIConnector
 import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
@@ -69,12 +69,12 @@ class AutoDevRunProfileState(
 
                     // todo: check create story
                     val storyId = options.storyId()
-                    val storyDetail = autoDevFlow.fillStoryDetail(storyId)
+                    val storyDetail = autoDevFlow.getOrCreateStoryDetail(storyId)
 
                     indicator.fraction = 0.2
 
                     indicator.text = AutoDevBundle.message("devti.generatingDtoAndEntity")
-                    autoDevFlow.generateDtoAndEntity(storyDetail)
+                    autoDevFlow.updateOrCreateDtoAndEntity(storyDetail)
 
                     indicator.fraction = 0.4
 
@@ -84,12 +84,12 @@ class AutoDevRunProfileState(
                     indicator.fraction = 0.6
 
                     indicator.text = AutoDevBundle.message("devti.progress.updatingEndpointMethod")
-                    autoDevFlow.updateEndpointMethod(target, storyDetail)
+                    autoDevFlow.updateOrCreateEndpointCode(target, storyDetail)
 
                     indicator.fraction = 0.8
 
                     indicator.text = AutoDevBundle.message("devti.progress.creatingServiceAndRepository")
-                    autoDevFlow.createServiceAndRepository()
+                    autoDevFlow.updateOrCreateServiceAndRepository()
 
                     indicator.fraction = 1.0
                 }

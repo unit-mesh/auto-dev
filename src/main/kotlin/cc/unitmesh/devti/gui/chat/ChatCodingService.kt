@@ -1,14 +1,14 @@
 package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.connector.ConnectorService
+import cc.unitmesh.devti.connector.ConnectorFactory
 import cc.unitmesh.devti.parser.JavaCodePostProcessor
 import com.intellij.openapi.application.ApplicationManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 
 class ChatCodingService(var actionType: ChatBotActionType) {
-    private val connectorService = ConnectorService.getInstance()
+    private val connectorFactory = ConnectorFactory.getInstance()
 
     val action = when (actionType) {
         ChatBotActionType.EXPLAIN -> "explain"
@@ -55,7 +55,7 @@ class ChatCodingService(var actionType: ChatBotActionType) {
     }
 
     private fun makeChatBotRequest(requestPrompt: String): Flow<String> {
-        return connectorService.connector().stream(requestPrompt)
+        return connectorFactory.connector().stream(requestPrompt)
     }
 
     private fun getCodeSection(content: String, prefixText: String, suffixText: String): String {

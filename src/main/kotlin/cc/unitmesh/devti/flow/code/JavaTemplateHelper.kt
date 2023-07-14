@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.flow
+package cc.unitmesh.devti.flow.code
 
 import com.intellij.ide.fileTemplates.FileTemplateDescriptor
 import com.intellij.ide.fileTemplates.FileTemplateManager
@@ -6,7 +6,7 @@ import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.project.Project
 import java.util.*
 
-class JavaCrudTemplate(val project: Project) {
+class JavaTemplateHelper(val project: Project) {
     private val fileTemplateManager = FileTemplateManager.getDefaultInstance()
     private val controllerTemplate = FileTemplateDescriptor("Java Controller.java", JavaFileType.INSTANCE.icon)
 

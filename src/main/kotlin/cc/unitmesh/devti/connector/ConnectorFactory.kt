@@ -7,7 +7,7 @@ import cc.unitmesh.devti.settings.DEFAULT_AI_ENGINE
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.application.ApplicationManager
 
-class ConnectorService {
+class ConnectorFactory {
     private val aiEngine: String = AutoDevSettingsState.getInstance()?.aiEngine ?: DEFAULT_AI_ENGINE
     fun connector(): CodeCopilot {
         return when (aiEngine) {
@@ -19,8 +19,8 @@ class ConnectorService {
     }
 
     companion object {
-        fun getInstance(): ConnectorService {
-            return ApplicationManager.getApplication().getService(ConnectorService::class.java)
+        fun getInstance(): ConnectorFactory {
+            return ApplicationManager.getApplication().getService(ConnectorFactory::class.java)
         }
     }
 }

@@ -4,9 +4,11 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.flow.kanban.Kanban
 import cc.unitmesh.devti.flow.model.SimpleStory
-import cc.unitmesh.devti.connector.DevtiFlowAction
+import cc.unitmesh.devti.flow.base.DevtiFlowAction
 import cc.unitmesh.devti.connector.openai.OpenAIConnector
 import cc.unitmesh.devti.connector.openai.PromptTemplate
+import cc.unitmesh.devti.flow.base.SpringBaseCrud
+import cc.unitmesh.devti.flow.code.JavaParseUtil
 import cc.unitmesh.devti.flow.model.SimpleProjectInfo
 import cc.unitmesh.devti.flow.model.TargetEndpoint
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
@@ -31,7 +33,7 @@ class AutoDevFlow(
     /**
      * Step 1: check story detail is valid, if not, fill story detail
      */
-    fun fillStoryDetail(id: String): String {
+    override fun getOrCreateStoryDetail(id: String): String {
         val simpleProject = kanban.getProjectInfo()
         val story = kanban.getStoryById(id)
 
@@ -53,7 +55,7 @@ class AutoDevFlow(
     /**
      * Step 2: base on story detail, generate dto and entity
      */
-    fun generateDtoAndEntity(storyDetail: String) {
+    override fun updateOrCreateDtoAndEntity(storyDetail: String) {
         val files: List<DtClass> = processor?.modelList() ?: emptyList()
         val promptText = promptTemplate.createDtoAndEntity(storyDetail, files)
 
@@ -68,7 +70,7 @@ class AutoDevFlow(
     /**
      * Step 3: fetch suggest endpoint, if not found, return null
      */
-    fun fetchSuggestEndpoint(storyDetail: String): TargetEndpoint {
+    override fun fetchSuggestEndpoint(storyDetail: String): TargetEndpoint {
         val files: List<DtClass> = processor?.controllerList() ?: emptyList()
         logger.warn("start devti flow")
         val targetEndpoint = analysisEndpoint(storyDetail, files)
@@ -92,7 +94,7 @@ class AutoDevFlow(
     /**
      * Step 4: update endpoint method
      */
-    fun updateEndpointMethod(target: TargetEndpoint, storyDetail: String) {
+    override fun updateOrCreateEndpointCode(target: TargetEndpoint, storyDetail: String) {
         selectedControllerName = target.controller.name
         try {
             doExecuteUpdateEndpoint(target, storyDetail)
@@ -105,7 +107,7 @@ class AutoDevFlow(
     /**
      * Step 5: create service and repository
      */
-    fun createServiceAndRepository() {
+    override fun updateOrCreateServiceAndRepository() {
         // filter controllerName == selectedControllerName
         val files: List<PsiFile> = processor?.getAllControllerFiles()?.filter { it.name == selectedControllerName }
             ?: emptyList()
@@ -197,17 +199,17 @@ class AutoDevFlow(
         return code
     }
 
-    override fun fillStoryDetail(project: SimpleProjectInfo, story: String): String {
+    fun fillStoryDetail(project: SimpleProjectInfo, story: String): String {
         val promptText = promptTemplate.storyDetail(project, story)
         return executePrompt(promptText)
     }
 
-    override fun analysisEndpoint(storyDetail: String, classes: List<DtClass>): String {
+    fun analysisEndpoint(storyDetail: String, classes: List<DtClass>): String {
         val promptText = promptTemplate.createEndpoint(storyDetail, classes)
         return executePrompt(promptText)
     }
 
-    override fun needUpdateMethodOfController(targetEndpoint: String, clazz: DtClass, storyDetail: String): String {
+    fun needUpdateMethodOfController(targetEndpoint: String, clazz: DtClass, storyDetail: String): String {
         val allModels = processor?.modelList()?.map { it } ?: emptyList()
         val relevantName = targetEndpoint.replace("Controller", "")
 

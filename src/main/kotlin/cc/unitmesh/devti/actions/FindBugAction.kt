@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.actions
 
 import cc.unitmesh.devti.AutoDevIcons
-import cc.unitmesh.devti.connector.ConnectorService
+import cc.unitmesh.devti.connector.ConnectorFactory
 import cc.unitmesh.devti.gui.createSuggestionPopup
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -17,7 +17,7 @@ class FindBugAction(methodName: @NlsSafe String, val method: PsiMethod) :
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val code = method.text
-        val apiExecutor = ConnectorService.getInstance().connector()
+        val apiExecutor = ConnectorFactory.getInstance().connector()
 
         val task = object : Task.Backgroundable(project, "Find bug", true) {
             override fun run(indicator: ProgressIndicator) {

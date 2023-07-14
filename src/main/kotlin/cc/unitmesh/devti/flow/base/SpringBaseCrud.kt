@@ -1,6 +1,7 @@
-package cc.unitmesh.devti.flow
+package cc.unitmesh.devti.flow.base
 
 import cc.unitmesh.devti.analysis.DtClass
+import cc.unitmesh.devti.flow.code.SpringLayerCharacteristic
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiFile
 

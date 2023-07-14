@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.flow
+package cc.unitmesh.devti.flow.code
 
 object JavaParseUtil {
     // split java code string to multiple class string

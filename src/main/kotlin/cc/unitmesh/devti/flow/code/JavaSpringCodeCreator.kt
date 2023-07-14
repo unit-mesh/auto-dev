@@ -1,6 +1,7 @@
-package cc.unitmesh.devti.flow
+package cc.unitmesh.devti.flow.code
 
 import cc.unitmesh.devti.analysis.DtClass
+import cc.unitmesh.devti.flow.base.SpringBaseCrud
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
@@ -23,7 +24,7 @@ import kotlin.reflect.KFunction1
 
 class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
     private val psiElementFactory = JavaPsiFacade.getElementFactory(project)
-    private val codeTemplate = JavaCrudTemplate(project)
+    private val codeTemplate = JavaTemplateHelper(project)
     private val psiManager = PsiManager.getInstance(project)
     private val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
 
@@ -129,21 +130,10 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
         return DtClass(endpoint, emptyList())
     }
 
-    override fun createEntity(code: String): DtClass? {
-        return createClassByCode(code, getAllEntityFiles())
-    }
-
-    override fun createDto(code: String): DtClass? {
-        return createClassByCode(code, getAllDtoFiles())
-    }
-
-    override fun createRepository(code: String): DtClass? {
-        return createClassByCode(code, getAllRepositoryFiles())
-    }
-
-    override fun createService(code: String): DtClass? {
-        return createClassByCode(code, getAllServiceFiles())
-    }
+    override fun createEntity(code: String): DtClass? = createClassByCode(code, getAllEntityFiles())
+    override fun createDto(code: String): DtClass? = createClassByCode(code, getAllDtoFiles())
+    override fun createRepository(code: String): DtClass? = createClassByCode(code, getAllRepositoryFiles())
+    override fun createService(code: String): DtClass? = createClassByCode(code, getAllServiceFiles())
 
     private fun createClassByCode(code: String, psiFiles: List<PsiFile>): DtClass? {
         val firstFile = psiFiles.first()
