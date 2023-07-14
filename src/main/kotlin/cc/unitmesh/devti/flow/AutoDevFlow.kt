@@ -117,6 +117,17 @@ class AutoDevFlow(
         isNeedCreateController: Boolean = false,
         controllerName: String = "",
     ) {
+        JavaParseUtil.splitClass(code).forEach {
+            createCode(processor, it, controllerName, isNeedCreateController)
+        }
+    }
+
+    private fun createCode(
+        processor: SpringBaseCrud,
+        code: String,
+        controllerName: String,
+        isNeedCreateController: Boolean
+    ) {
         when {
             processor.isController(code) -> {
                 processor.createControllerOrUpdateMethod(controllerName, code, isNeedCreateController)

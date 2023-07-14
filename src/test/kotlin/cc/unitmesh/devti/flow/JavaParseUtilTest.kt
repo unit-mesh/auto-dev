@@ -1,10 +1,10 @@
 package cc.unitmesh.devti.flow
 
+import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class JavaParseUtilTest {
-    val demoCode = """
-// Request DTO
+    private val requestCode = """// Request DTO
 public class CreateBlogRequest {
     private String title;
     private String content;
@@ -24,9 +24,9 @@ public class CreateBlogRequest {
     public void setContent(String content) {
         this.content = content;
     }
-}
+}"""
 
-// Response DTO
+    private val responseCode = """// Response DTO
 public class CreateBlogResponse {
     private long id;
     private String title;
@@ -55,9 +55,9 @@ public class CreateBlogResponse {
     public void setContent(String content) {
         this.content = content;
     }
-}
+}"""
 
-// Entity
+    private val entityCode = """// Entity
 public class BlogPost {
     private long id;
     private String title;
@@ -86,15 +86,20 @@ public class BlogPost {
     public void setContent(String content) {
         this.content = content;
     }
-}
-    """.trimIndent()
+}"""
+    private val demoCode = requestCode + responseCode + entityCode
 
     @Test
     fun splitClass() {
         val classes = JavaParseUtil.splitClass(demoCode)
         assert(classes.size == 3)
         assert(classes[0].contains("CreateBlogRequest"))
+        assertEquals(classes[0], requestCode)
+
         assert(classes[1].contains("CreateBlogResponse"))
+        assertEquals(classes[1], responseCode)
+
         assert(classes[2].contains("BlogPost"))
+        assertEquals(classes[2], entityCode)
     }
 }
