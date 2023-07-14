@@ -18,6 +18,7 @@ import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.util.PsiTreeUtil
+import kotlin.reflect.KFunction1
 
 
 class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
@@ -26,40 +27,26 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
 
     private val controllers = getAllControllerFiles()
 
-    private fun getAllEntityFiles(): List<PsiFile> {
-        val psiManager = PsiManager.getInstance(project)
-
-        val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
-        val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
-
-        return filterFiles(javaFiles, psiManager, ::entityFilter)
+    override fun controllerList(): List<DtClass> = this.getAllControllerFiles().map(DtClass.Companion::fromJavaFile)
+    override fun serviceList(): List<DtClass> = this.getAllServiceFiles().map(DtClass.Companion::fromJavaFile)
+    override fun entityList(): List<DtClass> = this.getAllEntityFiles().map(DtClass.Companion::fromJavaFile)
+    override fun modelList(): List<DtClass> {
+        val files = this.getAllEntityFiles() + this.getAllDtoFiles()
+        return files.map(DtClass.Companion::fromJavaFile)
     }
 
-    private fun getAllControllerFiles(): List<PsiFile> {
+    private fun getAllControllerFiles(): List<PsiFile> = filterFilesByFunc(::controllerFilter)
+    private fun getAllEntityFiles(): List<PsiFile> = filterFilesByFunc(::entityFilter)
+    private fun getAllDtoFiles(): List<PsiFile> = filterFilesByFunc(::dtoFilter)
+    private fun getAllServiceFiles(): List<PsiFile> = filterFilesByFunc(::serviceFilter)
+
+    private fun filterFilesByFunc(filter: KFunction1<PsiClass, Boolean>): List<PsiFile> {
         val psiManager = PsiManager.getInstance(project)
 
         val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
         val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
 
-        return filterFiles(javaFiles, psiManager, ::controllerFilter)
-    }
-
-    private fun getAllDtoFiles(): List<PsiFile> {
-        val psiManager = PsiManager.getInstance(project)
-
-        val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
-        val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
-
-        return filterFiles(javaFiles, psiManager, ::dtoFilter)
-    }
-
-    private fun getAllServiceFiles(): List<PsiFile> {
-        val psiManager = PsiManager.getInstance(project)
-
-        val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
-        val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
-
-        return filterFiles(javaFiles, psiManager, ::serviceFilter)
+        return filterFiles(javaFiles, psiManager, filter)
     }
 
     private fun filterFiles(
@@ -94,23 +81,6 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
         }
 
         return psiClass
-    }
-
-    override fun controllerList(): List<DtClass> {
-        return this.getAllControllerFiles().map(DtClass.Companion::fromJavaFile)
-    }
-
-    override fun serviceList(): List<DtClass> {
-        return this.getAllServiceFiles().map(DtClass.Companion::fromJavaFile)
-    }
-
-    override fun entityList(): List<DtClass> {
-        return this.getAllEntityFiles().map(DtClass.Companion::fromJavaFile)
-    }
-
-    override fun modelList(): List<DtClass> {
-        val files = this.getAllEntityFiles() + this.getAllDtoFiles()
-        return files.map(DtClass.Companion::fromJavaFile)
     }
 
     override fun createControllerOrUpdateMethod(targetController: String, code: String, isControllerExist: Boolean) {
