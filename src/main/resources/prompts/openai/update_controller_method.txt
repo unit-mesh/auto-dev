@@ -6,7 +6,7 @@
 - 你最后返回的代码示例如下：
 // {your should return method code in here}
 ```java
-@PostMapping("{xxxx}")
+@{http method}Mapping("{xxxx}")
 @ApiOperation(value = "xxxx", notes = "xxxx")
 public {methodReturnType} {methodName}({methodParams}) {
     {methodBody}
