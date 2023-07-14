@@ -178,6 +178,10 @@ class AutoDevFlow(
                 processor.createDto(code)
             }
 
+            processor.isRepository(code) -> {
+                processor.createRepository(code)
+            }
+
             else -> {
                 processor.createClass(code, null)
             }

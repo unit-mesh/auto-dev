@@ -22,7 +22,8 @@ public class {serviceName} {
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-public class {xxxRepository} extends JpaRepository<{xxx}, Long> {
+@Repository
+public interface {xxxRepository} extends JpaRepository<{xxx}, Long> {
 
 }
 ```

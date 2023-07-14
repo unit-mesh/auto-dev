@@ -39,6 +39,7 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
     override fun getAllEntityFiles(): List<PsiFile> = filterFilesByFunc(::entityFilter)
     override fun getAllDtoFiles(): List<PsiFile> = filterFilesByFunc(::dtoFilter)
     override fun getAllServiceFiles(): List<PsiFile> = filterFilesByFunc(::serviceFilter)
+    override fun getAllRepositoryFiles(): List<PsiFile> = filterFilesByFunc(::repositoryFilter)
 
     private fun filterFilesByFunc(filter: KFunction1<PsiClass, Boolean>): List<PsiFile> {
         return runReadAction {
@@ -141,6 +142,10 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
         return createClassByCode(code, getAllDtoFiles())
     }
 
+    override fun createRepository(code: String): DtClass? {
+        return createClassByCode(code, getAllRepositoryFiles())
+    }
+
     override fun createService(code: String): DtClass? {
         return createClassByCode(code, getAllServiceFiles())
     }
@@ -171,11 +176,11 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
             runWriteAction {
                 val newClass = psiElementFactory.createClassFromText(code, null)
 
-                val regex = Regex("public\\s+class\\s+(\\w+)")
+                val regex = Regex("public\\s+(class|interface)\\s+(\\w+)")
                 val matchResult = regex.find(code)
 
-                val className = if (matchResult?.groupValues?.get(1) != null) {
-                    matchResult.groupValues[1]
+                val className = if (matchResult?.groupValues?.get(2) != null) {
+                    matchResult.groupValues[2]
                 } else if (newClass.identifyingElement?.text != null) {
                     newClass.identifyingElement?.text
                 } else {

@@ -17,6 +17,7 @@ interface SpringBaseCrud {
     fun getAllEntityFiles(): List<PsiFile>
     fun getAllDtoFiles(): List<PsiFile>
     fun getAllServiceFiles(): List<PsiFile>
+    fun getAllRepositoryFiles(): List<PsiFile>
 
 
     fun createControllerOrUpdateMethod(targetController: String, code: String, isControllerExist: Boolean)
@@ -24,6 +25,7 @@ interface SpringBaseCrud {
     fun createEntity(code: String): DtClass?
     fun createService(code: String): DtClass?
     fun createDto(code: String): DtClass?
+    fun createRepository(code: String): DtClass?
     fun createClass(code: String, packageName: String?): DtClass?
 
     fun dtoFilter(clazz: PsiClass): Boolean {
@@ -44,6 +46,11 @@ interface SpringBaseCrud {
     fun serviceFilter(clazz: PsiClass): Boolean = clazz.annotations
         .map { it.qualifiedName }.any {
             it == "org.springframework.stereotype.Service"
+        }
+
+    fun repositoryFilter(clazz: PsiClass): Boolean = clazz.annotations
+        .map { it.qualifiedName }.any {
+            it == "org.springframework.stereotype.Repository"
         }
 
     fun entityFilter(clazz: PsiClass): Boolean = clazz.annotations
@@ -103,4 +110,17 @@ interface SpringBaseCrud {
         return regex.containsMatchIn(code)
     }
 
+    fun isRepository(code: String): Boolean {
+        if (code.contains("@Repository")) {
+            return true
+        }
+
+        if (code.contains("import org.springframework.stereotype.Repository")) {
+            return true
+        }
+
+        // regex to match `public class xxRepository`
+        val regex = Regex("public\\s+class\\s+\\w+Repository")
+        return regex.containsMatchIn(code)
+    }
 }
