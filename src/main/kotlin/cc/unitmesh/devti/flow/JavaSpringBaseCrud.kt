@@ -24,8 +24,8 @@ import kotlin.reflect.KFunction1
 class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
     private val psiElementFactory = JavaPsiFacade.getElementFactory(project)
     private val codeTemplate = JavaCrudTemplate(project)
-
-    private val controllers = getAllControllerFiles()
+    private val psiManager = PsiManager.getInstance(project)
+    private val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
 
     override fun controllerList(): List<DtClass> = this.getAllControllerFiles().map(DtClass.Companion::fromJavaFile)
     override fun serviceList(): List<DtClass> = this.getAllServiceFiles().map(DtClass.Companion::fromJavaFile)
@@ -41,11 +41,7 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
     private fun getAllServiceFiles(): List<PsiFile> = filterFilesByFunc(::serviceFilter)
 
     private fun filterFilesByFunc(filter: KFunction1<PsiClass, Boolean>): List<PsiFile> {
-        val psiManager = PsiManager.getInstance(project)
-
-        val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
         val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
-
         return filterFiles(javaFiles, psiManager, filter)
     }
 
@@ -89,7 +85,7 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
             return
         }
 
-        val targetControllerFile = controllers.first { it.name == "$targetController.java" }
+        val targetControllerFile = getAllControllerFiles().first { it.name == "$targetController.java" }
 
         ApplicationManager.getApplication().runReadAction {
             val targetControllerClass = PsiTreeUtil.findChildrenOfType(targetControllerFile, PsiClass::class.java)
@@ -113,7 +109,7 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
     }
 
     override fun createController(endpoint: String, code: String): DtClass? {
-        if (controllers.isEmpty()) {
+        if (getAllControllerFiles().isEmpty()) {
             return DtClass("", emptyList())
         }
 
@@ -224,7 +220,7 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
         return firstControllerPkg
     }
 
-    private fun firstController() = controllers.first()
+    private fun firstController() = getAllControllerFiles().first()
 
     private fun createClassByTemplate(
         parentDirectory: VirtualFile,
