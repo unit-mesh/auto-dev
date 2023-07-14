@@ -24,7 +24,8 @@ class AutoDevFlow(
     val ui: ChatCodingComponent,
 ) : DevtiFlowAction {
     private val promptGenerator = PromptGenerator()
-    var selectedControllerName = ""
+    private var selectedControllerName = ""
+    private var selectedControllerCode = ""
 
     /**
      * Step 1: check story detail is valid, if not, fill story detail
@@ -108,10 +109,12 @@ class AutoDevFlow(
         // filter controllerName == selectedControllerName
         val files: List<PsiFile> = processor?.getAllControllerFiles()?.filter { it.name == selectedControllerName }
             ?: emptyList()
-        val controller = files.firstOrNull() ?: return
-
-        val controllerCode = runReadAction {
-            controller.text
+        val controllerCode = if (files.isEmpty()) {
+            selectedControllerCode
+        } else {
+            runReadAction {
+                files[0].text
+            }
         }
 
         val promptText = promptGenerator.createServiceAndRepository(controllerCode)
@@ -159,6 +162,7 @@ class AutoDevFlow(
     ) {
         when {
             processor.isController(code) -> {
+                selectedControllerCode = code
                 processor.createControllerOrUpdateMethod(controllerName, code, isNeedCreateController)
             }
 
