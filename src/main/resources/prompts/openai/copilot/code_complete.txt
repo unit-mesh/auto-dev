@@ -1,8 +1,0 @@
-Code complete follow function of {className}. Here are your requirements:
-
-1. if the origin code is not good, you can refactor it.
-2. should only return one function, not explanation.
-
-###
-{code}
-###
