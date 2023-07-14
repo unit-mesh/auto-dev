@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.flow
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.flow.kanban.Kanban
 import cc.unitmesh.devti.flow.model.SimpleStory
@@ -236,6 +237,10 @@ class AutoDevFlow(
 
     private fun executePrompt(promptText: String): String {
         ui.add(promptText, true)
+
+        // for answer
+        ui.add(AutoDevBundle.message("devti.loading"))
+
         return runBlocking {
             val prompt = connector.stream(promptText)
             val result = ui.updateMessage(prompt)
