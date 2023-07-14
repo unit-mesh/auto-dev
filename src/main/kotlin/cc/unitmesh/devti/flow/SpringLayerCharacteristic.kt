@@ -21,14 +21,14 @@ class SpringLayerCharacteristic(
             annotation = "@Service",
             imports = listOf("org.springframework.stereotype.Service"),
             codeRegex = "public\\s+(class|interface)\\s+\\w+Service",
-            fileName = ".*Service\\.java"
+            fileName = ".*(Service|ServiceImpl)\\.java"
         )
 
         private val entityCharacteristic = SpringLayerCharacteristic(
             annotation = "@Entity",
             imports = listOf("javax.persistence.Entity"),
             codeRegex = "public\\s+class\\s+\\w+Entity",
-            fileName = ".*Entity\\.java"
+            fileName = ".*\\.java"
         )
 
         private val dtoCharacteristic = SpringLayerCharacteristic(
