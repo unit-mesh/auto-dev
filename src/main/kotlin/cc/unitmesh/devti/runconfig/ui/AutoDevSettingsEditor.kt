@@ -4,6 +4,7 @@ import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import javax.swing.JComponent
 
 class AutoDevSettingsEditor(project: Project) : SettingsEditor<AutoDevConfiguration>() {
@@ -15,11 +16,13 @@ class AutoDevSettingsEditor(project: Project) : SettingsEditor<AutoDevConfigurat
 
     override fun createEditor(): JComponent = panel {
         row("GitHub Project (owner/repo)") {
-            fullWidthCell(githubRepo)
+            cell(githubRepo)
+                .horizontalAlign(HorizontalAlign.FILL)
         }
 
         row("Story ID:") {
-            fullWidthCell(storyId)
+            cell(storyId)
+                .horizontalAlign(HorizontalAlign.FILL)
         }
     }.also {
         panel = it
