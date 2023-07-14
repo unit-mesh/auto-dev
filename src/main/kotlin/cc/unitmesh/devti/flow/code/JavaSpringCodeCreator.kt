@@ -37,11 +37,9 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
     override fun getAllServiceFiles(): List<PsiFile> = filterFilesByFunc(::serviceFilter)
     override fun getAllRepositoryFiles(): List<PsiFile> = filterFilesByFunc(::repositoryFilter)
 
-    private fun filterFilesByFunc(filter: KFunction1<PsiClass, Boolean>): List<PsiFile> {
-        return runReadAction {
-            val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
-            return@runReadAction filterFiles(javaFiles, psiManager, filter)
-        }
+    private fun filterFilesByFunc(filter: KFunction1<PsiClass, Boolean>): List<PsiFile> = runReadAction {
+        val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
+        return@runReadAction filterFiles(javaFiles, psiManager, filter)
     }
 
     private fun filterFiles(
