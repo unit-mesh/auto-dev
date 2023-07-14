@@ -34,13 +34,19 @@ class PromptTemplate {
             .replace("{storyDetail}", storyDetail)
     }
 
-    fun updateControllerMethod(
+    fun createOrUpdateControllerMethod(
         targetClazz: DtClass,
         storyDetail: String,
         models: List<DtClass>,
-        services: List<DtClass>
+        services: List<DtClass>,
+        isNewController: Boolean
     ): String {
-        val promptText: InputStream = getResource("update_controller_method")!!
+        val promptText: InputStream = if (isNewController) {
+            getResource("create_controller")!!
+        } else {
+            getResource("update_controller_method")!!
+        }
+
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         val spec = PromptConfig.load().spec["controller"]
 

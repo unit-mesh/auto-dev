@@ -10,7 +10,8 @@
 ```java
 import lombok.Data;
 
-@Data public class {requestName} {
+@Data
+public class {requestName} {
     {requestField}
 }
 ```
@@ -19,7 +20,8 @@ import lombok.Data;
 ```java
 import lombok.Data;
 
-@Data public class {responseName} {
+@Data
+public class {responseName} {
     {responseField}
 }
 ```

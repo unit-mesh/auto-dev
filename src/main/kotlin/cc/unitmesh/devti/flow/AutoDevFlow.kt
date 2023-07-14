@@ -29,6 +29,7 @@ class AutoDevFlow(
     private val promptTemplate = PromptTemplate()
     private var selectedControllerName = ""
     private var selectedControllerCode = ""
+    private var isNewController = false
 
     /**
      * Step 1: check story detail is valid, if not, fill story detail
@@ -88,6 +89,7 @@ class AutoDevFlow(
             return TargetEndpoint(controller, DtClass(controller, listOf()), false)
         }
 
+        isNewController = true
         return TargetEndpoint(controller, targetController)
     }
 
@@ -97,10 +99,10 @@ class AutoDevFlow(
     override fun updateOrCreateEndpointCode(target: TargetEndpoint, storyDetail: String) {
         selectedControllerName = target.controller.name
         try {
-            doExecuteUpdateEndpoint(target, storyDetail)
+            doExecuteUpdateEndpoint(target, storyDetail, isNewController)
         } catch (e: Exception) {
             logger.warn("update method failed: $e, try to fill update method 2nd")
-            doExecuteUpdateEndpoint(target, storyDetail)
+            doExecuteUpdateEndpoint(target, storyDetail, isNewController)
         }
     }
 
@@ -131,8 +133,8 @@ class AutoDevFlow(
     }
 
 
-    private fun doExecuteUpdateEndpoint(target: TargetEndpoint, storyDetail: String) {
-        val codes = fetchForEndpoint(target.endpoint, target.controller, storyDetail)
+    private fun doExecuteUpdateEndpoint(target: TargetEndpoint, storyDetail: String, isNewController: Boolean) {
+        val codes = fetchForEndpoint(target.endpoint, target.controller, storyDetail, isNewController)
         if (codes.isEmpty()) {
             logger.warn("update method code is empty, skip")
         } else {
@@ -192,8 +194,9 @@ class AutoDevFlow(
         targetEndpoint: String,
         targetController: DtClass,
         storyDetail: String,
+        isNewController: Boolean,
     ): List<String> {
-        val content = needUpdateMethodOfController(targetEndpoint, targetController, storyDetail)
+        val content = needUpdateMethodOfController(targetEndpoint, targetController, storyDetail, isNewController)
         val code = parseCodeFromString(content)
         logger.warn("update method code: $code")
         return code
@@ -209,7 +212,12 @@ class AutoDevFlow(
         return executePrompt(promptText)
     }
 
-    fun needUpdateMethodOfController(targetEndpoint: String, clazz: DtClass, storyDetail: String): String {
+    fun needUpdateMethodOfController(
+        targetEndpoint: String,
+        clazz: DtClass,
+        storyDetail: String,
+        isNewController: Boolean
+    ): String {
         val allModels = processor?.modelList()?.map { it } ?: emptyList()
         val relevantName = targetEndpoint.replace("Controller", "")
 
@@ -229,7 +237,7 @@ class AutoDevFlow(
 
         val services = processor?.serviceList()?.map { it } ?: emptyList()
 
-        val promptText = promptTemplate.updateControllerMethod(clazz, storyDetail, models, services)
+        val promptText = promptTemplate.createOrUpdateControllerMethod(clazz, storyDetail, models, services, isNewController)
         logger.warn("needUpdateMethodForController prompt text: $promptText")
         return executePrompt(promptText)
     }
