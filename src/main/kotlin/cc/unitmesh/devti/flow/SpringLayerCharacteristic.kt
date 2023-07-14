@@ -1,10 +1,11 @@
 package cc.unitmesh.devti.flow
 
+import com.intellij.psi.PsiClass
 import kotlinx.serialization.Serializable
 
 @Serializable
 class SpringLayerCharacteristic(
-    val annotation: String, val imports: List<String>, val codeRegex: String, val fileName: String
+    val annotation: String, val imports: List<String>, val codeRegex: String, val fileName: String? = null
 ) {
     companion object {
         private val controllerCharacteristic = SpringLayerCharacteristic(
@@ -28,7 +29,6 @@ class SpringLayerCharacteristic(
             annotation = "@Entity",
             imports = listOf("javax.persistence.Entity"),
             codeRegex = "public\\s+class\\s+\\w+Entity",
-            fileName = ".*\\.java"
         )
 
         private val dtoCharacteristic = SpringLayerCharacteristic(
@@ -68,6 +68,27 @@ class SpringLayerCharacteristic(
 
             val regex = Regex(characteristic.codeRegex)
             return regex.containsMatchIn(code)
+        }
+
+        fun checkLayer(code: PsiClass, type: String): Boolean {
+            val characteristic = allCharacteristics[type] ?: return false
+            code.annotations.forEach {
+                if (characteristic.imports.contains(it.qualifiedName)) {
+                    return true
+                }
+            }
+
+            if (characteristic.fileName != null) {
+                val regex = Regex(characteristic.fileName)
+                code.name?.lowercase()?.let {
+                    if (regex.containsMatchIn(it)) {
+                        return true
+                    }
+                }
+            }
+
+            val regex = Regex(characteristic.codeRegex)
+            return regex.containsMatchIn(code.text)
         }
     }
 }

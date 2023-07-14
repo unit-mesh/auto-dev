@@ -29,11 +29,6 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
 
     override fun controllerList(): List<DtClass> = this.getAllControllerFiles().map(DtClass.Companion::fromJavaFile)
     override fun serviceList(): List<DtClass> = this.getAllServiceFiles().map(DtClass.Companion::fromJavaFile)
-    override fun entityList(): List<DtClass> = this.getAllEntityFiles().map(DtClass.Companion::fromJavaFile)
-    override fun modelList(): List<DtClass> {
-        val files = this.getAllEntityFiles() + this.getAllDtoFiles()
-        return files.map(DtClass.Companion::fromJavaFile)
-    }
 
     override fun getAllControllerFiles(): List<PsiFile> = filterFilesByFunc(::controllerFilter)
     override fun getAllEntityFiles(): List<PsiFile> = filterFilesByFunc(::entityFilter)
