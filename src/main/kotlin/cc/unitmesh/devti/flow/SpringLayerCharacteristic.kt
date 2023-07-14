@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 class SpringLayerCharacteristic(
     val annotation: String, val imports: List<String>, val codeRegex: String, val fileName: String? = null
 ) {
+
     companion object {
         private val controllerCharacteristic = SpringLayerCharacteristic(
             annotation = "@Controller",
