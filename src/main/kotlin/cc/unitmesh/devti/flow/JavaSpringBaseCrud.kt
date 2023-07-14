@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.flow
 
 import cc.unitmesh.devti.analysis.DtClass
-import cc.unitmesh.devti.analysis.fromPsiFile
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
@@ -13,14 +12,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileSystem
-import com.intellij.psi.JavaPsiFacade
-import com.intellij.psi.PsiClass
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiManager
-import com.intellij.psi.PsiMethod
-import com.intellij.psi.PsiPackageStatement
+import com.intellij.psi.*
 import com.intellij.psi.codeStyle.CodeStyleManager
-import com.intellij.psi.impl.source.PsiJavaFileImpl
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
@@ -32,7 +25,6 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
     private val codeTemplate = JavaCrudTemplate(project)
 
     private val controllers = getAllControllerFiles()
-    private val services = getAllServiceFiles()
 
     private fun getAllEntityFiles(): List<PsiFile> {
         val psiManager = PsiManager.getInstance(project)
@@ -101,21 +93,16 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
     }
 
     override fun controllerList(): List<DtClass> {
-        return this.controllers.map {
-            val className = it.name.substring(0, it.name.length - ".java".length)
-            DtClass.fromPsiFile(it) ?: DtClass(className, emptyList())
-        }
+        return this.getAllControllerFiles().map(DtClass.Companion::fromJavaFile)
     }
 
     override fun serviceList(): List<DtClass> {
-        return this.getAllServiceFiles().map { DtClass.fromJavaFile(it as PsiJavaFileImpl) }
+        return this.getAllServiceFiles().map(DtClass.Companion::fromJavaFile)
     }
 
     override fun modelList(): List<DtClass> {
         val files = this.getAllEntityFiles() + this.getAllDtoFiles()
-        return files.map {
-            DtClass.fromJavaFile(it as PsiJavaFileImpl)
-        }
+        return files.map(DtClass.Companion::fromJavaFile)
     }
 
     override fun createControllerOrUpdateMethod(targetController: String, code: String, isControllerExist: Boolean) {

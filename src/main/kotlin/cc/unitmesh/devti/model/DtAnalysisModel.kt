@@ -2,6 +2,7 @@ package cc.unitmesh.devti.analysis
 
 import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiFile
 import com.intellij.psi.impl.source.PsiJavaFileImpl
 
 data class DtMethod(val name: String, val returnType: String, val parameters: List<DtParameter>)
@@ -95,6 +96,10 @@ class DtClass(
     companion object {
         fun formatPsi(psiClass: PsiClass): String {
             return fromPsi(psiClass).commentFormat()
+        }
+
+        fun fromJavaFile(file: PsiFile): DtClass {
+            return fromJavaFile(file as? PsiJavaFileImpl)
         }
 
         fun fromJavaFile(file: PsiJavaFileImpl?): DtClass {
