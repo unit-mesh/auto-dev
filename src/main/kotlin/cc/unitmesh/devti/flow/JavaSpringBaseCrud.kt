@@ -66,13 +66,17 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
         javaFiles: Collection<VirtualFile>,
         psiManager: PsiManager,
         filter: (PsiClass) -> Boolean,
-    ) = javaFiles
-        .mapNotNull { virtualFile -> psiManager.findFile(virtualFile) }
-        .filter { psiFile ->
-            val psiClass = PsiTreeUtil.findChildrenOfType(psiFile, PsiClass::class.java)
-                .firstOrNull()
-            psiClass != null && filter(psiClass)
+    ): List<PsiFile> {
+        return runReadAction {
+            return@runReadAction javaFiles
+                .mapNotNull { virtualFile -> psiManager.findFile(virtualFile) }
+                .filter { psiFile ->
+                    val psiClass = PsiTreeUtil.findChildrenOfType(psiFile, PsiClass::class.java)
+                        .firstOrNull()
+                    psiClass != null && filter(psiClass)
+                }
         }
+    }
 
     fun addMethodToClass(psiClass: PsiClass, method: String): PsiClass {
         val methodFromText = psiElementFactory.createMethodFromText(method, psiClass)
