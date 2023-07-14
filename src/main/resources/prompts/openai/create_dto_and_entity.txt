@@ -1,6 +1,7 @@
 请根据下面的用户故事，编写 DTO（Request, Response） 和 Entity 的代码。要求如下：
 {spec}
 - 每个 Request，Response，Entity 请使用新的 markdown 代码块（```java）。
+- 每个 Request，Response，Entity 请使用独立的 markdown 代码块。
 - 如果已经存在 Entity、DTO，请不要返回新的。
 - 你的返回代码应该是完整的，可以直接编译通过的。
 
