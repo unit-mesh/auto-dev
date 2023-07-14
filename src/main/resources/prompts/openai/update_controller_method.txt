@@ -1,6 +1,7 @@
 你是一个资深的后端 CRUD 工程师，请根据下面的用户故事以及 {controllerName} 的相关信息，编写 Controller 部分的 Java 代码。要求如下：
 {spec}
 1. 只返回修改完的函数代码，不做解释。
+2. 请参考标准的 RESTful API 设计规范，尽量使用标准的 HTTP 方法和状态码。
 
 ###
 // {controllerName} 相关信息如下：
