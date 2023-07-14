@@ -71,18 +71,25 @@ class AutoDevRunProfileState(
                     val storyId = options.storyId()
                     val storyDetail = autoDevFlow.fillStoryDetail(storyId)
 
-                    indicator.fraction = 0.3
+                    indicator.fraction = 0.2
 
                     indicator.text = AutoDevBundle.message("devti.generatingDtoAndEntity")
                     autoDevFlow.generateDtoAndEntity(storyDetail)
 
+                    indicator.fraction = 0.4
+
                     indicator.text = AutoDevBundle.message("devti.progress.fetchingSuggestEndpoint")
                     val target = autoDevFlow.fetchSuggestEndpoint(storyDetail)
 
-                    indicator.fraction = 0.7
+                    indicator.fraction = 0.6
 
                     indicator.text = AutoDevBundle.message("devti.progress.updatingEndpointMethod")
                     autoDevFlow.updateEndpointMethod(target, storyDetail)
+
+                    indicator.fraction = 0.8
+
+                    indicator.text = AutoDevBundle.message("devti.progress.creatingServiceAndRepository")
+                    autoDevFlow.createServiceAndRepository()
 
                     indicator.fraction = 1.0
                 }

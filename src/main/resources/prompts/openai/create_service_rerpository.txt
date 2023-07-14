@@ -27,3 +27,8 @@ public class {xxxRepository} extends JpaRepository<{xxx}, Long> {
 }
 ```
 ###
+
+// Controller 代码
+```java
+{controllerCode}
+```

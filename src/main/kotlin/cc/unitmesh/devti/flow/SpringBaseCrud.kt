@@ -2,16 +2,23 @@ package cc.unitmesh.devti.flow
 
 import cc.unitmesh.devti.analysis.DtClass
 import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiFile
 
+// TODO: remove this interface
 interface SpringBaseCrud {
     fun controllerList(): List<DtClass>
+    fun entityList(): List<DtClass>
     fun serviceList(): List<DtClass>
-
     /**
      * return all entity class + dto class
      */
     fun modelList(): List<DtClass>
-    fun entityList(): List<DtClass>
+    fun getAllControllerFiles(): List<PsiFile>
+    fun getAllEntityFiles(): List<PsiFile>
+    fun getAllDtoFiles(): List<PsiFile>
+    fun getAllServiceFiles(): List<PsiFile>
+
+
     fun createControllerOrUpdateMethod(targetController: String, code: String, isControllerExist: Boolean)
     fun createController(endpoint: String, code: String): DtClass?
     fun createEntity(code: String): DtClass?

@@ -35,10 +35,10 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
         return files.map(DtClass.Companion::fromJavaFile)
     }
 
-    private fun getAllControllerFiles(): List<PsiFile> = filterFilesByFunc(::controllerFilter)
-    private fun getAllEntityFiles(): List<PsiFile> = filterFilesByFunc(::entityFilter)
-    private fun getAllDtoFiles(): List<PsiFile> = filterFilesByFunc(::dtoFilter)
-    private fun getAllServiceFiles(): List<PsiFile> = filterFilesByFunc(::serviceFilter)
+    override fun getAllControllerFiles(): List<PsiFile> = filterFilesByFunc(::controllerFilter)
+    override fun getAllEntityFiles(): List<PsiFile> = filterFilesByFunc(::entityFilter)
+    override fun getAllDtoFiles(): List<PsiFile> = filterFilesByFunc(::dtoFilter)
+    override fun getAllServiceFiles(): List<PsiFile> = filterFilesByFunc(::serviceFilter)
 
     private fun filterFilesByFunc(filter: KFunction1<PsiClass, Boolean>): List<PsiFile> {
         return runReadAction {

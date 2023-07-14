@@ -11,8 +11,10 @@ import cc.unitmesh.devti.flow.model.TargetEndpoint
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.runconfig.AutoDevRunProfileState
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.psi.PsiFile
 import kotlinx.coroutines.runBlocking
 
 class AutoDevFlow(
@@ -22,6 +24,7 @@ class AutoDevFlow(
     val ui: ChatCodingComponent,
 ) : DevtiFlowAction {
     private val promptGenerator = PromptGenerator()
+    var selectedControllerName = ""
 
     /**
      * Step 1: check story detail is valid, if not, fill story detail
@@ -86,9 +89,10 @@ class AutoDevFlow(
     }
 
     /**
-     * Step 3: update endpoint method
+     * Step 4: update endpoint method
      */
     fun updateEndpointMethod(target: TargetEndpoint, storyDetail: String) {
+        selectedControllerName = target.controller.name
         try {
             doExecuteUpdateEndpoint(target, storyDetail)
         } catch (e: Exception) {
@@ -96,6 +100,31 @@ class AutoDevFlow(
             doExecuteUpdateEndpoint(target, storyDetail)
         }
     }
+
+    /**
+     * Step 5: create service and repository
+     */
+    fun createServiceAndRepository() {
+        // filter controllerName == selectedControllerName
+        val files: List<PsiFile> = processor?.getAllControllerFiles()?.filter { it.name == selectedControllerName }
+            ?: emptyList()
+        val controller = files.firstOrNull() ?: return
+
+        val controllerCode = runReadAction {
+            controller.text
+        }
+
+        val promptText = promptGenerator.createServiceAndRepository(controllerCode)
+
+        logger.warn("createServiceAndController prompt text: $promptText")
+        val result = executePrompt(promptText)
+
+        val services = parseCodeFromString(result)
+        services.forEach { service ->
+            processor?.let { createCodeByType(service, it, true) }
+        }
+    }
+
 
     private fun doExecuteUpdateEndpoint(target: TargetEndpoint, storyDetail: String) {
         val codes = fetchForEndpoint(target.endpoint, target.controller, storyDetail)

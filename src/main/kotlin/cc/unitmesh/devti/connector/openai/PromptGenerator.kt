@@ -3,6 +3,7 @@ package cc.unitmesh.devti.connector.openai
 import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.flow.model.SimpleProjectInfo
 import cc.unitmesh.devti.prompting.PromptConfig
+import com.intellij.openapi.util.NlsSafe
 import java.io.InputStream
 
 class PromptGenerator {
@@ -48,7 +49,7 @@ class PromptGenerator {
             .replace("{controllers}", targetClazz.format())
             .replace("{storyDetail}", storyDetail)
             .replace("{models}", models.joinToString("\n", transform = DtClass::formatDto))
-            .replace("{services}", models.joinToString("\n", transform = DtClass::format))
+            .replace("{services}", services.joinToString("\n", transform = DtClass::format))
             .replace("{spec}", spec ?: "")
     }
 
@@ -64,5 +65,12 @@ class PromptGenerator {
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         return promptTextString
             .replace("{code}", text)
+    }
+
+    fun createServiceAndRepository(controller: @NlsSafe String): String {
+        val promptText: InputStream = getResource("create_service_and_repository")!!
+        val promptTextString = promptText.bufferedReader().use { it.readText() }
+        return promptTextString
+            .replace("{controllerCode}", controller)
     }
 }
