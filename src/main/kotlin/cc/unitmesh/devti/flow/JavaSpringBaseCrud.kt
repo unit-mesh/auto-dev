@@ -20,6 +20,7 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiPackageStatement
 import com.intellij.psi.codeStyle.CodeStyleManager
+import com.intellij.psi.impl.source.PsiJavaFileImpl
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
@@ -107,17 +108,13 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
     }
 
     override fun serviceList(): List<DtClass> {
-        return this.services.map {
-            val className = it.name.substring(0, it.name.length - ".java".length)
-            DtClass.fromPsiFile(it) ?: DtClass(className, emptyList())
-        }
+        return this.getAllServiceFiles().map { DtClass.fromJavaFile(it as PsiJavaFileImpl) }
     }
 
     override fun modelList(): List<DtClass> {
         val files = this.getAllEntityFiles() + this.getAllDtoFiles()
         return files.map {
-            val className = it.name.substring(0, it.name.length - ".java".length)
-            DtClass.fromPsiFile(it) ?: DtClass(className, emptyList())
+            DtClass.fromJavaFile(it as PsiJavaFileImpl)
         }
     }
 
