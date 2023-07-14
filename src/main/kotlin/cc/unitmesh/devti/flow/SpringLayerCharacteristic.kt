@@ -54,7 +54,7 @@ class SpringLayerCharacteristic(
         )
 
 
-        fun checkLayer(code: String, type: String): Boolean {
+        fun check(code: String, type: String): Boolean {
             val characteristic = allCharacteristics[type] ?: return false
             if (code.contains(characteristic.annotation)) {
                 return true
@@ -70,7 +70,7 @@ class SpringLayerCharacteristic(
             return regex.containsMatchIn(code)
         }
 
-        fun checkLayer(code: PsiClass, type: String): Boolean {
+        fun check(code: PsiClass, type: String): Boolean {
             val characteristic = allCharacteristics[type] ?: return false
             code.annotations.forEach {
                 if (characteristic.imports.contains(it.qualifiedName)) {

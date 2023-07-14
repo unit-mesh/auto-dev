@@ -32,15 +32,15 @@ interface SpringBaseCrud {
     fun createRepository(code: String): DtClass?
     fun createClass(code: String, packageName: String?): DtClass?
 
-    fun dtoFilter(clazz: PsiClass): Boolean = SpringLayerCharacteristic.checkLayer(clazz, "dto")
-    fun entityFilter(clazz: PsiClass): Boolean = SpringLayerCharacteristic.checkLayer(clazz, "entity")
-    fun controllerFilter(clazz: PsiClass): Boolean = SpringLayerCharacteristic.checkLayer(clazz, "controller")
-    fun serviceFilter(clazz: PsiClass): Boolean = SpringLayerCharacteristic.checkLayer(clazz, "service")
-    fun repositoryFilter(clazz: PsiClass): Boolean = SpringLayerCharacteristic.checkLayer(clazz, "repository")
+    fun dtoFilter(clazz: PsiClass): Boolean = SpringLayerCharacteristic.check(clazz, "dto")
+    fun entityFilter(clazz: PsiClass): Boolean = SpringLayerCharacteristic.check(clazz, "entity")
+    fun controllerFilter(clazz: PsiClass): Boolean = SpringLayerCharacteristic.check(clazz, "controller")
+    fun serviceFilter(clazz: PsiClass): Boolean = SpringLayerCharacteristic.check(clazz, "service")
+    fun repositoryFilter(clazz: PsiClass): Boolean = SpringLayerCharacteristic.check(clazz, "repository")
 
-    fun isDto(code: String): Boolean = SpringLayerCharacteristic.checkLayer(code, "dto")
-    fun isEntity(code: String): Boolean = SpringLayerCharacteristic.checkLayer(code, "entity")
-    fun isController(code: String): Boolean = SpringLayerCharacteristic.checkLayer(code, "controller")
-    fun isService(code: String): Boolean = SpringLayerCharacteristic.checkLayer(code, "service")
-    fun isRepository(code: String): Boolean = SpringLayerCharacteristic.checkLayer(code, "repository")
+    fun isDto(code: String): Boolean = SpringLayerCharacteristic.check(code, "dto")
+    fun isEntity(code: String): Boolean = SpringLayerCharacteristic.check(code, "entity")
+    fun isController(code: String): Boolean = SpringLayerCharacteristic.check(code, "controller")
+    fun isService(code: String): Boolean = SpringLayerCharacteristic.check(code, "service")
+    fun isRepository(code: String): Boolean = SpringLayerCharacteristic.check(code, "repository")
 }
