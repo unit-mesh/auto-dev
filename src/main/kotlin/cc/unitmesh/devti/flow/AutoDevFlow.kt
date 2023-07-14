@@ -85,11 +85,11 @@ class AutoDevFlow(
         logger.warn("target endpoint: $controller")
         val targetController = files.find { it.name == controller }
         if (targetController == null) {
+            isNewController = true
             logger.warn("no controller found from: $controller")
             return TargetEndpoint(controller, DtClass(controller, listOf()), false)
         }
 
-        isNewController = true
         return TargetEndpoint(controller, targetController)
     }
 
@@ -110,7 +110,6 @@ class AutoDevFlow(
      * Step 5: create service and repository
      */
     override fun updateOrCreateServiceAndRepository() {
-        // filter controllerName == selectedControllerName
         val files: List<PsiFile> = processor?.getAllControllerFiles()?.filter { it.name == selectedControllerName }
             ?: emptyList()
         val controllerCode = if (files.isEmpty()) {
@@ -163,9 +162,9 @@ class AutoDevFlow(
         isNeedCreateController: Boolean
     ) {
         when {
-            processor!!.isController(code) -> {
+            isNeedCreateController || processor!!.isController(code) -> {
                 selectedControllerCode = code
-                processor.createControllerOrUpdateMethod(controllerName, code, isNeedCreateController)
+                processor!!.createControllerOrUpdateMethod(controllerName, code, isNeedCreateController)
             }
 
             processor.isService(code) -> {
@@ -237,7 +236,8 @@ class AutoDevFlow(
 
         val services = processor?.serviceList()?.map { it } ?: emptyList()
 
-        val promptText = promptTemplate.createOrUpdateControllerMethod(clazz, storyDetail, models, services, isNewController)
+        val promptText =
+            promptTemplate.createOrUpdateControllerMethod(clazz, storyDetail, models, services, isNewController)
         logger.warn("needUpdateMethodForController prompt text: $promptText")
         return executePrompt(promptText)
     }

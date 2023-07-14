@@ -1,8 +1,10 @@
 你是一个资深的后端 CRUD 工程师，请根据下面的用户故事以及 {controllerName} 的相关信息，编写 Controller 部分的 Java 代码。要求如下：
 {spec}
-- 只返回 Controller 对应特别接口的函数。
-- 不做解释，只返回修改完的函数代码。
-- 你返回的代码示例如下：
+
+- 只返回 Controller 对应接口的关键函数。
+- 不做解释，只返回对应的关键函数。
+- 你最后返回的代码示例如下：
+// {your should return method code in here}
 ```java
 @PostMapping("{xxxx}")
 @ApiOperation(value = "xxxx", notes = "xxxx")
@@ -24,9 +26,11 @@ public {methodReturnType} {methodName}({methodParams}) {
 {services}
 ###
 
-用户故事如下：
-
 ###
+// 用户故事如下：
 {storyDetail}
 ###
 
+你的代码：
+
+// {your should return method code in here}
