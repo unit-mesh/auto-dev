@@ -18,10 +18,10 @@ class PromptTemplateTest {
         assertEquals(
             """你是一个敏捷项目的 BA，请根据如下的信息，编写用户故事。
 
-1. 你的项目是：### AutoDev:description ###
-2. 你的需求是： ### story information ###。
-3. 必须要考虑、尽可能考虑各种异常场景，添加更多的 AC（至少 3 个）。
-4. 你的返回模板如下所示：
+- 你的项目是：### AutoDev:description ###
+- 你的需求是： ### story information ###。
+- 必须要考虑、尽可能考虑各种异常场景，添加更多的 AC（至少 3 个）。
+- 你的返回模板如下所示：
 
 ###
 用户故事：可以选择宝贝出行服务
@@ -47,8 +47,8 @@ AC 1:  xxx
         assertEquals(
             """你是一个资深的后端 CRUD 工程师，请根据下面的用户故事 和 Controller 列表。要求：
 
-1. 返回最合适的 Controller 名字
-2. 如果不存在合适的 Controller 名字，请返回适合的 Controller 名字。
+- 返回最合适的 Controller 名字
+- 如果不存在合适的 Controller 名字，请返回适合的 Controller 名字。
 
 Controller 列表：
 
