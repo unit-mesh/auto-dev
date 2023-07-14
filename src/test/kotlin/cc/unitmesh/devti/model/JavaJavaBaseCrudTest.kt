@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.analysis
 
-import cc.unitmesh.devti.flow.JavaSpringBaseCrud
+import cc.unitmesh.devti.flow.JavaSpringCodeCreator
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiElementFactory
 import com.intellij.testFramework.LightPlatformTestCase
@@ -21,7 +21,7 @@ class JavaJavaBaseCrudTest : LightPlatformTestCase() {
     }
 
     fun testShould_return_true_when_its_a_service() {
-        val processor = JavaSpringBaseCrud(project)
+        val processor = JavaSpringCodeCreator(project)
 
         val originCode = """@Service class HelloService {
 }

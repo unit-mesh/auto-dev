@@ -2,7 +2,7 @@ package cc.unitmesh.devti.runconfig
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.flow.AutoDevFlow
-import cc.unitmesh.devti.flow.JavaSpringBaseCrud
+import cc.unitmesh.devti.flow.JavaSpringCodeCreator
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.connector.openai.OpenAIConnector
 import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
@@ -43,7 +43,7 @@ class AutoDevRunProfileState(
         val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(DevtiFlowToolWindowFactory.id)
         val contentManager = toolWindowManager?.contentManager
 
-        val javaAuto = project.service<JavaSpringBaseCrud>()
+        val javaAuto = project.service<JavaSpringCodeCreator>()
         val gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)
 
         val openAIRunner = OpenAIConnector()

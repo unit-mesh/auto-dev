@@ -60,9 +60,8 @@ class AutoDevFlow(
         logger.warn("needUpdateMethodForController prompt text: $promptText")
         val result = executePrompt(promptText)
 
-        val dtos = parseCodeFromString(result)
-        dtos.forEach { dto ->
-            processor?.let { createCodeByType(dto, it) }
+        parseCodeFromString(result).forEach { dto ->
+            processor?.let { createCodeByType(dto) }
         }
     }
 
@@ -125,7 +124,7 @@ class AutoDevFlow(
 
         val services = parseCodeFromString(result)
         services.forEach { service ->
-            processor?.let { createCodeByType(service, it, true) }
+            processor?.let { createCodeByType(service, true) }
         }
     }
 
@@ -139,30 +138,28 @@ class AutoDevFlow(
 
             codes.indices.forEach { i ->
                 val code = codes[i]
-                createCodeByType(code, processor, target.isNeedToCreated, target.controller.name)
+                createCodeByType(code, target.isNeedToCreated, target.controller.name)
             }
         }
     }
 
     private fun createCodeByType(
         code: String,
-        processor: SpringBaseCrud,
         isNeedCreateController: Boolean = false,
         controllerName: String = "",
     ) {
         JavaParseUtil.splitClass(code).forEach {
-            createCode(processor, it, controllerName, isNeedCreateController)
+            createCode(it, controllerName, isNeedCreateController)
         }
     }
 
     private fun createCode(
-        processor: SpringBaseCrud,
         code: String,
         controllerName: String,
         isNeedCreateController: Boolean
     ) {
         when {
-            processor.isController(code) -> {
+            processor!!.isController(code) -> {
                 selectedControllerCode = code
                 processor.createControllerOrUpdateMethod(controllerName, code, isNeedCreateController)
             }

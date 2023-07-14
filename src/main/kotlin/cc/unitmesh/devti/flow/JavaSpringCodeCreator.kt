@@ -21,7 +21,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import kotlin.reflect.KFunction1
 
 
-class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
+class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
     private val psiElementFactory = JavaPsiFacade.getElementFactory(project)
     private val codeTemplate = JavaCrudTemplate(project)
     private val psiManager = PsiManager.getInstance(project)
@@ -247,7 +247,7 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
     }
 
     companion object {
-        private val log: Logger = logger<JavaSpringBaseCrud>()
+        private val log: Logger = logger<JavaSpringCodeCreator>()
     }
 }
 
