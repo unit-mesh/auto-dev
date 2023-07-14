@@ -82,7 +82,7 @@ interface SpringBaseCrud {
         }
 
         // regex to match `public class xxService`
-        val regex = Regex("public\\s+class\\s+\\w+Service")
+        val regex = Regex("public\\s+(class|interface)\\s+\\w+Service")
         return regex.containsMatchIn(code)
     }
 
@@ -120,7 +120,7 @@ interface SpringBaseCrud {
         }
 
         // regex to match `public class xxRepository`
-        val regex = Regex("public\\s+class\\s+\\w+Repository")
+        val regex = Regex("public\\s+(class|interface)\\s+\\w+Repository")
         return regex.containsMatchIn(code)
     }
 }
