@@ -1,0 +1,29 @@
+你是一个资深的后端 CRUD 工程师，请根据下面的 Controller 代码，实现对应的 Service 代码和 Repository 代码。要求如下：
+{spec}
+- 你返回的代码需要能够编译通过，不做解释。
+- 你返回的代码示例如下：
+###
+```java
+import org.springframework.stereotype.Service;
+
+@Service
+public class {serviceName} {
+    xxxRepository xxxRepository;
+
+    constructor({xxxRepository} {xxxRepository}) {
+        this.{xxxRepository} = {xxxRepository};
+    }
+
+    // {the logic to support on the controller}
+}
+```
+
+```java
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
+
+public class {xxxRepository} extends JpaRepository<{xxx}, Long> {
+
+}
+```
+###

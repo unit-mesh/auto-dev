@@ -1,4 +1,4 @@
-请根据下面的用户故事，编写 DTO（Request, Response） 和 Entity 的代码。要求如下：
+你是一个资深的后端 CRUD 工程师，请根据下面的用户故事，编写 DTO（Request, Response） 和 Entity 的代码。要求如下：
 {spec}
 - 每个 Request，Response，Entity 请使用新的 markdown 代码块（```java）。
 - 每个 Request，Response，Entity 请使用独立的 markdown 代码块。
