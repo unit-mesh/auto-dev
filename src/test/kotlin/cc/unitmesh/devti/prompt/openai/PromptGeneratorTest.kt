@@ -45,7 +45,7 @@ AC 1:  xxx
         val files: List<DtClass> = listOf(DtClass("TaxiController", emptyList()), DtClass("GpsController", emptyList()))
         val result = promptGenerator.createEndpoint(storyDetail, files)
         assertEquals(
-            """请根据下面的用户故事 和 Controller 列表。要求：
+            """你是一个资深的后端 CRUD 工程师，请根据下面的用户故事 和 Controller 列表。要求：
 
 1. 返回最合适的 Controller 名字
 2. 如果不存在合适的 Controller 名字，请返回适合的 Controller 名字。
