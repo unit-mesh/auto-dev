@@ -190,7 +190,9 @@ class AutoDevFlow(
             dtos
         }
 
-        val promptText = promptGenerator.updateControllerMethod(clazz, storyDetail, models)
+        val services = processor?.serviceList()?.map { it } ?: emptyList()
+
+        val promptText = promptGenerator.updateControllerMethod(clazz, storyDetail, models, services)
         logger.warn("needUpdateMethodForController prompt text: $promptText")
         return executePrompt(promptText)
     }

@@ -1,8 +1,6 @@
 请根据下面的用户故事以及 {controllerName} 的相关信息，编写 Controller 部分的 Java 代码。要求如下：
 {spec}
-1. 使用 Java 语言 + Spring 编写
-2. 只返回 Controller 对应方法的代码。
-3. 不做解释，只返回修改完的函数代码。
+1. 只返回修改完的函数代码，不做解释。
 
 ###
 // {controllerName} 相关信息如下：
@@ -12,6 +10,9 @@
 ###
 // 相关 DTO 和 entity 类如下：
 {models}
+
+// 所有 service 类如下，{如果不存在需要的 service 类，请自行创建}
+{services}
 ###
 
 用户故事如下：

@@ -41,8 +41,10 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
     private fun getAllServiceFiles(): List<PsiFile> = filterFilesByFunc(::serviceFilter)
 
     private fun filterFilesByFunc(filter: KFunction1<PsiClass, Boolean>): List<PsiFile> {
-        val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
-        return filterFiles(javaFiles, psiManager, filter)
+        return runReadAction {
+            val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
+            return@runReadAction filterFiles(javaFiles, psiManager, filter)
+        }
     }
 
     private fun filterFiles(
