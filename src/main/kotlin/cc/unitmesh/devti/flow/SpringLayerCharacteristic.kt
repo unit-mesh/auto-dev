@@ -1,0 +1,73 @@
+package cc.unitmesh.devti.flow
+
+import kotlinx.serialization.Serializable
+
+@Serializable
+class SpringLayerCharacteristic(
+    val annotation: String, val imports: List<String>, val codeRegex: String, val fileName: String
+) {
+    companion object {
+        private val controllerCharacteristic = SpringLayerCharacteristic(
+            annotation = "@Controller",
+            imports = listOf(
+                "org.springframework.stereotype.Controller",
+                "org.springframework.web.bind.annotation.RestController"
+            ),
+            codeRegex = "public\\s+class\\s+\\w+Controller",
+            fileName = ".*Controller\\.java"
+        )
+
+        private val serviceCharacteristic = SpringLayerCharacteristic(
+            annotation = "@Service",
+            imports = listOf("org.springframework.stereotype.Service"),
+            codeRegex = "public\\s+(class|interface)\\s+\\w+Service",
+            fileName = ".*Service\\.java"
+        )
+
+        private val entityCharacteristic = SpringLayerCharacteristic(
+            annotation = "@Entity",
+            imports = listOf("javax.persistence.Entity"),
+            codeRegex = "public\\s+class\\s+\\w+Entity",
+            fileName = ".*Entity\\.java"
+        )
+
+        private val dtoCharacteristic = SpringLayerCharacteristic(
+            annotation = "@Data",
+            imports = listOf("lombok.Data"),
+            codeRegex = "public\\s+class\\s+\\w+(Dto|DTO|Request|Response|Res|Req)",
+            fileName = ".*(Dto|DTO|Request|Response|Res|Req)\\.java"
+        )
+
+        private val repositoryCharacteristic = SpringLayerCharacteristic(
+            annotation = "org.springframework.stereotype.Repository",
+            imports = listOf("org.springframework.stereotype.Repository"),
+            codeRegex = "public\\s+(class|interface)\\s+\\w+Repository",
+            fileName = ".*Repository\\.java"
+        )
+
+        private val allCharacteristics = mapOf(
+            "controller" to controllerCharacteristic,
+            "service" to serviceCharacteristic,
+            "entity" to entityCharacteristic,
+            "dto" to dtoCharacteristic,
+            "repository" to repositoryCharacteristic
+        )
+
+
+        fun checkLayer(code: String, type: String): Boolean {
+            val characteristic = allCharacteristics[type] ?: return false
+            if (code.contains(characteristic.annotation)) {
+                return true
+            }
+
+            characteristic.imports.forEach {
+                if (code.contains(it)) {
+                    return true
+                }
+            }
+
+            val regex = Regex(characteristic.codeRegex)
+            return regex.containsMatchIn(code)
+        }
+    }
+}

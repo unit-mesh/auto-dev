@@ -9,6 +9,7 @@ interface SpringBaseCrud {
     fun controllerList(): List<DtClass>
     fun entityList(): List<DtClass>
     fun serviceList(): List<DtClass>
+
     /**
      * return all entity class + dto class
      */
@@ -31,7 +32,6 @@ interface SpringBaseCrud {
     fun dtoFilter(clazz: PsiClass): Boolean {
         val className = clazz.name?.lowercase()
 
-        // endsWith dto, request, response
         return (className?.endsWith("dto") == true ||
                 className?.endsWith("request") == true
                 || className?.endsWith("response") == true)
@@ -58,69 +58,9 @@ interface SpringBaseCrud {
             it == "javax.persistence.Entity"
         }
 
-    fun isController(code: String): Boolean {
-        if (code.contains("@Controller")) {
-            return true
-        }
-
-        if (code.contains("import org.springframework.stereotype.Controller")) {
-            return true
-        }
-
-        // regex to match `public class xxController`
-        val regex = Regex("public\\s+class\\s+\\w+Controller")
-        return regex.containsMatchIn(code)
-    }
-
-    fun isService(code: String): Boolean {
-        if (code.contains("@Service")) {
-            return true
-        }
-
-        if (code.contains("import org.springframework.stereotype.Service")) {
-            return true
-        }
-
-        // regex to match `public class xxService`
-        val regex = Regex("public\\s+(class|interface)\\s+\\w+Service")
-        return regex.containsMatchIn(code)
-    }
-
-    fun isEntity(code: String): Boolean {
-        if (code.contains("@Entity")) {
-            return true
-        }
-
-        if (code.contains("import javax.persistence.Entity")) {
-            return true
-        }
-
-        // regex to match `public class xxEntity`
-        val regex = Regex("public\\s+class\\s+\\w+Entity")
-        return regex.containsMatchIn(code)
-    }
-
-    fun isDto(code: String): Boolean {
-        if (code.contains("import lombok.Data")) {
-            return true
-        }
-
-        // regex to match `public class xxDto`
-        val regex = Regex("public\\s+class\\s+\\w+(Dto|DTO|Request|Response|Res|Req)")
-        return regex.containsMatchIn(code)
-    }
-
-    fun isRepository(code: String): Boolean {
-        if (code.contains("@Repository")) {
-            return true
-        }
-
-        if (code.contains("import org.springframework.stereotype.Repository")) {
-            return true
-        }
-
-        // regex to match `public class xxRepository`
-        val regex = Regex("public\\s+(class|interface)\\s+\\w+Repository")
-        return regex.containsMatchIn(code)
-    }
+    fun isController(code: String): Boolean = SpringLayerCharacteristic.checkLayer(code, "controller")
+    fun isService(code: String): Boolean = SpringLayerCharacteristic.checkLayer(code, "service")
+    fun isEntity(code: String): Boolean = SpringLayerCharacteristic.checkLayer(code, "entity")
+    fun isDto(code: String): Boolean = SpringLayerCharacteristic.checkLayer(code, "dto")
+    fun isRepository(code: String): Boolean = SpringLayerCharacteristic.checkLayer(code, "repository")
 }
