@@ -71,6 +71,18 @@ class DtClass(
         return output.toString()
     }
 
+    fun formatDto(): String {
+        if (fields.isNotEmpty()) {
+            val output = StringBuilder()
+            output.append("$packageName.$name(")
+            output.append(fields.joinToString(", ") { "${it.name}: ${it.type}" })
+            output.append(")")
+            return output.toString()
+        }
+
+        return "$packageName.$name\n"
+    }
+
     fun format(): String {
         val output = StringBuilder()
         output.append("class $name ")

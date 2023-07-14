@@ -11,6 +11,7 @@ interface SpringBaseCrud {
      * return all entity class + dto class
      */
     fun modelList(): List<DtClass>
+    fun entityList(): List<DtClass>
     fun createControllerOrUpdateMethod(targetController: String, code: String, isControllerExist: Boolean)
     fun createController(endpoint: String, code: String): DtClass?
     fun createEntity(code: String): DtClass?

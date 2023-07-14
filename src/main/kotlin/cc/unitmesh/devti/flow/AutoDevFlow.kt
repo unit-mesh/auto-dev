@@ -173,7 +173,23 @@ class AutoDevFlow(
     }
 
     override fun needUpdateMethodOfController(targetEndpoint: String, clazz: DtClass, storyDetail: String): String {
-        val models = processor?.modelList()?.map { it.name } ?: emptyList()
+        val allModels = processor?.modelList()?.map { it } ?: emptyList()
+        val relevantName = targetEndpoint.replace("Controller", "")
+
+        // filter *Request, *Response
+        val dtos = allModels.filter {
+            it.name.contains(relevantName) && (it.name.endsWith("Request") || it.name.endsWith("Response"))
+        }
+
+        // relevant entity = xxController -> xx
+        val relevantDto = allModels.find { it.name.startsWith(relevantName) }
+
+        val models = if (relevantDto != null) {
+            dtos + relevantDto
+        } else {
+            dtos
+        }
+
         val promptText = promptGenerator.updateControllerMethod(clazz, storyDetail, models)
         logger.warn("needUpdateMethodForController prompt text: $promptText")
         return executePrompt(promptText)

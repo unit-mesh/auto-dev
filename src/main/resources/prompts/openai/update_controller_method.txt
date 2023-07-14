@@ -10,7 +10,7 @@
 ###
 
 ###
-// 已有的相关 DTO 和 entity 类如下：
+// 相关 DTO 和 entity 类如下：
 {models}
 ###
 

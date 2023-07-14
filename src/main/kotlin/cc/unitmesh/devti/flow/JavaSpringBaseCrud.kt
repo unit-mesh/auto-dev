@@ -104,6 +104,10 @@ class JavaSpringBaseCrud(val project: Project) : SpringBaseCrud {
         return this.getAllServiceFiles().map(DtClass.Companion::fromJavaFile)
     }
 
+    override fun entityList(): List<DtClass> {
+        return this.getAllEntityFiles().map(DtClass.Companion::fromJavaFile)
+    }
+
     override fun modelList(): List<DtClass> {
         val files = this.getAllEntityFiles() + this.getAllDtoFiles()
         return files.map(DtClass.Companion::fromJavaFile)

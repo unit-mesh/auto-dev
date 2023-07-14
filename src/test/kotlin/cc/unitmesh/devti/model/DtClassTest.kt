@@ -3,6 +3,7 @@ package cc.unitmesh.devti.analysis
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiElementFactory
 import com.intellij.testFramework.LightPlatformTestCase
+import org.junit.Test
 
 class DtClassTest : LightPlatformTestCase() {
     private val javaFactory: PsiElementFactory get() = JavaPsiFacade.getElementFactory(project)
@@ -95,6 +96,23 @@ public void setAttendees(List<String> attendees) {
 // ' some getters and setters
 // }
 """
+        )
+    }
+
+    fun testShould_format_dto_class() {
+        val originCode = """
+private String roomId;
+private String startTime;
+private String endTime;
+private List<String> attendees;
+"""
+        val psiClass = javaFactory.createClassFromText(originCode, null)
+        psiClass.setName("MeetingRequest")
+
+        val dtClass = DtClass.fromPsi(psiClass)
+        assertEquals(
+            dtClass.formatDto(),
+            "MeetingRequest.MeetingRequest(roomId: String, startTime: String, endTime: String, attendees: List<String>)"
         )
     }
 
