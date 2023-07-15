@@ -45,9 +45,18 @@ class PromptStrategyAdvisor(val project: Project) {
     }
 
     fun advice(javaFile: PsiJavaFile, calleeName: String): FinalPrompt {
-        // strategy 1: remove class code without the imports
+        val code = javaFile.text
+        if (encoding.countTokens(code) < tokenLength) {
+            return FinalPrompt(code, "")
+        }
 
+        // strategy 1: remove class code without the imports
         val javaCode = javaFile.classes[0]
+        val countTokens = encoding.countTokens(javaCode.text)
+        if (countTokens < tokenLength) {
+            return FinalPrompt(javaCode.text, "")
+        }
+
         return advice(javaCode, calleeName)
     }
 
