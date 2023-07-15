@@ -51,7 +51,7 @@ class AutoDevRunProfileState(
         val chatCodingService = ChatCodingService(ChatBotActionType.REVIEW)
         val contentPanel = ChatCodingComponent(chatCodingService)
 
-        val autoDevFlow = AutoDevFlow(gitHubIssue, openAIRunner, javaAuto, contentPanel)
+        val autoDevFlow = AutoDevFlow(gitHubIssue, openAIRunner, javaAuto, contentPanel, project)
 
         val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
 

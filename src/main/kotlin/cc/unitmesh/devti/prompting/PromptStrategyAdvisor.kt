@@ -44,7 +44,7 @@ class PromptStrategyAdvisor(val project: Project) {
         return FinalPrompt(prefixCodeWithoutImport, suffixCode)
     }
 
-    fun advice(javaFile: PsiJavaFile, calleeName: String): FinalPrompt {
+    fun advice(javaFile: PsiJavaFile, calleeName: String = ""): FinalPrompt {
         val code = javaFile.text
         if (encoding.countTokens(code) < tokenLength) {
             return FinalPrompt(code, "")
@@ -60,7 +60,7 @@ class PromptStrategyAdvisor(val project: Project) {
         return advice(javaCode, calleeName)
     }
 
-    fun advice(javaCode: PsiClass, calleeName: String): FinalPrompt {
+    fun advice(javaCode: PsiClass, calleeName: String = ""): FinalPrompt {
         val codeString = javaCode.text
         val textbase = advice(codeString, "")
         if (encoding.countTokens(textbase.prefixCode) < tokenLength) {
@@ -96,6 +96,7 @@ class PromptStrategyAdvisor(val project: Project) {
         }.map {
             it.name
         }
+
         return fields
     }
 

@@ -13,11 +13,15 @@ import cc.unitmesh.devti.flow.model.SimpleProjectInfo
 import cc.unitmesh.devti.flow.model.TargetEndpoint
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.parser.parseCodeFromString
+import cc.unitmesh.devti.prompting.PromptStrategyAdvisor
 import cc.unitmesh.devti.runconfig.AutoDevRunProfileState
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiJavaFile
 import kotlinx.coroutines.runBlocking
 
 class AutoDevFlow(
@@ -25,11 +29,13 @@ class AutoDevFlow(
     private val connector: OpenAIConnector,
     private val processor: SpringBaseCrud? = null,
     val ui: ChatCodingComponent,
+    val project: Project,
 ) : DevtiFlowAction {
     private val promptTemplate = PromptTemplate()
     private var selectedControllerName = ""
     private var selectedControllerCode = ""
     private var isNewController = false
+    private val promptStrategy = project.service<PromptStrategyAdvisor>()
 
     /**
      * Step 1: check story detail is valid, if not, fill story detail
@@ -116,7 +122,8 @@ class AutoDevFlow(
             selectedControllerCode
         } else {
             runReadAction {
-                files[0].text
+                val serviceName = selectedControllerName.removeSuffix("Controller") + "Service"
+                promptStrategy.advice(files.first() as PsiJavaFile, serviceName).prefixCode
             }
         }
 
