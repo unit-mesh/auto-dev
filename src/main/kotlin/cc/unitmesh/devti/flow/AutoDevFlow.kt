@@ -116,14 +116,23 @@ class AutoDevFlow(
      * Step 5: create service and repository
      */
     override fun updateOrCreateServiceAndRepository() {
-        val files: List<PsiFile> = processor?.getAllControllerFiles()?.filter { it.name == selectedControllerName }
+        val serviceName = selectedControllerName.removeSuffix("Controller") + "Service"
+        // check service is exist
+        val files: List<PsiFile> = processor?.getAllServiceFiles()?.filter { it.name == serviceName }
             ?: emptyList()
-        val controllerCode = if (files.isEmpty()) {
+
+        createServiceFile(serviceName)
+    }
+
+    private fun createServiceFile(serviceName: String) {
+        val controllerFile: List<PsiFile> =
+            processor?.getAllControllerFiles()?.filter { it.name == selectedControllerName }
+                ?: emptyList()
+        val controllerCode = if (controllerFile.isEmpty()) {
             selectedControllerCode
         } else {
             runReadAction {
-                val serviceName = selectedControllerName.removeSuffix("Controller") + "Service"
-                promptStrategy.advice(files.first() as PsiJavaFile, serviceName).prefixCode
+                promptStrategy.advice(controllerFile.first() as PsiJavaFile, serviceName).prefixCode
             }
         }
 
