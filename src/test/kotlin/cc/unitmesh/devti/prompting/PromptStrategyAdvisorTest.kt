@@ -5,7 +5,7 @@ import com.intellij.psi.PsiElementFactory
 import com.intellij.testFramework.LightPlatformTestCase
 
 
-class PromptStrategyAdvisorTest: LightPlatformTestCase() {
+class PromptStrategyAdvisorTest : LightPlatformTestCase() {
     private val javaFactory: PsiElementFactory get() = JavaPsiFacade.getElementFactory(project)
 
     fun testShould_enable_get_field_reference() {
@@ -35,7 +35,12 @@ class PromptStrategyAdvisorTest: LightPlatformTestCase() {
         psiClass.setName("HelloController")
 
         val usages = advisor.advice(psiClass, "BlogService")
-        assertEquals(usages.prefixCode, """ blogService.createBlog(blogPost);
- blogService.getAllBlogPosts();""")
+        assertEquals(
+            usages.prefixCode, """        {some other code}
+        return blogService.createBlog(blogPost);
+        {some other code}
+        return blogService.getAllBlogPosts();
+"""
+        )
     }
 }

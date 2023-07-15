@@ -3,6 +3,7 @@ package cc.unitmesh.devti.prompting
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
 import com.knuddels.jtokkit.Encodings
@@ -48,6 +49,7 @@ class PromptStrategyAdvisor(val project: Project) {
             return FinalPrompt(codeString, "")
         }
 
+        // for Web controller, service, repository, etc.
         val fields = javaCode.fields.filter {
             it.type.canonicalText == calleeName
         }.map {
@@ -58,6 +60,15 @@ class PromptStrategyAdvisor(val project: Project) {
             return FinalPrompt(codeString, "")
         }
 
+        val lines = getByFields(fields, codeString)
+
+        return FinalPrompt(lines, "")
+    }
+
+    private fun getByFields(
+        fields: List<@NlsSafe String>,
+        codeString: @NlsSafe String
+    ): String {
         val firstFieldName = fields[0]
         // get all line when match by field usage (by Regex)
         val regex = Regex(".*\\s+$firstFieldName\\..*")
@@ -65,7 +76,7 @@ class PromptStrategyAdvisor(val project: Project) {
             it.matches(regex)
         }
 
-        return FinalPrompt(lines.joinToString("\n"), "")
+        return lines.joinToString("") { "        {some other code}\n$it\n" }
     }
 
     companion object {
