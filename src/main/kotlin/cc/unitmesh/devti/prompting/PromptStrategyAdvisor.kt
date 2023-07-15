@@ -123,24 +123,24 @@ class PromptStrategyAdvisor(val project: Project) {
 
     fun advice(serviceFile: PsiJavaFile, usedMethod: List<String>, noExistMethods: List<String>): FinalPrompt {
         val code = serviceFile.text
-        val filterNeedImplementMethods = noExistMethods.filter {
-            usedMethod.contains(it)
+        val filterNeedImplementMethods = usedMethod.filter {
+            noExistMethods.any { noExistMethod ->
+                it.contains(noExistMethod)
+            }
         }
+
         val suffixCode = filterNeedImplementMethods.joinToString(", ")
 
         val finalPrompt = code + """
             | // TODO: implement the method $suffixCode
         """.trimMargin()
         if (encoding.countTokens(finalPrompt) < tokenLength) {
-            return FinalPrompt(finalPrompt, suffixCode)
+            return FinalPrompt(code, suffixCode)
         }
 
         val javaCode = DtClass.fromJavaFile(serviceFile).format()
-        val prompt  = javaCode + """
-            | // TODO: implement the method $suffixCode
-        """.trimMargin()
 
-        return FinalPrompt(prompt, suffixCode)
+        return FinalPrompt(javaCode, suffixCode)
     }
 
     companion object {
