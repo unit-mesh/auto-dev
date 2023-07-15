@@ -9,7 +9,6 @@ import cc.unitmesh.devti.connector.openai.OpenAIConnector
 import cc.unitmesh.devti.connector.openai.PromptTemplate
 import cc.unitmesh.devti.flow.base.SpringBaseCrud
 import cc.unitmesh.devti.flow.code.JavaParseUtil
-import cc.unitmesh.devti.flow.model.SimpleProjectInfo
 import cc.unitmesh.devti.flow.model.TargetEndpoint
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.parser.parseCodeFromString
@@ -49,7 +48,10 @@ class AutoDevFlow(
         if (!kanban.isValidStory(storyDetail)) {
             logger.warn("story detail is not valid, fill story detail")
 
-            storyDetail = fillStoryDetail(simpleProject, story.description)
+            storyDetail = run {
+                val promptText = promptTemplate.storyDetail(simpleProject, story.description)
+                executePrompt(promptText)
+            }
 
             val newStory = SimpleStory(story.id, story.title, storyDetail)
             kanban.updateStoryDetail(newStory)
@@ -80,7 +82,8 @@ class AutoDevFlow(
     override fun fetchSuggestEndpoint(storyDetail: String): TargetEndpoint {
         val files: List<DtClass> = processor?.controllerList() ?: emptyList()
         logger.warn("start devti flow")
-        val targetEndpoint = analysisEndpoint(storyDetail, files)
+        val promptText = promptTemplate.createEndpoint(storyDetail, files)
+        val targetEndpoint = executePrompt(promptText)
 
         val controller = matchControllerName(targetEndpoint)
         if (controller == null) {
@@ -117,11 +120,24 @@ class AutoDevFlow(
      */
     override fun updateOrCreateServiceAndRepository() {
         val serviceName = selectedControllerName.removeSuffix("Controller") + "Service"
-        // check service is exist
-        val files: List<PsiFile> = processor?.getAllServiceFiles()?.filter { it.name == serviceName }
-            ?: emptyList()
+//        // check service is exist
+//        val files: List<PsiFile> = processor?.getAllServiceFiles()?.filter { it.name == serviceName }
+//            ?: emptyList()
+//        if (files.isNotEmpty()) {
+//            updateServiceMethod(files.first() as PsiJavaFile, serviceName)
+//        } else {
+//
+//        }
 
         createServiceFile(serviceName)
+    }
+
+    // TODO: update service method
+    private fun updateServiceMethod(serviceFile: PsiJavaFile, serviceName: String) {
+        // 1. filter used method from selectedControllerCode
+        // 2. if serviceFile exist used method, skip
+        // 3. if serviceFile not exist used method, send service code to openai
+        // 4. insert code to serviceFile
     }
 
     private fun createServiceFile(serviceName: String) {
@@ -217,17 +233,7 @@ class AutoDevFlow(
         return code
     }
 
-    fun fillStoryDetail(project: SimpleProjectInfo, story: String): String {
-        val promptText = promptTemplate.storyDetail(project, story)
-        return executePrompt(promptText)
-    }
-
-    fun analysisEndpoint(storyDetail: String, classes: List<DtClass>): String {
-        val promptText = promptTemplate.createEndpoint(storyDetail, classes)
-        return executePrompt(promptText)
-    }
-
-    fun needUpdateMethodOfController(
+    private fun needUpdateMethodOfController(
         targetEndpoint: String,
         clazz: DtClass,
         storyDetail: String,
@@ -266,8 +272,7 @@ class AutoDevFlow(
 
         return runBlocking {
             val prompt = connector.stream(promptText)
-            val result = ui.updateMessage(prompt)
-            return@runBlocking result
+            return@runBlocking ui.updateMessage(prompt)
         }
     }
 
