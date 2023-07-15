@@ -42,17 +42,30 @@ class PromptStrategyAdvisor(val project: Project) {
     }
 
     fun advice(javaCode: PsiClass, calleeName: String): FinalPrompt {
-        val textbase = advice(javaCode.text, "")
+        val codeString = javaCode.text
+        val textbase = advice(codeString, "")
         if (encoding.countTokens(textbase.prefixCode) < tokenLength) {
-            return FinalPrompt(javaCode.text, "")
+            return FinalPrompt(codeString, "")
         }
 
-        println("............")
-        javaCode.fields.map {
-            println(it.text)
+        val fields = javaCode.fields.filter {
+            it.type.canonicalText == calleeName
+        }.map {
+            it.name
         }
 
-        return FinalPrompt(javaCode.text, "")
+        if (fields.isEmpty()) {
+            return FinalPrompt(codeString, "")
+        }
+
+        val firstFieldName = fields[0]
+        // search all field usage by regex `\s+firstFieldName\..*`
+        val fieldRegex = Regex("\\s+$firstFieldName\\..*")
+        val fieldUsage = fieldRegex.findAll(codeString).map {
+            it.value
+        }.toList()
+
+        return FinalPrompt(fieldUsage.joinToString("\n"), "")
     }
 
     companion object {

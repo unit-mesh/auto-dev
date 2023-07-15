@@ -126,7 +126,7 @@ class DtClass(
                 val fields = psiClass.fields.map { field ->
                     DtField(
                         name = field.name,
-                        type = field.type.toString().replace("PsiType:", "")
+                        type = field.type.canonicalText
                     )
                 }
 

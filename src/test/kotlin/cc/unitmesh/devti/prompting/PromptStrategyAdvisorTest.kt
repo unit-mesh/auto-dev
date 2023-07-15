@@ -18,11 +18,24 @@ class PromptStrategyAdvisorTest: LightPlatformTestCase() {
     public BlogController(BlogService blogService) {
         this.blogService = blogService;
     }
+    
+    @PostMapping("/blog")
+    public BlogPost createBlog(CreateBlogDto blogDto) {
+        BlogPost blogPost = new BlogPost();
+        BeanUtils.copyProperties(blogDto, blogPost);
+        return blogService.createBlog(blogPost);
+    }
+
+    @GetMapping("/blog")
+    public List<BlogPost> getBlog() {
+        return blogService.getAllBlogPosts();
+    }
 """
         val psiClass = javaFactory.createClassFromText(originCode, null)
         psiClass.setName("HelloController")
 
-
-        advisor.advice(psiClass, "")
+        val usages = advisor.advice(psiClass, "BlogService")
+        assertEquals(usages.prefixCode, """ blogService.createBlog(blogPost);
+ blogService.getAllBlogPosts();""")
     }
 }
