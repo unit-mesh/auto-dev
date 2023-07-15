@@ -138,6 +138,8 @@ class AutoDevFlow(
         // 1. filter used method from selectedControllerCode.
         val usedMethod = JavaCodeProcessor.findUsageCode(selectedControllerCode, serviceName)
         // 2. if serviceFile exist used method, skip
+        // TODO: or also send service code to server ???
+        JavaCodeProcessor.findNoExistMethod(serviceFile, usedMethod)
         // 3. if serviceFile not exist used method, send service code to openai
         // 4. insert code to serviceFile
     }
