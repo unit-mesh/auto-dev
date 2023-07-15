@@ -3,7 +3,7 @@ package cc.unitmesh.devti.parser
 /**
  * will format complete code by prefix code and suffix code
  */
-class JavaCodePostProcessor(
+class PostCodeProcessor(
     private val prefixCode: String,
     private val suffixCode: String,
     private val completeCode: String,

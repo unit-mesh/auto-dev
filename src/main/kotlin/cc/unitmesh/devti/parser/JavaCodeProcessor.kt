@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.parser
 
-class JavaStringProcessor {
+class JavaCodeProcessor {
     companion object {
         fun findUsageCode(code: String, calleeName: String): List<String> {
             // a serviceName should be uppercase, we need to convert first letter to lowercase

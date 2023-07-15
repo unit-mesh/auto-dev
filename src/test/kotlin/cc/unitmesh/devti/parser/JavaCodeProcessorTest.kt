@@ -3,7 +3,7 @@ package cc.unitmesh.devti.parser
 import junit.framework.TestCase.assertEquals
 import org.junit.Test
 
-class JavaStringProcessorTest {
+class JavaCodeProcessorTest {
     @Test
     fun should_filter_called_service_line_inside_controller() {
         val code = """
@@ -21,7 +21,7 @@ class JavaStringProcessorTest {
             }
         """.trimIndent()
 
-        val usedMethodCode = JavaStringProcessor.findUsageCode(code, "UserService")
+        val usedMethodCode = JavaCodeProcessor.findUsageCode(code, "UserService")
         assert(usedMethodCode.size == 1)
 
         assertEquals("userService.getUser();", usedMethodCode[0])
@@ -44,7 +44,7 @@ class JavaStringProcessorTest {
             }
         """.trimIndent()
 
-        val usedMethodCode = JavaStringProcessor.findUsageCode(code, "UserService")
+        val usedMethodCode = JavaCodeProcessor.findUsageCode(code, "UserService")
         assert(usedMethodCode.size == 1)
 
         assertEquals("userService.getUser(\"1\");", usedMethodCode[0])
