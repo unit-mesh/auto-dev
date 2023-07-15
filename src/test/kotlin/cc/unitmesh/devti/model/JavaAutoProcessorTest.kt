@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.analysis
+package cc.unitmesh.devti.model
 
 import cc.unitmesh.devti.flow.code.JavaSpringCodeCreator
 import com.intellij.psi.JavaPsiFacade
