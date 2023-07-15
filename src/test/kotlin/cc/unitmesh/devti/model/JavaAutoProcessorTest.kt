@@ -20,11 +20,13 @@ class JavaAutoProcessorTest : LightPlatformTestCase() {
 
         val endpoints = JavaSpringCodeCreator(project)
         val newClasses =
-            endpoints.addMethodToClass(psiClass, """
-    public String hello2() { 
-        return "Greetings from Spring Boot!"; 
-    }
-""".trimIndent())
+            JavaSpringCodeCreator.addMethodToClass(
+                psiClass, """
+        public String hello2() { 
+            return "Greetings from Spring Boot!"; 
+        }
+    """.trimIndent(), endpoints.psiElementFactory
+            )
 
         assertEquals("hello", newClasses.methods[0].name)
         assertEquals("hello2", newClasses.methods[1].name)

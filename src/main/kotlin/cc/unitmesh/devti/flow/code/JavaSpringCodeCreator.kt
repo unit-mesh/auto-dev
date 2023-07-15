@@ -58,24 +58,6 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
         }
     }
 
-    fun addMethodToClass(psiClass: PsiClass, method: String): PsiClass {
-        val methodFromText = psiElementFactory.createMethodFromText(method, psiClass)
-        var lastMethod: PsiMethod? = null
-        val allMethods = psiClass.methods
-
-        if (allMethods.isNotEmpty()) {
-            lastMethod = allMethods[allMethods.size - 1]
-        }
-
-        if (lastMethod != null) {
-            psiClass.addAfter(methodFromText, lastMethod)
-        } else {
-            psiClass.add(methodFromText)
-        }
-
-        return psiClass
-    }
-
     override fun createControllerOrUpdateMethod(targetController: String, code: String, isControllerExist: Boolean) {
         if (!isControllerExist) {
             this.createController(targetController, code)
@@ -84,25 +66,7 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
 
         val targetControllerFile = getAllControllerFiles().first { it.name == "$targetController.java" }
 
-        ApplicationManager.getApplication().runReadAction {
-            val targetControllerClass = PsiTreeUtil.findChildrenOfType(targetControllerFile, PsiClass::class.java)
-                .firstOrNull() ?: return@runReadAction // Return from the lambda if the class is not found
-
-            var method = code
-            if (code.contains("class $targetController")) {
-                method = code.substring(code.indexOf("{") + 1, code.lastIndexOf("}"))
-            }
-
-            method = method.trimIndent()
-
-            ApplicationManager.getApplication().invokeLater {
-                WriteCommandAction.writeCommandAction(project)
-                    .run<RuntimeException> {
-                        addMethodToClass(targetControllerClass, method)
-                        CodeStyleManager.getInstance(project).reformat(targetControllerFile)
-                    }
-            }
-        }
+        Companion.updateCodeMethod(targetControllerFile, targetController, code, project, psiElementFactory)
     }
 
     override fun createController(endpoint: String, code: String): DtClass? {
@@ -231,6 +195,51 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
 
     companion object {
         private val log: Logger = logger<JavaSpringCodeCreator>()
+        fun addMethodToClass(psiClass: PsiClass, method: String, elementFactory: PsiElementFactory): PsiClass {
+            val methodFromText = elementFactory.createMethodFromText(method, psiClass)
+            var lastMethod: PsiMethod? = null
+            val allMethods = psiClass.methods
+
+            if (allMethods.isNotEmpty()) {
+                lastMethod = allMethods[allMethods.size - 1]
+            }
+
+            if (lastMethod != null) {
+                psiClass.addAfter(methodFromText, lastMethod)
+            } else {
+                psiClass.add(methodFromText)
+            }
+
+            return psiClass
+        }
+
+        fun updateCodeMethod(
+            targetFile: PsiFile,
+            targetClass: String,
+            code: String,
+            project: Project,
+            elementFactory: PsiElementFactory
+        ) {
+            ApplicationManager.getApplication().runReadAction {
+                val targetControllerClass = PsiTreeUtil.findChildrenOfType(targetFile, PsiClass::class.java)
+                    .firstOrNull() ?: return@runReadAction // Return from the lambda if the class is not found
+
+                var method = code
+                if (code.contains("class $targetClass")) {
+                    method = code.substring(code.indexOf("{") + 1, code.lastIndexOf("}"))
+                }
+
+                method = method.trimIndent()
+
+                ApplicationManager.getApplication().invokeLater {
+                    WriteCommandAction.writeCommandAction(project)
+                        .run<RuntimeException> {
+                            addMethodToClass(targetControllerClass, method, elementFactory)
+                            CodeStyleManager.getInstance(project).reformat(targetFile)
+                        }
+                }
+            }
+        }
     }
 }
 
