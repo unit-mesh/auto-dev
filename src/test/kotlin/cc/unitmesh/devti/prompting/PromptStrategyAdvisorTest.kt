@@ -7,12 +7,7 @@ import com.intellij.testFramework.LightPlatformTestCase
 
 class PromptStrategyAdvisorTest : LightPlatformTestCase() {
     private val javaFactory: PsiElementFactory get() = JavaPsiFacade.getElementFactory(project)
-
-    fun testShould_enable_get_field_reference() {
-        val advisor = PromptStrategyAdvisor(project)
-        advisor.tokenLength = 30
-
-        val originCode = """
+    private val originCode = """
     BlogService blogService;
 
     public BlogController(BlogService blogService) {
@@ -31,6 +26,34 @@ class PromptStrategyAdvisorTest : LightPlatformTestCase() {
         return blogService.getAllBlogPosts();
     }
 """
+
+    fun testShould_enable_get_service_code() {
+        val advisor = PromptStrategyAdvisor(project)
+        advisor.tokenLength = 90
+
+        val psiClass = javaFactory.createClassFromText(originCode, null)
+        psiClass.setName("HelloController")
+
+        val usages = advisor.advice(psiClass, "BlogService")
+        assertEquals(
+            usages.prefixCode, """    @PostMapping("/blog")
+    public BlogPost createBlog(CreateBlogDto blogDto) {
+        BlogPost blogPost = new BlogPost();
+        BeanUtils.copyProperties(blogDto, blogPost);
+        return blogService.createBlog(blogPost);
+    }
+
+    @GetMapping("/blog")
+    public List<BlogPost> getBlog() {
+        return blogService.getAllBlogPosts();
+    }"""
+        )
+    }
+
+    fun testShould_enable_get_field_reference() {
+        val advisor = PromptStrategyAdvisor(project)
+        advisor.tokenLength = 30
+
         val psiClass = javaFactory.createClassFromText(originCode, null)
         psiClass.setName("HelloController")
 

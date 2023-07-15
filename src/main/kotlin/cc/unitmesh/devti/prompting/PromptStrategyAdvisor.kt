@@ -49,31 +49,60 @@ class PromptStrategyAdvisor(val project: Project) {
             return FinalPrompt(codeString, "")
         }
 
+        // strategy 1: remove class code without the imports
+
         // for Web controller, service, repository, etc.
+        val fields = filterFieldsByName(javaCode, calleeName)
+        if (fields.isEmpty()) {
+            return FinalPrompt(codeString, "")
+        }
+
+        val targetField = fields[0]
+        val targetFieldRegex = Regex(".*\\s+$targetField\\..*")
+
+        // strategy 2: if all method contains the field, we should return all method
+        val methodCodes = getByMethods(javaCode, targetFieldRegex)
+        if (encoding.countTokens(methodCodes) < tokenLength) {
+            return FinalPrompt(methodCodes, "")
+        }
+
+        // strategy 3: if all line contains the field, we should return all line
+        val lines = getByFields(codeString, targetFieldRegex)
+        return FinalPrompt(lines, "")
+    }
+
+    private fun filterFieldsByName(
+        javaCode: PsiClass,
+        calleeName: String
+    ): List<@NlsSafe String> {
         val fields = javaCode.fields.filter {
             it.type.canonicalText == calleeName
         }.map {
             it.name
         }
-
-        if (fields.isEmpty()) {
-            return FinalPrompt(codeString, "")
-        }
-
-        val lines = getByFields(fields, codeString)
-
-        return FinalPrompt(lines, "")
+        return fields
     }
 
+    private fun getByMethods(javaCode: PsiClass, firstFieldRegex: Regex): String {
+        val methods = javaCode.methods.filter {
+            firstFieldRegex.containsMatchIn(it.text)
+        }.map {
+            it.text
+        }
+
+        val methodCodes = methods.joinToString("\n\n") {
+            "    $it" // we need to add 4 spaces for each method
+        }
+        return methodCodes
+    }
+
+    // get all line when match by field usage (by Regex)
     private fun getByFields(
-        fields: List<@NlsSafe String>,
-        codeString: @NlsSafe String
+        codeString: @NlsSafe String,
+        firstFieldRegex: Regex
     ): String {
-        val firstFieldName = fields[0]
-        // get all line when match by field usage (by Regex)
-        val regex = Regex(".*\\s+$firstFieldName\\..*")
         val lines = codeString.split("\n").filter {
-            it.matches(regex)
+            it.matches(firstFieldRegex)
         }
 
         return lines.joinToString("") { "        {some other code}\n$it\n" }
