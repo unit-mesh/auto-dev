@@ -2,6 +2,7 @@ package cc.unitmesh.devti.connector.openai
 
 import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.flow.model.SimpleProjectInfo
+import cc.unitmesh.devti.prompting.FinalPrompt
 import cc.unitmesh.devti.prompting.PromptConfig
 import com.intellij.openapi.util.NlsSafe
 import java.io.InputStream
@@ -78,5 +79,13 @@ class PromptTemplate {
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         return promptTextString
             .replace("{controllerCode}", controller)
+    }
+
+    fun updateServiceMethod(finalCode: FinalPrompt): String {
+        val promptText: InputStream = getResource("update_service_method")!!
+        val promptTextString = promptText.bufferedReader().use { it.readText() }
+        return promptTextString
+            .replace("{prefixCode}", finalCode.prefixCode)
+            .replace("{suffixCode}", finalCode.suffixCode)
     }
 }

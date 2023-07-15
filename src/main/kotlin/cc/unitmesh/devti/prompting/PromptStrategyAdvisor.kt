@@ -1,12 +1,11 @@
 package cc.unitmesh.devti.prompting
 
+import cc.unitmesh.devti.analysis.DtClass
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
-import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
-import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiJavaFile
 import com.knuddels.jtokkit.Encodings
 import com.knuddels.jtokkit.api.Encoding
@@ -120,6 +119,28 @@ class PromptStrategyAdvisor(val project: Project) {
         }
 
         return lines.joinToString("") { "        {some other code}\n$it\n" }
+    }
+
+    fun advice(serviceFile: PsiJavaFile, usedMethod: List<String>, noExistMethods: List<String>): FinalPrompt {
+        val code = serviceFile.text
+        val filterNeedImplementMethods = noExistMethods.filter {
+            usedMethod.contains(it)
+        }
+        val suffixCode = filterNeedImplementMethods.joinToString(", ")
+
+        val finalPrompt = code + """
+            | // TODO: implement the method $suffixCode
+        """.trimMargin()
+        if (encoding.countTokens(finalPrompt) < tokenLength) {
+            return FinalPrompt(finalPrompt, suffixCode)
+        }
+
+        val javaCode = DtClass.fromJavaFile(serviceFile).format()
+        val prompt  = javaCode + """
+            | // TODO: implement the method $suffixCode
+        """.trimMargin()
+
+        return FinalPrompt(prompt, suffixCode)
     }
 
     companion object {

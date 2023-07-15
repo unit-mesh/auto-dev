@@ -66,7 +66,11 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
 
         val targetControllerFile = getAllControllerFiles().first { it.name == "$targetController.java" }
 
-        Companion.updateCodeMethod(targetControllerFile, targetController, code, project, psiElementFactory)
+        updateCodeMethod(targetControllerFile, targetController, code, project, psiElementFactory)
+    }
+
+    override fun updateMethod(targetFile: PsiFile, targetClass: String, code: String) {
+        updateCodeMethod(targetFile, targetClass, code, project, psiElementFactory)
     }
 
     override fun createController(endpoint: String, code: String): DtClass? {

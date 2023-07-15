@@ -1,0 +1,16 @@
+你是一个资深的后端 CRUD 工程师，根据下面的信息编写 Service 层新方法的代码。要求：
+
+- 实现 // TODO 声明部分的方法。
+- 保证 Service 层的代码简洁易读，不要有冗余代码。
+- 你最后返回的代码示例如下：
+// TODO: implementation follows methods: {{some method}}
+```java
+public {methodReturnType} {methodName}({methodParams}) {
+    {methodBody}
+}
+```
+
+// current service code
+{prefixCode}
+// TODO: implementation follows methods:  {suffixCode}
+

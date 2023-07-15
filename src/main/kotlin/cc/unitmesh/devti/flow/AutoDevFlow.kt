@@ -9,6 +9,7 @@ import cc.unitmesh.devti.connector.openai.OpenAIConnector
 import cc.unitmesh.devti.connector.openai.PromptTemplate
 import cc.unitmesh.devti.flow.base.SpringBaseCrud
 import cc.unitmesh.devti.flow.code.JavaParseUtil
+import cc.unitmesh.devti.flow.code.JavaSpringCodeCreator
 import cc.unitmesh.devti.flow.model.TargetEndpoint
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.parser.JavaCodeProcessor
@@ -122,26 +123,37 @@ class AutoDevFlow(
     override fun updateOrCreateServiceAndRepository() {
         val serviceName = selectedControllerName.removeSuffix("Controller") + "Service"
 //        // check service is exist
-//        val files: List<PsiFile> = processor?.getAllServiceFiles()?.filter { it.name == serviceName }
-//            ?: emptyList()
-//        if (files.isNotEmpty()) {
-//            updateServiceMethod(files.first() as PsiJavaFile, serviceName)
-//        } else {
-//
-//        }
+        val files: List<PsiFile> = processor?.getAllServiceFiles()?.filter { it.name == "$serviceName.java" }
+            ?: emptyList()
 
-        createServiceFile(serviceName)
+        if (files.isNotEmpty()) {
+            updateServiceMethod(files.first() as PsiJavaFile, serviceName)
+        } else {
+            createServiceFile(serviceName)
+        }
     }
 
     // TODO: update service method
     private fun updateServiceMethod(serviceFile: PsiJavaFile, serviceName: String) {
         // 1. filter used method from selectedControllerCode.
-        val usedMethod = JavaCodeProcessor.findUsageCode(selectedControllerCode, serviceName)
+        val usedCode = JavaCodeProcessor.findUsageCode(selectedControllerCode, serviceName)
+
         // 2. if serviceFile exist used method, skip
         // TODO: or also send service code to server ???
-        JavaCodeProcessor.findNoExistMethod(serviceFile, usedMethod)
+        val noExistMethods = JavaCodeProcessor.findNoExistMethod(serviceFile, usedCode)
+        if (noExistMethods.isEmpty()) {
+            logger.warn("no need to update service method")
+            return
+        }
+
         // 3. if serviceFile not exist used method, send service code to openai
-        // 4. insert code to serviceFile
+        val finalPrompt = promptStrategy.advice(serviceFile, usedCode, noExistMethods)
+        val promptText = promptTemplate.updateServiceMethod(finalPrompt)
+        val result = executePrompt(promptText)
+        val services = parseCodeFromString(result)
+        services.forEach { code ->
+            processor?.updateMethod(serviceFile, serviceName, code)
+        }
     }
 
     private fun createServiceFile(serviceName: String) {

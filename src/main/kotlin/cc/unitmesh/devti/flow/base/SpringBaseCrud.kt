@@ -25,7 +25,6 @@ interface SpringBaseCrud {
     fun getAllRepositoryFiles(): List<PsiFile>
 
     fun createControllerOrUpdateMethod(targetController: String, code: String, isControllerExist: Boolean)
-
     fun createDto(code: String): DtClass?
     fun createEntity(code: String): DtClass?
     fun createController(endpoint: String, code: String): DtClass?
@@ -44,4 +43,5 @@ interface SpringBaseCrud {
     fun isController(code: String): Boolean = SpringLayerCharacteristic.check(code, "controller")
     fun isService(code: String): Boolean = SpringLayerCharacteristic.check(code, "service")
     fun isRepository(code: String): Boolean = SpringLayerCharacteristic.check(code, "repository")
+    fun updateMethod(targetFile: PsiFile, targetClass: String, code: String)
 }
