@@ -19,6 +19,7 @@ import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.util.IncorrectOperationException
 import kotlin.reflect.KFunction1
 
 
@@ -238,7 +239,11 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
                 ApplicationManager.getApplication().invokeLater {
                     WriteCommandAction.writeCommandAction(project)
                         .run<RuntimeException> {
-                            addMethodToClass(targetControllerClass, method, elementFactory)
+                            try {
+                                addMethodToClass(targetControllerClass, method, elementFactory)
+                            } catch (e: IncorrectOperationException) {
+                                log.warn("Failed to add method to class $targetClass")
+                            }
                             CodeStyleManager.getInstance(project).reformat(targetFile)
                         }
                 }
