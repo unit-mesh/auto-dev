@@ -6,6 +6,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiJavaFile
 import com.knuddels.jtokkit.Encodings
 import com.knuddels.jtokkit.api.Encoding
 import com.knuddels.jtokkit.api.EncodingRegistry
@@ -42,14 +44,19 @@ class PromptStrategyAdvisor(val project: Project) {
         return FinalPrompt(prefixCodeWithoutImport, suffixCode)
     }
 
+    fun advice(javaFile: PsiJavaFile, calleeName: String): FinalPrompt {
+        // strategy 1: remove class code without the imports
+
+        val javaCode = javaFile.classes[0]
+        return advice(javaCode, calleeName)
+    }
+
     fun advice(javaCode: PsiClass, calleeName: String): FinalPrompt {
         val codeString = javaCode.text
         val textbase = advice(codeString, "")
         if (encoding.countTokens(textbase.prefixCode) < tokenLength) {
             return FinalPrompt(codeString, "")
         }
-
-        // strategy 1: remove class code without the imports
 
         // for Web controller, service, repository, etc.
         val fields = filterFieldsByName(javaCode, calleeName)

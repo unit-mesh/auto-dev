@@ -2,6 +2,7 @@ package cc.unitmesh.devti.prompting
 
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiElementFactory
+import com.intellij.psi.impl.source.PsiJavaFileImpl
 import com.intellij.testFramework.LightPlatformTestCase
 
 
