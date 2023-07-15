@@ -11,6 +11,7 @@ import cc.unitmesh.devti.flow.base.SpringBaseCrud
 import cc.unitmesh.devti.flow.code.JavaParseUtil
 import cc.unitmesh.devti.flow.model.TargetEndpoint
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
+import cc.unitmesh.devti.parser.JavaStringProcessor
 import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.prompting.PromptStrategyAdvisor
 import cc.unitmesh.devti.runconfig.AutoDevRunProfileState
@@ -134,7 +135,8 @@ class AutoDevFlow(
 
     // TODO: update service method
     private fun updateServiceMethod(serviceFile: PsiJavaFile, serviceName: String) {
-        // 1. filter used method from selectedControllerCode
+        // 1. filter used method from selectedControllerCode.
+        val usedMethod = JavaStringProcessor.findUsageCode(selectedControllerCode, serviceName)
         // 2. if serviceFile exist used method, skip
         // 3. if serviceFile not exist used method, send service code to openai
         // 4. insert code to serviceFile
@@ -144,6 +146,7 @@ class AutoDevFlow(
         val controllerFile: List<PsiFile> =
             processor?.getAllControllerFiles()?.filter { it.name == selectedControllerName }
                 ?: emptyList()
+
         val controllerCode = if (controllerFile.isEmpty()) {
             selectedControllerCode
         } else {
