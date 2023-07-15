@@ -17,13 +17,10 @@ data class FinalPrompt(val prefixCode: String, val suffixCode: String) {}
 
 @Service(Service.Level.PROJECT)
 class PromptStrategyAdvisor(val project: Project) {
-
-    // The default OpenAI Token will be 4096, we leave 3072 for the code.
-    var tokenLength = 3072
+    // The default OpenAI Token will be 4096, we leave 2048 for the code.
+    var tokenLength = 2048
     private var registry: EncodingRegistry? = Encodings.newDefaultEncodingRegistry()
     private var encoding: Encoding = registry?.getEncoding(EncodingType.CL100K_BASE)!!
-    private val psiElementFactory = project.let { JavaPsiFacade.getElementFactory(it) }
-    private val javaPsiFacade = JavaPsiFacade.getInstance(project)
 
     fun advice(prefixCode: String, suffixCode: String): FinalPrompt {
         val tokenCount: Int = encoding.countTokens(prefixCode)
