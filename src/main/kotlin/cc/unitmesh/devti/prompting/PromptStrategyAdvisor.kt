@@ -59,13 +59,13 @@ class PromptStrategyAdvisor(val project: Project) {
         }
 
         val firstFieldName = fields[0]
-        // search all field usage by regex `\s+firstFieldName\..*`
-        val fieldRegex = Regex("\\s+$firstFieldName\\..*")
-        val fieldUsage = fieldRegex.findAll(codeString).map {
-            it.value
-        }.toList()
+        // get all line when match by field usage (by Regex)
+        val regex = Regex(".*\\s+$firstFieldName\\..*")
+        val lines = codeString.split("\n").filter {
+            it.matches(regex)
+        }
 
-        return FinalPrompt(fieldUsage.joinToString("\n"), "")
+        return FinalPrompt(lines.joinToString("\n"), "")
     }
 
     companion object {
