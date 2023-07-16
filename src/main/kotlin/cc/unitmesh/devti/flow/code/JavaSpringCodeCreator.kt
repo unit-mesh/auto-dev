@@ -7,6 +7,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -23,6 +24,7 @@ import com.intellij.util.IncorrectOperationException
 import kotlin.reflect.KFunction1
 
 
+@Service(Service.Level.PROJECT)
 class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
     val psiElementFactory = JavaPsiFacade.getElementFactory(project)
     private val codeTemplate = JavaTemplateHelper(project)

@@ -46,12 +46,6 @@
 
         <!-- LSP -->
         <applicationService serviceImplementation="cc.unitmesh.devti.connector.ConnectorFactory"/>
-
-        <projectService serviceImplementation="cc.unitmesh.devti.flow.code.JavaSpringCodeCreator"/>
-        <projectService serviceImplementation="cc.unitmesh.devti.prompting.jvm.MvcContextService"/>
-        <projectService serviceImplementation="cc.unitmesh.devti.prompting.jvm.JavaTechStackService"/>
-        <projectService serviceImplementation="cc.unitmesh.devti.prompting.CommitPrompting"/>
-        <projectService serviceImplementation="cc.unitmesh.devti.prompting.PromptStrategyAdvisor"/>
     </extensions>
 
     <actions>
