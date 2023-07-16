@@ -9,13 +9,11 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vcs.VcsDataKeys
 import com.intellij.openapi.vcs.changes.ChangeListManagerImpl
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.impl.source.PsiJavaFileImpl
-import com.intellij.vcs.commit.CommitWorkflowUi
 
 class JavaActionPrompting(
     private val action: ChatBotActionType,
@@ -173,7 +171,8 @@ examples:
         val changes = changeListManager.changeLists.flatMap {
             it.changes
         }
-// after 2023.2, can use the following code
+
+//        EditorHistoryManager, after 2023.2, can use the following code
 //        val commitWorkflowUi: CommitWorkflowUi = project.service()
 //        val changes = commitWorkflowUi.getIncludedChanges()
 
