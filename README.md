@@ -106,6 +106,20 @@ Key Concepts:
 - CRUD design: [SpringBaseCrud](src/main/kotlin/cc/unitmesh/devti/flow/base/SpringBaseCrud.kt)
 - Prompt Strategy design: [PromptStrategyAdvisor](src/main/kotlin/cc/unitmesh/devti/prompting/PromptStrategyAdvisor.kt)
 
+### TODO for prompt Strategy
+
+JetBrains LLM
+
+```javascript
+defaultPriorities.json = [
+  "BeforeCursor",
+  "SimilarFile",
+  "ImportedFile",
+  "PathMarker",
+  "LanguageMarker"
+]
+```
+
 ## Release
 
 1. change `pluginVersion` in [gradle.properties](gradle.properties)

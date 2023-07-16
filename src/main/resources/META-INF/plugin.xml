@@ -89,6 +89,7 @@
                 description="Ask Chatbot about this code">
             <add-to-group group-id="Vcs.Commit.PrimaryCommitActions" anchor="first"/>
             <add-to-group group-id="Vcs.CommitExecutor.Actions" anchor="first"/>
+            <add-to-group group-id="Vcs.MessageActionGroup"/>
         </action>
 
 
