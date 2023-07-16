@@ -4,7 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.connector.openai.OpenAIConnector
 import cc.unitmesh.devti.connector.openai.PromptTemplate
-import cc.unitmesh.devti.flow.base.DevtiFlowAction
+import cc.unitmesh.devti.flow.base.CrudFlowAction
 import cc.unitmesh.devti.flow.base.SpringBaseCrud
 import cc.unitmesh.devti.flow.code.JavaParseUtil
 import cc.unitmesh.devti.flow.kanban.Kanban
@@ -30,7 +30,7 @@ class AutoDevFlow(
     private val processor: SpringBaseCrud? = null,
     val ui: ChatCodingComponent,
     val project: Project,
-) : DevtiFlowAction {
+) : CrudFlowAction {
     private val promptTemplate = PromptTemplate()
     private var selectedControllerName = ""
     private var selectedControllerCode = ""
