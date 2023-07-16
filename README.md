@@ -106,6 +106,12 @@ Key Concepts:
 - CRUD design: [SpringBaseCrud](src/main/kotlin/cc/unitmesh/devti/flow/base/SpringBaseCrud.kt)
 - Prompt Strategy design: [PromptStrategyAdvisor](src/main/kotlin/cc/unitmesh/devti/prompting/PromptStrategyAdvisor.kt)
 
+## Release
+
+1. change `pluginVersion` in [gradle.properties](gradle.properties)
+2. git tag `version`
+3. `./gradlew publishPlugin`
+
 ## License
 
 ChatUI based
