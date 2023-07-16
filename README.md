@@ -19,8 +19,8 @@ features:
 - Smart code completion. Based on your code context like (Controller, Service `import`), AutoDev will suggest you the
   best code.
 - AI assistant. AutoDev will help you find bug, explain code, trace exception, and more.
-- Custom prompt. You can custom your prompt in `Settings` -> `Tools` -> `DevTi`
-- Custom LLM Server. You can custom your LLM Server in `Settings` -> `Tools` -> `DevTi`
+- Custom prompt. You can customize your prompt in `Settings` -> `Tools` -> `DevTi`
+- Custom LLM Server. You can customize your LLM Server in `Settings` -> `Tools` -> `DevTi`
 - [ ] Smart architecture. With ArchGuard Co-mate DSL, AutoDev will help you design your architecture.
 
 ## Usage
@@ -45,25 +45,6 @@ Right click on the code editor, select `AutoDev` -> `CodeCompletion` -> `CodeCom
 
 ![Copilot Mode](https://unitmesh.cc/auto-dev/copilot-mode.png)
 
-### AutoCRUD mode
-
-1. add `// devti://story/github/1` comments in your code.
-2. configure GitHub repository for Run Configuration.
-3. click `AutoDev` button in the comments' left.
-
-Run Screenshots:
-
-![AutoDev](https://unitmesh.cc/auto-dev/init-instruction.png)
-
-Output Screenshots:
-
-![AutoDev](https://unitmesh.cc/auto-dev/blog-controller.png)
-
-## Development
-
-1. `git clone https://github.com/unit-mesh/AutoDev.git`
-2. open in IntelliJ IDEA
-3. `./gradlew runIde`
 
 ### Custom prompt
 
@@ -98,6 +79,32 @@ Output Screenshots:
   }
 }
 ```
+
+### AutoCRUD mode
+
+1. add `// devti://story/github/1` comments in your code.
+2. configure GitHub repository for Run Configuration.
+3. click `AutoDev` button in the comments' left.
+
+Run Screenshots:
+
+![AutoDev](https://unitmesh.cc/auto-dev/init-instruction.png)
+
+Output Screenshots:
+
+![AutoDev](https://unitmesh.cc/auto-dev/blog-controller.png)
+
+## Development
+
+1. `git clone https://github.com/unit-mesh/AutoDev.git`
+2. open in IntelliJ IDEA
+3. `./gradlew runIde`
+
+Key Concepts:
+
+- Workflow flow design: [DevtiFlowAction](src/main/kotlin/cc/unitmesh/devti/flow/base/DevtiFlowAction.kt)
+- CRUD design: [SpringBaseCrud](src/main/kotlin/cc/unitmesh/devti/flow/base/SpringBaseCrud.kt)
+- Prompt Strategy design: [PromptStrategyAdvisor](src/main/kotlin/cc/unitmesh/devti/prompting/PromptStrategyAdvisor.kt)
 
 ## License
 
