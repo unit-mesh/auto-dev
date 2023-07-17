@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.parser
+package cc.unitmesh.devti.java
 
 import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.PsiJavaFile

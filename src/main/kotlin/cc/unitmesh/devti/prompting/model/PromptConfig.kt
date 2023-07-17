@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.prompting
+package cc.unitmesh.devti.prompting.model
 
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.diagnostic.Logger

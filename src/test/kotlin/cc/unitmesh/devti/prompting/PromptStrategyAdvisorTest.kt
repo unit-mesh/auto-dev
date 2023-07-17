@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.prompting
 
+import cc.unitmesh.devti.java.prompt.PromptStrategyAdvisor
 import com.intellij.lang.java.JavaLanguage
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiElementFactory

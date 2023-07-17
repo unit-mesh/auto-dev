@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.prompting
 
 import cc.unitmesh.devti.parser.parseCodeFromString
+import cc.unitmesh.devti.prompting.model.PromptConfig
 import junit.framework.TestCase.assertNotNull
 import org.junit.Test
 import java.io.File

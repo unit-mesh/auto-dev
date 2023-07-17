@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.runconfig
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.flow.AutoDevFlow
+import cc.unitmesh.devti.java.JavaAutoDevFlow
 import cc.unitmesh.devti.flow.code.JavaSpringCodeCreator
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.connector.openai.OpenAIConnector
@@ -51,7 +51,7 @@ class AutoDevRunProfileState(
         val chatCodingService = ChatCodingService(ChatBotActionType.REVIEW)
         val contentPanel = ChatCodingComponent(chatCodingService)
 
-        val autoDevFlow = AutoDevFlow(gitHubIssue, openAIRunner, javaAuto, contentPanel, project)
+        val javaAutoDevFlow = JavaAutoDevFlow(gitHubIssue, openAIRunner, javaAuto, contentPanel, project)
 
         val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
 
@@ -69,27 +69,27 @@ class AutoDevRunProfileState(
 
                     // todo: check create story
                     val storyId = options.storyId()
-                    val storyDetail = autoDevFlow.getOrCreateStoryDetail(storyId)
+                    val storyDetail = javaAutoDevFlow.getOrCreateStoryDetail(storyId)
 
                     indicator.fraction = 0.2
 
                     indicator.text = AutoDevBundle.message("devti.generatingDtoAndEntity")
-                    autoDevFlow.updateOrCreateDtoAndEntity(storyDetail)
+                    javaAutoDevFlow.updateOrCreateDtoAndEntity(storyDetail)
 
                     indicator.fraction = 0.4
 
                     indicator.text = AutoDevBundle.message("devti.progress.fetchingSuggestEndpoint")
-                    val target = autoDevFlow.fetchSuggestEndpoint(storyDetail)
+                    val target = javaAutoDevFlow.fetchSuggestEndpoint(storyDetail)
 
                     indicator.fraction = 0.6
 
                     indicator.text = AutoDevBundle.message("devti.progress.updatingEndpointMethod")
-                    autoDevFlow.updateOrCreateEndpointCode(target, storyDetail)
+                    javaAutoDevFlow.updateOrCreateEndpointCode(target, storyDetail)
 
                     indicator.fraction = 0.8
 
                     indicator.text = AutoDevBundle.message("devti.progress.creatingServiceAndRepository")
-                    autoDevFlow.updateOrCreateServiceAndRepository()
+                    javaAutoDevFlow.updateOrCreateServiceAndRepository()
 
                     indicator.fraction = 1.0
                 }

@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.actions.chat
 
 import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
-import cc.unitmesh.devti.prompting.JavaActionPrompting
+import cc.unitmesh.devti.java.prompt.JavaPromptFormatter
 import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.gui.chat.ChatCodingService
@@ -45,7 +45,7 @@ abstract class ChatBaseAction : AnAction() {
 
         chatCodingService.handlePromptAndResponse(
             contentPanel,
-            JavaActionPrompting(chatCodingService.actionType, lang, prefixText, file, project),
+            JavaPromptFormatter(chatCodingService.actionType, lang, prefixText, file, project),
             getReplaceableAction(event),
             prefixText,
             suffixText

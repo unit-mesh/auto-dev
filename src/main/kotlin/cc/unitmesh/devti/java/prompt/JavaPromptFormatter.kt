@@ -1,9 +1,11 @@
-package cc.unitmesh.devti.prompting
+package cc.unitmesh.devti.java.prompt
 
 import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import cc.unitmesh.devti.gui.chat.PromptFormatter
-import cc.unitmesh.devti.prompting.jvm.JavaTechStackService
-import cc.unitmesh.devti.prompting.jvm.MvcContextService
+import cc.unitmesh.devti.java.JavaTechStackService
+import cc.unitmesh.devti.java.MvcContextService
+import cc.unitmesh.devti.prompting.CommitPrompting
+import cc.unitmesh.devti.prompting.model.PromptConfig
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.service
@@ -15,7 +17,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.impl.source.PsiJavaFileImpl
 
-class JavaActionPrompting(
+class JavaPromptFormatter(
     private val action: ChatBotActionType,
     private val lang: String,
     private val prefixText: String,
@@ -216,6 +218,6 @@ examples:
     }
 
     companion object {
-        private val logger = Logger.getInstance(JavaActionPrompting::class.java)
+        private val logger = Logger.getInstance(JavaPromptFormatter::class.java)
     }
 }

@@ -1,8 +1,7 @@
-package cc.unitmesh.devti.prompting.jvm
+package cc.unitmesh.devti.java
 
 import cc.unitmesh.devti.prompting.model.TestStack
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.service
 import com.intellij.openapi.externalSystem.model.project.LibraryData
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.project.Project

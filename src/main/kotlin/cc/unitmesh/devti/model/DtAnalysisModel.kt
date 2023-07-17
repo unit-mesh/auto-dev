@@ -111,14 +111,7 @@ class DtClass(
         }
 
         fun fromJavaFile(file: PsiFile): DtClass {
-            return fromJavaFile(file as? PsiJavaFileImpl)
-        }
-
-        fun fromJavaFile(file: PsiJavaFileImpl?): DtClass {
-            return runReadAction {
-                val psiClass = file?.classes?.firstOrNull() ?: return@runReadAction DtClass("", emptyList())
-                return@runReadAction fromPsi(psiClass)
-            }
+            return cc.unitmesh.devti.java.fromJavaFile(file as? PsiJavaFileImpl)
         }
 
         fun fromPsi(psiClass: PsiClass): DtClass {
@@ -159,3 +152,4 @@ class DtClass(
         }
     }
 }
+

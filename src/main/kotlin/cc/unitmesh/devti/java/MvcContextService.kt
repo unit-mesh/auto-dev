@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.prompting.jvm
+package cc.unitmesh.devti.java
 
 import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.prompting.model.ControllerContext
@@ -69,7 +69,7 @@ ${relevantModel?.joinToString("\n")}
 
         val relevantModel = (services ?: emptyList()) + (models ?: emptyList())
 
-        val clazz = DtClass.fromJavaFile(file)
+        val clazz = fromJavaFile(file)
         return """ 
 ${relevantModel.joinToString("\n")}\n
 // current path: ${clazz.path}

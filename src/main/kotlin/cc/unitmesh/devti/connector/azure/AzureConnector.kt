@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.connector.azure
 
 import cc.unitmesh.devti.connector.CodeCopilot
-import cc.unitmesh.devti.prompting.PromptConfig
+import cc.unitmesh.devti.prompting.model.PromptConfig
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.OPENAI_MODEL
 import com.fasterxml.jackson.databind.ObjectMapper

@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.parser
 
+import cc.unitmesh.devti.java.JavaCodeProcessor
 import com.intellij.lang.java.JavaLanguage
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiElementFactory
@@ -7,8 +8,6 @@ import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiJavaFile
 import com.intellij.testFramework.LightPlatformTestCase
 import junit.framework.TestCase
-import junit.framework.TestCase.assertEquals
-import org.junit.Test
 
 class JavaCodeProcessorTest : LightPlatformTestCase() {
     private val javaFactory: PsiElementFactory get() = JavaPsiFacade.getElementFactory(project)

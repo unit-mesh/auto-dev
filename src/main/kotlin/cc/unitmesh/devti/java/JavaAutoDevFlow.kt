@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.flow
+package cc.unitmesh.devti.java
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.analysis.DtClass
@@ -11,9 +11,8 @@ import cc.unitmesh.devti.flow.kanban.Kanban
 import cc.unitmesh.devti.flow.model.SimpleStory
 import cc.unitmesh.devti.flow.model.TargetEndpoint
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
-import cc.unitmesh.devti.parser.JavaCodeProcessor
+import cc.unitmesh.devti.java.prompt.PromptStrategyAdvisor
 import cc.unitmesh.devti.parser.parseCodeFromString
-import cc.unitmesh.devti.prompting.PromptStrategyAdvisor
 import cc.unitmesh.devti.runconfig.AutoDevRunProfileState
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.service
@@ -24,7 +23,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiJavaFile
 import kotlinx.coroutines.runBlocking
 
-class AutoDevFlow(
+class JavaAutoDevFlow(
     private val kanban: Kanban,
     private val connector: OpenAIConnector,
     private val processor: SpringBaseCrud? = null,
