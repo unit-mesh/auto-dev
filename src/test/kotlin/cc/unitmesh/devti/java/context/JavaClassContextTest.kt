@@ -4,6 +4,7 @@ import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
 import com.intellij.lang.java.JavaLanguage
 import com.intellij.psi.PsiFileFactory
+import com.intellij.psi.PsiJavaFile
 import com.intellij.testFramework.LightPlatformTestCase
 import junit.framework.TestCase
 
@@ -50,8 +51,18 @@ public class BlogController {
 
     fun testShould_convert_class_to_string() {
         val psiFile = fileFactory.createFileFromText(JavaLanguage.INSTANCE, classCode)
-        val classContext: ClassContext = ClassContextProvider(false).from(psiFile)
+        val psiElement = (psiFile as PsiJavaFile).classes[0]
+        val classContext: ClassContext = ClassContextProvider(false).from(psiElement)
 
-        TestCase.assertEquals(classContext.toQuery(), "")
+        TestCase.assertEquals(
+            classContext.toQuery(),
+            """class name: BlogController
+class fields: blogService
+class methods: public BlogController(BlogService blogService)
+@PostMapping("/blog")     public BlogPost createBlog(CreateBlogDto blogDto)
+@GetMapping("/blog")     public List<BlogPost> getBlog()
+super classes: []
+"""
+        )
     }
 }
