@@ -1,5 +1,6 @@
 rootProject.name = "AutoDev"
 
 include(
-    "python"
+    "pycharm",
+    "idea"
 )

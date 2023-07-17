@@ -1,7 +1,0 @@
-<idea-plugin package="cc.unitmesh.python">
-    <!--suppress PluginXmlValidity -->
-    <dependencies>
-        <plugin id="com.intellij.python"/>
-    </dependencies>
-
-</idea-plugin>

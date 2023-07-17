@@ -1,0 +1,5 @@
+<idea-plugin package="cc.unitmesh.devti">
+    <depends>com.intellij.java</depends>
+    <depends>org.jetbrains.plugins.gradle</depends>
+
+</idea-plugin>

@@ -9,7 +9,8 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/python" />
+            <option value="$PROJECT_DIR$/idea" />
+            <option value="$PROJECT_DIR$/pycharm" />
           </set>
         </option>
       </GradleProjectSettings>

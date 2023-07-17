@@ -1,5 +1,5 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
-<idea-plugin>
+<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude" allow-bundled-update="true">
     <id>cc.unitmesh.devti</id>
     <name>AutoDev</name>
     <vendor>Phodal Huang</vendor>
@@ -10,10 +10,11 @@
     <depends>Git4Idea</depends>
 
     <resource-bundle>messages.AutoDevBundle</resource-bundle>
-
-    <content>
-        <module name="cc.unitmesh.python"/>
-    </content>
+<!--    -->
+<!--    <dependencies>-->
+<!--        <module name="cc.unitmesh.python"/>-->
+<!--        <module name="cc.unitmesh.java"/>-->
+<!--    </dependencies>-->
 
     <description><![CDATA[
     <a href="https://plugins.jetbrains.com/plugin/21520-autodev">Homepage</a> | <a href="https://github.com/unit-mesh/auto-dev">Github</a> | <a href="https://github.com/unit-mesh/auto-dev/issues">Issues</a>.<br />

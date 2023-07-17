@@ -92,11 +92,20 @@ allprojects {
     }
 }
 
-
-project(":python") {
+project(":pycharm") {
     intellij {
         version.set("PC-2022.2.4")
         plugins.set(listOf("python-ce"))
+    }
+    dependencies {
+        implementation(project(":"))
+    }
+}
+
+project(":idea") {
+    intellij {
+        version.set("IC-2022.2")
+        plugins.set(listOf("com.intellij.java", "org.jetbrains.plugins.gradle"))
     }
     dependencies {
         implementation(project(":"))
