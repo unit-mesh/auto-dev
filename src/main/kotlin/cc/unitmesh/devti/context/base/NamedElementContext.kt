@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.context
+package cc.unitmesh.devti.context.base
 
 import cc.unitmesh.devti.context.base.LLMQueryContext
 import com.intellij.psi.PsiElement
