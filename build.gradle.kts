@@ -1,5 +1,6 @@
-import org.jetbrains.changelog.Changelog
 import org.gradle.api.JavaVersion.VERSION_17
+import org.jetbrains.changelog.Changelog
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
     repositories {
@@ -32,6 +33,8 @@ repositories {
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
+//    implementation(project(":python"))
+
     implementation(libs.github.api)
     implementation(libs.dotenv)
 
@@ -50,6 +53,56 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.9.3")
 }
+
+allprojects {
+    apply {
+        plugin("idea")
+        plugin("kotlin")
+        plugin("org.jetbrains.intellij")
+    }
+
+
+    repositories {
+        mavenCentral()
+        maven("https://cache-redirector.jetbrains.com/repo.maven.apache.org/maven2")
+        maven("https://cache-redirector.jetbrains.com/intellij-dependencies")
+    }
+
+    idea {
+        module {
+            generatedSourceDirs.add(file("src/gen"))
+        }
+    }
+
+    configure<JavaPluginExtension> {
+        sourceCompatibility = VERSION_17
+        targetCompatibility = VERSION_17
+    }
+
+    tasks {
+        withType<KotlinCompile> {
+            kotlinOptions {
+                jvmTarget = VERSION_17.toString()
+                languageVersion = "1.8"
+                // see https://plugins.jetbrains.com/docs/intellij/using-kotlin.html#kotlin-standard-library
+                apiVersion = "1.7"
+                freeCompilerArgs = listOf("-Xjvm-default=all")
+            }
+        }
+    }
+}
+
+
+project(":python") {
+    intellij {
+        version.set("PC-2022.2.4")
+        plugins.set(listOf("python-ce"))
+    }
+    dependencies {
+        implementation(project(":"))
+    }
+}
+
 
 // Configure Gradle IntelliJ Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
@@ -84,21 +137,21 @@ tasks {
     wrapper {
         gradleVersion = properties("gradleVersion").get()
     }
-
-    configure<JavaPluginExtension> {
-        sourceCompatibility = VERSION_17
-        targetCompatibility = VERSION_17
-    }
-
-    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions {
-            jvmTarget = VERSION_17.toString()
-            languageVersion = "1.8"
-            // see https://plugins.jetbrains.com/docs/intellij/using-kotlin.html#kotlin-standard-library
-            apiVersion = "1.7"
-            freeCompilerArgs = listOf("-Xjvm-default=all")
-        }
-    }
+//
+//    configure<JavaPluginExtension> {
+//        sourceCompatibility = VERSION_17
+//        targetCompatibility = VERSION_17
+//    }
+//
+//    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+//        kotlinOptions {
+//            jvmTarget = VERSION_17.toString()
+//            languageVersion = "1.8"
+//            // see https://plugins.jetbrains.com/docs/intellij/using-kotlin.html#kotlin-standard-library
+//            apiVersion = "1.7"
+//            freeCompilerArgs = listOf("-Xjvm-default=all")
+//        }
+//    }
 
     patchPluginXml {
         version = properties("pluginVersion")
@@ -143,6 +196,7 @@ tasks {
         // The pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
         // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
-        channels = properties("pluginVersion").map { listOf(it.split('-').getOrElse(1) { "default" }.split('.').first()) }
+        channels =
+            properties("pluginVersion").map { listOf(it.split('-').getOrElse(1) { "default" }.split('.').first()) }
     }
 }

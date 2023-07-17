@@ -11,6 +11,10 @@
 
     <resource-bundle>messages.AutoDevBundle</resource-bundle>
 
+    <content>
+        <module name="cc.unitmesh.python"/>
+    </content>
+
     <description><![CDATA[
     <a href="https://plugins.jetbrains.com/plugin/21520-autodev">Homepage</a> | <a href="https://github.com/unit-mesh/auto-dev">Github</a> | <a href="https://github.com/unit-mesh/auto-dev/issues">Issues</a>.<br />
     <br/>
