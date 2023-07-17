@@ -2,6 +2,7 @@ package cc.unitmesh.devti.intentions.editor
 
 import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
 import cc.unitmesh.devti.gui.chat.*
+import cc.unitmesh.devti.java.prompt.JavaPromptFormatter
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.editor.Editor
@@ -44,8 +45,8 @@ abstract class AbstractChatIntention : IntentionAction {
             return
         }
 
-        val promptToUse = getPrompt(project, elementToExplain)
-        val actionType = ChatBotActionType.CODE_COMPLETE
+//        val promptToUse = getPrompt(project, elementToExplain)
+        val actionType = getActionType()
 
         val toolWindowManager =
             ToolWindowManager.getInstance(project).getToolWindow(DevtiFlowToolWindowFactory.id) ?: return
@@ -58,11 +59,15 @@ abstract class AbstractChatIntention : IntentionAction {
             contentManager.removeAllContents(true)
             contentManager.addContent(content)
             toolWindowManager.activate {
-                val promptFormatter = IntentionPromptFormatter(promptToUse, selectedText, file.language)
+//                val promptFormatter = IntentionPromptFormatter(promptToUse, selectedText, file.language)
+
+                val promptFormatter = JavaPromptFormatter(actionType, selectedText, file, project)
                 chatCodingService.handlePromptAndResponse(contentPanel, promptFormatter)
             }
         }
     }
+
+    open fun getActionType() = ChatBotActionType.CODE_COMPLETE
 
     protected fun getElementToExplain(project: Project?, editor: Editor?): PsiElement? {
         if (project == null || editor == null) return null

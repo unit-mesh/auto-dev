@@ -52,7 +52,7 @@ abstract class ChatBaseAction : AnAction() {
             )
 
             val actionType = chatCodingService.actionType
-            val promptFormatter = JavaPromptFormatter(actionType, lang, prefixText, file, project)
+            val promptFormatter = JavaPromptFormatter(actionType, prefixText, file, project)
             chatCodingService.handlePromptAndResponse(contentPanel, promptFormatter, chatContext)
         }
     }

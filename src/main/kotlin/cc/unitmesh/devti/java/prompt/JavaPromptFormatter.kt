@@ -19,7 +19,6 @@ import com.intellij.psi.impl.source.PsiJavaFileImpl
 
 class JavaPromptFormatter(
     private val action: ChatBotActionType,
-    private val lang: String,
     private val prefixText: String,
     private val file: PsiFile?,
     val project: Project,
@@ -27,6 +26,7 @@ class JavaPromptFormatter(
     private var additionContext: String = ""
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private var promptConfig: PromptConfig? = null
+    private val lang: String = file?.language?.displayName ?: ""
 
     private val mvcContextService = project.service<MvcContextService>()
 
