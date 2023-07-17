@@ -12,41 +12,33 @@ class JavaMethodContextBuilder : MethodContextBuilder {
         includeClassContext: Boolean,
         gatherUsages: Boolean
     ): MethodContext? {
-        if (psiElement is PsiMethod) {
-            val returnType = processReturnTypeText(psiElement.returnType?.presentableText)
-            val language = psiElement.language.displayName
-            val containingClass = psiElement.containingClass
-            val signatureString = getSignatureString(psiElement)
-            val methodName = psiElement.name
-            val methodText = psiElement.text
-            val parameters = psiElement.parameters
-
-            val parameterList = parameters.mapNotNull {
-                it.name
-            }
-
-            val variableContextList = parameterList.map { it }
-
-            val usagesList = if (gatherUsages) {
-                JavaContextCollectionUtilsKt.findUsages(psiElement as PsiNameIdentifierOwner)
-            } else {
-                emptyList()
-            }
-
-            return MethodContext(
-                psiElement,
-                methodText,
-                methodName,
-                signatureString,
-                containingClass,
-                language,
-                returnType,
-                variableContextList,
-                includeClassContext,
-                usagesList
-            )
+        if (psiElement !is PsiMethod) {
+            return null
         }
-        return null
+
+        val parameterList = psiElement.parameters.mapNotNull {
+            it.name
+        }
+        val variableContextList = parameterList.map { it }
+
+        val usagesList = if (gatherUsages) {
+            JavaContextCollectionUtilsKt.findUsages(psiElement as PsiNameIdentifierOwner)
+        } else {
+            emptyList()
+        }
+
+        return MethodContext(
+            psiElement,
+            text = psiElement.text,
+            name = psiElement.name,
+            signature = getSignatureString(psiElement),
+            enclosingClass = psiElement.containingClass,
+            language = psiElement.language.displayName,
+            returnType = processReturnTypeText(psiElement.returnType?.presentableText),
+            variableContextList,
+            includeClassContext,
+            usagesList
+        )
     }
 
     private fun processReturnTypeText(returnType: String?): String? {
