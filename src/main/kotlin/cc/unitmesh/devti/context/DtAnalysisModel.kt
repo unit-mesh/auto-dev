@@ -1,14 +1,21 @@
 package cc.unitmesh.devti.analysis
 
+import cc.unitmesh.devti.java.fromJavaFile
 import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiFile
 import com.intellij.psi.impl.source.PsiJavaFileImpl
 
+@Deprecated("Use [MethodContextBuilder] for multiple language support")
 data class DtMethod(val name: String, val returnType: String, val parameters: List<DtParameter>)
+
+@Deprecated("Use [VariableContextBuilder] for multiple language support")
 data class DtField(val name: String, val type: String)
+
+@Deprecated("Use [VariableContextBuilder] for multiple language support")
 data class DtParameter(val name: String, val type: String)
 
+@Deprecated("Use [ClassContextBuilder] for multiple language support")
 class DtClass(
     val name: String,
     val methods: List<DtMethod>,
@@ -111,7 +118,7 @@ class DtClass(
         }
 
         fun fromJavaFile(file: PsiFile): DtClass {
-            return cc.unitmesh.devti.java.fromJavaFile(file as? PsiJavaFileImpl)
+            return fromJavaFile(file as? PsiJavaFileImpl)
         }
 
         fun fromPsi(psiClass: PsiClass): DtClass {
