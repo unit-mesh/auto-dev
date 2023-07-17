@@ -1,6 +1,6 @@
-package cc.unitmesh.devti.connector.openai
+package cc.unitmesh.devti.models.openai
 
-import cc.unitmesh.devti.connector.CodeCopilot
+import cc.unitmesh.devti.models.CodeCopilotProvider
 import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.OPENAI_MODEL
@@ -26,7 +26,7 @@ import retrofit2.converter.jackson.JacksonConverterFactory
 import java.time.Duration
 
 
-class OpenAIConnector : CodeCopilot {
+class OpenAIProvider : CodeCopilotProvider {
     private val promptTemplate = PromptTemplate()
     private var service: OpenAiService
 
@@ -129,6 +129,6 @@ class OpenAIConnector : CodeCopilot {
     }
 
     companion object {
-        private val logger: Logger = logger<OpenAIConnector>()
+        private val logger: Logger = logger<OpenAIProvider>()
     }
 }

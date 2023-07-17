@@ -1,6 +1,6 @@
-package cc.unitmesh.devti.connector.custom
+package cc.unitmesh.devti.models.custom
 
-import cc.unitmesh.devti.connector.CodeCopilot
+import cc.unitmesh.devti.models.CodeCopilotProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.prompting.model.PromptConfig
 import com.intellij.openapi.diagnostic.Logger
@@ -9,7 +9,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 
 
-class CustomConnector : CodeCopilot {
+class CustomProvider : CodeCopilotProvider {
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private val url = autoDevSettingsState?.customEngineServer ?: ""
     private val key = autoDevSettingsState?.customEngineToken ?: ""
@@ -21,7 +21,7 @@ class CustomConnector : CodeCopilot {
         promptConfig = PromptConfig.tryParse(prompts)
     }
 
-    private val logger = Logger.getInstance(CustomConnector::class.java)
+    private val logger = Logger.getInstance(CustomProvider::class.java)
 
 
     override fun prompt(promptText: String): String {

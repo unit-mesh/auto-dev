@@ -1,6 +1,6 @@
-package cc.unitmesh.devti.connector.azure
+package cc.unitmesh.devti.models.azure
 
-import cc.unitmesh.devti.connector.CodeCopilot
+import cc.unitmesh.devti.models.CodeCopilotProvider
 import cc.unitmesh.devti.prompting.model.PromptConfig
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.OPENAI_MODEL
@@ -15,8 +15,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 
 
-class AzureConnector : CodeCopilot {
-    private val logger = Logger.getInstance(AzureConnector::class.java)
+class AzureOpenAIProvider : CodeCopilotProvider {
+    private val logger = Logger.getInstance(AzureOpenAIProvider::class.java)
 
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private val url = autoDevSettingsState?.customEngineServer ?: ""

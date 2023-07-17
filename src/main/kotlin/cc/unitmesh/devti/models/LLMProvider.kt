@@ -1,12 +1,9 @@
-package cc.unitmesh.devti.connector
+package cc.unitmesh.devti.models
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
-interface CodeCopilot {
-    fun autoComment(text: String): String
-    fun findBug(text: String): String
-
+interface LLMProvider {
     fun prompt(promptText: String): String
     fun stream(promptText: String): Flow<String> {
         return callbackFlow {

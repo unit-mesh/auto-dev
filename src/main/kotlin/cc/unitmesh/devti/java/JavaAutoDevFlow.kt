@@ -2,8 +2,8 @@ package cc.unitmesh.devti.java
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.analysis.DtClass
-import cc.unitmesh.devti.connector.openai.OpenAIConnector
-import cc.unitmesh.devti.connector.openai.PromptTemplate
+import cc.unitmesh.devti.models.openai.OpenAIProvider
+import cc.unitmesh.devti.models.openai.PromptTemplate
 import cc.unitmesh.devti.flow.base.CrudFlowAction
 import cc.unitmesh.devti.flow.base.SpringBaseCrud
 import cc.unitmesh.devti.flow.code.JavaParseUtil
@@ -25,7 +25,7 @@ import kotlinx.coroutines.runBlocking
 
 class JavaAutoDevFlow(
     private val kanban: Kanban,
-    private val connector: OpenAIConnector,
+    private val connector: OpenAIProvider,
     private val processor: SpringBaseCrud? = null,
     val ui: ChatCodingComponent,
     val project: Project,

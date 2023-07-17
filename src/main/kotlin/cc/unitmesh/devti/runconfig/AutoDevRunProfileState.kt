@@ -4,7 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.java.JavaAutoDevFlow
 import cc.unitmesh.devti.flow.code.JavaSpringCodeCreator
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
-import cc.unitmesh.devti.connector.openai.OpenAIConnector
+import cc.unitmesh.devti.models.openai.OpenAIProvider
 import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
@@ -46,7 +46,7 @@ class AutoDevRunProfileState(
         val javaAuto = project.service<JavaSpringCodeCreator>()
         val gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)
 
-        val openAIRunner = OpenAIConnector()
+        val openAIRunner = OpenAIProvider()
 
         val chatCodingService = ChatCodingService(ChatBotActionType.REVIEW)
         val contentPanel = ChatCodingComponent(chatCodingService)

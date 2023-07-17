@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.connector.ConnectorFactory
+import cc.unitmesh.devti.models.ConnectorFactory
 import cc.unitmesh.devti.parser.PostCodeProcessor
 import com.intellij.openapi.application.ApplicationManager
 import kotlinx.coroutines.flow.Flow

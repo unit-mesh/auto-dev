@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.connector.openai
+package cc.unitmesh.devti.models.openai
 
 import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.flow.model.SimpleProjectInfo
