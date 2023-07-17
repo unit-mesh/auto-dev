@@ -1,15 +1,11 @@
 package cc.unitmesh.devti.intentions.editor
 
 import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
-import cc.unitmesh.devti.gui.chat.ChatBotActionType
-import cc.unitmesh.devti.gui.chat.ChatCodingComponent
-import cc.unitmesh.devti.gui.chat.ChatCodingService
-import cc.unitmesh.devti.java.prompt.JavaPromptFormatter
+import cc.unitmesh.devti.gui.chat.*
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -44,32 +40,29 @@ abstract class AbstractChatIntention : IntentionAction {
             selectedText = editor.selectionModel.selectedText
         }
 
-        val promptToUse = getPrompt(project, elementToExplain) ?: return
+        if (selectedText == null) {
+            return
+        }
+
+        val promptToUse = getPrompt(project, elementToExplain)
         val actionType = ChatBotActionType.CODE_COMPLETE
 
         val toolWindowManager =
             ToolWindowManager.getInstance(project).getToolWindow(DevtiFlowToolWindowFactory.id) ?: return
         toolWindowManager.activate {
-            sendToChat(actionType, toolWindowManager, file)
+            val chatCodingService = ChatCodingService(actionType)
+            val contentPanel = ChatCodingComponent(chatCodingService)
+            val contentManager = toolWindowManager.contentManager
+            val content = contentManager.factory.createContent(contentPanel, chatCodingService.getLabel(), false)
+
+            contentManager.removeAllContents(true)
+            contentManager.addContent(content)
+            toolWindowManager.activate {
+                val promptFormatter = IntentionPromptFormatter(promptToUse, selectedText, file.language)
+                chatCodingService.handlePromptAndResponse(contentPanel, promptFormatter)
+            }
         }
     }
-
-    private fun sendToChat(
-        actionType: ChatBotActionType,
-        toolWindowManager: ToolWindow,
-        file: PsiFile
-    ) {
-        val chatCodingService = ChatCodingService(actionType)
-        val contentPanel = ChatCodingComponent(chatCodingService)
-        val contentManager = toolWindowManager.contentManager
-        val content = contentManager.factory.createContent(contentPanel, chatCodingService.getLabel(), false)
-        val lang = file.language.displayName
-
-        contentManager.removeAllContents(true)
-        contentManager.addContent(content)
-        toolWindowManager.activate(null)
-    }
-
 
     protected fun getElementToExplain(project: Project?, editor: Editor?): PsiElement? {
         if (project == null || editor == null) return null

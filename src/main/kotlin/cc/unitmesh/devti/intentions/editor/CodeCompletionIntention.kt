@@ -18,5 +18,4 @@ class CodeCompletionIntention : AbstractChatIntention() {
     override fun getPrompt(project: Project, elementToExplain: PsiElement?): String {
         return "Code completion"
     }
-
 }

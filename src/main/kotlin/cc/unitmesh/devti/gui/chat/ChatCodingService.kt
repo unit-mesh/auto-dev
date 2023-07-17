@@ -35,7 +35,7 @@ class ChatCodingService(var actionType: ChatBotActionType) {
     fun handlePromptAndResponse(
         ui: ChatCodingComponent,
         prompt: PromptFormatter,
-        context: ChatContext
+        context: ChatContext? = null
     ) {
         ui.add(prompt.getUIPrompt(), true)
         ui.add(AutoDevBundle.message("devti.loading"))
@@ -45,11 +45,11 @@ class ChatCodingService(var actionType: ChatBotActionType) {
             runBlocking {
                 when {
                     actionType === ChatBotActionType.REFACTOR -> ui.updateReplaceableContent(response) {
-                        context.replaceSelectedText?.invoke(getCodeSection(it, context.prefixText, context.suffixText))
+                        context?.replaceSelectedText?.invoke(getCodeSection(it, context.prefixText, context.suffixText))
                     }
 
                     actionType === ChatBotActionType.CODE_COMPLETE -> ui.updateReplaceableContent(response) {
-                        context.replaceSelectedText?.invoke(getCodeSection(it, context.prefixText, context.suffixText))
+                        context?.replaceSelectedText?.invoke(getCodeSection(it, context.prefixText, context.suffixText))
                     }
 
                     else -> ui.updateMessage(response)

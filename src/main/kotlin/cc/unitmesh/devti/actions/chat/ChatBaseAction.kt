@@ -9,7 +9,9 @@ import cc.unitmesh.devti.java.prompt.JavaPromptFormatter
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
+import com.intellij.psi.PsiFile
 
 abstract class ChatBaseAction : AnAction() {
     override fun actionPerformed(event: AnActionEvent) {
@@ -42,17 +44,17 @@ abstract class ChatBaseAction : AnAction() {
 
         contentManager?.removeAllContents(true)
         contentManager?.addContent(content!!)
-        toolWindowManager?.activate(null)
+        toolWindowManager?.activate {
+            val chatContext = ChatContext(
+                getReplaceableAction(event),
+                prefixText,
+                suffixText
+            )
 
-        val chatContext = ChatContext(
-            getReplaceableAction(event),
-            prefixText,
-            suffixText
-        )
-
-        val actionType = chatCodingService.actionType
-        val promptFormatter = JavaPromptFormatter(actionType, lang, prefixText, file, project)
-        chatCodingService.handlePromptAndResponse(contentPanel, promptFormatter, chatContext)
+            val actionType = chatCodingService.actionType
+            val promptFormatter = JavaPromptFormatter(actionType, lang, prefixText, file, project)
+            chatCodingService.handlePromptAndResponse(contentPanel, promptFormatter, chatContext)
+        }
     }
 
     open fun getReplaceableAction(event: AnActionEvent): ((response: String) -> Unit)? {
