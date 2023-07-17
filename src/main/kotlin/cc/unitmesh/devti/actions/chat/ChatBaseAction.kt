@@ -27,7 +27,6 @@ abstract class ChatBaseAction : AnAction() {
         val caretModel = event.getData(CommonDataKeys.EDITOR)?.caretModel
         var prefixText = caretModel?.currentCaret?.selectedText ?: ""
 
-        val lang = event.getData(CommonDataKeys.PSI_FILE)?.language?.displayName ?: ""
         val file = event.getData(CommonDataKeys.PSI_FILE)
 
         val lineEndOffset = document?.getLineEndOffset(document.getLineNumber(caretModel?.offset ?: 0)) ?: 0
@@ -35,6 +34,7 @@ abstract class ChatBaseAction : AnAction() {
         if (prefixText.isEmpty()) {
             prefixText = document?.text?.substring(0, lineEndOffset) ?: ""
         }
+
         // suffixText is the text after the selectedText, which is the text after the cursor position
         val suffixText = document?.text?.substring(lineEndOffset) ?: ""
 
