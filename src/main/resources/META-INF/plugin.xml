@@ -16,6 +16,12 @@
     <br/>
     AutoDev is a fully automated AI-assisted programming tool and an implementation of the DevTi Intellij IDE designed for use in-flight.
     ]]></description>
+<!--     -->
+<!--    <extensionPoints>-->
+<!--        <extensionPoint name="aiAssistantIntention" beanClass="com.intellij.codeInsight.intention.IntentionActionBean" dynamic="true">-->
+<!--            <with tag="className" implements="com.intellij.codeInsight.intention.IntentionAction"/>-->
+<!--        </extensionPoint>-->
+<!--    </extensionPoints>-->
 
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable parentId="tools" instance="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
@@ -45,7 +51,19 @@
                     factoryClass="cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory"/>
 
         <applicationService serviceImplementation="cc.unitmesh.devti.models.ConnectorFactory"/>
+
+        <intentionAction>
+            <className>cc.unitmesh.devti.intentions.editor.CodeCompletionIntention</className>
+            <category>SDK intentions</category>
+        </intentionAction>
     </extensions>
+
+<!--    <extensions defaultExtensionNs="cc.unitmesh.devti">-->
+<!--        <aiAssistantIntention>-->
+<!--            <className>cc.unitmesh.devti.intentions.editor.CodeCompletionIntention</className>-->
+<!--            <categoryKey>Intention.category.llm</categoryKey>-->
+<!--        </aiAssistantIntention>-->
+<!--    </extensions>-->
 
     <actions>
         <group id="org.intellij.sdk.action.GroupedActions" popup="true" text="AutoDev" description="AutoDev">
