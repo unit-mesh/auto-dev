@@ -4,13 +4,11 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.IntentionActionBean
-import com.intellij.icons.AllIcons
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
-import com.intellij.openapi.ui.popup.ListPopupStep
 import com.intellij.openapi.ui.popup.ListSeparator
 import com.intellij.openapi.ui.popup.PopupStep
 import com.intellij.openapi.ui.popup.util.BaseListPopupStep
@@ -45,6 +43,8 @@ class AIAssistantIntention : IntentionAction, Iconable {
         val popupStep = CustomPopupStep(intentions, project, editor, file, title)
         val popup = JBPopupFactory.getInstance().createListPopup(popupStep)
 
+        // TODO: after 2023.2 we can use this
+//        popup.setCaption(AllIcons.General.Beta)
         popup.showInBestPositionFor(editor)
     }
 
