@@ -21,6 +21,23 @@
         <extensionPoint name="aiAssistantIntention" beanClass="com.intellij.codeInsight.intention.IntentionActionBean" dynamic="true">
             <with tag="className" implements="com.intellij.codeInsight.intention.IntentionAction"/>
         </extensionPoint>
+
+        <extensionPoint name="classContextBuilder" beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass"
+                  implements="cc.unitmesh.devti.context.classbuilder.ClassContextBuilder"/>
+        </extensionPoint>
+        <extensionPoint name="methodContextBuilder" beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass"
+                  implements="cc.unitmesh.devti.context.methodbuilder.MethodContextBuilder"/>
+        </extensionPoint>
+        <extensionPoint name="fileContextBuilder" beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass"
+                  implements="cc.unitmesh.devti.context.filebuilder.FileContextBuilder"/>
+        </extensionPoint>
+        <extensionPoint name="variableContextBuilder" beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass"
+                  implements="cc.unitmesh.devti.context.variablebuilder.VariableContextBuilder"/>
+        </extensionPoint>
     </extensionPoints>
 
     <extensions defaultExtensionNs="com.intellij">
