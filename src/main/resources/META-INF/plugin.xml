@@ -24,19 +24,19 @@
 
         <extensionPoint name="classContextBuilder" beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
             <with attribute="implementationClass"
-                  implements="cc.unitmesh.devti.context.classbuilder.ClassContextBuilder"/>
+                  implements="cc.unitmesh.devti.context.builder.ClassContextBuilder"/>
         </extensionPoint>
         <extensionPoint name="methodContextBuilder" beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
             <with attribute="implementationClass"
-                  implements="cc.unitmesh.devti.context.methodbuilder.MethodContextBuilder"/>
+                  implements="cc.unitmesh.devti.context.builder.MethodContextBuilder"/>
         </extensionPoint>
         <extensionPoint name="fileContextBuilder" beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
             <with attribute="implementationClass"
-                  implements="cc.unitmesh.devti.context.filebuilder.FileContextBuilder"/>
+                  implements="cc.unitmesh.devti.context.builder.FileContextBuilder"/>
         </extensionPoint>
         <extensionPoint name="variableContextBuilder" beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
             <with attribute="implementationClass"
-                  implements="cc.unitmesh.devti.context.variablebuilder.VariableContextBuilder"/>
+                  implements="cc.unitmesh.devti.context.builder.VariableContextBuilder"/>
         </extensionPoint>
     </extensionPoints>
 
