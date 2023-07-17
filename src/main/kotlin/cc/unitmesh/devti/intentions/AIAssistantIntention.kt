@@ -44,7 +44,6 @@ class AIAssistantIntention : IntentionAction, Iconable {
         val popup = JBPopupFactory.getInstance().createListPopup(popupStep)
 
         // TODO: after 2023.2 we can use this
-//        popup.setCaption(AllIcons.General.Beta)
         popup.showInBestPositionFor(editor)
     }
 

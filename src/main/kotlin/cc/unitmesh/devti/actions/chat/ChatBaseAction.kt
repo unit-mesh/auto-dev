@@ -4,16 +4,12 @@ import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.gui.chat.ChatCodingService
+import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.java.prompt.JavaPromptFormatter
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.editor.Document
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.wm.ToolWindowManager
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.codeStyle.CodeStyleManager
 
 abstract class ChatBaseAction : AnAction() {
     override fun actionPerformed(event: AnActionEvent) {
@@ -32,14 +28,6 @@ abstract class ChatBaseAction : AnAction() {
         val lang = event.getData(CommonDataKeys.PSI_FILE)?.language?.displayName ?: ""
         val file = event.getData(CommonDataKeys.PSI_FILE)
 
-        val chatCodingService = ChatCodingService(getActionType())
-        val contentPanel = ChatCodingComponent(chatCodingService)
-        val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
-
-        contentManager?.removeAllContents(true)
-        contentManager?.addContent(content!!)
-        toolWindowManager?.activate(null)
-
         val lineEndOffset = document?.getLineEndOffset(document.getLineNumber(caretModel?.offset ?: 0)) ?: 0
         // if selectedText is empty, then we use the cursor position to get the text
         if (prefixText.isEmpty()) {
@@ -48,13 +36,23 @@ abstract class ChatBaseAction : AnAction() {
         // suffixText is the text after the selectedText, which is the text after the cursor position
         val suffixText = document?.text?.substring(lineEndOffset) ?: ""
 
-        chatCodingService.handlePromptAndResponse(
-            contentPanel,
-            JavaPromptFormatter(chatCodingService.actionType, lang, prefixText, file, project),
+        val chatCodingService = ChatCodingService(getActionType())
+        val contentPanel = ChatCodingComponent(chatCodingService)
+        val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
+
+        contentManager?.removeAllContents(true)
+        contentManager?.addContent(content!!)
+        toolWindowManager?.activate(null)
+
+        val chatContext = ChatContext(
             getReplaceableAction(event),
             prefixText,
             suffixText
         )
+
+        val actionType = chatCodingService.actionType
+        val promptFormatter = JavaPromptFormatter(actionType, lang, prefixText, file, project)
+        chatCodingService.handlePromptAndResponse(contentPanel, promptFormatter, chatContext)
     }
 
     open fun getReplaceableAction(event: AnActionEvent): ((response: String) -> Unit)? {

@@ -7,6 +7,12 @@ import com.intellij.openapi.application.ApplicationManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 
+data class ChatContext(
+    val replaceSelectedText: ((response: String) -> Unit)? = null,
+    val prefixText: String,
+    val suffixText: String
+)
+
 class ChatCodingService(var actionType: ChatBotActionType) {
     private val connectorFactory = ConnectorFactory.getInstance()
 
@@ -29,9 +35,7 @@ class ChatCodingService(var actionType: ChatBotActionType) {
     fun handlePromptAndResponse(
         ui: ChatCodingComponent,
         prompt: PromptFormatter,
-        replaceSelectedText: ((response: String) -> Unit)? = null,
-        prefixText: String,
-        suffixText: String
+        context: ChatContext
     ) {
         ui.add(prompt.getUIPrompt(), true)
         ui.add(AutoDevBundle.message("devti.loading"))
@@ -41,11 +45,11 @@ class ChatCodingService(var actionType: ChatBotActionType) {
             runBlocking {
                 when {
                     actionType === ChatBotActionType.REFACTOR -> ui.updateReplaceableContent(response) {
-                        replaceSelectedText?.invoke(getCodeSection(it, prefixText, suffixText))
+                        context.replaceSelectedText?.invoke(getCodeSection(it, context.prefixText, context.suffixText))
                     }
 
                     actionType === ChatBotActionType.CODE_COMPLETE -> ui.updateReplaceableContent(response) {
-                        replaceSelectedText?.invoke(getCodeSection(it, prefixText, suffixText))
+                        context.replaceSelectedText?.invoke(getCodeSection(it, context.prefixText, context.suffixText))
                     }
 
                     else -> ui.updateMessage(response)
