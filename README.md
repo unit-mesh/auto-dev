@@ -102,9 +102,9 @@ Output Screenshots:
 
 Key Concepts:
 
-- Workflow flow design: [DevtiFlowAction](src/main/kotlin/cc/unitmesh/devti/flow/base/DevtiFlowAction.kt)
+- Workflow flow design: [CrudFlowAction](src/main/kotlin/cc/unitmesh/devti/flow/base/CrudFlowAction.kt)
 - CRUD design: [SpringBaseCrud](src/main/kotlin/cc/unitmesh/devti/flow/base/SpringBaseCrud.kt)
-- Prompt Strategy design: [PromptStrategyAdvisor](src/main/kotlin/cc/unitmesh/devti/prompting/PromptStrategyAdvisor.kt)
+- Prompt Strategy design: [PromptStrategyAdvisor](src/main/kotlin/cc/unitmesh/devti/java/prompt/PromptStrategyAdvisor.kt)
 
 ### TODO for prompt Strategy
 
