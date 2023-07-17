@@ -17,29 +17,6 @@
     AutoDev is a fully automated AI-assisted programming tool and an implementation of the DevTi Intellij IDE designed for use in-flight.
     ]]></description>
 
-    <extensionPoints>
-        <extensionPoint name="aiAssistantIntention" beanClass="com.intellij.codeInsight.intention.IntentionActionBean" dynamic="true">
-            <with tag="className" implements="com.intellij.codeInsight.intention.IntentionAction"/>
-        </extensionPoint>
-
-        <extensionPoint name="classContextBuilder" beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
-            <with attribute="implementationClass"
-                  implements="cc.unitmesh.devti.context.builder.ClassContextBuilder"/>
-        </extensionPoint>
-        <extensionPoint name="methodContextBuilder" beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
-            <with attribute="implementationClass"
-                  implements="cc.unitmesh.devti.context.builder.MethodContextBuilder"/>
-        </extensionPoint>
-        <extensionPoint name="fileContextBuilder" beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
-            <with attribute="implementationClass"
-                  implements="cc.unitmesh.devti.context.builder.FileContextBuilder"/>
-        </extensionPoint>
-        <extensionPoint name="variableContextBuilder" beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
-            <with attribute="implementationClass"
-                  implements="cc.unitmesh.devti.context.builder.VariableContextBuilder"/>
-        </extensionPoint>
-    </extensionPoints>
-
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable parentId="tools" instance="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                                  id="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
@@ -75,12 +52,49 @@
         </intentionAction>
     </extensions>
 
+    <extensionPoints>
+        <extensionPoint name="aiAssistantIntention" beanClass="com.intellij.codeInsight.intention.IntentionActionBean"
+                        dynamic="true">
+            <with tag="className" implements="com.intellij.codeInsight.intention.IntentionAction"/>
+        </extensionPoint>
+
+        <extensionPoint name="classContextBuilder" beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass"
+                  implements="cc.unitmesh.devti.context.builder.ClassContextBuilder"/>
+        </extensionPoint>
+        <extensionPoint name="methodContextBuilder" beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass"
+                  implements="cc.unitmesh.devti.context.builder.MethodContextBuilder"/>
+        </extensionPoint>
+        <extensionPoint name="fileContextBuilder" beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass"
+                  implements="cc.unitmesh.devti.context.builder.FileContextBuilder"/>
+        </extensionPoint>
+        <extensionPoint name="variableContextBuilder" beanClass="com.intellij.lang.LanguageExtensionPoint"
+                        dynamic="true">
+            <with attribute="implementationClass"
+                  implements="cc.unitmesh.devti.context.builder.VariableContextBuilder"/>
+        </extensionPoint>
+    </extensionPoints>
+
     <extensions defaultExtensionNs="cc.unitmesh.devti">
         <aiAssistantIntention>
             <className>cc.unitmesh.devti.intentions.editor.CodeCompletionIntention</className>
             <categoryKey>intention.category.llm</categoryKey>
         </aiAssistantIntention>
     </extensions>
+
+    <extensions defaultExtensionNs="cc.unitmesh.devti">
+        <classContextBuilder language="JAVA"
+                             implementationClass="cc.unitmesh.devti.java.context.JavaClassContextBuilder"/>
+        <methodContextBuilder language="JAVA"
+                              implementationClass="cc.unitmesh.devti.java.context.JavaMethodContextBuilder"/>
+        <fileContextBuilder language="JAVA"
+                            implementationClass="cc.unitmesh.devti.java.context.JavaFileContextBuilder"/>
+        <variableContextBuilder language="JAVA"
+                                implementationClass="cc.unitmesh.devti.java.context.JavaVariableContextBuilder"/>
+    </extensions>
+
 
     <actions>
         <group id="org.intellij.sdk.action.GroupedActions" popup="true" text="AutoDev" description="AutoDev">

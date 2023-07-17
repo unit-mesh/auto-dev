@@ -4,5 +4,5 @@ import cc.unitmesh.devti.context.ClassContext
 import com.intellij.psi.PsiElement
 
 interface ClassContextBuilder {
-    fun getClassContext(paramPsiElement: PsiElement, paramBoolean: Boolean): ClassContext?
+    fun getClassContext(psiElement: PsiElement, gatherUsages: Boolean): ClassContext?
 }
