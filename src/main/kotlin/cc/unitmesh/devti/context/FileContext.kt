@@ -14,9 +14,15 @@ class FileContext(
     val classes: List<PsiElement>,
     val methods: List<PsiElement>
 ) : LLMQueryContext {
+    fun getClassNames(): List<String> = classes.mapNotNull {
+        ClassContextProvider(false).from(it).name
+    }
 
     override fun toQuery(): String {
-        return ""
+        val filePackage = "_"
+        val fileImports = imports.joinToString(" ", transform = { it.text })
+        val fileClassNames = getClassNames().joinToString(", ")
+        return "file name: $name\nfile path: $path\nfile package: $filePackage\nfile imports: $fileImports\nfile classes: $fileClassNames"
     }
 
     override fun toJson(): String {
@@ -28,5 +34,4 @@ class FileContext(
             )
         )
     }
-
 }
