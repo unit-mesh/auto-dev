@@ -207,49 +207,11 @@ project(":plugin") {
             jvmArgs("-Dide.show.tips.on.startup.default.value=false")
             // uncomment if `unexpected exception ProcessCanceledException` prevents you from debugging a running IDE
             // jvmArgs("-Didea.ProcessCanceledException=disabled")
-
-            // Uncomment to enable FUS testing mode
-            // jvmArgs("-Dfus.internal.test.mode=true")
-
-            // Uncomment to enable localization testing mode
-            // jvmArgs("-Didea.l10n=true")
         }
-
-//        patchPluginXml {
-//            version = properties("pluginVersion")
-//            sinceBuild = properties("pluginSinceBuild")
-//            untilBuild = properties("pluginUntilBuild")
-//
-//            // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
-//            pluginDescription = properties("pluginDescription")
-//
-//            val changelog = project.changelog // local variable for configuration cache compatibility
-//            // Get the latest available change notes from the changelog file
-//            changeNotes = properties("pluginVersion").map { pluginVersion ->
-//                with(changelog) {
-//                    renderItem(
-//                        (getOrNull(pluginVersion) ?: getUnreleased())
-//                            .withHeader(false)
-//                            .withEmptySections(false),
-//                        Changelog.OutputType.HTML,
-//                    )
-//                }
-//            }
-//        }
 
         withType<PatchPluginXmlTask> {
             pluginDescription.set(provider { file("description.html").readText() })
         }
-
-
-//        signPlugin {
-//            certificateChain = environment("CERTIFICATE_CHAIN")
-//            privateKey = environment("PRIVATE_KEY")
-//            password = environment("PRIVATE_KEY_PASSWORD")
-//        }
-
-//        withType<SignedPluginTask> {
-//        }
 
         withType<PublishPluginTask> {
             token.set("publishToken")
@@ -325,12 +287,6 @@ project(":idea") {
         implementation(project(":"))
     }
 }
-
-// Configure Gradle Changelog Plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
-//changelog {
-//    groups.empty()
-//    repositoryUrl = properties("pluginRepositoryUrl")
-//}
 
 fun File.isPluginJar(): Boolean {
     if (!isFile) return false
