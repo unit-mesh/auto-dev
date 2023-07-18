@@ -1,7 +1,6 @@
-package cc.unitmesh.devti.flow.base
+package cc.unitmesh.devti.provider
 
 import cc.unitmesh.devti.flow.kanban.Kanban
-import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.flow.model.TargetEndpoint
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.models.openai.OpenAIProvider

@@ -105,7 +105,5 @@ class DtClass(
 
         return output.toString()
     }
-
-    companion object
 }
 

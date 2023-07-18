@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.ui.NullableComponent
@@ -150,7 +151,7 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
             val context = ChatContext(null, "", "")
 
             chatCodingService.actionType = ChatBotActionType.REFACTOR
-            chatCodingService.handlePromptAndResponse(this, object : PromptFormatterProvider {
+            chatCodingService.handlePromptAndResponse(this, object : ContextPrompter {
                 override fun getUIPrompt() = prompt
                 override fun getRequestPrompt() = prompt
             }, context)

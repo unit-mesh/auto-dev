@@ -5,7 +5,7 @@ import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.ChatContext
-import cc.unitmesh.devti.prompting.PoweredPromptFormatterProvider
+import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -42,6 +42,12 @@ abstract class ChatBaseAction : AnAction() {
 
         contentManager?.removeAllContents(true)
         contentManager?.addContent(content!!)
+
+        val actionType = chatCodingService.actionType
+
+        val prompter = ContextPrompter.prompter()
+        prompter?.initContext(actionType, prefixText, file, project)
+
         toolWindowManager?.activate {
             val chatContext = ChatContext(
                 getReplaceableAction(event),
@@ -49,9 +55,7 @@ abstract class ChatBaseAction : AnAction() {
                 suffixText
             )
 
-            val actionType = chatCodingService.actionType
-            val promptFormatter = PoweredPromptFormatterProvider(actionType, prefixText, file, project)
-            chatCodingService.handlePromptAndResponse(contentPanel, promptFormatter, chatContext)
+            chatCodingService.handlePromptAndResponse(contentPanel, prompter!!, chatContext)
         }
     }
 

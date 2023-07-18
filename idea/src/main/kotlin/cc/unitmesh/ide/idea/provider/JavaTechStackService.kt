@@ -1,6 +1,6 @@
-package cc.unitmesh.ide.idea
+package cc.unitmesh.ide.idea.provider
 
-import cc.unitmesh.devti.flow.base.TechStackProvider
+import cc.unitmesh.devti.provider.TechStackProvider
 import cc.unitmesh.devti.prompting.model.TestStack
 import com.intellij.openapi.externalSystem.model.project.LibraryData
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager

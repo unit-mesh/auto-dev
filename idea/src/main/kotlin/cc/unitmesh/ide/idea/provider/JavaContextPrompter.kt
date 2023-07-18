@@ -1,11 +1,12 @@
-package cc.unitmesh.devti.prompting
+package cc.unitmesh.ide.idea.provider
 
-import cc.unitmesh.devti.flow.base.TechStackProvider
+import cc.unitmesh.devti.provider.TechStackProvider
 import cc.unitmesh.devti.gui.chat.ChatBotActionType
-import cc.unitmesh.devti.gui.chat.PromptFormatterProvider
-import cc.unitmesh.devti.java.MvcContextService
+import cc.unitmesh.devti.prompting.CommitPrompting
+import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.prompting.model.PromptConfig
 import cc.unitmesh.devti.settings.AutoDevSettingsState
+import cc.unitmesh.ide.idea.java.MvcContextService
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -14,22 +15,28 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 
-class PoweredPromptFormatterProvider(
-    private val action: ChatBotActionType,
-    private val prefixText: String,
-    private val file: PsiFile?,
-    val project: Project,
-) : PromptFormatterProvider {
+class JavaContextPrompter() : ContextPrompter {
     private var additionContext: String = ""
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private var promptConfig: PromptConfig? = null
+
+    lateinit var action: ChatBotActionType
+    lateinit var prefixText: String
+    var file: PsiFile? = null
+    lateinit var project: Project
+    lateinit var mvcContextService: MvcContextService
     private val lang: String = file?.language?.displayName ?: ""
-
-    private val mvcContextService = project.service<MvcContextService>()
-
     private val fileName = file?.name ?: ""
     private val isController = fileName.endsWith("Controller.java")
     private val isService = fileName.endsWith("Service.java") || fileName.endsWith("ServiceImpl.java")
+
+    override fun initContext(actionType: ChatBotActionType, prefixText: String, file: PsiFile?, project: Project) {
+        this.action = actionType
+        this.prefixText = prefixText
+        this.file = file
+        this.project = project
+        mvcContextService = project.service<MvcContextService>()
+    }
 
     init {
         val prompts = autoDevSettingsState.customEnginePrompts

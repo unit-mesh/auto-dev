@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.prompting
+package cc.unitmesh.devti.provider
 
 import cc.unitmesh.devti.prompting.model.FinalCodePrompt
 import com.intellij.openapi.extensions.ExtensionPointName

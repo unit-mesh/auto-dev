@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.models.ConnectorFactory
 import cc.unitmesh.devti.parser.PostCodeProcessor
 import com.intellij.openapi.application.ApplicationManager
@@ -34,7 +35,7 @@ class ChatCodingService(var actionType: ChatBotActionType) {
 
     fun handlePromptAndResponse(
         ui: ChatCodingComponent,
-        prompt: PromptFormatterProvider,
+        prompt: ContextPrompter,
         context: ChatContext? = null
     ) {
         ui.add(prompt.getUIPrompt(), true)

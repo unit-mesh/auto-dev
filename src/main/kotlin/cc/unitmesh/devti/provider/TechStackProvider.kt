@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.flow.base
+package cc.unitmesh.devti.provider
 
 import cc.unitmesh.devti.prompting.model.TestStack
 import com.intellij.openapi.extensions.ExtensionPointName
