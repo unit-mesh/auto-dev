@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.flow
 
-import cc.unitmesh.devti.flow.code.SpringLayerCharacteristic
+import cc.unitmesh.devti.java.code.SpringLayerCharacteristic
 import org.junit.Test
 
 class SpringLayerCharacteristicTest {

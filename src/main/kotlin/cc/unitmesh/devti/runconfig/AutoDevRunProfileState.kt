@@ -2,7 +2,7 @@ package cc.unitmesh.devti.runconfig
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.java.JavaAutoDevFlow
-import cc.unitmesh.devti.flow.code.JavaSpringCodeCreator
+import cc.unitmesh.devti.java.code.JavaSpringCodeCreator
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.models.openai.OpenAIProvider
 import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory

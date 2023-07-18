@@ -1,13 +1,10 @@
-package cc.unitmesh.devti.flow.code
+package cc.unitmesh.devti.java.code
 
 import com.intellij.psi.PsiClass
 import kotlinx.serialization.Serializable
 
 @Serializable
-class SpringLayerCharacteristic(
-    val annotation: String, val imports: List<String>, val codeRegex: String, val fileName: String? = null
-) {
-
+class SpringLayerCharacteristic(val annotation: String, val imports: List<String>, val codeRegex: String, val fileName: String? = null) {
     companion object {
         private val controllerCharacteristic = SpringLayerCharacteristic(
             annotation = "@Controller",

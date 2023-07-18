@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.analysis
 
-import cc.unitmesh.devti.flow.code.JavaSpringCodeCreator
+import cc.unitmesh.devti.java.code.JavaSpringCodeCreator
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiElementFactory
 import com.intellij.testFramework.LightPlatformTestCase

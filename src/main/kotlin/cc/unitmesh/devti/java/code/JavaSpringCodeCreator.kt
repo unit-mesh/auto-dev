@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.flow.code
+package cc.unitmesh.devti.java.code
 
 import cc.unitmesh.devti.context.DtClass
 import cc.unitmesh.devti.java.SpringBaseCrud

@@ -5,7 +5,7 @@ import cc.unitmesh.devti.context.DtClass
 import cc.unitmesh.devti.models.openai.OpenAIProvider
 import cc.unitmesh.devti.models.openai.PromptTemplate
 import cc.unitmesh.devti.flow.base.CrudFlowProvider
-import cc.unitmesh.devti.flow.code.JavaParseUtil
+import cc.unitmesh.devti.java.code.JavaParseUtil
 import cc.unitmesh.devti.flow.kanban.Kanban
 import cc.unitmesh.devti.flow.model.SimpleStory
 import cc.unitmesh.devti.flow.model.TargetEndpoint
