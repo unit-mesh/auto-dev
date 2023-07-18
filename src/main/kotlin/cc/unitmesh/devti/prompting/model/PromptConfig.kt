@@ -34,24 +34,20 @@ data class PromptConfig(
             return config
         }
 
-        fun default(): PromptConfig {
-            val spec = mapOf(
+        fun default(): PromptConfig = PromptConfig(
+            autoComplete = PromptItem("Complete java code, return rest code, no explaining.", "{code}"),
+            autoComment = PromptItem("Auto comment code", "{code}"),
+            codeReview = PromptItem("Code review code", "{code}"),
+            refactor = PromptItem("Refactor for follow code", "{code}"),
+            writeTest = PromptItem("Write test code for", "{code}"),
+            mapOf(
                 "controller" to "",
                 "service" to "",
                 "entity" to "",
                 "repository" to "",
                 "ddl" to ""
             )
-
-            return PromptConfig(
-                autoComplete =  PromptItem("Complete java code, return rest code, no explaining.", "{code}"),
-                autoComment =  PromptItem("Auto comment code", "{code}"),
-                codeReview = PromptItem("Code review code", "{code}"),
-                refactor = PromptItem("Refactor for follow code", "{code}"),
-                writeTest = PromptItem("Write test code for", "{code}"),
-                spec
-            )
-        }
+        )
 
         fun tryParse(prompts: String?): PromptConfig {
             if (prompts == null) {
