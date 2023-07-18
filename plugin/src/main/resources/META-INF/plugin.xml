@@ -3,6 +3,12 @@
     <name>AutoDev</name>
     <vendor>Phodal Huang</vendor>
 
+    <description><![CDATA[
+    <a href="https://plugins.jetbrains.com/plugin/21520-autodev">Homepage</a> | <a href="https://github.com/unit-mesh/auto-dev">Github</a> | <a href="https://github.com/unit-mesh/auto-dev/issues">Issues</a>.<br />
+    <br/>
+    AutoDev is a fully automated AI-assisted programming tool and an implementation of the DevTi Intellij IDE designed for use in-flight.
+    ]]></description>
+
     <change-notes><![CDATA[
         todo
     ]]>
@@ -14,7 +20,7 @@
     <xi:include href="/META-INF/autodev-core.xml" xpointer="xpointer(/idea-plugin/*)"/>
 
     <content>
-        <module name="cc.unitmesh.ide.pycharm"/>
-        <module name="cc.unitmesh.ide.idea"/>
+        <module name="cc.unitmesh.pycharm"/>
+        <module name="cc.unitmesh.idea"/>
     </content>
 </idea-plugin>

@@ -1,4 +1,4 @@
-<idea-plugin package="cc.unitmesh.ide.pycharm">
+<idea-plugin package="cc.unitmesh.pycharm">
     <dependencies>
         <plugin id="com.intellij.modules.python"/>
     </dependencies>

@@ -1,4 +1,4 @@
-<idea-plugin package="cc.unitmesh.ide.idea">
+<idea-plugin package="cc.unitmesh.idea">
     <dependencies>
         <plugin id="com.intellij.modules.java"/>
         <plugin id="org.jetbrains.plugins.gradle"/>

@@ -1,26 +1,11 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude" allow-bundled-update="true">
-    <id>cc.unitmesh.devti</id>
-    <name>AutoDev</name>
-    <vendor>Phodal Huang</vendor>
-
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.java</depends>
     <depends>org.jetbrains.plugins.gradle</depends>
     <depends>Git4Idea</depends>
 
     <resource-bundle>messages.AutoDevBundle</resource-bundle>
-<!--    -->
-<!--    <dependencies>-->
-<!--        <module name="cc.unitmesh.python"/>-->
-<!--        <module name="cc.unitmesh.java"/>-->
-<!--    </dependencies>-->
-
-    <description><![CDATA[
-    <a href="https://plugins.jetbrains.com/plugin/21520-autodev">Homepage</a> | <a href="https://github.com/unit-mesh/auto-dev">Github</a> | <a href="https://github.com/unit-mesh/auto-dev/issues">Issues</a>.<br />
-    <br/>
-    AutoDev is a fully automated AI-assisted programming tool and an implementation of the DevTi Intellij IDE designed for use in-flight.
-    ]]></description>
 
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable parentId="tools" instance="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
