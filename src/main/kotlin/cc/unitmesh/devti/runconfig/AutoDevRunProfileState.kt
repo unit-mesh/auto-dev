@@ -1,12 +1,12 @@
 package cc.unitmesh.devti.runconfig
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.flow.base.DevFlowProvider
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.gui.chat.ChatCodingService
-import cc.unitmesh.devti.java.JavaAutoDevFlow
 import cc.unitmesh.devti.models.openai.OpenAIProvider
 import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
 import cc.unitmesh.devti.runconfig.options.AutoDevConfigurationOptions
@@ -44,11 +44,16 @@ class AutoDevRunProfileState(
         val gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)
 
         val openAIRunner = OpenAIProvider()
-
         val chatCodingService = ChatCodingService(ChatBotActionType.REVIEW)
         val contentPanel = ChatCodingComponent(chatCodingService)
 
-        val javaAutoDevFlow = JavaAutoDevFlow(gitHubIssue, openAIRunner, contentPanel, project)
+        val flowProvider = DevFlowProvider.flowProvider()
+        if (flowProvider == null) {
+            logger<AutoDevRunProfileState>().error("current Language don't implementation DevFlow")
+            return null
+        }
+
+        flowProvider.initContext(gitHubIssue, openAIRunner, contentPanel, project)
 
         val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
 
@@ -66,27 +71,27 @@ class AutoDevRunProfileState(
 
                     // todo: check create story
                     val storyId = options.storyId()
-                    val storyDetail = javaAutoDevFlow.getOrCreateStoryDetail(storyId)
+                    val storyDetail = flowProvider.getOrCreateStoryDetail(storyId)
 
                     indicator.fraction = 0.2
 
                     indicator.text = AutoDevBundle.message("devti.generatingDtoAndEntity")
-                    javaAutoDevFlow.updateOrCreateDtoAndEntity(storyDetail)
+                    flowProvider.updateOrCreateDtoAndEntity(storyDetail)
 
                     indicator.fraction = 0.4
 
                     indicator.text = AutoDevBundle.message("devti.progress.fetchingSuggestEndpoint")
-                    val target = javaAutoDevFlow.fetchSuggestEndpoint(storyDetail)
+                    val target = flowProvider.fetchSuggestEndpoint(storyDetail)
 
                     indicator.fraction = 0.6
 
                     indicator.text = AutoDevBundle.message("devti.progress.updatingEndpointMethod")
-                    javaAutoDevFlow.updateOrCreateEndpointCode(target, storyDetail)
+                    flowProvider.updateOrCreateEndpointCode(target, storyDetail)
 
                     indicator.fraction = 0.8
 
                     indicator.text = AutoDevBundle.message("devti.progress.creatingServiceAndRepository")
-                    javaAutoDevFlow.updateOrCreateServiceAndRepository()
+                    flowProvider.updateOrCreateServiceAndRepository()
 
                     indicator.fraction = 1.0
                 }

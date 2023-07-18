@@ -4,8 +4,9 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.context.DtClass
 import cc.unitmesh.devti.models.openai.OpenAIProvider
 import cc.unitmesh.devti.models.openai.PromptTemplate
-import cc.unitmesh.devti.flow.base.CrudFlowProvider
+import cc.unitmesh.devti.flow.base.DevFlowProvider
 import cc.unitmesh.devti.flow.kanban.Kanban
+import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.flow.model.SimpleStory
 import cc.unitmesh.devti.flow.model.TargetEndpoint
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
@@ -23,24 +24,35 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiJavaFile
 import kotlinx.coroutines.runBlocking
 
-class JavaAutoDevFlow(
-    private val kanban: Kanban,
-    private val connector: OpenAIProvider,
-    val ui: ChatCodingComponent,
-    val project: Project,
-) : CrudFlowProvider {
+class JavaAutoDevFlow : DevFlowProvider {
     private val promptTemplate = PromptTemplate()
     private var selectedControllerName = ""
     private var selectedControllerCode = ""
     private var isNewController = false
+
+    private lateinit var kanban: Kanban
+    private lateinit var connector: OpenAIProvider
+    private lateinit var ui: ChatCodingComponent
+    private lateinit var processor: JavaSpringCodeCreator
     private val promptStrategy = PromptStrategy.strategy()!!
-    val processor = project.service<JavaSpringCodeCreator>()
+
+    override fun initContext(
+        gitHubIssue: Kanban,
+        openAIRunner: OpenAIProvider,
+        contentPanel: ChatCodingComponent,
+        project: Project
+    ) {
+        this.kanban = gitHubIssue
+        this.connector = openAIRunner
+        this.ui = contentPanel
+        processor = project.service<JavaSpringCodeCreator>()
+    }
 
     /**
      * Step 1: check story detail is valid, if not, fill story detail
      */
     override fun getOrCreateStoryDetail(id: String): String {
-        val simpleProject = kanban.getProjectInfo()
+        val simpleProject = kanban!!.getProjectInfo()
         val story = kanban.getStoryById(id)
 
         // 1. check story detail is valid, if not, fill story detail

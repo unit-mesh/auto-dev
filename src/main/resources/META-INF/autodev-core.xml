@@ -62,8 +62,8 @@
                   implements="cc.unitmesh.devti.context.builder.VariableContextBuilder"/>
         </extensionPoint>
 
-        <extensionPoint qualifiedName="cc.unitmesh.crudFlowProvider"
-                        interface="cc.unitmesh.devti.flow.base.CrudFlowProvider"
+        <extensionPoint qualifiedName="cc.unitmesh.devFlowProvider"
+                        interface="cc.unitmesh.devti.flow.base.DevFlowProvider"
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.techStackProvider"
