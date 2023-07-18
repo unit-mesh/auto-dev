@@ -19,6 +19,5 @@ interface ContextPrompter {
 
         fun prompter(): ContextPrompter? = EP_NAME.extensionList.firstOrNull()
     }
-
 }
 

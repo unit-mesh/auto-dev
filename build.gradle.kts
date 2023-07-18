@@ -126,6 +126,7 @@ project(":plugin") {
         implementation(project(":"))
         implementation(project(":idea"))
         implementation(project(":pycharm"))
+        implementation(project(":webstorm"))
     }
 
     // Collects all jars produced by compilation of project modules and merges them into singe one.
