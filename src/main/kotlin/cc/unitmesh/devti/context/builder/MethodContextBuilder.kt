@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.context.builder
 
-import com.intellij.ml.llm.context.MethodContext
+import cc.unitmesh.devti.context.MethodContext
 import com.intellij.psi.PsiElement
 
 interface MethodContextBuilder {

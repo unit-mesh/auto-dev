@@ -2,7 +2,6 @@ package cc.unitmesh.devti.context
 
 import cc.unitmesh.devti.context.base.NamedElementContext
 import com.google.gson.Gson
-import com.intellij.ml.llm.context.MethodContext
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
 

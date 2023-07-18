@@ -1,7 +1,5 @@
-package com.intellij.ml.llm.context
+package cc.unitmesh.devti.context
 
-import cc.unitmesh.devti.context.ClassContext
-import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.context.base.NamedElementContext
 import com.google.gson.Gson
 import com.intellij.psi.PsiElement

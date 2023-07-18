@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.java.context
 
 import cc.unitmesh.devti.context.builder.MethodContextBuilder
-import com.intellij.ml.llm.context.MethodContext
+import cc.unitmesh.devti.context.MethodContext
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiNameIdentifierOwner

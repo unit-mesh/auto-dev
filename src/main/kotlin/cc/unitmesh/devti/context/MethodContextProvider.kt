@@ -3,7 +3,6 @@ package cc.unitmesh.devti.context
 import cc.unitmesh.devti.context.builder.MethodContextBuilder
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageExtension
-import com.intellij.ml.llm.context.MethodContext
 import com.intellij.psi.PsiElement
 import org.jetbrains.annotations.NotNull
 
