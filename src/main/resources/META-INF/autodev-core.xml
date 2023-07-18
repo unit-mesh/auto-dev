@@ -84,6 +84,10 @@
             <className>cc.unitmesh.devti.intentions.editor.CodeCompletionIntention</className>
             <categoryKey>Intention.category.llm</categoryKey>
         </aiAssistantIntention>
+        <aiAssistantIntention>
+            <className>cc.unitmesh.devti.intentions.editor.RefactorThisIntention</className>
+            <categoryKey>Intention.category.llm</categoryKey>
+        </aiAssistantIntention>
     </extensions>
 
     <actions>
