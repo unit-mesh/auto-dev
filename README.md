@@ -128,7 +128,8 @@ defaultPriorities.json = [
 
 ## License
 
-ChatUI based
-on: [https://github.com/Cspeisman/chatgpt-intellij-plugin](https://github.com/Cspeisman/chatgpt-intellij-plugin)
+- ChatUI based on: [https://github.com/Cspeisman/chatgpt-intellij-plugin](https://github.com/Cspeisman/chatgpt-intellij-plugin)
+- Multiple target inspired by: [https://github.com/intellij-rust/intellij-rust](https://github.com/intellij-rust/intellij-rust)
+- SimilarFile inspired by: JetBrains and GitHub Copilot
 
-@Thoughtworks AIEE Team. This code is distributed under the MPL 2.0 license. See `LICENSE` in this directory.
+This code is distributed under the MPL 2.0 license. See `LICENSE` in this directory.
