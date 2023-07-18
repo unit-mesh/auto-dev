@@ -28,9 +28,6 @@ data class PromptConfig(
     companion object {
         private val logger = Logger.getInstance(PromptConfig::class.java)
 
-        /**
-         * Load prompt config from settings
-         */
         fun load(): PromptConfig {
             val config = tryParse(AutoDevSettingsState.getInstance().customEnginePrompts)
             logger.info("Loaded prompt config: $config")
@@ -47,11 +44,11 @@ data class PromptConfig(
             )
 
             return PromptConfig(
-                PromptItem("Complete java code, return rest code, no explaining.", "{code}"),
-                PromptItem("Auto comment code", "{code}"),
-                PromptItem("Code review code", "{code}"),
-                PromptItem("Find bug", "{code}"),
-                PromptItem("Write test code for", "{code}"),
+                autoComplete =  PromptItem("Complete java code, return rest code, no explaining.", "{code}"),
+                autoComment =  PromptItem("Auto comment code", "{code}"),
+                codeReview = PromptItem("Code review code", "{code}"),
+                refactor = PromptItem("Refactor for follow code", "{code}"),
+                writeTest = PromptItem("Write test code for", "{code}"),
                 spec
             )
         }

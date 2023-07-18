@@ -18,10 +18,10 @@ class ChatCodingService(var actionType: ChatBotActionType) {
     private val connectorFactory = ConnectorFactory.getInstance()
 
     val action = when (actionType) {
-        ChatBotActionType.EXPLAIN -> "explain"
-        ChatBotActionType.REVIEW -> "review"
-        ChatBotActionType.REFACTOR -> "refactor"
-        ChatBotActionType.CODE_COMPLETE -> "complete"
+        ChatBotActionType.EXPLAIN -> "Write down what this code does"
+        ChatBotActionType.REVIEW -> "Code Review"
+        ChatBotActionType.REFACTOR -> "Refactor This code"
+        ChatBotActionType.CODE_COMPLETE -> "Auto Complete for this code"
         ChatBotActionType.WRITE_TEST -> "write test"
         ChatBotActionType.FIX_ISSUE -> "help me fix this"
         ChatBotActionType.GEN_COMMIT_MESSAGE -> "generate commit message"
