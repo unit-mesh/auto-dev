@@ -25,7 +25,7 @@ fun prop(name: String): String =
     extra.properties[name] as? String
         ?: error("Property `$name` is not defined in gradle.properties")
 
-val basePluginArchiveName = "autodev"
+val basePluginArchiveName = "intellij-autodev"
 
 val pycharmPlugins: List<String> = listOf()
 val ideaPlugins = listOf("com.intellij.java", "org.jetbrains.plugins.gradle")
@@ -173,23 +173,23 @@ project(":plugin") {
 
     // Add plugin sources to the plugin ZIP.
     // gradle-intellij-plugin will use it as a plugin sources if the plugin is used as a dependency
-    val createSourceJar = task<Jar>("createSourceJar") {
-        for (prj in pluginProjects) {
-            from(prj.kotlin.sourceSets.main.get().kotlin) {
-                include("**/*.java")
-                include("**/*.kt")
-            }
-        }
-
-        destinationDirectory.set(layout.buildDirectory.dir("libs"))
-        archiveBaseName.set(basePluginArchiveName)
-        archiveClassifier.set("src")
-    }
+//    val createSourceJar = task<Jar>("createSourceJar") {
+//        for (prj in pluginProjects) {
+//            from(prj.kotlin.sourceSets.main.get().kotlin) {
+//                include("**/*.java")
+//                include("**/*.kt")
+//            }
+//        }
+//
+//        destinationDirectory.set(layout.buildDirectory.dir("libs"))
+//        archiveBaseName.set(basePluginArchiveName)
+//        archiveClassifier.set("src")
+//    }
 
     tasks {
         buildPlugin {
-            dependsOn(createSourceJar)
-            from(createSourceJar) { into("lib/src") }
+//            dependsOn(createSourceJar)
+//            from(createSourceJar) { into("lib/src") }
             // Set proper name for final plugin zip.
             // Otherwise, base name is the same as gradle module name
             archiveBaseName.set(basePluginArchiveName)
