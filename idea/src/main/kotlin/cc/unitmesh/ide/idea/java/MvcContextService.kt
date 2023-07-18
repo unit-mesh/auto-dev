@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.java
+package cc.unitmesh.ide.idea.java
 
 import cc.unitmesh.devti.context.DtClass
 import com.intellij.openapi.application.runReadAction

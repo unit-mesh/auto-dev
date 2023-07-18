@@ -1,10 +1,5 @@
 package cc.unitmesh.devti.context
 
-import com.intellij.openapi.application.runReadAction
-import com.intellij.psi.PsiClass
-import com.intellij.psi.PsiFile
-import com.intellij.psi.impl.source.PsiJavaFileImpl
-
 @Deprecated("Use [MethodContextBuilder] for multiple language support")
 data class DtMethod(val name: String, val returnType: String, val parameters: List<DtParameter>)
 
@@ -111,51 +106,6 @@ class DtClass(
         return output.toString()
     }
 
-    companion object {
-        fun formatPsi(psiClass: PsiClass): String {
-            return fromPsi(psiClass).commentFormat()
-        }
-
-        fun fromJavaFile(file: PsiFile): DtClass {
-            return fromJavaFile(file as? PsiJavaFileImpl)
-        }
-
-        fun fromPsi(psiClass: PsiClass): DtClass {
-            return runReadAction {
-                val fields = psiClass.fields.map { field ->
-                    DtField(
-                        name = field.name,
-                        type = field.type.canonicalText
-                    )
-                }
-
-                val methods = psiClass.methods.map { method ->
-                    // if method is getter or setter, skip
-                    if (method.name.startsWith("get") || method.name.startsWith("set")) {
-                        return@map null
-                    }
-
-                    DtMethod(
-                        name = method.name,
-                        returnType = method.returnType?.presentableText ?: "",
-                        parameters = method.parameters.map { parameter ->
-                            DtParameter(
-                                name = parameter.name ?: "",
-                                type = parameter.type.toString().replace("PsiType:", "")
-                            )
-                        }
-                    )
-                }.filterNotNull()
-
-                return@runReadAction DtClass(
-                    packageName = psiClass.qualifiedName ?: "",
-                    path = psiClass.containingFile?.virtualFile?.path ?: "",
-                    name = psiClass.name ?: "",
-                    methods = methods,
-                    fields = fields
-                )
-            }
-        }
-    }
+    companion object
 }
 

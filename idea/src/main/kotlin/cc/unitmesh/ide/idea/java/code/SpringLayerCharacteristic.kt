@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.java.code
+package cc.unitmesh.ide.idea.java.code
 
 import com.intellij.psi.PsiClass
 import kotlinx.serialization.Serializable

@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.java.code
+package cc.unitmesh.ide.idea.java.code
 
 object JavaParseUtil {
     // split java code string to multiple class string
