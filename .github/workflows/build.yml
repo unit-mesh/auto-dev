@@ -121,7 +121,7 @@ jobs:
         id: artifact
         shell: bash
         run: |
-          cd ${{ github.workspace }}/build/distributions
+          cd ${{ github.workspace }}/plugin/build/distributions
           FILENAME=`ls *.zip`
           unzip "$FILENAME" -d content
 
