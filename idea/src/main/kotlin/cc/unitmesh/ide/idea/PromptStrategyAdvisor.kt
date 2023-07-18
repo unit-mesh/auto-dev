@@ -1,28 +1,23 @@
-package cc.unitmesh.devti.java
+package cc.unitmesh.ide.idea
 
 import cc.unitmesh.devti.context.DtClass
+import cc.unitmesh.devti.prompting.PromptStrategy
 import cc.unitmesh.devti.prompting.model.FinalCodePrompt
-import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiJavaFile
-import com.knuddels.jtokkit.Encodings
-import com.knuddels.jtokkit.api.Encoding
-import com.knuddels.jtokkit.api.EncodingRegistry
-import com.knuddels.jtokkit.api.EncodingType
 
-// TODO: refactor to interface
-@Service(Service.Level.PROJECT)
-class PromptStrategyAdvisor(val project: Project) {
-    // The default OpenAI Token will be 4096, we leave 2048 for the code.
-    var tokenLength = 2048
-    private var registry: EncodingRegistry? = Encodings.newDefaultEncodingRegistry()
-    private var encoding: Encoding = registry?.getEncoding(EncodingType.CL100K_BASE)!!
+class PromptStrategyAdvisor : PromptStrategy {
+    override fun tokenLength(): Int {
+        return 3072
+    }
 
-    fun advice(prefixCode: String, suffixCode: String): FinalCodePrompt {
-        val tokenCount: Int = encoding.countTokens(prefixCode)
+    private var tokenLength = tokenLength()
+
+    override fun advice(prefixCode: String, suffixCode: String): FinalCodePrompt {
+        val tokenCount: Int = this.countTokens(prefixCode)
         if (tokenCount < tokenLength) {
             return FinalCodePrompt(prefixCode, suffixCode)
         }
@@ -30,7 +25,7 @@ class PromptStrategyAdvisor(val project: Project) {
         // remove all `import` syntax in java code, should contain with new line
         val importRegexWithNewLine = Regex("import .*;\n")
         val prefixCodeWithoutImport = prefixCode.replace(importRegexWithNewLine, "")
-        val tokenCountWithoutImport: Int = encoding.countTokens(prefixCodeWithoutImport)
+        val tokenCountWithoutImport: Int = this.countTokens(prefixCodeWithoutImport)
 
         if (tokenCountWithoutImport < tokenLength) {
             return FinalCodePrompt(prefixCodeWithoutImport, suffixCode)
@@ -40,26 +35,42 @@ class PromptStrategyAdvisor(val project: Project) {
         return FinalCodePrompt(prefixCodeWithoutImport, suffixCode)
     }
 
-    fun advice(javaFile: PsiJavaFile, calleeName: String = ""): FinalCodePrompt {
+    override fun advice(psiFile: PsiElement, calleeName: String): FinalCodePrompt {
+        return when (psiFile) {
+            is PsiJavaFile -> {
+                adviceFile(psiFile, calleeName)
+            }
+
+            is PsiClass -> {
+                adviceClass(psiFile, calleeName)
+            }
+
+            else -> {
+                FinalCodePrompt("", "")
+            }
+        }
+    }
+
+    private fun adviceFile(javaFile: PsiJavaFile, calleeName: String = ""): FinalCodePrompt {
         val code = javaFile.text
-        if (encoding.countTokens(code) < tokenLength) {
+        if (this.countTokens(code) < tokenLength) {
             return FinalCodePrompt(code, "")
         }
 
         // strategy 1: remove class code without the imports
         val javaCode = javaFile.classes[0]
-        val countTokens = encoding.countTokens(javaCode.text)
+        val countTokens = this.countTokens(javaCode.text)
         if (countTokens < tokenLength) {
             return FinalCodePrompt(javaCode.text, "")
         }
 
-        return advice(javaCode, calleeName)
+        return adviceClass(javaCode, calleeName)
     }
 
-    fun advice(javaCode: PsiClass, calleeName: String = ""): FinalCodePrompt {
+    fun adviceClass(javaCode: PsiClass, calleeName: String = ""): FinalCodePrompt {
         val codeString = javaCode.text
         val textbase = advice(codeString, "")
-        if (encoding.countTokens(textbase.prefixCode) < tokenLength) {
+        if (this.countTokens(textbase.prefixCode) < tokenLength) {
             return FinalCodePrompt(codeString, "")
         }
 
@@ -74,7 +85,7 @@ class PromptStrategyAdvisor(val project: Project) {
 
         // strategy 2: if all method contains the field, we should return all method
         val methodCodes = getByMethods(javaCode, targetFieldRegex)
-        if (encoding.countTokens(methodCodes) < tokenLength) {
+        if (this.countTokens(methodCodes) < tokenLength) {
             return FinalCodePrompt(methodCodes, "")
         }
 
@@ -121,6 +132,18 @@ class PromptStrategyAdvisor(val project: Project) {
         return lines.joinToString("") { "        {some other code}\n$it\n" }
     }
 
+    override fun advice(psiFile: PsiElement, usedMethod: List<String>, noExistMethods: List<String>): FinalCodePrompt {
+        return when (psiFile) {
+            is PsiJavaFile -> {
+                advice(psiFile, usedMethod, noExistMethods)
+            }
+
+            else -> {
+                FinalCodePrompt("", "")
+            }
+        }
+    }
+
     fun advice(serviceFile: PsiJavaFile, usedMethod: List<String>, noExistMethods: List<String>): FinalCodePrompt {
         val code = serviceFile.text
         val filterNeedImplementMethods = usedMethod.filter {
@@ -134,7 +157,7 @@ class PromptStrategyAdvisor(val project: Project) {
         val finalPrompt = code + """
             | // TODO: implement the method $suffixCode
         """.trimMargin()
-        if (encoding.countTokens(finalPrompt) < tokenLength) {
+        if (this.countTokens(finalPrompt) < tokenLength) {
             return FinalCodePrompt(code, suffixCode)
         }
 

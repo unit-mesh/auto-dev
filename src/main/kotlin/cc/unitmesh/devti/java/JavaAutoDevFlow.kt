@@ -12,9 +12,9 @@ import cc.unitmesh.devti.flow.model.SimpleStory
 import cc.unitmesh.devti.flow.model.TargetEndpoint
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.parser.parseCodeFromString
+import cc.unitmesh.devti.prompting.PromptStrategy
 import cc.unitmesh.devti.runconfig.AutoDevRunProfileState
 import com.intellij.openapi.application.runReadAction
-import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -33,7 +33,7 @@ class JavaAutoDevFlow(
     private var selectedControllerName = ""
     private var selectedControllerCode = ""
     private var isNewController = false
-    private val promptStrategy = project.service<PromptStrategyAdvisor>()
+    private val promptStrategy = PromptStrategy.strategy()!!
 
     /**
      * Step 1: check story detail is valid, if not, fill story detail

@@ -28,8 +28,7 @@ fun prop(name: String): String =
 val basePluginArchiveName = "intellij-autodev"
 
 val pycharmPlugins: List<String> = listOf()
-val ideaPlugins = listOf("com.intellij.java", "org.jetbrains.plugins.gradle", "Git4Idea")
-
+val ideaPlugins = listOf("Git4Idea", "com.intellij.java")
 val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
 
 val javaPlugin = "com.intellij.java"
@@ -309,8 +308,8 @@ project(":") {
                 .forEach { it.resolve() }
         }
     }
-
 }
+
 project(":pycharm") {
     intellij {
         version.set(pycharmVersion)

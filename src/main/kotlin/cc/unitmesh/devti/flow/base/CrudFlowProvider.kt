@@ -12,7 +12,7 @@ interface CrudFlowProvider {
 
     companion object {
         private val EP_NAME: ExtensionPointName<CrudFlowProvider> =
-            ExtensionPointName.create("cc.unitmesh.prompterFormatterProvider")
+            ExtensionPointName.create("cc.unitmesh.crudFlowProvider")
 
         fun flowProvider(): CrudFlowProvider? = EP_NAME.extensionList.asSequence().firstOrNull()
     }
