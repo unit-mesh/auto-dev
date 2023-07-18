@@ -1,14 +1,13 @@
 package cc.unitmesh.devti.runconfig
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.java.JavaAutoDevFlow
-import cc.unitmesh.devti.java.code.JavaSpringCodeCreator
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
-import cc.unitmesh.devti.models.openai.OpenAIProvider
 import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.gui.chat.ChatCodingService
+import cc.unitmesh.devti.java.JavaAutoDevFlow
+import cc.unitmesh.devti.models.openai.OpenAIProvider
 import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
 import cc.unitmesh.devti.runconfig.options.AutoDevConfigurationOptions
 import cc.unitmesh.devti.settings.AutoDevSettingsState
@@ -17,7 +16,6 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
-import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressIndicator
@@ -43,7 +41,6 @@ class AutoDevRunProfileState(
         val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(DevtiFlowToolWindowFactory.id)
         val contentManager = toolWindowManager?.contentManager
 
-        val javaAuto = project.service<JavaSpringCodeCreator>()
         val gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)
 
         val openAIRunner = OpenAIProvider()
@@ -51,7 +48,7 @@ class AutoDevRunProfileState(
         val chatCodingService = ChatCodingService(ChatBotActionType.REVIEW)
         val contentPanel = ChatCodingComponent(chatCodingService)
 
-        val javaAutoDevFlow = JavaAutoDevFlow(gitHubIssue, openAIRunner, javaAuto, contentPanel, project)
+        val javaAutoDevFlow = JavaAutoDevFlow(gitHubIssue, openAIRunner, contentPanel, project)
 
         val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
 

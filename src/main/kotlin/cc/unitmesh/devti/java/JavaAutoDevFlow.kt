@@ -10,10 +10,12 @@ import cc.unitmesh.devti.flow.kanban.Kanban
 import cc.unitmesh.devti.flow.model.SimpleStory
 import cc.unitmesh.devti.flow.model.TargetEndpoint
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
+import cc.unitmesh.devti.java.code.JavaSpringCodeCreator
 import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.prompting.PromptStrategy
 import cc.unitmesh.devti.runconfig.AutoDevRunProfileState
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -24,7 +26,6 @@ import kotlinx.coroutines.runBlocking
 class JavaAutoDevFlow(
     private val kanban: Kanban,
     private val connector: OpenAIProvider,
-    private val processor: SpringBaseCrud? = null,
     val ui: ChatCodingComponent,
     val project: Project,
 ) : CrudFlowProvider {
@@ -33,6 +34,7 @@ class JavaAutoDevFlow(
     private var selectedControllerCode = ""
     private var isNewController = false
     private val promptStrategy = PromptStrategy.strategy()!!
+    val processor = project.service<JavaSpringCodeCreator>()
 
     /**
      * Step 1: check story detail is valid, if not, fill story detail

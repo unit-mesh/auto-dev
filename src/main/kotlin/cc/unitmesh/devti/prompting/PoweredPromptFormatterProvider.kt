@@ -1,9 +1,9 @@
-package cc.unitmesh.devti.java
+package cc.unitmesh.devti.prompting
 
 import cc.unitmesh.devti.flow.base.TechStackProvider
 import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import cc.unitmesh.devti.gui.chat.PromptFormatterProvider
-import cc.unitmesh.devti.prompting.CommitPrompting
+import cc.unitmesh.devti.java.MvcContextService
 import cc.unitmesh.devti.prompting.model.PromptConfig
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.application.runReadAction
