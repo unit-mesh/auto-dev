@@ -2,7 +2,7 @@ package cc.unitmesh.devti.intentions.editor
 
 import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
 import cc.unitmesh.devti.gui.chat.*
-import cc.unitmesh.devti.java.prompt.JavaPromptFormatterProvider
+import cc.unitmesh.devti.java.JavaPromptFormatterProvider
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.editor.Editor

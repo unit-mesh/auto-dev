@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.context
 
+import cc.unitmesh.devti.java.fromJavaFile
 import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiFile

@@ -14,6 +14,18 @@
         <variableContextBuilder language="JAVA"
                                 implementationClass="cc.unitmesh.ide.idea.context.JavaVariableContextBuilder"/>
         <prompterFormatterProvider
-                            implementationClass="cc.unitmesh.devti.java.JavaPromptFormatterProvider"/>
+                implementationClass="cc.unitmesh.devti.java.JavaPromptFormatterProvider"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- show find bug -->
+        <runLineMarkerContributor language="JAVA"
+                                  implementationClass="cc.unitmesh.ide.idea.contributor.CodeCommentsMarkerContributor"/>
+        <runLineMarkerContributor language="JAVA"
+                                  implementationClass="cc.unitmesh.ide.idea.contributor.FindBugMarkerContributor"/>
+
+        <runLineMarkerContributor language="JAVA"
+                                  implementationClass="cc.unitmesh.ide.idea.contributor.AutoDevFeatureMarkerContributor"/>
+
     </extensions>
 </idea-plugin>

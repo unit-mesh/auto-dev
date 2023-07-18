@@ -12,14 +12,6 @@
                                  displayName="AutoDev"/>
 
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.AutoDevSettingsState"/>
-        <!-- show find bug -->
-        <runLineMarkerContributor language="JAVA"
-                                  implementationClass="cc.unitmesh.devti.language.contributor.CodeCommentsMarkerContributor"/>
-        <runLineMarkerContributor language="JAVA"
-                                  implementationClass="cc.unitmesh.devti.language.contributor.FindBugMarkerContributor"/>
-
-        <runLineMarkerContributor language="JAVA"
-                                  implementationClass="cc.unitmesh.devti.language.contributor.AutoDevFeatureMarkerContributor"/>
 
         <runConfigurationProducer
                 implementation="cc.unitmesh.devti.runconfig.command.AutoDevFeatureConfigurationProducer"/>

@@ -282,6 +282,10 @@ project(":plugin") {
 }
 
 project(":") {
+    intellij {
+        version.set(ideaVersion)
+        plugins.set(ideaPlugins)
+    }
     dependencies {
         implementation(libs.github.api)
         implementation(libs.dotenv)

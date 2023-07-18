@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.contributor
+package cc.unitmesh.ide.idea.contributor
 
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.language.DevtiAnnotator
