@@ -111,7 +111,7 @@ project(":plugin") {
 
     intellij {
         pluginName.set(basePluginArchiveName)
-        val pluginList: MutableList<String> = mutableListOf("com.intellij.java", "Git4Idea")
+        val pluginList: MutableList<String> = mutableListOf("Git4Idea")
         if (baseIDE == "idea") {
             pluginList += listOf(
                 javaPlugin,
@@ -261,7 +261,11 @@ project(":plugin") {
 
         withType<PublishPluginTask> {
             token.set("publishToken")
-            channels.set(properties("pluginVersion").map { listOf(it.split('-').getOrElse(1) { "default" }.split('.').first()) })
+            channels.set(properties("pluginVersion").map {
+                listOf(
+                    it.split('-').getOrElse(1) { "default" }.split('.').first()
+                )
+            })
         }
     }
 }
