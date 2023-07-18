@@ -45,7 +45,7 @@ abstract class ChatBaseAction : AnAction() {
 
         val actionType = chatCodingService.actionType
 
-        val prompter = ContextPrompter.prompter()
+        val prompter = ContextPrompter.prompter(file?.language?.displayName ?: "")
         prompter?.initContext(actionType, prefixText, file, project)
 
         toolWindowManager?.activate {

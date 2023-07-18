@@ -7,7 +7,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
-class PythonContextPrompter : ContextPrompter {
+class PythonContextPrompter : ContextPrompter() {
     private var action: ChatBotActionType? = null
     private var selectedText: String = ""
     private var file: PsiFile? = null

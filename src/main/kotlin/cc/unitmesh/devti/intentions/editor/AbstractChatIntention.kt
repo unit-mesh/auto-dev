@@ -58,7 +58,7 @@ abstract class AbstractChatIntention : IntentionAction {
             contentManager.removeAllContents(true)
             contentManager.addContent(content)
             toolWindowManager.activate {
-                val prompter = ContextPrompter.prompter()
+                val prompter = ContextPrompter.prompter(file?.language?.displayName ?: "")
                 prompter?.initContext(actionType, selectedText, file, project)
 
                 chatCodingService.handlePromptAndResponse(contentPanel, prompter!!)

@@ -5,7 +5,9 @@
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
-        <contextPrompter implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptContextPrompter"/>
+        <contextPrompter
+                language="JavaScript"
+                implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptContextPrompter"/>
         <techStackProvider implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptTechStackService"/>
         <devFlowProvider implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptAutoDevFlow"/>
         <promptStrategy implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptPromptStrategyAdvisor"/>

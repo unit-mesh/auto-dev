@@ -14,7 +14,10 @@
         <variableContextBuilder language="Python"
                                 implementationClass="cc.unitmesh.ide.pycharm.context.PythonVariableContextBuilder"/>
 
-        <contextPrompter implementation="cc.unitmesh.ide.pycharm.provider.PythonContextPrompter"/>
+        <contextPrompter
+                language="Python"
+                implementation="cc.unitmesh.ide.pycharm.provider.PythonContextPrompter"/>
+
         <techStackProvider implementation="cc.unitmesh.ide.pycharm.provider.PythonTechStackService"/>
         <devFlowProvider implementation="cc.unitmesh.ide.pycharm.provider.PythonAutoDevFlow"/>
         <promptStrategy implementation="cc.unitmesh.ide.pycharm.provider.PythonPromptStrategyAdvisor"/>
