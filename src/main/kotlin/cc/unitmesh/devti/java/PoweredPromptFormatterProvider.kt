@@ -14,7 +14,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 
-class JavaPromptFormatterProvider(
+class PoweredPromptFormatterProvider(
     private val action: ChatBotActionType,
     private val prefixText: String,
     private val file: PsiFile?,

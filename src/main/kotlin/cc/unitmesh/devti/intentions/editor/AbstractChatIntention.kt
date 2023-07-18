@@ -2,7 +2,7 @@ package cc.unitmesh.devti.intentions.editor
 
 import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
 import cc.unitmesh.devti.gui.chat.*
-import cc.unitmesh.devti.java.JavaPromptFormatterProvider
+import cc.unitmesh.devti.java.PoweredPromptFormatterProvider
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.editor.Editor
@@ -61,7 +61,7 @@ abstract class AbstractChatIntention : IntentionAction {
             toolWindowManager.activate {
 //                val promptFormatter = IntentionPromptFormatter(promptToUse, selectedText, file.language)
 
-                val promptFormatter = JavaPromptFormatterProvider(actionType, selectedText, file, project)
+                val promptFormatter = PoweredPromptFormatterProvider(actionType, selectedText, file, project)
                 chatCodingService.handlePromptAndResponse(contentPanel, promptFormatter)
             }
         }

@@ -5,7 +5,7 @@ import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.ChatContext
-import cc.unitmesh.devti.java.JavaPromptFormatterProvider
+import cc.unitmesh.devti.java.PoweredPromptFormatterProvider
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -50,7 +50,7 @@ abstract class ChatBaseAction : AnAction() {
             )
 
             val actionType = chatCodingService.actionType
-            val promptFormatter = JavaPromptFormatterProvider(actionType, prefixText, file, project)
+            val promptFormatter = PoweredPromptFormatterProvider(actionType, prefixText, file, project)
             chatCodingService.handlePromptAndResponse(contentPanel, promptFormatter, chatContext)
         }
     }

@@ -161,7 +161,7 @@ class JavaAutoDevFlow(
             selectedControllerCode
         } else {
             runReadAction {
-                promptStrategy.advice(controllerFile.first() as PsiJavaFile, serviceName).prefixCode
+                promptStrategy.advice(controllerFile.first(), serviceName).prefixCode
             }
         }
 
