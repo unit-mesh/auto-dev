@@ -334,29 +334,10 @@ project(":idea") {
     }
 }
 
-//
-//// Configure Gradle IntelliJ Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
-//intellij {
-//    pluginName = properties("pluginName")
-//    version = properties("platformVersion")
-//    type = properties("platformType")
-//
-//    // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file.
-//    plugins = properties("platformPlugins").map { it.split(',').map(String::trim).filter(String::isNotEmpty) }
-//}
-
 // Configure Gradle Changelog Plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
 //changelog {
 //    groups.empty()
 //    repositoryUrl = properties("pluginRepositoryUrl")
-//}
-
-// Configure Gradle Qodana Plugin - read more: https://github.com/JetBrains/gradle-qodana-plugin
-//qodana {
-//    cachePath = provider { file(".qodana").canonicalPath }
-//    reportPath = provider { file("build/reports/inspections").canonicalPath }
-//    saveReport = true
-//    showReport = environment("QODANA_SHOW_REPORT").map { it.toBoolean() }.getOrElse(false)
 //}
 
 fun File.isPluginJar(): Boolean {
