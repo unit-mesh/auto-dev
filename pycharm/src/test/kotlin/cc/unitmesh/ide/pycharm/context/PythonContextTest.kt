@@ -24,6 +24,10 @@ print(p1.age) """
         val psiElement = (psiFile as PyFile).topLevelClasses[0]
         val classContext: ClassContext = ClassContextProvider(false).from(psiElement)
 
-        assertEquals(classContext.toQuery(), "");
+        assertEquals(classContext.toQuery(), """class name: _
+class fields: 
+class methods: 
+super classes: null
+""");
     }
 }
