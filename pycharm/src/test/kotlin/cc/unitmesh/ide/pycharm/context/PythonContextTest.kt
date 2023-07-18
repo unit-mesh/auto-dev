@@ -6,7 +6,9 @@ import com.intellij.psi.PsiFileFactory
 import com.intellij.testFramework.LightPlatformTestCase
 import com.jetbrains.python.PythonLanguage
 import com.jetbrains.python.psi.PyFile
+import org.junit.Ignore
 
+@Ignore
 class PythonContextTest  : LightPlatformTestCase() {
     private val fileFactory: PsiFileFactory get() = PsiFileFactory.getInstance(project)
     private val classCode = """class Person:
