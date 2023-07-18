@@ -8,7 +8,7 @@ import cc.unitmesh.devti.models.openai.OpenAIProvider
 import cc.unitmesh.devti.provider.DevFlowProvider
 import com.intellij.openapi.project.Project
 
-class DjangoAutoDevFlow : DevFlowProvider {
+class PythonAutoDevFlow : DevFlowProvider {
     override fun initContext(
         gitHubIssue: Kanban,
         openAIRunner: OpenAIProvider,

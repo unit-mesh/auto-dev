@@ -16,7 +16,6 @@ class PromptStrategyAdvisor : PromptStrategy {
         return 3072
     }
 
-
     override fun advice(prefixCode: String, suffixCode: String): FinalCodePrompt {
         val tokenCount: Int = this.countTokens(prefixCode)
         if (tokenCount < tokenLength) {
