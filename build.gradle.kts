@@ -45,19 +45,6 @@ val baseVersion = when (baseIDE) {
     else -> error("Unexpected IDE name: `$baseIDE`")
 }
 
-group = properties("pluginGroup").get()
-version = properties("pluginVersion").get()
-
-// Configure project's dependencies
-repositories {
-    mavenCentral()
-}
-
-// Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
-dependencies {
-
-}
-
 allprojects {
     apply {
         plugin("idea")
@@ -121,13 +108,10 @@ allprojects {
 }
 
 project(":plugin") {
-    apply {
-        plugin("org.jetbrains.changelog")
-    }
-
     version = prop("pluginVersion")
+
     intellij {
-        pluginName.set("autodev")
+        pluginName.set(basePluginArchiveName)
         val pluginList: MutableList<String> = mutableListOf("com.intellij.java", "Git4Idea")
         if (baseIDE == "idea") {
             pluginList += listOf(
@@ -178,23 +162,23 @@ project(":plugin") {
 
     // Add plugin sources to the plugin ZIP.
     // gradle-intellij-plugin will use it as a plugin sources if the plugin is used as a dependency
-//    val createSourceJar = task<Jar>("createSourceJar") {
-//        for (prj in pluginProjects) {
-//            from(prj.kotlin.sourceSets.main.get().kotlin) {
-//                include("**/*.java")
-//                include("**/*.kt")
-//            }
-//        }
-//
-//        destinationDirectory.set(layout.buildDirectory.dir("libs"))
-//        archiveBaseName.set(basePluginArchiveName)
-//        archiveClassifier.set("src")
-//    }
+    val createSourceJar = task<Jar>("createSourceJar") {
+        for (prj in pluginProjects) {
+            from(prj.kotlin.sourceSets.main.get().kotlin) {
+                include("**/*.java")
+                include("**/*.kt")
+            }
+        }
+
+        destinationDirectory.set(layout.buildDirectory.dir("libs"))
+        archiveBaseName.set(basePluginArchiveName)
+        archiveClassifier.set("src")
+    }
 
     tasks {
         buildPlugin {
-//            dependsOn(createSourceJar)
-//            from(createSourceJar) { into("lib/src") }
+            dependsOn(createSourceJar)
+            from(createSourceJar) { into("lib/src") }
             // Set proper name for final plugin zip.
             // Otherwise, base name is the same as gradle module name
             archiveBaseName.set(basePluginArchiveName)
@@ -212,7 +196,7 @@ project(":plugin") {
             // Otherwise, `buildSearchableOptions` task can't load the plugin and searchable options are not built.
             // Should be dropped when jar merging is implemented in `gradle-intellij-plugin` itself
             dependsOn(mergePluginJarTask)
-//            enabled = prop("enableBuildSearchableOptions").toBoolean()
+            enabled = false
         }
 
         withType<RunIdeTask> {
@@ -263,21 +247,21 @@ project(":plugin") {
 //            systemProperty("jb.consents.confirmation.enabled", "false")
 //        }
 
-        signPlugin {
-            certificateChain = environment("CERTIFICATE_CHAIN")
-            privateKey = environment("PRIVATE_KEY")
-            password = environment("PRIVATE_KEY_PASSWORD")
-        }
-
-        publishPlugin {
-            dependsOn("patchChangelog")
-            token = environment("PUBLISH_TOKEN")
-            // The pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
-            // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
-            // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
-            channels =
-                properties("pluginVersion").map { listOf(it.split('-').getOrElse(1) { "default" }.split('.').first()) }
-        }
+//        signPlugin {
+//            certificateChain = environment("CERTIFICATE_CHAIN")
+//            privateKey = environment("PRIVATE_KEY")
+//            password = environment("PRIVATE_KEY_PASSWORD")
+//        }
+//
+//        publishPlugin {
+//            dependsOn("patchChangelog")
+//            token = environment("PUBLISH_TOKEN")
+//            // The pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
+//            // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
+//            // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
+//            channels =
+//                properties("pluginVersion").map { listOf(it.split('-').getOrElse(1) { "default" }.split('.').first()) }
+//        }
     }
 }
 
@@ -286,6 +270,7 @@ project(":") {
         version.set(ideaVersion)
         plugins.set(ideaPlugins)
     }
+
     dependencies {
         implementation(libs.github.api)
         implementation(libs.dotenv)
@@ -301,7 +286,11 @@ project(":") {
             exclude(module = "jackson-annotations")
         }
 
-        implementation(libs.comate.spec.lang)
+        implementation("org.archguard.comate:spec-lang:0.2.0") {
+            exclude(module = "jackson-core")
+            exclude(module = "jackson-databind")
+            exclude(module = "jackson-annotations")
+        }
 
         implementation("com.knuddels:jtokkit:0.6.1")
 

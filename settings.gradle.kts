@@ -1,4 +1,4 @@
-rootProject.name = "AutoDev"
+rootProject.name = "intellij-autodev"
 
 include("plugin")
 
