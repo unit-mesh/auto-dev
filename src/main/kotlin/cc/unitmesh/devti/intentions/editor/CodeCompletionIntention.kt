@@ -77,14 +77,13 @@ class CodeCompletionIntention : AbstractChatIntention() {
             contentManager.removeAllContents(true)
             contentManager.addContent(content)
             toolWindowManager.activate {
-
                 chatCodingService.handlePromptAndResponse(contentPanel, object : ContextPrompter() {
                     override fun getUIPrompt(): String {
-                        return "Complete code from prompt\n$prompt"
+                        return "Complete code for follow code: \n$prompt"
                     }
 
                     override fun getRequestPrompt(): String {
-                        return "Complete code from prompt\n$prompt"
+                        return "Complete code for follow code: \n$prompt"
                     }
                 })
             }
