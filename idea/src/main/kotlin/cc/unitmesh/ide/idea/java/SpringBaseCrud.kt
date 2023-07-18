@@ -2,7 +2,6 @@ package cc.unitmesh.ide.idea.java
 
 import cc.unitmesh.devti.context.DtClass
 import cc.unitmesh.ide.idea.fromJavaFile
-import cc.unitmesh.ide.idea.java.code.SpringLayerCharacteristic
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiFile
 

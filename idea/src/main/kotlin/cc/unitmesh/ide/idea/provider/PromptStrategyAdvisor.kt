@@ -10,11 +10,12 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiJavaFile
 
 class PromptStrategyAdvisor : PromptStrategy {
+    var tokenLength = tokenLength()
+
     override fun tokenLength(): Int {
         return 3072
     }
 
-    private var tokenLength = tokenLength()
 
     override fun advice(prefixCode: String, suffixCode: String): FinalCodePrompt {
         val tokenCount: Int = this.countTokens(prefixCode)

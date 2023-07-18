@@ -1,4 +1,4 @@
-package cc.unitmesh.ide.idea.java.code
+package cc.unitmesh.ide.idea.java
 
 import com.intellij.ide.fileTemplates.FileTemplateDescriptor
 import com.intellij.ide.fileTemplates.FileTemplateManager

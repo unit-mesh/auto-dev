@@ -1,6 +1,5 @@
-package cc.unitmesh.devti
+package cc.unitmesh.ide.idea.provider
 
-import cc.unitmesh.devti.java.JavaAutoDevFlow
 import org.junit.Test
 
 class JavaAutoDevFlowTest {

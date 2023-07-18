@@ -1,7 +1,6 @@
-package cc.unitmesh.ide.idea.java.code
+package cc.unitmesh.ide.idea.java
 
 import cc.unitmesh.devti.context.DtClass
-import cc.unitmesh.ide.idea.java.SpringBaseCrud
 import cc.unitmesh.ide.idea.fromJavaFile
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.application.ApplicationManager

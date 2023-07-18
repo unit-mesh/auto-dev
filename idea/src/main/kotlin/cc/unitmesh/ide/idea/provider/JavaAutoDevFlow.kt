@@ -13,8 +13,8 @@ import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.provider.PromptStrategy
 import cc.unitmesh.devti.runconfig.AutoDevRunProfileState
 import cc.unitmesh.ide.idea.java.JavaCodeProcessor
-import cc.unitmesh.ide.idea.java.code.JavaParseUtil
-import cc.unitmesh.ide.idea.java.code.JavaSpringCodeCreator
+import cc.unitmesh.ide.idea.java.JavaParseUtil
+import cc.unitmesh.ide.idea.java.JavaSpringCodeCreator
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger

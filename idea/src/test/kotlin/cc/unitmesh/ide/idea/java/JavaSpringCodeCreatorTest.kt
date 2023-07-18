@@ -1,12 +1,11 @@
-package cc.unitmesh.devti.analysis
+package cc.unitmesh.ide.idea.java
 
-import cc.unitmesh.devti.java.code.JavaSpringCodeCreator
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiElementFactory
 import com.intellij.testFramework.LightPlatformTestCase
 import junit.framework.TestCase
 
-class JavaJavaBaseCrudTest : LightPlatformTestCase() {
+class JavaSpringCodeCreatorTest : LightPlatformTestCase() {
     private val javaFactory: PsiElementFactory get() = JavaPsiFacade.getElementFactory(project)
 
     fun testShould_create_a_new_controller() {

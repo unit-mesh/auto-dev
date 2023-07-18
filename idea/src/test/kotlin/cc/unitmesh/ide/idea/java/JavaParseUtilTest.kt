@@ -1,6 +1,5 @@
-package cc.unitmesh.devti.flow
+package cc.unitmesh.ide.idea.java
 
-import cc.unitmesh.devti.java.code.JavaParseUtil
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

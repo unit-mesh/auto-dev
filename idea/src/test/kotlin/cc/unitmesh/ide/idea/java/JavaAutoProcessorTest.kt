@@ -1,6 +1,5 @@
-package cc.unitmesh.devti.model
+package cc.unitmesh.ide.idea.java
 
-import cc.unitmesh.devti.java.code.JavaSpringCodeCreator
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiElementFactory
 import com.intellij.testFramework.LightPlatformTestCase

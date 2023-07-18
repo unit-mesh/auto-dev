@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull
 class MethodContextProvider(private val includeClassContext: Boolean, private val gatherUsages: Boolean) {
     @NotNull
     private val languageExtension: LanguageExtension<MethodContextBuilder> =
-        LanguageExtension("cc.unitmesh.devti.methodContextBuilder")
+        LanguageExtension("cc.unitmesh.methodContextBuilder")
 
     @NotNull
     private var providers: List<MethodContextBuilder> = emptyList()

@@ -1,6 +1,5 @@
-package cc.unitmesh.devti.prompting
+package cc.unitmesh.ide.idea.provider
 
-import cc.unitmesh.devti.java.prompt.PromptStrategyAdvisor
 import com.intellij.lang.java.JavaLanguage
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiElementFactory
@@ -51,7 +50,7 @@ public class BlogController {
 """.trimIndent()
 
     fun testShould_enable_get_service_code() {
-        val advisor = PromptStrategyAdvisor(project)
+        val advisor = PromptStrategyAdvisor()
         advisor.tokenLength = 90
 
         val psiClass = javaFactory.createClassFromText(originCode, null)
@@ -74,7 +73,7 @@ public class BlogController {
     }
 
     fun testShould_enable_get_field_reference() {
-        val advisor = PromptStrategyAdvisor(project)
+        val advisor = PromptStrategyAdvisor()
         advisor.tokenLength = 30
 
         val psiClass = javaFactory.createClassFromText(originCode, null)
@@ -91,7 +90,7 @@ public class BlogController {
     }
 
     fun testShould_get_without_imports() {
-        val advisor = PromptStrategyAdvisor(project)
+        val advisor = PromptStrategyAdvisor()
         advisor.tokenLength = 120
 
         val psiFile = fileFactory.createFileFromText(JavaLanguage.INSTANCE, classCode)

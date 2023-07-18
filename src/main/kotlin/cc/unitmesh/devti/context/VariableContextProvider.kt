@@ -11,7 +11,7 @@ class VariableContextProvider(
     private val gatherUsages: Boolean
 ) {
     private val languageExtension: LanguageExtension<VariableContextBuilder> =
-        LanguageExtension("cc.unitmesh.devti.variableContextBuilder")
+        LanguageExtension("cc.unitmesh.variableContextBuilder")
 
     private val providers: List<VariableContextBuilder>
 

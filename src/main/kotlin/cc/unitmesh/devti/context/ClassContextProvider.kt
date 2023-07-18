@@ -6,7 +6,7 @@ import com.intellij.lang.LanguageExtension
 import com.intellij.psi.PsiElement
 
 class ClassContextProvider(private val gatherUsages: Boolean) {
-    private val languageExtension = LanguageExtension<ClassContextBuilder>("cc.unitmesh.devti.classContextBuilder")
+    private val languageExtension = LanguageExtension<ClassContextBuilder>("cc.unitmesh.classContextBuilder")
     private val providers: List<ClassContextBuilder>
 
     init {
