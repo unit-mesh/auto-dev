@@ -33,6 +33,7 @@ val ideaPlugins = listOf("com.intellij.java", "org.jetbrains.plugins.gradle")
 val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
 
 val javaPlugin = "com.intellij.java"
+val gradlePlugin = "org.jetbrains.plugins.gradle"
 val baseIDE = prop("baseIDE")
 val platformVersion = prop("globalPlatformVersion").toInt()
 val ideaVersion = prop("ideaVersion")

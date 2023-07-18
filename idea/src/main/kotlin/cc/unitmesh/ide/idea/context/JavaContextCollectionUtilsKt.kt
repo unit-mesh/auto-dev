@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.java.context
+package cc.unitmesh.ide.idea.context
 
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod

@@ -69,24 +69,12 @@
         <!-- TODO: add build system extension point -->
     </extensionPoints>
 
-    <extensions defaultExtensionNs="cc.unitmesh.devti">
+    <extensions defaultExtensionNs="cc.unitmesh">
         <aiAssistantIntention>
             <className>cc.unitmesh.devti.intentions.editor.CodeCompletionIntention</className>
             <categoryKey>intention.category.llm</categoryKey>
         </aiAssistantIntention>
     </extensions>
-
-    <extensions defaultExtensionNs="cc.unitmesh.devti">
-        <classContextBuilder language="JAVA"
-                             implementationClass="cc.unitmesh.devti.java.context.JavaClassContextBuilder"/>
-        <methodContextBuilder language="JAVA"
-                              implementationClass="cc.unitmesh.devti.java.context.JavaMethodContextBuilder"/>
-        <fileContextBuilder language="JAVA"
-                            implementationClass="cc.unitmesh.devti.java.context.JavaFileContextBuilder"/>
-        <variableContextBuilder language="JAVA"
-                                implementationClass="cc.unitmesh.devti.java.context.JavaVariableContextBuilder"/>
-    </extensions>
-
 
     <actions>
         <group id="org.intellij.sdk.action.GroupedActions" popup="true" text="AutoDev" description="AutoDev">

@@ -3,4 +3,15 @@
         <plugin id="com.intellij.modules.java"/>
         <plugin id="org.jetbrains.plugins.gradle"/>
     </dependencies>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <classContextBuilder language="JAVA"
+                             implementationClass="cc.unitmesh.ide.idea.context.JavaClassContextBuilder"/>
+        <methodContextBuilder language="JAVA"
+                              implementationClass="cc.unitmesh.ide.idea.context.JavaMethodContextBuilder"/>
+        <fileContextBuilder language="JAVA"
+                            implementationClass="cc.unitmesh.ide.idea.context.JavaFileContextBuilder"/>
+        <variableContextBuilder language="JAVA"
+                                implementationClass="cc.unitmesh.ide.idea.context.JavaVariableContextBuilder"/>
+    </extensions>
 </idea-plugin>
