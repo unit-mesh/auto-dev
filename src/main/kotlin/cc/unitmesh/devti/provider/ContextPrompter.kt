@@ -28,8 +28,6 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
         private val EP_NAME: ExtensionPointName<ContextPrompter> =
             ExtensionPointName.create("cc.unitmesh.contextPrompter")
 
-        private val logger = Logger.getInstance(ContextPrompter::class.java)
-
         fun prompter(lang: String): ContextPrompter? {
             val extensionList = EP_NAME.extensionList
             val contextPrompter = extensionList.filter {

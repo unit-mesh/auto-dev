@@ -15,7 +15,6 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import org.jetbrains.annotations.NonNls
 
-
 class AutoDevCommandRunner : GenericProgramRunner<RunnerSettings>() {
     companion object {
         private val log: Logger = logger<AutoDevRunProfileState>()

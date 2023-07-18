@@ -192,7 +192,7 @@ examples:
     }
 
     private fun addTestContext() {
-        val techStackProvider = TechStackProvider.stack()
+        val techStackProvider = TechStackProvider.stack(file?.language?.displayName ?: "")
         val techStacks = techStackProvider!!.prepareLibrary()
         when {
             isController -> {

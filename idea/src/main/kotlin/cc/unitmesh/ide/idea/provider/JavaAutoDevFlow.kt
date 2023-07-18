@@ -24,7 +24,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiJavaFile
 import kotlinx.coroutines.runBlocking
 
-class JavaAutoDevFlow : DevFlowProvider {
+class JavaAutoDevFlow : DevFlowProvider() {
     private val promptTemplate = PromptTemplate()
     private var selectedControllerName = ""
     private var selectedControllerCode = ""
@@ -46,7 +46,7 @@ class JavaAutoDevFlow : DevFlowProvider {
         this.connector = aiRunner
         this.ui = component
         processor = project.service<JavaSpringCodeCreator>()
-        promptStrategy = PromptStrategy.strategy()!!
+        promptStrategy = PromptStrategy.strategy("java")!!
     }
 
     /**

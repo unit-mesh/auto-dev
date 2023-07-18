@@ -18,8 +18,15 @@
                 language="Python"
                 implementation="cc.unitmesh.ide.pycharm.provider.PythonContextPrompter"/>
 
-        <techStackProvider implementation="cc.unitmesh.ide.pycharm.provider.PythonTechStackService"/>
-        <devFlowProvider implementation="cc.unitmesh.ide.pycharm.provider.PythonAutoDevFlow"/>
-        <promptStrategy implementation="cc.unitmesh.ide.pycharm.provider.PythonPromptStrategyAdvisor"/>
+        <techStackProvider
+                language="Python"
+                implementation="cc.unitmesh.ide.pycharm.provider.PythonTechStackService"/>
+
+        <devFlowProvider
+                language="Python"
+                implementation="cc.unitmesh.ide.pycharm.provider.PythonAutoDevFlow"/>
+        <promptStrategy
+                language="Python"
+                implementation="cc.unitmesh.ide.pycharm.provider.PythonPromptStrategyAdvisor"/>
     </extensions>
 </idea-plugin>

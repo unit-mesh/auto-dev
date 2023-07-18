@@ -4,7 +4,7 @@ import cc.unitmesh.devti.prompting.model.FinalCodePrompt
 import cc.unitmesh.devti.provider.PromptStrategy
 import com.intellij.psi.PsiElement
 
-class PythonPromptStrategyAdvisor : PromptStrategy {
+class PythonPromptStrategyAdvisor : PromptStrategy() {
     override fun advice(prefixCode: String, suffixCode: String): FinalCodePrompt {
         return FinalCodePrompt("", "")
     }

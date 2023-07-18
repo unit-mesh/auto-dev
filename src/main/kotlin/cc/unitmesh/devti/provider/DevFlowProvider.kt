@@ -6,20 +6,42 @@ import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.models.openai.OpenAIProvider
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
+import com.intellij.serviceContainer.LazyExtensionInstance
+import com.intellij.util.xmlb.annotations.Attribute
 
-interface DevFlowProvider {
-    fun initContext(kanban: Kanban, aiRunner: OpenAIProvider, component: ChatCodingComponent, project: Project)
+abstract class DevFlowProvider : LazyExtensionInstance<ContextPrompter>() {
+    @Attribute("language")
+    var language: String? = null
 
-    fun getOrCreateStoryDetail(id: String): String
-    fun updateOrCreateDtoAndEntity(storyDetail: String)
-    fun fetchSuggestEndpoint(storyDetail: String): TargetEndpoint
-    fun updateOrCreateEndpointCode(target: TargetEndpoint, storyDetail: String)
-    fun updateOrCreateServiceAndRepository()
+    @Attribute("implementationClass")
+    var implementationClass: String? = null
+
+    override fun getImplementationClassName(): String? {
+        return implementationClass
+    }
+
+    abstract fun initContext(kanban: Kanban, aiRunner: OpenAIProvider, component: ChatCodingComponent, project: Project)
+    abstract fun getOrCreateStoryDetail(id: String): String
+    abstract fun updateOrCreateDtoAndEntity(storyDetail: String)
+    abstract fun fetchSuggestEndpoint(storyDetail: String): TargetEndpoint
+    abstract fun updateOrCreateEndpointCode(target: TargetEndpoint, storyDetail: String)
+    abstract fun updateOrCreateServiceAndRepository()
 
     companion object {
         private val EP_NAME: ExtensionPointName<DevFlowProvider> =
             ExtensionPointName.create("cc.unitmesh.devFlowProvider")
 
-        fun flowProvider(): DevFlowProvider? = EP_NAME.extensionList.firstOrNull()
+        fun flowProvider(lang: String): DevFlowProvider? {
+            val extensionList = EP_NAME.extensionList
+            val contextPrompter = extensionList.filter {
+                it.language?.lowercase() == lang.lowercase()
+            }
+
+            return if (contextPrompter.isEmpty()) {
+                extensionList.first()
+            } else {
+                contextPrompter.first()
+            }
+        }
     }
 }

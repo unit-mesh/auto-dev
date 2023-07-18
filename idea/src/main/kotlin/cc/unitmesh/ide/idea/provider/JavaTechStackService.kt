@@ -7,7 +7,7 @@ import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.project.ProjectManager
 import org.jetbrains.plugins.gradle.util.GradleConstants
 
-class JavaTechStackService: TechStackProvider {
+class JavaTechStackService: TechStackProvider() {
     override fun prepareLibrary(): TestStack {
         val project = ProjectManager.getInstance().defaultProject
         val projectData = ProjectDataManager.getInstance().getExternalProjectData(

@@ -18,6 +18,7 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -47,7 +48,8 @@ class AutoDevRunProfileState(
         val chatCodingService = ChatCodingService(ChatBotActionType.REVIEW)
         val contentPanel = ChatCodingComponent(chatCodingService)
 
-        val flowProvider = DevFlowProvider.flowProvider()
+        // TODO: support other language
+        val flowProvider = DevFlowProvider.flowProvider("java")
         if (flowProvider == null) {
             logger<AutoDevRunProfileState>().error("current Language don't implementation DevFlow")
             return null

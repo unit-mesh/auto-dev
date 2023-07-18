@@ -9,7 +9,7 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiJavaFile
 
-class PromptStrategyAdvisor : PromptStrategy {
+class PromptStrategyAdvisor : PromptStrategy() {
     var tokenLength = tokenLength()
 
     override fun tokenLength(): Int {
