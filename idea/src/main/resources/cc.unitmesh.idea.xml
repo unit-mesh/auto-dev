@@ -17,6 +17,7 @@
         <contextPrompter implementation="cc.unitmesh.ide.idea.provider.JavaContextPrompter"/>
         <techStackProvider implementation="cc.unitmesh.ide.idea.provider.JavaTechStackService"/>
         <devFlowProvider implementation="cc.unitmesh.ide.idea.provider.JavaAutoDevFlow"/>
+        <promptStrategy implementation="cc.unitmesh.ide.idea.provider.PromptStrategyAdvisor"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

@@ -34,7 +34,7 @@ class JavaAutoDevFlow : DevFlowProvider {
     private lateinit var connector: OpenAIProvider
     private lateinit var ui: ChatCodingComponent
     private lateinit var processor: JavaSpringCodeCreator
-    private val promptStrategy = PromptStrategy.strategy()!!
+    private lateinit var promptStrategy: PromptStrategy
 
     override fun initContext(
         gitHubIssue: Kanban,
@@ -46,6 +46,7 @@ class JavaAutoDevFlow : DevFlowProvider {
         this.connector = openAIRunner
         this.ui = contentPanel
         processor = project.service<JavaSpringCodeCreator>()
+        promptStrategy = PromptStrategy.strategy()!!
     }
 
     /**
