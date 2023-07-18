@@ -1,0 +1,20 @@
+<idea-plugin package="cc.unitmesh" xmlns:xi="http://www.w3.org/2001/XInclude" allow-bundled-update="true">
+    <id>cc.unitmesh.devti</id>
+    <name>AutoDev</name>
+    <vendor>Phodal Huang</vendor>
+
+    <change-notes><![CDATA[
+        todo
+    ]]>
+    </change-notes>
+
+    <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
+         on how to target different products -->
+
+    <xi:include href="/META-INF/autodev-core.xml" xpointer="xpointer(/idea-plugin/*)"/>
+
+    <content>
+        <module name="cc.unitmesh.ide.pycharm"/>
+        <module name="cc.unitmesh.ide.idea"/>
+    </content>
+</idea-plugin>

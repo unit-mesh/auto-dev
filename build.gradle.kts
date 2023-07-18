@@ -54,25 +54,7 @@ repositories {
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
-//    implementation(project(":python"))
 
-    implementation(libs.github.api)
-    implementation(libs.dotenv)
-
-    implementation(libs.bundles.openai)
-    implementation(libs.bundles.markdown)
-
-    implementation(libs.kotlinx.serialization.json)
-    // jackson-module-kotlin
-    implementation(libs.jackson.module.kotlin)
-
-    implementation(libs.comate.spec.lang)
-
-    implementation("com.knuddels:jtokkit:0.6.1")
-
-    // junit
-    testImplementation("junit:junit:4.13.2")
-    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.9.3")
 }
 
 allprojects {
@@ -128,9 +110,17 @@ allprojects {
         prepareSandbox { enabled = false }
         buildSearchableOptions { enabled = false }
     }
+
+    val testOutput = configurations.create("testOutput")
+
+    dependencies {
+        compileOnly(kotlin("stdlib-jdk8"))
+        testOutput(sourceSets.getByName("test").output.classesDirs)
+    }
 }
 
 project(":plugin") {
+    version = prop("pluginVersion")
     intellij {
         pluginName.set("autodev")
         val pluginList: MutableList<String> = mutableListOf()
@@ -248,6 +238,37 @@ project(":plugin") {
     }
 }
 
+project(":") {
+    dependencies {
+        implementation(libs.github.api)
+        implementation(libs.dotenv)
+
+        implementation(libs.bundles.openai)
+        implementation(libs.bundles.markdown)
+
+        implementation(libs.kotlinx.serialization.json)
+        // jackson-module-kotlin
+        implementation(libs.jackson.module.kotlin)
+
+        implementation(libs.comate.spec.lang)
+
+        implementation("com.knuddels:jtokkit:0.6.1")
+
+        // junit
+        testImplementation("junit:junit:4.13.2")
+        testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.9.3")
+    }
+
+    task("resolveDependencies") {
+        doLast {
+            rootProject.allprojects
+                .map { it.configurations }
+                .flatMap { it.filter { c -> c.isCanBeResolved } }
+                .forEach { it.resolve() }
+        }
+    }
+
+}
 project(":pycharm") {
     intellij {
         version.set(pycharmVersion)
