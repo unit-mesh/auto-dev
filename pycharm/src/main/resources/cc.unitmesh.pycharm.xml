@@ -1,2 +1,9 @@
 <idea-plugin package="cc.unitmesh.ide.pycharm">
+    <extensions defaultExtensionNs="cc.unitmesh">
+
+        <contextPrompter implementation="cc.unitmesh.ide.pycharm.provider.PythonContextPrompter"/>
+        <techStackProvider implementation="cc.unitmesh.ide.pycharm.provider.PythonTechStackService"/>
+        <devFlowProvider implementation="cc.unitmesh.ide.pycharm.provider.DjangoAutoDevFlow"/>
+        <promptStrategy implementation="cc.unitmesh.ide.pycharm.provider.PythonPromptStrategyAdvisor"/>
+    </extensions>
 </idea-plugin>
