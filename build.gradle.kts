@@ -27,12 +27,11 @@ fun prop(name: String): String =
 
 val basePluginArchiveName = "intellij-autodev"
 
-val pycharmPlugins: List<String> = listOf()
+val pycharmPlugins: List<String> = listOf("PythonCore")
 val ideaPlugins = listOf("Git4Idea", "com.intellij.java", "org.jetbrains.plugins.gradle")
 val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
 
 val javaPlugin = "com.intellij.java"
-val gradlePlugin = "org.jetbrains.plugins.gradle"
 val baseIDE = prop("baseIDE")
 val platformVersion = prop("globalPlatformVersion").toInt()
 val ideaVersion = prop("ideaVersion")
@@ -43,6 +42,7 @@ val javaScriptPlugin = "JavaScript"
 val baseVersion = when (baseIDE) {
     "idea" -> ideaVersion
     "pycharm" -> pycharmVersion
+//    "webstorm" -> prop("webstormVersion")
     else -> error("Unexpected IDE name: `$baseIDE`")
 }
 

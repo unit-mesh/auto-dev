@@ -1,4 +1,5 @@
 <idea-plugin package="cc.unitmesh.ide.webstorm">
+    <!--suppress PluginXmlValidity -->
     <dependencies>
         <plugin id="JavaScript"/>
     </dependencies>

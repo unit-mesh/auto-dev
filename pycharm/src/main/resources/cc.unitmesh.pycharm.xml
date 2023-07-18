@@ -1,5 +1,18 @@
 <idea-plugin package="cc.unitmesh.ide.pycharm">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+        <plugin id="com.intellij.modules.python"/>
+    </dependencies>
+
     <extensions defaultExtensionNs="cc.unitmesh">
+        <classContextBuilder language="Python"
+                             implementationClass="cc.unitmesh.ide.pycharm.context.PythonClassContextBuilder"/>
+        <fileContextBuilder language="Python"
+                            implementationClass="cc.unitmesh.ide.pycharm.context.PythonFileContextBuilder"/>
+        <methodContextBuilder language="Python"
+                              implementationClass="cc.unitmesh.ide.pycharm.context.PythonMethodContextBuilder"/>
+        <variableContextBuilder language="Python"
+                                implementationClass="cc.unitmesh.ide.pycharm.context.PythonVariableContextBuilder"/>
 
         <contextPrompter implementation="cc.unitmesh.ide.pycharm.provider.PythonContextPrompter"/>
         <techStackProvider implementation="cc.unitmesh.ide.pycharm.provider.PythonTechStackService"/>

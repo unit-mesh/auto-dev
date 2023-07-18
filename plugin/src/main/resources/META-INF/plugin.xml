@@ -19,8 +19,10 @@
 
     <xi:include href="/META-INF/autodev-core.xml" xpointer="xpointer(/idea-plugin/*)"/>
 
+    <!--suppress PluginXmlValidity -->
     <content>
         <module name="cc.unitmesh.pycharm"/>
         <module name="cc.unitmesh.idea"/>
+        <module name="cc.unitmesh.webstorm"/>
     </content>
 </idea-plugin>

@@ -1,4 +1,5 @@
 <idea-plugin package="cc.unitmesh.ide.idea">
+    <!--suppress PluginXmlValidity -->
     <dependencies>
         <plugin id="com.intellij.modules.java"/>
         <plugin id="org.jetbrains.plugins.gradle"/>
