@@ -10,6 +10,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/idea" />
+            <option value="$PROJECT_DIR$/plugin" />
             <option value="$PROJECT_DIR$/pycharm" />
           </set>
         </option>
