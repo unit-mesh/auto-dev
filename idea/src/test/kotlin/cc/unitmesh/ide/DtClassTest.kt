@@ -1,6 +1,6 @@
 package cc.unitmesh.ide
 
-import cc.unitmesh.devti.context.DtClass
+import cc.unitmesh.devti.context.model.DtClass
 import cc.unitmesh.ide.idea.fromPsi
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiElementFactory

@@ -16,7 +16,7 @@ class MethodContextProvider(private val includeClassContext: Boolean, private va
 
     init {
         val registeredLanguages = Language.getRegisteredLanguages()
-        providers = registeredLanguages.mapNotNull { languageExtension.forLanguage(it) }
+        providers = registeredLanguages.mapNotNull(languageExtension::forLanguage)
     }
 
     @NotNull

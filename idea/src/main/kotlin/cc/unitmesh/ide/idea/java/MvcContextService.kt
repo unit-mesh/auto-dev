@@ -1,6 +1,6 @@
 package cc.unitmesh.ide.idea.java
 
-import cc.unitmesh.devti.context.DtClass
+import cc.unitmesh.devti.context.model.DtClass
 import cc.unitmesh.ide.idea.formatPsi
 import cc.unitmesh.ide.idea.fromJavaFile
 import com.intellij.openapi.application.runReadAction

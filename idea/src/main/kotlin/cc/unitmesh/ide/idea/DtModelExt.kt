@@ -1,9 +1,9 @@
 package cc.unitmesh.ide.idea
 
-import cc.unitmesh.devti.context.DtClass
-import cc.unitmesh.devti.context.DtField
-import cc.unitmesh.devti.context.DtMethod
-import cc.unitmesh.devti.context.DtParameter
+import cc.unitmesh.devti.context.model.DtClass
+import cc.unitmesh.devti.context.model.DtField
+import cc.unitmesh.devti.context.model.DtMethod
+import cc.unitmesh.devti.context.model.DtParameter
 import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiFile

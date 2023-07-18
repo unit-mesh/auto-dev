@@ -11,9 +11,7 @@ class ClassContextProvider(private val gatherUsages: Boolean) {
 
     init {
         val registeredLanguages = Language.getRegisteredLanguages()
-        providers = registeredLanguages.mapNotNull { language ->
-            languageExtension.forLanguage(language)
-        }
+        providers = registeredLanguages.mapNotNull(languageExtension::forLanguage)
     }
 
     fun from(psiElement: PsiElement): ClassContext {

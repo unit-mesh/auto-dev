@@ -1,6 +1,6 @@
 package cc.unitmesh.ide.pycharm.provider
 
-import cc.unitmesh.devti.context.DtClass
+import cc.unitmesh.devti.context.model.DtClass
 import cc.unitmesh.devti.flow.kanban.Kanban
 import cc.unitmesh.devti.flow.model.TargetEndpoint
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent

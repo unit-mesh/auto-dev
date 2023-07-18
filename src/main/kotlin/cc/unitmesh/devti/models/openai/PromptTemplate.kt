@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.models.openai
 
-import cc.unitmesh.devti.context.DtClass
+import cc.unitmesh.devti.context.model.DtClass
 import cc.unitmesh.devti.flow.model.SimpleProjectInfo
 import cc.unitmesh.devti.prompting.model.FinalCodePrompt
 import cc.unitmesh.devti.prompting.model.PromptConfig

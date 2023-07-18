@@ -17,7 +17,7 @@ class VariableContextProvider(
 
     init {
         val registeredLanguages = Language.getRegisteredLanguages()
-        providers = registeredLanguages.mapNotNull { languageExtension.forLanguage(it) }
+        providers = registeredLanguages.mapNotNull(languageExtension::forLanguage)
     }
 
     fun from(psiElement: PsiElement): VariableContext {
