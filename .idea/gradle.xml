@@ -12,6 +12,7 @@
             <option value="$PROJECT_DIR$/idea" />
             <option value="$PROJECT_DIR$/plugin" />
             <option value="$PROJECT_DIR$/pycharm" />
+            <option value="$PROJECT_DIR$/webstorm" />
           </set>
         </option>
       </GradleProjectSettings>

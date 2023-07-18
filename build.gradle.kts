@@ -38,6 +38,8 @@ val platformVersion = prop("globalPlatformVersion").toInt()
 val ideaVersion = prop("ideaVersion")
 val pycharmVersion = prop("pycharmVersion")
 
+val javaScriptPlugin = "JavaScript"
+
 val baseVersion = when (baseIDE) {
     "idea" -> ideaVersion
     "pycharm" -> pycharmVersion
@@ -282,6 +284,15 @@ project(":idea") {
     intellij {
         version.set(ideaVersion)
         plugins.set(ideaPlugins)
+    }
+    dependencies {
+        implementation(project(":"))
+    }
+}
+
+project(":webstorm") {
+    intellij {
+        plugins.set(listOf(javaScriptPlugin))
     }
     dependencies {
         implementation(project(":"))

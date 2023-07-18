@@ -4,5 +4,6 @@ include("plugin")
 
 include(
     "pycharm",
-    "idea"
+    "idea",
+    "webstorm",
 )
