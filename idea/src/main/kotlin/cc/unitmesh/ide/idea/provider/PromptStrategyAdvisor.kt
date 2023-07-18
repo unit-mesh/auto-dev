@@ -3,6 +3,7 @@ package cc.unitmesh.ide.idea.provider
 import cc.unitmesh.devti.context.DtClass
 import cc.unitmesh.devti.provider.PromptStrategy
 import cc.unitmesh.devti.prompting.model.FinalCodePrompt
+import cc.unitmesh.ide.idea.fromJavaFile
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement

@@ -1,4 +1,4 @@
-package cc.unitmesh.ide.idea.java
+package cc.unitmesh.ide.idea
 
 import cc.unitmesh.devti.context.DtClass
 import cc.unitmesh.devti.context.DtField

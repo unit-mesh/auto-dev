@@ -25,6 +25,6 @@ interface DevFlowProvider {
         private val EP_NAME: ExtensionPointName<DevFlowProvider> =
             ExtensionPointName.create("cc.unitmesh.devFlowProvider")
 
-        fun flowProvider(): DevFlowProvider? = EP_NAME.extensionList.asSequence().firstOrNull()
+        fun flowProvider(): DevFlowProvider? = EP_NAME.extensionList.firstOrNull()
     }
 }
