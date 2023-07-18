@@ -1,7 +1,7 @@
 # AutoDev
 
 <p align="center">
-  <img src="src/main/resources/META-INF/pluginIcon.svg" width="64px" height="64px" />
+  <img src="plugin/src/main/resources/META-INF/pluginIcon.svg" width="64px" height="64px" />
 </p>
 
 [![Build](https://github.com/unit-mesh/auto-dev/actions/workflows/build.yml/badge.svg)](https://github.com/unit-mesh/auto-dev/actions/workflows/build.yml)
@@ -35,7 +35,7 @@ features:
 
 ### CodeCompletion mode
 
-Right click on the code editor, select `AutoDev` -> `CodeCompletion` -> `CodeComplete`
+Right-click on the code editor, select `AutoDev` -> `CodeCompletion` -> `CodeComplete`
 
 ![Code completion](https://unitmesh.cc/auto-dev/completion-mode.png)
 
