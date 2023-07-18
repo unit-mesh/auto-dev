@@ -25,11 +25,9 @@
         <toolWindow id="DevTiFlow" secondary="true" icon="AllIcons.Toolwindows.WebToolWindow" anchor="right"
                     factoryClass="cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory"/>
 
-        <applicationService serviceImplementation="cc.unitmesh.devti.models.ConnectorFactory"/>
-
         <intentionAction>
             <className>cc.unitmesh.devti.intentions.AIAssistantIntention</className>
-            <categoryKey>intention.category.llm</categoryKey>
+            <categoryKey>Intention.category.llm</categoryKey>
         </intentionAction>
     </extensions>
 
@@ -40,19 +38,26 @@
             <with tag="className" implements="com.intellij.codeInsight.intention.IntentionAction"/>
         </extensionPoint>
 
-        <extensionPoint name="classContextBuilder" beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+        <extensionPoint qualifiedName="cc.unitmesh.classContextBuilder"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
             <with attribute="implementationClass"
                   implements="cc.unitmesh.devti.context.builder.ClassContextBuilder"/>
         </extensionPoint>
-        <extensionPoint name="methodContextBuilder" beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+
+        <extensionPoint qualifiedName="cc.unitmesh.methodContextBuilder"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
             <with attribute="implementationClass"
                   implements="cc.unitmesh.devti.context.builder.MethodContextBuilder"/>
         </extensionPoint>
-        <extensionPoint name="fileContextBuilder" beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+
+        <extensionPoint qualifiedName="cc.unitmesh.fileContextBuilder"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
             <with attribute="implementationClass"
                   implements="cc.unitmesh.devti.context.builder.FileContextBuilder"/>
         </extensionPoint>
-        <extensionPoint name="variableContextBuilder" beanClass="com.intellij.lang.LanguageExtensionPoint"
+
+        <extensionPoint qualifiedName="cc.unitmesh.variableContextBuilder"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint"
                         dynamic="true">
             <with attribute="implementationClass"
                   implements="cc.unitmesh.devti.context.builder.VariableContextBuilder"/>
@@ -61,6 +66,7 @@
         <extensionPoint qualifiedName="cc.unitmesh.prompterFormatterProvider"
                         interface="cc.unitmesh.devti.gui.chat.PromptFormatterProvider"
                         dynamic="true"/>
+
         <extensionPoint qualifiedName="cc.unitmesh.crudFlowProvider"
                         interface="cc.unitmesh.devti.flow.base.CrudFlowProvider"
                         dynamic="true"/>
@@ -70,7 +76,7 @@
     <extensions defaultExtensionNs="cc.unitmesh">
         <aiAssistantIntention>
             <className>cc.unitmesh.devti.intentions.editor.CodeCompletionIntention</className>
-            <categoryKey>intention.category.llm</categoryKey>
+            <categoryKey>Intention.category.llm</categoryKey>
         </aiAssistantIntention>
     </extensions>
 

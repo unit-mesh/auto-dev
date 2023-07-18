@@ -6,7 +6,9 @@ import cc.unitmesh.devti.models.openai.OpenAIProvider
 import cc.unitmesh.devti.settings.DEFAULT_AI_ENGINE
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.Service
 
+@Service
 class ConnectorFactory {
     private val aiEngine: String = AutoDevSettingsState.getInstance().aiEngine ?: DEFAULT_AI_ENGINE
     fun connector(): CodeCopilotProvider {
