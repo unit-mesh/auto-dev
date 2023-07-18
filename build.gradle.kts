@@ -27,17 +27,19 @@ fun prop(name: String): String =
 
 val basePluginArchiveName = "intellij-autodev"
 
-val pycharmPlugins: List<String> = listOf("PythonCore")
-val ideaPlugins = listOf("Git4Idea", "com.intellij.java", "org.jetbrains.plugins.gradle")
-val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
+val javaScriptPlugins = listOf("JavaScript")
+val pycharmPlugins = listOf("PythonCore")
+val javaPlugins = listOf("com.intellij.java")
+val kotlinPlugins = listOf("org.jetbrains.kotlin")
 
-val javaPlugin = "com.intellij.java"
+val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
+val ideaPlugins = listOf("Git4Idea", "com.intellij.java", "org.jetbrains.plugins.gradle")
+
 val baseIDE = prop("baseIDE")
 val platformVersion = prop("globalPlatformVersion").toInt()
 val ideaVersion = prop("ideaVersion")
 val pycharmVersion = prop("pycharmVersion")
 
-val javaScriptPlugin = "JavaScript"
 
 val baseVersion = when (baseIDE) {
     "idea" -> ideaVersion
@@ -115,9 +117,7 @@ project(":plugin") {
         pluginName.set(basePluginArchiveName)
         val pluginList: MutableList<String> = mutableListOf("Git4Idea")
         if (baseIDE == "idea") {
-            pluginList += listOf(
-                javaPlugin,
-            )
+            pluginList += javaPlugins
         }
         plugins.set(pluginList)
     }
@@ -292,7 +292,7 @@ project(":idea") {
 
 project(":webstorm") {
     intellij {
-        plugins.set(listOf(javaScriptPlugin))
+        plugins.set(javaScriptPlugins)
     }
     dependencies {
         implementation(project(":"))
