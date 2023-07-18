@@ -13,7 +13,7 @@
 
 features:
 
-- languages support: Java, Kotlin (maybe ?)
+- languages support: Java, Kotlin, Python, JavaScript, or others...
 - Auto development mode. With DevTi Protocol (like `devti://story/github/1102`) will auto generate
   Controller-Service-Model code.
 - Smart code completion. Based on your code context like (Controller, Service `import`), AutoDev will suggest you the
