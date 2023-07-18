@@ -1,8 +1,6 @@
 <idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude" allow-bundled-update="true">
     <resource-bundle>messages.AutoDevBundle</resource-bundle>
-
     <depends>com.intellij.modules.platform</depends>
-    <depends>com.intellij.java</depends>
     <depends>Git4Idea</depends>
 
     <extensions defaultExtensionNs="com.intellij">
