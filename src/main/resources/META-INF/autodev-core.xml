@@ -1,4 +1,4 @@
-<idea-plugin>
+<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude" allow-bundled-update="true">
     <resource-bundle>messages.AutoDevBundle</resource-bundle>
 
     <depends>com.intellij.modules.platform</depends>
@@ -34,7 +34,8 @@
     </extensions>
 
     <extensionPoints>
-        <extensionPoint name="aiAssistantIntention" beanClass="com.intellij.codeInsight.intention.IntentionActionBean"
+        <extensionPoint qualifiedName="cc.unitmesh.aiAssistantIntention"
+                        beanClass="com.intellij.codeInsight.intention.IntentionActionBean"
                         dynamic="true">
             <with tag="className" implements="com.intellij.codeInsight.intention.IntentionAction"/>
         </extensionPoint>

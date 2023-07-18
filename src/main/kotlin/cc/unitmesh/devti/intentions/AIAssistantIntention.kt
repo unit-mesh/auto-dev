@@ -64,7 +64,7 @@ class AIAssistantIntention : IntentionAction, Iconable {
 
     companion object {
         val EP_NAME: ExtensionPointName<IntentionActionBean> =
-            ExtensionPointName<IntentionActionBean>("cc.unitmesh.devti.aiAssistantIntention")
+            ExtensionPointName<IntentionActionBean>("cc.unitmesh.aiAssistantIntention")
     }
 }
 
