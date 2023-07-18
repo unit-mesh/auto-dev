@@ -2,6 +2,7 @@ package cc.unitmesh.ide.pycharm.context
 
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.builder.ClassContextBuilder
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.jetbrains.python.psi.PyClass
@@ -9,6 +10,9 @@ import com.jetbrains.python.psi.PyFunction
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 class PythonClassContextBuilder : ClassContextBuilder {
+    companion object {
+        val logger = Logger.getInstance(PythonClassContextBuilder::class.java)
+    }
     override fun getClassContext(psiElement: PsiElement, gatherUsages: Boolean): ClassContext? {
         if (psiElement !is PyClass) {
             return null

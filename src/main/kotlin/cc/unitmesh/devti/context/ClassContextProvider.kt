@@ -3,6 +3,7 @@ package cc.unitmesh.devti.context
 import cc.unitmesh.devti.context.builder.ClassContextBuilder
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageExtension
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.psi.PsiElement
 
 class ClassContextProvider(private val gatherUsages: Boolean) {
@@ -12,6 +13,10 @@ class ClassContextProvider(private val gatherUsages: Boolean) {
     init {
         val registeredLanguages = Language.getRegisteredLanguages()
         providers = registeredLanguages.mapNotNull(languageExtension::forLanguage)
+    }
+
+    companion object {
+        val logger = Logger.getInstance(ClassContextProvider::class.java)
     }
 
     fun from(psiElement: PsiElement): ClassContext {
