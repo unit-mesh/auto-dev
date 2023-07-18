@@ -28,7 +28,7 @@ fun prop(name: String): String =
 val basePluginArchiveName = "intellij-autodev"
 
 val pycharmPlugins: List<String> = listOf()
-val ideaPlugins = listOf("com.intellij.java", "org.jetbrains.plugins.gradle")
+val ideaPlugins = listOf("com.intellij.java", "org.jetbrains.plugins.gradle", "Git4Idea")
 
 val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
 

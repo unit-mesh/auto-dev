@@ -34,7 +34,7 @@ class ChatCodingService(var actionType: ChatBotActionType) {
 
     fun handlePromptAndResponse(
         ui: ChatCodingComponent,
-        prompt: PromptFormatter,
+        prompt: PromptFormatterProvider,
         context: ChatContext? = null
     ) {
         ui.add(prompt.getUIPrompt(), true)

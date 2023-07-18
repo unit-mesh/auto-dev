@@ -5,13 +5,11 @@ import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.ChatContext
-import cc.unitmesh.devti.java.prompt.JavaPromptFormatter
+import cc.unitmesh.devti.java.prompt.JavaPromptFormatterProvider
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
-import com.intellij.psi.PsiFile
 
 abstract class ChatBaseAction : AnAction() {
     override fun actionPerformed(event: AnActionEvent) {
@@ -52,7 +50,7 @@ abstract class ChatBaseAction : AnAction() {
             )
 
             val actionType = chatCodingService.actionType
-            val promptFormatter = JavaPromptFormatter(actionType, prefixText, file, project)
+            val promptFormatter = JavaPromptFormatterProvider(actionType, prefixText, file, project)
             chatCodingService.handlePromptAndResponse(contentPanel, promptFormatter, chatContext)
         }
     }

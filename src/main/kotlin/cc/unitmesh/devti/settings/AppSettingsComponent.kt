@@ -3,13 +3,11 @@ package cc.unitmesh.devti.settings
 import com.intellij.json.JsonLanguage
 import com.intellij.openapi.editor.SpellCheckingEditorCustomizationProvider
 import com.intellij.openapi.editor.ex.EditorEx
-import com.intellij.openapi.fileTypes.PlainTextLanguage
 import com.intellij.openapi.ui.ComboBox
-import com.intellij.ui.HorizontalScrollBarEditorCustomization
 import com.intellij.ui.LanguageTextField
 import com.intellij.ui.components.JBLabel
-import com.intellij.ui.components.JBTextField
 import com.intellij.ui.components.JBPasswordField
+import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.FormBuilder
 import java.awt.Dimension
 import java.awt.FontMetrics

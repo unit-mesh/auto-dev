@@ -1,9 +1,7 @@
-package cc.unitmesh.devti.java.prompt
+package cc.unitmesh.ide.idea.flow
 
 import cc.unitmesh.devti.gui.chat.ChatBotActionType
-import cc.unitmesh.devti.gui.chat.PromptFormatter
-import cc.unitmesh.devti.java.JavaTechStackService
-import cc.unitmesh.devti.java.MvcContextService
+import cc.unitmesh.devti.gui.chat.PromptFormatterProvider
 import cc.unitmesh.devti.prompting.CommitPrompting
 import cc.unitmesh.devti.prompting.model.PromptConfig
 import cc.unitmesh.devti.settings.AutoDevSettingsState
@@ -17,12 +15,12 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.impl.source.PsiJavaFileImpl
 
-class JavaPromptFormatter(
+class JavaPromptFormatterProvider(
     private val action: ChatBotActionType,
     private val prefixText: String,
     private val file: PsiFile?,
     val project: Project,
-) : PromptFormatter {
+) : PromptFormatterProvider {
     private var additionContext: String = ""
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private var promptConfig: PromptConfig? = null
@@ -218,6 +216,6 @@ examples:
     }
 
     companion object {
-        private val logger = Logger.getInstance(JavaPromptFormatter::class.java)
+        private val logger = Logger.getInstance(JavaPromptFormatterProvider::class.java)
     }
 }

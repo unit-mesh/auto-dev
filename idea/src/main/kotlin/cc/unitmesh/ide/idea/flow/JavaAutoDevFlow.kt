@@ -1,17 +1,16 @@
-package cc.unitmesh.devti.java
+package cc.unitmesh.ide.idea.flow
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.models.openai.OpenAIProvider
 import cc.unitmesh.devti.models.openai.PromptTemplate
-import cc.unitmesh.devti.flow.base.CrudFlowAction
+import cc.unitmesh.devti.flow.base.CrudFlowProvider
 import cc.unitmesh.devti.flow.base.SpringBaseCrud
 import cc.unitmesh.devti.flow.code.JavaParseUtil
 import cc.unitmesh.devti.flow.kanban.Kanban
 import cc.unitmesh.devti.flow.model.SimpleStory
 import cc.unitmesh.devti.flow.model.TargetEndpoint
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
-import cc.unitmesh.devti.java.prompt.PromptStrategyAdvisor
 import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.runconfig.AutoDevRunProfileState
 import com.intellij.openapi.application.runReadAction
@@ -29,7 +28,7 @@ class JavaAutoDevFlow(
     private val processor: SpringBaseCrud? = null,
     val ui: ChatCodingComponent,
     val project: Project,
-) : CrudFlowAction {
+) : CrudFlowProvider {
     private val promptTemplate = PromptTemplate()
     private var selectedControllerName = ""
     private var selectedControllerCode = ""

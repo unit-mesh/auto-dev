@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.java.prompt
+package cc.unitmesh.ide.idea.flow
 
 import cc.unitmesh.devti.analysis.DtClass
 import cc.unitmesh.devti.prompting.model.FinalCodePrompt

@@ -66,6 +66,12 @@
                   implements="cc.unitmesh.devti.context.builder.VariableContextBuilder"/>
         </extensionPoint>
 
+        <extensionPoint qualifiedName="cc.unitmesh.prompterFormatterProvider"
+                        interface="cc.unitmesh.devti.gui.chat.PromptFormatterProvider"
+                        dynamic="true"/>
+        <extensionPoint qualifiedName="cc.unitmesh.crudFlowProvider"
+                        interface="cc.unitmesh.devti.flow.base.CrudFlowProvider"
+                        dynamic="true"/>
         <!-- TODO: add build system extension point -->
     </extensionPoints>
 

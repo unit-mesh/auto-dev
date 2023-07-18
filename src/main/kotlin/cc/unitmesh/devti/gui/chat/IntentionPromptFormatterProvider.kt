@@ -2,7 +2,7 @@ package cc.unitmesh.devti.gui.chat
 
 import com.intellij.lang.Language
 
-class IntentionPromptFormatter(val prompt: String, val selectedText: String, val lang: Language) : PromptFormatter {
+class IntentionPromptFormatterProvider(val prompt: String, val selectedText: String, val lang: Language) : PromptFormatterProvider {
     override fun getUIPrompt(): String {
         return """
             $prompt

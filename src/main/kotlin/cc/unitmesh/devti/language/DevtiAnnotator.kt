@@ -6,9 +6,7 @@ import com.intellij.lang.annotation.Annotator
 import com.intellij.psi.PsiElement
 
 class DevtiAnnotator : Annotator {
-    override fun annotate(element: PsiElement, holder: AnnotationHolder) {
-
-    }
+    override fun annotate(element: PsiElement, holder: AnnotationHolder) = Unit
 
     companion object {
         val AutoCRUDRegex = Regex("^//\\s+devti://story/(github)/(\\d+)(/.*)?$")
