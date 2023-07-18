@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.java
 
+import cc.unitmesh.devti.flow.base.TechStackProvider
 import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import cc.unitmesh.devti.gui.chat.PromptFormatterProvider
 import cc.unitmesh.devti.prompting.CommitPrompting
@@ -179,8 +180,8 @@ examples:
     }
 
     private fun addTestContext() {
-        val techStackService = project.service<JavaTechStackService>()
-        val techStacks = techStackService.prepareLibrary()
+        val techStackProvider = TechStackProvider.stack()
+        val techStacks = techStackProvider!!.prepareLibrary()
         when {
             isController -> {
                 additionContext = "// tech stacks: " + techStacks.controllerString()

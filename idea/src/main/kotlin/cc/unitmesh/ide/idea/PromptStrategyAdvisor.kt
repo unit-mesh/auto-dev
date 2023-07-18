@@ -165,8 +165,4 @@ class PromptStrategyAdvisor : PromptStrategy {
 
         return FinalCodePrompt(javaCode, suffixCode)
     }
-
-    companion object {
-        private val logger = Logger.getInstance(PromptStrategyAdvisor::class.java)
-    }
 }

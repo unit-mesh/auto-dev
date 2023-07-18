@@ -1,15 +1,15 @@
-package cc.unitmesh.devti.java
+package cc.unitmesh.ide.idea
 
+import cc.unitmesh.devti.flow.base.TechStackProvider
 import cc.unitmesh.devti.prompting.model.TestStack
-import com.intellij.openapi.components.Service
 import com.intellij.openapi.externalSystem.model.project.LibraryData
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
-import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ProjectManager
 import org.jetbrains.plugins.gradle.util.GradleConstants
 
-@Service(Service.Level.PROJECT)
-class JavaTechStackService(private val project: Project) {
-    fun prepareLibrary(): TestStack {
+class JavaTechStackService: TechStackProvider {
+    override fun prepareLibrary(): TestStack {
+        val project = ProjectManager.getInstance().defaultProject
         val projectData = ProjectDataManager.getInstance().getExternalProjectData(
             project, GradleConstants.SYSTEM_ID, project.basePath!!
         )

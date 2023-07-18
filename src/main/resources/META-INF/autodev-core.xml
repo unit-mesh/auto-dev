@@ -3,7 +3,6 @@
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.java</depends>
-    <depends>org.jetbrains.plugins.gradle</depends>
     <depends>Git4Idea</depends>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -65,6 +64,10 @@
 
         <extensionPoint qualifiedName="cc.unitmesh.crudFlowProvider"
                         interface="cc.unitmesh.devti.flow.base.CrudFlowProvider"
+                        dynamic="true"/>
+
+        <extensionPoint qualifiedName="cc.unitmesh.techStackProvider"
+                        interface="cc.unitmesh.devti.flow.base.TechStackProvider"
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.promptStrategy"

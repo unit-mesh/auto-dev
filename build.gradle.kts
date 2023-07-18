@@ -28,7 +28,7 @@ fun prop(name: String): String =
 val basePluginArchiveName = "intellij-autodev"
 
 val pycharmPlugins: List<String> = listOf()
-val ideaPlugins = listOf("Git4Idea", "com.intellij.java")
+val ideaPlugins = listOf("Git4Idea", "com.intellij.java", "org.jetbrains.plugins.gradle")
 val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
 
 val javaPlugin = "com.intellij.java"
@@ -269,7 +269,7 @@ project(":plugin") {
 project(":") {
     intellij {
         version.set(ideaVersion)
-        plugins.set(ideaPlugins)
+        plugins.set(listOf("Git4Idea"))
     }
 
     dependencies {
