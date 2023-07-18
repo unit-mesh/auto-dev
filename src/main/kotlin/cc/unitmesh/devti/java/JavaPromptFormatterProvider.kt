@@ -7,13 +7,11 @@ import cc.unitmesh.devti.prompting.model.PromptConfig
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.service
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.ChangeListManagerImpl
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
-import com.intellij.psi.impl.source.PsiJavaFileImpl
 
 class JavaPromptFormatterProvider(
     private val action: ChatBotActionType,
@@ -202,7 +200,7 @@ examples:
                 val relativePath = regex.find(selectedText)?.groupValues?.get(1) ?: ""
                 val file = LocalFileSystem.getInstance().findFileByPath(projectPath + relativePath)
                 file?.let {
-                    val psiFile = PsiManager.getInstance(project).findFile(it) as? PsiJavaFileImpl
+                    val psiFile = PsiManager.getInstance(project).findFile(it)
                     psiFile
                 }
             } else {
@@ -213,9 +211,5 @@ examples:
                 additionContext = lookupFile.text.toString()
             }
         }
-    }
-
-    companion object {
-        private val logger = Logger.getInstance(JavaPromptFormatterProvider::class.java)
     }
 }

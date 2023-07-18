@@ -13,9 +13,6 @@
                             implementationClass="cc.unitmesh.ide.idea.context.JavaFileContextBuilder"/>
         <variableContextBuilder language="JAVA"
                                 implementationClass="cc.unitmesh.ide.idea.context.JavaVariableContextBuilder"/>
-        <prompterFormatterProvider
-                implementation="cc.unitmesh.devti.java.JavaPromptFormatterProvider"/>
-
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
