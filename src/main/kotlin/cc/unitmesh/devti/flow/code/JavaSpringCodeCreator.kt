@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.flow.code
 
-import cc.unitmesh.devti.analysis.DtClass
+import cc.unitmesh.devti.context.DtClass
 import cc.unitmesh.devti.flow.base.SpringBaseCrud
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.application.ApplicationManager

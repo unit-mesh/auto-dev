@@ -1,9 +1,9 @@
 package cc.unitmesh.devti.analysis
 
+import cc.unitmesh.devti.context.DtClass
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiElementFactory
 import com.intellij.testFramework.LightPlatformTestCase
-import org.junit.Test
 
 class DtClassTest : LightPlatformTestCase() {
     private val javaFactory: PsiElementFactory get() = JavaPsiFacade.getElementFactory(project)

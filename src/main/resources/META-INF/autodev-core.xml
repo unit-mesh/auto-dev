@@ -1,11 +1,10 @@
-<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
-<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude" allow-bundled-update="true">
+<idea-plugin>
+    <resource-bundle>messages.AutoDevBundle</resource-bundle>
+
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.java</depends>
     <depends>org.jetbrains.plugins.gradle</depends>
     <depends>Git4Idea</depends>
-
-    <resource-bundle>messages.AutoDevBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable parentId="tools" instance="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"

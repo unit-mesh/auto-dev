@@ -1,4 +1,4 @@
-package cc.unitmesh.ide.idea.flow
+package cc.unitmesh.devti.java
 
 import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.PsiJavaFile

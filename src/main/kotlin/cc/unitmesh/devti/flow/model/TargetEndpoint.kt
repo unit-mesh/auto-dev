@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.flow.model
 
-import cc.unitmesh.devti.analysis.DtClass
+import cc.unitmesh.devti.context.DtClass
 
 data class TargetEndpoint(
     val endpoint: String,

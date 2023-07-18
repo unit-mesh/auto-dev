@@ -1,4 +1,4 @@
-package cc.unitmesh.ide.idea.flow
+package cc.unitmesh.devti.java
 
 import cc.unitmesh.devti.prompting.model.TestStack
 import com.intellij.openapi.components.Service

@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.actions
+package cc.unitmesh.ide.idea.action
 
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.models.ConnectorFactory

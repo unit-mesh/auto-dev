@@ -1,6 +1,6 @@
-package cc.unitmesh.ide.idea.flow
+package cc.unitmesh.devti.java
 
-import cc.unitmesh.devti.analysis.DtClass
+import cc.unitmesh.devti.context.DtClass
 import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.impl.source.PsiJavaFileImpl
 

@@ -128,7 +128,7 @@ project(":plugin") {
     version = prop("pluginVersion")
     intellij {
         pluginName.set("autodev")
-        val pluginList: MutableList<String> = mutableListOf()
+        val pluginList: MutableList<String> = mutableListOf("com.intellij.java", "Git4Idea")
         if (baseIDE == "idea") {
             pluginList += listOf(
                 javaPlugin,
@@ -291,7 +291,11 @@ project(":") {
 
         implementation(libs.kotlinx.serialization.json)
         // jackson-module-kotlin
-        implementation(libs.jackson.module.kotlin)
+        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2") {
+            exclude(module = "jackson-core")
+            exclude(module = "jackson-databind")
+            exclude(module = "jackson-annotations")
+        }
 
         implementation(libs.comate.spec.lang)
 
