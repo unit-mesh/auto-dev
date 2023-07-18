@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.java
 
 import cc.unitmesh.devti.context.DtClass
-import cc.unitmesh.devti.prompting.model.ControllerContext
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project

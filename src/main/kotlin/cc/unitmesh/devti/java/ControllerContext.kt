@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.prompting.model
+package cc.unitmesh.devti.java
 
 import com.intellij.psi.PsiClass
 
