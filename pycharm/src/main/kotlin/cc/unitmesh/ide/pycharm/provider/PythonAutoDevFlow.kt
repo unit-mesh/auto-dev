@@ -10,9 +10,9 @@ import com.intellij.openapi.project.Project
 
 class PythonAutoDevFlow : DevFlowProvider {
     override fun initContext(
-        gitHubIssue: Kanban,
-        openAIRunner: OpenAIProvider,
-        contentPanel: ChatCodingComponent,
+        kanban: Kanban,
+        aiRunner: OpenAIProvider,
+        component: ChatCodingComponent,
         project: Project
     ) {
     }

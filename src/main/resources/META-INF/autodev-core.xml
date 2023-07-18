@@ -1,4 +1,4 @@
-<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude" allow-bundled-update="true">
+<idea-plugin allow-bundled-update="true">
     <resource-bundle>messages.AutoDevBundle</resource-bundle>
 
     <depends>com.intellij.modules.platform</depends>
@@ -64,6 +64,7 @@
                         interface="cc.unitmesh.devti.provider.DevFlowProvider"
                         dynamic="true"/>
 
+        <!-- TODO: add build system extension point -->
         <extensionPoint qualifiedName="cc.unitmesh.techStackProvider"
                         interface="cc.unitmesh.devti.provider.TechStackProvider"
                         dynamic="true"/>
@@ -76,7 +77,6 @@
         <extensionPoint qualifiedName="cc.unitmesh.promptStrategy"
                         interface="cc.unitmesh.devti.provider.PromptStrategy"
                         dynamic="true"/>
-        <!-- TODO: add build system extension point -->
     </extensionPoints>
 
     <extensions defaultExtensionNs="cc.unitmesh">

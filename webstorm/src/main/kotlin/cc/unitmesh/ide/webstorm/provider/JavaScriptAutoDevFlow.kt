@@ -9,9 +9,9 @@ import com.intellij.openapi.project.Project
 
 class JavaScriptAutoDevFlow : DevFlowProvider {
     override fun initContext(
-        gitHubIssue: Kanban,
-        openAIRunner: OpenAIProvider,
-        contentPanel: ChatCodingComponent,
+        kanban: Kanban,
+        aiRunner: OpenAIProvider,
+        component: ChatCodingComponent,
         project: Project
     ) {
         TODO("Not yet implemented")

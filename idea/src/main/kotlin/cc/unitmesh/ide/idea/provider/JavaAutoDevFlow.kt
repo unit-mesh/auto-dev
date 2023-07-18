@@ -37,14 +37,14 @@ class JavaAutoDevFlow : DevFlowProvider {
     private lateinit var promptStrategy: PromptStrategy
 
     override fun initContext(
-        gitHubIssue: Kanban,
-        openAIRunner: OpenAIProvider,
-        contentPanel: ChatCodingComponent,
+        kanban: Kanban,
+        aiRunner: OpenAIProvider,
+        component: ChatCodingComponent,
         project: Project
     ) {
-        this.kanban = gitHubIssue
-        this.connector = openAIRunner
-        this.ui = contentPanel
+        this.kanban = kanban
+        this.connector = aiRunner
+        this.ui = component
         processor = project.service<JavaSpringCodeCreator>()
         promptStrategy = PromptStrategy.strategy()!!
     }

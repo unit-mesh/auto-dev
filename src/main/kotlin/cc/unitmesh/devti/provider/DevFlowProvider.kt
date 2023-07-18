@@ -8,12 +8,7 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 
 interface DevFlowProvider {
-    fun initContext(
-        gitHubIssue: Kanban,
-        openAIRunner: OpenAIProvider,
-        contentPanel: ChatCodingComponent,
-        project: Project
-    )
+    fun initContext(kanban: Kanban, aiRunner: OpenAIProvider, component: ChatCodingComponent, project: Project)
 
     fun getOrCreateStoryDetail(id: String): String
     fun updateOrCreateDtoAndEntity(storyDetail: String)
