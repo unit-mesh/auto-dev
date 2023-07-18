@@ -25,26 +25,22 @@ class PythonContextPrompter : ContextPrompter() {
     }
 
     override fun getUIPrompt(): String {
-        val classInfo = fileContextProvider.from(file!!).toQuery()
-        logger.warn("classInfo: $classInfo")
         val chunkContext = SimilarChunksWithPaths().similarChunksWithPaths(file!!).toQuery()
-        logger.warn("chunkContext: $chunkContext")
 
         return """$action for the code:
-            $classInfo
             ```${lang}
+            $chunkContext
             $selectedText
             ```
             """.trimIndent()
     }
 
     override fun getRequestPrompt(): String {
-        val classInfo = fileContextProvider.from(file!!).toQuery()
-        logger.warn("classInfo: $classInfo")
+        val chunkContext = SimilarChunksWithPaths().similarChunksWithPaths(file!!).toQuery()
 
         return """$action for the code:
-            $classInfo
             ```${lang}
+            $chunkContext
             $selectedText
             ```
             """.trimIndent()
