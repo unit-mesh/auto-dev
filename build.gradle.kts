@@ -237,14 +237,10 @@ project(":plugin") {
 //            }
 //        }
 
-        // Configure UI tests plugin
-        // Read more: https://github.com/JetBrains/intellij-ui-test-robot
-//        runIdeForUiTests {
-//            systemProperty("robot-server.port", "8082")
-//            systemProperty("ide.mac.message.dialogs.as.sheets", "false")
-//            systemProperty("jb.privacy.policy.text", "<!--999.999-->")
-//            systemProperty("jb.consents.confirmation.enabled", "false")
-//        }
+        withType<PatchPluginXmlTask> {
+            pluginDescription.set(provider { file("description.html").readText() })
+        }
+
 
 //        signPlugin {
 //            certificateChain = environment("CERTIFICATE_CHAIN")
@@ -254,10 +250,6 @@ project(":plugin") {
 
 //        withType<SignedPluginTask> {
 //        }
-
-        withType<PatchPluginXmlTask> {
-            pluginDescription.set(provider { file("description.html").readText() })
-        }
 
         withType<PublishPluginTask> {
             token.set("publishToken")
