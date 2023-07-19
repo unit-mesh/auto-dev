@@ -9,11 +9,14 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorCustomElementRenderer
 import com.intellij.openapi.editor.actions.EditorActionUtil
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.codeStyle.CodeStyleManager
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlin.math.min
 
 class CodeCompletionIntention : AbstractChatIntention() {
@@ -61,11 +64,7 @@ class CodeCompletionIntention : AbstractChatIntention() {
 
         val suffix = document.getText(TextRange(offset, suffixEnd))
 
-//        val caretParent = if (file.findElementAt(offset) != null) file.findElementAt(offset)!!.parent else null
-//        val afterLineEndElementsInRange = editor.inlayModel.getAfterLineEndElementsInRange(offset, offset + 1)
-
         val text = ""
-//        val flow = connectorFactory.connector().stream(prompt)
         val flow = connectorFactory.connector().prompt(prompt)
         val presentation = LLMTextPresentation(editor, flow, false)
         val editorCustomElementRenderer: EditorCustomElementRenderer = PresentationRenderer(presentation)
@@ -74,6 +73,28 @@ class CodeCompletionIntention : AbstractChatIntention() {
             true,
             editorCustomElementRenderer
         )
+    }
+
+    // for future
+    private suspend fun renderInlay(
+        prompt: @NlsSafe String,
+        editor: Editor,
+        offset: Int
+    ) {
+        val flow: Flow<String> = connectorFactory.connector().stream(prompt)
+        var text = ""
+        flow.collect {
+            text += it
+            if (text.isNotEmpty()) {
+                val presentation = LLMTextPresentation(editor, it, false)
+                val editorCustomElementRenderer: EditorCustomElementRenderer = PresentationRenderer(presentation)
+                editor.inlayModel.addAfterLineEndElement(
+                    offset,
+                    true,
+                    editorCustomElementRenderer
+                )
+            }
+        }
     }
 
     private val connectorFactory = ConnectorFactory.getInstance()
