@@ -4,6 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.editor.presentation.LLMInlayRenderer
 import cc.unitmesh.devti.models.ConnectorFactory
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
@@ -107,27 +108,36 @@ class CodeCompletionIntention : AbstractChatIntention() {
         val flow: Flow<String> = connectorFactory.connector().stream(prompt)
         var text = ""
 
-        val renderer: EditorCustomElementRenderer = LLMInlayRenderer(editor, text.lines())
-        val addAfterLineEndElement = editor.inlayModel.addAfterLineEndElement(
-            offset,
-            true,
-            renderer
-        )!!
+//        val renderer: EditorCustomElementRenderer = LLMInlayRenderer(editor, text.lines())
+//        val addAfterLineEndElement = editor.inlayModel.addAfterLineEndElement(
+//            offset,
+//            true,
+//            renderer
+//        )!!
 
+        val project = editor.project!!
+        var currentOffset = offset
         flow.collect {
             text += it
-            addAfterLineEndElement.update()
-        }
 
-        EditorFactory.getInstance().addEditorFactoryListener(object : EditorFactoryListener {
-            override fun editorReleased(event: EditorFactoryEvent) {
-                Disposer.dispose(addAfterLineEndElement as Disposable)
+            ApplicationManager.getApplication().invokeAndWait {
+                WriteCommandAction.runWriteCommandAction(project) {
+                    insertStringAndSaveChange(project, it, editor.document, currentOffset, false)
+                }
+                currentOffset += it.length
+                editor.caretModel.moveToOffset(currentOffset)
             }
-        }, addAfterLineEndElement as Disposable)
-
-        WriteCommandAction.runWriteCommandAction(editor.project!!) {
-            insertStringAndSaveChange(editor.project!!, text, editor.document, offset, false)
         }
+
+//        EditorFactory.getInstance().addEditorFactoryListener(object : EditorFactoryListener {
+//            override fun editorReleased(event: EditorFactoryEvent) {
+//                Disposer.dispose(addAfterLineEndElement as Disposable)
+//            }
+//        }, addAfterLineEndElement as Disposable)
+//
+//        WriteCommandAction.runWriteCommandAction(editor.project!!) {
+//            insertStringAndSaveChange(editor.project!!, text, editor.document, offset, false)
+//        }
 //        val instance = LLMInlayManager.getInstance()
 //        instance.applyCompletion(editor.project!!, editor)
 //
