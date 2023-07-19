@@ -1,34 +1,27 @@
 package cc.unitmesh.devti.intentions.editor
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.editor.presentation.LLMInlayRenderer
 import cc.unitmesh.devti.models.ConnectorFactory
-import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.EditorCustomElementRenderer
-import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.actions.EditorActionUtil
-import com.intellij.openapi.editor.event.EditorFactoryEvent
-import com.intellij.openapi.editor.event.EditorFactoryListener
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.util.TextRange
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
+import com.intellij.psi.*
 import com.intellij.psi.codeStyle.CodeStyleManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
+import kotlin.jvm.internal.Ref
 import kotlin.math.min
 
 
 class CodeCompletionIntention : AbstractChatIntention() {
+    private val documentationTargetPointer: SmartPsiElementPointer<PsiElement>? = null
+
     companion object {
         val logger = Logger.getInstance(CodeCompletionIntention::class.java)
     }
@@ -67,7 +60,7 @@ class CodeCompletionIntention : AbstractChatIntention() {
             promptStart = (offset - promptLength).coerceAtLeast(0)
         }
 
-        var prompt = document.getText(TextRange.create(promptStart, offset))
+        val prompt = document.getText(TextRange.create(promptStart, offset))
 
         val suffixLength = 256
         var suffixEnd = min((offset + suffixLength).toDouble(), document.textLength.toDouble()).toInt()
@@ -89,9 +82,11 @@ class CodeCompletionIntention : AbstractChatIntention() {
 
         logger.warn("Prompt: $prompt")
         runBlocking {
-            renderInlay(prompt, editor, offset)
+            renderInlay(prompt, editor, offset, document)
         }
     }
+
+    private val writeActionGroupId = "code.complete.intention.write.action"
 
     /**
      * Renders an inlay with the given prompt in the specified editor at the specified offset.
@@ -103,30 +98,42 @@ class CodeCompletionIntention : AbstractChatIntention() {
     private suspend fun renderInlay(
         prompt: @NlsSafe String,
         editor: Editor,
-        offset: Int
+        offset: Int,
+        document: Document
     ) {
         val flow: Flow<String> = connectorFactory.connector().stream(prompt)
-        var text = ""
 
-//        val renderer: EditorCustomElementRenderer = LLMInlayRenderer(editor, text.lines())
-//        val addAfterLineEndElement = editor.inlayModel.addAfterLineEndElement(
-//            offset,
-//            true,
-//            renderer
-//        )!!
+        val fullSuggestion = StringBuilder()
+//        val documentationFromLastIteration: Ref.ObjectRef<String> = Ref.ObjectRef<String>()
+//        documentationFromLastIteration.element = ""
 
+        val currentOffset = offset
         val project = editor.project!!
-        var currentOffset = offset
-        flow.collect {
-            text += it
+        flow.collect { text ->
+            fullSuggestion.append(text)
 
-            ApplicationManager.getApplication().invokeAndWait {
-                WriteCommandAction.runWriteCommandAction(project) {
-                    insertStringAndSaveChange(project, it, editor.document, currentOffset, false)
+            WriteCommandAction.runWriteCommandAction(
+                project,
+                AutoDevBundle.message("intentions.chat.code.complete.name"),
+                writeActionGroupId,
+                {
+                    document.replaceString(currentOffset, currentOffset, text)
+                    PsiDocumentManager.getInstance(project).commitDocument(document)
+                    val psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document)
+                    val reformatRange = TextRange(offset, offset + fullSuggestion.length)
+                    CodeStyleManager.getInstance(project).reformatText(psiFile!!, listOf(reformatRange))
                 }
-                currentOffset += it.length
-                editor.caretModel.moveToOffset(currentOffset)
-            }
+            )
+
+
+//            ApplicationManager.getApplication().invokeAndWait {
+//                WriteCommandAction.runWriteCommandAction(project) {
+//                    insertStringAndSaveChange(project, it, editor.document, currentOffset, false)
+//                }
+//
+//                currentOffset += it.length
+//                editor.caretModel.moveToOffset(currentOffset)
+//            }
         }
 
 //        EditorFactory.getInstance().addEditorFactoryListener(object : EditorFactoryListener {
