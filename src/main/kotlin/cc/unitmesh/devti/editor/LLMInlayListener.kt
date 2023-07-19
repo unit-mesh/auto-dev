@@ -3,6 +3,7 @@ package cc.unitmesh.devti.editor
 import cc.unitmesh.devti.editor.presentation.LLMInlayRenderer
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.Inlay
+import com.intellij.util.concurrency.annotations.RequiresEdt
 import com.intellij.util.messages.Topic
 
 interface LLMInlayListener {

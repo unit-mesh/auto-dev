@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.actions
 
+import cc.unitmesh.devti.editor.LLMInlayManager
 import cc.unitmesh.devti.editor.presentation.EditorUtilCopy
 import com.intellij.application.options.CodeStyle
 import com.intellij.codeInsight.lookup.LookupManager
@@ -70,6 +71,7 @@ class LLMApplyInlaysAction : EditorAction(ApplyInlaysHandler()), DumbAware {
 
             // todo: update this to use the new API
             logger.info("doExecute for applyInlays")
+            LLMInlayManager.getInstance().applyCompletion(project, editor)
         }
     }
 
@@ -78,11 +80,11 @@ class LLMApplyInlaysAction : EditorAction(ApplyInlaysHandler()), DumbAware {
 
         val logger = Logger.getInstance(LLMApplyInlaysAction::class.java)
 
-        fun isSpaceOrTab(c: Char, withNewline: Boolean): Boolean {
+        private fun isSpaceOrTab(c: Char, withNewline: Boolean): Boolean {
             return c == ' ' || c == '\t' || withNewline && c == '\n'
         }
 
-        fun isSpacesOrTabs(text: CharSequence, withNewlines: Boolean): Boolean {
+        private fun isSpacesOrTabs(text: CharSequence, withNewlines: Boolean): Boolean {
             for (element in text) {
                 if (!isSpaceOrTab(element, withNewlines)) {
                     return false

@@ -21,6 +21,12 @@ class LLMTextPresentation(
     override val width: Int = size().width
     override val height: Int = size().height
 
+    /**
+     * Paints the given Graphics2D object with the specified TextAttributes.
+     *
+     * @param g the Graphics2D object to paint.
+     * @param attributes the TextAttributes to use for painting.
+     */
     override fun paint(g: Graphics2D, attributes: TextAttributes) {
         val visionThemeInfoProvider = PresentationUtil.getThemeInfoProvider()
         val updatedAttributes = getTextAttributes(editor)

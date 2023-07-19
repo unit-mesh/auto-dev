@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.editor
 
+import cc.unitmesh.devti.editor.presentation.LLMInlayRenderer
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
@@ -13,10 +14,13 @@ interface LLMInlayManager : Disposable {
     fun isAvailable(editor: Editor): Boolean
 
     @RequiresEdt
-    fun applyCompletion(project: Project, editor: Editor)
+    fun applyCompletion(project: Project, editor: Editor): Boolean
 
     @RequiresEdt
-    fun disposeInlays(editor: Editor)
+    fun collectInlays(editor: Editor, startOffset: Int, endOffset: Int): List<LLMInlayRenderer>
+
+    @RequiresEdt
+    fun disposeInlays(editor: Editor, disposeContext: InlayDisposeContext)
 
     companion object {
         fun getInstance(): LLMInlayManager {
