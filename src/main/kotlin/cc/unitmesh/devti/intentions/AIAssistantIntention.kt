@@ -37,7 +37,7 @@ class AIAssistantIntention : IntentionAction, Iconable {
     }
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
-        val intentions = getAiAssistantIntentions(project, editor, file)
+        val intentions = Companion.getAiAssistantIntentions(project, editor, file)
 
         val title = AutoDevBundle.message("intentions.assistant.popup.title")
         val popupStep = CustomPopupStep(intentions, project, editor, file, title)
@@ -47,24 +47,24 @@ class AIAssistantIntention : IntentionAction, Iconable {
         popup.showInBestPositionFor(editor)
     }
 
-    private fun getAiAssistantIntentions(project: Project, editor: Editor, file: PsiFile): List<IntentionAction> {
-        val intentions: MutableList<IntentionAction> = ArrayList()
-        val extensionList = EP_NAME.extensionList
-
-        for (bean in extensionList) {
-            val intentionActionBean = bean as IntentionActionBean
-            val intention = intentionActionBean.instance
-            if (intention.isAvailable(project, editor, file)) {
-                intentions.add(intention)
-            }
-        }
-
-        return intentions
-    }
-
     companion object {
         val EP_NAME: ExtensionPointName<IntentionActionBean> =
             ExtensionPointName<IntentionActionBean>("cc.unitmesh.aiAssistantIntention")
+
+        fun getAiAssistantIntentions(project: Project, editor: Editor, file: PsiFile): List<IntentionAction> {
+            val intentions: MutableList<IntentionAction> = ArrayList()
+            val extensionList = EP_NAME.extensionList
+
+            for (bean in extensionList) {
+                val intentionActionBean = bean as IntentionActionBean
+                val intention = intentionActionBean.instance
+                if (intention.isAvailable(project, editor, file)) {
+                    intentions.add(intention)
+                }
+            }
+
+            return intentions
+        }
     }
 }
 

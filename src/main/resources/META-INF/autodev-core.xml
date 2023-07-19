@@ -91,6 +91,11 @@
     </extensions>
 
     <actions>
+        <group id="IntentionsActionGroup" class="cc.unitmesh.devti.intentions.editor.IntentionsActionGroup"
+               icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
+            <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
+        </group>
+
         <group id="org.intellij.sdk.action.GroupedActions" popup="true" text="AutoDev" description="AutoDev">
             <action id="cc.unitmesh.devti.actions.chat.ChatBotExplainAction"
                     class="cc.unitmesh.devti.actions.chat.ChatBotExplainAction" text="Explain This"

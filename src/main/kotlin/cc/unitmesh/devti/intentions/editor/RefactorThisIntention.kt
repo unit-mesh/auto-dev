@@ -15,9 +15,9 @@ class RefactorThisIntention : AbstractChatIntention() {
         return (editor != null) && (file != null)
     }
 
-    override fun getText(): String = AutoDevBundle.message("intentions.chat.code.complete.name")
+    override fun getText(): String = AutoDevBundle.message("intentions.chat.code.refactor.name")
 
-    override fun getFamilyName(): String = AutoDevBundle.message("intentions.chat.code.complete.family.name")
+    override fun getFamilyName(): String = AutoDevBundle.message("intentions.chat.code.refactor.family.name")
 
     /**
      * Retrieves the prompt for performing a code refactoring.
