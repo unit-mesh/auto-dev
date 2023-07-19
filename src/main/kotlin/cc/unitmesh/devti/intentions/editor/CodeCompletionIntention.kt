@@ -1,18 +1,20 @@
 package cc.unitmesh.devti.intentions.editor
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.editor.LLMInlayListener
-import cc.unitmesh.devti.editor.LLMInlayManager
 import cc.unitmesh.devti.editor.presentation.LLMInlayRenderer
 import cc.unitmesh.devti.models.ConnectorFactory
-import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorCustomElementRenderer
+import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.actions.EditorActionUtil
+import com.intellij.openapi.editor.event.EditorFactoryEvent
+import com.intellij.openapi.editor.event.EditorFactoryListener
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiDocumentManager
@@ -54,7 +56,7 @@ class CodeCompletionIntention : AbstractChatIntention() {
 
         val document = editor.document
         val offset = editor.caretModel.offset
-        val promptLength = 256
+        val promptLength = 512
         var promptStart = (offset - promptLength).coerceAtLeast(0)
         val isOutBoundary = !EditorActionUtil.isWordBoundary(editor.document.text, promptStart, false, false)
         while (promptStart < offset && isOutBoundary) {
@@ -64,17 +66,27 @@ class CodeCompletionIntention : AbstractChatIntention() {
             promptStart = (offset - promptLength).coerceAtLeast(0)
         }
 
-        val prompt = document.getText(TextRange.create(promptStart, offset))
+        var prompt = document.getText(TextRange.create(promptStart, offset))
 
         val suffixLength = 256
         var suffixEnd = min((offset + suffixLength).toDouble(), document.textLength.toDouble()).toInt()
         while (suffixEnd > offset && !EditorActionUtil.isWordBoundary(editor.document.text, suffixEnd, false, false)) {
             suffixEnd--
         }
-
+//
+//        val element = PsiUtilBase.getElementAtCaret(editor) ?: file
+//        val chunksWithPaths = SimilarChunksWithPaths().similarChunksWithPaths(element)
+//        val size = chunksWithPaths.chunks?.size ?: 0
+//        val similarCode = if (size > 0) {
+//            chunksWithPaths.toQuery()
+//        } else {
+//            ""
+//        }
+//        prompt = "Code complete for follow code \n$similarCode\n$prompt"
         // TODO: use suffix to improve the completion
-        val suffix = document.getText(TextRange(offset, suffixEnd))
+//        val suffix = document.getText(TextRange(offset, suffixEnd))
 
+        logger.warn("Prompt: $prompt")
         runBlocking {
             renderInlay(prompt, editor, offset)
         }
@@ -94,24 +106,30 @@ class CodeCompletionIntention : AbstractChatIntention() {
     ) {
         val flow: Flow<String> = connectorFactory.connector().stream(prompt)
         var text = ""
-        flow.collect {
-            text += it
-        }
 
         val renderer: EditorCustomElementRenderer = LLMInlayRenderer(editor, text.lines())
-        val inlay = editor.inlayModel.addAfterLineEndElement(
+        val addAfterLineEndElement = editor.inlayModel.addAfterLineEndElement(
             offset,
             true,
             renderer
-        )
+        )!!
 
-        logger.warn("Prompt: $prompt")
+        flow.collect {
+            text += it
+            addAfterLineEndElement.update()
+        }
+
+        EditorFactory.getInstance().addEditorFactoryListener(object : EditorFactoryListener {
+            override fun editorReleased(event: EditorFactoryEvent) {
+                Disposer.dispose(addAfterLineEndElement as Disposable)
+            }
+        }, addAfterLineEndElement as Disposable)
+
         WriteCommandAction.runWriteCommandAction(editor.project!!) {
             insertStringAndSaveChange(editor.project!!, text, editor.document, offset, false)
         }
-
-        val instance = LLMInlayManager.getInstance()
-        instance.applyCompletion(editor.project!!, editor)
+//        val instance = LLMInlayManager.getInstance()
+//        instance.applyCompletion(editor.project!!, editor)
 //
 //        ApplicationManager.getApplication().messageBus.syncPublisher(LLMInlayListener.TOPIC)
 //            .inlaysUpdated(editor, listOf(inlay))

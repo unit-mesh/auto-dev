@@ -9,9 +9,9 @@
                                  id="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                                  displayName="AutoDev"/>
 
-        <!--        <applicationService-->
-        <!--                serviceInterface="cc.unitmesh.devti.editor.LLMInlayManager"-->
-        <!--                serviceImplementation="cc.unitmesh.devti.editor.LLMInlayManagerImpl" />-->
+                <applicationService
+                        serviceInterface="cc.unitmesh.devti.editor.LLMInlayManager"
+                        serviceImplementation="cc.unitmesh.devti.editor.LLMInlayManagerImpl" />
 
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.AutoDevSettingsState"/>
 
@@ -100,12 +100,12 @@
     </extensions>
 
     <actions>
-        <action id="llm.applyInlays"
-                class="cc.unitmesh.devti.actions.LLMApplyInlaysAction">
-            <keyboard-shortcut first-keystroke="TAB" keymap="$default"/>
-            <override-text place="MainMenu" text="Apply Completions to Editor"/>
-            <override-text place="EditorPopup" text="Accept"/>
-        </action>
+<!--        <action id="llm.applyInlays"-->
+<!--                class="cc.unitmesh.devti.actions.LLMApplyInlaysAction">-->
+<!--            <keyboard-shortcut first-keystroke="TAB" keymap="$default"/>-->
+<!--            <override-text place="MainMenu" text="Apply Completions to Editor"/>-->
+<!--            <override-text place="EditorPopup" text="Accept"/>-->
+<!--        </action>-->
 
         <group id="AutoDevIntentionsActionGroup" class="cc.unitmesh.devti.intentions.editor.IntentionsActionGroup">
             <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
