@@ -27,6 +27,13 @@ class CodeCompletionIntention : AbstractChatIntention() {
         return "Complete code from prompt"
     }
 
+    /**
+     * Invokes the method and performs auto-completion based on the current caret position in the editor.
+     *
+     * @param project the current project
+     * @param editor the editor in which the completion is performed
+     * @param file the PSI file in the editor
+     */
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (editor == null || file == null) return
 
