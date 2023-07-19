@@ -1,11 +1,11 @@
 package cc.unitmesh.devti.intentions.editor
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.editor.LLMInlayListener
+import cc.unitmesh.devti.editor.LLMInlayManager
 import cc.unitmesh.devti.editor.presentation.LLMInlayRenderer
 import cc.unitmesh.devti.models.ConnectorFactory
-import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.invokeLater
-import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
@@ -13,7 +13,6 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorCustomElementRenderer
 import com.intellij.openapi.editor.actions.EditorActionUtil
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiDocumentManager
@@ -107,17 +106,15 @@ class CodeCompletionIntention : AbstractChatIntention() {
         )
 
         logger.warn("Prompt: $prompt")
-        Disposer.dispose( inlay as Disposable)
         WriteCommandAction.runWriteCommandAction(editor.project!!) {
             insertStringAndSaveChange(editor.project!!, text, editor.document, offset, false)
-
         }
 
-//        val instance = LLMInlayManager.getInstance()
-//        instance.applyCompletion(editor.project!!, editor)
-//        ApplicationManager.getApplication().messageBus
-//            .syncPublisher(LLMInlayListener.TOPIC)
-//            .inlaysUpdated(editor, listOf(renderer))
+        val instance = LLMInlayManager.getInstance()
+        instance.applyCompletion(editor.project!!, editor)
+//
+//        ApplicationManager.getApplication().messageBus.syncPublisher(LLMInlayListener.TOPIC)
+//            .inlaysUpdated(editor, listOf(inlay))
     }
 
     private val connectorFactory = ConnectorFactory.getInstance()

@@ -9,9 +9,9 @@
                                  id="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                                  displayName="AutoDev"/>
 
-        <applicationService
-                serviceInterface="cc.unitmesh.devti.editor.LLMInlayManager"
-                serviceImplementation="cc.unitmesh.devti.editor.LLMInlayManagerImpl" />
+        <!--        <applicationService-->
+        <!--                serviceInterface="cc.unitmesh.devti.editor.LLMInlayManager"-->
+        <!--                serviceImplementation="cc.unitmesh.devti.editor.LLMInlayManagerImpl" />-->
 
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.AutoDevSettingsState"/>
 
