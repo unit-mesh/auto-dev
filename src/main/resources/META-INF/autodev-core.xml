@@ -91,7 +91,7 @@
     </extensions>
 
     <actions>
-        <group id="IntentionsActionGroup" class="cc.unitmesh.devti.intentions.editor.IntentionsActionGroup"
+        <group id="IntentionsActionGroup" class="cc.unitmesh.devti.intentions.editor.AutoDevIntentionsActionGroup"
                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
             <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
         </group>
