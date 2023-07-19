@@ -2,8 +2,8 @@ package cc.unitmesh.devti.intentions.editor
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.models.ConnectorFactory
-import cc.unitmesh.devti.presentation.LLMTextPresentation
-import com.intellij.codeInsight.hints.presentation.PresentationRenderer
+import cc.unitmesh.devti.presentation.LLMInlayRenderer
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorCustomElementRenderer
@@ -15,13 +15,16 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.codeStyle.CodeStyleManager
-import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
 import kotlin.math.min
 
 class CodeCompletionIntention : AbstractChatIntention() {
+    companion object {
+        val logger = Logger.getInstance(CodeCompletionIntention::class.java)
+    }
+
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         return (editor != null) && (file != null)
     }
@@ -88,16 +91,16 @@ class CodeCompletionIntention : AbstractChatIntention() {
         var text = ""
         flow.collect {
             text += it
-            if (text.isNotEmpty()) {
-                val presentation = LLMTextPresentation(editor, it, false)
-                val editorCustomElementRenderer: EditorCustomElementRenderer = PresentationRenderer(presentation)
-                editor.inlayModel.addAfterLineEndElement(
-                    offset,
-                    true,
-                    editorCustomElementRenderer
-                )
-            }
         }
+
+        val renderer: EditorCustomElementRenderer = LLMInlayRenderer(editor, text.lines())
+        editor.inlayModel.addAfterLineEndElement(
+            offset,
+            true,
+            renderer
+        )
+
+        logger.warn("Prompt: $prompt")
     }
 
     private val connectorFactory = ConnectorFactory.getInstance()
