@@ -105,9 +105,8 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
     override fun createService(code: String): DtClass? = createClassByCode(code, getAllServiceFiles())
 
     private fun createClassByCode(code: String, psiFiles: List<PsiFile>): DtClass? {
-        val firstFile = psiFiles.first()
         val packageName = if (psiFiles.isNotEmpty()) {
-            firstFile.lookupPackageName()?.packageName
+            psiFiles.firstOrNull()?.lookupPackageName()?.packageName
         } else {
             packageCloseToController("service")
         }
@@ -115,7 +114,7 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
         val newCode = "package $packageName;\n\n$code"
 
         if (packageName == null) {
-            log.warn("No package statement found in file ${firstFile.name}")
+            log.warn("No package statement found in file ${psiFiles.firstOrNull()?.name}")
             return DtClass("", emptyList())
         }
 

@@ -197,8 +197,6 @@ class JavaAutoDevFlow : DevFlowProvider() {
         if (codes.isEmpty()) {
             logger.warn("update method code is empty, skip")
         } else {
-            if (processor == null) return
-
             codes.indices.forEach { i ->
                 val code = codes[i]
                 createCodeByType(code, target.isNeedToCreated, target.controller.name)
@@ -222,9 +220,9 @@ class JavaAutoDevFlow : DevFlowProvider() {
         isNeedCreateController: Boolean
     ) {
         when {
-            isNeedCreateController || processor!!.isController(code) -> {
+            isNeedCreateController || processor.isController(code) -> {
                 selectedControllerCode = code
-                processor!!.createControllerOrUpdateMethod(controllerName, code, isNeedCreateController)
+                processor.createControllerOrUpdateMethod(controllerName, code, isNeedCreateController)
             }
 
             processor.isService(code) -> {

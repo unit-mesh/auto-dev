@@ -141,17 +141,6 @@ class CodeCompletionIntention : AbstractChatIntention() {
                 logger.warn("Suggestion: $suggestion")
             }
         }
-
-//        EditorFactory.getInstance().addEditorFactoryListener(object : EditorFactoryListener {
-//            override fun editorReleased(event: EditorFactoryEvent) {
-//                Disposer.dispose(addAfterLineEndElement as Disposable)
-//            }
-//        }, addAfterLineEndElement as Disposable)
-//        val instance = LLMInlayManager.getInstance()
-//        instance.applyCompletion(editor.project!!, editor)
-//
-//        ApplicationManager.getApplication().messageBus.syncPublisher(LLMInlayListener.TOPIC)
-//            .inlaysUpdated(editor, listOf(inlay))
     }
 
     private val connectorFactory = ConnectorFactory.getInstance()
