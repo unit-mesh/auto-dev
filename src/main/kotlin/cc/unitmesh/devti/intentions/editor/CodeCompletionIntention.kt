@@ -8,11 +8,8 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.actions.EditorActionUtil
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.Task
+import com.intellij.openapi.progress.*
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
-import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.util.TextRange
@@ -20,6 +17,8 @@ import com.intellij.psi.*
 import com.intellij.psi.codeStyle.CodeStyleManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlin.jvm.internal.Ref
 import kotlin.math.min
 
@@ -89,10 +88,8 @@ class CodeCompletionIntention : AbstractChatIntention() {
 
         val task = object : Task.Backgroundable(project, "Code completion", true) {
             override fun run(indicator: ProgressIndicator) {
-                ApplicationManager.getApplication().invokeLater() {
-                    runBlockingCancellable(indicator) {
-                        renderInlay(prompt, editor, offset, document)
-                    }
+                ApplicationManager.getApplication().invokeLater {
+                    renderInlay(prompt, editor, offset, document, indicator)
                 }
             }
         }
@@ -110,35 +107,40 @@ class CodeCompletionIntention : AbstractChatIntention() {
      * @param editor The editor in which to render the inlay.
      * @param offset The offset at which to render the inlay.
      */
-    private suspend fun renderInlay(
+    private fun renderInlay(
         prompt: @NlsSafe String,
         editor: Editor,
         offset: Int,
-        document: Document
+        document: Document,
+        indicator: ProgressIndicator
     ) {
         val flow: Flow<String> = connectorFactory.connector().stream(prompt)
 
-        val currentOffset = Ref.IntRef()
-        currentOffset.element = offset
+        runBlockingCancellable(indicator) {
+            launch {
+                val currentOffset = Ref.IntRef()
+                currentOffset.element = offset
 
-        val project = editor.project!!
-        val suggestion = StringBuilder()
-        flow.collect {
-            suggestion.append(it)
-            WriteCommandAction.runWriteCommandAction(
-                project,
-                AutoDevBundle.message("intentions.chat.code.complete.name"),
-                writeActionGroupId,
-                {
-                    insertStringAndSaveChange(project, it, editor.document, currentOffset.element, false)
+                val project = editor.project!!
+                val suggestion = StringBuilder()
+                flow.collect {
+                    suggestion.append(it)
+                    WriteCommandAction.runWriteCommandAction(
+                        project,
+                        AutoDevBundle.message("intentions.chat.code.complete.name"),
+                        writeActionGroupId,
+                        {
+                            insertStringAndSaveChange(project, it, editor.document, currentOffset.element, false)
+                        }
+                    )
+
+                    currentOffset.element += it.length
+                    editor.caretModel.moveToOffset(currentOffset.element)
                 }
-            )
 
-            currentOffset.element += it.length
-            editor.caretModel.moveToOffset(currentOffset.element)
+                logger.warn("Suggestion: $suggestion")
+            }
         }
-
-        logger.warn("Suggestion: $suggestion")
 
 //        EditorFactory.getInstance().addEditorFactoryListener(object : EditorFactoryListener {
 //            override fun editorReleased(event: EditorFactoryEvent) {
