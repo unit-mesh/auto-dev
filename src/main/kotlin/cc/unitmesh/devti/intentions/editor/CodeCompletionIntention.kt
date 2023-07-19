@@ -1,10 +1,12 @@
 package cc.unitmesh.devti.intentions.editor
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.gui.chat.ChatBotActionType
-import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.models.ConnectorFactory
+import cc.unitmesh.devti.presentation.LLMTextPresentation
+import com.intellij.codeInsight.hints.presentation.PresentationRenderer
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.EditorCustomElementRenderer
 import com.intellij.openapi.editor.actions.EditorActionUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
@@ -24,7 +26,7 @@ class CodeCompletionIntention : AbstractChatIntention() {
     override fun getFamilyName(): String = AutoDevBundle.message("intentions.chat.code.complete.family.name")
 
     override fun getPrompt(project: Project, elementToExplain: PsiElement?): String {
-        return "Complete code from prompt"
+        return "Complete code for "
     }
 
     /**
@@ -58,24 +60,23 @@ class CodeCompletionIntention : AbstractChatIntention() {
         }
 
         val suffix = document.getText(TextRange(offset, suffixEnd))
-        complete(project, prompt, suffix, editor, offset)
+
+//        val caretParent = if (file.findElementAt(offset) != null) file.findElementAt(offset)!!.parent else null
+//        val afterLineEndElementsInRange = editor.inlayModel.getAfterLineEndElementsInRange(offset, offset + 1)
+
+        val text = ""
+//        val flow = connectorFactory.connector().stream(prompt)
+        val flow = connectorFactory.connector().prompt(prompt)
+        val presentation = LLMTextPresentation(editor, flow, false)
+        val editorCustomElementRenderer: EditorCustomElementRenderer = PresentationRenderer(presentation)
+        editor.inlayModel.addAfterLineEndElement(
+            offset,
+            true,
+            editorCustomElementRenderer
+        )
     }
 
-    fun complete(project: Project, prompt: String, suffix: String, editor: Editor, offset: Int) {
-        val actionType = ChatBotActionType.CODE_COMPLETE
-
-        val prompter = object : ContextPrompter() {
-            override fun getUIPrompt(): String {
-                return "Complete code for follow code: \n$prompt"
-            }
-
-            override fun getRequestPrompt(): String {
-                return "Complete code for follow code: \n$prompt"
-            }
-        }
-
-        sendToChat(project, actionType, prompter)
-    }
+    private val connectorFactory = ConnectorFactory.getInstance()
 
     fun insertStringAndSaveChange(
         project: Project,
