@@ -1,21 +1,13 @@
 package cc.unitmesh.devti.intentions.editor
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatBotActionType
-import cc.unitmesh.devti.gui.chat.ChatCodingComponent
-import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.actions.EditorActionUtil
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.Task
-import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
-import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -65,29 +57,17 @@ class CodeCompletionIntention : AbstractChatIntention() {
     fun complete(project: Project, prompt: String, suffix: String, editor: Editor, offset: Int) {
         val actionType = ChatBotActionType.CODE_COMPLETE
 
-        val toolWindowManager =
-            ToolWindowManager.getInstance(project).getToolWindow(DevtiFlowToolWindowFactory.id) ?: return
-        toolWindowManager.activate {
-            val chatCodingService = ChatCodingService(actionType)
-            val contentPanel = ChatCodingComponent(chatCodingService)
-            val contentManager = toolWindowManager.contentManager
-            val content =
-                contentManager.factory.createContent(contentPanel, chatCodingService.getLabel(), false)
+        val prompter = object : ContextPrompter() {
+            override fun getUIPrompt(): String {
+                return "Complete code for follow code: \n$prompt"
+            }
 
-            contentManager.removeAllContents(true)
-            contentManager.addContent(content)
-            toolWindowManager.activate {
-                chatCodingService.handlePromptAndResponse(contentPanel, object : ContextPrompter() {
-                    override fun getUIPrompt(): String {
-                        return "Complete code for follow code: \n$prompt"
-                    }
-
-                    override fun getRequestPrompt(): String {
-                        return "Complete code for follow code: \n$prompt"
-                    }
-                })
+            override fun getRequestPrompt(): String {
+                return "Complete code for follow code: \n$prompt"
             }
         }
+
+        sendToChat(project, actionType, prompter)
     }
 
     fun insertStringAndSaveChange(

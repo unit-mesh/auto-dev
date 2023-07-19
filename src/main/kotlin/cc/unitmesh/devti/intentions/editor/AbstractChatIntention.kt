@@ -1,15 +1,11 @@
 package cc.unitmesh.devti.intentions.editor
 
-import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
 import cc.unitmesh.devti.gui.chat.*
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.NlsSafe
-import com.intellij.openapi.wm.ToolWindow
-import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNameIdentifierOwner
@@ -26,6 +22,13 @@ abstract class AbstractChatIntention : IntentionAction {
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean =
         editor != null && file != null
 
+    /**
+     * Invokes the given method with the specified parameters.
+     *
+     * @param project The current project.
+     * @param editor The editor in which the method is invoked.
+     * @param file The file in which the method is invoked.
+     */
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (editor == null || file == null) return
 
@@ -49,28 +52,22 @@ abstract class AbstractChatIntention : IntentionAction {
 
         val actionType = getActionType()
 
-        val toolWindowManager =
-            ToolWindowManager.getInstance(project).getToolWindow(DevtiFlowToolWindowFactory.id) ?: return
-        toolWindowManager.activate {
-            val chatCodingService = ChatCodingService(actionType)
-            val contentPanel = ChatCodingComponent(chatCodingService)
-            val contentManager = toolWindowManager.contentManager
-            val content = contentManager.factory.createContent(contentPanel, chatCodingService.getLabel(), false)
 
-            contentManager.removeAllContents(true)
-            contentManager.addContent(content)
-            toolWindowManager.activate {
-                val prompter = ContextPrompter.prompter(file?.language?.displayName ?: "")
-                prompter?.initContext(actionType, selectedText, file, project)
-
-                chatCodingService.handlePromptAndResponse(contentPanel, prompter!!)
-            }
-        }
+        val prompter = ContextPrompter.prompter(file.language.displayName)
+        prompter?.initContext(actionType, selectedText, file, project)
+        sendToChat(project, actionType, prompter!!)
     }
 
     open fun getActionType() = ChatBotActionType.CODE_COMPLETE
 
-    protected fun getElementToExplain(project: Project?, editor: Editor?): PsiElement? {
+    /**
+     * Returns the PsiElement to explain in the given project and editor.
+     *
+     * @param project the project in which the element resides (nullable)
+     * @param editor the editor in which the element is located (nullable)
+     * @return the PsiElement to explain, or null if either the project or editor is null, or if no element is found
+     */
+    protected open fun getElementToExplain(project: Project?, editor: Editor?): PsiElement? {
         if (project == null || editor == null) return null
 
         val element = PsiUtilBase.getElementAtCaret(editor) ?: return null
@@ -83,3 +80,4 @@ abstract class AbstractChatIntention : IntentionAction {
     }
 
 }
+
