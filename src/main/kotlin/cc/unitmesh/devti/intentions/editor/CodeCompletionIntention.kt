@@ -103,37 +103,24 @@ class CodeCompletionIntention : AbstractChatIntention() {
     ) {
         val flow: Flow<String> = connectorFactory.connector().stream(prompt)
 
-        val fullSuggestion = StringBuilder()
-//        val documentationFromLastIteration: Ref.ObjectRef<String> = Ref.ObjectRef<String>()
-//        documentationFromLastIteration.element = ""
+        val currentOffset = Ref.IntRef()
+        currentOffset.element = offset
 
-        val currentOffset = offset
         val project = editor.project!!
-        flow.collect { text ->
-            fullSuggestion.append(text)
-
+        var lastSuggestionLine = ""
+        flow.collect {
+            lastSuggestionLine += it
             WriteCommandAction.runWriteCommandAction(
                 project,
                 AutoDevBundle.message("intentions.chat.code.complete.name"),
                 writeActionGroupId,
                 {
-                    document.replaceString(currentOffset, currentOffset, text)
-                    PsiDocumentManager.getInstance(project).commitDocument(document)
-                    val psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document)
-                    val reformatRange = TextRange(offset, offset + fullSuggestion.length)
-                    CodeStyleManager.getInstance(project).reformatText(psiFile!!, listOf(reformatRange))
+                    insertStringAndSaveChange(project, it, editor.document, currentOffset.element, false)
                 }
             )
 
-
-//            ApplicationManager.getApplication().invokeAndWait {
-//                WriteCommandAction.runWriteCommandAction(project) {
-//                    insertStringAndSaveChange(project, it, editor.document, currentOffset, false)
-//                }
-//
-//                currentOffset += it.length
-//                editor.caretModel.moveToOffset(currentOffset)
-//            }
+            currentOffset.element += it.length
+            editor.caretModel.moveToOffset(currentOffset.element)
         }
 
 //        EditorFactory.getInstance().addEditorFactoryListener(object : EditorFactoryListener {
