@@ -2,11 +2,17 @@ package cc.unitmesh.devti.intentions.editor
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.models.ConnectorFactory
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.actions.EditorActionUtil
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
+import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.util.TextRange
@@ -14,7 +20,6 @@ import com.intellij.psi.*
 import com.intellij.psi.codeStyle.CodeStyleManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.runBlocking
 import kotlin.jvm.internal.Ref
 import kotlin.math.min
 
@@ -81,9 +86,19 @@ class CodeCompletionIntention : AbstractChatIntention() {
 //        val suffix = document.getText(TextRange(offset, suffixEnd))
 
         logger.warn("Prompt: $prompt")
-        runBlocking {
-            renderInlay(prompt, editor, offset, document)
+
+        val task = object : Task.Backgroundable(project, "Code completion", true) {
+            override fun run(indicator: ProgressIndicator) {
+                ApplicationManager.getApplication().invokeLater() {
+                    runBlockingCancellable(indicator) {
+                        renderInlay(prompt, editor, offset, document)
+                    }
+                }
+            }
         }
+
+        ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+
     }
 
     private val writeActionGroupId = "code.complete.intention.write.action"
@@ -107,9 +122,9 @@ class CodeCompletionIntention : AbstractChatIntention() {
         currentOffset.element = offset
 
         val project = editor.project!!
-        var lastSuggestionLine = ""
+        val suggestion = StringBuilder()
         flow.collect {
-            lastSuggestionLine += it
+            suggestion.append(it)
             WriteCommandAction.runWriteCommandAction(
                 project,
                 AutoDevBundle.message("intentions.chat.code.complete.name"),
@@ -123,15 +138,13 @@ class CodeCompletionIntention : AbstractChatIntention() {
             editor.caretModel.moveToOffset(currentOffset.element)
         }
 
+        logger.warn("Suggestion: $suggestion")
+
 //        EditorFactory.getInstance().addEditorFactoryListener(object : EditorFactoryListener {
 //            override fun editorReleased(event: EditorFactoryEvent) {
 //                Disposer.dispose(addAfterLineEndElement as Disposable)
 //            }
 //        }, addAfterLineEndElement as Disposable)
-//
-//        WriteCommandAction.runWriteCommandAction(editor.project!!) {
-//            insertStringAndSaveChange(editor.project!!, text, editor.document, offset, false)
-//        }
 //        val instance = LLMInlayManager.getInstance()
 //        instance.applyCompletion(editor.project!!, editor)
 //
