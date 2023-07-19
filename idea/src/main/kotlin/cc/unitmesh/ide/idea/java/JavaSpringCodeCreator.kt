@@ -99,16 +99,16 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
         return DtClass(endpoint, emptyList())
     }
 
-    override fun createEntity(code: String): DtClass? = createClassByCode(code, getAllEntityFiles())
-    override fun createDto(code: String): DtClass? = createClassByCode(code, getAllDtoFiles())
-    override fun createRepository(code: String): DtClass? = createClassByCode(code, getAllRepositoryFiles())
-    override fun createService(code: String): DtClass? = createClassByCode(code, getAllServiceFiles())
+    override fun createEntity(code: String): DtClass? = createClassByCode(code, getAllEntityFiles(), "model")
+    override fun createDto(code: String): DtClass? = createClassByCode(code, getAllDtoFiles(), "dto")
+    override fun createRepository(code: String): DtClass? = createClassByCode(code, getAllRepositoryFiles(), "repository")
+    override fun createService(code: String): DtClass? = createClassByCode(code, getAllServiceFiles(), "service")
 
-    private fun createClassByCode(code: String, psiFiles: List<PsiFile>): DtClass? {
+    private fun createClassByCode(code: String, psiFiles: List<PsiFile>, layerName: String): DtClass? {
         val packageName = if (psiFiles.isNotEmpty()) {
             psiFiles.firstOrNull()?.lookupPackageName()?.packageName
         } else {
-            packageCloseToController("service")
+            packageCloseToController(layerName)
         }
 
         val newCode = "package $packageName;\n\n$code"
