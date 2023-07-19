@@ -15,8 +15,10 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.codeStyle.CodeStyleManager
+import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.runBlocking
 import kotlin.math.min
 
 class CodeCompletionIntention : AbstractChatIntention() {
@@ -62,20 +64,21 @@ class CodeCompletionIntention : AbstractChatIntention() {
             suffixEnd--
         }
 
+        // TODO: use suffix to improve the completion
         val suffix = document.getText(TextRange(offset, suffixEnd))
 
-        val text = ""
-        val flow = connectorFactory.connector().prompt(prompt)
-        val presentation = LLMTextPresentation(editor, flow, false)
-        val editorCustomElementRenderer: EditorCustomElementRenderer = PresentationRenderer(presentation)
-        editor.inlayModel.addAfterLineEndElement(
-            offset,
-            true,
-            editorCustomElementRenderer
-        )
+        runBlocking {
+            renderInlay(prompt, editor, offset)
+        }
     }
 
-    // for future
+    /**
+     * Renders an inlay with the given prompt in the specified editor at the specified offset.
+     *
+     * @param prompt The prompt to display in the inlay.
+     * @param editor The editor in which to render the inlay.
+     * @param offset The offset at which to render the inlay.
+     */
     private suspend fun renderInlay(
         prompt: @NlsSafe String,
         editor: Editor,
