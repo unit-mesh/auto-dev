@@ -13,7 +13,7 @@ import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
-class AutoDevIntentionsActionGroup : ActionGroup(), DumbAware {
+class IntentionsActionGroup : ActionGroup(), DumbAware {
     init {
         templatePresentation.text =
             AutoDevBundle.message("intentions.assistant.name")
