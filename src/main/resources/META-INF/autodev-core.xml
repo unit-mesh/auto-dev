@@ -40,6 +40,12 @@
             <with tag="className" implements="com.intellij.codeInsight.intention.IntentionAction"/>
         </extensionPoint>
 
+        <extensionPoint qualifiedName="cc.unitmesh.fileContextBuilder"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass"
+                  implements="cc.unitmesh.devti.context.builder.FileContextBuilder"/>
+        </extensionPoint>
+
         <extensionPoint qualifiedName="cc.unitmesh.classContextBuilder"
                         beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
             <with attribute="implementationClass"
@@ -50,12 +56,6 @@
                         beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
             <with attribute="implementationClass"
                   implements="cc.unitmesh.devti.context.builder.MethodContextBuilder"/>
-        </extensionPoint>
-
-        <extensionPoint qualifiedName="cc.unitmesh.fileContextBuilder"
-                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
-            <with attribute="implementationClass"
-                  implements="cc.unitmesh.devti.context.builder.FileContextBuilder"/>
         </extensionPoint>
 
         <extensionPoint qualifiedName="cc.unitmesh.variableContextBuilder"

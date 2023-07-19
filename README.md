@@ -45,7 +45,6 @@ Right-click on the code editor, select `AutoDev` -> `CodeCompletion` -> `CodeCom
 
 ![Copilot Mode](https://unitmesh.cc/auto-dev/copilot-mode.png)
 
-
 ### Custom prompt
 
 ```json
@@ -104,32 +103,146 @@ Key Concepts:
 
 - Workflow flow design: [CrudFlowAction](src/main/kotlin/cc/unitmesh/devti/flow/base/CrudFlowAction.kt)
 - CRUD design: [SpringBaseCrud](src/main/kotlin/cc/unitmesh/devti/flow/base/SpringBaseCrud.kt)
-- Prompt Strategy design: [PromptStrategyAdvisor](src/main/kotlin/cc/unitmesh/devti/java/prompt/PromptStrategyAdvisor.kt)
+- Prompt Strategy
+  design: [PromptStrategyAdvisor](src/main/kotlin/cc/unitmesh/devti/java/prompt/PromptStrategyAdvisor.kt)
 
-### TODO for prompt Strategy
-
-JetBrains LLM
-
-```javascript
-defaultPriorities.json = [
-  "BeforeCursor",
-  "SimilarFile",
-  "ImportedFile",
-  "PathMarker",
-  "LanguageMarker"
-]
-```
-
-## Release
+### Release
 
 1. change `pluginVersion` in [gradle.properties](gradle.properties)
 2. git tag `version`
 3. `./gradlew publishPlugin`
 
+## add new language support
+
+We referenced the multi-language support implementation of JetBrains AI Assistant and combined it with the design
+principles of AutoDev to design a series of extension points.
+
+### Extension Points
+
+JetBrains AI Assistant Extension Points:
+
+```xml
+
+<extensionPoints>
+    <extensionPoint qualifiedName="cc.unitmesh.fileContextBuilder"
+                    beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+        <with attribute="implementationClass"
+              implements="cc.unitmesh.devti.context.builder.FileContextBuilder"/>
+    </extensionPoint>
+
+    <extensionPoint qualifiedName="cc.unitmesh.classContextBuilder"
+                    beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+        <with attribute="implementationClass"
+              implements="cc.unitmesh.devti.context.builder.ClassContextBuilder"/>
+    </extensionPoint>
+
+    <extensionPoint qualifiedName="cc.unitmesh.methodContextBuilder"
+                    beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+        <with attribute="implementationClass"
+              implements="cc.unitmesh.devti.context.builder.MethodContextBuilder"/>
+    </extensionPoint>
+
+    <extensionPoint qualifiedName="cc.unitmesh.variableContextBuilder"
+                    beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+        <with attribute="implementationClass"
+              implements="cc.unitmesh.devti.context.builder.VariableContextBuilder"/>
+    </extensionPoint>
+</extensionPoints>
+```
+
+AutoDev Extension Points:
+
+```xml
+
+<extensionPoints>
+    <!-- AutoCRUD flow -->
+    <extensionPoint qualifiedName="cc.unitmesh.devFlowProvider"
+                    interface="cc.unitmesh.devti.provider.DevFlowProvider"
+                    dynamic="true"/>
+
+    <!-- get tech stacks from dep, like build.gradle, package.json ... -->
+    <extensionPoint qualifiedName="cc.unitmesh.techStackProvider"
+                    interface="cc.unitmesh.devti.provider.TechStackProvider"
+                    dynamic="true"/>
+
+    <!-- custom context strategy for Auto CRUD -->
+    <extensionPoint qualifiedName="cc.unitmesh.contextPrompter"
+                    interface="cc.unitmesh.devti.provider.ContextPrompter"
+                    dynamic="true"/>
+
+    <!-- Others strategy, like token count -->
+    <extensionPoint qualifiedName="cc.unitmesh.promptStrategy"
+                    interface="cc.unitmesh.devti.provider.PromptStrategy"
+                    dynamic="true"/>
+</extensionPoints>
+```
+
+#### Java/IDEA Example
+
+```xml
+
+<extensions defaultExtensionNs="cc.unitmesh">
+    <!-- Language support   -->
+    <classContextBuilder language="JAVA"
+                         implementationClass="cc.unitmesh.ide.idea.context.JavaClassContextBuilder"/>
+
+    <methodContextBuilder language="JAVA"
+                          implementationClass="cc.unitmesh.ide.idea.context.JavaMethodContextBuilder"/>
+
+    <fileContextBuilder language="JAVA"
+                        implementationClass="cc.unitmesh.ide.idea.context.JavaFileContextBuilder"/>
+
+    <variableContextBuilder language="JAVA"
+                            implementationClass="cc.unitmesh.ide.idea.context.JavaVariableContextBuilder"/>
+
+    <!-- TechStack Binding -->
+    <contextPrompter
+            language="JAVA"
+            implementation="cc.unitmesh.ide.idea.provider.JavaContextPrompter"/>
+    <techStackProvider
+            language="JAVA"
+            implementation="cc.unitmesh.ide.idea.provider.JavaTechStackService"/>
+    <devFlowProvider
+            language="JAVA"
+            implementation="cc.unitmesh.ide.idea.provider.JavaAutoDevFlow"/>
+    <promptStrategy
+            language="JAVA"
+            implementation="cc.unitmesh.ide.idea.provider.PromptStrategyAdvisor"/>
+</extensions>
+```
+
+## Prompt Strategy
+
+JetBrains LLM and GitHub Copilot try to implmentation like this:
+
+```javascript
+defaultPriorities.json = [
+    "BeforeCursor",
+    "SimilarFile",
+    "ImportedFile",
+    "PathMarker",
+    "LanguageMarker"
+]
+```
+
+We currently support:
+
+- [x] BeforeCursor
+- [ ] SimilarFile
+    - [x] JaccardSimilarity by JetBrains
+    - [ ] all cases
+- [ ] ImportedFile
+    - [x] Java CRUD
+    - [ ] all cases
+- [x] PathMarker
+- [x] LanguageMarker
+
 ## License
 
-- ChatUI based on: [https://github.com/Cspeisman/chatgpt-intellij-plugin](https://github.com/Cspeisman/chatgpt-intellij-plugin)
-- Multiple target inspired by: [https://github.com/intellij-rust/intellij-rust](https://github.com/intellij-rust/intellij-rust)
+- ChatUI based
+  on: [https://github.com/Cspeisman/chatgpt-intellij-plugin](https://github.com/Cspeisman/chatgpt-intellij-plugin)
+- Multiple target inspired
+  by: [https://github.com/intellij-rust/intellij-rust](https://github.com/intellij-rust/intellij-rust)
 - SimilarFile inspired by: JetBrains and GitHub Copilot
 
 This code is distributed under the MPL 2.0 license. See `LICENSE` in this directory.
