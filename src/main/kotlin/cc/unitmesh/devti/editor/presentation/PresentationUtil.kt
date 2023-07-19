@@ -88,7 +88,7 @@ object PresentationUtil {
         if (ApplicationInfo.getInstance().build.baselineVersion >= 221) {
             try {
                 method = EditorColorsScheme::class.java.getMethod("getEditorFontSize2D", *arrayOfNulls(0))
-            } catch (noSuchMethodException: NoSuchMethodException) {
+            } catch (_: NoSuchMethodException) {
             }
         }
         getEditorFontSize2DMethod = method
