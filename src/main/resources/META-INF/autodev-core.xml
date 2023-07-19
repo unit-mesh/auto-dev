@@ -79,6 +79,11 @@
                         dynamic="true"/>
     </extensionPoints>
 
+    <applicationListeners>
+        <listener topic="cc.unitmesh.devti.editor.LLMInlayListener"
+                  class="cc.unitmesh.devti.editor.LLMInlayGotItListener"/>
+    </applicationListeners>
+
     <extensions defaultExtensionNs="cc.unitmesh">
         <aiAssistantIntention>
             <className>cc.unitmesh.devti.intentions.editor.CodeCompletionIntention</className>
@@ -91,6 +96,13 @@
     </extensions>
 
     <actions>
+        <action id="llm.applyInlays"
+                class="cc.unitmesh.devti.actions.LLMApplyInlaysAction">
+            <keyboard-shortcut first-keystroke="TAB" keymap="$default"/>
+            <override-text place="MainMenu" text="Apply Completions to Editor"/>
+            <override-text place="EditorPopup" text="Accept"/>
+        </action>
+
         <group id="AutoDevIntentionsActionGroup" class="cc.unitmesh.devti.intentions.editor.IntentionsActionGroup">
             <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
         </group>

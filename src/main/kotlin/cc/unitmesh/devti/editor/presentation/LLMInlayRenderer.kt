@@ -1,7 +1,7 @@
-package cc.unitmesh.devti.presentation
+package cc.unitmesh.devti.editor.presentation
 
-import cc.unitmesh.devti.presentation.PresentationUtil.getTextAttributes
-import cc.unitmesh.devti.presentation.PresentationUtil.replaceLeadingTabs
+import cc.unitmesh.devti.editor.presentation.PresentationUtil.getTextAttributes
+import cc.unitmesh.devti.editor.presentation.PresentationUtil.replaceLeadingTabs
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorCustomElementRenderer
 import com.intellij.openapi.editor.Inlay

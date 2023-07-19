@@ -2,7 +2,8 @@ package cc.unitmesh.devti.intentions.editor
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.models.ConnectorFactory
-import cc.unitmesh.devti.presentation.LLMInlayRenderer
+import cc.unitmesh.devti.editor.presentation.LLMInlayRenderer
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
@@ -15,6 +16,7 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.codeStyle.CodeStyleManager
+import com.intellij.util.concurrency.annotations.RequiresEdt
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
@@ -101,6 +103,9 @@ class CodeCompletionIntention : AbstractChatIntention() {
         )
 
         logger.warn("Prompt: $prompt")
+
+//        ApplicationManager.getApplication().messageBus
+//            .syncPublisher(CopilotInlayListener.TOPIC)
     }
 
     private val connectorFactory = ConnectorFactory.getInstance()

@@ -1,7 +1,7 @@
-package cc.unitmesh.devti.presentation
+package cc.unitmesh.devti.editor.presentation
 
-import cc.unitmesh.devti.presentation.PresentationUtil.fontMetrics
-import cc.unitmesh.devti.presentation.PresentationUtil.getTextAttributes
+import cc.unitmesh.devti.editor.presentation.PresentationUtil.fontMetrics
+import cc.unitmesh.devti.editor.presentation.PresentationUtil.getTextAttributes
 import com.intellij.codeInsight.codeVision.ui.model.RangeCodeVisionModel
 import com.intellij.codeInsight.hints.presentation.BasePresentation
 import com.intellij.openapi.editor.Editor
