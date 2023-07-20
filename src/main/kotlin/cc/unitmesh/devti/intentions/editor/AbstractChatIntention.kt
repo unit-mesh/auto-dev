@@ -13,6 +13,8 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilBase
 
 abstract class AbstractChatIntention : IntentionAction {
+    open fun getActionType() = ChatBotActionType.CODE_COMPLETE
+
     open val prompt: String = "Code completion"
 
     override fun startInWriteAction(): Boolean = false
@@ -55,8 +57,6 @@ abstract class AbstractChatIntention : IntentionAction {
         prompter?.initContext(actionType, selectedText, file, project, editor.caretModel.offset)
         sendToChat(project, actionType, prompter!!)
     }
-
-    open fun getActionType() = ChatBotActionType.CODE_COMPLETE
 
     /**
      * Returns the PsiElement to explain in the given project and editor.

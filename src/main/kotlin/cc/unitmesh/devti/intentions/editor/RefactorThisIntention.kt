@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.intentions.editor
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
@@ -11,6 +12,8 @@ import com.intellij.psi.PsiFile
  * It extends the AbstractChatIntention class.
  */
 class RefactorThisIntention : AbstractChatIntention() {
+    override fun getActionType() = ChatBotActionType.REFACTOR
+
     override val prompt = "Refactor following code:"
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
