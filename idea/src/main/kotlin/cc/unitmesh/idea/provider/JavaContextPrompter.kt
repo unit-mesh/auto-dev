@@ -33,9 +33,9 @@ class JavaContextPrompter : ContextPrompter() {
     private val isService = fileName.endsWith("Service.java") || fileName.endsWith("ServiceImpl.java")
     private lateinit var changeListManager: ChangeListManager
 
-    override fun initContext(actionType: ChatBotActionType, prefixText: String, file: PsiFile?, project: Project) {
+    override fun initContext(actionType: ChatBotActionType, text: String, file: PsiFile?, project: Project, offset: Int) {
         this.action = actionType
-        this.prefixText = prefixText
+        this.prefixText = text
         this.file = file
         this.project = project
         changeListManager = ChangeListManagerImpl.getInstance(project)

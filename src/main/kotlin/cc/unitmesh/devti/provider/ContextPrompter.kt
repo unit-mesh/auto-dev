@@ -1,8 +1,6 @@
 package cc.unitmesh.devti.provider
 
 import cc.unitmesh.devti.gui.chat.ChatBotActionType
-import cc.unitmesh.devti.prompting.model.PromptConfig
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
@@ -22,7 +20,7 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
 
     open fun getUIPrompt(): String = ""
     open fun getRequestPrompt(): String = ""
-    open fun initContext(actionType: ChatBotActionType, prefixText: String, file: PsiFile?, project: Project) {}
+    open fun initContext(actionType: ChatBotActionType, text: String, file: PsiFile?, project: Project, offset: Int) {}
 
     companion object {
         private val EP_NAME: ExtensionPointName<ContextPrompter> =

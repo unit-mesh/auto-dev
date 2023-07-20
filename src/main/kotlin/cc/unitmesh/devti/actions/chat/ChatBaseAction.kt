@@ -53,7 +53,7 @@ abstract class ChatBaseAction : AnAction() {
 
         val prompter = ContextPrompter.prompter(file?.language?.displayName ?: "")
         logger.info("use prompter: ${prompter?.javaClass}")
-        prompter?.initContext(actionType, prefixText, file, project)
+        prompter?.initContext(actionType, prefixText, file, project, caretModel?.offset ?: 0)
 
         toolWindowManager?.activate {
             val chatContext = ChatContext(

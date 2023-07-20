@@ -12,9 +12,9 @@ class JavaScriptContextPrompter : ContextPrompter() {
     private var project: Project? = null
 
     private val lang: String = file?.language?.displayName ?: ""
-    override fun initContext(actionType: ChatBotActionType, prefixText: String, file: PsiFile?, project: Project) {
+    override fun initContext(actionType: ChatBotActionType, text: String, file: PsiFile?, project: Project, offset: Int) {
         this.action = actionType
-        this.selectedText = prefixText
+        this.selectedText = text
         this.file = file
         this.project = project
     }

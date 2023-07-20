@@ -52,7 +52,7 @@ abstract class AbstractChatIntention : IntentionAction {
 
 
         val prompter = ContextPrompter.prompter(file.language.displayName)
-        prompter?.initContext(actionType, selectedText, file, project)
+        prompter?.initContext(actionType, selectedText, file, project, editor.caretModel.offset)
         sendToChat(project, actionType, prompter!!)
     }
 

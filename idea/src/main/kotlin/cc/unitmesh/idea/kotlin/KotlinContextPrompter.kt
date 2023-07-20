@@ -14,9 +14,9 @@ class KotlinContextPrompter : ContextPrompter() {
     private var project: Project? = null
     private var lang: String = ""
 
-    override fun initContext(actionType: ChatBotActionType, prefixText: String, file: PsiFile?, project: Project) {
+    override fun initContext(actionType: ChatBotActionType, text: String, file: PsiFile?, project: Project, offset: Int) {
         this.action = actionType
-        this.selectedText = prefixText
+        this.selectedText = text
         this.file = file
         this.project = project
         this.lang = file?.language?.displayName ?: ""
