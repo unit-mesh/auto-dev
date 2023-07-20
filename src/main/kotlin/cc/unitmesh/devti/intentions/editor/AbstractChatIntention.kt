@@ -13,9 +13,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilBase
 
 abstract class AbstractChatIntention : IntentionAction {
-    val prompt: String = "Code completion"
-
-    abstract fun getPrompt(project: Project, elementToExplain: PsiElement?): String
+    open val prompt: String = "Code completion"
 
     override fun startInWriteAction(): Boolean = false
 

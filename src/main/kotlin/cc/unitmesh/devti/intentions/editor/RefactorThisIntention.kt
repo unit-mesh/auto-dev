@@ -11,6 +11,8 @@ import com.intellij.psi.PsiFile
  * It extends the AbstractChatIntention class.
  */
 class RefactorThisIntention : AbstractChatIntention() {
+    override val prompt = "Refactor following code:"
+
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         return (editor != null) && (file != null)
     }
@@ -18,15 +20,4 @@ class RefactorThisIntention : AbstractChatIntention() {
     override fun getText(): String = AutoDevBundle.message("intentions.chat.code.refactor.name")
 
     override fun getFamilyName(): String = AutoDevBundle.message("intentions.chat.code.refactor.family.name")
-
-    /**
-     * Retrieves the prompt for performing a code refactoring.
-     *
-     * @param project the current project
-     * @param elementToExplain the specific element to explain in the prompt (optional)
-     * @return the prompt message for the code refactoring
-     */
-    override fun getPrompt(project: Project, elementToExplain: PsiElement?): String {
-        return "Refactor following code:"
-    }
 }
