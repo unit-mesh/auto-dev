@@ -21,7 +21,7 @@ fun DtClass.Companion.formatPsi(psiClass: PsiClass): String {
 }
 
 fun DtClass.Companion.fromJavaFile(file: PsiFile): DtClass {
-    return cc.unitmesh.idea.fromJavaFile(file as? PsiJavaFileImpl)
+    return fromJavaFile(file as? PsiJavaFileImpl)
 }
 
 fun DtClass.Companion.fromPsi(psiClass: PsiClass): DtClass {

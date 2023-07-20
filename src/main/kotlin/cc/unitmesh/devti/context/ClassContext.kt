@@ -22,6 +22,17 @@ class ClassContext(
         MethodContextProvider(false, gatherUsages = false).from(it).signature
     }
 
+    // TODO: align to DtModel
+    /**
+     * Output:
+     * ```
+     * class BlogService {
+     *   blogRepository: BlogRepository
+     *   + createBlog(blogDto: CreateBlogDto): BlogPost
+     *   + getAllBlogPosts(): List<BlogPost>
+     * }
+     * ```
+     */
     override fun toQuery(): String {
         val className = name ?: "_"
         val classFields = getFieldNames().joinToString(separator = " ")
