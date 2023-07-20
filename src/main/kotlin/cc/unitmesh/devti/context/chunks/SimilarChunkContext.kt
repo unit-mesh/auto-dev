@@ -40,7 +40,7 @@ class SimilarChunkContext(val language: Language, val paths: List<String>?, val 
         if (commentSymbol == null) return code
 
         return code.split("\n").joinToString("\n") {
-            "$commentSymbol $commentSymbol"
+            "$commentSymbol $it"
         }
     }
 }
