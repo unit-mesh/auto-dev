@@ -10,9 +10,9 @@ class MethodContext(
     override val text: String,
     override val name: String?,
     val signature: String? = null,
-    val enclosingClass: PsiElement?= null,
-    val language: String?= null,
-    val returnType: String?= null,
+    val enclosingClass: PsiElement? = null,
+    val language: String? = null,
+    val returnType: String? = null,
     val paramNames: List<String> = emptyList(),
     val includeClassContext: Boolean = false,
     val usages: List<PsiReference> = emptyList()

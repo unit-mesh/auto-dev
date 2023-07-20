@@ -1,6 +1,5 @@
 package cc.unitmesh.pycharm.provider
 
-import cc.unitmesh.devti.context.FileContextProvider
 import cc.unitmesh.devti.context.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import cc.unitmesh.devti.provider.ContextPrompter
@@ -14,7 +13,6 @@ class PythonContextPrompter : ContextPrompter() {
     private var file: PsiFile? = null
     private var project: Project? = null
     private var lang: String = ""
-    private val fileContextProvider = FileContextProvider()
 
     override fun initContext(actionType: ChatBotActionType, prefixText: String, file: PsiFile?, project: Project) {
         this.action = actionType

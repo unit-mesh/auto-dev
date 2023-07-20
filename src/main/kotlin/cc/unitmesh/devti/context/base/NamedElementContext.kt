@@ -7,4 +7,6 @@ abstract class NamedElementContext(open val root: PsiElement, open val text: Str
     override fun toQuery(): String = TODO()
 
     override fun toJson(): String = TODO()
+
+    override fun toUML(): String = TODO()
 }

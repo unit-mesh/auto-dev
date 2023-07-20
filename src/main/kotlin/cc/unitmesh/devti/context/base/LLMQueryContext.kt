@@ -10,4 +10,9 @@ interface LLMQueryContext {
      * convert to json string
      */
     fun toJson(): String
+
+    /**
+     * to UML
+     */
+    fun toUML(): String
 }
