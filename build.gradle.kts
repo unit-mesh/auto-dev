@@ -57,7 +57,7 @@ val javaPlugins = listOf("com.intellij.java")
 val kotlinPlugins = listOf("org.jetbrains.kotlin")
 
 val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
-val ideaPlugins = listOf("Git4Idea", "com.intellij.java", "org.jetbrains.plugins.gradle")
+val ideaPlugins = listOf("Git4Idea", "com.intellij.java", "org.jetbrains.plugins.gradle", "org.jetbrains.kotlin")
 
 val baseIDE = prop("baseIDE")
 val platformVersion = prop("globalPlatformVersion").toInt()

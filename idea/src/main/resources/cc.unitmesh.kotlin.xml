@@ -1,0 +1,21 @@
+<idea-plugin package="cc.unitmesh.idea">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+        <plugin id="org.jetbrains.kotlin"/>
+        <plugin id="org.jetbrains.plugins.gradle"/>
+    </dependencies>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <classContextBuilder language="JAVA"
+                             implementationClass="cc.unitmesh.idea.context.JavaClassContextBuilder"/>
+
+        <methodContextBuilder language="JAVA"
+                              implementationClass="cc.unitmesh.idea.context.JavaMethodContextBuilder"/>
+
+        <fileContextBuilder language="JAVA"
+                            implementationClass="cc.unitmesh.idea.context.JavaFileContextBuilder"/>
+
+        <variableContextBuilder language="JAVA"
+                                implementationClass="cc.unitmesh.idea.context.JavaVariableContextBuilder"/>
+    </extensions>
+</idea-plugin>
