@@ -35,10 +35,9 @@ class CodeCompletionTask(
     private val writeActionGroupId = "code.complete.intention.write.action"
     private val codeMessage = AutoDevBundle.message("intentions.chat.code.complete.name")
 
-    val chunksString = SimilarChunksWithPaths.createQuery(element, 256)
-
-    val commenter = LanguageCommenters.INSTANCE.forLanguage(element.language)
-    val commentPrefix = commenter?.lineCommentPrefix
+    private val chunksString = SimilarChunksWithPaths.createQuery(element, 256)
+    private val commenter = LanguageCommenters.INSTANCE.forLanguage(element.language)
+    private val commentPrefix = commenter?.lineCommentPrefix
 
     override fun run(indicator: ProgressIndicator) {
         val prompt = if (chunksString == null) {
