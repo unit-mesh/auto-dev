@@ -17,5 +17,9 @@
 
         <variableContextBuilder language="Kotlin"
                                 implementationClass="cc.unitmesh.idea.kotlin.KotlinVariableContextBuilder"/>
+
+        <contextPrompter
+                language="Kotlin"
+                implementation="cc.unitmesh.idea.kotlin.KotlinContextPrompter"/>
     </extensions>
 </idea-plugin>
