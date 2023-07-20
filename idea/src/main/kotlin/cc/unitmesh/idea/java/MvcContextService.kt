@@ -70,7 +70,7 @@ ${relevantModel?.joinToString("\n")}
 
         val relevantModel = (services ?: emptyList()) + (models ?: emptyList())
 
-        val clazz = cc.unitmesh.idea.fromJavaFile(file)
+        val clazz = fromJavaFile(file)
         return """ 
 ${relevantModel.joinToString("\n")}\n
 // current path: ${clazz.path}

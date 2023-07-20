@@ -35,25 +35,17 @@ features:
 
 ## Usage
 
-1. Install
-    - method 1. Install from JetBrains Plugin Repository: [AutoDev](https://plugins.jetbrains.com/plugin/21520-autodev)
-    - method 2. Download plugin from release page: [release](https://github.com/unit-mesh/auto-dev/releases) and install
-      plugin in your IDE
-2. configure GitHub Token (optional) and OpenAI config in `Settings` -> `Tools` -> `DevTi`
-
-![Token Configure](https://unitmesh.cc/auto-dev/autodev-config.png)
+1. Install from JetBrains Plugin Repository: [AutoDev](https://plugins.jetbrains.com/plugin/21520-autodev)
+2. Configure GitHub Token (optional) and OpenAI config in `Settings` -> `Tools` -> `AutoDev`
 
 ### CodeCompletion mode
 
-Right-click on the code editor, select `AutoDev` -> `CodeCompletion` -> `CodeComplete`
+You can:
+
+- Right-click on the code editor, select `AutoDev` -> `CodeCompletion` -> `CodeComplete`
+- or use `Alt + Enter` to open `Intention Actions` menu, select `AutoDev` -> `CodeCompletion`
 
 ![Code completion](https://unitmesh.cc/auto-dev/completion-mode.png)
-
-### Copilot mode
-
-1. click as you want:
-
-![Copilot Mode](https://unitmesh.cc/auto-dev/copilot-mode.png)
 
 ### Custom prompt
 
