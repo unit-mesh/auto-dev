@@ -74,7 +74,7 @@ class JavaContextPrompter : ContextPrompter() {
 
     private fun createPrompt(selectedText: String): String {
         var prompt = """$action this $lang code"""
-        when (action) {
+        when (action!!) {
             ChatBotActionType.REVIEW -> {
                 val codeReview = promptConfig?.codeReview
                 prompt = if (codeReview?.instruction?.isNotEmpty() == true) {
@@ -185,7 +185,7 @@ examples:
 //        val commitWorkflowUi: CommitWorkflowUi = project.service()
 //        val changes = commitWorkflowUi.getIncludedChanges()
 
-        val prompting = project.service<CommitPrompting>()
+        val prompting = project!!.service<CommitPrompting>()
         additionContext += prompting.computeDiff(changes)
     }
 
@@ -204,14 +204,14 @@ examples:
     }
 
     private fun addFixIssueContext(selectedText: String) {
-        val projectPath = project.basePath ?: ""
+        val projectPath = project!!.basePath ?: ""
         runReadAction {
             val lookupFile = if (selectedText.contains(projectPath)) {
                 val regex = Regex("$projectPath(.*\\.java)")
                 val relativePath = regex.find(selectedText)?.groupValues?.get(1) ?: ""
                 val file = LocalFileSystem.getInstance().findFileByPath(projectPath + relativePath)
                 file?.let {
-                    val psiFile = PsiManager.getInstance(project).findFile(it)
+                    val psiFile = PsiManager.getInstance(project!!).findFile(it)
                     psiFile
                 }
             } else {
