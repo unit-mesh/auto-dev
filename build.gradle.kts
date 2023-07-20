@@ -36,7 +36,7 @@ plugins {
     alias(libs.plugins.serialization)
 
     kotlin("jvm") version "1.8.22"
-    id("org.jetbrains.intellij") version "1.13.1"
+    id("org.jetbrains.intellij") version "1.15.0"
     id("net.saliman.properties") version "1.5.2"
 }
 
