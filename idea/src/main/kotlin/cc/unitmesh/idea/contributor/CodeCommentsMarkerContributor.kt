@@ -1,7 +1,7 @@
 package cc.unitmesh.idea.contributor
 
 import cc.unitmesh.devti.AutoDevIcons
-import cc.unitmesh.ide.idea.action.AutoCommentAction
+import cc.unitmesh.idea.action.AutoCommentAction
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiIdentifier

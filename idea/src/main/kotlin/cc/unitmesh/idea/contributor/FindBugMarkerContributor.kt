@@ -2,7 +2,7 @@ package cc.unitmesh.idea.contributor
 
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.runconfig.AutoDevRunProfileState
-import cc.unitmesh.ide.idea.action.FindBugAction
+import cc.unitmesh.idea.action.FindBugAction
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger

@@ -2,19 +2,19 @@ package cc.unitmesh.idea.provider
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.context.model.DtClass
-import cc.unitmesh.devti.models.openai.OpenAIProvider
-import cc.unitmesh.devti.models.openai.PromptTemplate
-import cc.unitmesh.devti.provider.DevFlowProvider
 import cc.unitmesh.devti.flow.kanban.Kanban
 import cc.unitmesh.devti.flow.model.SimpleStory
 import cc.unitmesh.devti.flow.model.TargetEndpoint
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
+import cc.unitmesh.devti.models.openai.OpenAIProvider
+import cc.unitmesh.devti.models.openai.PromptTemplate
 import cc.unitmesh.devti.parser.parseCodeFromString
+import cc.unitmesh.devti.provider.DevFlowProvider
 import cc.unitmesh.devti.provider.PromptStrategy
 import cc.unitmesh.devti.runconfig.AutoDevRunProfileState
-import cc.unitmesh.ide.idea.java.JavaCodeProcessor
-import cc.unitmesh.ide.idea.java.JavaParseUtil
-import cc.unitmesh.ide.idea.java.JavaSpringCodeCreator
+import cc.unitmesh.idea.java.JavaCodeProcessor
+import cc.unitmesh.idea.java.JavaParseUtil
+import cc.unitmesh.idea.java.JavaSpringCodeCreator
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger

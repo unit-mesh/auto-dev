@@ -6,7 +6,7 @@ import cc.unitmesh.devti.prompting.model.PromptConfig
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.provider.TechStackProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
-import cc.unitmesh.ide.idea.java.MvcContextService
+import cc.unitmesh.idea.java.MvcContextService
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
