@@ -4,9 +4,17 @@
   <img src="plugin/src/main/resources/META-INF/pluginIcon.svg" width="64px" height="64px" />
 </p>
 
-[![Build](https://github.com/unit-mesh/auto-dev/actions/workflows/build.yml/badge.svg)](https://github.com/unit-mesh/auto-dev/actions/workflows/build.yml)
-[![Version](https://img.shields.io/jetbrains/plugin/v/21520-autodev.svg)](https://plugins.jetbrains.com/plugin/21520-autodev)
-[![Downloads](https://img.shields.io/jetbrains/plugin/d/21520-autodev.svg)](https://plugins.jetbrains.com/plugin/21520-autodev)
+<p align="center">
+  <a href="https://github.com/unit-mesh/auto-dev/actions/workflows/build.yml">
+    <img src="https://github.com/unit-mesh/auto-dev/actions/workflows/build.yml/badge.svg" alt="Build">
+  </a>
+  <a href="https://plugins.jetbrains.com/plugin/21520-autodev">
+    <img src="https://img.shields.io/jetbrains/plugin/v/21520-autodev.svg" alt="Version">
+  </a>
+  <a href="https://plugins.jetbrains.com/plugin/21520-autodev">
+    <img src="https://img.shields.io/jetbrains/plugin/d/21520-autodev.svg" alt="Downloads">
+  </a>
+</p>
 
 > AutoDev 是一款高度自动化的 AI 辅助编程工具。AutoDev 能够与您的需求管理系统（例如 Jira、Trello、Github Issue 等）直接对接。在
 > IDE 中，您只需简单点击，AutoDev 会根据您的需求自动为您生成代码。您所需做的，仅仅是对生成的代码进行质量检查。
