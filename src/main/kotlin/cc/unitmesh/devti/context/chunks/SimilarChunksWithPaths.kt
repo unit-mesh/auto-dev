@@ -25,12 +25,14 @@ class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRel
                 return@runReadAction similarChunksWithPaths.toQuery()
             }
         }
-
     }
 
     fun similarChunksWithPaths(element: PsiElement): SimilarChunkContext {
         val mostRecentFiles: List<VirtualFile> = getMostRecentFiles(element)
-        val mostRecentFilesRelativePaths: List<String> = mostRecentFiles.map { INSTANCE.relativePathTo(it, element)!! }
+        val mostRecentFilesRelativePaths: List<String> = mostRecentFiles.mapNotNull {
+            INSTANCE.relativePathTo(it, element)
+        }
+
         val chunks: List<List<String>> = extractChunks(element, mostRecentFiles)
         val jaccardSimilarities: List<List<Double>> = tokenLevelJaccardSimilarity(chunks, element)
         val paths: MutableList<String> = ArrayList()
