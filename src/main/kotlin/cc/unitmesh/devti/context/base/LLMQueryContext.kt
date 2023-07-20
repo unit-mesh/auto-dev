@@ -12,7 +12,8 @@ interface LLMQueryContext {
     fun toJson(): String
 
     /**
-     * to UML
+     * for align correct [DtModel]
      */
+    @Deprecated("not used")
     fun toUML(): String?
 }
