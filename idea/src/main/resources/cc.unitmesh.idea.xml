@@ -1,4 +1,4 @@
-<idea-plugin package="cc.unitmesh.ide.idea">
+<idea-plugin package="cc.unitmesh.idea">
     <!--suppress PluginXmlValidity -->
     <dependencies>
         <plugin id="com.intellij.modules.java"/>
@@ -7,40 +7,40 @@
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <classContextBuilder language="JAVA"
-                             implementationClass="cc.unitmesh.ide.idea.context.JavaClassContextBuilder"/>
+                             implementationClass="cc.unitmesh.idea.context.JavaClassContextBuilder"/>
 
         <methodContextBuilder language="JAVA"
-                              implementationClass="cc.unitmesh.ide.idea.context.JavaMethodContextBuilder"/>
+                              implementationClass="cc.unitmesh.idea.context.JavaMethodContextBuilder"/>
 
         <fileContextBuilder language="JAVA"
-                            implementationClass="cc.unitmesh.ide.idea.context.JavaFileContextBuilder"/>
+                            implementationClass="cc.unitmesh.idea.context.JavaFileContextBuilder"/>
 
         <variableContextBuilder language="JAVA"
-                                implementationClass="cc.unitmesh.ide.idea.context.JavaVariableContextBuilder"/>
+                                implementationClass="cc.unitmesh.idea.context.JavaVariableContextBuilder"/>
 
         <contextPrompter
                 language="JAVA"
-                implementation="cc.unitmesh.ide.idea.provider.JavaContextPrompter"/>
+                implementation="cc.unitmesh.idea.provider.JavaContextPrompter"/>
         <techStackProvider
                 language="JAVA"
-                implementation="cc.unitmesh.ide.idea.provider.JavaTechStackService"/>
+                implementation="cc.unitmesh.idea.provider.JavaTechStackService"/>
         <devFlowProvider
                 language="JAVA"
-                implementation="cc.unitmesh.ide.idea.provider.JavaAutoDevFlow"/>
+                implementation="cc.unitmesh.idea.provider.JavaAutoDevFlow"/>
         <promptStrategy
                 language="JAVA"
-                implementation="cc.unitmesh.ide.idea.provider.PromptStrategyAdvisor"/>
+                implementation="cc.unitmesh.idea.provider.PromptStrategyAdvisor"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- show find bug -->
         <runLineMarkerContributor language="JAVA"
-                                  implementationClass="cc.unitmesh.ide.idea.contributor.CodeCommentsMarkerContributor"/>
+                                  implementationClass="cc.unitmesh.idea.contributor.CodeCommentsMarkerContributor"/>
         <runLineMarkerContributor language="JAVA"
-                                  implementationClass="cc.unitmesh.ide.idea.contributor.FindBugMarkerContributor"/>
+                                  implementationClass="cc.unitmesh.idea.contributor.FindBugMarkerContributor"/>
 
         <runLineMarkerContributor language="JAVA"
-                                  implementationClass="cc.unitmesh.ide.idea.contributor.AutoDevFeatureMarkerContributor"/>
+                                  implementationClass="cc.unitmesh.idea.contributor.AutoDevFeatureMarkerContributor"/>
 
     </extensions>
 </idea-plugin>
