@@ -21,11 +21,13 @@ class JavaContextPrompter : ContextPrompter() {
     private var additionContext: String = ""
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private var promptConfig: PromptConfig? = null
-    lateinit var mvcContextService: MvcContextService
+    private lateinit var mvcContextService: MvcContextService
     private var fileName = ""
-    private val isController = fileName.endsWith("Controller.java")
-    private val isService = fileName.endsWith("Service.java") || fileName.endsWith("ServiceImpl.java")
     private lateinit var changeListManager: ChangeListManager
+
+    private fun isController() = fileName.endsWith("Controller.java")
+    private fun isService() = fileName.endsWith("Service.java") || fileName.endsWith("ServiceImpl.java")
+
 
     override fun initContext(actionType: ChatBotActionType, selectedText: String, file: PsiFile?, project: Project, offset: Int) {
         super.initContext(actionType, selectedText, file, project, offset)
@@ -109,7 +111,7 @@ class JavaContextPrompter : ContextPrompter() {
                 }
 
                 when {
-                    isController -> {
+                    isController() -> {
                         val spec = PromptConfig.load().spec["controller"]
                         if (!spec.isNullOrEmpty()) {
                             additionContext = "requirements: \n$spec"
@@ -117,7 +119,7 @@ class JavaContextPrompter : ContextPrompter() {
                         additionContext += mvcContextService.controllerPrompt(file)
                     }
 
-                    isService -> {
+                    isService() -> {
                         val spec = PromptConfig.load().spec["service"]
                         if (!spec.isNullOrEmpty()) {
                             additionContext = "requirements: \n$spec"
@@ -191,11 +193,11 @@ examples:
         val techStackProvider = TechStackProvider.stack(file?.language?.displayName ?: "")
         val techStacks = techStackProvider!!.prepareLibrary()
         when {
-            isController -> {
+            isController() -> {
                 additionContext = "// tech stacks: " + techStacks.controllerString()
             }
 
-            isService -> {
+            isService() -> {
                 additionContext = "// tech stacks: " + techStacks.serviceString()
             }
         }
