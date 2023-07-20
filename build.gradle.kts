@@ -317,6 +317,7 @@ project(":idea") {
 
 project(":webstorm") {
     intellij {
+        version.set(ideaVersion)
         plugins.set(javaScriptPlugins)
     }
     dependencies {
