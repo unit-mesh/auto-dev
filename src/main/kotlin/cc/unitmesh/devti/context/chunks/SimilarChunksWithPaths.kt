@@ -17,34 +17,37 @@ class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRel
 
         fun createQuery(element: PsiElement, chunkSize: Int = 60): String? {
             return runReadAction {
-                val similarChunksWithPaths = SimilarChunksWithPaths(chunkSize).similarChunksWithPaths(element)
-                if (similarChunksWithPaths.paths?.isEmpty() == true || similarChunksWithPaths.chunks?.isEmpty() == true) {
+                try {
+                    val similarChunksWithPaths = SimilarChunksWithPaths(chunkSize).similarChunksWithPaths(element)
+                    if (similarChunksWithPaths.paths?.isEmpty() == true || similarChunksWithPaths.chunks?.isEmpty() == true) {
+                        return@runReadAction null
+                    }
+
+                    return@runReadAction similarChunksWithPaths.toQuery()
+                } catch (e: Exception) {
                     return@runReadAction null
                 }
-
-                return@runReadAction similarChunksWithPaths.toQuery()
             }
         }
     }
 
     fun similarChunksWithPaths(element: PsiElement): SimilarChunkContext {
-        val mostRecentFiles: List<VirtualFile> = getMostRecentFiles(element)
-        val mostRecentFilesRelativePaths: List<String> = mostRecentFiles.mapNotNull {
-            INSTANCE.relativePathTo(it, element)
+        val mostRecentFiles = getMostRecentFiles(element)
+        val mostRecentFilesRelativePaths = mostRecentFiles.map { INSTANCE.relativePathTo(it, element)!! }
+        val chunks = extractChunks(element, mostRecentFiles)
+        val jaccardSimilarities = tokenLevelJaccardSimilarity(chunks, element)
+
+        val paths = mutableListOf<String>()
+        val chunksList = mutableListOf<String>()
+
+        for ((fileIndex, jaccardList) in jaccardSimilarities.withIndex()) {
+            val maxIndex = jaccardList.indexOf(jaccardList.maxOrNull())
+            paths.add(mostRecentFilesRelativePaths[fileIndex])
+            chunksList.add(chunks[fileIndex][maxIndex])
         }
 
-        val chunks: List<List<String>> = extractChunks(element, mostRecentFiles)
-        val jaccardSimilarities: List<List<Double>> = tokenLevelJaccardSimilarity(chunks, element)
-        val paths: MutableList<String> = ArrayList()
-        val chunksList: MutableList<String> = ArrayList()
-
-        jaccardSimilarities.forEachIndexed { index, list ->
-            val maxIndex = list.indexOf(list.maxOrNull()!!)
-            paths.add(mostRecentFilesRelativePaths[index])
-            chunksList.add(chunks[index][maxIndex])
-        }
-
-        return SimilarChunkContext(element.language, paths, chunksList)
+        val language = element.language
+        return SimilarChunkContext(language, paths, chunksList)
     }
 
     private fun tokenLevelJaccardSimilarity(chunks: List<List<String>>, element: PsiElement): List<List<Double>> {

@@ -20,4 +20,6 @@ class RefactorThisIntention : AbstractChatIntention() {
     override fun getText(): String = AutoDevBundle.message("intentions.chat.code.refactor.name")
 
     override fun getFamilyName(): String = AutoDevBundle.message("intentions.chat.code.refactor.family.name")
+
+    
 }

@@ -45,7 +45,6 @@ class CodeCompletionIntention : AbstractChatIntention() {
 
         val task = CodeCompletionTask(editor, prefix, suffix, element, offset)
         ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
-
     }
 
     companion object {
