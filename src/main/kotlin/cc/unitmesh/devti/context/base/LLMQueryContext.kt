@@ -14,5 +14,5 @@ interface LLMQueryContext {
     /**
      * to UML
      */
-    fun toUML(): String
+    fun toUML(): String?
 }

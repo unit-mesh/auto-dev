@@ -45,6 +45,23 @@ class MethodContext(
         return query
     }
 
+    /**
+     * convert code method to UML, like:
+     * ```java
+     * @GetMapping("/blog")
+     * public List<BlogPost> getBlog() {
+     *     return blogService.getAllBlogPosts();
+     * }
+     * ```
+     * will be converted to:
+     * ```plantuml
+     * + getBlog(): List<BlogPost>
+     * ```
+     */
+    override fun toUML(): String? {
+        return signature
+    }
+
     override fun toJson(): String = Gson().toJson(
         mapOf(
             "text" to text,
