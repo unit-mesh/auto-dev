@@ -4,7 +4,7 @@ import cc.unitmesh.devti.context.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.diagnostic.Logger
 
-class KotlinContextPrompter() : ContextPrompter() {
+class KotlinContextPrompter : ContextPrompter() {
     override fun getUIPrompt(): String {
         val chunkContext = getChunks()
 

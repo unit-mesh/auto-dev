@@ -17,13 +17,13 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
 
     open fun initContext(
         actionType: ChatBotActionType,
-        text: String,
+        selectedText: String,
         file: PsiFile?,
         project: Project,
         offset: Int
     ) {
         this.action = actionType
-        this.selectedText = text
+        this.selectedText = selectedText
         this.file = file
         this.project = project
         this.lang = file?.language?.displayName ?: ""

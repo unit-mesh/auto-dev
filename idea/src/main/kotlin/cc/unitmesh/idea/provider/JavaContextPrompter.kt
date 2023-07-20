@@ -21,16 +21,14 @@ class JavaContextPrompter : ContextPrompter() {
     private var additionContext: String = ""
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private var promptConfig: PromptConfig? = null
-
-    lateinit var prefixText: String
     lateinit var mvcContextService: MvcContextService
     private var fileName = ""
     private val isController = fileName.endsWith("Controller.java")
     private val isService = fileName.endsWith("Service.java") || fileName.endsWith("ServiceImpl.java")
     private lateinit var changeListManager: ChangeListManager
 
-    override fun initContext(actionType: ChatBotActionType, text: String, file: PsiFile?, project: Project, offset: Int) {
-        super.initContext(actionType, text, file, project, offset)
+    override fun initContext(actionType: ChatBotActionType, selectedText: String, file: PsiFile?, project: Project, offset: Int) {
+        super.initContext(actionType, selectedText, file, project, offset)
         changeListManager = ChangeListManagerImpl.getInstance(project)
         mvcContextService = project.service<MvcContextService>()
 
@@ -44,12 +42,12 @@ class JavaContextPrompter : ContextPrompter() {
     }
 
     override fun getUIPrompt(): String {
-        val prompt = createPrompt(prefixText)
+        val prompt = createPrompt(selectedText)
         val finalPrompt = if (additionContext.isNotEmpty()) {
             """$additionContext
-                |$prefixText""".trimMargin()
+                |$selectedText""".trimMargin()
         } else {
-            prefixText
+            selectedText
         }
 
         return """$prompt:
@@ -58,12 +56,12 @@ class JavaContextPrompter : ContextPrompter() {
     }
 
     override fun getRequestPrompt(): String {
-        val prompt = createPrompt(prefixText)
+        val prompt = createPrompt(selectedText)
         val finalPrompt = if (additionContext.isNotEmpty()) {
             """$additionContext
-                |$prefixText""".trimMargin()
+                |$selectedText""".trimMargin()
         } else {
-            prefixText
+            selectedText
         }
 
         return """$prompt:
