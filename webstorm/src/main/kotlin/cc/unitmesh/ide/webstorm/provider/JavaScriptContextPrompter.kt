@@ -6,17 +6,14 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
 class JavaScriptContextPrompter : ContextPrompter() {
-    private var action: ChatBotActionType? = null
-    private var selectedText: String = ""
-    private var file: PsiFile? = null
-    private var project: Project? = null
-
-    private val lang: String = file?.language?.displayName ?: ""
-    override fun initContext(actionType: ChatBotActionType, text: String, file: PsiFile?, project: Project, offset: Int) {
-        this.action = actionType
-        this.selectedText = text
-        this.file = file
-        this.project = project
+    override fun initContext(
+        actionType: ChatBotActionType,
+        text: String,
+        file: PsiFile?,
+        project: Project,
+        offset: Int
+    ) {
+        super.initContext(actionType, text, file, project, offset)
     }
 
     override fun getUIPrompt(): String {

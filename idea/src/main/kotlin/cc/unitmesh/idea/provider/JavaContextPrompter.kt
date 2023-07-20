@@ -22,22 +22,15 @@ class JavaContextPrompter : ContextPrompter() {
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private var promptConfig: PromptConfig? = null
 
-    lateinit var action: ChatBotActionType
     lateinit var prefixText: String
-    private var file: PsiFile? = null
-    lateinit var project: Project
     lateinit var mvcContextService: MvcContextService
-    private var lang: String = ""
     private var fileName = ""
     private val isController = fileName.endsWith("Controller.java")
     private val isService = fileName.endsWith("Service.java") || fileName.endsWith("ServiceImpl.java")
     private lateinit var changeListManager: ChangeListManager
 
     override fun initContext(actionType: ChatBotActionType, text: String, file: PsiFile?, project: Project, offset: Int) {
-        this.action = actionType
-        this.prefixText = text
-        this.file = file
-        this.project = project
+        super.initContext(actionType, text, file, project, offset)
         changeListManager = ChangeListManagerImpl.getInstance(project)
         mvcContextService = project.service<MvcContextService>()
 

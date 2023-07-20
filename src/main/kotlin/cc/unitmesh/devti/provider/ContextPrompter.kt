@@ -8,6 +8,28 @@ import com.intellij.serviceContainer.LazyExtensionInstance
 import com.intellij.util.xmlb.annotations.Attribute
 
 abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
+    protected var action: ChatBotActionType? = null
+    protected var selectedText: String = ""
+    protected var file: PsiFile? = null
+    protected var project: Project? = null
+    protected var lang: String = ""
+    protected var offset: Int = 0
+
+    open fun initContext(
+        actionType: ChatBotActionType,
+        text: String,
+        file: PsiFile?,
+        project: Project,
+        offset: Int
+    ) {
+        this.action = actionType
+        this.selectedText = text
+        this.file = file
+        this.project = project
+        this.lang = file?.language?.displayName ?: ""
+        this.offset = offset
+    }
+
     @Attribute("language")
     var language: String? = null
 
@@ -20,7 +42,6 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
 
     open fun getUIPrompt(): String = ""
     open fun getRequestPrompt(): String = ""
-    open fun initContext(actionType: ChatBotActionType, text: String, file: PsiFile?, project: Project, offset: Int) {}
 
     companion object {
         private val EP_NAME: ExtensionPointName<ContextPrompter> =
