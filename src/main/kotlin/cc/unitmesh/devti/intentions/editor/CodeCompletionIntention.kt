@@ -99,25 +99,50 @@ class CodeCompletionIntention : AbstractChatIntention() {
                 currentOffset.element = offset
 
                 val project = editor.project!!
+                val line = StringBuilder()
                 val suggestion = StringBuilder()
                 flow.collect {
                     suggestion.append(it)
-                    WriteCommandAction.runWriteCommandAction(
-                        project,
-                        AutoDevBundle.message("intentions.chat.code.complete.name"),
-                        writeActionGroupId,
-                        {
-                            insertStringAndSaveChange(project, it, editor.document, currentOffset.element, false)
-                        }
-                    )
+                    line.append(it)
+                    if (!it.endsWith("\n")) return@collect
 
-                    currentOffset.element += it.length
-                    editor.caretModel.moveToOffset(currentOffset.element)
+                    val suggestionLine = line.toString()
+                    insertLine(project, suggestionLine, editor, currentOffset)
+                    line.clear()
+                }
+
+                if (line.isNotEmpty()) {
+                    insertLine(project, line.toString(), editor, currentOffset)
                 }
 
                 logger.warn("Suggestion: $suggestion")
             }
         }
+    }
+
+    private fun insertLine(
+        project: Project,
+        suggestionLine: String,
+        editor: Editor,
+        currentOffset: Ref.IntRef
+    ) {
+        WriteCommandAction.runWriteCommandAction(
+            project,
+            AutoDevBundle.message("intentions.chat.code.complete.name"),
+            writeActionGroupId,
+            {
+                insertStringAndSaveChange(
+                    project,
+                    suggestionLine,
+                    editor.document,
+                    currentOffset.element,
+                    false
+                )
+            }
+        )
+
+        currentOffset.element += suggestionLine.length
+        editor.caretModel.moveToOffset(currentOffset.element)
     }
 
     private val connectorFactory = ConnectorFactory.getInstance()
