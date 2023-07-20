@@ -13,6 +13,7 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.PsiElement
 import com.intellij.psi.codeStyle.CodeStyleManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -20,16 +21,20 @@ import kotlinx.coroutines.launch
 import kotlin.jvm.internal.Ref
 
 class CodeCompletionTask(
-    val editor: Editor,
-    val prompt: String,
-    val offset: Int,
+    private val editor: Editor,
+    private val prefix: String,
+    private val suffix: String,
+    private val element: PsiElement,
+    private val offset: Int,
 ) : Task.Backgroundable(editor.project, AutoDevBundle.message("intentions.chat.code.complete.name")) {
 
     private val connectorFactory = ConnectorFactory.getInstance()
 
     private val writeActionGroupId = "code.complete.intention.write.action"
+    private val codeMessage = AutoDevBundle.message("intentions.chat.code.complete.name")
+
     override fun run(indicator: ProgressIndicator) {
-        val flow: Flow<String> = connectorFactory.connector().stream(prompt)
+        val flow: Flow<String> = connectorFactory.connector().stream(prefix)
         LLMCoroutineScopeService.scope(editor.project!!).launch {
             val currentOffset = Ref.IntRef()
             currentOffset.element = offset
@@ -41,7 +46,7 @@ class CodeCompletionTask(
                 invokeLater {
                     WriteCommandAction.runWriteCommandAction(
                         project,
-                        AutoDevBundle.message("intentions.chat.code.complete.name"),
+                        codeMessage,
                         writeActionGroupId,
                         {
                             insertStringAndSaveChange(project, it, editor.document, currentOffset.element, false)
@@ -55,7 +60,6 @@ class CodeCompletionTask(
 
             CodeCompletionIntention.logger.warn("Suggestion: $suggestion")
         }
-
     }
 
     companion object {
