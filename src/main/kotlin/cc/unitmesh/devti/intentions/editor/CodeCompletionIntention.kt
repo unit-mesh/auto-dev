@@ -2,23 +2,27 @@ package cc.unitmesh.devti.intentions.editor
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.models.ConnectorFactory
-import com.intellij.openapi.application.ApplicationManager
+import cc.unitmesh.devti.models.LLMCoroutineScopeService
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.actions.EditorActionUtil
-import com.intellij.openapi.progress.*
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.util.TextRange
-import com.intellij.psi.*
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.PsiFile
 import com.intellij.psi.codeStyle.CodeStyleManager
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlin.jvm.internal.Ref
 import kotlin.math.min
 
@@ -63,11 +67,11 @@ class CodeCompletionIntention : AbstractChatIntention() {
 
         logger.warn("Prompt: $prompt")
 
+        updateCodeCompletion(prompt, editor, offset)
+
         val task = object : Task.Backgroundable(project, "Code completion", true) {
             override fun run(indicator: ProgressIndicator) {
-                ApplicationManager.getApplication().invokeLater {
-                    updateCodeCompletion(prompt, editor, offset, document, indicator)
-                }
+                updateCodeCompletion(prompt, editor, offset)
             }
         }
 
@@ -88,35 +92,31 @@ class CodeCompletionIntention : AbstractChatIntention() {
         prompt: @NlsSafe String,
         editor: Editor,
         offset: Int,
-        document: Document,
-        indicator: ProgressIndicator
     ) {
         val flow: Flow<String> = connectorFactory.connector().stream(prompt)
+        LLMCoroutineScopeService.scope(editor.project!!).launch {
+            val currentOffset = Ref.IntRef()
+            currentOffset.element = offset
 
-        runBlocking {
-            launch {
-                val currentOffset = Ref.IntRef()
-                currentOffset.element = offset
+            val project = editor.project!!
+            val suggestion = StringBuilder()
+            flow.collect {
+                invokeLater {
+                    WriteCommandAction.runWriteCommandAction(
+                        project,
+                        AutoDevBundle.message("intentions.chat.code.complete.name"),
+                        writeActionGroupId,
+                        {
+                            insertStringAndSaveChange(project, it, editor.document, currentOffset.element, false)
+                        }
+                    )
 
-                val project = editor.project!!
-                val line = StringBuilder()
-                val suggestion = StringBuilder()
-                flow.collect {
-                    suggestion.append(it)
-                    line.append(it)
-                    if (!it.endsWith("\n")) return@collect
-
-                    val suggestionLine = line.toString()
-                    insertLine(project, suggestionLine, editor, currentOffset)
-                    line.clear()
+                    currentOffset.element += it.length
+                    editor.caretModel.moveToOffset(currentOffset.element)
                 }
-
-                if (line.isNotEmpty()) {
-                    insertLine(project, line.toString(), editor, currentOffset)
-                }
-
-                logger.warn("Suggestion: $suggestion")
             }
+
+            logger.warn("Suggestion: $suggestion")
         }
     }
 
@@ -149,6 +149,19 @@ class CodeCompletionIntention : AbstractChatIntention() {
 
     companion object {
         val logger = Logger.getInstance(CodeCompletionIntention::class.java)
+
+        fun updateDocument(
+            project: Project,
+            suggestion: String,
+            document: Document,
+            textRange: TextRange
+        ) {
+            document.replaceString(textRange.startOffset, textRange.endOffset, suggestion)
+            PsiDocumentManager.getInstance(project).commitDocument(document)
+            val psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document)
+            val reformatRange = TextRange(textRange.startOffset, textRange.startOffset + suggestion.length)
+            CodeStyleManager.getInstance(project).reformatText(psiFile!!, listOf(reformatRange))
+        }
 
         fun insertStringAndSaveChange(
             project: Project,
