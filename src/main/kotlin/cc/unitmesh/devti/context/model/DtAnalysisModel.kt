@@ -33,10 +33,10 @@ class DtClass(
     // val commentPrefix = commenter?.lineCommentPrefix
     fun commentFormat(): String {
         val output = StringBuilder()
-        output.append("// package: $packageName\n")
-        output.append("// class $name {\n")
+        output.append("package: $packageName\n")
+        output.append("class $name {\n")
         output.append(fields.joinToString("\n") { field ->
-            "//   ${field.name}: ${field.type}"
+            "   ${field.name}: ${field.type}"
         })
 
         // remove getter and setter, and add them to getterSetter
@@ -54,14 +54,14 @@ class DtClass(
             }
 
         if (getterSetter.isNotEmpty()) {
-            output.append("\n//   'getter/setter: ${getterSetter.joinToString(", ")}\n")
+            output.append("\n   'getter/setter: ${getterSetter.joinToString(", ")}\n")
         }
 
         val methodCodes = methodsWithoutGetterSetter
             .filter { it.name != this.name }
             .joinToString("\n") { method ->
                 val params = method.parameters.joinToString("") { parameter -> "${parameter.name}: ${parameter.type}" }
-                "//   + ${method.name}($params)" + if (method.returnType.isNotBlank()) ": ${method.returnType}" else ""
+                "   + ${method.name}($params)" + if (method.returnType.isNotBlank()) ": ${method.returnType}" else ""
             }
 
         if (methodCodes.isNotBlank()) {
@@ -69,11 +69,13 @@ class DtClass(
             output.append(methodCodes)
         }
 
-        output.append("\n// ' some getters and setters\n")
-        output.append("// }\n")
+        output.append("\n ' some getters and setters\n")
+        output.append(" }\n")
 
         // TODO: split output and add comments line
-        return output.toString()
+        return output.split("\n").joinToString("\n") {
+            "// $it"
+        }
     }
 
     fun formatDto(): String {
