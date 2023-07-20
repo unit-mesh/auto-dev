@@ -9,6 +9,10 @@ data class DtField(val name: String, val type: String)
 @Deprecated("Use [VariableContextBuilder] for multiple language support")
 data class DtParameter(val name: String, val type: String)
 
+/**
+ * We need to migration to [ClassContextBuilder] for multiple language support
+ * [cc.unitmesh.devti.context.builder.ClassContextBuilder] is the new builder for [DtClass]
+ */
 @Deprecated("Use [ClassContextBuilder] for multiple language support")
 class DtClass(
     val name: String,
