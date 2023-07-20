@@ -1,5 +1,5 @@
 <idea-plugin package="cc.unitmesh" xmlns:xi="http://www.w3.org/2001/XInclude">
-    <id>org.rust.lang</id>
+    <id>cc.unitmesh.devti</id>
     <xi:include href="/META-INF/autodev-core.xml" xpointer="xpointer(/idea-plugin/*)"/>
 
     <!--suppress PluginXmlValidity -->

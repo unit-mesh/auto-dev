@@ -140,6 +140,8 @@ project(":plugin") {
         val pluginList: MutableList<String> = mutableListOf("Git4Idea")
         if (baseIDE == "idea") {
             pluginList += javaPlugins
+        } else if (baseIDE == "pycharm") {
+            pluginList += pycharmPlugins
         }
         plugins.set(pluginList)
     }
