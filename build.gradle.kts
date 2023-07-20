@@ -28,6 +28,8 @@ import org.jetbrains.intellij.tasks.PublishPluginTask
 import org.jetbrains.intellij.tasks.RunIdeTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+gradle.startParameter.showStacktrace = ShowStacktrace.ALWAYS
+
 plugins {
     id("java") // Java support
     alias(libs.plugins.changelog) // Gradle Changelog Plugin

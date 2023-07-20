@@ -151,3 +151,5 @@ repositories.json
 .qodana
 build
 src/main/gen
+!.idea/runConfigurations
+!.idea/.name
