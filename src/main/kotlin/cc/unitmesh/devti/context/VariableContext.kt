@@ -9,11 +9,11 @@ class VariableContext(
     override val root: PsiElement,
     override val text: String,
     override val name: String?,
-    val enclosingMethod: PsiElement?,
-    val enclosingClass: PsiElement?,
-    val usages: List<PsiReference>,
-    val includeMethodContext: Boolean,
-    val includeClassContext: Boolean
+    val enclosingMethod: PsiElement? = null,
+    val enclosingClass: PsiElement?= null,
+    val usages: List<PsiReference> = emptyList(),
+    val includeMethodContext: Boolean = false,
+    val includeClassContext: Boolean = false
 ) : NamedElementContext(
     root, text, name
 ) {

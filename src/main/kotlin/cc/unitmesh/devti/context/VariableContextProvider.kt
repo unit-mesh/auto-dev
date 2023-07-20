@@ -29,6 +29,6 @@ class VariableContextProvider(
             }
         }
 
-        return VariableContext(psiElement, psiElement.text, null, null, null, listOf(), false, false)
+        return VariableContext(psiElement, psiElement.text, null)
     }
 }

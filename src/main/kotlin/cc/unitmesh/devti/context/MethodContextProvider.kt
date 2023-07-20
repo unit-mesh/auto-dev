@@ -30,17 +30,6 @@ class MethodContextProvider(private val includeClassContext: Boolean, private va
             }
         }
 
-        return MethodContext(
-            psiElement,
-            psiElement.text,
-            null,
-            null,
-            null,
-            psiElement.language.displayName,
-            null,
-            emptyList(),
-            false,
-            emptyList(),
-        )
+        return MethodContext(psiElement, psiElement.text, null)
     }
 }

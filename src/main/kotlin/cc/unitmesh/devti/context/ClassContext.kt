@@ -9,10 +9,10 @@ class ClassContext(
     override val root: PsiElement,
     override val text: String?,
     override val name: String?,
-    val methods: List<PsiElement>,
-    val fields: List<PsiElement>,
-    val superClasses: List<String>?,
-    val usages: List<PsiReference>
+    val methods: List<PsiElement> = emptyList(),
+    val fields: List<PsiElement> = emptyList(),
+    val superClasses: List<String>? = null,
+    val usages: List<PsiReference> = emptyList()
 ) : NamedElementContext(root, text, name) {
     private fun getFieldNames(): List<String> = fields.mapNotNull {
         VariableContextProvider(false, false, false).from(it).name

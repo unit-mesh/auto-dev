@@ -26,14 +26,6 @@ class ClassContextProvider(private val gatherUsages: Boolean) {
             }
         }
 
-        return ClassContext(
-            psiElement,
-            null,
-            null,
-            listOf(),
-            listOf(),
-            null,
-            listOf(),
-        )
+        return ClassContext(psiElement, null, null)
     }
 }

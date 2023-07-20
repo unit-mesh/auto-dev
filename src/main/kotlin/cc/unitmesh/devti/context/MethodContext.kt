@@ -9,13 +9,13 @@ class MethodContext(
     override val root: PsiElement,
     override val text: String,
     override val name: String?,
-    val signature: String?,
-    val enclosingClass: PsiElement?,
-    val language: String?,
-    val returnType: String?,
-    val paramNames: List<String>,
-    val includeClassContext: Boolean,
-    val usages: List<PsiReference>
+    val signature: String? = null,
+    val enclosingClass: PsiElement?= null,
+    val language: String?= null,
+    val returnType: String?= null,
+    val paramNames: List<String> = emptyList(),
+    val includeClassContext: Boolean = false,
+    val usages: List<PsiReference> = emptyList()
 ) : NamedElementContext(
     root, text, name
 ) {
