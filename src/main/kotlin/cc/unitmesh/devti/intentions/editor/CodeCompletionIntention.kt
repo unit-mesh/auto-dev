@@ -26,8 +26,6 @@ import kotlin.math.min
 class CodeCompletionIntention : AbstractChatIntention() {
     override fun getText(): String = AutoDevBundle.message("intentions.chat.code.complete.name")
     override fun getFamilyName(): String = AutoDevBundle.message("intentions.chat.code.complete.family.name")
-    override fun getPrompt(project: Project, elementToExplain: PsiElement?): String = "Complete code:"
-
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (editor == null || file == null) return
 
@@ -68,7 +66,7 @@ class CodeCompletionIntention : AbstractChatIntention() {
         val task = object : Task.Backgroundable(project, "Code completion", true) {
             override fun run(indicator: ProgressIndicator) {
                 ApplicationManager.getApplication().invokeLater {
-                    renderInlay(prompt, editor, offset, document, indicator)
+                    updateCodeCompletion(prompt, editor, offset, document, indicator)
                 }
             }
         }
@@ -86,7 +84,7 @@ class CodeCompletionIntention : AbstractChatIntention() {
      * @param editor The editor in which to render the inlay.
      * @param offset The offset at which to render the inlay.
      */
-    private fun renderInlay(
+    private fun updateCodeCompletion(
         prompt: @NlsSafe String,
         editor: Editor,
         offset: Int,
