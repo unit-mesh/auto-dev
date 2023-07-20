@@ -11,15 +11,13 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import java.io.File
 
-class SimilarChunksWithPaths() {
+class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRelevantFiles: Int = 20) {
     companion object {
         val INSTANCE: SimilarChunksWithPaths = SimilarChunksWithPaths()
-        private const val CHUNK_SIZE = 60
-        private const val MAX_RELEVANT_FILES = 20
 
-        fun createQuery(element: PsiElement): String? {
+        fun createQuery(element: PsiElement, chunkSize: Int = 60): String? {
             return runReadAction {
-                val similarChunksWithPaths = INSTANCE.similarChunksWithPaths(element)
+                val similarChunksWithPaths = SimilarChunksWithPaths(chunkSize).similarChunksWithPaths(element)
                 if (similarChunksWithPaths.paths?.isEmpty() == true || similarChunksWithPaths.chunks?.isEmpty() == true) {
                     return@runReadAction null
                 }
@@ -82,7 +80,7 @@ class SimilarChunksWithPaths() {
         val psiManager: PsiManager = PsiManager.getInstance(element.project)
         return mostRecentFiles.mapNotNull { file ->
             val psiFile = psiManager.findFile(file)
-            psiFile?.text?.split("\n", limit = CHUNK_SIZE)?.chunked(CHUNK_SIZE)?.flatten()
+            psiFile?.text?.split("\n", limit = chunkSize)?.chunked(chunkSize)?.flatten()
         }
     }
 
@@ -94,7 +92,7 @@ class SimilarChunksWithPaths() {
         val recentFiles: List<VirtualFile> = EditorHistoryManager.getInstance(element.project).fileList.filter { file ->
             file.isValid && file.fileType == fileType
         }
-        val start = (recentFiles.size - MAX_RELEVANT_FILES + 1).coerceAtLeast(0)
+        val start = (recentFiles.size - maxRelevantFiles + 1).coerceAtLeast(0)
         val end = (recentFiles.size - 1).coerceAtLeast(0)
         return recentFiles.subList(start, end)
     }

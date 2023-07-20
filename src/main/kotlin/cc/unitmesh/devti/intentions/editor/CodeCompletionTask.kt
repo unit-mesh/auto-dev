@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.intentions.editor
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.context.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.models.ConnectorFactory
 import cc.unitmesh.devti.models.LLMCoroutineScopeService
 import com.intellij.openapi.application.invokeLater
@@ -34,7 +35,16 @@ class CodeCompletionTask(
     private val codeMessage = AutoDevBundle.message("intentions.chat.code.complete.name")
 
     override fun run(indicator: ProgressIndicator) {
-        val flow: Flow<String> = connectorFactory.connector().stream(prefix)
+        val chunksString = SimilarChunksWithPaths.createQuery(element, 256)
+        val prompt = if (chunksString == null) {
+            prefix
+        } else {
+            "$chunksString\n $prefix"
+        }
+
+        val flow: Flow<String> = connectorFactory.connector().stream(prompt)
+        logger.warn("Prompt: $prompt")
+
         LLMCoroutineScopeService.scope(editor.project!!).launch {
             val currentOffset = Ref.IntRef()
             currentOffset.element = offset
@@ -58,7 +68,7 @@ class CodeCompletionTask(
                 }
             }
 
-            CodeCompletionIntention.logger.warn("Suggestion: $suggestion")
+            logger.warn("Suggestion: $suggestion")
         }
     }
 
