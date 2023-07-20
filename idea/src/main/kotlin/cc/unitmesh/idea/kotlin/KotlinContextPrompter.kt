@@ -23,22 +23,20 @@ class KotlinContextPrompter : ContextPrompter() {
     }
 
     override fun getUIPrompt(): String {
-        val chunkContext = SimilarChunksWithPaths().similarChunksWithPaths(file!!).toQuery()
+        val chunkContext = SimilarChunksWithPaths.createQuery(file!!) ?: ""
 
         return """$action for the code:
-            ```${lang}
-            $chunkContext
+            ```${lang} $chunkContext
             $selectedText
             ```
             """.trimIndent()
     }
 
     override fun getRequestPrompt(): String {
-        val chunkContext = SimilarChunksWithPaths().similarChunksWithPaths(file!!).toQuery()
+        val chunkContext = SimilarChunksWithPaths.createQuery(file!!) ?: ""
 
         return """$action for the code:
-            ```${lang}
-            $chunkContext
+            ```${lang} $chunkContext
             $selectedText
             ```
             """.trimIndent()

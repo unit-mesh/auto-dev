@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.context.chunks
 
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.fileEditor.impl.EditorHistoryManager
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.roots.ProjectFileIndex
@@ -15,6 +16,18 @@ class SimilarChunksWithPaths() {
         val INSTANCE: SimilarChunksWithPaths = SimilarChunksWithPaths()
         private const val CHUNK_SIZE = 60
         private const val MAX_RELEVANT_FILES = 20
+
+        fun createQuery(element: PsiElement): String? {
+            return runReadAction {
+                val similarChunksWithPaths = INSTANCE.similarChunksWithPaths(element)
+                if (similarChunksWithPaths.paths?.isEmpty() == true || similarChunksWithPaths.chunks?.isEmpty() == true) {
+                    return@runReadAction null
+                }
+
+                return@runReadAction similarChunksWithPaths.toQuery()
+            }
+        }
+
     }
 
     fun similarChunksWithPaths(element: PsiElement): SimilarChunkContext {
