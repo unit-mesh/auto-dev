@@ -2,6 +2,7 @@ package cc.unitmesh.idea.context
 
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
+import cc.unitmesh.devti.context.MethodContextProvider
 import com.intellij.lang.java.JavaLanguage
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiJavaFile
@@ -63,6 +64,22 @@ class methods: public BlogController(BlogService blogService)
 @GetMapping("/blog")     public List<BlogPost> getBlog()
 super classes: []
 """
+        )
+    }
+
+    fun testShould_convert_function_to_string() {
+        val psiFile = fileFactory.createFileFromText(JavaLanguage.INSTANCE, classCode)
+        val psiElement = (psiFile as PsiJavaFile).classes[0].methods[0]
+        val context = MethodContextProvider(false, false).from(psiElement)
+
+        assertEquals(
+            context.toQuery(),
+            """    fun name: BlogController
+    fun language: Java
+    fun signature: public BlogController(BlogService blogService)
+    fun code: public BlogController(BlogService blogService) {
+    this.blogService = blogService;
+}"""
         )
     }
 }
