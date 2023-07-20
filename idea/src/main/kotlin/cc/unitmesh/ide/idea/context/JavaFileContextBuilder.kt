@@ -23,6 +23,6 @@ class JavaFileContextBuilder : FileContextBuilder {
         val path = psiFile.virtualFile.path
         val name = psiFile.name
 
-        return FileContext(psiFile, name, path, packageString, imports, emptyList(), emptyList())
+        return FileContext(psiFile, name, path, packageString, imports)
     }
 }

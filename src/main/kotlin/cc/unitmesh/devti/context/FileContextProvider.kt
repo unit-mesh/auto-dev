@@ -24,6 +24,6 @@ class FileContextProvider {
             }
         }
 
-        return FileContext(psiFile, psiFile.name, psiFile.virtualFile?.path!!, null, listOf(), listOf(), listOf())
+        return FileContext(psiFile, psiFile.name, psiFile.virtualFile?.path!!)
     }
 }

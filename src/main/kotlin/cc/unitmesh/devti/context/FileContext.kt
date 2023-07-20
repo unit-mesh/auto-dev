@@ -9,10 +9,10 @@ class FileContext(
     val root: PsiFile,
     val name: String,
     val path: String,
-    val packageString: String?,
-    val imports: List<PsiElement>,
-    val classes: List<PsiElement>,
-    val methods: List<PsiElement>
+    val packageString: String? = null,
+    val imports: List<PsiElement> = emptyList(),
+    val classes: List<PsiElement> = emptyList(),
+    val methods: List<PsiElement> = emptyList(),
 ) : LLMQueryContext {
     fun getClassNames(): List<String> = classes.mapNotNull {
         ClassContextProvider(false).from(it).name
