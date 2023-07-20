@@ -1,4 +1,4 @@
-<idea-plugin package="cc.unitmesh.idea">
+<idea-plugin package="cc.unitmesh.idea.kotlin">
     <!--suppress PluginXmlValidity -->
     <dependencies>
         <plugin id="org.jetbrains.kotlin"/>
@@ -6,16 +6,16 @@
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
-        <classContextBuilder language="JAVA"
-                             implementationClass="cc.unitmesh.idea.context.JavaClassContextBuilder"/>
+        <classContextBuilder language="Kotlin"
+                             implementationClass="cc.unitmesh.idea.kotlin.KotlinClassContextBuilder"/>
 
-        <methodContextBuilder language="JAVA"
-                              implementationClass="cc.unitmesh.idea.context.JavaMethodContextBuilder"/>
+        <methodContextBuilder language="Kotlin"
+                              implementationClass="cc.unitmesh.idea.kotlin.KotlinMethodContextBuilder"/>
 
-        <fileContextBuilder language="JAVA"
-                            implementationClass="cc.unitmesh.idea.context.JavaFileContextBuilder"/>
+        <fileContextBuilder language="Kotlin"
+                            implementationClass="cc.unitmesh.idea.kotlin.KotlinFileContextBuilder"/>
 
-        <variableContextBuilder language="JAVA"
-                                implementationClass="cc.unitmesh.idea.context.JavaVariableContextBuilder"/>
+        <variableContextBuilder language="Kotlin"
+                                implementationClass="cc.unitmesh.idea.kotlin.KotlinVariableContextBuilder"/>
     </extensions>
 </idea-plugin>

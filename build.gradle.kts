@@ -53,7 +53,7 @@ val basePluginArchiveName = "intellij-autodev"
 
 val javaScriptPlugins = listOf("JavaScript")
 val pycharmPlugins = listOf("PythonCore")
-val javaPlugins = listOf("com.intellij.java")
+val javaPlugins = listOf("com.intellij.java", "org.jetbrains.kotlin")
 val kotlinPlugins = listOf("org.jetbrains.kotlin")
 
 val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
