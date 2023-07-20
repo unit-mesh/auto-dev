@@ -16,6 +16,9 @@ class PythonContextTest  : LightPlatformTestCase() {
     self.name = name
     self.age = age
 
+  def myfunc(self):
+    print("Hello my name is " + self.name)  
+
 p1 = Person("John", 36)
 
 print(p1.name)
@@ -24,6 +27,7 @@ print(p1.age) """
     fun testShould_convert_class_to_string() {
         val psiFile = fileFactory.createFileFromText(PythonLanguage.INSTANCE, classCode)
         val psiElement = (psiFile as PyFile).topLevelClasses[0]
+        psiElement.methods.forEach { println(it.name) }
         val classContext: ClassContext = ClassContextProvider(false).from(psiElement)
 
         assertEquals(classContext.toQuery(), """class name: _

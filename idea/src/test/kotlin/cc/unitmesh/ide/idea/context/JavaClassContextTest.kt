@@ -8,7 +8,6 @@ import com.intellij.psi.PsiJavaFile
 import com.intellij.testFramework.LightPlatformTestCase
 import org.junit.Ignore
 
-@Ignore
 class JavaClassContextTest : LightPlatformTestCase() {
     private val fileFactory: PsiFileFactory get() = PsiFileFactory.getInstance(project)
 
