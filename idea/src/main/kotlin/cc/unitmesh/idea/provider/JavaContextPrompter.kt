@@ -1,5 +1,6 @@
 package cc.unitmesh.idea.provider
 
+import cc.unitmesh.devti.context.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import cc.unitmesh.devti.prompting.CommitPrompting
 import cc.unitmesh.devti.prompting.model.PromptConfig
@@ -131,6 +132,10 @@ class JavaContextPrompter : ContextPrompter() {
                             additionContext = "requirements: \n$spec"
                         }
                         additionContext += mvcContextService.servicePrompt(file)
+                    }
+
+                    else -> {
+                        additionContext = SimilarChunksWithPaths.createQuery(file!!) ?: ""
                     }
                 }
             }
