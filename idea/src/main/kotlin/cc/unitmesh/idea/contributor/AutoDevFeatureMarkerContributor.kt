@@ -5,6 +5,7 @@ import cc.unitmesh.devti.language.DevtiAnnotator
 import cc.unitmesh.devti.runconfig.command.AutoDevFeatureConfigurationProducer
 import com.intellij.execution.lineMarker.ExecutorAction
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
+import com.intellij.lang.LanguageCommenters
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 
@@ -13,7 +14,11 @@ class AutoDevFeatureMarkerContributor : RunLineMarkerContributor() {
         if (element !is PsiComment) return null
 
         val commentText = element.text
-        if (!commentText.startsWith("// devti://")) return null
+
+        val commenter = LanguageCommenters.INSTANCE.forLanguage(element.language)
+        val commentPrefix = commenter?.lineCommentPrefix
+
+        if (!commentText.startsWith("$commentPrefix devti://")) return null
 
         if (!DevtiAnnotator.isAutoCRUD(commentText)) return null
 
