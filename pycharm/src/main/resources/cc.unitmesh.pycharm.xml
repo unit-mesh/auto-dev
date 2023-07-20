@@ -1,4 +1,4 @@
-<idea-plugin package="cc.unitmesh.ide.pycharm">
+<idea-plugin package="cc.unitmesh.pycharm">
     <!--suppress PluginXmlValidity -->
     <dependencies>
         <plugin id="com.intellij.modules.python"/>
@@ -6,27 +6,27 @@
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <classContextBuilder language="Python"
-                             implementationClass="cc.unitmesh.ide.pycharm.context.PythonClassContextBuilder"/>
+                             implementationClass="cc.unitmesh.pycharm.context.PythonClassContextBuilder"/>
         <fileContextBuilder language="Python"
-                            implementationClass="cc.unitmesh.ide.pycharm.context.PythonFileContextBuilder"/>
+                            implementationClass="cc.unitmesh.pycharm.context.PythonFileContextBuilder"/>
         <methodContextBuilder language="Python"
-                              implementationClass="cc.unitmesh.ide.pycharm.context.PythonMethodContextBuilder"/>
+                              implementationClass="cc.unitmesh.pycharm.context.PythonMethodContextBuilder"/>
         <variableContextBuilder language="Python"
-                                implementationClass="cc.unitmesh.ide.pycharm.context.PythonVariableContextBuilder"/>
+                                implementationClass="cc.unitmesh.pycharm.context.PythonVariableContextBuilder"/>
 
         <contextPrompter
                 language="Python"
-                implementation="cc.unitmesh.ide.pycharm.provider.PythonContextPrompter"/>
+                implementation="cc.unitmesh.pycharm.provider.PythonContextPrompter"/>
 
         <techStackProvider
                 language="Python"
-                implementation="cc.unitmesh.ide.pycharm.provider.PythonTechStackService"/>
+                implementation="cc.unitmesh.pycharm.provider.PythonTechStackService"/>
 
         <devFlowProvider
                 language="Python"
-                implementation="cc.unitmesh.ide.pycharm.provider.PythonAutoDevFlow"/>
+                implementation="cc.unitmesh.pycharm.provider.PythonAutoDevFlow"/>
         <promptStrategy
                 language="Python"
-                implementation="cc.unitmesh.ide.pycharm.provider.PythonPromptStrategyAdvisor"/>
+                implementation="cc.unitmesh.pycharm.provider.PythonPromptStrategyAdvisor"/>
     </extensions>
 </idea-plugin>

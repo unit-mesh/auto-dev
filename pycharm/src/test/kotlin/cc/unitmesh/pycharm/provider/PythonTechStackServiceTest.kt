@@ -1,4 +1,4 @@
-package cc.unitmesh.ide.pycharm.provider
+package cc.unitmesh.pycharm.provider
 
 import cc.unitmesh.devti.provider.TechStackProvider
 import com.intellij.testFramework.LightPlatformTestCase

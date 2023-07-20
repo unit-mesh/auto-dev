@@ -9,7 +9,7 @@ abstract class TechStackProvider : LazyExtensionInstance<TechStackProvider>() {
     @Attribute("language")
     var language: String? = null
 
-    @Attribute("implementationClass")
+    @Attribute("implementation")
     var implementationClass: String? = null
 
     override fun getImplementationClassName(): String? {

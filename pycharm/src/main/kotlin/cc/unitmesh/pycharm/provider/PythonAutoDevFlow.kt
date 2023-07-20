@@ -1,4 +1,4 @@
-package cc.unitmesh.ide.pycharm.provider
+package cc.unitmesh.pycharm.provider
 
 import cc.unitmesh.devti.context.model.DtClass
 import cc.unitmesh.devti.flow.kanban.Kanban
