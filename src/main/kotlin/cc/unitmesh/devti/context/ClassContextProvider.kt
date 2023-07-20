@@ -21,9 +21,8 @@ class ClassContextProvider(private val gatherUsages: Boolean) {
 
     fun from(psiElement: PsiElement): ClassContext {
         for (provider in providers) {
-            val classContext = provider.getClassContext(psiElement, gatherUsages)
-            if (classContext != null) {
-                return classContext
+            provider.getClassContext(psiElement, gatherUsages)?.let {
+                return it
             }
         }
 
