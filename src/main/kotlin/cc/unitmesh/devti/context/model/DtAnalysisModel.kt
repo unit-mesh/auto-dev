@@ -28,6 +28,9 @@ class DtClass(
      * //}
      * ```
      */
+    // todo: support by comment
+    // val commenter = LanguageCommenters.INSTANCE.forLanguage(language)
+    // val commentPrefix = commenter?.lineCommentPrefix
     fun commentFormat(): String {
         val output = StringBuilder()
         output.append("// package: $packageName\n")
@@ -69,6 +72,7 @@ class DtClass(
         output.append("\n// ' some getters and setters\n")
         output.append("// }\n")
 
+        // TODO: split output and add comments line
         return output.toString()
     }
 

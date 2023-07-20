@@ -15,12 +15,14 @@ features:
 
 - languages support: Java, Kotlin, Python, JavaScript, or others...
 - Auto development mode. With DevTi Protocol (like `devti://story/github/1102`) will auto generate
-  Controller-Service-Model code.
-- Smart code completion. Based on your code context like (Controller, Service `import`), AutoDev will suggest you the
-  best code.
-- AI assistant. AutoDev will help you find bug, explain code, trace exception, and more.
-- Custom prompt. You can customize your prompt in `Settings` -> `Tools` -> `DevTi`
-- Custom LLM Server. You can customize your LLM Server in `Settings` -> `Tools` -> `DevTi`
+  Model-Controller-Service-Repository code.
+- Smart code completion.
+    - Pattern specific.Based on your code context like (Controller, Service `import`), AutoDev will suggest you the
+      best code.
+    - Related code. Based on recently file changes, AutoDev will call calculate similar chunk to generate best code. 
+- AI assistant. AutoDev will help you find bug, explain code, trace exception, generate commits, and more.
+- Custom prompt. You can customize your prompt in `Settings` -> `Tools` -> `AutoDev`
+- Custom LLM Server. You can customize your LLM Server in `Settings` -> `Tools` -> `AutoDev`
 - [ ] Smart architecture. With ArchGuard Co-mate DSL, AutoDev will help you design your architecture.
 
 ## Usage
@@ -101,8 +103,7 @@ Output Screenshots:
 
 Key Concepts:
 
-- Workflow flow design: [CrudFlowAction](src/main/kotlin/cc/unitmesh/devti/flow/base/CrudFlowAction.kt)
-- CRUD design: [SpringBaseCrud](src/main/kotlin/cc/unitmesh/devti/flow/base/SpringBaseCrud.kt)
+- Workflow flow design: [DevFlowProvider](src/main/kotlin/cc/unitmesh/devti/provider/DevFlowProvider.kt)
 - Prompt Strategy
   design: [PromptStrategyAdvisor](src/main/kotlin/cc/unitmesh/devti/java/prompt/PromptStrategyAdvisor.kt)
 
@@ -123,6 +124,7 @@ For a new language, you need to implement:
 
 1. create a new module in `settings.gradle.kts`, like: `webstorm`, `pycharm` ...,
 2. config in  `build.gradle.kts` for new module, like:
+
 ```kotlin
 project(":pycharm") {
     intellij {
@@ -134,8 +136,10 @@ project(":pycharm") {
     }
 }
 ```
-3. sync Gradle in Intellij IDEA 
-4. create xml file in `resources/META-INF` like `cc.unitmesh.pycharm.xml`, and import to `plugin/src/main/resources/META-INF/plugin.xml`
+
+3. sync Gradle in Intellij IDEA
+4. create xml file in `resources/META-INF` like `cc.unitmesh.pycharm.xml`, and import
+   to `plugin/src/main/resources/META-INF/plugin.xml`
 5. create extension points
 
 ### Extension Points
@@ -250,8 +254,8 @@ We currently support:
 
 - [x] BeforeCursor
 - [ ] SimilarFile
-    - [x] JaccardSimilarity by JetBrains
-    - [ ] all cases
+    - [x] JaccardSimilarity Path and Chunks by JetBrains
+    - [ ] Cosine Similarity Chunk by MethodName 
 - [ ] ImportedFile
     - [x] Java CRUD
     - [ ] all cases
