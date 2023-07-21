@@ -7,16 +7,16 @@
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <classContextBuilder language="JAVA"
-                             implementationClass="cc.unitmesh.idea.context.JavaClassContextBuilder"/>
+                             implementationClass="cc.unitmesh.idea.java.context.JavaClassContextBuilder"/>
 
         <methodContextBuilder language="JAVA"
-                              implementationClass="cc.unitmesh.idea.context.JavaMethodContextBuilder"/>
+                              implementationClass="cc.unitmesh.idea.java.context.JavaMethodContextBuilder"/>
 
         <fileContextBuilder language="JAVA"
-                            implementationClass="cc.unitmesh.idea.context.JavaFileContextBuilder"/>
+                            implementationClass="cc.unitmesh.idea.java.context.JavaFileContextBuilder"/>
 
         <variableContextBuilder language="JAVA"
-                                implementationClass="cc.unitmesh.idea.context.JavaVariableContextBuilder"/>
+                                implementationClass="cc.unitmesh.idea.java.context.JavaVariableContextBuilder"/>
 
         <contextPrompter
                 language="JAVA"

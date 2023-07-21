@@ -1,4 +1,4 @@
-package cc.unitmesh.idea.context
+package cc.unitmesh.idea.java.context
 
 import cc.unitmesh.devti.context.FileContext
 import cc.unitmesh.devti.context.builder.FileContextBuilder

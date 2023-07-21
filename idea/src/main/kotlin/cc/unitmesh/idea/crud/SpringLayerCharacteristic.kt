@@ -1,4 +1,4 @@
-package cc.unitmesh.idea.java
+package cc.unitmesh.idea.crud
 
 import com.intellij.psi.PsiClass
 import kotlinx.serialization.Serializable

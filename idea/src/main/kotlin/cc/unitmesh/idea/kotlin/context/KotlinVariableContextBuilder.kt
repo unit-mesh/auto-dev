@@ -2,7 +2,7 @@ package cc.unitmesh.idea.kotlin.context
 
 import cc.unitmesh.devti.context.VariableContext
 import cc.unitmesh.devti.context.builder.VariableContextBuilder
-import cc.unitmesh.idea.context.JavaContextCollectionUtilsKt
+import cc.unitmesh.idea.java.context.JavaContextCollectionUtilsKt
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.util.PsiTreeUtil

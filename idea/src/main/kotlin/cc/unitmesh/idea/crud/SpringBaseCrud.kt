@@ -1,4 +1,4 @@
-package cc.unitmesh.idea.java
+package cc.unitmesh.idea.crud
 
 import cc.unitmesh.devti.context.model.DtClass
 import cc.unitmesh.idea.fromJavaFile

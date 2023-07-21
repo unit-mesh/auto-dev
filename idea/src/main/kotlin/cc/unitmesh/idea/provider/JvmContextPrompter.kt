@@ -7,7 +7,7 @@ import cc.unitmesh.devti.prompting.model.PromptConfig
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.provider.TechStackProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
-import cc.unitmesh.idea.java.MvcContextService
+import cc.unitmesh.idea.crud.MvcContextService
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -25,11 +25,24 @@ class JvmContextPrompter : ContextPrompter() {
     private var fileName = ""
     private lateinit var changeListManager: ChangeListManager
 
-    private fun isController() = fileName.endsWith("Controller.java")
-    private fun isService() = fileName.endsWith("Service.java") || fileName.endsWith("ServiceImpl.java")
+    private fun langSuffix(): String = when (lang) {
+        "Java" -> "java"
+        "Kotlin" -> "kt"
+        else -> "java"
+    }
+
+    private fun isController() = fileName.endsWith("Controller." + langSuffix())
+    private fun isService() =
+        fileName.endsWith("Service." + langSuffix()) || fileName.endsWith("ServiceImpl." + langSuffix())
 
 
-    override fun initContext(actionType: ChatBotActionType, selectedText: String, file: PsiFile?, project: Project, offset: Int) {
+    override fun initContext(
+        actionType: ChatBotActionType,
+        selectedText: String,
+        file: PsiFile?,
+        project: Project,
+        offset: Int
+    ) {
         super.initContext(actionType, selectedText, file, project, offset)
         changeListManager = ChangeListManagerImpl.getInstance(project)
         mvcContextService = project.service<MvcContextService>()
@@ -207,7 +220,7 @@ examples:
         val projectPath = project!!.basePath ?: ""
         runReadAction {
             val lookupFile = if (selectedText.contains(projectPath)) {
-                val regex = Regex("$projectPath(.*\\.java)")
+                val regex = Regex("$projectPath(.*\\.)${langSuffix()}")
                 val relativePath = regex.find(selectedText)?.groupValues?.get(1) ?: ""
                 val file = LocalFileSystem.getInstance().findFileByPath(projectPath + relativePath)
                 file?.let {
