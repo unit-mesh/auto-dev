@@ -2,6 +2,7 @@ package cc.unitmesh.idea.action
 
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.models.ConnectorFactory
+import cc.unitmesh.devti.models.LLMCoroutineScopeService
 import cc.unitmesh.devti.runconfig.AutoDevRunProfileState
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -12,6 +13,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiMethod
+import kotlinx.coroutines.launch
 
 class AutoCommentAction(
     private val methodName: @NlsSafe String,
@@ -26,18 +28,20 @@ class AutoCommentAction(
         }
 
         ApplicationManager.getApplication().invokeLater {
-            val newMethodCode = apiExecutor.autoComment(method.text).trimIndent()
+            LLMCoroutineScopeService.scope(project).launch {
+                val newMethodCode = apiExecutor.autoComment(method.text).trimIndent()
 
-            if (newMethodCode.isEmpty()) {
-                log.error("no code complete result")
-                return@invokeLater
-            }
-            log.warn("newMethodCode: $newMethodCode")
+                if (newMethodCode.isEmpty()) {
+                    log.error("no code complete result")
+                    return@launch
+                }
+                log.warn("newMethodCode: $newMethodCode")
 
-            // 2. replace method
-            WriteCommandAction.runWriteCommandAction(project) {
-                psiElementFactory?.createMethodFromText(newMethodCode, method)?.let {
-                    method.replace(it)
+                // 2. replace method
+                WriteCommandAction.runWriteCommandAction(project) {
+                    psiElementFactory?.createMethodFromText(newMethodCode, method)?.let {
+                        method.replace(it)
+                    }
                 }
             }
         }

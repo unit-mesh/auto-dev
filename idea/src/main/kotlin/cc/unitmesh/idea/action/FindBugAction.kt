@@ -30,9 +30,7 @@ class FindBugAction(methodName: @NlsSafe String, val method: PsiMethod) :
                 indicator.text = "Start replacing method"
 
                 val popup = createSuggestionPopup(suggestion)
-                ApplicationManager.getApplication().invokeLater() {
-                    popup.showCenteredInCurrentWindow(project)
-                }
+                popup.showCenteredInCurrentWindow(project)
 
                 indicator.fraction = 1.0
             }
