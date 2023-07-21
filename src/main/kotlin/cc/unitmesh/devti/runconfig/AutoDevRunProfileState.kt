@@ -7,8 +7,7 @@ import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.gui.chat.ChatCodingService
-import cc.unitmesh.devti.models.ConnectorFactory
-import cc.unitmesh.devti.models.openai.OpenAIProvider
+import cc.unitmesh.devti.llms.ConnectorFactory
 import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
 import cc.unitmesh.devti.runconfig.options.AutoDevConfigurationOptions
 import cc.unitmesh.devti.settings.AutoDevSettingsState

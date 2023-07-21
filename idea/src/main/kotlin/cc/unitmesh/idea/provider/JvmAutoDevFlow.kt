@@ -6,8 +6,8 @@ import cc.unitmesh.devti.flow.kanban.Kanban
 import cc.unitmesh.devti.flow.model.SimpleStory
 import cc.unitmesh.devti.flow.model.TargetEndpoint
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
-import cc.unitmesh.devti.models.LLMProvider
-import cc.unitmesh.devti.models.openai.PromptTemplate
+import cc.unitmesh.devti.llms.LLMProvider
+import cc.unitmesh.devti.llms.openai.PromptTemplate
 import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.provider.DevFlowProvider
 import cc.unitmesh.devti.provider.PromptStrategy

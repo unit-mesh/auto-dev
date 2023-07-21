@@ -1,6 +1,6 @@
-package cc.unitmesh.devti.models.openai
+package cc.unitmesh.devti.llms.openai
 
-import cc.unitmesh.devti.models.CodeCopilotProvider
+import cc.unitmesh.devti.llms.CodeCopilotProvider
 import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.OPENAI_MODEL
@@ -20,7 +20,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory

@@ -9,13 +9,6 @@ import org.commonmark.node.Node
 import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
 
-fun md2html(markdown: String): String {
-    val parser: Parser = Parser.builder().build()
-    val document: Node = parser.parse(markdown)
-    val htmlRenderer: HtmlRenderer = HtmlRenderer.builder().build()
-    return htmlRenderer.render(document)
-}
-
 fun parseMarkdown(markdown: String): String {
     val extensions: List<Extension> = listOf(TablesExtension.create())
     val parser = Parser.builder()
@@ -31,12 +24,17 @@ fun parseMarkdown(markdown: String): String {
 }
 
 fun parseCodeFromString(markdown: String): List<String> {
-    val parser: Parser = Parser.builder().build()
+    val extensions: List<Extension> = listOf(TablesExtension.create())
+    val parser: Parser = Parser.builder()
+        .extensions(extensions)
+        .build()
+
     val node: Node = parser.parse(markdown)
     val visitor = CodeVisitor()
     node.accept(visitor)
 
     if (visitor.code.isEmpty()) {
+        // TODO: we need to add multiple code blocks support
         val isJavaMethod = markdown.contains("public ") || markdown.contains("private ") || markdown.contains("protected ")
         if (isJavaMethod) {
             return listOf(markdown)

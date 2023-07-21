@@ -3,8 +3,7 @@ package cc.unitmesh.ide.webstorm.provider
 import cc.unitmesh.devti.flow.kanban.Kanban
 import cc.unitmesh.devti.flow.model.TargetEndpoint
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
-import cc.unitmesh.devti.models.LLMProvider
-import cc.unitmesh.devti.models.openai.OpenAIProvider
+import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.provider.DevFlowProvider
 import com.intellij.openapi.project.Project
 

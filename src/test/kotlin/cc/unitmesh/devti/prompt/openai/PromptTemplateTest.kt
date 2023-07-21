@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.prompt.openai
 
 import cc.unitmesh.devti.context.model.DtClass
-import cc.unitmesh.devti.models.openai.PromptTemplate
+import cc.unitmesh.devti.llms.openai.PromptTemplate
 import cc.unitmesh.devti.flow.model.SimpleProjectInfo
 import org.junit.Assert.assertEquals
 import org.junit.Test

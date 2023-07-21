@@ -1,7 +1,7 @@
 package cc.unitmesh.idea.action
 
 import cc.unitmesh.devti.AutoDevIcons
-import cc.unitmesh.devti.models.ConnectorFactory
+import cc.unitmesh.devti.llms.ConnectorFactory
 import cc.unitmesh.devti.gui.createSuggestionPopup
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent

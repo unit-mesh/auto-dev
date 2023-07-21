@@ -1,9 +1,8 @@
-package cc.unitmesh.devti.models.azure
+package cc.unitmesh.devti.llms.azure
 
-import cc.unitmesh.devti.models.CodeCopilotProvider
+import cc.unitmesh.devti.llms.CodeCopilotProvider
 import cc.unitmesh.devti.prompting.model.PromptConfig
 import cc.unitmesh.devti.settings.AutoDevSettingsState
-import cc.unitmesh.devti.settings.OPENAI_MODEL
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.intellij.openapi.components.Service
@@ -22,14 +21,14 @@ class AzureOpenAIProvider(val project: Project) : CodeCopilotProvider {
     private val logger = Logger.getInstance(AzureOpenAIProvider::class.java)
 
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
-    private val url = autoDevSettingsState?.customEngineServer ?: ""
+    private val url = autoDevSettingsState.customEngineServer
     private var promptConfig: PromptConfig? = null
     private var client = OkHttpClient()
     private val openAiVersion: String
 
     init {
-        val prompts = autoDevSettingsState?.customEnginePrompts
-        openAiVersion = AutoDevSettingsState.getInstance()?.openAiModel ?: OPENAI_MODEL[0]
+        val prompts = autoDevSettingsState.customEnginePrompts
+        openAiVersion = AutoDevSettingsState.getInstance().openAiModel
         promptConfig = PromptConfig.tryParse(prompts)
     }
 

@@ -5,7 +5,7 @@ import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.ChatContext
-import cc.unitmesh.devti.models.openai.OpenAIProvider
+import cc.unitmesh.devti.llms.openai.OpenAIProvider
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent

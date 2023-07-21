@@ -2,8 +2,8 @@ package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.provider.ContextPrompter
-import cc.unitmesh.devti.models.ConnectorFactory
-import cc.unitmesh.devti.models.LLMCoroutineScopeService
+import cc.unitmesh.devti.llms.ConnectorFactory
+import cc.unitmesh.devti.llms.LLMCoroutineScopeService
 import cc.unitmesh.devti.parser.PostCodeProcessor
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project

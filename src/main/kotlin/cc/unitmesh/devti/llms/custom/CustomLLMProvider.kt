@@ -1,6 +1,6 @@
-package cc.unitmesh.devti.models.custom
+package cc.unitmesh.devti.llms.custom
 
-import cc.unitmesh.devti.models.CodeCopilotProvider
+import cc.unitmesh.devti.llms.CodeCopilotProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.prompting.model.PromptConfig
 import com.intellij.openapi.components.Service
@@ -12,19 +12,19 @@ import okhttp3.Request
 
 
 @Service(Service.Level.PROJECT)
-class CustomProvider(val project: Project) : CodeCopilotProvider {
+class CustomLLMProvider(val project: Project) : CodeCopilotProvider {
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
-    private val url = autoDevSettingsState?.customEngineServer ?: ""
-    private val key = autoDevSettingsState?.customEngineToken ?: ""
+    private val url = autoDevSettingsState.customEngineServer
+    private val key = autoDevSettingsState.customEngineToken
     private var promptConfig: PromptConfig? = null
     private var client = OkHttpClient()
 
     init {
-        val prompts = autoDevSettingsState?.customEnginePrompts
+        val prompts = autoDevSettingsState.customEnginePrompts
         promptConfig = PromptConfig.tryParse(prompts)
     }
 
-    private val logger = Logger.getInstance(CustomProvider::class.java)
+    private val logger = Logger.getInstance(CustomLLMProvider::class.java)
 
 
     override fun prompt(promptText: String): String {

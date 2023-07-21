@@ -1,8 +1,8 @@
 package cc.unitmesh.idea.action
 
 import cc.unitmesh.devti.AutoDevIcons
-import cc.unitmesh.devti.models.ConnectorFactory
-import cc.unitmesh.devti.models.LLMCoroutineScopeService
+import cc.unitmesh.devti.llms.ConnectorFactory
+import cc.unitmesh.devti.llms.LLMCoroutineScopeService
 import cc.unitmesh.devti.runconfig.AutoDevRunProfileState
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
