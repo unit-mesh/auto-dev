@@ -7,7 +7,6 @@ import cc.unitmesh.devti.flow.model.SimpleStory
 import cc.unitmesh.devti.flow.model.TargetEndpoint
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.models.LLMProvider
-import cc.unitmesh.devti.models.openai.OpenAIProvider
 import cc.unitmesh.devti.models.openai.PromptTemplate
 import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.provider.DevFlowProvider
@@ -54,7 +53,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
      * Step 1: check story detail is valid, if not, fill story detail
      */
     override fun getOrCreateStoryDetail(id: String): String {
-        val simpleProject = kanban!!.getProjectInfo()
+        val simpleProject = kanban.getProjectInfo()
         val story = kanban.getStoryById(id)
 
         // 1. check story detail is valid, if not, fill story detail
@@ -79,14 +78,14 @@ class JvmAutoDevFlow : DevFlowProvider() {
      * Step 2: base on story detail, generate dto and entity
      */
     override fun updateOrCreateDtoAndEntity(storyDetail: String) {
-        val files: List<DtClass> = processor?.modelList() ?: emptyList()
+        val files: List<DtClass> = processor.modelList()
         val promptText = promptTemplate.createDtoAndEntity(storyDetail, files)
 
         logger.warn("needUpdateMethodForController prompt text: $promptText")
         val result = executePrompt(promptText)
 
         parseCodeFromString(result).forEach { dto ->
-            processor?.let { createCodeByType(dto) }
+            processor.let { createCodeByType(dto) }
         }
     }
 
@@ -94,7 +93,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
      * Step 3: fetch suggest endpoint, if not found, return null
      */
     override fun fetchSuggestEndpoint(storyDetail: String): TargetEndpoint {
-        val files: List<DtClass> = processor?.controllerList() ?: emptyList()
+        val files: List<DtClass> = processor.controllerList()
         logger.warn("start devti flow")
         val promptText = promptTemplate.createEndpoint(storyDetail, files)
         val targetEndpoint = executePrompt(promptText)
@@ -135,7 +134,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
     override fun updateOrCreateServiceAndRepository() {
         val serviceName = selectedControllerName.removeSuffix("Controller") + "Service"
 //        // check service is exist
-        val files: List<PsiFile> = processor?.getAllServiceFiles()?.filter { it.name == "$serviceName.java" }
+        val files: List<PsiFile> = processor.getAllServiceFiles()?.filter { it.name == "$serviceName.java" }
             ?: emptyList()
 
         if (files.isNotEmpty()) {
@@ -164,13 +163,13 @@ class JvmAutoDevFlow : DevFlowProvider() {
         val result = executePrompt(promptText)
         val services = parseCodeFromString(result)
         services.forEach { code ->
-            processor?.updateMethod(serviceFile, serviceName, code)
+            processor.updateMethod(serviceFile, serviceName, code)
         }
     }
 
     private fun createServiceFile(serviceName: String) {
         val controllerFile: List<PsiFile> =
-            processor?.getAllControllerFiles()?.filter { it.name == selectedControllerName }
+            processor.getAllControllerFiles()?.filter { it.name == selectedControllerName }
                 ?: emptyList()
 
         val controllerCode = if (controllerFile.isEmpty()) {
@@ -188,7 +187,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
 
         val services = parseCodeFromString(result)
         services.forEach { service ->
-            processor?.let { createCodeByType(service, true) }
+            createCodeByType(service, true)
         }
     }
 
@@ -199,8 +198,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
             logger.warn("update method code is empty, skip")
         } else {
             codes.indices.forEach { i ->
-                val code = codes[i]
-                createCodeByType(code, target.isNeedToCreated, target.controller.name)
+                createCodeByType(codes[i], target.isNeedToCreated, target.controller.name)
             }
         }
     }
@@ -266,7 +264,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
         storyDetail: String,
         isNewController: Boolean
     ): String {
-        val allModels = processor?.modelList()?.map { it } ?: emptyList()
+        val allModels = processor.modelList()?.map { it } ?: emptyList()
         val relevantName = targetEndpoint.replace("Controller", "")
 
         // filter *Request, *Response
@@ -283,7 +281,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
             dtos
         }
 
-        val services = processor?.serviceList()?.map { it } ?: emptyList()
+        val services = processor.serviceList()?.map { it } ?: emptyList()
 
         val promptText =
             promptTemplate.createOrUpdateControllerMethod(clazz, storyDetail, models, services, isNewController)
@@ -293,7 +291,6 @@ class JvmAutoDevFlow : DevFlowProvider() {
 
     private fun executePrompt(promptText: String): String {
         ui.add(promptText, true)
-
         // for answer
         ui.add(AutoDevBundle.message("devti.loading"))
 
