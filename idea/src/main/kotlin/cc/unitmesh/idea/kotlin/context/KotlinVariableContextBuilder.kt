@@ -1,4 +1,4 @@
-package cc.unitmesh.idea.kotlin
+package cc.unitmesh.idea.kotlin.context
 
 import cc.unitmesh.devti.context.VariableContext
 import cc.unitmesh.devti.context.builder.VariableContextBuilder
@@ -6,7 +6,6 @@ import cc.unitmesh.idea.context.JavaContextCollectionUtilsKt
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.psi.KtVariableDeclaration

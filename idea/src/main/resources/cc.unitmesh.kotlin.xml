@@ -7,19 +7,28 @@
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <classContextBuilder language="Kotlin"
-                             implementationClass="cc.unitmesh.idea.kotlin.KotlinClassContextBuilder"/>
+                             implementationClass="cc.unitmesh.idea.kotlin.context.KotlinClassContextBuilder"/>
 
         <methodContextBuilder language="Kotlin"
-                              implementationClass="cc.unitmesh.idea.kotlin.KotlinMethodContextBuilder"/>
+                              implementationClass="cc.unitmesh.idea.kotlin.context.KotlinMethodContextBuilder"/>
 
         <fileContextBuilder language="Kotlin"
-                            implementationClass="cc.unitmesh.idea.kotlin.KotlinFileContextBuilder"/>
+                            implementationClass="cc.unitmesh.idea.kotlin.context.KotlinFileContextBuilder"/>
 
         <variableContextBuilder language="Kotlin"
-                                implementationClass="cc.unitmesh.idea.kotlin.KotlinVariableContextBuilder"/>
+                                implementationClass="cc.unitmesh.idea.kotlin.context.KotlinVariableContextBuilder"/>
 
         <contextPrompter
                 language="Kotlin"
-                implementation="cc.unitmesh.idea.kotlin.KotlinContextPrompter"/>
+                implementation="cc.unitmesh.idea.provider.JvmContextPrompter"/>
+        <techStackProvider
+                language="Kotlin"
+                implementation="cc.unitmesh.idea.provider.JvmTechStackService"/>
+        <devFlowProvider
+                language="Kotlin"
+                implementation="cc.unitmesh.idea.provider.JvmAutoDevFlow"/>
+        <promptStrategy
+                language="Kotlin"
+                implementation="cc.unitmesh.idea.provider.JvmPromptStrategy"/>
     </extensions>
 </idea-plugin>

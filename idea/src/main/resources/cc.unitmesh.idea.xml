@@ -20,16 +20,16 @@
 
         <contextPrompter
                 language="JAVA"
-                implementation="cc.unitmesh.idea.provider.JavaContextPrompter"/>
+                implementation="cc.unitmesh.idea.provider.JvmContextPrompter"/>
         <techStackProvider
                 language="JAVA"
-                implementation="cc.unitmesh.idea.provider.JavaTechStackService"/>
+                implementation="cc.unitmesh.idea.provider.JvmTechStackService"/>
         <devFlowProvider
                 language="JAVA"
-                implementation="cc.unitmesh.idea.provider.JavaAutoDevFlow"/>
+                implementation="cc.unitmesh.idea.provider.JvmAutoDevFlow"/>
         <promptStrategy
                 language="JAVA"
-                implementation="cc.unitmesh.idea.provider.PromptStrategyAdvisor"/>
+                implementation="cc.unitmesh.idea.provider.JvmPromptStrategy"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

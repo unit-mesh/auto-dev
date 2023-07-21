@@ -1,4 +1,4 @@
-package cc.unitmesh.idea.kotlin
+package cc.unitmesh.idea.kotlin.context
 
 import cc.unitmesh.devti.context.MethodContext
 import cc.unitmesh.devti.context.builder.MethodContextBuilder

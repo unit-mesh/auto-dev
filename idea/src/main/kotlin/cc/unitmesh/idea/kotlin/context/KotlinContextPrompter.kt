@@ -1,4 +1,4 @@
-package cc.unitmesh.idea.kotlin
+package cc.unitmesh.idea.kotlin.context
 
 import cc.unitmesh.devti.context.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.provider.ContextPrompter

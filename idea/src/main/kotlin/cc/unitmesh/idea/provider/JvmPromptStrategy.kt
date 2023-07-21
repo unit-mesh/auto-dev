@@ -9,7 +9,7 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiJavaFile
 
-class PromptStrategyAdvisor : PromptStrategy() {
+class JvmPromptStrategy : PromptStrategy() {
     var tokenLength = tokenLength()
 
     override fun tokenLength(): Int {
@@ -23,7 +23,7 @@ class PromptStrategyAdvisor : PromptStrategy() {
         }
 
         // remove all `import` syntax in java code, should contain with new line
-        val importRegexWithNewLine = Regex("import .*;\n")
+        val importRegexWithNewLine = Regex("import .*\n")
         val prefixCodeWithoutImport = prefixCode.replace(importRegexWithNewLine, "")
         val tokenCountWithoutImport: Int = this.countTokens(prefixCodeWithoutImport)
 

@@ -24,7 +24,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiJavaFile
 import kotlinx.coroutines.runBlocking
 
-class JavaAutoDevFlow : DevFlowProvider() {
+class JvmAutoDevFlow : DevFlowProvider() {
     private val promptTemplate = PromptTemplate()
     private var selectedControllerName = ""
     private var selectedControllerCode = ""

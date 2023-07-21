@@ -8,7 +8,7 @@ import com.intellij.psi.PsiJavaFile
 import com.intellij.testFramework.LightPlatformTestCase
 
 
-class PromptStrategyAdvisorTest : LightPlatformTestCase() {
+class JvmPromptStrategyTest : LightPlatformTestCase() {
     private val javaFactory: PsiElementFactory get() = JavaPsiFacade.getElementFactory(project)
     private val fileFactory: PsiFileFactory get() = PsiFileFactory.getInstance(project)
     private val originCode = """
@@ -50,7 +50,7 @@ public class BlogController {
 """.trimIndent()
 
     fun testShould_enable_get_service_code() {
-        val advisor = PromptStrategyAdvisor()
+        val advisor = JvmPromptStrategy()
         advisor.tokenLength = 90
 
         val psiClass = javaFactory.createClassFromText(originCode, null)
@@ -73,7 +73,7 @@ public class BlogController {
     }
 
     fun testShould_enable_get_field_reference() {
-        val advisor = PromptStrategyAdvisor()
+        val advisor = JvmPromptStrategy()
         advisor.tokenLength = 30
 
         val psiClass = javaFactory.createClassFromText(originCode, null)
@@ -90,7 +90,7 @@ public class BlogController {
     }
 
     fun testShould_get_without_imports() {
-        val advisor = PromptStrategyAdvisor()
+        val advisor = JvmPromptStrategy()
         advisor.tokenLength = 120
 
         val psiFile = fileFactory.createFileFromText(JavaLanguage.INSTANCE, classCode)
