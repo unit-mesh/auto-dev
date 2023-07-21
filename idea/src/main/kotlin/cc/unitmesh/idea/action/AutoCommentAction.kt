@@ -19,7 +19,7 @@ class AutoCommentAction(
 ) : AnAction({ "Auto Comment for $methodName" }, AutoDevIcons.AI_COPILOT) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        val apiExecutor = ConnectorFactory.getInstance().connector()
+        val apiExecutor = ConnectorFactory.getInstance().connector(project)
 
         val psiElementFactory = project.let {
             JavaPsiFacade.getElementFactory(it)

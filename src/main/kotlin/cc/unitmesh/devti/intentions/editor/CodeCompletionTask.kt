@@ -47,7 +47,7 @@ class CodeCompletionTask(
             "code complete for follow code: \n$commentPrefix$filePath\n$chunksString\n$prefix"
         }
 
-        val flow: Flow<String> = connectorFactory.connector().stream(prompt)
+        val flow: Flow<String> = connectorFactory.connector(editor.project!!).stream(prompt)
         logger.warn("Prompt: $prompt")
 
         LLMCoroutineScopeService.scope(editor.project!!).launch {

@@ -7,6 +7,7 @@ import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatBotActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.gui.chat.ChatCodingService
+import cc.unitmesh.devti.models.ConnectorFactory
 import cc.unitmesh.devti.models.openai.OpenAIProvider
 import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
 import cc.unitmesh.devti.runconfig.options.AutoDevConfigurationOptions
@@ -18,7 +19,6 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -44,8 +44,8 @@ class AutoDevRunProfileState(
 
         val gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)
 
-        val openAIRunner = OpenAIProvider()
-        val chatCodingService = ChatCodingService(ChatBotActionType.REVIEW)
+        val openAIRunner = ConnectorFactory.getInstance().connector(project)
+        val chatCodingService = ChatCodingService(ChatBotActionType.REVIEW, project)
         val contentPanel = ChatCodingComponent(chatCodingService)
 
         // TODO: support other language

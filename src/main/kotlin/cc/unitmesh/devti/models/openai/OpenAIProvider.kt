@@ -4,8 +4,10 @@ import cc.unitmesh.devti.models.CodeCopilotProvider
 import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.OPENAI_MODEL
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
 import com.theokanning.openai.client.OpenAiApi
 import com.theokanning.openai.completion.chat.ChatCompletionRequest
@@ -26,7 +28,8 @@ import retrofit2.converter.jackson.JacksonConverterFactory
 import java.time.Duration
 
 
-class OpenAIProvider : CodeCopilotProvider {
+@Service(Service.Level.PROJECT)
+class OpenAIProvider(val project: Project) : CodeCopilotProvider {
     private val promptTemplate = PromptTemplate()
     private var service: OpenAiService
 

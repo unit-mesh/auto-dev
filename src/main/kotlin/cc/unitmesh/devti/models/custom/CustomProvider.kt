@@ -3,13 +3,16 @@ package cc.unitmesh.devti.models.custom
 import cc.unitmesh.devti.models.CodeCopilotProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.prompting.model.PromptConfig
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.project.Project
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
 
-class CustomProvider : CodeCopilotProvider {
+@Service(Service.Level.PROJECT)
+class CustomProvider(val project: Project) : CodeCopilotProvider {
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private val url = autoDevSettingsState?.customEngineServer ?: ""
     private val key = autoDevSettingsState?.customEngineToken ?: ""

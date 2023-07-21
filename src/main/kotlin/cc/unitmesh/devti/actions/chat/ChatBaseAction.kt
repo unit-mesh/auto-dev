@@ -42,7 +42,7 @@ abstract class ChatBaseAction : AnAction() {
         // suffixText is the text after the selectedText, which is the text after the cursor position
         val suffixText = document?.text?.substring(lineEndOffset) ?: ""
 
-        val chatCodingService = ChatCodingService(getActionType())
+        val chatCodingService = ChatCodingService(getActionType(), project)
         val contentPanel = ChatCodingComponent(chatCodingService)
         val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
 

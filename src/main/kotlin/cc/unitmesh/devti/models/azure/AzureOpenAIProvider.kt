@@ -6,7 +6,9 @@ import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.OPENAI_MODEL
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.project.Project
 import com.theokanning.openai.completion.chat.ChatCompletionResult
 import com.theokanning.openai.completion.chat.ChatMessage
 import com.theokanning.openai.completion.chat.ChatMessageRole
@@ -15,7 +17,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 
 
-class AzureOpenAIProvider : CodeCopilotProvider {
+@Service(Service.Level.PROJECT)
+class AzureOpenAIProvider(val project: Project) : CodeCopilotProvider {
     private val logger = Logger.getInstance(AzureOpenAIProvider::class.java)
 
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()

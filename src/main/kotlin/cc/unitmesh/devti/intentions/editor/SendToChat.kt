@@ -11,7 +11,7 @@ import com.intellij.openapi.wm.ToolWindowManager
 fun sendToChat(project: Project, actionType: ChatBotActionType, prompter: ContextPrompter) {
     val toolWindowManager =
         ToolWindowManager.getInstance(project).getToolWindow(DevtiFlowToolWindowFactory.id) ?: return
-    val chatCodingService = ChatCodingService(actionType)
+    val chatCodingService = ChatCodingService(actionType, project)
     val contentPanel = ChatCodingComponent(chatCodingService)
     val contentManager = toolWindowManager.contentManager
     val content = contentManager.factory.createContent(contentPanel, chatCodingService.getLabel(), false)

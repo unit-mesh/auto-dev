@@ -3,9 +3,12 @@ package cc.unitmesh.devti.gui.chat
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.models.ConnectorFactory
+import cc.unitmesh.devti.models.LLMCoroutineScopeService
 import cc.unitmesh.devti.parser.PostCodeProcessor
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.project.Project
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 data class ChatContext(
@@ -14,7 +17,7 @@ data class ChatContext(
     val suffixText: String
 )
 
-class ChatCodingService(var actionType: ChatBotActionType) {
+class ChatCodingService(var actionType: ChatBotActionType, val project: Project) {
     private val connectorFactory = ConnectorFactory.getInstance()
 
     val action = when (actionType) {
@@ -43,7 +46,7 @@ class ChatCodingService(var actionType: ChatBotActionType) {
 
         ApplicationManager.getApplication().executeOnPooledThread {
             val response = this.makeChatBotRequest(prompt.getRequestPrompt())
-            runBlocking {
+            LLMCoroutineScopeService.scope(project).launch {
                 when {
                     actionType === ChatBotActionType.REFACTOR -> ui.updateReplaceableContent(response) {
                         context?.replaceSelectedText?.invoke(getCodeSection(it, context.prefixText, context.suffixText))
@@ -60,7 +63,7 @@ class ChatCodingService(var actionType: ChatBotActionType) {
     }
 
     private fun makeChatBotRequest(requestPrompt: String): Flow<String> {
-        return connectorFactory.connector().stream(requestPrompt)
+        return connectorFactory.connector(project).stream(requestPrompt)
     }
 
     private fun getCodeSection(content: String, prefixText: String, suffixText: String): String {
