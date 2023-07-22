@@ -40,10 +40,10 @@ class ReleaseNoteSuggestionAction : AnAction() {
         val commitMsgs = stringList.joinToString(",")
         toolWindowManager?.activate {
             chatCodingService.handlePromptAndResponse(contentPanel, object : ContextPrompter() {
-                override fun createDisplayPrompt(): String =
+                override fun displayPrompt(): String =
                     "generate release note based on follow info: $commitMsgs"
 
-                override fun createRequestPrompt(): String =
+                override fun requestPrompt(): String =
                     "generate release note based on follow info: $commitMsgs"
             }, null)
         }

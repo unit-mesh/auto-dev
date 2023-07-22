@@ -12,20 +12,20 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
 
 abstract class ChatBaseAction : AnAction() {
     companion object {
         private val logger: Logger = logger<OpenAIProvider>()
     }
+
     override fun actionPerformed(event: AnActionEvent) {
         executeAction(event)
     }
 
     open fun executeAction(event: AnActionEvent) {
-        val project = event.project
-        val toolWindowManager = ToolWindowManager.getInstance(project!!).getToolWindow(DevtiFlowToolWindowFactory.id)
-        val contentManager = toolWindowManager?.contentManager
+        val project = event.project ?: return
         val document = event.getData(CommonDataKeys.EDITOR)?.document
 
         val caretModel = event.getData(CommonDataKeys.EDITOR)?.caretModel
@@ -42,27 +42,40 @@ abstract class ChatBaseAction : AnAction() {
         // suffixText is the text after the selectedText, which is the text after the cursor position
         val suffixText = document?.text?.substring(lineEndOffset) ?: ""
 
-        val chatCodingService = ChatCodingService(getActionType(), project)
-        val contentPanel = ChatCodingComponent(chatCodingService)
-        val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
-
-        contentManager?.removeAllContents(true)
-        contentManager?.addContent(content!!)
-
-        val actionType = chatCodingService.actionType
 
         val prompter = ContextPrompter.prompter(file?.language?.displayName ?: "")
         logger.info("use prompter: ${prompter?.javaClass}")
-        prompter?.initContext(actionType, prefixText, file, project, caretModel?.offset ?: 0)
+        prompter?.initContext(getActionType(), prefixText, file, project, caretModel?.offset ?: 0)
 
-        toolWindowManager?.activate {
+
+        sendToToolWindow(project) { service, panel ->
             val chatContext = ChatContext(
                 getReplaceableAction(event),
                 prefixText,
                 suffixText
             )
 
-            chatCodingService.handlePromptAndResponse(contentPanel, prompter!!, chatContext)
+            service.handlePromptAndResponse(panel, prompter!!, chatContext)
+        }
+    }
+
+    open fun sendToToolWindow(
+        project: Project,
+        activeAction: (service: ChatCodingService, panel: ChatCodingComponent) -> Unit
+    ) {
+        val chatCodingService = ChatCodingService(getActionType(), project)
+        val contentPanel = ChatCodingComponent(chatCodingService)
+
+        val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(DevtiFlowToolWindowFactory.id)
+        val contentManager = toolWindowManager?.contentManager
+
+        val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
+
+        contentManager?.removeAllContents(true)
+        contentManager?.addContent(content!!)
+
+        toolWindowManager?.activate {
+            activeAction(chatCodingService, contentPanel)
         }
     }
 

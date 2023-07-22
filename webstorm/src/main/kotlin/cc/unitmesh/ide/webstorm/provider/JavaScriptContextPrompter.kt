@@ -4,7 +4,7 @@ import cc.unitmesh.devti.provider.ContextPrompter
 
 class JavaScriptContextPrompter : ContextPrompter() {
 
-    override fun createDisplayPrompt(): String {
+    override fun displayPrompt(): String {
         return """$action for the code:
             ```${lang}
             $selectedText
@@ -12,7 +12,7 @@ class JavaScriptContextPrompter : ContextPrompter() {
             """.trimIndent()
     }
 
-    override fun createRequestPrompt(): String {
+    override fun requestPrompt(): String {
         return """$action for the code:
             ```${lang}
             $selectedText

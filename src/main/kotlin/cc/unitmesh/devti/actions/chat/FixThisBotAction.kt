@@ -2,7 +2,9 @@ package cc.unitmesh.devti.actions.chat
 
 import cc.unitmesh.devti.actions.chat.issue.ErrorPlace
 import cc.unitmesh.devti.actions.chat.issue.PromptConstructor
+import cc.unitmesh.devti.actions.chat.issue.RuntimeErrorExplanationPrompt
 import cc.unitmesh.devti.gui.chat.ChatBotActionType
+import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.execution.filters.FileHyperlinkInfo
 import com.intellij.execution.impl.ConsoleViewImpl
 import com.intellij.execution.impl.EditorHyperlinkSupport
@@ -11,7 +13,6 @@ import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.execution.ui.RunContentManager
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.markup.RangeHighlighter
 import com.intellij.openapi.project.Project
@@ -31,27 +32,39 @@ class FixThisBotAction : ChatBaseAction() {
         val project = event.project ?: return
         val description: ErrorDescription = getErrorDescription(event) ?: return
 
-        extracted(project, description.consoleLineFrom, description.consoleLineTo, description.editor)
+        val prompt = extracted(project, description)
+
+        sendToToolWindow(project) { service, panel ->
+            service.handlePromptAndResponse(panel, object : ContextPrompter() {
+                override fun displayPrompt(): String {
+                    return prompt?.displayText ?: ""
+                }
+
+                override fun requestPrompt(): String {
+                    return prompt?.requestText ?: ""
+                }
+            }, null)
+        }
     }
 
     private fun extracted(
         project: Project,
-        consoleLineFrom: Int,
-        consoleLineTo: Int,
-        consoleEditor: Editor
-    ) {
+        description: ErrorDescription,
+    ): RuntimeErrorExplanationPrompt? {
+        val consoleLineFrom = description.consoleLineFrom
+        val consoleLineTo = description.consoleLineTo
+        val consoleEditor = description.editor
+
         val extractedText =
             extractTextFromRunPanel(project, consoleLineFrom, consoleLineTo, consoleEditor)
-                ?: return
+                ?: return null
 
         val extractedErrorPlaces: List<ErrorPlace> =
             extractErrorPlaces(project, consoleLineFrom, consoleLineTo, consoleEditor)
 
         val promptConstructor = PromptConstructor(8192)
-        val prompt = promptConstructor.makePrompt(extractedText, extractedErrorPlaces)
 
-        println(prompt.displayText)
-        println(prompt.text)
+        return promptConstructor.makePrompt(extractedText, extractedErrorPlaces)
     }
 
     private fun getExecutionConsole(project: Project): ExecutionConsole? {
