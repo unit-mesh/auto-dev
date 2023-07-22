@@ -8,6 +8,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.EditorCustomElementRenderer
 import com.intellij.openapi.editor.Inlay
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.impl.ImaginaryEditor
@@ -88,14 +89,17 @@ class LLMInlayManagerImpl : LLMInlayManager {
 
     override fun editorModified(editor: Editor, changeOffset: Int) {
         disposeInlays(editor, InlayDisposeContext.Typing)
-
         requestCompletions(editor, changeOffset) { completion ->
-            if (completion.isNotEmpty()) {
-                logger.debug("Adding inlay: $completion")
-                WriteCommandAction.runWriteCommandAction(editor.project) {
-                    val renderer = LLMInlayRenderer(editor, completion.lines())
-                    renderer.apply {
-                        editor.inlayModel.addAfterLineEndElement(changeOffset, true, this)
+            if (completion.isEmpty()) return@requestCompletions
+
+            WriteCommandAction.runWriteCommandAction(editor.project) {
+                val renderer = LLMInlayRenderer(editor, completion.lines())
+                renderer.apply {
+                    val inlay: Inlay<EditorCustomElementRenderer>? = editor.inlayModel
+                        .addBlockElement(changeOffset, true, false, 0, this)
+
+                    inlay?.let {
+                        renderer.setInlay(inlay)
                     }
                 }
             }

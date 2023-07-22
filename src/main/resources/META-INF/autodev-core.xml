@@ -120,6 +120,13 @@
             <override-text place="EditorPopup" text="Accept"/>
         </action>
 
+        <action id="copilot.disposeInlays"
+                class="cc.unitmesh.devti.actions.LLMDisposeInlaysAction">
+            <keyboard-shortcut first-keystroke="ESCAPE" keymap="$default"/>
+            <override-text place="MainMenu" text="Hide Completions in Editor"/>
+        </action>
+
+
         <group id="AutoDevIntentionsActionGroup" class="cc.unitmesh.devti.intentions.editor.IntentionsActionGroup">
             <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
         </group>

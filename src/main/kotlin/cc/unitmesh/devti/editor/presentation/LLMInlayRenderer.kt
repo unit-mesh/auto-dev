@@ -11,10 +11,7 @@ import org.jetbrains.annotations.NonNls
 import java.awt.Graphics
 import java.awt.Rectangle
 
-class LLMInlayRenderer(
-    editor: Editor,
-    lines: List<String?>,
-) : EditorCustomElementRenderer {
+class LLMInlayRenderer(editor: Editor, lines: List<String?>, ) : EditorCustomElementRenderer {
     private val lines: List<String>
     private val content: String
     fun setCachedWidth(cachedWidth: Int) {

@@ -56,7 +56,6 @@ class CompletionTaskRequest(
                 document.modificationStamp
             }
 
-
             return CompletionTaskRequest(
                 project,
                 useTabs,
@@ -102,12 +101,7 @@ class CodeCompletionTask(
     private val commentPrefix = commenter?.lineCommentPrefix
 
     override fun run(indicator: ProgressIndicator) {
-        val prefix = request.documentContent.substring(0, request.offset)
-        val prompt = if (chunksString == null) {
-            prefix
-        } else {
-            "code complete for follow code: \n$commentPrefix${request.fileUri}\n$chunksString\n$prefix"
-        }
+        val prompt = promptText()
 
         val flow: Flow<String> = connectorFactory.connector(request.project).stream(prompt)
         logger.warn("Prompt: $prompt")
@@ -118,6 +112,7 @@ class CodeCompletionTask(
 
             val project = request.project
             val suggestion = StringBuilder()
+
             flow.collect {
                 suggestion.append(it)
                 invokeLater {
@@ -139,11 +134,24 @@ class CodeCompletionTask(
         }
     }
 
+    private fun promptText(): String {
+        val prefix = request.documentContent.substring(0, request.offset)
+        val prompt = if (chunksString == null) {
+            prefix
+        } else {
+            "code complete for follow code: \n$commentPrefix${request.fileUri}\n$chunksString\n$prefix"
+        }
+        return prompt
+    }
+
     fun execute(onFirstCompletion: Consumer<String>?) {
+        val prompt = promptText()
+
         LLMCoroutineScopeService.scope(project).launch {
-            val flow: Flow<String> = connectorFactory.connector(project).stream("code complete")
+            val flow: Flow<String> = connectorFactory.connector(project).stream(prompt)
             val suggestion = StringBuilder()
             flow.collect {
+                print(it)
                 suggestion.append(it)
             }
 
