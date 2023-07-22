@@ -24,7 +24,8 @@
         <!-- Run Configurations -->
         <programRunner implementation="cc.unitmesh.devti.runconfig.AutoDevCommandRunner"/>
 
-        <toolWindow id="DevTiFlow" secondary="true" icon="AllIcons.Toolwindows.WebToolWindow" anchor="right"
+        <toolWindow id="DevTiFlow" secondary="true" anchor="right"
+                    icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                     factoryClass="cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory"/>
 
         <intentionAction>
