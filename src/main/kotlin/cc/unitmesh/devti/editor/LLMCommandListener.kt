@@ -24,14 +24,14 @@ class LLMCommandListener(private val project: Project) : CommandListener {
 
     override fun commandStarted(event: CommandEvent) {
         if (activeCommands.getAndIncrement() > 0) {
-            LOG.debug("Skipping nested commandStarted. Event: $event")
+            logger.debug("Skipping nested commandStarted. Event: $event")
             return
         }
+
         val editor = getSelectedEditorSafely(project)
         if (editor != null) {
             startedWithEditor.set(true)
-            COMMAND_STATE_KEY[editor] =
-                createCommandState(editor)
+            COMMAND_STATE_KEY[editor] = createCommandState(editor)
         } else {
             startedWithEditor.set(false)
         }
@@ -40,23 +40,21 @@ class LLMCommandListener(private val project: Project) : CommandListener {
 
     override fun commandFinished(event: CommandEvent) {
         if (activeCommands.decrementAndGet() > 0) {
-            LOG.debug("Skipping nested commandFinished. Event: $event")
+            logger.debug("Skipping nested commandFinished. Event: $event")
             return
         }
 
-        if (!startedWithEditor.get()) {
-            return
-        }
+        if (!startedWithEditor.get()) return
+
         val editor = getSelectedEditorSafely(project) ?: return
         val editorManager = LLMInlayManager.getInstance()
-        if (!editorManager.isAvailable(editor)) {
-            return
-        }
+
+        if (!editorManager.isAvailable(editor)) return
 
         val commandStartState = COMMAND_STATE_KEY[editor] ?: return
         val commandEndState = createCommandState(editor)
         if (isDocumentModification(commandStartState, commandEndState)) {
-            LOG.debug("command modified document: " + event.commandName)
+            logger.debug("command modified document: " + event.commandName)
             editorManager.editorModified(editor)
         } else if (isCaretPositionChange(commandStartState, commandEndState)) {
             editorManager.disposeInlays(editor, InlayDisposeContext.CaretChange)
@@ -71,13 +69,11 @@ class LLMCommandListener(private val project: Project) : CommandListener {
     override fun undoTransparentActionFinished() {
         val currentEditorStamp = undoTransparentActionStamp.get()
         undoTransparentActionStamp.set(null)
-        val editor = getSelectedEditorSafely(project)
-        if (editor == null || currentEditorStamp == null || editor !== currentEditorStamp.editor) {
-            return
-        }
-        if (getDocumentStamp(editor.document) == currentEditorStamp.modificationStamp) {
-            return
-        }
+        val editor = getSelectedEditorSafely(project) ?: return
+
+        if (currentEditorStamp == null || editor !== currentEditorStamp.editor) return
+        if (getDocumentStamp(editor.document) == currentEditorStamp.modificationStamp) return
+
         val editorManager = LLMInlayManager.getInstance()
         if (editorManager.isAvailable(editor)) {
             editorManager.editorModified(editor)
@@ -93,13 +89,14 @@ class LLMCommandListener(private val project: Project) : CommandListener {
     }
 
     companion object {
-        private val LOG = Logger.getInstance(LLMCommandListener::class.java)
+        private val logger = Logger.getInstance(LLMCommandListener::class.java)
         private val COMMAND_STATE_KEY = Key.create<CommandEditorState>("llm.commandState")
     }
 
     private fun createCommandState(editor: Editor): CommandEditorState {
         return CommandEditorState(getDocumentStamp(editor.document), editor.caretModel.visualPosition)
     }
+
     private fun createUndoTransparentState(editor: Editor): UndoTransparentActionState {
         return UndoTransparentActionState(editor, getDocumentStamp(editor.document))
     }
