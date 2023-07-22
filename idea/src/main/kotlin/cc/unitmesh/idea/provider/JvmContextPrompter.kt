@@ -184,6 +184,10 @@ examples:
                 }
                 prompt = "create ddl based on the follow info"
             }
+
+            ChatBotActionType.CREATE_CHANGELOG -> {
+                prompt = "generate release note base on the follow commit"
+            }
         }
 
         return prompt

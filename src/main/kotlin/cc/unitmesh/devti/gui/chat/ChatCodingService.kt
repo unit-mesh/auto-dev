@@ -10,12 +10,6 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
-data class ChatContext(
-    val replaceSelectedText: ((response: String) -> Unit)? = null,
-    val prefixText: String,
-    val suffixText: String
-)
-
 class ChatCodingService(var actionType: ChatBotActionType, val project: Project) {
     private val connectorFactory = ConnectorFactory.getInstance()
 
@@ -28,10 +22,11 @@ class ChatCodingService(var actionType: ChatBotActionType, val project: Project)
         ChatBotActionType.FIX_ISSUE -> "help me fix this"
         ChatBotActionType.GEN_COMMIT_MESSAGE -> "generate commit message"
         ChatBotActionType.CREATE_DDL -> "create ddl"
+        ChatBotActionType.CREATE_CHANGELOG -> "generate release note"
     }
 
     fun getLabel(): String {
-        val capitalizedAction = action.capitalize()
+        val capitalizedAction = action.replaceFirstChar { it.uppercase() }
         return "$capitalizedAction Code"
     }
 
@@ -83,5 +78,6 @@ enum class ChatBotActionType {
     WRITE_TEST,
     GEN_COMMIT_MESSAGE,
     FIX_ISSUE,
-    CREATE_DDL;
+    CREATE_DDL,
+    CREATE_CHANGELOG;
 }

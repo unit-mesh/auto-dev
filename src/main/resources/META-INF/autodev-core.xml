@@ -28,6 +28,9 @@
                     icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                     factoryClass="cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory"/>
 
+        <notificationGroup id="AI notification group" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
+                           key="notification.group.name"/>
+
         <intentionAction>
             <className>cc.unitmesh.devti.intentions.AIAssistantIntention</className>
             <categoryKey>Intention.category.llm</categoryKey>
@@ -156,9 +159,9 @@
         </action>
 
         <action id="autodev.Vcs.LLMChangelog"
-                class="cc.unitmesh.devti.vcs.ChangelogSuggestionAction" text="Generate Changelog (AutoDev)"
+                class="cc.unitmesh.devti.vcs.ReleaseNoteSuggestionAction" text="Generate Release Note (AutoDev)"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
-                description="Ask AutoDev generate commit message">
+                description="Ask AutoDev generate release note">
 
             <add-to-group group-id="Vcs.Log.ContextMenu" relative-to-action="Vcs.ShowDiffWithLocal" anchor="after"/>
         </action>
