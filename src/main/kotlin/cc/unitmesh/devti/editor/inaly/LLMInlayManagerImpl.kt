@@ -1,6 +1,8 @@
 package cc.unitmesh.devti.editor.inaly
 
 import cc.unitmesh.devti.editor.presentation.LLMInlayRenderer
+import cc.unitmesh.devti.intentions.editor.CodeCompletionTask
+import cc.unitmesh.devti.intentions.editor.CompletionTaskRequest
 import com.intellij.injected.editor.EditorWindow
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.command.WriteCommandAction
@@ -13,6 +15,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.KeyWithDefaultValue
+import com.intellij.psi.util.PsiUtilBase
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import com.intellij.util.concurrency.annotations.RequiresEdt
 import java.util.function.Consumer
@@ -88,14 +91,23 @@ class LLMInlayManagerImpl : LLMInlayManager {
 
         requestCompletions(editor, changeOffset) { completion ->
             if (completion.isNotEmpty()) {
-                applyCompletion(editor.project!!, editor)
+                logger.debug("Adding inlay: $completion")
+                WriteCommandAction.runWriteCommandAction(editor.project) {
+                    val renderer = LLMInlayRenderer(editor, completion.lines())
+                    renderer.apply {
+                        editor.inlayModel.addAfterLineEndElement(changeOffset, true, this)
+                    }
+                }
             }
         }
     }
 
     @RequiresBackgroundThread
     private fun requestCompletions(editor: Editor, changeOffset: Int, onFirstCompletion: Consumer<String>?) {
-        logger.info("Requesting completions for offset $changeOffset")
+        val element = PsiUtilBase.getElementAtCaret(editor) ?: return
+        val request = CompletionTaskRequest.create(editor, changeOffset, element) ?: return
+
+        CodeCompletionTask(request).execute(onFirstCompletion)
     }
 
     override fun editorModified(editor: Editor) {

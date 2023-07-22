@@ -24,6 +24,8 @@ import com.intellij.psi.codeStyle.CodeStyleManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.util.concurrent.Flow.*
+import java.util.function.Consumer
 import kotlin.jvm.internal.Ref
 
 
@@ -134,6 +136,18 @@ class CodeCompletionTask(
             }
 
             logger.warn("Suggestion: $suggestion")
+        }
+    }
+
+    fun execute(onFirstCompletion: Consumer<String>?) {
+        LLMCoroutineScopeService.scope(project).launch {
+            val flow: Flow<String> = connectorFactory.connector(project).stream("code complete")
+            val suggestion = StringBuilder()
+            flow.collect {
+                suggestion.append(it)
+            }
+
+            onFirstCompletion?.accept(suggestion.toString())
         }
     }
 
