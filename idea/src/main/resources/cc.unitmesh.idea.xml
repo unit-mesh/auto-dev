@@ -20,7 +20,7 @@
 
         <contextPrompter
                 language="JAVA"
-                implementation="cc.unitmesh.idea.provider.JvmContextPrompter"/>
+                implementation="cc.unitmesh.idea.provider.JvmIdeaContextPrompter"/>
         <techStackProvider
                 language="JAVA"
                 implementation="cc.unitmesh.idea.provider.JvmTechStackService"/>

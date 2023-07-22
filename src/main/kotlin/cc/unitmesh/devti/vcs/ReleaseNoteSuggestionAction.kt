@@ -40,10 +40,15 @@ class ReleaseNoteSuggestionAction : AnAction() {
         val prompter = ContextPrompter.prompter("")
         prompter?.initContext(actionType, "", null, project, 0)
 
+        val commitMsgs = stringList.joinToString(",")
         toolWindowManager?.activate {
-            val chatContext = ChatContext(null, stringList.joinToString(","), "")
+            chatCodingService.handlePromptAndResponse(contentPanel, object : ContextPrompter() {
+                override fun getUIPrompt(): String =
+                    "generate release note based on follow info: $commitMsgs"
 
-            chatCodingService.handlePromptAndResponse(contentPanel, prompter!!, chatContext)
+                override fun getRequestPrompt(): String =
+                    "generate release note based on follow info: $commitMsgs"
+            }, null)
         }
     }
 }

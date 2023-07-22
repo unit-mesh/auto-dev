@@ -17,7 +17,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 
-class JvmContextPrompter : ContextPrompter() {
+class JvmIdeaContextPrompter : ContextPrompter() {
     private var additionContext: String = ""
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private var promptConfig: PromptConfig? = null
