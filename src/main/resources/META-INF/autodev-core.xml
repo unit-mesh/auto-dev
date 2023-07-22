@@ -96,6 +96,11 @@
                   class="cc.unitmesh.devti.editor.LLMInlayGotItListener"/>
     </applicationListeners>
 
+    <projectListeners>
+        <listener topic="com.intellij.openapi.command.CommandListener"
+                  class="cc.unitmesh.devti.editor.LLMCommandListener"/>
+    </projectListeners>
+
     <extensions defaultExtensionNs="cc.unitmesh">
         <aiAssistantIntention>
             <className>cc.unitmesh.devti.intentions.editor.CodeCompletionIntention</className>
