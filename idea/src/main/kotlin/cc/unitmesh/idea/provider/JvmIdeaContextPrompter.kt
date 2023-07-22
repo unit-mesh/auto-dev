@@ -45,7 +45,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
     ) {
         super.initContext(actionType, selectedText, file, project, offset)
         changeListManager = ChangeListManagerImpl.getInstance(project)
-        mvcContextService = project.service<MvcContextService>()
+        mvcContextService = MvcContextService(project)
 
         lang = file?.language?.displayName ?: ""
         fileName = file?.name ?: ""

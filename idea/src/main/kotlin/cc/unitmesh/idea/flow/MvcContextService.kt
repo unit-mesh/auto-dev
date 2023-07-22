@@ -4,7 +4,6 @@ import cc.unitmesh.devti.context.model.DtClass
 import cc.unitmesh.idea.formatPsi
 import cc.unitmesh.idea.fromJavaFile
 import com.intellij.openapi.application.runReadAction
-import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiClass
@@ -13,7 +12,6 @@ import com.intellij.psi.PsiImportStatementBase
 import com.intellij.psi.impl.source.PsiJavaFileImpl
 import com.intellij.psi.search.GlobalSearchScope
 
-@Service(Service.Level.PROJECT)
 class MvcContextService(private val project: Project) {
     private val searchScope = GlobalSearchScope.allScope(project)
     private val javaPsiFacade = JavaPsiFacade.getInstance(project)

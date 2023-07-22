@@ -24,6 +24,7 @@ class DevtiFlowToolWindowFactory : ToolWindowFactory, DumbAware {
         val chatCodingService = ChatCodingService(ChatBotActionType.EXPLAIN, project!!)
         val contentPanel = ChatCodingComponent(chatCodingService)
         val content = contentFactory.createContent(contentPanel, AutoDevBundle.message("autodev.flow"), false)
+        // config tool window title
         toolWindow.contentManager.addContent(content)
     }
 }
