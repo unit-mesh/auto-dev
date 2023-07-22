@@ -5,7 +5,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.command.WriteCommandAction
 
-class CodeCompleteAction : ChatBaseAction() {
+class CodeCompleteChatAction : ChatBaseAction() {
     override fun getActionType(): ChatBotActionType {
         return ChatBotActionType.CODE_COMPLETE
     }

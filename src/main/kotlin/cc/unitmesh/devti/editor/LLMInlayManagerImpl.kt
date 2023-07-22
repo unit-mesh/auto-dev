@@ -13,7 +13,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.KeyWithDefaultValue
+import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import com.intellij.util.concurrency.annotations.RequiresEdt
+import java.util.function.Consumer
 
 class LLMInlayManagerImpl : LLMInlayManager {
     companion object {
@@ -78,6 +80,25 @@ class LLMInlayManagerImpl : LLMInlayManager {
         }
 
         wrapProcessing(editor) { disposeInlays(collectInlays(editor, 0, editor.document.textLength)) }
+    }
+
+    override fun editorModified(editor: Editor, changeOffset: Int) {
+        disposeInlays(editor, InlayDisposeContext.Typing)
+
+        requestCompletions(editor, changeOffset, Consumer { completion ->
+            if (completion.isNotEmpty()) {
+                applyCompletion(editor.project!!, editor)
+            }
+        })
+    }
+
+    @RequiresBackgroundThread
+    private fun requestCompletions(editor: Editor, changeOffset: Int, onFirstCompletion: Consumer<String>?) {
+        println(editor.document.text)
+    }
+
+    override fun editorModified(editor: Editor) {
+        editorModified(editor, editor.caretModel.offset)
     }
 
     private fun disposeInlays(renderers: List<LLMInlayRenderer>) {

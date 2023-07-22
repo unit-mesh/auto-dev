@@ -31,6 +31,10 @@
         <notificationGroup id="AI notification group" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
                            key="notification.group.name"/>
 
+        <editorFactoryListener implementation="cc.unitmesh.devti.editor.AutoDevEditorListener"/>
+        <typedHandler order="first, before completionAutoPopup"
+                      implementation="cc.unitmesh.devti.editor.TypeOverHandler"/>
+
         <intentionAction>
             <className>cc.unitmesh.devti.intentions.AIAssistantIntention</className>
             <categoryKey>Intention.category.llm</categoryKey>
@@ -104,12 +108,12 @@
     </extensions>
 
     <actions>
-        <!--        <action id="llm.applyInlays"-->
-        <!--                class="cc.unitmesh.devti.actions.LLMApplyInlaysAction">-->
-        <!--            <keyboard-shortcut first-keystroke="TAB" keymap="$default"/>-->
-        <!--            <override-text place="MainMenu" text="Apply Completions to Editor"/>-->
-        <!--            <override-text place="EditorPopup" text="Accept"/>-->
-        <!--        </action>-->
+        <action id="llm.applyInlays"
+                class="cc.unitmesh.devti.actions.LLMApplyInlaysAction">
+            <keyboard-shortcut first-keystroke="TAB" keymap="$default"/>
+            <override-text place="MainMenu" text="Apply Completions to Editor"/>
+            <override-text place="EditorPopup" text="Accept"/>
+        </action>
 
         <group id="AutoDevIntentionsActionGroup" class="cc.unitmesh.devti.intentions.editor.IntentionsActionGroup">
             <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
@@ -166,8 +170,8 @@
             <add-to-group group-id="Vcs.Log.ContextMenu" relative-to-action="Vcs.ShowDiffWithLocal" anchor="after"/>
         </action>
 
-        <action id="cc.unitmesh.devti.actions.chat.CodeCompleteAction"
-                class="cc.unitmesh.devti.actions.chat.CodeCompleteAction" text="Code Complete (AutoDev)"
+        <action id="cc.unitmesh.devti.actions.chat.CodeCompleteChatAction"
+                class="cc.unitmesh.devti.actions.chat.CodeCompleteChatAction" text="Code Complete (AutoDev)"
                 description="Ask AutoDev about this code">
 
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>

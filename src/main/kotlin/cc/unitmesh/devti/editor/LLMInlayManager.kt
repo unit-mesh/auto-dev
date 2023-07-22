@@ -22,6 +22,10 @@ interface LLMInlayManager : Disposable {
     @RequiresEdt
     fun disposeInlays(editor: Editor, disposeContext: InlayDisposeContext)
 
+    fun editorModified(editor: Editor, changeOffset: Int)
+
+    fun editorModified(editor: Editor)
+
     companion object {
         fun getInstance(): LLMInlayManager {
             return ApplicationManager.getApplication().getService(LLMInlayManager::class.java)
