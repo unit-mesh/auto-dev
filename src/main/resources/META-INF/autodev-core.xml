@@ -10,8 +10,8 @@
                                  displayName="AutoDev"/>
 
         <applicationService
-                serviceInterface="cc.unitmesh.devti.editor.LLMInlayManager"
-                serviceImplementation="cc.unitmesh.devti.editor.LLMInlayManagerImpl"/>
+                serviceInterface="cc.unitmesh.devti.editor.inaly.LLMInlayManager"
+                serviceImplementation="cc.unitmesh.devti.editor.inaly.LLMInlayManagerImpl"/>
 
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.AutoDevSettingsState"/>
 
@@ -31,9 +31,9 @@
         <notificationGroup id="AI notification group" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
                            key="notification.group.name"/>
 
-        <editorFactoryListener implementation="cc.unitmesh.devti.editor.AutoDevEditorListener"/>
+        <editorFactoryListener implementation="cc.unitmesh.devti.editor.inaly.AutoDevEditorListener"/>
         <typedHandler order="first, before completionAutoPopup"
-                      implementation="cc.unitmesh.devti.editor.TypeOverHandler"/>
+                      implementation="cc.unitmesh.devti.editor.inaly.TypeOverHandler"/>
 
         <intentionAction>
             <className>cc.unitmesh.devti.intentions.AIAssistantIntention</className>
@@ -92,13 +92,13 @@
     </extensionPoints>
 
     <applicationListeners>
-        <listener topic="cc.unitmesh.devti.editor.LLMInlayListener"
-                  class="cc.unitmesh.devti.editor.LLMInlayGotItListener"/>
+        <listener topic="cc.unitmesh.devti.editor.inaly.LLMInlayListener"
+                  class="cc.unitmesh.devti.editor.inaly.LLMInlayGotItListener"/>
     </applicationListeners>
 
     <projectListeners>
         <listener topic="com.intellij.openapi.command.CommandListener"
-                  class="cc.unitmesh.devti.editor.LLMCommandListener"/>
+                  class="cc.unitmesh.devti.editor.inaly.LLMCommandListener"/>
     </projectListeners>
 
     <extensions defaultExtensionNs="cc.unitmesh">

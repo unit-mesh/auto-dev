@@ -1,6 +1,5 @@
-package cc.unitmesh.devti.editor
+package cc.unitmesh.devti.editor.inaly
 
-import com.intellij.codeInsight.lookup.LookupManager
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.event.*

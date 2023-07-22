@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.editor
+package cc.unitmesh.devti.editor.inaly
 
 import cc.unitmesh.devti.editor.presentation.LLMInlayRenderer
 import com.intellij.injected.editor.EditorWindow
