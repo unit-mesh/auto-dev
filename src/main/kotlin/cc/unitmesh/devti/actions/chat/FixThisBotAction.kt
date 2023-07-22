@@ -19,9 +19,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiManager
 import com.intellij.refactoring.suggested.range
 import kotlin.jvm.internal.Intrinsics
 import kotlin.math.max
+
 
 class FixThisBotAction : ChatBaseAction() {
     override fun getActionType(): ChatBotActionType {
@@ -155,10 +157,13 @@ class FixThisBotAction : ChatBaseAction() {
 
         val hyperlinkText = consoleText.substring(range.startOffset, range.endOffset)
         val projectFileIndex: ProjectFileIndex = ProjectFileIndex.getInstance(project)
+        val isProjectFile =
+            projectFileIndex.isInProject(virtualFile, project) && !projectFileIndex.isInLibrary(virtualFile)
+
         return ErrorPlace(
             hyperlinkText,
             lineNumber,
-            projectFileIndex.isInProject(virtualFile, project) && !projectFileIndex.isInLibrary(virtualFile),
+            isProjectFile,
             virtualFile,
             project
         )
@@ -173,7 +178,13 @@ class FixThisBotAction : ChatBaseAction() {
 }
 
 private fun ProjectFileIndex.isInProject(virtualFile: VirtualFile, project: Project): Boolean {
+    // https://github.com/JetBrains/intellij-community/blob/master/platform/core-impl/src/com/intellij/psi/search/ProjectScopeImpl.java#L25
+    // new version has better method
     if (virtualFile.path.startsWith(project.basePath ?: return false)) {
+        return true
+    }
+
+    PsiManager.getInstance(project).findFile(virtualFile)?.let {
         return true
     }
 
