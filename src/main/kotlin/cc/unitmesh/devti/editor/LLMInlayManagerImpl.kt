@@ -19,7 +19,8 @@ import java.util.function.Consumer
 
 class LLMInlayManagerImpl : LLMInlayManager {
     companion object {
-        private val LOG = Logger.getInstance(LLMInlayManagerImpl::class.java)
+        private val logger = Logger.getInstance(LLMInlayManagerImpl::class.java)
+
         val KEY_DOCUMENT_SAVE_VETO = Key.create<Boolean>("llm.docSaveVeto")
         private val KEY_PROCESSING =
             KeyWithDefaultValue.create("llm.processing", java.lang.Boolean.valueOf(false)) as Key<Boolean>
@@ -85,16 +86,16 @@ class LLMInlayManagerImpl : LLMInlayManager {
     override fun editorModified(editor: Editor, changeOffset: Int) {
         disposeInlays(editor, InlayDisposeContext.Typing)
 
-        requestCompletions(editor, changeOffset, Consumer { completion ->
+        requestCompletions(editor, changeOffset) { completion ->
             if (completion.isNotEmpty()) {
                 applyCompletion(editor.project!!, editor)
             }
-        })
+        }
     }
 
     @RequiresBackgroundThread
     private fun requestCompletions(editor: Editor, changeOffset: Int, onFirstCompletion: Consumer<String>?) {
-        println(editor.document.text)
+        logger.info("Requesting completions for offset $changeOffset")
     }
 
     override fun editorModified(editor: Editor) {
@@ -102,7 +103,7 @@ class LLMInlayManagerImpl : LLMInlayManager {
     }
 
     private fun disposeInlays(renderers: List<LLMInlayRenderer>) {
-        LOG.debug("Disposing inlays: " + renderers.size)
+        logger.debug("Disposing inlays: " + renderers.size)
         for (renderer in renderers) {
             val inlay = renderer.getInlay()
             if (inlay != null) {
