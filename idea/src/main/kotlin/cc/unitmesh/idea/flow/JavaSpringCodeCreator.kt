@@ -26,7 +26,8 @@ import kotlin.reflect.KFunction1
 
 @Service(Service.Level.PROJECT)
 class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
-    val psiElementFactory = JavaPsiFacade.getElementFactory(project)
+    val psiElementFactory: PsiElementFactory get() = JavaPsiFacade.getElementFactory(project)
+
     private val codeTemplate = JavaTemplateHelper(project)
     private val psiManager = PsiManager.getInstance(project)
     private val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)

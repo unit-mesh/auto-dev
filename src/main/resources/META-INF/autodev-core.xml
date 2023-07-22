@@ -114,27 +114,27 @@
         <group id="org.intellij.sdk.action.GroupedActions" popup="true" text="AutoDev" description="AutoDev">
             <action id="cc.unitmesh.devti.actions.chat.ChatBotExplainAction"
                     class="cc.unitmesh.devti.actions.chat.ChatBotExplainAction" text="Explain This"
-                    description="Ask Chatbot about this code">
+                    description="Ask AutoDev about this code">
             </action>
 
             <action id="cc.unitmesh.devti.actions.chat.ChatBotRefactorAction"
                     class="cc.unitmesh.devti.actions.chat.ChatBotRefactorAction" text="Refactor This"
-                    description="Ask Chatbot about this code">
+                    description="Ask AutoDev about this code">
             </action>
 
             <action id="cc.unitmesh.devti.actions.chat.ChatBotReviewAction"
                     class="cc.unitmesh.devti.actions.chat.ChatBotReviewAction" text="Review This"
-                    description="Ask Chatbot about this code">
+                    description="Ask AutoDev about this code">
             </action>
 
             <action id="cc.unitmesh.devti.actions.chat.WriteTestAction"
                     class="cc.unitmesh.devti.actions.chat.WriteTestAction" text="Write Test for This"
-                    description="Ask Chatbot about this code">
+                    description="Ask AutoDev about this code">
             </action>
 
             <action id="cc.unitmesh.devti.actions.chat.CreateDdlAction"
                     class="cc.unitmesh.devti.actions.chat.CreateDdlAction" text="Create DDL"
-                    description="Ask Chatbot create DDL code">
+                    description="Ask AutoDev create DDL code">
             </action>
 
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
@@ -142,22 +142,29 @@
 
         <action id="cc.unitmesh.devti.actions.chat.FixThisBotAction"
                 class="cc.unitmesh.devti.actions.chat.FixThisBotAction" text="Fix This (AutoDev)"
-                description="Ask Chatbot about this code">
+                description="Ask AutoDev about this code">
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
         </action>
 
-        <action id="cc.unitmesh.devti.actions.chat.CommitMessageSuggestionAction"
-                class="cc.unitmesh.devti.actions.chat.CommitMessageSuggestionAction" text="Commit Message (AutoDev)"
-                description="Ask Chatbot about this code">
-            <add-to-group group-id="Vcs.Commit.PrimaryCommitActions" anchor="first"/>
-            <add-to-group group-id="Vcs.CommitExecutor.Actions" anchor="first"/>
+        <action id="autodev.Vcs.CommitMessage"
+                class="cc.unitmesh.devti.vcs.CommitMessageSuggestionAction" text="Commit Message (AutoDev)"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+                description="Ask AutoDev generate commit message">
+
             <add-to-group group-id="Vcs.MessageActionGroup"/>
         </action>
 
+        <action id="autodev.Vcs.LLMChangelog"
+                class="cc.unitmesh.devti.vcs.ChangelogSuggestionAction" text="Generate Changelog (AutoDev)"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+                description="Ask AutoDev generate commit message">
+
+            <add-to-group group-id="Vcs.Log.ContextMenu" relative-to-action="Vcs.ShowDiffWithLocal" anchor="after"/>
+        </action>
 
         <action id="cc.unitmesh.devti.actions.chat.CodeCompleteAction"
                 class="cc.unitmesh.devti.actions.chat.CodeCompleteAction" text="Code Complete (AutoDev)"
-                description="Ask Chatbot about this code">
+                description="Ask AutoDev about this code">
 
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
