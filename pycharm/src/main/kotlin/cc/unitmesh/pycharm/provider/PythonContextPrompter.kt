@@ -5,7 +5,7 @@ import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.diagnostic.Logger
 
 class PythonContextPrompter : ContextPrompter() {
-    override fun getUIPrompt(): String {
+    override fun createDisplayPrompt(): String {
         val chunkContext = SimilarChunksWithPaths().similarChunksWithPaths(file!!).toQuery()
 
         return """$action for the code:
@@ -16,7 +16,7 @@ class PythonContextPrompter : ContextPrompter() {
             """.trimIndent()
     }
 
-    override fun getRequestPrompt(): String {
+    override fun createRequestPrompt(): String {
         val chunkContext = SimilarChunksWithPaths().similarChunksWithPaths(file!!).toQuery()
 
         return """$action for the code:

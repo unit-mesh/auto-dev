@@ -56,7 +56,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
         promptConfig = PromptConfig.tryParse(prompts)
     }
 
-    override fun getUIPrompt(): String {
+    override fun createDisplayPrompt(): String {
         val prompt = createPrompt(selectedText)
         val finalPrompt = if (additionContext.isNotEmpty()) {
             """$additionContext
@@ -70,7 +70,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
         """.trimMargin()
     }
 
-    override fun getRequestPrompt(): String {
+    override fun createRequestPrompt(): String {
         val prompt = createPrompt(selectedText)
         val finalPrompt = if (additionContext.isNotEmpty()) {
             """$additionContext

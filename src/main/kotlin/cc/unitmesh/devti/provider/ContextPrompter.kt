@@ -40,8 +40,8 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
         return implementationClass
     }
 
-    open fun getUIPrompt(): String = ""
-    open fun getRequestPrompt(): String = ""
+    open fun createDisplayPrompt(): String = ""
+    open fun createRequestPrompt(): String = ""
 
     companion object {
         private val EP_NAME: ExtensionPointName<ContextPrompter> =

@@ -152,8 +152,8 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
 
             chatCodingService.actionType = ChatBotActionType.REFACTOR
             chatCodingService.handlePromptAndResponse(this, object : ContextPrompter() {
-                override fun getUIPrompt() = prompt
-                override fun getRequestPrompt() = prompt
+                override fun createDisplayPrompt() = prompt
+                override fun createRequestPrompt() = prompt
             }, context)
         }
 
