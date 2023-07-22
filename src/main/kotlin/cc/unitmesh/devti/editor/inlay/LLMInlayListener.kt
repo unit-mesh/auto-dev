@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.editor.inaly
+package cc.unitmesh.devti.editor.inlay
 
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorCustomElementRenderer

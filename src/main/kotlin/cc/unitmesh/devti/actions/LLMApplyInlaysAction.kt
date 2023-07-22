@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.actions
 
-import cc.unitmesh.devti.editor.inaly.LLMInlayManager
+import cc.unitmesh.devti.editor.inlay.LLMInlayManager
 import cc.unitmesh.devti.editor.presentation.EditorUtilCopy
 import com.intellij.application.options.CodeStyle
 import com.intellij.codeInsight.lookup.LookupManager

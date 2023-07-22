@@ -10,8 +10,8 @@
                                  displayName="AutoDev"/>
 
         <applicationService
-                serviceInterface="cc.unitmesh.devti.editor.inaly.LLMInlayManager"
-                serviceImplementation="cc.unitmesh.devti.editor.inaly.LLMInlayManagerImpl"/>
+                serviceInterface="cc.unitmesh.devti.editor.inlay.LLMInlayManager"
+                serviceImplementation="cc.unitmesh.devti.editor.inlay.LLMInlayManagerImpl"/>
 
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.AutoDevSettingsState"/>
 
@@ -31,9 +31,9 @@
         <notificationGroup id="AI notification group" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
                            key="notification.group.name"/>
 
-        <editorFactoryListener implementation="cc.unitmesh.devti.editor.inaly.AutoDevEditorListener"/>
-        <typedHandler order="first, before completionAutoPopup"
-                      implementation="cc.unitmesh.devti.editor.inaly.TypeOverHandler"/>
+<!--        <editorFactoryListener implementation="cc.unitmesh.devti.editor.inlay.AutoDevEditorListener"/>-->
+<!--        <typedHandler order="first, before completionAutoPopup"-->
+<!--                      implementation="cc.unitmesh.devti.editor.inlay.TypeOverHandler"/>-->
 
         <intentionAction>
             <className>cc.unitmesh.devti.intentions.AIAssistantIntention</className>
@@ -91,15 +91,14 @@
                         dynamic="true"/>
     </extensionPoints>
 
-    <applicationListeners>
-        <listener topic="cc.unitmesh.devti.editor.inaly.LLMInlayListener"
-                  class="cc.unitmesh.devti.editor.inaly.LLMInlayGotItListener"/>
-    </applicationListeners>
-
-    <projectListeners>
-        <listener topic="com.intellij.openapi.command.CommandListener"
-                  class="cc.unitmesh.devti.editor.inaly.LLMCommandListener"/>
-    </projectListeners>
+<!--    <applicationListeners>-->
+<!--        <listener topic="cc.unitmesh.devti.editor.inlay.LLMInlayListener"-->
+<!--                  class="cc.unitmesh.devti.editor.inlay.LLMInlayGotItListener"/>-->
+<!--    </applicationListeners>-->
+<!--    <projectListeners>-->
+<!--        <listener topic="com.intellij.openapi.command.CommandListener"-->
+<!--                  class="cc.unitmesh.devti.editor.inlay.LLMCommandListener"/>-->
+<!--    </projectListeners>-->
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <aiAssistantIntention>

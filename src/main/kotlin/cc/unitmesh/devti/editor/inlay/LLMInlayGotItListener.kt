@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.editor.inaly
+package cc.unitmesh.devti.editor.inlay
 
 import cc.unitmesh.devti.actions.LLMApplyInlaysAction
 import com.intellij.openapi.editor.Editor

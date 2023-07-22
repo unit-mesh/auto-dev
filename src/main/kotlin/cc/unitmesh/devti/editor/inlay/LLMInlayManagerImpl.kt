@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.editor.inaly
+package cc.unitmesh.devti.editor.inlay
 
 import cc.unitmesh.devti.editor.presentation.LLMInlayRenderer
 import cc.unitmesh.devti.intentions.editor.CodeCompletionTask
@@ -18,7 +18,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.KeyWithDefaultValue
-import com.intellij.openapi.util.TextRange
 import com.intellij.psi.util.PsiUtilBase
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import com.intellij.util.concurrency.annotations.RequiresEdt
@@ -35,7 +34,7 @@ class LLMInlayManagerImpl : LLMInlayManager {
         private val KEY_EDITOR_SUPPORTED = Key.create<Boolean>("llm.editorSupported")
     }
 
-    var currentCompletion: String = ""
+    private var currentCompletion: String = ""
 
     @RequiresEdt
     override fun isAvailable(editor: Editor): Boolean {

@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.editor.inaly
+package cc.unitmesh.devti.editor.inlay
 
 enum class InlayDisposeContext {
     UserAction,

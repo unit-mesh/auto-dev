@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.actions
 
-import cc.unitmesh.devti.editor.inaly.InlayDisposeContext
-import cc.unitmesh.devti.editor.inaly.LLMInlayManager
+import cc.unitmesh.devti.editor.inlay.InlayDisposeContext
+import cc.unitmesh.devti.editor.inlay.LLMInlayManager
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.editor.Caret
 import com.intellij.openapi.editor.Editor
