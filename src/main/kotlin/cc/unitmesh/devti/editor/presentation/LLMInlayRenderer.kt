@@ -78,6 +78,7 @@ class LLMInlayRenderer(editor: Editor, lines: List<String?>, ) : EditorCustomEle
         if (editor.isDisposed) {
             return
         }
+
         LLMTextInlayPainter.renderCodeBlock(editor, content, lines, g, region, textAttributes)
     }
 }
