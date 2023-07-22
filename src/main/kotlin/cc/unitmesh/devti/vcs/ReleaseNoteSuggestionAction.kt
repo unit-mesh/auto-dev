@@ -37,9 +37,6 @@ class ReleaseNoteSuggestionAction : AnAction() {
         contentManager?.removeAllContents(true)
         contentManager?.addContent(content!!)
 
-        val prompter = ContextPrompter.prompter("")
-        prompter?.initContext(actionType, "", null, project, 0)
-
         val commitMsgs = stringList.joinToString(",")
         toolWindowManager?.activate {
             chatCodingService.handlePromptAndResponse(contentPanel, object : ContextPrompter() {
