@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.intentions.editor
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.context.chunks.SimilarChunksWithPaths
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.actions.EditorActionUtil
@@ -43,7 +42,8 @@ class CodeCompletionIntention : AbstractChatIntention() {
         val element = PsiUtilBase.getElementAtCaret(editor) ?: file
         val suffix = document.getText(TextRange(offset, suffixEnd))
 
-        val task = CodeCompletionTask(editor, prefix, suffix, element, offset)
+        val request = CompletionTaskRequest.create(editor, offset, element) ?: return
+        val task = CodeCompletionTask(request)
         ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
     }
 

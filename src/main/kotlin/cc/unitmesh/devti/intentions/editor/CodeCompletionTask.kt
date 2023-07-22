@@ -34,10 +34,12 @@ class CompletionTaskRequest(
     val fileUri: VirtualFile,
     val documentContent: String,
     val offset: Int,
-    val documentVersion: Long
+    val documentVersion: Long,
+    val element: PsiElement,
+    val editor: Editor
 ) : Disposable {
     companion object {
-        fun create(editor: Editor, offset: Int): CompletionTaskRequest? {
+        fun create(editor: Editor, offset: Int, element: PsiElement): CompletionTaskRequest? {
             val project = editor.project ?: return null
 
             val document = editor.document
@@ -47,9 +49,10 @@ class CompletionTaskRequest(
             val tabWidth = editor.settings.getTabSize(project)
             val uri = file.virtualFile
             val documentVersion = if (document is DocumentEx) {
-                document.modificationSequence
-                    .toLong()
-            } else document.modificationStamp
+                document.modificationSequence.toLong()
+            } else {
+                document.modificationStamp
+            }
 
 
             return CompletionTaskRequest(
@@ -60,6 +63,8 @@ class CompletionTaskRequest(
                 document.text,
                 offset,
                 documentVersion,
+                element,
+                editor
             )
 
         }
@@ -82,38 +87,34 @@ class CompletionTaskRequest(
 }
 
 class CodeCompletionTask(
-    private val editor: Editor,
-    private val prefix: String,
-    private val suffix: String,
-    private val element: PsiElement,
-    private val offset: Int,
-) : Task.Backgroundable(editor.project, AutoDevBundle.message("intentions.chat.code.complete.name")) {
+    private val request: CompletionTaskRequest,
+) : Task.Backgroundable(request.project, AutoDevBundle.message("intentions.chat.code.complete.name")) {
 
     private val connectorFactory = ConnectorFactory.getInstance()
 
     private val writeActionGroupId = "code.complete.intention.write.action"
     private val codeMessage = AutoDevBundle.message("intentions.chat.code.complete.name")
 
-    private val chunksString = SimilarChunksWithPaths.createQuery(element, 256)
-    private val commenter = LanguageCommenters.INSTANCE.forLanguage(element.language)
+    private val chunksString = SimilarChunksWithPaths.createQuery(request.element, 256)
+    private val commenter = LanguageCommenters.INSTANCE.forLanguage(request.element.language)
     private val commentPrefix = commenter?.lineCommentPrefix
 
     override fun run(indicator: ProgressIndicator) {
+        val prefix = request.documentContent.substring(0, request.offset)
         val prompt = if (chunksString == null) {
             prefix
         } else {
-            val filePath = element.containingFile.virtualFile.path
-            "code complete for follow code: \n$commentPrefix$filePath\n$chunksString\n$prefix"
+            "code complete for follow code: \n$commentPrefix${request.fileUri}\n$chunksString\n$prefix"
         }
 
-        val flow: Flow<String> = connectorFactory.connector(editor.project!!).stream(prompt)
+        val flow: Flow<String> = connectorFactory.connector(request.project).stream(prompt)
         logger.warn("Prompt: $prompt")
 
-        LLMCoroutineScopeService.scope(editor.project!!).launch {
+        LLMCoroutineScopeService.scope(request.project).launch {
             val currentOffset = Ref.IntRef()
-            currentOffset.element = offset
+            currentOffset.element = request.offset
 
-            val project = editor.project!!
+            val project = request.project
             val suggestion = StringBuilder()
             flow.collect {
                 suggestion.append(it)
@@ -123,12 +124,12 @@ class CodeCompletionTask(
                         codeMessage,
                         writeActionGroupId,
                         {
-                            insertStringAndSaveChange(project, it, editor.document, currentOffset.element, false)
+                            insertStringAndSaveChange(project, it, request.editor.document, currentOffset.element, false)
                         }
                     )
 
                     currentOffset.element += it.length
-                    editor.caretModel.moveToOffset(currentOffset.element)
+                    request.editor.caretModel.moveToOffset(currentOffset.element)
                 }
             }
 
