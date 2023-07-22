@@ -27,18 +27,17 @@ class LLMApplyInlaysAction : EditorAction(ApplyInlaysHandler()), DumbAware {
             e.presentation.isEnabled = false
             return
         }
+
         super.update(e)
     }
 
     private fun isIgnoredKeyboardEvent(e: AnActionEvent): Boolean {
-        if (e.inputEvent !is KeyEvent) {
-            return false
-        }
-        if ((e.inputEvent as KeyEvent).keyChar != '\t') {
-            return false
-        }
+        if (e.inputEvent !is KeyEvent) return false
+        if ((e.inputEvent as KeyEvent).keyChar != '\t') return false
+
         val project = e.project ?: return false
         val editor = getEditor(e.dataContext) ?: return false
+
         val document = editor.document
         val blockIndent = CodeStyle.getIndentOptions(project, document).INDENT_SIZE
         val caretOffset = editor.caretModel.offset
