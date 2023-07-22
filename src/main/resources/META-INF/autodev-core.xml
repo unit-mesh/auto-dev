@@ -31,9 +31,9 @@
         <notificationGroup id="AI notification group" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
                            key="notification.group.name"/>
 
-<!--        <editorFactoryListener implementation="cc.unitmesh.devti.editor.inlay.AutoDevEditorListener"/>-->
-<!--        <typedHandler order="first, before completionAutoPopup"-->
-<!--                      implementation="cc.unitmesh.devti.editor.inlay.TypeOverHandler"/>-->
+        <!--        <editorFactoryListener implementation="cc.unitmesh.devti.editor.inlay.AutoDevEditorListener"/>-->
+        <!--        <typedHandler order="first, before completionAutoPopup"-->
+        <!--                      implementation="cc.unitmesh.devti.editor.inlay.TypeOverHandler"/>-->
 
         <intentionAction>
             <className>cc.unitmesh.devti.intentions.AIAssistantIntention</className>
@@ -91,14 +91,14 @@
                         dynamic="true"/>
     </extensionPoints>
 
-<!--    <applicationListeners>-->
-<!--        <listener topic="cc.unitmesh.devti.editor.inlay.LLMInlayListener"-->
-<!--                  class="cc.unitmesh.devti.editor.inlay.LLMInlayGotItListener"/>-->
-<!--    </applicationListeners>-->
-<!--    <projectListeners>-->
-<!--        <listener topic="com.intellij.openapi.command.CommandListener"-->
-<!--                  class="cc.unitmesh.devti.editor.inlay.LLMCommandListener"/>-->
-<!--    </projectListeners>-->
+    <!--    <applicationListeners>-->
+    <!--        <listener topic="cc.unitmesh.devti.editor.inlay.LLMInlayListener"-->
+    <!--                  class="cc.unitmesh.devti.editor.inlay.LLMInlayGotItListener"/>-->
+    <!--    </applicationListeners>-->
+    <projectListeners>
+        <listener topic="com.intellij.openapi.command.CommandListener"
+                  class="cc.unitmesh.devti.editor.inlay.LLMCommandListener"/>
+    </projectListeners>
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <aiAssistantIntention>
@@ -118,13 +118,6 @@
             <override-text place="MainMenu" text="Apply Completions to Editor"/>
             <override-text place="EditorPopup" text="Accept"/>
         </action>
-
-        <action id="copilot.disposeInlays"
-                class="cc.unitmesh.devti.actions.LLMDisposeInlaysAction">
-            <keyboard-shortcut first-keystroke="ESCAPE" keymap="$default"/>
-            <override-text place="MainMenu" text="Hide Completions in Editor"/>
-        </action>
-
 
         <group id="AutoDevIntentionsActionGroup" class="cc.unitmesh.devti.intentions.editor.IntentionsActionGroup">
             <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>

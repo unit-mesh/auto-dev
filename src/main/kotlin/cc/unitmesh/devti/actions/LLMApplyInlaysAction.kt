@@ -46,11 +46,8 @@ class LLMApplyInlaysAction : EditorAction(ApplyInlaysHandler()), DumbAware {
             return false
         }
         val caretOffsetAfterTab = EditorUtilCopy.indentLine(project, editor, line, blockIndent, caretOffset)
-        if (caretOffsetAfterTab < caretOffset) {
-            return false
-        }
 
-        return true
+        return caretOffsetAfterTab >= caretOffset
     }
 
 

@@ -25,7 +25,6 @@ import com.intellij.psi.codeStyle.CodeStyleManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import java.util.concurrent.Flow.*
 import java.util.function.Consumer
 import kotlin.jvm.internal.Ref
 
@@ -42,7 +41,7 @@ class CompletionTaskRequest(
     val editor: Editor
 ) : Disposable {
     companion object {
-        fun create(editor: Editor, offset: Int, element: PsiElement): CompletionTaskRequest? {
+        fun create(editor: Editor, offset: Int, element: PsiElement, prefix: String?): CompletionTaskRequest? {
             val project = editor.project ?: return null
 
             val document = editor.document
@@ -62,7 +61,7 @@ class CompletionTaskRequest(
                 useTabs,
                 tabWidth,
                 uri,
-                document.text,
+                prefix ?: document.text,
                 offset,
                 documentVersion,
                 element,
@@ -122,7 +121,13 @@ class CodeCompletionTask(
                         codeMessage,
                         writeActionGroupId,
                         {
-                            insertStringAndSaveChange(project, it, request.editor.document, currentOffset.element, false)
+                            insertStringAndSaveChange(
+                                project,
+                                it,
+                                request.editor.document,
+                                currentOffset.element,
+                                false
+                            )
                         }
                     )
 
