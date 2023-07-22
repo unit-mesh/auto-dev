@@ -5,6 +5,7 @@ import cc.unitmesh.devti.intentions.editor.CodeCompletionTask
 import cc.unitmesh.devti.intentions.editor.CompletionTaskRequest
 import com.intellij.injected.editor.EditorWindow
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Editor
@@ -12,24 +13,29 @@ import com.intellij.openapi.editor.EditorCustomElementRenderer
 import com.intellij.openapi.editor.Inlay
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.impl.ImaginaryEditor
+import com.intellij.openapi.fileEditor.FileDocumentSynchronizationVetoer
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.KeyWithDefaultValue
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.util.PsiUtilBase
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import com.intellij.util.concurrency.annotations.RequiresEdt
 import java.util.function.Consumer
 
+
 class LLMInlayManagerImpl : LLMInlayManager {
     companion object {
         private val logger = Logger.getInstance(LLMInlayManagerImpl::class.java)
-
+        private val KEY_LAST_REQUEST = Key.create<CompletionTaskRequest>("copilot.editorRequest")
         val KEY_DOCUMENT_SAVE_VETO = Key.create<Boolean>("llm.docSaveVeto")
         private val KEY_PROCESSING =
             KeyWithDefaultValue.create("llm.processing", java.lang.Boolean.valueOf(false)) as Key<Boolean>
         private val KEY_EDITOR_SUPPORTED = Key.create<Boolean>("llm.editorSupported")
     }
+
+    var currentCompletion: String = ""
 
     @RequiresEdt
     override fun isAvailable(editor: Editor): Boolean {
@@ -52,17 +58,45 @@ class LLMInlayManagerImpl : LLMInlayManager {
     @RequiresEdt
     override fun applyCompletion(project: Project, editor: Editor): Boolean {
         disposeInlays(editor, InlayDisposeContext.Applied)
+
+        val request = KEY_LAST_REQUEST[editor]
+        if (request == null) {
+            logger.warn("No request found for editor: $editor")
+            return false
+        }
+
+        // todo: count completion
+//        val text = request.documentContent
+//        val range: TextRange = completion.getReplacementRange()
+//        val text: String = completion.getReplacementText()
         WriteCommandAction.runWriteCommandAction(project, "Apply Copilot Suggestion", "AutoDev", {
             if (project.isDisposed) return@runWriteCommandAction
             val document = editor.document
             try {
                 KEY_DOCUMENT_SAVE_VETO[document] = true
+                wrapWithTemporarySaveVetoHandler {
+                    document.insertString(request.offset, currentCompletion)
+                    editor.caretModel.moveToOffset(request.offset + currentCompletion.length)
+                    return@wrapWithTemporarySaveVetoHandler
+                }
             } finally {
                 KEY_DOCUMENT_SAVE_VETO[document] = null
             }
         })
 
         return true
+    }
+
+    private fun wrapWithTemporarySaveVetoHandler(runnable: Runnable) {
+        val disposable = Disposer.newDisposable()
+        try {
+            val extensionPoint =
+                ApplicationManager.getApplication().extensionArea.getExtensionPoint(FileDocumentSynchronizationVetoer.EP_NAME)
+            extensionPoint.registerExtension(LLMEditorSaveVetoer(), disposable)
+            runnable.run()
+        } finally {
+            Disposer.dispose(disposable)
+        }
     }
 
     @RequiresEdt
@@ -92,12 +126,13 @@ class LLMInlayManagerImpl : LLMInlayManager {
         requestCompletions(editor, changeOffset) { completion ->
             if (completion.isEmpty()) return@requestCompletions
 
+            currentCompletion = completion
+
             WriteCommandAction.runWriteCommandAction(editor.project) {
                 val renderer = LLMInlayRenderer(editor, completion.lines())
                 renderer.apply {
                     val inlay: Inlay<EditorCustomElementRenderer>? = editor.inlayModel
                         .addBlockElement(changeOffset, true, false, 0, this)
-
                     inlay?.let {
                         renderer.setInlay(inlay)
                     }
@@ -111,6 +146,7 @@ class LLMInlayManagerImpl : LLMInlayManager {
         val element = PsiUtilBase.getElementAtCaret(editor) ?: return
         val request = CompletionTaskRequest.create(editor, changeOffset, element) ?: return
 
+        KEY_LAST_REQUEST[editor] = request
         CodeCompletionTask(request).execute(onFirstCompletion)
     }
 

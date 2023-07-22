@@ -11,6 +11,7 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.editor.ex.DocumentEx
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
@@ -127,6 +128,7 @@ class CodeCompletionTask(
 
                     currentOffset.element += it.length
                     request.editor.caretModel.moveToOffset(currentOffset.element)
+                    request.editor.scrollingModel.scrollToCaret(ScrollType.MAKE_VISIBLE)
                 }
             }
 
