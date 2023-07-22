@@ -12,9 +12,9 @@ import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.provider.DevFlowProvider
 import cc.unitmesh.devti.provider.PromptStrategy
 import cc.unitmesh.devti.runconfig.AutoDevRunProfileState
-import cc.unitmesh.idea.crud.JavaCodeProcessor
-import cc.unitmesh.idea.crud.JavaParseUtil
-import cc.unitmesh.idea.crud.JavaSpringCodeCreator
+import cc.unitmesh.idea.flow.JavaCodeProcessor
+import cc.unitmesh.idea.flow.JavaParseUtil
+import cc.unitmesh.idea.flow.JavaSpringCodeCreator
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger

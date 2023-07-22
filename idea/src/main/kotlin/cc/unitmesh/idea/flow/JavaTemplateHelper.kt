@@ -1,4 +1,4 @@
-package cc.unitmesh.idea.crud
+package cc.unitmesh.idea.flow
 
 import com.intellij.ide.fileTemplates.FileTemplateDescriptor
 import com.intellij.ide.fileTemplates.FileTemplateManager

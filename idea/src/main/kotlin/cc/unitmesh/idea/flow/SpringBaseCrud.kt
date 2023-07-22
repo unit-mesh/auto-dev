@@ -1,4 +1,4 @@
-package cc.unitmesh.idea.crud
+package cc.unitmesh.idea.flow
 
 import cc.unitmesh.devti.context.model.DtClass
 import cc.unitmesh.idea.fromJavaFile

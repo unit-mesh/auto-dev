@@ -1,6 +1,6 @@
 package cc.unitmesh.idea.java
 
-import cc.unitmesh.idea.crud.SpringLayerCharacteristic
+import cc.unitmesh.idea.flow.SpringLayerCharacteristic
 import org.junit.Test
 
 class SpringLayerCharacteristicTest {

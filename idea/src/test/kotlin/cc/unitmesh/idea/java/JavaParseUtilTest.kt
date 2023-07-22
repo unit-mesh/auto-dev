@@ -1,6 +1,6 @@
 package cc.unitmesh.idea.java
 
-import cc.unitmesh.idea.crud.JavaParseUtil
+import cc.unitmesh.idea.flow.JavaParseUtil
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

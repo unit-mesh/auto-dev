@@ -1,6 +1,6 @@
 package cc.unitmesh.idea.java
 
-import cc.unitmesh.idea.crud.JavaSpringCodeCreator
+import cc.unitmesh.idea.flow.JavaSpringCodeCreator
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiElementFactory
 import com.intellij.testFramework.LightPlatformTestCase

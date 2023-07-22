@@ -1,4 +1,4 @@
-package cc.unitmesh.idea.crud
+package cc.unitmesh.idea.flow
 
 import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.PsiJavaFile

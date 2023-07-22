@@ -1,4 +1,4 @@
-package cc.unitmesh.idea.crud
+package cc.unitmesh.idea.flow
 
 object JavaParseUtil {
     // split java code string to multiple class string

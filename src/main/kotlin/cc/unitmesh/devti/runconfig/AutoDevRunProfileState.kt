@@ -34,7 +34,7 @@ class AutoDevRunProfileState(
 
     init {
         val instance = AutoDevSettingsState.getInstance()
-        githubToken = instance?.githubToken ?: ""
+        githubToken = instance.githubToken
     }
 
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
