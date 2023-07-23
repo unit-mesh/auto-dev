@@ -19,8 +19,7 @@ class JavaFileContextBuilder : FileContextBuilder {
 
         val packageString = packageStatement?.text
         val path = psiFile.virtualFile.path
-        val name = psiFile.name
 
-        return FileContext(psiFile, name, path, packageString, imports)
+        return FileContext(psiFile, psiFile.name, path, packageString, imports)
     }
 }

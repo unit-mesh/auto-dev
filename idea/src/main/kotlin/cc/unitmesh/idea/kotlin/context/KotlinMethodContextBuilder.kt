@@ -20,8 +20,6 @@ class KotlinMethodContextBuilder : MethodContextBuilder {
     ): MethodContext? {
         if (psiElement !is KtNamedFunction) return null
 
-        val text = psiElement.text
-        val name = psiElement.name
         val returnType = psiElement.getReturnTypeReference()?.text
         val containingClass = psiElement.containingClass()
         val signatureString = Util.getSignatureString(psiElement)
@@ -32,8 +30,8 @@ class KotlinMethodContextBuilder : MethodContextBuilder {
 
         return MethodContext(
             psiElement,
-            text,
-            name,
+            psiElement.text,
+            psiElement.name,
             signatureString,
             containingClass,
             displayName,
