@@ -15,9 +15,7 @@ class JavaFileContextBuilder : FileContextBuilder {
         val importLists = getChildrenOfTypeAsList(psiFile, PsiImportList::class.java)
 
         val imports = mutableListOf<PsiElement>()
-        for (it in importLists) {
-            imports.addAll(it.allImportStatements)
-        }
+        for (it in importLists) imports.addAll(it.allImportStatements)
 
         val packageString = packageStatement?.text
         val path = psiFile.virtualFile.path

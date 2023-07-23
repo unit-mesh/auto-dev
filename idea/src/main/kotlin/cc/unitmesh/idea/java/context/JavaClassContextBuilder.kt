@@ -10,9 +10,7 @@ import kotlin.collections.toList
 
 class JavaClassContextBuilder : ClassContextBuilder {
     override fun getClassContext(psiElement: PsiElement, gatherUsages: Boolean): ClassContext? {
-        if (psiElement !is PsiClass) {
-            return null
-        }
+        if (psiElement !is PsiClass) return null
 
         val supers = psiElement.supers as Array<PsiClass>
         val fields = psiElement.fields.toList()
@@ -23,9 +21,7 @@ class JavaClassContextBuilder : ClassContextBuilder {
         val destination = ArrayList<String>()
         for (element in supers) {
             val name = element.name
-            if (name != null) {
-                destination.add(name)
-            }
+            if (name != null) destination.add(name)
         }
 
         val usages =
