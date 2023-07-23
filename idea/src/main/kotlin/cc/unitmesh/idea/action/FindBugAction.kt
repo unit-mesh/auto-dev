@@ -19,7 +19,7 @@ class FindBugAction(methodName: @NlsSafe String, val method: PsiMethod) :
         val code = method.text
         val apiExecutor = ConnectorFactory.getInstance().connector(project)
 
-        val task = object : Task.Backgroundable(project, "Find bug", true) {
+        val task = object : Task.Backgroundable(project, "Find potential problems in the code: ", true) {
             override fun run(indicator: ProgressIndicator) {
                 indicator.fraction = 0.5
                 indicator.text = "Call OpenAI API..."

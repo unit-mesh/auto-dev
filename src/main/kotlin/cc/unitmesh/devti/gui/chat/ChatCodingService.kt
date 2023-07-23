@@ -13,17 +13,7 @@ import kotlinx.coroutines.launch
 class ChatCodingService(var actionType: ChatBotActionType, val project: Project) {
     private val connectorFactory = ConnectorFactory.getInstance()
 
-    val action = when (actionType) {
-        ChatBotActionType.EXPLAIN -> "Write down what this code does"
-        ChatBotActionType.REVIEW -> "Code Review"
-        ChatBotActionType.REFACTOR -> "Refactor This code"
-        ChatBotActionType.CODE_COMPLETE -> "Auto Complete for this code"
-        ChatBotActionType.WRITE_TEST -> "write test"
-        ChatBotActionType.FIX_ISSUE -> "help me fix this"
-        ChatBotActionType.GEN_COMMIT_MESSAGE -> "generate commit message"
-        ChatBotActionType.CREATE_DDL -> "create ddl"
-        ChatBotActionType.CREATE_CHANGELOG -> "generate release note"
-    }
+    val action = actionType.instruction()
 
     fun getLabel(): String {
         val capitalizedAction = action.replaceFirstChar { it.uppercase() }
@@ -68,16 +58,4 @@ class ChatCodingService(var actionType: ChatBotActionType, val project: Project)
 
         return PostCodeProcessor(prefixText, suffixText, content).execute()
     }
-}
-
-enum class ChatBotActionType {
-    REFACTOR,
-    EXPLAIN,
-    REVIEW,
-    CODE_COMPLETE,
-    WRITE_TEST,
-    GEN_COMMIT_MESSAGE,
-    FIX_ISSUE,
-    CREATE_DDL,
-    CREATE_CHANGELOG;
 }

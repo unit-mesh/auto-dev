@@ -1,5 +1,7 @@
 package cc.unitmesh.devti.prompting.model
 
+import cc.unitmesh.devti.gui.chat.ChatBotActionType
+import cc.unitmesh.devti.gui.chat.ChatBotActionType.*
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.diagnostic.Logger
 import kotlinx.serialization.SerialName
@@ -35,11 +37,11 @@ data class PromptConfig(
         }
 
         fun default(): PromptConfig = PromptConfig(
-            autoComplete = PromptItem("Complete java code, return rest code, no explaining.", "{code}"),
-            autoComment = PromptItem("Auto comment code", "{code}"),
-            codeReview = PromptItem("Code review code", "{code}"),
-            refactor = PromptItem("Refactor for follow code", "{code}"),
-            writeTest = PromptItem("Write test code for", "{code}"),
+            autoComplete = PromptItem(CODE_COMPLETE.instruction(), "{code}"),
+            autoComment = PromptItem(EXPLAIN.instruction(), "{code}"),
+            codeReview = PromptItem(REVIEW.instruction(), "{code}"),
+            refactor = PromptItem(REFACTOR.instruction(), "{code}"),
+            writeTest = PromptItem(WRITE_TEST.instruction(), "{code}"),
             mapOf(
                 "controller" to "",
                 "service" to "",
