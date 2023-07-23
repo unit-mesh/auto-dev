@@ -55,8 +55,7 @@ class LLMCommandListener(private val project: Project) : CommandListener {
         val commandEndState = createCommandState(editor)
         if (isDocumentModification(commandStartState, commandEndState)) {
             logger.debug("command modified document: " + event.commandName)
-// TODO: we used intention
-//            editorManager.editorModified(editor)
+            editorManager.editorModified(editor)
         } else if (isCaretPositionChange(commandStartState, commandEndState)) {
             editorManager.disposeInlays(editor, InlayDisposeContext.CaretChange)
         }
