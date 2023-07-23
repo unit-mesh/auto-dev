@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.intentions.error
 
+import cc.unitmesh.devti.llms.tokenizer.LLM_MAX_TOKEN
 import cc.unitmesh.devti.llms.tokenizer.TokenizerImpl
 import cc.unitmesh.devti.prompting.model.RuntimeErrorExplanationPrompt
 import com.intellij.execution.filters.FileHyperlinkInfo
@@ -72,7 +73,7 @@ object ErrorMessageProcessor {
         val extractedErrorPlaces: List<ErrorPlace> =
             extractErrorPlaces(project, consoleLineFrom, consoleLineTo, consoleEditor)
 
-        val errorPromptConstructor = ErrorPromptConstructor(8192, TokenizerImpl.INSTANCE)
+        val errorPromptConstructor = ErrorPromptConstructor(LLM_MAX_TOKEN, TokenizerImpl.INSTANCE)
 
         return errorPromptConstructor.makePrompt(extractedText, extractedErrorPlaces)
     }

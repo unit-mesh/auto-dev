@@ -53,8 +53,8 @@ class ErrorPromptConstructor(val maxLength: Int, val tokenizer: Tokenizer) {
     private fun trimByGreedyScopeSelection(errorPlace: ErrorPlace, maxTokenCount: Int): ErrorScope? {
         val result: Ref.ObjectRef<ErrorScope?> = Ref.ObjectRef<ErrorScope?>()
         ApplicationManager.getApplication().runReadAction {
-            val markDownLanguageSlug = errorPlace.getMarkDownLanguageSlug() ?: ""
-            val language: String = markDownLanguageSlug
+            val language: String = errorPlace.getMarkDownLanguageSlug() ?: ""
+
             val scope = tryFitAllFile(
                 errorPlace.hyperlinkText,
                 errorPlace.programText,
@@ -82,6 +82,7 @@ class ErrorPromptConstructor(val maxLength: Int, val tokenizer: Tokenizer) {
             if (currentContainingElement is PsiFile || currentContainingElement == null) {
                 break
             }
+
             errorScope = tryFitContainingElement(
                 errorPlace.hyperlinkText,
                 currentContainingElement,
@@ -92,9 +93,11 @@ class ErrorPromptConstructor(val maxLength: Int, val tokenizer: Tokenizer) {
             if (errorScope == null) {
                 break
             }
+
             result = errorScope
             findContainingElement = currentContainingElement.parent
         }
+
         return result
     }
 
@@ -132,9 +135,11 @@ class ErrorPromptConstructor(val maxLength: Int, val tokenizer: Tokenizer) {
         virtualFile: VirtualFile
     ): ErrorScope? {
         val firstTry = "filename: $filename\n\n```$language\n$programText\n```\n"
-        return if (findTrimPositionForMaxTokens(firstTry, maxTokenCount) >= firstTry.length) {
-            ErrorScope(0, programText.lines().size - 1, firstTry, virtualFile)
-        } else null
+        if (findTrimPositionForMaxTokens(firstTry, maxTokenCount) < firstTry.length) {
+            return null
+        }
+
+        return ErrorScope(0, programText.lines().size - 1, firstTry, virtualFile)
     }
 
     private fun findTrimPositionForMaxTokens(text: String, maxTokenCount: Int): Int {
@@ -149,6 +154,7 @@ class ErrorPromptConstructor(val maxLength: Int, val tokenizer: Tokenizer) {
             trimPosition += line.length + 1
             tokenSum += tokenCountInLine
         }
+
         return trimPosition
     }
 

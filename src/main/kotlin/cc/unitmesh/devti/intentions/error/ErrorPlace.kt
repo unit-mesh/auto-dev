@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.intentions.error
 
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
@@ -31,8 +30,7 @@ data class ErrorPlace(
     fun getMarkDownLanguageSlug(): String? {
         val psiFile = psiFile ?: return null
         val language = psiFile.language
-        val displayName: @NlsSafe String = language.displayName
-        val displayNameLowercased = displayName.lowercase()
+        val displayNameLowercased = language.displayName.lowercase()
 
         return when (displayNameLowercased) {
             "c#" -> "csharp"

@@ -11,24 +11,24 @@ object PsiUtilsKt {
     fun getLineStartOffset(psiFile: PsiFile, line: Int): Int? {
         var document = psiFile.viewProvider.document
         if (document == null) {
-            document = PsiDocumentManager.getInstance(psiFile.project)
-                .getDocument(psiFile)
+            document = PsiDocumentManager.getInstance(psiFile.project).getDocument(psiFile)
         }
 
-        if (document != null && line >= 0 && line < document.lineCount) {
-            val startOffset = document.getLineStartOffset(line)
-            val element = psiFile.findElementAt(startOffset) ?: return startOffset
-            if (element is PsiWhiteSpace || element is PsiComment) {
-                val skipSiblingsForward = PsiTreeUtil.skipSiblingsForward(
-                    element, PsiWhiteSpace::class.java, PsiComment::class.java
-                )
+        if (document == null) return null
+        if (line < 0 || line >= document.lineCount) return null
 
-                return if (skipSiblingsForward != null) getStartOffset(skipSiblingsForward) else startOffset
-            }
+        val startOffset = document.getLineStartOffset(line)
+        val element = psiFile.findElementAt(startOffset) ?: return startOffset
+
+        if (element !is PsiWhiteSpace && element !is PsiComment) {
             return startOffset
         }
 
-        return null
+        val skipSiblingsForward = PsiTreeUtil.skipSiblingsForward(
+            element, PsiWhiteSpace::class.java, PsiComment::class.java
+        )
+
+        return if (skipSiblingsForward != null) getStartOffset(skipSiblingsForward) else startOffset
     }
 
     fun getLineNumber(element: PsiElement, start: Boolean): Int {
@@ -37,11 +37,13 @@ object PsiUtilsKt {
             document = PsiDocumentManager.getInstance(element.project).getDocument(element.containingFile)
         }
 
+        if (document == null) return 0
+
         val index = if (start) getStartOffset(element) else getEndOffset(element)
-        return if (index > (document?.textLength ?: 0) || document == null) {
-            0
-        } else {
-            document.getLineNumber(index)
+        if (index > document.textLength) {
+            return 0
         }
+
+        return document.getLineNumber(index)
     }
 }
