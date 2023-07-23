@@ -1,10 +1,9 @@
 package cc.unitmesh.devti.actions.chat
 
-import cc.unitmesh.devti.gui.chat.ChatBotActionType
+import cc.unitmesh.devti.gui.chat.ChatActionType
 
 class WriteTestAction : ChatBaseAction() {
-    override fun getActionType(): ChatBotActionType {
-        return ChatBotActionType.WRITE_TEST
+    override fun getActionType(): ChatActionType {
+        return ChatActionType.WRITE_TEST
     }
-
 }

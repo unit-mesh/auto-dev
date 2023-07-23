@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.prompting.model
 
-import cc.unitmesh.devti.gui.chat.ChatBotActionType
-import cc.unitmesh.devti.gui.chat.ChatBotActionType.*
+import cc.unitmesh.devti.gui.chat.ChatActionType.*
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.diagnostic.Logger
 import kotlinx.serialization.SerialName

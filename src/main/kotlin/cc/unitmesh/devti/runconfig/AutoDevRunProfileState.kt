@@ -4,7 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.provider.DevFlowProvider
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
-import cc.unitmesh.devti.gui.chat.ChatBotActionType
+import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.llms.ConnectorFactory
@@ -44,7 +44,7 @@ class AutoDevRunProfileState(
         val gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)
 
         val openAIRunner = ConnectorFactory.getInstance().connector(project)
-        val chatCodingService = ChatCodingService(ChatBotActionType.REVIEW, project)
+        val chatCodingService = ChatCodingService(ChatActionType.REVIEW, project)
         val contentPanel = ChatCodingComponent(chatCodingService)
 
         // TODO: support other language

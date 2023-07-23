@@ -1,10 +1,10 @@
 package cc.unitmesh.devti.actions.chat
 
-import cc.unitmesh.devti.gui.chat.ChatBotActionType
+import cc.unitmesh.devti.gui.chat.ChatActionType
 
 class ChatBotExplainAction : ChatBaseAction() {
 
-    override fun getActionType(): ChatBotActionType {
-        return ChatBotActionType.EXPLAIN
+    override fun getActionType(): ChatActionType {
+        return ChatActionType.EXPLAIN
     }
 }

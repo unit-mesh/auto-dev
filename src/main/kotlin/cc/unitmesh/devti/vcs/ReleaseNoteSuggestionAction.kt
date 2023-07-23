@@ -1,10 +1,9 @@
 package cc.unitmesh.devti.vcs
 
 import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
-import cc.unitmesh.devti.gui.chat.ChatBotActionType
+import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.gui.chat.ChatCodingService
-import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -26,7 +25,7 @@ class ReleaseNoteSuggestionAction : AnAction() {
             log.selectedShortDetails.map { it.fullMessage }
         } ?: return
 
-        val actionType = ChatBotActionType.CREATE_CHANGELOG
+        val actionType = ChatActionType.CREATE_CHANGELOG
 
         val toolWindowManager = ToolWindowManager.getInstance(project!!).getToolWindow(DevtiFlowToolWindowFactory.id)
         val contentManager = toolWindowManager?.contentManager

@@ -13,7 +13,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilBase
 
 abstract class AbstractChatIntention : IntentionAction {
-    open fun getActionType() = ChatBotActionType.CODE_COMPLETE
+    open fun getActionType() = ChatActionType.CODE_COMPLETE
 
     open val prompt: String = "Code completion"
 

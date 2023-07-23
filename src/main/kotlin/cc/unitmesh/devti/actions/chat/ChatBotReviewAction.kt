@@ -1,11 +1,10 @@
 package cc.unitmesh.devti.actions.chat
 
-import cc.unitmesh.devti.gui.chat.ChatBotActionType
-import com.intellij.openapi.actionSystem.AnActionEvent
+import cc.unitmesh.devti.gui.chat.ChatActionType
 
 class ChatBotReviewAction : ChatBaseAction() {
 
-    override fun getActionType(): ChatBotActionType {
-        return ChatBotActionType.REVIEW
+    override fun getActionType(): ChatActionType {
+        return ChatActionType.REVIEW
     }
 }

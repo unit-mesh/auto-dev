@@ -150,7 +150,7 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
             searchTextArea.text = ""
             val context = ChatContext(null, "", "")
 
-            chatCodingService.actionType = ChatBotActionType.REFACTOR
+            chatCodingService.actionType = ChatActionType.REFACTOR
             chatCodingService.handlePromptAndResponse(this, object : ContextPrompter() {
                 override fun displayPrompt() = prompt
                 override fun requestPrompt() = prompt

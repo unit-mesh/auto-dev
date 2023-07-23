@@ -1,14 +1,14 @@
 package cc.unitmesh.devti.actions.chat
 
-import cc.unitmesh.devti.gui.chat.ChatBotActionType
+import cc.unitmesh.devti.gui.chat.ChatActionType
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.command.WriteCommandAction
 
 class ChatBotRefactorAction : ChatBaseAction() {
 
-    override fun getActionType(): ChatBotActionType {
-        return ChatBotActionType.REFACTOR
+    override fun getActionType(): ChatActionType {
+        return ChatActionType.REFACTOR
 
     }
 

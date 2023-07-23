@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.gui
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.gui.chat.ChatBotActionType
+import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import com.intellij.openapi.application.ApplicationManager
@@ -21,7 +21,7 @@ class DevtiFlowToolWindowFactory : ToolWindowFactory, DumbAware {
     )
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        val chatCodingService = ChatCodingService(ChatBotActionType.EXPLAIN, project!!)
+        val chatCodingService = ChatCodingService(ChatActionType.EXPLAIN, project!!)
         val contentPanel = ChatCodingComponent(chatCodingService)
         val content = contentFactory.createContent(contentPanel, AutoDevBundle.message("autodev.flow"), false)
         // config tool window title

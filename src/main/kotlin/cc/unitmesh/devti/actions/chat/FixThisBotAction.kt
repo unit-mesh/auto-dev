@@ -3,7 +3,7 @@ package cc.unitmesh.devti.actions.chat
 import cc.unitmesh.devti.actions.chat.issue.ErrorPlace
 import cc.unitmesh.devti.actions.chat.issue.PromptConstructor
 import cc.unitmesh.devti.actions.chat.issue.RuntimeErrorExplanationPrompt
-import cc.unitmesh.devti.gui.chat.ChatBotActionType
+import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.execution.filters.FileHyperlinkInfo
 import com.intellij.execution.impl.ConsoleViewImpl
@@ -26,8 +26,8 @@ import kotlin.math.max
 
 
 class FixThisBotAction : ChatBaseAction() {
-    override fun getActionType(): ChatBotActionType {
-        return ChatBotActionType.FIX_ISSUE
+    override fun getActionType(): ChatActionType {
+        return ChatActionType.FIX_ISSUE
     }
 
     override fun actionPerformed(event: AnActionEvent) {

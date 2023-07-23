@@ -10,7 +10,7 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
-class ChatCodingService(var actionType: ChatBotActionType, val project: Project) {
+class ChatCodingService(var actionType: ChatActionType, val project: Project) {
     private val connectorFactory = ConnectorFactory.getInstance()
 
     val action = actionType.instruction()
@@ -32,11 +32,11 @@ class ChatCodingService(var actionType: ChatBotActionType, val project: Project)
             val response = this.makeChatBotRequest(prompt.requestPrompt())
             LLMCoroutineScopeService.scope(project).launch {
                 when {
-                    actionType === ChatBotActionType.REFACTOR -> ui.updateReplaceableContent(response) {
+                    actionType === ChatActionType.REFACTOR -> ui.updateReplaceableContent(response) {
                         context?.replaceSelectedText?.invoke(getCodeSection(it, context.prefixText, context.suffixText))
                     }
 
-                    actionType === ChatBotActionType.CODE_COMPLETE -> ui.updateReplaceableContent(response) {
+                    actionType === ChatActionType.CODE_COMPLETE -> ui.updateReplaceableContent(response) {
                         context?.replaceSelectedText?.invoke(getCodeSection(it, context.prefixText, context.suffixText))
                     }
 

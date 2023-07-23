@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.actions.chat
 
 import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
-import cc.unitmesh.devti.gui.chat.ChatBotActionType
+import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.ChatContext
@@ -83,5 +83,5 @@ abstract class ChatBaseAction : AnAction() {
         return null
     }
 
-    abstract fun getActionType(): ChatBotActionType
+    abstract fun getActionType(): ChatActionType
 }

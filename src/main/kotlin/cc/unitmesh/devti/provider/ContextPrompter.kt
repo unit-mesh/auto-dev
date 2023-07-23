@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.provider
 
-import cc.unitmesh.devti.gui.chat.ChatBotActionType
+import cc.unitmesh.devti.gui.chat.ChatActionType
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
@@ -8,7 +8,7 @@ import com.intellij.serviceContainer.LazyExtensionInstance
 import com.intellij.util.xmlb.annotations.Attribute
 
 abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
-    protected var action: ChatBotActionType? = null
+    protected var action: ChatActionType? = null
     protected var selectedText: String = ""
     protected var file: PsiFile? = null
     protected var project: Project? = null
@@ -16,7 +16,7 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
     protected var offset: Int = 0
 
     open fun initContext(
-        actionType: ChatBotActionType,
+        actionType: ChatActionType,
         selectedText: String,
         file: PsiFile?,
         project: Project,

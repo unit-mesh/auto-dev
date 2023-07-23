@@ -1,7 +1,7 @@
 package cc.unitmesh.idea.provider
 
 import cc.unitmesh.devti.context.chunks.SimilarChunksWithPaths
-import cc.unitmesh.devti.gui.chat.ChatBotActionType
+import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.prompting.CommitPrompting
 import cc.unitmesh.devti.prompting.model.PromptConfig
 import cc.unitmesh.devti.provider.ContextPrompter
@@ -37,7 +37,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
 
 
     override fun initContext(
-        actionType: ChatBotActionType,
+        actionType: ChatActionType,
         selectedText: String,
         file: PsiFile?,
         project: Project,
@@ -88,7 +88,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
     private fun createPrompt(selectedText: String): String {
         var prompt = """$action this $lang code"""
         when (action!!) {
-            ChatBotActionType.REVIEW -> {
+            ChatActionType.REVIEW -> {
                 val codeReview = promptConfig?.codeReview
                 prompt = if (codeReview?.instruction?.isNotEmpty() == true) {
                     codeReview.instruction
@@ -97,7 +97,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
                 }
             }
 
-            ChatBotActionType.EXPLAIN -> {
+            ChatActionType.EXPLAIN -> {
                 val autoComment = promptConfig?.autoComment
                 prompt = if (autoComment?.instruction?.isNotEmpty() == true) {
                     autoComment.instruction
@@ -106,7 +106,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
                 }
             }
 
-            ChatBotActionType.REFACTOR -> {
+            ChatActionType.REFACTOR -> {
                 val refactor = promptConfig?.refactor
                 prompt = if (refactor?.instruction?.isNotEmpty() == true) {
                     refactor.instruction
@@ -115,7 +115,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
                 }
             }
 
-            ChatBotActionType.CODE_COMPLETE -> {
+            ChatActionType.CODE_COMPLETE -> {
                 val codeComplete = promptConfig?.autoComplete
                 prompt = if (codeComplete?.instruction?.isNotEmpty() == true) {
                     codeComplete.instruction
@@ -146,7 +146,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
                 }
             }
 
-            ChatBotActionType.WRITE_TEST -> {
+            ChatActionType.WRITE_TEST -> {
                 val writeTest = promptConfig?.writeTest
                 prompt = if (writeTest?.instruction?.isNotEmpty() == true) {
                     writeTest.instruction
@@ -157,12 +157,12 @@ class JvmIdeaContextPrompter : ContextPrompter() {
                 addTestContext()
             }
 
-            ChatBotActionType.FIX_ISSUE -> {
+            ChatActionType.FIX_ISSUE -> {
                 prompt = "fix issue, and only submit the code changes."
                 addFixIssueContext(selectedText)
             }
 
-            ChatBotActionType.GEN_COMMIT_MESSAGE -> {
+            ChatActionType.GEN_COMMIT_MESSAGE -> {
                 prompt = """suggest 10 commit messages based on the following diff:
 commit messages should:
  - follow conventional commits
@@ -177,7 +177,7 @@ examples:
                 prepareVcsContext()
             }
 
-            ChatBotActionType.CREATE_DDL -> {
+            ChatActionType.CREATE_DDL -> {
                 val spec = PromptConfig.load().spec["ddl"]
                 if (!spec.isNullOrEmpty()) {
                     additionContext = "requirements: \n$spec"
@@ -185,7 +185,7 @@ examples:
                 prompt = "create ddl based on the follow info"
             }
 
-            ChatBotActionType.CREATE_CHANGELOG -> {
+            ChatActionType.CREATE_CHANGELOG -> {
                 prompt = "generate release note base on the follow commit"
             }
         }

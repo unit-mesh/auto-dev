@@ -1,13 +1,13 @@
 package cc.unitmesh.devti.actions.chat
 
-import cc.unitmesh.devti.gui.chat.ChatBotActionType
+import cc.unitmesh.devti.gui.chat.ChatActionType
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.command.WriteCommandAction
 
 class CodeCompleteChatAction : ChatBaseAction() {
-    override fun getActionType(): ChatBotActionType {
-        return ChatBotActionType.CODE_COMPLETE
+    override fun getActionType(): ChatActionType {
+        return ChatActionType.CODE_COMPLETE
     }
 
     override fun getReplaceableAction(event: AnActionEvent): (response: String) -> Unit {

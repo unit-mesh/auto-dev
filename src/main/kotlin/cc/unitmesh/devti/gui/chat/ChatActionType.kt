@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.gui.chat
 
-enum class ChatBotActionType {
+enum class ChatActionType {
     REFACTOR,
     EXPLAIN,
     REVIEW,
@@ -12,11 +12,7 @@ enum class ChatBotActionType {
     CREATE_CHANGELOG;
 
     fun instruction(): String {
-        return Companion.instruction(this)
-    }
-
-    companion object {
-        fun instruction(chatBotActionType: ChatBotActionType) = when (chatBotActionType) {
+        return when (this) {
             EXPLAIN -> "Explain selected code"
             REVIEW -> "Code Review"
             REFACTOR -> "Refactor the following code"
