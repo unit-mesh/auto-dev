@@ -1,5 +1,7 @@
 package cc.unitmesh.devti.intentions.error
 
+import cc.unitmesh.devti.llms.tokenizer.TokenizerImpl
+import cc.unitmesh.devti.prompting.model.RuntimeErrorExplanationPrompt
 import com.intellij.execution.filters.FileHyperlinkInfo
 import com.intellij.execution.impl.ConsoleViewImpl
 import com.intellij.execution.impl.EditorHyperlinkSupport
@@ -70,7 +72,7 @@ object ErrorMessageProcessor {
         val extractedErrorPlaces: List<ErrorPlace> =
             extractErrorPlaces(project, consoleLineFrom, consoleLineTo, consoleEditor)
 
-        val promptConstructor = PromptConstructor(8192)
+        val promptConstructor = PromptConstructor(8192, TokenizerImpl.INSTANCE)
 
         return promptConstructor.makePrompt(extractedText, extractedErrorPlaces)
     }

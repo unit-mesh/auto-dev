@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.llms
+package cc.unitmesh.devti.editor
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service

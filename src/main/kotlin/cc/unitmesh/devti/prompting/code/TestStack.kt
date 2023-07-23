@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.prompting.model
+package cc.unitmesh.devti.prompting.code
 
 data class TestStack(
     val controller: MutableMap<String, Boolean> = mutableMapOf(),

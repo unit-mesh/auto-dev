@@ -1,7 +1,7 @@
 package cc.unitmesh.idea.provider
 
 import cc.unitmesh.devti.provider.TechStackProvider
-import cc.unitmesh.devti.prompting.model.TestStack
+import cc.unitmesh.devti.prompting.code.TestStack
 import com.intellij.openapi.externalSystem.model.project.LibraryData
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.project.ProjectManager

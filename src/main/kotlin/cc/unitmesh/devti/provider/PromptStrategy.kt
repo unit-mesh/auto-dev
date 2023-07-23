@@ -1,17 +1,12 @@
 package cc.unitmesh.devti.provider
 
+import cc.unitmesh.devti.llms.tokenizer.Tokenizer
+import cc.unitmesh.devti.llms.tokenizer.TokenizerImpl
 import cc.unitmesh.devti.prompting.model.FinalCodePrompt
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.psi.PsiElement
 import com.intellij.serviceContainer.LazyExtensionInstance
 import com.intellij.util.xmlb.annotations.Attribute
-import com.knuddels.jtokkit.Encodings
-import com.knuddels.jtokkit.api.Encoding
-import com.knuddels.jtokkit.api.EncodingRegistry
-import com.knuddels.jtokkit.api.EncodingType
-
-private var registry: EncodingRegistry? = Encodings.newDefaultEncodingRegistry()
-private var encoding: Encoding = registry?.getEncoding(EncodingType.CL100K_BASE)!!
 
 abstract class PromptStrategy : LazyExtensionInstance<TechStackProvider>() {
     @Attribute("language")
@@ -20,13 +15,15 @@ abstract class PromptStrategy : LazyExtensionInstance<TechStackProvider>() {
     @Attribute("implementationClass")
     var implementationClass: String? = null
 
+    private val tokenizer: Tokenizer = TokenizerImpl.INSTANCE
+
     override fun getImplementationClassName(): String? {
         return implementationClass
     }
 
     // The default OpenAI Token will be 4096, we leave 2048 for the code.
-    open fun tokenLength(): Int = 2048
-    fun countTokens(code: String): Int = encoding.countTokens(code)
+    open fun tokenLength(): Int = 8192
+    fun count(code: String): Int = tokenizer.count(code)
     abstract fun advice(prefixCode: String, suffixCode: String): FinalCodePrompt
     abstract fun advice(psiFile: PsiElement, calleeName: String = ""): FinalCodePrompt
     abstract fun advice(psiFile: PsiElement, usedMethod: List<String>, noExistMethods: List<String>): FinalCodePrompt

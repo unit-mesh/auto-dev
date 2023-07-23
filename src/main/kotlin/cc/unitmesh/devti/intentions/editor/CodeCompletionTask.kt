@@ -3,7 +3,7 @@ package cc.unitmesh.devti.intentions.editor
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.context.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.llms.ConnectorFactory
-import cc.unitmesh.devti.llms.LLMCoroutineScopeService
+import cc.unitmesh.devti.editor.LLMCoroutineScopeService
 import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.invokeLater

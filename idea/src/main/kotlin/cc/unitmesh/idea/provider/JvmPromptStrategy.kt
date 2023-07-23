@@ -17,7 +17,7 @@ class JvmPromptStrategy : PromptStrategy() {
     }
 
     override fun advice(prefixCode: String, suffixCode: String): FinalCodePrompt {
-        val tokenCount: Int = this.countTokens(prefixCode)
+        val tokenCount: Int = this.count(prefixCode)
         if (tokenCount < tokenLength) {
             return FinalCodePrompt(prefixCode, suffixCode)
         }
@@ -25,7 +25,7 @@ class JvmPromptStrategy : PromptStrategy() {
         // remove all `import` syntax in java code, should contain with new line
         val importRegexWithNewLine = Regex("import .*\n")
         val prefixCodeWithoutImport = prefixCode.replace(importRegexWithNewLine, "")
-        val tokenCountWithoutImport: Int = this.countTokens(prefixCodeWithoutImport)
+        val tokenCountWithoutImport: Int = this.count(prefixCodeWithoutImport)
 
         if (tokenCountWithoutImport < tokenLength) {
             return FinalCodePrompt(prefixCodeWithoutImport, suffixCode)
@@ -53,13 +53,13 @@ class JvmPromptStrategy : PromptStrategy() {
 
     private fun adviceFile(javaFile: PsiJavaFile, calleeName: String = ""): FinalCodePrompt {
         val code = javaFile.text
-        if (this.countTokens(code) < tokenLength) {
+        if (this.count(code) < tokenLength) {
             return FinalCodePrompt(code, "")
         }
 
         // strategy 1: remove class code without the imports
         val javaCode = javaFile.classes[0]
-        val countTokens = this.countTokens(javaCode.text)
+        val countTokens = this.count(javaCode.text)
         if (countTokens < tokenLength) {
             return FinalCodePrompt(javaCode.text, "")
         }
@@ -70,7 +70,7 @@ class JvmPromptStrategy : PromptStrategy() {
     fun adviceClass(javaCode: PsiClass, calleeName: String = ""): FinalCodePrompt {
         val codeString = javaCode.text
         val textbase = advice(codeString, "")
-        if (this.countTokens(textbase.prefixCode) < tokenLength) {
+        if (this.count(textbase.prefixCode) < tokenLength) {
             return FinalCodePrompt(codeString, "")
         }
 
@@ -85,7 +85,7 @@ class JvmPromptStrategy : PromptStrategy() {
 
         // strategy 2: if all method contains the field, we should return all method
         val methodCodes = getByMethods(javaCode, targetFieldRegex)
-        if (this.countTokens(methodCodes) < tokenLength) {
+        if (this.count(methodCodes) < tokenLength) {
             return FinalCodePrompt(methodCodes, "")
         }
 
@@ -157,7 +157,7 @@ class JvmPromptStrategy : PromptStrategy() {
         val finalPrompt = code + """
             | // TODO: implement the method $suffixCode
         """.trimMargin()
-        if (this.countTokens(finalPrompt) < tokenLength) {
+        if (this.count(finalPrompt) < tokenLength) {
             return FinalCodePrompt(code, suffixCode)
         }
 

@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.provider
 
-import cc.unitmesh.devti.prompting.model.TestStack
+import cc.unitmesh.devti.prompting.code.TestStack
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.serviceContainer.LazyExtensionInstance
 import com.intellij.util.xmlb.annotations.Attribute
