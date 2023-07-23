@@ -52,14 +52,14 @@ data class PromptConfig(
         )
 
         fun tryParse(prompts: String?): PromptConfig {
-            if (prompts == null) {
+            if (prompts.isNullOrEmpty() || prompts == "\"\"") {
                 return default()
             }
 
             try {
                 return Json.decodeFromString(prompts)
             } catch (e: Exception) {
-                logger.warn("Error parsing prompts: $e")
+                logger.info("Not found custom prompt, will use default: $e")
             }
 
             return default()
