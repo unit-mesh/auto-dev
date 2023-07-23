@@ -5,13 +5,8 @@ import com.intellij.psi.util.PsiTreeUtil
 
 
 object PsiUtilsKt {
-    fun getStartOffset(element: PsiElement): Int {
-        return element.textRange.startOffset
-    }
-
-    fun getEndOffset(element: PsiElement): Int {
-        return element.textRange.endOffset
-    }
+    fun getStartOffset(element: PsiElement): Int = element.textRange.startOffset
+    fun getEndOffset(element: PsiElement): Int = element.textRange.endOffset
 
     fun getLineStartOffset(psiFile: PsiFile, line: Int): Int? {
         var document = psiFile.viewProvider.document

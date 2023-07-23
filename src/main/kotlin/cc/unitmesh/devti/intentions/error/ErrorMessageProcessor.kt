@@ -72,9 +72,9 @@ object ErrorMessageProcessor {
         val extractedErrorPlaces: List<ErrorPlace> =
             extractErrorPlaces(project, consoleLineFrom, consoleLineTo, consoleEditor)
 
-        val promptConstructor = PromptConstructor(8192, TokenizerImpl.INSTANCE)
+        val errorPromptConstructor = ErrorPromptConstructor(8192, TokenizerImpl.INSTANCE)
 
-        return promptConstructor.makePrompt(extractedText, extractedErrorPlaces)
+        return errorPromptConstructor.makePrompt(extractedText, extractedErrorPlaces)
     }
 
     private fun getFileHyperlinkInfo(rangeHighlighter: RangeHighlighter): FileHyperlinkInfo? {

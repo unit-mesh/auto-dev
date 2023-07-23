@@ -21,14 +21,9 @@ import kotlin.jvm.internal.Intrinsics
 
 class AIAssistantIntention : IntentionAction, Iconable {
     override fun startInWriteAction(): Boolean = false
-
     override fun getText(): String = AutoDevBundle.message("intentions.assistant.name")
     override fun getFamilyName(): String = AutoDevBundle.message("intentions.assistant.name")
-
-    override fun getIcon(flags: Int): Icon {
-        return AutoDevIcons.AI_COPILOT
-    }
-
+    override fun getIcon(flags: Int): Icon = AutoDevIcons.AI_COPILOT
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         if (file == null) return false
 
