@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.actions.chat.issue
+package cc.unitmesh.devti.intentions.error
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe

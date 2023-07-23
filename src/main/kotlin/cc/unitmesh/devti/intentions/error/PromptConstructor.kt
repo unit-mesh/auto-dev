@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.actions.chat.issue
+package cc.unitmesh.devti.intentions.error
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.vfs.VirtualFile
@@ -30,7 +30,7 @@ class PromptConstructor(val maxLength: Int) {
         val capacity = maxLength - (promptTemplate.length - 10)
         val maxLengthForPiece = capacity / 2
         var currentmaxTokenCount = maxLengthForPiece
-        val listOfIncludedDiapasons = mutableListOf<Scope>()
+        val listOfIncludedDiapasons = mutableListOf<ErrorScope>()
 
         list.forEach { errorPlace ->
             if (errorPlace.isProjectFile) {
@@ -55,8 +55,8 @@ class PromptConstructor(val maxLength: Int) {
         return RuntimeErrorExplanationPrompt(formattedDisplayText, formattedPrompt)
     }
 
-    private fun trimByGreedyScopeSelection(errorPlace: ErrorPlace, maxTokenCount: Int): Scope? {
-        val result: Ref.ObjectRef<Scope?> = Ref.ObjectRef<Scope?>()
+    private fun trimByGreedyScopeSelection(errorPlace: ErrorPlace, maxTokenCount: Int): ErrorScope? {
+        val result: Ref.ObjectRef<ErrorScope?> = Ref.ObjectRef<ErrorScope?>()
         ApplicationManager.getApplication().runReadAction {
             val markDownLanguageSlug = errorPlace.getMarkDownLanguageSlug() ?: ""
             val language: String = markDownLanguageSlug
@@ -78,26 +78,26 @@ class PromptConstructor(val maxLength: Int) {
         return result.element
     }
 
-    private fun findEnclosingScopeGreedy(errorPlace: ErrorPlace, maxTokenCount: Int, language: String): Scope? {
-        var scope: Scope?
-        var result: Scope? = null
+    private fun findEnclosingScopeGreedy(errorPlace: ErrorPlace, maxTokenCount: Int, language: String): ErrorScope? {
+        var errorScope: ErrorScope?
+        var result: ErrorScope? = null
         var findContainingElement = errorPlace.findContainingElement()
         while (true) {
             val currentContainingElement = findContainingElement
             if (currentContainingElement is PsiFile || currentContainingElement == null) {
                 break
             }
-            scope = tryFitContainingElement(
+            errorScope = tryFitContainingElement(
                 errorPlace.hyperlinkText,
                 currentContainingElement,
                 maxTokenCount,
                 language,
                 errorPlace.virtualFile
             )
-            if (scope == null) {
+            if (errorScope == null) {
                 break
             }
-            result = scope
+            result = errorScope
             findContainingElement = currentContainingElement.parent
         }
         return result
@@ -109,7 +109,7 @@ class PromptConstructor(val maxLength: Int) {
         maxTokenCount: Int,
         language: String,
         virtualFile: VirtualFile
-    ): Scope? {
+    ): ErrorScope? {
         val lineNumberStart = PsiUtilsKt.getLineNumber(currentContainingElement, false)
         val lineNumberFinish = PsiUtilsKt.getLineNumber(currentContainingElement, false)
         val prefix = "filename: $filename\n line: $lineNumberStart\n\n"
@@ -120,7 +120,7 @@ class PromptConstructor(val maxLength: Int) {
             
             """.trimIndent()
         return if (findTrimPositionForMaxTokens(candidate, maxTokenCount) >= candidate.length) {
-            Scope(
+            ErrorScope(
                 lineNumberStart,
                 lineNumberFinish,
                 candidate,
@@ -135,10 +135,10 @@ class PromptConstructor(val maxLength: Int) {
         maxTokenCount: Int,
         language: String,
         virtualFile: VirtualFile
-    ): Scope? {
+    ): ErrorScope? {
         val firstTry = "filename: $filename\n\n```$language\n$programText\n```\n"
         return if (findTrimPositionForMaxTokens(firstTry, maxTokenCount) >= firstTry.length) {
-            Scope(0, programText.lines().size - 1, firstTry, virtualFile)
+            ErrorScope(0, programText.lines().size - 1, firstTry, virtualFile)
         } else null
     }
 
@@ -165,12 +165,5 @@ class PromptConstructor(val maxLength: Int) {
         )
 
         return substring
-    }
-}
-
-class RuntimeErrorExplanationPrompt(val displayText: String, val requestText: String)
-class Scope(val lineStart: Int, val lineFinish: Int, val text: String, val thisVirtualFile: VirtualFile) {
-    fun containsLineNumber(lineNumber: Int, virtualFile: VirtualFile): Boolean {
-        return lineNumber in lineStart..lineFinish && thisVirtualFile == virtualFile
     }
 }
