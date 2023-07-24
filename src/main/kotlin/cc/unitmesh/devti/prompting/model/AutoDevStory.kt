@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.runconfig.config
+package cc.unitmesh.devti.prompting.model
 
 import cc.unitmesh.devti.flow.model.StoryConfig
 import cc.unitmesh.devti.runconfig.command.BaseConfig

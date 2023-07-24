@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.runconfig.config
 
+import cc.unitmesh.devti.prompting.model.AutoDevStory
 import cc.unitmesh.devti.runconfig.AutoDevRunProfileState
 import cc.unitmesh.devti.runconfig.options.AutoDevConfigurationOptions
 import cc.unitmesh.devti.runconfig.ui.AutoDevSettingsEditor

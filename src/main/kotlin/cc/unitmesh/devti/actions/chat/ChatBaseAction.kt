@@ -66,7 +66,7 @@ abstract class ChatBaseAction : AnAction() {
         val chatCodingService = ChatCodingService(getActionType(), project)
         val contentPanel = ChatCodingComponent(chatCodingService)
 
-        val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(DevtiFlowToolWindowFactory.id)
+        val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(DevtiFlowToolWindowFactory.Util.id)
         val contentManager = toolWindowManager?.contentManager
 
         val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)

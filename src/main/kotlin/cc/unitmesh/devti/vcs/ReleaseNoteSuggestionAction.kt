@@ -27,7 +27,7 @@ class ReleaseNoteSuggestionAction : AnAction() {
 
         val actionType = ChatActionType.CREATE_CHANGELOG
 
-        val toolWindowManager = ToolWindowManager.getInstance(project!!).getToolWindow(DevtiFlowToolWindowFactory.id)
+        val toolWindowManager = ToolWindowManager.getInstance(project!!).getToolWindow(DevtiFlowToolWindowFactory.Util.id)
         val contentManager = toolWindowManager?.contentManager
         val chatCodingService = ChatCodingService(actionType, project)
         val contentPanel = ChatCodingComponent(chatCodingService)

@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.flow.model
+package cc.unitmesh.devti.prompting.code
 
 import cc.unitmesh.devti.context.model.DtClass
 

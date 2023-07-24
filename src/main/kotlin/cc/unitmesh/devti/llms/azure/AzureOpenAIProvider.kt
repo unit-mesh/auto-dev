@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.llms.azure
 
 import cc.unitmesh.devti.llms.CodeCopilotProvider
-import cc.unitmesh.devti.prompting.model.PromptConfig
+import cc.unitmesh.devti.prompting.model.CustomPromptConfig
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -22,14 +22,14 @@ class AzureOpenAIProvider(val project: Project) : CodeCopilotProvider {
 
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private val url = autoDevSettingsState.customEngineServer
-    private var promptConfig: PromptConfig? = null
+    private var customPromptConfig: CustomPromptConfig? = null
     private var client = OkHttpClient()
     private val openAiVersion: String
 
     init {
         val prompts = autoDevSettingsState.customEnginePrompts
         openAiVersion = AutoDevSettingsState.getInstance().openAiModel
-        promptConfig = PromptConfig.tryParse(prompts)
+        customPromptConfig = CustomPromptConfig.tryParse(prompts)
     }
 
     override fun prompt(promptText: String): String {
@@ -88,12 +88,12 @@ class AzureOpenAIProvider(val project: Project) : CodeCopilotProvider {
     }
 
     override fun autoComment(text: String): String {
-        val comment = promptConfig!!.autoComment
+        val comment = customPromptConfig!!.autoComment
         return prompt(comment.instruction, comment.input.replace("{code}", text))
     }
 
     override fun findBug(text: String): String {
-        val bug = promptConfig!!.refactor
+        val bug = customPromptConfig!!.refactor
         return prompt(bug.instruction, bug.input.replace("{code}", text))
     }
 }

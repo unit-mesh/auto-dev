@@ -31,7 +31,7 @@ import git4idea.repo.GitRepositoryManager
 import java.io.StringWriter
 
 @Service(Service.Level.PROJECT)
-class CommitPrompting(private val project: Project) {
+class VcsPrompting(private val project: Project) {
     private val gitRepositoryManager = GitRepositoryManager.getInstance(project)
 
     fun computeDiff(includedChanges: List<Change>): String {

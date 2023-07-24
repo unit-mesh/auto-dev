@@ -3,7 +3,7 @@ package cc.unitmesh.devti.llms.openai
 import cc.unitmesh.devti.context.model.DtClass
 import cc.unitmesh.devti.flow.model.SimpleProjectInfo
 import cc.unitmesh.devti.prompting.model.FinalCodePrompt
-import cc.unitmesh.devti.prompting.model.PromptConfig
+import cc.unitmesh.devti.prompting.model.CustomPromptConfig
 import com.intellij.openapi.util.NlsSafe
 import java.io.InputStream
 
@@ -49,7 +49,7 @@ class PromptTemplate {
         }
 
         val promptTextString = promptText.bufferedReader().use { it.readText() }
-        val spec = PromptConfig.load().spec["controller"]
+        val spec = CustomPromptConfig.load().spec["controller"]
 
         return promptTextString
             .replace("{controllerName}", targetClazz.name)

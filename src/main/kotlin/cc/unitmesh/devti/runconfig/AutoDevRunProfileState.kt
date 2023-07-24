@@ -38,7 +38,7 @@ class AutoDevRunProfileState(
     }
 
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
-        val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(DevtiFlowToolWindowFactory.id)
+        val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(DevtiFlowToolWindowFactory.Util.id)
         val contentManager = toolWindowManager?.contentManager
 
         val gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)

@@ -12,16 +12,14 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
 
 class DevtiFlowToolWindowFactory : ToolWindowFactory, DumbAware {
-    companion object {
-        val id = "DevTiFlow"
+    object Util {
+        const val id = "DevTiFlow"
     }
 
-    private val contentFactory = ApplicationManager.getApplication().getService(
-        ContentFactory::class.java
-    )
+    private val contentFactory = ApplicationManager.getApplication().getService(ContentFactory::class.java)
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        val chatCodingService = ChatCodingService(ChatActionType.EXPLAIN, project!!)
+        val chatCodingService = ChatCodingService(ChatActionType.EXPLAIN, project)
         val contentPanel = ChatCodingComponent(chatCodingService)
         val content = contentFactory.createContent(contentPanel, AutoDevBundle.message("autodev.flow"), false)
         // config tool window title

@@ -2,7 +2,7 @@ package cc.unitmesh.devti.llms.custom
 
 import cc.unitmesh.devti.llms.CodeCopilotProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
-import cc.unitmesh.devti.prompting.model.PromptConfig
+import cc.unitmesh.devti.prompting.model.CustomPromptConfig
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
@@ -16,12 +16,12 @@ class CustomLLMProvider(val project: Project) : CodeCopilotProvider {
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private val url = autoDevSettingsState.customEngineServer
     private val key = autoDevSettingsState.customEngineToken
-    private var promptConfig: PromptConfig? = null
+    private var customPromptConfig: CustomPromptConfig? = null
     private var client = OkHttpClient()
 
     init {
         val prompts = autoDevSettingsState.customEnginePrompts
-        promptConfig = PromptConfig.tryParse(prompts)
+        customPromptConfig = CustomPromptConfig.tryParse(prompts)
     }
 
     private val logger = Logger.getInstance(CustomLLMProvider::class.java)
@@ -63,12 +63,12 @@ class CustomLLMProvider(val project: Project) : CodeCopilotProvider {
     }
 
     override fun autoComment(text: String): String {
-        val comment = promptConfig!!.autoComment
+        val comment = customPromptConfig!!.autoComment
         return prompt(comment.instruction, comment.input.replace("{code}", text))
     }
 
     override fun findBug(text: String): String {
-        val bug = promptConfig!!.refactor
+        val bug = customPromptConfig!!.refactor
         return prompt(bug.instruction, bug.input.replace("{code}", text))
     }
 

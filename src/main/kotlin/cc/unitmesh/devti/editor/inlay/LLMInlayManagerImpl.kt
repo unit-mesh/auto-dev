@@ -113,9 +113,7 @@ class LLMInlayManagerImpl : LLMInlayManager {
 
     @RequiresEdt
     override fun disposeInlays(editor: Editor, disposeContext: InlayDisposeContext) {
-        if (!isAvailable(editor) || isProcessing(editor)) {
-            return
-        }
+        if (!isAvailable(editor) || isProcessing(editor)) return
 
         wrapProcessing(editor) { disposeInlays(collectInlays(editor, 0, editor.document.textLength)) }
     }

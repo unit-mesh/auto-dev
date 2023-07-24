@@ -2,8 +2,8 @@ package cc.unitmesh.idea.provider
 
 import cc.unitmesh.devti.context.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.prompting.CommitPrompting
-import cc.unitmesh.devti.prompting.model.PromptConfig
+import cc.unitmesh.devti.prompting.VcsPrompting
+import cc.unitmesh.devti.prompting.model.CustomPromptConfig
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.provider.TechStackProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
@@ -20,7 +20,7 @@ import com.intellij.psi.PsiManager
 class JvmIdeaContextPrompter : ContextPrompter() {
     private var additionContext: String = ""
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
-    private var promptConfig: PromptConfig? = null
+    private var customPromptConfig: CustomPromptConfig? = null
     private lateinit var mvcContextService: MvcContextService
     private var fileName = ""
     private lateinit var changeListManager: ChangeListManager
@@ -53,7 +53,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
 
     init {
         val prompts = autoDevSettingsState.customEnginePrompts
-        promptConfig = PromptConfig.tryParse(prompts)
+        customPromptConfig = CustomPromptConfig.tryParse(prompts)
     }
 
     override fun displayPrompt(): String {
@@ -89,7 +89,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
         var prompt = """$action this $lang code"""
         when (action!!) {
             ChatActionType.REVIEW -> {
-                val codeReview = promptConfig?.codeReview
+                val codeReview = customPromptConfig?.codeReview
                 prompt = if (codeReview?.instruction?.isNotEmpty() == true) {
                     codeReview.instruction
                 } else {
@@ -98,7 +98,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
             }
 
             ChatActionType.EXPLAIN -> {
-                val autoComment = promptConfig?.autoComment
+                val autoComment = customPromptConfig?.autoComment
                 prompt = if (autoComment?.instruction?.isNotEmpty() == true) {
                     autoComment.instruction
                 } else {
@@ -107,7 +107,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
             }
 
             ChatActionType.REFACTOR -> {
-                val refactor = promptConfig?.refactor
+                val refactor = customPromptConfig?.refactor
                 prompt = if (refactor?.instruction?.isNotEmpty() == true) {
                     refactor.instruction
                 } else {
@@ -116,7 +116,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
             }
 
             ChatActionType.CODE_COMPLETE -> {
-                val codeComplete = promptConfig?.autoComplete
+                val codeComplete = customPromptConfig?.autoComplete
                 prompt = if (codeComplete?.instruction?.isNotEmpty() == true) {
                     codeComplete.instruction
                 } else {
@@ -125,7 +125,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
 
                 when {
                     isController() -> {
-                        val spec = PromptConfig.load().spec["controller"]
+                        val spec = CustomPromptConfig.load().spec["controller"]
                         if (!spec.isNullOrEmpty()) {
                             additionContext = "requirements: \n$spec"
                         }
@@ -133,7 +133,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
                     }
 
                     isService() -> {
-                        val spec = PromptConfig.load().spec["service"]
+                        val spec = CustomPromptConfig.load().spec["service"]
                         if (!spec.isNullOrEmpty()) {
                             additionContext = "requirements: \n$spec"
                         }
@@ -147,7 +147,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
             }
 
             ChatActionType.WRITE_TEST -> {
-                val writeTest = promptConfig?.writeTest
+                val writeTest = customPromptConfig?.writeTest
                 prompt = if (writeTest?.instruction?.isNotEmpty() == true) {
                     writeTest.instruction
                 } else {
@@ -178,7 +178,7 @@ examples:
             }
 
             ChatActionType.CREATE_DDL -> {
-                val spec = PromptConfig.load().spec["ddl"]
+                val spec = CustomPromptConfig.load().spec["ddl"]
                 if (!spec.isNullOrEmpty()) {
                     additionContext = "requirements: \n$spec"
                 }
@@ -202,7 +202,7 @@ examples:
 //        val commitWorkflowUi: CommitWorkflowUi = project.service()
 //        val changes = commitWorkflowUi.getIncludedChanges()
 
-        val prompting = project!!.service<CommitPrompting>()
+        val prompting = project!!.service<VcsPrompting>()
         additionContext += prompting.computeDiff(changes)
     }
 
