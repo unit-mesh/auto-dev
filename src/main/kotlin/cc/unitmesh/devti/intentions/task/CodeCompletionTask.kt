@@ -1,9 +1,10 @@
-package cc.unitmesh.devti.intentions.editor
+package cc.unitmesh.devti.intentions.task
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.context.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.llms.ConnectorFactory
 import cc.unitmesh.devti.editor.LLMCoroutineScopeService
+import cc.unitmesh.devti.intentions.CodeCompletionIntention
 import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.invokeLater

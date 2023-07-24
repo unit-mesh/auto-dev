@@ -21,7 +21,6 @@ abstract class TechStackProvider : LazyExtensionInstance<TechStackProvider>() {
     companion object {
         private val EP_NAME: ExtensionPointName<TechStackProvider> =
             ExtensionPointName.create("cc.unitmesh.techStackProvider")
-
         fun stack(lang: String): TechStackProvider? {
             val extensionList = EP_NAME.extensionList
             val providers = extensionList.filter {

@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.intentions.editor
+package cc.unitmesh.devti.intentions
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.chat.ChatActionType

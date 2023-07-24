@@ -1,6 +1,7 @@
-package cc.unitmesh.devti.intentions.editor
+package cc.unitmesh.devti.intentions
 
 import cc.unitmesh.devti.gui.chat.*
+import cc.unitmesh.devti.intentions.editor.sendToChat
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.lang.injection.InjectedLanguageManager
@@ -33,7 +34,7 @@ abstract class AbstractChatIntention : IntentionAction {
         if (editor == null || file == null) return
 
         var selectedText = editor.selectionModel.selectedText
-        val elementToExplain = getElementToExplain(project, editor)
+        val elementToExplain = getElementToAction(project, editor)
 
         if (selectedText == null) {
             if (elementToExplain == null) {
@@ -65,7 +66,7 @@ abstract class AbstractChatIntention : IntentionAction {
      * @param editor the editor in which the element is located (nullable)
      * @return the PsiElement to explain, or null if either the project or editor is null, or if no element is found
      */
-    protected open fun getElementToExplain(project: Project?, editor: Editor?): PsiElement? {
+    protected open fun getElementToAction(project: Project?, editor: Editor?): PsiElement? {
         if (project == null || editor == null) return null
 
         val element = PsiUtilBase.getElementAtCaret(editor) ?: return null

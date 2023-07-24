@@ -102,11 +102,15 @@
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <aiAssistantIntention>
-            <className>cc.unitmesh.devti.intentions.editor.CodeCompletionIntention</className>
+            <className>cc.unitmesh.devti.intentions.CodeCompletionIntention</className>
             <categoryKey>Intention.category.llm</categoryKey>
         </aiAssistantIntention>
         <aiAssistantIntention>
-            <className>cc.unitmesh.devti.intentions.editor.RefactorThisIntention</className>
+            <className>cc.unitmesh.devti.intentions.WriteTestIntention</className>
+            <categoryKey>Intention.category.llm</categoryKey>
+        </aiAssistantIntention>
+        <aiAssistantIntention>
+            <className>cc.unitmesh.devti.intentions.RefactorThisIntention</className>
             <categoryKey>Intention.category.llm</categoryKey>
         </aiAssistantIntention>
     </extensions>

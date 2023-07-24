@@ -9,9 +9,10 @@ import org.jetbrains.plugins.gradle.util.GradleConstants
 
 class JvmTechStackService: TechStackProvider() {
     override fun prepareLibrary(): TestStack {
-        val project = ProjectManager.getInstance().defaultProject
+        val project = ProjectManager.getInstance().openProjects.firstOrNull() ?: return TestStack()
+        val basePath = project.basePath ?: return TestStack()
         val projectData = ProjectDataManager.getInstance().getExternalProjectData(
-            project, GradleConstants.SYSTEM_ID, project.basePath!!
+            project, GradleConstants.SYSTEM_ID, basePath
         )
 
         val testStack = TestStack()

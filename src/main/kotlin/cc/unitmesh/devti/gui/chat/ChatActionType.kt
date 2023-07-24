@@ -17,7 +17,7 @@ enum class ChatActionType {
             REVIEW -> "Code Review"
             REFACTOR -> "Refactor the following code"
             CODE_COMPLETE -> "Complete java code, return rest code, no explaining"
-            WRITE_TEST -> "Write test for following code"
+            WRITE_TEST -> "Write unit test for following code"
             FIX_ISSUE -> "Help me fix this issue"
             GEN_COMMIT_MESSAGE -> "generate commit message"
             CREATE_DDL -> "create ddl"

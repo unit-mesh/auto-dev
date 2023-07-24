@@ -207,8 +207,13 @@ examples:
     }
 
     private fun addTestContext() {
-        val techStackProvider = TechStackProvider.stack(file?.language?.displayName ?: "")
-        val techStacks = techStackProvider!!.prepareLibrary()
+        val techStackProvider = TechStackProvider.stack(file?.language?.displayName ?: "") ?: return
+        val techStacks = techStackProvider.prepareLibrary()
+        if (techStacks.controllerString().isEmpty() && techStacks.serviceString().isEmpty()) {
+            additionContext = "no test context"
+            return
+        }
+
         when {
             isController() -> {
                 additionContext = "// tech stacks: " + techStacks.controllerString()

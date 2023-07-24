@@ -1,12 +1,11 @@
-package cc.unitmesh.devti.intentions.editor
+package cc.unitmesh.devti.intentions
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.editor.inlay.LLMInlayManager
+import cc.unitmesh.devti.intentions.task.CompletionTaskRequest
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.actions.EditorActionUtil
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
