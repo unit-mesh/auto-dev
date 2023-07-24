@@ -4,6 +4,8 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.intentions.editor.sendToChat
 import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.provider.TestContextProvider
+import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
@@ -20,6 +22,12 @@ class WriteTestIntention : AbstractChatIntention() {
 
         val prompter = ContextPrompter.prompter(file.language.displayName)
         val actionType = ChatActionType.WRITE_TEST
+
+        val lang = file.language.displayName
+
+        WriteAction.runAndWait<Throwable> {
+            val context = TestContextProvider.context(lang)?.prepareTestFile(file)
+        }
 
         prompter?.initContext(actionType, selectedText, file, project, editor.caretModel.offset)
         sendToChat(project, actionType, prompter!!)

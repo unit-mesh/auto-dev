@@ -89,6 +89,10 @@
         <extensionPoint qualifiedName="cc.unitmesh.promptStrategy"
                         interface="cc.unitmesh.devti.provider.PromptStrategy"
                         dynamic="true"/>
+
+        <extensionPoint qualifiedName="cc.unitmesh.testContextProvider"
+                        interface="cc.unitmesh.devti.provider.TestContextProvider"
+                        dynamic="true"/>
     </extensionPoints>
 
     <!--    <applicationListeners>-->

@@ -30,6 +30,10 @@
         <promptStrategy
                 language="JAVA"
                 implementation="cc.unitmesh.idea.provider.JvmPromptStrategy"/>
+
+        <testContextProvider
+                language="JAVA"
+                implementation="cc.unitmesh.idea.provider.JvmTestContextProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
