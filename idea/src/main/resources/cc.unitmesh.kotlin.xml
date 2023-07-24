@@ -18,17 +18,17 @@
         <variableContextBuilder language="Kotlin"
                                 implementationClass="cc.unitmesh.idea.kotlin.context.KotlinVariableContextBuilder"/>
 
-        <contextPrompter
-                language="Kotlin"
-                implementation="cc.unitmesh.idea.provider.JvmIdeaContextPrompter"/>
-        <techStackProvider
-                language="Kotlin"
-                implementation="cc.unitmesh.idea.provider.JvmTechStackService"/>
-        <devFlowProvider
-                language="Kotlin"
-                implementation="cc.unitmesh.idea.provider.JvmAutoDevFlow"/>
-        <promptStrategy
-                language="Kotlin"
-                implementation="cc.unitmesh.idea.provider.JvmPromptStrategy"/>
+<!--        <contextPrompter-->
+<!--                language="Kotlin"-->
+<!--                implementation="cc.unitmesh.idea.provider.JvmIdeaContextPrompter"/>-->
+<!--        <techStackProvider-->
+<!--                language="Kotlin"-->
+<!--                implementation="cc.unitmesh.idea.provider.JvmTechStackService"/>-->
+<!--        <devFlowProvider-->
+<!--                language="Kotlin"-->
+<!--                implementation="cc.unitmesh.idea.provider.JvmAutoDevFlow"/>-->
+<!--        <promptStrategy-->
+<!--                language="Kotlin"-->
+<!--                implementation="cc.unitmesh.idea.provider.JvmPromptStrategy"/>-->
     </extensions>
 </idea-plugin>
