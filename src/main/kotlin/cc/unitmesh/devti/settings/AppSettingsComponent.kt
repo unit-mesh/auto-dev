@@ -84,7 +84,7 @@ class AppSettingsComponent {
     }
 
     fun getOpenAiModel(): String {
-        return openAiModel.selectedItem?.toString() ?: "gpt-3.5-turbo"
+        return openAiModel.selectedItem?.toString() ?: OPENAI_MODEL[0]
     }
 
     fun setOpenAiModel(newText: String) {

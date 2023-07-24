@@ -50,7 +50,7 @@ class AutoDevRunProfileState(
         // TODO: support other language
         val flowProvider = DevFlowProvider.flowProvider("java")
         if (flowProvider == null) {
-            logger<AutoDevRunProfileState>().error("current Language don't implementation DevFlow")
+            logger.error("current Language don't implementation DevFlow")
             return null
         }
 
@@ -103,6 +103,6 @@ class AutoDevRunProfileState(
     }
 
     companion object {
-        private val log: Logger = logger<AutoDevRunProfileState>()
+        private val logger: Logger = logger<AutoDevRunProfileState>()
     }
 }
