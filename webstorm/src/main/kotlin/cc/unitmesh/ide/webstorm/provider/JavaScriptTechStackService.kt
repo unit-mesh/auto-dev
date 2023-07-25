@@ -23,6 +23,24 @@ class JavaScriptTechStackService : TechStackProvider() {
         val frameworks = mutableMapOf<String, Boolean>()
         val frameworkNames = listOf("react", "vue", "angular", "jquery", "bootstrap", "antd", "material-ui")
 
+        val testFrameworks = mutableMapOf<String, Boolean>()
+        val testFrameworksNames = listOf(
+            "jest",
+            "mocha",
+            "jasmine",
+            "karma",
+            "ava",
+            "tape",
+            "qunit",
+            "tap",
+            "ava",
+            "cypress",
+            "protractor",
+            "nightwatch",
+            "selenium",
+            "webdriverio"
+        )
+
         packageJsonData.allDependencyEntries.forEach { (name, entry) ->
             entry.dependencyType.let {
                 when (it) {
@@ -38,6 +56,11 @@ class JavaScriptTechStackService : TechStackProvider() {
                                 frameworks[frameworkName] = true
                             }
                         }
+                        testFrameworksNames.forEach { testFrameworkName ->
+                            if (name.startsWith(testFrameworkName) || name == testFrameworkName) {
+                                testFrameworks[testFrameworkName] = true
+                            }
+                        }
                     }
 
                     PackageJsonDependency.devDependencies -> {
@@ -46,6 +69,11 @@ class JavaScriptTechStackService : TechStackProvider() {
                         frameworkNames.forEach { frameworkName ->
                             if (name.startsWith(frameworkName) || name == frameworkName) {
                                 frameworks[frameworkName] = true
+                            }
+                        }
+                        testFrameworksNames.forEach { testFrameworkName ->
+                            if (name.startsWith(testFrameworkName) || name == testFrameworkName) {
+                                testFrameworks[testFrameworkName] = true
                             }
                         }
                     }
@@ -59,6 +87,6 @@ class JavaScriptTechStackService : TechStackProvider() {
         }
 
 
-        return TestStack(frameworks, frameworks, dependencies, devDependencies)
+        return TestStack(frameworks, testFrameworks, dependencies, devDependencies)
     }
 }
