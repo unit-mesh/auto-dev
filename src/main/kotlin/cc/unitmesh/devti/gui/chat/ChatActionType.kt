@@ -11,15 +11,26 @@ enum class ChatActionType {
     CREATE_DDL,
     CREATE_CHANGELOG;
 
-    fun instruction(): String {
+    fun instruction(lang: String = ""): String {
         return when (this) {
-            EXPLAIN -> "Explain selected code"
-            REVIEW -> "Code Review"
-            REFACTOR -> "Refactor the following code"
-            CODE_COMPLETE -> "Complete java code, return rest code, no explaining"
-            WRITE_TEST -> "Write unit test for following code"
+            EXPLAIN -> "Explain selected $lang code"
+            REVIEW -> "Code Review for following $lang  code"
+            REFACTOR -> "Refactor the following $lang  code"
+            CODE_COMPLETE -> "Complete $lang  code, return rest code, no explaining"
+            WRITE_TEST -> "Write unit test for following $lang  code"
             FIX_ISSUE -> "Help me fix this issue"
-            GEN_COMMIT_MESSAGE -> "generate commit message"
+            GEN_COMMIT_MESSAGE -> """suggest 10 commit messages based on the following diff:
+commit messages should:
+ - follow conventional commits
+ - message format should be: <type>[scope]: <description>
+
+examples:
+ - fix(authentication): add password regex pattern
+ - feat(storage): add new test cases
+ 
+ {{diff}}
+ """
+
             CREATE_DDL -> "create ddl"
             CREATE_CHANGELOG -> "generate release note"
         }

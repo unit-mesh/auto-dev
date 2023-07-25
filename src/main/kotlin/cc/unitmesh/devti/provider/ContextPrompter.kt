@@ -1,6 +1,8 @@
 package cc.unitmesh.devti.provider
 
+import cc.unitmesh.devti.context.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.prompting.model.CustomPromptConfig
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
@@ -47,7 +49,7 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
         private val EP_NAME: ExtensionPointName<ContextPrompter> =
             ExtensionPointName.create("cc.unitmesh.contextPrompter")
 
-        fun prompter(lang: String): ContextPrompter? {
+        fun prompter(lang: String): ContextPrompter {
             val extensionList = EP_NAME.extensionList
             val contextPrompter = extensionList.filter {
                 it.language?.lowercase() == lang.lowercase()
