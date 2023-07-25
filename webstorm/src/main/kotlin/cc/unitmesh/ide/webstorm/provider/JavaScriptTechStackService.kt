@@ -4,15 +4,16 @@ import cc.unitmesh.devti.prompting.code.TestStack
 import cc.unitmesh.devti.provider.TechStackProvider
 import com.intellij.javascript.nodejs.PackageJsonData
 import com.intellij.javascript.nodejs.PackageJsonDependency
-import com.intellij.javascript.nodejs.packageJson.PackageJsonFileManager
+import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil
 import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.project.guessProjectDir
 
 class JavaScriptTechStackService : TechStackProvider() {
     override fun prepareLibrary(): TestStack {
         val project = ProjectManager.getInstance().openProjects.firstOrNull() ?: return TestStack()
 
-        val packageFile =
-            PackageJsonFileManager.getInstance(project).validPackageJsonFiles.firstOrNull() ?: return TestStack()
+        val baseDir = project.guessProjectDir() ?: return TestStack()
+        val packageFile = PackageJsonUtil.findUpPackageJson(baseDir) ?: return TestStack()
         val packageJsonData = PackageJsonData.getOrCreate(packageFile)
 
         val devDependencies = mutableMapOf<String, String>()
