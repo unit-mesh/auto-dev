@@ -13,7 +13,7 @@ class KotlinVersionProvider : ChatContextProvider {
         return sourceFile == null || sourceFile.language == KotlinLanguage.INSTANCE
     }
 
-    override fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
+    override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         return emptyList()
     }
 

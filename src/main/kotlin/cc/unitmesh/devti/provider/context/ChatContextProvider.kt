@@ -10,12 +10,12 @@ interface ChatContextProvider {
     fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean
 
     @RequiresBackgroundThread
-    fun collect(
+    suspend fun collect(
         project: Project,
         creationContext: ChatCreationContext,
     ): List<ChatContextItem>
 
-    fun filterItems(list: List<ChatContextItem?>, creationContext: ChatCreationContext): List<ChatContextItem?> {
+    suspend fun filterItems(list: List<ChatContextItem?>, creationContext: ChatCreationContext): List<ChatContextItem?> {
         return list
     }
 

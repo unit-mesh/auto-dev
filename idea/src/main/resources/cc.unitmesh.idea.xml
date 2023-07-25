@@ -18,6 +18,8 @@
         <variableContextBuilder language="JAVA"
                                 implementationClass="cc.unitmesh.idea.java.context.JavaVariableContextBuilder"/>
 
+        <chatContextProvider implementation="cc.unitmesh.idea.provider.JavaVersionProvider"/>
+
         <contextPrompter
                 language="JAVA"
                 implementation="cc.unitmesh.idea.provider.JvmIdeaContextPrompter"/>
