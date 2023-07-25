@@ -4,7 +4,7 @@ import cc.unitmesh.devti.llms.CodeCopilotProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.prompting.model.CustomPromptConfig
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
@@ -24,7 +24,7 @@ class CustomLLMProvider(val project: Project) : CodeCopilotProvider {
         customPromptConfig = CustomPromptConfig.tryParse(prompts)
     }
 
-    private val logger = Logger.getInstance(CustomLLMProvider::class.java)
+    private val logger = logger<CustomLLMProvider>()
 
 
     override fun prompt(promptText: String): String {

@@ -9,7 +9,7 @@ import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.ScrollType
@@ -168,7 +168,7 @@ class CodeCompletionTask(
     }
 
     companion object {
-        val logger = Logger.getInstance(CodeCompletionIntention::class.java)
+        val logger = logger<CodeCompletionIntention>()
 
         fun insertStringAndSaveChange(
             project: Project,

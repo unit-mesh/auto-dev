@@ -19,6 +19,7 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiJavaFile
@@ -299,7 +300,6 @@ class JvmAutoDevFlow : DevFlowProvider() {
             return@runBlocking ui.updateMessage(prompt)
         }
     }
-
     companion object {
         private val logger: Logger = logger<AutoDevRunProfileState>()
         private val regex = Regex("""(\w+Controller)""")

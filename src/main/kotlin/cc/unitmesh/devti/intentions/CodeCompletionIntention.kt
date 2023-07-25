@@ -3,7 +3,7 @@ package cc.unitmesh.devti.intentions
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.editor.inlay.LLMInlayManager
 import cc.unitmesh.devti.intentions.task.CompletionTaskRequest
-import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.actions.EditorActionUtil
 import com.intellij.openapi.project.Project
@@ -52,6 +52,6 @@ class CodeCompletionIntention : AbstractChatIntention() {
     }
 
     companion object {
-        val logger = Logger.getInstance(CodeCompletionIntention::class.java)
+        val logger = logger<CodeCompletionIntention>()
     }
 }

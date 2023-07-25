@@ -7,7 +7,7 @@ import com.intellij.injected.editor.EditorWindow
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorCustomElementRenderer
 import com.intellij.openapi.editor.Inlay
@@ -26,7 +26,7 @@ import java.util.function.Consumer
 
 class LLMInlayManagerImpl : LLMInlayManager {
     companion object {
-        private val logger = Logger.getInstance(LLMInlayManagerImpl::class.java)
+        private val logger = logger<LLMInlayManagerImpl>()
         private val KEY_LAST_REQUEST = Key.create<CompletionTaskRequest>("copilot.editorRequest")
         val KEY_DOCUMENT_SAVE_VETO = Key.create<Boolean>("llm.docSaveVeto")
         private val KEY_PROCESSING =

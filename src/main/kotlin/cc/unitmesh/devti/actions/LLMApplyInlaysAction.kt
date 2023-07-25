@@ -7,7 +7,7 @@ import com.intellij.codeInsight.lookup.LookupManager
 import com.intellij.codeInsight.template.TemplateManager
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Caret
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
@@ -74,7 +74,7 @@ class LLMApplyInlaysAction : EditorAction(ApplyInlaysHandler()), DumbAware {
     companion object {
         const val ID = "llm.applyInlays"
 
-        val logger = Logger.getInstance(LLMApplyInlaysAction::class.java)
+        val logger = logger<LLMApplyInlaysAction>()
 
         private fun isSpaceOrTab(c: Char, withNewline: Boolean): Boolean {
             return c == ' ' || c == '\t' || withNewline && c == '\n'

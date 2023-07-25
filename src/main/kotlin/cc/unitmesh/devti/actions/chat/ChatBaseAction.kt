@@ -10,14 +10,13 @@ import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
 
 abstract class ChatBaseAction : AnAction() {
     companion object {
-        private val logger: Logger = logger<OpenAIProvider>()
+        private val logger = logger<OpenAIProvider>()
     }
 
     override fun actionPerformed(event: AnActionEvent) {

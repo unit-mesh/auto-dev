@@ -3,7 +3,7 @@ package cc.unitmesh.devti.context
 import cc.unitmesh.devti.context.builder.ClassContextBuilder
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageExtension
-import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.psi.PsiElement
 
 class ClassContextProvider(private val gatherUsages: Boolean) {
@@ -16,7 +16,7 @@ class ClassContextProvider(private val gatherUsages: Boolean) {
     }
 
     companion object {
-        val logger = Logger.getInstance(ClassContextProvider::class.java)
+        val logger = logger<ClassContextProvider>()
     }
 
     fun from(psiElement: PsiElement): ClassContext {

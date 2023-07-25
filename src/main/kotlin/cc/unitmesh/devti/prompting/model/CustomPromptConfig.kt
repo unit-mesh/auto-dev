@@ -2,7 +2,7 @@ package cc.unitmesh.devti.prompting.model
 
 import cc.unitmesh.devti.gui.chat.ChatActionType.*
 import cc.unitmesh.devti.settings.AutoDevSettingsState
-import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -24,7 +24,7 @@ data class CustomPromptConfig(
     val spec: Map<String, String> = mapOf()
 ) {
     companion object {
-        private val logger = Logger.getInstance(CustomPromptConfig::class.java)
+        private val logger = logger<CustomPromptConfig>()
 
         fun load(): CustomPromptConfig {
             val config = tryParse(AutoDevSettingsState.getInstance().customEnginePrompts)

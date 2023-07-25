@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.gui.chat
 
 
-import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
@@ -101,7 +101,7 @@ class MessageComponent(private val question: String, isPrompt: Boolean) : JBPane
     }
 
     companion object {
-        private val logger = Logger.getInstance(MessageComponent::class.java)
+        private val logger = logger<MessageComponent>()
 
     }
 }

@@ -2,7 +2,7 @@ package cc.unitmesh.devti.editor.inlay
 
 import com.intellij.openapi.command.CommandEvent
 import com.intellij.openapi.command.CommandListener
-import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.VisualPosition
@@ -89,7 +89,7 @@ class LLMCommandListener(private val project: Project) : CommandListener {
     }
 
     companion object {
-        private val logger = Logger.getInstance(LLMCommandListener::class.java)
+        private val logger = logger<LLMCommandListener>()
         private val COMMAND_STATE_KEY = Key.create<CommandEditorState>("llm.commandState")
     }
 

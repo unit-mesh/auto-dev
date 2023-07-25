@@ -7,14 +7,14 @@ import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.vcs.log.VcsLogDataKeys
 
 // TODO: for 232 , we
 class ReleaseNoteSuggestionAction : AnAction() {
     companion object {
-        val logger = Logger.getInstance(ReleaseNoteSuggestionAction::class.java)
+        val logger = logger<ReleaseNoteSuggestionAction>()
     }
 
     override fun actionPerformed(e: AnActionEvent) {

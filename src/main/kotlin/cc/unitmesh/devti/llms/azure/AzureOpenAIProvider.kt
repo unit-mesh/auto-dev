@@ -6,7 +6,7 @@ import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.theokanning.openai.completion.chat.ChatCompletionResult
 import com.theokanning.openai.completion.chat.ChatMessage
@@ -18,7 +18,7 @@ import okhttp3.Request
 
 @Service(Service.Level.PROJECT)
 class AzureOpenAIProvider(val project: Project) : CodeCopilotProvider {
-    private val logger = Logger.getInstance(AzureOpenAIProvider::class.java)
+    private val logger = logger<AzureOpenAIProvider>()
 
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private val url = autoDevSettingsState.customEngineServer
