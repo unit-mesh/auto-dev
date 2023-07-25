@@ -6,16 +6,16 @@
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
-        <classContextBuilder language="Kotlin"
+        <classContextBuilder language="kotlin"
                              implementationClass="cc.unitmesh.idea.kotlin.context.KotlinClassContextBuilder"/>
 
-        <methodContextBuilder language="Kotlin"
+        <methodContextBuilder language="kotlin"
                               implementationClass="cc.unitmesh.idea.kotlin.context.KotlinMethodContextBuilder"/>
 
-        <fileContextBuilder language="Kotlin"
+        <fileContextBuilder language="kotlin"
                             implementationClass="cc.unitmesh.idea.kotlin.context.KotlinFileContextBuilder"/>
 
-        <variableContextBuilder language="Kotlin"
+        <variableContextBuilder language="kotlin"
                                 implementationClass="cc.unitmesh.idea.kotlin.context.KotlinVariableContextBuilder"/>
 
         <chatContextProvider implementation="cc.unitmesh.idea.provider.KotlinVersionProvider"/>
