@@ -18,13 +18,23 @@ class JavaScriptTechStackService : TechStackProvider() {
         val devDependencies = mutableMapOf<String, String>()
         val dependencies = mutableMapOf<String, String>()
 
+        // merge frameworks, if start with start name: like: "react", "react-dom", "react-router-dom"
+        val frameworks = mutableMapOf<String, Boolean>()
+        val frameworkNames = listOf("react", "vue", "angular", "jquery", "bootstrap", "antd", "material-ui")
+
         packageJsonData.allDependencyEntries.forEach { (name, entry) ->
             entry.dependencyType.let {
                 when (it) {
                     PackageJsonDependency.dependencies -> {
-                        // if name start with @types, it is a dev dependency
                         if (!name.startsWith("@types/")) {
                             devDependencies[name] = entry.versionRange
+                        }
+
+                        // merge frameworks
+                        frameworkNames.forEach { frameworkName ->
+                            if (name.startsWith(frameworkName)) {
+                                frameworks[frameworkName] = true
+                            }
                         }
                     }
 
@@ -37,6 +47,7 @@ class JavaScriptTechStackService : TechStackProvider() {
             }
         }
 
-        return TestStack(mutableMapOf(), mutableMapOf(), dependencies, devDependencies)
+
+        return TestStack(frameworks, frameworks, dependencies, devDependencies)
     }
 }
