@@ -93,6 +93,10 @@
         <extensionPoint qualifiedName="cc.unitmesh.testContextProvider"
                         interface="cc.unitmesh.devti.provider.TestContextProvider"
                         dynamic="true"/>
+
+        <extensionPoint qualifiedName="cc.unitmesh.chatContextProvider"
+                        interface="cc.unitmesh.devti.provider.ChatContextProvider"
+                        dynamic="true"/>
     </extensionPoints>
 
     <!--    <applicationListeners>-->
