@@ -1,25 +1,12 @@
 package cc.unitmesh.devti.provider
 
-import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.provider.context.ChatOrigin
+import cc.unitmesh.devti.provider.context.ChatContextItem
+import cc.unitmesh.devti.provider.context.ChatCreationContext
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiFile
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import com.intellij.util.concurrency.annotations.RequiresReadLock
 import kotlin.coroutines.Continuation
-
-class ChatCreationContext(
-    val origin: ChatOrigin,
-    val action: ChatActionType,
-    val sourceFile: PsiFile?,
-    val extraItems: List<ChatContextItem>
-)
-
-class ChatContextItem(
-    val clazz: Class<*>,
-    var text: String
-)
 
 interface ChatContextProvider {
     @RequiresReadLock
