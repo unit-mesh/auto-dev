@@ -27,7 +27,7 @@ features:
 - Smart code completion.
     - Pattern specific.Based on your code context like (Controller, Service `import`), AutoDev will suggest you the
       best code.
-    - Related code. Based on recently file changes, AutoDev will call calculate similar chunk to generate best code. 
+    - Related code. Based on recently file changes, AutoDev will call calculate similar chunk to generate best code.
 - AI assistant. AutoDev will help you find bug, explain code, trace exception, generate commits, and more.
 - Custom prompt. You can customize your prompt in `Settings` -> `Tools` -> `AutoDev`
 - Custom LLM Server. You can customize your LLM Server in `Settings` -> `Tools` -> `AutoDev`
@@ -255,12 +255,19 @@ We currently support:
 - [x] BeforeCursor
 - [ ] SimilarFile
     - [x] JaccardSimilarity Path and Chunks by JetBrains
-    - [ ] Cosine Similarity Chunk by MethodName 
+    - [ ] Cosine Similarity Chunk by MethodName
 - [ ] ImportedFile
     - [x] Java CRUD
     - [ ] all cases
 - [x] PathMarker
 - [x] LanguageMarker
+
+## Useful Links
+
+- [Copilot-Explorer](https://github.com/thakkarparth007/copilot-explorer)  Hacky repo to see what the Copilot extension
+  sends to the server.
+- [Github Copilot](https://github.com/saschaschramm/github-copilot) a small part about Copilot Performance logs.
+- [花了大半个月，我终于逆向分析了Github Copilot](https://github.com/mengjian-github/copilot-analysis)
 
 ## License
 
