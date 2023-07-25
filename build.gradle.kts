@@ -54,7 +54,7 @@ val basePluginArchiveName = "intellij-autodev"
 val javaScriptPlugins = listOf("JavaScript")
 val pycharmPlugins = listOf("PythonCore")
 val javaPlugins = listOf("com.intellij.java", "org.jetbrains.kotlin")
-val kotlinPlugins = listOf("org.jetbrains.kotlin")
+//val kotlinPlugins = listOf("org.jetbrains.kotlin")
 
 val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
 val ideaPlugins = listOf("Git4Idea", "com.intellij.java", "org.jetbrains.plugins.gradle", "org.jetbrains.kotlin", "JavaScript")
@@ -256,7 +256,7 @@ project(":plugin") {
 project(":") {
     intellij {
         version.set(ideaVersion)
-        plugins.set(listOf("Git4Idea", "JavaScript"))
+        plugins.set(ideaPlugins)
     }
 
     dependencies {
