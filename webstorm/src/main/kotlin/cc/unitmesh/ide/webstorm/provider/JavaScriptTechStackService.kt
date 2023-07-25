@@ -26,19 +26,29 @@ class JavaScriptTechStackService : TechStackProvider() {
             entry.dependencyType.let {
                 when (it) {
                     PackageJsonDependency.dependencies -> {
+                        // also remove `eslint`
                         if (!name.startsWith("@types/")) {
                             devDependencies[name] = entry.versionRange
                         }
 
                         // merge frameworks
                         frameworkNames.forEach { frameworkName ->
-                            if (name.startsWith(frameworkName)) {
+                            if (name.startsWith(frameworkName) || name == frameworkName) {
                                 frameworks[frameworkName] = true
                             }
                         }
                     }
 
-                    PackageJsonDependency.devDependencies -> devDependencies[name] = entry.versionRange
+                    PackageJsonDependency.devDependencies -> {
+                        devDependencies[name] = entry.versionRange
+
+                        frameworkNames.forEach { frameworkName ->
+                            if (name.startsWith(frameworkName) || name == frameworkName) {
+                                frameworks[frameworkName] = true
+                            }
+                        }
+                    }
+
                     PackageJsonDependency.peerDependencies -> {}
                     PackageJsonDependency.optionalDependencies -> {}
                     PackageJsonDependency.bundledDependencies -> {

@@ -25,34 +25,34 @@ class JvmTechStackService: TechStackProvider() {
             val name = it.groupId + ":" + it.artifactId
             when {
                 name.contains("spring-boot-starter-web") -> {
-                    testStack.controller.putIfAbsent("Spring Boot Starter", true)
+                    testStack.coreFrameworks.putIfAbsent("Spring Boot Starter", true)
                 }
                 //  org.springframework.boot:spring-boot-starter-jdbc
                 name.contains("org.springframework.boot:spring-boot-starter-jdbc") -> {
-                    testStack.controller.putIfAbsent("JDBC", true)
+                    testStack.coreFrameworks.putIfAbsent("JDBC", true)
                 }
 
                 name.contains("org.springframework.boot:spring-boot-test") -> {
-                    testStack.service.putIfAbsent("Spring Boot Test", true)
+                    testStack.testFrameworks.putIfAbsent("Spring Boot Test", true)
                 }
 
                 name.contains("org.assertj:assertj-core") -> {
-                    testStack.controller.putIfAbsent("AssertJ", true)
-                    testStack.service.putIfAbsent("AssertJ", true)
+                    testStack.coreFrameworks.putIfAbsent("AssertJ", true)
+                    testStack.testFrameworks.putIfAbsent("AssertJ", true)
                 }
 
                 name.contains("org.junit.jupiter:junit-jupiter") -> {
-                    testStack.controller.putIfAbsent("JUnit 5", true)
-                    testStack.service.putIfAbsent("JUnit 5", true)
+                    testStack.coreFrameworks.putIfAbsent("JUnit 5", true)
+                    testStack.testFrameworks.putIfAbsent("JUnit 5", true)
                 }
 
                 name.contains("org.mockito:mockito-core") -> {
-                    testStack.controller.putIfAbsent("Mockito", true)
-                    testStack.service.putIfAbsent("Mockito", true)
+                    testStack.coreFrameworks.putIfAbsent("Mockito", true)
+                    testStack.testFrameworks.putIfAbsent("Mockito", true)
                 }
 
                 name.contains("com.h2database:h2") -> {
-                    testStack.controller.putIfAbsent("H2", true)
+                    testStack.coreFrameworks.putIfAbsent("H2", true)
                 }
             }
         }
