@@ -9,11 +9,11 @@ data class TestStack(
     val deps: MutableMap<String, String> = mutableMapOf(),
     val devDeps: MutableMap<String, String> = mutableMapOf()
 ) {
-    fun controllerString(): String {
+    fun coreFrameworks(): String {
         return coreFrameworks.keys.joinToString(", ")
     }
 
-    fun serviceString(): String {
+    fun testFrameworks(): String {
         return testFrameworks.keys.joinToString(", ")
     }
 }

@@ -2,7 +2,7 @@
     <!--suppress PluginXmlValidity -->
     <dependencies>
         <plugin id="org.jetbrains.kotlin"/>
-        <plugin id="org.jetbrains.plugins.gradle"/>
+        <module name="cc.unitmesh.idea"/>
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
@@ -18,14 +18,9 @@
         <variableContextBuilder language="kotlin"
                                 implementationClass="cc.unitmesh.idea.kotlin.context.KotlinVariableContextBuilder"/>
 
-        <chatContextProvider implementation="cc.unitmesh.idea.provider.KotlinVersionProvider"/>
-
 <!--        <contextPrompter-->
 <!--                language="Kotlin"-->
 <!--                implementation="cc.unitmesh.idea.provider.JvmIdeaContextPrompter"/>-->
-<!--        <techStackProvider-->
-<!--                language="Kotlin"-->
-<!--                implementation="cc.unitmesh.idea.provider.JvmTechStackService"/>-->
 <!--        <devFlowProvider-->
 <!--                language="Kotlin"-->
 <!--                implementation="cc.unitmesh.idea.provider.JvmAutoDevFlow"/>-->

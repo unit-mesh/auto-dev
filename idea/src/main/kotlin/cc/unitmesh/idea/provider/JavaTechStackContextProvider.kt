@@ -1,14 +1,68 @@
 package cc.unitmesh.idea.provider
 
-import cc.unitmesh.devti.provider.TechStackProvider
 import cc.unitmesh.devti.prompting.code.TestStack
+import cc.unitmesh.devti.provider.context.ChatContextItem
+import cc.unitmesh.devti.provider.context.ChatContextProvider
+import cc.unitmesh.devti.provider.context.ChatCreationContext
 import com.intellij.openapi.externalSystem.model.project.LibraryData
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
+import com.intellij.psi.PsiFile
 import org.jetbrains.plugins.gradle.util.GradleConstants
 
-class JvmTechStackService: TechStackProvider() {
-    override fun prepareLibrary(): TestStack {
+class JavaTechStackContextProvider : ChatContextProvider {
+    override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
+        val psiFile = creationContext.sourceFile
+        val isJavaFile = psiFile?.containingFile?.virtualFile?.extension?.equals("java", true) ?: false
+
+        val sourceFile: PsiFile? = creationContext.sourceFile
+        return sourceFile == null || isJavaFile
+    }
+
+    override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
+        val techStacks = prepareLibrary()
+
+        if (techStacks.coreFrameworks().isEmpty() && techStacks.testFrameworks().isEmpty()) {
+            return emptyList()
+        }
+
+        val fileName = creationContext.sourceFile?.name ?: return emptyList()
+        val langSuffix = "java"
+
+        fun isController() = fileName.endsWith("Controller." + langSuffix)
+        fun isService() =
+            fileName.endsWith("Service.$langSuffix") || fileName.endsWith("ServiceImpl." + langSuffix)
+
+        when {
+            isController() -> {
+                return techStacks.coreFrameworks.map {
+                    ChatContextItem(
+                        JavaTechStackContextProvider::class,
+                        "You are working on a project that uses ${it.key} to build RESTful APIs."
+                    )
+                }
+            }
+
+            isService() -> {
+                return techStacks.coreFrameworks.map {
+                    ChatContextItem(
+                        JavaTechStackContextProvider::class,
+                        "You are working on a project that uses ${it.key} to build business logic."
+                    )
+                }
+            }
+        }
+
+        return techStacks.coreFrameworks.map {
+            ChatContextItem(
+                JavaTechStackContextProvider::class,
+                "You are working on a project that uses ${it.key} to build business logic."
+            )
+        }
+    }
+
+    private fun prepareLibrary(): TestStack {
         val project = ProjectManager.getInstance().openProjects.firstOrNull() ?: return TestStack()
         val basePath = project.basePath ?: return TestStack()
         val projectData = ProjectDataManager.getInstance().getExternalProjectData(

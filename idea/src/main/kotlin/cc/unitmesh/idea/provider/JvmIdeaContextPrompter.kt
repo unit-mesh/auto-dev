@@ -5,7 +5,9 @@ import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.prompting.VcsPrompting
 import cc.unitmesh.devti.prompting.model.CustomPromptConfig
 import cc.unitmesh.devti.provider.ContextPrompter
-import cc.unitmesh.devti.provider.TechStackProvider
+import cc.unitmesh.devti.provider.context.ChatContextProvider
+import cc.unitmesh.devti.provider.context.ChatCreationContext
+import cc.unitmesh.devti.provider.context.ChatOrigin
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.idea.flow.MvcContextService
 import com.intellij.openapi.application.runReadAction
@@ -16,6 +18,9 @@ import com.intellij.openapi.vcs.changes.ChangeListManagerImpl
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 class JvmIdeaContextPrompter : ContextPrompter() {
     private var additionContext: String = ""
@@ -57,7 +62,9 @@ class JvmIdeaContextPrompter : ContextPrompter() {
     }
 
     override fun displayPrompt(): String {
-        val prompt = createPrompt(selectedText)
+        val prompt = runBlocking {
+            createPrompt(selectedText)
+        }
         val finalPrompt = if (additionContext.isNotEmpty()) {
             """$additionContext
                 |$selectedText""".trimMargin()
@@ -71,7 +78,9 @@ class JvmIdeaContextPrompter : ContextPrompter() {
     }
 
     override fun requestPrompt(): String {
-        val prompt = createPrompt(selectedText)
+        val prompt = runBlocking {
+            createPrompt(selectedText)
+        }
         val finalPrompt = if (additionContext.isNotEmpty()) {
             """$additionContext
                 |$selectedText""".trimMargin()
@@ -85,7 +94,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
     }
 
 
-    private fun createPrompt(selectedText: String): String {
+    private suspend fun createPrompt(selectedText: String): String {
         var prompt = """$action this $lang code"""
         when (action!!) {
             ChatActionType.REVIEW -> {
@@ -154,7 +163,14 @@ class JvmIdeaContextPrompter : ContextPrompter() {
                     "请为如下的 $lang 代码编写测试"
                 }
 
-                addTestContext()
+                // todo: change to scope
+                withContext(Dispatchers.Default) {
+                    val creationContext = ChatCreationContext(ChatOrigin.ChatAction, action!!, file)
+                    val allContexts = ChatContextProvider.collectChatContextList(project!!, creationContext)
+                    val formattedContexts = allContexts.joinToString("\n") { contextItem -> contextItem.toString() }
+
+                    additionContext = formattedContexts
+                }
             }
 
             ChatActionType.FIX_ISSUE -> {
@@ -204,25 +220,6 @@ examples:
 
         val prompting = project!!.service<VcsPrompting>()
         additionContext += prompting.computeDiff(changes)
-    }
-
-    private fun addTestContext() {
-        val techStackProvider = TechStackProvider.stack(file?.language?.displayName ?: "") ?: return
-        val techStacks = techStackProvider.prepareLibrary()
-        if (techStacks.controllerString().isEmpty() && techStacks.serviceString().isEmpty()) {
-            additionContext = "no test context"
-            return
-        }
-
-        when {
-            isController() -> {
-                additionContext = "// tech stacks: " + techStacks.controllerString()
-            }
-
-            isService() -> {
-                additionContext = "// tech stacks: " + techStacks.serviceString()
-            }
-        }
     }
 
     private fun addFixIssueContext(selectedText: String) {
