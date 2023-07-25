@@ -1,7 +1,5 @@
-package cc.unitmesh.devti.provider
+package cc.unitmesh.devti.provider.context
 
-import cc.unitmesh.devti.provider.context.ChatContextItem
-import cc.unitmesh.devti.provider.context.ChatCreationContext
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
@@ -23,9 +21,7 @@ interface ChatContextProvider {
         return list
     }
 
-    class Companion {
-        companion object {
-            val EP_NAME = ExtensionPointName<ChatContextProvider>("cc.unitmesh.chatContextProvider")
-        }
+    companion object {
+        val EP_NAME = ExtensionPointName<ChatContextProvider>("cc.unitmesh.chatContextProvider")
     }
 }
