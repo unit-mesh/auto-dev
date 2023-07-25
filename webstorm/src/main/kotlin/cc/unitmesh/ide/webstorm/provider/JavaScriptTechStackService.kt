@@ -21,7 +21,13 @@ class JavaScriptTechStackService : TechStackProvider() {
         packageJsonData.allDependencyEntries.forEach { (name, entry) ->
             entry.dependencyType.let {
                 when (it) {
-                    PackageJsonDependency.dependencies -> dependencies[name] = entry.versionRange
+                    PackageJsonDependency.dependencies -> {
+                        // if name start with @types, it is a dev dependency
+                        if (!name.startsWith("@types/")) {
+                            devDependencies[name] = entry.versionRange
+                        }
+                    }
+
                     PackageJsonDependency.devDependencies -> devDependencies[name] = entry.versionRange
                     PackageJsonDependency.peerDependencies -> {}
                     PackageJsonDependency.optionalDependencies -> {}
