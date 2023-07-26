@@ -153,3 +153,4 @@ build
 src/main/gen
 !.idea/runConfigurations
 !.idea/.name
+!.idea/icon.svg
