@@ -33,7 +33,7 @@
 
         <testContextProvider
                 language="JAVA"
-                implementation="cc.unitmesh.idea.provider.JvmTestContextProvider"/>
+                implementation="cc.unitmesh.idea.provider.JavaTestContextProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

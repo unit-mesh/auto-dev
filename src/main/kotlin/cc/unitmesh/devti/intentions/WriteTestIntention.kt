@@ -26,7 +26,7 @@ class WriteTestIntention : AbstractChatIntention() {
         val lang = file.language.displayName
 
         WriteAction.runAndWait<Throwable> {
-            val context = TestContextProvider.context(lang)?.prepareTestFile(file)
+            val context = TestContextProvider.context(lang)?.prepareTestFile(file, project)
         }
 
         prompter?.initContext(actionType, selectedText, file, project, editor.caretModel.offset)

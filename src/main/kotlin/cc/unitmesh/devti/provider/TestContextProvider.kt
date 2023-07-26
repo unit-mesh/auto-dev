@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.provider
 
 import com.intellij.openapi.extensions.ExtensionPointName
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import com.intellij.serviceContainer.LazyExtensionInstance
@@ -17,7 +18,7 @@ abstract class TestContextProvider : LazyExtensionInstance<TestContextProvider>(
         return implementationClass
     }
 
-    abstract fun prepareTestFile(sourceFile: PsiFile): VirtualFile?
+    abstract fun prepareTestFile(sourceFile: PsiFile, project: Project): VirtualFile?
 
     abstract fun insertTestMethod(methodName: String, code: String): String
 
