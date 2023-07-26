@@ -16,7 +16,6 @@ open class JavaTechStackContextProvider : ChatContextProvider {
     open val fileExt = "java"
 
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
-        logger<JavaTechStackContextProvider>().warn("psiFile: $creationContext")
         val psiFile = creationContext.sourceFile ?: return false
         return psiFile is PsiJavaFile
     }
