@@ -1,6 +1,7 @@
 package cc.unitmesh.idea.provider
 
 import cc.unitmesh.devti.context.chunks.SimilarChunksWithPaths
+import cc.unitmesh.devti.editor.LLMCoroutineScopeService
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.prompting.VcsPrompting
 import cc.unitmesh.devti.prompting.model.CustomPromptConfig
@@ -12,6 +13,7 @@ import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.idea.flow.MvcContextService
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.ChangeListManager
 import com.intellij.openapi.vcs.changes.ChangeListManagerImpl
@@ -19,6 +21,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
@@ -62,9 +65,10 @@ class JvmIdeaContextPrompter : ContextPrompter() {
     }
 
     override fun displayPrompt(): String {
-        val prompt = runBlocking {
+        val prompt = LLMCoroutineScopeService.scope(project!!).launch {
             createPrompt(selectedText)
         }
+
         val finalPrompt = if (additionContext.isNotEmpty()) {
             """$additionContext
                 |$selectedText""".trimMargin()
@@ -164,13 +168,12 @@ class JvmIdeaContextPrompter : ContextPrompter() {
                 }
 
                 // todo: change to scope
-                withContext(Dispatchers.Default) {
-                    val creationContext = ChatCreationContext(ChatOrigin.ChatAction, action!!, file)
-                    val allContexts = ChatContextProvider.collectChatContextList(project!!, creationContext)
-                    val formattedContexts = allContexts.joinToString("\n") { contextItem -> contextItem.toString() }
+                val creationContext = ChatCreationContext(ChatOrigin.ChatAction, action!!, file)
+                val allContexts = ChatContextProvider.collectChatContextList(project!!, creationContext)
+                val formattedContexts = allContexts.joinToString("\n") { contextItem -> contextItem.toString() }
 
-                    additionContext = formattedContexts
-                }
+                additionContext = formattedContexts
+                logger.info("additionContext: $additionContext")
             }
 
             ChatActionType.FIX_ISSUE -> {
@@ -241,5 +244,9 @@ examples:
                 additionContext = lookupFile.text.toString()
             }
         }
+    }
+
+    companion object {
+        val logger = logger<JvmIdeaContextPrompter>()
     }
 }
