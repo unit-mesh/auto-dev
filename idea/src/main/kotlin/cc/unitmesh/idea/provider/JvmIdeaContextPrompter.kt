@@ -19,7 +19,6 @@ import com.intellij.openapi.vcs.changes.ChangeListManagerImpl
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 class JvmIdeaContextPrompter : ContextPrompter() {
@@ -98,41 +97,34 @@ class JvmIdeaContextPrompter : ContextPrompter() {
 
 
     private suspend fun createPrompt(selectedText: String): String {
-        var prompt = """$action this $lang code"""
+        var prompt = action!!.instruction(lang)
+
         when (action!!) {
             ChatActionType.REVIEW -> {
                 val codeReview = customPromptConfig?.codeReview
-                prompt = if (codeReview?.instruction?.isNotEmpty() == true) {
-                    codeReview.instruction
-                } else {
-                    "请检查如下的 $lang 代码"
+                if (codeReview?.instruction?.isNotEmpty() == true) {
+                    prompt = codeReview.instruction
                 }
             }
 
             ChatActionType.EXPLAIN -> {
                 val autoComment = customPromptConfig?.autoComment
-                prompt = if (autoComment?.instruction?.isNotEmpty() == true) {
-                    autoComment.instruction
-                } else {
-                    "请解释如下的 $lang 代码"
+                if (autoComment?.instruction?.isNotEmpty() == true) {
+                    prompt = autoComment.instruction
                 }
             }
 
             ChatActionType.REFACTOR -> {
                 val refactor = customPromptConfig?.refactor
-                prompt = if (refactor?.instruction?.isNotEmpty() == true) {
-                    refactor.instruction
-                } else {
-                    "请重构如下的 $lang 代码"
+                if (refactor?.instruction?.isNotEmpty() == true) {
+                    prompt = refactor.instruction
                 }
             }
 
             ChatActionType.CODE_COMPLETE -> {
                 val codeComplete = customPromptConfig?.autoComplete
-                prompt = if (codeComplete?.instruction?.isNotEmpty() == true) {
-                    codeComplete.instruction
-                } else {
-                    "Complete $lang code, return rest code, no explaining"
+                if (codeComplete?.instruction?.isNotEmpty() == true) {
+                    prompt = codeComplete.instruction
                 }
 
                 when {
@@ -160,10 +152,8 @@ class JvmIdeaContextPrompter : ContextPrompter() {
 
             ChatActionType.WRITE_TEST -> {
                 val writeTest = customPromptConfig?.writeTest
-                prompt = if (writeTest?.instruction?.isNotEmpty() == true) {
-                    writeTest.instruction
-                } else {
-                    "请为如下的 $lang 代码编写测试"
+                if (writeTest?.instruction?.isNotEmpty() == true) {
+                    prompt = writeTest.instruction
                 }
 
                 // todo: change to scope
@@ -175,22 +165,10 @@ class JvmIdeaContextPrompter : ContextPrompter() {
             }
 
             ChatActionType.FIX_ISSUE -> {
-                prompt = "fix issue, and only submit the code changes."
                 addFixIssueContext(selectedText)
             }
 
             ChatActionType.GEN_COMMIT_MESSAGE -> {
-                prompt = """suggest 10 commit messages based on the following diff:
-commit messages should:
- - follow conventional commits
- - message format should be: <type>[scope]: <description>
-
-examples:
- - fix(authentication): add password regex pattern
- - feat(storage): add new test cases
- 
- {{diff}}
- """
                 prepareVcsContext()
             }
 
