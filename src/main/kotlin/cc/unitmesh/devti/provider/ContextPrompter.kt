@@ -42,6 +42,7 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
         return implementationClass
     }
 
+    open fun appendAdditionContext(context: String) {}
     open fun displayPrompt(): String = ""
     open fun requestPrompt(): String = ""
 

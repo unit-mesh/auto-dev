@@ -1,8 +1,10 @@
 package cc.unitmesh.devti.provider
 
+import cc.unitmesh.devti.context.ClassContext
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.serviceContainer.LazyExtensionInstance
 import com.intellij.util.xmlb.annotations.Attribute
@@ -10,6 +12,7 @@ import com.intellij.util.xmlb.annotations.Attribute
 data class TestFileContext(
     val isNewFile: Boolean,
     val file: VirtualFile,
+    val relatedClass: List<ClassContext> = emptyList()
 )
 
 abstract class TestContextProvider : LazyExtensionInstance<TestContextProvider>() {
@@ -25,9 +28,9 @@ abstract class TestContextProvider : LazyExtensionInstance<TestContextProvider>(
         return implementationClass
     }
 
-    abstract fun prepareTestFile(sourceFile: PsiFile, project: Project): TestFileContext?
+    abstract fun prepareTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext?
 
-    abstract fun insertTestMethod(methodName: String, code: String): String
+    abstract fun insertTestMethod(sourceFile: PsiFile, project: Project, methodName: String, code: String): Boolean
 
     companion object {
         private val EP_NAME: ExtensionPointName<TestContextProvider> =

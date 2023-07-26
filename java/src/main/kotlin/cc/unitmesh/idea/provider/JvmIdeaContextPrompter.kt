@@ -29,6 +29,10 @@ class JvmIdeaContextPrompter : ContextPrompter() {
     private var fileName = ""
     private lateinit var changeListManager: ChangeListManager
 
+    override fun appendAdditionContext(context: String) {
+        additionContext += context
+    }
+
     private fun langSuffix(): String = when (lang.lowercase()) {
         "java" -> "java"
         "kotlin" -> "kt"

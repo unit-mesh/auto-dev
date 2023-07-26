@@ -29,25 +29,50 @@ class WriteTestIntention : AbstractChatIntention() {
 
         val selectedText = element.text
 
-        val prompter = ContextPrompter.prompter(file.language.displayName)
         val actionType = ChatActionType.WRITE_TEST
 
         val lang = file.language.displayName
 
         LLMCoroutineScopeService.scope(project).launch {
             WriteAction.runAndWait<Throwable> {
-                val testContext = TestContextProvider.context(lang)?.prepareTestFile(file, project)
+                val testContext = TestContextProvider.context(lang)?.prepareTestFile(file, project, element)
                 if (testContext == null) {
                     logger<WriteTestIntention>().error("Failed to create test file for: $file")
                     return@runAndWait
                 }
 
                 runBlocking {
-                    val creationContext = ChatCreationContext(ChatOrigin.Intention, actionType, file)
-                    ChatContextProvider.collectChatContextList(project, creationContext)
+                    var prompter = "Write test for ${testContext.file.name}, ${testContext.file.path}."
 
-                    prompter.initContext(actionType, selectedText, file, project, editor.caretModel.offset)
-                    sendToChat(project, actionType, prompter)
+                    val creationContext = ChatCreationContext(ChatOrigin.Intention, actionType, file)
+                    val chatContextItems = ChatContextProvider.collectChatContextList(project, creationContext)
+                    chatContextItems.forEach {
+                        prompter += it.text
+                    }
+
+                    val additionContext = testContext.relatedClass.map {
+                        it.toQuery()
+                    }.joinToString("\n").lines().map {
+                        "// $it"
+                    }.joinToString("\n")
+
+                    prompter += additionContext
+
+                    prompter += """```$lang
+                        |$selectedText
+                        |```
+                        |"""
+
+
+                    sendToChat(project, actionType, object : ContextPrompter() {
+                        override fun displayPrompt(): String {
+                            return prompter
+                        }
+
+                        override fun requestPrompt(): String {
+                            return prompter
+                        }
+                    })
                 }
             }
         }

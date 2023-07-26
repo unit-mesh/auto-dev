@@ -1,20 +1,25 @@
 package cc.unitmesh.idea.provider
 
+import cc.unitmesh.devti.context.ClassContext
+import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.provider.TestContextProvider
 import cc.unitmesh.devti.provider.TestFileContext
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiJavaFile
+import com.intellij.psi.*
 
 class JavaTestContextProvider : TestContextProvider() {
 
-    override fun prepareTestFile(sourceFile: PsiFile, project: Project): TestFileContext? {
+    override fun prepareTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
         val sourceFilePath = sourceFile.virtualFile
         val sourceDir = sourceFilePath.parent
 
         val packageName = (sourceFile as PsiJavaFile).packageName
+
+        val relatedModels = prepareModels(sourceFile, project, element)
 
         // Check if the source file is in the src/main/java directory
         if (!sourceDir?.path?.contains("/src/main/java/")!!) {
@@ -32,7 +37,7 @@ class JavaTestContextProvider : TestContextProvider() {
             return if (testDirCreated != null) {
                 // Successfully created the test directory
                 val targetFile = createTestFile(sourceFile, testDirCreated, packageName)
-                TestFileContext(true, targetFile)
+                TestFileContext(true, targetFile, relatedModels)
             } else {
                 // Failed to create the test directory, return null
                 null
@@ -44,15 +49,82 @@ class JavaTestContextProvider : TestContextProvider() {
         val testFile = LocalFileSystem.getInstance().findFileByPath(testFilePath)
 
         return if (testFile != null) {
-            TestFileContext(false, testFile)
+            TestFileContext(false, testFile, relatedModels)
         } else {
             val targetFile = createTestFile(sourceFile, testDir, packageName)
-            TestFileContext(true, targetFile)
+            TestFileContext(true, targetFile, relatedModels)
         }
     }
 
-    override fun insertTestMethod(methodName: String, code: String): String {
-        TODO("Not yet implemented")
+    private fun prepareModels(sourceFile: PsiJavaFile, project: Project, element: PsiElement): List<ClassContext> {
+        // 1. if element is method, find input and output Class, 2. find method call from fields
+        val models = mutableListOf<ClassContext>()
+        val allImports = sourceFile.importList?.allImportStatements?.map {
+            it.importReference?.text
+        }?.filterNotNull().orEmpty()
+
+        if (element is PsiMethod) {
+            val inputTypes = element.parameterList.parameters.map {
+                it.type is PsiClassType
+            }.filterIsInstance<PsiClassType>().filter {
+                allImports.contains(it.canonicalText)
+            }.map { it.resolve()!! }
+
+            // find input class from inputTypes
+            inputTypes.forEach {
+                models.add(ClassContextProvider(false).from(it))
+            }
+
+            val returnType = element.returnTypeElement
+            if (returnType != null) {
+                val outputType = returnType.type
+                if (outputType is PsiClassType) {
+                    val outputClass = outputType.resolve()
+                    if (outputClass != null) {
+                        models.add(ClassContextProvider(false).from(outputClass))
+                    }
+                }
+            }
+        }
+
+        logger<JavaTestContextProvider>().warn("models: $models")
+        return models
+    }
+
+    override fun insertTestMethod(sourceFile: PsiFile, project: Project, methodName: String, code: String): Boolean {
+        // Get the root element (usually a class) of the source file
+        val rootElement = sourceFile.children.find { it is PsiClass } as? PsiClass
+
+        if (rootElement != null) {
+            // Check if a method with the same name already exists
+            val existingMethod = rootElement.methods.find { it.name == methodName }
+
+            if (existingMethod != null) {
+                // Method with the same name already exists, return an error message
+//                return "Error: Method with name '$methodName' already exists."
+                return false
+            } else {
+                // Create the new test method
+                val psiElementFactory = PsiElementFactory.getInstance(project)
+                val newTestMethod =
+                    psiElementFactory.createMethodFromText("void $methodName() {\n$code\n}", rootElement)
+
+                // Add the new method to the class
+                val addedMethod = rootElement.add(newTestMethod) as PsiMethod
+
+                // Format the newly inserted code
+                addedMethod.navigate(true)
+
+                // Refresh the project to make the changes visible
+                project.guessProjectDir()?.refresh(true, true)
+
+//                return "Success: Method '$methodName' successfully added."
+                return true
+            }
+        } else {
+//            return "Error: Failed to find the class to insert the method."
+            return false
+        }
     }
 
     private fun createTestFile(sourceFile: PsiFile, testDir: VirtualFile, packageName: String): VirtualFile {
