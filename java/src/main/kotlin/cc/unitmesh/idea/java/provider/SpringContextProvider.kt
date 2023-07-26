@@ -4,6 +4,7 @@ import cc.unitmesh.devti.prompting.code.TestStack
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
+import cc.unitmesh.idea.java.library.SpringLibrary
 import com.intellij.openapi.externalSystem.model.project.LibraryData
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.project.Project
@@ -87,38 +88,52 @@ open class SpringContextProvider : ChatContextProvider {
         val libraryDataList = prepareLibraryData(project)
 
         val testStack = TestStack()
+        var hasMatchSpringMvc = false
+        var hasMatchSprinData = false
+
         libraryDataList?.forEach {
             val name = it.groupId + ":" + it.artifactId
-            when {
-                name.contains("spring-boot-starter-web") -> {
-                    testStack.coreFrameworks.putIfAbsent("Spring Boot Starter", true)
+            if (!hasMatchSpringMvc) {
+                SpringLibrary.SPRING_MVC.forEach { entry ->
+                    entry.coords.forEach { coord ->
+                        if (name.contains(coord)) {
+                            testStack.coreFrameworks.putIfAbsent(entry.shortText, true)
+                            hasMatchSpringMvc = true
+                        }
+                    }
                 }
-                //  org.springframework.boot:spring-boot-starter-jdbc
-                name.contains("org.springframework.boot:spring-boot-starter-jdbc") -> {
-                    testStack.coreFrameworks.putIfAbsent("JDBC", true)
-                }
+            }
 
+            if (!hasMatchSprinData) {
+                SpringLibrary.SPRING_DATA.forEach { entry ->
+                    entry.coords.forEach { coord ->
+                        if (name.contains(coord)) {
+                            testStack.coreFrameworks.putIfAbsent(entry.shortText, true)
+                            hasMatchSprinData = true
+                        }
+                    }
+                }
+            }
+
+            when {
                 name.contains("org.springframework.boot:spring-boot-test") -> {
                     testStack.testFrameworks.putIfAbsent("Spring Boot Test", true)
                 }
 
                 name.contains("org.assertj:assertj-core") -> {
-                    testStack.coreFrameworks.putIfAbsent("AssertJ", true)
                     testStack.testFrameworks.putIfAbsent("AssertJ", true)
                 }
 
                 name.contains("org.junit.jupiter:junit-jupiter") -> {
-                    testStack.coreFrameworks.putIfAbsent("JUnit 5", true)
                     testStack.testFrameworks.putIfAbsent("JUnit 5", true)
                 }
 
                 name.contains("org.mockito:mockito-core") -> {
-                    testStack.coreFrameworks.putIfAbsent("Mockito", true)
                     testStack.testFrameworks.putIfAbsent("Mockito", true)
                 }
 
                 name.contains("com.h2database:h2") -> {
-                    testStack.coreFrameworks.putIfAbsent("H2", true)
+                    testStack.testFrameworks.putIfAbsent("H2", true)
                 }
             }
         }
