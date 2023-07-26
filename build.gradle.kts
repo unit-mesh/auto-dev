@@ -30,6 +30,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 gradle.startParameter.showStacktrace = ShowStacktrace.ALWAYS
 
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     id("java") // Java support
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
