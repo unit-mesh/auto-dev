@@ -8,16 +8,12 @@ import com.intellij.openapi.externalSystem.model.project.LibraryData
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
-import com.intellij.psi.PsiFile
 import org.jetbrains.plugins.gradle.util.GradleConstants
 
 class JavaTechStackContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
-        val psiFile = creationContext.sourceFile
-        val isJavaFile = psiFile?.containingFile?.virtualFile?.extension?.equals("java", true) ?: false
-
-        val sourceFile: PsiFile? = creationContext.sourceFile
-        return sourceFile == null || isJavaFile
+        val psiFile = creationContext.sourceFile ?: return false
+        return psiFile.containingFile?.virtualFile?.extension?.equals("java", true) ?: false
     }
 
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
@@ -28,11 +24,10 @@ class JavaTechStackContextProvider : ChatContextProvider {
         }
 
         val fileName = creationContext.sourceFile?.name ?: return emptyList()
-        val langSuffix = "java"
 
-        fun isController() = fileName.endsWith("Controller." + langSuffix)
+        fun isController() = fileName.endsWith("Controller.java")
         fun isService() =
-            fileName.endsWith("Service.$langSuffix") || fileName.endsWith("ServiceImpl." + langSuffix)
+            fileName.endsWith("Service.java") || fileName.endsWith("ServiceImpl.java")
 
         when {
             isController() -> {
