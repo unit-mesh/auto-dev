@@ -5,16 +5,13 @@ import cc.unitmesh.devti.context.builder.MethodContextBuilder
 import cc.unitmesh.idea.java.context.JavaContextCollectionUtilsKt
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
-import org.jetbrains.annotations.NotNull
-import org.jetbrains.annotations.Nullable
 import org.jetbrains.kotlin.idea.quickfix.createFromUsage.callableBuilder.getReturnTypeReference
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.psiUtil.containingClass
 
 class KotlinMethodContextBuilder : MethodContextBuilder {
-    @Nullable
     override fun getMethodContext(
-        @NotNull psiElement: PsiElement,
+        psiElement: PsiElement,
         includeClassContext: Boolean,
         gatherUsages: Boolean
     ): MethodContext? {
@@ -43,7 +40,7 @@ class KotlinMethodContextBuilder : MethodContextBuilder {
     }
 
     object Util {
-        fun getSignatureString(@NotNull signatureString: KtNamedFunction): String {
+        fun getSignatureString(signatureString: KtNamedFunction): String {
             val bodyBlockExpression = signatureString.bodyBlockExpression
             val startOffsetInParent = if (bodyBlockExpression != null) {
                 bodyBlockExpression.startOffsetInParent
