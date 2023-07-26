@@ -167,10 +167,9 @@ class JvmIdeaContextPrompter : ContextPrompter() {
 
                 // todo: change to scope
                 val creationContext = ChatCreationContext(ChatOrigin.ChatAction, action!!, file)
-                val allContexts = ChatContextProvider.collectChatContextList(project!!, creationContext)
-                val formattedContexts = allContexts.joinToString("\n") { contextItem -> contextItem.toString() }
+                val allContexts = ChatContextProvider.collectChatContext(project!!, creationContext)
 
-                additionContext = formattedContexts
+                additionContext = allContexts
                 logger.info("additionContext: $additionContext")
             }
 

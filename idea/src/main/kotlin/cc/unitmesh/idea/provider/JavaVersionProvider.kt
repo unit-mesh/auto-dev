@@ -11,8 +11,6 @@ import com.intellij.openapi.projectRoots.JavaSdkType
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.util.lang.JavaVersion
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 class JavaVersionProvider : ChatContextProvider {
     override fun collect(

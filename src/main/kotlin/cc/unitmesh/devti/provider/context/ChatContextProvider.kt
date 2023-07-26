@@ -32,16 +32,20 @@ interface ChatContextProvider {
 
             val chatContextProviders = EP_NAME.extensionList
             for (provider in chatContextProviders) {
-                val applicable = withContext(Dispatchers.Default) {
-                    provider.isApplicable(project, chatCreationContext)
-                }
+                try {
+                    val applicable = withContext(Dispatchers.Default) {
+                        provider.isApplicable(project, chatCreationContext)
+                    }
 
-                if (applicable) {
-                    val filteredItems = withContext(Dispatchers.Default) {
-                        provider.filterItems(elements, chatCreationContext)
-                    }.filterNotNull()
+                    if (applicable) {
+                        val filteredItems = withContext(Dispatchers.Default) {
+                            provider.filterItems(elements, chatCreationContext)
+                        }.filterNotNull()
 
-                    elements.addAll(filteredItems)
+                        elements.addAll(filteredItems)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
             }
 
@@ -49,5 +53,15 @@ interface ChatContextProvider {
 
             return elements
         }
+
+        suspend fun collectChatContext(
+            project: Project,
+            chatCreationContext: ChatCreationContext
+        ): String {
+            val itemList = collectChatContextList(project, chatCreationContext)
+            return itemList.joinToString(separator = "\n") { it.text }
+        }
+
+
     }
 }
