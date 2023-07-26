@@ -152,7 +152,7 @@ project(":plugin") {
 
     dependencies {
         implementation(project(":"))
-        implementation(project(":idea"))
+        implementation(project(":java"))
         implementation(project(":pycharm"))
         implementation(project(":webstorm"))
         implementation(project(":kotlin"))
@@ -310,7 +310,7 @@ project(":pycharm") {
     }
 }
 
-project(":idea") {
+project(":java") {
     intellij {
         version.set(ideaVersion)
         plugins.set(ideaPlugins)
@@ -337,7 +337,7 @@ project(":kotlin") {
     }
     dependencies {
         implementation(project(":"))
-        implementation(project(":idea"))
+        implementation(project(":java"))
     }
 }
 

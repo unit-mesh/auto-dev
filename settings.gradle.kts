@@ -7,7 +7,7 @@ include("plugin")
 
 include(
     "pycharm",
-    "idea",
+    "java",
     "kotlin",
     "webstorm",
 )
