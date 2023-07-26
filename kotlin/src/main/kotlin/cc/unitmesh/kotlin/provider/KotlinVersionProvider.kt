@@ -1,4 +1,4 @@
-package cc.unitmesh.idea.kotlin.provider
+package cc.unitmesh.kotlin.provider
 
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider

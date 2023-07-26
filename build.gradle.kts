@@ -58,7 +58,8 @@ val javaPlugins = listOf("com.intellij.java", "org.jetbrains.kotlin")
 //val kotlinPlugins = listOf("org.jetbrains.kotlin")
 
 val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
-val ideaPlugins = listOf("Git4Idea", "com.intellij.java", "org.jetbrains.plugins.gradle", "org.jetbrains.kotlin", "JavaScript")
+val ideaPlugins =
+    listOf("Git4Idea", "com.intellij.java", "org.jetbrains.plugins.gradle", "org.jetbrains.kotlin", "JavaScript")
 
 val baseIDE = prop("baseIDE")
 val platformVersion = prop("globalPlatformVersion").toInt()
@@ -154,6 +155,7 @@ project(":plugin") {
         implementation(project(":idea"))
         implementation(project(":pycharm"))
         implementation(project(":webstorm"))
+        implementation(project(":kotlin"))
     }
 
     // Collects all jars produced by compilation of project modules and merges them into singe one.
@@ -325,6 +327,17 @@ project(":webstorm") {
     }
     dependencies {
         implementation(project(":"))
+    }
+}
+
+project(":kotlin") {
+    intellij {
+        version.set(ideaVersion)
+        plugins.set(ideaPlugins)
+    }
+    dependencies {
+        implementation(project(":"))
+        implementation(project(":idea"))
     }
 }
 

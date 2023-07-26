@@ -1,0 +1,33 @@
+<idea-plugin package="cc.unitmesh.kotlin">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+        <plugin id="org.jetbrains.kotlin"/>
+        <module name="cc.unitmesh.idea"/>
+    </dependencies>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <classContextBuilder language="kotlin"
+                             implementationClass="cc.unitmesh.kotlin.context.KotlinClassContextBuilder"/>
+
+        <methodContextBuilder language="kotlin"
+                              implementationClass="cc.unitmesh.kotlin.context.KotlinMethodContextBuilder"/>
+
+        <fileContextBuilder language="kotlin"
+                            implementationClass="cc.unitmesh.kotlin.context.KotlinFileContextBuilder"/>
+
+        <variableContextBuilder language="kotlin"
+                                implementationClass="cc.unitmesh.kotlin.context.KotlinVariableContextBuilder"/>
+
+        <chatContextProvider implementation="cc.unitmesh.kotlin.provider.KotlinVersionProvider"/>
+
+<!--        <contextPrompter-->
+<!--                language="Kotlin"-->
+<!--                implementation="cc.unitmesh.provider.JvmIdeaContextPrompter"/>-->
+<!--        <devFlowProvider-->
+<!--                language="Kotlin"-->
+<!--                implementation="cc.unitmesh.provider.JvmAutoDevFlow"/>-->
+<!--        <promptStrategy-->
+<!--                language="Kotlin"-->
+<!--                implementation="cc.unitmesh.provider.JvmPromptStrategy"/>-->
+    </extensions>
+</idea-plugin>
