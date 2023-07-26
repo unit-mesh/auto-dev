@@ -18,6 +18,8 @@
         <variableContextBuilder language="kotlin"
                                 implementationClass="cc.unitmesh.idea.kotlin.context.KotlinVariableContextBuilder"/>
 
+        <chatContextProvider implementation="cc.unitmesh.idea.kotlin.provider.KotlinVersionProvider"/>
+
 <!--        <contextPrompter-->
 <!--                language="Kotlin"-->
 <!--                implementation="cc.unitmesh.idea.provider.JvmIdeaContextPrompter"/>-->

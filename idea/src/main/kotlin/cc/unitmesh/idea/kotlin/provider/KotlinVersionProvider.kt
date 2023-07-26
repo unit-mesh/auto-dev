@@ -1,4 +1,4 @@
-package cc.unitmesh.idea.provider
+package cc.unitmesh.idea.kotlin.provider
 
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
@@ -16,7 +16,4 @@ class KotlinVersionProvider : ChatContextProvider {
     override fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         return emptyList()
     }
-
-    private fun isKotlinFile(psiFile: PsiFile?) =
-        psiFile?.containingFile?.virtualFile?.extension?.equals("kt", true) ?: false
 }

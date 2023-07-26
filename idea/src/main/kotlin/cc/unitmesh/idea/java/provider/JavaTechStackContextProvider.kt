@@ -1,4 +1,4 @@
-package cc.unitmesh.idea.provider
+package cc.unitmesh.idea.java.provider
 
 import cc.unitmesh.devti.prompting.code.TestStack
 import cc.unitmesh.devti.provider.context.ChatContextItem
@@ -12,7 +12,9 @@ import com.intellij.openapi.project.ProjectManager
 import com.intellij.psi.PsiJavaFile
 import org.jetbrains.plugins.gradle.util.GradleConstants
 
-class JavaTechStackContextProvider : ChatContextProvider {
+open class JavaTechStackContextProvider : ChatContextProvider {
+    open val fileExt = "java"
+
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
         logger<JavaTechStackContextProvider>().warn("psiFile: $creationContext")
         val psiFile = creationContext.sourceFile ?: return false
@@ -28,9 +30,9 @@ class JavaTechStackContextProvider : ChatContextProvider {
 
         val fileName = creationContext.sourceFile?.name ?: ""
 
-        fun isController() = fileName.endsWith("Controller.java")
+        fun isController() = fileName.endsWith("Controller.$fileExt")
         fun isService() =
-            fileName.endsWith("Service.java") || fileName.endsWith("ServiceImpl.java")
+            fileName.endsWith("Service.$fileExt") || fileName.endsWith("ServiceImpl.$fileExt")
 
         when {
             isController() -> {
