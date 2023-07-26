@@ -7,7 +7,14 @@ import com.intellij.psi.PsiFile
 import com.intellij.serviceContainer.LazyExtensionInstance
 import com.intellij.util.xmlb.annotations.Attribute
 
+data class TestFileContext(
+    val isNewFile: Boolean,
+    val file: VirtualFile,
+)
+
 abstract class TestContextProvider : LazyExtensionInstance<TestContextProvider>() {
+    val AUTO_DEV_PLACEHOLDER = "<AUTO_DEV_PLACEHOLDER>"
+
     @Attribute("language")
     var language: String? = null
 
@@ -18,7 +25,7 @@ abstract class TestContextProvider : LazyExtensionInstance<TestContextProvider>(
         return implementationClass
     }
 
-    abstract fun prepareTestFile(sourceFile: PsiFile, project: Project): VirtualFile?
+    abstract fun prepareTestFile(sourceFile: PsiFile, project: Project): TestFileContext?
 
     abstract fun insertTestMethod(methodName: String, code: String): String
 

@@ -40,10 +40,7 @@ abstract class AbstractChatIntention : IntentionAction {
             if (elementToExplain == null) {
                 return
             }
-            val startOffset = elementToExplain.textRange.startOffset
-            val endOffset = elementToExplain.textRange.endOffset
-
-            editor.selectionModel.setSelection(startOffset, endOffset)
+            selectElement(elementToExplain, editor)
             selectedText = editor.selectionModel.selectedText
         }
 
@@ -57,6 +54,13 @@ abstract class AbstractChatIntention : IntentionAction {
         val prompter = ContextPrompter.prompter(file.language.displayName)
         prompter?.initContext(actionType, selectedText, file, project, editor.caretModel.offset)
         sendToChat(project, actionType, prompter!!)
+    }
+
+    protected fun selectElement(elementToExplain: PsiElement, editor: Editor) {
+        val startOffset = elementToExplain.textRange.startOffset
+        val endOffset = elementToExplain.textRange.endOffset
+
+        editor.selectionModel.setSelection(startOffset, endOffset)
     }
 
     /**
