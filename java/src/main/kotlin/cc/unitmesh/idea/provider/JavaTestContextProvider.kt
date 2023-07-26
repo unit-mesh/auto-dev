@@ -5,6 +5,7 @@ import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.provider.TestContextProvider
 import cc.unitmesh.devti.provider.TestFileContext
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -57,17 +58,12 @@ class JavaTestContextProvider : TestContextProvider() {
     }
 
     private fun prepareModels(sourceFile: PsiJavaFile, project: Project, element: PsiElement): List<ClassContext> {
-        // 1. if element is method, find input and output Class, 2. find method call from fields
         val models = mutableListOf<ClassContext>()
-        val allImports = sourceFile.importList?.allImportStatements?.map {
-            it.importReference?.text
-        }?.filterNotNull().orEmpty()
-
         if (element is PsiMethod) {
             val inputTypes = element.parameterList.parameters.map {
                 it.type is PsiClassType
             }.filterIsInstance<PsiClassType>().filter {
-                allImports.contains(it.canonicalText)
+                it.resolve()?.containingFile?.virtualFile?.path?.contains(project.guessProjectDir()?.path!!)!!
             }.map { it.resolve()!! }
 
             // find input class from inputTypes
