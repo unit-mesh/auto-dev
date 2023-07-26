@@ -15,15 +15,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class JavaVersionProvider : ChatContextProvider {
-    override suspend fun collect(
+    override fun collect(
         project: Project,
         creationContext: ChatCreationContext
-    ): List<ChatContextItem> = withContext(Dispatchers.Default) {
+    ): List<ChatContextItem> {
         val psiFile = creationContext.sourceFile
         val containsJavaFile = { psiFile?.containingFile?.virtualFile?.extension?.equals("java", true) ?: false }
 
         if (!containsJavaFile()) {
-            return@withContext emptyList()
+            return emptyList()
         }
 
         val javaVersion = JavaVersion.current()
@@ -34,7 +34,7 @@ class JavaVersionProvider : ChatContextProvider {
             "You are working on a project that uses Java SDK version $javaVersionStr."
         )
 
-        return@withContext listOf(chatContextItem)
+        return listOf(chatContextItem)
     }
 
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {

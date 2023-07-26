@@ -20,10 +20,8 @@ import com.intellij.openapi.vcs.changes.ChangeListManagerImpl
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 
 class JvmIdeaContextPrompter : ContextPrompter() {
     private var additionContext: String = ""
@@ -33,9 +31,9 @@ class JvmIdeaContextPrompter : ContextPrompter() {
     private var fileName = ""
     private lateinit var changeListManager: ChangeListManager
 
-    private fun langSuffix(): String = when (lang) {
-        "Java" -> "java"
-        "Kotlin" -> "kt"
+    private fun langSuffix(): String = when (lang.lowercase()) {
+        "java" -> "java"
+        "kotlin" -> "kt"
         else -> "java"
     }
 

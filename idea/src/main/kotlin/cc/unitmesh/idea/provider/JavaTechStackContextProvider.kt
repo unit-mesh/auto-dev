@@ -8,15 +8,16 @@ import com.intellij.openapi.externalSystem.model.project.LibraryData
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
+import com.intellij.psi.PsiJavaFile
 import org.jetbrains.plugins.gradle.util.GradleConstants
 
 class JavaTechStackContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
         val psiFile = creationContext.sourceFile ?: return false
-        return psiFile.containingFile?.virtualFile?.extension?.equals("java", true) ?: false
+        return psiFile is PsiJavaFile
     }
 
-    override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
+    override fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         val techStacks = prepareLibrary()
 
         if (techStacks.coreFrameworks().isEmpty() && techStacks.testFrameworks().isEmpty()) {
