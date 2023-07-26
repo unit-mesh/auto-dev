@@ -11,13 +11,27 @@ enum class ChatActionType {
     CREATE_DDL,
     CREATE_CHANGELOG;
 
+    override fun toString(): String {
+        return when (this) {
+            EXPLAIN -> "explain"
+            REVIEW -> "review"
+            REFACTOR -> "refactor"
+            CODE_COMPLETE -> "code complete"
+            WRITE_TEST -> "write test"
+            FIX_ISSUE -> "fix issue"
+            GEN_COMMIT_MESSAGE -> "generate commit message"
+            CREATE_DDL -> "create ddl"
+            CREATE_CHANGELOG -> "generate release note"
+        }
+    }
+
     fun instruction(lang: String = ""): String {
         return when (this) {
             EXPLAIN -> "Explain selected $lang code"
-            REVIEW -> "Code Review for following $lang  code"
-            REFACTOR -> "Refactor the following $lang  code"
+            REVIEW -> "Code Review for following $lang code"
+            REFACTOR -> "Refactor the following $lang code"
             CODE_COMPLETE -> "Complete $lang  code, return rest code, no explaining"
-            WRITE_TEST -> "Write unit test for following $lang  code"
+            WRITE_TEST -> "Write unit test for following $lang code"
             FIX_ISSUE -> "Help me fix this issue"
             GEN_COMMIT_MESSAGE -> """suggest 10 commit messages based on the following diff:
 commit messages should:

@@ -16,7 +16,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
     val action = actionType.instruction()
 
     fun getLabel(): String {
-        val capitalizedAction = action.replaceFirstChar { it.uppercase() }
+        val capitalizedAction = actionType
         return "$capitalizedAction Code"
     }
 

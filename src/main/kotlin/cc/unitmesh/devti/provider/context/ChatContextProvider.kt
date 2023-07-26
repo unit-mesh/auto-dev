@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.provider.context
 
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
@@ -39,7 +40,7 @@ interface ChatContextProvider {
 
                     if (applicable) {
                         val filteredItems = withContext(Dispatchers.Default) {
-                            provider.filterItems(elements, chatCreationContext)
+                            provider.filterItems(provider.collect(project, chatCreationContext), chatCreationContext)
                         }.filterNotNull()
 
                         elements.addAll(filteredItems)
@@ -61,7 +62,5 @@ interface ChatContextProvider {
             val itemList = collectChatContextList(project, chatCreationContext)
             return itemList.joinToString(separator = "\n") { it.text }
         }
-
-
     }
 }

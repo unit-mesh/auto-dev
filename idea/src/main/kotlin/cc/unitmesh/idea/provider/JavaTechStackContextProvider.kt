@@ -4,6 +4,7 @@ import cc.unitmesh.devti.prompting.code.TestStack
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.model.project.LibraryData
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.project.Project
@@ -13,6 +14,7 @@ import org.jetbrains.plugins.gradle.util.GradleConstants
 
 class JavaTechStackContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
+        logger<JavaTechStackContextProvider>().warn("psiFile: $creationContext")
         val psiFile = creationContext.sourceFile ?: return false
         return psiFile is PsiJavaFile
     }
@@ -24,7 +26,7 @@ class JavaTechStackContextProvider : ChatContextProvider {
             return emptyList()
         }
 
-        val fileName = creationContext.sourceFile?.name ?: return emptyList()
+        val fileName = creationContext.sourceFile?.name ?: ""
 
         fun isController() = fileName.endsWith("Controller.java")
         fun isService() =
@@ -32,30 +34,30 @@ class JavaTechStackContextProvider : ChatContextProvider {
 
         when {
             isController() -> {
-                return techStacks.coreFrameworks.map {
+                return listOf(
                     ChatContextItem(
                         JavaTechStackContextProvider::class,
-                        "You are working on a project that uses ${it.key} to build RESTful APIs."
+                        "You are working on a project that uses ${techStacks.coreFrameworks.keys.joinToString(",")} to build RESTful APIs."
                     )
-                }
+                )
             }
 
             isService() -> {
-                return techStacks.coreFrameworks.map {
+                return listOf(
                     ChatContextItem(
                         JavaTechStackContextProvider::class,
-                        "You are working on a project that uses ${it.key} to build business logic."
+                        "You are working on a project that uses ${techStacks.coreFrameworks.keys.joinToString(",")} to build business logic."
                     )
-                }
+                )
             }
         }
 
-        return techStacks.coreFrameworks.map {
+        return listOf(
             ChatContextItem(
                 JavaTechStackContextProvider::class,
-                "You are working on a project that uses ${it.key} to build business logic."
+                "You are working on a project that uses ${techStacks.coreFrameworks.keys.joinToString(",")} to build business logic."
             )
-        }
+        )
     }
 
     private fun prepareLibrary(): TestStack {

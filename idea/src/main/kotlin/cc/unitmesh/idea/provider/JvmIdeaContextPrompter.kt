@@ -1,7 +1,6 @@
 package cc.unitmesh.idea.provider
 
 import cc.unitmesh.devti.context.chunks.SimilarChunksWithPaths
-import cc.unitmesh.devti.editor.LLMCoroutineScopeService
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.prompting.VcsPrompting
 import cc.unitmesh.devti.prompting.model.CustomPromptConfig
@@ -63,36 +62,38 @@ class JvmIdeaContextPrompter : ContextPrompter() {
     }
 
     override fun displayPrompt(): String {
-        val prompt = LLMCoroutineScopeService.scope(project!!).launch {
-            createPrompt(selectedText)
-        }
+        return runBlocking {
+            val prompt = createPrompt(selectedText)
 
-        val finalPrompt = if (additionContext.isNotEmpty()) {
-            """$additionContext
+
+            val finalPrompt = if (additionContext.isNotEmpty()) {
+                """$additionContext
                 |$selectedText""".trimMargin()
-        } else {
-            selectedText
-        }
+            } else {
+                selectedText
+            }
 
-        return """$prompt:
+            return@runBlocking """$prompt:
          <pre><code>$finalPrompt</pre></code>
         """.trimMargin()
+        }
     }
 
     override fun requestPrompt(): String {
-        val prompt = runBlocking {
-            createPrompt(selectedText)
-        }
-        val finalPrompt = if (additionContext.isNotEmpty()) {
-            """$additionContext
-                |$selectedText""".trimMargin()
-        } else {
-            selectedText
-        }
+        return runBlocking {
+            val prompt = createPrompt(selectedText)
 
-        return """$prompt:
-            $finalPrompt
-        """.trimMargin()
+            val finalPrompt = if (additionContext.isNotEmpty()) {
+                """$additionContext
+                |$selectedText""".trimMargin()
+            } else {
+                selectedText
+            }
+
+            return@runBlocking """$prompt:
+                    $finalPrompt
+                """.trimMargin()
+        }
     }
 
 

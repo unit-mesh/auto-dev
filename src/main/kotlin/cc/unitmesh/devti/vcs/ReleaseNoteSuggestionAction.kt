@@ -11,7 +11,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.vcs.log.VcsLogDataKeys
 
-// TODO: for 232 , we
+
 class ReleaseNoteSuggestionAction : AnAction() {
     companion object {
         val logger = logger<ReleaseNoteSuggestionAction>()
