@@ -69,7 +69,10 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
             return
         }
 
-        val targetControllerFile = getAllControllerFiles().first { it.name == "$targetController.java" }
+        val allControllerFiles = getAllControllerFiles()
+        if (allControllerFiles.isEmpty()) return
+
+        val targetControllerFile = allControllerFiles.first { it.name == "$targetController.java" }
 
         updateCodeMethod(targetControllerFile, targetController, code, project, psiElementFactory)
     }
@@ -103,7 +106,9 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
 
     override fun createEntity(code: String): DtClass? = createClassByCode(code, getAllEntityFiles(), "model")
     override fun createDto(code: String): DtClass? = createClassByCode(code, getAllDtoFiles(), "dto")
-    override fun createRepository(code: String): DtClass? = createClassByCode(code, getAllRepositoryFiles(), "repository")
+    override fun createRepository(code: String): DtClass? =
+        createClassByCode(code, getAllRepositoryFiles(), "repository")
+
     override fun createService(code: String): DtClass? = createClassByCode(code, getAllServiceFiles(), "service")
 
     private fun createClassByCode(code: String, psiFiles: List<PsiFile>, layerName: String): DtClass? {
