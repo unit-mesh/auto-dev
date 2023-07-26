@@ -183,6 +183,10 @@ class JvmIdeaContextPrompter : ContextPrompter() {
             ChatActionType.CREATE_CHANGELOG -> {
                 prompt = "generate release note base on the follow commit"
             }
+
+            ChatActionType.CHAT -> {
+                prompt = ""
+            }
         }
 
         return prompt

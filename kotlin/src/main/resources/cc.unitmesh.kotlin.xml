@@ -19,15 +19,5 @@
                                 implementationClass="cc.unitmesh.kotlin.context.KotlinVariableContextBuilder"/>
 
         <chatContextProvider implementation="cc.unitmesh.kotlin.provider.KotlinVersionProvider"/>
-
-<!--        <contextPrompter-->
-<!--                language="Kotlin"-->
-<!--                implementation="cc.unitmesh.provider.JvmIdeaContextPrompter"/>-->
-<!--        <devFlowProvider-->
-<!--                language="Kotlin"-->
-<!--                implementation="cc.unitmesh.provider.JvmAutoDevFlow"/>-->
-<!--        <promptStrategy-->
-<!--                language="Kotlin"-->
-<!--                implementation="cc.unitmesh.provider.JvmPromptStrategy"/>-->
     </extensions>
 </idea-plugin>

@@ -19,7 +19,6 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiJavaFile
@@ -296,7 +295,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
         ui.add(AutoDevBundle.message("devti.loading"))
 
         return runBlocking {
-            val prompt = connector.stream(promptText)
+            val prompt = connector.stream(promptText, "")
             return@runBlocking ui.updateMessage(prompt)
         }
     }

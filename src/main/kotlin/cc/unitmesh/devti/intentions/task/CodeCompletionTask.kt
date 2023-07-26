@@ -104,7 +104,7 @@ class CodeCompletionTask(
     override fun run(indicator: ProgressIndicator) {
         val prompt = promptText()
 
-        val flow: Flow<String> = connectorFactory.connector(request.project).stream(prompt)
+        val flow: Flow<String> = connectorFactory.connector(request.project).stream(prompt, "")
         logger.warn("Prompt: $prompt")
 
         LLMCoroutineScopeService.scope(request.project).launch {
@@ -156,7 +156,7 @@ class CodeCompletionTask(
         val prompt = promptText()
 
         LLMCoroutineScopeService.scope(project).launch {
-            val flow: Flow<String> = connectorFactory.connector(project).stream(prompt)
+            val flow: Flow<String> = connectorFactory.connector(project).stream(prompt, "")
             val suggestion = StringBuilder()
             flow.collect {
                 print(it)

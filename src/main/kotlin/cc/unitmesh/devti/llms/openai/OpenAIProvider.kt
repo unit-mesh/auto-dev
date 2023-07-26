@@ -66,7 +66,7 @@ class OpenAIProvider(val project: Project) : CodeCopilotProvider {
     private var historyMessageLength: Int = 0
 
     override fun prompt(promptText: String): String {
-        val completionRequest = prepareRequest(promptText)
+        val completionRequest = prepareRequest(promptText, "")
 
         val completion = service.createChatCompletion(completionRequest)
         val output = completion
@@ -76,8 +76,8 @@ class OpenAIProvider(val project: Project) : CodeCopilotProvider {
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun stream(promptText: String): Flow<String> {
-        val completionRequest = prepareRequest(promptText)
+    override fun stream(promptText: String, systemPrompt: String): Flow<String> {
+        val completionRequest = prepareRequest(promptText, systemPrompt)
 
         return callbackFlow {
             withContext(Dispatchers.IO) {
@@ -96,7 +96,12 @@ class OpenAIProvider(val project: Project) : CodeCopilotProvider {
 
     }
 
-    private fun prepareRequest(promptText: String): ChatCompletionRequest? {
+    private fun prepareRequest(promptText: String, systemPrompt: String): ChatCompletionRequest? {
+        if (messages.isEmpty()) {
+            val systemMessage = ChatMessage(ChatMessageRole.SYSTEM.value(), systemPrompt)
+            messages.add(systemMessage)
+        }
+
         val systemMessage = ChatMessage(ChatMessageRole.USER.value(), promptText)
 
         historyMessageLength += promptText.length

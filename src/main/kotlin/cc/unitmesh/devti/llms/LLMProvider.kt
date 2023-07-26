@@ -8,7 +8,7 @@ interface LLMProvider {
     fun prompt(promptText: String): String
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun stream(promptText: String): Flow<String> {
+    fun stream(promptText: String, systemPrompt: String): Flow<String> {
         return callbackFlow {
             val prompt = prompt(promptText)
             trySend(prompt)

@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.gui.chat
 
 enum class ChatActionType {
+    CHAT,
     REFACTOR,
     EXPLAIN,
     REVIEW,
@@ -22,6 +23,7 @@ enum class ChatActionType {
             GEN_COMMIT_MESSAGE -> "generate commit message"
             CREATE_DDL -> "create ddl"
             CREATE_CHANGELOG -> "generate release note"
+            CHAT -> ""
         }
     }
 
@@ -47,6 +49,7 @@ examples:
 
             CREATE_DDL -> "create ddl"
             CREATE_CHANGELOG -> "generate release note"
+            CHAT -> ""
         }
     }
 }

@@ -19,10 +19,10 @@ class DevtiFlowToolWindowFactory : ToolWindowFactory, DumbAware {
     private val contentFactory = ApplicationManager.getApplication().getService(ContentFactory::class.java)
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        val chatCodingService = ChatCodingService(ChatActionType.EXPLAIN, project)
+        val chatCodingService = ChatCodingService(ChatActionType.CHAT, project)
         val contentPanel = ChatCodingComponent(chatCodingService)
         val content = contentFactory.createContent(contentPanel, AutoDevBundle.message("autodev.flow"), false)
-        // config tool window title
+
         toolWindow.contentManager.addContent(content)
     }
 }
