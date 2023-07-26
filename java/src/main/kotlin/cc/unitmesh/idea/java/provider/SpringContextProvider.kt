@@ -4,24 +4,30 @@ import cc.unitmesh.devti.prompting.code.TestStack
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.model.project.LibraryData
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.ProjectManager
-import com.intellij.psi.PsiJavaFile
 import org.jetbrains.plugins.gradle.util.GradleConstants
 
-open class JavaTechStackContextProvider : ChatContextProvider {
-    open val fileExt = "java"
+open class SpringContextProvider : ChatContextProvider {
 
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
-        val psiFile = creationContext.sourceFile ?: return false
-        return psiFile is PsiJavaFile
+//        val module = ModuleUtilCore.findModuleForFile(creationContext.sourceFile)
+        return hasProjectLibraries(project)
+    }
+
+    private fun hasProjectLibraries(project: Project): Boolean {
+        prepareLibraryData(project)?.forEach {
+            if (it.groupId?.contains("org.springframework") == true) {
+                return true
+            }
+        }
+
+        return false
     }
 
     override fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
-        val techStacks = prepareLibrary()
+        val techStacks = prepareLibrary(project)
 
         if (techStacks.coreFrameworks().isEmpty() && techStacks.testFrameworks().isEmpty()) {
             return emptyList()
@@ -29,15 +35,16 @@ open class JavaTechStackContextProvider : ChatContextProvider {
 
         val fileName = creationContext.sourceFile?.name ?: ""
 
-        fun isController() = fileName.endsWith("Controller.$fileExt")
+        fun isController() = fileName.endsWith("Controller.java") || fileName.endsWith("Controller.kt")
         fun isService() =
-            fileName.endsWith("Service.$fileExt") || fileName.endsWith("ServiceImpl.$fileExt")
+            fileName.endsWith("Service.java") || fileName.endsWith("ServiceImpl.java")
+                    || fileName.endsWith("Service.kt") || fileName.endsWith("ServiceImpl.kt")
 
         when {
             isController() -> {
                 return listOf(
                     ChatContextItem(
-                        JavaTechStackContextProvider::class,
+                        SpringContextProvider::class,
                         "You are working on a project that uses ${techStacks.coreFrameworks.keys.joinToString(",")} to build RESTful APIs."
                     )
                 )
@@ -46,7 +53,7 @@ open class JavaTechStackContextProvider : ChatContextProvider {
             isService() -> {
                 return listOf(
                     ChatContextItem(
-                        JavaTechStackContextProvider::class,
+                        SpringContextProvider::class,
                         "You are working on a project that uses ${techStacks.coreFrameworks.keys.joinToString(",")} to build business logic."
                     )
                 )
@@ -55,26 +62,32 @@ open class JavaTechStackContextProvider : ChatContextProvider {
 
         return listOf(
             ChatContextItem(
-                JavaTechStackContextProvider::class,
+                SpringContextProvider::class,
                 "You are working on a project that uses ${techStacks.coreFrameworks.keys.joinToString(",")} to build business logic."
             )
         )
     }
 
-    private fun prepareLibrary(): TestStack {
-        val project = ProjectManager.getInstance().openProjects.firstOrNull() ?: return TestStack()
-        val basePath = project.basePath ?: return TestStack()
+    private fun prepareLibraryData(project: Project): List<LibraryData>? {
+        val basePath = project.basePath ?: return null
         val projectData = ProjectDataManager.getInstance().getExternalProjectData(
             project, GradleConstants.SYSTEM_ID, basePath
         )
 
-        val testStack = TestStack()
-
-        projectData?.externalProjectStructure?.children?.filter {
+        val libraryDataList = projectData?.externalProjectStructure?.children?.filter {
             it.data is LibraryData
         }?.map {
             it.data as LibraryData
-        }?.forEach {
+        }
+
+        return libraryDataList
+    }
+
+    private fun prepareLibrary(project: Project): TestStack {
+        val libraryDataList = prepareLibraryData(project)
+
+        val testStack = TestStack()
+        libraryDataList?.forEach {
             val name = it.groupId + ":" + it.artifactId
             when {
                 name.contains("spring-boot-starter-web") -> {

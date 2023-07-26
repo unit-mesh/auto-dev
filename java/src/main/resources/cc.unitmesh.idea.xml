@@ -19,7 +19,7 @@
                                 implementationClass="cc.unitmesh.idea.java.context.JavaVariableContextBuilder"/>
 
         <chatContextProvider implementation="cc.unitmesh.idea.java.provider.JavaVersionProvider"/>
-        <chatContextProvider implementation="cc.unitmesh.idea.java.provider.JavaTechStackContextProvider"/>
+        <chatContextProvider implementation="cc.unitmesh.idea.java.provider.SpringContextProvider"/>
 
         <contextPrompter
                 language="JAVA"
