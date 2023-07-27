@@ -6,22 +6,16 @@ import cc.unitmesh.devti.llms.ConnectorFactory
 import cc.unitmesh.devti.editor.LLMCoroutineScopeService
 import cc.unitmesh.devti.intentions.CodeCompletionIntention
 import com.intellij.lang.LanguageCommenters
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Document
-import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.ScrollType
-import com.intellij.openapi.editor.ex.DocumentEx
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.TextRange
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiElement
 import com.intellij.psi.codeStyle.CodeStyleManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -29,64 +23,6 @@ import kotlinx.coroutines.launch
 import java.util.function.Consumer
 import kotlin.jvm.internal.Ref
 
-
-class CompletionTaskRequest(
-    val project: Project,
-    val useTabIndents: Boolean,
-    val tabWidth: Int,
-    val fileUri: VirtualFile,
-    val documentContent: String,
-    val offset: Int,
-    val documentVersion: Long,
-    val element: PsiElement,
-    val editor: Editor
-) : Disposable {
-    companion object {
-        fun create(editor: Editor, offset: Int, element: PsiElement, prefix: String?): CompletionTaskRequest? {
-            val project = editor.project ?: return null
-
-            val document = editor.document
-            val file = PsiDocumentManager.getInstance(project).getPsiFile(document) ?: return null
-
-            val useTabs = editor.settings.isUseTabCharacter(project)
-            val tabWidth = editor.settings.getTabSize(project)
-            val uri = file.virtualFile
-            val documentVersion = if (document is DocumentEx) {
-                document.modificationSequence.toLong()
-            } else {
-                document.modificationStamp
-            }
-
-            return CompletionTaskRequest(
-                project,
-                useTabs,
-                tabWidth,
-                uri,
-                prefix ?: document.text,
-                offset,
-                documentVersion,
-                element,
-                editor
-            )
-
-        }
-    }
-
-    @Volatile
-    var isCancelled = false
-
-    fun cancel() {
-        if (isCancelled) {
-            return
-        }
-        isCancelled = true
-        Disposer.dispose(this)
-    }
-
-    override fun dispose() {
-        isCancelled = true
-    }
-}
 
 class CodeCompletionTask(
     private val request: CompletionTaskRequest,
@@ -107,6 +43,7 @@ class CodeCompletionTask(
         val flow: Flow<String> = connectorFactory.connector(request.project).stream(prompt, "")
         logger.warn("Prompt: $prompt")
 
+        val editor = request.editor
         LLMCoroutineScopeService.scope(request.project).launch {
             val currentOffset = Ref.IntRef()
             currentOffset.element = request.offset
@@ -125,7 +62,7 @@ class CodeCompletionTask(
                             insertStringAndSaveChange(
                                 project,
                                 it,
-                                request.editor.document,
+                                editor.document,
                                 currentOffset.element,
                                 false
                             )
@@ -133,8 +70,8 @@ class CodeCompletionTask(
                     )
 
                     currentOffset.element += it.length
-                    request.editor.caretModel.moveToOffset(currentOffset.element)
-                    request.editor.scrollingModel.scrollToCaret(ScrollType.MAKE_VISIBLE)
+                    editor.caretModel.moveToOffset(currentOffset.element)
+                    editor.scrollingModel.scrollToCaret(ScrollType.MAKE_VISIBLE)
                 }
             }
 

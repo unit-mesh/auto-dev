@@ -36,7 +36,9 @@ class ClassContext(
     override fun toQuery(): String {
         val className = name ?: "_"
         val classFields = getFieldNames().joinToString(separator = " ")
-        val classMethods = getMethodSignatures().joinToString(separator = "\n")
+        val classMethods = getMethodSignatures()
+            .filter { it.isNotBlank() }
+            .joinToString(separator = "\n")
         return "class name: $className\nclass fields: $classFields\nclass methods: $classMethods\nsuper classes: $superClasses\n"
     }
 
