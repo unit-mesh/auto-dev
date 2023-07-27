@@ -139,9 +139,9 @@ class JavaTestContextProvider : TestContextProvider() {
             return insertClassCode(sourceFile, project, code)
         }
 
-        return runReadAction {
+        return runWriteAction {
             // Check if the root element (usually a class) of the source file is PsiClass
-            val rootElement = sourceFile.children.find { it is PsiClass } as? PsiClass ?: return@runReadAction false
+            val rootElement = sourceFile.children.find { it is PsiClass } as? PsiClass ?: return@runWriteAction false
 
             // Create the new test method
             val psiElementFactory = PsiElementFactory.getInstance(project)
@@ -151,7 +151,7 @@ class JavaTestContextProvider : TestContextProvider() {
             // Check if the method already exists in the class
             if (rootElement.findMethodsByName(newTestMethod.name, false).isNotEmpty()) {
                 log.error("Method already exists in the class: ${newTestMethod.name}")
-                return@runReadAction false
+                return@runWriteAction false
             }
 
             // Add the @Test annotation if it's missing
@@ -168,7 +168,7 @@ class JavaTestContextProvider : TestContextProvider() {
             // Refresh the project to make the changes visible
             project.guessProjectDir()?.refresh(true, true)
 
-            return@runReadAction true
+            return@runWriteAction true
         }
     }
 

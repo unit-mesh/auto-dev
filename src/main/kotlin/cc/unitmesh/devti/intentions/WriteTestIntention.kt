@@ -21,7 +21,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.kotlin.idea.core.util.toPsiFile
 
 class WriteTestIntention : AbstractChatIntention() {
     override fun getText(): String = AutoDevBundle.message("intentions.chat.code.test.name")
@@ -49,7 +48,19 @@ class WriteTestIntention : AbstractChatIntention() {
                 }
 
                 runBlocking {
-                    var prompter = "Write unit test for following code. You MUST return code only, not explain.\n\n"
+                    var prompter = if (testContext.isNewFile) {
+                        """Write unit test for following code. 
+                            | You MUST return code only, not explain.
+                            | You MUST use given-when-then style.
+                            | You MUST use should_xx style for test method name.
+                            | """.trimMargin()
+                    } else {
+                        """Write unit test for following code. 
+                            | You MUST return method code only, not java class, no explain.
+                            | You MUST use given-when-then style.
+                            | You MUST use should_xx style for test method name.
+                            | """
+                    }
 
                     val creationContext = ChatCreationContext(ChatOrigin.Intention, actionType, file)
                     val chatContextItems = ChatContextProvider.collectChatContextList(project, creationContext)
