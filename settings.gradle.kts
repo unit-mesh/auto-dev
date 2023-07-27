@@ -10,4 +10,5 @@ include(
     "java",
     "kotlin",
     "webstorm",
+    "goland",
 )

@@ -13,7 +13,6 @@ import org.jetbrains.plugins.gradle.util.GradleConstants
 open class SpringContextProvider : ChatContextProvider {
 
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
-//        val module = ModuleUtilCore.findModuleForFile(creationContext.sourceFile)
         return hasProjectLibraries(project)
     }
 
@@ -89,7 +88,7 @@ open class SpringContextProvider : ChatContextProvider {
 
         val testStack = TestStack()
         var hasMatchSpringMvc = false
-        var hasMatchSprinData = false
+        var hasMatchSpringData = false
 
         libraryDataList?.forEach {
             val name = it.groupId + ":" + it.artifactId
@@ -104,12 +103,12 @@ open class SpringContextProvider : ChatContextProvider {
                 }
             }
 
-            if (!hasMatchSprinData) {
+            if (!hasMatchSpringData) {
                 SpringLibrary.SPRING_DATA.forEach { entry ->
                     entry.coords.forEach { coord ->
                         if (name.contains(coord)) {
                             testStack.coreFrameworks.putIfAbsent(entry.shortText, true)
-                            hasMatchSprinData = true
+                            hasMatchSpringData = true
                         }
                     }
                 }

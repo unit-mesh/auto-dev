@@ -13,18 +13,7 @@ enum class ChatActionType {
     CREATE_CHANGELOG;
 
     override fun toString(): String {
-        return when (this) {
-            EXPLAIN -> "explain"
-            REVIEW -> "review"
-            REFACTOR -> "refactor"
-            CODE_COMPLETE -> "code complete"
-            WRITE_TEST -> "write test"
-            FIX_ISSUE -> "fix issue"
-            GEN_COMMIT_MESSAGE -> "generate commit message"
-            CREATE_DDL -> "create ddl"
-            CREATE_CHANGELOG -> "generate release note"
-            CHAT -> ""
-        }
+        return instruction()
     }
 
     fun instruction(lang: String = ""): String {
@@ -46,7 +35,6 @@ examples:
  
  {{diff}}
  """
-
             CREATE_DDL -> "create ddl"
             CREATE_CHANGELOG -> "generate release note"
             CHAT -> ""

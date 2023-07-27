@@ -83,7 +83,7 @@ class WriteTestIntention : AbstractChatIntention() {
 
                     prompter += additionContext
 
-                    prompter += "```$lang\n$selectedText\n```\n"
+                    prompter += "\n```$lang\n$selectedText\n```\n"
 
                     if (!testContext.isNewFile) {
                         prompter += "Start writing test method code here:  \n"

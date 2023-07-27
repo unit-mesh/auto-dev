@@ -59,17 +59,25 @@ val javaPlugins = listOf("com.intellij.java", "org.jetbrains.kotlin")
 
 val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
 val ideaPlugins =
-    listOf("Git4Idea", "com.intellij.java", "org.jetbrains.plugins.gradle", "org.jetbrains.kotlin", "JavaScript")
+    listOf(
+        "Git4Idea",
+        "com.intellij.java",
+        "org.jetbrains.plugins.gradle",
+        "org.jetbrains.kotlin",
+        "JavaScript"
+    )
 
 val baseIDE = prop("baseIDE")
 val platformVersion = prop("globalPlatformVersion").toInt()
 val ideaVersion = prop("ideaVersion")
+val golandVersion = prop("golandVersion")
 val pycharmVersion = prop("pycharmVersion")
 
 
 val baseVersion = when (baseIDE) {
     "idea" -> ideaVersion
     "pycharm" -> pycharmVersion
+    "goland" -> golandVersion
 //    "webstorm" -> prop("webstormVersion")
     else -> error("Unexpected IDE name: `$baseIDE`")
 }
@@ -153,9 +161,10 @@ project(":plugin") {
     dependencies {
         implementation(project(":"))
         implementation(project(":java"))
+        implementation(project(":kotlin"))
         implementation(project(":pycharm"))
         implementation(project(":webstorm"))
-        implementation(project(":kotlin"))
+        implementation(project(":goland"))
     }
 
     // Collects all jars produced by compilation of project modules and merges them into singe one.
@@ -338,6 +347,16 @@ project(":kotlin") {
     dependencies {
         implementation(project(":"))
         implementation(project(":java"))
+    }
+}
+
+project(":goland") {
+    intellij {
+        version.set(golandVersion)
+        plugins.set(listOf("org.jetbrains.plugins.go"))
+    }
+    dependencies {
+        implementation(project(":"))
     }
 }
 
