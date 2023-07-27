@@ -4,6 +4,7 @@ import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.provider.TestContextProvider
 import cc.unitmesh.devti.provider.TestFileContext
+import com.intellij.ide.projectView.impl.ProjectRootsUtil
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.application.runWriteAction
@@ -12,12 +13,17 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.IndexNotReadyException
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.roots.FileIndex
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiClassReferenceType
+import com.intellij.psi.stubs.StubUpdatingIndex
+import com.intellij.util.FileContentUtil
+import com.intellij.util.indexing.FileBasedIndex
 import java.io.File
+import java.util.*
 
 class JavaTestContextProvider : TestContextProvider() {
     companion object {
@@ -31,6 +37,8 @@ class JavaTestContextProvider : TestContextProvider() {
         val packageName = (sourceFile as PsiJavaFile).packageName
         var isNewFile = false
 
+        val relatedModels = lookupRelevantClass(project, element)
+
         // Check if the source file is in the src/main/java directory
         if (!sourceDir?.path?.contains("/src/main/java/")!!) {
             log.error("Source file is not in the src/main/java directory: $sourceDir")
@@ -39,7 +47,7 @@ class JavaTestContextProvider : TestContextProvider() {
 
         // Find the test directory
         val testDirPath = sourceDir.path.replace("/src/main/java/", "/src/test/java/")
-        val testDir = LocalFileSystem.getInstance().findFileByPath(testDirPath)
+        var testDir = LocalFileSystem.getInstance().findFileByPath(testDirPath)
 
         if (testDir == null || !testDir.isDirectory) {
             isNewFile = true
@@ -49,6 +57,7 @@ class JavaTestContextProvider : TestContextProvider() {
                 testDirFile.mkdirs()
                 // Refresh the VirtualFileManager to make sure the newly created directory is visible in IntelliJ
                 VirtualFileManager.getInstance().refreshWithoutFileWatcher(false)
+                testDir = LocalFileSystem.getInstance().findFileByPath(testDirPath)
             }
         }
 
@@ -62,10 +71,7 @@ class JavaTestContextProvider : TestContextProvider() {
         val testFilePath = testDirPath + "/" + sourceFile.name.replace(".java", "Test.java")
         val testFile = LocalFileSystem.getInstance().findFileByPath(testFilePath)
 
-        // commit and update file index
         project.guessProjectDir()?.refresh(true, true)
-
-        val relatedModels = lookupRelevantClass(project, element)
 
         return if (testFile != null) {
             TestFileContext(isNewFile, testFile, relatedModels)
@@ -105,11 +111,7 @@ class JavaTestContextProvider : TestContextProvider() {
             element.parameterList.parameters.filter {
                 it.type is PsiClassReferenceType
             }.map {
-                try {
-                    resolvedClasses[it.name] = (it.type as PsiClassReferenceType).resolve()
-                } catch (e: IndexNotReadyException) {
-                    log.warn("Failed to resolve class: ${it.type.canonicalText}")
-                }
+                resolvedClasses[it.name] = (it.type as PsiClassReferenceType).resolve()
             }
 
             val outputType = element.returnTypeElement?.type
@@ -117,11 +119,7 @@ class JavaTestContextProvider : TestContextProvider() {
                 if (outputType.parameters.isNotEmpty()) {
                     outputType.parameters.forEach {
                         if (it is PsiClassReferenceType) {
-                            try {
-                                resolvedClasses[it.canonicalText] = it.resolve()
-                            } catch (e: IndexNotReadyException) {
-                                log.warn("Failed to resolve class: ${it.canonicalText}")
-                            }
+                            resolvedClasses[it.canonicalText] = it.resolve()
                         }
                     }
                 }
