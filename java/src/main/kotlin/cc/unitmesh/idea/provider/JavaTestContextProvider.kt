@@ -61,27 +61,41 @@ class JavaTestContextProvider : TestContextProvider() {
         val models = mutableListOf<ClassContext>()
         val projectPath = project.guessProjectDir()?.path
 
-        val resolvedClasses = mutableListOf<PsiClass?>()
-        if (element is PsiMethod) {
-            element.parameterList.parameters.map {
-                resolvedClasses += (it.type as PsiClassReferenceType).resolve()
-            }
+        val resolvedClasses = resolveByMethod(element)
 
-            val outputType = element.returnTypeElement?.type
-            if (outputType is PsiClassReferenceType) {
-                resolvedClasses += outputType.resolve()
+        if (element is PsiClass) {
+            val methods = element.methods
+            methods.forEach { method ->
+                resolvedClasses.putAll(resolveByMethod(method))
             }
         }
 
-        resolvedClasses.forEach {
-            val classPath = it?.containingFile?.virtualFile?.path
+        resolvedClasses.forEach { (_, psiClass) ->
+            val classPath = psiClass?.containingFile?.virtualFile?.path
             if (classPath?.contains(projectPath!!) == true) {
-                models.add(ClassContextProvider(false).from(it))
+                models.add(ClassContextProvider(false).from(psiClass))
             }
         }
 
         logger<JavaTestContextProvider>().warn("models: $models")
         return models
+    }
+
+    private fun resolveByMethod(element: PsiElement): MutableMap<String, PsiClass?> {
+        val resolvedClasses = mutableMapOf<String, PsiClass?>()
+        if (element is PsiMethod) {
+            element.parameterList.parameters.map {
+                resolvedClasses[it.name] = (it.type as PsiClassReferenceType).resolve()
+            }
+
+            val outputType = element.returnTypeElement?.type
+            if (outputType is PsiClassReferenceType) {
+                val canonicalText = outputType.canonicalText
+                resolvedClasses[canonicalText] = outputType.resolve()
+            }
+        }
+
+        return resolvedClasses
     }
 
     override fun insertTestCode(sourceFile: PsiFile, project: Project, methodName: String, code: String): Boolean {
