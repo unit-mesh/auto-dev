@@ -4,6 +4,7 @@ import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.provider.TestContextProvider
 import cc.unitmesh.devti.provider.TestFileContext
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.WriteCommandAction
@@ -139,46 +140,39 @@ class JavaTestContextProvider : TestContextProvider() {
             return insertClassCode(sourceFile, project, code)
         }
 
-        return runWriteAction {
-            // Check if the root element (usually a class) of the source file is PsiClass
-            val rootElement = sourceFile.children.find { it is PsiClass } as? PsiClass ?: return@runWriteAction false
+        val rootElement = runReadAction {
+            sourceFile.children.find { it is PsiClass } as? PsiClass
+        } ?: return false
 
-            // Create the new test method
+        ApplicationManager.getApplication().invokeLater {
             val psiElementFactory = PsiElementFactory.getInstance(project)
 
             val newTestMethod = psiElementFactory.createMethodFromText(code, rootElement)
-
-            // Check if the method already exists in the class
             if (rootElement.findMethodsByName(newTestMethod.name, false).isNotEmpty()) {
                 log.error("Method already exists in the class: ${newTestMethod.name}")
-                return@runWriteAction false
             }
 
-            // Add the @Test annotation if it's missing
-            val modifierList: PsiModifierList = newTestMethod.modifierList
-            val testAnnotation: PsiAnnotation = psiElementFactory.createAnnotationFromText("@Test", newTestMethod)
-            modifierList.add(testAnnotation)
+            log.info("newTestMethod: ${newTestMethod.text}")
 
-            // Insert the new test method into the class
-            val addedMethod: PsiMethod = rootElement.add(newTestMethod) as PsiMethod
+            WriteCommandAction.runWriteCommandAction(project) {
+                val addedMethod: PsiMethod = rootElement.add(newTestMethod) as PsiMethod
+                addedMethod.navigate(true)
+            }
 
-            // Format the newly inserted code
-            addedMethod.navigate(true)
-
-            // Refresh the project to make the changes visible
             project.guessProjectDir()?.refresh(true, true)
-
-            return@runWriteAction true
         }
+
+        return true
     }
 
     override fun insertClassCode(sourceFile: PsiFile, project: Project, code: String): Boolean {
         val psiTestFile = PsiManager.getInstance(project).findFile(sourceFile.virtualFile) ?: return false
 
-        WriteCommandAction.runWriteCommandAction(project) {
-            // add code to test file by string
-            val document = psiTestFile.viewProvider.document!!
-            document.insertString(document.textLength, code)
+        ApplicationManager.getApplication().invokeLater {
+            WriteCommandAction.runWriteCommandAction(project) {
+                val document = psiTestFile.viewProvider.document!!
+                document.insertString(document.textLength, code)
+            }
         }
 
         return true
@@ -192,7 +186,6 @@ class JavaTestContextProvider : TestContextProvider() {
         val testFile = testDir.createChildData(this, testFileName)
         testFile.setBinaryContent(testFileContent.toByteArray())
 
-        // Refresh the test directory to make sure the test file is visible
         testDir.refresh(false, true)
 
         return testFile

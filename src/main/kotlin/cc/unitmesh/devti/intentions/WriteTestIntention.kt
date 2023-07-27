@@ -10,6 +10,7 @@ import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
 import com.intellij.openapi.application.WriteAction
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -53,13 +54,16 @@ class WriteTestIntention : AbstractChatIntention() {
                             | You MUST return code only, not explain.
                             | You MUST use given-when-then style.
                             | You MUST use should_xx style for test method name.
+                            | When testing controller, you MUST use MockMvc and test API only.
                             | """.trimMargin()
                     } else {
                         """Write unit test for following code. 
                             | You MUST return method code only, not java class, no explain.
                             | You MUST use given-when-then style.
                             | You MUST use should_xx style for test method name.
-                            | """
+                            | When testing controller, you MUST use MockMvc and test API only.
+                            | You MUST return start with @Test annotation.
+                            | """.trimMargin()
                     }
 
                     val creationContext = ChatCreationContext(ChatOrigin.Intention, actionType, file)
@@ -67,6 +71,8 @@ class WriteTestIntention : AbstractChatIntention() {
                     chatContextItems.forEach {
                         prompter += it.text
                     }
+
+                    prompter += "\n"
 
                     val additionContext = testContext.relatedClass.joinToString("\n") {
                         it.toQuery()
@@ -76,10 +82,11 @@ class WriteTestIntention : AbstractChatIntention() {
 
                     prompter += additionContext
 
-                    prompter += """```$lang
-                        |$selectedText
-                        |```
-                        |"""
+                    prompter += "```$lang\n$selectedText\n```\n"
+
+                    if (!testContext.isNewFile) {
+                        prompter += "Start writing test method code here:  \n"
+                    }
 
                     // navigate to the test file
                     navigateTestFile(testContext.file, editor, project)
@@ -92,9 +99,11 @@ class WriteTestIntention : AbstractChatIntention() {
                             suggestion.append(it)
                         }
 
-                        parseCodeFromString(suggestion.toString()).forEach {
-                            val testFile: PsiFile = PsiManager.getInstance(project).findFile(testContext.file)!!
-                            testContextProvider.insertTestMethod(testFile, project, it)
+                        runReadAction {
+                            parseCodeFromString(suggestion.toString()).forEach {
+                                val testFile: PsiFile = PsiManager.getInstance(project).findFile(testContext.file)!!
+                                testContextProvider.insertTestMethod(testFile, project, it)
+                            }
                         }
                     }
                 }
