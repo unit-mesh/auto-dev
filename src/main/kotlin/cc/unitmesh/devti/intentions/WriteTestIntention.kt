@@ -35,7 +35,7 @@ class WriteTestIntention : AbstractChatIntention() {
 
         LLMCoroutineScopeService.scope(project).launch {
             WriteAction.runAndWait<Throwable> {
-                val testContext = TestContextProvider.context(lang)?.prepareTestFile(file, project, element)
+                val testContext = TestContextProvider.context(lang)?.findOrCreateTestFile(file, project, element)
                 if (testContext == null) {
                     logger<WriteTestIntention>().error("Failed to create test file for: $file")
                     return@runAndWait

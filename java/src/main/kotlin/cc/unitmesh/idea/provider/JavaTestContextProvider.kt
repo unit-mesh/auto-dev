@@ -5,7 +5,6 @@ import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.provider.TestContextProvider
 import cc.unitmesh.devti.provider.TestFileContext
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -14,13 +13,13 @@ import com.intellij.psi.*
 
 class JavaTestContextProvider : TestContextProvider() {
 
-    override fun prepareTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
+    override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
         val sourceFilePath = sourceFile.virtualFile
         val sourceDir = sourceFilePath.parent
 
         val packageName = (sourceFile as PsiJavaFile).packageName
 
-        val relatedModels = prepareModels(sourceFile, project, element)
+        val relatedModels = lookupRelevantClass(project, element)
 
         // Check if the source file is in the src/main/java directory
         if (!sourceDir?.path?.contains("/src/main/java/")!!) {
@@ -57,13 +56,15 @@ class JavaTestContextProvider : TestContextProvider() {
         }
     }
 
-    private fun prepareModels(sourceFile: PsiJavaFile, project: Project, element: PsiElement): List<ClassContext> {
+    override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {
         val models = mutableListOf<ClassContext>()
+        val projectBash = project.guessProjectDir()?.path
+
         if (element is PsiMethod) {
             val inputTypes = element.parameterList.parameters.map {
                 it.type is PsiClassType
             }.filterIsInstance<PsiClassType>().filter {
-                it.resolve()?.containingFile?.virtualFile?.path?.contains(project.guessProjectDir()?.path!!)!!
+                it.resolve()?.containingFile?.virtualFile?.path?.contains(projectBash!!)!!
             }.map { it.resolve()!! }
 
             // find input class from inputTypes
