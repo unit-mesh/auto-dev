@@ -28,6 +28,7 @@ class JavaTestContextProvider : TestContextProvider() {
         val sourceDir = sourceFilePath.parent
 
         val packageName = (sourceFile as PsiJavaFile).packageName
+        var isNewFile = false
 
         // Check if the source file is in the src/main/java directory
         if (!sourceDir?.path?.contains("/src/main/java/")!!) {
@@ -40,6 +41,7 @@ class JavaTestContextProvider : TestContextProvider() {
         val testDir = LocalFileSystem.getInstance().findFileByPath(testDirPath)
 
         if (testDir == null || !testDir.isDirectory) {
+            isNewFile = true
             // Create the test directory if it doesn't exist
             val testDirFile = File(testDirPath)
             if (!testDirFile.exists()) {
@@ -55,7 +57,6 @@ class JavaTestContextProvider : TestContextProvider() {
             return null
         }
 
-
         // Test directory already exists, find the corresponding test file
         val testFilePath = testDirPath + "/" + sourceFile.name.replace(".java", "Test.java")
         val testFile = LocalFileSystem.getInstance().findFileByPath(testFilePath)
@@ -66,10 +67,10 @@ class JavaTestContextProvider : TestContextProvider() {
         val relatedModels = lookupRelevantClass(project, element)
 
         return if (testFile != null) {
-            TestFileContext(false, testFile, relatedModels)
+            TestFileContext(isNewFile, testFile, relatedModels)
         } else {
             val targetFile = createTestFile(sourceFile, testDir!!, packageName)
-            TestFileContext(true, targetFile, relatedModels)
+            TestFileContext(isNewFile = true, targetFile, relatedModels)
         }
     }
 
@@ -127,7 +128,7 @@ class JavaTestContextProvider : TestContextProvider() {
         return resolvedClasses
     }
 
-    override fun insertTestMethod(sourceFile: PsiFile, project: Project, code: String): Boolean {
+    override fun insertTestCode(sourceFile: PsiFile, project: Project, code: String): Boolean {
         // Check if the provided methodCode contains @Test annotation
         log.info("methodCode: $code")
         if (!code.contains("@Test")) {
@@ -166,13 +167,12 @@ class JavaTestContextProvider : TestContextProvider() {
     }
 
     override fun insertClassCode(sourceFile: PsiFile, project: Project, code: String): Boolean {
+        log.info("start insertClassCode: $code")
         val psiTestFile = PsiManager.getInstance(project).findFile(sourceFile.virtualFile) ?: return false
 
-        ApplicationManager.getApplication().invokeLater {
-            WriteCommandAction.runWriteCommandAction(project) {
-                val document = psiTestFile.viewProvider.document!!
-                document.insertString(document.textLength, code)
-            }
+        WriteCommandAction.runWriteCommandAction(project) {
+            val document = psiTestFile.viewProvider.document!!
+            document.insertString(document.textLength, code)
         }
 
         return true

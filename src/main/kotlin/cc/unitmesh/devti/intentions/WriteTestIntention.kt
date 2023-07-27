@@ -6,6 +6,7 @@ import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.llms.ConnectorFactory
 import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.provider.TestContextProvider
+import cc.unitmesh.devti.provider.TestFileContext
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
@@ -93,19 +94,28 @@ class WriteTestIntention : AbstractChatIntention() {
 
                     val flow: Flow<String> = ConnectorFactory.getInstance().connector(project).stream(prompter, "")
                     logger<WriteTestIntention>().warn("Prompt: $prompter")
-                    LLMCoroutineScopeService.scope(project).launch {
-                        val suggestion = StringBuilder()
-                        flow.collect {
-                            suggestion.append(it)
-                        }
+                    writeTestToFile(project, flow, testContext, testContextProvider)
+                }
+            }
+        }
+    }
 
-                        runReadAction {
-                            parseCodeFromString(suggestion.toString()).forEach {
-                                val testFile: PsiFile = PsiManager.getInstance(project).findFile(testContext.file)!!
-                                testContextProvider.insertTestMethod(testFile, project, it)
-                            }
-                        }
-                    }
+    private fun writeTestToFile(
+        project: Project,
+        flow: Flow<String>,
+        context: TestFileContext,
+        contextProvider: TestContextProvider
+    ) {
+        LLMCoroutineScopeService.scope(project).launch {
+            val suggestion = StringBuilder()
+            flow.collect {
+                suggestion.append(it)
+            }
+
+            runReadAction {
+                parseCodeFromString(suggestion.toString()).forEach {
+                    val testFile: PsiFile = PsiManager.getInstance(project).findFile(context.file)!!
+                    contextProvider.insertTestCode(testFile, project, it)
                 }
             }
         }
