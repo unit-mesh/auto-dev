@@ -61,27 +61,22 @@ class JavaTestContextProvider : TestContextProvider() {
         val models = mutableListOf<ClassContext>()
         val projectPath = project.guessProjectDir()?.path
 
+        val resolvedClasses = mutableListOf<PsiClass?>()
         if (element is PsiMethod) {
-            val inputTypes = element.parameterList.parameters.map {
-                (it.type as PsiClassReferenceType).resolve()
-            }.filter {
-                it?.containingFile?.virtualFile?.path?.contains(projectPath!!) ?: false
-            }.filterNotNull()
-
-            // find input class from inputTypes
-            inputTypes.forEach {
-                models.add(ClassContextProvider(false).from(it))
+            element.parameterList.parameters.map {
+                resolvedClasses += (it.type as PsiClassReferenceType).resolve()
             }
 
-            val returnType = element.returnTypeElement
-            if (returnType != null) {
-                val outputType = returnType.type
-                if (outputType is PsiClassReferenceType) {
-                    val outputClass = outputType.resolve()?.containingFile?.virtualFile?.path
-                    if (outputClass?.contains(projectPath!!) == true) {
-                        models.add(ClassContextProvider(false).from(outputType.resolve()!!))
-                    }
-                }
+            val outputType = element.returnTypeElement?.type
+            if (outputType is PsiClassReferenceType) {
+                resolvedClasses += outputType.resolve()
+            }
+        }
+
+        resolvedClasses.forEach {
+            val classPath = it?.containingFile?.virtualFile?.path
+            if (classPath?.contains(projectPath!!) == true) {
+                models.add(ClassContextProvider(false).from(it))
             }
         }
 
