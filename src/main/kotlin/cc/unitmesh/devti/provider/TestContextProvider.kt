@@ -32,7 +32,7 @@ abstract class TestContextProvider : LazyExtensionInstance<TestContextProvider>(
 
     abstract fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext>
 
-    abstract fun insertTestMethod(sourceFile: PsiFile, project: Project, methodName: String, code: String): Boolean
+    abstract fun insertTestCode(sourceFile: PsiFile, project: Project, methodName: String, code: String): Boolean
 
     companion object {
         private val EP_NAME: ExtensionPointName<TestContextProvider> =

@@ -10,6 +10,7 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.*
+import com.intellij.psi.impl.source.PsiClassReferenceType
 
 class JavaTestContextProvider : TestContextProvider() {
 
@@ -58,14 +59,14 @@ class JavaTestContextProvider : TestContextProvider() {
 
     override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {
         val models = mutableListOf<ClassContext>()
-        val projectBash = project.guessProjectDir()?.path
+        val projectPath = project.guessProjectDir()?.path
 
         if (element is PsiMethod) {
             val inputTypes = element.parameterList.parameters.map {
-                it.type is PsiClassType
-            }.filterIsInstance<PsiClassType>().filter {
-                it.resolve()?.containingFile?.virtualFile?.path?.contains(projectBash!!)!!
-            }.map { it.resolve()!! }
+                (it.type as PsiClassReferenceType).resolve()
+            }.filter {
+                it?.containingFile?.virtualFile?.path?.contains(projectPath!!) ?: false
+            }.filterNotNull()
 
             // find input class from inputTypes
             inputTypes.forEach {
@@ -75,10 +76,10 @@ class JavaTestContextProvider : TestContextProvider() {
             val returnType = element.returnTypeElement
             if (returnType != null) {
                 val outputType = returnType.type
-                if (outputType is PsiClassType) {
-                    val outputClass = outputType.resolve()
-                    if (outputClass != null) {
-                        models.add(ClassContextProvider(false).from(outputClass))
+                if (outputType is PsiClassReferenceType) {
+                    val outputClass = outputType.resolve()?.containingFile?.virtualFile?.path
+                    if (outputClass?.contains(projectPath!!) == true) {
+                        models.add(ClassContextProvider(false).from(outputType.resolve()!!))
                     }
                 }
             }
@@ -88,7 +89,7 @@ class JavaTestContextProvider : TestContextProvider() {
         return models
     }
 
-    override fun insertTestMethod(sourceFile: PsiFile, project: Project, methodName: String, code: String): Boolean {
+    override fun insertTestCode(sourceFile: PsiFile, project: Project, methodName: String, code: String): Boolean {
         // Get the root element (usually a class) of the source file
         val rootElement = sourceFile.children.find { it is PsiClass } as? PsiClass
 
