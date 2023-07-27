@@ -216,10 +216,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
                 val regex = Regex("$projectPath(.*\\.)${langSuffix()}")
                 val relativePath = regex.find(selectedText)?.groupValues?.get(1) ?: ""
                 val file = LocalFileSystem.getInstance().findFileByPath(projectPath + relativePath)
-                file?.let {
-                    val psiFile = PsiManager.getInstance(project!!).findFile(it)
-                    psiFile
-                }
+                file?.let { PsiManager.getInstance(project!!).findFile(it) }
             } else {
                 null
             }

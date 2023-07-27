@@ -9,6 +9,7 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.IndexNotReadyException
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -51,7 +52,7 @@ class JavaTestContextProvider : TestContextProvider() {
             }
         }
 
-        val testDirCreated = LocalFileSystem.getInstance().refreshAndFindFileByPath(testDirPath)
+        val testDirCreated = LocalFileSystem.getInstance().findFileByPath(testDirPath)
         if (testDirCreated == null) {
             log.error("Failed to create test directory: $testDirPath")
             return null
@@ -61,8 +62,8 @@ class JavaTestContextProvider : TestContextProvider() {
         val testFilePath = testDirPath + "/" + sourceFile.name.replace(".java", "Test.java")
         val testFile = LocalFileSystem.getInstance().findFileByPath(testFilePath)
 
-        // update file index
-        VirtualFileManager.getInstance().syncRefresh()
+        // commit and update file index
+        project.guessProjectDir()?.refresh(true, true)
 
         val relatedModels = lookupRelevantClass(project, element)
 
@@ -78,12 +79,7 @@ class JavaTestContextProvider : TestContextProvider() {
         val models = mutableListOf<ClassContext>()
         val projectPath = project.guessProjectDir()?.path
 
-        val resolvedClasses = try {
-            resolveByMethod(element)
-        } catch (e: Exception) {
-            log.error("Failed to resolve class by method: ${e.message}")
-            mutableMapOf()
-        }
+        val resolvedClasses = resolveByMethod(element)
 
         if (element is PsiClass) {
             val methods = element.methods
@@ -106,8 +102,14 @@ class JavaTestContextProvider : TestContextProvider() {
     private fun resolveByMethod(element: PsiElement): MutableMap<String, PsiClass?> {
         val resolvedClasses = mutableMapOf<String, PsiClass?>()
         if (element is PsiMethod) {
-            element.parameterList.parameters.map {
-                resolvedClasses[it.name] = (it.type as PsiClassReferenceType).resolve()
+            element.parameterList.parameters.filter {
+                it.type is PsiClassReferenceType
+            }.map {
+                try {
+                    resolvedClasses[it.name] = (it.type as PsiClassReferenceType).resolve()
+                } catch (e: IndexNotReadyException) {
+                    log.warn("Failed to resolve class: ${it.type.canonicalText}")
+                }
             }
 
             val outputType = element.returnTypeElement?.type
@@ -115,7 +117,11 @@ class JavaTestContextProvider : TestContextProvider() {
                 if (outputType.parameters.isNotEmpty()) {
                     outputType.parameters.forEach {
                         if (it is PsiClassReferenceType) {
-                            resolvedClasses[it.canonicalText] = it.resolve()
+                            try {
+                                resolvedClasses[it.canonicalText] = it.resolve()
+                            } catch (e: IndexNotReadyException) {
+                                log.warn("Failed to resolve class: ${it.canonicalText}")
+                            }
                         }
                     }
                 }
