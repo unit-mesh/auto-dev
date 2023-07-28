@@ -12,8 +12,6 @@ import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.WriteAction
-import com.intellij.openapi.application.smartReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -27,7 +25,6 @@ import com.intellij.psi.PsiFile
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 class TestCodeGenRequest(
     val file: PsiFile,
@@ -79,7 +76,7 @@ class TestCodeGenTask(
             // sometimes, we need to wait for the project to be smart or create test package,
             // so we need to run this in a smart mode, it will wait for the project to be smart
             DumbService.getInstance(request.project).runWhenSmart {
-                val additionContext = testContext.relatedClass.joinToString("\n") {
+                val additionContext = testContext.relatedFiles.joinToString("\n") {
                     it.toQuery()
                 }.lines().joinToString("\n") {
                     "// $it"

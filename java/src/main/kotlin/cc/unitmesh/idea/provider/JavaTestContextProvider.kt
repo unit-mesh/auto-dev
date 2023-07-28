@@ -2,6 +2,7 @@ package cc.unitmesh.idea.provider
 
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
+import cc.unitmesh.devti.context.FileContext
 import cc.unitmesh.devti.provider.TestContextProvider
 import cc.unitmesh.devti.provider.TestFileContext
 import com.intellij.openapi.application.ApplicationManager
@@ -18,6 +19,7 @@ import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiClassReferenceType
 import java.io.File
 import kotlin.jvm.internal.Ref
+import cc.unitmesh.devti.context.FileContextProvider
 
 class JavaTestContextProvider : TestContextProvider() {
     companion object {
@@ -89,15 +91,12 @@ class JavaTestContextProvider : TestContextProvider() {
         return result.element
     }
 
-    /**
-     * TODO: return ClassContext with package name with [cc.unitmesh.devti.context.FileContext]
-     */
-    override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {
-        val result: Ref.ObjectRef<List<ClassContext>> = Ref.ObjectRef()
+    override fun lookupRelevantClass(project: Project, element: PsiElement): List<FileContext> {
+        val result: Ref.ObjectRef<List<FileContext>> = Ref.ObjectRef()
         result.element = emptyList()
 
         ApplicationManager.getApplication().runReadAction {
-            val elements = mutableListOf<ClassContext>()
+            val elements = mutableListOf<FileContext>()
             val projectPath = project.guessProjectDir()?.path
 
             val resolvedClasses = resolveByMethod(element)
@@ -112,7 +111,7 @@ class JavaTestContextProvider : TestContextProvider() {
             resolvedClasses.forEach { (_, psiClass) ->
                 val classPath = psiClass?.containingFile?.virtualFile?.path
                 if (classPath?.contains(projectPath!!) == true) {
-                    elements += (ClassContextProvider(false).from(psiClass))
+                    elements += FileContextProvider().from(psiClass)
                 }
             }
 
@@ -123,13 +122,13 @@ class JavaTestContextProvider : TestContextProvider() {
     }
 
     // TODO: handle generic type
-    private fun resolveByMethod(element: PsiElement): MutableMap<String, PsiClass?> {
-        val resolvedClasses = mutableMapOf<String, PsiClass?>()
+    private fun resolveByMethod(element: PsiElement): MutableMap<String, PsiJavaFile?> {
+        val resolvedClasses = mutableMapOf<String, PsiJavaFile?>()
         if (element is PsiMethod) {
             element.parameterList.parameters.filter {
                 it.type is PsiClassReferenceType
             }.map {
-                resolvedClasses[it.name] = (it.type as PsiClassReferenceType).resolve()
+                resolvedClasses[it.name] = (it.type as PsiClassReferenceType).resolve()?.containingFile as PsiJavaFile
             }
 
             val outputType = element.returnTypeElement?.type
@@ -137,13 +136,13 @@ class JavaTestContextProvider : TestContextProvider() {
                 if (outputType.parameters.isNotEmpty()) {
                     outputType.parameters.forEach {
                         if (it is PsiClassReferenceType) {
-                            resolvedClasses[it.canonicalText] = it.resolve()
+                            resolvedClasses[it.canonicalText] = it.resolve()?.containingFile as PsiJavaFile
                         }
                     }
                 }
 
                 val canonicalText = outputType.canonicalText
-                resolvedClasses[canonicalText] = outputType.resolve()
+                resolvedClasses[canonicalText] = outputType.resolve()?.containingFile as PsiJavaFile
             }
         }
 

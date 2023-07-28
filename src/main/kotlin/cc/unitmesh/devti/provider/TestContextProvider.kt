@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.provider
 
-import cc.unitmesh.devti.context.ClassContext
+import cc.unitmesh.devti.context.FileContext
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -12,7 +12,7 @@ import com.intellij.util.xmlb.annotations.Attribute
 data class TestFileContext(
     val isNewFile: Boolean,
     val file: VirtualFile,
-    val relatedClass: List<ClassContext> = emptyList()
+    val relatedFiles: List<FileContext> = emptyList()
 )
 
 abstract class TestContextProvider : LazyExtensionInstance<TestContextProvider>() {
@@ -29,7 +29,7 @@ abstract class TestContextProvider : LazyExtensionInstance<TestContextProvider>(
     }
 
     abstract fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext?
-    abstract fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext>
+    abstract fun lookupRelevantClass(project: Project, element: PsiElement): List<FileContext>
 
     abstract fun insertTestCode(sourceFile: VirtualFile, project: Project, methodCode: String): Boolean
     abstract fun insertClassCode(sourceFile: VirtualFile, project: Project, code: String): Boolean
