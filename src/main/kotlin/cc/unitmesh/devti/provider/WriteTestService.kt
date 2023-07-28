@@ -16,7 +16,7 @@ data class TestFileContext(
     val testClassName: String?,
 )
 
-abstract class TestContextProvider : LazyExtensionInstance<TestContextProvider>() {
+abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
     val AUTO_DEV_PLACEHOLDER = "<AUTO_DEV_PLACEHOLDER>"
 
     @Attribute("language")
@@ -36,10 +36,10 @@ abstract class TestContextProvider : LazyExtensionInstance<TestContextProvider>(
     abstract fun insertClassCode(sourceFile: VirtualFile, project: Project, code: String): Boolean
 
     companion object {
-        private val EP_NAME: ExtensionPointName<TestContextProvider> =
+        private val EP_NAME: ExtensionPointName<WriteTestService> =
             ExtensionPointName.create("cc.unitmesh.testContextProvider")
 
-        fun context(lang: String): TestContextProvider? {
+        fun context(lang: String): WriteTestService? {
             val extensionList = EP_NAME.extensionList
             val providers = extensionList.filter {
                 it.language?.lowercase() == lang.lowercase()

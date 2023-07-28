@@ -33,7 +33,7 @@
 
         <testContextProvider
                 language="JAVA"
-                implementation="cc.unitmesh.idea.provider.JavaTestContextProvider"/>
+                implementation="cc.unitmesh.idea.provider.JavaWriteTestService"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

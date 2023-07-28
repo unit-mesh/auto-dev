@@ -91,7 +91,7 @@
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.testContextProvider"
-                        interface="cc.unitmesh.devti.provider.TestContextProvider"
+                        interface="cc.unitmesh.devti.provider.WriteTestService"
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.chatContextProvider"

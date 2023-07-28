@@ -1,9 +1,8 @@
 package cc.unitmesh.idea.provider
 
-import cc.unitmesh.devti.context.ClassContext
-import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.context.FileContext
-import cc.unitmesh.devti.provider.TestContextProvider
+import cc.unitmesh.devti.context.FileContextProvider
+import cc.unitmesh.devti.provider.WriteTestService
 import cc.unitmesh.devti.provider.TestFileContext
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
@@ -19,11 +18,10 @@ import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiClassReferenceType
 import java.io.File
 import kotlin.jvm.internal.Ref
-import cc.unitmesh.devti.context.FileContextProvider
 
-class JavaTestContextProvider : TestContextProvider() {
+class JavaWriteTestService : WriteTestService() {
     companion object {
-        val log = logger<JavaTestContextProvider>()
+        val log = logger<JavaWriteTestService>()
     }
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {

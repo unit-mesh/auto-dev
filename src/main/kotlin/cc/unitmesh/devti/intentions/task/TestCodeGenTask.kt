@@ -6,7 +6,7 @@ import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.intentions.WriteTestIntention
 import cc.unitmesh.devti.llms.ConnectorFactory
 import cc.unitmesh.devti.parser.parseCodeFromString
-import cc.unitmesh.devti.provider.TestContextProvider
+import cc.unitmesh.devti.provider.WriteTestService
 import cc.unitmesh.devti.provider.TestFileContext
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
@@ -39,14 +39,14 @@ class TestCodeGenTask(
 ) : Task.Backgroundable(request.project, AutoDevBundle.message("intentions.chat.code.test.name")) {
     private val actionType = ChatActionType.WRITE_TEST
     private val lang = request.file.language.displayName
-    private val testContextProvider = TestContextProvider.context(lang)
+    private val writeTestService = WriteTestService.context(lang)
 
     override fun run(indicator: ProgressIndicator) {
         indicator.isIndeterminate = true
         indicator.fraction = 0.1
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.prepare-context")
 
-        val testContext = testContextProvider?.findOrCreateTestFile(request.file, request.project, request.element)
+        val testContext = writeTestService?.findOrCreateTestFile(request.file, request.project, request.element)
         if (testContext == null) {
             logger<WriteTestIntention>().error("Failed to create test file for: ${request.file}")
             return
@@ -112,7 +112,7 @@ class TestCodeGenTask(
             indicator.fraction = 0.9
             indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.write-test")
 
-            writeTestToFile(request.project, flow, testContext, testContextProvider!!)
+            writeTestToFile(request.project, flow, testContext, writeTestService!!)
 
             navigateTestFile(testContext.file, request.editor, request.project)
 
@@ -124,7 +124,7 @@ class TestCodeGenTask(
         project: Project,
         flow: Flow<String>,
         context: TestFileContext,
-        contextProvider: TestContextProvider
+        contextProvider: WriteTestService
     ) {
         val suggestion = StringBuilder()
         flow.collect {
