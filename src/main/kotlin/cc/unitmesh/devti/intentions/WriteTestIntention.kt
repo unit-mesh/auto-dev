@@ -88,8 +88,10 @@ class WriteTestIntention : AbstractChatIntention() {
 
                         prompter += "\n```${lang.lowercase()}\n$selectedText\n```\n"
 
-                        if (!testContext.isNewFile) {
-                            prompter += "Start writing test method code here:  \n"
+                        prompter += if (!testContext.isNewFile) {
+                            "Start writing test method code here:  \n"
+                        } else {
+                            "Start with `import` syntax here:  \n"
                         }
 
                         val flow: Flow<String> = ConnectorFactory.getInstance().connector(project).stream(prompter, "")
