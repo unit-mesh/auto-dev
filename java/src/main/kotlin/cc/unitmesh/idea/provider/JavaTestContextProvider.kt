@@ -8,6 +8,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -16,6 +17,7 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiClassReferenceType
 import java.io.File
+import kotlin.jvm.internal.Ref
 
 class JavaTestContextProvider : TestContextProvider() {
     companion object {
@@ -24,21 +26,29 @@ class JavaTestContextProvider : TestContextProvider() {
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
         val sourceFilePath = sourceFile.virtualFile
-        val sourceDir = sourceFilePath.parent
+        val parentDir = sourceFilePath.parent
 
-        val packageName = (sourceFile as PsiJavaFile).packageName
-        var isNewFile = false
+        val parentDirPath: Ref.ObjectRef<String> = Ref.ObjectRef()
+        val packageRef: Ref.ObjectRef<String> = Ref.ObjectRef()
+        packageRef.element = ""
+        ApplicationManager.getApplication().runReadAction {
+            packageRef.element = (sourceFile as PsiJavaFile).packageName
+            parentDirPath.element = parentDir?.path
+        }
+
+        val packageName = packageRef.element
 
         val relatedModels = lookupRelevantClass(project, element)
 
         // Check if the source file is in the src/main/java directory
-        if (!sourceDir?.path?.contains("/src/main/java/")!!) {
-            log.error("Source file is not in the src/main/java directory: $sourceDir")
+        if (!parentDirPath.element?.contains("/src/main/java/")!!) {
+            log.error("Source file is not in the src/main/java directory: ${parentDirPath.element}")
             return null
         }
+        var isNewFile = false
 
         // Find the test directory
-        val testDirPath = sourceDir.path.replace("/src/main/java/", "/src/test/java/")
+        val testDirPath = parentDir.path.replace("/src/main/java/", "/src/test/java/")
         var testDir = LocalFileSystem.getInstance().findFileByPath(testDirPath)
 
         if (testDir == null || !testDir.isDirectory) {
@@ -47,17 +57,21 @@ class JavaTestContextProvider : TestContextProvider() {
             val testDirFile = File(testDirPath)
             if (!testDirFile.exists()) {
                 testDirFile.mkdirs()
-                // Refresh the VirtualFileManager to make sure the newly created directory is visible in IntelliJ
-                VirtualFileManager.getInstance().refreshWithoutFileWatcher(false)
-                testDir = LocalFileSystem.getInstance().findFileByPath(testDirPath)
+
+                LocalFileSystem.getInstance().refreshAndFindFileByPath(testDirPath)?.let { refreshedDir ->
+                    testDir = refreshedDir
+                }
             }
         }
 
-        val testDirCreated = LocalFileSystem.getInstance().findFileByPath(testDirPath)
+        val testDirCreated: VirtualFile? =
+            VirtualFileManager.getInstance().refreshAndFindFileByUrl("file://$testDirPath")
         if (testDirCreated == null) {
             log.error("Failed to create test directory: $testDirPath")
             return null
         }
+
+        val result: Ref.ObjectRef<TestFileContext?> = Ref.ObjectRef()
 
         // Test directory already exists, find the corresponding test file
         val testFilePath = testDirPath + "/" + sourceFile.name.replace(".java", "Test.java")
@@ -65,35 +79,44 @@ class JavaTestContextProvider : TestContextProvider() {
 
         project.guessProjectDir()?.refresh(true, true)
 
-        return if (testFile != null) {
-            TestFileContext(isNewFile, testFile, relatedModels)
+        if (testFile != null) {
+            result.element = TestFileContext(isNewFile, testFile, relatedModels)
         } else {
-            val targetFile = createTestFile(sourceFile, testDir!!, packageName)
-            TestFileContext(isNewFile = true, targetFile, relatedModels)
+            val targetFile = createTestFile(sourceFile, testDir!!, packageName, project)
+            result.element = TestFileContext(isNewFile = true, targetFile, relatedModels)
         }
+
+        return result.element
     }
 
     override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {
-        val models = mutableListOf<ClassContext>()
-        val projectPath = project.guessProjectDir()?.path
+        val result: Ref.ObjectRef<List<ClassContext>> = Ref.ObjectRef()
+        result.element = emptyList()
 
-        val resolvedClasses = resolveByMethod(element)
+        ApplicationManager.getApplication().runReadAction {
+            val elements = mutableListOf<ClassContext>()
+            val projectPath = project.guessProjectDir()?.path
 
-        if (element is PsiClass) {
-            val methods = element.methods
-            methods.forEach { method ->
-                resolvedClasses.putAll(resolveByMethod(method))
+            val resolvedClasses = resolveByMethod(element)
+
+            if (element is PsiClass) {
+                val methods = element.methods
+                methods.forEach { method ->
+                    resolvedClasses.putAll(resolveByMethod(method))
+                }
             }
+
+            resolvedClasses.forEach { (_, psiClass) ->
+                val classPath = psiClass?.containingFile?.virtualFile?.path
+                if (classPath?.contains(projectPath!!) == true) {
+                    elements += (ClassContextProvider(false).from(psiClass))
+                }
+            }
+
+            result.element = elements
         }
 
-        resolvedClasses.forEach { (_, psiClass) ->
-            val classPath = psiClass?.containingFile?.virtualFile?.path
-            if (classPath?.contains(projectPath!!) == true) {
-                models.add(ClassContextProvider(false).from(psiClass))
-            }
-        }
-
-        return models
+        return result.element
     }
 
     // TODO: handle generic type
@@ -185,16 +208,21 @@ class JavaTestContextProvider : TestContextProvider() {
         return true
     }
 
-    private fun createTestFile(sourceFile: PsiFile, testDir: VirtualFile, packageName: String): VirtualFile {
+    private fun createTestFile(sourceFile: PsiFile, testDir: VirtualFile, packageName: String, project: Project): VirtualFile {
         val sourceFileName = sourceFile.name
         val testFileName = sourceFileName.replace(".java", "Test.java")
         val testFileContent = "package $packageName;\n\n"
 
-        val testFile = testDir.createChildData(this, testFileName)
-        testFile.setBinaryContent(testFileContent.toByteArray())
+        val testFileRef: Ref.ObjectRef<VirtualFile> = Ref.ObjectRef()
 
-        testDir.refresh(false, true)
+        WriteCommandAction.runWriteCommandAction(project) {
+            val testFile = testDir.createChildData(this, testFileName)
+            testFileRef.element = testFile
 
-        return testFile
+            val document = FileDocumentManager.getInstance().getDocument(testFile)
+            document?.setText(testFileContent)
+        }
+
+        return testFileRef.element!!
     }
 }

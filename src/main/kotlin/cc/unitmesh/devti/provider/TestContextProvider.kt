@@ -29,7 +29,6 @@ abstract class TestContextProvider : LazyExtensionInstance<TestContextProvider>(
     }
 
     abstract fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext?
-
     abstract fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext>
 
     abstract fun insertTestCode(sourceFile: VirtualFile, project: Project, methodCode: String): Boolean
