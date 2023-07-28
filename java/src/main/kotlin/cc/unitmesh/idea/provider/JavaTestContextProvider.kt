@@ -145,11 +145,11 @@ class JavaTestContextProvider : TestContextProvider() {
             return insertClassCode(sourceFile, project, code)
         }
 
-        val rootElement = runReadAction {
-            sourceFile.children.find { it is PsiClass } as? PsiClass
-        } ?: return false
-
         ApplicationManager.getApplication().invokeLater {
+            val rootElement = runReadAction {
+                sourceFile.children.find { it is PsiClass } as? PsiClass
+            } ?: return@invokeLater
+
             val psiElementFactory = PsiElementFactory.getInstance(project)
 
             val newTestMethod = psiElementFactory.createMethodFromText(code, rootElement)

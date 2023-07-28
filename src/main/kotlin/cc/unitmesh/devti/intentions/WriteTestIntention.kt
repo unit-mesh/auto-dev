@@ -15,6 +15,7 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
@@ -75,26 +76,29 @@ class WriteTestIntention : AbstractChatIntention() {
 
                     prompter += "\n"
 
-                    val additionContext = testContext.relatedClass.joinToString("\n") {
-                        it.toQuery()
-                    }.lines().joinToString("\n") {
-                        "// $it"
+                    DumbService.getInstance(project).runWhenSmart {
+                        val additionContext = testContext.relatedClass.joinToString("\n") {
+                            it.toQuery()
+                        }.lines().joinToString("\n") {
+                            "// $it"
+                        }
+
+
+                        prompter += additionContext
+
+                        prompter += "\n```${lang.lowercase()}\n$selectedText\n```\n"
+
+                        if (!testContext.isNewFile) {
+                            prompter += "Start writing test method code here:  \n"
+                        }
+
+                        val flow: Flow<String> = ConnectorFactory.getInstance().connector(project).stream(prompter, "")
+                        logger<WriteTestIntention>().warn("Prompt: $prompter")
+                        writeTestToFile(project, flow, testContext, testContextProvider)
+
+                        // navigate to the test file
+                        navigateTestFile(testContext.file, editor, project)
                     }
-
-                    prompter += additionContext
-
-                    prompter += "\n```$lang\n$selectedText\n```\n"
-
-                    if (!testContext.isNewFile) {
-                        prompter += "Start writing test method code here:  \n"
-                    }
-
-                    // navigate to the test file
-                    navigateTestFile(testContext.file, editor, project)
-
-                    val flow: Flow<String> = ConnectorFactory.getInstance().connector(project).stream(prompter, "")
-                    logger<WriteTestIntention>().warn("Prompt: $prompter")
-                    writeTestToFile(project, flow, testContext, testContextProvider)
                 }
             }
         }
@@ -112,11 +116,10 @@ class WriteTestIntention : AbstractChatIntention() {
                 suggestion.append(it)
             }
 
-            runReadAction {
-                parseCodeFromString(suggestion.toString()).forEach {
-                    val testFile: PsiFile = PsiManager.getInstance(project).findFile(context.file)!!
-                    contextProvider.insertTestCode(testFile, project, it)
-                }
+            logger<WriteTestIntention>().warn("LLM suggestion: $suggestion")
+            parseCodeFromString(suggestion.toString()).forEach {
+                val testFile: PsiFile = PsiManager.getInstance(project).findFile(context.file)!!
+                contextProvider.insertTestCode(testFile, project, it)
             }
         }
     }
