@@ -12,7 +12,8 @@ import com.intellij.util.xmlb.annotations.Attribute
 data class TestFileContext(
     val isNewFile: Boolean,
     val file: VirtualFile,
-    val relatedFiles: List<FileContext> = emptyList()
+    val relatedFiles: List<FileContext> = emptyList(),
+    val testClassName: String?,
 )
 
 abstract class TestContextProvider : LazyExtensionInstance<TestContextProvider>() {

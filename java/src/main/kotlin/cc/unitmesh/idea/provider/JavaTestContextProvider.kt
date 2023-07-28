@@ -29,6 +29,7 @@ class JavaTestContextProvider : TestContextProvider() {
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
         val sourceFilePath = sourceFile.virtualFile
         val parentDir = sourceFilePath.parent
+        val className = sourceFile.name.replace(".java", "") + "Test"
 
         val parentDirPath: Ref.ObjectRef<String> = Ref.ObjectRef()
         val packageRef: Ref.ObjectRef<String> = Ref.ObjectRef()
@@ -47,6 +48,7 @@ class JavaTestContextProvider : TestContextProvider() {
             log.error("Source file is not in the src/main/java directory: ${parentDirPath.element}")
             return null
         }
+
         var isNewFile = false
 
         // Find the test directory
@@ -82,10 +84,10 @@ class JavaTestContextProvider : TestContextProvider() {
         project.guessProjectDir()?.refresh(true, true)
 
         if (testFile != null) {
-            result.element = TestFileContext(isNewFile, testFile, relatedModels)
+            result.element = TestFileContext(isNewFile, testFile, relatedModels, className)
         } else {
             val targetFile = createTestFile(sourceFile, testDir!!, packageName, project)
-            result.element = TestFileContext(isNewFile = true, targetFile, relatedModels)
+            result.element = TestFileContext(isNewFile = true, targetFile, relatedModels, className)
         }
 
         return result.element

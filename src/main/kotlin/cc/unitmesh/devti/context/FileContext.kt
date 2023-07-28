@@ -19,10 +19,30 @@ class FileContext(
     }
 
     override fun toQuery(): String {
-        val filePackage = "_"
-        val fileImports = imports.joinToString(" ", transform = { it.text })
-        val fileClassNames = getClassNames().joinToString(", ")
-        return "file name: $name\nfile path: $path\nfile package: $filePackage\nfile imports: $fileImports\nfile classes: $fileClassNames"
+        fun getFieldString(fieldName: String, fieldValue: String): String {
+            return if (fieldValue.isNotBlank()) {
+                "$fieldName: $fieldValue"
+            } else {
+                ""
+            }
+        }
+
+        val filePackage = getFieldString("file package", packageString ?: "")
+        val fileImports = getFieldString(
+            "file imports",
+            if (imports.isNotEmpty()) imports.joinToString(" ", transform = { it.text }) else ""
+        )
+        val fileClassNames =
+            getFieldString("file classes", if (getClassNames().isNotEmpty()) getClassNames().joinToString(", ") else "")
+        val filePath = getFieldString("file path", path)
+
+        return buildString {
+            append("file name: $name\n")
+            append("$filePackage\n")
+            append("$fileImports\n")
+            append("$fileClassNames\n")
+            append("$filePath\n")
+        }
     }
 
     override fun toUML(): String {

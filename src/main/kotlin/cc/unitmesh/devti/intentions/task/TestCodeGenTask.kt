@@ -17,7 +17,6 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
-import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
@@ -30,7 +29,8 @@ class TestCodeGenRequest(
     val file: PsiFile,
     val element: PsiElement,
     val project: Project,
-    val editor: Editor
+    val editor: Editor,
+    val selectText: String
 )
 
 class TestCodeGenTask(
@@ -73,37 +73,31 @@ class TestCodeGenTask(
 
             prompter += "\n"
 
-            // sometimes, we need to wait for the project to be smart or create test package,
-            // so we need to run this in a smart mode, it will wait for the project to be smart
-            DumbService.getInstance(request.project).runWhenSmart {
-                val additionContext = testContext.relatedFiles.joinToString("\n") {
-                    it.toQuery()
-                }.lines().joinToString("\n") {
-                    "// $it"
-                }
 
-
-                prompter += additionContext
-
-                prompter += "\n```${lang.lowercase()}\n${request.element.text}\n```\n"
-
-                prompter += if (!testContext.isNewFile) {
-                    "Start writing test method code here:  \n"
-                } else {
-                    "Start with `import` syntax here:  \n"
-                }
-
-                LLMCoroutineScopeService.scope(project).launch {
-                    val flow: Flow<String> =
-                        ConnectorFactory.getInstance().connector(request.project).stream(prompter, "")
-
-                    logger<WriteTestIntention>().warn("Prompt: $prompter")
-
-                    writeTestToFile(request.project, flow, testContext, testContextProvider!!)
-
-                    navigateTestFile(testContext.file, request.editor, request.project)
-                }
+            val additionContext = testContext.relatedFiles.joinToString("\n") {
+                it.toQuery()
+            }.lines().joinToString("\n") {
+                "// $it"
             }
+
+            prompter += additionContext
+
+            prompter += "\n```${lang.lowercase()}\n${request.selectText}\n```\n"
+
+            prompter += if (!testContext.isNewFile) {
+                "Start writing test method code here:  \n"
+            } else {
+                "Start ${testContext.testClassName} with `import` syntax here:  \n"
+            }
+
+            val flow: Flow<String> =
+                ConnectorFactory.getInstance().connector(request.project).stream(prompter, "")
+
+            logger<WriteTestIntention>().warn("Prompt: $prompter")
+
+            writeTestToFile(request.project, flow, testContext, testContextProvider!!)
+
+            navigateTestFile(testContext.file, request.editor, request.project)
         }
     }
 
