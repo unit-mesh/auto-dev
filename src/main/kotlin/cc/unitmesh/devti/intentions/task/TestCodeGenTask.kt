@@ -11,6 +11,7 @@ import cc.unitmesh.devti.provider.TestFileContext
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.application.smartReadAction
 import com.intellij.openapi.diagnostic.logger
@@ -128,12 +129,14 @@ class TestCodeGenTask(
     }
 
     fun navigateTestFile(testFile: VirtualFile, editor: Editor, project: Project) {
-        val fileEditorManager = FileEditorManager.getInstance(project)
-        val editors = fileEditorManager.openFile(testFile, true)
+        ApplicationManager.getApplication().invokeLater {
+            val fileEditorManager = FileEditorManager.getInstance(project)
+            val editors = fileEditorManager.openFile(testFile, true)
 
-        // If the file is already open in the editor, focus on the editor tab
-        if (editors.isNotEmpty()) {
-            fileEditorManager.setSelectedEditor(testFile, "text-editor")
+            // If the file is already open in the editor, focus on the editor tab
+            if (editors.isNotEmpty()) {
+                fileEditorManager.setSelectedEditor(testFile, "text-editor")
+            }
         }
     }
 }

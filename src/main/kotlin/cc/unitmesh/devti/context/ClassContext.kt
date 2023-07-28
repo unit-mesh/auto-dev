@@ -22,7 +22,6 @@ class ClassContext(
         MethodContextProvider(false, gatherUsages = false).from(it).signature
     }
 
-    // TODO: align to DtModel
     /**
      * Output:
      * ```
@@ -35,11 +34,21 @@ class ClassContext(
      */
     override fun toQuery(): String {
         val className = name ?: "_"
-        val classFields = getFieldNames().joinToString(separator = " ")
-        val classMethods = getMethodSignatures()
+        val classFields = getFieldNames().joinToString(separator = "\n  ")
+
+        val methodSignatures = getMethodSignatures()
             .filter { it.isNotBlank() }
-            .joinToString(separator = "\n")
-        return "class name: $className\nclass fields: $classFields\nclass methods: $classMethods\nsuper classes: $superClasses\n"
+            .map { method ->
+                "+ ${method}"
+            }
+            .joinToString(separator = "\n  ")
+
+        return """
+        |class $className {
+        |  $classFields
+        |  $methodSignatures
+        |}
+    """.trimMargin()
     }
 
     override fun toJson(): String = Gson().toJson({
