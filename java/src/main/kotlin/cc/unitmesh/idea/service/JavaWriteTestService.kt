@@ -121,7 +121,6 @@ class JavaWriteTestService : WriteTestService() {
         return result.element
     }
 
-    // TODO: handle generic type
     private fun resolveByMethod(element: PsiElement): MutableMap<String, PsiJavaFile?> {
         val resolvedClasses = mutableMapOf<String, PsiJavaFile?>()
         if (element is PsiMethod) {

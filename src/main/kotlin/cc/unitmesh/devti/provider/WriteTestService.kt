@@ -17,8 +17,6 @@ data class TestFileContext(
 )
 
 abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
-    val AUTO_DEV_PLACEHOLDER = "<AUTO_DEV_PLACEHOLDER>"
-
     @Attribute("language")
     var language: String? = null
 
@@ -31,8 +29,7 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
 
     abstract fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext?
     abstract fun lookupRelevantClass(project: Project, element: PsiElement): List<FileContext>
-
-    abstract fun insertTestCode(sourceFile: VirtualFile, project: Project, methodCode: String): Boolean
+    abstract fun insertTestCode(sourceFile: VirtualFile, project: Project, code: String): Boolean
     abstract fun insertClassCode(sourceFile: VirtualFile, project: Project, code: String): Boolean
 
     companion object {
