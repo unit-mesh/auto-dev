@@ -32,7 +32,7 @@ features:
 - Custom prompt. You can customize your prompt in `Settings` -> `Tools` -> `AutoDev`
 - Custom LLM Server. You can customize your LLM Server in `Settings` -> `Tools` -> `AutoDev`
 - Auto Testing
-    - [ ] auto create unit test. 
+    - [x] create unit test intention.
     - [ ] auto run unit test and try to fix test.
 - [ ] Smart architecture. With ArchGuard Co-mate DSL, AutoDev will help you design your architecture.
 
