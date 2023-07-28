@@ -38,9 +38,15 @@ class FileContext(
 
         return buildString {
             append("file name: $name\n")
-            append("$filePackage\n")
-            append("$fileImports\n")
-            append("$fileClassNames\n")
+            if (filePackage.isNotBlank()) {
+                append("$filePackage\n")
+            }
+            if (fileImports.isNotBlank()) {
+                append("$fileImports\n")
+            }
+            if (fileClassNames.isNotBlank()) {
+                append("$fileClassNames\n")
+            }
             append("$filePath\n")
         }
     }

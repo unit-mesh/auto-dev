@@ -106,6 +106,7 @@ class JavaWriteTestService : WriteTestService() {
             val projectPath = project.guessProjectDir()?.path
 
             val resolvedClasses = resolveByMethod(element)
+            resolvedClasses.putAll(resolveByField(element))
 
             if (element is PsiClass) {
                 val methods = element.methods
@@ -114,6 +115,7 @@ class JavaWriteTestService : WriteTestService() {
                 }
             }
 
+            // find the class in the same project
             resolvedClasses.forEach { (_, psiClass) ->
                 val classPath = psiClass?.containingFile?.virtualFile?.path
                 if (classPath?.contains(projectPath!!) == true) {
@@ -148,6 +150,32 @@ class JavaWriteTestService : WriteTestService() {
 
                 val canonicalText = outputType.canonicalText
                 resolvedClasses[canonicalText] = outputType.resolve()?.containingFile as PsiJavaFile
+            }
+        }
+
+        return resolvedClasses
+    }
+
+
+    private fun resolveByField(element: PsiElement): Map<out String, PsiJavaFile?> {
+        // find element's class and lookup fields
+        val file = element.containingFile as PsiJavaFile
+        val psiClass = file.classes.firstOrNull() ?: return emptyMap()
+
+        val resolvedClasses = mutableMapOf<String, PsiJavaFile?>()
+        psiClass.fields.forEach { field ->
+            val fieldType = field.type
+            if (fieldType is PsiClassReferenceType) {
+                if (fieldType.parameters.isNotEmpty()) {
+                    fieldType.parameters.forEach {
+                        if (it is PsiClassReferenceType) {
+                            resolvedClasses[it.canonicalText] = it.resolve()?.containingFile as PsiJavaFile
+                        }
+                    }
+                }
+
+                val canonicalText = fieldType.canonicalText
+                resolvedClasses[canonicalText] = fieldType.resolve()?.containingFile as PsiJavaFile
             }
         }
 
