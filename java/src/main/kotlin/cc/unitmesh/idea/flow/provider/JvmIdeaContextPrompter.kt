@@ -9,6 +9,7 @@ import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
 import cc.unitmesh.devti.settings.AutoDevSettingsState
+import cc.unitmesh.idea.MvcUtil
 import cc.unitmesh.idea.flow.MvcContextService
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.service
@@ -32,17 +33,6 @@ class JvmIdeaContextPrompter : ContextPrompter() {
     override fun appendAdditionContext(context: String) {
         additionContext += context
     }
-
-    private fun langSuffix(): String = when (lang.lowercase()) {
-        "java" -> "java"
-        "kotlin" -> "kt"
-        else -> "java"
-    }
-
-    private fun isController() = fileName.endsWith("Controller." + langSuffix())
-    private fun isService() =
-        fileName.endsWith("Service." + langSuffix()) || fileName.endsWith("ServiceImpl." + langSuffix())
-
 
     override fun initContext(
         actionType: ChatActionType,
@@ -132,7 +122,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
                 }
 
                 when {
-                    isController() -> {
+                    MvcUtil.isController(fileName, lang) -> {
                         val spec = CustomPromptConfig.load().spec["controller"]
                         if (!spec.isNullOrEmpty()) {
                             additionContext = "requirements: \n$spec"
@@ -140,7 +130,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
                         additionContext += mvcContextService.controllerPrompt(file)
                     }
 
-                    isService() -> {
+                    MvcUtil.isService(fileName, lang) -> {
                         val spec = CustomPromptConfig.load().spec["service"]
                         if (!spec.isNullOrEmpty()) {
                             additionContext = "requirements: \n$spec"
@@ -213,7 +203,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
         val projectPath = project!!.basePath ?: ""
         runReadAction {
             val lookupFile = if (selectedText.contains(projectPath)) {
-                val regex = Regex("$projectPath(.*\\.)${langSuffix()}")
+                val regex = Regex("$projectPath(.*\\.)${MvcUtil.langSuffix(lang)}")
                 val relativePath = regex.find(selectedText)?.groupValues?.get(1) ?: ""
                 val file = LocalFileSystem.getInstance().findFileByPath(projectPath + relativePath)
                 file?.let { PsiManager.getInstance(project!!).findFile(it) }

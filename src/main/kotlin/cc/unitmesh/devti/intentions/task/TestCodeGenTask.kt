@@ -55,16 +55,10 @@ class TestCodeGenTask(
         var prompter = if (testContext.isNewFile) {
             """Write unit test for following code. 
                                     | You MUST return code only, not explain.
-                                    | You MUST use given-when-then style.
-                                    | You MUST use should_xx style for test method name.
-                                    | When testing controller, you MUST use MockMvc and test API only.
                                     | """.trimMargin()
         } else {
             """Write unit test for following code. 
-                                    | You MUST return method code only, not java class, no explain.
-                                    | You MUST use given-when-then style.
-                                    | You MUST use should_xx style for test method name.
-                                    | When testing controller, you MUST use MockMvc and test API only.
+                                    | You MUST return method code only, no explain.
                                     | You MUST return start with @Test annotation.
                                     | """.trimMargin()
         }
