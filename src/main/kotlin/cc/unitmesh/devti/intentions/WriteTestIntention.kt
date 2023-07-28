@@ -14,7 +14,6 @@ import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
-import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -42,13 +41,11 @@ class WriteTestIntention : AbstractChatIntention() {
 
     private fun writeTestTask(file: PsiFile, element: PsiElement, project: Project, editor: Editor) {
         val lang = file.language.displayName
-
-        val selectedText = element.text
         val actionType = ChatActionType.WRITE_TEST
-
         val testContextProvider = TestContextProvider.context(lang)
 
         WriteAction.runAndWait<Throwable> {
+
             val testContext = testContextProvider?.findOrCreateTestFile(file, project, element)
             if (testContext == null) {
                 logger<WriteTestIntention>().error("Failed to create test file for: $file")
@@ -93,7 +90,7 @@ class WriteTestIntention : AbstractChatIntention() {
 
                     prompter += additionContext
 
-                    prompter += "\n```${lang.lowercase()}\n$selectedText\n```\n"
+                    prompter += "\n```${lang.lowercase()}\n${element.text}\n```\n"
 
                     prompter += if (!testContext.isNewFile) {
                         "Start writing test method code here:  \n"

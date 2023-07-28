@@ -142,12 +142,19 @@ class JavaTestContextProvider : TestContextProvider() {
 
         // if code is a class code, we need to insert
         if (code.contains("public class ")) {
+            // todo: if the class is new, we need to sync PsiClass, if not, we cannot insert the code in next
             return insertClassCode(sourceFile, project, code)
         }
 
         ApplicationManager.getApplication().invokeLater {
             val rootElement = runReadAction {
-                sourceFile.children.find { it is PsiClass } as? PsiClass
+                val psiClass = sourceFile.children.find { it is PsiClass } as? PsiClass
+                if (psiClass == null) {
+                    log.error("Failed to find PsiClass in the source file: $sourceFile")
+                    return@runReadAction null
+                }
+
+                return@runReadAction psiClass
             } ?: return@invokeLater
 
             val psiElementFactory = PsiElementFactory.getInstance(project)
