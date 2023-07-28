@@ -24,6 +24,7 @@ import com.intellij.psi.PsiFile
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlin.jvm.internal.Ref
 
 class TestCodeGenRequest(
     val file: PsiFile,
@@ -73,14 +74,17 @@ class TestCodeGenTask(
 
             prompter += "\n"
 
-
-            val additionContext = testContext.relatedFiles.joinToString("\n") {
-                it.toQuery()
-            }.lines().joinToString("\n") {
-                "// $it"
+            val additionContextRef: Ref.ObjectRef<String> = Ref.ObjectRef()
+            additionContextRef.element = ""
+            ApplicationManager.getApplication().runReadAction {
+                additionContextRef.element = testContext.relatedFiles.joinToString("\n") {
+                    it.toQuery()
+                }.lines().joinToString("\n") {
+                    "// $it"
+                }
             }
 
-            prompter += additionContext
+            prompter += additionContextRef.element
 
             prompter += "\n```${lang.lowercase()}\n${request.selectText}\n```\n"
 

@@ -158,9 +158,7 @@ class JavaTestContextProvider : TestContextProvider() {
             return false
         }
 
-        // if code is a class code, we need to insert
-        if (code.contains("public class ")) {
-            // todo: if the class is new, we need to sync PsiClass, if not, we cannot insert the code in next
+        if (code.contains("class ")) {
             return insertClassCode(sourceFile, project, code)
         }
 
@@ -169,7 +167,7 @@ class JavaTestContextProvider : TestContextProvider() {
                 val psiJavaFile = PsiManager.getInstance(project).findFile(sourceFile) as PsiJavaFile
                 val psiClass = psiJavaFile.classes.firstOrNull()
                 if (psiClass == null) {
-                    log.error("Failed to find PsiClass in the source file: $psiJavaFile")
+                    log.error("Failed to find PsiClass in the source file: $psiJavaFile, code: $code")
                     return@runReadAction null
                 }
 
@@ -212,7 +210,12 @@ class JavaTestContextProvider : TestContextProvider() {
         return true
     }
 
-    private fun createTestFile(sourceFile: PsiFile, testDir: VirtualFile, packageName: String, project: Project): VirtualFile {
+    private fun createTestFile(
+        sourceFile: PsiFile,
+        testDir: VirtualFile,
+        packageName: String,
+        project: Project
+    ): VirtualFile {
         val sourceFileName = sourceFile.name
         val testFileName = sourceFileName.replace(".java", "Test.java")
         val testFileContent = "package $packageName;\n\n"
