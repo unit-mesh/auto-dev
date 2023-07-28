@@ -132,7 +132,7 @@ class JavaTestContextProvider : TestContextProvider() {
         return resolvedClasses
     }
 
-    override fun insertTestCode(sourceFile: PsiFile, project: Project, code: String): Boolean {
+    override fun insertTestCode(sourceFile: VirtualFile, project: Project, code: String): Boolean {
         // Check if the provided methodCode contains @Test annotation
         log.info("methodCode: $code")
         if (!code.contains("@Test")) {
@@ -170,12 +170,12 @@ class JavaTestContextProvider : TestContextProvider() {
         return true
     }
 
-    override fun insertClassCode(sourceFile: PsiFile, project: Project, code: String): Boolean {
+    override fun insertClassCode(sourceFile: VirtualFile, project: Project, code: String): Boolean {
         log.info("start insertClassCode: $code")
-        val psiTestFile = PsiManager.getInstance(project).findFile(sourceFile.virtualFile) ?: return false
 
         WriteCommandAction.runWriteCommandAction(project) {
-            val document = psiTestFile.viewProvider.document!!
+            val psiFile = PsiManager.getInstance(project).findFile(sourceFile) as PsiJavaFile
+            val document = psiFile.viewProvider.document!!
             document.insertString(document.textLength, code)
         }
 

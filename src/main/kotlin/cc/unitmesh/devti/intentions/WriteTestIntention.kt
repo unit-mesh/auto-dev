@@ -117,9 +117,9 @@ class WriteTestIntention : AbstractChatIntention() {
             }
 
             logger<WriteTestIntention>().warn("LLM suggestion: $suggestion")
+
             parseCodeFromString(suggestion.toString()).forEach {
-                val testFile: PsiFile = PsiManager.getInstance(project).findFile(context.file)!!
-                contextProvider.insertTestCode(testFile, project, it)
+                contextProvider.insertTestCode(context.file, project, it)
             }
         }
     }
