@@ -57,13 +57,12 @@ public class BlogController {
 
         assertEquals(
             classContext.toQuery(),
-            """class name: BlogController
-class fields: blogService
-class methods: public BlogController(BlogService blogService)
-@PostMapping("/blog")     public BlogPost createBlog(CreateBlogDto blogDto)
-@GetMapping("/blog")     public List<BlogPost> getBlog()
-super classes: []
-"""
+            """class BlogController {
+  blogService
+  + public BlogController(BlogService blogService)
+  + @PostMapping("/blog")     public BlogPost createBlog(CreateBlogDto blogDto)
+  + @GetMapping("/blog")     public List<BlogPost> getBlog()
+}"""
         )
     }
 

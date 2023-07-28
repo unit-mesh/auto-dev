@@ -281,7 +281,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
             dtos
         }
 
-        val services = processor.serviceList()?.map { it } ?: emptyList()
+        val services = processor.serviceList().map { it }
 
         val promptText =
             promptTemplate.createOrUpdateControllerMethod(clazz, storyDetail, models, services, isNewController)
