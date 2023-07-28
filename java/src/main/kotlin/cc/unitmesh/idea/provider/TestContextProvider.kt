@@ -24,29 +24,22 @@ class TestContextProvider : ChatContextProvider {
         } ?: false
 
         if (isController) {
-            items.add(
-                ChatContextItem(
-                    TestContextProvider::class,
-                    """
+            val testControllerPrompt = """
                         |You MUST use should_xx style for test method name.
                         |You MUST use MockMvc and test API only.
                         |You MUST use given-when-then style.
                         |You MUST use should_xx style for test method name.""".trimMargin()
-                )
-            )
+            items += ChatContextItem(TestContextProvider::class, testControllerPrompt)
         }
 
         if (isService) {
-            items.add(
-                ChatContextItem(
-                    TestContextProvider::class,
-                    """
+            val testServicePrompt = """
                         |You MUST use should_xx style for test method name.
                         |You MUST use Mockito and test service only.
                         |You MUST use given-when-then style.
                         |You MUST use should_xx style for test method name. """.trimMargin()
-                )
-            )
+
+            items += ChatContextItem(TestContextProvider::class, testServicePrompt)
         }
 
         return items
