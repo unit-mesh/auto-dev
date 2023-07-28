@@ -27,10 +27,11 @@ class TestContextProvider : ChatContextProvider {
             items.add(
                 ChatContextItem(
                     TestContextProvider::class,
-                    """You MUST use should_xx style for test method name.
-                    | You MUST use MockMvc and test API only.
-                    | You MUST use given-when-then style.
-                    | You MUST use should_xx style for test method name.""".trimMargin()
+                    """
+                        |You MUST use should_xx style for test method name.
+                        |You MUST use MockMvc and test API only.
+                        |You MUST use given-when-then style.
+                        |You MUST use should_xx style for test method name.""".trimMargin()
                 )
             )
         }
@@ -39,10 +40,11 @@ class TestContextProvider : ChatContextProvider {
             items.add(
                 ChatContextItem(
                     TestContextProvider::class,
-                    """You MUST use should_xx style for test method name.
-                    | You MUST use Mockito and test service only.
-                    | You MUST use given-when-then style.
-                    | You MUST use should_xx style for test method name. """.trimMargin()
+                    """
+                        |You MUST use should_xx style for test method name.
+                        |You MUST use Mockito and test service only.
+                        |You MUST use given-when-then style.
+                        |You MUST use should_xx style for test method name. """.trimMargin()
                 )
             )
         }
