@@ -158,7 +158,7 @@ class JavaTestContextProvider : TestContextProvider() {
             return false
         }
 
-        if (code.contains("class ")) {
+        if (code.startsWith("import") && code.contains("class ")) {
             return insertClassCode(sourceFile, project, code)
         }
 

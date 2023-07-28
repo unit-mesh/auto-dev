@@ -42,6 +42,10 @@ class TestCodeGenTask(
     private val testContextProvider = TestContextProvider.context(lang)
 
     override fun run(indicator: ProgressIndicator) {
+        indicator.isIndeterminate = true
+        indicator.fraction = 0.1
+        indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.prepare-context")
+
         val testContext = testContextProvider?.findOrCreateTestFile(request.file, request.project, request.element)
         if (testContext == null) {
             logger<WriteTestIntention>().error("Failed to create test file for: ${request.file}")
@@ -72,6 +76,9 @@ class TestCodeGenTask(
                 prompter += it.text
             }
 
+            indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.collect-context")
+            indicator.fraction = 0.3
+
             prompter += "\n"
 
             val additionContextRef: Ref.ObjectRef<String> = Ref.ObjectRef()
@@ -94,14 +101,22 @@ class TestCodeGenTask(
                 "Start ${testContext.testClassName} with `import` syntax here:  \n"
             }
 
+            indicator.fraction = 0.8
+            indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.prompt")
+
             val flow: Flow<String> =
                 ConnectorFactory.getInstance().connector(request.project).stream(prompter, "")
 
             logger<WriteTestIntention>().warn("Prompt: $prompter")
 
+            indicator.fraction = 0.9
+            indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.write-test")
+
             writeTestToFile(request.project, flow, testContext, testContextProvider!!)
 
             navigateTestFile(testContext.file, request.editor, request.project)
+
+            indicator.fraction = 1.0
         }
     }
 
