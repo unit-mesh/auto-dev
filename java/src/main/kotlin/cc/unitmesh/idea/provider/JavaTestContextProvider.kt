@@ -125,7 +125,6 @@ class JavaTestContextProvider : TestContextProvider() {
     }
 
     override fun insertTestCode(sourceFile: VirtualFile, project: Project, code: String): Boolean {
-        // Check if the provided methodCode contains @Test annotation
         log.info("methodCode: $code")
         if (!code.contains("@Test")) {
             log.error("methodCode does not contain @Test annotation: $code")
@@ -160,8 +159,13 @@ class JavaTestContextProvider : TestContextProvider() {
             log.info("newTestMethod: ${newTestMethod.text}")
 
             WriteCommandAction.runWriteCommandAction(project) {
-                val addedMethod: PsiMethod = rootElement.add(newTestMethod) as PsiMethod
-                addedMethod.navigate(true)
+                val lastMethod = rootElement.methods.lastOrNull()
+                val lastMethodEndOffset = lastMethod?.textRange?.endOffset ?: 0
+
+                val document = PsiDocumentManager.getInstance(project).getDocument(rootElement.containingFile)
+                // insert new line with indent before the new method
+                document?.insertString(lastMethodEndOffset, "\n    ")
+                document?.insertString(lastMethodEndOffset, newTestMethod.text)
             }
 
             project.guessProjectDir()?.refresh(true, true)
@@ -172,7 +176,6 @@ class JavaTestContextProvider : TestContextProvider() {
 
     override fun insertClassCode(sourceFile: VirtualFile, project: Project, code: String): Boolean {
         log.info("start insertClassCode: $code")
-
         WriteCommandAction.runWriteCommandAction(project) {
             val psiFile = PsiManager.getInstance(project).findFile(sourceFile) as PsiJavaFile
             val document = psiFile.viewProvider.document!!
