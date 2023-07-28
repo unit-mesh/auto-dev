@@ -41,13 +41,14 @@ class WriteTestIntention : AbstractChatIntention() {
     }
 
     private fun writeTestTask(file: PsiFile, element: PsiElement, project: Project, editor: Editor) {
+        val lang = file.language.displayName
+
+        val selectedText = element.text
+        val actionType = ChatActionType.WRITE_TEST
+
+        val testContextProvider = TestContextProvider.context(lang)
+
         WriteAction.runAndWait<Throwable> {
-            val lang = file.language.displayName
-
-            val selectedText = element.text
-            val actionType = ChatActionType.WRITE_TEST
-
-            val testContextProvider = TestContextProvider.context(lang)
             val testContext = testContextProvider?.findOrCreateTestFile(file, project, element)
             if (testContext == null) {
                 logger<WriteTestIntention>().error("Failed to create test file for: $file")
