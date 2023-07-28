@@ -2,8 +2,9 @@ package cc.unitmesh.idea.provider
 
 import cc.unitmesh.devti.context.FileContext
 import cc.unitmesh.devti.context.FileContextProvider
-import cc.unitmesh.devti.provider.WriteTestService
 import cc.unitmesh.devti.provider.TestFileContext
+import cc.unitmesh.devti.provider.WriteTestService
+import com.intellij.execution.RunManager
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
@@ -229,5 +230,15 @@ class JavaWriteTestService : WriteTestService() {
         }
 
         return testFileRef.element!!
+    }
+
+    fun runJunitTest(project: Project) {
+//        val projectTracker: AutoImportProjectTracker = AutoImportProjectTracker.getInstance(project)
+//        projectTracker.scheduleChangeProcessing()
+//        projectTracker.enableAutoReloadInTests()
+//        RunManager.getInstance(project).allConfigurationsList.forEach {
+        // filter in here and make runnable
+//        }
+
     }
 }

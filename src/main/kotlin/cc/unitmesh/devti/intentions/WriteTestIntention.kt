@@ -3,7 +3,10 @@ package cc.unitmesh.devti.intentions
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.intentions.task.TestCodeGenRequest
 import cc.unitmesh.devti.intentions.task.TestCodeGenTask
+import com.intellij.execution.RunManager
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.externalSystem.autoimport.AutoImportProjectTracker
+import com.intellij.openapi.externalSystem.autoimport.ExternalSystemProjectAware
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
@@ -18,6 +21,7 @@ class WriteTestIntention : AbstractChatIntention() {
 
         val element = getElementToAction(project, editor) ?: return
         selectElement(element, editor)
+
 
         val task = TestCodeGenTask(TestCodeGenRequest(file, element, project, editor, element.text))
 
