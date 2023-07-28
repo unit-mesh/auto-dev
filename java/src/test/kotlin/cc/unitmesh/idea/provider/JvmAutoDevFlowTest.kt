@@ -1,5 +1,6 @@
 package cc.unitmesh.idea.provider
 
+import cc.unitmesh.idea.flow.provider.JvmAutoDevFlow
 import org.junit.Test
 
 class JvmAutoDevFlowTest {

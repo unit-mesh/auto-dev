@@ -1,10 +1,9 @@
-package cc.unitmesh.idea.provider
+package cc.unitmesh.idea.service
 
 import cc.unitmesh.devti.context.FileContext
 import cc.unitmesh.devti.context.FileContextProvider
 import cc.unitmesh.devti.provider.TestFileContext
 import cc.unitmesh.devti.provider.WriteTestService
-import com.intellij.execution.RunManager
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction

@@ -1,4 +1,4 @@
-package cc.unitmesh.idea.flow
+package cc.unitmesh.idea.spring
 
 import com.intellij.psi.PsiClass
 import kotlinx.serialization.Serializable

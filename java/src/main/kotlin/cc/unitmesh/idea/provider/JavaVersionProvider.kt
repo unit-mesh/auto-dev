@@ -1,4 +1,4 @@
-package cc.unitmesh.idea.java.provider
+package cc.unitmesh.idea.provider
 
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider

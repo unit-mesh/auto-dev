@@ -1,4 +1,4 @@
-package cc.unitmesh.idea.java.library
+package cc.unitmesh.idea.context.library
 
 data class SpringDataLibraryDescriptor(val shortText: String, val coords: Array<String>)
 data class LibraryDescriptor(val shortText: String, val coords: String)

@@ -1,4 +1,4 @@
-package cc.unitmesh.idea.provider
+package cc.unitmesh.idea.flow.provider
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.context.model.DtClass
@@ -14,7 +14,7 @@ import cc.unitmesh.devti.provider.PromptStrategy
 import cc.unitmesh.devti.runconfig.AutoDevRunProfileState
 import cc.unitmesh.idea.flow.JavaCodeProcessor
 import cc.unitmesh.idea.flow.JavaParseUtil
-import cc.unitmesh.idea.flow.JavaSpringCodeCreator
+import cc.unitmesh.idea.spring.JavaSpringCodeCreator
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger

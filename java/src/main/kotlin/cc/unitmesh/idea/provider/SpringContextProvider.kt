@@ -1,10 +1,10 @@
-package cc.unitmesh.idea.java.provider
+package cc.unitmesh.idea.provider
 
 import cc.unitmesh.devti.prompting.code.TestStack
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
-import cc.unitmesh.idea.java.library.SpringLibrary
+import cc.unitmesh.idea.context.library.SpringLibrary
 import com.intellij.openapi.externalSystem.model.project.LibraryData
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.project.Project

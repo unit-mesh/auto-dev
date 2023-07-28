@@ -1,5 +1,6 @@
 package cc.unitmesh.idea.provider
 
+import cc.unitmesh.idea.flow.provider.JvmPromptStrategy
 import com.intellij.lang.java.JavaLanguage
 import com.intellij.psi.JavaPsiFacade
 import com.intellij.psi.PsiElementFactory

@@ -2,7 +2,7 @@ package cc.unitmesh.kotlin.context
 
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.builder.ClassContextBuilder
-import cc.unitmesh.idea.java.context.JavaContextCollectionUtilsKt
+import cc.unitmesh.idea.context.JavaContextCollectionUtilsKt
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import org.jetbrains.annotations.Nullable
