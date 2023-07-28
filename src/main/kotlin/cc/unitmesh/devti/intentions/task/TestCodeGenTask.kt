@@ -90,7 +90,7 @@ class TestCodeGenTask(
             prompter += "\n```${lang.lowercase()}\n${request.selectText}\n```\n"
 
             prompter += if (!testContext.isNewFile) {
-                "Start writing test method code here:  \n"
+                "Start test code with `@Test` syntax here:  \n"
             } else {
                 "Start ${testContext.testClassName} with `import` syntax here:  \n"
             }
