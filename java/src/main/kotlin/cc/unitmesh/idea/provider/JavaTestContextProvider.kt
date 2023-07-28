@@ -4,26 +4,18 @@ import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.provider.TestContextProvider
 import cc.unitmesh.devti.provider.TestFileContext
-import com.intellij.ide.projectView.impl.ProjectRootsUtil
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
-import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.project.IndexNotReadyException
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
-import com.intellij.openapi.roots.FileIndex
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiClassReferenceType
-import com.intellij.psi.stubs.StubUpdatingIndex
-import com.intellij.util.FileContentUtil
-import com.intellij.util.indexing.FileBasedIndex
 import java.io.File
-import java.util.*
 
 class JavaTestContextProvider : TestContextProvider() {
     companion object {
@@ -148,9 +140,10 @@ class JavaTestContextProvider : TestContextProvider() {
 
         ApplicationManager.getApplication().invokeLater {
             val rootElement = runReadAction {
-                val psiClass = sourceFile.children.find { it is PsiClass } as? PsiClass
+                val psiJavaFile = PsiManager.getInstance(project).findFile(sourceFile) as PsiJavaFile
+                val psiClass = psiJavaFile.classes.firstOrNull()
                 if (psiClass == null) {
-                    log.error("Failed to find PsiClass in the source file: $sourceFile")
+                    log.error("Failed to find PsiClass in the source file: $psiJavaFile")
                     return@runReadAction null
                 }
 
