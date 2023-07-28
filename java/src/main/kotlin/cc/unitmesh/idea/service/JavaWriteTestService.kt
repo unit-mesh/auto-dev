@@ -236,7 +236,7 @@ class JavaWriteTestService : WriteTestService() {
         return testFileRef.element!!
     }
 
-    override fun runJunitTest(project: Project, virtualFile: VirtualFile) {
+    override fun runTest(project: Project, virtualFile: VirtualFile) {
         val runManager = RunManager.getInstance(project)
         val allConfigurationsList = runManager.allConfigurationsList
         log.warn(virtualFile.nameWithoutExtension)

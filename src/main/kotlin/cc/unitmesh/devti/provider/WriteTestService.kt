@@ -32,7 +32,7 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
     abstract fun lookupRelevantClass(project: Project, element: PsiElement): List<FileContext>
     abstract fun insertTestCode(sourceFile: VirtualFile, project: Project, code: String): Boolean
     abstract fun insertClassCode(sourceFile: VirtualFile, project: Project, code: String): Boolean
-    open fun runJunitTest(project: Project, virtualFile: VirtualFile) {}
+    open fun runTest(project: Project, virtualFile: VirtualFile) {}
 
     companion object {
         private val EP_NAME: ExtensionPointName<WriteTestService> =

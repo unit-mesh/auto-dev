@@ -110,7 +110,7 @@ class TestCodeGenTask(
 
             navigateTestFile(testContext.file, request.editor, request.project)
 
-            writeTestService.runJunitTest(request.project, testContext.file)
+            writeTestService.runTest(request.project, testContext.file)
 
             indicator.fraction = 1.0
         }
