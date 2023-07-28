@@ -14,8 +14,8 @@ class FileContext(
     val classes: List<PsiElement> = emptyList(),
     val methods: List<PsiElement> = emptyList(),
 ) : LLMQueryContext {
-    private fun getClassNames(): List<String> = classes.mapNotNull {
-        ClassContextProvider(false).from(it).name
+    private fun getClassDetail(): List<String> = classes.mapNotNull {
+        ClassContextProvider(false).from(it).toQuery()
     }
 
     override fun toQuery(): String {
@@ -33,20 +33,14 @@ class FileContext(
             if (imports.isNotEmpty()) imports.joinToString(" ", transform = { it.text }) else ""
         )
         val fileClassNames =
-            getFieldString("file classes", if (getClassNames().isNotEmpty()) getClassNames().joinToString(", ") else "")
+            getFieldString("file classes", if (getClassDetail().isNotEmpty()) getClassDetail().joinToString(", ") else "")
         val filePath = getFieldString("file path", path)
 
         return buildString {
             append("file name: $name\n")
-            if (filePackage.isNotBlank()) {
-                append("$filePackage\n")
-            }
-            if (fileImports.isNotBlank()) {
-                append("$fileImports\n")
-            }
-            if (fileClassNames.isNotBlank()) {
-                append("$fileClassNames\n")
-            }
+            if (filePackage.isNotEmpty()) append("$filePackage\n")
+            if (fileImports.isNotEmpty()) append("$fileImports\n")
+            if (fileClassNames.isNotEmpty()) append("$fileClassNames\n")
             append("$filePath\n")
         }
     }
