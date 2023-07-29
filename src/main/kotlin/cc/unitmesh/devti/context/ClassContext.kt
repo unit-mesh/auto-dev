@@ -22,26 +22,13 @@ class ClassContext(
         MethodContextProvider(false, gatherUsages = false).from(it).signature
     }
 
-    /**
-     * Output:
-     * ```
-     * class BlogService {
-     *   blogRepository: BlogRepository
-     *   + createBlog(blogDto: CreateBlogDto): BlogPost
-     *   + getAllBlogPosts(): List<BlogPost>
-     * }
-     * ```
-     */
     override fun toQuery(): String {
         val className = name ?: "_"
         val classFields = getFieldNames().joinToString(separator = "\n  ")
-
         val methodSignatures = getMethodSignatures()
-            .filter { it.isNotBlank() }
-            .map { method ->
-                "+ ${method}"
+            .filter { it.isNotBlank() }.joinToString(separator = "\n  ") { method ->
+                "+ $method"
             }
-            .joinToString(separator = "\n  ")
 
         return """
         |class $className {

@@ -31,12 +31,10 @@ class MethodContext(
     }
 
     override fun toQuery(): String {
-        val query = """
-        fun name: ${name ?: "_"}
-        fun language: ${language ?: "_"}
-        fun signature: ${signature ?: "_"}
-        fun code: $text
-    """.trimIndent()
+        val query = """language: ${language ?: "_"}
+fun name: ${name ?: "_"}
+fun signature: ${signature ?: "_"}
+    $text"""
 
         if (classContext != null) {
             return query + classContext.toQuery()

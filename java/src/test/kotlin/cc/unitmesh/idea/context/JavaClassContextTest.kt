@@ -73,12 +73,13 @@ public class BlogController {
 
         assertEquals(
             context.toQuery(),
-            """    fun name: BlogController
-    fun language: Java
-    fun signature: public BlogController(BlogService blogService)
-    fun code: public BlogController(BlogService blogService) {
-    this.blogService = blogService;
-}"""
+            """
+               |language: Java
+               |fun name: BlogController
+               |fun signature: public BlogController(BlogService blogService)
+               |    public BlogController(BlogService blogService) {
+               |        this.blogService = blogService;
+               |    }""".trimMargin()
         )
     }
 }

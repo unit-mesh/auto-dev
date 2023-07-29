@@ -14,7 +14,7 @@ class FileContext(
     val classes: List<PsiElement> = emptyList(),
     val methods: List<PsiElement> = emptyList(),
 ) : LLMQueryContext {
-    private fun getClassDetail(): List<String> = classes.mapNotNull {
+    private fun getClassDetail(): List<String> = classes.map {
         ClassContextProvider(false).from(it).toQuery()
     }
 
