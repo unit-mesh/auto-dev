@@ -5,6 +5,15 @@
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
+        <classContextBuilder language="JavaScript"
+                             implementationClass="cc.unitmesh.ide.webstorm.context.JavaScriptClassContextBuilder"/>
+        <methodContextBuilder language="JavaScript"
+                              implementationClass="cc.unitmesh.ide.webstorm.context.JavaScriptMethodContextBuilder"/>
+        <fileContextBuilder language="JavaScript"
+                            implementationClass="cc.unitmesh.ide.webstorm.context.JavaScriptFileContextBuilder"/>
+        <variableContextBuilder language="JavaScript"
+                                implementationClass="cc.unitmesh.ide.webstorm.context.JavaScriptVariableContextBuilder"/>
+
         <contextPrompter
                 language="JavaScript"
                 implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptContextPrompter"/>
