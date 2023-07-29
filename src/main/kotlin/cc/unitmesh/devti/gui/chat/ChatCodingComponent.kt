@@ -142,8 +142,12 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
     private fun addQuestionArea() {
         val actionPanel = JPanel(BorderLayout())
 
-        val searchTextArea = EditorTextField()
-        searchTextArea.setOneLineMode(false)
+        val searchTextArea = LLMInputField(
+            chatCodingService.project,
+            chatCodingService,
+            this,
+            listOf()
+        )
 
         val listener: (ActionEvent) -> Unit = {
             val prompt = searchTextArea.text
@@ -156,14 +160,6 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
                 override fun requestPrompt() = prompt
             }, context)
         }
-
-        searchTextArea.addKeyListener(object : KeyAdapter() {
-            override fun keyPressed(e: KeyEvent?) {
-                if (e?.keyCode == KeyEvent.VK_ENTER) {
-                    listener.invoke(ActionEvent(e.source, e.id, e.paramString()))
-                }
-            }
-        })
 
         actionPanel.add(searchTextArea, BorderLayout.CENTER)
 
