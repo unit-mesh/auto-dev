@@ -2,42 +2,13 @@ package cc.unitmesh.devti.gui.chat
 
 
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.util.text.StringUtil
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
-import com.intellij.util.ui.UIUtil
-import org.jetbrains.annotations.Nls
-import org.jetbrains.annotations.NotNull
 import java.awt.*
-import javax.accessibility.AccessibleContext
 import javax.swing.*
-
-class DisplayComponent(question: String) : JEditorPane() {
-    init {
-        this.contentType = "text/plain;charset=UTF-8"
-        this.putClientProperty(HONOR_DISPLAY_PROPERTIES, true)
-        this.font = UIUtil.getMenuFont()
-        this.isEditable = false
-        this.border = JBEmptyBorder(8)
-        this.text = question
-        this.isOpaque = false
-        this.putClientProperty(
-            AccessibleContext.ACCESSIBLE_NAME_PROPERTY,
-            StringUtil.unescapeXmlEntities(StringUtil.stripHtml(question, " "))
-        )
-
-        if (this.caret != null) {
-            this.caretPosition = 0
-        }
-    }
-
-    fun updateMessage(content: String) {
-        this.text = content
-    }
-}
 
 class MessageComponent(private val question: String, isPrompt: Boolean) : JBPanel<MessageComponent>() {
     private val component: DisplayComponent = DisplayComponent(question)
