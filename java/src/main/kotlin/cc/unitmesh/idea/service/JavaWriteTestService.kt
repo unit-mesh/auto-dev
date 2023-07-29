@@ -109,8 +109,7 @@ class JavaWriteTestService : WriteTestService() {
             resolvedClasses.putAll(resolveByField(element))
 
             if (element is PsiClass) {
-                val methods = element.methods
-                methods.forEach { method ->
+                element.methods.forEach { method ->
                     resolvedClasses.putAll(resolveByMethod(method))
                 }
             }
@@ -135,7 +134,7 @@ class JavaWriteTestService : WriteTestService() {
             element.parameterList.parameters.filter {
                 it.type is PsiClassReferenceType
             }.map {
-                resolvedClasses[it.name] = (it.type as PsiClassReferenceType).resolve()?.containingFile as PsiJavaFile
+                resolvedClasses[it.name] = (it.type as PsiClassReferenceType).resolveFile()
             }
 
             val outputType = element.returnTypeElement?.type
@@ -143,13 +142,13 @@ class JavaWriteTestService : WriteTestService() {
                 if (outputType.parameters.isNotEmpty()) {
                     outputType.parameters.forEach {
                         if (it is PsiClassReferenceType) {
-                            resolvedClasses[it.canonicalText] = it.resolve()?.containingFile as PsiJavaFile
+                            resolvedClasses[it.canonicalText] = outputType.resolveFile()
                         }
                     }
                 }
 
                 val canonicalText = outputType.canonicalText
-                resolvedClasses[canonicalText] = outputType.resolve()?.containingFile as PsiJavaFile
+                resolvedClasses[canonicalText] = outputType.resolveFile()
             }
         }
 
@@ -169,13 +168,13 @@ class JavaWriteTestService : WriteTestService() {
                 if (fieldType.parameters.isNotEmpty()) {
                     fieldType.parameters.forEach {
                         if (it is PsiClassReferenceType) {
-                            resolvedClasses[it.canonicalText] = it.resolve()?.containingFile as PsiJavaFile
+                            resolvedClasses[it.canonicalText] = it.resolveFile()
                         }
                     }
                 }
 
                 val canonicalText = fieldType.canonicalText
-                resolvedClasses[canonicalText] = fieldType.resolve()?.containingFile as PsiJavaFile
+                resolvedClasses[canonicalText] = fieldType.resolveFile()
             }
         }
 
@@ -297,4 +296,8 @@ class JavaWriteTestService : WriteTestService() {
             executor
         )
     }
+}
+
+private fun PsiClassReferenceType.resolveFile(): PsiJavaFile? {
+    return this.resolve()?.containingFile as PsiJavaFile
 }
