@@ -5,7 +5,6 @@ import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.ui.NullableComponent
-import com.intellij.ui.EditorTextField
 import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
 import com.intellij.ui.OnePixelSplitter
@@ -142,10 +141,8 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
     private fun addQuestionArea() {
         val actionPanel = JPanel(BorderLayout())
 
-        val searchTextArea = LLMInputField(
+        val searchTextArea = AutoDevInputField(
             chatCodingService.project,
-            chatCodingService,
-            this,
             listOf()
         )
 
@@ -154,12 +151,18 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
             searchTextArea.text = ""
             val context = ChatContext(null, "", "")
 
-            chatCodingService.actionType = ChatActionType.REFACTOR
+            chatCodingService.actionType = ChatActionType.CHAT
             chatCodingService.handlePromptAndResponse(this, object : ContextPrompter() {
                 override fun displayPrompt() = prompt
                 override fun requestPrompt() = prompt
             }, context)
         }
+
+        searchTextArea.addListener(object : AutoDevInputListener {
+            override fun onSubmit(component: AutoDevInputField, trigger: AutoDevInputTrigger) {
+                listener.invoke(ActionEvent(component, 0, trigger.name))
+            }
+        })
 
         actionPanel.add(searchTextArea, BorderLayout.CENTER)
 
