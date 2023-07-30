@@ -64,16 +64,8 @@ class TestCodeGenTask(
         }
 
         LLMCoroutineScopeService.scope(project).launch {
-            val creationContext = ChatCreationContext(ChatOrigin.Intention, actionType, request.file)
-            val chatContextItems = ChatContextProvider.collectChatContextList(request.project, creationContext)
-            chatContextItems.forEach {
-                prompter += it.text
-            }
-
             indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.collect-context")
             indicator.fraction = 0.3
-
-            prompter += "\n"
 
             val additionContextRef: Ref.ObjectRef<String> = Ref.ObjectRef()
             additionContextRef.element = ""
@@ -85,10 +77,14 @@ class TestCodeGenTask(
                 }
             }
 
+            val creationContext = ChatCreationContext(ChatOrigin.Intention, actionType, request.file)
+            val contextItems = ChatContextProvider.collectChatContextList(request.project, creationContext)
+            contextItems.forEach {
+                prompter += it.text
+            }
+            prompter += "\n"
             prompter += additionContextRef.element
-
             prompter += "\n```${lang.lowercase()}\n${request.selectText}\n```\n"
-
             prompter += if (!testContext.isNewFile) {
                 "Start test code with `@Test` syntax here:  \n"
             } else {
