@@ -32,7 +32,7 @@ class FileContext(
             "file imports",
             if (imports.isNotEmpty()) imports.joinToString(" ", transform = { it.text }) else ""
         )
-        val fileClassNames =
+        val classDetails =
             getFieldString("file classes", if (getClassDetail().isNotEmpty()) getClassDetail().joinToString(", ") else "")
         val filePath = getFieldString("file path", path)
 
@@ -40,7 +40,7 @@ class FileContext(
             append("file name: $name\n")
             if (filePackage.isNotEmpty()) append("$filePackage\n")
             if (fileImports.isNotEmpty()) append("$fileImports\n")
-            if (fileClassNames.isNotEmpty()) append("$fileClassNames\n")
+            if (classDetails.isNotEmpty()) append("$classDetails\n")
             append("$filePath\n")
         }
     }
