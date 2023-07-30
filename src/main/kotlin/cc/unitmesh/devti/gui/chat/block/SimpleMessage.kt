@@ -5,9 +5,10 @@ import cc.unitmesh.devti.gui.chat.ChatRole
 class SimpleMessage(
     override val displayText: String,
     override val text: String,
-    override val role: ChatRole
+    val chatRole: ChatRole
 ) : CompletableMessage {
     private val textListeners: MutableList<MessageBlockTextListener> = mutableListOf()
+    override fun getRole(): ChatRole = chatRole
 
     override fun addTextListener(textListener: MessageBlockTextListener) {
         textListeners += textListener

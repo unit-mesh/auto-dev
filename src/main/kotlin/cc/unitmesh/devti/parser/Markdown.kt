@@ -23,6 +23,20 @@ fun parseMarkdown(markdown: String): String {
     return htmlRenderer.render(document)
 }
 
+fun toHtml(markdown: String): String {
+    val extensions: List<Extension> = listOf(TablesExtension.create())
+    val parser = Parser.builder()
+        .extensions(extensions)
+        .build()
+
+    val document: Node = parser.parse(markdown)
+    val htmlRenderer = HtmlRenderer
+        .builder()
+        .extensions(extensions)
+        .build()
+    return htmlRenderer.render(document)
+}
+
 fun parseCodeFromString(markdown: String): List<String> {
     val extensions: List<Extension> = listOf(TablesExtension.create())
     val parser: Parser = Parser.builder()
