@@ -10,13 +10,7 @@ import com.intellij.util.ui.JBUI
 import java.awt.*
 import javax.swing.*
 
-enum class LLMChatRole {
-    System,
-    Assistant,
-    User
-}
-
-class MessageComponent(private val message: String, role: LLMChatRole) : JBPanel<MessageComponent>() {
+class MessageComponent(private val message: String, role: ChatRole) : JBPanel<MessageComponent>() {
     private val component: DisplayComponent = DisplayComponent(message)
     private var answer: String? = null
 
@@ -24,9 +18,9 @@ class MessageComponent(private val message: String, role: LLMChatRole) : JBPanel
         isDoubleBuffered = true
         isOpaque = true
         background = when (role) {
-            LLMChatRole.System -> JBColor(0xEAEEF7, 0x45494A)
-            LLMChatRole.Assistant -> JBColor(0xE0EEF7, 0x2d2f30)
-            LLMChatRole.User -> JBColor(0xE0EEF7, 0x2d2f30)
+            ChatRole.System -> JBColor(0xEAEEF7, 0x45494A)
+            ChatRole.Assistant -> JBColor(0xE0EEF7, 0x2d2f30)
+            ChatRole.User -> JBColor(0xE0EEF7, 0x2d2f30)
         }
 
         this.border = JBEmptyBorder(8)
