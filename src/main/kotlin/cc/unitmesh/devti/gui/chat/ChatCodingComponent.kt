@@ -68,7 +68,7 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
     }
 
     fun add(message: String, isMe: Boolean = false) {
-        val messageComponent = MessageComponent(message, isMe)
+        val messageComponent = MessageComponent(message, LLMChatRole.User)
 
         myList.add(messageComponent)
         updateLayout()
@@ -124,7 +124,7 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
     }
 
     private suspend fun updateMessageInUi(content: Flow<String>): String {
-        val messageComponent = MessageComponent("...", false)
+        val messageComponent = MessageComponent("...", LLMChatRole.Assistant)
         myList.add(messageComponent)
 
         var text = ""
