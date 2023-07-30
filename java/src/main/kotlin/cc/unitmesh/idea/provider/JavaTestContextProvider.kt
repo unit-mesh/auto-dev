@@ -7,7 +7,7 @@ import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.idea.MvcUtil
 import com.intellij.openapi.project.Project
 
-class TestContextProvider : ChatContextProvider {
+class JavaTestContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
         return creationContext.action == ChatActionType.WRITE_TEST
     }
@@ -29,7 +29,7 @@ class TestContextProvider : ChatContextProvider {
                         |You MUST use MockMvc and test API only.
                         |You MUST use given-when-then style.
                         |You MUST use should_xx style for test method name.""".trimMargin()
-            items += ChatContextItem(TestContextProvider::class, testControllerPrompt)
+            items += ChatContextItem(JavaTestContextProvider::class, testControllerPrompt)
         }
 
         if (isService) {
@@ -39,7 +39,7 @@ class TestContextProvider : ChatContextProvider {
                         |You MUST use given-when-then style.
                         |You MUST use should_xx style for test method name. """.trimMargin()
 
-            items += ChatContextItem(TestContextProvider::class, testServicePrompt)
+            items += ChatContextItem(JavaTestContextProvider::class, testServicePrompt)
         }
 
         return items
