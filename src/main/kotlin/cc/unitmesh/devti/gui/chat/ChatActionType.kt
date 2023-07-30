@@ -21,7 +21,7 @@ enum class ChatActionType {
             EXPLAIN -> "Explain selected $lang code"
             REVIEW -> "Code Review for following $lang code"
             REFACTOR -> "Refactor the following $lang code"
-            CODE_COMPLETE -> "Complete $lang  code, return rest code, no explaining"
+            CODE_COMPLETE -> "Complete $lang code, return rest code, no explaining"
             WRITE_TEST -> "Write unit test for following $lang code"
             FIX_ISSUE -> "Help me fix this issue"
             GEN_COMMIT_MESSAGE -> """suggest 10 commit messages based on the following diff:

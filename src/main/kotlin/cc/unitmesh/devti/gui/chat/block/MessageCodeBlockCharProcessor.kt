@@ -40,7 +40,7 @@ class MessageCodeBlockCharProcessor {
         }
     }
 
-    fun isCodeBlockEnd(parameters: Parameters, blockStart: Int): Boolean {
+    private fun isCodeBlockEnd(parameters: Parameters, blockStart: Int): Boolean {
         if (parameters.charIndex - blockStart < 5) {
             return false
         }
@@ -51,17 +51,15 @@ class MessageCodeBlockCharProcessor {
                 val subSequence = fullMessage.subSequence(charIndex - 3, charIndex + 1)
                 subSequence == "\n$borderBlock"
             }
-
             parameters.char == '\n' && (charIndex - 3) - 1 >= 0 -> {
                 val subSequence = fullMessage.subSequence(charIndex - 4, charIndex)
                 subSequence == "\n$borderBlock"
             }
-
             else -> false
         }
     }
 
-    fun isCodeBlockStart(parameters: Parameters): Boolean {
+    private fun isCodeBlockStart(parameters: Parameters): Boolean {
         if (parameters.char == triggerChar && parameters.charIndex + 3 < parameters.fullMessage.length) {
             val isLineStart = parameters.charIndex == 0 || parameters.fullMessage[parameters.charIndex - 1] == '\n'
             if (isLineStart) {

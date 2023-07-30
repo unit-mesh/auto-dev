@@ -1,8 +1,6 @@
 package cc.unitmesh.devti.provider
 
-import cc.unitmesh.devti.context.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.prompting.model.CustomPromptConfig
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile

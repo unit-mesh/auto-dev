@@ -37,15 +37,11 @@ abstract class ChatBaseAction : AnAction() {
         if (prefixText.isEmpty()) {
             prefixText = document?.text?.substring(0, lineEndOffset) ?: ""
         }
-
-        // suffixText is the text after the selectedText, which is the text after the cursor position
         val suffixText = document?.text?.substring(lineEndOffset) ?: ""
 
-
         val prompter = ContextPrompter.prompter(file?.language?.displayName ?: "")
-        logger.info("use prompter: ${prompter?.javaClass}")
-        prompter?.initContext(getActionType(), prefixText, file, project, caretModel?.offset ?: 0)
-
+        logger.info("use prompter: ${prompter.javaClass}")
+        prompter.initContext(getActionType(), prefixText, file, project, caretModel?.offset ?: 0)
 
         sendToToolWindow(project) { service, panel ->
             val chatContext = ChatContext(
@@ -54,7 +50,7 @@ abstract class ChatBaseAction : AnAction() {
                 suffixText
             )
 
-            service.handlePromptAndResponse(panel, prompter!!, chatContext)
+            service.handlePromptAndResponse(panel, prompter, chatContext)
         }
     }
 

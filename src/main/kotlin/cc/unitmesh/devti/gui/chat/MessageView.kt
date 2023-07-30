@@ -13,7 +13,7 @@ import java.awt.*
 import javax.swing.*
 import kotlin.jvm.internal.Ref
 
-class MessageView(private val message: String, role: ChatRole) : JBPanel<MessageView>(), DataProvider {
+class MessageView(private val message: String, role: ChatRole) : JBPanel<MessageView>() {
     private val component: DisplayComponent = DisplayComponent(message)
     private var answer: String? = null
 
@@ -165,9 +165,5 @@ class MessageView(private val message: String, role: ChatRole) : JBPanel<Message
     companion object {
         private val logger = logger<MessageView>()
 
-    }
-
-    override fun getData(dataId: String): Any? {
-        return message
     }
 }

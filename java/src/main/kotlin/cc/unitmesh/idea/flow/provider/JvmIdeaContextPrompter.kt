@@ -58,7 +58,6 @@ class JvmIdeaContextPrompter : ContextPrompter() {
         return runBlocking {
             val prompt = createPrompt(selectedText)
 
-
             val finalPrompt = if (additionContext.isNotEmpty()) {
                 """$additionContext
                 |$selectedText""".trimMargin()
@@ -67,8 +66,8 @@ class JvmIdeaContextPrompter : ContextPrompter() {
             }
 
             return@runBlocking """$prompt:
-         <pre><code>$finalPrompt</pre></code>
-        """.trimMargin()
+                                | <pre><code>$finalPrompt</pre></code>
+                                """.trimMargin()
         }
     }
 
@@ -78,13 +77,19 @@ class JvmIdeaContextPrompter : ContextPrompter() {
 
             val finalPrompt = if (additionContext.isNotEmpty()) {
                 """$additionContext
-                |$selectedText""".trimMargin()
+                |```$lang
+                |$selectedText
+                |```
+                |""".trimMargin()
             } else {
-                selectedText
+                """```$lang
+                    |$selectedText
+                    |```
+                """.trimMargin()
             }
 
-            return@runBlocking """$prompt:
-                    $finalPrompt
+            return@runBlocking """$prompt: 
+                | $finalPrompt
                 """.trimMargin()
         }
     }
