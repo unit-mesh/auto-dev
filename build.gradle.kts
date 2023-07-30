@@ -278,6 +278,8 @@ project(":") {
         implementation(libs.bundles.openai)
         implementation(libs.bundles.markdown)
 
+        implementation("org.jetbrains:markdown:0.2.0.pre-55")
+
         implementation(libs.kotlinx.serialization.json)
         // jackson-module-kotlin
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2") {

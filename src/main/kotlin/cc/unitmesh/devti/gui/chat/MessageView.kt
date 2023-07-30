@@ -32,21 +32,21 @@ class MessageView(private val message: String, role: ChatRole) : JBPanel<Message
         centerPanel.isOpaque = false
         centerPanel.border = JBUI.Borders.emptyRight(8)
 
-//        component.updateMessage(message)
-//        component.revalidate()
-//        component.repaint()
-//        centerPanel.add(component)
-
         add(centerPanel, BorderLayout.CENTER)
 
-        val parts = layoutAll(message, SimpleMessage(message, message, role))
-        println(parts)
-
-        parts.forEach {
-            val blockView = TextBlockView(it)
-            blockView.initialize();
-            blockView.getComponent().setForeground(JBUI.CurrentTheme.Label.foreground())
-            centerPanel.add(blockView.getComponent())
+        if (role == ChatRole.User) {
+            val parts = layoutAll(message, SimpleMessage(message, message, role))
+            parts.forEach {
+                val blockView = TextBlockView(it)
+                blockView.initialize();
+                blockView.getComponent().setForeground(JBUI.CurrentTheme.Label.foreground())
+                centerPanel.add(blockView.getComponent())
+            }
+        } else {
+            component.updateMessage(message)
+            component.revalidate()
+            component.repaint()
+            centerPanel.add(component)
         }
     }
 

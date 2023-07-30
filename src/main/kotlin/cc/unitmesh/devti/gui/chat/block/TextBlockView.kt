@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.gui.chat.block
 
 import cc.unitmesh.devti.gui.chat.ChatRole
-import cc.unitmesh.devti.parser.toHtml
+import cc.unitmesh.devti.parser.convertMarkdownToHtml
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.util.ui.HTMLEditorKitBuilder
@@ -53,7 +53,7 @@ class TextBlockView(private val block: MessageBlock) : MessageBlockView {
 
     fun parseText(txt: String): String {
         if (getBlock().getMessage().getRole() === ChatRole.Assistant) {
-            return toHtml(txt)
+            return convertMarkdownToHtml(txt)
         }
 
         return XmlStringUtil.escapeString(txt)

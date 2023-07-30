@@ -7,35 +7,6 @@ import org.commonmark.node.FencedCodeBlock
 import org.commonmark.node.IndentedCodeBlock
 import org.commonmark.node.Node
 import org.commonmark.parser.Parser
-import org.commonmark.renderer.html.HtmlRenderer
-
-fun parseMarkdown(markdown: String): String {
-    val extensions: List<Extension> = listOf(TablesExtension.create())
-    val parser = Parser.builder()
-        .extensions(extensions)
-        .build()
-
-    val document: Node = parser.parse(markdown)
-    val htmlRenderer = HtmlRenderer
-        .builder()
-        .extensions(extensions)
-        .build()
-    return htmlRenderer.render(document)
-}
-
-fun toHtml(markdown: String): String {
-    val extensions: List<Extension> = listOf(TablesExtension.create())
-    val parser = Parser.builder()
-        .extensions(extensions)
-        .build()
-
-    val document: Node = parser.parse(markdown)
-    val htmlRenderer = HtmlRenderer
-        .builder()
-        .extensions(extensions)
-        .build()
-    return htmlRenderer.render(document)
-}
 
 fun parseCodeFromString(markdown: String): List<String> {
     val extensions: List<Extension> = listOf(TablesExtension.create())
