@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.gui.chat.block
 
-enum class BlockType  {
+enum class MessageBlockType  {
     CodeEditor,
     PlainText
 }

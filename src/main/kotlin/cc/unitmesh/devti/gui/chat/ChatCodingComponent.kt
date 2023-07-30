@@ -68,9 +68,9 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
     }
 
     fun add(message: String, isMe: Boolean = false) {
-        val messageComponent = MessageComponent(message, ChatRole.User)
+        val messageView = MessageView(message, ChatRole.User)
 
-        myList.add(messageComponent)
+        myList.add(messageView)
         updateLayout()
         scrollToBottom()
         progressBar.isIndeterminate = true
@@ -124,15 +124,15 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
     }
 
     private suspend fun updateMessageInUi(content: Flow<String>): String {
-        val messageComponent = MessageComponent("...", ChatRole.Assistant)
-        myList.add(messageComponent)
+        val messageView = MessageView("...", ChatRole.Assistant)
+        myList.add(messageView)
 
         var text = ""
         content.collect {
             text += it
-            messageComponent.updateSourceContent(text)
-            messageComponent.updateContent(text)
-            messageComponent.scrollToBottom()
+            messageView.updateSourceContent(text)
+            messageView.updateContent(text)
+            messageView.scrollToBottom()
         }
 
         return text

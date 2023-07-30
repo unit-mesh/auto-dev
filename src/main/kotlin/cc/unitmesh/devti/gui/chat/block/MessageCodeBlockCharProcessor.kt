@@ -6,7 +6,7 @@ enum class BorderType {
 }
 
 class Parameters(val char: Char, val charIndex: Int, val fullMessage: String)
-class ContextChange(@JvmField val contextType: BlockType, @JvmField val borderType: BorderType)
+class ContextChange(@JvmField val contextType: MessageBlockType, @JvmField val borderType: BorderType)
 
 class MessageCodeBlockCharProcessor {
     companion object {
@@ -16,23 +16,23 @@ class MessageCodeBlockCharProcessor {
 
     fun suggestTypeChange(
         parameters: Parameters,
-        currentContextType: BlockType,
+        currentContextType: MessageBlockType,
         blockStart: Int
     ): ContextChange? {
         if (parameters.char != triggerChar && parameters.char != '\n') return null
 
         return when (currentContextType) {
-            BlockType.PlainText -> {
+            MessageBlockType.PlainText -> {
                 if (isCodeBlockStart(parameters)) {
-                    ContextChange(BlockType.CodeEditor, BorderType.START)
+                    ContextChange(MessageBlockType.CodeEditor, BorderType.START)
                 } else {
                     null
                 }
             }
 
-            BlockType.CodeEditor -> {
+            MessageBlockType.CodeEditor -> {
                 if (isCodeBlockEnd(parameters, blockStart)) {
-                    ContextChange(BlockType.CodeEditor, BorderType.END)
+                    ContextChange(MessageBlockType.CodeEditor, BorderType.END)
                 } else {
                     null
                 }

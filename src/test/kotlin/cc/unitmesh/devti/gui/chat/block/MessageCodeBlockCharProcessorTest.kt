@@ -11,7 +11,7 @@ class MessageCodeBlockCharProcessorTest {
             |    println("Hello World!")
             |}
             |```""".trimMargin())
-        val currentContextType = BlockType.PlainText
+        val currentContextType = MessageBlockType.PlainText
         val blockStart = 0
 
         // when
@@ -19,7 +19,7 @@ class MessageCodeBlockCharProcessorTest {
 
         // then
         assert(contextChange != null)
-        assert(contextChange!!.contextType == BlockType.CodeEditor)
+        assert(contextChange!!.contextType == MessageBlockType.CodeEditor)
         assert(contextChange.borderType == BorderType.START)
     }
 
@@ -30,7 +30,7 @@ class MessageCodeBlockCharProcessorTest {
             | some text
             | some text
         """.trimMargin())
-        val currentContextType = BlockType.CodeEditor
+        val currentContextType = MessageBlockType.CodeEditor
         val blockStart = 0
 
         // when
@@ -48,7 +48,7 @@ class MessageCodeBlockCharProcessorTest {
             |    println("Hello World!")
             |}
             |""".trimMargin())
-        val currentContextType = BlockType.PlainText
+        val currentContextType = MessageBlockType.PlainText
         val blockStart = 0
 
         // when
@@ -56,7 +56,7 @@ class MessageCodeBlockCharProcessorTest {
 
         // then
         assert(contextChange != null)
-        assert(contextChange!!.contextType == BlockType.CodeEditor)
+        assert(contextChange!!.contextType == MessageBlockType.CodeEditor)
         assert(contextChange.borderType == BorderType.START)
     }
 }
