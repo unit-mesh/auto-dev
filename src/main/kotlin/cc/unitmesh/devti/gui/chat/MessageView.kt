@@ -40,47 +40,53 @@ class MessageView(private val message: String, role: ChatRole) : JBPanel<Message
 
         add(centerPanel, BorderLayout.CENTER)
 
-//        layoutAll(message)
+        val parts = layoutAll(message, SimpleMessage(message, message, role))
+        println(parts)
     }
 
-    fun layoutAll(messageText: String): List<MessageBlock> {
-        var currentContextType = MessageBlockType.PlainText
+    fun layoutAll(messageText: String, message: CompletableMessage): List<MessageBlock> {
+        val currentContextTypeRef = Ref.ObjectRef<MessageBlockType>()
+        currentContextTypeRef.element = MessageBlockType.PlainText
+
         val blockStart: Ref.IntRef = Ref.IntRef()
 
-        val parts = ArrayList<MessageBlock>()
+        val parts = mutableListOf<MessageBlock>()
 
         for ((index, item) in messageText.withIndex()) {
             val param = Parameters(item, index, messageText)
             val suggestTypeChange =
-                MessageCodeBlockCharProcessor().suggestTypeChange(param, currentContextType, blockStart.element)
+                MessageCodeBlockCharProcessor().suggestTypeChange(
+                    param,
+                    currentContextTypeRef.element,
+                    blockStart.element
+                )
+                    ?: continue
 
-            if (suggestTypeChange != null) {
-                when {
-                    suggestTypeChange.contextType == currentContextType -> {
-                        if (suggestTypeChange.borderType == BorderType.START) {
-                            logger.error("suggestTypeChange return $currentContextType START while there is already $currentContextType opened")
-                        } else {
-                            pushPart(blockStart, messageText, currentContextType, message, parts, index)
-                        }
+            when {
+                suggestTypeChange.contextType == currentContextTypeRef.element -> {
+                    if (suggestTypeChange.borderType == BorderType.START) {
+                        logger.error("suggestTypeChange return ${currentContextTypeRef.element} START while there is already ${currentContextTypeRef.element} opened")
+                    } else {
+                        pushPart(blockStart, messageText, currentContextTypeRef, message, parts, index)
                     }
+                }
 
-                    suggestTypeChange.borderType == BorderType.START -> {
-                        if (index > blockStart.element) {
-                            pushPart(blockStart, messageText, currentContextType, message, parts, index - 1)
-                        }
-                        blockStart.element = index
-                        currentContextType = suggestTypeChange.contextType
+                suggestTypeChange.borderType == BorderType.START -> {
+                    if (index > blockStart.element) {
+                        pushPart(blockStart, messageText, currentContextTypeRef, message, parts, index - 1)
                     }
+                    blockStart.element = index
+                    currentContextTypeRef.element = suggestTypeChange.contextType
+                }
 
-                    else -> {
-                        logger.error("suggestTypeChange return $currentContextType END when there wasn't open tag")
-                    }
+                else -> {
+                    logger.error("suggestTypeChange return ${currentContextTypeRef.element} END when there wasn't open tag")
                 }
             }
         }
 
         if (blockStart.element < messageText.length) {
-            pushPart(blockStart, messageText, currentContextType, message, parts, messageText.length - 1)
+            pushPart(blockStart, messageText, currentContextTypeRef, message, parts, messageText.length - 1)
         }
 
         return parts
@@ -89,12 +95,39 @@ class MessageView(private val message: String, role: ChatRole) : JBPanel<Message
     private fun pushPart(
         blockStart: Ref.IntRef,
         messageText: String,
-        currentContextType: MessageBlockType,
-        message: String,
-        list: List<MessageBlock>,
+        currentContextType: Ref.ObjectRef<MessageBlockType>,
+        message: CompletableMessage,
+        list: MutableList<MessageBlock>,
         partUpperOffset: Int
     ) {
+        val newPart = createPart(blockStart.element, partUpperOffset, messageText, currentContextType, message)
+        list.add(newPart)
 
+        blockStart.element = partUpperOffset + 1
+        currentContextType.element = MessageBlockType.PlainText
+    }
+
+    private fun createPart(
+        blockStart: Int,
+        partUpperOffset: Int,
+        messageText: String,
+        currentContextType: Ref.ObjectRef<MessageBlockType>,
+        message: CompletableMessage
+    ): MessageBlock {
+        check(blockStart < messageText.length)
+        check(partUpperOffset < messageText.length)
+
+        val blockText = messageText.substring(blockStart, partUpperOffset + 1)
+        val part: MessageBlock = when (currentContextType.element!!) {
+            MessageBlockType.CodeEditor -> TextBlock(message)
+            MessageBlockType.PlainText -> CodeBlock(message)
+        }
+
+        if (blockText.isNotEmpty()) {
+            part.addContent(blockText)
+        }
+
+        return part
     }
 
     fun updateContent(content: String) {
@@ -135,6 +168,6 @@ class MessageView(private val message: String, role: ChatRole) : JBPanel<Message
     }
 
     override fun getData(dataId: String): Any? {
-        TODO("Not yet implemented")
+        return message
     }
 }

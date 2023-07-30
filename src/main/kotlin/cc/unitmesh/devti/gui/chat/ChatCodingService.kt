@@ -4,6 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.llms.ConnectorFactory
 import cc.unitmesh.devti.editor.LLMCoroutineScopeService
+import cc.unitmesh.devti.gui.chat.block.SimpleMessage
 import cc.unitmesh.devti.parser.PostCodeProcessor
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
@@ -25,7 +26,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         prompt: ContextPrompter,
         context: ChatContext? = null
     ) {
-        ui.add(prompt.displayPrompt(), true)
+        ui.add(prompt.requestPrompt(), true)
         ui.add(AutoDevBundle.message("devti.loading"))
 
         ApplicationManager.getApplication().executeOnPooledThread {

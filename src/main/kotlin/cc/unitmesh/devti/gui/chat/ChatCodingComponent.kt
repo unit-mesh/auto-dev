@@ -68,7 +68,8 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
     }
 
     fun add(message: String, isMe: Boolean = false) {
-        val messageView = MessageView(message, ChatRole.User)
+        val role = if (isMe) ChatRole.User else ChatRole.Assistant
+        val messageView = MessageView(message, role)
 
         myList.add(messageView)
         updateLayout()
@@ -124,7 +125,7 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
     }
 
     private suspend fun updateMessageInUi(content: Flow<String>): String {
-        val messageView = MessageView("...", ChatRole.Assistant)
+        val messageView = MessageView("", ChatRole.Assistant)
         myList.add(messageView)
 
         var text = ""
