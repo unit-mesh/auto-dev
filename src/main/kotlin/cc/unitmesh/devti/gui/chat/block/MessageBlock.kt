@@ -73,7 +73,7 @@ class CodeBlock(val msg: CompletableMessage) : AbstractMessageBlock(msg) {
         this.code = Code(language, "", false)
     }
 
-    override fun addContent(addedContent: String) {
-        this.code = Code.parse(addedContent)
+    override fun onContentChanged(content: String) {
+        this.code = Code.parse(content)
     }
 }

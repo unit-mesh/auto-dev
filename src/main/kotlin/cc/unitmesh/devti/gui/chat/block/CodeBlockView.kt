@@ -24,9 +24,8 @@ import com.intellij.util.concurrency.annotations.RequiresReadLock
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.components.BorderLayoutPanel
 import javax.swing.JComponent
-import kotlin.jvm.internal.Intrinsics
 
-class CodePartView(private val block: CodeBlock, private val project: Project, private val disposable: Disposable) :
+class CodeBlockView(private val block: CodeBlock, private val project: Project, private val disposable: Disposable) :
     MessageBlockView {
     private var editorInfo: CodePartEditorInfo? = null
 
@@ -66,8 +65,7 @@ class CodePartView(private val block: CodeBlock, private val project: Project, p
         if (editorInfo == null) {
             val editorInfo: CodePartEditorInfo = createCodeViewer(
                 project,
-                PropertyGraph(null as String?, false)
-                    .property(code.text),
+                PropertyGraph(null as String?, false).property(code.text),
                 disposable,
                 code.language,
                 getBlock().getMessage()
@@ -88,12 +86,12 @@ class CodePartView(private val block: CodeBlock, private val project: Project, p
     companion object {
         private fun createCodeViewerFile(language: Language, content: String): LightVirtualFile {
             val file = LightVirtualFile("AutoDevSnippet", language, content)
-            if (Intrinsics.areEqual(file.fileType, UnknownFileType.INSTANCE)) {
-                file.setFileType(PlainTextFileType.INSTANCE)
+            if (file.fileType == UnknownFileType.INSTANCE) {
+                file.fileType = PlainTextFileType.INSTANCE
             }
+
             return file
         }
-
 
         private fun createCodeViewerEditor(
             project: Project,
@@ -104,6 +102,7 @@ class CodePartView(private val block: CodeBlock, private val project: Project, p
             val language = file.language
             val editor: Editor = EditorFactory.getInstance().createViewer(document, project);
             (editor as EditorEx).setFile(file)
+            editor.setCaretEnabled(true)
             val highlighter = EditorHighlighterFactory.getInstance().createEditorHighlighter(project, file)
 
             editor.highlighter = highlighter
@@ -135,6 +134,7 @@ class CodePartView(private val block: CodeBlock, private val project: Project, p
                     editor.markupModel.removeAllHighlighters()
                 }
             })
+
             return editor
         }
 
@@ -146,7 +146,7 @@ class CodePartView(private val block: CodeBlock, private val project: Project, p
             message: CompletableMessage
         ): CodePartEditorInfo {
             val forceFoldEditorByDefault = message.getRole() === ChatRole.User
-            val content = graphProperty.get() as String
+            val content = graphProperty.get()
 
             val createCodeViewerFile: VirtualFile = createCodeViewerFile(language, content)
             val document: Document =

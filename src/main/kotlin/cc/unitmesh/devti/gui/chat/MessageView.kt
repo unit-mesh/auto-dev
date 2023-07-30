@@ -2,7 +2,10 @@ package cc.unitmesh.devti.gui.chat
 
 
 import cc.unitmesh.devti.gui.chat.block.*
+import cc.unitmesh.devti.prompting.code.TestStack
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.panels.VerticalLayout
@@ -37,9 +40,15 @@ class MessageView(private val message: String, role: ChatRole) : JBPanel<Message
         if (role == ChatRole.User) {
             val parts = layoutAll(message, SimpleMessage(message, message, role))
             parts.forEach {
-                val blockView = TextBlockView(it)
+                val blockView = when(it) {
+                    is CodeBlock -> {
+                        val project = ProjectManager.getInstance().openProjects.firstOrNull()
+                        CodeBlockView(it, project!!) { }
+                    }
+                    else -> TextBlockView(it)
+                }
                 blockView.initialize();
-                blockView.getComponent().setForeground(JBUI.CurrentTheme.Label.foreground())
+                blockView.getComponent()?.setForeground(JBUI.CurrentTheme.Label.foreground())
                 centerPanel.add(blockView.getComponent())
             }
         } else {
@@ -125,8 +134,8 @@ class MessageView(private val message: String, role: ChatRole) : JBPanel<Message
 
         val blockText = messageText.substring(blockStart, partUpperOffset + 1)
         val part: MessageBlock = when (currentContextType.element!!) {
-            MessageBlockType.CodeEditor -> TextBlock(message)
-            MessageBlockType.PlainText -> CodeBlock(message)
+            MessageBlockType.CodeEditor -> CodeBlock(message)
+            MessageBlockType.PlainText -> TextBlock(message)
         }
 
         if (blockText.isNotEmpty()) {
