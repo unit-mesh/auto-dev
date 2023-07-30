@@ -1,5 +1,5 @@
 package cc.unitmesh.devti.gui.chat.block
 
-interface MessageBlockTextListener {
+fun interface MessageBlockTextListener {
     fun onTextChanged(str: String)
 }

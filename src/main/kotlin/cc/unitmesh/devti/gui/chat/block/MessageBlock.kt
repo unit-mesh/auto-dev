@@ -1,5 +1,8 @@
 package cc.unitmesh.devti.gui.chat.block
 
+import cc.unitmesh.devti.parser.Code
+import com.intellij.lang.Language
+
 interface MessageBlock {
     val type: MessageBlockType
     fun getTextContent(): String
@@ -61,5 +64,16 @@ class TextBlock(val msg: CompletableMessage) : AbstractMessageBlock(msg) {
 }
 
 class CodeBlock(val msg: CompletableMessage) : AbstractMessageBlock(msg) {
-    override val type: MessageBlockType = MessageBlockType.CodeEditor
+    override var type: MessageBlockType = MessageBlockType.CodeEditor
+
+    public var code: Code
+
+    init {
+        val language = Language.ANY
+        this.code = Code(language, "", false)
+    }
+
+    override fun addContent(addedContent: String) {
+        this.code = Code.parse(addedContent)
+    }
 }

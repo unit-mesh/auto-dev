@@ -47,7 +47,7 @@ class Code(val language: Language, val text: String, val isComplete: Boolean) {
             }
 
             val trimmedCode = codeBuilder.substring(startIndex, endIndex + 1).toString()
-            val language = findLanguage(languageId!!)
+            val language = findLanguage(languageId ?: "")
             return Code(language, trimmedCode, codeClosed)
         }
 
