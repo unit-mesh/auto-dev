@@ -4,7 +4,6 @@ import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.parser.Code
 import com.intellij.lang.Language
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
@@ -25,8 +24,8 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.util.concurrency.annotations.RequiresReadLock
 import com.intellij.util.ui.JBUI
-import kotlin.jvm.internal.Ref
 import javax.swing.JComponent
+import kotlin.jvm.internal.Ref
 
 class CodeBlockView(private val block: CodeBlock, private val project: Project, private val disposable: Disposable) :
     MessageBlockView {

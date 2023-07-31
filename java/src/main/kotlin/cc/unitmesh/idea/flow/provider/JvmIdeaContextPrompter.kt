@@ -22,7 +22,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import kotlinx.coroutines.runBlocking
 
-class JvmIdeaContextPrompter : ContextPrompter() {
+open class JvmIdeaContextPrompter : ContextPrompter() {
     private var additionContext: String = ""
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private var customPromptConfig: CustomPromptConfig? = null
@@ -59,24 +59,12 @@ class JvmIdeaContextPrompter : ContextPrompter() {
             val prompt = createPrompt(selectedText)
 
             val finalPrompt = if (additionContext.isNotEmpty()) {
-                """|```
-                   |$additionContext
-                   |```
-                   |
-                   |```$lang
-                   |$selectedText
-                   |```
-                   |""".trimMargin()
+                "```\n$additionContext\n```\n\n```$lang\n$selectedText\n```\n"
             } else {
-                """|```$lang
-                   |$selectedText
-                   |```
-                """.trimMargin()
+                "```$lang\n$selectedText\n```"
             }
 
-            return@runBlocking """$prompt: 
-                |$finalPrompt
-                """.trimMargin()
+            return@runBlocking "$prompt: \n$finalPrompt"
         }
     }
 
@@ -85,21 +73,12 @@ class JvmIdeaContextPrompter : ContextPrompter() {
             val prompt = createPrompt(selectedText)
 
             val finalPrompt = if (additionContext.isNotEmpty()) {
-                """|$additionContext
-                   |```$lang
-                   |$selectedText
-                   |```
-                   |""".trimMargin()
+                "$additionContext\n```$lang\n$selectedText\n```\n"
             } else {
-                """|```$lang
-                   |$selectedText
-                   |```
-                """.trimMargin()
+                "```$lang\n$selectedText\n```"
             }
 
-            return@runBlocking """$prompt: 
-                |$finalPrompt
-                """.trimMargin()
+            return@runBlocking "$prompt:\n$finalPrompt"
         }
     }
 

@@ -26,6 +26,9 @@
         <chatContextProvider implementation="cc.unitmesh.kotlin.provider.KotlinVersionProvider"/>
         <chatContextProvider implementation="cc.unitmesh.kotlin.provider.KotlinTestContextProvider"/>
 
+        <contextPrompter
+                language="kotlin"
+                implementation="cc.unitmesh.kotlin.provider.KotlinContextPrompter"/>
         <testContextProvider
                 language="kotlin"
                 implementation="cc.unitmesh.kotlin.provider.KotlinWriteTestService"/>

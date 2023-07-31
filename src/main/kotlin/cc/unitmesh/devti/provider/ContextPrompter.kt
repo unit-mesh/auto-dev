@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.provider
 
 import cc.unitmesh.devti.gui.chat.ChatActionType
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
@@ -54,11 +55,14 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
                 it.language?.lowercase() == lang.lowercase()
             }
 
-            return if (contextPrompter.isEmpty()) {
-                extensionList.first()
-            } else {
+            val prompter = if (contextPrompter.isNotEmpty()) {
                 contextPrompter.first()
+            } else {
+                logger<ContextPrompter>().warn("No context prompter found for language $lang, will use default")
+                DefaultContextPrompter()
             }
+
+            return prompter
         }
     }
 }

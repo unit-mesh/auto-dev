@@ -14,18 +14,10 @@ class JavaScriptContextPrompter : ContextPrompter() {
             ""
         }
 
-        return """$action for the code:
-            ```${lang}$frameInfo
-            $selectedText
-            ```
-            """.trimIndent()
+        return "$action for the code:\n```${lang}$frameInfo\n$selectedText\n```"
     }
 
     override fun requestPrompt(): String {
-        return """$action for the code:
-            ```${lang}
-            $selectedText
-            ```
-            """.trimIndent()
+        return "$action for the code:\n```${lang}\n$selectedText\n```"
     }
 }
