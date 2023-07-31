@@ -6,6 +6,9 @@
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
+        <codeModifier language="kotlin"
+                      implementationClass="cc.unitmesh.kotlin.context.KotlinCodeModifier"/>
+
         <chatContextProvider implementation="cc.unitmesh.kotlin.provider.KotlinTestContextProvider"/>
 
         <classContextBuilder language="kotlin"

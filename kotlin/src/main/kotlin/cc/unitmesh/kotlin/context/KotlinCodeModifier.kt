@@ -1,9 +1,7 @@
-package cc.unitmesh.idea.context
+package cc.unitmesh.kotlin.context
 
 import cc.unitmesh.devti.context.builder.CodeModifier
-import cc.unitmesh.idea.service.JavaWriteTestService
 import com.intellij.lang.Language
-import com.intellij.lang.java.JavaLanguage
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
@@ -12,23 +10,24 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiElementFactory
-import com.intellij.psi.PsiJavaFile
 import com.intellij.psi.PsiManager
+import org.jetbrains.kotlin.idea.KotlinLanguage
+import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtPsiFactory
 
-open class JavaCodeModifier : CodeModifier {
+class KotlinCodeModifier : CodeModifier {
     companion object {
-        val log = logger<JavaWriteTestService>()
+        val log = logger<KotlinCodeModifier>()
     }
 
     override fun isApplicable(language: Language): Boolean {
-        return language is JavaLanguage
+        return language is KotlinLanguage
     }
 
     fun lookupFile(
         project: Project,
         sourceFile: VirtualFile
-    ) = PsiManager.getInstance(project).findFile(sourceFile) as PsiJavaFile
+    ) = PsiManager.getInstance(project).findFile(sourceFile) as KtFile
 
     override fun insertTestCode(sourceFile: VirtualFile, project: Project, code: String): Boolean {
         log.info("methodCode: $code")
@@ -48,19 +47,18 @@ open class JavaCodeModifier : CodeModifier {
     override fun insertMethod(sourceFile: VirtualFile, project: Project, code: String): Boolean {
         ApplicationManager.getApplication().invokeLater {
             val rootElement = runReadAction {
-                val psiJavaFile = lookupFile(project, sourceFile)
-                val psiClass = psiJavaFile.classes.firstOrNull()
+                val ktFile = lookupFile(project, sourceFile)
+                val psiClass = ktFile.classes.firstOrNull()
                 if (psiClass == null) {
-                    log.error("Failed to find PsiClass in the source file: $psiJavaFile, code: $code")
+                    log.error("Failed to find PsiClass in the source file: $ktFile, code: $code")
                     return@runReadAction null
                 }
 
                 return@runReadAction psiClass
             } ?: return@invokeLater
 
-            val psiElementFactory = PsiElementFactory.getInstance(project)
 
-            val newTestMethod = psiElementFactory.createMethodFromText(code, rootElement)
+            val newTestMethod =  KtPsiFactory(project).createFunction(code)
             if (rootElement.findMethodsByName(newTestMethod.name, false).isNotEmpty()) {
                 log.error("Method already exists in the class: ${newTestMethod.name}")
             }
@@ -72,7 +70,6 @@ open class JavaCodeModifier : CodeModifier {
                 val lastMethodEndOffset = lastMethod?.textRange?.endOffset ?: 0
 
                 val document = PsiDocumentManager.getInstance(project).getDocument(rootElement.containingFile)
-                // insert new line with indent before the new method
                 document?.insertString(lastMethodEndOffset, "\n    ")
                 document?.insertString(lastMethodEndOffset, newTestMethod.text)
             }
