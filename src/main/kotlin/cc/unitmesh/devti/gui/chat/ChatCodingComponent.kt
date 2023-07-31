@@ -196,6 +196,7 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
     fun setContent(trimMargin: String) {
         val focusManager = IdeFocusManager.getInstance(chatCodingService.project)
         focusManager.requestFocus(inputField, true)
+        this.inputField.recreateDocument()
         this.inputField.text = trimMargin
     }
 }

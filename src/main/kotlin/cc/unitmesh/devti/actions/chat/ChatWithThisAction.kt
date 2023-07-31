@@ -15,10 +15,9 @@ class ChatWithThisAction: ChatBaseAction() {
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
-        val document = event.getData(CommonDataKeys.EDITOR)?.document
 
         val caretModel = event.getData(CommonDataKeys.EDITOR)?.caretModel
-        var prefixText = caretModel?.currentCaret?.selectedText ?: ""
+        val prefixText = caretModel?.currentCaret?.selectedText ?: ""
 
         val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(DevtiFlowToolWindowFactory.Util.id)
         val contentManager = toolWindowManager?.contentManager

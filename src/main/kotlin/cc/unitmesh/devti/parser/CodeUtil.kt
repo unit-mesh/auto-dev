@@ -51,7 +51,7 @@ class Code(val language: Language, val text: String, val isComplete: Boolean) {
             return Code(language, trimmedCode, codeClosed)
         }
 
-        private fun findLanguage(languageName: String): Language {
+        fun findLanguage(languageName: String): Language {
             val fixedLanguage = when (languageName) {
                 "csharp" -> "c#"
                 "fsharp" -> "f#"

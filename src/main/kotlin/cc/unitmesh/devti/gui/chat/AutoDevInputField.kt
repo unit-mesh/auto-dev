@@ -1,10 +1,13 @@
 package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.gui.chat.block.findDocument
+import cc.unitmesh.devti.parser.Code.Companion.findLanguage
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ex.AnActionListener
 import com.intellij.openapi.command.CommandProcessor
+import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.openapi.editor.actions.EnterAction
@@ -14,6 +17,8 @@ import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.fileTypes.FileTypes
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.EditorTextField
 import com.intellij.util.EventDispatcher
 import com.intellij.util.messages.MessageBusConnection
@@ -127,5 +132,22 @@ class AutoDevInputField(
 
     fun addListener(listener: AutoDevInputListener) {
         editorListeners.addListener(listener)
+    }
+
+    fun recreateDocument() {
+        val lightVirtualFile: VirtualFile =
+            LightVirtualFile("AutoDevInput-" + UUID.randomUUID(), findLanguage("Markdown"), "")
+
+        val inputDocument =
+            lightVirtualFile.findDocument() ?: throw IllegalStateException("Can't create inmemory document")
+
+        initializeDocumentListeners(inputDocument)
+        setDocument(inputDocument)
+    }
+
+    private fun initializeDocumentListeners(inputDocument: Document) {
+        listeners.forEach { listener ->
+            inputDocument.addDocumentListener(listener)
+        }
     }
 }
