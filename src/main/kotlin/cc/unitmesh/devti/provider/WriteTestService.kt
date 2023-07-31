@@ -26,7 +26,6 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
     override fun getImplementationClassName(): String? {
         return implementationClass
     }
-
     abstract fun isApplicable(element: PsiElement): Boolean
 
     abstract fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext?
