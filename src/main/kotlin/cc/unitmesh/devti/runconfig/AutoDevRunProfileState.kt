@@ -3,7 +3,7 @@ package cc.unitmesh.devti.runconfig
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.provider.DevFlowProvider
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
-import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
+import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.gui.chat.ChatCodingService
@@ -16,7 +16,6 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressIndicator
@@ -46,7 +45,7 @@ class AutoDevRunProfileState(
         val chatCodingService = ChatCodingService(ChatActionType.CHAT, project)
         val contentPanel = ChatCodingComponent(chatCodingService)
 
-        val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(DevtiFlowToolWindowFactory.Util.id)
+        val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolWindowFactory.Util.id)
         val contentManager = toolWindowManager?.contentManager
 
         val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)

@@ -11,9 +11,9 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
 
-class DevtiFlowToolWindowFactory : ToolWindowFactory, DumbAware {
+class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
     object Util {
-        const val id = "DevTiFlow"
+        const val id = "AutoDev"
     }
 
     private val contentFactory = ApplicationManager.getApplication().getService(ContentFactory::class.java)

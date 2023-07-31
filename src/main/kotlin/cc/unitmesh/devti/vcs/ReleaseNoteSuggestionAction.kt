@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.vcs
 
-import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
+import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.gui.chat.ChatCodingService
@@ -27,7 +27,7 @@ class ReleaseNoteSuggestionAction : AnAction() {
 
         val actionType = ChatActionType.CREATE_CHANGELOG
 
-        val toolWindowManager = ToolWindowManager.getInstance(project!!).getToolWindow(DevtiFlowToolWindowFactory.Util.id)
+        val toolWindowManager = ToolWindowManager.getInstance(project!!).getToolWindow(AutoDevToolWindowFactory.Util.id)
         val contentManager = toolWindowManager?.contentManager
         val chatCodingService = ChatCodingService(actionType, project)
         val contentPanel = ChatCodingComponent(chatCodingService)

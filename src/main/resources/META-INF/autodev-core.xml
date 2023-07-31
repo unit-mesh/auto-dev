@@ -24,9 +24,9 @@
         <!-- Run Configurations -->
         <programRunner implementation="cc.unitmesh.devti.runconfig.AutoDevCommandRunner"/>
 
-        <toolWindow id="DevTiFlow" secondary="true" anchor="right"
+        <toolWindow id="AutoDev" secondary="true" anchor="right"
                     icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
-                    factoryClass="cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory"/>
+                    factoryClass="cc.unitmesh.devti.gui.AutoDevToolWindowFactory"/>
 
         <notificationGroup id="AI notification group" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
                            key="notification.group.name"/>

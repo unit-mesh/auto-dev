@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.actions.chat
 
-import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
+import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.gui.chat.ChatCodingService
@@ -61,7 +61,7 @@ abstract class ChatBaseAction : AnAction() {
         val chatCodingService = ChatCodingService(getActionType(), project)
         val contentPanel = ChatCodingComponent(chatCodingService)
 
-        val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(DevtiFlowToolWindowFactory.Util.id)
+        val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolWindowFactory.Util.id)
         val contentManager = toolWindowManager?.contentManager
 
         val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)

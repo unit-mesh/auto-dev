@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.actions.chat
 
-import cc.unitmesh.devti.gui.DevtiFlowToolWindowFactory
+import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingComponent
 import cc.unitmesh.devti.gui.chat.ChatCodingService
@@ -19,7 +19,7 @@ class ChatWithThisAction: ChatBaseAction() {
         val caretModel = event.getData(CommonDataKeys.EDITOR)?.caretModel
         val prefixText = caretModel?.currentCaret?.selectedText ?: ""
 
-        val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(DevtiFlowToolWindowFactory.Util.id)
+        val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolWindowFactory.Util.id)
         val contentManager = toolWindowManager?.contentManager
 
         val chatCodingService = ChatCodingService(getActionType(), project)
