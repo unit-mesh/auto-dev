@@ -17,7 +17,6 @@ import javax.swing.text.DefaultCaret
 import javax.swing.text.Element
 import javax.swing.text.View
 import javax.swing.text.html.ParagraphView
-import kotlin.jvm.functions.Function2
 import kotlin.math.max
 
 class TextBlockView(private val block: MessageBlock) : MessageBlockView {
@@ -49,8 +48,7 @@ class TextBlockView(private val block: MessageBlock) : MessageBlockView {
         jEditorPane.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
                 if (e == null) return
-                val parent = jEditorPane.parent
-                parent?.dispatchEvent(e)
+                jEditorPane.parent?.dispatchEvent(e)
             }
         })
         return jEditorPane
@@ -68,13 +66,13 @@ class TextBlockView(private val block: MessageBlock) : MessageBlockView {
         fun createBaseComponent(): JEditorPane {
             val jEditorPane = JEditorPane()
             jEditorPane.setContentType("text/html")
-            val build = HTMLEditorKitBuilder().withViewFactoryExtensions(
+            val htmlEditorKit = HTMLEditorKitBuilder().withViewFactoryExtensions(
                 LineSpacingExtension(0.2f)
             ).build()
-            build.getStyleSheet().addRule("p {margin-top: 1px}")
+            htmlEditorKit.getStyleSheet().addRule("p {margin-top: 1px}")
 
             jEditorPane.also {
-                it.editorKit = build
+                it.editorKit = htmlEditorKit
                 it.isEditable = false
                 it.putClientProperty("JEditorPane.honorDisplayProperties", true)
                 it.isOpaque = false
@@ -88,11 +86,7 @@ class TextBlockView(private val block: MessageBlock) : MessageBlockView {
 
             if (jEditorPane.caret != null) {
                 jEditorPane.setCaretPosition(0)
-                val caret = jEditorPane.caret
-                val defaultCaret = if (caret is DefaultCaret) caret else null
-                if (defaultCaret != null) {
-                    defaultCaret.updatePolicy = 1
-                }
+                (jEditorPane.caret as? DefaultCaret)?.updatePolicy = 1
             }
             return jEditorPane
         }
@@ -103,28 +97,22 @@ class TextBlockView(private val block: MessageBlock) : MessageBlockView {
 internal class LineSpacingExtension(val lineSpacing: Float) : ExtendableHTMLViewFactory.Extension {
 
     override operator fun invoke(elem: Element, defaultView: View): View? {
-        return if (defaultView is ParagraphView) {
-            object : ParagraphView(elem) {
-                override fun calculateMinorAxisRequirements(
-                    axis: Int,
-                    requirements: SizeRequirements?
-                ): SizeRequirements {
-                    var sizeRequirements = requirements
-                    if (sizeRequirements == null) {
-                        sizeRequirements = SizeRequirements()
-                    }
-                    sizeRequirements.minimum = layoutPool.getMinimumSpan(axis).toInt()
-                    sizeRequirements.preferred =
-                        max(sizeRequirements.minimum, layoutPool.getPreferredSpan(axis).toInt())
-                    sizeRequirements.maximum = Int.MAX_VALUE
-                    sizeRequirements.alignment = 0.5f
-                    return sizeRequirements
-                }
+        return if (defaultView !is ParagraphView) null
+        else object : ParagraphView(elem) {
+            override fun calculateMinorAxisRequirements(axis: Int, requirements: SizeRequirements?): SizeRequirements {
+                val sizeRequirements = requirements ?: SizeRequirements()
 
-                override fun setLineSpacing(ls: Float) {
-                    super.setLineSpacing(this@LineSpacingExtension.lineSpacing)
-                }
+                sizeRequirements.minimum = layoutPool.getMinimumSpan(axis).toInt()
+                sizeRequirements.preferred = max(sizeRequirements.minimum, layoutPool.getPreferredSpan(axis).toInt())
+                sizeRequirements.maximum = Int.MAX_VALUE
+                sizeRequirements.alignment = 0.5f
+
+                return sizeRequirements
             }
-        } else null
+
+            override fun setLineSpacing(ls: Float) {
+                super.setLineSpacing(this@LineSpacingExtension.lineSpacing)
+            }
+        }
     }
 }

@@ -2,8 +2,6 @@ package cc.unitmesh.devti.gui.chat
 
 
 import cc.unitmesh.devti.gui.chat.block.*
-import cc.unitmesh.devti.prompting.code.TestStack
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.ui.JBColor
