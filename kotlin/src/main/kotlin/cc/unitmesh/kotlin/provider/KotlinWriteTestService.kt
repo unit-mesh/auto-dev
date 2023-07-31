@@ -16,12 +16,18 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.util.elementType
 import org.jetbrains.kotlin.idea.KotlinLanguage
-import org.jetbrains.kotlin.psi.KtClass
-import org.jetbrains.kotlin.psi.KtClassOrObject
-import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.psi.KtFunction
+import org.jetbrains.kotlin.idea.quickfix.createFromUsage.callableBuilder.getReturnTypeReference
+import org.jetbrains.kotlin.idea.references.mainReference
+import org.jetbrains.kotlin.idea.structuralsearch.resolveKotlinType
+import org.jetbrains.kotlin.nj2k.postProcessing.type
+import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.containingClass
+import org.jetbrains.kotlin.psi.psiUtil.containingClassOrObject
+import org.jetbrains.kotlin.resolve.descriptorUtil.classId
+import org.jetbrains.kotlin.resolve.source.getPsi
+import org.jetbrains.kotlinx.serialization.compiler.resolve.toClassDescriptor
 import java.io.File
 import kotlin.jvm.internal.Ref
 
@@ -110,7 +116,6 @@ class KotlinWriteTestService : WriteTestService() {
             val projectPath = project.guessProjectDir()?.path
 
             val resolvedClasses = resolveByMethod(element)
-            resolvedClasses.putAll(resolveByField(element))
 
             if (element is KtClassOrObject) {
                 KotlinClassContextBuilder.getFunctions(element).forEach {
@@ -135,40 +140,37 @@ class KotlinWriteTestService : WriteTestService() {
     private fun resolveByMethod(element: PsiElement): MutableMap<String, KtClass?> {
         val resolvedClasses = mutableMapOf<String, KtClass?>()
         if (element is KtFunction) {
-            element.valueParameters.forEach {
-                it.containingClass()?.let { containingClass ->
-                    resolvedClasses[containingClass.name!!] = containingClass
+            element.valueParameters.mapNotNull {
+                val typeReference = it.typeReference
+                resolveType(typeReference)
+            }.forEach {
+                if (it is KtClass) {
+                    resolvedClasses[it.name!!] = it
                 }
             }
 
-//            val outputType = element.typeReference?.classForRefactor()
-//            if (outputType != null) {
-//                resolvedClasses[outputType.name!!] = outputType
-//            }
-
-//            val outputType = element.returnTypeElement?.type
-//            if (outputType is PsiClassReferenceType) {
-//                if (outputType.parameters.isNotEmpty()) {
-//                    outputType.parameters.forEach {
-//                        if (it is PsiClassReferenceType) {
-//                            resolvedClasses[it.canonicalText] = outputType.resolveFile()
-//                        }
-//                    }
-//                }
-//
-//                val canonicalText = outputType.canonicalText
-//                resolvedClasses[canonicalText] = outputType.resolveFile()
-//            }
+            val outputType = resolveType(element.getReturnTypeReference())
+            if (outputType != null) {
+                if (outputType is KtClass) {
+                    resolvedClasses[outputType.name!!] = outputType
+                }
+            }
         }
 
         return resolvedClasses
     }
 
+    private fun resolveType(typeReference: KtTypeReference?): PsiElement? {
+        if (typeReference == null) return null
+        if (typeReference.typeElement is KtUserType) {
+            val typeElement = typeReference.typeElement as KtUserType
+            val typeElementReference = typeElement.referenceExpression?.mainReference?.resolve()
+            if (typeElementReference is KtClass) {
+                return typeElementReference
+            }
+        }
 
-    private fun resolveByField(element: PsiElement): Map<out String, KtClass?> {
-        val resolvedClasses = mutableMapOf<String, KtClass?>()
-
-        return resolvedClasses
+        return null
     }
 
     private fun createTestFile(
