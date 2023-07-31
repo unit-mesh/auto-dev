@@ -55,20 +55,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
     }
 
     override fun displayPrompt(): String {
-        return runBlocking {
-            val prompt = createPrompt(selectedText)
-
-            val finalPrompt = if (additionContext.isNotEmpty()) {
-                """$additionContext
-                |$selectedText""".trimMargin()
-            } else {
-                selectedText
-            }
-
-            return@runBlocking """$prompt:
-                                | <pre><code>$finalPrompt</pre></code>
-                                """.trimMargin()
-        }
+        return this.requestPrompt()
     }
 
     override fun requestPrompt(): String {
@@ -76,7 +63,11 @@ class JvmIdeaContextPrompter : ContextPrompter() {
             val prompt = createPrompt(selectedText)
 
             val finalPrompt = if (additionContext.isNotEmpty()) {
-                """$additionContext
+                """
+                |```$lang
+                |$additionContext
+                |```
+                |
                 |```$lang
                 |$selectedText
                 |```

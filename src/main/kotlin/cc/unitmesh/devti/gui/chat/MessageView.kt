@@ -36,13 +36,14 @@ class MessageView(private val message: String, role: ChatRole) : JBPanel<Message
         add(centerPanel, BorderLayout.CENTER)
 
         if (role == ChatRole.User) {
-            val parts = layoutAll(message, SimpleMessage(message, message, role))
+            val parts = layoutAll(SimpleMessage(message, message, role))
             parts.forEach {
-                val blockView = when(it) {
+                val blockView = when (it) {
                     is CodeBlock -> {
                         val project = ProjectManager.getInstance().openProjects.firstOrNull()
                         CodeBlockView(it, project!!) { }
                     }
+
                     else -> TextBlockView(it)
                 }
                 blockView.initialize();
@@ -55,92 +56,6 @@ class MessageView(private val message: String, role: ChatRole) : JBPanel<Message
             component.repaint()
             centerPanel.add(component)
         }
-    }
-
-    fun layoutAll(messageText: String, message: CompletableMessage): List<MessageBlock> {
-        val currentContextTypeRef = Ref.ObjectRef<MessageBlockType>()
-        currentContextTypeRef.element = MessageBlockType.PlainText
-
-        val blockStart: Ref.IntRef = Ref.IntRef()
-
-        val parts = mutableListOf<MessageBlock>()
-
-        for ((index, item) in messageText.withIndex()) {
-            val param = Parameters(item, index, messageText)
-            val suggestTypeChange =
-                MessageCodeBlockCharProcessor().suggestTypeChange(
-                    param,
-                    currentContextTypeRef.element,
-                    blockStart.element
-                )
-                    ?: continue
-
-            when {
-                suggestTypeChange.contextType == currentContextTypeRef.element -> {
-                    if (suggestTypeChange.borderType == BorderType.START) {
-                        logger.error("suggestTypeChange return ${currentContextTypeRef.element} START while there is already ${currentContextTypeRef.element} opened")
-                    } else {
-                        pushPart(blockStart, messageText, currentContextTypeRef, message, parts, index)
-                    }
-                }
-
-                suggestTypeChange.borderType == BorderType.START -> {
-                    if (index > blockStart.element) {
-                        pushPart(blockStart, messageText, currentContextTypeRef, message, parts, index - 1)
-                    }
-                    blockStart.element = index
-                    currentContextTypeRef.element = suggestTypeChange.contextType
-                }
-
-                else -> {
-                    logger.error("suggestTypeChange return ${currentContextTypeRef.element} END when there wasn't open tag")
-                }
-            }
-        }
-
-        if (blockStart.element < messageText.length) {
-            pushPart(blockStart, messageText, currentContextTypeRef, message, parts, messageText.length - 1)
-        }
-
-        return parts
-    }
-
-    private fun pushPart(
-        blockStart: Ref.IntRef,
-        messageText: String,
-        currentContextType: Ref.ObjectRef<MessageBlockType>,
-        message: CompletableMessage,
-        list: MutableList<MessageBlock>,
-        partUpperOffset: Int
-    ) {
-        val newPart = createPart(blockStart.element, partUpperOffset, messageText, currentContextType, message)
-        list.add(newPart)
-
-        blockStart.element = partUpperOffset + 1
-        currentContextType.element = MessageBlockType.PlainText
-    }
-
-    private fun createPart(
-        blockStart: Int,
-        partUpperOffset: Int,
-        messageText: String,
-        currentContextType: Ref.ObjectRef<MessageBlockType>,
-        message: CompletableMessage
-    ): MessageBlock {
-        check(blockStart < messageText.length)
-        check(partUpperOffset < messageText.length)
-
-        val blockText = messageText.substring(blockStart, partUpperOffset + 1)
-        val part: MessageBlock = when (currentContextType.element!!) {
-            MessageBlockType.CodeEditor -> CodeBlock(message)
-            MessageBlockType.PlainText -> TextBlock(message)
-        }
-
-        if (blockText.isNotEmpty()) {
-            part.addContent(blockText)
-        }
-
-        return part
     }
 
     fun updateContent(content: String) {
@@ -177,6 +92,88 @@ class MessageView(private val message: String, role: ChatRole) : JBPanel<Message
 
     companion object {
         private val logger = logger<MessageView>()
+        private fun createPart(
+            blockStart: Int,
+            partUpperOffset: Int,
+            messageText: String,
+            currentContextType: Ref.ObjectRef<MessageBlockType>,
+            message: CompletableMessage
+        ): MessageBlock {
+            check(blockStart < messageText.length)
+            check(partUpperOffset < messageText.length)
+
+            val blockText = messageText.substring(blockStart, partUpperOffset + 1)
+            val part: MessageBlock = when (currentContextType.element!!) {
+                MessageBlockType.CodeEditor -> CodeBlock(message)
+                MessageBlockType.PlainText -> TextBlock(message)
+            }
+
+            if (blockText.isNotEmpty()) {
+                part.addContent(blockText)
+            }
+
+            return part
+        }
+
+        private fun pushPart(
+            blockStart: Ref.IntRef,
+            messageText: String,
+            currentContextType: Ref.ObjectRef<MessageBlockType>,
+            message: CompletableMessage,
+            list: MutableList<MessageBlock>,
+            partUpperOffset: Int
+        ) {
+            val newPart = createPart(blockStart.element, partUpperOffset, messageText, currentContextType, message)
+            list.add(newPart)
+
+            blockStart.element = partUpperOffset + 1
+            currentContextType.element = MessageBlockType.PlainText
+        }
+
+        fun layoutAll(message: CompletableMessage): List<MessageBlock> {
+            val messageText: String = message.text
+            val contextTypeRef = Ref.ObjectRef<MessageBlockType>()
+            contextTypeRef.element = MessageBlockType.PlainText
+
+            val blockStart: Ref.IntRef = Ref.IntRef()
+
+            val parts = mutableListOf<MessageBlock>()
+
+            for ((index, item) in messageText.withIndex()) {
+                val param = Parameters(item, index, messageText)
+                val suggestTypeChange =
+                    MessageCodeBlockCharProcessor().suggestTypeChange(param, contextTypeRef.element, blockStart.element)
+                        ?: continue
+
+                when {
+                    suggestTypeChange.contextType == contextTypeRef.element -> {
+                        if (suggestTypeChange.borderType == BorderType.START) {
+                            logger.error("suggestTypeChange return ${contextTypeRef.element} START while there is already ${contextTypeRef.element} opened")
+                        } else {
+                            pushPart(blockStart, messageText, contextTypeRef, message, parts, index)
+                        }
+                    }
+
+                    suggestTypeChange.borderType == BorderType.START -> {
+                        if (index > blockStart.element) {
+                            pushPart(blockStart, messageText, contextTypeRef, message, parts, index - 1)
+                        }
+                        blockStart.element = index
+                        contextTypeRef.element = suggestTypeChange.contextType
+                    }
+
+                    else -> {
+                        logger.error("suggestTypeChange return ${contextTypeRef.element} END when there wasn't open tag")
+                    }
+                }
+            }
+
+            if (blockStart.element < messageText.length) {
+                pushPart(blockStart, messageText, contextTypeRef, message, parts, messageText.length - 1)
+            }
+
+            return parts
+        }
 
     }
 }
