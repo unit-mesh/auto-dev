@@ -13,7 +13,7 @@ open class JavaTestContextProvider : ChatContextProvider {
         return creationContext.action == ChatActionType.WRITE_TEST && creationContext.sourceFile?.language is JavaLanguage
     }
 
-    open fun langFileSuffix() = ".java"
+    open fun langFileSuffix() = "java"
 
     override fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         val items = mutableListOf<ChatContextItem>()
@@ -26,23 +26,24 @@ open class JavaTestContextProvider : ChatContextProvider {
             MvcUtil.isService(it, langFileSuffix())
         } ?: false
 
-        if (isController) {
-            val testControllerPrompt = """
-                        |You MUST use should_xx style for test method name.
-                        |You MUST use MockMvc and test API only.
-                        |You MUST use given-when-then style.
-                        |You MUST use should_xx style for test method name.""".trimMargin()
-            items += ChatContextItem(JavaTestContextProvider::class, testControllerPrompt)
-        }
+        when {
+            isController -> {
+                val testControllerPrompt = """
+                            |You MUST use should_xx_xx style for test method name.
+                            |You MUST use MockMvc and test API only.
+                            |You MUST use given-when-then style.
+                            |You MUST use should_xx style for test method name.""".trimMargin()
+                items += ChatContextItem(JavaTestContextProvider::class, testControllerPrompt)
+            }
+            isService -> {
+                val testServicePrompt = """
+                            |You MUST use should_xx_xx style for test method name.
+                            |You MUST use Mock library and test service only.
+                            |You MUST use given-when-then style.
+                            |You MUST use should_xx style for test method name. """.trimMargin()
 
-        if (isService) {
-            val testServicePrompt = """
-                        |You MUST use should_xx style for test method name.
-                        |You MUST use Mockito and test service only.
-                        |You MUST use given-when-then style.
-                        |You MUST use should_xx style for test method name. """.trimMargin()
-
-            items += ChatContextItem(JavaTestContextProvider::class, testServicePrompt)
+                items += ChatContextItem(JavaTestContextProvider::class, testServicePrompt)
+            }
         }
 
         return items
