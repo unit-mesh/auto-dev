@@ -7,6 +7,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import org.jetbrains.annotations.Nullable
 import org.jetbrains.kotlin.psi.KtClassOrObject
+import org.jetbrains.kotlin.psi.KtFunction
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtParameter
 
@@ -32,8 +33,8 @@ class KotlinClassContextBuilder : ClassContextBuilder {
     }
 
     companion object {
-        fun getFunctions(kotlinClass: KtClassOrObject): List<KtNamedFunction> {
-            return kotlinClass.getDeclarations().filterIsInstance<KtNamedFunction>()
+        fun getFunctions(kotlinClass: KtClassOrObject): List<KtFunction> {
+            return kotlinClass.getDeclarations().filterIsInstance<KtFunction>()
         }
     }
 }

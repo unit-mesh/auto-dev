@@ -74,7 +74,6 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
         )
     }
 
-
     companion object {
         val log = logger<WriteTestService>()
         private val EP_NAME: ExtensionPointName<WriteTestService> =

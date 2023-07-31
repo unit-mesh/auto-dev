@@ -16,17 +16,10 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.psi.util.elementType
 import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.idea.quickfix.createFromUsage.callableBuilder.getReturnTypeReference
 import org.jetbrains.kotlin.idea.references.mainReference
-import org.jetbrains.kotlin.idea.structuralsearch.resolveKotlinType
-import org.jetbrains.kotlin.nj2k.postProcessing.type
 import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.psi.psiUtil.containingClass
-import org.jetbrains.kotlin.psi.psiUtil.containingClassOrObject
-import org.jetbrains.kotlin.resolve.descriptorUtil.classId
-import org.jetbrains.kotlin.resolve.source.getPsi
 import org.jetbrains.kotlinx.serialization.compiler.resolve.toClassDescriptor
 import java.io.File
 import kotlin.jvm.internal.Ref
@@ -52,8 +45,6 @@ class KotlinWriteTestService : WriteTestService() {
             packageRef.element = (sourceFile as KtFile).packageFqName.asString()
             parentDirPath.element = parentDir?.path
         }
-
-        val packageName = packageRef.element
 
         val relatedModels = lookupRelevantClass(project, element)
 
@@ -100,7 +91,7 @@ class KotlinWriteTestService : WriteTestService() {
         if (testFile != null) {
             result.element = TestFileContext(isNewFile, testFile, relatedModels, className, sourceFile.language)
         } else {
-            val targetFile = createTestFile(sourceFile, testDir!!, packageName, project)
+            val targetFile = createTestFile(sourceFile, testDir!!, packageRef.element, project)
             result.element = TestFileContext(isNewFile = true, targetFile, relatedModels, "", sourceFile.language)
         }
 
@@ -121,6 +112,8 @@ class KotlinWriteTestService : WriteTestService() {
                 KotlinClassContextBuilder.getFunctions(element).forEach {
                     resolvedClasses.putAll(resolveByMethod(it))
                 }
+
+                resolvedClasses.putAll(resolveByFields(element))
             }
 
             // find the class in the same project
@@ -136,6 +129,22 @@ class KotlinWriteTestService : WriteTestService() {
 
         return result.element
     }
+
+    private fun resolveByFields(element: KtClassOrObject): Map<out String, KtClass?> {
+        val resolvedClasses = mutableMapOf<String, KtClass?>()
+        element.primaryConstructorParameters.forEach {
+            val typeReference = it.typeReference
+            val type = resolveType(typeReference)
+            if (type != null) {
+                if (type is KtClass) {
+                    resolvedClasses[type.name!!] = type
+                }
+            }
+        }
+
+        return resolvedClasses
+    }
+
 
     private fun resolveByMethod(element: PsiElement): MutableMap<String, KtClass?> {
         val resolvedClasses = mutableMapOf<String, KtClass?>()
