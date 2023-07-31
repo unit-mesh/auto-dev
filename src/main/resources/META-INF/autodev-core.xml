@@ -117,15 +117,18 @@
     <extensions defaultExtensionNs="cc.unitmesh">
         <aiAssistantIntention>
             <className>cc.unitmesh.devti.intentions.CodeCompletionIntention</className>
-            <categoryKey>Intention.category.llm</categoryKey>
+            <bundleName>messages.AutoDevBundle</bundleName>
+            <categoryKey>intention.category.llm</categoryKey>
         </aiAssistantIntention>
         <aiAssistantIntention>
             <className>cc.unitmesh.devti.intentions.WriteTestIntention</className>
-            <categoryKey>Intention.category.llm</categoryKey>
+            <bundleName>messages.AutoDevBundle</bundleName>
+            <categoryKey>intention.category.llm</categoryKey>
         </aiAssistantIntention>
         <aiAssistantIntention>
             <className>cc.unitmesh.devti.intentions.RefactorThisIntention</className>
-            <categoryKey>Intention.category.llm</categoryKey>
+            <bundleName>messages.AutoDevBundle</bundleName>
+            <categoryKey>intention.category.llm</categoryKey>
         </aiAssistantIntention>
     </extensions>
 
