@@ -24,7 +24,7 @@ class MessageViewTest {
         assert(parts.size == 2)
         assertEquals(parts[0].getTextContent(), "complete code:\n")
         assertEquals(parts[1].getTextContent(), """
-            |```Java
+            |```java
             |public class HelloWorld {
             |    public static void main(String[] args) {
             |        System.out.println("Hello, World");
