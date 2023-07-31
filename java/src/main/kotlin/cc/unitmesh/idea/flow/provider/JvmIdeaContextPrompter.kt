@@ -55,7 +55,29 @@ class JvmIdeaContextPrompter : ContextPrompter() {
     }
 
     override fun displayPrompt(): String {
-        return this.requestPrompt()
+        return runBlocking {
+            val prompt = createPrompt(selectedText)
+
+            val finalPrompt = if (additionContext.isNotEmpty()) {
+                """|```
+                   |$additionContext
+                   |```
+                   |
+                   |```$lang
+                   |$selectedText
+                   |```
+                   |""".trimMargin()
+            } else {
+                """|```$lang
+                   |$selectedText
+                   |```
+                """.trimMargin()
+            }
+
+            return@runBlocking """$prompt: 
+                |$finalPrompt
+                """.trimMargin()
+        }
     }
 
     override fun requestPrompt(): String {
@@ -63,24 +85,20 @@ class JvmIdeaContextPrompter : ContextPrompter() {
             val prompt = createPrompt(selectedText)
 
             val finalPrompt = if (additionContext.isNotEmpty()) {
-                """
-                |```$lang
-                |$additionContext
-                |```
-                |
-                |```$lang
-                |$selectedText
-                |```
-                |""".trimMargin()
+                """|$additionContext
+                   |```$lang
+                   |$selectedText
+                   |```
+                   |""".trimMargin()
             } else {
-                """```$lang
-                    |$selectedText
-                    |```
+                """|```$lang
+                   |$selectedText
+                   |```
                 """.trimMargin()
             }
 
             return@runBlocking """$prompt: 
-                | $finalPrompt
+                |$finalPrompt
                 """.trimMargin()
         }
     }
