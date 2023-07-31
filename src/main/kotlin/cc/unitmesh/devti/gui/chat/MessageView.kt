@@ -46,7 +46,7 @@ class MessageView(private val message: String, role: ChatRole, displayText: Stri
 
                     else -> TextBlockView(it)
                 }
-                blockView.initialize();
+                blockView.initialize()
                 blockView.getComponent()?.setForeground(JBUI.CurrentTheme.Label.foreground())
                 centerPanel.add(blockView.getComponent())
             }

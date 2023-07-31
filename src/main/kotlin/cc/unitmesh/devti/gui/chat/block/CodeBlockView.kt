@@ -4,6 +4,8 @@ import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.parser.Code
 import com.intellij.lang.Language
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
@@ -22,7 +24,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.util.concurrency.annotations.RequiresReadLock
 import com.intellij.util.ui.JBUI
-import com.intellij.util.ui.components.BorderLayoutPanel
+import kotlin.jvm.internal.Ref
 import javax.swing.JComponent
 
 class CodeBlockView(private val block: CodeBlock, private val project: Project, private val disposable: Disposable) :
@@ -51,7 +53,9 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
 
     override fun initialize() {
         if (editorInfo == null) {
-            updateOrCreateCodeView()
+            ApplicationManager.getApplication().invokeLater() {
+                updateOrCreateCodeView()
+            }
         }
     }
 
@@ -94,7 +98,6 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
             document: Document,
             disposable: Disposable
         ): EditorEx {
-            val language = file.language
             val editor: Editor = EditorFactory.getInstance().createViewer(document, project);
             (editor as EditorEx).setFile(file)
             editor.setCaretEnabled(true)
@@ -164,5 +167,11 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
 
 @RequiresReadLock
 fun VirtualFile.findDocument(): Document? {
-    return FileDocumentManager.getInstance().getDocument(this)
+    val ref: Ref.ObjectRef<Document?> = Ref.ObjectRef()
+    runReadAction {
+        val instance = FileDocumentManager.getInstance()
+        ref.element = instance.getDocument(this)
+    }
+
+    return ref.element
 }

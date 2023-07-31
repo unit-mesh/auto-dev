@@ -31,7 +31,7 @@ class ChatWithThisAction: ChatBaseAction() {
         contentManager?.addContent(content!!)
 
         toolWindowManager?.activate {
-            contentPanel.setContent("""
+            contentPanel.setContent("\n" + """
                 |```$language
                 |$prefixText
                 |```""".trimMargin())

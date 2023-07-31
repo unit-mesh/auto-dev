@@ -2,6 +2,7 @@ package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.provider.ContextPrompter
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.ui.NullableComponent
@@ -72,6 +73,7 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
     fun addMessage(message: String, isMe: Boolean = false, displayPrompt: String = "") {
         val role = if (isMe) ChatRole.User else ChatRole.Assistant
         val displayText = displayPrompt.ifEmpty { message }
+
         val messageView = MessageView(message, role, displayText)
 
         myList.add(messageView)
@@ -91,7 +93,10 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
     }
 
     suspend fun updateMessage(content: Flow<String>): String {
-        myList.remove(myList.componentCount - 1)
+        if (myList.componentCount > 0) {
+            myList.remove(myList.componentCount - 1)
+        }
+
         val result = updateMessageInUi(content)
 
         progressBar.isIndeterminate = false
