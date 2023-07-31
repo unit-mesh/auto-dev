@@ -71,7 +71,7 @@ class TestCodeGenTask(
             val additionContextRef: Ref.ObjectRef<String> = Ref.ObjectRef()
             additionContextRef.element = ""
             ApplicationManager.getApplication().runReadAction {
-                additionContextRef.element = testContext.relatedFiles.joinToString("\n") {
+                additionContextRef.element = testContext.relatedClasses.joinToString("\n") {
                     it.toQuery()
                 }.lines().joinToString("\n") {
                     "// $it"

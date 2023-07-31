@@ -11,9 +11,6 @@ import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtParameter
 
 class KotlinClassContextBuilder : ClassContextBuilder {
-    private fun getDeclaredFields(kotlinClass: KtClassOrObject): List<KtNamedFunction> {
-        return kotlinClass.getDeclarations().filterIsInstance<KtNamedFunction>()
-    }
 
     private fun getPrimaryConstructorFields(kotlinClass: KtClassOrObject): List<KtParameter> {
         return kotlinClass.getPrimaryConstructorParameters().filter { it.hasValOrVar() }
@@ -25,12 +22,18 @@ class KotlinClassContextBuilder : ClassContextBuilder {
 
         val text = psiElement.text
         val name = psiElement.name
-        val declaredFields = getDeclaredFields(psiElement)
+        val ktNamedFunctions = Companion.getFunctions(psiElement)
         val primaryConstructorFields = getPrimaryConstructorFields(psiElement)
-        val allFields = declaredFields + primaryConstructorFields
+        val allFields = ktNamedFunctions + primaryConstructorFields
         val usages =
             if (gatherUsages) JavaContextCollectionUtilsKt.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
 
-        return ClassContext(psiElement, text, name, declaredFields, allFields, null, usages)
+        return ClassContext(psiElement, text, name, ktNamedFunctions, allFields, null, usages)
+    }
+
+    companion object {
+        fun getFunctions(kotlinClass: KtClassOrObject): List<KtNamedFunction> {
+            return kotlinClass.getDeclarations().filterIsInstance<KtNamedFunction>()
+        }
     }
 }

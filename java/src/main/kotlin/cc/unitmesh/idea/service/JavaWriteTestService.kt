@@ -1,7 +1,7 @@
 package cc.unitmesh.idea.service
 
-import cc.unitmesh.devti.context.FileContext
-import cc.unitmesh.devti.context.FileContextProvider
+import cc.unitmesh.devti.context.ClassContext
+import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.provider.TestFileContext
 import cc.unitmesh.devti.provider.WriteTestService
 import com.intellij.lang.Language
@@ -95,12 +95,12 @@ class JavaWriteTestService : WriteTestService() {
         return result.element
     }
 
-    override fun lookupRelevantClass(project: Project, element: PsiElement): List<FileContext> {
-        val result: Ref.ObjectRef<List<FileContext>> = Ref.ObjectRef()
+    override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {
+        val result: Ref.ObjectRef<List<ClassContext>> = Ref.ObjectRef()
         result.element = emptyList()
 
         ApplicationManager.getApplication().runReadAction {
-            val elements = mutableListOf<FileContext>()
+            val elements = mutableListOf<ClassContext>()
             val projectPath = project.guessProjectDir()?.path
 
             val resolvedClasses = resolveByMethod(element)
@@ -116,7 +116,7 @@ class JavaWriteTestService : WriteTestService() {
             resolvedClasses.forEach { (_, psiClass) ->
                 val classPath = psiClass?.containingFile?.virtualFile?.path
                 if (classPath?.contains(projectPath!!) == true) {
-                    elements += FileContextProvider().from(psiClass)
+                    elements += ClassContextProvider(false).from(psiClass)
                 }
             }
 
@@ -126,13 +126,13 @@ class JavaWriteTestService : WriteTestService() {
         return result.element
     }
 
-    private fun resolveByMethod(element: PsiElement): MutableMap<String, PsiJavaFile?> {
-        val resolvedClasses = mutableMapOf<String, PsiJavaFile?>()
+    private fun resolveByMethod(element: PsiElement): MutableMap<String, PsiClass?> {
+        val resolvedClasses = mutableMapOf<String, PsiClass?>()
         if (element is PsiMethod) {
             element.parameterList.parameters.filter {
                 it.type is PsiClassReferenceType
             }.map {
-                resolvedClasses[it.name] = (it.type as PsiClassReferenceType).resolveFile()
+                resolvedClasses[it.name] = (it.type as PsiClassReferenceType).resolve()
             }
 
             val outputType = element.returnTypeElement?.type
@@ -140,13 +140,13 @@ class JavaWriteTestService : WriteTestService() {
                 if (outputType.parameters.isNotEmpty()) {
                     outputType.parameters.forEach {
                         if (it is PsiClassReferenceType) {
-                            resolvedClasses[it.canonicalText] = outputType.resolveFile()
+                            resolvedClasses[it.canonicalText] = outputType.resolve()
                         }
                     }
                 }
 
                 val canonicalText = outputType.canonicalText
-                resolvedClasses[canonicalText] = outputType.resolveFile()
+                resolvedClasses[canonicalText] = outputType.resolve()
             }
         }
 
@@ -154,25 +154,23 @@ class JavaWriteTestService : WriteTestService() {
     }
 
 
-    private fun resolveByField(element: PsiElement): Map<out String, PsiJavaFile?> {
-        // find element's class and lookup fields
-        val file = element.containingFile as PsiJavaFile
-        val psiClass = file.classes.firstOrNull() ?: return emptyMap()
+    private fun resolveByField(element: PsiElement): Map<out String, PsiClass?> {
+        val psiClass = element.containingFile as PsiClass
 
-        val resolvedClasses = mutableMapOf<String, PsiJavaFile?>()
+        val resolvedClasses = mutableMapOf<String, PsiClass?>()
         psiClass.fields.forEach { field ->
             val fieldType = field.type
             if (fieldType is PsiClassReferenceType) {
                 if (fieldType.parameters.isNotEmpty()) {
                     fieldType.parameters.forEach {
                         if (it is PsiClassReferenceType) {
-                            resolvedClasses[it.canonicalText] = it.resolveFile()
+                            resolvedClasses[it.canonicalText] = it.resolve()
                         }
                     }
                 }
 
                 val canonicalText = fieldType.canonicalText
-                resolvedClasses[canonicalText] = fieldType.resolveFile()
+                resolvedClasses[canonicalText] = fieldType.resolve()
             }
         }
 
@@ -201,8 +199,4 @@ class JavaWriteTestService : WriteTestService() {
 
         return testFileRef.element!!
     }
-}
-
-private fun PsiClassReferenceType.resolveFile(): PsiJavaFile? {
-    return this.resolve()?.containingFile as PsiJavaFile
 }

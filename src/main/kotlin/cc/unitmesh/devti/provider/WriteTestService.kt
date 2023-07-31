@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.provider
 
-import cc.unitmesh.devti.context.FileContext
+import cc.unitmesh.devti.context.ClassContext
 import com.intellij.execution.Executor
 import com.intellij.execution.ExecutorRegistryImpl
 import com.intellij.execution.RunManager
@@ -20,7 +20,7 @@ import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration
 data class TestFileContext(
     val isNewFile: Boolean,
     val file: VirtualFile,
-    val relatedFiles: List<FileContext> = emptyList(),
+    val relatedClasses: List<ClassContext> = emptyList(),
     val testClassName: String?,
     val language: Language,
 )
@@ -39,7 +39,7 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
     abstract fun isApplicable(element: PsiElement): Boolean
 
     abstract fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext?
-    abstract fun lookupRelevantClass(project: Project, element: PsiElement): List<FileContext>
+    abstract fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext>
     fun runTest(project: Project, virtualFile: VirtualFile) {
         val runManager = RunManager.getInstance(project)
         val allConfigurationsList = runManager.allConfigurationsList

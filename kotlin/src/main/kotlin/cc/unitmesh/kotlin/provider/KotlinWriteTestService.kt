@@ -1,9 +1,10 @@
 package cc.unitmesh.kotlin.provider
 
-import cc.unitmesh.devti.context.FileContext
-import cc.unitmesh.devti.context.FileContextProvider
+import cc.unitmesh.devti.context.ClassContext
+import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.provider.TestFileContext
 import cc.unitmesh.devti.provider.WriteTestService
+import cc.unitmesh.kotlin.context.KotlinClassContextBuilder
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
@@ -15,12 +16,12 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiJavaFile
-import com.intellij.psi.PsiManager
 import org.jetbrains.kotlin.idea.KotlinLanguage
+import org.jetbrains.kotlin.psi.KtClass
+import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtFunction
-import org.jetbrains.kotlin.psi.KtTypeReference
+import org.jetbrains.kotlin.psi.psiUtil.containingClass
 import java.io.File
 import kotlin.jvm.internal.Ref
 
@@ -100,28 +101,28 @@ class KotlinWriteTestService : WriteTestService() {
         return result.element
     }
 
-    override fun lookupRelevantClass(project: Project, element: PsiElement): List<FileContext> {
-        val result: Ref.ObjectRef<List<FileContext>> = Ref.ObjectRef()
+    override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {
+        val result: Ref.ObjectRef<List<ClassContext>> = Ref.ObjectRef()
         result.element = emptyList()
 
         ApplicationManager.getApplication().runReadAction {
-            val elements = mutableListOf<FileContext>()
+            val elements = mutableListOf<ClassContext>()
             val projectPath = project.guessProjectDir()?.path
 
             val resolvedClasses = resolveByMethod(element)
-//            resolvedClasses.putAll(resolveByField(element))
+            resolvedClasses.putAll(resolveByField(element))
 
-//            if (element is PsiClass) {
-//                element.methods.forEach { method ->
-//                    resolvedClasses.putAll(resolveByMethod(method))
-//                }
-//            }
+            if (element is KtClassOrObject) {
+                KotlinClassContextBuilder.getFunctions(element).forEach {
+                    resolvedClasses.putAll(resolveByMethod(it))
+                }
+            }
 
             // find the class in the same project
             resolvedClasses.forEach { (_, psiClass) ->
                 val classPath = psiClass?.containingFile?.virtualFile?.path
                 if (classPath?.contains(projectPath!!) == true) {
-                    elements += FileContextProvider().from(psiClass)
+                    elements += ClassContextProvider(false).from(psiClass)
                 }
             }
 
@@ -131,19 +132,19 @@ class KotlinWriteTestService : WriteTestService() {
         return result.element
     }
 
-    private fun resolveByMethod(element: PsiElement): MutableMap<String, KtFile?> {
-        val resolvedClasses = mutableMapOf<String, KtFile?>()
+    private fun resolveByMethod(element: PsiElement): MutableMap<String, KtClass?> {
+        val resolvedClasses = mutableMapOf<String, KtClass?>()
         if (element is KtFunction) {
-//            element.parameterList.parameters.filter {
-////                it.type is PsiClassReferenceType
-//                it.type is PsiClassReferenceType && it.type.canonicalText != "java.lang.String"
-//            }.map {
-//                resolvedClasses[it.name] = (it.type as PsiClassReferenceType).resolveFile()
-//            }
-            element.valueParameters.filter {
-                it.typeReference is KtTypeReference
+            element.valueParameters.forEach {
+                it.containingClass()?.let { containingClass ->
+                    resolvedClasses[containingClass.name!!] = containingClass
+                }
             }
 
+//            val outputType = element.typeReference?.classForRefactor()
+//            if (outputType != null) {
+//                resolvedClasses[outputType.name!!] = outputType
+//            }
 
 //            val outputType = element.returnTypeElement?.type
 //            if (outputType is PsiClassReferenceType) {
@@ -164,26 +165,8 @@ class KotlinWriteTestService : WriteTestService() {
     }
 
 
-    private fun resolveByField(element: PsiElement): Map<out String, PsiJavaFile?> {
-        val file = element.containingFile as PsiJavaFile
-        val psiClass = file.classes.firstOrNull() ?: return emptyMap()
-
-        val resolvedClasses = mutableMapOf<String, PsiJavaFile?>()
-        psiClass.fields.forEach { field ->
-//            val fieldType = field.type
-//            if (fieldType is PsiClassReferenceType) {
-//                if (fieldType.parameters.isNotEmpty()) {
-//                    fieldType.parameters.forEach {
-//                        if (it is PsiClassReferenceType) {
-//                            resolvedClasses[it.canonicalText] = it.resolveFile()
-//                        }
-//                    }
-//                }
-//
-//                val canonicalText = fieldType.canonicalText
-//                resolvedClasses[canonicalText] = fieldType.resolveFile()
-//            }
-        }
+    private fun resolveByField(element: PsiElement): Map<out String, KtClass?> {
+        val resolvedClasses = mutableMapOf<String, KtClass?>()
 
         return resolvedClasses
     }
@@ -210,8 +193,4 @@ class KotlinWriteTestService : WriteTestService() {
 
         return testFileRef.element!!
     }
-}
-
-private fun KtTypeReference.resolveFile(): KtFile? {
-    return this.containingFile.virtualFile?.let { PsiManager.getInstance(project).findFile(it) as KtFile }
 }
