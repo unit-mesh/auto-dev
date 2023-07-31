@@ -149,10 +149,15 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
 
             val editor: EditorEx =
                 createCodeViewerEditor(project, createCodeViewerFile as LightVirtualFile, document, disposable)
+
             editor.scrollPane.setBorder(JBUI.Borders.empty())
             editor.component.setBorder(JBUI.Borders.empty())
 
-            return CodePartEditorInfo(graphProperty, BorderLayoutPanel(), editor, createCodeViewerFile)
+            val editorFragment = EditorFragment(project, editor, message)
+            editorFragment.setCollapsed(forceFoldEditorByDefault)
+            editorFragment.updateExpandCollapseLabel()
+
+            return CodePartEditorInfo(graphProperty, editorFragment.getContent(), editor, createCodeViewerFile)
         }
     }
 }

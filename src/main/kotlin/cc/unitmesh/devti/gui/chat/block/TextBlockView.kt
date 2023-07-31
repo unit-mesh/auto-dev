@@ -4,14 +4,21 @@ import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.parser.convertMarkdownToHtml
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.util.text.StringUtil
+import com.intellij.util.ui.ExtendableHTMLViewFactory
 import com.intellij.util.ui.HTMLEditorKitBuilder
 import com.intellij.xml.util.XmlStringUtil
 import java.awt.Component
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.JEditorPane
+import javax.swing.SizeRequirements
 import javax.swing.event.HyperlinkEvent
 import javax.swing.text.DefaultCaret
+import javax.swing.text.Element
+import javax.swing.text.View
+import javax.swing.text.html.ParagraphView
+import kotlin.jvm.functions.Function2
+import kotlin.math.max
 
 class TextBlockView(private val block: MessageBlock) : MessageBlockView {
     private val editorPane: JEditorPane
@@ -20,11 +27,9 @@ class TextBlockView(private val block: MessageBlock) : MessageBlockView {
     init {
         editorPane = createComponent()
         component = editorPane
-        val messagePartTextListener = object : MessageBlockTextListener {
-            override fun onTextChanged(str: String) {
-                editorPane.text = parseText(str)
-                editorPane.invalidate()
-            }
+        val messagePartTextListener = MessageBlockTextListener { str ->
+            editorPane.text = parseText(str)
+            editorPane.invalidate()
         }
 
         getBlock().addTextListener(messagePartTextListener)
@@ -35,7 +40,7 @@ class TextBlockView(private val block: MessageBlock) : MessageBlockView {
     override fun getComponent(): Component = component
 
     private fun createComponent(): JEditorPane {
-        val jEditorPane = Companion.createBaseComponent()
+        val jEditorPane = createBaseComponent()
         jEditorPane.addHyperlinkListener { it: HyperlinkEvent ->
             if (it.eventType == HyperlinkEvent.EventType.ACTIVATED) {
                 BrowserUtil.browse(it.url)
@@ -63,8 +68,11 @@ class TextBlockView(private val block: MessageBlock) : MessageBlockView {
         fun createBaseComponent(): JEditorPane {
             val jEditorPane = JEditorPane()
             jEditorPane.setContentType("text/html")
-            val build = HTMLEditorKitBuilder().build()
+            val build = HTMLEditorKitBuilder().withViewFactoryExtensions(
+                LineSpacingExtension(0.2f)
+            ).build()
             build.getStyleSheet().addRule("p {margin-top: 1px}")
+
             jEditorPane.also {
                 it.editorKit = build
                 it.isEditable = false
@@ -88,5 +96,35 @@ class TextBlockView(private val block: MessageBlock) : MessageBlockView {
             }
             return jEditorPane
         }
+    }
+}
+
+
+internal class LineSpacingExtension(val lineSpacing: Float) : ExtendableHTMLViewFactory.Extension {
+
+    override operator fun invoke(elem: Element, defaultView: View): View? {
+        return if (defaultView is ParagraphView) {
+            object : ParagraphView(elem) {
+                override fun calculateMinorAxisRequirements(
+                    axis: Int,
+                    requirements: SizeRequirements?
+                ): SizeRequirements {
+                    var sizeRequirements = requirements
+                    if (sizeRequirements == null) {
+                        sizeRequirements = SizeRequirements()
+                    }
+                    sizeRequirements.minimum = layoutPool.getMinimumSpan(axis).toInt()
+                    sizeRequirements.preferred =
+                        max(sizeRequirements.minimum, layoutPool.getPreferredSpan(axis).toInt())
+                    sizeRequirements.maximum = Int.MAX_VALUE
+                    sizeRequirements.alignment = 0.5f
+                    return sizeRequirements
+                }
+
+                override fun setLineSpacing(ls: Float) {
+                    super.setLineSpacing(this@LineSpacingExtension.lineSpacing)
+                }
+            }
+        } else null
     }
 }
