@@ -85,7 +85,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
         val result = executePrompt(promptText)
 
         parseCodeFromString(result).forEach { dto ->
-            processor.let { createCodeByType(dto) }
+            createCodeByType(dto)
         }
     }
 
@@ -264,7 +264,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
         storyDetail: String,
         isNewController: Boolean
     ): String {
-        val allModels = processor.modelList()?.map { it } ?: emptyList()
+        val allModels = processor.modelList().map { it }
         val relevantName = targetEndpoint.replace("Controller", "")
 
         // filter *Request, *Response
@@ -290,7 +290,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
     }
 
     private fun executePrompt(promptText: String): String {
-        ui.addMessage(promptText, true)
+        ui.addMessage(promptText, false, promptText)
         // for answer
         ui.addMessage(AutoDevBundle.message("devti.loading"))
 

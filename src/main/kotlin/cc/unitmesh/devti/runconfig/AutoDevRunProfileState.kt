@@ -16,8 +16,8 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
@@ -39,14 +39,20 @@ class AutoDevRunProfileState(
     }
 
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
-        val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(DevtiFlowToolWindowFactory.Util.id)
-        val contentManager = toolWindowManager?.contentManager
-
         val gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)
 
         val openAIRunner = ConnectorFactory.getInstance().connector(project)
-        val chatCodingService = ChatCodingService(ChatActionType.REVIEW, project)
+
+        val chatCodingService = ChatCodingService(ChatActionType.CHAT, project)
         val contentPanel = ChatCodingComponent(chatCodingService)
+
+        val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(DevtiFlowToolWindowFactory.Util.id)
+        val contentManager = toolWindowManager?.contentManager
+
+        val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
+
+        contentManager?.removeAllContents(true)
+        contentManager?.addContent(content!!)
 
         // TODO: support other language
         val flowProvider = DevFlowProvider.flowProvider("java")
@@ -55,53 +61,49 @@ class AutoDevRunProfileState(
             return null
         }
 
-        flowProvider.initContext(gitHubIssue, openAIRunner, contentPanel, project)
-
-        val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
-
-        contentManager?.removeAllContents(true)
-        contentManager?.addContent(content!!)
-        toolWindowManager?.activate(null)
-
-        ProgressManager.getInstance().run(
-            object : Task.Backgroundable(project, "Loading retained test failure", true) {
-                override fun run(indicator: ProgressIndicator) {
-                    indicator.isIndeterminate = false
-                    indicator.fraction = 0.0
-
-                    indicator.text = AutoDevBundle.message("devti.progress.creatingStory")
-
-                    // todo: check create story
-                    val storyId = options.storyId()
-                    val storyDetail = flowProvider.getOrCreateStoryDetail(storyId)
-
-                    indicator.fraction = 0.2
-
-                    indicator.text = AutoDevBundle.message("devti.generatingDtoAndEntity")
-                    flowProvider.updateOrCreateDtoAndEntity(storyDetail)
-
-                    indicator.fraction = 0.4
-
-                    indicator.text = AutoDevBundle.message("devti.progress.fetchingSuggestEndpoint")
-                    val target = flowProvider.fetchSuggestEndpoint(storyDetail)
-
-                    indicator.fraction = 0.6
-
-                    indicator.text = AutoDevBundle.message("devti.progress.updatingEndpointMethod")
-                    flowProvider.updateOrCreateEndpointCode(target, storyDetail)
-
-                    indicator.fraction = 0.8
-
-                    indicator.text = AutoDevBundle.message("devti.progress.creatingServiceAndRepository")
-                    flowProvider.updateOrCreateServiceAndRepository()
-
-                    indicator.fraction = 1.0
-                }
-            }
-        )
+        toolWindowManager?.activate {
+            flowProvider.initContext(gitHubIssue, openAIRunner, contentPanel, project)
+            ProgressManager.getInstance().run(executeCrud(flowProvider))
+        }
 
         return null
     }
+
+    private fun executeCrud(flowProvider: DevFlowProvider) =
+        object : Task.Backgroundable(project, "Loading retained test failure", true) {
+            override fun run(indicator: ProgressIndicator) {
+                indicator.isIndeterminate = false
+                indicator.fraction = 0.0
+
+                indicator.text = AutoDevBundle.message("devti.progress.creatingStory")
+
+                // todo: check create story
+                val storyId = options.storyId()
+                val storyDetail = flowProvider.getOrCreateStoryDetail(storyId)
+
+                indicator.fraction = 0.2
+
+                indicator.text = AutoDevBundle.message("devti.generatingDtoAndEntity")
+                flowProvider.updateOrCreateDtoAndEntity(storyDetail)
+
+                indicator.fraction = 0.4
+
+                indicator.text = AutoDevBundle.message("devti.progress.fetchingSuggestEndpoint")
+                val target = flowProvider.fetchSuggestEndpoint(storyDetail)
+
+                indicator.fraction = 0.6
+
+                indicator.text = AutoDevBundle.message("devti.progress.updatingEndpointMethod")
+                flowProvider.updateOrCreateEndpointCode(target, storyDetail)
+
+                indicator.fraction = 0.8
+
+                indicator.text = AutoDevBundle.message("devti.progress.creatingServiceAndRepository")
+                flowProvider.updateOrCreateServiceAndRepository()
+
+                indicator.fraction = 1.0
+            }
+        }
 
     companion object {
         private val logger: Logger = logger<AutoDevRunProfileState>()

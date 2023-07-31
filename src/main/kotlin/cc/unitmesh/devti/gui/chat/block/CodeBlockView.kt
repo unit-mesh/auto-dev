@@ -9,6 +9,7 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.editor.EditorKind
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.ex.EditorMarkupModel
 import com.intellij.openapi.editor.ex.FocusChangeListener
@@ -53,9 +54,7 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
 
     override fun initialize() {
         if (editorInfo == null) {
-            ApplicationManager.getApplication().invokeLater() {
-                updateOrCreateCodeView()
-            }
+            updateOrCreateCodeView()
         }
     }
 
@@ -98,7 +97,7 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
             document: Document,
             disposable: Disposable
         ): EditorEx {
-            val editor: Editor = EditorFactory.getInstance().createViewer(document, project);
+            val editor: Editor = EditorFactory.getInstance().createViewer(document, project, EditorKind.PREVIEW)
             (editor as EditorEx).setFile(file)
             editor.setCaretEnabled(true)
             val highlighter = EditorHighlighterFactory.getInstance().createEditorHighlighter(project, file)
