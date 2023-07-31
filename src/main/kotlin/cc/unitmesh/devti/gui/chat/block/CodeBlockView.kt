@@ -41,12 +41,7 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
     }
 
     override fun getComponent(): JComponent {
-        val codePartEditorInfo = editorInfo
-        if (codePartEditorInfo != null) {
-            return codePartEditorInfo.component
-        }
-
-        return updateOrCreateCodeView()!!.component
+        return editorInfo?.component ?: return updateOrCreateCodeView()!!.component
     }
 
     val codeContent: String
