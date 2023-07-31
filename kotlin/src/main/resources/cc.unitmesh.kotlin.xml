@@ -24,5 +24,9 @@
                                 implementationClass="cc.unitmesh.kotlin.context.KotlinVariableContextBuilder"/>
 
         <chatContextProvider implementation="cc.unitmesh.kotlin.provider.KotlinVersionProvider"/>
+
+        <testContextProvider
+                language="kotlin"
+                implementation="cc.unitmesh.kotlin.provider.KotlinWriteTestService"/>
     </extensions>
 </idea-plugin>

@@ -217,7 +217,7 @@ class JvmIdeaContextPrompter : ContextPrompter() {
         val projectPath = project!!.basePath ?: ""
         runReadAction {
             val lookupFile = if (selectedText.contains(projectPath)) {
-                val regex = Regex("$projectPath(.*\\.)${MvcUtil.langSuffix(lang)}")
+                val regex = Regex("$projectPath(.*\\.)${lang.lowercase()}")
                 val relativePath = regex.find(selectedText)?.groupValues?.get(1) ?: ""
                 val file = LocalFileSystem.getInstance().findFileByPath(projectPath + relativePath)
                 file?.let { PsiManager.getInstance(project!!).findFile(it) }
