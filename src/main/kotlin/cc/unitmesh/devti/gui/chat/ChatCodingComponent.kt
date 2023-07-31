@@ -67,9 +67,10 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
         addQuestionArea()
     }
 
-    fun add(message: String, isMe: Boolean = false) {
+    fun addMessage(message: String, isMe: Boolean = false, displayPrompt: String = "") {
         val role = if (isMe) ChatRole.User else ChatRole.Assistant
-        val messageView = MessageView(message, role)
+        val displayText = displayPrompt.ifEmpty { message }
+        val messageView = MessageView(message, role, displayText)
 
         myList.add(messageView)
         updateLayout()
@@ -125,7 +126,7 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
     }
 
     private suspend fun updateMessageInUi(content: Flow<String>): String {
-        val messageView = MessageView("", ChatRole.Assistant)
+        val messageView = MessageView("", ChatRole.Assistant, "")
         myList.add(messageView)
 
         var text = ""

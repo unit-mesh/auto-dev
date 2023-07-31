@@ -13,7 +13,7 @@ import java.awt.*
 import javax.swing.*
 import kotlin.jvm.internal.Ref
 
-class MessageView(private val message: String, role: ChatRole) : JBPanel<MessageView>() {
+class MessageView(private val message: String, role: ChatRole, displayText: String) : JBPanel<MessageView>() {
     private val component: DisplayComponent = DisplayComponent(message)
     private var answer: String? = null
 
@@ -36,7 +36,7 @@ class MessageView(private val message: String, role: ChatRole) : JBPanel<Message
         add(centerPanel, BorderLayout.CENTER)
 
         if (role == ChatRole.User) {
-            val parts = layoutAll(SimpleMessage(message, message, role))
+            val parts = layoutAll(SimpleMessage(displayText, message, role))
             parts.forEach {
                 val blockView = when (it) {
                     is CodeBlock -> {
@@ -131,7 +131,7 @@ class MessageView(private val message: String, role: ChatRole) : JBPanel<Message
         }
 
         fun layoutAll(message: CompletableMessage): List<MessageBlock> {
-            val messageText: String = message.text
+            val messageText: String = message.displayText
             val contextTypeRef = Ref.ObjectRef<MessageBlockType>()
             contextTypeRef.element = MessageBlockType.PlainText
 
