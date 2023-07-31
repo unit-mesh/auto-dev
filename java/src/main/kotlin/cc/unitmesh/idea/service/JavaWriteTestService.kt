@@ -4,14 +4,8 @@ import cc.unitmesh.devti.context.FileContext
 import cc.unitmesh.devti.context.FileContextProvider
 import cc.unitmesh.devti.provider.TestFileContext
 import cc.unitmesh.devti.provider.WriteTestService
-import com.intellij.execution.Executor
-import com.intellij.execution.ExecutorRegistryImpl
-import com.intellij.execution.RunManager
-import com.intellij.ide.actions.runAnything.RunAnythingPopupUI.getExecutor
 import com.intellij.lang.Language
-import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -22,7 +16,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiClassReferenceType
-import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration
 import java.io.File
 import kotlin.jvm.internal.Ref
 
@@ -207,40 +200,6 @@ class JavaWriteTestService : WriteTestService() {
         }
 
         return testFileRef.element!!
-    }
-
-    override fun runTest(project: Project, virtualFile: VirtualFile) {
-        val runManager = RunManager.getInstance(project)
-        val allConfigurationsList = runManager.allConfigurationsList
-        log.warn(virtualFile.nameWithoutExtension)
-        val testConfig = allConfigurationsList.firstOrNull {
-            it.name == virtualFile.nameWithoutExtension && it is GradleRunConfiguration
-        }
-
-        if (testConfig == null) {
-            log.warn("Failed to find test configuration for: ${virtualFile.nameWithoutExtension}")
-            return
-        }
-
-        val configurationSettings =
-            runManager.findConfigurationByTypeAndName(testConfig.getType(), testConfig.name)
-
-        if (configurationSettings == null) {
-            log.warn("Failed to find test configuration for: ${virtualFile.nameWithoutExtension}")
-            return
-        }
-
-        log.info("configurationSettings: $configurationSettings")
-        runManager.selectedConfiguration = configurationSettings
-
-        val executor: Executor = getExecutor()
-        ExecutorRegistryImpl.RunnerHelper.run(
-            project,
-            testConfig,
-            configurationSettings,
-            DataContext.EMPTY_CONTEXT,
-            executor
-        )
     }
 }
 
