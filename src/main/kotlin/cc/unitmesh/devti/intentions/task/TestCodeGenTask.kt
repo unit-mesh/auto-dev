@@ -39,7 +39,7 @@ class TestCodeGenTask(
 ) : Task.Backgroundable(request.project, AutoDevBundle.message("intentions.chat.code.test.name")) {
     private val actionType = ChatActionType.WRITE_TEST
     private val lang = request.file.language.displayName
-    private val writeTestService = WriteTestService.context(lang)
+    private val writeTestService = WriteTestService.context(request.element)
 
     override fun run(indicator: ProgressIndicator) {
         indicator.isIndeterminate = true

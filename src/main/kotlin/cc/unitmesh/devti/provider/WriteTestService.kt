@@ -4,7 +4,6 @@ import cc.unitmesh.devti.context.FileContext
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.serviceContainer.LazyExtensionInstance
@@ -28,6 +27,8 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
         return implementationClass
     }
 
+    abstract fun isApplicable(element: PsiElement): Boolean
+
     abstract fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext?
     abstract fun lookupRelevantClass(project: Project, element: PsiElement): List<FileContext>
     abstract fun insertTestCode(sourceFile: VirtualFile, project: Project, code: String): Boolean
@@ -38,17 +39,14 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
         private val EP_NAME: ExtensionPointName<WriteTestService> =
             ExtensionPointName.create("cc.unitmesh.testContextProvider")
 
-        fun context(lang: String): WriteTestService? {
+        fun context(psiElement: PsiElement): WriteTestService? {
+            val lang = psiElement.language.displayName
             val extensionList = EP_NAME.extensionList
             val providers = extensionList.filter {
-                it.language?.lowercase() == lang.lowercase()
+                it.language?.lowercase() == lang.lowercase() && it.isApplicable(psiElement)
             }
 
-            return if (providers.isEmpty()) {
-                extensionList.first()
-            } else {
-                providers.first()
-            }
+            return providers.firstOrNull()
         }
     }
 }

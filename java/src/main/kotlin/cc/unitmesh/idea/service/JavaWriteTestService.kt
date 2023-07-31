@@ -30,6 +30,10 @@ class JavaWriteTestService : WriteTestService() {
         val log = logger<JavaWriteTestService>()
     }
 
+    override fun isApplicable(element: PsiElement): Boolean {
+        return element is PsiClass
+    }
+
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
         val sourceFilePath = sourceFile.virtualFile
         val parentDir = sourceFilePath.parent
