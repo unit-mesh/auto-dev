@@ -5,6 +5,7 @@ import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.ui.NullableComponent
+import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
 import com.intellij.ui.OnePixelSplitter
@@ -41,6 +42,7 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
         myList, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
     )
+    private var inputField: AutoDevInputField = AutoDevInputField(chatCodingService.project, listOf())
 
     init {
         val splitter = OnePixelSplitter(true, .98f)
@@ -148,6 +150,8 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
             listOf()
         )
 
+        this.inputField = searchTextArea
+
         val listener: (ActionEvent) -> Unit = {
             val prompt = searchTextArea.text
             searchTextArea.text = ""
@@ -187,5 +191,11 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
         actionPanel.add(actionButtons, BorderLayout.EAST)
 
         mainPanel.add(actionPanel, BorderLayout.SOUTH)
+    }
+
+    fun setContent(trimMargin: String) {
+        val focusManager = IdeFocusManager.getInstance(chatCodingService.project)
+        focusManager.requestFocus(inputField, true)
+        this.inputField.text = trimMargin
     }
 }
