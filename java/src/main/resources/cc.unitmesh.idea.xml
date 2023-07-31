@@ -18,6 +18,9 @@
         <variableContextBuilder language="JAVA"
                                 implementationClass="cc.unitmesh.idea.context.JavaVariableContextBuilder"/>
 
+        <codeModifier language="JAVA"
+                      implementationClass="cc.unitmesh.idea.context.JavaCodeModifier"/>
+
         <chatContextProvider implementation="cc.unitmesh.idea.provider.JavaVersionProvider"/>
         <chatContextProvider implementation="cc.unitmesh.idea.provider.SpringContextProvider"/>
         <chatContextProvider implementation="cc.unitmesh.idea.provider.JavaTestContextProvider"/>

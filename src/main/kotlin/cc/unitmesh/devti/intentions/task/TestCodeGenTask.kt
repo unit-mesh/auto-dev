@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.intentions.task
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.context.CodeModifierProvider
 import cc.unitmesh.devti.editor.LLMCoroutineScopeService
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.intentions.WriteTestIntention
@@ -102,11 +103,11 @@ class TestCodeGenTask(
             indicator.fraction = 0.9
             indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.write-test")
 
-            writeTestToFile(request.project, flow, testContext, writeTestService!!)
+            writeTestToFile(request.project, flow, testContext)
 
             navigateTestFile(testContext.file, request.editor, request.project)
 
-            writeTestService.runTest(request.project, testContext.file)
+            writeTestService?.runTest(request.project, testContext.file)
 
             indicator.fraction = 1.0
         }
@@ -116,7 +117,6 @@ class TestCodeGenTask(
         project: Project,
         flow: Flow<String>,
         context: TestFileContext,
-        contextProvider: WriteTestService
     ) {
         val suggestion = StringBuilder()
         flow.collect {
@@ -125,8 +125,9 @@ class TestCodeGenTask(
 
         logger<WriteTestIntention>().warn("LLM suggestion: $suggestion")
 
+        val modifier = CodeModifierProvider().modifier(context.language) ?: throw IllegalStateException("Unsupported language: ${context.language}")
         parseCodeFromString(suggestion.toString()).forEach {
-            contextProvider.insertTestCode(context.file, project, it)
+            modifier.insertTestCode(context.file, project, it)
         }
     }
 

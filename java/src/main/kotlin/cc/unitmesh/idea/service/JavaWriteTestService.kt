@@ -8,6 +8,7 @@ import com.intellij.execution.Executor
 import com.intellij.execution.ExecutorRegistryImpl
 import com.intellij.execution.RunManager
 import com.intellij.ide.actions.runAnything.RunAnythingPopupUI.getExecutor
+import com.intellij.lang.Language
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
@@ -31,7 +32,7 @@ class JavaWriteTestService : WriteTestService() {
     }
 
     override fun isApplicable(element: PsiElement): Boolean {
-        return element is PsiClass
+        return element.language == Language.findLanguageByID("JAVA")
     }
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
@@ -92,10 +93,10 @@ class JavaWriteTestService : WriteTestService() {
         project.guessProjectDir()?.refresh(true, true)
 
         if (testFile != null) {
-            result.element = TestFileContext(isNewFile, testFile, relatedModels, className)
+            result.element = TestFileContext(isNewFile, testFile, relatedModels, className, sourceFile.language)
         } else {
             val targetFile = createTestFile(sourceFile, testDir!!, packageName, project)
-            result.element = TestFileContext(isNewFile = true, targetFile, relatedModels, className)
+            result.element = TestFileContext(isNewFile = true, targetFile, relatedModels, "", sourceFile.language)
         }
 
         return result.element
@@ -183,65 +184,6 @@ class JavaWriteTestService : WriteTestService() {
         }
 
         return resolvedClasses
-    }
-
-    override fun insertTestCode(sourceFile: VirtualFile, project: Project, code: String): Boolean {
-        log.info("methodCode: $code")
-        if (!code.contains("@Test")) {
-            log.error("methodCode does not contain @Test annotation: $code")
-            return false
-        }
-
-        if (code.startsWith("import") && code.contains("class ")) {
-            return insertClassCode(sourceFile, project, code)
-        }
-
-        ApplicationManager.getApplication().invokeLater {
-            val rootElement = runReadAction {
-                val psiJavaFile = PsiManager.getInstance(project).findFile(sourceFile) as PsiJavaFile
-                val psiClass = psiJavaFile.classes.firstOrNull()
-                if (psiClass == null) {
-                    log.error("Failed to find PsiClass in the source file: $psiJavaFile, code: $code")
-                    return@runReadAction null
-                }
-
-                return@runReadAction psiClass
-            } ?: return@invokeLater
-
-            val psiElementFactory = PsiElementFactory.getInstance(project)
-
-            val newTestMethod = psiElementFactory.createMethodFromText(code, rootElement)
-            if (rootElement.findMethodsByName(newTestMethod.name, false).isNotEmpty()) {
-                log.error("Method already exists in the class: ${newTestMethod.name}")
-            }
-
-            log.info("newTestMethod: ${newTestMethod.text}")
-
-            WriteCommandAction.runWriteCommandAction(project) {
-                val lastMethod = rootElement.methods.lastOrNull()
-                val lastMethodEndOffset = lastMethod?.textRange?.endOffset ?: 0
-
-                val document = PsiDocumentManager.getInstance(project).getDocument(rootElement.containingFile)
-                // insert new line with indent before the new method
-                document?.insertString(lastMethodEndOffset, "\n    ")
-                document?.insertString(lastMethodEndOffset, newTestMethod.text)
-            }
-
-            project.guessProjectDir()?.refresh(true, true)
-        }
-
-        return true
-    }
-
-    override fun insertClassCode(sourceFile: VirtualFile, project: Project, code: String): Boolean {
-        log.info("start insertClassCode: $code")
-        WriteCommandAction.runWriteCommandAction(project) {
-            val psiFile = PsiManager.getInstance(project).findFile(sourceFile) as PsiJavaFile
-            val document = psiFile.viewProvider.document!!
-            document.insertString(document.textLength, code)
-        }
-
-        return true
     }
 
     private fun createTestFile(

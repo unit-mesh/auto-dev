@@ -66,6 +66,12 @@
                   implements="cc.unitmesh.devti.context.builder.MethodContextBuilder"/>
         </extensionPoint>
 
+        <extensionPoint qualifiedName="cc.unitmesh.codeModifier"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass"
+                  implements="cc.unitmesh.devti.context.builder.CodeModifier"/>
+        </extensionPoint>
+
         <extensionPoint qualifiedName="cc.unitmesh.variableContextBuilder"
                         beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
             <with attribute="implementationClass"

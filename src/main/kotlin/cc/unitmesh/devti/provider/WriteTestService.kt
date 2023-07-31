@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.provider
 
 import cc.unitmesh.devti.context.FileContext
+import com.intellij.lang.Language
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -14,6 +15,7 @@ data class TestFileContext(
     val file: VirtualFile,
     val relatedFiles: List<FileContext> = emptyList(),
     val testClassName: String?,
+    val language: Language,
 )
 
 abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
@@ -26,12 +28,11 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
     override fun getImplementationClassName(): String? {
         return implementationClass
     }
+
     abstract fun isApplicable(element: PsiElement): Boolean
 
     abstract fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext?
     abstract fun lookupRelevantClass(project: Project, element: PsiElement): List<FileContext>
-    abstract fun insertTestCode(sourceFile: VirtualFile, project: Project, code: String): Boolean
-    abstract fun insertClassCode(sourceFile: VirtualFile, project: Project, code: String): Boolean
     open fun runTest(project: Project, virtualFile: VirtualFile) {}
 
     companion object {
