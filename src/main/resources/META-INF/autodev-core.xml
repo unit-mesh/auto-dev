@@ -201,5 +201,11 @@
 
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
+
+        <group id="AutoDev.ToolWindow.Snippet.Toolbar">
+            <action id="AutoDev.ToolWindow.Snippet.CopyToClipboard"
+                    icon="AllIcons.Actions.Copy"
+                    class="cc.unitmesh.devti.gui.snippet.AutoDevCopyToClipboardAction"/>
+        </group>
     </actions>
 </idea-plugin>

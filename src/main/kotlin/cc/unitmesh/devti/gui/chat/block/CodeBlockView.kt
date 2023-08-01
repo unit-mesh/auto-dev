@@ -4,11 +4,17 @@ import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.parser.Code
 import com.intellij.lang.Language
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.ActionToolbar
+import com.intellij.openapi.actionSystem.ex.ActionUtil
+import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.EditorKind
+import com.intellij.openapi.editor.colors.EditorColorsListener
+import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.ex.EditorMarkupModel
 import com.intellij.openapi.editor.ex.FocusChangeListener
@@ -23,6 +29,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.util.concurrency.annotations.RequiresReadLock
+import com.intellij.util.messages.Topic
 import com.intellij.util.ui.JBUI
 import javax.swing.JComponent
 import kotlin.jvm.internal.Ref
@@ -150,6 +157,21 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
 
             val editor: EditorEx =
                 createCodeViewerEditor(project, createCodeViewerFile as LightVirtualFile, document, disposable)
+
+            val toolbarActionGroup = ActionUtil.getActionGroup("AutoDev.ToolWindow.Snippet.Toolbar")
+            toolbarActionGroup?.let {
+                val jComponent: JComponent =
+                    object : ActionToolbarImpl(ActionPlaces.TOOLBAR, toolbarActionGroup, false) {
+                        override fun updateUI() {
+                            super.updateUI()
+                            editor.component.setBorder(JBUI.Borders.empty())
+                        }
+                    }
+
+                jComponent.setBackground(editor.backgroundColor)
+                jComponent.setOpaque(true)
+                editor.headerComponent = jComponent
+            }
 
             editor.scrollPane.setBorder(JBUI.Borders.empty())
             editor.component.setBorder(JBUI.Borders.empty())
