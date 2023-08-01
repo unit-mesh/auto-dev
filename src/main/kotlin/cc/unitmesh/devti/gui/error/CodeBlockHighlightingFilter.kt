@@ -9,17 +9,14 @@ import com.intellij.psi.PsiFile
 
 class CodeBlockHighlightingFilter : HighlightInfoFilter {
     override fun accept(highlightInfo: HighlightInfo, file: PsiFile?): Boolean {
-        val hasError = highlightInfo.getSeverity().compareTo(HighlightSeverity.GENERIC_SERVER_ERROR_OR_WARNING) >= 0;
+        val hasError = highlightInfo.severity >= HighlightSeverity.GENERIC_SERVER_ERROR_OR_WARNING;
 
         if (file == null || !hasError) {
             return true;
         }
 
-        val virtualFile = file.getVirtualFile();
-        if (virtualFile != null && AutoDevSnippetFile.isSnippet(virtualFile)) {
-            return false;
-        }
+        val virtualFile = file.virtualFile;
 
-        return true;
+        return !(virtualFile != null && AutoDevSnippetFile.isSnippet(virtualFile));
     }
 }

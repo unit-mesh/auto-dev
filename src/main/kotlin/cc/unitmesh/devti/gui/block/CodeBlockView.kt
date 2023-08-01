@@ -103,6 +103,10 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
             disposable: Disposable
         ): EditorEx {
             val editor: Editor = EditorFactory.getInstance().createViewer(document, project, EditorKind.PREVIEW)
+            disposable.whenDisposed(disposable) {
+                EditorFactory.getInstance().releaseEditor(editor)
+            }
+
             (editor as EditorEx).setFile(file)
             editor.setCaretEnabled(true)
             val highlighter = EditorHighlighterFactory.getInstance().createEditorHighlighter(project, file)
@@ -129,11 +133,11 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
 
             editor.addFocusListener(object : FocusChangeListener {
                 override fun focusGained(focusEditor: Editor) {
-                    editor.getSettings().isCaretRowShown = true
+                    settings.isCaretRowShown = true
                 }
 
                 override fun focusLost(focusEditor: Editor) {
-                    editor.getSettings().isCaretRowShown = false
+                    settings.isCaretRowShown = false
                     editor.markupModel.removeAllHighlighters()
                 }
             })
@@ -157,10 +161,6 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
 
             val editor: EditorEx =
                 createCodeViewerEditor(project, createCodeViewerFile as LightVirtualFile, document, disposable)
-
-            disposable.whenDisposed {
-                EditorFactory.getInstance().releaseEditor(editor)
-            }
 
             val toolbarActionGroup = ActionUtil.getActionGroup("AutoDev.ToolWindow.Snippet.Toolbar")
             toolbarActionGroup?.let {
@@ -199,10 +199,6 @@ fun VirtualFile.findDocument(): Document? {
     }
 
     return ref.element
-}
-
-fun Disposable.whenDisposed(listener: () -> Unit) {
-    Disposer.register(this, Disposable { listener() })
 }
 
 fun Disposable.whenDisposed(
