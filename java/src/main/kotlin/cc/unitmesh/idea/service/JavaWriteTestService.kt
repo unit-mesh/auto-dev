@@ -136,18 +136,25 @@ class JavaWriteTestService : WriteTestService() {
             }
 
             val outputType = element.returnTypeElement?.type
-            if (outputType is PsiClassReferenceType) {
-                if (outputType.parameters.isNotEmpty()) {
-                    outputType.parameters.forEach {
-                        if (it is PsiClassReferenceType) {
-                            resolvedClasses[it.canonicalText] = outputType.resolve()
-                        }
+            resolvedClasses.putAll(resolveByType(outputType))
+        }
+
+        return resolvedClasses
+    }
+
+    private fun resolveByType(outputType: PsiType?): MutableMap<String, PsiClass?> {
+        val resolvedClasses = mutableMapOf<String, PsiClass?>()
+        if (outputType is PsiClassReferenceType) {
+            if (outputType.parameters.isNotEmpty()) {
+                outputType.parameters.forEach {
+                    if (it is PsiClassReferenceType) {
+                        resolvedClasses[it.canonicalText] = outputType.resolve()
                     }
                 }
-
-                val canonicalText = outputType.canonicalText
-                resolvedClasses[canonicalText] = outputType.resolve()
             }
+
+            val canonicalText = outputType.canonicalText
+            resolvedClasses[canonicalText] = outputType.resolve()
         }
 
         return resolvedClasses
@@ -159,19 +166,7 @@ class JavaWriteTestService : WriteTestService() {
 
         val resolvedClasses = mutableMapOf<String, PsiClass?>()
         psiClass.fields.forEach { field ->
-            val fieldType = field.type
-            if (fieldType is PsiClassReferenceType) {
-                if (fieldType.parameters.isNotEmpty()) {
-                    fieldType.parameters.forEach {
-                        if (it is PsiClassReferenceType) {
-                            resolvedClasses[it.canonicalText] = it.resolve()
-                        }
-                    }
-                }
-
-                val canonicalText = fieldType.canonicalText
-                resolvedClasses[canonicalText] = fieldType.resolve()
-            }
+            resolvedClasses.putAll(resolveByType(field.type))
         }
 
         return resolvedClasses
