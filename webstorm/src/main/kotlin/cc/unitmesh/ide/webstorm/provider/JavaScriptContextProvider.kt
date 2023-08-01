@@ -15,7 +15,7 @@ import com.intellij.lang.javascript.JavaScriptSupportLoader
 import com.intellij.lang.javascript.JavascriptLanguage
 import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil
 import com.intellij.lang.javascript.dialects.TypeScriptJSXLanguageDialect
-import com.intellij.lang.javascript.frameworks.react.JSXLanguageLevelAnnotator
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.project.guessProjectDir
@@ -44,23 +44,23 @@ class JavaScriptContextProvider : ChatContextProvider {
         val mostPopularPackagesContext = getMostPopularPackagesContext(snapshot)
         if (mostPopularPackagesContext != null) results.add(mostPopularPackagesContext)
 
-        val techStack = prepareLibrary()
+        val techStack = prepareStack(snapshot)
+        logger<JavaScriptContextProvider>().warn("Tech stack: $techStack")
         if (techStack.coreFrameworks().isNotEmpty()) {
-            results.add(
-                ChatContextItem(
-                    JavaScriptContextProvider::class,
-                    "The project uses the following JavaScript component frameworks: ${techStack.coreFrameworks()}"
-                )
+            val element = ChatContextItem(
+                JavaScriptContextProvider::class,
+                "The project uses the following JavaScript component frameworks: ${techStack.coreFrameworks()}"
             )
+            results.add(element)
         }
 
         if (techStack.testFrameworks().isNotEmpty()) {
-            results.add(
-                ChatContextItem(
-                    JavaScriptContextProvider::class,
-                    "The project uses ${techStack.testFrameworks()} to test."
-                )
+            val testChatContext = ChatContextItem(
+                JavaScriptContextProvider::class,
+                "The project uses ${techStack.testFrameworks()} to test."
             )
+
+            results.add(testChatContext)
         }
 
         return results
@@ -93,41 +93,23 @@ class JavaScriptContextProvider : ChatContextProvider {
             "The project uses TypeScript language" + (version?.let { ", version: $version" } ?: ""))
     }
 
-    fun prepareLibrary(): TestStack {
-        val project = ProjectManager.getInstance().openProjects.firstOrNull() ?: return TestStack()
-
-        val baseDir = project.guessProjectDir() ?: return TestStack()
-        val packageFile = PackageJsonUtil.findUpPackageJson(baseDir) ?: return TestStack()
-        val packageJsonData = PackageJsonData.getOrCreate(packageFile)
-
+    fun prepareStack(snapshot: JsDependenciesSnapshot): TestStack {
         val devDependencies = mutableMapOf<String, String>()
         val dependencies = mutableMapOf<String, String>()
 
         val frameworks = mutableMapOf<String, Boolean>()
         val testFrameworks = mutableMapOf<String, Boolean>()
 
-        packageJsonData.allDependencyEntries.forEach { (name, entry) ->
+        snapshot.packages.forEach { (name, entry) ->
             entry.dependencyType.let {
                 when (it) {
-                    PackageJsonDependency.dependencies -> {
+                    PackageJsonDependency.dependencies,
+                    PackageJsonDependency.devDependencies -> {
                         // also remove `eslint`
                         if (!name.startsWith("@types/")) {
                             devDependencies[name] = entry.versionRange
                         }
 
-                        JsWebFrameworks.values().forEach { framework ->
-                            if (name.startsWith(framework.name) || name == framework.name) {
-                                frameworks[framework.name] = true
-                            }
-                        }
-                        JsTestFrameworks.values().forEach { testFramework ->
-                            if (name.startsWith(testFramework.name) || name == testFramework.name) {
-                                testFrameworks[testFramework.name] = true
-                            }
-                        }
-                    }
-
-                    PackageJsonDependency.devDependencies -> {
                         devDependencies[name] = entry.versionRange
 
                         JsWebFrameworks.values().forEach { frameworkName ->
@@ -142,10 +124,7 @@ class JavaScriptContextProvider : ChatContextProvider {
                         }
                     }
 
-                    PackageJsonDependency.peerDependencies -> {}
-                    PackageJsonDependency.optionalDependencies -> {}
-                    PackageJsonDependency.bundledDependencies -> {
-                    }
+                    else -> {}
                 }
             }
         }
