@@ -18,10 +18,6 @@
                 language="Python"
                 implementation="cc.unitmesh.pycharm.provider.PythonContextPrompter"/>
 
-        <techStackProvider
-                language="Python"
-                implementation="cc.unitmesh.pycharm.provider.PythonTechStackService"/>
-
         <devFlowProvider
                 language="Python"
                 implementation="cc.unitmesh.pycharm.provider.PythonAutoDevFlow"/>

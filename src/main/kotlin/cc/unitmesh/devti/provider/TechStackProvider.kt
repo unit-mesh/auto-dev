@@ -5,6 +5,7 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.serviceContainer.LazyExtensionInstance
 import com.intellij.util.xmlb.annotations.Attribute
 
+@Deprecated("Use [ChatContextProvider] instead")
 abstract class TechStackProvider : LazyExtensionInstance<TechStackProvider>() {
     @Attribute("language")
     var language: String? = null
