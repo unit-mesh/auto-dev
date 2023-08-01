@@ -59,7 +59,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
         // 1. check story detail is valid, if not, fill story detail
         var storyDetail = story.description
         if (!kanban.isValidStory(storyDetail)) {
-            logger.warn("story detail is not valid, fill story detail")
+            logger.info("story detail is not valid, fill story detail")
 
             storyDetail = run {
                 val promptText = promptTemplate.storyDetail(simpleProject, story.description)
@@ -70,7 +70,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
             kanban.updateStoryDetail(newStory)
         }
 
-        logger.warn("user story detail: $storyDetail")
+        logger.info("user story detail: $storyDetail")
         return storyDetail
     }
 
@@ -81,7 +81,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
         val files: List<DtClass> = processor.modelList()
         val promptText = promptTemplate.createDtoAndEntity(storyDetail, files)
 
-        logger.warn("needUpdateMethodForController prompt text: $promptText")
+        logger.info("needUpdateMethodForController prompt text: $promptText")
         val result = executePrompt(promptText)
 
         parseCodeFromString(result).forEach { dto ->
@@ -94,21 +94,21 @@ class JvmAutoDevFlow : DevFlowProvider() {
      */
     override fun fetchSuggestEndpoint(storyDetail: String): TargetEndpoint {
         val files: List<DtClass> = processor.controllerList()
-        logger.warn("start devti flow")
+        logger.info("start devti flow")
         val promptText = promptTemplate.createEndpoint(storyDetail, files)
         val targetEndpoint = executePrompt(promptText)
 
         val controller = matchControllerName(targetEndpoint)
         if (controller == null) {
-            logger.warn("no controller found from: $controller")
+            logger.info("no controller found from: $controller")
             return TargetEndpoint("", DtClass("", listOf()), false)
         }
 
-        logger.warn("target endpoint: $controller")
+        logger.info("target endpoint: $controller")
         val targetController = files.find { it.name == controller }
         if (targetController == null) {
             isNewController = true
-            logger.warn("no controller found from: $controller")
+            logger.info("no controller found from: $controller")
             return TargetEndpoint(controller, DtClass(controller, listOf()), false)
         }
 
@@ -123,7 +123,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
         try {
             doExecuteUpdateEndpoint(target, storyDetail, isNewController)
         } catch (e: Exception) {
-            logger.warn("update method failed: $e, try to fill update method 2nd")
+            logger.info("update method failed: $e, try to fill update method 2nd")
             doExecuteUpdateEndpoint(target, storyDetail, isNewController)
         }
     }
@@ -133,9 +133,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
      */
     override fun updateOrCreateServiceAndRepository() {
         val serviceName = selectedControllerName.removeSuffix("Controller") + "Service"
-//        // check service is exist
-        val files: List<PsiFile> = processor.getAllServiceFiles()?.filter { it.name == "$serviceName.java" }
-            ?: emptyList()
+        val files: List<PsiFile> = processor.getAllServiceFiles().filter { it.name == "$serviceName.java" }
 
         if (files.isNotEmpty()) {
             updateServiceMethod(files.first() as PsiJavaFile, serviceName)
@@ -150,10 +148,9 @@ class JvmAutoDevFlow : DevFlowProvider() {
         val usedCode = JavaCodeProcessor.findUsageCode(selectedControllerCode, serviceName)
 
         // 2. if serviceFile exist used method, skip
-        // TODO: or also send service code to server ???
         val noExistMethods = JavaCodeProcessor.findNoExistMethod(serviceFile, usedCode)
         if (noExistMethods.isEmpty()) {
-            logger.warn("no need to update service method")
+            logger.info("no need to update service method")
             return
         }
 
@@ -169,8 +166,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
 
     private fun createServiceFile(serviceName: String) {
         val controllerFile: List<PsiFile> =
-            processor.getAllControllerFiles()?.filter { it.name == selectedControllerName }
-                ?: emptyList()
+            processor.getAllControllerFiles().filter { it.name == selectedControllerName }
 
         val controllerCode = if (controllerFile.isEmpty()) {
             selectedControllerCode
@@ -182,7 +178,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
 
         val promptText = promptTemplate.createServiceAndRepository(controllerCode)
 
-        logger.warn("createServiceAndController prompt text: $promptText")
+        logger.info("createServiceAndController prompt text: $promptText")
         val result = executePrompt(promptText)
 
         val services = parseCodeFromString(result)
@@ -195,7 +191,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
     private fun doExecuteUpdateEndpoint(target: TargetEndpoint, storyDetail: String, isNewController: Boolean) {
         val codes = fetchForEndpoint(target.endpoint, target.controller, storyDetail, isNewController)
         if (codes.isEmpty()) {
-            logger.warn("update method code is empty, skip")
+            logger.info("update method code is empty, skip")
         } else {
             codes.indices.forEach { i ->
                 createCodeByType(codes[i], target.isNeedToCreated, target.controller.name)
@@ -254,7 +250,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
     ): List<String> {
         val content = needUpdateMethodOfController(targetEndpoint, targetController, storyDetail, isNewController)
         val code = parseCodeFromString(content)
-        logger.warn("update method code: $code")
+        logger.info("update method code: $code")
         return code
     }
 
@@ -285,7 +281,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
 
         val promptText =
             promptTemplate.createOrUpdateControllerMethod(clazz, storyDetail, models, services, isNewController)
-        logger.warn("needUpdateMethodForController prompt text: $promptText")
+        logger.info("needUpdateMethodForController prompt text: $promptText")
         return executePrompt(promptText)
     }
 
@@ -299,6 +295,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
             return@runBlocking ui.updateMessage(prompt)
         }
     }
+
     companion object {
         private val logger: Logger = logger<AutoDevRunProfileState>()
         private val regex = Regex("""(\w+Controller)""")
