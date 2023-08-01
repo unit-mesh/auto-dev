@@ -24,7 +24,7 @@ class MessageView(private val message: String, role: ChatRole, val displayText: 
         isOpaque = true
         background = when (role) {
             ChatRole.System -> JBColor(0xEAEEF7, 0x45494A)
-            ChatRole.Assistant -> JBColor(0xE0EEF7, 0x2d2f30)
+            ChatRole.Assistant -> JBColor(0xEAEEF7, 0x2d2f30)
             ChatRole.User -> JBColor(0xE0EEF7, 0x2d2f30)
         }
 

@@ -162,11 +162,13 @@ class JavaWriteTestService : WriteTestService() {
 
 
     private fun resolveByField(element: PsiElement): Map<out String, PsiClass?> {
-        val psiClass = element.containingFile as PsiClass
+        val psiFile = element.containingFile as PsiJavaFile
 
         val resolvedClasses = mutableMapOf<String, PsiClass?>()
-        psiClass.fields.forEach { field ->
-            resolvedClasses.putAll(resolveByType(field.type))
+        psiFile.classes.forEach { psiClass ->
+            psiClass.fields.forEach { field ->
+                resolvedClasses.putAll(resolveByType(field.type))
+            }
         }
 
         return resolvedClasses

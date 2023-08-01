@@ -22,11 +22,14 @@ import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.fileTypes.UnknownFileType
 import com.intellij.openapi.observable.properties.GraphProperty
 import com.intellij.openapi.observable.properties.PropertyGraph
+import com.intellij.openapi.observable.util.whenDisposed
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.util.concurrency.annotations.RequiresReadLock
 import com.intellij.util.ui.JBUI
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.JComponent
 import kotlin.jvm.internal.Ref
 
@@ -109,19 +112,20 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
             val markupModel: MarkupModelEx = editor.markupModel
             (markupModel as EditorMarkupModel).isErrorStripeVisible = false
 
-            val editorSettings = editor.getSettings()
-            editorSettings.isDndEnabled = false
-            editorSettings.isLineNumbersShown = false
-            editorSettings.additionalLinesCount = 0
-            editorSettings.isLineMarkerAreaShown = false
-            editorSettings.isFoldingOutlineShown = false
-            editorSettings.isRightMarginShown = false
-            editorSettings.isShowIntentionBulb = false
-            editorSettings.isUseSoftWraps = true
-            editorSettings.setPaintSoftWraps(false)
-            editorSettings.isRefrainFromScrolling = true
-            editorSettings.isAdditionalPageAtBottom = false
-            editorSettings.isCaretRowShown = false
+            val settings = editor.getSettings().also {
+                it.isDndEnabled = false
+                it.isLineNumbersShown = false
+                it.additionalLinesCount = 0
+                it.isLineMarkerAreaShown = false
+                it.isFoldingOutlineShown = false
+                it.isRightMarginShown = false
+                it.isShowIntentionBulb = false
+                it.isUseSoftWraps = true
+                it.setPaintSoftWraps(false)
+                it.isRefrainFromScrolling = true
+                it.isAdditionalPageAtBottom = false
+                it.isCaretRowShown = false
+            }
 
             editor.addFocusListener(object : FocusChangeListener {
                 override fun focusGained(focusEditor: Editor) {
@@ -153,6 +157,10 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
 
             val editor: EditorEx =
                 createCodeViewerEditor(project, createCodeViewerFile as LightVirtualFile, document, disposable)
+
+            disposable.whenDisposed {
+                EditorFactory.getInstance().releaseEditor(editor)
+            }
 
             val toolbarActionGroup = ActionUtil.getActionGroup("AutoDev.ToolWindow.Snippet.Toolbar")
             toolbarActionGroup?.let {
@@ -191,4 +199,29 @@ fun VirtualFile.findDocument(): Document? {
     }
 
     return ref.element
+}
+
+fun Disposable.whenDisposed(listener: () -> Unit) {
+    Disposer.register(this, Disposable { listener() })
+}
+
+fun Disposable.whenDisposed(
+    parentDisposable: Disposable,
+    listener: () -> Unit
+) {
+    val isDisposed = AtomicBoolean(false)
+
+    val disposable = Disposable {
+        if (isDisposed.compareAndSet(false, true)) {
+            listener()
+        }
+    }
+
+    Disposer.register(this, disposable)
+
+    Disposer.register(parentDisposable, Disposable {
+        if (isDisposed.compareAndSet(false, true)) {
+            Disposer.dispose(disposable)
+        }
+    })
 }
