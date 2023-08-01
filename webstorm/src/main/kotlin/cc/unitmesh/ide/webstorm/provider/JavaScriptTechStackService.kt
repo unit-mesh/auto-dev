@@ -1,15 +1,14 @@
 package cc.unitmesh.ide.webstorm.provider
 
 import cc.unitmesh.devti.prompting.code.TestStack
-import cc.unitmesh.devti.provider.TechStackProvider
 import com.intellij.javascript.nodejs.PackageJsonData
 import com.intellij.javascript.nodejs.PackageJsonDependency
 import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.project.guessProjectDir
 
-class JavaScriptTechStackService : TechStackProvider() {
-    override fun prepareLibrary(): TestStack {
+class JavaScriptTechStackService {
+    fun prepareLibrary(): TestStack {
         val project = ProjectManager.getInstance().openProjects.firstOrNull() ?: return TestStack()
 
         val baseDir = project.guessProjectDir() ?: return TestStack()

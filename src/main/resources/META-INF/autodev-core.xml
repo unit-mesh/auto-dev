@@ -82,11 +82,6 @@
                         interface="cc.unitmesh.devti.provider.DevFlowProvider"
                         dynamic="true"/>
 
-        <!-- TODO: add build system extension point -->
-        <extensionPoint qualifiedName="cc.unitmesh.techStackProvider"
-                        interface="cc.unitmesh.devti.provider.TechStackProvider"
-                        dynamic="true"/>
-
         <!-- TODO: find better way to share context -->
         <extensionPoint qualifiedName="cc.unitmesh.contextPrompter"
                         interface="cc.unitmesh.devti.provider.ContextPrompter"
