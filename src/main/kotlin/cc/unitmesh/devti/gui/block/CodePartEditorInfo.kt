@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.gui.chat.block
+package cc.unitmesh.devti.gui.block
 
 import com.intellij.lang.Language
 import com.intellij.openapi.editor.ex.EditorEx

@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.gui.chat.block.findDocument
+import cc.unitmesh.devti.gui.block.findDocument
 import cc.unitmesh.devti.parser.Code.Companion.findLanguage
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.*

@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.gui.chat.block
+package cc.unitmesh.devti.gui.block
 
 import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.parser.Code
@@ -85,7 +85,7 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
 
     companion object {
         private fun createCodeViewerFile(language: Language, content: String): LightVirtualFile {
-            val file = LightVirtualFile("AutoDevSnippet", language, content)
+            val file = LightVirtualFile(AUTODEV_SNIPPET_NAME, language, content)
             if (file.fileType == UnknownFileType.INSTANCE) {
                 file.fileType = PlainTextFileType.INSTANCE
             }

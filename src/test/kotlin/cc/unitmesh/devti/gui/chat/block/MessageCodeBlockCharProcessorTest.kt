@@ -1,5 +1,9 @@
 package cc.unitmesh.devti.gui.chat.block
 
+import cc.unitmesh.devti.gui.block.BorderType
+import cc.unitmesh.devti.gui.block.MessageBlockType
+import cc.unitmesh.devti.gui.block.MessageCodeBlockCharProcessor
+import cc.unitmesh.devti.gui.block.Parameters
 import org.junit.Test
 
 class MessageCodeBlockCharProcessorTest {
