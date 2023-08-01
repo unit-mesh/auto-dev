@@ -26,15 +26,11 @@ class JestCodeModifier : JavaScriptTestCodeModifier("jest") {
             return insertClass(sourceFile, project, code)
         }
 
-        insertMethod(sourceFile, project, code)
+        insertClass(sourceFile, project, code)
         return true
     }
 
     override fun insertMethod(sourceFile: VirtualFile, project: Project, code: String): Boolean {
-        val jsFile = ReadAction.compute<PsiFile, Throwable> {
-            PsiManager.getInstance(project).findFile(sourceFile) as JSFile
-        }
-
         return true
     }
 
