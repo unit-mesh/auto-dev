@@ -87,23 +87,6 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
         }
     }
 
-    val chatContextCache: MutableMap<ChatCreationContext, String> = mutableMapOf()
-    private suspend fun collectionContext(creationContext: ChatCreationContext): String {
-        if (chatContextCache.containsKey(creationContext)) {
-            return chatContextCache[creationContext]!!
-        }
-
-        var chatContext = ""
-
-        val contextItems = ChatContextProvider.collectChatContextList(project!!, creationContext)
-        contextItems.forEach {
-            chatContext += it.text + "\n"
-        }
-
-        chatContextCache[creationContext] = chatContext
-        return chatContext
-    }
-
 
     private suspend fun createPrompt(selectedText: String): String {
         var prompt = action!!.instruction(lang)

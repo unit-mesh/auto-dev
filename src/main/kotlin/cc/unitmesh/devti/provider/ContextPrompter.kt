@@ -1,6 +1,8 @@
 package cc.unitmesh.devti.provider
 
 import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.provider.context.ChatContextProvider
+import cc.unitmesh.devti.provider.context.ChatCreationContext
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
@@ -15,6 +17,23 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
     protected var project: Project? = null
     protected var lang: String = ""
     protected var offset: Int = 0
+
+    val chatContextCache: MutableMap<ChatCreationContext, String> = mutableMapOf()
+    suspend fun collectionContext(creationContext: ChatCreationContext): String {
+        if (chatContextCache.containsKey(creationContext)) {
+            return chatContextCache[creationContext]!!
+        }
+
+        var chatContext = ""
+
+        val contextItems = ChatContextProvider.collectChatContextList(project!!, creationContext)
+        contextItems.forEach {
+            chatContext += it.text + "\n"
+        }
+
+        chatContextCache[creationContext] = chatContext
+        return chatContext
+    }
 
     open fun initContext(
         actionType: ChatActionType,
