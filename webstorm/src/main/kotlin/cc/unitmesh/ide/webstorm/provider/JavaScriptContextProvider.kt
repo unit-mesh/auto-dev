@@ -6,6 +6,7 @@ import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import com.intellij.javascript.nodejs.PackageJsonData
 import com.intellij.javascript.nodejs.PackageJsonDependency
+import com.intellij.javascript.nodejs.packageJson.PackageJsonFileManager
 import com.intellij.json.JsonLanguage
 import com.intellij.lang.html.HTMLLanguage
 import com.intellij.lang.javascript.JavaScriptSupportLoader
@@ -14,6 +15,7 @@ import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import com.intellij.util.PlatformUtils
 
@@ -52,7 +54,6 @@ class JavaScriptContextProvider : ChatContextProvider {
 
         return results
     }
-
 
     fun prepareLibrary(): TestStack {
         val project = ProjectManager.getInstance().openProjects.firstOrNull() ?: return TestStack()
