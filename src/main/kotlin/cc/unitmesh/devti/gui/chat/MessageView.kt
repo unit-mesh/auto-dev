@@ -2,6 +2,7 @@ package cc.unitmesh.devti.gui.chat
 
 
 import cc.unitmesh.devti.gui.chat.block.*
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.ui.JBColor
@@ -13,9 +14,10 @@ import java.awt.*
 import javax.swing.*
 import kotlin.jvm.internal.Ref
 
-class MessageView(private val message: String, role: ChatRole, displayText: String) : JBPanel<MessageView>() {
+class MessageView(private val message: String, role: ChatRole, val displayText: String) : JBPanel<MessageView>() {
     private val component: DisplayComponent = DisplayComponent(message)
     private var answer: String? = null
+    private var centerPanel: JPanel = JPanel(VerticalLayout(JBUI.scale(8)))
 
     init {
         isDoubleBuffered = true
@@ -29,32 +31,37 @@ class MessageView(private val message: String, role: ChatRole, displayText: Stri
         this.border = JBEmptyBorder(8)
         layout = BorderLayout(JBUI.scale(8), 0)
 
-        val centerPanel = JPanel(VerticalLayout(JBUI.scale(8)))
+        centerPanel = JPanel(VerticalLayout(JBUI.scale(8)))
         centerPanel.isOpaque = false
         centerPanel.border = JBUI.Borders.emptyRight(8)
 
         add(centerPanel, BorderLayout.CENTER)
 
         if (role == ChatRole.User) {
-            val parts = layoutAll(SimpleMessage(displayText, message, role))
-            parts.forEach {
-                val blockView = when (it) {
-                    is CodeBlock -> {
-                        val project = ProjectManager.getInstance().openProjects.firstOrNull()
-                        CodeBlockView(it, project!!) { }
-                    }
-
-                    else -> TextBlockView(it)
-                }
-                blockView.initialize()
-                blockView.getComponent()?.setForeground(JBUI.CurrentTheme.Label.foreground())
-                centerPanel.add(blockView.getComponent())
-            }
+            val simpleMessage = SimpleMessage(displayText, message, role)
+            renderInPartView(simpleMessage)
         } else {
             component.updateMessage(message)
             component.revalidate()
             component.repaint()
             centerPanel.add(component)
+        }
+    }
+
+    private fun renderInPartView(message: SimpleMessage) {
+        val parts = layoutAll(message)
+        parts.forEach {
+            val blockView = when (it) {
+                is CodeBlock -> {
+                    val project = ProjectManager.getInstance().openProjects.firstOrNull()
+                    CodeBlockView(it, project!!) { }
+                }
+
+                else -> TextBlockView(it)
+            }
+            blockView.initialize()
+            blockView.getComponent()?.setForeground(JBUI.CurrentTheme.Label.foreground())
+            centerPanel.add(blockView.getComponent())
         }
     }
 
@@ -70,6 +77,19 @@ class MessageView(private val message: String, role: ChatRole, displayText: Stri
         SwingUtilities.invokeLater {
             val bounds: Rectangle = bounds
             scrollRectToVisible(bounds)
+        }
+    }
+
+    fun doneContent() {
+        val displayText = component.text
+        centerPanel.remove(component)
+
+        ApplicationManager.getApplication().invokeLater() {
+            val message = SimpleMessage(displayText, displayText, ChatRole.Assistant)
+            renderInPartView(message)
+
+            centerPanel.revalidate()
+            centerPanel.repaint()
         }
     }
 

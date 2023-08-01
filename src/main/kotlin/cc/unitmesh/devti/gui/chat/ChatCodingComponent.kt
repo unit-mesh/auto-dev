@@ -144,6 +144,8 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
             messageView.scrollToBottom()
         }
 
+        messageView.doneContent()
+
         return text
     }
 
