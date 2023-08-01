@@ -71,7 +71,6 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
     }
 
     override fun requestPrompt(): String {
-
         return runBlocking {
             val instruction = createPrompt(selectedText)
             val chatContext = collectionContext(creationContext)
@@ -148,13 +147,6 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
                 if (writeTest?.instruction?.isNotEmpty() == true) {
                     prompt = writeTest.instruction
                 }
-
-                // todo: change to scope
-                val creationContext = ChatCreationContext(ChatOrigin.ChatAction, action!!, file)
-                val allContexts = ChatContextProvider.collectChatContext(project!!, creationContext)
-
-                additionContext = allContexts
-                logger.info("additionContext: $additionContext")
             }
 
             ChatActionType.FIX_ISSUE -> {
