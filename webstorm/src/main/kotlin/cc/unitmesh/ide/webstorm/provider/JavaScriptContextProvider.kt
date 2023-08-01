@@ -4,7 +4,7 @@ import cc.unitmesh.devti.prompting.code.TestStack
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
-import cc.unitmesh.ide.webstorm.DependenciesSnapshot
+import cc.unitmesh.ide.webstorm.JsDependenciesSnapshot
 import com.intellij.javascript.nodejs.PackageJsonData
 import com.intellij.javascript.nodejs.PackageJsonDependency
 import com.intellij.json.JsonLanguage
@@ -31,10 +31,13 @@ class JavaScriptContextProvider : ChatContextProvider {
 
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         val results = mutableListOf<ChatContextItem>()
-        val snapshot = DependenciesSnapshot.create(project, creationContext)
+        val snapshot = JsDependenciesSnapshot.create(project, creationContext)
 
         val typeScriptLanguageContext = getTypeScriptLanguageContext(snapshot)
         if (typeScriptLanguageContext != null) results.add(typeScriptLanguageContext)
+
+        val mostPopularPackagesContext = getMostPopularPackagesContext(snapshot)
+        if (mostPopularPackagesContext != null) results.add(mostPopularPackagesContext)
 
         val techStack = prepareLibrary()
         if (techStack.coreFrameworks().isNotEmpty()) {
@@ -58,7 +61,26 @@ class JavaScriptContextProvider : ChatContextProvider {
         return results
     }
 
-    private fun getTypeScriptLanguageContext(snapshot: DependenciesSnapshot): ChatContextItem? {
+    private fun getMostPopularPackagesContext(snapshot: JsDependenciesSnapshot): ChatContextItem? {
+        val dependencies = snapshot.packages
+            .asSequence()
+            .filter { entry -> JsDependenciesSnapshot.mostPopularPackages.contains(entry.key) }
+            .map { entry ->
+                val dependency = entry.key
+                val version = entry.value.parseVersion()
+                if (version != null) "$dependency: $version" else dependency
+            }
+            .toList()
+
+        if (dependencies.isEmpty()) return null
+
+        return ChatContextItem(
+            JavaScriptContextProvider::class,
+            "The project uses the following JavaScript packages: ${dependencies.joinToString(", ")}"
+        )
+    }
+
+    private fun getTypeScriptLanguageContext(snapshot: JsDependenciesSnapshot): ChatContextItem? {
         val packageJson = snapshot.packages["typescript"] ?: return null
         val version = packageJson.parseVersion()
         return ChatContextItem(

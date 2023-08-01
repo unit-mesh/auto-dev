@@ -5,25 +5,27 @@
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
-        <classContextBuilder language="JavaScript"
-                             implementationClass="cc.unitmesh.ide.webstorm.context.JavaScriptClassContextBuilder"/>
-        <methodContextBuilder language="JavaScript"
-                              implementationClass="cc.unitmesh.ide.webstorm.context.JavaScriptMethodContextBuilder"/>
-        <fileContextBuilder language="JavaScript"
-                            implementationClass="cc.unitmesh.ide.webstorm.context.JavaScriptFileContextBuilder"/>
-        <variableContextBuilder language="JavaScript"
-                                implementationClass="cc.unitmesh.ide.webstorm.context.JavaScriptVariableContextBuilder"/>
+        <classContextBuilder language="JavaScript" implementationClass="cc.unitmesh.ide.webstorm.context.JavaScriptClassContextBuilder"/>
+        <classContextBuilder language="Typescript" implementationClass="cc.unitmesh.ide.webstorm.context.JavaScriptClassContextBuilder"/>
+
+        <methodContextBuilder language="JavaScript" implementationClass="cc.unitmesh.ide.webstorm.context.JavaScriptMethodContextBuilder"/>
+        <methodContextBuilder language="Typescript" implementationClass="cc.unitmesh.ide.webstorm.context.JavaScriptMethodContextBuilder"/>
+
+        <fileContextBuilder language="JavaScript" implementationClass="cc.unitmesh.ide.webstorm.context.JavaScriptFileContextBuilder"/>
+        <fileContextBuilder language="Typescript" implementationClass="cc.unitmesh.ide.webstorm.context.JavaScriptFileContextBuilder"/>
+
+        <variableContextBuilder language="JavaScript" implementationClass="cc.unitmesh.ide.webstorm.context.JavaScriptVariableContextBuilder"/>
+        <variableContextBuilder language="Typescript" implementationClass="cc.unitmesh.ide.webstorm.context.JavaScriptVariableContextBuilder"/>
 
         <chatContextProvider implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptContextProvider"/>
 
-        <contextPrompter
-                language="JavaScript"
-                implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptContextPrompter"/>
-        <devFlowProvider
-                language="JavaScript"
-                implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptAutoDevFlow"/>
-        <promptStrategy
-                language="JavaScript"
-                implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptPromptStrategyAdvisor"/>
+        <contextPrompter language="JavaScript" implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptContextPrompter"/>
+        <contextPrompter language="Typescript" implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptContextPrompter"/>
+
+        <devFlowProvider language="JavaScript" implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptAutoDevFlow"/>
+        <devFlowProvider language="Typescript" implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptAutoDevFlow"/>
+
+        <promptStrategy language="JavaScript" implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptPromptStrategyAdvisor"/>
+        <promptStrategy language="Typescript" implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptPromptStrategyAdvisor"/>
     </extensions>
 </idea-plugin>
