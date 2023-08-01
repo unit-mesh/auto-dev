@@ -6,7 +6,6 @@ import cc.unitmesh.devti.provider.TestFileContext
 import cc.unitmesh.devti.provider.WriteTestService
 import com.intellij.lang.Language
 import com.intellij.openapi.application.ReadAction
-import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
