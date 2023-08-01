@@ -4,9 +4,9 @@ import cc.unitmesh.devti.prompting.code.TestStack
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
+import cc.unitmesh.ide.webstorm.DependenciesSnapshot
 import com.intellij.javascript.nodejs.PackageJsonData
 import com.intellij.javascript.nodejs.PackageJsonDependency
-import com.intellij.javascript.nodejs.packageJson.PackageJsonFileManager
 import com.intellij.json.JsonLanguage
 import com.intellij.lang.html.HTMLLanguage
 import com.intellij.lang.javascript.JavaScriptSupportLoader
@@ -15,7 +15,6 @@ import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.project.guessProjectDir
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import com.intellij.util.PlatformUtils
 
@@ -31,9 +30,13 @@ class JavaScriptContextProvider : ChatContextProvider {
     }
 
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
-        val techStack = prepareLibrary()
-
         val results = mutableListOf<ChatContextItem>()
+        val snapshot = DependenciesSnapshot.create(project, creationContext)
+
+        val typeScriptLanguageContext = getTypeScriptLanguageContext(snapshot)
+        if (typeScriptLanguageContext != null) results.add(typeScriptLanguageContext)
+
+        val techStack = prepareLibrary()
         if (techStack.coreFrameworks().isNotEmpty()) {
             results.add(
                 ChatContextItem(
@@ -53,6 +56,14 @@ class JavaScriptContextProvider : ChatContextProvider {
         }
 
         return results
+    }
+
+    private fun getTypeScriptLanguageContext(snapshot: DependenciesSnapshot): ChatContextItem? {
+        val packageJson = snapshot.packages["typescript"] ?: return null
+        val version = packageJson.parseVersion()
+        return ChatContextItem(
+            JavaScriptContextProvider::class,
+            "The project uses TypeScript language" + (version?.let { ", version: $version" } ?: ""))
     }
 
     fun prepareLibrary(): TestStack {
