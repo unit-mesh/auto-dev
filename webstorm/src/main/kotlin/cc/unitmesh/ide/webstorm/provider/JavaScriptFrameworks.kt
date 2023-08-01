@@ -25,6 +25,5 @@ enum class JsTestFrameworks(val presentation: String, val packageName: String) {
     Cypress("Cypress", "cypress"),
     Protractor("Protractor", "protractor"),
     Nightwatch("Nightwatch", "nightwatch"),
-    Selenium("Selenium", "selenium"),
-    Webdriverio("Webdriverio", "webdriverio")
+    Vitest("Vitest", "vitest")
 }

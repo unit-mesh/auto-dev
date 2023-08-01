@@ -112,14 +112,16 @@ class JavaScriptContextProvider : ChatContextProvider {
 
                         devDependencies[name] = entry.versionRange
 
-                        JsWebFrameworks.values().forEach { frameworkName ->
-                            if (name.startsWith(frameworkName.name) || name == frameworkName.name) {
-                                frameworks[frameworkName.name] = true
+
+                        JsWebFrameworks.values().forEach { framework ->
+                            if (name.startsWith(framework.packageName) || name == framework.packageName) {
+                                frameworks[framework.packageName] = true
                             }
                         }
-                        JsTestFrameworks.values().forEach { testFramework ->
-                            if (name.startsWith(testFramework.name) || name == testFramework.name) {
-                                testFrameworks[testFramework.name] = true
+
+                        JsTestFrameworks.values().forEach { framework ->
+                            if (name.startsWith(framework.packageName) || name == framework.packageName) {
+                                testFrameworks[framework.packageName] = true
                             }
                         }
                     }
