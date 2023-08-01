@@ -119,6 +119,11 @@
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <aiAssistantIntention>
+            <className>cc.unitmesh.devti.intentions.NewChatWithCodeIntention</className>
+            <bundleName>messages.AutoDevBundle</bundleName>
+            <categoryKey>intention.category.llm</categoryKey>
+        </aiAssistantIntention>
+        <aiAssistantIntention>
             <className>cc.unitmesh.devti.intentions.CodeCompletionIntention</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
