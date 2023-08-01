@@ -8,7 +8,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.serviceContainer.LazyExtensionInstance
 import com.intellij.util.xmlb.annotations.Attribute
 
-abstract class PromptStrategy : LazyExtensionInstance<TechStackProvider>() {
+abstract class PromptStrategy : LazyExtensionInstance<PromptStrategy>() {
     @Attribute("language")
     var language: String? = null
 

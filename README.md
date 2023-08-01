@@ -185,11 +185,6 @@ AutoDev Extension Points:
                     interface="cc.unitmesh.devti.provider.DevFlowProvider"
                     dynamic="true"/>
 
-    <!-- get tech stacks from dep, like build.gradle, package.json ... -->
-    <extensionPoint qualifiedName="cc.unitmesh.techStackProvider"
-                    interface="cc.unitmesh.devti.provider.TechStackProvider"
-                    dynamic="true"/>
-
     <!-- custom context strategy for Auto CRUD -->
     <extensionPoint qualifiedName="cc.unitmesh.contextPrompter"
                     interface="cc.unitmesh.devti.provider.ContextPrompter"
