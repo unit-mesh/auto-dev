@@ -26,24 +26,29 @@ open class JavaTestContextProvider : ChatContextProvider {
             MvcUtil.isService(it, langFileSuffix())
         } ?: false
 
-        when {
+        val baseTestPrompt = """
+            |You MUST use should_xx_xx style for test method name.
+            |You MUST use given-when-then style.
+            |""".trimMargin()
+
+        items += when {
             isController -> {
-                val testControllerPrompt = """
-                            |You MUST use should_xx_xx style for test method name.
+                val testControllerPrompt = baseTestPrompt + """
                             |You MUST use MockMvc and test API only.
-                            |You MUST use given-when-then style.
-                            |You MUST use should_xx style for test method name.""".trimMargin()
-                items += ChatContextItem(JavaTestContextProvider::class, testControllerPrompt)
+                            |""".trimMargin()
+                ChatContextItem(JavaTestContextProvider::class, testControllerPrompt)
             }
 
             isService -> {
-                val testServicePrompt = """
-                            |You MUST use should_xx_xx style for test method name.
+                val testServicePrompt = baseTestPrompt + """
                             |You MUST use Mock library and test service only.
-                            |You MUST use given-when-then style.
-                            |You MUST use should_xx style for test method name. """.trimMargin()
+                            |""".trimMargin()
 
-                items += ChatContextItem(JavaTestContextProvider::class, testServicePrompt)
+                ChatContextItem(JavaTestContextProvider::class, testServicePrompt)
+            }
+
+            else -> {
+                ChatContextItem(JavaTestContextProvider::class, baseTestPrompt)
             }
         }
 
