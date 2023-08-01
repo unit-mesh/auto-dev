@@ -54,20 +54,15 @@ class CodeCompletionTask(
             flow.collect {
                 suggestion.append(it)
                 invokeLater {
-                    WriteCommandAction.runWriteCommandAction(
-                        project,
-                        codeMessage,
-                        writeActionGroupId,
-                        {
-                            insertStringAndSaveChange(
-                                project,
-                                it,
-                                editor.document,
-                                currentOffset.element,
-                                false
-                            )
-                        }
-                    )
+                    WriteCommandAction.runWriteCommandAction(project, codeMessage, writeActionGroupId, {
+                        insertStringAndSaveChange(
+                            project,
+                            it,
+                            editor.document,
+                            currentOffset.element,
+                            false
+                        )
+                    })
 
                     currentOffset.element += it.length
                     editor.caretModel.moveToOffset(currentOffset.element)
