@@ -24,7 +24,7 @@ class AutoDevSettingsConfigurable : Configurable {
     }
 
     override fun isModified(): Boolean {
-        val settings: AutoDevSettingsState = AutoDevSettingsState.getInstance()!!
+        val settings: AutoDevSettingsState = AutoDevSettingsState.getInstance()
         var modified = !component!!.openAiKey.equals(settings.openAiKey)
         modified = modified or (!component!!.githubToken.equals(settings.githubToken))
         modified = modified or (!component!!.openAiModel.equals(settings.openAiModel))
@@ -33,6 +33,7 @@ class AutoDevSettingsConfigurable : Configurable {
         modified = modified or (!component!!.customEngineServer.equals(settings.customEngineServer))
         modified = modified or (!component!!.customEngineToken.equals(settings.customEngineToken))
         modified = modified or (!component!!.customEnginePrompt.equals(settings.customEnginePrompts))
+        modified = modified or (!component!!.language.equals(settings.language))
         return modified
     }
 
@@ -46,10 +47,12 @@ class AutoDevSettingsConfigurable : Configurable {
         settings.customEngineServer = component!!.getCustomEngineServer()
         settings.customEngineToken = component!!.getCustomEngineToken()
         settings.customEnginePrompts = component!!.getCustomEnginePrompt()
+        settings.language = component!!.getLanguage()
     }
 
     override fun reset() {
         val settings: AutoDevSettingsState = AutoDevSettingsState.getInstance()!!
+        component!!.setLanguage(settings.language)
         component!!.setOpenAiKey(settings.openAiKey)
         component!!.setGithubToken(settings.githubToken)
         component!!.setOpenAiModel(settings.openAiModel)

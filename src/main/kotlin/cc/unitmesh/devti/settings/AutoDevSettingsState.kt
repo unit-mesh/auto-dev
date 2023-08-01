@@ -17,6 +17,7 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
     var customEngineServer = ""
     var customEngineToken = ""
     var customEnginePrompts = ""
+    var language = DEFAULT_HUMAN_LANGUAGE
 
     @Synchronized
     override fun getState(): AutoDevSettingsState {

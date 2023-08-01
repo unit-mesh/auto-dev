@@ -24,6 +24,7 @@ class AppSettingsComponent {
     val aiEngine = ComboBox(AI_ENGINES)
     val customEngineServer = JBTextField()
     val customEngineToken = JBTextField()
+    val language = ComboBox(HUMAN_LANGUAGES)
 
     private var myEditor: EditorEx? = null
     var customEnginePrompt = object : LanguageTextField(JsonLanguage.INSTANCE, null, "") {
@@ -47,6 +48,7 @@ class AppSettingsComponent {
         customEnginePrompt.preferredSize = Dimension(25 * columnWidth, 16 * metrics.height)
 
         panel = FormBuilder.createFormBuilder()
+            .addLabeledComponent(JBLabel("Language: "), language, 1, false)
             .addLabeledComponent(JBLabel("AI Engine: "), aiEngine, 1, false)
             .addSeparator()
             .addTooltip("GitHub Token is for AutoDev")
@@ -129,5 +131,13 @@ class AppSettingsComponent {
 
     fun setCustomEnginePrompt(newText: String) {
         customEnginePrompt.text = newText
+    }
+
+    fun getLanguage(): String {
+        return language.selectedItem?.toString() ?: HUMAN_LANGUAGES[0]
+    }
+
+    fun setLanguage(newText: String) {
+        language.selectedItem = newText
     }
 }

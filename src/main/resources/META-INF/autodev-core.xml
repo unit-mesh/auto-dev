@@ -125,6 +125,8 @@
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </aiAssistantIntention>
+
+        <chatContextProvider implementation="cc.unitmesh.devti.provider.LanguageContextProvider"/>
     </extensions>
 
     <actions>
