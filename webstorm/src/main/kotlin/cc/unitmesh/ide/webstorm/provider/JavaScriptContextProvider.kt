@@ -6,32 +6,19 @@ import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.ide.webstorm.JsDependenciesSnapshot
 import cc.unitmesh.ide.webstorm.JsDependenciesSnapshot.Companion.mostPopularPackages
-import com.intellij.javascript.nodejs.PackageJsonData
+import cc.unitmesh.ide.webstorm.LanguageApplicableUtil
 import com.intellij.javascript.nodejs.PackageJsonDependency
-import com.intellij.json.JsonLanguage
-import com.intellij.lang.Language
-import com.intellij.lang.html.HTMLLanguage
-import com.intellij.lang.javascript.JavaScriptSupportLoader
-import com.intellij.lang.javascript.JavascriptLanguage
-import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil
-import com.intellij.lang.javascript.dialects.TypeScriptJSXLanguageDialect
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.ProjectManager
-import com.intellij.openapi.project.guessProjectDir
 import com.intellij.psi.PsiFile
 import com.intellij.util.PlatformUtils
 
 class JavaScriptContextProvider : ChatContextProvider {
-    private val supportedLanguages = setOf(JavascriptLanguage.INSTANCE.id, JavaScriptSupportLoader.TYPESCRIPT.id)
-
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
         if (PlatformUtils.isWebStorm()) return true
 
         val sourceFile: PsiFile = creationContext.sourceFile ?: return false
-        val language: Language = sourceFile.language
-
-        return supportedLanguages.contains(language.id) || language is HTMLLanguage || language is JsonLanguage || language is TypeScriptJSXLanguageDialect
+        return LanguageApplicableUtil.isJavaScriptApplicable(sourceFile.language)
     }
 
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
@@ -135,3 +122,4 @@ class JavaScriptContextProvider : ChatContextProvider {
         return TestStack(frameworks, testFrameworks, dependencies, devDependencies)
     }
 }
+

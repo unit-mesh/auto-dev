@@ -19,6 +19,9 @@
 
         <chatContextProvider implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptContextProvider"/>
 
+        <codeModifier language="JavaScript" implementationClass="cc.unitmesh.ide.webstorm.provider.JavaScriptCodeModifier"/>
+        <codeModifier language="TypeScript" implementationClass="cc.unitmesh.ide.webstorm.provider.JavaScriptCodeModifier"/>
+
         <contextPrompter language="JavaScript" implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptContextPrompter"/>
         <contextPrompter language="Typescript" implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptContextPrompter"/>
 
