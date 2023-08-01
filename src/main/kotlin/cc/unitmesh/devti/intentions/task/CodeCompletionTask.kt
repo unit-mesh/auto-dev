@@ -41,7 +41,7 @@ class CodeCompletionTask(
         val prompt = promptText()
 
         val flow: Flow<String> = connectorFactory.connector(request.project).stream(prompt, "")
-        logger.warn("Prompt: $prompt")
+        logger.info("Prompt: $prompt")
 
         val editor = request.editor
         LLMCoroutineScopeService.scope(request.project).launch {
@@ -75,7 +75,7 @@ class CodeCompletionTask(
                 }
             }
 
-            logger.warn("Suggestion: $suggestion")
+            logger.info("Suggestion: $suggestion")
         }
     }
 

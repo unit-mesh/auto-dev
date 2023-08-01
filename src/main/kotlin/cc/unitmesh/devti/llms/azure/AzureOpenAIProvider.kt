@@ -57,7 +57,6 @@ class AzureOpenAIProvider(val project: Project) : CodeCopilotProvider {
             |"temperature": 0.0
             }""".trimMargin()
 
-        logger.warn("requestText: $requestText")
         val body = okhttp3.RequestBody.create(
             "application/json; charset=utf-8".toMediaTypeOrNull(),
             requestText
@@ -79,12 +78,7 @@ class AzureOpenAIProvider(val project: Project) : CodeCopilotProvider {
         val completion: ChatCompletionResult =
             objectMapper.readValue(response.body?.string(), ChatCompletionResult::class.java)
 
-        val output = completion
-            .choices[0].message.content
-
-        logger.warn("output: $output")
-
-        return output
+        return completion.choices[0].message.content
     }
 
     override fun autoComment(text: String): String {
