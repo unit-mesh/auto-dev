@@ -50,11 +50,11 @@ class TestCodeGenTask(
         val testContext = writeTestService?.findOrCreateTestFile(request.file, request.project, request.element)
         if (testContext == null) {
             if (writeTestService == null) {
-                logger<WriteTestIntention>().error("Could not find WriteTestService for: ${request.file}")
+                logger<TestCodeGenTask>().error("Could not find WriteTestService for: ${request.file}")
                 return
             }
 
-            logger<WriteTestIntention>().error("Failed to create test file for: ${request.file}")
+            logger<TestCodeGenTask>().error("Failed to create test file for: ${request.file}")
             return
         }
 
