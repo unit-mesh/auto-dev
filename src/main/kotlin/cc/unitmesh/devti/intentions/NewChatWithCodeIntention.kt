@@ -18,16 +18,13 @@ class NewChatWithCodeIntention : AbstractChatIntention() {
         val elementToExplain = getElementToAction(project, editor)
 
         if (selectedText == null) {
-            if (elementToExplain == null) {
-                return
-            }
+            if (elementToExplain == null) return
+
             selectElement(elementToExplain, editor)
             selectedText = editor.selectionModel.selectedText
         }
 
-        if (selectedText == null) {
-            return
-        }
+        if (selectedText == null) return
 
         val language = file.language.displayName
 
