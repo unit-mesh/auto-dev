@@ -1,16 +1,37 @@
 package cc.unitmesh.pycharm.provider
 
 import cc.unitmesh.devti.context.chunks.SimilarChunksWithPaths
+import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.ContextPrompter
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiFile
 
 class PythonContextPrompter : ContextPrompter() {
+    private var additionContext: String = ""
+
+    companion object {
+        val log = logger<PythonContextPrompter>()
+    }
+
+    override fun initContext(
+        actionType: ChatActionType,
+        selectedText: String,
+        file: PsiFile?,
+        project: Project,
+        offset: Int
+    ) {
+        super.initContext(actionType, selectedText, file, project, offset)
+        additionContext = SimilarChunksWithPaths().similarChunksWithPaths(file!!).toQuery()
+    }
+
     override fun displayPrompt(): String {
-        val chunkContext = SimilarChunksWithPaths().similarChunksWithPaths(file!!).toQuery()
-        return "$action\n```${lang}\n$chunkContext\n$selectedText\n```"
+        return "$action\n```${lang}\n$selectedText\n```"
     }
 
     override fun requestPrompt(): String {
-        val chunkContext = SimilarChunksWithPaths().similarChunksWithPaths(file!!).toQuery()
-        return "$action\n```${lang}\n$chunkContext\n$selectedText\n```"
+        val prompt = "$action\n```${lang}\n$additionContext\n$selectedText\n```"
+        log.info("final prompt: $prompt")
+        return prompt
     }
 }

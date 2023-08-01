@@ -2,7 +2,6 @@ package cc.unitmesh.ide.webstorm.provider
 
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.ContextPrompter
-import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
 import com.intellij.openapi.diagnostic.logger
@@ -33,14 +32,16 @@ class JavaScriptContextPrompter : ContextPrompter() {
 
         return runBlocking {
             additionContext = collectionContext(creationContext)
-            return@runBlocking "${action!!.instruction(lang)}:\n```markdown\n$additionContext```\n```${lang}\n$selectedText\n```"
+            return@runBlocking "${action!!.instruction(lang)}\n```$lang\n$selectedText\n```"
         }
     }
 
     override fun requestPrompt(): String {
         return runBlocking {
             additionContext = collectionContext(creationContext)
-            return@runBlocking "${action!!.instruction(lang)}:\n$additionContext\n```${lang}\n$selectedText\n```"
+            val finalPrompt = "${action!!.instruction(lang)}:\n$additionContext\n```${lang}\n$selectedText\n```"
+            log.info("context: $finalPrompt")
+            return@runBlocking finalPrompt
         }
     }
 }

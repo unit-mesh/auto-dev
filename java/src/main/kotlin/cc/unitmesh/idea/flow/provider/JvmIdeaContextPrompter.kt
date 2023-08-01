@@ -58,32 +58,33 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
 
     override fun displayPrompt(): String {
         return runBlocking {
-            val prompt = createPrompt(selectedText)
-            val chatContext = collectionContext(creationContext)
+            val instruction = createPrompt(selectedText)
 
             val finalPrompt = if (additionContext.isNotEmpty()) {
-                "```\n$chatContext\n$additionContext\n```\n```$lang\n$selectedText\n```\n"
+                "```\n$additionContext\n```\n```$lang\n$selectedText\n```\n"
             } else {
                 "```$lang\n$selectedText\n```"
             }
 
-            return@runBlocking "$prompt: \n$finalPrompt"
+            return@runBlocking "$instruction: \n$finalPrompt"
         }
     }
 
     override fun requestPrompt(): String {
 
         return runBlocking {
-            val prompt = createPrompt(selectedText)
+            val instruction = createPrompt(selectedText)
             val chatContext = collectionContext(creationContext)
 
-            val finalPrompt = if (additionContext.isNotEmpty()) {
+            val finalContext = if (additionContext.isNotEmpty()) {
                 "\n$chatContext\n$additionContext\n```$lang\n$selectedText\n```\n"
             } else {
                 "```$lang\n$selectedText\n```"
             }
 
-            return@runBlocking "$prompt:\n$finalPrompt"
+            val finalPrompt = "$instruction:\n$finalContext"
+            logger.info("final prompt: $finalPrompt")
+            return@runBlocking finalPrompt
         }
     }
 
