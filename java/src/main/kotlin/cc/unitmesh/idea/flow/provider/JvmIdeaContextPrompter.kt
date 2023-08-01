@@ -165,7 +165,6 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
                 if (!spec.isNullOrEmpty()) {
                     additionContext = "requirements: \n$spec"
                 }
-                prompt = "create ddl based on the follow info"
             }
 
             ChatActionType.CREATE_CHANGELOG -> {

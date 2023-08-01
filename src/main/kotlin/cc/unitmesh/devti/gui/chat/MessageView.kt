@@ -82,9 +82,9 @@ class MessageView(private val message: String, role: ChatRole, val displayText: 
 
     fun doneContent() {
         val displayText = component.text
-        centerPanel.remove(component)
-
         ApplicationManager.getApplication().invokeLater() {
+            centerPanel.remove(component)
+
             val message = SimpleMessage(displayText, displayText, ChatRole.Assistant)
             renderInPartView(message)
 
