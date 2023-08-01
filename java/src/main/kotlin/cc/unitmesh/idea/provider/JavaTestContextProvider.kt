@@ -15,7 +15,7 @@ open class JavaTestContextProvider : ChatContextProvider {
 
     open fun langFileSuffix() = "java"
 
-    override fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
+    override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         val items = mutableListOf<ChatContextItem>()
 
         val isController = creationContext.sourceFile?.name?.let {
@@ -35,6 +35,7 @@ open class JavaTestContextProvider : ChatContextProvider {
                             |You MUST use should_xx style for test method name.""".trimMargin()
                 items += ChatContextItem(JavaTestContextProvider::class, testControllerPrompt)
             }
+
             isService -> {
                 val testServicePrompt = """
                             |You MUST use should_xx_xx style for test method name.

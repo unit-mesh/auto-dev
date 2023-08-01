@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.provider.context
 
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
@@ -13,7 +12,7 @@ interface ChatContextProvider {
     fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean
 
     @RequiresBackgroundThread
-    fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem>
+    suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem>
 
     fun filterItems(
         list: List<ChatContextItem?>,

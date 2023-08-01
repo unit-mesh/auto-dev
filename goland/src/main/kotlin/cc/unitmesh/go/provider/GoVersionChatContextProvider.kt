@@ -10,7 +10,7 @@ class GoVersionChatContextProvider : ChatContextProvider {
         return true
     }
 
-    override fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
+    override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         TODO("Not yet implemented")
     }
 }

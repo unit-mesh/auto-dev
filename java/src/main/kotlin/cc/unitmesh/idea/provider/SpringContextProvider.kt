@@ -26,7 +26,7 @@ open class SpringContextProvider : ChatContextProvider {
         return false
     }
 
-    override fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
+    override suspend  fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         val techStacks = prepareLibrary(project)
 
         if (techStacks.coreFrameworks().isEmpty() && techStacks.testFrameworks().isEmpty()) {

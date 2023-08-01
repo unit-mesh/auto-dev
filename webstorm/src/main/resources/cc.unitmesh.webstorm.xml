@@ -14,12 +14,11 @@
         <variableContextBuilder language="JavaScript"
                                 implementationClass="cc.unitmesh.ide.webstorm.context.JavaScriptVariableContextBuilder"/>
 
+        <chatContextProvider implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptContextProvider"/>
+
         <contextPrompter
                 language="JavaScript"
                 implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptContextPrompter"/>
-        <techStackProvider
-                language="JavaScript"
-                implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptTechStackService"/>
         <devFlowProvider
                 language="JavaScript"
                 implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptAutoDevFlow"/>
