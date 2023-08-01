@@ -18,13 +18,10 @@ open class JavaTestContextProvider : ChatContextProvider {
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         val items = mutableListOf<ChatContextItem>()
 
-        val isController = creationContext.sourceFile?.name?.let {
-            MvcUtil.isController(it, langFileSuffix())
-        } ?: false
+        val fileName = creationContext.sourceFile?.name
 
-        val isService = creationContext.sourceFile?.name?.let {
-            MvcUtil.isService(it, langFileSuffix())
-        } ?: false
+        val isController = fileName?.let { MvcUtil.isController(it, langFileSuffix()) } ?: false
+        val isService = fileName?.let { MvcUtil.isService(it, langFileSuffix()) } ?: false
 
         val baseTestPrompt = """
             |You MUST use should_xx_xx style for test method name.
