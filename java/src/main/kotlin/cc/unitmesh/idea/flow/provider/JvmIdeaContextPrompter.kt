@@ -5,7 +5,6 @@ import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.prompting.VcsPrompting
 import cc.unitmesh.devti.prompting.model.CustomPromptConfig
 import cc.unitmesh.devti.provider.ContextPrompter
-import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
 import cc.unitmesh.devti.settings.AutoDevSettingsState

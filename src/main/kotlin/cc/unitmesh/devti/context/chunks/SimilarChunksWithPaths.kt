@@ -16,7 +16,7 @@ class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRel
         val INSTANCE: SimilarChunksWithPaths = SimilarChunksWithPaths()
 
         fun createQuery(element: PsiElement, chunkSize: Int = 60): String? {
-            if (element.language.displayName.lowercase() == "Markdown") {
+            if (element.language.displayName.lowercase() == "markdown") {
                 return null
             }
 
@@ -35,7 +35,7 @@ class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRel
         }
     }
 
-    fun similarChunksWithPaths(element: PsiElement): SimilarChunkContext {
+    private fun similarChunksWithPaths(element: PsiElement): SimilarChunkContext {
         val mostRecentFiles = getMostRecentFiles(element)
         val mostRecentFilesRelativePaths = mostRecentFiles.map { INSTANCE.relativePathTo(it, element)!! }
         val chunks = extractChunks(element, mostRecentFiles)
