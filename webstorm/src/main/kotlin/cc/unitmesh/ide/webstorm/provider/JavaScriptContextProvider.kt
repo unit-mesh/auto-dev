@@ -32,7 +32,6 @@ class JavaScriptContextProvider : ChatContextProvider {
         if (mostPopularPackagesContext != null) results.add(mostPopularPackagesContext)
 
         val techStack = prepareStack(snapshot)
-        logger<JavaScriptContextProvider>().warn("Tech stack: $techStack")
         if (techStack.coreFrameworks().isNotEmpty()) {
             val element = ChatContextItem(
                 JavaScriptContextProvider::class,

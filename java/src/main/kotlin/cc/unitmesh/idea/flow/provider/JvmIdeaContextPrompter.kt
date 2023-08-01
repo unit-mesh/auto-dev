@@ -29,6 +29,7 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
     private lateinit var mvcContextService: MvcContextService
     private var fileName = ""
     private lateinit var changeListManager: ChangeListManager
+    private lateinit var creationContext: ChatCreationContext
 
     override fun appendAdditionContext(context: String) {
         additionContext += context
@@ -47,6 +48,7 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
 
         lang = file?.language?.displayName ?: ""
         fileName = file?.name ?: ""
+        creationContext = ChatCreationContext(ChatOrigin.ChatAction, action!!, file)
     }
 
     init {
@@ -55,17 +57,9 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
     }
 
     override fun displayPrompt(): String {
-        val creationContext = ChatCreationContext(ChatOrigin.ChatAction, action!!, file)
-
         return runBlocking {
             val prompt = createPrompt(selectedText)
-            var chatContext = ""
-
-            val contextItems = ChatContextProvider.collectChatContextList(project!!, creationContext)
-            contextItems.forEach {
-                chatContext += it.text + "\n"
-            }
-
+            val chatContext = collectionContext(creationContext)
 
             val finalPrompt = if (additionContext.isNotEmpty()) {
                 "```\n$chatContext\n$additionContext\n```\n```$lang\n$selectedText\n```\n"
@@ -78,16 +72,10 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
     }
 
     override fun requestPrompt(): String {
-        val creationContext = ChatCreationContext(ChatOrigin.ChatAction, action!!, file)
 
         return runBlocking {
             val prompt = createPrompt(selectedText)
-            var chatContext = ""
-
-            val contextItems = ChatContextProvider.collectChatContextList(project!!, creationContext)
-            contextItems.forEach {
-                chatContext += it.text + "\n"
-            }
+            val chatContext = collectionContext(creationContext)
 
             val finalPrompt = if (additionContext.isNotEmpty()) {
                 "\n$chatContext\n$additionContext\n```$lang\n$selectedText\n```\n"
@@ -97,6 +85,23 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
 
             return@runBlocking "$prompt:\n$finalPrompt"
         }
+    }
+
+    val chatContextCache: MutableMap<ChatCreationContext, String> = mutableMapOf()
+    private suspend fun collectionContext(creationContext: ChatCreationContext): String {
+        if (chatContextCache.containsKey(creationContext)) {
+            return chatContextCache[creationContext]!!
+        }
+
+        var chatContext = ""
+
+        val contextItems = ChatContextProvider.collectChatContextList(project!!, creationContext)
+        contextItems.forEach {
+            chatContext += it.text + "\n"
+        }
+
+        chatContextCache[creationContext] = chatContext
+        return chatContext
     }
 
 
