@@ -50,19 +50,36 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
             ExtensionPointName.create("cc.unitmesh.contextPrompter")
 
         fun prompter(lang: String): ContextPrompter {
+            val langLowercase = lang.lowercase()
             val extensionList = EP_NAME.extensionList
-            val contextPrompter = extensionList.filter {
-                it.language?.lowercase() == lang.lowercase()
-            }
+            val contextPrompter = filterByLang(extensionList, langLowercase)
 
             val prompter = if (contextPrompter.isNotEmpty()) {
                 contextPrompter.first()
             } else {
-                logger<ContextPrompter>().warn("No context prompter found for language $lang, will use default")
-                DefaultContextPrompter()
+                // if lang == "TypeScript JSX", we just use TypeScript
+                val firstPartLang = langLowercase.split(" ")[0]
+                val partLang = filterByLang(extensionList, firstPartLang)
+                if (partLang.isNotEmpty()) {
+                    partLang[0]
+                } else {
+                    logger<ContextPrompter>().warn("No context prompter found for language $lang, will use default")
+                    DefaultContextPrompter()
+                }
             }
 
             return prompter
+        }
+
+        private fun filterByLang(
+            extensionList: List<ContextPrompter>,
+            langLowercase: String
+        ): List<ContextPrompter> {
+            val contextPrompter = extensionList.filter {
+                it.language?.lowercase() == langLowercase
+            }
+
+            return contextPrompter
         }
     }
 }

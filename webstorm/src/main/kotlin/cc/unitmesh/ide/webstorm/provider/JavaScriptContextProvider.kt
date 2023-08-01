@@ -8,10 +8,13 @@ import cc.unitmesh.ide.webstorm.JsDependenciesSnapshot
 import com.intellij.javascript.nodejs.PackageJsonData
 import com.intellij.javascript.nodejs.PackageJsonDependency
 import com.intellij.json.JsonLanguage
+import com.intellij.lang.Language
 import com.intellij.lang.html.HTMLLanguage
 import com.intellij.lang.javascript.JavaScriptSupportLoader
 import com.intellij.lang.javascript.JavascriptLanguage
 import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil
+import com.intellij.lang.javascript.dialects.TypeScriptJSXLanguageDialect
+import com.intellij.lang.javascript.frameworks.react.JSXLanguageLevelAnnotator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.project.guessProjectDir
@@ -20,13 +23,14 @@ import com.intellij.util.PlatformUtils
 
 class JavaScriptContextProvider : ChatContextProvider {
     private val supportedLanguages = setOf(JavascriptLanguage.INSTANCE.id, JavaScriptSupportLoader.TYPESCRIPT.id)
+
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
         if (PlatformUtils.isWebStorm()) return true
 
         val sourceFile: PsiFile = creationContext.sourceFile ?: return false
-        val language = sourceFile.language
+        val language: Language = sourceFile.language
 
-        return supportedLanguages.contains(language.id) || language is HTMLLanguage || language is JsonLanguage
+        return supportedLanguages.contains(language.id) || language is HTMLLanguage || language is JsonLanguage || language is TypeScriptJSXLanguageDialect
     }
 
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
