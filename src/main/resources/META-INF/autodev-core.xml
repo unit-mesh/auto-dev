@@ -39,6 +39,13 @@
             <className>cc.unitmesh.devti.intentions.AIAssistantIntention</className>
             <categoryKey>Intention.category.llm</categoryKey>
         </intentionAction>
+
+
+        <highlightErrorFilter implementation="cc.unitmesh.devti.gui.error.CodeBlockHighlightErrorFilter"/>
+        <daemon.highlightInfoFilter implementation="cc.unitmesh.devti.gui.error.CodeBlockHighlightingFilter"/>
+        <defaultHighlightingSettingProvider implementation="cc.unitmesh.devti.gui.error.CodeBlockHighlightingSettingsProvider"/>
+        <daemon.intentionActionFilter implementation="cc.unitmesh.devti.gui.error.CodeBlockIntentionActionFilter"/>
+
     </extensions>
 
     <extensionPoints>
