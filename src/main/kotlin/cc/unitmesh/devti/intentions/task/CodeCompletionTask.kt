@@ -77,21 +77,22 @@ class CodeCompletionTask(
     private fun promptText(): String {
         val prefix = request.documentContent.substring(0, request.offset)
         val prompt = if (chunksString == null) {
-            prefix
+            "complete code for given code: \n$prefix"
         } else {
-            "code complete for follow code: \n$commentPrefix${request.fileUri}\n$chunksString\n$prefix"
+            "complete code for given code: \n$commentPrefix${request.fileUri}\n$chunksString\n$prefix"
         }
+
         return prompt
     }
 
     fun execute(onFirstCompletion: Consumer<String>?) {
         val prompt = promptText()
 
+        logger.warn("Prompt: $prompt")
         LLMCoroutineScopeService.scope(project).launch {
             val flow: Flow<String> = connectorFactory.connector(project).stream(prompt, "")
             val suggestion = StringBuilder()
             flow.collect {
-                print(it)
                 suggestion.append(it)
             }
 

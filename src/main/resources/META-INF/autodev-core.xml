@@ -43,7 +43,8 @@
 
         <highlightErrorFilter implementation="cc.unitmesh.devti.gui.error.CodeBlockHighlightErrorFilter"/>
         <daemon.highlightInfoFilter implementation="cc.unitmesh.devti.gui.error.CodeBlockHighlightingFilter"/>
-        <defaultHighlightingSettingProvider implementation="cc.unitmesh.devti.gui.error.CodeBlockHighlightingSettingsProvider"/>
+        <defaultHighlightingSettingProvider
+                implementation="cc.unitmesh.devti.gui.error.CodeBlockHighlightingSettingsProvider"/>
         <daemon.intentionActionFilter implementation="cc.unitmesh.devti.gui.error.CodeBlockIntentionActionFilter"/>
 
     </extensions>
@@ -119,6 +120,11 @@
     <extensions defaultExtensionNs="cc.unitmesh">
         <aiAssistantIntention>
             <className>cc.unitmesh.devti.intentions.CodeCompletionIntention</className>
+            <bundleName>messages.AutoDevBundle</bundleName>
+            <categoryKey>intention.category.llm</categoryKey>
+        </aiAssistantIntention>
+        <aiAssistantIntention>
+            <className>cc.unitmesh.devti.intentions.CodeCompletionInlayIntention</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </aiAssistantIntention>
