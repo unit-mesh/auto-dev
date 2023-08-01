@@ -19,8 +19,8 @@
 
         <chatContextProvider implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptContextProvider"/>
 
-        <codeModifier language="JavaScript" implementationClass="cc.unitmesh.ide.webstorm.provider.JavaScriptCodeModifier"/>
-        <codeModifier language="TypeScript" implementationClass="cc.unitmesh.ide.webstorm.provider.JavaScriptCodeModifier"/>
+        <codeModifier language="JavaScript" implementationClass="cc.unitmesh.ide.webstorm.provider.testing.JestCodeModifier"/>
+        <codeModifier language="TypeScript" implementationClass="cc.unitmesh.ide.webstorm.provider.testing.JestCodeModifier"/>
 
         <contextPrompter language="JavaScript" implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptContextPrompter"/>
         <contextPrompter language="Typescript" implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptContextPrompter"/>
@@ -30,5 +30,8 @@
 
         <promptStrategy language="JavaScript" implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptPromptStrategyAdvisor"/>
         <promptStrategy language="Typescript" implementation="cc.unitmesh.ide.webstorm.provider.JavaScriptPromptStrategyAdvisor"/>
+
+        <testContextProvider language="JavaScript" implementation="cc.unitmesh.ide.webstorm.provider.testing.JavaScriptWriteTestService"/>
+        <testContextProvider language="Typescript" implementation="cc.unitmesh.ide.webstorm.provider.testing.JavaScriptWriteTestService"/>
     </extensions>
 </idea-plugin>

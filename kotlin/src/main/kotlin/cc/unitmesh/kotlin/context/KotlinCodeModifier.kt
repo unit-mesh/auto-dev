@@ -30,7 +30,6 @@ class KotlinCodeModifier : CodeModifier {
     ) = PsiManager.getInstance(project).findFile(sourceFile) as KtFile
 
     override fun insertTestCode(sourceFile: VirtualFile, project: Project, code: String): Boolean {
-        log.info("methodCode: $code")
         if (!code.contains("@Test")) {
             log.error("methodCode does not contain @Test annotation: $code")
             return false
