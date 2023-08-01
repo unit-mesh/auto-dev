@@ -55,11 +55,20 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
     }
 
     override fun displayPrompt(): String {
+        val creationContext = ChatCreationContext(ChatOrigin.ChatAction, action!!, file)
+
         return runBlocking {
             val prompt = createPrompt(selectedText)
+            var chatContext = ""
+
+            val contextItems = ChatContextProvider.collectChatContextList(project!!, creationContext)
+            contextItems.forEach {
+                chatContext += it.text + "\n"
+            }
+
 
             val finalPrompt = if (additionContext.isNotEmpty()) {
-                "```\n$additionContext\n```\n\n```$lang\n$selectedText\n```\n"
+                "```\n$chatContext\n$additionContext\n```\n```$lang\n$selectedText\n```\n"
             } else {
                 "```$lang\n$selectedText\n```"
             }
@@ -69,11 +78,19 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
     }
 
     override fun requestPrompt(): String {
+        val creationContext = ChatCreationContext(ChatOrigin.ChatAction, action!!, file)
+
         return runBlocking {
             val prompt = createPrompt(selectedText)
+            var chatContext = ""
+
+            val contextItems = ChatContextProvider.collectChatContextList(project!!, creationContext)
+            contextItems.forEach {
+                chatContext += it.text + "\n"
+            }
 
             val finalPrompt = if (additionContext.isNotEmpty()) {
-                "$additionContext\n```$lang\n$selectedText\n```\n"
+                "\n$chatContext\n$additionContext\n```$lang\n$selectedText\n```\n"
             } else {
                 "```$lang\n$selectedText\n```"
             }

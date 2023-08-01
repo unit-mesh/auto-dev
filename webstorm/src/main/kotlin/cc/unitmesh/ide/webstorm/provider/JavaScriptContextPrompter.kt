@@ -21,7 +21,8 @@ class JavaScriptContextPrompter : ContextPrompter() {
         return runBlocking {
             val contextItems = ChatContextProvider.collectChatContextList(project!!, creationContext)
             contextItems.forEach {
-                additionContext += it.text + "\n"
+
+                 += it.text + "\n"
             }
 
             return@runBlocking "${action!!.instruction(lang)}:\n```markdown\n$additionContext```\n```${lang}\n$selectedText\n```"
