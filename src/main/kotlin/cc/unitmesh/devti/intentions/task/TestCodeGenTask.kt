@@ -19,6 +19,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
@@ -26,6 +27,7 @@ import com.intellij.psi.PsiFile
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
+import kotlin.jvm.internal.Ref
 
 class TestCodeGenRequest(
     val file: PsiFile,
@@ -48,6 +50,8 @@ class TestCodeGenTask(
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.prepare-context")
 
         val testContext = writeTestService?.findOrCreateTestFile(request.file, request.project, request.element)
+        DumbService.getInstance(request.project).waitForSmartMode()
+
         if (testContext == null) {
             if (writeTestService == null) {
                 logger<TestCodeGenTask>().error("Could not find WriteTestService for: ${request.file}")
@@ -99,7 +103,6 @@ class TestCodeGenTask(
             ConnectorFactory.getInstance().connector(request.project).stream(prompter, "")
 
         logger<WriteTestIntention>().warn("Prompt: $prompter")
-
 
         indicator.fraction = 0.8
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.prompt")
