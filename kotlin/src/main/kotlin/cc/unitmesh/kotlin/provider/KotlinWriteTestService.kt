@@ -6,6 +6,7 @@ import cc.unitmesh.devti.provider.TestFileContext
 import cc.unitmesh.devti.provider.WriteTestService
 import cc.unitmesh.kotlin.context.KotlinClassContextBuilder
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -16,6 +17,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiJavaFile
 import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.idea.quickfix.createFromUsage.callableBuilder.getReturnTypeReference
 import org.jetbrains.kotlin.idea.references.mainReference
@@ -38,25 +40,22 @@ class KotlinWriteTestService : WriteTestService() {
         val parentDir = sourceFilePath.parent
         val className = sourceFile.name.replace(".kt", "") + "Test"
 
-        val parentDirPath: Ref.ObjectRef<String> = Ref.ObjectRef()
-        val packageRef: Ref.ObjectRef<String> = Ref.ObjectRef()
-        packageRef.element = ""
-        ApplicationManager.getApplication().runReadAction {
-            packageRef.element = (sourceFile as KtFile).packageFqName.asString()
-            parentDirPath.element = parentDir?.path
+        val packageName = ReadAction.compute<String, Throwable> {
+            (sourceFile as PsiJavaFile).packageName
+        }
+        val parentDirPath = ReadAction.compute<String, Throwable> {
+            parentDir?.path
         }
 
         val relatedModels = lookupRelevantClass(project, element)
 
-        // Check if the source file is in the src/main/java directory
-        if (!parentDirPath.element?.contains("/src/main/kotlin/")!!) {
-            log.error("Source file is not in the src/main/java directory: ${parentDirPath.element}")
+        if (!parentDirPath?.contains("/src/main/kotlin/")!!) {
+            log.error("Source file is not in the src/main/java directory: ${parentDirPath}")
             return null
         }
 
         var isNewFile = false
 
-        // Find the test directory
         val testDirPath = parentDir.path.replace("/src/main/kotlin/", "/src/test/kotlin/")
         var testDir = LocalFileSystem.getInstance().findFileByPath(testDirPath)
 
@@ -80,7 +79,6 @@ class KotlinWriteTestService : WriteTestService() {
             return null
         }
 
-        val result: Ref.ObjectRef<TestFileContext?> = Ref.ObjectRef()
 
         // Test directory already exists, find the corresponding test file
         val testFilePath = testDirPath + "/" + sourceFile.name.replace(".kt", "Test.kt")
@@ -88,21 +86,16 @@ class KotlinWriteTestService : WriteTestService() {
 
         project.guessProjectDir()?.refresh(true, true)
 
-        if (testFile != null) {
-            result.element = TestFileContext(isNewFile, testFile, relatedModels, className, sourceFile.language)
+        return if (testFile != null) {
+            TestFileContext(isNewFile, testFile, relatedModels, className, sourceFile.language)
         } else {
-            val targetFile = createTestFile(sourceFile, testDir!!, packageRef.element, project)
-            result.element = TestFileContext(isNewFile = true, targetFile, relatedModels, "", sourceFile.language)
+            val targetFile = createTestFile(sourceFile, testDir!!, packageName, project)
+            TestFileContext(isNewFile = true, targetFile, relatedModels, "", sourceFile.language)
         }
-
-        return result.element
     }
 
     override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {
-        val result: Ref.ObjectRef<List<ClassContext>> = Ref.ObjectRef()
-        result.element = emptyList()
-
-        ApplicationManager.getApplication().runReadAction {
+        return ReadAction.compute<List<ClassContext>, Throwable> {
             val elements = mutableListOf<ClassContext>()
             val projectPath = project.guessProjectDir()?.path
 
@@ -124,10 +117,8 @@ class KotlinWriteTestService : WriteTestService() {
                 }
             }
 
-            result.element = elements
+            elements
         }
-
-        return result.element
     }
 
     private fun resolveByFields(element: KtClassOrObject): Map<out String, KtClass?> {
@@ -189,19 +180,16 @@ class KotlinWriteTestService : WriteTestService() {
         project: Project
     ): VirtualFile {
         val sourceFileName = sourceFile.name
-        val testFileName = sourceFileName.replace(".java", "Test.java")
+        val testFileName = sourceFileName.replace(".kt", "Test.kt")
         val testFileContent = "package $packageName;\n\n"
 
-        val testFileRef: Ref.ObjectRef<VirtualFile> = Ref.ObjectRef()
-
-        WriteCommandAction.runWriteCommandAction(project) {
+        return WriteCommandAction.runWriteCommandAction<VirtualFile>(project) {
             val testFile = testDir.createChildData(this, testFileName)
-            testFileRef.element = testFile
 
             val document = FileDocumentManager.getInstance().getDocument(testFile)
             document?.setText(testFileContent)
-        }
 
-        return testFileRef.element!!
+            testFile
+        }
     }
 }

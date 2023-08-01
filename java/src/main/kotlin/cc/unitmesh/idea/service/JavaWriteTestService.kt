@@ -172,7 +172,6 @@ class JavaWriteTestService : WriteTestService() {
         val testFileName = sourceFileName.replace(".java", "Test.java")
         val testFileContent = "package $packageName;\n\n"
 
-
         return WriteCommandAction.runWriteCommandAction<VirtualFile>(project) {
             val testFile = testDir.createChildData(this, testFileName)
 
