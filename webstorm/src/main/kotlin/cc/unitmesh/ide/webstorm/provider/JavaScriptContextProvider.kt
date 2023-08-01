@@ -5,6 +5,7 @@ import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.ide.webstorm.JsDependenciesSnapshot
+import cc.unitmesh.ide.webstorm.JsDependenciesSnapshot.Companion.mostPopularPackages
 import com.intellij.javascript.nodejs.PackageJsonData
 import com.intellij.javascript.nodejs.PackageJsonDependency
 import com.intellij.json.JsonLanguage
@@ -68,7 +69,7 @@ class JavaScriptContextProvider : ChatContextProvider {
     private fun getMostPopularPackagesContext(snapshot: JsDependenciesSnapshot): ChatContextItem? {
         val dependencies = snapshot.packages
             .asSequence()
-            .filter { entry -> JsDependenciesSnapshot.mostPopularPackages.contains(entry.key) }
+            .filter { entry -> mostPopularPackages.contains(entry.key) && !entry.key.startsWith("@type") }
             .map { entry ->
                 val dependency = entry.key
                 val version = entry.value.parseVersion()
