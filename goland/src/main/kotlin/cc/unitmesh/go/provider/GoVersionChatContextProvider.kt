@@ -7,7 +7,7 @@ import com.intellij.openapi.project.Project
 
 class GoVersionChatContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
-        return true
+        return false
     }
 
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {

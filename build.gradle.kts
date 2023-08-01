@@ -64,7 +64,7 @@ val ideaPlugins =
         "com.intellij.java",
         "org.jetbrains.plugins.gradle",
         "org.jetbrains.kotlin",
-        "JavaScript",
+        "JavaScript"
     )
 
 val baseIDE = prop("baseIDE")
