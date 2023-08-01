@@ -97,15 +97,14 @@ Output Screenshots:
 
 ## Development
 
-1. `git clone https://github.com/unit-mesh/AutoDev.git`
+1. `git clone https://github.com/unit-mesh/auto-dev/`
 2. open in IntelliJ IDEA
 3. `./gradlew runIde`
 
 Key Concepts:
 
 - Workflow flow design: [DevFlowProvider](src/main/kotlin/cc/unitmesh/devti/provider/DevFlowProvider.kt)
-- Prompt Strategy
-  design: [PromptStrategyAdvisor](src/main/kotlin/cc/unitmesh/devti/java/prompt/PromptStrategyAdvisor.kt)
+- Prompt Strategy design: [PromptStrategyAdvisor](src/main/kotlin/cc/unitmesh/devti/provider/PromptStrategy.kt)
 
 ### Release
 
@@ -124,7 +123,6 @@ For a new language, you need to implement:
 
 1. create a new module in `settings.gradle.kts`, like: `webstorm`, `pycharm` ...,
 2. config in  `build.gradle.kts` for new module, like:
-
 ```kotlin
 project(":pycharm") {
     intellij {
@@ -136,7 +134,6 @@ project(":pycharm") {
     }
 }
 ```
-
 3. sync Gradle in Intellij IDEA
 4. create xml file in `resources/META-INF` like `cc.unitmesh.pycharm.xml`, and import
    to `plugin/src/main/resources/META-INF/plugin.xml`
@@ -200,7 +197,6 @@ AutoDev Extension Points:
 #### Java/IDEA Example
 
 ```xml
-
 <extensions defaultExtensionNs="cc.unitmesh">
     <!-- Language support   -->
     <classContextBuilder language="JAVA"
@@ -216,24 +212,27 @@ AutoDev Extension Points:
                             implementationClass="cc.unitmesh.ide.idea.context.JavaVariableContextBuilder"/>
 
     <!-- TechStack Binding -->
-    <contextPrompter
-            language="JAVA"
-            implementation="cc.unitmesh.ide.idea.provider.JavaContextPrompter"/>
-    <techStackProvider
-            language="JAVA"
-            implementation="cc.unitmesh.ide.idea.provider.JavaTechStackService"/>
-    <devFlowProvider
-            language="JAVA"
-            implementation="cc.unitmesh.ide.idea.provider.JavaAutoDevFlow"/>
-    <promptStrategy
-            language="JAVA"
-            implementation="cc.unitmesh.ide.idea.provider.PromptStrategyAdvisor"/>
+    <extensionPoint qualifiedName="cc.unitmesh.contextPrompter"
+                    interface="cc.unitmesh.devti.provider.ContextPrompter"
+                    dynamic="true"/>
+  
+    <extensionPoint qualifiedName="cc.unitmesh.promptStrategy"
+                    interface="cc.unitmesh.devti.provider.PromptStrategy"
+                    dynamic="true"/>
+  
+    <extensionPoint qualifiedName="cc.unitmesh.testContextProvider"
+                    interface="cc.unitmesh.devti.provider.WriteTestService"
+                    dynamic="true"/>
+  
+    <extensionPoint qualifiedName="cc.unitmesh.chatContextProvider"
+                    interface="cc.unitmesh.devti.provider.context.ChatContextProvider"
+                    dynamic="true"/>
 </extensions>
 ```
 
 ## Prompt Strategy
 
-JetBrains LLM and GitHub Copilot try to implmentation like this:
+simliar to JetBrains LLM and GitHub Copilot, will be implementation like this:
 
 ```javascript
 defaultPriorities.json = [
@@ -252,7 +251,7 @@ We currently support:
     - [x] JaccardSimilarity Path and Chunks by JetBrains
     - [ ] Cosine Similarity Chunk by MethodName
 - [ ] ImportedFile
-    - [x] Java CRUD
+    - [x] Java, Kotlin
     - [ ] all cases
 - [x] PathMarker
 - [x] LanguageMarker
