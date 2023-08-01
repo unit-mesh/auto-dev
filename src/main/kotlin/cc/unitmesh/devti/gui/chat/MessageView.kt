@@ -2,7 +2,6 @@ package cc.unitmesh.devti.gui.chat
 
 
 import cc.unitmesh.devti.gui.block.*
-import cc.unitmesh.devti.gui.chat.block.*
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.ProjectManager
