@@ -78,7 +78,7 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
         val prompt = if (chunksString == null) {
             "complete code for given code: \n$prefix"
         } else {
-            "complete code for given code: \n$commentPrefix${request.fileUri}\n$chunksString\n$prefix"
+            "complete code for given code: \n$commentPrefix\n$chunksString\n$prefix"
         }
 
         return prompt
