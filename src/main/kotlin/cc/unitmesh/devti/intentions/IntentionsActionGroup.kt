@@ -1,7 +1,6 @@
-package cc.unitmesh.devti.intentions.editor
+package cc.unitmesh.devti.intentions
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.intentions.AIAssistantIntention
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnAction
@@ -13,11 +12,7 @@ import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
-class IntentionsActionGroup : ActionGroup(), DumbAware {
-    init {
-        templatePresentation.text = AutoDevBundle.message("intentions.assistant.name")
-    }
-
+class IntentionsActionGroup : ActionGroup(AutoDevBundle.message("intentions.assistant.name"), true), DumbAware {
     override fun getChildren(e: AnActionEvent?): Array<AnAction> {
         val project: Project = e?.project ?: return emptyArray()
         val editor: Editor = e.getData(CommonDataKeys.EDITOR) ?: return emptyArray()
