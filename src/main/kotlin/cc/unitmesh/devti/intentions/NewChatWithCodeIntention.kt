@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.intentions
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.actions.chat.chatWithSelection
+import cc.unitmesh.devti.toolwindow.chatWithSelection
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project

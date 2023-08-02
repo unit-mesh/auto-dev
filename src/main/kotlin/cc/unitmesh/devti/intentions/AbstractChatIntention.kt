@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.intentions
 
 import cc.unitmesh.devti.gui.chat.*
-import cc.unitmesh.devti.intentions.editor.sendToChat
+import cc.unitmesh.devti.toolwindow.sendToChat
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.lang.injection.InjectedLanguageManager

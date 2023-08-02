@@ -40,6 +40,13 @@ class AutoDevRunProfileState(
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
         val gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)
 
+        // TODO: support other language
+        val flowProvider = DevFlowProvider.flowProvider("java")
+        if (flowProvider == null) {
+            logger.error("current Language don't implementation DevFlow")
+            return null
+        }
+
         val openAIRunner = ConnectorFactory.getInstance().connector(project)
 
         val chatCodingService = ChatCodingService(ChatActionType.CHAT, project)
@@ -52,13 +59,6 @@ class AutoDevRunProfileState(
 
         contentManager?.removeAllContents(true)
         contentManager?.addContent(content!!)
-
-        // TODO: support other language
-        val flowProvider = DevFlowProvider.flowProvider("java")
-        if (flowProvider == null) {
-            logger.error("current Language don't implementation DevFlow")
-            return null
-        }
 
         toolWindowManager?.activate {
             flowProvider.initContext(gitHubIssue, openAIRunner, contentPanel, project)
