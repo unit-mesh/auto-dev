@@ -15,30 +15,18 @@ import cc.unitmesh.devti.provider.context.ChatOrigin
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
 
-class TestCodeGenRequest(
-    val file: PsiFile,
-    val element: PsiElement,
-    val project: Project,
-    val editor: Editor,
-    val selectText: String
-)
-
-class TestCodeGenTask(
-    val request: TestCodeGenRequest
-) : Task.Backgroundable(request.project, AutoDevBundle.message("intentions.chat.code.test.name")) {
+class TestCodeGenTask(val request: TestCodeGenRequest) :
+    Task.Backgroundable(request.project, AutoDevBundle.message("intentions.chat.code.test.name")) {
     private val actionType = ChatActionType.GENERATE_TEST
     private val lang = request.file.language.displayName
     private val writeTestService = WriteTestService.context(request.element)

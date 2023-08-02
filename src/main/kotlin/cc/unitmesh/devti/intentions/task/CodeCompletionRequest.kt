@@ -9,7 +9,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 
-class CompletionTaskRequest(
+class CodeCompletionRequest(
     val project: Project,
     val useTabIndents: Boolean,
     val tabWidth: Int,
@@ -21,26 +21,24 @@ class CompletionTaskRequest(
     val editor: Editor
 ) : Disposable {
     companion object {
-        fun create(editor: Editor, offset: Int, element: PsiElement, prefix: String?): CompletionTaskRequest? {
+        fun create(editor: Editor, offset: Int, element: PsiElement, prefix: String?): CodeCompletionRequest? {
             val project = editor.project ?: return null
-
             val document = editor.document
             val file = PsiDocumentManager.getInstance(project).getPsiFile(document) ?: return null
 
             val useTabs = editor.settings.isUseTabCharacter(project)
             val tabWidth = editor.settings.getTabSize(project)
-            val uri = file.virtualFile
             val documentVersion = if (document is DocumentEx) {
                 document.modificationSequence.toLong()
             } else {
                 document.modificationStamp
             }
 
-            return CompletionTaskRequest(
+            return CodeCompletionRequest(
                 project,
                 useTabs,
                 tabWidth,
-                uri,
+                file.virtualFile,
                 prefix ?: document.text,
                 offset,
                 documentVersion,

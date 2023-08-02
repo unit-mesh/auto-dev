@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 import java.util.function.Consumer
 import kotlin.jvm.internal.Ref
 
-class CodeCompletionTask(private val request: CompletionTaskRequest) :
+class CodeCompletionTask(private val request: CodeCompletionRequest) :
     Task.Backgroundable(request.project, AutoDevBundle.message("intentions.chat.code.complete.name")) {
 
     private val connectorFactory = ConnectorFactory.getInstance()

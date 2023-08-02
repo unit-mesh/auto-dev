@@ -2,7 +2,7 @@ package cc.unitmesh.devti.editor.inlay
 
 import cc.unitmesh.devti.editor.presentation.LLMInlayRenderer
 import cc.unitmesh.devti.intentions.task.CodeCompletionTask
-import cc.unitmesh.devti.intentions.task.CompletionTaskRequest
+import cc.unitmesh.devti.intentions.task.CodeCompletionRequest
 import com.intellij.injected.editor.EditorWindow
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
@@ -27,7 +27,7 @@ import java.util.function.Consumer
 class LLMInlayManagerImpl : LLMInlayManager {
     companion object {
         private val logger = logger<LLMInlayManagerImpl>()
-        private val KEY_LAST_REQUEST = Key.create<CompletionTaskRequest>("copilot.editorRequest")
+        private val KEY_LAST_REQUEST = Key.create<CodeCompletionRequest>("copilot.editorRequest")
         val KEY_DOCUMENT_SAVE_VETO = Key.create<Boolean>("llm.docSaveVeto")
         private val KEY_PROCESSING =
             KeyWithDefaultValue.create("llm.processing", java.lang.Boolean.valueOf(false)) as Key<Boolean>
@@ -137,7 +137,7 @@ class LLMInlayManagerImpl : LLMInlayManager {
     @RequiresBackgroundThread
     private fun requestCompletions(editor: Editor, changeOffset: Int, onFirstCompletion: Consumer<String>?) {
         val element = PsiUtilBase.getElementAtCaret(editor) ?: return
-        val request = CompletionTaskRequest.create(editor, changeOffset, element, null) ?: return
+        val request = CodeCompletionRequest.create(editor, changeOffset, element, null) ?: return
 
         KEY_LAST_REQUEST[editor] = request
         CodeCompletionTask(request).execute(onFirstCompletion)
