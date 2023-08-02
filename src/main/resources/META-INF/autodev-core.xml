@@ -138,11 +138,6 @@
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </aiAssistantIntention>
-        <aiAssistantIntention>
-            <className>cc.unitmesh.devti.intentions.RefactorThisIntention</className>
-            <bundleName>messages.AutoDevBundle</bundleName>
-            <categoryKey>intention.category.llm</categoryKey>
-        </aiAssistantIntention>
 
         <chatContextProvider implementation="cc.unitmesh.devti.provider.LanguageContextProvider"/>
     </extensions>
