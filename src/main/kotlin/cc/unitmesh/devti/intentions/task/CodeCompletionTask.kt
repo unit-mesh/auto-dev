@@ -41,7 +41,7 @@ class CodeCompletionTask(
         val prompt = promptText()
 
         val flow: Flow<String> = connectorFactory.connector(request.project).stream(prompt, "")
-        logger.warn("Prompt: $prompt")
+        logger.info("Prompt: $prompt")
 
         val editor = request.editor
         LLMCoroutineScopeService.scope(request.project).launch {
@@ -54,20 +54,15 @@ class CodeCompletionTask(
             flow.collect {
                 suggestion.append(it)
                 invokeLater {
-                    WriteCommandAction.runWriteCommandAction(
-                        project,
-                        codeMessage,
-                        writeActionGroupId,
-                        {
-                            insertStringAndSaveChange(
-                                project,
-                                it,
-                                editor.document,
-                                currentOffset.element,
-                                false
-                            )
-                        }
-                    )
+                    WriteCommandAction.runWriteCommandAction(project, codeMessage, writeActionGroupId, {
+                        insertStringAndSaveChange(
+                            project,
+                            it,
+                            editor.document,
+                            currentOffset.element,
+                            false
+                        )
+                    })
 
                     currentOffset.element += it.length
                     editor.caretModel.moveToOffset(currentOffset.element)
@@ -75,28 +70,29 @@ class CodeCompletionTask(
                 }
             }
 
-            logger.warn("Suggestion: $suggestion")
+            logger.info("Suggestion: $suggestion")
         }
     }
 
     private fun promptText(): String {
         val prefix = request.documentContent.substring(0, request.offset)
         val prompt = if (chunksString == null) {
-            prefix
+            "complete code for given code: \n$prefix"
         } else {
-            "code complete for follow code: \n$commentPrefix${request.fileUri}\n$chunksString\n$prefix"
+            "complete code for given code: \n$commentPrefix${request.fileUri}\n$chunksString\n$prefix"
         }
+
         return prompt
     }
 
     fun execute(onFirstCompletion: Consumer<String>?) {
         val prompt = promptText()
 
+        logger.warn("Prompt: $prompt")
         LLMCoroutineScopeService.scope(project).launch {
             val flow: Flow<String> = connectorFactory.connector(project).stream(prompt, "")
             val suggestion = StringBuilder()
             flow.collect {
-                print(it)
                 suggestion.append(it)
             }
 

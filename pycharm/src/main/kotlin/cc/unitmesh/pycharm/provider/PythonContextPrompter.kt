@@ -22,7 +22,7 @@ class PythonContextPrompter : ContextPrompter() {
         offset: Int
     ) {
         super.initContext(actionType, selectedText, file, project, offset)
-        additionContext = SimilarChunksWithPaths().similarChunksWithPaths(file!!).toQuery()
+        additionContext = SimilarChunksWithPaths.createQuery(file!!) ?: ""
     }
 
     override fun displayPrompt(): String {

@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.gui.chat.block
+package cc.unitmesh.devti.gui.block
 
 import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.parser.Code
@@ -7,7 +7,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl
-import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
@@ -23,12 +23,13 @@ import com.intellij.openapi.fileTypes.UnknownFileType
 import com.intellij.openapi.observable.properties.GraphProperty
 import com.intellij.openapi.observable.properties.PropertyGraph
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.util.concurrency.annotations.RequiresReadLock
 import com.intellij.util.ui.JBUI
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.JComponent
-import kotlin.jvm.internal.Ref
 
 class CodeBlockView(private val block: CodeBlock, private val project: Project, private val disposable: Disposable) :
     MessageBlockView {
@@ -63,12 +64,9 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
     fun updateOrCreateCodeView(): CodePartEditorInfo? {
         val code: Code = getBlock().code
         if (editorInfo == null) {
+            val graphProperty = PropertyGraph(null, false).property(code.text)
             val editorInfo: CodePartEditorInfo = createCodeViewer(
-                project,
-                PropertyGraph(null as String?, false).property(code.text),
-                disposable,
-                code.language,
-                getBlock().getMessage()
+                project, graphProperty, disposable, code.language, getBlock().getMessage()
             )
             this.editorInfo = editorInfo
         } else {
@@ -85,7 +83,7 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
 
     companion object {
         private fun createCodeViewerFile(language: Language, content: String): LightVirtualFile {
-            val file = LightVirtualFile("AutoDevSnippet", language, content)
+            val file = LightVirtualFile(AUTODEV_SNIPPET_NAME, language, content)
             if (file.fileType == UnknownFileType.INSTANCE) {
                 file.fileType = PlainTextFileType.INSTANCE
             }
@@ -100,6 +98,10 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
             disposable: Disposable
         ): EditorEx {
             val editor: Editor = EditorFactory.getInstance().createViewer(document, project, EditorKind.PREVIEW)
+            disposable.whenDisposed(disposable) {
+                EditorFactory.getInstance().releaseEditor(editor)
+            }
+
             (editor as EditorEx).setFile(file)
             editor.setCaretEnabled(true)
             val highlighter = EditorHighlighterFactory.getInstance().createEditorHighlighter(project, file)
@@ -109,27 +111,28 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
             val markupModel: MarkupModelEx = editor.markupModel
             (markupModel as EditorMarkupModel).isErrorStripeVisible = false
 
-            val editorSettings = editor.getSettings()
-            editorSettings.isDndEnabled = false
-            editorSettings.isLineNumbersShown = false
-            editorSettings.additionalLinesCount = 0
-            editorSettings.isLineMarkerAreaShown = false
-            editorSettings.isFoldingOutlineShown = false
-            editorSettings.isRightMarginShown = false
-            editorSettings.isShowIntentionBulb = false
-            editorSettings.isUseSoftWraps = true
-            editorSettings.setPaintSoftWraps(false)
-            editorSettings.isRefrainFromScrolling = true
-            editorSettings.isAdditionalPageAtBottom = false
-            editorSettings.isCaretRowShown = false
+            val settings = editor.getSettings().also {
+                it.isDndEnabled = false
+                it.isLineNumbersShown = false
+                it.additionalLinesCount = 0
+                it.isLineMarkerAreaShown = false
+                it.isFoldingOutlineShown = false
+                it.isRightMarginShown = false
+                it.isShowIntentionBulb = false
+                it.isUseSoftWraps = true
+                it.setPaintSoftWraps(false)
+                it.isRefrainFromScrolling = true
+                it.isAdditionalPageAtBottom = false
+                it.isCaretRowShown = false
+            }
 
             editor.addFocusListener(object : FocusChangeListener {
                 override fun focusGained(focusEditor: Editor) {
-                    editor.getSettings().isCaretRowShown = true
+                    settings.isCaretRowShown = true
                 }
 
                 override fun focusLost(focusEditor: Editor) {
-                    editor.getSettings().isCaretRowShown = false
+                    settings.isCaretRowShown = false
                     editor.markupModel.removeAllHighlighters()
                 }
             })
@@ -156,7 +159,7 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
 
             val toolbarActionGroup = ActionUtil.getActionGroup("AutoDev.ToolWindow.Snippet.Toolbar")
             toolbarActionGroup?.let {
-                val jComponent: ActionToolbarImpl =
+                val toolbar: ActionToolbarImpl =
                     object : ActionToolbarImpl(ActionPlaces.TOOLBAR, toolbarActionGroup, false) {
                         override fun updateUI() {
                             super.updateUI()
@@ -164,10 +167,10 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
                         }
                     }
 
-                jComponent.setBackground(editor.backgroundColor)
-                jComponent.setOpaque(true)
-                jComponent.setTargetComponent(editor.contentComponent)
-                editor.headerComponent = jComponent
+                toolbar.setBackground(editor.backgroundColor)
+                toolbar.setOpaque(true)
+                toolbar.setTargetComponent(editor.contentComponent)
+                editor.headerComponent = toolbar
             }
 
             editor.scrollPane.setBorder(JBUI.Borders.empty())
@@ -184,11 +187,28 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
 
 @RequiresReadLock
 fun VirtualFile.findDocument(): Document? {
-    val ref: Ref.ObjectRef<Document?> = Ref.ObjectRef()
-    runReadAction {
-        val instance = FileDocumentManager.getInstance()
-        ref.element = instance.getDocument(this)
+    return ReadAction.compute<Document, Throwable> {
+        FileDocumentManager.getInstance().getDocument(this)
+    }
+}
+
+fun Disposable.whenDisposed(
+    parentDisposable: Disposable,
+    listener: () -> Unit
+) {
+    val isDisposed = AtomicBoolean(false)
+
+    val disposable = Disposable {
+        if (isDisposed.compareAndSet(false, true)) {
+            listener()
+        }
     }
 
-    return ref.element
+    Disposer.register(this, disposable)
+
+    Disposer.register(parentDisposable, Disposable {
+        if (isDisposed.compareAndSet(false, true)) {
+            Disposer.dispose(disposable)
+        }
+    })
 }

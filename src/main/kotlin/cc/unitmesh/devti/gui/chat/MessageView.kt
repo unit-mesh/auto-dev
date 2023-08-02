@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.gui.chat
 
 
-import cc.unitmesh.devti.gui.chat.block.*
+import cc.unitmesh.devti.gui.block.*
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.ProjectManager
@@ -14,7 +14,8 @@ import java.awt.*
 import javax.swing.*
 import kotlin.jvm.internal.Ref
 
-class MessageView(private val message: String, role: ChatRole, val displayText: String) : JBPanel<MessageView>() {
+class MessageView(private val message: String, role: ChatRole, private val displayText: String) :
+    JBPanel<MessageView>() {
     private val component: DisplayComponent = DisplayComponent(message)
     private var answer: String? = null
     private var centerPanel: JPanel = JPanel(VerticalLayout(JBUI.scale(8)))
@@ -24,7 +25,7 @@ class MessageView(private val message: String, role: ChatRole, val displayText: 
         isOpaque = true
         background = when (role) {
             ChatRole.System -> JBColor(0xEAEEF7, 0x45494A)
-            ChatRole.Assistant -> JBColor(0xE0EEF7, 0x2d2f30)
+            ChatRole.Assistant -> JBColor(0xEAEEF7, 0x2d2f30)
             ChatRole.User -> JBColor(0xE0EEF7, 0x2d2f30)
         }
 
@@ -82,9 +83,10 @@ class MessageView(private val message: String, role: ChatRole, val displayText: 
 
     fun doneContent() {
         val displayText = component.text
-        centerPanel.remove(component)
 
-        ApplicationManager.getApplication().invokeLater() {
+        ApplicationManager.getApplication().invokeLater {
+            centerPanel.remove(component)
+
             val message = SimpleMessage(displayText, displayText, ChatRole.Assistant)
             renderInPartView(message)
 

@@ -160,14 +160,14 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
 
                 val targetClass = "$className.java"
                 if (parentDirectory.findChild(targetClass) != null) {
-                    log.warn("File $targetClass already exists")
+                    log.info("File $targetClass already exists")
                     return@runWriteAction
                 }
 
                 val virtualFile = parentDirectory.createChildData(fileSystem, targetClass)
                 VfsUtil.saveText(virtualFile, code)
 
-                log.warn("Created file ${virtualFile.path}")
+                log.info("Created file ${virtualFile.path}")
                 parentDirectory.refresh(false, true)
             }
         }
@@ -200,7 +200,7 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
                 val virtualFile = parentDirectory.createChildData(fileSystem, "$serviceName.java")
                 VfsUtil.saveText(virtualFile, templateCode)
 
-                log.warn("Created file ${virtualFile.path}")
+                log.info("Created file ${virtualFile.path}")
                 parentDirectory.refresh(false, true)
             }
         }

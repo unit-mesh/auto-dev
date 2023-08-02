@@ -2,12 +2,11 @@ package cc.unitmesh.devti.intentions.error
 
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.prompting.model.RuntimeErrorExplanationPrompt
-import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import java.lang.String.format
-import kotlin.jvm.internal.Ref
 import kotlin.math.min
 
 class ErrorPromptConstructor(val maxLength: Int, val tokenizer: Tokenizer) {
@@ -24,7 +23,7 @@ class ErrorPromptConstructor(val maxLength: Int, val tokenizer: Tokenizer) {
         var sourceCode = ""
         val capacity = maxLength - (promptTemplate.length - 10)
         val maxLengthForPiece = capacity / 2
-        var currentmaxTokenCount = maxLengthForPiece
+        var currentMaxTokenCount = maxLengthForPiece
         val listOfIncludedDiapasons = mutableListOf<ErrorScope>()
 
         list.forEach { errorPlace ->
@@ -33,9 +32,9 @@ class ErrorPromptConstructor(val maxLength: Int, val tokenizer: Tokenizer) {
                     listOfIncludedDiapasons.any { it.containsLineNumber(errorPlace.lineNumber, errorPlace.virtualFile) }
 
                 if (!isLineIncluded) {
-                    val trimmed = trimByGreedyScopeSelection(errorPlace, currentmaxTokenCount) ?: return@forEach
+                    val trimmed = trimByGreedyScopeSelection(errorPlace, currentMaxTokenCount) ?: return@forEach
 
-                    currentmaxTokenCount -= tokenizer.count(trimmed.text)
+                    currentMaxTokenCount -= tokenizer.count(trimmed.text)
                     sourceCode += trimmed.text
                     listOfIncludedDiapasons.add(trimmed)
                 }
@@ -51,26 +50,17 @@ class ErrorPromptConstructor(val maxLength: Int, val tokenizer: Tokenizer) {
     }
 
     private fun trimByGreedyScopeSelection(errorPlace: ErrorPlace, maxTokenCount: Int): ErrorScope? {
-        val result: Ref.ObjectRef<ErrorScope?> = Ref.ObjectRef<ErrorScope?>()
-        ApplicationManager.getApplication().runReadAction {
+        return ReadAction.compute<ErrorScope?, Throwable> {
             val language: String = errorPlace.getMarkDownLanguageSlug() ?: ""
 
-            val scope = tryFitAllFile(
+            tryFitAllFile(
                 errorPlace.hyperlinkText,
                 errorPlace.programText,
                 maxTokenCount,
                 language,
                 errorPlace.virtualFile
-            )
-
-            if (scope != null) {
-                result.element = scope
-            } else {
-                result.element = findEnclosingScopeGreedy(errorPlace, maxTokenCount, language)
-            }
+            ) ?: findEnclosingScopeGreedy(errorPlace, maxTokenCount, language)
         }
-
-        return result.element
     }
 
     private fun findEnclosingScopeGreedy(errorPlace: ErrorPlace, maxTokenCount: Int, language: String): ErrorScope? {

@@ -40,10 +40,10 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
 
     abstract fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext?
     abstract fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext>
+
     fun runTest(project: Project, virtualFile: VirtualFile) {
         val runManager = RunManager.getInstance(project)
         val allConfigurationsList = runManager.allConfigurationsList
-        log.warn(virtualFile.nameWithoutExtension)
         val testConfig = allConfigurationsList.firstOrNull {
             it.name == virtualFile.nameWithoutExtension && it is GradleRunConfiguration
         }

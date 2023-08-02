@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.gui.chat.block
+package cc.unitmesh.devti.gui.block
 
 import java.awt.Component
 

@@ -37,8 +37,16 @@
 
         <intentionAction>
             <className>cc.unitmesh.devti.intentions.AIAssistantIntention</className>
-            <categoryKey>Intention.category.llm</categoryKey>
+            <categoryKey>intention.category.llm</categoryKey>
         </intentionAction>
+
+
+        <highlightErrorFilter implementation="cc.unitmesh.devti.gui.error.CodeBlockHighlightErrorFilter"/>
+        <daemon.highlightInfoFilter implementation="cc.unitmesh.devti.gui.error.CodeBlockHighlightingFilter"/>
+        <defaultHighlightingSettingProvider
+                implementation="cc.unitmesh.devti.gui.error.CodeBlockHighlightingSettingsProvider"/>
+        <daemon.intentionActionFilter implementation="cc.unitmesh.devti.gui.error.CodeBlockIntentionActionFilter"/>
+
     </extensions>
 
     <extensionPoints>
@@ -111,7 +119,17 @@
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <aiAssistantIntention>
+            <className>cc.unitmesh.devti.intentions.NewChatWithCodeIntention</className>
+            <bundleName>messages.AutoDevBundle</bundleName>
+            <categoryKey>intention.category.llm</categoryKey>
+        </aiAssistantIntention>
+        <aiAssistantIntention>
             <className>cc.unitmesh.devti.intentions.CodeCompletionIntention</className>
+            <bundleName>messages.AutoDevBundle</bundleName>
+            <categoryKey>intention.category.llm</categoryKey>
+        </aiAssistantIntention>
+        <aiAssistantIntention>
+            <className>cc.unitmesh.devti.intentions.CodeCompletionInlayIntention</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </aiAssistantIntention>
@@ -162,8 +180,8 @@
                     description="Chat with this code">
             </action>
 
-            <action id="cc.unitmesh.devti.actions.chat.WriteTestAction"
-                    class="cc.unitmesh.devti.actions.chat.WriteTestAction" text="Write Test for This"
+            <action id="cc.unitmesh.devti.actions.chat.GenerateTestAction"
+                    class="cc.unitmesh.devti.actions.chat.GenerateTestAction" text="Write Test for This"
                     description="Ask AutoDev about this code">
             </action>
 

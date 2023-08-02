@@ -8,13 +8,4 @@ class CreateDdlAction : ChatBaseAction() {
     override fun getActionType(): ChatActionType {
         return ChatActionType.CREATE_DDL
     }
-
-    override fun actionPerformed(event: AnActionEvent) {
-        val fileType = event.getData(PSI_FILE)?.fileType?.name
-        if (fileType != "SQL") {
-            return
-        }
-
-        super.actionPerformed(event)
-    }
 }

@@ -1,11 +1,13 @@
 package cc.unitmesh.devti.intentions
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.editor.inlay.LLMInlayManager
+import cc.unitmesh.devti.intentions.task.CodeCompletionTask
 import cc.unitmesh.devti.intentions.task.CompletionTaskRequest
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.actions.EditorActionUtil
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
@@ -43,12 +45,12 @@ class CodeCompletionIntention : AbstractChatIntention() {
         val suffix = document.getText(TextRange(offset, suffixEnd))
 
         val request = CompletionTaskRequest.create(editor, offset, element, prefix) ?: return
-//        val task = CodeCompletionTask(request)
-//        ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+        val task = CodeCompletionTask(request)
+        ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
 
-        val llmInlayManager = LLMInlayManager.getInstance()
-        llmInlayManager
-            .editorModified(editor, offset)
+//        val llmInlayManager = LLMInlayManager.getInstance()
+//        llmInlayManager
+//            .editorModified(editor, offset)
     }
 
     companion object {

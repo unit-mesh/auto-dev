@@ -5,7 +5,7 @@ import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.provider.TestFileContext
 import cc.unitmesh.devti.provider.WriteTestService
 import com.intellij.lang.Language
-import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -17,7 +17,6 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiClassReferenceType
 import java.io.File
-import kotlin.jvm.internal.Ref
 
 class JavaWriteTestService : WriteTestService() {
     companion object {
@@ -33,21 +32,18 @@ class JavaWriteTestService : WriteTestService() {
         val parentDir = sourceFilePath.parent
         val className = sourceFile.name.replace(".java", "") + "Test"
 
-        val parentDirPath: Ref.ObjectRef<String> = Ref.ObjectRef()
-        val packageRef: Ref.ObjectRef<String> = Ref.ObjectRef()
-        packageRef.element = ""
-        ApplicationManager.getApplication().runReadAction {
-            packageRef.element = (sourceFile as PsiJavaFile).packageName
-            parentDirPath.element = parentDir?.path
+        val packageName = ReadAction.compute<String, Throwable> {
+            (sourceFile as PsiJavaFile).packageName
         }
-
-        val packageName = packageRef.element
+        val parentDirPath = ReadAction.compute<String, Throwable> {
+            parentDir?.path
+        }
 
         val relatedModels = lookupRelevantClass(project, element)
 
         // Check if the source file is in the src/main/java directory
-        if (!parentDirPath.element?.contains("/src/main/java/")!!) {
-            log.error("Source file is not in the src/main/java directory: ${parentDirPath.element}")
+        if (!parentDirPath?.contains("/src/main/java/")!!) {
+            log.error("Source file is not in the src/main/java directory: ${parentDirPath}")
             return null
         }
 
@@ -72,12 +68,11 @@ class JavaWriteTestService : WriteTestService() {
 
         val testDirCreated: VirtualFile? =
             VirtualFileManager.getInstance().refreshAndFindFileByUrl("file://$testDirPath")
+
         if (testDirCreated == null) {
             log.error("Failed to create test directory: $testDirPath")
             return null
         }
-
-        val result: Ref.ObjectRef<TestFileContext?> = Ref.ObjectRef()
 
         // Test directory already exists, find the corresponding test file
         val testFilePath = testDirPath + "/" + sourceFile.name.replace(".java", "Test.java")
@@ -85,21 +80,16 @@ class JavaWriteTestService : WriteTestService() {
 
         project.guessProjectDir()?.refresh(true, true)
 
-        if (testFile != null) {
-            result.element = TestFileContext(isNewFile, testFile, relatedModels, className, sourceFile.language)
+        return if (testFile != null) {
+            TestFileContext(isNewFile, testFile, relatedModels, className, sourceFile.language)
         } else {
             val targetFile = createTestFile(sourceFile, testDir!!, packageName, project)
-            result.element = TestFileContext(isNewFile = true, targetFile, relatedModels, "", sourceFile.language)
+            TestFileContext(isNewFile = true, targetFile, relatedModels, "", sourceFile.language)
         }
-
-        return result.element
     }
 
     override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {
-        val result: Ref.ObjectRef<List<ClassContext>> = Ref.ObjectRef()
-        result.element = emptyList()
-
-        ApplicationManager.getApplication().runReadAction {
+        return ReadAction.compute<List<ClassContext>, Throwable> {
             val elements = mutableListOf<ClassContext>()
             val projectPath = project.guessProjectDir()?.path
 
@@ -120,10 +110,8 @@ class JavaWriteTestService : WriteTestService() {
                 }
             }
 
-            result.element = elements
+            elements
         }
-
-        return result.element
     }
 
     private fun resolveByMethod(element: PsiElement): MutableMap<String, PsiClass?> {
@@ -162,11 +150,13 @@ class JavaWriteTestService : WriteTestService() {
 
 
     private fun resolveByField(element: PsiElement): Map<out String, PsiClass?> {
-        val psiClass = element.containingFile as PsiClass
+        val psiFile = element.containingFile as PsiJavaFile
 
         val resolvedClasses = mutableMapOf<String, PsiClass?>()
-        psiClass.fields.forEach { field ->
-            resolvedClasses.putAll(resolveByType(field.type))
+        psiFile.classes.forEach { psiClass ->
+            psiClass.fields.forEach { field ->
+                resolvedClasses.putAll(resolveByType(field.type))
+            }
         }
 
         return resolvedClasses
@@ -182,16 +172,13 @@ class JavaWriteTestService : WriteTestService() {
         val testFileName = sourceFileName.replace(".java", "Test.java")
         val testFileContent = "package $packageName;\n\n"
 
-        val testFileRef: Ref.ObjectRef<VirtualFile> = Ref.ObjectRef()
-
-        WriteCommandAction.runWriteCommandAction(project) {
+        return WriteCommandAction.runWriteCommandAction<VirtualFile>(project) {
             val testFile = testDir.createChildData(this, testFileName)
-            testFileRef.element = testFile
 
             val document = FileDocumentManager.getInstance().getDocument(testFile)
             document?.setText(testFileContent)
-        }
 
-        return testFileRef.element!!
+            testFile
+        }
     }
 }

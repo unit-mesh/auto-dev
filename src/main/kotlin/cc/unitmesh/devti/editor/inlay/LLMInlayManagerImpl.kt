@@ -64,10 +64,6 @@ class LLMInlayManagerImpl : LLMInlayManager {
             return false
         }
 
-        // todo: count completion
-//        val text = request.documentContent
-//        val range: TextRange = completion.getReplacementRange()
-//        val text: String = completion.getReplacementText()
         WriteCommandAction.runWriteCommandAction(project, "Apply Copilot Suggestion", "AutoDev", {
             if (project.isDisposed) return@runWriteCommandAction
             val document = editor.document

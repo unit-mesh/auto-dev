@@ -69,9 +69,9 @@ ${relevantModel?.joinToString("\n")}
         val relevantModel = (services ?: emptyList()) + (models ?: emptyList())
 
         val clazz = fromJavaFile(file)
-        return """ 
-${relevantModel.joinToString("\n")}\n
-// current path: ${clazz.path}
+        return """
+${relevantModel.joinToString("\n")}
+//current path: ${clazz.path}
 """
     }
 }

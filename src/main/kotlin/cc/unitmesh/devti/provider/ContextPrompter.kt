@@ -18,10 +18,15 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
     protected var lang: String = ""
     protected var offset: Int = 0
 
-    val chatContextCache: MutableMap<ChatCreationContext, String> = mutableMapOf()
+    private val chatContextCache: MutableMap<ChatCreationContext, String> = mutableMapOf()
+
     suspend fun collectionContext(creationContext: ChatCreationContext): String {
         if (chatContextCache.containsKey(creationContext)) {
-            return chatContextCache[creationContext]!!
+            val cachedContent = chatContextCache[creationContext]!!
+            if (cachedContent.isNotEmpty()) {
+                logger<ContextPrompter>().info("use cache for $creationContext, content: $cachedContent")
+                return cachedContent
+            }
         }
 
         var chatContext = ""
@@ -30,6 +35,8 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
         contextItems.forEach {
             chatContext += it.text + "\n"
         }
+
+        logger<ContextPrompter>().info("context: $chatContext")
 
         chatContextCache[creationContext] = chatContext
         return chatContext

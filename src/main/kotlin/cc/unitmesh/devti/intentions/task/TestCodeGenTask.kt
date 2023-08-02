@@ -2,30 +2,31 @@ package cc.unitmesh.devti.intentions.task
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.context.CodeModifierProvider
-import cc.unitmesh.devti.editor.LLMCoroutineScopeService
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.intentions.WriteTestIntention
 import cc.unitmesh.devti.llms.ConnectorFactory
 import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.provider.WriteTestService
 import cc.unitmesh.devti.provider.TestFileContext
+import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
-import kotlin.jvm.internal.Ref
+import kotlinx.coroutines.runBlocking
 
 class TestCodeGenRequest(
     val file: PsiFile,
@@ -38,7 +39,7 @@ class TestCodeGenRequest(
 class TestCodeGenTask(
     val request: TestCodeGenRequest
 ) : Task.Backgroundable(request.project, AutoDevBundle.message("intentions.chat.code.test.name")) {
-    private val actionType = ChatActionType.WRITE_TEST
+    private val actionType = ChatActionType.GENERATE_TEST
     private val lang = request.file.language.displayName
     private val writeTestService = WriteTestService.context(request.element)
 
@@ -48,6 +49,8 @@ class TestCodeGenTask(
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.prepare-context")
 
         val testContext = writeTestService?.findOrCreateTestFile(request.file, request.project, request.element)
+        DumbService.getInstance(request.project).waitForSmartMode()
+
         if (testContext == null) {
             if (writeTestService == null) {
                 logger<TestCodeGenTask>().error("Could not find WriteTestService for: ${request.file}")
@@ -69,45 +72,41 @@ class TestCodeGenTask(
                                     | """.trimMargin()
         }
 
-        LLMCoroutineScopeService.scope(project).launch {
-            indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.collect-context")
-            indicator.fraction = 0.3
+        indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.collect-context")
+        indicator.fraction = 0.3
 
-            val additionContextRef: Ref.ObjectRef<String> = Ref.ObjectRef()
-            additionContextRef.element = ""
-            ApplicationManager.getApplication().runReadAction {
-                additionContextRef.element = testContext.relatedClasses.joinToString("\n") {
-                    it.toQuery()
-                }.lines().joinToString("\n") {
-                    "// $it"
-                }
+        val creationContext = ChatCreationContext(ChatOrigin.Intention, actionType, request.file)
+        val contextItems: List<ChatContextItem> = runBlocking {
+            return@runBlocking ChatContextProvider.collectChatContextList(request.project, creationContext)
+        }
+        contextItems.forEach {
+            prompter += it.text
+        }
+
+        prompter += "\n"
+        prompter += ReadAction.compute<String, Throwable> {
+            testContext.relatedClasses.joinToString("\n") {
+                it.toQuery()
+            }.lines().joinToString("\n") {
+                "// $it"
             }
+        }
+        prompter += "\n```${lang.lowercase()}\n${request.selectText}\n```\n"
+        prompter += if (!testContext.isNewFile) {
+            "Start test code with `@Test` syntax here:  \n"
+        } else {
+            "Start ${testContext.testClassName} with `import` syntax here:  \n"
+        }
 
-            val creationContext = ChatCreationContext(ChatOrigin.Intention, actionType, request.file)
-            val contextItems = ChatContextProvider.collectChatContextList(request.project, creationContext)
-            contextItems.forEach {
-                prompter += it.text
-            }
-            prompter += "\n"
-            prompter += additionContextRef.element
-            prompter += "\n```${lang.lowercase()}\n${request.selectText}\n```\n"
-            prompter += if (!testContext.isNewFile) {
-                "Start test code with `@Test` syntax here:  \n"
-            } else {
-                "Start ${testContext.testClassName} with `import` syntax here:  \n"
-            }
+        val flow: Flow<String> =
+            ConnectorFactory.getInstance().connector(request.project).stream(prompter, "")
 
-            indicator.fraction = 0.8
-            indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.prompt")
+        logger<WriteTestIntention>().warn("Prompt: $prompter")
 
-            val flow: Flow<String> =
-                ConnectorFactory.getInstance().connector(request.project).stream(prompter, "")
+        indicator.fraction = 0.8
+        indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.prompt")
 
-            logger<WriteTestIntention>().warn("Prompt: $prompter")
-
-            indicator.fraction = 0.9
-            indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.write-test")
-
+        runBlocking {
             writeTestToFile(request.project, flow, testContext)
 
             navigateTestFile(testContext.file, request.editor, request.project)
@@ -130,7 +129,9 @@ class TestCodeGenTask(
 
         logger<WriteTestIntention>().warn("LLM suggestion: $suggestion")
 
-        val modifier = CodeModifierProvider().modifier(context.language) ?: throw IllegalStateException("Unsupported language: ${context.language}")
+        val modifier = CodeModifierProvider().modifier(context.language)
+            ?: throw IllegalStateException("Unsupported language: ${context.language}")
+
         parseCodeFromString(suggestion.toString()).forEach {
             modifier.insertTestCode(context.file, project, it)
         }

@@ -16,6 +16,10 @@ class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRel
         val INSTANCE: SimilarChunksWithPaths = SimilarChunksWithPaths()
 
         fun createQuery(element: PsiElement, chunkSize: Int = 60): String? {
+            if (element.language.displayName.lowercase() == "markdown") {
+                return null
+            }
+
             return runReadAction {
                 try {
                     val similarChunksWithPaths = SimilarChunksWithPaths(chunkSize).similarChunksWithPaths(element)
@@ -31,7 +35,7 @@ class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRel
         }
     }
 
-    fun similarChunksWithPaths(element: PsiElement): SimilarChunkContext {
+    private fun similarChunksWithPaths(element: PsiElement): SimilarChunkContext {
         val mostRecentFiles = getMostRecentFiles(element)
         val mostRecentFilesRelativePaths = mostRecentFiles.map { INSTANCE.relativePathTo(it, element)!! }
         val chunks = extractChunks(element, mostRecentFiles)
@@ -62,7 +66,10 @@ class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRel
 
     private fun relativePathTo(relativeFile: VirtualFile, element: PsiElement): String? {
         val fileIndex: ProjectFileIndex = ProjectRootManager.getInstance(element.project).fileIndex
-        var contentRoot: VirtualFile? = fileIndex.getContentRootForFile(relativeFile)
+        var contentRoot: VirtualFile? = runReadAction {
+            fileIndex.getContentRootForFile(relativeFile)
+        }
+
         if (contentRoot == null) {
             contentRoot = fileIndex.getClassRootForFile(relativeFile)
         }

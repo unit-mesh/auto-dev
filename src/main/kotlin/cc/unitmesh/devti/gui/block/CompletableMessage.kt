@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.gui.chat.block
+package cc.unitmesh.devti.gui.block
 
 import cc.unitmesh.devti.gui.chat.ChatRole
 

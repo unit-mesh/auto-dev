@@ -5,7 +5,6 @@ import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.ide.webstorm.JsDependenciesSnapshot
-import cc.unitmesh.ide.webstorm.JsDependenciesSnapshot.Companion.mostPopularPackages
 import cc.unitmesh.ide.webstorm.LanguageApplicableUtil
 import com.intellij.javascript.nodejs.PackageJsonDependency
 import com.intellij.openapi.diagnostic.logger
@@ -56,7 +55,7 @@ class JavaScriptContextProvider : ChatContextProvider {
     private fun getMostPopularPackagesContext(snapshot: JsDependenciesSnapshot): ChatContextItem? {
         val dependencies = snapshot.packages
             .asSequence()
-            .filter { entry -> mostPopularPackages.contains(entry.key) && !entry.key.startsWith("@type") }
+            .filter { entry -> MOST_POPULAR_PACKAGES.contains(entry.key) && !entry.key.startsWith("@type") }
             .map { entry ->
                 val dependency = entry.key
                 val version = entry.value.parseVersion()
@@ -92,14 +91,9 @@ class JavaScriptContextProvider : ChatContextProvider {
                 when (it) {
                     PackageJsonDependency.dependencies,
                     PackageJsonDependency.devDependencies -> {
-                        // also remove `eslint`
                         if (!name.startsWith("@types/")) {
                             devDependencies[name] = entry.versionRange
                         }
-
-                        devDependencies[name] = entry.versionRange
-
-
                         JsWebFrameworks.values().forEach { framework ->
                             if (name.startsWith(framework.packageName) || name == framework.packageName) {
                                 frameworks[framework.packageName] = true
@@ -112,12 +106,10 @@ class JavaScriptContextProvider : ChatContextProvider {
                             }
                         }
                     }
-
                     else -> {}
                 }
             }
         }
-
 
         return TestStack(frameworks, testFrameworks, dependencies, devDependencies)
     }

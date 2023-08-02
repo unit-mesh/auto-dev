@@ -10,6 +10,6 @@ class KotlinTestContextProvider : JavaTestContextProvider() {
     override fun langFileSuffix(): String = "kt"
 
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
-        return creationContext.action == ChatActionType.WRITE_TEST && creationContext.sourceFile?.language is KotlinLanguage
+        return creationContext.action == ChatActionType.GENERATE_TEST && creationContext.sourceFile?.language is KotlinLanguage
     }
 }

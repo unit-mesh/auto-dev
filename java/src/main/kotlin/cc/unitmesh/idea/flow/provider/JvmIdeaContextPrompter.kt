@@ -5,7 +5,6 @@ import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.prompting.VcsPrompting
 import cc.unitmesh.devti.prompting.model.CustomPromptConfig
 import cc.unitmesh.devti.provider.ContextPrompter
-import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
 import cc.unitmesh.devti.settings.AutoDevSettingsState
@@ -57,17 +56,15 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
     }
 
     override fun displayPrompt(): String {
-        return runBlocking {
-            val instruction = createPrompt(selectedText)
+        val instruction = createPrompt(selectedText)
 
-            val finalPrompt = if (additionContext.isNotEmpty()) {
-                "```\n$additionContext\n```\n```$lang\n$selectedText\n```\n"
-            } else {
-                "```$lang\n$selectedText\n```"
-            }
-
-            return@runBlocking "$instruction: \n$finalPrompt"
+        val finalPrompt = if (additionContext.isNotEmpty()) {
+            "```\n$additionContext\n```\n```$lang\n$selectedText\n```\n"
+        } else {
+            "```$lang\n$selectedText\n```"
         }
+
+        return "$instruction: \n$finalPrompt"
     }
 
     override fun requestPrompt(): String {
@@ -75,20 +72,25 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
             val instruction = createPrompt(selectedText)
             val chatContext = collectionContext(creationContext)
 
-            val finalContext = if (additionContext.isNotEmpty()) {
-                "\n$chatContext\n$additionContext\n```$lang\n$selectedText\n```\n"
-            } else {
-                "```$lang\n$selectedText\n```"
+            var finalPrompt = instruction
+
+            if (chatContext.isNotEmpty()) {
+                finalPrompt += "\n$chatContext"
             }
 
-            val finalPrompt = "$instruction:\n$finalContext"
+            if (additionContext.isNotEmpty()) {
+                finalPrompt += "\n$additionContext"
+            }
+
+            finalPrompt += "```$lang\n$selectedText\n```"
+
             logger.info("final prompt: $finalPrompt")
             return@runBlocking finalPrompt
         }
     }
 
 
-    private suspend fun createPrompt(selectedText: String): String {
+    private fun createPrompt(selectedText: String): String {
         var prompt = action!!.instruction(lang)
 
         when (action!!) {
@@ -142,7 +144,7 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
                 }
             }
 
-            ChatActionType.WRITE_TEST -> {
+            ChatActionType.GENERATE_TEST -> {
                 val writeTest = customPromptConfig?.writeTest
                 if (writeTest?.instruction?.isNotEmpty() == true) {
                     prompt = writeTest.instruction
@@ -162,7 +164,6 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
                 if (!spec.isNullOrEmpty()) {
                     additionContext = "requirements: \n$spec"
                 }
-                prompt = "create ddl based on the follow info"
             }
 
             ChatActionType.CREATE_CHANGELOG -> {

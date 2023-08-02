@@ -120,14 +120,12 @@ class OpenAIProvider(val project: Project) : CodeCopilotProvider {
 
     override fun autoComment(text: @NlsSafe String): String {
         val promptText = promptTemplate.autoComment(text)
-        logger.warn("autoComment prompt text: $promptText")
         val prompt = prompt(promptText)
         return parseCodeFromString(prompt)[0]
     }
 
     override fun findBug(text: String): String {
         val promptText = promptTemplate.findBug(text)
-        logger.warn("findBug prompt text: $promptText")
         return prompt(promptText)
     }
 
