@@ -15,8 +15,7 @@ import com.intellij.psi.PsiFile
 
 class IntentionsActionGroup : ActionGroup(), DumbAware {
     init {
-        templatePresentation.text =
-            AutoDevBundle.message("intentions.assistant.name")
+        templatePresentation.text = AutoDevBundle.message("intentions.assistant.name")
     }
 
     override fun getChildren(e: AnActionEvent?): Array<AnAction> {
@@ -27,9 +26,9 @@ class IntentionsActionGroup : ActionGroup(), DumbAware {
         val intentions: List<IntentionAction> =
             AIAssistantIntention.getAiAssistantIntentions(project, editor, file)
 
-        return intentions.map { intentionAction ->
-            DumbAwareAction.create(intentionAction.text) {
-                intentionAction.invoke(project, editor, file)
+        return intentions.map { action ->
+            DumbAwareAction.create(action.text) {
+                action.invoke(project, editor, file)
             }
         }.toTypedArray()
     }

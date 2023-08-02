@@ -167,22 +167,22 @@
 
             <action id="cc.unitmesh.devti.actions.chat.ChatBotRefactorAction"
                     class="cc.unitmesh.devti.actions.chat.ChatBotRefactorAction" text="Refactor This"
-                    description="Ask AutoDev about this code">
+                    description="Ask AutoDev refactor this code">
             </action>
 
             <action id="cc.unitmesh.devti.actions.chat.ChatBotReviewAction"
                     class="cc.unitmesh.devti.actions.chat.ChatBotReviewAction" text="Review This"
-                    description="Ask AutoDev about this code">
+                    description="Ask AutoDev review this code">
             </action>
 
             <action id="cc.unitmesh.devti.actions.chat.ChatWithThisAction"
                     class="cc.unitmesh.devti.actions.chat.ChatWithThisAction" text="Chat with This"
-                    description="Chat with this code">
+                    description="Ask AutoDev chat with this code">
             </action>
 
             <action id="cc.unitmesh.devti.actions.chat.GenerateTestAction"
                     class="cc.unitmesh.devti.actions.chat.GenerateTestAction" text="Write Test for This"
-                    description="Ask AutoDev about this code">
+                    description="Ask AutoDev write this code">
             </action>
 
             <action id="cc.unitmesh.devti.actions.chat.CreateDdlAction"
@@ -195,7 +195,7 @@
 
         <action id="cc.unitmesh.devti.actions.chat.FixThisBotAction"
                 class="cc.unitmesh.devti.actions.chat.FixThisBotAction" text="Fix This (AutoDev)"
-                description="Ask AutoDev about this code">
+                description="Ask AutoDev fi this code">
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
         </action>
 
