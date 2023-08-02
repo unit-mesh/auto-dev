@@ -1,12 +1,13 @@
 package cc.unitmesh.devti.intentions
 
-import cc.unitmesh.devti.gui.chat.*
-import cc.unitmesh.devti.toolwindow.sendToChat
+import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.toolwindow.sendToChat
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNameIdentifierOwner
@@ -81,5 +82,21 @@ abstract class AbstractChatIntention : IntentionAction {
         return identifierOwner ?: element
     }
 
+    fun calculateFrontendElementToExplain(project: Project?, psiFile: PsiFile, range: TextRange): PsiElement? {
+        if (project == null || !psiFile.isValid) return null
+
+        val element = PsiUtilBase.getElementAtOffset(psiFile, range.startOffset)
+        if (InjectedLanguageManager.getInstance(project).isInjectedFragment(psiFile)) {
+            return psiFile
+        }
+
+        val injected = InjectedLanguageManager.getInstance(project).findInjectedElementAt(psiFile, range.startOffset)
+        if (injected != null) {
+            return injected.containingFile
+        }
+
+        val psiElement: PsiElement? = PsiTreeUtil.getParentOfType(element, PsiNameIdentifierOwner::class.java)
+        return psiElement ?: element
+    }
 }
 
