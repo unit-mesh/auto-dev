@@ -81,23 +81,6 @@ abstract class ChatBaseAction : AnAction() {
         }
     }
 
-    fun calculateFrontendElementToExplain(project: Project?, psiFile: PsiFile, range: TextRange): PsiElement? {
-        if (project == null || !psiFile.isValid) return null
-
-        val element = PsiUtilBase.getElementAtOffset(psiFile, range.startOffset)
-        if (InjectedLanguageManager.getInstance(project).isInjectedFragment(psiFile)) {
-            return psiFile
-        }
-
-        val injected = InjectedLanguageManager.getInstance(project).findInjectedElementAt(psiFile, range.startOffset)
-        if (injected != null) {
-            return injected.containingFile
-        }
-
-        val psiElement: PsiElement? = PsiTreeUtil.getParentOfType(element, PsiNameIdentifierOwner::class.java)
-        return psiElement ?: element
-    }
-
     open fun getReplaceableAction(event: AnActionEvent): ((response: String) -> Unit)? {
         return null
     }

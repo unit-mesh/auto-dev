@@ -19,7 +19,6 @@ class ChatWithThisAction : ChatBaseAction() {
         return ChatActionType.CHAT
     }
 
-
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
 
@@ -28,38 +27,6 @@ class ChatWithThisAction : ChatBaseAction() {
         val language = event.getData(CommonDataKeys.PSI_FILE)?.language?.displayName ?: ""
 
         chatWithSelection(project, language, prefixText, getActionType())
-    }
-
-    private fun computeTitle(project: Project, psiFile: PsiFile, range: TextRange): String {
-        val defaultTitle = AutoDevBundle.message("intentions.chat.selected.code.name")
-        if (!range.isEmpty) {
-            return defaultTitle
-        }
-        val element: PsiElement = calculateFrontendElementToExplain(project, psiFile, range) ?: return defaultTitle
-
-        return when {
-            element is PsiFile -> {
-                if (InjectedLanguageManager.getInstance(project).isInjectedFragment(element)) {
-                    val displayName = element.getLanguage().displayName
-                    return AutoDevBundle.message("intentions.chat.selected.fragment.name", displayName)
-                }
-
-                val name: String = element.name
-                return AutoDevBundle.message("intentions.chat.selected.element.name", name, getDescription(element))
-            }
-
-            element is PsiNameIdentifierOwner && element.name != null -> {
-                AutoDevBundle.message("intentions.chat.selected.element.name", element.name!!, getDescription(element))
-            }
-
-            else -> {
-                defaultTitle
-            }
-        }
-    }
-
-    private fun getDescription(element: PsiElement): String {
-        return ElementDescriptionUtil.getElementDescription(element, UsageViewTypeLocation.INSTANCE)
     }
 }
 

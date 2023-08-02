@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.intentions
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.toolwindow.sendToChat
@@ -7,11 +8,14 @@ import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.TextRange
+import com.intellij.psi.ElementDescriptionUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilBase
+import com.intellij.usageView.UsageViewTypeLocation
 
 abstract class AbstractChatIntention : IntentionAction {
     open fun getActionType() = ChatActionType.CODE_COMPLETE
@@ -79,6 +83,60 @@ abstract class AbstractChatIntention : IntentionAction {
 
         val identifierOwner = PsiTreeUtil.getParentOfType(element, PsiNameIdentifierOwner::class.java)
         return identifierOwner ?: element
+    }
+
+    fun getCurrentSelectionAsRange(editor: Editor): TextRange {
+        val currentCaret = editor.caretModel.currentCaret
+        return TextRange(currentCaret.selectionStart, currentCaret.selectionEnd)
+    }
+
+    fun computeTitle(project: Project, psiFile: PsiFile, range: TextRange): String {
+        val defaultTitle = AutoDevBundle.message("intentions.chat.selected.code.name")
+        if (!range.isEmpty) {
+            return defaultTitle
+        }
+        val element: PsiElement = calculateFrontendElementToExplain(project, psiFile, range) ?: return defaultTitle
+
+        return when {
+            element is PsiFile -> {
+                if (InjectedLanguageManager.getInstance(project).isInjectedFragment(element)) {
+                    val displayName = element.getLanguage().displayName
+                    return AutoDevBundle.message("intentions.chat.selected.fragment.name", displayName)
+                }
+
+                val name: String = element.name
+                return AutoDevBundle.message("intentions.chat.selected.element.name", name, getDescription(element))
+            }
+
+            element is PsiNameIdentifierOwner && element.name != null -> {
+                AutoDevBundle.message("intentions.chat.selected.element.name", element.name!!, getDescription(element))
+            }
+
+            else -> {
+                defaultTitle
+            }
+        }
+    }
+
+    private fun getDescription(element: PsiElement): String {
+        return ElementDescriptionUtil.getElementDescription(element, UsageViewTypeLocation.INSTANCE)
+    }
+
+    fun calculateFrontendElementToExplain(project: Project?, psiFile: PsiFile, range: TextRange): PsiElement? {
+        if (project == null || !psiFile.isValid) return null
+
+        val element = PsiUtilBase.getElementAtOffset(psiFile, range.startOffset)
+        if (InjectedLanguageManager.getInstance(project).isInjectedFragment(psiFile)) {
+            return psiFile
+        }
+
+        val injected = InjectedLanguageManager.getInstance(project).findInjectedElementAt(psiFile, range.startOffset)
+        if (injected != null) {
+            return injected.containingFile
+        }
+
+        val psiElement: PsiElement? = PsiTreeUtil.getParentOfType(element, PsiNameIdentifierOwner::class.java)
+        return psiElement ?: element
     }
 }
 

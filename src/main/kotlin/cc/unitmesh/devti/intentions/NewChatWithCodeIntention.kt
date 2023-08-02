@@ -1,15 +1,25 @@
 package cc.unitmesh.devti.intentions
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.toolwindow.chatWithSelection
 import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.toolwindow.chatWithSelection
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
 class NewChatWithCodeIntention : AbstractChatIntention() {
-    override fun getText(): String = AutoDevBundle.message("intentions.chat.new.name")
+    var title: String = ""
+    override fun getText() = title
     override fun getFamilyName(): String = AutoDevBundle.message("intentions.chat.new.family.name")
+
+    override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
+        if (editor == null || file == null) {
+            return false
+        }
+
+        this.title = computeTitle(project, file, getCurrentSelectionAsRange(editor))
+        return true
+    }
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (editor == null || file == null) return
