@@ -93,7 +93,6 @@ class OpenAIProvider(val project: Project) : CodeCopilotProvider {
                 close()
             }
         }
-
     }
 
     private fun prepareRequest(promptText: String, systemPrompt: String): ChatCompletionRequest? {

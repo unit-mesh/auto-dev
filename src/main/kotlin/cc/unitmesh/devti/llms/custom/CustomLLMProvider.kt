@@ -13,6 +13,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.time.Duration
 
 @Serializable
 data class CustomRequest(val instruction: String, val input: String)
@@ -25,6 +26,7 @@ class CustomLLMProvider(val project: Project) : CodeCopilotProvider {
     private val key = autoDevSettingsState.customEngineToken
     private var customPromptConfig: CustomPromptConfig? = null
     private var client = OkHttpClient()
+    private val timeout = Duration.ofSeconds(600)
 
     init {
         val prompts = autoDevSettingsState.customEnginePrompts
@@ -49,19 +51,28 @@ class CustomLLMProvider(val project: Project) : CodeCopilotProvider {
             builder.addHeader("Authorization", "Bearer $key")
         }
 
-        val request = builder
-            .url(url)
-            .post(body)
-            .build()
+        try {
+            client = client.newBuilder()
+                .readTimeout(timeout)
+                .build()
 
-        val response = client.newCall(request).execute()
+            val request = builder
+                .url(url)
+                .post(body)
+                .build()
 
-        if (!response.isSuccessful) {
-            logger.info("$response")
+            val response = client.newCall(request).execute()
+
+            if (!response.isSuccessful) {
+                logger.error("$response")
+                return ""
+            }
+
+            return response.body?.string() ?: ""
+        } catch (e: IllegalArgumentException) {
+            logger.error("Failed to set timeout", e)
             return ""
         }
-
-        return response.body?.string() ?: ""
     }
 
     override fun autoComment(text: String): String {

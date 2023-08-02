@@ -55,4 +55,5 @@ async def chat(data: MessageInput):
         "data": [json.dumps(input), 2000, 0.1, 0.1, "chatglm_4bit_seldon"]
     }).json()
 
+    print(response["data"][0])
     return response["data"][0]

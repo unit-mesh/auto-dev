@@ -1,6 +1,8 @@
 package cc.unitmesh.devti.llms
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.NonCancellable.cancel
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
@@ -12,6 +14,8 @@ interface LLMProvider {
         return callbackFlow {
             val prompt = prompt(promptText)
             trySend(prompt)
+
+            awaitClose()
         }
     }
 }

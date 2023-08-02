@@ -38,13 +38,18 @@ object ErrorMessageProcessor {
         lineTo: Int?,
         consoleEditor: Editor?
     ): String? {
-        val editor = consoleEditor ?: getConsoleEditor(project) ?: return null
+        var editor = consoleEditor
+        if (editor == null) editor = getConsoleEditor(project)
+        if (editor == null) return null
+
         val document = editor.document
 
-        val startOffset = document.getLineStartOffset(lineFrom)
-        val endOffset = document.getLineEndOffset(lineTo ?: (document.lineCount - 1))
-
-        return document.getText(TextRange(startOffset, endOffset))
+        return document.getText(
+            TextRange(
+                document.getLineStartOffset(lineFrom),
+                document.getLineEndOffset(lineTo ?: (document.lineCount - 1))
+            )
+        )
     }
 
     private fun getConsoleEditor(project: Project): Editor? {
