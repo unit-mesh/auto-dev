@@ -9,6 +9,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
+import com.intellij.openapi.wm.ex.ToolWindowEx
 import com.intellij.ui.content.ContentFactory
 
 class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
@@ -19,10 +20,12 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
     private val contentFactory = ApplicationManager.getApplication().getService(ContentFactory::class.java)
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
+        val disposable = toolWindow.disposable
         val chatCodingService = ChatCodingService(ChatActionType.CHAT, project)
-        val contentPanel = ChatCodingComponent(chatCodingService)
+        val contentPanel = ChatCodingComponent(chatCodingService, disposable)
         val content = contentFactory.createContent(contentPanel, AutoDevBundle.message("autodev.flow"), false)
 
-        toolWindow.contentManager.addContent(content)
+        val toolWindowEx = toolWindow as ToolWindowEx
+        toolWindowEx.contentManager.addContent(content)
     }
 }

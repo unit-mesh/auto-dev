@@ -7,19 +7,12 @@ import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.llms.openai.OpenAIProvider
 import cc.unitmesh.devti.provider.ContextPrompter
-import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.wm.ToolWindowManager
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiNameIdentifierOwner
-import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.psi.util.PsiUtilBase
 
 abstract class ChatBaseAction : AnAction() {
     companion object {
@@ -66,10 +59,10 @@ abstract class ChatBaseAction : AnAction() {
         activeAction: (service: ChatCodingService, panel: ChatCodingComponent) -> Unit
     ) {
         val chatCodingService = ChatCodingService(getActionType(), project)
-        val contentPanel = ChatCodingComponent(chatCodingService)
 
         val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolWindowFactory.Util.id)
         val contentManager = toolWindowManager?.contentManager
+        val contentPanel = ChatCodingComponent(chatCodingService, toolWindowManager?.disposable)
 
         val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
 

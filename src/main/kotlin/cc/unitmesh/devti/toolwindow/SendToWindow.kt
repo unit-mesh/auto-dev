@@ -11,10 +11,10 @@ import com.intellij.openapi.wm.ToolWindowManager
 
 fun sendToChat(project: Project, runnable: (ChatCodingComponent) -> Unit) {
     val chatCodingService = ChatCodingService(ChatActionType.CHAT, project)
-    val contentPanel = ChatCodingComponent(chatCodingService)
 
     val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolWindowFactory.Util.id)
     val contentManager = toolWindowManager?.contentManager
+    val contentPanel = ChatCodingComponent(chatCodingService, toolWindowManager?.disposable)
 
     val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
 
@@ -31,7 +31,9 @@ fun sendToChat(project: Project, actionType: ChatActionType, prompter: ContextPr
     val toolWindowManager =
         ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolWindowFactory.Util.id) ?: return
     val chatCodingService = ChatCodingService(actionType, project)
-    val contentPanel = ChatCodingComponent(chatCodingService)
+
+    val contentPanel = ChatCodingComponent(chatCodingService, toolWindowManager?.disposable)
+
     val contentManager = toolWindowManager.contentManager
     val content = contentManager.factory.createContent(contentPanel, chatCodingService.getLabel(), false)
 
@@ -53,7 +55,7 @@ fun chatWithSelection(
     val contentManager = toolWindowManager?.contentManager
 
     val chatCodingService = ChatCodingService(chatActionType, project)
-    val contentPanel = ChatCodingComponent(chatCodingService)
+    val contentPanel = ChatCodingComponent(chatCodingService, toolWindowManager?.disposable)
     val content = contentManager?.factory?.createContent(contentPanel, "Chat with this", false)
 
     contentManager?.removeAllContents(true)

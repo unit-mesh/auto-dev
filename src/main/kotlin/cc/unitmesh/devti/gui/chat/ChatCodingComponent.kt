@@ -1,8 +1,9 @@
 package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.gui.block.whenDisposed
 import cc.unitmesh.devti.provider.ContextPrompter
-import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.ui.NullableComponent
@@ -13,7 +14,6 @@ import com.intellij.ui.OnePixelSplitter
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
-import com.intellij.ui.components.labels.LinkLabel
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBFont
@@ -29,7 +29,7 @@ import javax.swing.JProgressBar
 import javax.swing.ScrollPaneConstants
 
 
-class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JBPanel<ChatCodingComponent>(),
+class ChatCodingComponent(private val chatCodingService: ChatCodingService, disposable: Disposable?) : JBPanel<ChatCodingComponent>(),
     NullableComponent {
     companion object {
         private val logger: Logger = logger<ChatCodingComponent>()
@@ -68,6 +68,10 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
         mainPanel.add(splitter)
         myScrollPane.verticalScrollBar.autoscrolls = true
         addQuestionArea()
+
+        disposable?.whenDisposed(disposable) {
+            myList.removeAll()
+        }
     }
 
     fun addMessage(message: String, isMe: Boolean = false, displayPrompt: String = "") {
@@ -180,21 +184,11 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService) : JB
         actionPanel.add(searchTextArea, BorderLayout.CENTER)
 
         val actionButtons = JPanel(BorderLayout())
-        val clearChat = LinkLabel<String>(AutoDevBundle.message("devti.chat.clear"), null)
-        clearChat.addMouseListener(object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent?) {
-                myList.removeAll()
-                updateUI()
-            }
-        })
-
-        clearChat.border = JBEmptyBorder(5, 5, 5, 5)
 
         val button = JButton(AutoDevBundle.message("devti.chat.send"))
         button.addActionListener(listener)
 
         actionButtons.add(button, BorderLayout.NORTH)
-        actionButtons.add(clearChat, BorderLayout.SOUTH)
         actionPanel.add(actionButtons, BorderLayout.EAST)
 
         mainPanel.add(actionPanel, BorderLayout.SOUTH)

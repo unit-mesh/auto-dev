@@ -42,7 +42,7 @@ class CodeCompletionIntention : AbstractChatIntention() {
         }
 
         val element = PsiUtilBase.getElementAtCaret(editor) ?: file
-        val suffix = document.getText(TextRange(offset, suffixEnd))
+//        val suffix = document.getText(TextRange(offset, suffixEnd))
 
         val request = CodeCompletionRequest.create(editor, offset, element, prefix) ?: return
         val task = CodeCompletionTask(request)

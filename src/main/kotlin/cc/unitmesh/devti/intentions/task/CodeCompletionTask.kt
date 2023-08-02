@@ -67,7 +67,13 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
     }
 
     private fun promptText(): String {
-        val prefix = request.documentContent.substring(0, request.offset)
+        val documentLength = request.documentContent.length
+        val prefix = if (request.offset > documentLength) {
+            request.documentContent
+        } else {
+            request.documentContent.substring(0, request.offset)
+        }
+
         val prompt = if (chunksString == null) {
             "complete code for given code: \n$prefix"
         } else {

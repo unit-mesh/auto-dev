@@ -30,7 +30,7 @@ class ReleaseNoteSuggestionAction : AnAction() {
         val toolWindowManager = ToolWindowManager.getInstance(project!!).getToolWindow(AutoDevToolWindowFactory.Util.id)
         val contentManager = toolWindowManager?.contentManager
         val chatCodingService = ChatCodingService(actionType, project)
-        val contentPanel = ChatCodingComponent(chatCodingService)
+        val contentPanel = ChatCodingComponent(chatCodingService, toolWindowManager?.disposable)
         val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
 
         contentManager?.removeAllContents(true)
