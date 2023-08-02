@@ -2,7 +2,10 @@ package cc.unitmesh.devti.settings
 
 import com.intellij.json.JsonLanguage
 import com.intellij.openapi.editor.SpellCheckingEditorCustomizationProvider
+import com.intellij.openapi.editor.colors.EditorColorsUtil
 import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.LanguageTextField
 import com.intellij.ui.components.JBLabel
@@ -27,14 +30,18 @@ class AppSettingsComponent {
     val language = ComboBox(HUMAN_LANGUAGES)
 
     private var myEditor: EditorEx? = null
-    var customEnginePrompt = object : LanguageTextField(JsonLanguage.INSTANCE, null, "") {
+    val project = ProjectManager.getInstance().openProjects.firstOrNull()
+    var customEnginePrompt = object : LanguageTextField(JsonLanguage.INSTANCE, project, "") {
+
         override fun createEditor(): EditorEx {
             myEditor = super.createEditor().apply {
                 setShowPlaceholderWhenFocused(true)
                 setHorizontalScrollbarVisible(true)
                 setVerticalScrollbarVisible(true)
                 setPlaceholder("Enter custom prompt here")
-                SpellCheckingEditorCustomizationProvider.getInstance().disabledCustomization?.customize(this)
+
+                val scheme = EditorColorsUtil.getColorSchemeForBackground(this.colorsScheme.defaultBackground)
+                this.colorsScheme = this.createBoundColorSchemeDelegate(scheme)
             }
 
             return myEditor!!
