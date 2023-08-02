@@ -37,7 +37,7 @@
 
         <intentionAction>
             <className>cc.unitmesh.devti.intentions.AIAssistantIntention</className>
-            <categoryKey>Intention.category.llm</categoryKey>
+            <categoryKey>intention.category.llm</categoryKey>
         </intentionAction>
 
 
