@@ -14,7 +14,8 @@ import java.awt.*
 import javax.swing.*
 import kotlin.jvm.internal.Ref
 
-class MessageView(private val message: String, role: ChatRole, val displayText: String) : JBPanel<MessageView>() {
+class MessageView(private val message: String, role: ChatRole, private val displayText: String) :
+    JBPanel<MessageView>() {
     private val component: DisplayComponent = DisplayComponent(message)
     private var answer: String? = null
     private var centerPanel: JPanel = JPanel(VerticalLayout(JBUI.scale(8)))
@@ -82,7 +83,8 @@ class MessageView(private val message: String, role: ChatRole, val displayText: 
 
     fun doneContent() {
         val displayText = component.text
-        ApplicationManager.getApplication().invokeLater() {
+
+        ApplicationManager.getApplication().invokeLater {
             centerPanel.remove(component)
 
             val message = SimpleMessage(displayText, displayText, ChatRole.Assistant)
