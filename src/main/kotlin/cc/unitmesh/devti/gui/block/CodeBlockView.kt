@@ -64,12 +64,9 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
     fun updateOrCreateCodeView(): CodePartEditorInfo? {
         val code: Code = getBlock().code
         if (editorInfo == null) {
+            val graphProperty = PropertyGraph(null, false).property(code.text)
             val editorInfo: CodePartEditorInfo = createCodeViewer(
-                project,
-                PropertyGraph(null as String?, false).property(code.text),
-                disposable,
-                code.language,
-                getBlock().getMessage()
+                project, graphProperty, disposable, code.language, getBlock().getMessage()
             )
             this.editorInfo = editorInfo
         } else {
