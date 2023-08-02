@@ -155,7 +155,12 @@
             <override-text place="EditorPopup" text="Accept"/>
         </action>
 
-        <group id="org.intellij.sdk.action.GroupedActions" popup="true" text="AutoDev" description="AutoDev">
+        <group id="AutoDevIntentionsActionGroup" class="cc.unitmesh.devti.intentions.IntentionsActionGroup"
+               icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT" searchable="false">
+            <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
+        </group>
+
+        <group id="org.intellij.sdk.action.GroupedActions" popup="true" text="AutoDev Chat" description="AutoDev chat">
             <action id="cc.unitmesh.devti.actions.chat.ChatBotExplainAction"
                     class="cc.unitmesh.devti.actions.chat.ChatBotExplainAction" text="Explain This"
                     description="Ask AutoDev about this code">
@@ -217,11 +222,6 @@
 
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
-
-        <group id="AutoDevIntentionsActionGroup" class="cc.unitmesh.devti.intentions.IntentionsActionGroup"
-               icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT" searchable="false">
-            <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
-        </group>
 
         <group id="AutoDev.ToolWindow.Snippet.Toolbar">
             <action id="AutoDev.ToolWindow.Snippet.CopyToClipboard"
