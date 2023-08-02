@@ -67,11 +67,11 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
     }
 
     private fun promptText(): String {
-        val documentLength = request.documentContent.length
+        val documentLength = request.prefixText.length
         val prefix = if (request.offset > documentLength) {
-            request.documentContent
+            request.prefixText
         } else {
-            request.documentContent.substring(0, request.offset)
+            request.prefixText.substring(0, request.offset)
         }
 
         val prompt = if (chunksString == null) {

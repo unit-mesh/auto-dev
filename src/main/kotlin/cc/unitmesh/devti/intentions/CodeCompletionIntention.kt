@@ -42,15 +42,11 @@ class CodeCompletionIntention : AbstractChatIntention() {
         }
 
         val element = PsiUtilBase.getElementAtCaret(editor) ?: file
-//        val suffix = document.getText(TextRange(offset, suffixEnd))
+        val suffix = document.getText(TextRange(offset, suffixEnd))
 
-        val request = CodeCompletionRequest.create(editor, offset, element, prefix) ?: return
+        val request = CodeCompletionRequest.create(editor, offset, element, prefix, suffix) ?: return
         val task = CodeCompletionTask(request)
         ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
-
-//        val llmInlayManager = LLMInlayManager.getInstance()
-//        llmInlayManager
-//            .editorModified(editor, offset)
     }
 
     companion object {

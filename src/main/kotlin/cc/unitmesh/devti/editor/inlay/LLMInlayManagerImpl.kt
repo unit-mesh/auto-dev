@@ -137,7 +137,7 @@ class LLMInlayManagerImpl : LLMInlayManager {
     @RequiresBackgroundThread
     private fun requestCompletions(editor: Editor, changeOffset: Int, onFirstCompletion: Consumer<String>?) {
         val element = PsiUtilBase.getElementAtCaret(editor) ?: return
-        val request = CodeCompletionRequest.create(editor, changeOffset, element, null) ?: return
+        val request = CodeCompletionRequest.create(editor, changeOffset, element, null, null) ?: return
 
         KEY_LAST_REQUEST[editor] = request
         CodeCompletionTask(request).execute(onFirstCompletion)

@@ -14,14 +14,15 @@ class CodeCompletionRequest(
     val useTabIndents: Boolean,
     val tabWidth: Int,
     val fileUri: VirtualFile,
-    val documentContent: String,
+    val prefixText: String,
     val offset: Int,
     val documentVersion: Long,
     val element: PsiElement,
-    val editor: Editor
+    val editor: Editor,
+    val suffixText: String
 ) : Disposable {
     companion object {
-        fun create(editor: Editor, offset: Int, element: PsiElement, prefix: String?): CodeCompletionRequest? {
+        fun create(editor: Editor, offset: Int, element: PsiElement, prefix: String?, suffix: String?): CodeCompletionRequest? {
             val project = editor.project ?: return null
             val document = editor.document
             val file = PsiDocumentManager.getInstance(project).getPsiFile(document) ?: return null
@@ -34,6 +35,10 @@ class CodeCompletionRequest(
                 document.modificationStamp
             }
 
+            val prefixText = prefix ?: document.text.substring(0, offset)
+            val offset = offset - prefixText.length
+            val suffixText = suffix ?: document.text.substring(offset)
+
             return CodeCompletionRequest(
                 project,
                 useTabs,
@@ -43,7 +48,8 @@ class CodeCompletionRequest(
                 offset,
                 documentVersion,
                 element,
-                editor
+                editor,
+                suffixText
             )
 
         }
