@@ -21,7 +21,7 @@ class GitHubIssue(val repoUrl: String, val token: String) : Kanban {
 
     override fun getProjectInfo(): SimpleProjectInfo {
         val repo = gitHub.getRepository(repoUrl)
-        return SimpleProjectInfo(repo.fullName, repo.name, repo.description)
+        return SimpleProjectInfo(repo.fullName, repo.name, repo.description ?: "")
     }
 
     override fun getStories(): List<SimpleStory> {
