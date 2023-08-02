@@ -7,7 +7,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl
-import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
@@ -22,7 +22,6 @@ import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.fileTypes.UnknownFileType
 import com.intellij.openapi.observable.properties.GraphProperty
 import com.intellij.openapi.observable.properties.PropertyGraph
-import com.intellij.openapi.observable.util.whenDisposed
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
@@ -31,7 +30,6 @@ import com.intellij.util.concurrency.annotations.RequiresReadLock
 import com.intellij.util.ui.JBUI
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.JComponent
-import kotlin.jvm.internal.Ref
 
 class CodeBlockView(private val block: CodeBlock, private val project: Project, private val disposable: Disposable) :
     MessageBlockView {
@@ -164,7 +162,7 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
 
             val toolbarActionGroup = ActionUtil.getActionGroup("AutoDev.ToolWindow.Snippet.Toolbar")
             toolbarActionGroup?.let {
-                val jComponent: ActionToolbarImpl =
+                val toolbar: ActionToolbarImpl =
                     object : ActionToolbarImpl(ActionPlaces.TOOLBAR, toolbarActionGroup, false) {
                         override fun updateUI() {
                             super.updateUI()
@@ -172,10 +170,10 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
                         }
                     }
 
-                jComponent.setBackground(editor.backgroundColor)
-                jComponent.setOpaque(true)
-                jComponent.setTargetComponent(editor.contentComponent)
-                editor.headerComponent = jComponent
+                toolbar.setBackground(editor.backgroundColor)
+                toolbar.setOpaque(true)
+                toolbar.setTargetComponent(editor.contentComponent)
+                editor.headerComponent = toolbar
             }
 
             editor.scrollPane.setBorder(JBUI.Borders.empty())
@@ -192,13 +190,9 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
 
 @RequiresReadLock
 fun VirtualFile.findDocument(): Document? {
-    val ref: Ref.ObjectRef<Document?> = Ref.ObjectRef()
-    runReadAction {
-        val instance = FileDocumentManager.getInstance()
-        ref.element = instance.getDocument(this)
+    return ReadAction.compute<Document, Throwable> {
+        FileDocumentManager.getInstance().getDocument(this)
     }
-
-    return ref.element
 }
 
 fun Disposable.whenDisposed(
