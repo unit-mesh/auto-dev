@@ -11,6 +11,7 @@ import cc.unitmesh.devti.llms.ConnectorFactory
 import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
 import cc.unitmesh.devti.runconfig.options.AutoDevConfigurationOptions
 import cc.unitmesh.devti.settings.AutoDevSettingsState
+import cc.unitmesh.devti.toolwindow.sendToChat
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
@@ -46,21 +47,9 @@ class AutoDevRunProfileState(
             logger.error("current Language don't implementation DevFlow")
             return null
         }
-
         val openAIRunner = ConnectorFactory.getInstance().connector(project)
 
-        val chatCodingService = ChatCodingService(ChatActionType.CHAT, project)
-        val contentPanel = ChatCodingComponent(chatCodingService)
-
-        val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolWindowFactory.Util.id)
-        val contentManager = toolWindowManager?.contentManager
-
-        val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
-
-        contentManager?.removeAllContents(true)
-        contentManager?.addContent(content!!)
-
-        toolWindowManager?.activate {
+        sendToChat(project) { contentPanel ->
             flowProvider.initContext(gitHubIssue, openAIRunner, contentPanel, project)
             ProgressManager.getInstance().run(executeCrud(flowProvider))
         }
