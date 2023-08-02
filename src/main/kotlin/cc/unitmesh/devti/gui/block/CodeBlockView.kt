@@ -12,6 +12,9 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.EditorKind
+import com.intellij.openapi.editor.colors.EditorColorsListener
+import com.intellij.openapi.editor.colors.EditorColorsManager
+import com.intellij.openapi.editor.colors.EditorColorsScheme
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.ex.EditorMarkupModel
 import com.intellij.openapi.editor.ex.FocusChangeListener
@@ -27,11 +30,12 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.util.concurrency.annotations.RequiresReadLock
+import com.intellij.util.messages.Topic
 import com.intellij.util.ui.JBUI
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.JComponent
 
-class CodeBlockView(private val block: CodeBlock, private val project: Project, private val disposable: Disposable) :
+open class CodeBlockView(private val block: CodeBlock, private val project: Project, private val disposable: Disposable) :
     MessageBlockView {
     private var editorInfo: CodePartEditorInfo? = null
 
@@ -157,10 +161,10 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
             val editor: EditorEx =
                 createCodeViewerEditor(project, createCodeViewerFile as LightVirtualFile, document, disposable)
 
-            val toolbarActionGroup = ActionUtil.getActionGroup("AutoDev.ToolWindow.Snippet.Toolbar")
-            toolbarActionGroup?.let {
+            val toolbarActionGroup = ActionUtil.getActionGroup("AutoDev.ToolWindow.Snippet.Toolbar")!!
+            toolbarActionGroup.let {
                 val toolbar: ActionToolbarImpl =
-                    object : ActionToolbarImpl(ActionPlaces.TOOLBAR, toolbarActionGroup, false) {
+                    object : ActionToolbarImpl(ActionPlaces.MAIN_TOOLBAR, toolbarActionGroup, true) {
                         override fun updateUI() {
                             super.updateUI()
                             editor.component.setBorder(JBUI.Borders.empty())
@@ -171,6 +175,11 @@ class CodeBlockView(private val block: CodeBlock, private val project: Project, 
                 toolbar.setOpaque(true)
                 toolbar.setTargetComponent(editor.contentComponent)
                 editor.headerComponent = toolbar
+                val connect = project.messageBus.connect(disposable)
+                val topic: Topic<EditorColorsListener> = EditorColorsManager.TOPIC
+                connect.subscribe(topic, EditorColorsListener {
+                    toolbar.setBackground(editor.backgroundColor)
+                })
             }
 
             editor.scrollPane.setBorder(JBUI.Borders.empty())

@@ -219,6 +219,9 @@
         </action>
 
         <group id="AutoDev.ToolWindow.Snippet.Toolbar">
+            <action id="AutoDev.ToolWindow.Snippet.LanguageLabelAction"
+                    class="cc.unitmesh.devti.gui.snippet.AutoDevLanguageLabelAction"/>
+
             <action id="AutoDev.ToolWindow.Snippet.CopyToClipboard"
                     icon="AllIcons.Actions.Copy"
                     class="cc.unitmesh.devti.gui.snippet.AutoDevCopyToClipboardAction"/>
