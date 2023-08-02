@@ -7,12 +7,19 @@ import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.llms.openai.OpenAIProvider
 import cc.unitmesh.devti.provider.ContextPrompter
+import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.wm.ToolWindowManager
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiNameIdentifierOwner
+import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.PsiUtilBase
 
 abstract class ChatBaseAction : AnAction() {
     companion object {
@@ -72,6 +79,23 @@ abstract class ChatBaseAction : AnAction() {
         toolWindowManager?.activate {
             activeAction(chatCodingService, contentPanel)
         }
+    }
+
+    fun calculateFrontendElementToExplain(project: Project?, psiFile: PsiFile, range: TextRange): PsiElement? {
+        if (project == null || !psiFile.isValid) return null
+
+        val element = PsiUtilBase.getElementAtOffset(psiFile, range.startOffset)
+        if (InjectedLanguageManager.getInstance(project).isInjectedFragment(psiFile)) {
+            return psiFile
+        }
+
+        val injected = InjectedLanguageManager.getInstance(project).findInjectedElementAt(psiFile, range.startOffset)
+        if (injected != null) {
+            return injected.containingFile
+        }
+
+        val psiElement: PsiElement? = PsiTreeUtil.getParentOfType(element, PsiNameIdentifierOwner::class.java)
+        return psiElement ?: element
     }
 
     open fun getReplaceableAction(event: AnActionEvent): ((response: String) -> Unit)? {
