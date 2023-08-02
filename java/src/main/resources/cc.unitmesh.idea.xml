@@ -38,6 +38,12 @@
         <testContextProvider
                 language="JAVA"
                 implementation="cc.unitmesh.idea.service.JavaWriteTestService"/>
+
+        <aiAssistantIntention>
+            <className>cc.unitmesh.idea.action.AutoCrudAction</className>
+            <bundleName>messages.AutoDevBundle</bundleName>
+            <categoryKey>intention.category.llm</categoryKey>
+        </aiAssistantIntention>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

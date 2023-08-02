@@ -9,12 +9,7 @@ import cc.unitmesh.devti.provider.DevFlowProvider
 import com.intellij.openapi.project.Project
 
 class PythonAutoDevFlow : DevFlowProvider() {
-    override fun initContext(
-        kanban: Kanban,
-        aiRunner: LLMProvider,
-        component: ChatCodingComponent,
-        project: Project
-    ) {
+    override fun initContext(kanban: Kanban?, aiRunner: LLMProvider, component: ChatCodingComponent, project: Project) {
     }
 
     override fun getOrCreateStoryDetail(id: String): String {

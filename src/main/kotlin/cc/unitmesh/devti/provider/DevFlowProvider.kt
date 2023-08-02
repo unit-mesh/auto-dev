@@ -20,7 +20,7 @@ abstract class DevFlowProvider : LazyExtensionInstance<ContextPrompter>() {
         return implementationClass
     }
 
-    abstract fun initContext(kanban: Kanban, aiRunner: LLMProvider, component: ChatCodingComponent, project: Project)
+    abstract fun initContext(kanban: Kanban?, aiRunner: LLMProvider, component: ChatCodingComponent, project: Project)
     abstract fun getOrCreateStoryDetail(id: String): String
     abstract fun updateOrCreateDtoAndEntity(storyDetail: String)
     abstract fun fetchSuggestEndpoint(storyDetail: String): TargetEndpoint

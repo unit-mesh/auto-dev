@@ -9,7 +9,7 @@ import com.intellij.openapi.project.Project
 
 class JavaScriptAutoDevFlow : DevFlowProvider() {
     override fun initContext(
-        kanban: Kanban,
+        kanban: Kanban?,
         aiRunner: LLMProvider,
         component: ChatCodingComponent,
         project: Project

@@ -30,14 +30,14 @@ class JvmAutoDevFlow : DevFlowProvider() {
     private var selectedControllerCode = ""
     private var isNewController = false
 
-    private lateinit var kanban: Kanban
+    private var kanban: Kanban? = null
     private lateinit var connector: LLMProvider
     private lateinit var ui: ChatCodingComponent
     private lateinit var processor: JavaSpringCodeCreator
     private lateinit var promptStrategy: PromptStrategy
 
     override fun initContext(
-        kanban: Kanban,
+        kanban: Kanban?,
         aiRunner: LLMProvider,
         component: ChatCodingComponent,
         project: Project
@@ -53,12 +53,12 @@ class JvmAutoDevFlow : DevFlowProvider() {
      * Step 1: check story detail is valid, if not, fill story detail
      */
     override fun getOrCreateStoryDetail(id: String): String {
-        val simpleProject = kanban.getProjectInfo()
-        val story = kanban.getStoryById(id)
+        val simpleProject = kanban?.getProjectInfo() ?: return ""
+        val story = kanban!!.getStoryById(id)
 
         // 1. check story detail is valid, if not, fill story detail
         var storyDetail = story.description
-        if (!kanban.isValidStory(storyDetail)) {
+        if (!kanban!!.isValidStory(storyDetail)) {
             logger.info("story detail is not valid, fill story detail")
 
             storyDetail = run {
@@ -67,7 +67,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
             }
 
             val newStory = SimpleStory(story.id, story.title, storyDetail)
-            kanban.updateStoryDetail(newStory)
+            kanban!!.updateStoryDetail(newStory)
         }
 
         logger.info("user story detail: $storyDetail")
