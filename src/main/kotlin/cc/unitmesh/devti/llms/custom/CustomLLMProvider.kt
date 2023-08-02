@@ -6,9 +6,16 @@ import cc.unitmesh.devti.prompting.model.CustomPromptConfig
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+
+@Serializable
+data class CustomRequest(val instruction: String, val input: String)
 
 
 @Service(Service.Level.PROJECT)
@@ -31,15 +38,11 @@ class CustomLLMProvider(val project: Project) : CodeCopilotProvider {
     }
 
     fun prompt(instruction: String, input: String): String {
-        val body = okhttp3.RequestBody.create(
-            "application/json; charset=utf-8".toMediaTypeOrNull(),
-            """
-                {
-                    "instruction": "$instruction",
-                    "input": "$input",
-                }
-            """.trimIndent()
-        )
+        // encode the request as JSON with kotlinx.serialization
+        val body = Json.encodeToString(CustomRequest(instruction, input))
+            .toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
+
+        logger.warn("Requesting from $body")
 
         val builder = Request.Builder()
         if (key.isNotEmpty()) {
@@ -54,7 +57,7 @@ class CustomLLMProvider(val project: Project) : CodeCopilotProvider {
         val response = client.newCall(request).execute()
 
         if (!response.isSuccessful) {
-            logger.error("$response")
+            logger.info("$response")
             return ""
         }
 
