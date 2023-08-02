@@ -2,7 +2,7 @@ package cc.unitmesh.idea.service
 
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
-import cc.unitmesh.devti.provider.TestFileContext
+import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.devti.provider.WriteTestService
 import com.intellij.lang.Language
 import com.intellij.openapi.application.ReadAction

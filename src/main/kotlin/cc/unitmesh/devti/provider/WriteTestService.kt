@@ -1,11 +1,11 @@
 package cc.unitmesh.devti.provider
 
 import cc.unitmesh.devti.context.ClassContext
+import cc.unitmesh.devti.provider.context.TestFileContext
 import com.intellij.execution.Executor
 import com.intellij.execution.ExecutorRegistryImpl
 import com.intellij.execution.RunManager
 import com.intellij.ide.actions.runAnything.RunAnythingPopupUI
-import com.intellij.lang.Language
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.extensions.ExtensionPointName
@@ -17,14 +17,6 @@ import com.intellij.serviceContainer.LazyExtensionInstance
 import com.intellij.util.xmlb.annotations.Attribute
 import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration
 
-data class TestFileContext(
-    val isNewFile: Boolean,
-    val file: VirtualFile,
-    val relatedClasses: List<ClassContext> = emptyList(),
-    val testClassName: String?,
-    val language: Language,
-)
-
 abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
     @Attribute("language")
     var language: String? = null
@@ -32,12 +24,8 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
     @Attribute("implementation")
     var implementationClass: String? = null
 
-    override fun getImplementationClassName(): String? {
-        return implementationClass
-    }
-
+    override fun getImplementationClassName(): String? = implementationClass
     abstract fun isApplicable(element: PsiElement): Boolean
-
     abstract fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext?
     abstract fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext>
 
@@ -76,8 +64,7 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
 
     companion object {
         val log = logger<WriteTestService>()
-        private val EP_NAME: ExtensionPointName<WriteTestService> =
-            ExtensionPointName.create("cc.unitmesh.testContextProvider")
+        private val EP_NAME: ExtensionPointName<WriteTestService> = ExtensionPointName.create("cc.unitmesh.testContextProvider")
 
         fun context(psiElement: PsiElement): WriteTestService? {
             val lang = psiElement.language.displayName

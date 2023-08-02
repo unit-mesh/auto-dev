@@ -18,7 +18,6 @@ import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.refactoring.suggested.range
-import kotlin.jvm.internal.Intrinsics
 import kotlin.math.max
 
 object ErrorMessageProcessor {
@@ -68,28 +67,24 @@ object ErrorMessageProcessor {
             extractErrorPlaces(project, consoleLineFrom, consoleLineTo, consoleEditor)
 
         val errorPromptConstructor = ErrorPromptConstructor(LLM_MAX_TOKEN, TokenizerImpl.INSTANCE)
-
         return errorPromptConstructor.makePrompt(extractedText, extractedErrorPlaces)
     }
 
     private fun getFileHyperlinkInfo(rangeHighlighter: RangeHighlighter): FileHyperlinkInfo? {
         val hyperlinkInfo = EditorHyperlinkSupport.getHyperlinkInfo(rangeHighlighter)
-        return when (hyperlinkInfo) {
-            is FileHyperlinkInfo -> hyperlinkInfo
-            else -> null
-        }
+        if (hyperlinkInfo !is FileHyperlinkInfo) return null
+
+        return hyperlinkInfo
     }
 
     private fun extractErrorPlaceFromHighlighter(
         consoleText: String, highlighter: RangeHighlighter, project: Project
     ): ErrorPlace? {
         val fileHyperlinkInfo: FileHyperlinkInfo = getFileHyperlinkInfo(highlighter) ?: return null
-
         val descriptor = fileHyperlinkInfo.descriptor ?: return null
+
         val virtualFile: VirtualFile = descriptor.file
-
         val lineNumber = max(0.0, descriptor.line.toDouble()).toInt()
-
         val range = highlighter.range!!
 
         val hyperlinkText = consoleText.substring(range.startOffset, range.endOffset)
@@ -97,13 +92,7 @@ object ErrorMessageProcessor {
         val isProjectFile =
             projectFileIndex.isInProject(virtualFile, project) && !projectFileIndex.isInLibrary(virtualFile)
 
-        return ErrorPlace(
-            hyperlinkText,
-            lineNumber,
-            isProjectFile,
-            virtualFile,
-            project
-        )
+        return ErrorPlace(hyperlinkText, lineNumber, isProjectFile, virtualFile, project)
     }
 
     private fun extractErrorPlaces(
@@ -130,10 +119,7 @@ object ErrorMessageProcessor {
     }
 
     private fun getExecutionConsole(project: Project): ExecutionConsole? {
-        val runContentManager: RunContentManager = RunContentManager.getInstance(project)
-        Intrinsics.checkNotNullExpressionValue(runContentManager, "getInstance(project)")
-        val selectedContent: RunContentDescriptor? = runContentManager.selectedContent
-
+        val selectedContent: RunContentDescriptor? = RunContentManager.getInstance(project).selectedContent
         return selectedContent?.executionConsole
     }
 }

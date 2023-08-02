@@ -7,7 +7,7 @@ import cc.unitmesh.devti.intentions.WriteTestIntention
 import cc.unitmesh.devti.llms.ConnectorFactory
 import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.provider.WriteTestService
-import cc.unitmesh.devti.provider.TestFileContext
+import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
@@ -53,11 +53,11 @@ class TestCodeGenTask(
 
         if (testContext == null) {
             if (writeTestService == null) {
-                logger<TestCodeGenTask>().error("Could not find WriteTestService for: ${request.file}")
+                logger.error("Could not find WriteTestService for: ${request.file}")
                 return
             }
 
-            logger<TestCodeGenTask>().error("Failed to create test file for: ${request.file}")
+            logger.error("Failed to create test file for: ${request.file}")
             return
         }
 
@@ -101,18 +101,15 @@ class TestCodeGenTask(
         val flow: Flow<String> =
             ConnectorFactory.getInstance().connector(request.project).stream(prompter, "")
 
-        logger<WriteTestIntention>().warn("Prompt: $prompter")
+        logger<WriteTestIntention>().info("Prompt: $prompter")
 
         indicator.fraction = 0.8
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.prompt")
 
         runBlocking {
             writeTestToFile(request.project, flow, testContext)
-
-            navigateTestFile(testContext.file, request.editor, request.project)
-
+            navigateTestFile(testContext.file, request.project)
             writeTestService?.runTest(request.project, testContext.file)
-
             indicator.fraction = 1.0
         }
     }
@@ -123,11 +120,9 @@ class TestCodeGenTask(
         context: TestFileContext,
     ) {
         val suggestion = StringBuilder()
-        flow.collect {
-            suggestion.append(it)
-        }
+        flow.collect(suggestion::append)
 
-        logger<WriteTestIntention>().warn("LLM suggestion: $suggestion")
+        logger.info("LLM suggestion: $suggestion")
 
         val modifier = CodeModifierProvider().modifier(context.language)
             ?: throw IllegalStateException("Unsupported language: ${context.language}")
@@ -137,7 +132,7 @@ class TestCodeGenTask(
         }
     }
 
-    fun navigateTestFile(testFile: VirtualFile, editor: Editor, project: Project) {
+    private fun navigateTestFile(testFile: VirtualFile, project: Project) {
         ApplicationManager.getApplication().invokeLater {
             val fileEditorManager = FileEditorManager.getInstance(project)
             val editors = fileEditorManager.openFile(testFile, true)
@@ -147,5 +142,9 @@ class TestCodeGenTask(
                 fileEditorManager.setSelectedEditor(testFile, "text-editor")
             }
         }
+    }
+
+    companion object {
+        private val logger = logger<TestCodeGenTask>()
     }
 }

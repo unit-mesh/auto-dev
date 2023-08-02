@@ -23,10 +23,8 @@ import kotlinx.coroutines.launch
 import java.util.function.Consumer
 import kotlin.jvm.internal.Ref
 
-
-class CodeCompletionTask(
-    private val request: CompletionTaskRequest,
-) : Task.Backgroundable(request.project, AutoDevBundle.message("intentions.chat.code.complete.name")) {
+class CodeCompletionTask(private val request: CompletionTaskRequest) :
+    Task.Backgroundable(request.project, AutoDevBundle.message("intentions.chat.code.complete.name")) {
 
     private val connectorFactory = ConnectorFactory.getInstance()
 
@@ -55,13 +53,7 @@ class CodeCompletionTask(
                 suggestion.append(it)
                 invokeLater {
                     WriteCommandAction.runWriteCommandAction(project, codeMessage, writeActionGroupId, {
-                        insertStringAndSaveChange(
-                            project,
-                            it,
-                            editor.document,
-                            currentOffset.element,
-                            false
-                        )
+                        insertStringAndSaveChange(project, it, editor.document, currentOffset.element, false)
                     })
 
                     currentOffset.element += it.length
@@ -113,12 +105,12 @@ class CodeCompletionTask(
             document.insertString(startOffset, suggestion)
             PsiDocumentManager.getInstance(project).commitDocument(document)
 
-            if (withReformat) {
-                val psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document)
-                psiFile?.let { file ->
-                    val reformatRange = TextRange(startOffset, startOffset + suggestion.length)
-                    CodeStyleManager.getInstance(project).reformatText(file, listOf(reformatRange))
-                }
+            if (!withReformat) return
+
+            val psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document)
+            psiFile?.let { file ->
+                val reformatRange = TextRange(startOffset, startOffset + suggestion.length)
+                CodeStyleManager.getInstance(project).reformatText(file, listOf(reformatRange))
             }
         }
     }

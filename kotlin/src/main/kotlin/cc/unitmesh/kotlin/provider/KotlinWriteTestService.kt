@@ -2,10 +2,9 @@ package cc.unitmesh.kotlin.provider
 
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
-import cc.unitmesh.devti.provider.TestFileContext
+import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.devti.provider.WriteTestService
 import cc.unitmesh.kotlin.context.KotlinClassContextBuilder
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
@@ -22,9 +21,7 @@ import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.idea.quickfix.createFromUsage.callableBuilder.getReturnTypeReference
 import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlinx.serialization.compiler.resolve.toClassDescriptor
 import java.io.File
-import kotlin.jvm.internal.Ref
 
 class KotlinWriteTestService : WriteTestService() {
     companion object {
