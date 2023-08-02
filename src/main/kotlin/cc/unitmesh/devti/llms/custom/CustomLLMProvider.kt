@@ -26,7 +26,6 @@ class CustomLLMProvider(val project: Project) : CodeCopilotProvider {
 
     private val logger = logger<CustomLLMProvider>()
 
-
     override fun prompt(promptText: String): String {
         return this.prompt(promptText, "")
     }
