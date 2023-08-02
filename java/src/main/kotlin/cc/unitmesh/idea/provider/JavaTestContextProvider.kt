@@ -10,7 +10,7 @@ import com.intellij.openapi.project.Project
 
 open class JavaTestContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
-        return creationContext.action == ChatActionType.WRITE_TEST && creationContext.sourceFile?.language is JavaLanguage
+        return creationContext.action == ChatActionType.GENERATE_TEST && creationContext.sourceFile?.language is JavaLanguage
     }
 
     open fun langFileSuffix() = "java"

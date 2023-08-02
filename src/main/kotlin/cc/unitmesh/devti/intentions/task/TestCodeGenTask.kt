@@ -27,7 +27,6 @@ import com.intellij.psi.PsiFile
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
-import kotlin.jvm.internal.Ref
 
 class TestCodeGenRequest(
     val file: PsiFile,
@@ -40,7 +39,7 @@ class TestCodeGenRequest(
 class TestCodeGenTask(
     val request: TestCodeGenRequest
 ) : Task.Backgroundable(request.project, AutoDevBundle.message("intentions.chat.code.test.name")) {
-    private val actionType = ChatActionType.WRITE_TEST
+    private val actionType = ChatActionType.GENERATE_TEST
     private val lang = request.file.language.displayName
     private val writeTestService = WriteTestService.context(request.element)
 

@@ -37,7 +37,7 @@ data class CustomPromptConfig(
             autoComment = CustomPromptItem(EXPLAIN.instruction(), "{code}"),
             codeReview = CustomPromptItem(REVIEW.instruction(), "{code}"),
             refactor = CustomPromptItem(REFACTOR.instruction(), "{code}"),
-            writeTest = CustomPromptItem(WRITE_TEST.instruction(), "{code}"),
+            writeTest = CustomPromptItem(GENERATE_TEST.instruction(), "{code}"),
 
             mapOf(
                 "controller" to "",

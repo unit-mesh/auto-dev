@@ -6,7 +6,7 @@ enum class ChatActionType {
     EXPLAIN,
     REVIEW,
     CODE_COMPLETE,
-    WRITE_TEST,
+    GENERATE_TEST,
     GEN_COMMIT_MESSAGE,
     FIX_ISSUE,
     CREATE_DDL,
@@ -22,7 +22,7 @@ enum class ChatActionType {
             REVIEW -> "Code Review given following $lang code"
             REFACTOR -> "Refactor the given $lang code"
             CODE_COMPLETE -> "Complete $lang code, return rest code, no explaining"
-            WRITE_TEST -> "Write unit test for given $lang code"
+            GENERATE_TEST -> "Write unit test for given $lang code"
             FIX_ISSUE -> "Help me fix this issue"
             GEN_COMMIT_MESSAGE -> """suggest 10 commit messages based on the following diff:
 commit messages should:

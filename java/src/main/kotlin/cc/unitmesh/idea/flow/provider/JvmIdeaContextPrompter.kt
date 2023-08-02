@@ -144,7 +144,7 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
                 }
             }
 
-            ChatActionType.WRITE_TEST -> {
+            ChatActionType.GENERATE_TEST -> {
                 val writeTest = customPromptConfig?.writeTest
                 if (writeTest?.instruction?.isNotEmpty() == true) {
                     prompt = writeTest.instruction
