@@ -64,28 +64,21 @@ class ErrorPromptConstructor(val maxLength: Int, val tokenizer: Tokenizer) {
     }
 
     private fun findEnclosingScopeGreedy(errorPlace: ErrorPlace, maxTokenCount: Int, language: String): ErrorScope? {
-        var errorScope: ErrorScope?
         var result: ErrorScope? = null
-        var findContainingElement = errorPlace.findContainingElement()
-        while (true) {
-            val currentContainingElement = findContainingElement
-            if (currentContainingElement is PsiFile || currentContainingElement == null) {
-                break
-            }
+        var containingElement = errorPlace.findContainingElement()
 
-            errorScope = tryFitContainingElement(
+        while (true) {
+            if (containingElement is PsiFile || containingElement == null) break
+
+            result = tryFitContainingElement(
                 errorPlace.hyperlinkText,
-                currentContainingElement,
+                containingElement,
                 maxTokenCount,
                 language,
                 errorPlace.virtualFile
-            )
-            if (errorScope == null) {
-                break
-            }
+            ) ?: break
 
-            result = errorScope
-            findContainingElement = currentContainingElement.parent
+            containingElement = containingElement.parent
         }
 
         return result
@@ -150,11 +143,7 @@ class ErrorPromptConstructor(val maxLength: Int, val tokenizer: Tokenizer) {
 
     private fun trimTextByTokenizer(text: String, maxTokenCount: Int): String {
         val offset = findTrimPositionForMaxTokens(text, maxTokenCount)
-        val substring = text.substring(
-            0, min(text.length.toDouble(), offset.toDouble())
-                .toInt()
-        )
 
-        return substring
+        return text.substring(0, min(text.length, offset))
     }
 }
