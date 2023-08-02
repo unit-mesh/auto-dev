@@ -9,6 +9,24 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.wm.ToolWindowManager
 
+fun sendToChat(project: Project, runnable: (ChatCodingComponent) -> Unit) {
+    val chatCodingService = ChatCodingService(ChatActionType.CHAT, project)
+    val contentPanel = ChatCodingComponent(chatCodingService)
+
+    val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolWindowFactory.Util.id)
+    val contentManager = toolWindowManager?.contentManager
+
+    val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
+
+    contentManager?.removeAllContents(true)
+    contentManager?.addContent(content!!)
+
+    toolWindowManager?.activate {
+        runnable(contentPanel)
+    }
+}
+
+
 fun sendToChat(project: Project, actionType: ChatActionType, prompter: ContextPrompter) {
     val toolWindowManager =
         ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolWindowFactory.Util.id) ?: return

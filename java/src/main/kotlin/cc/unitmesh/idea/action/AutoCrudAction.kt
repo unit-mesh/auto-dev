@@ -8,6 +8,7 @@ import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.intentions.AbstractChatIntention
 import cc.unitmesh.devti.llms.ConnectorFactory
 import cc.unitmesh.devti.provider.DevFlowProvider
+import cc.unitmesh.devti.toolwindow.sendToChat
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
@@ -23,18 +24,7 @@ class AutoCrudAction : AbstractChatIntention() {
     override fun getFamilyName(): String = AutoDevBundle.message("intentions.crud.new.family.name")
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
-        val openAIRunner = ConnectorFactory.getInstance().connector(project)
-
-        val chatCodingService = ChatCodingService(ChatActionType.CHAT, project)
-        val contentPanel = ChatCodingComponent(chatCodingService)
-
-        val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolWindowFactory.Util.id)
-        val contentManager = toolWindowManager?.contentManager
-
-        val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
-
-        contentManager?.removeAllContents(true)
-        contentManager?.addContent(content!!)
+        if (editor == null || file == null) return
 
         // TODO: support other language
         val flowProvider = DevFlowProvider.flowProvider("java")
@@ -43,10 +33,9 @@ class AutoCrudAction : AbstractChatIntention() {
             return
         }
 
-        var selectedText = editor?.selectionModel?.selectedText ?: throw IllegalStateException("no select text")
-
-
-        toolWindowManager?.activate {
+        sendToChat(project) { contentPanel ->
+            val openAIRunner = ConnectorFactory.getInstance().connector(project)
+            val selectedText = editor.selectionModel.selectedText ?: throw IllegalStateException("no select text")
             flowProvider.initContext(null, openAIRunner, contentPanel, project)
             ProgressManager.getInstance().run(executeCrud(flowProvider, project, selectedText))
         }
