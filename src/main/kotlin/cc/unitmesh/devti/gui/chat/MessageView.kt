@@ -163,9 +163,9 @@ class MessageView(private val message: String, role: ChatRole, private val displ
 
             for ((index, item) in messageText.withIndex()) {
                 val param = Parameters(item, index, messageText)
+                val processor = MessageCodeBlockCharProcessor()
                 val suggestTypeChange =
-                    MessageCodeBlockCharProcessor().suggestTypeChange(param, contextTypeRef.element, blockStart.element)
-                        ?: continue
+                    processor.suggestTypeChange(param, contextTypeRef.element, blockStart.element) ?: continue
 
                 when {
                     suggestTypeChange.contextType == contextTypeRef.element -> {
@@ -180,6 +180,7 @@ class MessageView(private val message: String, role: ChatRole, private val displ
                         if (index > blockStart.element) {
                             pushPart(blockStart, messageText, contextTypeRef, message, parts, index - 1)
                         }
+
                         blockStart.element = index
                         contextTypeRef.element = suggestTypeChange.contextType
                     }
