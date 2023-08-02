@@ -3,10 +3,6 @@ package cc.unitmesh.devti.runconfig
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.provider.DevFlowProvider
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
-import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
-import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.gui.chat.ChatCodingComponent
-import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.llms.ConnectorFactory
 import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
 import cc.unitmesh.devti.runconfig.options.AutoDevConfigurationOptions
@@ -23,7 +19,6 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.wm.ToolWindowManager
 
 class AutoDevRunProfileState(
     val environment: ExecutionEnvironment,
@@ -47,7 +42,7 @@ class AutoDevRunProfileState(
             logger.error("current Language don't implementation DevFlow")
             return null
         }
-        val openAIRunner = ConnectorFactory.getInstance().connector(project)
+        val openAIRunner = ConnectorFactory().connector(project)
 
         sendToChat(project) { contentPanel ->
             flowProvider.initContext(gitHubIssue, openAIRunner, contentPanel, project)

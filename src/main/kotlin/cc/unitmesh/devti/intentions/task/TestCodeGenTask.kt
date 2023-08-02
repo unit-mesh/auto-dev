@@ -87,7 +87,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         }
 
         val flow: Flow<String> =
-            ConnectorFactory.getInstance().connector(request.project).stream(prompter, "")
+            ConnectorFactory().connector(request.project).stream(prompter, "")
 
         logger<WriteTestIntention>().info("Prompt: $prompter")
 

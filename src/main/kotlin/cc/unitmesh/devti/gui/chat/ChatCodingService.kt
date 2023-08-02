@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 class ChatCodingService(var actionType: ChatActionType, val project: Project) {
-    private val connectorFactory = ConnectorFactory.getInstance()
+    private val connectorFactory = ConnectorFactory()
 
     val action = actionType.instruction()
 

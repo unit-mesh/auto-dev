@@ -17,7 +17,7 @@ class FindBugAction(methodName: @NlsSafe String, val method: PsiMethod) :
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val code = method.text
-        val apiExecutor = ConnectorFactory.getInstance().connector(project)
+        val apiExecutor = ConnectorFactory().connector(project)
 
         val task = object : Task.Backgroundable(project, "Find potential problems in the code: ", true) {
             override fun run(indicator: ProgressIndicator) {

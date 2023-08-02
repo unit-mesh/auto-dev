@@ -26,7 +26,7 @@ import kotlin.jvm.internal.Ref
 class CodeCompletionTask(private val request: CodeCompletionRequest) :
     Task.Backgroundable(request.project, AutoDevBundle.message("intentions.chat.code.complete.name")) {
 
-    private val connectorFactory = ConnectorFactory.getInstance()
+    private val connectorFactory = ConnectorFactory()
 
     private val writeActionGroupId = "code.complete.intention.write.action"
     private val codeMessage = AutoDevBundle.message("intentions.chat.code.complete.name")

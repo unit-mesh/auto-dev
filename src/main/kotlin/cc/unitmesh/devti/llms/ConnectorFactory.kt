@@ -5,7 +5,6 @@ import cc.unitmesh.devti.llms.custom.CustomLLMProvider
 import cc.unitmesh.devti.llms.openai.OpenAIProvider
 import cc.unitmesh.devti.settings.DEFAULT_AI_ENGINE
 import cc.unitmesh.devti.settings.AutoDevSettingsState
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 
@@ -21,9 +20,4 @@ class ConnectorFactory {
         }
     }
 
-    companion object {
-        fun getInstance(): ConnectorFactory {
-            return ApplicationManager.getApplication().getService(ConnectorFactory::class.java)
-        }
-    }
 }
