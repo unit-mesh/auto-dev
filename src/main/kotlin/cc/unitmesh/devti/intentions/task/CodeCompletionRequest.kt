@@ -35,8 +35,6 @@ class CodeCompletionRequest(
                 document.modificationStamp
             }
 
-            val prefixText = prefix ?: document.text.substring(0, offset)
-            val offset = offset - prefixText.length
             val suffixText = suffix ?: document.text.substring(offset)
 
             return CodeCompletionRequest(
