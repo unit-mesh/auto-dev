@@ -4,7 +4,7 @@ import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 
 
-object PsiUtilsKt {
+object PsiUtils {
     fun getStartOffset(element: PsiElement): Int = element.textRange.startOffset
     fun getEndOffset(element: PsiElement): Int = element.textRange.endOffset
 

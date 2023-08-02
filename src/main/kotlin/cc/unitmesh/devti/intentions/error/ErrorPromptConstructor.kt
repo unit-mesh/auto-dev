@@ -98,8 +98,8 @@ class ErrorPromptConstructor(val maxLength: Int, val tokenizer: Tokenizer) {
         language: String,
         virtualFile: VirtualFile
     ): ErrorScope? {
-        val lineNumberStart = PsiUtilsKt.getLineNumber(currentContainingElement, false)
-        val lineNumberFinish = PsiUtilsKt.getLineNumber(currentContainingElement, false)
+        val lineNumberStart = PsiUtils.getLineNumber(currentContainingElement, false)
+        val lineNumberFinish = PsiUtils.getLineNumber(currentContainingElement, false)
         val prefix = "filename: $filename\n line: $lineNumberStart\n\n"
         val candidate = """
             $prefix```$language

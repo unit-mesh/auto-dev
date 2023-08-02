@@ -22,7 +22,7 @@ data class ErrorPlace(
 
     fun findContainingElement(): PsiElement? {
         val psiFile = psiFile ?: return null
-        val lineStartOffset = PsiUtilsKt.getLineStartOffset(psiFile, lineNumber) ?: return null
+        val lineStartOffset = PsiUtils.getLineStartOffset(psiFile, lineNumber) ?: return null
         val errorPlaceOffset: Int = lineStartOffset
         return this.psiFile?.findElementAt(errorPlaceOffset)
     }
