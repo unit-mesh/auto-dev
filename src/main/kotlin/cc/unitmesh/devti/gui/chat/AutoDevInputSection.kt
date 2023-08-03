@@ -74,7 +74,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         input = AutoDevInput(project, listOf(), disposable, this)
         documentListener = object : DocumentListener {
             override fun documentChanged(event: DocumentEvent) {
-                val i = input?.preferredSize?.height
+                val i = input.preferredSize?.height
                 if (i != input.height) {
                     revalidate()
                 }
@@ -110,9 +110,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             }
         })
 
-        invokeLater {
-            tokenizer = TokenizerImpl()
-        }
+        tokenizer = TokenizerImpl.INSTANCE
     }
 
     fun initEditor() {
