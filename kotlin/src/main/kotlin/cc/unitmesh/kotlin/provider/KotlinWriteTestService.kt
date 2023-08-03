@@ -38,7 +38,7 @@ class KotlinWriteTestService : WriteTestService() {
         val className = sourceFile.name.replace(".kt", "") + "Test"
 
         val packageName = ReadAction.compute<String, Throwable> {
-            (sourceFile as PsiJavaFile).packageName
+            (sourceFile as KtFile).packageName
         }
         val parentDirPath = ReadAction.compute<String, Throwable> {
             parentDir?.path
