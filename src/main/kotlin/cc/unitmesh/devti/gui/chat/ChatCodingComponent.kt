@@ -6,6 +6,8 @@ import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.editor.event.DocumentEvent
+import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.ui.NullableComponent
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.ui.Gray
