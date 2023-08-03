@@ -14,7 +14,7 @@ fun sendToChat(project: Project, runnable: (ChatCodingPanel) -> Unit) {
 
     val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolWindowFactory.Util.id)
     val contentManager = toolWindowManager?.contentManager
-    val contentPanel = ChatCodingPanel(chatCodingService, toolWindowManager?.disposable)
+    val contentPanel = ChatCodingPanel(chatCodingService, toolWindowManager?.disposable,)
 
     val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
 

@@ -181,6 +181,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             val contentManager: ContentManager = decorator.contentManager ?: return JBUI.scale(200)
             return contentManager.component.height / 2
         }
-    val focusableComponent: JComponent
-        get() = input
+
+    val focusableComponent: JComponent get() = input
 }

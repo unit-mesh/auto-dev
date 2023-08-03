@@ -80,6 +80,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         })
 
         mainPanel.add(inputSection, BorderLayout.SOUTH)
+        inputSection.text = ""
 
         disposable?.whenDisposed(disposable) {
             myList.removeAll()
@@ -165,48 +166,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         return text
     }
 
-//    private fun addQuestionArea() {
-//        val actionPanel = JPanel(BorderLayout())
-//
-//        val searchTextArea = AutoDevInputField(
-//            chatCodingService.project,
-//            listOf()
-//        )
-//
-//        this.inputField = searchTextArea
-//
-//        val listener: (ActionEvent) -> Unit = {
-//            val prompt = searchTextArea.text
-//            searchTextArea.text = ""
-//            val context = ChatContext(null, "", "")
-//
-//            chatCodingService.actionType = ChatActionType.CHAT
-//            chatCodingService.handlePromptAndResponse(this, object : ContextPrompter() {
-//                override fun displayPrompt() = prompt
-//                override fun requestPrompt() = prompt
-//            }, context)
-//        }
-//
-//        searchTextArea.addListener(object : AutoDevInputListener {
-//            override fun onSubmit(component: AutoDevInputField, trigger: AutoDevInputTrigger) {
-//                listener.invoke(ActionEvent(component, 0, trigger.name))
-//            }
-//        })
-//
-//        actionPanel.add(searchTextArea, BorderLayout.CENTER)
-//
-//        val actionButtons = JPanel(BorderLayout())
-//
-//        val button = JButton(AutoDevBundle.message("devti.chat.send"))
-//        button.addActionListener(listener)
-//
-//        actionButtons.add(button, BorderLayout.NORTH)
-//        actionPanel.add(actionButtons, BorderLayout.EAST)
-//
-//        mainPanel.add(actionPanel, BorderLayout.SOUTH)
-//    }
-
     fun setContent(trimMargin: String) {
-        inputSection.setContent(trimMargin)
+        inputSection.text = trimMargin
     }
 }
