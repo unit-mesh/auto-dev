@@ -22,13 +22,6 @@ class CustomInput(BaseModel):
     history: List[str]
 
 
-# "application/json; charset=utf-8".toMediaTypeOrNull(),
-#             """
-#                 {
-#                     "instruction": "$instruction",
-#                     "input": "$input",
-#                 }
-#             """.trimIndent()
 class MessageInput(BaseModel):
     instruction: str
     input: str
@@ -44,8 +37,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.post("/chat")
 async def chat(data: MessageInput):
-    print(data)
-
     input = {
         "text": data.instruction,
         "history": []
@@ -55,5 +46,4 @@ async def chat(data: MessageInput):
         "data": [json.dumps(input), 2000, 0.1, 0.1, "chatglm_4bit_seldon"]
     }).json()
 
-    print(response["data"][0])
     return response["data"][0]
