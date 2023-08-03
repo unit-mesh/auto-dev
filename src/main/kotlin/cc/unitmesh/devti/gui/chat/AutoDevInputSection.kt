@@ -2,13 +2,13 @@ package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
-import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
+import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.IdeFocusManager
@@ -21,7 +21,6 @@ import com.intellij.util.ui.components.BorderLayoutPanel
 import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
-import java.awt.event.ActionEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.Box
@@ -95,7 +94,29 @@ class AutoDevInputSection(
         borderLayoutPanel.addToCenter(horizontalGlue)
         borderLayoutPanel.addToRight(button)
         addToBottom(borderLayoutPanel)
+
+        addListener(object : AutoDevInputListener {
+            override fun editorAdded(editor: EditorEx) {
+                this@AutoDevInputSection.initEditor()
+            }
+        })
+
     }
+
+    fun initEditor() {
+        val editorEx = when (this.input.editor) {
+            is EditorEx -> this.input.editor
+            else -> null
+        } ?: return
+
+        val jComponent = this as JComponent
+
+        setBorder(AutoDevCoolBorder(editorEx as EditorEx, jComponent))
+        UIUtil.forEachComponentInHierarchy(jComponent) { component: Component ->
+            (component as JComponent).setOpaque(false)
+        }
+    }
+
 
     override fun getPreferredSize(): Dimension {
         val result = super.getPreferredSize()

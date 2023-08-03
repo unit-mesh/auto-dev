@@ -152,6 +152,7 @@ class AutoDevInputField(
 
         initializeDocumentListeners(inputDocument)
         setDocument(inputDocument)
+        inputSection.initEditor()
     }
 
     private fun initializeDocumentListeners(inputDocument: Document) {
