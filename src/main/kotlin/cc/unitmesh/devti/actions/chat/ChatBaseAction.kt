@@ -2,7 +2,7 @@ package cc.unitmesh.devti.actions.chat
 
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.gui.chat.ChatCodingComponent
+import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.llms.openai.OpenAIProvider
@@ -56,13 +56,13 @@ abstract class ChatBaseAction : AnAction() {
 
     open fun sendToToolWindow(
         project: Project,
-        activeAction: (service: ChatCodingService, panel: ChatCodingComponent) -> Unit
+        activeAction: (service: ChatCodingService, panel: ChatCodingPanel) -> Unit
     ) {
         val chatCodingService = ChatCodingService(getActionType(), project)
 
         val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolWindowFactory.Util.id)
         val contentManager = toolWindowManager?.contentManager
-        val contentPanel = ChatCodingComponent(chatCodingService, toolWindowManager?.disposable)
+        val contentPanel = ChatCodingPanel(chatCodingService, toolWindowManager?.disposable)
 
         val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
 

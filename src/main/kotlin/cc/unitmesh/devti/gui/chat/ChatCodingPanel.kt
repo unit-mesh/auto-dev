@@ -5,7 +5,6 @@ import cc.unitmesh.devti.gui.block.whenDisposed
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.ui.NullableComponent
-import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
 import com.intellij.ui.OnePixelSplitter
@@ -27,8 +26,8 @@ import javax.swing.JProgressBar
 import javax.swing.ScrollPaneConstants
 
 
-class ChatCodingComponent(private val chatCodingService: ChatCodingService, val disposable: Disposable?) :
-    JBPanel<ChatCodingComponent>(),
+class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disposable: Disposable?) :
+    JBPanel<ChatCodingPanel>(),
     NullableComponent {
     private var progressBar: JProgressBar
     private val myTitle = JBLabel("Conversation")
@@ -64,7 +63,8 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService, val 
         mainPanel.add(splitter)
         myScrollPane.verticalScrollBar.autoscrolls = true
 
-        inputSection = AutoDevInputSection(chatCodingService, chatCodingService.project, disposable, this)
+        inputSection = AutoDevInputSection(chatCodingService.project, disposable)
+        inputSection.initEditor()
         inputSection.addListener(object : AutoDevInputListener {
             override fun onSubmit(component: AutoDevInputSection, trigger: AutoDevInputTrigger) {
                 val prompt = component.text
@@ -72,12 +72,13 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService, val 
                 val context = ChatContext(null, "", "")
 
                 chatCodingService.actionType = ChatActionType.CHAT
-                chatCodingService.handlePromptAndResponse(this@ChatCodingComponent, object : ContextPrompter() {
+                chatCodingService.handlePromptAndResponse(this@ChatCodingPanel, object : ContextPrompter() {
                     override fun displayPrompt() = prompt
                     override fun requestPrompt() = prompt
                 }, context)
             }
         })
+
         mainPanel.add(inputSection, BorderLayout.SOUTH)
 
         disposable?.whenDisposed(disposable) {

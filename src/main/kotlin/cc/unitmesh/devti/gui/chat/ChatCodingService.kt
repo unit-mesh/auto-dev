@@ -21,7 +21,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
     }
 
     fun handlePromptAndResponse(
-        ui: ChatCodingComponent,
+        ui: ChatCodingPanel,
         prompt: ContextPrompter,
         context: ChatContext? = null
     ) {

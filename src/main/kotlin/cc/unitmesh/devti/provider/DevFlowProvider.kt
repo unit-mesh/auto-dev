@@ -2,7 +2,7 @@ package cc.unitmesh.devti.provider
 
 import cc.unitmesh.devti.flow.kanban.Kanban
 import cc.unitmesh.devti.prompting.code.TargetEndpoint
-import cc.unitmesh.devti.gui.chat.ChatCodingComponent
+import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.llms.LLMProvider
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
@@ -20,7 +20,7 @@ abstract class DevFlowProvider : LazyExtensionInstance<ContextPrompter>() {
         return implementationClass
     }
 
-    abstract fun initContext(kanban: Kanban?, aiRunner: LLMProvider, component: ChatCodingComponent, project: Project)
+    abstract fun initContext(kanban: Kanban?, aiRunner: LLMProvider, component: ChatCodingPanel, project: Project)
     abstract fun getOrCreateStoryDetail(id: String): String
     abstract fun updateOrCreateDtoAndEntity(storyDetail: String)
     abstract fun fetchSuggestEndpoint(storyDetail: String): TargetEndpoint

@@ -28,13 +28,8 @@ import javax.swing.JComponent
 import kotlin.math.max
 import kotlin.math.min
 
-class AutoDevInputSection(
-    private val chatCodingService: ChatCodingService,
-    private val project: Project,
-    val disposable: Disposable?,
-    val panel: ChatCodingComponent
-) : BorderLayoutPanel() {
-    private val input: AutoDevInputField
+class AutoDevInputSection(private val project: Project, val disposable: Disposable?) : BorderLayoutPanel() {
+    private val input: AutoDevInput
     private val documentListener: DocumentListener
     private val buttonPresentation: Presentation
     private val button: ActionButton
@@ -68,7 +63,7 @@ class AutoDevInputSection(
         )
 
 
-        input = AutoDevInputField(project, listOf(), disposable, this)
+        input = AutoDevInput(project, listOf(), disposable, this)
         documentListener = object : DocumentListener {
             override fun documentChanged(event: DocumentEvent) {
                 val i = input.preferredSize.height
@@ -100,7 +95,6 @@ class AutoDevInputSection(
                 this@AutoDevInputSection.initEditor()
             }
         })
-
     }
 
     fun initEditor() {
@@ -125,7 +119,7 @@ class AutoDevInputSection(
     }
 
     fun setContent(trimMargin: String) {
-        val focusManager = IdeFocusManager.getInstance(chatCodingService.project)
+        val focusManager = IdeFocusManager.getInstance(project)
         focusManager.requestFocus(input, true)
         this.input.recreateDocument()
         this.input.text = trimMargin

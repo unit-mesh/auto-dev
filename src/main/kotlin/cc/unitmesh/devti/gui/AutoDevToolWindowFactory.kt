@@ -2,7 +2,7 @@ package cc.unitmesh.devti.gui
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.gui.chat.ChatCodingComponent
+import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.DumbAware
@@ -22,7 +22,7 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val disposable = toolWindow.disposable
         val chatCodingService = ChatCodingService(ChatActionType.CHAT, project)
-        val contentPanel = ChatCodingComponent(chatCodingService, disposable)
+        val contentPanel = ChatCodingPanel(chatCodingService, disposable)
         val content = contentFactory.createContent(contentPanel, AutoDevBundle.message("autodev.flow"), false)
 
         val toolWindowEx = toolWindow as ToolWindowEx

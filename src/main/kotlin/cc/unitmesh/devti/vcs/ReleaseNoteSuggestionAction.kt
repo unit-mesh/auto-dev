@@ -2,7 +2,7 @@ package cc.unitmesh.devti.vcs
 
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.gui.chat.ChatCodingComponent
+import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.actionSystem.AnAction
@@ -30,7 +30,7 @@ class ReleaseNoteSuggestionAction : AnAction() {
         val toolWindowManager = ToolWindowManager.getInstance(project!!).getToolWindow(AutoDevToolWindowFactory.Util.id)
         val contentManager = toolWindowManager?.contentManager
         val chatCodingService = ChatCodingService(actionType, project)
-        val contentPanel = ChatCodingComponent(chatCodingService, toolWindowManager?.disposable)
+        val contentPanel = ChatCodingPanel(chatCodingService, toolWindowManager?.disposable)
         val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
 
         contentManager?.removeAllContents(true)

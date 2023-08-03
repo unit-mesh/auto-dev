@@ -5,7 +5,7 @@ import cc.unitmesh.devti.context.model.DtClass
 import cc.unitmesh.devti.flow.kanban.Kanban
 import cc.unitmesh.devti.flow.model.SimpleStory
 import cc.unitmesh.devti.prompting.code.TargetEndpoint
-import cc.unitmesh.devti.gui.chat.ChatCodingComponent
+import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.llms.openai.PromptTemplate
 import cc.unitmesh.devti.parser.parseCodeFromString
@@ -32,14 +32,14 @@ class JvmAutoDevFlow : DevFlowProvider() {
 
     private var kanban: Kanban? = null
     private lateinit var connector: LLMProvider
-    private lateinit var ui: ChatCodingComponent
+    private lateinit var ui: ChatCodingPanel
     private lateinit var processor: JavaSpringCodeCreator
     private lateinit var promptStrategy: PromptStrategy
 
     override fun initContext(
         kanban: Kanban?,
         aiRunner: LLMProvider,
-        component: ChatCodingComponent,
+        component: ChatCodingPanel,
         project: Project
     ) {
         this.kanban = kanban

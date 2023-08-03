@@ -40,7 +40,7 @@ interface AutoDevInputListener : EventListener {
     fun onSubmit(component: AutoDevInputSection, trigger: AutoDevInputTrigger) {}
 }
 
-class AutoDevInputField(
+class AutoDevInput(
     project: Project,
     private val listeners: List<DocumentListener>,
     val disposable: Disposable?,
@@ -65,7 +65,7 @@ class AutoDevInputField(
         DumbAwareAction.create {
             object : AnAction() {
                 override fun actionPerformed(e1: AnActionEvent) {
-                    val editor = this@AutoDevInputField.editor ?: return
+                    val editor = this@AutoDevInput.editor ?: return
 
                     CommandProcessor.getInstance().executeCommand(project, {
                         val eol = "\n"
@@ -89,7 +89,7 @@ class AutoDevInputField(
 
         connect.subscribe(topic, object : AnActionListener {
             override fun afterActionPerformed(action: AnAction, event: AnActionEvent, result: AnActionResult) {
-                if (event.dataContext.getData(CommonDataKeys.EDITOR) === this@AutoDevInputField.editor && action is EnterAction) {
+                if (event.dataContext.getData(CommonDataKeys.EDITOR) === this@AutoDevInput.editor && action is EnterAction) {
                     editorListeners.multicaster.onSubmit(inputSection, AutoDevInputTrigger.Key)
                 }
             }
