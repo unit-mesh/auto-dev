@@ -42,6 +42,7 @@ interface AutoDevInputListener : EventListener {
 class AutoDevInputField(
     project: Project,
     private val listeners: List<DocumentListener>,
+    val disposable: Disposable?,
 ) : EditorTextField(project, FileTypes.PLAIN_TEXT), Disposable {
     private val editorListeners: EventDispatcher<AutoDevInputListener> =
         EventDispatcher.create(AutoDevInputListener::class.java)
@@ -81,7 +82,7 @@ class AutoDevInputField(
         )
 
 
-        val connect: MessageBusConnection = project.messageBus.connect(this)
+        val connect: MessageBusConnection = project.messageBus.connect(disposable ?: this)
         val topic = AnActionListener.TOPIC
 
         connect.subscribe(topic, object : AnActionListener {
