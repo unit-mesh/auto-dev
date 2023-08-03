@@ -26,7 +26,6 @@ import com.intellij.util.ui.components.BorderLayoutPanel
 import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
-import java.awt.EventQueue.invokeLater
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.util.function.Supplier
@@ -40,7 +39,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     private val documentListener: DocumentListener
     private val buttonPresentation: Presentation
     private val button: ActionButton
-    private val dispatcher: EventDispatcher<AutoDevInputListener> =
+    val editorListeners: EventDispatcher<AutoDevInputListener> =
         EventDispatcher.create(AutoDevInputListener::class.java)
     private var tokenizer: Tokenizer? = null
     var text: String
@@ -61,7 +60,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             DumbAwareAction.create {
                 object : DumbAwareAction("") {
                     override fun actionPerformed(e: AnActionEvent) {
-                        dispatcher.multicaster.onSubmit(this@AutoDevInputSection, AutoDevInputTrigger.Button)
+                        editorListeners.multicaster.onSubmit(this@AutoDevInputSection, AutoDevInputTrigger.Button)
                     }
                 }.actionPerformed(it)
             },
@@ -72,6 +71,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
 
         input = AutoDevInput(project, listOf(), disposable, this)
+
         documentListener = object : DocumentListener {
             override fun documentChanged(event: DocumentEvent) {
                 val i = input.preferredSize?.height
@@ -80,7 +80,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                 }
             }
         }
-
         input.addDocumentListener(documentListener)
         input.recreateDocument()
 
@@ -124,6 +123,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         setBorder(AutoDevCoolBorder(editorEx as EditorEx, jComponent))
         UIUtil.forEachComponentInHierarchy(jComponent) { component: Component ->
             (component as JComponent).setOpaque(false)
+            component.revalidate()
         }
     }
 
@@ -152,7 +152,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     override fun setBackground(bg: Color?) {}
 
     fun addListener(listener: AutoDevInputListener) {
-        dispatcher.addListener(listener)
+        editorListeners.addListener(listener)
     }
 
     fun setSendingMode(sendingMode: Boolean) {

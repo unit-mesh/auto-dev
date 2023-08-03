@@ -46,8 +46,7 @@ class AutoDevInput(
     val disposable: Disposable?,
     val inputSection: AutoDevInputSection,
 ) : EditorTextField(project, FileTypes.PLAIN_TEXT), Disposable {
-    private val editorListeners: EventDispatcher<AutoDevInputListener> =
-        EventDispatcher.create(AutoDevInputListener::class.java)
+    private var editorListeners: EventDispatcher<AutoDevInputListener> = inputSection.editorListeners
 
     init {
         isOneLineMode = false
@@ -86,7 +85,6 @@ class AutoDevInput(
 
         val connect: MessageBusConnection = project.messageBus.connect(disposable ?: this)
         val topic = AnActionListener.TOPIC
-
         connect.subscribe(topic, object : AnActionListener {
             override fun afterActionPerformed(action: AnAction, event: AnActionEvent, result: AnActionResult) {
                 if (event.dataContext.getData(CommonDataKeys.EDITOR) === this@AutoDevInput.editor && action is EnterAction) {
@@ -109,7 +107,7 @@ class AutoDevInput(
         repaint()
     }
 
-    override fun createEditor(): EditorEx {
+    public override fun createEditor(): EditorEx {
         val editor = super.createEditor()
         editor.setVerticalScrollbarVisible(true)
         setBorder(JBUI.Borders.empty())
@@ -134,13 +132,8 @@ class AutoDevInput(
         return TextEditorProvider.getInstance().getTextEditor(it)
     }
 
-
     override fun dispose() {
         listeners.forEach { editor?.document?.removeDocumentListener(it) }
-    }
-
-    fun addListener(listener: AutoDevInputListener) {
-        editorListeners.addListener(listener)
     }
 
     fun recreateDocument() {

@@ -5,6 +5,7 @@ import cc.unitmesh.devti.gui.block.whenDisposed
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.ui.NullableComponent
+import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
 import com.intellij.ui.OnePixelSplitter
@@ -39,10 +40,17 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
     )
     private var inputSection: AutoDevInputSection
+    private val focusMouseListener: MouseAdapter
 
     init {
         val splitter = OnePixelSplitter(true, .98f)
         splitter.dividerWidth = 2
+
+        focusMouseListener = object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent?) {
+                focusInput()
+            }
+        }
 
         myTitle.foreground = JBColor.namedColor("Label.infoForeground", JBColor(Gray.x80, Gray.x8C))
         myTitle.font = JBFont.label()
@@ -64,7 +72,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         myScrollPane.verticalScrollBar.autoscrolls = true
 
         inputSection = AutoDevInputSection(chatCodingService.project, disposable)
-        inputSection.initEditor()
+        mainPanel.add(inputSection, BorderLayout.SOUTH)
         inputSection.addListener(object : AutoDevInputListener {
             override fun onSubmit(component: AutoDevInputSection, trigger: AutoDevInputTrigger) {
                 val prompt = component.text
@@ -79,11 +87,17 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
             }
         })
 
-        mainPanel.add(inputSection, BorderLayout.SOUTH)
         inputSection.text = ""
 
         disposable?.whenDisposed(disposable) {
             myList.removeAll()
+        }
+    }
+
+    fun focusInput() {
+        val focusManager = IdeFocusManager.getInstance(chatCodingService.project)
+        focusManager.doWhenFocusSettlesDown {
+            focusManager.requestFocus(this.inputSection.focusableComponent, true)
         }
     }
 
@@ -168,5 +182,6 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
 
     fun setContent(trimMargin: String) {
         inputSection.text = trimMargin
+        this.focusInput()
     }
 }
