@@ -2,6 +2,9 @@ package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
+import cc.unitmesh.devti.llms.tokenizer.LLM_MAX_TOKEN
+import cc.unitmesh.devti.llms.tokenizer.Tokenizer
+import cc.unitmesh.devti.llms.tokenizer.TokenizerImpl
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Presentation
@@ -11,6 +14,8 @@ import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.ComponentValidator
+import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.impl.InternalDecorator
 import com.intellij.ui.content.ContentManager
@@ -21,8 +26,10 @@ import com.intellij.util.ui.components.BorderLayoutPanel
 import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
+import java.awt.EventQueue.invokeLater
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.util.function.Supplier
 import javax.swing.Box
 import javax.swing.JComponent
 import kotlin.math.max
@@ -35,6 +42,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     private val button: ActionButton
     private val dispatcher: EventDispatcher<AutoDevInputListener> =
         EventDispatcher.create(AutoDevInputListener::class.java)
+    private var tokenizer: Tokenizer? = null
     var text: String
         get() {
             return input.text
@@ -66,7 +74,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         input = AutoDevInput(project, listOf(), disposable, this)
         documentListener = object : DocumentListener {
             override fun documentChanged(event: DocumentEvent) {
-                val i = input.preferredSize.height
+                val i = input?.preferredSize?.height
                 if (i != input.height) {
                     revalidate()
                 }
@@ -90,11 +98,21 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         borderLayoutPanel.addToRight(button)
         addToBottom(borderLayoutPanel)
 
+        ComponentValidator(disposable!!).withValidator(Supplier<ValidationInfo?> {
+            val validationInfo: ValidationInfo? = this.getInputValidationInfo()
+            button.setEnabled(validationInfo == null)
+            return@Supplier validationInfo
+        }).installOn((this as JComponent)).revalidate()
+
         addListener(object : AutoDevInputListener {
             override fun editorAdded(editor: EditorEx) {
                 this@AutoDevInputSection.initEditor()
             }
         })
+
+        invokeLater {
+            tokenizer = TokenizerImpl()
+        }
     }
 
     fun initEditor() {
@@ -141,6 +159,17 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     fun setSendingMode(sendingMode: Boolean) {
 //        input.setSendingMode(sendingMode)
+    }
+
+    private fun getInputValidationInfo(): ValidationInfo? {
+        val text = input.getDocument().text
+        val textLength = (this.tokenizer)?.count(text) ?: text.length
+
+        val exceed: Int = textLength - LLM_MAX_TOKEN
+        if (exceed <= 0) return null
+
+        val errorMessage = AutoDevBundle.message("chat.too.long.user.message", exceed)
+        return ValidationInfo(errorMessage, this as JComponent).asWarning()
     }
 
     private val maxHeight: Int
