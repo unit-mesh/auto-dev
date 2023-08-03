@@ -112,6 +112,40 @@ Key Concepts:
 2. git tag `version`
 3. `./gradlew publishPlugin`
 
+### Custom Server API example
+
+API
+
+```http request
+POST http://127.0.0.1/chat
+body:
+{
+  "instruction": "auto_complete",
+  "input": "public class Main {\n    public static void main(String[] args) "
+}
+
+response (string only) :
+"{\n        System.out.println(\"Hello World!\");\n    }\n}"
+```
+
+python code example: [main.py](example/custom_llm_server/main.py)
+
+```python
+class MessageInput(BaseModel):
+    instruction: str
+    input: str
+
+@app.post("/chat")
+async def chat(data: MessageInput):
+  input = {} # your backend data 
+
+  response = requests.post("your_llm_server", json={
+    # your backend data
+  }).json()
+
+  return response["data"][0]
+```
+
 ## improve language support for some language
 
 We referenced the multi-language support implementation of JetBrains AI Assistant and combined it with the design
