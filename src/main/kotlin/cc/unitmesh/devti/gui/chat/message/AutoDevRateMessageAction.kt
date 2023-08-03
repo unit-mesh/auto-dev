@@ -1,9 +1,15 @@
 package cc.unitmesh.devti.gui.chat.message
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.gui.block.CompletableMessage
+import com.intellij.ide.HelpTooltip
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.project.DumbAwareToggleAction
+import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.util.Key
 import javax.swing.Icon
 
 
@@ -33,11 +39,12 @@ abstract class AutoDevRateMessageAction : DumbAwareToggleAction() {
     }
 
     override fun setSelected(e: AnActionEvent, state: Boolean) {
+        val project = e.project ?: ProjectManager.getInstance().openProjects.firstOrNull() ?: return
+        AutoDevNotifications.notify(project, AutoDevBundle.message("tooltip.thanks"))
+
         val message = getMessage(e) ?: return
-        val completableMessage = getMessage(e)
         message.rating = if (isSelected(e)) ChatMessageRating.None else getReaction()
     }
-
 
     class Like : AutoDevRateMessageAction() {
         override fun getReaction(): ChatMessageRating = ChatMessageRating.Like
