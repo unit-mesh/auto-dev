@@ -12,4 +12,16 @@ object AutoDevIcons {
 
     @JvmField
     val Send: Icon = IconLoader.getIcon("/icons/send.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val Like: Icon = IconLoader.getIcon("/icons/like.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val Liked: Icon = IconLoader.getIcon("/icons/liked.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val Dislike: Icon = IconLoader.getIcon("/icons/dislike.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val Disliked: Icon = IconLoader.getIcon("/icons/disliked.svg", AutoDevIcons::class.java)
 }

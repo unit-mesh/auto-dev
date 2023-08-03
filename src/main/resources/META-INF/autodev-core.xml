@@ -226,5 +226,13 @@
                     icon="AllIcons.Actions.Copy"
                     class="cc.unitmesh.devti.gui.snippet.AutoDevCopyToClipboardAction"/>
         </group>
+
+        <group id="AutoDev.ToolWindow.Message.Toolbar.Assistant">
+            <action id="AIAssistant.ToolWindow.Message.Like"
+                    class="cc.unitmesh.devti.gui.chat.message.AutoDevRateMessageAction$Like"/>
+            <action id="AIAssistant.ToolWindow.Message.Dislike"
+                    class="cc.unitmesh.devti.gui.chat.message.AutoDevRateMessageAction$Dislike"/>
+        </group>
+
     </actions>
 </idea-plugin>
