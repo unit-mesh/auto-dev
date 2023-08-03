@@ -19,16 +19,13 @@ abstract class AutoDevRateMessageAction : DumbAwareToggleAction() {
     abstract fun getReactionIconSelected(): Icon
 
     private fun getMessage(event: AnActionEvent): CompletableMessage? {
-        return event.dataContext.getData<CompletableMessage>(CompletableMessage.key)
+        return event.dataContext.getData(CompletableMessage.key)
     }
 
     override fun update(e: AnActionEvent) {
         super.update(e)
         val icon: Icon = if (!isSelected(e)) getReactionIcon() else getReactionIconSelected()
         e.presentation.setIcon(icon)
-
-        // SET HOVER TOOLTIP FOR icon
-        e.presentation.description = "Like this message"
     }
 
     override fun isSelected(e: AnActionEvent): Boolean {

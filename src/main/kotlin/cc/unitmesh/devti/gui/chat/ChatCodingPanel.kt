@@ -175,7 +175,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
             messageView.scrollToBottom()
         }
 
-        messageView.doneContent()
+        messageView.reRenderAssistantOutput()
 
         return text
     }

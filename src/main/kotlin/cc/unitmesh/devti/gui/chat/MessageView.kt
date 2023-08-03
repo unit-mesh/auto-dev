@@ -2,6 +2,8 @@ package cc.unitmesh.devti.gui.chat
 
 
 import cc.unitmesh.devti.gui.block.*
+import com.intellij.openapi.actionSystem.ex.ActionUtil
+import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.ProjectManager
@@ -9,13 +11,16 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.ui.JBEmptyBorder
+import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
+import com.intellij.util.ui.components.BorderLayoutPanel
 import java.awt.*
 import javax.swing.*
 import kotlin.jvm.internal.Ref
 
-class MessageView(private val message: String, role: ChatRole, private val displayText: String) :
+class MessageView(private val message: String, val role: ChatRole, private val displayText: String) :
     JBPanel<MessageView>() {
+    private val myNameLabel: Component
     private val component: DisplayComponent = DisplayComponent(message)
     private var answer: String? = null
     private var centerPanel: JPanel = JPanel(VerticalLayout(JBUI.scale(8)))
@@ -29,6 +34,15 @@ class MessageView(private val message: String, role: ChatRole, private val displ
             ChatRole.User -> JBColor(0xE0EEF7, 0x2d2f30)
         }
 
+        val authorLabel = JLabel()
+        authorLabel.setFont(JBFont.h4())
+        authorLabel.setText(when (role) {
+            ChatRole.System -> "System"
+            ChatRole.Assistant -> "Assistant"
+            ChatRole.User -> "User"
+        })
+        myNameLabel = authorLabel
+
         this.border = JBEmptyBorder(8)
         layout = BorderLayout(JBUI.scale(8), 0)
 
@@ -36,6 +50,7 @@ class MessageView(private val message: String, role: ChatRole, private val displ
         centerPanel.isOpaque = false
         centerPanel.border = JBUI.Borders.emptyRight(8)
 
+        centerPanel.add(myNameLabel)
         add(centerPanel, BorderLayout.CENTER)
 
         if (role == ChatRole.User) {
@@ -47,6 +62,25 @@ class MessageView(private val message: String, role: ChatRole, private val displ
             component.repaint()
             centerPanel.add(component)
         }
+    }
+
+    private fun createTitlePanel(): JPanel {
+        val borderLayoutPanel = BorderLayoutPanel()
+        borderLayoutPanel.setOpaque(false)
+        borderLayoutPanel.addToCenter(this.myNameLabel)
+        val group = ActionUtil.getActionGroup("AutoDev.ToolWindow.Message.Toolbar.Assistant")
+
+        if (group != null) {
+            val actionToolbar = ActionToolbarImpl(javaClass.getName(), group, true)
+            actionToolbar.setLayoutPolicy(0)
+            actionToolbar.component.setOpaque(false)
+            actionToolbar.component.setBorder(JBUI.Borders.empty())
+            actionToolbar.setTargetComponent(this)
+            borderLayoutPanel.addToRight(actionToolbar.component)
+        }
+
+        borderLayoutPanel.setOpaque(false)
+        return borderLayoutPanel
     }
 
     private fun renderInPartView(message: SimpleMessage) {
@@ -81,11 +115,15 @@ class MessageView(private val message: String, role: ChatRole, private val displ
         }
     }
 
-    fun doneContent() {
+    fun reRenderAssistantOutput() {
         val displayText = component.text
 
         ApplicationManager.getApplication().invokeLater {
             centerPanel.remove(component)
+            centerPanel.updateUI()
+
+            centerPanel.add(myNameLabel)
+            centerPanel.add(createTitlePanel())
 
             val message = SimpleMessage(displayText, displayText, ChatRole.Assistant)
             renderInPartView(message)
