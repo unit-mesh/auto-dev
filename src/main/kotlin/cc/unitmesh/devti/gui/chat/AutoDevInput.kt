@@ -14,6 +14,7 @@ import com.intellij.openapi.editor.actions.EnterAction
 import com.intellij.openapi.editor.actions.IncrementalFindAction
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider
 import com.intellij.openapi.fileTypes.FileTypes
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
@@ -36,13 +37,14 @@ enum class AutoDevInputTrigger {
 
 interface AutoDevInputListener : EventListener {
     fun editorAdded(editor: EditorEx) {}
-    fun onSubmit(component: AutoDevInputField, trigger: AutoDevInputTrigger) {}
+    fun onSubmit(component: AutoDevInputSection, trigger: AutoDevInputTrigger) {}
 }
 
 class AutoDevInputField(
     project: Project,
     private val listeners: List<DocumentListener>,
     val disposable: Disposable?,
+    val inputSection: AutoDevInputSection,
 ) : EditorTextField(project, FileTypes.PLAIN_TEXT), Disposable {
     private val editorListeners: EventDispatcher<AutoDevInputListener> =
         EventDispatcher.create(AutoDevInputListener::class.java)
@@ -88,7 +90,7 @@ class AutoDevInputField(
         connect.subscribe(topic, object : AnActionListener {
             override fun afterActionPerformed(action: AnAction, event: AnActionEvent, result: AnActionResult) {
                 if (event.dataContext.getData(CommonDataKeys.EDITOR) === this@AutoDevInputField.editor && action is EnterAction) {
-                    editorListeners.multicaster.onSubmit(this@AutoDevInputField, AutoDevInputTrigger.Key)
+                    editorListeners.multicaster.onSubmit(inputSection, AutoDevInputTrigger.Key)
                 }
             }
         })
@@ -119,13 +121,19 @@ class AutoDevInputField(
     }
 
     override fun getBackground(): Color {
-        val editor = editor
-        if (editor != null) {
-            val colorsScheme = editor.colorsScheme
-            return colorsScheme.defaultBackground
-        }
-        return super.getBackground()
+        val editor = editor ?: return super.getBackground()
+        return editor.colorsScheme.defaultBackground
     }
+
+    override fun getData(dataId: String): Any? {
+        if (!PlatformCoreDataKeys.FILE_EDITOR.`is`(dataId)) {
+            return super.getData(dataId)
+        }
+
+        val it = editor ?: return super.getData(dataId)
+        return TextEditorProvider.getInstance().getTextEditor(it)
+    }
+
 
     override fun dispose() {
         listeners.forEach { editor?.document?.removeDocumentListener(it) }

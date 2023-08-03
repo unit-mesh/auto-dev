@@ -2,6 +2,7 @@ package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.block.whenDisposed
+import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.ui.NullableComponent
 import com.intellij.openapi.wm.IdeFocusManager
@@ -64,6 +65,19 @@ class ChatCodingComponent(private val chatCodingService: ChatCodingService, val 
         myScrollPane.verticalScrollBar.autoscrolls = true
 
         inputSection = AutoDevInputSection(chatCodingService, chatCodingService.project, disposable, this)
+        inputSection.addListener(object : AutoDevInputListener {
+            override fun onSubmit(component: AutoDevInputSection, trigger: AutoDevInputTrigger) {
+                val prompt = component.text
+                component.text = ""
+                val context = ChatContext(null, "", "")
+
+                chatCodingService.actionType = ChatActionType.CHAT
+                chatCodingService.handlePromptAndResponse(this@ChatCodingComponent, object : ContextPrompter() {
+                    override fun displayPrompt() = prompt
+                    override fun requestPrompt() = prompt
+                }, context)
+            }
+        })
         mainPanel.add(inputSection, BorderLayout.SOUTH)
 
         disposable?.whenDisposed(disposable) {

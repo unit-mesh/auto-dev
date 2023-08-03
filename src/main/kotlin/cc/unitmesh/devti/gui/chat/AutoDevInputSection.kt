@@ -1,28 +1,31 @@
 package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Presentation
+import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
+import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.impl.InternalDecorator
 import com.intellij.ui.content.ContentManager
+import com.intellij.util.EventDispatcher
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.components.BorderLayoutPanel
-import java.awt.BorderLayout
+import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.event.ActionEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.Box
-import javax.swing.JButton
 import javax.swing.JComponent
-import javax.swing.JPanel
 import kotlin.math.max
 import kotlin.math.min
 
@@ -34,13 +37,39 @@ class AutoDevInputSection(
 ) : BorderLayoutPanel() {
     private val input: AutoDevInputField
     private val documentListener: DocumentListener
+    private val buttonPresentation: Presentation
+    private val button: ActionButton
+    private val dispatcher: EventDispatcher<AutoDevInputListener> =
+        EventDispatcher.create(AutoDevInputListener::class.java)
+    var text: String
+        get() {
+            return input.text
+        }
+        set(text) {
+            input.recreateDocument()
+            input.text = text
+        }
+
 
     init {
         val presentation = Presentation(AutoDevBundle.message("devti.chat.send"))
-        val jButton = JButton(AutoDevBundle.message("devti.chat.send"))
-        presentation.icon = jButton.icon
+        presentation.setIcon(AutoDevIcons.Send)
+        buttonPresentation = presentation
+        button = ActionButton(
+            DumbAwareAction.create {
+                object : DumbAwareAction("") {
+                    override fun actionPerformed(e: AnActionEvent) {
+                        dispatcher.multicaster.onSubmit(this@AutoDevInputSection, AutoDevInputTrigger.Button)
+                    }
+                }.actionPerformed(it)
+            },
+            buttonPresentation,
+            "",
+            Dimension(20, 20)
+        )
 
-        input = AutoDevInputField(project, listOf(), disposable)
+
+        input = AutoDevInputField(project, listOf(), disposable, this)
         documentListener = object : DocumentListener {
             override fun documentChanged(event: DocumentEvent) {
                 val i = input.preferredSize.height
@@ -53,24 +82,6 @@ class AutoDevInputSection(
         input.addDocumentListener(documentListener)
         input.recreateDocument()
 
-        val listener: (ActionEvent) -> Unit = {
-            val prompt = input.text
-            input.text = ""
-            val context = ChatContext(null, "", "")
-
-            chatCodingService.actionType = ChatActionType.CHAT
-            chatCodingService.handlePromptAndResponse(panel, object : ContextPrompter() {
-                override fun displayPrompt() = prompt
-                override fun requestPrompt() = prompt
-            }, context)
-        }
-
-        input.addListener(object : AutoDevInputListener {
-            override fun onSubmit(component: AutoDevInputField, trigger: AutoDevInputTrigger) {
-                listener.invoke(ActionEvent(component, 0, trigger.name))
-            }
-        })
-
         addToCenter(input)
 
         val borderLayoutPanel = BorderLayoutPanel()
@@ -81,9 +92,8 @@ class AutoDevInputSection(
                 ideFocusManager.requestFocus(input, true)
             }
         })
-
         borderLayoutPanel.addToCenter(horizontalGlue)
-        borderLayoutPanel.addToRight(jButton)
+        borderLayoutPanel.addToRight(button)
         addToBottom(borderLayoutPanel)
     }
 
@@ -98,6 +108,20 @@ class AutoDevInputSection(
         focusManager.requestFocus(input, true)
         this.input.recreateDocument()
         this.input.text = trimMargin
+    }
+
+    override fun getBackground(): Color? {
+        // it seems that the input field is not ready when this method is called
+        if (this.input == null) return super.getBackground()
+
+        val editor = input.editor ?: return super.getBackground()
+        return editor.colorsScheme.defaultBackground
+    }
+
+    override fun setBackground(bg: Color?) {}
+
+    fun addListener(listener: AutoDevInputListener) {
+        dispatcher.addListener(listener)
     }
 
     fun setSendingMode(sendingMode: Boolean) {
