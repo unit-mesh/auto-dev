@@ -5,7 +5,6 @@ import cc.unitmesh.devti.provider.context.TestFileContext
 import com.intellij.execution.Executor
 import com.intellij.execution.ExecutorRegistryImpl
 import com.intellij.execution.RunManager
-import com.intellij.execution.configurations.LocatableConfigurationBase
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.ide.actions.runAnything.RunAnythingPopupUI
 import com.intellij.openapi.actionSystem.DataContext
@@ -71,13 +70,36 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
             ExtensionPointName.create("cc.unitmesh.testContextProvider")
 
         fun context(psiElement: PsiElement): WriteTestService? {
-            val lang = psiElement.language.displayName
+            val lang = psiElement.language.displayName.lowercase()
             val extensionList = EP_NAME.extensionList
-            val providers = extensionList.filter {
-                it.language?.lowercase() == lang.lowercase() && it.isApplicable(psiElement)
+            val testServices = filterByLang(extensionList, lang)
+
+            val service = if (testServices.isNotEmpty()) {
+                testServices.first()
+            } else {
+                // if lang == "TypeScript JSX", we just use TypeScript
+                val firstPartLang = lang.split(" ")[0]
+                val partLang = filterByLang(extensionList, firstPartLang)
+                if (partLang.isNotEmpty()) {
+                    partLang[0]
+                } else {
+                    logger<WriteTestService>().warn("No context prompter found for language $lang, will use default")
+                    return null
+                }
             }
 
-            return providers.firstOrNull()
+            return service
+        }
+
+        private fun filterByLang(
+            extensionList: List<WriteTestService>,
+            langLowercase: String
+        ): List<WriteTestService> {
+            val contextPrompter = extensionList.filter {
+                it.language?.lowercase() == langLowercase
+            }
+
+            return contextPrompter
         }
     }
 }
