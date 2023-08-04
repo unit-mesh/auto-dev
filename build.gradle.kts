@@ -255,7 +255,7 @@ project(":plugin") {
         }
 
         withType<PublishPluginTask> {
-            token.set("publishToken")
+            token.set(environment("PUBLISH_TOKEN"))
             channels.set(properties("pluginVersion").map {
                 listOf(
                     it.split('-').getOrElse(1) { "default" }.split('.').first()
