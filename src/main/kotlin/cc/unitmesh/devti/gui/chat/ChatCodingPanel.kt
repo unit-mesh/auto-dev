@@ -43,6 +43,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
     private val focusMouseListener: MouseAdapter
     private var panelContent: DialogPanel
     private val myScrollPane: JBScrollPane
+
     init {
         focusMouseListener = object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
@@ -61,8 +62,8 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
             ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
             ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
         )
-        myScrollPane.border = JBEmptyBorder(10, 15, 10, 15)
         myScrollPane.verticalScrollBar.autoscrolls = true
+        myScrollPane.background = UIUtil.getListBackground()
 
         progressBar = JProgressBar()
 
@@ -87,24 +88,24 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         })
 
         panelContent = panel {
-                row {
-                    cell(myScrollPane)
-                        .verticalAlign(VerticalAlign.FILL)
-                        .horizontalAlign(HorizontalAlign.FILL)
-                }.resizableRow()
+            row {
+                cell(myScrollPane)
+                    .verticalAlign(VerticalAlign.FILL)
+                    .horizontalAlign(HorizontalAlign.FILL)
+            }.resizableRow()
 
-                row {
-                    cell(progressBar).horizontalAlign(HorizontalAlign.FILL)
-                }
-
-                row {
-                    cell(actionLink).horizontalAlign(HorizontalAlign.RIGHT)
-                }
-
-                row {
-                    cell(inputSection).horizontalAlign(HorizontalAlign.FILL)
-                }
+            row {
+                cell(progressBar).horizontalAlign(HorizontalAlign.FILL)
             }
+
+            row {
+                cell(actionLink).horizontalAlign(HorizontalAlign.RIGHT)
+            }
+
+            row {
+                cell(inputSection).horizontalAlign(HorizontalAlign.FILL)
+            }
+        }
 
         setContent(panelContent)
 
@@ -114,7 +115,6 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
             myList.removeAll()
         }
     }
-
 
     fun focusInput() {
         val focusManager = IdeFocusManager.getInstance(chatCodingService.project)
