@@ -208,4 +208,11 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         inputSection.text = trimMargin
         this.focusInput()
     }
+
+    // TODO: add session and stop manage
+    fun clearChat() {
+        progressBar.isVisible = false
+        myList.removeAll()
+        updateUI()
+    }
 }

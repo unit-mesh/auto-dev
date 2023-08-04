@@ -1,13 +1,18 @@
 package cc.unitmesh.devti.gui.toolbar
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
+import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction
 import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.components.panels.Wrapper
 import com.intellij.util.ui.JBInsets
 import com.intellij.util.ui.JBUI
+import java.awt.event.ActionEvent
 import javax.swing.JButton
 import javax.swing.JComponent
 
@@ -23,6 +28,15 @@ class NewChatAction : DumbAwareAction(), CustomComponentAction {
                 putClientProperty("ActionToolbar.smallVariant", true)
                 putClientProperty("customButtonInsets", JBInsets(1).asUIResource())
                 setOpaque(false)
+                addActionListener { event: ActionEvent? ->
+                    val project = ProjectManager.getInstance().openProjects.firstOrNull() ?: return@addActionListener
+                    val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(
+                        AutoDevToolWindowFactory.Util.id)
+                    val contentManager = toolWindowManager?.contentManager
+                    contentManager?.component?.components?.filterIsInstance<ChatCodingPanel>()?.firstOrNull()?.let {
+                        it.clearChat()
+                    }
+                }
             }
         }
         return Wrapper(button).also {
