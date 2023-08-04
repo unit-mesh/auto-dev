@@ -4,6 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
+import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
@@ -27,5 +28,9 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
 
         val toolWindowEx = toolWindow as ToolWindowEx
         toolWindowEx.contentManager.addContent(content)
+    }
+
+    override fun init(toolWindow: ToolWindow) {
+        toolWindow.setTitleActions(listOfNotNull(ActionUtil.getActionGroup("AutoDev.ToolWindow.Chat.TitleActions")))
     }
 }

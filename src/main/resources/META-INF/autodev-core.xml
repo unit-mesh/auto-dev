@@ -230,11 +230,13 @@
                     class="cc.unitmesh.devti.gui.snippet.AutoDevCopyToClipboardAction"/>
         </group>
 
+        <group id="AutoDev.ToolWindow.Chat.TitleActions">
+            <action id="AutoDev.ToolWindow.NewChatAction" class="cc.unitmesh.devti.gui.toolbar.NewChatAction"/>
+        </group>
+
         <group id="AutoDev.ToolWindow.Message.Toolbar.Assistant">
             <action id="AutoDev.ToolWindow.Message.Like"
                     class="cc.unitmesh.devti.gui.chat.message.AutoDevRateMessageAction$Like"/>
-            <!--            <action id="AutoDev.ToolWindow.Message.Dislike"-->
-            <!--                    class="cc.unitmesh.devti.gui.chat.message.AutoDevRateMessageAction$Dislike"/>-->
         </group>
 
     </actions>
