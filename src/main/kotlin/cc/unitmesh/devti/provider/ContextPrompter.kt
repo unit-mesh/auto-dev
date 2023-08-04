@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.provider
 
 import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.provider.builtin.DefaultContextPrompter
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import com.intellij.openapi.diagnostic.logger

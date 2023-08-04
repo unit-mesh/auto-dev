@@ -142,7 +142,7 @@
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
 
-        <chatContextProvider implementation="cc.unitmesh.devti.provider.LanguageContextProvider"/>
+        <chatContextProvider implementation="cc.unitmesh.devti.provider.builtin.LanguageContextProvider"/>
     </extensions>
 
     <actions>
