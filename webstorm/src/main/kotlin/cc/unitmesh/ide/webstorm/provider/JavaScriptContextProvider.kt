@@ -10,12 +10,9 @@ import com.intellij.javascript.nodejs.PackageJsonDependency
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
-import com.intellij.util.PlatformUtils
 
 class JavaScriptContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
-        if (PlatformUtils.isWebStorm()) return true
-
         val sourceFile: PsiFile = creationContext.sourceFile ?: return false
         return LanguageApplicableUtil.isJavaScriptApplicable(sourceFile.language)
     }

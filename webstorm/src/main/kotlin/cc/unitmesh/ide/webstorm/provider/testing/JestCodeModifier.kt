@@ -3,21 +3,13 @@ package cc.unitmesh.ide.webstorm.provider.testing
 import cc.unitmesh.ide.webstorm.LanguageApplicableUtil
 import com.intellij.lang.Language
 import com.intellij.lang.javascript.psi.JSFile
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ReadAction
-import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
-import com.intellij.util.PlatformUtils
-import kotlin.jvm.internal.Ref
 
 class JestCodeModifier : JavaScriptTestCodeModifier("jest") {
     override fun isApplicable(language: Language): Boolean {
-        if (PlatformUtils.isWebStorm()) return true
-
         return LanguageApplicableUtil.isJavaScriptApplicable(language)
     }
 
