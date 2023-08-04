@@ -3,16 +3,22 @@ package cc.unitmesh.devti.gui.chat
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.block.whenDisposed
 import cc.unitmesh.devti.provider.ContextPrompter
+import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.ui.NullableComponent
+import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
 import com.intellij.ui.OnePixelSplitter
+import com.intellij.ui.components.ActionLink
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
+import com.intellij.ui.dsl.builder.*
+import com.intellij.ui.dsl.gridLayout.HorizontalAlign
+import com.intellij.ui.dsl.gridLayout.VerticalAlign
 import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
@@ -21,19 +27,15 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import java.awt.BorderLayout
 import java.awt.event.*
-import javax.swing.JButton
-import javax.swing.JPanel
-import javax.swing.JProgressBar
-import javax.swing.ScrollPaneConstants
+import javax.swing.*
 
 
 class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disposable: Disposable?) :
-    JBPanel<ChatCodingPanel>(),
+    SimpleToolWindowPanel(true, true),
     NullableComponent {
     private var progressBar: JProgressBar
     private val myTitle = JBLabel("Conversation")
     private val myList = JPanel(VerticalLayout(JBUI.scale(10)))
-    private val mainPanel = JPanel(BorderLayout(0, JBUI.scale(8)))
     private val myScrollPane = JBScrollPane(
         myList,
         ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -43,9 +45,6 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
     private val focusMouseListener: MouseAdapter
 
     init {
-        val splitter = OnePixelSplitter(true, .98f)
-        splitter.dividerWidth = 2
-
         focusMouseListener = object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
                 focusInput()
@@ -55,24 +54,20 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         myTitle.foreground = JBColor.namedColor("Label.infoForeground", JBColor(Gray.x80, Gray.x8C))
         myTitle.font = JBFont.label()
 
-        layout = BorderLayout(JBUI.scale(7), 0)
-        background = UIUtil.getListBackground()
-        mainPanel.isOpaque = false
-        add(mainPanel, BorderLayout.CENTER)
-
         myList.isOpaque = true
         myList.background = UIUtil.getListBackground()
         myScrollPane.border = JBEmptyBorder(10, 15, 10, 15)
 
-        splitter.firstComponent = myScrollPane
-
         progressBar = JProgressBar()
-        splitter.secondComponent = progressBar
-        mainPanel.add(splitter)
+
         myScrollPane.verticalScrollBar.autoscrolls = true
 
+        val actionLink = ActionLink(AutoDevBundle.message("label.submit.issue")) {
+            BrowserUtil.browse("https://github.com/unit-mesh/auto-dev/issues")
+        }
+        actionLink.setExternalLinkIcon()
+
         inputSection = AutoDevInputSection(chatCodingService.project, disposable)
-        mainPanel.add(inputSection, BorderLayout.SOUTH)
         inputSection.addListener(object : AutoDevInputListener {
             override fun onSubmit(component: AutoDevInputSection, trigger: AutoDevInputTrigger) {
                 val prompt = component.text
@@ -87,12 +82,30 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
             }
         })
 
+        setContent(
+            panel {
+                row {
+                    cell(myList).verticalAlign(VerticalAlign.FILL)
+                }
+                row {
+                    cell(progressBar).horizontalAlign(HorizontalAlign.FILL)
+                }
+                row {
+                    cell(actionLink).horizontalAlign(HorizontalAlign.RIGHT)
+                }
+                row {
+                    cell(inputSection).horizontalAlign(HorizontalAlign.FILL)
+                }
+            }
+        )
+
         inputSection.text = ""
 
         disposable?.whenDisposed(disposable) {
             myList.removeAll()
         }
     }
+
 
     fun focusInput() {
         val focusManager = IdeFocusManager.getInstance(chatCodingService.project)
@@ -127,6 +140,8 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         if (myList.componentCount > 0) {
             myList.remove(myList.componentCount - 1)
         }
+
+        progressBar.isVisible = true
 
         val result = updateMessageInUi(content)
 
@@ -180,7 +195,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         return text
     }
 
-    fun setContent(trimMargin: String) {
+    fun setInput(trimMargin: String) {
         inputSection.text = trimMargin
         this.focusInput()
     }

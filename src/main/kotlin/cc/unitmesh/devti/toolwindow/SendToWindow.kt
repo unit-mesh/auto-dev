@@ -62,6 +62,6 @@ fun chatWithSelection(
     contentManager?.addContent(content!!)
 
     toolWindowManager?.activate {
-        contentPanel.setContent("\n```$language\n$prefixText\n```")
+        contentPanel.setInput("\n```$language\n$prefixText\n```")
     }
 }
