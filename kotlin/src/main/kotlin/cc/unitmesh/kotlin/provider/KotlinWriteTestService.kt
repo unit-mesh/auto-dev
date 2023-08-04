@@ -5,6 +5,7 @@ import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.devti.provider.WriteTestService
 import cc.unitmesh.kotlin.context.KotlinClassContextBuilder
+import com.intellij.execution.configurations.RunProfile
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
@@ -16,16 +17,20 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiJavaFile
 import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.idea.quickfix.createFromUsage.callableBuilder.getReturnTypeReference
 import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.psi.*
+import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration
 import java.io.File
 
 class KotlinWriteTestService : WriteTestService() {
     companion object {
         val log = logger<KotlinWriteTestService>()
+    }
+
+    override fun runConfigurationClass(project: Project): Class<out RunProfile> {
+        return GradleRunConfiguration::class.java
     }
 
     override fun isApplicable(element: PsiElement): Boolean {

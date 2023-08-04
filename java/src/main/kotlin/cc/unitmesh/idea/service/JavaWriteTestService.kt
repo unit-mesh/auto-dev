@@ -4,6 +4,7 @@ import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.devti.provider.WriteTestService
+import com.intellij.execution.configurations.RunProfile
 import com.intellij.lang.Language
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.command.WriteCommandAction
@@ -16,11 +17,12 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiClassReferenceType
+import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration
 import java.io.File
 
 class JavaWriteTestService : WriteTestService() {
-    companion object {
-        val log = logger<JavaWriteTestService>()
+    override fun runConfigurationClass(project: Project): Class<out RunProfile> {
+        return GradleRunConfiguration::class.java
     }
 
     override fun isApplicable(element: PsiElement): Boolean {
@@ -180,5 +182,9 @@ class JavaWriteTestService : WriteTestService() {
 
             testFile
         }
+    }
+
+    companion object {
+        val log = logger<JavaWriteTestService>()
     }
 }

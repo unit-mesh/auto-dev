@@ -39,7 +39,7 @@
         <!--                      implementation="cc.unitmesh.devti.editor.inlay.TypeOverHandler"/>-->
 
         <intentionAction>
-            <className>cc.unitmesh.devti.intentions.AIAssistantIntention</className>
+            <className>cc.unitmesh.devti.intentions.AutoDevIntention</className>
             <categoryKey>intention.category.llm</categoryKey>
         </intentionAction>
 
@@ -53,7 +53,7 @@
     </extensions>
 
     <extensionPoints>
-        <extensionPoint qualifiedName="cc.unitmesh.aiAssistantIntention"
+        <extensionPoint qualifiedName="cc.unitmesh.autoDevIntention"
                         beanClass="com.intellij.codeInsight.intention.IntentionActionBean"
                         dynamic="true">
             <with tag="className" implements="com.intellij.codeInsight.intention.IntentionAction"/>
@@ -121,26 +121,26 @@
     <!--    </projectListeners>-->
 
     <extensions defaultExtensionNs="cc.unitmesh">
-        <aiAssistantIntention>
+        <autoDevIntention>
             <className>cc.unitmesh.devti.intentions.NewChatWithCodeIntention</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
-        </aiAssistantIntention>
-        <aiAssistantIntention>
+        </autoDevIntention>
+        <autoDevIntention>
             <className>cc.unitmesh.devti.intentions.CodeCompletionIntention</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
-        </aiAssistantIntention>
-        <aiAssistantIntention>
+        </autoDevIntention>
+        <autoDevIntention>
             <className>cc.unitmesh.devti.intentions.CodeCompletionInlayIntention</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
-        </aiAssistantIntention>
-        <aiAssistantIntention>
+        </autoDevIntention>
+        <autoDevIntention>
             <className>cc.unitmesh.devti.intentions.WriteTestIntention</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
-        </aiAssistantIntention>
+        </autoDevIntention>
 
         <chatContextProvider implementation="cc.unitmesh.devti.provider.LanguageContextProvider"/>
     </extensions>
@@ -231,10 +231,10 @@
         </group>
 
         <group id="AutoDev.ToolWindow.Message.Toolbar.Assistant">
-            <action id="AIAssistant.ToolWindow.Message.Like"
+            <action id="AutoDev.ToolWindow.Message.Like"
                     class="cc.unitmesh.devti.gui.chat.message.AutoDevRateMessageAction$Like"/>
-<!--            <action id="AIAssistant.ToolWindow.Message.Dislike"-->
-<!--                    class="cc.unitmesh.devti.gui.chat.message.AutoDevRateMessageAction$Dislike"/>-->
+            <action id="AutoDev.ToolWindow.Message.Dislike"
+                    class="cc.unitmesh.devti.gui.chat.message.AutoDevRateMessageAction$Dislike"/>
         </group>
 
     </actions>

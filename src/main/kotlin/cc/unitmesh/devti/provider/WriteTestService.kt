@@ -5,6 +5,8 @@ import cc.unitmesh.devti.provider.context.TestFileContext
 import com.intellij.execution.Executor
 import com.intellij.execution.ExecutorRegistryImpl
 import com.intellij.execution.RunManager
+import com.intellij.execution.configurations.LocatableConfigurationBase
+import com.intellij.execution.configurations.RunProfile
 import com.intellij.ide.actions.runAnything.RunAnythingPopupUI
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.diagnostic.logger
@@ -15,7 +17,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.serviceContainer.LazyExtensionInstance
 import com.intellij.util.xmlb.annotations.Attribute
-import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration
 
 abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
     @Attribute("language")
@@ -25,6 +26,7 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
     var implementationClass: String? = null
 
     override fun getImplementationClassName(): String? = implementationClass
+    abstract fun runConfigurationClass(project: Project): Class<out RunProfile>
     abstract fun isApplicable(element: PsiElement): Boolean
     abstract fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext?
     abstract fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext>
@@ -33,7 +35,8 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
         val runManager = RunManager.getInstance(project)
         val allConfigurationsList = runManager.allConfigurationsList
         val testConfig = allConfigurationsList.firstOrNull {
-            it.name == virtualFile.nameWithoutExtension && it is GradleRunConfiguration
+            val runConfigureClass = runConfigurationClass(project)
+            it.name == virtualFile.nameWithoutExtension && (it.javaClass == runConfigureClass)
         }
 
         if (testConfig == null) {
@@ -64,7 +67,8 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
 
     companion object {
         val log = logger<WriteTestService>()
-        private val EP_NAME: ExtensionPointName<WriteTestService> = ExtensionPointName.create("cc.unitmesh.testContextProvider")
+        private val EP_NAME: ExtensionPointName<WriteTestService> =
+            ExtensionPointName.create("cc.unitmesh.testContextProvider")
 
         fun context(psiElement: PsiElement): WriteTestService? {
             val lang = psiElement.language.displayName

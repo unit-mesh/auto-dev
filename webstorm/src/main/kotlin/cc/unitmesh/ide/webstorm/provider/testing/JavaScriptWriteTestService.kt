@@ -4,7 +4,11 @@ import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.devti.provider.WriteTestService
 import cc.unitmesh.ide.webstorm.LanguageApplicableUtil
+import com.intellij.execution.configurations.LocatableConfigurationBase
+import com.intellij.execution.configurations.RunProfile
+import com.intellij.lang.javascript.buildTools.npm.rc.NpmRunConfiguration
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.externalSystem.service.execution.ExternalSystemRunConfiguration
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiElement
@@ -14,6 +18,10 @@ import com.intellij.util.PlatformUtils
 
 
 class JavaScriptWriteTestService : WriteTestService() {
+    override fun runConfigurationClass(project: Project): Class<out RunProfile> {
+        return NpmRunConfiguration::class.java
+    }
+
     override fun isApplicable(element: PsiElement): Boolean {
         if (PlatformUtils.isWebStorm()) return true
 

@@ -15,7 +15,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import javax.swing.Icon
 
-class AIAssistantIntention : IntentionAction, Iconable {
+class AutoDevIntention : IntentionAction, Iconable {
     override fun startInWriteAction(): Boolean = false
     override fun getText(): String = AutoDevBundle.message("intentions.assistant.name")
     override fun getFamilyName(): String = AutoDevBundle.message("intentions.assistant.name")
@@ -40,7 +40,7 @@ class AIAssistantIntention : IntentionAction, Iconable {
 
     companion object {
         val EP_NAME: ExtensionPointName<IntentionActionBean> =
-            ExtensionPointName<IntentionActionBean>("cc.unitmesh.aiAssistantIntention")
+            ExtensionPointName<IntentionActionBean>("cc.unitmesh.autoDevIntention")
 
         fun getAiAssistantIntentions(project: Project, editor: Editor, file: PsiFile): List<IntentionAction> {
             val intentions: MutableList<IntentionAction> = ArrayList()
