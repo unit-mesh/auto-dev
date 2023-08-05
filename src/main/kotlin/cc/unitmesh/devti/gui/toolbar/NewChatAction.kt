@@ -26,16 +26,16 @@ class NewChatAction : DumbAwareAction(), CustomComponentAction {
         val button: JButton = object : JButton(message) {
             init {
                 putClientProperty("ActionToolbar.smallVariant", true)
-                putClientProperty("customButtonInsets", JBInsets(1).asUIResource())
+                putClientProperty("customButtonInsets", JBInsets(1, 1, 1, 1).asUIResource())
                 setOpaque(false)
-                addActionListener { event: ActionEvent? ->
+                addActionListener {
                     val project = ProjectManager.getInstance().openProjects.firstOrNull() ?: return@addActionListener
                     val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(
-                        AutoDevToolWindowFactory.Util.id)
+                        AutoDevToolWindowFactory.Util.id
+                    )
                     val contentManager = toolWindowManager?.contentManager
-                    contentManager?.component?.components?.filterIsInstance<ChatCodingPanel>()?.firstOrNull()?.let {
-                        it.clearChat()
-                    }
+                    contentManager?.component?.components?.filterIsInstance<ChatCodingPanel>()?.firstOrNull()
+                        ?.clearChat()
                 }
             }
         }
