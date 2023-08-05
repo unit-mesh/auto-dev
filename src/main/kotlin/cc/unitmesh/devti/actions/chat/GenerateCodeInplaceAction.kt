@@ -1,8 +1,12 @@
 package cc.unitmesh.devti.actions.chat
 
+import cc.unitmesh.devti.editor.LLMCoroutineScopeService
 import cc.unitmesh.devti.editor.inlay.InlayComponent
 import cc.unitmesh.devti.editor.inlay.InlayComponent.Companion.add
 import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.llms.ConnectorFactory
+import cc.unitmesh.devti.parser.Code
+import cc.unitmesh.devti.provider.builtin.DefaultContextPrompter
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
@@ -12,13 +16,23 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.EditorModificationUtilEx
 import com.intellij.openapi.editor.Inlay
 import com.intellij.openapi.editor.InlayProperties
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.psi.PsiFile
-import kotlinx.coroutines.runBlocking
+import com.intellij.util.DocumentUtil
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import org.jetbrains.kotlin.asJava.classes.runReadAction
+import org.jetbrains.kotlin.idea.util.application.invokeLater
 import java.awt.event.ActionEvent
 import java.util.concurrent.atomic.AtomicReference
 import javax.swing.AbstractAction
@@ -90,7 +104,7 @@ class GenerateCodeInplaceAction : AnAction() {
         snippet.addAcceptCallback {
             val it: String? = snippet.code
             if (it != null) {
-//                insertAtCaret(project, editor, it)
+                insertAtCaret(project, editor, it)
             }
             Disposer.dispose(addCodeSnippetInlay)
         }
@@ -106,8 +120,35 @@ class GenerateCodeInplaceAction : AnAction() {
             Disposer.dispose(addCodeSnippetInlay)
         }
 
-        runBlocking {
-//            handleAIMessage(project, in)
+        LLMCoroutineScopeService.scope(project).launch {
+            val prompter = DefaultContextPrompter()
+            prompter.initContext(
+                chatCreationContext!!.action,
+                text!!,
+                chatCreationContext.sourceFile,
+                project,
+                ReadAction.compute<Int, Throwable> { editor.caretModel.offset }
+            )
+            val prompt = text + "\n" + prompter.collectionContext(chatCreationContext)
+
+            logger<GenerateCodeInplaceAction>().warn("Result: $prompt")
+
+            val stringFlow = ConnectorFactory().connector(project).stream(prompt, "")
+
+            var result = ""
+            stringFlow.collect { result += it }
+
+            logger<GenerateCodeInplaceAction>().warn("Result: $result")
+            ApplicationManager.getApplication().invokeLater {
+                val code = Code(chatCreationContext.sourceFile!!.language, result, true)
+                snippet.setCode(code, project, Disposer.newDisposable())
+            }
+        }
+    }
+
+    private fun insertAtCaret(project: Project, editor: Editor, text: String) {
+        WriteCommandAction.runWriteCommandAction(project) {
+            EditorModificationUtilEx.insertStringAtCaret(editor, text, false, true)
         }
     }
 

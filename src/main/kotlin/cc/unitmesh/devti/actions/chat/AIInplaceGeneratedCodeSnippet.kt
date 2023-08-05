@@ -74,9 +74,7 @@ class AIInplaceGeneratedCodeSnippet(state: State = State.WAITING_INITIAL_RESPONS
         if (editorInfo == null) {
             editorInfo = CodeBlockView.createStrippedCodeViewer(
                 project,
-                PropertyGraph(
-                    null as String?, false,
-                ).property<String>(code.text),
+                PropertyGraph(null as String?, false).property(code.text),
                 disposable,
                 code.language
             )
