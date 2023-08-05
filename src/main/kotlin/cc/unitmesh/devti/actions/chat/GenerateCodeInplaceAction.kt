@@ -6,6 +6,7 @@ import cc.unitmesh.devti.editor.inlay.InlayComponent.Companion.add
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.llms.ConnectorFactory
 import cc.unitmesh.devti.parser.Code
+import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.provider.builtin.DefaultContextPrompter
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatCreationContext
@@ -34,6 +35,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.kotlin.asJava.classes.runReadAction
 import org.jetbrains.kotlin.idea.util.application.invokeLater
 import java.awt.event.ActionEvent
+import java.awt.event.KeyEvent
 import java.util.concurrent.atomic.AtomicReference
 import javax.swing.AbstractAction
 import javax.swing.KeyStroke
@@ -73,8 +75,8 @@ class GenerateCodeInplaceAction : AnAction() {
         val inputMap = component.inputMap
         val project = inlay.editor.project ?: return
 
-        inputMap.put(KeyStroke.getKeyStroke(10, 0), PROMPT_SUBMIT_ACTION)
-        inputMap.put(KeyStroke.getKeyStroke(27, 0), PROMPT_CANCEL_ACTION)
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), PROMPT_SUBMIT_ACTION)
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), PROMPT_CANCEL_ACTION)
 
         val actionMap = component.actionMap
         actionMap.put(PROMPT_SUBMIT_ACTION, object : AbstractAction() {
@@ -131,7 +133,7 @@ class GenerateCodeInplaceAction : AnAction() {
             )
             val prompt = text + "\n" + prompter.collectionContext(chatCreationContext)
 
-            logger<GenerateCodeInplaceAction>().warn("Result: $prompt")
+            logger<GenerateCodeInplaceAction>().warn("request prompt: $prompt")
 
             val stringFlow = ConnectorFactory().connector(project).stream(prompt, "")
 
@@ -140,7 +142,8 @@ class GenerateCodeInplaceAction : AnAction() {
 
             logger<GenerateCodeInplaceAction>().warn("Result: $result")
             ApplicationManager.getApplication().invokeLater {
-                val code = Code(chatCreationContext.sourceFile!!.language, result, true)
+                val codeString = parseCodeFromString(result).firstOrNull() ?: "cannot find code"
+                val code = Code(chatCreationContext.sourceFile!!.language, codeString, true)
                 snippet.setCode(code, project, Disposer.newDisposable())
             }
         }
@@ -162,7 +165,7 @@ class GenerateCodeInplaceAction : AnAction() {
     }
 
     companion object {
-        const val PROMPT_CANCEL_ACTION = "ai.prompt.cancel"
-        const val PROMPT_SUBMIT_ACTION = "ai.prompt.submit"
+        const val PROMPT_CANCEL_ACTION = "autodev.prompt.cancel"
+        const val PROMPT_SUBMIT_ACTION = "audodev.prompt.submit"
     }
 }
