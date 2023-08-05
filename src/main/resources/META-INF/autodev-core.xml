@@ -190,6 +190,11 @@
                     description="Ask AutoDev create DDL code">
             </action>
 
+            <action id="cc.unitmesh.devti.actions.chat.GenerateCodeInplaceAction"
+                    class="cc.unitmesh.devti.actions.chat.GenerateCodeInplaceAction" text="Generate Code here"
+                    description="Ask AutoDev Generate Code here">
+            </action>
+
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </group>
 

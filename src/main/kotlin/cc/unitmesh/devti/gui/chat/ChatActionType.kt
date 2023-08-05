@@ -10,7 +10,8 @@ enum class ChatActionType {
     GEN_COMMIT_MESSAGE,
     FIX_ISSUE,
     CREATE_DDL,
-    CREATE_CHANGELOG;
+    CREATE_CHANGELOG,
+    CUSTOM_COMPLETE;
 
     override fun toString(): String {
         return instruction()
@@ -38,6 +39,7 @@ examples:
             CREATE_DDL -> "create ddl based on the given information"
             CREATE_CHANGELOG -> "generate release note"
             CHAT -> ""
+            CUSTOM_COMPLETE -> ""
         }
     }
 }
