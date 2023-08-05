@@ -14,6 +14,6 @@ interface LLMQueryContext {
     /**
      * for align correct [DtModel]
      */
-    @Deprecated("not used")
-    fun toUML(): String?
+    @Deprecated("not used", ReplaceWith("toQuery()"))
+    fun toUML(): String = toQuery()
 }

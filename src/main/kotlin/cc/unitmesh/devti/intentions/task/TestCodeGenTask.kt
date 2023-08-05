@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.intentions.task
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.context.CodeModifierProvider
+import cc.unitmesh.devti.context.modifier.CodeModifierProvider
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.intentions.WriteTestIntention
 import cc.unitmesh.devti.llms.ConnectorFactory

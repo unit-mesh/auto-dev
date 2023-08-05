@@ -46,4 +46,9 @@ object PsiUtils {
 
         return document.getLineNumber(index)
     }
+
+    const val EMPTY_DATA = "_"
+    fun addLineNumbers(string: String): String {
+        return string.lines().mapIndexed { index, line -> "${index + 1} $line" }.joinToString("\n")
+    }
 }

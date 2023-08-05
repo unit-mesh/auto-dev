@@ -34,8 +34,6 @@ class SimilarChunkContext(val language: Language, val paths: List<String>?, val 
         )
     )
 
-    override fun toUML(): String = toQuery()
-
     private fun commentCode(code: String, commentSymbol: String?): String {
         if (commentSymbol == null) return code
 

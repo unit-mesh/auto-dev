@@ -56,8 +56,8 @@ fun signature: ${signature ?: "_"}
      * + getBlog(): List<BlogPost>
      * ```
      */
-    override fun toUML(): String? {
-        return signature
+    override fun toUML(): String {
+        return signature ?: ""
     }
 
     override fun toJson(): String = Gson().toJson(

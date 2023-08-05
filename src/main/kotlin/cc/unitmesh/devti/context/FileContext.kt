@@ -45,10 +45,6 @@ class FileContext(
         }
     }
 
-    override fun toUML(): String {
-        return toQuery()
-    }
-
     override fun toJson(): String {
         return Gson().toJson(
             mapOf(
