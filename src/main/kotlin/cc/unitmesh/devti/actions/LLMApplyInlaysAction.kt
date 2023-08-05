@@ -42,12 +42,20 @@ class LLMApplyInlaysAction : EditorAction(ApplyInlaysHandler()), DumbAware {
         val blockIndent = CodeStyle.getIndentOptions(project, document).INDENT_SIZE
         val caretOffset = editor.caretModel.offset
         val line = document.getLineNumber(caretOffset)
-        if (isNonEmptyLinePrefix(document, line, caretOffset)) {
+
+        val caretOffsetAfterTab = EditorUtilCopy.indentLine(project, editor, line, blockIndent, caretOffset)
+//        if (isNonEmptyLinePrefix(document, line, caretOffset) || caretOffsetAfterTab < caretOffset) {
+//            return false
+//        }
+
+        val instance = LLMInlayManager.getInstance()
+        val tabRange = TextRange.create(caretOffset, caretOffsetAfterTab)
+
+        if (instance.countCompletionInlays(editor, tabRange) > 0) {
             return false
         }
-        val caretOffsetAfterTab = EditorUtilCopy.indentLine(project, editor, line, blockIndent, caretOffset)
 
-        return caretOffsetAfterTab >= caretOffset
+        return true
     }
 
 
@@ -61,9 +69,10 @@ class LLMApplyInlaysAction : EditorAction(ApplyInlaysHandler()), DumbAware {
         }
 
         override fun doExecute(editor: Editor, caret: Caret?, dataContext: DataContext) {
-            if (editor.isDisposed) return@doExecute
+            if (editor.isDisposed) return
             val project = editor.project ?: return
-            if (project.isDisposed) return@doExecute
+            if (project.isDisposed) return
+
 
             // todo: update this to use the new API
             logger.info("doExecute for applyInlays")

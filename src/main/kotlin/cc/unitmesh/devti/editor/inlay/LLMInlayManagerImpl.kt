@@ -18,6 +18,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.KeyWithDefaultValue
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.util.PsiUtilBase
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import com.intellij.util.concurrency.annotations.RequiresEdt
@@ -41,11 +42,8 @@ class LLMInlayManagerImpl : LLMInlayManager {
         var isAvailable: Boolean? = KEY_EDITOR_SUPPORTED[editor]
         if (isAvailable == null) {
             isAvailable = editor !is EditorWindow && editor !is ImaginaryEditor && (
-                    editor !is EditorEx ||
-                            !editor.isEmbeddedIntoDialogWrapper
-                    ) &&
-                    !editor.isViewer &&
-                    !editor.isOneLineMode
+                    editor !is EditorEx || !editor.isEmbeddedIntoDialogWrapper) &&
+                    !editor.isViewer && !editor.isOneLineMode
 
             KEY_EDITOR_SUPPORTED[editor] = isAvailable
         }
@@ -145,6 +143,21 @@ class LLMInlayManagerImpl : LLMInlayManager {
 
     override fun editorModified(editor: Editor) {
         editorModified(editor, editor.caretModel.offset)
+    }
+
+    override fun countCompletionInlays(editor: Editor, tabRange: TextRange): Int {
+        val inlays = collectInlays(editor, tabRange.startOffset, tabRange.endOffset)
+        if (inlays.isEmpty()) return 0
+
+        val completionCount = inlays.count {
+            it.getInlay()?.renderer?.javaClass?.name?.contains("LLMInlayRenderer") ?: false
+        }
+
+        if (completionCount > 0) {
+            logger.debug("Completion inlays found: $completionCount")
+        }
+
+        return completionCount
     }
 
     private fun disposeInlays(renderers: List<LLMInlayRenderer>) {

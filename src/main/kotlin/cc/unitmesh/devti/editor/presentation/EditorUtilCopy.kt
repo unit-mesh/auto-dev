@@ -3,16 +3,27 @@ package cc.unitmesh.devti.editor.presentation
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.actions.EditorActionUtil
 import com.intellij.openapi.project.Project
+import kotlin.math.min
 
 object EditorUtilCopy {
-    @JvmOverloads
+    fun indentLine(project: Project?, editor: Editor, lineNumber: Int, indent: Int, caretOffset: Int): Int {
+        return indentLine(
+            project,
+            editor,
+            lineNumber,
+            indent,
+            caretOffset,
+            EditorActionUtil.shouldUseSmartTabs(project, editor)
+        )
+    }
+
     fun indentLine(
         project: Project?,
         editor: Editor,
         lineNumber: Int,
         indent: Int,
         caretOffset: Int,
-        shouldUseSmartTabs: Boolean = EditorActionUtil.shouldUseSmartTabs(project, editor),
+        shouldUseSmartTabs: Boolean
     ): Int {
         val editorSettings = editor.settings
         val tabSize = editorSettings.getTabSize(project)
@@ -27,9 +38,7 @@ object EditorUtilCopy {
             lineEnd = document.getLineEndOffset(lineNumber)
             spacesEnd = lineStart
             var inTabs = true
-            while (spacesEnd <= lineEnd &&
-                spacesEnd != lineEnd
-            ) {
+            while (spacesEnd <= lineEnd && spacesEnd != lineEnd) {
                 val c = text[spacesEnd]
                 if (c != '\t') {
                     if (inTabs) {
@@ -47,37 +56,37 @@ object EditorUtilCopy {
             }
         }
         var newCaretOffset = caretOffset
-        if (newCaretOffset >= lineStart && newCaretOffset < lineEnd && spacesEnd == lineEnd) {
+        if (newCaretOffset in lineStart until lineEnd && spacesEnd == lineEnd) {
             spacesEnd = newCaretOffset
-            tabsEnd = Math.min(spacesEnd, tabsEnd)
+            tabsEnd = min(spacesEnd, tabsEnd)
         }
         val oldLength = getSpaceWidthInColumns(text, lineStart, spacesEnd, tabSize)
-        tabsEnd = getSpaceWidthInColumns(text, lineStart, tabsEnd, tabSize)
+        val tabsEnd2 = getSpaceWidthInColumns(text, lineStart, tabsEnd, tabSize)
         var newLength = oldLength + indent
         if (newLength < 0) {
             newLength = 0
         }
-        tabsEnd += indent
-        if (tabsEnd < 0) {
-            tabsEnd = 0
+        var tabsEnd3 = tabsEnd2 + indent
+        if (tabsEnd3 < 0) {
+            tabsEnd3 = 0
         }
         if (!shouldUseSmartTabs) {
-            tabsEnd = newLength
+            tabsEnd3 = newLength
         }
         val buf = StringBuilder(newLength)
         var i = 0
         while (i < newLength) {
-            if (tabSize > 0 && editorSettings.isUseTabCharacter(project) && i + tabSize <= tabsEnd) {
+            if (tabSize > 0 && editorSettings.isUseTabCharacter(project) && i + tabSize <= tabsEnd3) {
                 buf.append('\t')
                 i += tabSize
-                continue
+            } else {
+                buf.append(' ')
+                i++
             }
-            buf.append(' ')
-            i++
         }
         val newSpacesEnd = lineStart + buf.length
         if (newCaretOffset >= spacesEnd) {
-            newCaretOffset += buf.length - spacesEnd - lineStart
+            newCaretOffset += buf.length - (spacesEnd - lineStart)
         } else if (newCaretOffset >= lineStart && newCaretOffset > newSpacesEnd) {
             newCaretOffset = newSpacesEnd
         }

@@ -5,6 +5,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.TextRange
 import com.intellij.util.concurrency.annotations.RequiresEdt
 
 interface LLMInlayManager : Disposable {
@@ -25,6 +26,7 @@ interface LLMInlayManager : Disposable {
     fun editorModified(editor: Editor, changeOffset: Int)
 
     fun editorModified(editor: Editor)
+    fun countCompletionInlays(editor: Editor, tabRange: TextRange) : Int
 
     companion object {
         fun getInstance(): LLMInlayManager {
