@@ -29,6 +29,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.openapi.vcs.VcsException
 import com.intellij.openapi.vcs.changes.Change
+import com.intellij.openapi.vcs.changes.CommitContext
 import com.intellij.openapi.vcs.changes.ContentRevision
 import com.intellij.openapi.vcs.changes.CurrentContentRevision
 import com.intellij.project.stateStore
@@ -44,6 +45,35 @@ import kotlin.math.min
 @Service(Service.Level.PROJECT)
 class VcsPrompting(private val project: Project) {
     private val gitRepositoryManager = GitRepositoryManager.getInstance(project)
+
+    fun calculateDiff(collection: List<Change>, project: Project): String {
+        try {
+            val writer = StringWriter()
+            val destination = collection.filterNot { isBinaryOrTooLarge(it) }
+            val basePath = project.basePath ?: throw RuntimeException("Project base path is null.")
+            val patches = IdeaTextPatchBuilder.buildPatch(
+                project,
+                destination,
+                Path.of(basePath),
+                false,
+                true
+            )
+
+            UnifiedDiffWriter.write(
+                project,
+                project.stateStore.projectBasePath,
+                patches,
+                writer,
+                "\n",
+                null as CommitContext?,
+                emptyList()
+            )
+            val diffString = writer.toString()
+            return trimDiff(diffString)
+        } catch (e: VcsException) {
+            throw RuntimeException("Error calculating diff: ${e.message}", e)
+        }
+    }
 
     fun computeDiff(includedChanges: List<Change>): String {
         val changesByRepository = includedChanges

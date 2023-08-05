@@ -30,7 +30,7 @@ enum class ChatActionType {
         }
 
         val prompting = project.service<VcsPrompting>()
-        return prompting.computeDiff(changes)
+        return prompting.calculateDiff(changes, project)
     }
 
     val old_commit_prompt = """suggest 10 commit messages based on the following diff:
@@ -48,20 +48,22 @@ enum class ChatActionType {
 
     fun generateCommitMessage(diff: String): String {
         return """Write a cohesive yet descriptive commit message for a given diff. 
-            Make sure to include both information What was changed and Why.
-            Start with a short sentence in imperative form, no more than 50 characters long.
-            Then leave an empty line and continue with a more detailed explanation, if necessary.
-            Explanation should have less than 200 characters.
-            
-            examples:
-             - fix(authentication): add password regex pattern
-             - feat(storage): add new test cases
-            
-            Diff:
-            ```diff
-            $diff
-            ```
-            Commit message:""".trimIndent()
+Make sure to include both information What was changed and Why.
+Start with a short sentence in imperative form, no more than 50 characters long.
+Then leave an empty line and continue with a more detailed explanation, if necessary.
+Explanation should have less than 200 characters.
+
+examples:
+- fix(authentication): add password regex pattern
+- feat(storage): add new test cases
+
+Diff:
+
+```diff
+$diff
+```
+
+"""
     }
 
     fun instruction(lang: String = ""): String {
