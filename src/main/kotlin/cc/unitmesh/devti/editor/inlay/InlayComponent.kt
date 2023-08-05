@@ -7,7 +7,6 @@ import com.intellij.openapi.editor.Inlay
 import com.intellij.openapi.editor.InlayProperties
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.markup.TextAttributes
-import com.intellij.openapi.observable.util.whenDisposed
 import java.awt.*
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
@@ -17,6 +16,7 @@ import javax.swing.JComponent
 import javax.swing.JScrollPane
 import kotlin.math.max
 import kotlin.math.min
+import cc.unitmesh.devti.gui.block.whenDisposed
 
 class InlayComponent<T : JComponent?> private constructor(@JvmField var component: T) : JComponent(),
     EditorCustomElementRenderer {
@@ -71,6 +71,7 @@ class InlayComponent<T : JComponent?> private constructor(@JvmField var componen
 
             val viewport = scrollPane.viewport
             viewport.addComponentListener(componentListener)
+
             addBlockElement.whenDisposed {
                 editor.getContentComponent().remove(inlayComponent)
                 viewport.removeComponentListener(componentListener)

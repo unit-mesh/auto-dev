@@ -25,6 +25,7 @@ import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.fileTypes.UnknownFileType
 import com.intellij.openapi.observable.properties.GraphProperty
 import com.intellij.openapi.observable.properties.PropertyGraph
+import com.intellij.openapi.observable.util.whenDisposed
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
@@ -239,6 +240,10 @@ fun VirtualFile.findDocument(): Document? {
     return ReadAction.compute<Document, Throwable> {
         FileDocumentManager.getInstance().getDocument(this)
     }
+}
+
+fun Disposable.whenDisposed(listener: () -> Unit) {
+    Disposer.register(this) { listener() }
 }
 
 fun Disposable.whenDisposed(
