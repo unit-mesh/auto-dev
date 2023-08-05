@@ -24,5 +24,10 @@
         <promptStrategy
                 language="Python"
                 implementation="cc.unitmesh.pycharm.provider.PythonPromptStrategyAdvisor"/>
+
+        <testContextProvider
+                language="Python"
+                implementation="cc.unitmesh.pycharm.provider.PythonWriteTestService"/>
+
     </extensions>
 </idea-plugin>
