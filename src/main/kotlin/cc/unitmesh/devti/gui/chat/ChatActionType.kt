@@ -77,7 +77,6 @@ $diff
             GEN_COMMIT_MESSAGE -> {
                 generateCommitMessage(prepareVcsContext())
             }
-
             CREATE_DDL -> "create ddl based on the given information"
             CREATE_CHANGELOG -> "generate release note"
             CHAT -> ""

@@ -7,7 +7,7 @@ import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.actionSystem.AnActionEvent
 
 
-class FixThisBotAction : ChatBaseAction() {
+class FixThisAction : ChatBaseAction() {
     override fun getActionType(): ChatActionType {
         return ChatActionType.FIX_ISSUE
     }

@@ -198,8 +198,8 @@
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </group>
 
-        <action id="cc.unitmesh.devti.actions.chat.FixThisBotAction"
-                class="cc.unitmesh.devti.actions.chat.FixThisBotAction" text="Fix This (AutoDev)"
+        <action id="cc.unitmesh.devti.actions.chat.FixThisAction"
+                class="cc.unitmesh.devti.actions.chat.FixThisAction" text="Fix This (AutoDev)"
                 description="Ask AutoDev fi this code">
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
         </action>
