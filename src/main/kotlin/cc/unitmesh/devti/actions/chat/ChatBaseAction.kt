@@ -19,9 +19,7 @@ abstract class ChatBaseAction : AnAction() {
         private val logger = logger<OpenAIProvider>()
     }
 
-    override fun actionPerformed(event: AnActionEvent) {
-        executeAction(event)
-    }
+    override fun actionPerformed(event: AnActionEvent) = executeAction(event)
 
     open fun executeAction(event: AnActionEvent) {
         val project = event.project ?: return

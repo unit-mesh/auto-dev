@@ -27,7 +27,6 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
     private var customPromptConfig: CustomPromptConfig? = null
     private lateinit var mvcContextService: MvcContextService
     private var fileName = ""
-    private lateinit var changeListManager: ChangeListManager
     private lateinit var creationContext: ChatCreationContext
 
     override fun appendAdditionContext(context: String) {
@@ -42,7 +41,6 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
         offset: Int
     ) {
         super.initContext(actionType, selectedText, file, project, offset)
-        changeListManager = ChangeListManagerImpl.getInstance(project)
         mvcContextService = MvcContextService(project)
 
         lang = file?.language?.displayName ?: ""
@@ -156,7 +154,6 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
             }
 
             ChatActionType.GEN_COMMIT_MESSAGE -> {
-                prepareVcsContext()
             }
 
             ChatActionType.CREATE_DDL -> {
@@ -178,19 +175,6 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
         }
 
         return prompt
-    }
-
-    private fun prepareVcsContext() {
-        val changes = changeListManager.changeLists.flatMap {
-            it.changes
-        }
-
-//        EditorHistoryManager, after 2023.2, can use the following code
-//        val commitWorkflowUi: CommitWorkflowUi = project.service()
-//        val changes = commitWorkflowUi.getIncludedChanges()
-
-        val prompting = project!!.service<VcsPrompting>()
-        additionContext += prompting.computeDiff(changes)
     }
 
     private fun addFixIssueContext(selectedText: String) {
