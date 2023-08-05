@@ -279,6 +279,7 @@ project(":") {
         implementation(libs.bundles.markdown)
 
         implementation("org.jetbrains:markdown:0.2.0.pre-55")
+//        implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.9.1")
 
         implementation(libs.kotlinx.serialization.json)
         // jackson-module-kotlin

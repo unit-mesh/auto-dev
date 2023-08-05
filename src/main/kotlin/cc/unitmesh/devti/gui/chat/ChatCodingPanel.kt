@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.gui.block.HtmlContentComponent
 import cc.unitmesh.devti.gui.block.whenDisposed
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.ide.BrowserUtil
@@ -18,7 +19,6 @@ import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.ui.dsl.gridLayout.VerticalAlign
-import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
@@ -44,6 +44,19 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
     private var panelContent: DialogPanel
     private val myScrollPane: JBScrollPane
 
+    private val welcomeMessage: String = """
+        <div>
+            <p>Hi, welcome to use <b>AutoDev</b>, how can I help you?</p>
+            <p>I’m powered by AI, so surprises and mistakes are possible. Make sure
+             to verify any generated code or suggestions, and <a href="https://github.com/unit-mesh/auto-dev">
+             share feedback</a> so that we can learn and improve.</p>
+        </div>
+
+    """.trimIndent()
+    private val welcomeComponent = HtmlContentComponent(welcomeMessage)
+    private var hasMessage = false
+
+
     init {
         focusMouseListener = object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
@@ -58,7 +71,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         myList.background = UIUtil.getListBackground()
 
         myScrollPane = JBScrollPane(
-            myList,
+            welcomeComponent,
             ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
             ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
         )
@@ -124,6 +137,12 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
     }
 
     fun addMessage(message: String, isMe: Boolean = false, displayPrompt: String = "") {
+        if (!hasMessage) {
+            myScrollPane.remove(welcomeComponent)
+            hasMessage = true
+            myScrollPane.setViewportView(myList)
+        }
+
         val role = if (isMe) ChatRole.User else ChatRole.Assistant
         val displayText = displayPrompt.ifEmpty { message }
 
@@ -212,6 +231,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
     // TODO: add session and stop manage
     fun clearChat() {
         progressBar.isVisible = false
+        myScrollPane.setViewportView(welcomeComponent)
         myList.removeAll()
         updateUI()
     }
