@@ -16,6 +16,8 @@ import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
+import javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+import javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
 
 class AIInplaceGeneratedCodeSnippet(state: State = State.WAITING_INITIAL_RESPONSE) : JPanel(),
     KeyboardAwareFocusOwner {
@@ -34,7 +36,6 @@ class AIInplaceGeneratedCodeSnippet(state: State = State.WAITING_INITIAL_RESPONS
         GENERATION_COMPLETED
     }
 
-    /* JADX WARN: 'super' call moved to the top of the method (can break code semantics) */
     init {
         this.state = state
         generatingPlaceholder = JLabel("Code generation in progress...")
@@ -112,7 +113,7 @@ class AIInplaceGeneratedCodeSnippet(state: State = State.WAITING_INITIAL_RESPONS
     }
 
     private fun initComponent() {
-        setBackground(ColorUtil.withAlpha(JBColor.CYAN, 0.2))
+        setBackground(ColorUtil.withAlpha(JBColor.GREEN, 0.1))
         add(generatingPlaceholder)
         add(actionsBar as Component)
     }
@@ -120,9 +121,8 @@ class AIInplaceGeneratedCodeSnippet(state: State = State.WAITING_INITIAL_RESPONS
     private fun customizeEditor(editor: EditorEx) {
         editor.component.setOpaque(false)
         editor.backgroundColor = ColorUtil.withAlpha(editor.backgroundColor, 0.0)
-        val scrollPane = editor.scrollPane
-        scrollPane.setVerticalScrollBarPolicy(21)
-        scrollPane.setHorizontalScrollBarPolicy(31)
+        editor.scrollPane.setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_ALWAYS)
+        editor.scrollPane.setHorizontalScrollBarPolicy(HORIZONTAL_SCROLLBAR_NEVER)
     }
 
     private fun updateActions() {
