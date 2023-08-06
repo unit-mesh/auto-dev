@@ -1,4 +1,4 @@
-package cc.unitmesh.clion.rust.provider
+package cc.unitmesh.clion.provider
 
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.ContextPrompter

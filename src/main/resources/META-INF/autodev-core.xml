@@ -60,13 +60,6 @@
             <with tag="className" implements="com.intellij.codeInsight.intention.IntentionAction"/>
         </extensionPoint>
 
-
-        <extensionPoint qualifiedName="cc.unitmesh.externalInterfaceBuilder"
-                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
-            <with attribute="implementationClass"
-                  implements="cc.unitmesh.devti.context.builder.SupplyInterfaceContextBuilder"/>
-        </extensionPoint>
-
         <extensionPoint qualifiedName="cc.unitmesh.fileContextBuilder"
                         beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
             <with attribute="implementationClass"

@@ -1,4 +1,4 @@
-package cc.unitmesh.clion.rust.context
+package cc.unitmesh.clion.context
 
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.builder.ClassContextBuilder
