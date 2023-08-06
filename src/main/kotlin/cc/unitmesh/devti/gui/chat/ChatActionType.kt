@@ -78,11 +78,12 @@ $diff
             GEN_COMMIT_MESSAGE -> {
                 generateCommitMessage(prepareVcsContext())
             }
+
             CREATE_DDL -> "create ddl based on the given information"
             CREATE_CHANGELOG -> "generate release note"
             CHAT -> ""
             CUSTOM_COMPLETE -> ""
-            EXPLAIN_BUSINESS -> "According the given code, return the business logic"
+            EXPLAIN_BUSINESS -> "Recover the original business scene and functionality of the provided code by describing it in a User Story format. Ensure that your explanation avoids any technical jargon or technology-related terms."
         }
     }
 }

@@ -10,8 +10,4 @@ data class ChatCreationContext(
     val sourceFile: PsiFile?,
     val extraItems: List<ChatContextItem> = emptyList(),
     val element: PsiElement? = null
-) {
-    override fun toString(): String {
-        return "ChatCreationContext(origin=$origin, action=$action, sourceFile=$sourceFile, extraItems=$extraItems, element=$element)"
-    }
-}
+)

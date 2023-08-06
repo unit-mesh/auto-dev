@@ -15,7 +15,7 @@ class MethodContext(
     val returnType: String? = null,
     val paramNames: List<String> = emptyList(),
     val includeClassContext: Boolean = false,
-    val usages: List<PsiReference> = emptyList()
+    val usages: List<PsiReference> = emptyList(),
 ) : NamedElementContext(
     root, text, name
 ) {
@@ -31,13 +31,22 @@ class MethodContext(
     }
 
     override fun toQuery(): String {
-        val query = """language: ${language ?: "_"}
+        val usageString = usages.joinToString("\n") {
+            val classFile = it.element.containingFile
+            val useText = it.element.text
+            "${classFile.name} -> $useText"
+        }
+
+        var query = """language: ${language ?: "_"}
 fun name: ${name ?: "_"}
 fun signature: ${signature ?: "_"}
-    $text"""
+"""
+        if (usageString.isNotEmpty()) {
+            query += "usages: \n$usageString"
+        }
 
         if (classContext != null) {
-            return query + classContext.toQuery()
+            query += classContext.toQuery()
         }
 
         return query

@@ -26,7 +26,6 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
         if (chatContextCache.containsKey(creationContext)) {
             val cachedContent = chatContextCache[creationContext]!!
             if (cachedContent.isNotEmpty()) {
-                logger<ContextPrompter>().info("use cache for $creationContext, content: $cachedContent")
                 return cachedContent
             }
         }
@@ -50,7 +49,7 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
         file: PsiFile?,
         project: Project,
         offset: Int,
-        element: PsiElement? = null
+        element: PsiElement? = null,
     ) {
         this.action = actionType
         this.selectedText = selectedText
@@ -102,7 +101,7 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
 
         private fun filterByLang(
             extensionList: List<ContextPrompter>,
-            langLowercase: String
+            langLowercase: String,
         ): List<ContextPrompter> {
             val contextPrompter = extensionList.filter {
                 it.language?.lowercase() == langLowercase

@@ -80,6 +80,7 @@ open class JavaContextPrompter : ContextPrompter() {
 
             finalPrompt += "```$lang\n$selectedText\n```"
 
+            println("final prompt: $finalPrompt")
             logger.info("final prompt: $finalPrompt")
             return@runBlocking finalPrompt
         }
@@ -87,6 +88,7 @@ open class JavaContextPrompter : ContextPrompter() {
 
 
     private fun createPrompt(selectedText: String): String {
+        additionContext = ""
         var prompt = action!!.instruction(lang)
 
         when (action!!) {

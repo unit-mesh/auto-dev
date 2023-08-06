@@ -122,7 +122,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
 
         setContent(panelContent)
 
-        inputSection.text = ""
+//        inputSection.text = ""
 
         disposable?.whenDisposed(disposable) {
             myList.removeAll()
