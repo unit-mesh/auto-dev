@@ -11,7 +11,7 @@
         <classContextBuilder language="ObjectiveC"
                              implementationClass="cc.unitmesh.clion.oc.context.OcClassContextBuilder"/>
         <classContextBuilder language="Rust"
-                             implementationClass="cc.unitmesh.clion.context.RustClassContextBuilder"/>
-        <contextPrompter language="Rust" implementation="cc.unitmesh.clion.provider.RustContextPrompter"/>
+                             implementationClass="cc.unitmesh.clion.rust.context.RustClassContextBuilder"/>
+        <contextPrompter language="Rust" implementation="cc.unitmesh.clion.rust.provider.RustContextPrompter"/>
     </extensions>
 </idea-plugin>
