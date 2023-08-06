@@ -28,7 +28,8 @@ class ExplainBusinessContextProvider : ChatContextProvider {
                     )
                 }
                 return methodContext?.let {
-                    val contextItem = ChatContextItem(ExplainBusinessContextProvider::class, it.toQuery())
+                    val toQuery = ReadAction.compute<String?, Throwable> { return@compute it.toQuery() }
+                    val contextItem = ChatContextItem(ExplainBusinessContextProvider::class, toQuery)
                     listOf(contextItem)
                 } ?: emptyList()
             }
