@@ -10,7 +10,6 @@ enum class JsWebFrameworks(val presentation: String, val packageName: String) {
     Lit("Lit", "lit"),
     Solid("Solid", "solid-js"),
     Preact("Preact", "preact")
-
 }
 
 enum class JsTestFrameworks(val presentation: String, val packageName: String) {

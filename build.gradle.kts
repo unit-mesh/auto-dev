@@ -81,6 +81,7 @@ val baseVersion = when (baseIDE) {
     "pycharm" -> pycharmVersion
     "goland" -> golandVersion
 //    "webstorm" -> prop("webstormVersion")
+    "clion" -> clionVersion
     else -> error("Unexpected IDE name: `$baseIDE`")
 }
 
