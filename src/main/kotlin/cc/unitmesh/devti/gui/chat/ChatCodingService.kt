@@ -25,11 +25,12 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         prompt: ContextPrompter,
         context: ChatContext? = null
     ) {
-        ui.addMessage(prompt.requestPrompt(), true, prompt.displayPrompt())
+        val requestPrompt = prompt.requestPrompt()
+        ui.addMessage(requestPrompt, true, prompt.displayPrompt())
         ui.addMessage(AutoDevBundle.message("devti.loading"))
 
         ApplicationManager.getApplication().executeOnPooledThread {
-            val response = this.makeChatBotRequest(prompt.requestPrompt())
+            val response = this.makeChatBotRequest(requestPrompt)
             LLMCoroutineScopeService.scope(project).launch {
                 when {
                     actionType === ChatActionType.REFACTOR -> ui.updateReplaceableContent(response) {
