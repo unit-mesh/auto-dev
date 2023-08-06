@@ -5,7 +5,7 @@ import cc.unitmesh.devti.calculateFrontendElementToExplain
 import cc.unitmesh.devti.getElementToAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.ContextPrompter
-import cc.unitmesh.devti.toolwindow.sendToChat
+import cc.unitmesh.devti.toolwindow.sendToChatPanel
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.editor.Editor
@@ -56,7 +56,7 @@ abstract class AbstractChatIntention : IntentionAction {
 
         val prompter = ContextPrompter.prompter(file.language.displayName)
         prompter.initContext(actionType, selectedText, file, project, editor.caretModel.offset, elementToExplain)
-        sendToChat(project, actionType, prompter)
+        sendToChatPanel(project, actionType, prompter)
     }
 
     protected fun selectElement(elementToExplain: PsiElement, editor: Editor) {

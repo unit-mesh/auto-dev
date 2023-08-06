@@ -1,18 +1,14 @@
 package cc.unitmesh.devti.actions.chat
 
-import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.gui.chat.ChatCodingPanel
-import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.llms.openai.OpenAIProvider
 import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.toolwindow.sendToChatPanel
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.wm.ToolWindowManager
 
 abstract class ChatBaseAction : AnAction() {
     companion object {
@@ -43,7 +39,7 @@ abstract class ChatBaseAction : AnAction() {
 
         prompter.initContext(getActionType(), prefixText, file, project, caretModel?.offset ?: 0, element)
 
-        sendToToolWindow(project) { service, panel ->
+        sendToChatPanel(project) { panel, service ->
             val chatContext = ChatContext(
                 getReplaceableAction(event),
                 prefixText,
@@ -51,26 +47,6 @@ abstract class ChatBaseAction : AnAction() {
             )
 
             service.handlePromptAndResponse(panel, prompter, chatContext)
-        }
-    }
-
-    open fun sendToToolWindow(
-        project: Project,
-        activeAction: (service: ChatCodingService, panel: ChatCodingPanel) -> Unit
-    ) {
-        val chatCodingService = ChatCodingService(getActionType(), project)
-
-        val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolWindowFactory.Util.id)
-        val contentManager = toolWindowManager?.contentManager
-        val contentPanel = ChatCodingPanel(chatCodingService, toolWindowManager?.disposable)
-
-        val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
-
-        contentManager?.removeAllContents(true)
-        contentManager?.addContent(content!!)
-
-        toolWindowManager?.activate {
-            activeAction(chatCodingService, contentPanel)
         }
     }
 

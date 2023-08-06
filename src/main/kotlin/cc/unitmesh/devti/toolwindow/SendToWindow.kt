@@ -9,13 +9,14 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.wm.ToolWindowManager
 
-fun sendToChat(project: Project, runnable: (ChatCodingPanel, ChatCodingService) -> Unit) {
-    val chatCodingService = ChatCodingService(ChatActionType.CHAT, project)
+fun sendToChatPanel(project: Project, runnable: (ChatCodingPanel, ChatCodingService) -> Unit) {
+    val actionType = ChatActionType.CHAT
+
+    val chatCodingService = ChatCodingService(actionType, project)
 
     val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolWindowFactory.Util.id)
     val contentManager = toolWindowManager?.contentManager
     val contentPanel = ChatCodingPanel(chatCodingService, toolWindowManager?.disposable)
-
     val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
 
     contentManager?.removeAllContents(true)
@@ -27,14 +28,12 @@ fun sendToChat(project: Project, runnable: (ChatCodingPanel, ChatCodingService) 
 }
 
 
-fun sendToChat(project: Project, actionType: ChatActionType, prompter: ContextPrompter) {
-    val toolWindowManager =
-        ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolWindowFactory.Util.id) ?: return
+fun sendToChatPanel(project: Project, actionType: ChatActionType, prompter: ContextPrompter) {
     val chatCodingService = ChatCodingService(actionType, project)
 
+    val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolWindowFactory.Util.id)
     val contentPanel = ChatCodingPanel(chatCodingService, toolWindowManager?.disposable)
-
-    val contentManager = toolWindowManager.contentManager
+    val contentManager = toolWindowManager?.contentManager!!
     val content = contentManager.factory.createContent(contentPanel, chatCodingService.getLabel(), false)
 
     contentManager.removeAllContents(true)
@@ -49,13 +48,13 @@ fun chatWithSelection(
     project: Project,
     language: @NlsSafe String,
     prefixText: @NlsSafe String,
-    chatActionType: ChatActionType
+    actionType: ChatActionType,
 ) {
-    val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolWindowFactory.Util.id)
-    val contentManager = toolWindowManager?.contentManager
+    val chatCodingService = ChatCodingService(actionType, project)
 
-    val chatCodingService = ChatCodingService(chatActionType, project)
+    val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolWindowFactory.Util.id)
     val contentPanel = ChatCodingPanel(chatCodingService, toolWindowManager?.disposable)
+    val contentManager = toolWindowManager?.contentManager
     val content = contentManager?.factory?.createContent(contentPanel, "Chat with this", false)
 
     contentManager?.removeAllContents(true)
