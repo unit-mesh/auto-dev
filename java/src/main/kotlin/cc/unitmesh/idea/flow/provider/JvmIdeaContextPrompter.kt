@@ -172,6 +172,7 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
             }
 
             ChatActionType.CUSTOM_COMPLETE -> TODO()
+            ChatActionType.CHAT_BUSINESS -> TODO()
         }
 
         return prompt

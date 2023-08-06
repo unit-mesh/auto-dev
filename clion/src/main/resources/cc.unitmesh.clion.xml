@@ -10,8 +10,12 @@
     <extensions defaultExtensionNs="cc.unitmesh">
         <classContextBuilder language="ObjectiveC"
                              implementationClass="cc.unitmesh.clion.oc.context.OcClassContextBuilder"/>
+
         <classContextBuilder language="Rust"
                              implementationClass="cc.unitmesh.clion.context.RustClassContextBuilder"/>
+        <methodContextBuilder language="Rust"
+                              implementationClass="cc.unitmesh.clion.context.RustMethodContextBuilder"/>
+
         <contextPrompter language="Rust" implementation="cc.unitmesh.clion.provider.RustContextPrompter"/>
     </extensions>
 </idea-plugin>

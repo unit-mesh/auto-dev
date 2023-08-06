@@ -5,9 +5,9 @@ import cc.unitmesh.devti.toolwindow.chatWithSelection
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 
-class ChatWithThisAction : ChatBaseAction() {
+class ChatWithBusinessAction : ChatBaseAction() {
     override fun getActionType(): ChatActionType {
-        return ChatActionType.CHAT
+        return ChatActionType.CHAT_BUSINESS
     }
 
     override fun actionPerformed(event: AnActionEvent) {
