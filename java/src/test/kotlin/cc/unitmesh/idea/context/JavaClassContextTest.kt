@@ -67,8 +67,8 @@ public class BlogController {
     }
 
     fun testShould_convert_function_to_string() {
-        val psiFile = fileFactory.createFileFromText(JavaLanguage.INSTANCE, classCode)
-        val psiElement = (psiFile as PsiJavaFile).classes[0].methods[0]
+        val psiFile = fileFactory.createFileFromText(JavaLanguage.INSTANCE, classCode) as PsiJavaFile
+        val psiElement = psiFile.classes[0].methods[0]
         val context = MethodContextProvider(false, false).from(psiElement)
 
         assertEquals(
