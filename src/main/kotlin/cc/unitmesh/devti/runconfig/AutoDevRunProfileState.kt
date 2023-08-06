@@ -7,7 +7,7 @@ import cc.unitmesh.devti.llms.ConnectorFactory
 import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
 import cc.unitmesh.devti.runconfig.options.AutoDevConfigurationOptions
 import cc.unitmesh.devti.settings.AutoDevSettingsState
-import cc.unitmesh.devti.toolwindow.sendToChatPanel
+import cc.unitmesh.devti.gui.sendToChatPanel
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState

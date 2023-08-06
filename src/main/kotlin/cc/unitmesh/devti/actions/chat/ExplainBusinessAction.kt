@@ -3,7 +3,7 @@ package cc.unitmesh.devti.actions.chat
 import cc.unitmesh.devti.getElementToAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.ContextPrompter
-import cc.unitmesh.devti.toolwindow.sendToChatPanel
+import cc.unitmesh.devti.gui.sendToChatPanel
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.progress.ProgressIndicator

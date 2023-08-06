@@ -5,7 +5,7 @@ import cc.unitmesh.devti.calculateFrontendElementToExplain
 import cc.unitmesh.devti.getElementToAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.ContextPrompter
-import cc.unitmesh.devti.toolwindow.sendToChatPanel
+import cc.unitmesh.devti.gui.sendToChatPanel
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.editor.Editor

@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.actions.chat
 
 import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.toolwindow.chatWithSelection
+import cc.unitmesh.devti.gui.chatWithSelection
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 

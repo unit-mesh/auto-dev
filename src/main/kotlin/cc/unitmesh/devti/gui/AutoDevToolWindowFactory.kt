@@ -17,13 +17,12 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
         const val id = "AutoDev"
     }
 
-    private val contentFactory = ApplicationManager.getApplication().getService(ContentFactory::class.java)
-
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val disposable = toolWindow.disposable
         val chatCodingService = ChatCodingService(ChatActionType.CHAT, project)
         val contentPanel = ChatCodingPanel(chatCodingService, disposable)
-        val content = ContentFactory.getInstance().createContent(contentPanel, AutoDevBundle.message("autodev.flow"), false)
+        val content =
+            ContentFactory.getInstance().createContent(contentPanel, AutoDevBundle.message("autodev.flow"), false)
         toolWindow.contentManager.addContent(content)
     }
 

@@ -4,7 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.intentions.AbstractChatIntention
 import cc.unitmesh.devti.llms.ConnectorFactory
 import cc.unitmesh.devti.provider.DevFlowProvider
-import cc.unitmesh.devti.toolwindow.sendToChatPanel
+import cc.unitmesh.devti.gui.sendToChatPanel
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
