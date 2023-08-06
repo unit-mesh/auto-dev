@@ -116,9 +116,9 @@ class MessageView(private val message: String, val role: ChatRole, private val d
     }
 
     fun reRenderAssistantOutput() {
-        val displayText = component.text
-
         ApplicationManager.getApplication().invokeLater {
+            val displayText = component.text
+
             centerPanel.remove(component)
             centerPanel.updateUI()
 
