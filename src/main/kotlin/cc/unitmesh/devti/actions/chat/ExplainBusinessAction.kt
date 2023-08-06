@@ -6,7 +6,10 @@ import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.toolwindow.sendToChat
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 
 class ExplainBusinessAction : ChatBaseAction() {
     override fun getActionType(): ChatActionType {
@@ -21,12 +24,22 @@ class ExplainBusinessAction : ChatBaseAction() {
         val actionType = getActionType()
         val editor = event.getData(CommonDataKeys.EDITOR) ?: return
         val elementToChat = getElementToAction(project, editor) ?: return
+        val offset = caretModel?.offset ?: 0
+        val elementText = elementToChat.text
 
-        val prompter = ContextPrompter.prompter(file?.language?.displayName ?: "")
-        val text = ReadAction.compute<String, Throwable> { elementToChat.text }
-        prompter.initContext(actionType, text, file, project, caretModel?.offset ?: 0, elementToChat)
+        sendToChat(project) { contentPanel, chatCodingService ->
+            val backgroundable = object : Task.Backgroundable(project, "Collecting context") {
+                override fun run(indicator: ProgressIndicator) {
+                    val prompter = ContextPrompter.prompter(file?.language?.displayName ?: "")
+                    prompter.initContext(actionType, elementText, file, project, offset, elementToChat)
 
-        sendToChat(project, actionType, prompter)
+                    chatCodingService.handlePromptAndResponse(contentPanel, prompter)
+                }
+            }
+
+            ProgressManager.getInstance()
+                .runProcessWithProgressAsynchronously(backgroundable, BackgroundableProcessIndicator(backgroundable))
+        }
     }
 }
 

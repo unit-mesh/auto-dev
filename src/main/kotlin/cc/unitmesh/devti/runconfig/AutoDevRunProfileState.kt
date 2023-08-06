@@ -44,7 +44,7 @@ class AutoDevRunProfileState(
         }
         val openAIRunner = ConnectorFactory().connector(project)
 
-        sendToChat(project) { contentPanel ->
+        sendToChat(project) { contentPanel, _ ->
             flowProvider.initContext(gitHubIssue, openAIRunner, contentPanel, project)
             ProgressManager.getInstance().run(executeCrud(flowProvider))
         }

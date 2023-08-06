@@ -28,7 +28,7 @@ class AutoCrudAction : AbstractChatIntention() {
             return
         }
 
-        sendToChat(project) { contentPanel ->
+        sendToChat(project) { contentPanel, _ ->
             val openAIRunner = ConnectorFactory().connector(project)
             val selectedText = editor.selectionModel.selectedText ?: throw IllegalStateException("no select text")
             flowProvider.initContext(null, openAIRunner, contentPanel, project)
