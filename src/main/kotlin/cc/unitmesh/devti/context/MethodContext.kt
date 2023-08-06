@@ -19,7 +19,6 @@ class MethodContext(
 ) : NamedElementContext(
     root, text, name
 ) {
-
     private val classContext: ClassContext?
 
     init {
