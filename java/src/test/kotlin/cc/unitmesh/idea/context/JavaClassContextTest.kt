@@ -77,9 +77,7 @@ public class BlogController {
                |language: Java
                |fun name: BlogController
                |fun signature: public BlogController(BlogService blogService)
-               |    public BlogController(BlogService blogService) {
-               |        this.blogService = blogService;
-               |    }""".trimMargin()
+               |""".trimMargin()
         )
     }
 }
