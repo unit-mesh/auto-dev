@@ -3,7 +3,7 @@ package cc.unitmesh.devti.intentions
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.getElementToAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.gui.chatWithSelection
+import cc.unitmesh.devti.gui.sendToChatWindow
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
@@ -39,7 +39,9 @@ class NewChatWithCodeIntention : AbstractChatIntention() {
 
         val language = file.language.displayName
 
-        chatWithSelection(project, language, selectedText, ChatActionType.CHAT)
+        sendToChatWindow(project, ChatActionType.CHAT) { contentPanel, _ ->
+            contentPanel.setInput("\n```$language\n$selectedText\n```")
+        }
     }
 
 }

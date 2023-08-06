@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.actions.chat
 
 import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.gui.chatWithSelection
+import cc.unitmesh.devti.gui.sendToChatWindow
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 
@@ -17,7 +17,9 @@ class ChatWithThisAction : ChatBaseAction() {
         val prefixText = caretModel?.currentCaret?.selectedText ?: ""
         val language = event.getData(CommonDataKeys.PSI_FILE)?.language?.displayName ?: ""
 
-        chatWithSelection(project, language, prefixText, getActionType())
+        sendToChatWindow(project, getActionType()) { contentPanel, _ ->
+            contentPanel.setInput("\n```$language\n$prefixText\n```")
+        }
     }
 }
 

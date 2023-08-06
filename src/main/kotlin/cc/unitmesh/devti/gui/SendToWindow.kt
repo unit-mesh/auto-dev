@@ -5,7 +5,6 @@ import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.wm.ToolWindowManager
 
 fun sendToChatWindow(
@@ -28,26 +27,13 @@ fun sendToChatWindow(
     }
 }
 
-
 fun sendToChatPanel(project: Project, runnable: (ChatCodingPanel, ChatCodingService) -> Unit) {
     val actionType = ChatActionType.CHAT
-
     sendToChatWindow(project, actionType, runnable)
 }
 
 fun sendToChatPanel(project: Project, actionType: ChatActionType, prompter: ContextPrompter) {
     sendToChatWindow(project, actionType) { contentPanel, chatCodingService ->
         chatCodingService.handlePromptAndResponse(contentPanel, prompter)
-    }
-}
-
-fun chatWithSelection(
-    project: Project,
-    language: @NlsSafe String,
-    prefixText: @NlsSafe String,
-    actionType: ChatActionType,
-) {
-    sendToChatWindow(project, actionType) { contentPanel, _ ->
-        contentPanel.setInput("\n```$language\n$prefixText\n```")
     }
 }
