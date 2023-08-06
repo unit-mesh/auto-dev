@@ -9,13 +9,12 @@ import com.intellij.lang.LanguageCommenters
 class SimilarChunkContext(val language: Language, val paths: List<String>?, val chunks: List<String>?) :
     LLMQueryContext {
     override fun toQuery(): String {
-        val commenter = LanguageCommenters.INSTANCE.forLanguage(language)
-        val commentPrefix = commenter?.lineCommentPrefix
+        val commenter = LanguageCommenters.INSTANCE.forLanguage(language) ?: return ""
+        val commentPrefix = commenter.lineCommentPrefix ?: return ""
 
         if (paths == null || chunks == null) return ""
 
-        val filteredPairs = paths.zip(chunks)
-            .filter { it.second.isNotEmpty() }
+        val filteredPairs = paths.zip(chunks).filter { it.second.isNotEmpty() }
 
         val queryBuilder = StringBuilder()
         for ((path, chunk) in filteredPairs) {
