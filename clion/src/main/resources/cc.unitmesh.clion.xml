@@ -8,6 +8,8 @@
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
+        <classContextBuilder language="ObjectiveC"
+                             implementationClass="cc.unitmesh.clion.oc.context.OcClassContextBuilder"/>
         <classContextBuilder language="Rust"
                              implementationClass="cc.unitmesh.clion.context.RustClassContextBuilder"/>
         <contextPrompter language="Rust" implementation="cc.unitmesh.clion.provider.RustContextPrompter"/>
