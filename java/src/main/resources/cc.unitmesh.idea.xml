@@ -24,6 +24,7 @@
         <chatContextProvider implementation="cc.unitmesh.idea.provider.JavaVersionProvider"/>
         <chatContextProvider implementation="cc.unitmesh.idea.provider.SpringContextProvider"/>
         <chatContextProvider implementation="cc.unitmesh.idea.provider.JavaTestContextProvider"/>
+        <chatContextProvider implementation="cc.unitmesh.idea.provider.ExplainBusinessContextProvider"/>
 
         <contextPrompter
                 language="JAVA"

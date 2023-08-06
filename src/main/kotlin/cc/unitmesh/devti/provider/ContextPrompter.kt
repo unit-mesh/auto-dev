@@ -7,6 +7,7 @@ import cc.unitmesh.devti.provider.context.ChatCreationContext
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.serviceContainer.LazyExtensionInstance
 import com.intellij.util.xmlb.annotations.Attribute
@@ -48,7 +49,8 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
         selectedText: String,
         file: PsiFile?,
         project: Project,
-        offset: Int
+        offset: Int,
+        element: PsiElement? = null
     ) {
         this.action = actionType
         this.selectedText = selectedText

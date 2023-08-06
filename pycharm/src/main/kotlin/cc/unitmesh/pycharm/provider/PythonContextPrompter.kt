@@ -5,6 +5,7 @@ import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 
 class PythonContextPrompter : ContextPrompter() {
@@ -19,9 +20,10 @@ class PythonContextPrompter : ContextPrompter() {
         selectedText: String,
         file: PsiFile?,
         project: Project,
-        offset: Int
+        offset: Int,
+        element: PsiElement?
     ) {
-        super.initContext(actionType, selectedText, file, project, offset)
+        super.initContext(actionType, selectedText, file, project, offset, element)
         additionContext = SimilarChunksWithPaths.createQuery(file!!) ?: ""
     }
 

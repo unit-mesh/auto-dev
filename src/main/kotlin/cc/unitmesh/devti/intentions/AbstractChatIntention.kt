@@ -1,6 +1,8 @@
 package cc.unitmesh.devti.intentions
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.calculateFrontendElementToExplain
+import cc.unitmesh.devti.getElementToAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.toolwindow.sendToChat
@@ -13,8 +15,6 @@ import com.intellij.psi.ElementDescriptionUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNameIdentifierOwner
-import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.psi.util.PsiUtilBase
 import com.intellij.usageView.UsageViewTypeLocation
 
 abstract class AbstractChatIntention : IntentionAction {
@@ -55,7 +55,7 @@ abstract class AbstractChatIntention : IntentionAction {
         val actionType = getActionType()
 
         val prompter = ContextPrompter.prompter(file.language.displayName)
-        prompter.initContext(actionType, selectedText, file, project, editor.caretModel.offset)
+        prompter.initContext(actionType, selectedText, file, project, editor.caretModel.offset, elementToExplain)
         sendToChat(project, actionType, prompter)
     }
 
@@ -64,25 +64,6 @@ abstract class AbstractChatIntention : IntentionAction {
         val endOffset = elementToExplain.textRange.endOffset
 
         editor.selectionModel.setSelection(startOffset, endOffset)
-    }
-
-    /**
-     * Returns the PsiElement to explain in the given project and editor.
-     *
-     * @param project the project in which the element resides (nullable)
-     * @param editor the editor in which the element is located (nullable)
-     * @return the PsiElement to explain, or null if either the project or editor is null, or if no element is found
-     */
-    protected open fun getElementToAction(project: Project?, editor: Editor?): PsiElement? {
-        if (project == null || editor == null) return null
-
-        val element = PsiUtilBase.getElementAtCaret(editor) ?: return null
-        val psiFile = element.containingFile
-
-        if (InjectedLanguageManager.getInstance(project).isInjectedFragment(psiFile)) return psiFile
-
-        val identifierOwner = PsiTreeUtil.getParentOfType(element, PsiNameIdentifierOwner::class.java)
-        return identifierOwner ?: element
     }
 
     fun getCurrentSelectionAsRange(editor: Editor): TextRange {
@@ -121,22 +102,4 @@ abstract class AbstractChatIntention : IntentionAction {
     private fun getDescription(element: PsiElement): String {
         return ElementDescriptionUtil.getElementDescription(element, UsageViewTypeLocation.INSTANCE)
     }
-
-    fun calculateFrontendElementToExplain(project: Project?, psiFile: PsiFile, range: TextRange): PsiElement? {
-        if (project == null || !psiFile.isValid) return null
-
-        val element = PsiUtilBase.getElementAtOffset(psiFile, range.startOffset)
-        if (InjectedLanguageManager.getInstance(project).isInjectedFragment(psiFile)) {
-            return psiFile
-        }
-
-        val injected = InjectedLanguageManager.getInstance(project).findInjectedElementAt(psiFile, range.startOffset)
-        if (injected != null) {
-            return injected.containingFile
-        }
-
-        val psiElement: PsiElement? = PsiTreeUtil.getParentOfType(element, PsiNameIdentifierOwner::class.java)
-        return psiElement ?: element
-    }
 }
-

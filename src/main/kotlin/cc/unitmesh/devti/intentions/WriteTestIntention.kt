@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.intentions
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.getElementToAction
 import cc.unitmesh.devti.intentions.task.TestCodeGenRequest
 import cc.unitmesh.devti.intentions.task.TestCodeGenTask
 import com.intellij.openapi.editor.Editor

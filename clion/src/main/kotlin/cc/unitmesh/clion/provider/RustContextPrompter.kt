@@ -6,6 +6,7 @@ import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import kotlinx.coroutines.runBlocking
 
@@ -22,9 +23,10 @@ class RustContextPrompter : ContextPrompter() {
         selectedText: String,
         file: PsiFile?,
         project: Project,
-        offset: Int
+        offset: Int,
+        element: PsiElement?
     ) {
-        super.initContext(actionType, selectedText, file, project, offset)
+        super.initContext(actionType, selectedText, file, project, offset, element)
         creationContext = ChatCreationContext(ChatOrigin.ChatAction, action!!, file)
     }
 

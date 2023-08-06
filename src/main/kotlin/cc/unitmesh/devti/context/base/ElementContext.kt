@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.context.base
 
-import cc.unitmesh.devti.intentions.error.PsiUtils
+import cc.unitmesh.devti.PsiUtils
 import com.google.gson.Gson
 import com.intellij.psi.PsiElement
 

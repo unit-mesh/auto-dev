@@ -7,7 +7,7 @@ import com.intellij.openapi.vcs.changes.ChangeListManagerImpl
 
 enum class ChatActionType {
     CHAT,
-    CHAT_BUSINESS,
+    EXPLAIN_BUSINESS,
     REFACTOR,
     EXPLAIN,
     REVIEW,
@@ -82,7 +82,7 @@ $diff
             CREATE_CHANGELOG -> "generate release note"
             CHAT -> ""
             CUSTOM_COMPLETE -> ""
-            CHAT_BUSINESS -> "According the given code, return the business logic"
+            EXPLAIN_BUSINESS -> "According the given code, return the business logic"
         }
     }
 }

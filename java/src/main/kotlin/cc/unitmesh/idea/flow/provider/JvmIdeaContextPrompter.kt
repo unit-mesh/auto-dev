@@ -2,7 +2,6 @@ package cc.unitmesh.idea.flow.provider
 
 import cc.unitmesh.devti.context.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.prompting.VcsPrompting
 import cc.unitmesh.devti.prompting.model.CustomPromptConfig
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.provider.context.ChatCreationContext
@@ -11,12 +10,10 @@ import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.idea.MvcUtil
 import cc.unitmesh.idea.flow.MvcContextService
 import com.intellij.openapi.application.runReadAction
-import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vcs.changes.ChangeListManager
-import com.intellij.openapi.vcs.changes.ChangeListManagerImpl
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import kotlinx.coroutines.runBlocking
@@ -38,9 +35,10 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
         selectedText: String,
         file: PsiFile?,
         project: Project,
-        offset: Int
+        offset: Int,
+        element: PsiElement?
     ) {
-        super.initContext(actionType, selectedText, file, project, offset)
+        super.initContext(actionType, selectedText, file, project, offset, element)
         mvcContextService = MvcContextService(project)
 
         lang = file?.language?.displayName ?: ""
@@ -171,8 +169,13 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
                 prompt = ""
             }
 
-            ChatActionType.CUSTOM_COMPLETE -> TODO()
-            ChatActionType.CHAT_BUSINESS -> TODO()
+            ChatActionType.CUSTOM_COMPLETE -> {
+
+            }
+
+            ChatActionType.EXPLAIN_BUSINESS -> {
+
+            }
         }
 
         return prompt

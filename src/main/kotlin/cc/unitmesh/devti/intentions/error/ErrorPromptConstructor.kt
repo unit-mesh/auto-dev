@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.intentions.error
 
+import cc.unitmesh.devti.PsiUtils
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.prompting.model.RuntimeErrorExplanationPrompt
 import com.intellij.openapi.application.ReadAction

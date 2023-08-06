@@ -39,7 +39,9 @@ abstract class ChatBaseAction : AnAction() {
 
         val prompter = ContextPrompter.prompter(file?.language?.displayName ?: "")
         logger.info("use prompter: ${prompter.javaClass}")
-        prompter.initContext(getActionType(), prefixText, file, project, caretModel?.offset ?: 0)
+        val element = event.getData(CommonDataKeys.PSI_ELEMENT)
+
+        prompter.initContext(getActionType(), prefixText, file, project, caretModel?.offset ?: 0, element)
 
         sendToToolWindow(project) { service, panel ->
             val chatContext = ChatContext(

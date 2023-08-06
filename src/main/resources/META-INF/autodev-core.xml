@@ -191,7 +191,7 @@
             </action>
 
             <action id="c.unitmesh.devti.actions.chat.ChatWithBusinessAction"
-                    class="cc.unitmesh.devti.actions.chat.ChatWithBusinessAction" text="Chat with Biz"
+                    class="cc.unitmesh.devti.actions.chat.ExplainBusinessAction" text="Chat with Biz"
                     description="Ask AutoDev talk with business">
 
                 <add-to-group group-id="EditorPopupMenu" anchor="first"/>

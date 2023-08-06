@@ -29,11 +29,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.psi.PsiFile
-import com.intellij.util.DocumentUtil
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import org.jetbrains.kotlin.asJava.classes.runReadAction
-import org.jetbrains.kotlin.idea.util.application.invokeLater
 import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
 import java.util.concurrent.atomic.AtomicReference
@@ -129,7 +126,8 @@ class GenerateCodeInplaceAction : AnAction() {
                 text!!,
                 chatCreationContext.sourceFile,
                 project,
-                ReadAction.compute<Int, Throwable> { editor.caretModel.offset }
+                ReadAction.compute<Int, Throwable> { editor.caretModel.offset },
+                chatCreationContext.element
             )
             val prompt = text + "\n" + prompter.collectionContext(chatCreationContext)
 
