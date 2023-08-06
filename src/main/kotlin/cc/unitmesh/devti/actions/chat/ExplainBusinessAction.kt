@@ -31,14 +31,7 @@ class ExplainBusinessAction : ChatBaseAction() {
             val prompter = ContextPrompter.prompter(file?.language?.displayName ?: "")
             prompter.initContext(actionType, elementText, file, project, offset, elementToChat)
 
-            val backgroundable = object : Task.Backgroundable(project, "Collecting context") {
-                override fun run(indicator: ProgressIndicator) {
-                    service.handlePromptAndResponse(panel, prompter)
-                }
-            }
-
-            ProgressManager.getInstance()
-                .runProcessWithProgressAsynchronously(backgroundable, BackgroundableProcessIndicator(backgroundable))
+            service.handlePromptAndResponse(panel, prompter)
         }
     }
 }
