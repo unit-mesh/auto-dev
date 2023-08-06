@@ -26,5 +26,6 @@
         <module name="cc.unitmesh.kotlin"/>
         <module name="cc.unitmesh.webstorm"/>
         <module name="cc.unitmesh.goland"/>
+        <module name="cc.unitmesh.clion"/>
     </content>
 </idea-plugin>

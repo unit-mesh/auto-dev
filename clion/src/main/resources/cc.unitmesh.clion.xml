@@ -1,0 +1,9 @@
+<idea-plugin package="cc.unitmesh.clion">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+        <module name="org.rust.lang"/>
+    </dependencies>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+    </extensions>
+</idea-plugin>

@@ -11,4 +11,5 @@ include(
     "kotlin",
     "webstorm",
     "goland",
+    "clion",
 )

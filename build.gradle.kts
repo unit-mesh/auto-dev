@@ -56,6 +56,8 @@ val javaScriptPlugins = listOf("JavaScript")
 val pycharmPlugins = listOf("PythonCore")
 val javaPlugins = listOf("com.intellij.java", "org.jetbrains.kotlin")
 //val kotlinPlugins = listOf("org.jetbrains.kotlin")
+val clionVersion = prop("clionVersion")
+val clionPlugins = listOf("com.intellij.cidr.base", "com.intellij.clion", "org.rust.lang:0.4.186.5143-223", "org.toml.lang")
 
 val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
 val ideaPlugins =
@@ -165,6 +167,7 @@ project(":plugin") {
         implementation(project(":pycharm"))
         implementation(project(":webstorm"))
         implementation(project(":goland"))
+        implementation(project(":clion"))
     }
 
     // Collects all jars produced by compilation of project modules and merges them into singe one.
@@ -350,6 +353,16 @@ project(":kotlin") {
     dependencies {
         implementation(project(":"))
         implementation(project(":java"))
+    }
+}
+
+project(":clion") {
+    intellij {
+        version.set(clionVersion)
+        plugins.set(clionPlugins)
+    }
+    dependencies {
+        implementation(project(":"))
     }
 }
 
