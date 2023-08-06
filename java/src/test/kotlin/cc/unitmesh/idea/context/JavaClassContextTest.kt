@@ -6,10 +6,9 @@ import cc.unitmesh.devti.context.MethodContextProvider
 import com.intellij.lang.java.JavaLanguage
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiJavaFile
-import com.intellij.testFramework.LightPlatformTestCase
-import org.junit.Ignore
+import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase
 
-class JavaClassContextTest : LightPlatformTestCase() {
+class JavaClassContextTest : LightJavaCodeInsightFixtureTestCase() {
     private val fileFactory: PsiFileFactory get() = PsiFileFactory.getInstance(project)
 
     private val originCode = """
@@ -31,8 +30,8 @@ class JavaClassContextTest : LightPlatformTestCase() {
         return blogService.getAllBlogPosts();
     }
 """
-    private val classCode = """
-    package cc.unitmesh.untitled.demo.controller;
+    private val controllerCode = """
+package cc.unitmesh.untitled.demo.controller;
 
 import cc.unitmesh.untitled.demo.dto.CreateBlogDto;
 import cc.unitmesh.untitled.demo.entity.BlogPost;
@@ -50,8 +49,46 @@ public class BlogController {
 }
 """.trimIndent()
 
+    private val serviceCode: String = """
+package cc.unitmesh.untitled.demo.service;
+
+import cc.unitmesh.untitled.demo.entity.BlogPost;
+import cc.unitmesh.untitled.demo.repository.BlogRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+public class BlogService {
+    @Autowired
+    BlogRepository blogRepository;
+
+    public BlogPost createBlog(BlogPost blogDto) {
+        return blogRepository.save(blogDto);
+    }
+
+    public BlogPost getBlogById(Long id) {
+        return blogRepository.findById(id).orElse(null);
+    }
+
+    public BlogPost updateBlog(Long id, BlogPost blogDto) {
+        return blogRepository.findById(id).map(blog -> {
+            blog.setTitle(blogDto.getTitle());
+            blog.setContent(blogDto.getContent());
+            return blogRepository.save(blog);
+        }).orElse(null);
+    }
+
+    public void deleteBlog(Long id) {
+        blogRepository.deleteById(id);
+    }
+}
+"""
+
     fun testShould_convert_class_to_string() {
-        val psiFile = fileFactory.createFileFromText(JavaLanguage.INSTANCE, classCode)
+        val psiFile = fileFactory.createFileFromText(JavaLanguage.INSTANCE, controllerCode)
         val psiElement = (psiFile as PsiJavaFile).classes[0]
         val classContext: ClassContext = ClassContextProvider(false).from(psiElement)
 
@@ -67,17 +104,21 @@ public class BlogController {
     }
 
     fun testShould_convert_function_to_string() {
-        val psiFile = fileFactory.createFileFromText(JavaLanguage.INSTANCE, classCode) as PsiJavaFile
-        val psiElement = psiFile.classes[0].methods[0]
-        val context = MethodContextProvider(false, false).from(psiElement)
+        myFixture.addClass(serviceCode)
+        myFixture.addClass(controllerCode)
+
+        val serviceFile = myFixture.findClass("cc.unitmesh.untitled.demo.service.BlogService")
+        val psiElement = serviceFile.methods[0]
+        val context = MethodContextProvider(false, true).from(psiElement)
 
         assertEquals(
             context.toQuery(),
             """
                |language: Java
-               |fun name: BlogController
-               |fun signature: public BlogController(BlogService blogService)
-               |""".trimMargin()
+               |fun name: createBlog
+               |fun signature: public BlogPost createBlog(BlogPost blogDto)
+               |usages: 
+               |BlogController.java -> blogService.createBlog""".trimMargin()
         )
     }
 }
