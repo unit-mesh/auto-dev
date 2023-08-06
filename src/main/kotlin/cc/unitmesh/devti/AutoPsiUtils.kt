@@ -9,7 +9,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilBase
 
 
-object PsiUtils {
+object AutoPsiUtils {
     fun getStartOffset(element: PsiElement): Int = element.textRange.startOffset
     fun getEndOffset(element: PsiElement): Int = element.textRange.endOffset
 

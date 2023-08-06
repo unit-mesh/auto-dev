@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.context.base
 
-import cc.unitmesh.devti.PsiUtils
+import cc.unitmesh.devti.AutoPsiUtils
 import com.google.gson.Gson
 import com.intellij.psi.PsiElement
 
@@ -9,8 +9,8 @@ class ElementContext(val element: PsiElement) : LLMQueryContext {
     val endLineNumber: Int
 
     init {
-        startLineNumber = PsiUtils.getLineNumber(element, true)
-        endLineNumber = PsiUtils.getLineNumber(element, false)
+        startLineNumber = AutoPsiUtils.getLineNumber(element, true)
+        endLineNumber = AutoPsiUtils.getLineNumber(element, false)
     }
 
     fun toQuery(prevLines: Int, postLines: Int, withLineNumbers: Boolean): String {
@@ -26,7 +26,7 @@ class ElementContext(val element: PsiElement) : LLMQueryContext {
         }
 
         if (withLineNumbers) {
-            string = PsiUtils.addLineNumbers(string)
+            string = AutoPsiUtils.addLineNumbers(string)
         }
         return string
     }

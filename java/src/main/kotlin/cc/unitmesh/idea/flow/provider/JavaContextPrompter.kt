@@ -18,7 +18,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import kotlinx.coroutines.runBlocking
 
-open class JvmIdeaContextPrompter : ContextPrompter() {
+open class JavaContextPrompter : ContextPrompter() {
     private var additionContext: String = ""
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private var customPromptConfig: CustomPromptConfig? = null
@@ -43,7 +43,7 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
 
         lang = file?.language?.displayName ?: ""
         fileName = file?.name ?: ""
-        creationContext = ChatCreationContext(ChatOrigin.ChatAction, action!!, file)
+        creationContext = ChatCreationContext(ChatOrigin.ChatAction, action!!, file, listOf(), element)
     }
 
     init {
@@ -166,15 +166,12 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
             }
 
             ChatActionType.CHAT -> {
-                prompt = ""
             }
 
             ChatActionType.CUSTOM_COMPLETE -> {
-
             }
 
             ChatActionType.EXPLAIN_BUSINESS -> {
-
             }
         }
 
@@ -200,6 +197,6 @@ open class JvmIdeaContextPrompter : ContextPrompter() {
     }
 
     companion object {
-        val logger = logger<JvmIdeaContextPrompter>()
+        val logger = logger<JavaContextPrompter>()
     }
 }

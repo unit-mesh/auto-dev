@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.intentions.error
 
-import cc.unitmesh.devti.PsiUtils
+import cc.unitmesh.devti.AutoPsiUtils
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
@@ -23,7 +23,7 @@ data class ErrorPlace(
 
     fun findContainingElement(): PsiElement? {
         val psiFile = psiFile ?: return null
-        val lineStartOffset = PsiUtils.getLineStartOffset(psiFile, lineNumber) ?: return null
+        val lineStartOffset = AutoPsiUtils.getLineStartOffset(psiFile, lineNumber) ?: return null
         val errorPlaceOffset: Int = lineStartOffset
         return this.psiFile?.findElementAt(errorPlaceOffset)
     }

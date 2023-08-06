@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.intentions.error
 
-import cc.unitmesh.devti.PsiUtils
+import cc.unitmesh.devti.AutoPsiUtils
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.prompting.model.RuntimeErrorExplanationPrompt
 import com.intellij.openapi.application.ReadAction
@@ -88,8 +88,8 @@ class ErrorPromptConstructor(private val maxLength: Int, private val tokenizer: 
         language: String,
         virtualFile: VirtualFile
     ): ErrorScope? {
-        val lineNumberStart = PsiUtils.getLineNumber(currentContainingElement, false)
-        val lineNumberFinish = PsiUtils.getLineNumber(currentContainingElement, false)
+        val lineNumberStart = AutoPsiUtils.getLineNumber(currentContainingElement, false)
+        val lineNumberFinish = AutoPsiUtils.getLineNumber(currentContainingElement, false)
         val prefix = "filename: $filename\n line: $lineNumberStart\n\n"
         val candidate = """
             $prefix```$language

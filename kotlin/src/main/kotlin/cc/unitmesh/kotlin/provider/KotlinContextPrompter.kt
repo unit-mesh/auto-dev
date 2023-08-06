@@ -1,6 +1,6 @@
 package cc.unitmesh.kotlin.provider
 
-import cc.unitmesh.idea.flow.provider.JvmIdeaContextPrompter
+import cc.unitmesh.idea.flow.provider.JavaContextPrompter
 
-class KotlinContextPrompter: JvmIdeaContextPrompter() {
+class KotlinContextPrompter: JavaContextPrompter() {
 }

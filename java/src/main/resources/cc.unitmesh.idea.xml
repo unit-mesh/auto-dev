@@ -28,7 +28,7 @@
 
         <contextPrompter
                 language="JAVA"
-                implementation="cc.unitmesh.idea.flow.provider.JvmIdeaContextPrompter"/>
+                implementation="cc.unitmesh.idea.flow.provider.JavaContextPrompter"/>
         <devFlowProvider
                 language="JAVA"
                 implementation="cc.unitmesh.idea.flow.provider.JvmAutoDevFlow"/>
