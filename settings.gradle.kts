@@ -3,6 +3,7 @@ rootProject.name = "intellij-autodev"
 enableFeaturePreview("VERSION_CATALOGS")
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
+include("companion")
 include("plugin")
 
 include(
