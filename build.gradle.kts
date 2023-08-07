@@ -154,6 +154,14 @@ allprojects {
     }
 }
 
+changelog {
+    version.set(properties("pluginVersion"))
+    groups.empty()
+    path.set(rootProject.file("CHANGELOG.md").toString())
+    repositoryUrl.set(properties("pluginRepositoryUrl"))
+}
+
+
 project(":plugin") {
     apply {
         plugin("org.jetbrains.changelog")
