@@ -23,4 +23,12 @@
     <content>
         <module name="cc.unitmesh.idea"/>
     </content>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <autoDevIntention>
+            <className>cc.unitmesh.comp.actions.TalkWithApiAction</className>
+            <bundleName>messages.AutoDevBundle</bundleName>
+            <categoryKey>intention.category.llm</categoryKey>
+        </autoDevIntention>
+    </extensions>
 </idea-plugin>
