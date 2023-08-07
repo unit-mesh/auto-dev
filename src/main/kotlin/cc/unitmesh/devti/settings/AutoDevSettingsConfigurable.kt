@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable
 import javax.swing.JComponent
 
 class AutoDevSettingsConfigurable : Configurable {
-    private var component: AppSettingsComponent? = null
+    private lateinit var component: AppSettingsComponent
 
     @Nls(capitalization = Nls.Capitalization.Title)
     override fun getDisplayName(): String {
@@ -14,56 +14,43 @@ class AutoDevSettingsConfigurable : Configurable {
     }
 
     override fun getPreferredFocusedComponent(): JComponent {
-        return component!!.preferredFocusedComponent
+        return component.preferredFocusedComponent
     }
 
     @Nullable
     override fun createComponent(): JComponent {
         component = AppSettingsComponent()
-        return component!!.panel
+        return component.panel
     }
 
     override fun isModified(): Boolean {
         val settings: AutoDevSettingsState = AutoDevSettingsState.getInstance()
-        var modified = !component!!.openAiKey.equals(settings.openAiKey)
-        modified = modified or (!component!!.githubToken.equals(settings.githubToken))
-        modified = modified or (!component!!.openAiModel.equals(settings.openAiModel))
-        modified = modified or (!component!!.customOpenAiHost.equals(settings.customOpenAiHost))
-        modified = modified or (!component!!.aiEngine.equals(settings.aiEngine))
-        modified = modified or (!component!!.customEngineServer.equals(settings.customEngineServer))
-        modified = modified or (!component!!.customEngineToken.equals(settings.customEngineToken))
-        modified = modified or (!component!!.customEnginePrompt.equals(settings.customEnginePrompts))
-        modified = modified or (!component!!.language.equals(settings.language))
-        return modified
+        return component.isModified(settings)
     }
 
     override fun apply() {
-        val settings: AutoDevSettingsState = AutoDevSettingsState.getInstance()!!
-        settings.openAiKey = component!!.getOpenAiKey()
-        settings.githubToken = component!!.getGithubToken()
-        settings.openAiModel = component!!.getOpenAiModel()
-        settings.customOpenAiHost = component!!.getOpenAiHost()
-        settings.aiEngine = component!!.getAiEngine()
-        settings.customEngineServer = component!!.getCustomEngineServer()
-        settings.customEngineToken = component!!.getCustomEngineToken()
-        settings.customEnginePrompts = component!!.getCustomEnginePrompt()
-        settings.language = component!!.getLanguage()
+        val settings: AutoDevSettingsState = AutoDevSettingsState.getInstance()
+        settings.openAiKey = component.getOpenAiKey()
+        settings.githubToken = component.getGithubToken()
+        settings.openAiModel = component.getOpenAiModel()
+        settings.customOpenAiHost = component.getOpenAiHost()
+        settings.aiEngine = component.getAiEngine()
+        settings.customEngineServer = component.getCustomEngineServer()
+        settings.customEngineToken = component.getCustomEngineToken()
+        settings.customEnginePrompts = component.getCustomEnginePrompt()
+        settings.language = component.getLanguage()
     }
 
     override fun reset() {
-        val settings: AutoDevSettingsState = AutoDevSettingsState.getInstance()!!
-        component!!.setLanguage(settings.language)
-        component!!.setOpenAiKey(settings.openAiKey)
-        component!!.setGithubToken(settings.githubToken)
-        component!!.setOpenAiModel(settings.openAiModel)
-        component!!.setOpenAiHost(settings.customOpenAiHost)
-        component!!.setAiEngine(settings.aiEngine)
-        component!!.setCustomEngineServer(settings.customEngineServer)
-        component!!.setCustomEngineToken(settings.customEngineToken)
-        component!!.setCustomEnginePrompt(settings.customEnginePrompts)
-    }
-
-    override fun disposeUIResources() {
-        component = null
+        val settings: AutoDevSettingsState = AutoDevSettingsState.getInstance()
+        component.setLanguage(settings.language)
+        component.setOpenAiKey(settings.openAiKey)
+        component.setGithubToken(settings.githubToken)
+        component.setOpenAiModel(settings.openAiModel)
+        component.setOpenAiHost(settings.customOpenAiHost)
+        component.setAiEngine(settings.aiEngine)
+        component.setCustomEngineServer(settings.customEngineServer)
+        component.setCustomEngineToken(settings.customEngineToken)
+        component.setCustomEnginePrompt(settings.customEnginePrompts)
     }
 }
