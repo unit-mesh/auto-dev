@@ -19,7 +19,7 @@ class AutoDevSettingsConfigurable : Configurable {
 
     @Nullable
     override fun createComponent(): JComponent {
-        component = AppSettingsComponent()
+        component = AppSettingsComponent(AutoDevSettingsState.getInstance())
         return component.panel
     }
 
@@ -29,28 +29,10 @@ class AutoDevSettingsConfigurable : Configurable {
     }
 
     override fun apply() {
-        val settings: AutoDevSettingsState = AutoDevSettingsState.getInstance()
-        settings.openAiKey = component.getOpenAiKey()
-        settings.githubToken = component.getGithubToken()
-        settings.openAiModel = component.getOpenAiModel()
-        settings.customOpenAiHost = component.getOpenAiHost()
-        settings.aiEngine = component.getAiEngine()
-        settings.customEngineServer = component.getCustomEngineServer()
-        settings.customEngineToken = component.getCustomEngineToken()
-        settings.customEnginePrompts = component.getCustomEnginePrompt()
-        settings.language = component.getLanguage()
+        component.exportSettings(target = AutoDevSettingsState.getInstance())
     }
 
     override fun reset() {
-        val settings: AutoDevSettingsState = AutoDevSettingsState.getInstance()
-        component.setLanguage(settings.language)
-        component.setOpenAiKey(settings.openAiKey)
-        component.setGithubToken(settings.githubToken)
-        component.setOpenAiModel(settings.openAiModel)
-        component.setOpenAiHost(settings.customOpenAiHost)
-        component.setAiEngine(settings.aiEngine)
-        component.setCustomEngineServer(settings.customEngineServer)
-        component.setCustomEngineToken(settings.customEngineToken)
-        component.setCustomEnginePrompt(settings.customEnginePrompts)
+        component.applySettings(AutoDevSettingsState.getInstance())
     }
 }

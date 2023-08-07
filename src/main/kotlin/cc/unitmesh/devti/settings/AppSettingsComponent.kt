@@ -15,7 +15,12 @@ import java.awt.FontMetrics
 import javax.swing.JComponent
 import javax.swing.JPanel
 
-class AppSettingsComponent {
+/**
+ * Settings component
+ *
+ * only provide [AutoDevSettingsState] and with api set it up
+ */
+class AppSettingsComponent(settings: AutoDevSettingsState) {
     val panel: JPanel
     val openAiKey = JBPasswordField()
     val githubToken = JBPasswordField()
@@ -71,48 +76,50 @@ class AppSettingsComponent {
             .addLabeledComponent(JBLabel("Custom Engine Prompt (Json): "), customEnginePrompt, 1, true)
             .addComponentFillVertically(JPanel(), 0)
             .panel
+
+        applySettings(settings)
     }
 
     val preferredFocusedComponent: JComponent
         get() = openAiKey
 
-    fun getOpenAiKey(): String {
-        return openAiKey.text
+    private fun getOpenAiKey(): String {
+        return openAiKey.password.joinToString("")
     }
 
-    fun setOpenAiKey(newText: String) {
+    private fun setOpenAiKey(newText: String) {
         openAiKey.text = newText
     }
 
-    fun getGithubToken(): String {
-        return githubToken.text
+    private fun getGithubToken(): String {
+        return githubToken.password.joinToString("")
     }
 
-    fun setGithubToken(newText: String) {
+    private fun setGithubToken(newText: String) {
         githubToken.text = newText
     }
 
-    fun getOpenAiModel(): String {
+    private fun getOpenAiModel(): String {
         return openAiModel.selectedItem?.toString() ?: OPENAI_MODEL[0]
     }
 
-    fun setOpenAiModel(newText: String) {
+    private fun setOpenAiModel(newText: String) {
         openAiModel.selectedItem = newText
     }
 
-    fun getOpenAiHost(): String {
+    private fun getOpenAiHost(): String {
         return customOpenAiHost.text
     }
 
-    fun setOpenAiHost(newText: String) {
+    private fun setOpenAiHost(newText: String) {
         customOpenAiHost.text = newText
     }
 
-    fun getAiEngine(): String {
+    private fun getAiEngine(): String {
         return aiEngine.selectedItem?.toString() ?: "OpenAI"
     }
 
-    fun setAiEngine(newText: String) {
+    private fun setAiEngine(newText: String) {
         aiEngine.selectedItem = newText
     }
 
@@ -120,36 +127,35 @@ class AppSettingsComponent {
         return customEngineServer.text
     }
 
-    fun setCustomEngineServer(newText: String) {
+    private fun setCustomEngineServer(newText: String) {
         customEngineServer.text = newText
     }
 
-    fun getCustomEngineToken(): String {
+    private fun getCustomEngineToken(): String {
         return customEngineToken.text
     }
 
-    fun setCustomEngineToken(newText: String) {
+    private fun setCustomEngineToken(newText: String) {
         customEngineToken.text = newText
     }
 
-    fun getCustomEnginePrompt(): String {
+    private fun getCustomEnginePrompt(): String {
         return customEnginePrompt.text
     }
 
-    fun setCustomEnginePrompt(newText: String) {
+    private fun setCustomEnginePrompt(newText: String) {
         customEnginePrompt.text = newText
     }
 
-    fun getLanguage(): String {
+    private fun getLanguage(): String {
         return language.selectedItem?.toString() ?: HUMAN_LANGUAGES[0]
     }
 
-    fun setLanguage(newText: String) {
+    private fun setLanguage(newText: String) {
         language.selectedItem = newText
     }
 
     fun isModified(origineSettings: AutoDevSettingsState): Boolean {
-        // TODO use data class to avoid manually write this
         return origineSettings.openAiKey != getOpenAiKey() ||
                 origineSettings.githubToken != getGithubToken() ||
                 origineSettings.openAiModel != getOpenAiModel() ||
@@ -159,5 +165,40 @@ class AppSettingsComponent {
                 origineSettings.customEngineToken != getCustomEngineToken() ||
                 origineSettings.customEnginePrompts != getCustomEnginePrompt() ||
                 origineSettings.language != getLanguage()
+    }
+
+    /**
+     * export settings to [target]
+     */
+    fun exportSettings(target: AutoDevSettingsState) {
+        target.apply {
+            openAiKey = getOpenAiKey()
+            githubToken = getGithubToken()
+            openAiModel = getOpenAiModel()
+            customOpenAiHost = getOpenAiHost()
+            aiEngine = getAiEngine()
+            customEngineServer = getCustomEngineServer()
+            customEngineToken = getCustomEngineToken()
+            customEnginePrompts = getCustomEnginePrompt()
+            language = getLanguage()
+        }
+    }
+
+    /**
+     * apply settings to setting UI
+     */
+    fun applySettings(settings: AutoDevSettingsState) {
+        settings.also {
+            setOpenAiKey(it.openAiKey)
+            setGithubToken(it.githubToken)
+            setOpenAiModel(it.openAiModel)
+            setOpenAiHost(it.customOpenAiHost)
+            setAiEngine(it.aiEngine)
+            setCustomEngineServer(it.customEngineServer)
+            setCustomEngineToken(it.customEngineToken)
+            setCustomEnginePrompt(it.customEnginePrompts)
+            setLanguage(it.language)
+        }
+
     }
 }
