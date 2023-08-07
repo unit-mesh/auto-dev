@@ -2,11 +2,13 @@ package cc.unitmesh.idea.actions
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.context.MethodContext
+import cc.unitmesh.devti.editor.LLMCoroutineScopeService
 import cc.unitmesh.devti.getElementToAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.intentions.AbstractChatIntention
 import cc.unitmesh.devti.provider.context.ChatContextItem
+import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
 import cc.unitmesh.idea.context.JavaMethodContextBuilder
@@ -21,6 +23,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiMethod
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class ExplainBusinessAction : AbstractChatIntention() {
     override fun getText(): String = AutoDevBundle.message("intentions.explain.business.new.name")
@@ -54,7 +58,7 @@ class ExplainBusinessAction : AbstractChatIntention() {
                         val methodContext = ReadAction.compute<MethodContext?, Throwable> {
                             return@compute JavaMethodContextBuilder().getMethodContext(
                                 creationContext.element as PsiMethod,
-                                true,
+                                false,
                                 gatherUsages = true
                             )
                         }
@@ -73,8 +77,11 @@ class ExplainBusinessAction : AbstractChatIntention() {
                     }
                 }
 
+                val creationContext =
+                    ChatCreationContext(ChatOrigin.ChatAction, getActionType(), file, listOf(), element)
+
                 val instruction = actionType.instruction(lang)
-                sendToChat(contextItems, selectedText, lang, project, instruction)
+                sendToChat(contextItems, selectedText, lang, project, instruction, creationContext)
             }
         }
 
@@ -82,26 +89,37 @@ class ExplainBusinessAction : AbstractChatIntention() {
     }
 
     private fun sendToChat(
-        contextItems: List<ChatContextItem>,
+        codeUsageContext: List<ChatContextItem>,
         selectedText: @NlsSafe String,
         lang: @NlsSafe String,
         project: Project,
         instruction: String,
+        creationContext: ChatCreationContext,
     ) {
         var chatContext = "\n"
-        contextItems.forEach {
-            chatContext += it.text
-        }
-
         ApplicationManager.getApplication().invokeLater {
+            val contextItems = runBlocking {
+                ChatContextProvider.collectChatContextList(project, creationContext)
+            }
+
+            contextItems.forEach {
+                chatContext += it.text + "\n"
+            }
+            chatContext += "// Compare this snippet\n"
+
+            codeUsageContext.forEach { item ->
+                chatContext += item.text.lines().joinToString("\n") { "// $it" }
+            }
+
+            val code = "```$lang\n$selectedText\n```"
             if (chatContext.isEmpty()) {
-                chatContext = selectedText
+                chatContext = code
             } else {
-                chatContext = "// Compare this snippet $chatContext\norigin code:\n```$lang$selectedText```\n"
+                chatContext = "```markdown\n$chatContext\n```\norigin code:\n$code\n"
             }
 
             sendToChatWindow(project, getActionType()) { contentPanel, _ ->
-                contentPanel.setInput("\n$instruction\n```markdown\n$chatContext")
+                contentPanel.setInput("\n$instruction\n$chatContext\nWrite down the user story:")
             }
         }
     }
