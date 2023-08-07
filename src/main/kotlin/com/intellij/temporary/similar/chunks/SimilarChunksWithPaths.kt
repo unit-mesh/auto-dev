@@ -1,4 +1,5 @@
-package cc.unitmesh.devti.context.chunks
+// Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
+package com.intellij.temporary.similar.chunks
 
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.fileEditor.impl.EditorHistoryManager

@@ -1,8 +1,8 @@
 package cc.unitmesh.devti.intentions
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.calculateFrontendElementToExplain
-import cc.unitmesh.devti.getElementToAction
+import com.intellij.temporary.calculateFrontendElementToExplain
+import com.intellij.temporary.getElementToAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.gui.sendToChatPanel

@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.gui.error
 
-import cc.unitmesh.devti.gui.block.AutoDevSnippetFile.isSnippet
+import com.intellij.temporary.gui.block.AutoDevSnippetFile.isSnippet
 import com.intellij.codeInsight.daemon.impl.analysis.DefaultHighlightingSettingProvider
 import com.intellij.codeInsight.daemon.impl.analysis.FileHighlightingSetting
 import com.intellij.openapi.project.Project

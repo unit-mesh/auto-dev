@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.gui.error
 
-import cc.unitmesh.devti.gui.block.AutoDevSnippetFile
+import com.intellij.temporary.gui.block.AutoDevSnippetFile
 import com.intellij.codeInsight.highlighting.HighlightErrorFilter
 import com.intellij.psi.PsiErrorElement
 

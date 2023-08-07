@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.context.base
 
-import cc.unitmesh.devti.AutoPsiUtils
+import com.intellij.temporary.AutoPsiUtils
 import com.google.gson.Gson
 import com.intellij.psi.PsiElement
 

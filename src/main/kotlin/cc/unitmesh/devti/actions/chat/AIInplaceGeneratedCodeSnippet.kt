@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.actions.chat
 
-import cc.unitmesh.devti.gui.block.CodeBlockView
-import cc.unitmesh.devti.gui.block.CodePartEditorInfo
+import com.intellij.temporary.gui.block.CodeBlockView
+import com.intellij.temporary.gui.block.CodePartEditorInfo
 import cc.unitmesh.devti.parser.Code
 import com.intellij.ide.KeyboardAwareFocusOwner
 import com.intellij.openapi.Disposable

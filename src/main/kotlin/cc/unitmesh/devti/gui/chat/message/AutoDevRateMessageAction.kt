@@ -3,15 +3,11 @@ package cc.unitmesh.devti.gui.chat.message
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
-import cc.unitmesh.devti.gui.block.CompletableMessage
-import com.intellij.ide.HelpTooltip
+import com.intellij.temporary.gui.block.CompletableMessage
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.project.DumbAwareToggleAction
 import com.intellij.openapi.project.ProjectManager
-import com.intellij.openapi.util.Key
 import javax.swing.Icon
-
 
 enum class ChatMessageRating {
     None,

@@ -16,7 +16,7 @@ import javax.swing.JComponent
 import javax.swing.JScrollPane
 import kotlin.math.max
 import kotlin.math.min
-import cc.unitmesh.devti.gui.block.whenDisposed
+import com.intellij.temporary.gui.block.whenDisposed
 
 class InlayComponent<T : JComponent?> private constructor(@JvmField var component: T) : JComponent(),
     EditorCustomElementRenderer {
