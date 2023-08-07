@@ -122,7 +122,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
 
         setContent(panelContent)
 
-//        inputSection.text = ""
+        inputSection.text = ""
 
         disposable?.whenDisposed(disposable) {
             myList.removeAll()
@@ -137,16 +137,6 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
     }
 
     fun addMessage(message: String, isMe: Boolean = false, displayPrompt: String = "") {
-//        if (!hasMessage) {
-//            myScrollPane.remove(welcomeComponent)
-//            hasMessage = true
-//            try {
-//                myScrollPane.setViewportView(myList)
-//            } catch (e: Exception) {
-//                e.printStackTrace()
-//            }
-//        }
-
         val role = if (isMe) ChatRole.User else ChatRole.Assistant
         val displayText = displayPrompt.ifEmpty { message }
 
@@ -235,7 +225,6 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
     // TODO: add session and stop manage
     fun clearChat() {
         progressBar.isVisible = false
-        myScrollPane.setViewportView(welcomeComponent)
         myList.removeAll()
         updateUI()
     }
