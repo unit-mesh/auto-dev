@@ -343,6 +343,7 @@ project(":") {
             exclude(module = "jackson-annotations")
         }
 
+        implementation("com.phodal.chapi:chapi-domain:2.1.2")
         implementation("com.knuddels:jtokkit:0.6.1")
 
         // junit
@@ -377,6 +378,8 @@ project(":java") {
     }
     dependencies {
         implementation(project(":"))
+        implementation("com.phodal.chapi:chapi-ast-java:2.1.2")
+        implementation("org.archguard.scanner:feat_apicalls:2.0.1")
     }
 }
 
