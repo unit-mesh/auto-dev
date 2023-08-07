@@ -134,20 +134,18 @@ class AzureOpenAIProvider(val project: Project) : CodeCopilotProvider {
             }, BackpressureStrategy.BUFFER)
 
         return callbackFlow {
-            withContext(Dispatchers.IO) {
-                sseFlowable
-                    .doOnError(Throwable::printStackTrace)
-                    .blockingForEach { sse ->
-                        val result: ChatCompletionResult =
-                            ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
-                        val completion = result.choices[0].message
-                        if (completion != null && completion.content != null) {
-                            trySend(completion.content)
-                        }
+            sseFlowable
+                .doOnError(Throwable::printStackTrace)
+                .blockingForEach { sse ->
+                    val result: ChatCompletionResult =
+                        ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
+                    val completion = result.choices[0].message
+                    if (completion != null && completion.content != null) {
+                        trySend(completion.content)
                     }
+                }
 
-                close()
-            }
+            close()
         }
     }
 
