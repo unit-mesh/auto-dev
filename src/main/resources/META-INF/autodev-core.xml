@@ -162,37 +162,37 @@
         <group id="org.intellij.sdk.action.GroupedActions" popup="true" text="AutoDev Chat" description="AutoDev chat">
             <action id="cc.unitmesh.devti.actions.chat.ChatBotExplainAction"
                     class="cc.unitmesh.devti.actions.chat.ChatBotExplainAction" text="Explain This"
-                    description="Ask AutoDev about this code">
+                    description="Ask AI about this code">
             </action>
 
             <action id="cc.unitmesh.devti.actions.chat.ChatBotRefactorAction"
                     class="cc.unitmesh.devti.actions.chat.ChatBotRefactorAction" text="Refactor This"
-                    description="Ask AutoDev refactor this code">
+                    description="Ask AI refactor this code">
             </action>
 
             <action id="cc.unitmesh.devti.actions.chat.ChatBotReviewAction"
                     class="cc.unitmesh.devti.actions.chat.ChatBotReviewAction" text="Review This"
-                    description="Ask AutoDev review this code">
+                    description="Ask AI review this code">
             </action>
 
             <action id="cc.unitmesh.devti.actions.chat.ChatWithThisAction"
                     class="cc.unitmesh.devti.actions.chat.ChatWithThisAction" text="Chat with This"
-                    description="Ask AutoDev chat with this code">
+                    description="Ask AI chat with this code">
             </action>
 
             <action id="cc.unitmesh.devti.actions.chat.GenerateTestAction"
                     class="cc.unitmesh.devti.actions.chat.GenerateTestAction" text="Write Test for This"
-                    description="Ask AutoDev write this code">
+                    description="Ask AI write this code">
             </action>
 
             <action id="cc.unitmesh.devti.actions.chat.CreateDdlAction"
                     class="cc.unitmesh.devti.actions.chat.CreateDdlAction" text="Create DDL"
-                    description="Ask AutoDev create DDL code">
+                    description="Ask AI create DDL code">
             </action>
 
 <!--            <action id="c.unitmesh.devti.actions.chat.ExplainBusinessAction"-->
 <!--                    class="cc.unitmesh.devti.actions.chat.ExplainBusinessAction" text="Explain Business"-->
-<!--                    description="Ask AutoDev explain with business">-->
+<!--                    description="Ask AI explain with business">-->
 <!--            </action>-->
 
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
@@ -200,14 +200,14 @@
 
         <action id="cc.unitmesh.devti.actions.chat.FixThisAction"
                 class="cc.unitmesh.devti.actions.chat.FixThisAction" text="Fix This (AutoDev)"
-                description="Ask AutoDev fi this code">
+                description="Ask AI fi this code">
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
         </action>
 
         <action id="autodev.Vcs.CommitMessage"
                 class="cc.unitmesh.devti.vcs.CommitMessageSuggestionAction" text="Commit Message (AutoDev)"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
-                description="Ask AutoDev generate commit message">
+                description="Ask AI generate commit message">
 
             <add-to-group group-id="Vcs.MessageActionGroup"/>
         </action>
@@ -215,14 +215,14 @@
         <action id="autodev.Vcs.LLMChangelog"
                 class="cc.unitmesh.devti.vcs.ReleaseNoteSuggestionAction" text="Generate Release Note (AutoDev)"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
-                description="Ask AutoDev generate release note">
+                description="Ask AI generate release note">
 
             <add-to-group group-id="Vcs.Log.ContextMenu" relative-to-action="Vcs.ShowDiffWithLocal" anchor="after"/>
         </action>
 
         <action id="cc.unitmesh.devti.actions.chat.CodeCompleteChatAction"
                 class="cc.unitmesh.devti.actions.chat.CodeCompleteChatAction" text="Code Complete (AutoDev)"
-                description="Ask AutoDev about this code">
+                description="Ask AI about this code">
 
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
