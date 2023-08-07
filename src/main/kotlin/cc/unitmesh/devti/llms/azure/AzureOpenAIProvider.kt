@@ -4,7 +4,6 @@ import cc.unitmesh.devti.llms.CodeCopilotProvider
 import cc.unitmesh.devti.prompting.model.CustomPromptConfig
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -12,8 +11,8 @@ import com.theokanning.openai.completion.chat.ChatCompletionResult
 import com.theokanning.openai.completion.chat.ChatMessage
 import com.theokanning.openai.completion.chat.ChatMessageRole
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -50,7 +49,6 @@ class AzureOpenAIProvider(val project: Project) : CodeCopilotProvider {
     private val messages: MutableList<SimpleOpenAIFormat> = ArrayList()
     private var historyMessageLength: Int = 0
 
-    private val mapper = ObjectMapper().registerKotlinModule()
 
     fun prompt(instruction: String, input: String): String {
         val promptText = "$instruction\n$input"
