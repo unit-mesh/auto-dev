@@ -36,6 +36,10 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 
+class AutoDevHttpException(error: String, parent: Exception?, val statusCode: Int, ) :
+    RuntimeException(error, parent) {
+}
+
 /**
  * Callback to parse Server Sent Events (SSE) from raw InputStream and
  * emit the events with io.reactivex.FlowableEmitter to allow streaming of
@@ -51,11 +55,7 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
                 if (errorBody == null) {
                     throw e
                 } else {
-                    val error = mapper.readValue(
-                        errorBody.string(),
-                        OpenAiError::class.java
-                    )
-                    throw OpenAiHttpException(error, e, e.reasonCode)
+                    throw AutoDevHttpException(errorBody.string(), e, e.reasonCode)
                 }
             }
             val inputStream = response.body!!.byteStream()
