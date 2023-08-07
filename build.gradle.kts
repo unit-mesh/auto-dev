@@ -23,6 +23,7 @@
 
 import groovy.xml.XmlParser
 import org.gradle.api.JavaVersion.VERSION_17
+import org.jetbrains.changelog.Changelog
 import org.jetbrains.intellij.tasks.PatchPluginXmlTask
 import org.jetbrains.intellij.tasks.PublishPluginTask
 import org.jetbrains.intellij.tasks.RunIdeTask
@@ -266,15 +267,34 @@ project(":plugin") {
 
         withType<PatchPluginXmlTask> {
             pluginDescription.set(provider { file("description.html").readText() })
+
+            changelog {
+                version.set(properties("pluginVersion"))
+                groups.empty()
+                path.set(rootProject.file("CHANGELOG.md").toString())
+                repositoryUrl.set(properties("pluginRepositoryUrl"))
+            }
+
+            val changelog = project.changelog
+            // Get the latest available change notes from the changelog file
+            changeNotes.set(properties("pluginVersion").map { pluginVersion ->
+                with(changelog) {
+                    renderItem(
+                        (getOrNull(pluginVersion) ?: getUnreleased())
+                            .withHeader(false)
+                            .withEmptySections(false),
+
+                        Changelog.OutputType.HTML,
+                    )
+                }
+            });
         }
 
         withType<PublishPluginTask> {
             dependsOn("patchChangelog")
             token.set(environment("PUBLISH_TOKEN"))
             channels.set(properties("pluginVersion").map {
-                listOf(
-                    it.split('-').getOrElse(1) { "default" }.split('.').first()
-                )
+                listOf(it.split('-').getOrElse(1) { "default" }.split('.').first())
             })
         }
     }
@@ -324,13 +344,6 @@ project(":") {
                 .flatMap { it.filter { c -> c.isCanBeResolved } }
                 .forEach { it.resolve() }
         }
-    }
-
-    changelog {
-        version.set(properties("pluginVersion"))
-        groups.empty()
-        path.set(layout.projectDirectory.file("CHANGELOG.md").toString())
-        repositoryUrl.set(properties("pluginRepositoryUrl"))
     }
 }
 
