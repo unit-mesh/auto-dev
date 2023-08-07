@@ -1,4 +1,4 @@
-package cc.unitmesh.idea.action
+package cc.unitmesh.idea.actions
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.intentions.AbstractChatIntention

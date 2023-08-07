@@ -1,4 +1,4 @@
-package cc.unitmesh.idea.flow.provider
+package cc.unitmesh.idea.promting
 
 import cc.unitmesh.devti.context.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.gui.chat.ChatActionType

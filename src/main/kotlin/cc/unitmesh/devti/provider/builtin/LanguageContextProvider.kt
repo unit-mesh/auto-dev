@@ -18,7 +18,7 @@ class LanguageContextProvider : ChatContextProvider {
         return listOf(
             ChatContextItem(
                 LanguageContextProvider::class,
-                "You MUST Use $language to return your answer!"
+                "You MUST Use $language to reply me!"
             )
         )
     }

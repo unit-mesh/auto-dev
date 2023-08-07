@@ -24,24 +24,27 @@
         <chatContextProvider implementation="cc.unitmesh.idea.provider.JavaVersionProvider"/>
         <chatContextProvider implementation="cc.unitmesh.idea.provider.SpringContextProvider"/>
         <chatContextProvider implementation="cc.unitmesh.idea.provider.JavaTestContextProvider"/>
-        <chatContextProvider implementation="cc.unitmesh.idea.provider.ExplainBusinessContextProvider"/>
 
         <contextPrompter
                 language="JAVA"
-                implementation="cc.unitmesh.idea.flow.provider.JavaContextPrompter"/>
+                implementation="cc.unitmesh.idea.promting.JavaContextPrompter"/>
         <devFlowProvider
                 language="JAVA"
-                implementation="cc.unitmesh.idea.flow.provider.JvmAutoDevFlow"/>
+                implementation="cc.unitmesh.idea.flow.JvmAutoDevFlow"/>
         <promptStrategy
                 language="JAVA"
-                implementation="cc.unitmesh.idea.flow.provider.JvmPromptStrategy"/>
+                implementation="cc.unitmesh.idea.promting.JvmPromptStrategy"/>
 
         <testContextProvider
                 language="JAVA"
                 implementation="cc.unitmesh.idea.service.JavaWriteTestService"/>
 
         <autoDevIntention>
-            <className>cc.unitmesh.idea.action.AutoCrudAction</className>
+            <className>cc.unitmesh.idea.actions.AutoCrudAction</className>
+            <bundleName>messages.AutoDevBundle</bundleName>
+            <categoryKey>intention.category.llm</categoryKey>
+        </autoDevIntention><autoDevIntention>
+            <className>cc.unitmesh.idea.actions.ExplainBusinessAction</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
