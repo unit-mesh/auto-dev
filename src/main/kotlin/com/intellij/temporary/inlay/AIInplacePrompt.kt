@@ -1,4 +1,4 @@
-package com.intellij.ml.llm.core.chat.ui.editor
+package com.intellij.temporary.inlay
 
 import com.intellij.ide.KeyboardAwareFocusOwner
 import java.awt.Dimension

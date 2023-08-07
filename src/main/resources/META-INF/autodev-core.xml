@@ -112,10 +112,6 @@
                         dynamic="true"/>
     </extensionPoints>
 
-    <!--    <applicationListeners>-->
-    <!--        <listener topic="cc.unitmesh.devti.editor.inlay.LLMInlayListener"-->
-    <!--                  class="cc.unitmesh.devti.editor.inlay.LLMInlayGotItListener"/>-->
-    <!--    </applicationListeners>-->
     <!--    <projectListeners>-->
     <!--        <listener topic="com.intellij.openapi.command.CommandListener"-->
     <!--                  class="cc.unitmesh.devti.editor.inlay.LLMCommandListener"/>-->

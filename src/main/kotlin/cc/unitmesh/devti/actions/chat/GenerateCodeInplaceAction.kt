@@ -1,8 +1,8 @@
 package cc.unitmesh.devti.actions.chat
 
 import cc.unitmesh.devti.editor.LLMCoroutineScopeService
-import cc.unitmesh.devti.editor.inlay.InlayComponent
-import cc.unitmesh.devti.editor.inlay.InlayComponent.Companion.add
+import com.intellij.temporary.inlay.presentation.InlayComponent
+import com.intellij.temporary.inlay.presentation.InlayComponent.Companion.add
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.llms.ConnectorFactory
 import cc.unitmesh.devti.parser.Code
@@ -11,7 +11,7 @@ import cc.unitmesh.devti.provider.builtin.DefaultContextPrompter
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
-import com.intellij.ml.llm.core.chat.ui.editor.AIInplacePrompt
+import com.intellij.temporary.inlay.presentation.AIInplacePrompt
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction

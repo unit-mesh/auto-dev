@@ -1,6 +1,9 @@
 // Copyright 2000-2023 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
-package cc.unitmesh.devti.editor.inlay
+package com.intellij.temporary.inlay
 
+import cc.unitmesh.devti.editor.inlay.maximumWidth
+import cc.unitmesh.devti.editor.inlay.preferredHeight
+import cc.unitmesh.devti.editor.inlay.preferredWidth
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorCustomElementRenderer
 import com.intellij.openapi.editor.Inlay

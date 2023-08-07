@@ -1,8 +1,8 @@
-package cc.unitmesh.devti.editor.presentation
+package com.intellij.temporary.inlay.presentation
 
-import cc.unitmesh.devti.editor.presentation.PresentationUtil.fontMetrics
-import cc.unitmesh.devti.editor.presentation.PresentationUtil.getFont
-import cc.unitmesh.devti.editor.presentation.PresentationUtil.getThemeInfoProvider
+import com.intellij.temporary.inlay.presentation.PresentationUtil.fontMetrics
+import com.intellij.temporary.inlay.presentation.PresentationUtil.getFont
+import com.intellij.temporary.inlay.presentation.PresentationUtil.getThemeInfoProvider
 import com.intellij.codeInsight.codeVision.ui.model.RangeCodeVisionModel
 import com.intellij.codeInsight.codeVision.ui.renderers.painters.ICodeVisionEntryBasePainter
 import com.intellij.openapi.editor.Editor

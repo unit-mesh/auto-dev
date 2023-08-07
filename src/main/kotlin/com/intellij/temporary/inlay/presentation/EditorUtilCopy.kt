@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.editor.presentation
+package com.intellij.temporary.inlay.presentation
 
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.actions.EditorActionUtil
