@@ -27,13 +27,13 @@
 
         <contextPrompter
                 language="JAVA"
-                implementation="cc.unitmesh.idea.flow.provider.JavaContextPrompter"/>
+                implementation="cc.unitmesh.idea.promting.JavaContextPrompter"/>
         <devFlowProvider
                 language="JAVA"
-                implementation="cc.unitmesh.idea.flow.provider.JvmAutoDevFlow"/>
+                implementation="cc.unitmesh.idea.flow.JvmAutoDevFlow"/>
         <promptStrategy
                 language="JAVA"
-                implementation="cc.unitmesh.idea.flow.provider.JvmPromptStrategy"/>
+                implementation="cc.unitmesh.idea.promting.JvmPromptStrategy"/>
 
         <testContextProvider
                 language="JAVA"

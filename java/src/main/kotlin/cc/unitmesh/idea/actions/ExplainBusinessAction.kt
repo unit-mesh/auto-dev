@@ -18,6 +18,7 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiMethod
 
@@ -47,22 +48,21 @@ class ExplainBusinessAction : AbstractChatIntention() {
 
         val task: Task.Backgroundable = object : Task.Backgroundable(project, "Collect context") {
             override fun run(indicator: ProgressIndicator) {
-                val instruction = actionType.instruction(lang)
-
+                // prepare context
                 val contextItems = when (element) {
                     is PsiMethod -> {
-                        val javaMethodContextBuilder = JavaMethodContextBuilder()
                         val methodContext = ReadAction.compute<MethodContext?, Throwable> {
-                            return@compute javaMethodContextBuilder.getMethodContext(
+                            return@compute JavaMethodContextBuilder().getMethodContext(
                                 creationContext.element as PsiMethod,
                                 true,
                                 gatherUsages = true
                             )
                         }
+                        // collect usages should run in [ProgressIndicator]
                         methodContext?.let {
-                            val toQuery = ReadAction.compute<String?, Throwable> { return@compute it.toQuery() }
-                                .lines()
-                                .joinToString("// $it\n")
+                            val toQuery = ReadAction.compute<String?, Throwable> {
+                                return@compute it.toQuery()
+                            }
                             val contextItem = ChatContextItem(ExplainBusinessAction::class, toQuery)
                             listOf(contextItem)
                         } ?: emptyList()
@@ -73,26 +73,37 @@ class ExplainBusinessAction : AbstractChatIntention() {
                     }
                 }
 
-                var chatContext = ""
-                contextItems.forEach {
-                    chatContext += it.text
-                }
-
-                if (chatContext.isEmpty()) {
-                    chatContext = selectedText
-                } else {
-                    chatContext = "// Compare this snippet $chatContext\norigin code:\n```$lang$selectedText```\n"
-                }
-
-                ApplicationManager.getApplication().invokeLater {
-                    sendToChatWindow(project, getActionType()) { contentPanel, _ ->
-                        contentPanel.setInput("\n$instruction\n```markdown\n$chatContext")
-                    }
-                }
+                val instruction = actionType.instruction(lang)
+                sendToChat(contextItems, selectedText, lang, project, instruction)
             }
         }
 
         ProgressManager.getInstance().runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+    }
+
+    private fun sendToChat(
+        contextItems: List<ChatContextItem>,
+        selectedText: @NlsSafe String,
+        lang: @NlsSafe String,
+        project: Project,
+        instruction: String,
+    ) {
+        var chatContext = "\n"
+        contextItems.forEach {
+            chatContext += it.text
+        }
+
+        ApplicationManager.getApplication().invokeLater {
+            if (chatContext.isEmpty()) {
+                chatContext = selectedText
+            } else {
+                chatContext = "// Compare this snippet $chatContext\norigin code:\n```$lang$selectedText```\n"
+            }
+
+            sendToChatWindow(project, getActionType()) { contentPanel, _ ->
+                contentPanel.setInput("\n$instruction\n```markdown\n$chatContext")
+            }
+        }
     }
 }
 

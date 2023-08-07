@@ -1,4 +1,4 @@
-package cc.unitmesh.idea.flow.provider
+package cc.unitmesh.idea.promting
 
 import cc.unitmesh.devti.context.model.DtClass
 import cc.unitmesh.devti.provider.PromptStrategy
