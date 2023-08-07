@@ -20,6 +20,10 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
     var language = DEFAULT_HUMAN_LANGUAGE
     var maxTokenLength = MAX_TOKEN_LENGTH.toString()
 
+    fun fetchMaxTokenLength(): Int {
+        return maxTokenLength.toIntOrNull() ?: MAX_TOKEN_LENGTH
+    }
+
     @Synchronized
     override fun getState(): AutoDevSettingsState {
         return this
@@ -31,6 +35,8 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
     }
 
     companion object {
+        val maxTokenLength: Int get() = getInstance().fetchMaxTokenLength()
+
         fun getInstance(): AutoDevSettingsState {
             return ApplicationManager.getApplication().getService(AutoDevSettingsState::class.java).state
         }

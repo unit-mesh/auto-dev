@@ -71,7 +71,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         myList.background = UIUtil.getListBackground()
 
         myScrollPane = JBScrollPane(
-            welcomeComponent,
+            myList,
             ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
             ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
         )
@@ -137,11 +137,15 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
     }
 
     fun addMessage(message: String, isMe: Boolean = false, displayPrompt: String = "") {
-        if (!hasMessage) {
-            myScrollPane.remove(welcomeComponent)
-            hasMessage = true
-            myScrollPane.setViewportView(myList)
-        }
+//        if (!hasMessage) {
+//            myScrollPane.remove(welcomeComponent)
+//            hasMessage = true
+//            try {
+//                myScrollPane.setViewportView(myList)
+//            } catch (e: Exception) {
+//                e.printStackTrace()
+//            }
+//        }
 
         val role = if (isMe) ChatRole.User else ChatRole.Assistant
         val displayText = displayPrompt.ifEmpty { message }
