@@ -6,12 +6,14 @@ import cc.unitmesh.devti.prompting.model.CustomPromptConfig
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.time.Duration
 
@@ -39,10 +41,14 @@ class CustomLLMProvider(val project: Project) : CodeCopilotProvider {
         return this.prompt(promptText, "")
     }
 
+    override fun stream(promptText: String, systemPrompt: String): Flow<String> {
+        return super.stream(promptText, systemPrompt)
+    }
+
     fun prompt(instruction: String, input: String): String {
         // encode the request as JSON with kotlinx.serialization
-        val body = Json.encodeToString(CustomRequest(instruction, input))
-            .toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
+        val requestContent = Json.encodeToString(CustomRequest(instruction, input))
+        val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), requestContent)
 
         logger.warn("Requesting from $body")
 
