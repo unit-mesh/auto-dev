@@ -18,6 +18,7 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
     var customEngineToken = ""
     var customEnginePrompts = ""
     var language = DEFAULT_HUMAN_LANGUAGE
+    var maxTokenLength = MAX_TOKEN_LENGTH.toString()
 
     @Synchronized
     override fun getState(): AutoDevSettingsState {

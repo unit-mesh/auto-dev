@@ -39,6 +39,7 @@ class AutoDevSettingsConfigurable : Configurable {
         settings.customEngineToken = component.getCustomEngineToken()
         settings.customEnginePrompts = component.getCustomEnginePrompt()
         settings.language = component.getLanguage()
+        settings.maxTokenLength = component.getMaxTokenLength().ifEmpty(MAX_TOKEN_LENGTH::toString)
     }
 
     override fun reset() {
@@ -52,5 +53,7 @@ class AutoDevSettingsConfigurable : Configurable {
         component.setCustomEngineServer(settings.customEngineServer)
         component.setCustomEngineToken(settings.customEngineToken)
         component.setCustomEnginePrompt(settings.customEnginePrompts)
+        component.setLanguage(settings.language)
+        component.setMaxTokenLength(settings.maxTokenLength)
     }
 }

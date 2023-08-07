@@ -26,6 +26,7 @@ class AppSettingsComponent {
     val customEngineServer = JBTextField()
     val customEngineToken = JBTextField()
     val language = ComboBox(HUMAN_LANGUAGES)
+    val maxTokenLengthInput = JBTextField(MAX_TOKEN_LENGTH)
 
     private var myEditor: EditorEx? = null
     private val customEnginePrompt by lazy {
@@ -57,6 +58,7 @@ class AppSettingsComponent {
         panel = FormBuilder.createFormBuilder()
             .addLabeledComponent(JBLabel("Language: "), language, 1, false)
             .addLabeledComponent(JBLabel("AI Engine: "), aiEngine, 1, false)
+            .addLabeledComponent(JBLabel("Max Token Length: "), maxTokenLengthInput, 1, false)
             .addSeparator()
             .addTooltip("GitHub Token is for AutoDev")
             .addLabeledComponent(JBLabel("GitHub Token: "), githubToken, 1, false)
@@ -148,16 +150,25 @@ class AppSettingsComponent {
         language.selectedItem = newText
     }
 
-    fun isModified(origineSettings: AutoDevSettingsState): Boolean {
+    fun getMaxTokenLength(): String {
+        return maxTokenLengthInput.text
+    }
+
+    fun setMaxTokenLength(newText: String) {
+        maxTokenLengthInput.text = newText
+    }
+
+    fun isModified(settings: AutoDevSettingsState): Boolean {
         // TODO use data class to avoid manually write this
-        return origineSettings.openAiKey != getOpenAiKey() ||
-                origineSettings.githubToken != getGithubToken() ||
-                origineSettings.openAiModel != getOpenAiModel() ||
-                origineSettings.customOpenAiHost != getOpenAiHost() ||
-                origineSettings.aiEngine != getAiEngine() ||
-                origineSettings.customEngineServer != getCustomEngineServer() ||
-                origineSettings.customEngineToken != getCustomEngineToken() ||
-                origineSettings.customEnginePrompts != getCustomEnginePrompt() ||
-                origineSettings.language != getLanguage()
+        return settings.openAiKey != getOpenAiKey() ||
+                settings.githubToken != getGithubToken() ||
+                settings.openAiModel != getOpenAiModel() ||
+                settings.customOpenAiHost != getOpenAiHost() ||
+                settings.aiEngine != getAiEngine() ||
+                settings.customEngineServer != getCustomEngineServer() ||
+                settings.customEngineToken != getCustomEngineToken() ||
+                settings.customEnginePrompts != getCustomEnginePrompt() ||
+                settings.language != getLanguage() ||
+                settings.maxTokenLength != getMaxTokenLength()
     }
 }
