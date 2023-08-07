@@ -190,11 +190,6 @@
                     description="Ask AI create DDL code">
             </action>
 
-<!--            <action id="c.unitmesh.devti.actions.chat.ExplainBusinessAction"-->
-<!--                    class="cc.unitmesh.devti.actions.chat.ExplainBusinessAction" text="Explain Business"-->
-<!--                    description="Ask AI explain with business">-->
-<!--            </action>-->
-
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </group>
 
