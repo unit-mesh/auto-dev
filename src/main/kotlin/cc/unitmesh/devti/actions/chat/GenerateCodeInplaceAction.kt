@@ -64,7 +64,7 @@ class GenerateCodeInplaceAction : AnAction() {
     }
 
     fun getChatCreationContext(list: List<ChatContextItem>, sourceFile: PsiFile?): ChatCreationContext {
-        return ChatCreationContext(ChatOrigin.Unknown, ChatActionType.CUSTOM_COMPLETE, sourceFile, list)
+        return ChatCreationContext(ChatOrigin.Unknown, ChatActionType.CUSTOM_COMPLETE, sourceFile, list, null)
     }
 
     private fun setupPrompt(inlay: Inlay<InlayComponent<AIInplacePrompt>>, sourceFile: PsiFile?) {

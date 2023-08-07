@@ -27,7 +27,7 @@ class RustContextPrompter : ContextPrompter() {
         element: PsiElement?
     ) {
         super.initContext(actionType, selectedText, file, project, offset, element)
-        creationContext = ChatCreationContext(ChatOrigin.ChatAction, action!!, file)
+        creationContext = ChatCreationContext(ChatOrigin.ChatAction, action!!, file, listOf(), element)
     }
 
     override fun displayPrompt(): String {

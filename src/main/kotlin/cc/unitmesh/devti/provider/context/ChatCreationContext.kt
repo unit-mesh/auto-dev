@@ -9,5 +9,5 @@ data class ChatCreationContext(
     val action: ChatActionType,
     val sourceFile: PsiFile?,
     val extraItems: List<ChatContextItem> = emptyList(),
-    val element: PsiElement? = null
+    val element: PsiElement?
 )
