@@ -21,8 +21,6 @@
 //SOFTWARE.
 package cc.unitmesh.devti.llms.azure
 
-import com.theokanning.openai.OpenAiError
-import com.theokanning.openai.OpenAiHttpException
 import com.theokanning.openai.service.OpenAiService
 import com.theokanning.openai.service.SSE
 import com.theokanning.openai.service.SSEFormatException
@@ -30,14 +28,12 @@ import io.reactivex.FlowableEmitter
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
-import org.apache.commons.httpclient.HttpException
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 
-class AutoDevHttpException(error: String, parent: Exception?, val statusCode: Int, ) :
-    RuntimeException(error, parent) {
+class AutoDevHttpException(error: String, val statusCode: Int) : RuntimeException(error) {
 }
 
 /**
@@ -50,12 +46,10 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
         var reader: BufferedReader? = null
         try {
             if (!response.isSuccessful) {
-                val e = HttpException(response.body.toString())
-                val errorBody = response.body
-                if (errorBody == null) {
-                    throw e
+                if (response.body == null) {
+                    throw AutoDevHttpException("Response body is null", response.code)
                 } else {
-                    throw AutoDevHttpException(errorBody.string(), e, e.reasonCode)
+                    throw AutoDevHttpException(response.body?.toString() ?: "", response.code)
                 }
             }
             val inputStream = response.body!!.byteStream()
