@@ -11,10 +11,21 @@ import com.intellij.openapi.project.Project
 import com.theokanning.openai.completion.chat.ChatCompletionResult
 import com.theokanning.openai.completion.chat.ChatMessage
 import com.theokanning.openai.completion.chat.ChatMessageRole
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
+@Serializable
+data class SimpleOpenAIFormat(val role: String, val content: String) {
+    companion object {
+        fun fromChatMessage(message: ChatMessage): SimpleOpenAIFormat {
+            return SimpleOpenAIFormat(message.role, message.content)
+        }
+    }
+}
 
 @Service(Service.Level.PROJECT)
 class AzureOpenAIProvider(val project: Project) : CodeCopilotProvider {
@@ -36,7 +47,7 @@ class AzureOpenAIProvider(val project: Project) : CodeCopilotProvider {
         return this.prompt(promptText, "")
     }
 
-    private val messages: MutableList<ChatMessage> = ArrayList()
+    private val messages: MutableList<SimpleOpenAIFormat> = ArrayList()
     private var historyMessageLength: Int = 0
 
     private val mapper = ObjectMapper().registerKotlinModule()
@@ -49,11 +60,11 @@ class AzureOpenAIProvider(val project: Project) : CodeCopilotProvider {
             messages.clear()
         }
 
-        messages.add(systemMessage)
+        messages.add(SimpleOpenAIFormat.fromChatMessage(systemMessage))
 
         val builder = Request.Builder()
         val requestText = """{
-            |"messages": ${mapper.writeValueAsString(messages)},
+            |"messages": ${Json.encodeToString(messages)},
             |"temperature": 0.0
             }""".trimMargin()
 
