@@ -1,8 +1,6 @@
 package cc.unitmesh.devti.actions.chat
 
 import cc.unitmesh.devti.editor.LLMCoroutineScopeService
-import com.intellij.temporary.inlay.presentation.InlayComponent
-import com.intellij.temporary.inlay.presentation.InlayComponent.Companion.add
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.llms.ConnectorFactory
 import cc.unitmesh.devti.parser.Code
@@ -11,7 +9,6 @@ import cc.unitmesh.devti.provider.builtin.DefaultContextPrompter
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
-import com.intellij.temporary.inlay.presentation.AIInplacePrompt
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
@@ -29,6 +26,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.psi.PsiFile
+import com.intellij.temporary.inlay.AIInplacePrompt
+import com.intellij.temporary.inlay.InlayComponent
+import com.intellij.temporary.inlay.InlayComponent.Companion.add
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.awt.event.ActionEvent
