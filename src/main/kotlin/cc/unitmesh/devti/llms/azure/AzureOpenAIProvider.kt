@@ -102,17 +102,8 @@ class AzureOpenAIProvider(val project: Project) : CodeCopilotProvider {
         return completion.choices[0].message.content
     }
 
-
-//    fun stream(apiCall: Call, emitDone: Boolean): Flowable<SSE?> {
-//        return Flowable.create({ emitter: FlowableEmitter<SSE?>? ->
-//            apiCall.enqueue(
-//
-//            )
-//        }, BackpressureStrategy.BUFFER)
-//    }
-
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun stream(promptText: String, systemPrompt: String): Flow<String> = callbackFlow {
+    override fun stream(promptText: String, systemPrompt: String): Flow<String> {
         val promptText1 = "$promptText\n${""}"
         val systemMessage = ChatMessage(ChatMessageRole.USER.value(), promptText1)
         if (historyMessageLength > 8192) {
@@ -126,33 +117,37 @@ class AzureOpenAIProvider(val project: Project) : CodeCopilotProvider {
         )
 
         val requestText = Json.encodeToString<SimpleOpenAIBody>(openAIBody)
-        val body = RequestBody.create(
-            "application/json; charset=utf-8".toMediaTypeOrNull(),
-            requestText
-        )
+        val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), requestText)
 
         val builder = Request.Builder()
         val request = builder
             .url(url)
             .post(body)
             .build()
+
         val call = client.newCall(request)
-        val emitDone = false;
-        withContext(Dispatchers.IO) {
-            Flowable.create({ emitter: FlowableEmitter<SSE> ->
+        val emitDone = false
+
+        val sseFlowable = Flowable
+            .create({ emitter: FlowableEmitter<SSE> ->
                 call.enqueue(cc.unitmesh.devti.llms.azure.ResponseBodyCallback(emitter, emitDone))
             }, BackpressureStrategy.BUFFER)
-                .doOnError(Throwable::printStackTrace)
-                .blockingForEach { sse ->
-                    val result: ChatCompletionResult =
-                        ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
-                    val completion = result.choices[0].message
-                    if (completion != null && completion.content != null) {
-                        trySend(completion.content)
-                    }
-                }
 
-            close()
+        return callbackFlow {
+            withContext(Dispatchers.IO) {
+                sseFlowable
+                    .doOnError(Throwable::printStackTrace)
+                    .blockingForEach { sse ->
+                        val result: ChatCompletionResult =
+                            ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
+                        val completion = result.choices[0].message
+                        if (completion != null && completion.content != null) {
+                            trySend(completion.content)
+                        }
+                    }
+
+                close()
+            }
         }
     }
 

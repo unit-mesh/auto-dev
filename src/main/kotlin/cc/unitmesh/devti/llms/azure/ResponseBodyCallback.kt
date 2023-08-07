@@ -60,28 +60,35 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
             }
             val inputStream = response.body!!.byteStream()
             reader = BufferedReader(InputStreamReader(inputStream, StandardCharsets.UTF_8))
-            var line = ""
+            var line: String? = null
             var sse: SSE? = null
             while (!emitter.isCancelled && reader.readLine().also { line = it } != null) {
-                sse = if (line.startsWith("data:")) {
-                    val data = line.substring(5).trim { it <= ' ' }
-                    SSE(data)
-                } else if (line == "" && sse != null) {
-                    if (sse.isDone) {
-                        if (emitDone) {
-                            emitter.onNext(sse)
-                        }
-                        break
+                sse = when {
+                    line!!.startsWith("data:") -> {
+                        val data = line!!.substring(5).trim { it <= ' ' }
+                        SSE(data)
                     }
-                    emitter.onNext(sse)
-                    null
-                } else {
-                    throw SSEFormatException("Invalid sse format! $line")
+
+                    line == "" && sse != null -> {
+                        if (sse.isDone) {
+                            if (emitDone) {
+                                emitter.onNext(sse)
+                            }
+                            break
+                        }
+                        emitter.onNext(sse)
+                        null
+                    }
+
+                    else -> {
+                        throw SSEFormatException("Invalid sse format! $line")
+                    }
                 }
             }
+
             emitter.onComplete()
         } catch (t: Throwable) {
-            onFailure(call, t as IOException)
+            onFailure(call, IOException(t))
         } finally {
             if (reader != null) {
                 try {
