@@ -1,0 +1,13 @@
+<idea-plugin package="cc.unitmesh.csharp">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+        <plugin id="com.intellij.modules.rider"/>
+    </dependencies>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <classContextBuilder language="C#"
+                             implementationClass="cc.unitmesh.csharp.context.CsharpClassContextBuilder"/>
+
+        <contextPrompter language="C#" implementation="cc.unitmesh.csharp.provider.CsharpContextPrompter"/>
+    </extensions>
+</idea-plugin>

@@ -10,9 +10,6 @@ import com.jetbrains.python.psi.PyFunction
 import com.jetbrains.python.psi.types.TypeEvalContext
 
 class PythonClassContextBuilder : ClassContextBuilder {
-    companion object {
-        val logger = logger<PythonClassContextBuilder>()
-    }
     override fun getClassContext(psiElement: PsiElement, gatherUsages: Boolean): ClassContext? {
         if (psiElement !is PyClass) {
             return null

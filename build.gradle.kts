@@ -58,6 +58,8 @@ val pycharmPlugins = listOf("PythonCore")
 val javaPlugins = listOf("com.intellij.java", "org.jetbrains.kotlin")
 //val kotlinPlugins = listOf("org.jetbrains.kotlin")
 val clionVersion = prop("clionVersion")
+
+// https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html#modules-specific-to-functionality
 val clionPlugins = listOf(
     "com.intellij.cidr.base",
     "com.intellij.cidr.lang",
