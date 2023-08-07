@@ -19,13 +19,13 @@
 > 🧙‍♂️ AutoDev: The AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, and a helpful
 > bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Testing feature 🧪 included! 🚀
 
-Video (Youtube) - English
+Video demo (Youtube) - English
 
-[![Watch the video](https://img.youtube.com/vi/gVBTBdFV5hA/default.jpg)](https://youtu.be/gVBTBdFV5hA)
+[![Watch the video](https://img.youtube.com/vi/gVBTBdFV5hA/sddefault.jpg)](https://youtu.be/gVBTBdFV5hA)
 
-Video (Bilibili) - 中文
+Video demo (Bilibili) - 中文
 
-[Watch the video](https://www.bilibili.com/video/BV1yV4y1i74c/)
+[![Watch the video](https://img.youtube.com/vi/gVBTBdFV5hA/sddefault.jpg)](https://www.bilibili.com/video/BV1yV4y1i74c/)
 
 features:
 
