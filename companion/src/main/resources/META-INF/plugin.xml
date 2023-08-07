@@ -24,6 +24,11 @@
         <module name="cc.unitmesh.idea"/>
     </content>
 
+    <dependencies>
+        <plugin id="com.intellij.modules.java"/>
+        <plugin id="org.jetbrains.plugins.gradle"/>
+    </dependencies>
+
     <extensions defaultExtensionNs="cc.unitmesh">
         <autoDevIntention>
             <className>cc.unitmesh.comp.actions.TalkWithApiAction</className>

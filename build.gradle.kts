@@ -375,9 +375,8 @@ project(":companion") {
     intellij {
         pluginName.set(basePluginArchiveName)
         val pluginList: MutableList<String> = mutableListOf("Git4Idea")
-        if (baseIDE == "idea") {
-            pluginList += javaPlugins
-        }
+        pluginList += javaPlugins
+
         plugins.set(pluginList)
     }
 
