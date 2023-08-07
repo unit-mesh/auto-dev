@@ -65,6 +65,8 @@ val clionPlugins = listOf(
     "org.rust.lang:0.4.186.5143-223",
     "org.toml.lang"
 )
+val riderVersion = prop("riderVersion")
+val riderPlugins: List<String> = listOf()
 
 val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
 val ideaPlugins =
@@ -400,6 +402,16 @@ project(":clion") {
     intellij {
         version.set(clionVersion)
         plugins.set(clionPlugins)
+    }
+    dependencies {
+        implementation(project(":"))
+    }
+}
+
+project(":csharp") {
+    intellij {
+        version.set(riderVersion)
+        plugins.set(riderPlugins)
     }
     dependencies {
         implementation(project(":"))

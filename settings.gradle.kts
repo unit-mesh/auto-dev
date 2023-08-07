@@ -12,4 +12,5 @@ include(
     "webstorm",
     "goland",
     "clion",
+    "csharp",
 )
