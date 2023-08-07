@@ -72,7 +72,7 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
         val allControllerFiles = getAllControllerFiles()
         if (allControllerFiles.isEmpty()) return
 
-        val targetControllerFile = allControllerFiles.first { it.name == "$targetController.java" }
+        val targetControllerFile = allControllerFiles.firstOrNull { it.name == "$targetController.java" } ?: return
 
         updateCodeMethod(targetControllerFile, targetController, code, project, psiElementFactory)
     }
