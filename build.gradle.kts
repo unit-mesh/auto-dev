@@ -57,7 +57,13 @@ val pycharmPlugins = listOf("PythonCore")
 val javaPlugins = listOf("com.intellij.java", "org.jetbrains.kotlin")
 //val kotlinPlugins = listOf("org.jetbrains.kotlin")
 val clionVersion = prop("clionVersion")
-val clionPlugins = listOf("com.intellij.cidr.base", "com.intellij.cidr.lang", "com.intellij.clion", "org.rust.lang:0.4.186.5143-223", "org.toml.lang")
+val clionPlugins = listOf(
+    "com.intellij.cidr.base",
+    "com.intellij.cidr.lang",
+    "com.intellij.clion",
+    "org.rust.lang:0.4.186.5143-223",
+    "org.toml.lang"
+)
 
 val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
 val ideaPlugins =
@@ -259,6 +265,7 @@ project(":plugin") {
         }
 
         withType<PublishPluginTask> {
+            dependsOn("patchChangelog")
             token.set(environment("PUBLISH_TOKEN"))
             channels.set(properties("pluginVersion").map {
                 listOf(
@@ -313,6 +320,12 @@ project(":") {
                 .flatMap { it.filter { c -> c.isCanBeResolved } }
                 .forEach { it.resolve() }
         }
+    }
+
+    changelog {
+        version.set(properties("pluginVersion"))
+        groups.empty()
+        repositoryUrl.set(properties("pluginRepositoryUrl"))
     }
 }
 
