@@ -10,12 +10,24 @@ import com.intellij.openapi.project.Project
 import com.theokanning.openai.completion.chat.ChatCompletionResult
 import com.theokanning.openai.completion.chat.ChatMessage
 import com.theokanning.openai.completion.chat.ChatMessageRole
+import com.theokanning.openai.service.ResponseBodyCallback
+import com.theokanning.openai.service.SSE
+import io.reactivex.BackpressureStrategy
+import io.reactivex.Flowable
+import io.reactivex.FlowableEmitter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import java.io.IOException
+
 
 @Serializable
 data class SimpleOpenAIFormat(val role: String, val content: String) {
@@ -25,6 +37,9 @@ data class SimpleOpenAIFormat(val role: String, val content: String) {
         }
     }
 }
+
+@Serializable
+data class SimpleOpenAIBody(val messages: List<SimpleOpenAIFormat>, val temperature: Double, val stream: Boolean)
 
 @Service(Service.Level.PROJECT)
 class AzureOpenAIProvider(val project: Project) : CodeCopilotProvider {
@@ -49,33 +64,31 @@ class AzureOpenAIProvider(val project: Project) : CodeCopilotProvider {
     private val messages: MutableList<SimpleOpenAIFormat> = ArrayList()
     private var historyMessageLength: Int = 0
 
-
     fun prompt(instruction: String, input: String): String {
         val promptText = "$instruction\n$input"
         val systemMessage = ChatMessage(ChatMessageRole.USER.value(), promptText)
-
         if (historyMessageLength > 8192) {
             messages.clear()
         }
-
         messages.add(SimpleOpenAIFormat.fromChatMessage(systemMessage))
+        val requestText = Json.encodeToString<SimpleOpenAIBody>(
+            SimpleOpenAIBody(
+                messages,
+                0.0,
+                false
+            )
+        )
 
-        val builder = Request.Builder()
-        val requestText = """{
-            |"messages": ${Json.encodeToString(messages)},
-            |"temperature": 0.0
-            }""".trimMargin()
-
-        val body = okhttp3.RequestBody.create(
+        val body = RequestBody.create(
             "application/json; charset=utf-8".toMediaTypeOrNull(),
             requestText
         )
 
+        val builder = Request.Builder()
         val request = builder
             .url(url)
             .post(body)
             .build()
-
         val response = client.newCall(request).execute()
 
         if (!response.isSuccessful) {
@@ -83,12 +96,66 @@ class AzureOpenAIProvider(val project: Project) : CodeCopilotProvider {
             return ""
         }
 
-        val objectMapper = ObjectMapper()
         val completion: ChatCompletionResult =
-            objectMapper.readValue(response.body?.string(), ChatCompletionResult::class.java)
+            ObjectMapper().readValue(response.body?.string(), ChatCompletionResult::class.java)
 
         return completion.choices[0].message.content
     }
+
+
+//    fun stream(apiCall: Call, emitDone: Boolean): Flowable<SSE?> {
+//        return Flowable.create({ emitter: FlowableEmitter<SSE?>? ->
+//            apiCall.enqueue(
+//
+//            )
+//        }, BackpressureStrategy.BUFFER)
+//    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun stream(promptText: String, systemPrompt: String): Flow<String> = callbackFlow {
+        val promptText1 = "$promptText\n${""}"
+        val systemMessage = ChatMessage(ChatMessageRole.USER.value(), promptText1)
+        if (historyMessageLength > 8192) {
+            messages.clear()
+        }
+        messages.add(SimpleOpenAIFormat.fromChatMessage(systemMessage))
+        val openAIBody = SimpleOpenAIBody(
+            messages,
+            0.0,
+            true
+        )
+
+        val requestText = Json.encodeToString<SimpleOpenAIBody>(openAIBody)
+        val body = RequestBody.create(
+            "application/json; charset=utf-8".toMediaTypeOrNull(),
+            requestText
+        )
+
+        val builder = Request.Builder()
+        val request = builder
+            .url(url)
+            .post(body)
+            .build()
+        val call = client.newCall(request)
+        val emitDone = false;
+        withContext(Dispatchers.IO) {
+            Flowable.create({ emitter: FlowableEmitter<SSE> ->
+                call.enqueue(cc.unitmesh.devti.llms.azure.ResponseBodyCallback(emitter, emitDone))
+            }, BackpressureStrategy.BUFFER)
+                .doOnError(Throwable::printStackTrace)
+                .blockingForEach { sse ->
+                    val result: ChatCompletionResult =
+                        ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
+                    val completion = result.choices[0].message
+                    if (completion != null && completion.content != null) {
+                        trySend(completion.content)
+                    }
+                }
+
+            close()
+        }
+    }
+
 
     override fun autoComment(text: String): String {
         val comment = customPromptConfig!!.autoComment
