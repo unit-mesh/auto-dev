@@ -154,6 +154,10 @@ allprojects {
 }
 
 project(":plugin") {
+    apply {
+        plugin("org.jetbrains.changelog")
+    }
+
     version = prop("pluginVersion")
 
     intellij {
@@ -325,6 +329,7 @@ project(":") {
     changelog {
         version.set(properties("pluginVersion"))
         groups.empty()
+        path.set(layout.projectDirectory.file("CHANGELOG.md").toString())
         repositoryUrl.set(properties("pluginRepositoryUrl"))
     }
 }
