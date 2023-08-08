@@ -176,8 +176,7 @@ open class JavaContextPrompter : ContextPrompter() {
             ChatActionType.EXPLAIN_BUSINESS -> {
             }
 
-            ChatActionType.CUSTOM_ACTION -> {
-            }
+            ChatActionType.CUSTOM_ACTION -> TODO()
         }
 
         return prompt
