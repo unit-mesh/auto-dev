@@ -1,6 +1,6 @@
 package cc.unitmesh.idea.promting
 
-import cc.unitmesh.devti.context.chunks.SimilarChunksWithPaths
+import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.prompting.model.CustomPromptConfig
 import cc.unitmesh.devti.provider.ContextPrompter

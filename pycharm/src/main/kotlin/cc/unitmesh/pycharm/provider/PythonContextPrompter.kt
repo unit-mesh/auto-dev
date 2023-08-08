@@ -1,6 +1,6 @@
 package cc.unitmesh.pycharm.provider
 
-import cc.unitmesh.devti.context.chunks.SimilarChunksWithPaths
+import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.diagnostic.logger

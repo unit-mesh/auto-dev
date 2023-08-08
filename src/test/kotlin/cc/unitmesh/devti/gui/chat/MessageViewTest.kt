@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.gui.chat
 
-import cc.unitmesh.devti.gui.block.SimpleMessage
+import com.intellij.temporary.gui.block.SimpleMessage
 import junit.framework.TestCase.assertEquals
 import org.junit.Test
 

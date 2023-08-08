@@ -2,8 +2,8 @@ package cc.unitmesh.devti.actions.chat
 
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatWindow
-import cc.unitmesh.devti.intentions.error.ErrorDescription
-import cc.unitmesh.devti.intentions.error.ErrorMessageProcessor
+import com.intellij.temporary.error.ErrorDescription
+import com.intellij.temporary.error.ErrorMessageProcessor
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.actionSystem.AnActionEvent
 

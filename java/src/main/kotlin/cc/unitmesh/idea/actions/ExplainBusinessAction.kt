@@ -2,8 +2,7 @@ package cc.unitmesh.idea.actions
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.context.MethodContext
-import cc.unitmesh.devti.editor.LLMCoroutineScopeService
-import cc.unitmesh.devti.getElementToAction
+import com.intellij.temporary.getElementToAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.intentions.AbstractChatIntention
@@ -23,7 +22,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiMethod
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 class ExplainBusinessAction : AbstractChatIntention() {

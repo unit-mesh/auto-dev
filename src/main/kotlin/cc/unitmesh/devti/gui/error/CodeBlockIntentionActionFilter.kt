@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.gui.error
 
-import cc.unitmesh.devti.gui.block.AutoDevSnippetFile.isSnippet
+import com.intellij.temporary.gui.block.AutoDevSnippetFile.isSnippet
 import com.intellij.codeInsight.daemon.impl.IntentionActionFilter
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.psi.PsiFile

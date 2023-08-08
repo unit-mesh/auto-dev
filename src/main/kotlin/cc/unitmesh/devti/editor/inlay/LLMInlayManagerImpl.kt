@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.editor.inlay
 
-import cc.unitmesh.devti.editor.presentation.LLMInlayRenderer
+import com.intellij.temporary.inlay.presentation.LLMInlayRenderer
 import cc.unitmesh.devti.intentions.task.CodeCompletionTask
 import cc.unitmesh.devti.intentions.task.CodeCompletionRequest
 import com.intellij.injected.editor.EditorWindow
