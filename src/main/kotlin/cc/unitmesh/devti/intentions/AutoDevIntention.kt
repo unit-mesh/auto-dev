@@ -2,7 +2,9 @@ package cc.unitmesh.devti.intentions
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
+import cc.unitmesh.devti.custom.CustomIntention
 import cc.unitmesh.devti.intentions.ui.CustomPopupStep
+import cc.unitmesh.devti.custom.CustomPromptConfig
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.IntentionActionBean
 import com.intellij.lang.injection.InjectedLanguageManager
@@ -43,18 +45,19 @@ class AutoDevIntention : IntentionAction, Iconable {
             ExtensionPointName<IntentionActionBean>("cc.unitmesh.autoDevIntention")
 
         fun getAiAssistantIntentions(project: Project, editor: Editor, file: PsiFile): List<IntentionAction> {
-            val intentions: MutableList<IntentionAction> = ArrayList()
             val extensionList = EP_NAME.extensionList
 
-            for (bean in extensionList) {
-                val intentionActionBean = bean as IntentionActionBean
-                val intention = intentionActionBean.instance
-                if (intention.isAvailable(project, editor, file)) {
-                    intentions.add(intention)
-                }
+            val builtinIntentions = extensionList
+                .asSequence()
+                .map { (it as IntentionActionBean).instance }
+                .filter { it.isAvailable(project, editor, file) }
+                .toList()
+
+            val customIntentions: List<IntentionAction> = CustomPromptConfig.load().prompts.map {
+                CustomIntention.create(it)
             }
 
-            return intentions
+            return builtinIntentions + customIntentions
         }
     }
 }

@@ -3,7 +3,7 @@ package cc.unitmesh.devti.custom
 import kotlinx.serialization.Serializable
 
 @Serializable
-class CustomIntentionPrompt {
+class CustomIntentionConfig {
     var title: String = ""
     var autoInvoke: Boolean = false
     var matchRegex: String = ""

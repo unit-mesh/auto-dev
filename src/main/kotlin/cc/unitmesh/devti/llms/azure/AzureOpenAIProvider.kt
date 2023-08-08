@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.llms.azure
 
 import cc.unitmesh.devti.llms.CodeCopilotProvider
-import cc.unitmesh.devti.prompting.model.CustomPromptConfig
+import cc.unitmesh.devti.custom.CustomPromptConfig
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.components.Service
@@ -10,23 +10,18 @@ import com.intellij.openapi.project.Project
 import com.theokanning.openai.completion.chat.ChatCompletionResult
 import com.theokanning.openai.completion.chat.ChatMessage
 import com.theokanning.openai.completion.chat.ChatMessageRole
-import com.theokanning.openai.service.ResponseBodyCallback
 import com.theokanning.openai.service.SSE
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.FlowableEmitter
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import java.io.IOException
 
 
 @Serializable

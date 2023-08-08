@@ -1,8 +1,7 @@
 package cc.unitmesh.devti.llms.custom
 
 import cc.unitmesh.devti.llms.CodeCopilotProvider
-import cc.unitmesh.devti.llms.azure.SimpleOpenAIBody
-import cc.unitmesh.devti.prompting.model.CustomPromptConfig
+import cc.unitmesh.devti.custom.CustomPromptConfig
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.components.Service
@@ -15,7 +14,6 @@ import io.reactivex.Flowable
 import io.reactivex.FlowableEmitter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.withContext
@@ -24,9 +22,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.sse.EventSource
-import okhttp3.sse.EventSourceListener
-import okhttp3.sse.EventSources
 import java.time.Duration
 
 

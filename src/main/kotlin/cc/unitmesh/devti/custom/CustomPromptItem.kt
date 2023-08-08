@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.prompting.model
+package cc.unitmesh.devti.custom
 
 import kotlinx.serialization.Serializable
 

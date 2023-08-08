@@ -1,6 +1,5 @@
-package cc.unitmesh.devti.prompting.model
+package cc.unitmesh.devti.custom
 
-import cc.unitmesh.devti.custom.CustomIntentionPrompt
 import cc.unitmesh.devti.gui.chat.ChatActionType.*
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.diagnostic.logger
@@ -29,7 +28,7 @@ data class CustomPromptConfig(
     @SerialName("spec")
     val spec: Map<String, String> = mapOf(),
     @SerialName("prompts")
-    val prompts: List<CustomIntentionPrompt> = listOf(),
+    val prompts: List<CustomIntentionConfig> = listOf(),
 ) {
     companion object {
         private val logger = logger<CustomPromptConfig>()
