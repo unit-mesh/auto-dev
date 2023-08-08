@@ -42,7 +42,7 @@ data class CustomPromptConfig(
         fun default(): CustomPromptConfig = CustomPromptConfig(
             autoComplete = CustomPromptItem(CODE_COMPLETE.instruction(), "{code}"),
             autoComment = CustomPromptItem(EXPLAIN.instruction(), "{code}"),
-            codeReview = CustomPromptItem(REVIEW.instruction(), "{code}"),
+            codeReview = CustomPromptItem("", "{code}"),
             refactor = CustomPromptItem(REFACTOR.instruction(), "{code}"),
             writeTest = CustomPromptItem(GENERATE_TEST.instruction(), "{code}"),
 

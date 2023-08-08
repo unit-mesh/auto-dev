@@ -171,11 +171,6 @@
                     description="Ask AI refactor this code">
             </action>
 
-            <action id="cc.unitmesh.devti.actions.chat.ChatBotReviewAction"
-                    class="cc.unitmesh.devti.actions.chat.ChatBotReviewAction" text="Review This"
-                    description="Ask AI review this code">
-            </action>
-
             <action id="cc.unitmesh.devti.actions.chat.ChatWithThisAction"
                     class="cc.unitmesh.devti.actions.chat.ChatWithThisAction" text="Chat with This"
                     description="Ask AI chat with this code">

@@ -9,7 +9,6 @@ enum class ChatActionType {
     CHAT,
     REFACTOR,
     EXPLAIN,
-    REVIEW,
     CODE_COMPLETE,
     GENERATE_TEST,
     GEN_COMMIT_MESSAGE,
@@ -70,7 +69,6 @@ $diff
     fun instruction(lang: String = ""): String {
         return when (this) {
             EXPLAIN -> "Explain selected $lang code"
-            REVIEW -> "Code Review given following $lang code"
             REFACTOR -> "Refactor the given $lang code"
             CODE_COMPLETE -> "Complete $lang code, return rest code, no explaining"
             GENERATE_TEST -> "Write unit test for given $lang code"

@@ -92,13 +92,6 @@ open class JavaContextPrompter : ContextPrompter() {
         var prompt = action!!.instruction(lang)
 
         when (action!!) {
-            ChatActionType.REVIEW -> {
-                val codeReview = customPromptConfig?.codeReview
-                if (codeReview?.instruction?.isNotEmpty() == true) {
-                    prompt = codeReview.instruction
-                }
-            }
-
             ChatActionType.EXPLAIN -> {
                 val autoComment = customPromptConfig?.autoComment
                 if (autoComment?.instruction?.isNotEmpty() == true) {
