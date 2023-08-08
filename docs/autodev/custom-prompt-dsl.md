@@ -6,7 +6,7 @@
     "title": "转译",
     "autoInvoke": true,
     "matchRegex": ".*",
-    "template": "帮我重构下面的代码为 Kotlin 语言，方便于我理解: \n ${SPEC.XXX} ${SELECTION}"
+    "template": "帮我重构下面的代码为 Kotlin 语言，方便于我理解: \n ${SPEC_XXX} ${SELECTION}"
   }
 ]
 ```

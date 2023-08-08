@@ -29,9 +29,7 @@ class CustomIntention(private val intentionConfig: CustomIntentionConfig) : Abst
         val withRange = elementWithRange(editor, file, project) ?: return
         val selectedText = withRange.first
         val psiElement = withRange.second
-
         val prompt: CustomIntentionPrompt = buildCustomPrompt(psiElement!!, selectedText, intentionConfig)
-
 
         sendToChatPanel(project, getActionType(), object : ContextPrompter() {
             override fun displayPrompt(): String {
@@ -52,20 +50,19 @@ class CustomIntention(private val intentionConfig: CustomIntentionConfig) : Abst
         val stringBuilderWriter = StringWriter()
         val velocityContext = VelocityContext()
 
-        val resolverMap = LinkedHashMap<CustomIntentionVariableType, VariableResolver>(10)
-
         val variableResolvers = arrayOf(
             MethodInputOutputVariableResolver(psiElement),
             SelectionVariableResolver(psiElement.language.displayName ?: "", selectedText),
         ) + SpecResolverService.getInstance().createResolvers()
 
+        val resolverMap = LinkedHashMap<String, VariableResolver>(10)
         for (resolver in variableResolvers) {
-            resolverMap[resolver.type] = resolver
+            resolverMap[resolver.variableName()] = resolver
         }
 
         resolverMap.forEach { (variableType, resolver) ->
             val value = resolver.resolve()
-            velocityContext.put(variableType.toString(), value)
+            velocityContext.put(variableType, value)
         }
 
         Velocity.evaluate(velocityContext, stringBuilderWriter, "", intentionConfig.template)

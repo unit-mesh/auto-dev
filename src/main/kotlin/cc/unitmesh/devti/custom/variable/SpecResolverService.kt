@@ -10,7 +10,7 @@ class SpecResolverService {
 
     fun createResolvers(): List<SpecVariableResolver> {
         return specs.map { (key, value) ->
-            SpecVariableResolver(key, value)
+            SpecVariableResolver("SPEC_$key", value)
         }
     }
 
