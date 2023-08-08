@@ -19,8 +19,6 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import org.archguard.scanner.analyser.backend.JavaApiAnalyser
-import org.archguard.scanner.core.sourcecode.ContainerService
-import org.archguard.scanner.core.sourcecode.ContainerSupply
 import java.awt.EventQueue.invokeLater
 
 class TalkWithApiAction : AbstractChatIntention() {
