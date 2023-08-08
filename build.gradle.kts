@@ -369,7 +369,7 @@ project(":pycharm") {
 }
 
 
-project(":companion") {
+project(":experiment") {
     version = prop("pluginVersion")
 
     intellij {
