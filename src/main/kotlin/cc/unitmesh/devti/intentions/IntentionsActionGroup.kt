@@ -19,7 +19,7 @@ class IntentionsActionGroup : ActionGroup(AutoDevBundle.message("intentions.assi
         val file: PsiFile = e.getData(CommonDataKeys.PSI_FILE) ?: return emptyArray()
 
         val intentions: List<IntentionAction> =
-            AutoDevIntention.getAiAssistantIntentions(project, editor, file)
+            AutoDevIntentionHelper.getAiAssistantIntentions(project, editor, file)
 
         return intentions.map { action ->
             DumbAwareAction.create(action.text) {

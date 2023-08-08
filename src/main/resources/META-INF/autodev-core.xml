@@ -40,7 +40,7 @@
         <!--                      implementation="cc.unitmesh.devti.editor.inlay.TypeOverHandler"/>-->
 
         <intentionAction>
-            <className>cc.unitmesh.devti.intentions.AutoDevIntention</className>
+            <className>cc.unitmesh.devti.intentions.AutoDevIntentionHelper</className>
             <categoryKey>intention.category.llm</categoryKey>
         </intentionAction>
 
@@ -124,22 +124,22 @@
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <autoDevIntention>
-            <className>cc.unitmesh.devti.intentions.NewChatWithCodeIntention</className>
+            <className>cc.unitmesh.devti.intentions.action.NewChatWithCodeIntention</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
         <autoDevIntention>
-            <className>cc.unitmesh.devti.intentions.CodeCompletionIntention</className>
+            <className>cc.unitmesh.devti.intentions.action.CodeCompletionIntention</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
         <autoDevIntention>
-            <className>cc.unitmesh.devti.intentions.CodeCompletionInlayIntention</className>
+            <className>cc.unitmesh.devti.intentions.action.CodeCompletionInlayIntention</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
         <autoDevIntention>
-            <className>cc.unitmesh.devti.intentions.WriteTestIntention</className>
+            <className>cc.unitmesh.devti.intentions.action.AutoTestThisIntention</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>

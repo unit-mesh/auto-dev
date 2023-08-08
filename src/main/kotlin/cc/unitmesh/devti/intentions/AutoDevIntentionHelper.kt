@@ -5,6 +5,7 @@ import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.custom.CustomIntention
 import cc.unitmesh.devti.intentions.ui.CustomPopupStep
 import cc.unitmesh.devti.custom.CustomPromptConfig
+import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.IntentionActionBean
 import com.intellij.lang.injection.InjectedLanguageManager
@@ -17,7 +18,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import javax.swing.Icon
 
-class AutoDevIntention : IntentionAction, Iconable {
+class AutoDevIntentionHelper : IntentionAction, Iconable {
     override fun startInWriteAction(): Boolean = false
     override fun getText(): String = AutoDevBundle.message("intentions.assistant.name")
     override fun getFamilyName(): String = AutoDevBundle.message("intentions.assistant.name")
@@ -30,7 +31,7 @@ class AutoDevIntention : IntentionAction, Iconable {
     }
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
-        val intentions = Companion.getAiAssistantIntentions(project, editor, file)
+        val intentions = getAiAssistantIntentions(project, editor, file)
 
         val title = AutoDevBundle.message("intentions.assistant.popup.title")
         val popupStep = CustomPopupStep(intentions, project, editor, file, title)

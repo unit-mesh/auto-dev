@@ -1,7 +1,8 @@
-package cc.unitmesh.devti.intentions
+package cc.unitmesh.devti.intentions.action
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.editor.inlay.LLMInlayManager
+import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile

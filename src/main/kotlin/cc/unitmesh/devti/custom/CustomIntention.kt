@@ -3,7 +3,7 @@ package cc.unitmesh.devti.custom
 import cc.unitmesh.devti.custom.variable.*
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatPanel
-import cc.unitmesh.devti.intentions.AbstractChatIntention
+import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project

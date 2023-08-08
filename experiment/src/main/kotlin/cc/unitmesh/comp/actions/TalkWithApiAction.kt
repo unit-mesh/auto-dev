@@ -3,7 +3,7 @@ package cc.unitmesh.comp.actions
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatWindow
-import cc.unitmesh.devti.intentions.AbstractChatIntention
+import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
 import chapi.ast.javaast.JavaAnalyser
 import chapi.domain.core.CodeDataStruct
 import com.intellij.ide.highlighter.JavaFileType

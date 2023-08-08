@@ -3,7 +3,7 @@ package cc.unitmesh.devti.intentions.task
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.context.modifier.CodeModifierProvider
 import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.intentions.WriteTestIntention
+import cc.unitmesh.devti.intentions.action.AutoTestThisIntention
 import cc.unitmesh.devti.llms.ConnectorFactory
 import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.provider.WriteTestService
@@ -89,7 +89,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         val flow: Flow<String> =
             ConnectorFactory().connector(request.project).stream(prompter, "")
 
-        logger<WriteTestIntention>().info("Prompt: $prompter")
+        logger<AutoTestThisIntention>().info("Prompt: $prompter")
 
         indicator.fraction = 0.8
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.prompt")

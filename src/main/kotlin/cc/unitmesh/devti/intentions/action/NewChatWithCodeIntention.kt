@@ -1,9 +1,10 @@
-package cc.unitmesh.devti.intentions
+package cc.unitmesh.devti.intentions.action
 
 import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.temporary.getElementToAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatWindow
+import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile

@@ -1,7 +1,7 @@
 package cc.unitmesh.idea.actions
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.intentions.AbstractChatIntention
+import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
 import cc.unitmesh.devti.llms.ConnectorFactory
 import cc.unitmesh.devti.provider.DevFlowProvider
 import cc.unitmesh.devti.gui.sendToChatPanel

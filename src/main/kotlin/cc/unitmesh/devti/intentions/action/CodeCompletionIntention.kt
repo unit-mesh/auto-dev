@@ -1,6 +1,7 @@
-package cc.unitmesh.devti.intentions
+package cc.unitmesh.devti.intentions.action
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
 import cc.unitmesh.devti.intentions.task.CodeCompletionTask
 import cc.unitmesh.devti.intentions.task.CodeCompletionRequest
 import com.intellij.openapi.diagnostic.logger

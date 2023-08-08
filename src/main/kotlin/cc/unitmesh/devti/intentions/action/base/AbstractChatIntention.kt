@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.intentions
+package cc.unitmesh.devti.intentions.action.base
 
 import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.temporary.calculateFrontendElementToExplain
