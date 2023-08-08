@@ -16,6 +16,7 @@ class MethodContext(
     val paramNames: List<String> = emptyList(),
     val includeClassContext: Boolean = false,
     val usages: List<PsiReference> = emptyList(),
+    val inputOutputClasses: List<PsiElement> = emptyList()
 ) : NamedElementContext(
     root, text, name
 ) {

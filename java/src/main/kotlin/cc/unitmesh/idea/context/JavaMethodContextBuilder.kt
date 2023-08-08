@@ -2,15 +2,17 @@ package cc.unitmesh.idea.context
 
 import cc.unitmesh.devti.context.builder.MethodContextBuilder
 import cc.unitmesh.devti.context.MethodContext
+import cc.unitmesh.idea.service.JavaTypeUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiNameIdentifierOwner
+import com.intellij.psi.impl.source.PsiClassReferenceType
 
 class JavaMethodContextBuilder : MethodContextBuilder {
     override fun getMethodContext(
         psiElement: PsiElement,
         includeClassContext: Boolean,
-        gatherUsages: Boolean
+        gatherUsages: Boolean,
     ): MethodContext? {
         if (psiElement !is PsiMethod) {
             return null
@@ -25,6 +27,8 @@ class JavaMethodContextBuilder : MethodContextBuilder {
             emptyList()
         }
 
+        val ios: List<PsiElement> = JavaTypeUtil.resolveByMethod(psiElement).values.mapNotNull { it }
+
         return MethodContext(
             psiElement,
             text = psiElement.text,
@@ -35,7 +39,8 @@ class JavaMethodContextBuilder : MethodContextBuilder {
             returnType = processReturnTypeText(psiElement.returnType?.presentableText),
             variableContextList,
             includeClassContext,
-            usagesList
+            usagesList,
+            ios
         )
     }
 

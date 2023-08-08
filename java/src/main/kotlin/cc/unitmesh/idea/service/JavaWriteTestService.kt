@@ -16,7 +16,6 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.*
-import com.intellij.psi.impl.source.PsiClassReferenceType
 import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration
 import java.io.File
 
@@ -95,12 +94,12 @@ class JavaWriteTestService : WriteTestService() {
             val elements = mutableListOf<ClassContext>()
             val projectPath = project.guessProjectDir()?.path
 
-            val resolvedClasses = resolveByMethod(element)
-            resolvedClasses.putAll(resolveByField(element))
+            val resolvedClasses = JavaTypeUtil.resolveByMethod(element)
+            resolvedClasses.putAll(JavaTypeUtil.resolveByField(element))
 
             if (element is PsiClass) {
                 element.methods.forEach { method ->
-                    resolvedClasses.putAll(resolveByMethod(method))
+                    resolvedClasses.putAll(JavaTypeUtil.resolveByMethod(method))
                 }
             }
 
@@ -116,53 +115,6 @@ class JavaWriteTestService : WriteTestService() {
         }
     }
 
-    private fun resolveByMethod(element: PsiElement): MutableMap<String, PsiClass?> {
-        val resolvedClasses = mutableMapOf<String, PsiClass?>()
-        if (element is PsiMethod) {
-            element.parameterList.parameters.filter {
-                it.type is PsiClassReferenceType
-            }.map {
-                resolvedClasses[it.name] = (it.type as PsiClassReferenceType).resolve()
-            }
-
-            val outputType = element.returnTypeElement?.type
-            resolvedClasses.putAll(resolveByType(outputType))
-        }
-
-        return resolvedClasses
-    }
-
-    private fun resolveByType(outputType: PsiType?): MutableMap<String, PsiClass?> {
-        val resolvedClasses = mutableMapOf<String, PsiClass?>()
-        if (outputType is PsiClassReferenceType) {
-            if (outputType.parameters.isNotEmpty()) {
-                outputType.parameters.forEach {
-                    if (it is PsiClassReferenceType) {
-                        resolvedClasses[it.canonicalText] = outputType.resolve()
-                    }
-                }
-            }
-
-            val canonicalText = outputType.canonicalText
-            resolvedClasses[canonicalText] = outputType.resolve()
-        }
-
-        return resolvedClasses
-    }
-
-
-    private fun resolveByField(element: PsiElement): Map<out String, PsiClass?> {
-        val psiFile = element.containingFile as PsiJavaFile
-
-        val resolvedClasses = mutableMapOf<String, PsiClass?>()
-        psiFile.classes.forEach { psiClass ->
-            psiClass.fields.forEach { field ->
-                resolvedClasses.putAll(resolveByType(field.type))
-            }
-        }
-
-        return resolvedClasses
-    }
 
     private fun createTestFile(
         sourceFile: PsiFile,
