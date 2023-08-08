@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
 class WriteTestIntention : AbstractChatIntention() {
+    override fun priority(): Int = 998
     override fun getText(): String = AutoDevBundle.message("intentions.chat.code.test.name")
     override fun getFamilyName(): String = AutoDevBundle.message("intentions.chat.code.test.family.name")
 

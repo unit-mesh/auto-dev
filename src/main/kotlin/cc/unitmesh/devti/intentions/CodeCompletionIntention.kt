@@ -16,6 +16,7 @@ import kotlin.math.min
 
 
 class CodeCompletionIntention : AbstractChatIntention() {
+    override fun priority(): Int = 981
     override fun getText(): String = AutoDevBundle.message("intentions.chat.code.complete.name")
     override fun getFamilyName(): String = AutoDevBundle.message("intentions.chat.code.complete.family.name")
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {

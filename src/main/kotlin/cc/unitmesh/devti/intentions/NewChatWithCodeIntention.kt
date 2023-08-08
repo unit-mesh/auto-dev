@@ -9,6 +9,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
 class NewChatWithCodeIntention : AbstractChatIntention() {
+    override fun priority(): Int = 999
+
     var title: String = ""
     override fun getText() = title
     override fun getFamilyName(): String = AutoDevBundle.message("intentions.chat.new.family.name")

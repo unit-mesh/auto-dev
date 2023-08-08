@@ -9,4 +9,5 @@ class CustomIntentionConfig {
     var matchRegex: String = ""
     var template: String = ""
     val isBuiltIn: Boolean = false
+    val priority: Int = 0
 }

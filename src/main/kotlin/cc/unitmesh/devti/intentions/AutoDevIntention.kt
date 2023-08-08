@@ -57,7 +57,8 @@ class AutoDevIntention : IntentionAction, Iconable {
                 CustomIntention.create(it)
             }
 
-            return builtinIntentions + customIntentions
+            val actionList = builtinIntentions + customIntentions
+            return actionList.map { it as AbstractChatIntention }.sortedByDescending { it.priority() }
         }
     }
 }

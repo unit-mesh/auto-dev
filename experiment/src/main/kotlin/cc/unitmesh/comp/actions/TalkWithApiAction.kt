@@ -22,6 +22,7 @@ import org.archguard.scanner.analyser.backend.JavaApiAnalyser
 import java.awt.EventQueue.invokeLater
 
 class TalkWithApiAction : AbstractChatIntention() {
+    override fun priority(): Int = 800
     override fun getText(): String = AutoDevBundle.message("intentions.companion.api.name")
     override fun getFamilyName(): String = AutoDevBundle.message("intentions.companion.api.family.name")
 

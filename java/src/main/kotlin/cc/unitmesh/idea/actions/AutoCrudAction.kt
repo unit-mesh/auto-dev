@@ -15,6 +15,8 @@ import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiFile
 
 class AutoCrudAction : AbstractChatIntention() {
+    override fun priority(): Int = 900
+
     override fun getText(): String = AutoDevBundle.message("intentions.crud.new.name")
     override fun getFamilyName(): String = AutoDevBundle.message("intentions.crud.new.family.name")
 

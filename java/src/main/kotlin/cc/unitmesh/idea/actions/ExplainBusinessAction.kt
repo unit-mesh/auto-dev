@@ -25,6 +25,7 @@ import com.intellij.psi.PsiMethod
 import kotlinx.coroutines.runBlocking
 
 class ExplainBusinessAction : AbstractChatIntention() {
+    override fun priority(): Int = 982
     override fun getText(): String = AutoDevBundle.message("intentions.explain.business.new.name")
     override fun getFamilyName(): String = AutoDevBundle.message("intentions.explain.business.family.name")
     override fun getActionType(): ChatActionType = ChatActionType.EXPLAIN_BUSINESS
@@ -75,11 +76,11 @@ class ExplainBusinessAction : AbstractChatIntention() {
                     }
                 }
 
-                val creationContext =
+                val context =
                     ChatCreationContext(ChatOrigin.ChatAction, getActionType(), file, listOf(), element)
 
                 val instruction = actionType.instruction(lang)
-                sendToChat(contextItems, selectedText, lang, project, instruction, creationContext)
+                sendToChat(contextItems, selectedText, lang, project, instruction, context)
             }
         }
 

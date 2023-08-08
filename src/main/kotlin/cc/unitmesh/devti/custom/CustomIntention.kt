@@ -15,11 +15,12 @@ import org.apache.velocity.app.Velocity
 import java.io.StringWriter
 
 class CustomIntention(private val intentionConfig: CustomIntentionConfig) : AbstractChatIntention() {
-    val specConfig: Map<String, String> = CustomPromptConfig.load().spec
-
     override fun getText(): String = intentionConfig.title
 
     override fun getFamilyName(): String = "Custom Intention"
+    override fun priority(): Int {
+        return intentionConfig.priority
+    }
 
     override fun getActionType(): ChatActionType = ChatActionType.CUSTOM_ACTION
 

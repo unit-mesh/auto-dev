@@ -19,6 +19,7 @@ import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.usageView.UsageViewTypeLocation
 
 abstract class AbstractChatIntention : IntentionAction {
+    abstract fun priority(): Int
     open fun getActionType() = ChatActionType.CODE_COMPLETE
 
     open val prompt: String = "Code completion"

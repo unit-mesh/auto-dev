@@ -77,12 +77,14 @@ You can customize your prompt in `Settings` -> `Tools` -> `AutoDev`
       "title": "Code complete",
       "autoInvoke": true,
       "matchRegex": ".*",
+      "priority": 99,
       "template": "Code complete:\n${SPEC_controller}\n\n${SELECTION}"
     },
     {
       "title": "Translate to Kotlin",
       "autoInvoke": false,
       "matchRegex": ".*",
+      "priority": 99,
       "template": "Translate follow code to Kotlin \n${SELECTION}"
     }
   ]
@@ -92,6 +94,7 @@ You can customize your prompt in `Settings` -> `Tools` -> `AutoDev`
 - title: the action name
 - autoInvoke: auto invoke this action when you perform action
 - matchRegex: TODO()
+- priority: the priority of the action, the higher will be first. (0~1000 was recommended)
 - template: the template of the action, you can use `${SPEC_controller}` to insert spec, `${SELECTION}` to insert
   selected code.
 
