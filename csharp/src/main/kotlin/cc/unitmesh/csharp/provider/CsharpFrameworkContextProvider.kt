@@ -8,8 +8,7 @@ import com.intellij.openapi.project.Project
 
 class CsharpFrameworkContextProvider: ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
-        return creationContext.action != ChatActionType.CODE_COMPLETE &&
-                creationContext.action != ChatActionType.EXPLAIN_BUSINESS
+        return creationContext.action != ChatActionType.CODE_COMPLETE
     }
 
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {

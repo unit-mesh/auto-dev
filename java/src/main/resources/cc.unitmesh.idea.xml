@@ -43,10 +43,6 @@
             <className>cc.unitmesh.idea.actions.AutoCrudAction</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
-        </autoDevIntention><autoDevIntention>
-            <className>cc.unitmesh.idea.actions.ExplainBusinessAction</className>
-            <bundleName>messages.AutoDevBundle</bundleName>
-            <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
     </extensions>
 

@@ -7,7 +7,6 @@ import com.intellij.openapi.vcs.changes.ChangeListManagerImpl
 
 enum class ChatActionType {
     CHAT,
-    EXPLAIN_BUSINESS,
     REFACTOR,
     EXPLAIN,
     REVIEW,
@@ -83,7 +82,6 @@ $diff
             CHAT -> ""
             CUSTOM_COMPLETE -> ""
             CUSTOM_ACTION -> ""
-            EXPLAIN_BUSINESS -> "Recover the original business scene and functionality of the provided code by describing it in a User Story format. Ensure that your explanation avoids any technical jargon or technology-related terms."
         }
     }
 }

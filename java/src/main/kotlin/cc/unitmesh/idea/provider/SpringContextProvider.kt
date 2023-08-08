@@ -13,9 +13,7 @@ import org.jetbrains.plugins.gradle.util.GradleConstants
 
 open class SpringContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
-        return hasProjectLibraries(project) &&
-                creationContext.action != ChatActionType.CODE_COMPLETE &&
-                creationContext.action != ChatActionType.EXPLAIN_BUSINESS
+        return hasProjectLibraries(project) && creationContext.action != ChatActionType.CODE_COMPLETE
     }
 
     private fun hasProjectLibraries(project: Project): Boolean {

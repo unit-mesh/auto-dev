@@ -165,10 +165,6 @@ open class JavaContextPrompter : ContextPrompter() {
 
             ChatActionType.CUSTOM_COMPLETE -> {
             }
-
-            ChatActionType.EXPLAIN_BUSINESS -> {
-            }
-
             ChatActionType.CUSTOM_ACTION -> TODO()
         }
 
