@@ -26,12 +26,6 @@ class TalkWithApiAction : AbstractChatIntention() {
         val task: Task.Backgroundable = object : Task.Backgroundable(project, "Collect context") {
             override fun run(indicator: ProgressIndicator) {
                 val psiManager = PsiManager.getInstance(project)
-//                val virtualFiles =
-//                    FileTypeIndex.getFiles(JavaFileType.INSTANCE, GlobalSearchScope.projectScope(project))
-//                val psiFiles = virtualFiles.mapNotNull {
-//                    ReadAction.compute<PsiFile, Throwable> { psiManager.findFile(it) }
-//                }
-
                 val psiFiles = ReadAction.compute<List<PsiFile>, Throwable> {
                     val virtualFiles =
                         FileTypeIndex.getFiles(JavaFileType.INSTANCE, GlobalSearchScope.projectScope(project))
