@@ -37,7 +37,9 @@ features:
       best code.
     - Related code. Based on recently file changes, AutoDev will call calculate similar chunk to generate best code.
 - AI assistant. AutoDev will help you find bug, explain code, trace exception, generate commits, and more.
-- Custom prompt. You can customize your prompt in `Settings` -> `Tools` -> `AutoDev`
+- Custom prompt.
+    - Custom spec 
+    - Custom intention action.
 - Custom LLM Server. You can customize your LLM Server in `Settings` -> `Tools` -> `AutoDev`
 - Auto Testing. create unit test intention, auto run unit test and try to fix test.
 
@@ -55,39 +57,43 @@ You can:
 
 ![Code completion](https://unitmesh.cc/auto-dev/completion-mode.png)
 
-### Custom prompt
+### Custom Action
+
+![Code completion](https://unitmesh.cc/auto-dev/custom-action.png)
+
+You can customize your prompt in `Settings` -> `Tools` -> `AutoDev`
 
 ```json
 {
-  "auto_complete": {
-    "instruction": "",
-    "input": ""
-  },
-  "auto_comment": {
-    "instruction": "",
-    "input": ""
-  },
-  "code_review": {
-    "instruction": "",
-    "input": ""
-  },
-  "refactor": {
-    "instruction": "",
-    "input": ""
-  },
-  "write_test": {
-    "instruction": "",
-    "input": ""
-  },
   "spec": {
     "controller": "- 在 Controller 中使用 BeanUtils.copyProperties 进行 DTO 转换 Entity\n- 禁止使用 Autowired\n-使用 Swagger Annotation 表明 API 含义\n-Controller 方法应该捕获并处理业务异常，不应该抛出系统异常。",
     "service": "- Service 层应该使用构造函数注入或者 setter 注入，不要使用 @Autowired 注解注入。",
     "entity": "- Entity 类应该使用 JPA 注解进行数据库映射\n- 实体类名应该与对应的数据库表名相同。实体类应该使用注解标记主键和表名，例如：@Id、@GeneratedValue、@Table 等。",
     "repository": "- Repository 接口应该继承 JpaRepository 接口，以获得基本的 CRUD 操作",
     "ddl": "-  字段应该使用 NOT NULL 约束，确保数据的完整性"
-  }
+  },
+  "prompts": [
+    {
+      "title": "Code complete",
+      "autoInvoke": true,
+      "matchRegex": ".*",
+      "template": "Code complete:\n${SPEC_controller}\n\n${SELECTION}"
+    },
+    {
+      "title": "Translate to Kotlin",
+      "autoInvoke": false,
+      "matchRegex": ".*",
+      "template": "Translate follow code to Kotlin \n${SELECTION}"
+    }
+  ]
 }
 ```
+
+- title: the action name
+- autoInvoke: auto invoke this action when you perform action
+- matchRegex: TODO()
+- template: the template of the action, you can use `${SPEC_controller}` to insert spec, `${SELECTION}` to insert
+  selected code.
 
 ### AutoCRUD mode
 

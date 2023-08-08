@@ -6,4 +6,8 @@ class SpecVariableResolver(val key: String, val value: String) : VariableResolve
     override fun resolve(): String {
         return value
     }
+
+    override fun variableName(): String {
+        return key
+    }
 }
