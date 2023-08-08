@@ -15,7 +15,6 @@ enum class ChatActionType {
     GENERATE_TEST,
     GEN_COMMIT_MESSAGE,
     FIX_ISSUE,
-    CREATE_DDL,
     CREATE_CHANGELOG,
     CUSTOM_COMPLETE,
     CUSTOM_ACTION
@@ -80,8 +79,6 @@ $diff
             GEN_COMMIT_MESSAGE -> {
                 generateCommitMessage(prepareVcsContext())
             }
-
-            CREATE_DDL -> "create ddl based on the given information"
             CREATE_CHANGELOG -> "generate release note"
             CHAT -> ""
             CUSTOM_COMPLETE -> ""

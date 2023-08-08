@@ -36,7 +36,7 @@ open class JavaContextPrompter : ContextPrompter() {
         file: PsiFile?,
         project: Project,
         offset: Int,
-        element: PsiElement?
+        element: PsiElement?,
     ) {
         super.initContext(actionType, selectedText, file, project, offset, element)
         mvcContextService = MvcContextService(project)
@@ -154,13 +154,6 @@ open class JavaContextPrompter : ContextPrompter() {
             }
 
             ChatActionType.GEN_COMMIT_MESSAGE -> {
-            }
-
-            ChatActionType.CREATE_DDL -> {
-                val spec = CustomPromptConfig.load().spec["ddl"]
-                if (!spec.isNullOrEmpty()) {
-                    additionContext = "requirements: \n$spec"
-                }
             }
 
             ChatActionType.CREATE_CHANGELOG -> {

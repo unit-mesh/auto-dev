@@ -186,11 +186,6 @@
                     description="Ask AI write this code">
             </action>
 
-            <action id="cc.unitmesh.devti.actions.chat.CreateDdlAction"
-                    class="cc.unitmesh.devti.actions.chat.CreateDdlAction" text="Create DDL"
-                    description="Ask AI create DDL code">
-            </action>
-
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </group>
 
