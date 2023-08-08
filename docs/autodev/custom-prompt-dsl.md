@@ -23,10 +23,9 @@ $SELECTION
 $SPEC.xxx 
 ```
 
-example: `$SPEC.controller`
+example: `$SPEC_CONTROLLER`
 
 ### CODE Context Variable
 
-`$ELEMENT.INPUT`
+`METHOD_INPUT_OUTPUT`
 
-`$ELEMENT.RETURN_TYPE`
