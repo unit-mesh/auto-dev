@@ -15,6 +15,10 @@ abstract class ChatBaseAction : AnAction() {
         private val logger = logger<OpenAIProvider>()
     }
 
+    open fun getReplaceableAction(event: AnActionEvent): ((response: String) -> Unit)? = null
+
+    abstract fun getActionType(): ChatActionType
+
     override fun actionPerformed(event: AnActionEvent) = executeAction(event)
 
     open fun executeAction(event: AnActionEvent) {
@@ -49,10 +53,4 @@ abstract class ChatBaseAction : AnAction() {
             service.handlePromptAndResponse(panel, prompter, chatContext)
         }
     }
-
-    open fun getReplaceableAction(event: AnActionEvent): ((response: String) -> Unit)? {
-        return null
-    }
-
-    abstract fun getActionType(): ChatActionType
 }
