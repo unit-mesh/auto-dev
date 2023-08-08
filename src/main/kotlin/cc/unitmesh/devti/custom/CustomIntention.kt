@@ -54,6 +54,7 @@ class CustomIntention(private val intentionConfig: CustomIntentionConfig) : Abst
 
         val variableResolvers = arrayOf(
             MethodInputOutputVariableResolver(psiElement),
+            SimilarChunkVariableResolver(psiElement),
             SelectionVariableResolver(psiElement.language.displayName ?: "", selectedText),
         ) + SpecResolverService.getInstance().createResolvers()
 
