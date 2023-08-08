@@ -14,6 +14,7 @@ import java.awt.Dimension
 import java.awt.FontMetrics
 import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.ScrollPaneConstants
 
 class AppSettingsComponent {
     val panel: JPanel
@@ -26,7 +27,7 @@ class AppSettingsComponent {
     val customEngineServer = JBTextField()
     val customEngineToken = JBTextField()
     val language = ComboBox(HUMAN_LANGUAGES)
-    val maxTokenLengthInput = JBTextField(MAX_TOKEN_LENGTH)
+    val maxTokenLengthInput = JBTextField()
 
     private var myEditor: EditorEx? = null
     private val customEnginePrompt by lazy {
@@ -36,7 +37,7 @@ class AppSettingsComponent {
             override fun createEditor(): EditorEx {
                 myEditor = super.createEditor().apply {
                     setShowPlaceholderWhenFocused(true)
-                    setHorizontalScrollbarVisible(true)
+                    setHorizontalScrollbarVisible(false)
                     setVerticalScrollbarVisible(true)
                     setPlaceholder("Enter custom prompt here")
 
@@ -53,7 +54,7 @@ class AppSettingsComponent {
         val metrics: FontMetrics = customEnginePrompt.getFontMetrics(customEnginePrompt.font)
         val columnWidth = metrics.charWidth('m')
         customEnginePrompt.setOneLineMode(false)
-        customEnginePrompt.preferredSize = Dimension(25 * columnWidth, 16 * metrics.height)
+        customEnginePrompt.preferredSize = Dimension(25 * columnWidth, 25 * metrics.height)
 
         panel = FormBuilder.createFormBuilder()
             .addLabeledComponent(JBLabel("Language: "), language, 1, false)
@@ -73,6 +74,7 @@ class AppSettingsComponent {
             .addLabeledComponent(JBLabel("Custom Engine Prompt (Json): "), customEnginePrompt, 1, true)
             .addComponentFillVertically(JPanel(), 0)
             .panel
+
     }
 
     val preferredFocusedComponent: JComponent

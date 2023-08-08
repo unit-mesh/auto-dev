@@ -5,7 +5,6 @@ import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.intentions.AbstractChatIntention
 import cc.unitmesh.devti.provider.ContextPrompter
-import cc.unitmesh.devti.provider.builtin.DefaultContextPrompter
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
@@ -29,24 +28,26 @@ class CustomIntention(private val intentionConfig: CustomIntentionConfig) : Abst
         val withRange = elementWithRange(editor, file, project) ?: return
         val selectedText = withRange.first
         val psiElement = withRange.second
-        val prompt: CustomIntentionPrompt = buildCustomPrompt(psiElement!!, selectedText, intentionConfig)
+        val prompt: CustomIntentionPrompt = buildCustomPrompt(psiElement!!, selectedText)
 
-        sendToChatPanel(project, getActionType(), object : ContextPrompter() {
-            override fun displayPrompt(): String {
-                return prompt.displayPrompt
-            }
+        if (intentionConfig.autoInvoke) {
+            sendToChatPanel(project, getActionType(), object : ContextPrompter() {
+                override fun displayPrompt(): String {
+                    return prompt.displayPrompt
+                }
 
-            override fun requestPrompt(): String {
-                return prompt.requestPrompt
+                override fun requestPrompt(): String {
+                    return prompt.requestPrompt
+                }
+            })
+        } else {
+            sendToChatPanel(project) { panel, _ ->
+                panel.setInput(prompt.displayPrompt)
             }
-        })
+        }
     }
 
-    private fun buildCustomPrompt(
-        psiElement: PsiElement,
-        selectedText: @NlsSafe String,
-        config: CustomIntentionConfig,
-    ): CustomIntentionPrompt {
+    private fun buildCustomPrompt(psiElement: PsiElement, selectedText: @NlsSafe String): CustomIntentionPrompt {
         val stringBuilderWriter = StringWriter()
         val velocityContext = VelocityContext()
 
