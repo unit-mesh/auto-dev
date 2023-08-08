@@ -19,6 +19,42 @@
 > 🧙‍♂️ AutoDev: The AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, and a helpful
 > bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Testing feature 🧪 included! 🚀
 
+Features:
+
+- Languages support: Java, Kotlin, Python, JavaScript, or others...
+- Auto development mode. 
+    - With DevTi Protocol (like `devti://story/github/1102`) will auto generate
+    Model-Controller-Service-Repository code.
+    - AutoCRUD mode. Auto generate CRUD code.
+    - Auto Testing. create unit test intention, auto run unit test and try to fix test.
+- Smart code completion.
+    - Pattern specific.Based on your code context like (Controller, Service `import`), AutoDev will suggest you the
+      best code.
+    - Related code. Based on recently file changes, AutoDev will call calculate similar chunk to generate best code.
+- Copilot mode 
+    - AutoDev will help you find bug, explain code, trace exception, generate commits, and more.
+- Chat mode
+    - Chat with AI.
+    - Chat with this.
+- Customize.
+    - Custom specification of prompt.
+    - Custom intention action. You can add your own intention action.
+    - Custom LLM Server. You can customize your LLM Server in `Settings` -> `Tools` -> `AutoDev`
+
+## Document
+
+- Usage: [docs/usage.md](docs/usage.md)
+- Development: [docs/development.md](docs/development.md)
+- Prompt Strategy: [docs/prompt-strategy.md](docs/prompt-strategy.md)
+
+### Customize
+
+- Custom Action: [docs/custom-action.md](docs/custom-action.md)
+- Custom LLM Server: [docs/custom-llm-server.md](docs/custom-llm-server.md)
+- Custom Language: [docs/custom-language.md](docs/custom-language.md)
+
+## Demo
+
 Video demo (Youtube) - English
 
 [![Watch the video](https://img.youtube.com/vi/gVBTBdFV5hA/sddefault.jpg)](https://youtu.be/gVBTBdFV5hA)
@@ -27,251 +63,6 @@ Video demo (Bilibili) - 中文
 
 [![Watch the video](https://img.youtube.com/vi/gVBTBdFV5hA/sddefault.jpg)](https://www.bilibili.com/video/BV1yV4y1i74c/)
 
-features:
-
-- languages support: Java, Kotlin, Python, JavaScript, or others...
-- Auto development mode. With DevTi Protocol (like `devti://story/github/1102`) will auto generate
-  Model-Controller-Service-Repository code.
-- Smart code completion.
-    - Pattern specific.Based on your code context like (Controller, Service `import`), AutoDev will suggest you the
-      best code.
-    - Related code. Based on recently file changes, AutoDev will call calculate similar chunk to generate best code.
-- AI assistant. AutoDev will help you find bug, explain code, trace exception, generate commits, and more.
-- Custom prompt.
-    - Custom spec 
-    - Custom intention action.
-- Custom LLM Server. You can customize your LLM Server in `Settings` -> `Tools` -> `AutoDev`
-- Auto Testing. create unit test intention, auto run unit test and try to fix test.
-
-## Usage
-
-1. Install from JetBrains Plugin Repository: [AutoDev](https://plugins.jetbrains.com/plugin/21520-autodev)
-2. Configure GitHub Token (optional) and OpenAI config in `Settings` -> `Tools` -> `AutoDev`
-
-### CodeCompletion mode
-
-You can:
-
-- Right-click on the code editor, select `AutoDev` -> `CodeCompletion` -> `CodeComplete`
-- or use `Alt + Enter` to open `Intention Actions` menu, select `AutoDev` -> `CodeCompletion`
-
-![Code completion](https://unitmesh.cc/auto-dev/completion-mode.png)
-
-### Custom Action
-
-![Code completion](https://unitmesh.cc/auto-dev/custom-action.png)
-
-For more, see [Custom Action](docs/custom-action.md)
-
-### AutoCRUD mode
-
-1. add `// devti://story/github/1` comments in your code.
-2. configure GitHub repository for Run Configuration.
-3. click `AutoDev` button in the comments' left.
-
-Run Screenshots:
-
-![AutoDev](https://unitmesh.cc/auto-dev/init-instruction.png)
-
-Output Screenshots:
-
-![AutoDev](https://unitmesh.cc/auto-dev/blog-controller.png)
-
-## Development
-
-1. `git clone https://github.com/unit-mesh/auto-dev/`
-2. open in IntelliJ IDEA
-3. `./gradlew runIde`
-
-Key Concepts:
-
-- Workflow flow design: [DevFlowProvider](src/main/kotlin/cc/unitmesh/devti/provider/DevFlowProvider.kt)
-- Prompt Strategy design: [PromptStrategyAdvisor](src/main/kotlin/cc/unitmesh/devti/provider/PromptStrategy.kt)
-
-### Release
-
-1. change `pluginVersion` in [gradle.properties](gradle.properties)
-2. git tag `version`
-3. `./gradlew publishPlugin`
-
-### Custom Server API example (ChatGLM2)
-
-Your LLM API example: 
-
-```http request
-POST http://127.0.0.1:8000/chat
-Content-Type: application/json
-
-{
-  "instruction": "code complete given code:\n```java public class Main {\n    public static void main(String[] args) {",
-  "input":""
-}
-
-### Response: 
-### "Here's an explanation of the given code:\n\n```\npublic class Main {\n```\nThis line defines the name of the main class as `Main`.\n```\npublic static void main(String[] args) {\n```\nThis line defines the `main` method as the entry point of the program. The `public`, `static`, and `void` access modifiers indicate that this method can be accessed directly from outside the class, it is static in nature and it does not take arguments.\n```\n    String[] args = new String[1];\n    args[0] = \"Hello\";\n    args[1] = \"World\";\n    \n    // Do something with the arguments\n}\n```\nThis line declares a variable `args` of type `String` and initializes it with an array of one element `String` object. The elements of the array are assigned the values \"Hello\" and \"World\" respectively.\n```\n    String[] args = new String[1];\n    args[0] = \"Hello\";\n    args[1] = \"World\";\n    \n    // Do something with the arguments\n}\n```\nThis line declares a variable `args` of type `String` and initializes it with an array of one element `String` object. The elements of the array are assigned the values \"Hello\" and \"World\" respectively.\n```\n    public static void main(String[] args) {\n```\nThis line refers to the `main` method defined in the previous class and passes it the argument array `args`.\n```\n    String[] args = new String[1];\n    args[0] = \"Hello\";\n    args[1] = \"World\";\n    \n    // Do something with the arguments\n}\n```\nThis line refers to the `main` method defined in the previous class and passes it the argument array `args`.\n```\n}\n```\nThis curly brace closes the `main` method.\n```\n}\n```\nThis curly brace closes the `main` method.\n```\n```\n\nOverall, this code creates a variable `args` of type `String` and assigns it an array of one element with the values \"Hello\" and \"World\". The `main` method is called and passes the argument array `args` to it."
-```
-
-python code example: [main.py](example/custom_llm_server/main.py)
-
-```python
-class MessageInput(BaseModel):
-    instruction: str
-    input: str
-
-@app.post("/chat")
-async def chat(data: MessageInput):
-  input = {} # your backend data 
-
-  response = requests.post("your_llm_server", json={
-    # your backend data
-  }).json()
-
-  return response["data"][0]
-```
-
-## improve language support for some language
-
-We referenced the multi-language support implementation of JetBrains AI Assistant and combined it with the design
-principles of AutoDev to design a series of extension points.
-
-We referenced the multi-target support implementation of Intellij Rust plugin and combined it with the design.
-
-For a new language, you need to implement:
-
-1. create a new module in `settings.gradle.kts`, like: `webstorm`, `pycharm` ...,
-2. config in  `build.gradle.kts` for new module, like:
-```kotlin
-project(":pycharm") {
-    intellij {
-        version.set(pycharmVersion)
-        plugins.set(pycharmPlugins)
-    }
-    dependencies {
-        implementation(project(":"))
-    }
-}
-```
-3. sync Gradle in Intellij IDEA
-4. create xml file in `resources/META-INF` like `cc.unitmesh.pycharm.xml`, and import
-   to `plugin/src/main/resources/META-INF/plugin.xml`
-5. create extension points
-
-### Extension Points
-
-JetBrains AI Assistant Extension Points:
-
-```xml
-
-<extensionPoints>
-    <extensionPoint qualifiedName="cc.unitmesh.fileContextBuilder"
-                    beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
-        <with attribute="implementationClass"
-              implements="cc.unitmesh.devti.context.builder.FileContextBuilder"/>
-    </extensionPoint>
-
-    <extensionPoint qualifiedName="cc.unitmesh.classContextBuilder"
-                    beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
-        <with attribute="implementationClass"
-              implements="cc.unitmesh.devti.context.builder.ClassContextBuilder"/>
-    </extensionPoint>
-
-    <extensionPoint qualifiedName="cc.unitmesh.methodContextBuilder"
-                    beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
-        <with attribute="implementationClass"
-              implements="cc.unitmesh.devti.context.builder.MethodContextBuilder"/>
-    </extensionPoint>
-
-    <extensionPoint qualifiedName="cc.unitmesh.variableContextBuilder"
-                    beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
-        <with attribute="implementationClass"
-              implements="cc.unitmesh.devti.context.builder.VariableContextBuilder"/>
-    </extensionPoint>
-</extensionPoints>
-```
-
-AutoDev Extension Points:
-
-```xml
-
-<extensionPoints>
-    <!-- AutoCRUD flow -->
-    <extensionPoint qualifiedName="cc.unitmesh.devFlowProvider"
-                    interface="cc.unitmesh.devti.provider.DevFlowProvider"
-                    dynamic="true"/>
-
-    <!-- custom context strategy for Auto CRUD -->
-    <extensionPoint qualifiedName="cc.unitmesh.contextPrompter"
-                    interface="cc.unitmesh.devti.provider.ContextPrompter"
-                    dynamic="true"/>
-
-    <!-- Others strategy, like token count -->
-    <extensionPoint qualifiedName="cc.unitmesh.promptStrategy"
-                    interface="cc.unitmesh.devti.provider.PromptStrategy"
-                    dynamic="true"/>
-</extensionPoints>
-```
-
-#### Java/IDEA Example
-
-```xml
-<extensions defaultExtensionNs="cc.unitmesh">
-    <!-- Language support   -->
-    <classContextBuilder language="JAVA"
-                         implementationClass="cc.unitmesh.ide.idea.context.JavaClassContextBuilder"/>
-
-    <methodContextBuilder language="JAVA"
-                          implementationClass="cc.unitmesh.ide.idea.context.JavaMethodContextBuilder"/>
-
-    <fileContextBuilder language="JAVA"
-                        implementationClass="cc.unitmesh.ide.idea.context.JavaFileContextBuilder"/>
-
-    <variableContextBuilder language="JAVA"
-                            implementationClass="cc.unitmesh.ide.idea.context.JavaVariableContextBuilder"/>
-
-    <!-- TechStack Binding -->
-    <extensionPoint qualifiedName="cc.unitmesh.contextPrompter"
-                    interface="cc.unitmesh.devti.provider.ContextPrompter"
-                    dynamic="true"/>
-  
-    <extensionPoint qualifiedName="cc.unitmesh.promptStrategy"
-                    interface="cc.unitmesh.devti.provider.PromptStrategy"
-                    dynamic="true"/>
-  
-    <extensionPoint qualifiedName="cc.unitmesh.testContextProvider"
-                    interface="cc.unitmesh.devti.provider.WriteTestService"
-                    dynamic="true"/>
-  
-    <extensionPoint qualifiedName="cc.unitmesh.chatContextProvider"
-                    interface="cc.unitmesh.devti.provider.context.ChatContextProvider"
-                    dynamic="true"/>
-</extensions>
-```
-
-## Prompt Strategy
-
-simliar to JetBrains LLM and GitHub Copilot, will be implementation like this:
-
-```javascript
-defaultPriorities.json = [
-    "BeforeCursor",
-    "SimilarFile",
-    "ImportedFile",
-    "PathMarker",
-    "LanguageMarker"
-]
-```
-
-We currently support:
-
-- [x] BeforeCursor
-- [ ] SimilarFile
-    - [x] JaccardSimilarity Path and Chunks by JetBrains
-    - [ ] Cosine Similarity Chunk by MethodName
-- [ ] ImportedFile
-    - [x] Java, Kotlin
-    - [ ] all cases
-- [x] PathMarker
-- [x] LanguageMarker
 
 ## Useful Links
 
