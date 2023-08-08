@@ -1,5 +1,7 @@
 package cc.unitmesh.devti.provider
 
+import com.intellij.lang.Language
+import com.intellij.lang.LanguageExtension
 import com.intellij.openapi.editor.SelectionModel
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
@@ -16,12 +18,24 @@ enum class LivingDocumentationProviderType {
  * 2. annotated like Swagger
  * 3. living documentation
  */
-interface LivingDocumentationProvider {
+interface LivingDocumentation {
     fun updateDoc(psiElement: PsiElement, str: String)
 
     fun findExampleDoc(psiNameIdentifierOwner: PsiNameIdentifierOwner): String
 
     fun findNearestDocumentationTarget(psiElement: PsiElement): PsiNameIdentifierOwner?
 
-    fun findDocTargetsInSelection(psiElement: PsiElement, selectionModel: SelectionModel): List<PsiNameIdentifierOwner?>
+    /**
+     * Find the documentation targets in the selection, like the method, class
+     */
+    fun findDocTargetsInSelection(psiElement: PsiElement, selectionModel: SelectionModel): List<PsiNameIdentifierOwner>
+
+    companion object {
+        private val languageExtension: LanguageExtension<LivingDocumentation> =
+            LanguageExtension("cc.unitmesh.livingDocumentation")
+
+        fun forLanguage(language: Language): LivingDocumentation? {
+            return languageExtension.forLanguage(language)
+        }
+    }
 }

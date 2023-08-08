@@ -90,9 +90,9 @@
                   implements="cc.unitmesh.devti.context.builder.VariableContextBuilder"/>
         </extensionPoint>
 
-        <extensionPoint name="livingDocumentation"
+        <extensionPoint qualifiedName="cc.unitmesh.livingDocumentation"
                         beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
-            <with attribute="implementationClass" implements="cc.unitmesh.devti.provider.LivingDocumentationProvider"/>
+            <with attribute="implementationClass" implements="cc.unitmesh.devti.provider.LivingDocumentation"/>
         </extensionPoint>
 
         <extensionPoint qualifiedName="cc.unitmesh.devFlowProvider"
