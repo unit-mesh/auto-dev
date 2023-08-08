@@ -1,22 +1,8 @@
-# Changelog
+# [](https://github.com/unit-mesh/auto-dev/compare/v1.1.1...v) (2023-08-08)
 
 ## [Unreleased]
 
-## [1.1.0] - 2023-08-08
-
-### Bug Fixes
-- **azure:** fix crash issues ([8d2581d](https://github.com/unit-mesh/auto-dev/commit/8d2581d377381e075cffa8546456f4c96a6f956f))
-- disable for veww ([8bb2063](https://github.com/unit-mesh/auto-dev/commit/8bb20630ad5c8fa266a37bf56e20e5ddbb8f5f4e))
-- disable for welcome board ([7ab469b](https://github.com/unit-mesh/auto-dev/commit/7ab469b0c617adcffceb329c75ff8b9105687024))
-- fix exception issues ([2fa1976](https://github.com/unit-mesh/auto-dev/commit/2fa19766cabeca08f087c485c58ea886f4a83e49))
-- fix format issues ([f83b70f](https://github.com/unit-mesh/auto-dev/commit/f83b70fc3fc7c9771dfd022860b3f5cb858c28dc))
-- fix lost element issue ([3dd043e](https://github.com/unit-mesh/auto-dev/commit/3dd043e334db3e6595fef97a5fad12ffdb953ee2))
-- fix null issue [#19](https://github.com/unit-mesh/auto-dev/issues/19) [#14](https://github.com/unit-mesh/auto-dev/issues/14) ([1fe63fe](https://github.com/unit-mesh/auto-dev/commit/1fe63fe94364e9c434ad661bf6e228174adba7cf))
-- fix tests ([ee67cde](https://github.com/unit-mesh/auto-dev/commit/ee67cde53356947d5c46e4e6833db8a5043ebd2e))
-- fix width issue ([b94ccc0](https://github.com/unit-mesh/auto-dev/commit/b94ccc0ca443737d54fe31b5b1bcb389d1c1e02a))
-- remove dpilicate code ([1a89ed0](https://github.com/unit-mesh/auto-dev/commit/1a89ed03fb4dd22678f25f6f3c66122de1204f66))
-- settings not change but show modified ([e3e327d](https://github.com/unit-mesh/auto-dev/commit/e3e327d6b92008de73312106ae2cefdd769aa698))
-- try add csharp framework context ([d2e7bfe](https://github.com/unit-mesh/auto-dev/commit/d2e7bfe7423a6824903b5690e591458c5c878563))
+## [1.1.1](https://github.com/unit-mesh/auto-dev/compare/v1.1.0...v[1.1.1]) (2023-08-08)
 
 ### Features
 - add csharp mod ([0a49b52](https://github.com/unit-mesh/auto-dev/commit/0a49b52a1fe6a5c1bc6d0a6a8e40c23d1e036014))
@@ -42,6 +28,20 @@
 - make custom server works with stream ([a7a9c1c](https://github.com/unit-mesh/auto-dev/commit/a7a9c1c418684105f8bbd198ac4b07fee346a67c))
 - **python:** add to add collect ([b67933f](https://github.com/unit-mesh/auto-dev/commit/b67933f81f24b7dd082a4e33f37589f5c37d2b56))
 - try with new api ([6a94505](https://github.com/unit-mesh/auto-dev/commit/6a945052ed89c43bc0ca337cf29467db3d7d1b8e))
+
+### Bug Fixes
+- **azure:** fix crash issues ([8d2581d](https://github.com/unit-mesh/auto-dev/commit/8d2581d377381e075cffa8546456f4c96a6f956f))
+- disable for veww ([8bb2063](https://github.com/unit-mesh/auto-dev/commit/8bb20630ad5c8fa266a37bf56e20e5ddbb8f5f4e))
+- disable for welcome board ([7ab469b](https://github.com/unit-mesh/auto-dev/commit/7ab469b0c617adcffceb329c75ff8b9105687024))
+- fix exception issues ([2fa1976](https://github.com/unit-mesh/auto-dev/commit/2fa19766cabeca08f087c485c58ea886f4a83e49))
+- fix format issues ([f83b70f](https://github.com/unit-mesh/auto-dev/commit/f83b70fc3fc7c9771dfd022860b3f5cb858c28dc))
+- fix lost element issue ([3dd043e](https://github.com/unit-mesh/auto-dev/commit/3dd043e334db3e6595fef97a5fad12ffdb953ee2))
+- fix null issue [#19](https://github.com/unit-mesh/auto-dev/issues/19) [#14](https://github.com/unit-mesh/auto-dev/issues/14) ([1fe63fe](https://github.com/unit-mesh/auto-dev/commit/1fe63fe94364e9c434ad661bf6e228174adba7cf))
+- fix tests ([ee67cde](https://github.com/unit-mesh/auto-dev/commit/ee67cde53356947d5c46e4e6833db8a5043ebd2e))
+- fix width issue ([b94ccc0](https://github.com/unit-mesh/auto-dev/commit/b94ccc0ca443737d54fe31b5b1bcb389d1c1e02a))
+- remove dpilicate code ([1a89ed0](https://github.com/unit-mesh/auto-dev/commit/1a89ed03fb4dd22678f25f6f3c66122de1204f66))
+- settings not change but show modified ([e3e327d](https://github.com/unit-mesh/auto-dev/commit/e3e327d6b92008de73312106ae2cefdd769aa698))
+- try add csharp framework context ([d2e7bfe](https://github.com/unit-mesh/auto-dev/commit/d2e7bfe7423a6824903b5690e591458c5c878563))
 
 ## [1.0.2](https://github.com/unit-mesh/auto-dev/compare/v[1.0.2]-beta.1...v[1.0.2]) (2023-08-07)
 
@@ -506,8 +506,8 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.1.0...HEAD
-[1.1.0]: https://github.com/unit-mesh/auto-dev/compare/v1.0.2...v1.1.0
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/unit-mesh/auto-dev/compare/v1.0.2...v1.1.1
 [1.0.2]: https://github.com/unit-mesh/auto-dev/compare/v1.0.2-beta.1...v1.0.2
 [1.0.2-beta.1]: https://github.com/unit-mesh/auto-dev/compare/v1.0.1...v1.0.2-beta.1
 [1.0.1]: https://github.com/unit-mesh/auto-dev/compare/v0.7.3...v1.0.1
