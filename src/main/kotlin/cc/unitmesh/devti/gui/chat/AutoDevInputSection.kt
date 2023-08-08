@@ -20,6 +20,7 @@ import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.impl.InternalDecorator
 import com.intellij.ui.content.ContentManager
 import com.intellij.util.EventDispatcher
+import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.components.BorderLayoutPanel
@@ -34,6 +35,9 @@ import javax.swing.JComponent
 import kotlin.math.max
 import kotlin.math.min
 
+/**
+ *
+ */
 class AutoDevInputSection(private val project: Project, val disposable: Disposable?) : BorderLayoutPanel() {
     private val input: AutoDevInput
     private val documentListener: DocumentListener
@@ -82,6 +86,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         }
         input.addDocumentListener(documentListener)
         input.recreateDocument()
+
+        input.border = JBEmptyBorder(8)
 
         addToCenter(input)
 
