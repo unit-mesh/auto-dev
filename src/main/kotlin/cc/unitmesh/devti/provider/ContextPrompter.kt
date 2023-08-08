@@ -13,6 +13,7 @@ import com.intellij.serviceContainer.LazyExtensionInstance
 import com.intellij.util.xmlb.annotations.Attribute
 
 abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
+    private var element: PsiElement? = null
     protected var action: ChatActionType? = null
     protected var selectedText: String = ""
     protected var file: PsiFile? = null
@@ -57,6 +58,7 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
         this.project = project
         this.lang = file?.language?.displayName ?: ""
         this.offset = offset
+        this.element = element
     }
 
     @Attribute("language")

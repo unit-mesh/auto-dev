@@ -1,14 +1,35 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v1.0.2-beta.1...v) (2023-08-07)
+# Changelog
 
 ## [Unreleased]
 
-## [1.0.2] - 2023-08-07
+## [1.0.3](https://github.com/unit-mesh/auto-dev/compare/v1.0.2...v[1.0.3]) (2023-08-07)
+
+### Bug Fixes
+- **azure:** fix crash issues ([8d2581d](https://github.com/unit-mesh/auto-dev/commit/8d2581d377381e075cffa8546456f4c96a6f956f))
+- disable for welcome board ([7ab469b](https://github.com/unit-mesh/auto-dev/commit/7ab469b0c617adcffceb329c75ff8b9105687024))
+- fix format issues ([f83b70f](https://github.com/unit-mesh/auto-dev/commit/f83b70fc3fc7c9771dfd022860b3f5cb858c28dc))
+- fix null issue [#19](https://github.com/unit-mesh/auto-dev/issues/19) [#14](https://github.com/unit-mesh/auto-dev/issues/14) ([1fe63fe](https://github.com/unit-mesh/auto-dev/commit/1fe63fe94364e9c434ad661bf6e228174adba7cf))
+- fix tests ([ee67cde](https://github.com/unit-mesh/auto-dev/commit/ee67cde53356947d5c46e4e6833db8a5043ebd2e))
+- settings not change but show modified ([e3e327d](https://github.com/unit-mesh/auto-dev/commit/e3e327d6b92008de73312106ae2cefdd769aa698))
+
+### Features
+- add token length config to [#19](https://github.com/unit-mesh/auto-dev/issues/19) ([ba83c80](https://github.com/unit-mesh/auto-dev/commit/ba83c8010a27fbd486e941b1b55907d196581ca3))
+- **biz:** make explain biz works ([6068a35](https://github.com/unit-mesh/auto-dev/commit/6068a357416f637c7934b2298ffd9b1322e6e7fd))
+- **biz:** reorg code ([e72683b](https://github.com/unit-mesh/auto-dev/commit/e72683b58711d0261f8a5263d99188e8f03499bd))
+- **biz:** update for context ([3f5b10a](https://github.com/unit-mesh/auto-dev/commit/3f5b10a4f0888b869821f478b28daa48abb7af3d))
+- make azure works with stream ([962b599](https://github.com/unit-mesh/auto-dev/commit/962b599e91e078d866398a0ebe487b64d862a948))
+- make custom server works with stream ([a7a9c1c](https://github.com/unit-mesh/auto-dev/commit/a7a9c1c418684105f8bbd198ac4b07fee346a67c))
+- try with new api ([6a94505](https://github.com/unit-mesh/auto-dev/commit/6a945052ed89c43bc0ca337cf29467db3d7d1b8e))
+
+## [1.0.2](https://github.com/unit-mesh/auto-dev/compare/v[1.0.2]-beta.1...v[1.0.2]) (2023-08-07)
 
 ### Bug Fixes
 - clen deps ([0625702](https://github.com/unit-mesh/auto-dev/commit/062570212a849c292aff0c72d3d2972d023fdc88))
 - deplay get display text message time ([46a24e8](https://github.com/unit-mesh/auto-dev/commit/46a24e8ae4b16636937e8917c3c43ab8f29ef1da))
 - fix a read issue before other ([5142ec2](https://github.com/unit-mesh/auto-dev/commit/5142ec2cb2ca3ed562baa122ec1b930ddd1d4081))
+- fix change sessions ([3ce2a57](https://github.com/unit-mesh/auto-dev/commit/3ce2a575b2a5c01b99808e44038e8cf358aa7ca2))
 - fix examples for commits ([469624a](https://github.com/unit-mesh/auto-dev/commit/469624af173055b25a2ad079d80d91f68b5e5038))
+- fix format ([0e61d89](https://github.com/unit-mesh/auto-dev/commit/0e61d8998175576fc0b21dd640bad90062bbbff6))
 - fix internal api issues ([16449c2](https://github.com/unit-mesh/auto-dev/commit/16449c290cbd4b591ec0c766937be0ad7f663297))
 - fix processor issue ([a8fc892](https://github.com/unit-mesh/auto-dev/commit/a8fc892daf26bef9d22ee609ea1be829410d613c))
 - fix read issues ([a318041](https://github.com/unit-mesh/auto-dev/commit/a31804159bd88999294ab3d9a1c5712e95c23f9e))
@@ -17,9 +38,6 @@
 - fix tests ([de6bb26](https://github.com/unit-mesh/auto-dev/commit/de6bb26c845fa26249bf72c2ab7257e603d90ce9))
 - fix typos ([109db5e](https://github.com/unit-mesh/auto-dev/commit/109db5e5573c9fd6b45fc2e31c94c293399e10a4))
 - try to resolve index issues ([25b2275](https://github.com/unit-mesh/auto-dev/commit/25b2275a4c0d3a7099aafd35aeb24dd15f03664a))
-- fix issues of internal API ([d3e56ab](https://github.com/unit-mesh/auto-dev/commit/d3e56ab7d9720281938a06a0f1178d19f3427dc1))
-- **ui:** fix genearete code waring ([6955882](https://github.com/unit-mesh/auto-dev/commit/6955882b49b85f7201ed7ab9a829c2dc9a9a1fd0))
-- **ui:** fix magic number ([8554153](https://github.com/unit-mesh/auto-dev/commit/855415349f488b23d2cfc3c221c566a9e832e9fe))
 
 ### Features
 - add basic for context ([5e6af8e](https://github.com/unit-mesh/auto-dev/commit/5e6af8ee5974c27244c2ee70d8e63b669daa2b9d))
@@ -30,10 +48,6 @@
 - **rust:** try to talk with biz in biz ([d138da7](https://github.com/unit-mesh/auto-dev/commit/d138da73d7b2e21fdfbf08466031e27b1404865e))
 - try to use refs ([ce3c671](https://github.com/unit-mesh/auto-dev/commit/ce3c67186ce50f847e968455d14e4ec4f3bcea70))
 - update for explain biz logic ([95049b5](https://github.com/unit-mesh/auto-dev/commit/95049b5ebe4b71093e6256fdaa65efe266a54900))
-- add welcome page ([3dc5c19](https://github.com/unit-mesh/auto-dev/commit/3dc5c19686d6958be977203af9a6f399c1e7676c))
-- init for chat messages ([fd139df](https://github.com/unit-mesh/auto-dev/commit/fd139df66c88f3698d705f7f8121f78ed48b318d))
-- make genearte code here ([3bce491](https://github.com/unit-mesh/auto-dev/commit/3bce4914198e7cc942f8519fed761523356003e7))
-- **ui:** thinking in generate in placE ([ec4563d](https://github.com/unit-mesh/auto-dev/commit/ec4563dc7fe601eadc20c9f5a97a2d2d26cdff49))
 
 ## [1.0.2-beta.1](https://github.com/unit-mesh/auto-dev/compare/[1.0.2-beta.1]...v[1.0.2-beta.1]) (2023-08-05)
 
@@ -470,7 +484,8 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.0.3...HEAD
+[1.0.3]: https://github.com/unit-mesh/auto-dev/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/unit-mesh/auto-dev/compare/v1.0.2-beta.1...v1.0.2
 [1.0.2-beta.1]: https://github.com/unit-mesh/auto-dev/compare/v1.0.1...v1.0.2-beta.1
 [1.0.1]: https://github.com/unit-mesh/auto-dev/compare/v0.7.3...v1.0.1

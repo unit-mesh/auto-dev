@@ -1,12 +1,12 @@
 package cc.unitmesh.devti.prompting
 
 import cc.unitmesh.devti.parser.parseCodeFromString
-import cc.unitmesh.devti.prompting.model.CustomPromptConfig
+import cc.unitmesh.devti.custom.CustomPromptConfig
 import junit.framework.TestCase.assertNotNull
 import org.junit.Test
 import java.io.File
 
-class CustomPromptConfigTest {
+class CustomIntentionConfigConfigTest {
     @Test
     fun should_serial_from_readme_string() {
         val readmeFile = File("README.md").readText()

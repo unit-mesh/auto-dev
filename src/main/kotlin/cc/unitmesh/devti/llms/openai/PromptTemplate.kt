@@ -3,7 +3,7 @@ package cc.unitmesh.devti.llms.openai
 import cc.unitmesh.devti.context.model.DtClass
 import cc.unitmesh.devti.flow.model.SimpleProjectInfo
 import cc.unitmesh.devti.prompting.model.FinalCodePrompt
-import cc.unitmesh.devti.prompting.model.CustomPromptConfig
+import cc.unitmesh.devti.custom.CustomPromptConfig
 import com.intellij.openapi.util.NlsSafe
 import java.io.InputStream
 

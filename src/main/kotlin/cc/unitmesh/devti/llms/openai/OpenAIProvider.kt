@@ -35,6 +35,7 @@ class OpenAIProvider(val project: Project) : CodeCopilotProvider {
     private val timeout = Duration.ofSeconds(600)
     private val openAiVersion: String = AutoDevSettingsState.getInstance()?.openAiModel ?: OPENAI_MODEL[0]
     private val openAiKey: String = AutoDevSettingsState.getInstance()?.openAiKey ?: ""
+    private val maxTokenLength: Int = AutoDevSettingsState.maxTokenLength
 
     init {
 
@@ -104,7 +105,7 @@ class OpenAIProvider(val project: Project) : CodeCopilotProvider {
         val systemMessage = ChatMessage(ChatMessageRole.USER.value(), promptText)
 
         historyMessageLength += promptText.length
-        if (historyMessageLength > 16384) {
+        if (historyMessageLength > maxTokenLength) {
             messages.clear()
         }
 

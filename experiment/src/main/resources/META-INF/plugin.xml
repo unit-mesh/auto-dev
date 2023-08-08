@@ -1,0 +1,39 @@
+<idea-plugin package="cc.unitmesh" xmlns:xi="http://www.w3.org/2001/XInclude" allow-bundled-update="true">
+    <id>cc.unitmesh.comp</id>
+    <name>Unit Companion</name>
+    <vendor>Phodal Huang</vendor>
+
+    <description><![CDATA[
+    <a href="https://plugins.jetbrains.com/plugin/21520-autodev">Homepage</a> | <a href="https://github.com/unit-mesh/auto-dev">Github</a> | <a href="https://github.com/unit-mesh/auto-dev/issues">Issues</a>.<br />
+    <br/>
+    AutoDev is a fully automated AI-assisted programming tool and an implementation of the DevTi Intellij IDE designed for use in-flight.
+    ]]></description>
+
+    <change-notes><![CDATA[
+        todo
+    ]]>
+    </change-notes>
+
+    <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
+         on how to target different products -->
+
+    <xi:include href="/META-INF/autodev-core.xml" xpointer="xpointer(/idea-plugin/*)"/>
+
+    <!--suppress PluginXmlValidity -->
+    <content>
+        <module name="cc.unitmesh.idea"/>
+    </content>
+
+    <dependencies>
+        <plugin id="com.intellij.modules.java"/>
+        <plugin id="org.jetbrains.plugins.gradle"/>
+    </dependencies>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <autoDevIntention>
+            <className>cc.unitmesh.comp.actions.TalkWithApiAction</className>
+            <bundleName>messages.AutoDevBundle</bundleName>
+            <categoryKey>intention.category.llm</categoryKey>
+        </autoDevIntention>
+    </extensions>
+</idea-plugin>

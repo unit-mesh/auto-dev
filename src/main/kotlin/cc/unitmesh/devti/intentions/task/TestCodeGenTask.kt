@@ -63,7 +63,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.collect-context")
         indicator.fraction = 0.3
 
-        val creationContext = ChatCreationContext(ChatOrigin.Intention, actionType, request.file)
+        val creationContext = ChatCreationContext(ChatOrigin.Intention, actionType, request.file, listOf(), element = request.element)
         val contextItems: List<ChatContextItem> = runBlocking {
             return@runBlocking ChatContextProvider.collectChatContextList(request.project, creationContext)
         }

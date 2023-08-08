@@ -58,6 +58,8 @@ val pycharmPlugins = listOf("PythonCore")
 val javaPlugins = listOf("com.intellij.java", "org.jetbrains.kotlin")
 //val kotlinPlugins = listOf("org.jetbrains.kotlin")
 val clionVersion = prop("clionVersion")
+
+// https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html#modules-specific-to-functionality
 val clionPlugins = listOf(
     "com.intellij.cidr.base",
     "com.intellij.cidr.lang",
@@ -65,6 +67,8 @@ val clionPlugins = listOf(
     "org.rust.lang:0.4.186.5143-223",
     "org.toml.lang"
 )
+val riderVersion = prop("riderVersion")
+val riderPlugins: List<String> = listOf()
 
 val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
 val ideaPlugins =
@@ -89,6 +93,7 @@ val baseVersion = when (baseIDE) {
     "goland" -> golandVersion
 //    "webstorm" -> prop("webstormVersion")
     "clion" -> clionVersion
+    "rider" -> riderVersion
     else -> error("Unexpected IDE name: `$baseIDE`")
 }
 
@@ -153,6 +158,14 @@ allprojects {
         testOutput(sourceSets.getByName("test").output.classesDirs)
     }
 }
+
+changelog {
+    version.set(properties("pluginVersion"))
+    groups.empty()
+    path.set(rootProject.file("CHANGELOG.md").toString())
+    repositoryUrl.set(properties("pluginRepositoryUrl"))
+}
+
 
 project(":plugin") {
     apply {
@@ -314,8 +327,6 @@ project(":") {
         implementation(libs.bundles.markdown)
 
         implementation("org.jetbrains:markdown:0.2.0.pre-55")
-//        implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.9.1")
-
         implementation(libs.kotlinx.serialization.json)
         // jackson-module-kotlin
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2") {
@@ -357,6 +368,118 @@ project(":pycharm") {
     }
 }
 
+
+project(":experiment") {
+    version = prop("pluginVersion")
+
+    intellij {
+        pluginName.set(basePluginArchiveName)
+        val pluginList: MutableList<String> = mutableListOf("Git4Idea")
+        pluginList += javaPlugins
+
+        plugins.set(pluginList)
+    }
+
+    dependencies {
+        implementation(project(":"))
+        implementation(project(":java"))
+
+        implementation("com.phodal.chapi:chapi-domain:2.1.2")
+        implementation("com.phodal.chapi:chapi-ast-java:2.1.2")
+        implementation("org.archguard.scanner:feat_apicalls:2.0.1")
+    }
+
+    // Collects all jars produced by compilation of project modules and merges them into singe one.
+    // We need to put all plugin manifest files into single jar to make new plugin model work
+    val mergePluginJarTask = task<Jar>("mergePluginJars") {
+        duplicatesStrategy = DuplicatesStrategy.FAIL
+        archiveBaseName.set(basePluginArchiveName)
+
+        exclude("META-INF/MANIFEST.MF")
+        exclude("**/classpath.index")
+
+        val pluginLibDir by lazy {
+            val sandboxTask = tasks.prepareSandbox.get()
+            sandboxTask.destinationDir.resolve("${sandboxTask.pluginName.get()}/lib")
+        }
+
+        val pluginJars by lazy {
+            pluginLibDir.listFiles().orEmpty().filter {
+                it.isPluginJar()
+            }
+        }
+
+        destinationDirectory.set(project.layout.dir(provider { pluginLibDir }))
+
+        doFirst {
+            for (file in pluginJars) {
+                from(zipTree(file))
+            }
+        }
+
+        doLast {
+            delete(pluginJars)
+        }
+    }
+
+    // Add plugin sources to the plugin ZIP.
+    // gradle-intellij-plugin will use it as a plugin sources if the plugin is used as a dependency
+    val createSourceJar = task<Jar>("createSourceJar") {
+        for (prj in pluginProjects) {
+            from(prj.kotlin.sourceSets.main.get().kotlin) {
+                include("**/*.java")
+                include("**/*.kt")
+            }
+        }
+
+        destinationDirectory.set(layout.buildDirectory.dir("libs"))
+        archiveBaseName.set(basePluginArchiveName)
+        archiveClassifier.set("src")
+    }
+
+    tasks {
+        buildPlugin {
+//            dependsOn(createSourceJar)
+//            from(createSourceJar) { into("lib/src") }
+            // Set proper name for final plugin zip.
+            // Otherwise, base name is the same as gradle module name
+            archiveBaseName.set(basePluginArchiveName)
+        }
+
+        runIde { enabled = true }
+
+        prepareSandbox {
+            finalizedBy(mergePluginJarTask)
+            enabled = true
+        }
+
+        buildSearchableOptions {
+            // Force `mergePluginJarTask` be executed before `buildSearchableOptions`
+            // Otherwise, `buildSearchableOptions` task can't load the plugin and searchable options are not built.
+            // Should be dropped when jar merging is implemented in `gradle-intellij-plugin` itself
+            dependsOn(mergePluginJarTask)
+            enabled = false
+        }
+
+        withType<RunIdeTask> {
+            // Default args for IDEA installation
+            jvmArgs("-Xmx768m", "-XX:+UseG1GC", "-XX:SoftRefLRUPolicyMSPerMB=50")
+            // Disable plugin auto reloading. See `com.intellij.ide.plugins.DynamicPluginVfsListener`
+            jvmArgs("-Didea.auto.reload.plugins=false")
+            // Don't show "Tip of the Day" at startup
+            jvmArgs("-Dide.show.tips.on.startup.default.value=false")
+            // uncomment if `unexpected exception ProcessCanceledException` prevents you from debugging a running IDE
+            // jvmArgs("-Didea.ProcessCanceledException=disabled")
+        }
+
+        withType<PublishPluginTask> {
+            channels.set(properties("pluginVersion").map {
+                listOf(it.split('-').getOrElse(1) { "default" }.split('.').first())
+            })
+        }
+    }
+}
+
 project(":java") {
     intellij {
         version.set(ideaVersion)
@@ -392,6 +515,16 @@ project(":clion") {
     intellij {
         version.set(clionVersion)
         plugins.set(clionPlugins)
+    }
+    dependencies {
+        implementation(project(":"))
+    }
+}
+
+project(":csharp") {
+    intellij {
+        version.set(riderVersion)
+        plugins.set(riderPlugins)
     }
     dependencies {
         implementation(project(":"))
