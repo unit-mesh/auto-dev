@@ -17,7 +17,9 @@ enum class ChatActionType {
     FIX_ISSUE,
     CREATE_DDL,
     CREATE_CHANGELOG,
-    CUSTOM_COMPLETE;
+    CUSTOM_COMPLETE,
+    CUSTOM_ACTION
+    ;
 
     override fun toString(): String {
         return instruction()
@@ -83,6 +85,7 @@ $diff
             CREATE_CHANGELOG -> "generate release note"
             CHAT -> ""
             CUSTOM_COMPLETE -> ""
+            CUSTOM_ACTION -> ""
             EXPLAIN_BUSINESS -> "Recover the original business scene and functionality of the provided code by describing it in a User Story format. Ensure that your explanation avoids any technical jargon or technology-related terms."
         }
     }

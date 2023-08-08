@@ -10,6 +10,7 @@ import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.ElementDescriptionUtil
 import com.intellij.psi.PsiElement
@@ -36,27 +37,39 @@ abstract class AbstractChatIntention : IntentionAction {
      */
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (editor == null || file == null) return
+        val withRange = elementWithRange(editor, file, project) ?: return
 
-        var selectedText = editor.selectionModel.selectedText
-        val elementToExplain = getElementToAction(project, editor)
-
-        if (selectedText == null) {
-            if (elementToExplain == null) {
-                return
-            }
-            selectElement(elementToExplain, editor)
-            selectedText = editor.selectionModel.selectedText
-        }
-
-        if (selectedText == null) {
-            return
-        }
+        val selectedText = withRange.first
+        val psiElement = withRange.second
 
         val actionType = getActionType()
 
         val prompter = ContextPrompter.prompter(file.language.displayName)
-        prompter.initContext(actionType, selectedText, file, project, editor.caretModel.offset, elementToExplain)
+        prompter.initContext(actionType, selectedText, file, project, editor.caretModel.offset, psiElement)
         sendToChatPanel(project, actionType, prompter)
+    }
+
+    fun elementWithRange(
+        editor: Editor,
+        file: PsiFile,
+        project: Project,
+    ): Pair<@NlsSafe String, PsiElement?>? {
+        var selectedText = editor.selectionModel.selectedText
+        val psiElement = getElementToAction(project, editor)
+
+        if (selectedText == null) {
+            if (psiElement == null) {
+                return null
+            }
+            selectElement(psiElement, editor)
+            selectedText = editor.selectionModel.selectedText
+        }
+
+        if (selectedText == null) {
+            return null
+        }
+
+        return Pair(selectedText, psiElement)
     }
 
     protected fun selectElement(elementToExplain: PsiElement, editor: Editor) {
