@@ -22,24 +22,23 @@ import javax.swing.JPanel
  */
 class AppSettingsComponent(settings: AutoDevSettingsState) {
     val panel: JPanel
-    val openAiKey = JBPasswordField()
-    val githubToken = JBPasswordField()
-    val customOpenAiHost = JBTextField()
-    val openAiModel = ComboBox(OPENAI_MODEL)
+    private val openAiKey = JBPasswordField()
+    private val githubToken = JBPasswordField()
+    private val customOpenAiHost = JBTextField()
+    private val openAiModel = ComboBox(OPENAI_MODEL)
 
-    val aiEngine = ComboBox(AI_ENGINES)
-    val customEngineServer = JBTextField()
-    val customEngineToken = JBTextField()
-    val language = ComboBox(HUMAN_LANGUAGES)
-    val maxTokenLengthInput = JBTextField(MAX_TOKEN_LENGTH)
+    private val aiEngine = ComboBox(AI_ENGINES)
+    private val customEngineServer = JBTextField()
+    private val customEngineToken = JBTextField()
+    private val language = ComboBox(HUMAN_LANGUAGES)
+    private val maxTokenLengthInput = JBTextField(MAX_TOKEN_LENGTH)
 
-    private var myEditor: EditorEx? = null
     private val customEnginePrompt by lazy {
         val project = ProjectManager.getInstance().openProjects.firstOrNull()
         object : LanguageTextField(JsonLanguage.INSTANCE, project, "") {
 
             override fun createEditor(): EditorEx {
-                myEditor = super.createEditor().apply {
+                return super.createEditor().apply {
                     setShowPlaceholderWhenFocused(true)
                     setHorizontalScrollbarVisible(true)
                     setVerticalScrollbarVisible(true)
@@ -48,8 +47,6 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
                     val scheme = EditorColorsUtil.getColorSchemeForBackground(this.colorsScheme.defaultBackground)
                     this.colorsScheme = this.createBoundColorSchemeDelegate(scheme)
                 }
-
-                return myEditor!!
             }
         }
     }
@@ -157,11 +154,11 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
         language.selectedItem = newText
     }
 
-    fun getMaxTokenLength(): String {
+    private fun getMaxTokenLength(): String {
         return maxTokenLengthInput.text
     }
 
-    fun setMaxTokenLength(newText: String) {
+    private fun setMaxTokenLength(newText: String) {
         maxTokenLengthInput.text = newText
     }
 
@@ -192,6 +189,7 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
             customEngineToken = getCustomEngineToken()
             customEnginePrompts = getCustomEnginePrompt()
             language = getLanguage()
+            maxTokenLength = getMaxTokenLength()
         }
     }
 
@@ -209,7 +207,7 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
             setCustomEngineToken(it.customEngineToken)
             setCustomEnginePrompt(it.customEnginePrompts)
             setLanguage(it.language)
+            setMaxTokenLength(it.maxTokenLength)
         }
-
     }
 }
