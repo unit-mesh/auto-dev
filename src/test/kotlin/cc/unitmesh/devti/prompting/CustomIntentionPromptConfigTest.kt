@@ -6,7 +6,7 @@ import junit.framework.TestCase.assertNotNull
 import org.junit.Test
 import java.io.File
 
-class CustomPromptConfigTest {
+class CustomIntentionPromptConfigTest {
     @Test
     fun should_serial_from_readme_string() {
         val readmeFile = File("README.md").readText()

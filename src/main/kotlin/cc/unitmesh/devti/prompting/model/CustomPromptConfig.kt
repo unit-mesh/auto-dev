@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.prompting.model
 
+import cc.unitmesh.devti.custom.CustomIntentionPrompt
 import cc.unitmesh.devti.gui.chat.ChatActionType.*
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.diagnostic.logger
@@ -10,18 +11,25 @@ import kotlinx.serialization.json.Json
 
 @Serializable
 data class CustomPromptConfig(
+    @Deprecated("Use [cc.unitmesh.devti.custom.CustomPromptAction] instead")
     @SerialName("auto_complete")
     val autoComplete: CustomPromptItem,
+    @Deprecated("Use [cc.unitmesh.devti.custom.CustomPromptAction] instead")
     @SerialName("auto_comment")
     val autoComment: CustomPromptItem,
+    @Deprecated("Use [cc.unitmesh.devti.custom.CustomPromptAction] instead")
     @SerialName("code_review")
     val codeReview: CustomPromptItem,
+    @Deprecated("Use [cc.unitmesh.devti.custom.CustomPromptAction] instead")
     @SerialName("refactor")
     val refactor: CustomPromptItem,
+    @Deprecated("Use [cc.unitmesh.devti.custom.CustomPromptAction] instead")
     @SerialName("write_test")
     val writeTest: CustomPromptItem,
     @SerialName("spec")
-    val spec: Map<String, String> = mapOf()
+    val spec: Map<String, String> = mapOf(),
+    @SerialName("prompts")
+    val prompts: List<CustomIntentionPrompt> = listOf(),
 ) {
     companion object {
         private val logger = logger<CustomPromptConfig>()
