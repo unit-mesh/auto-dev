@@ -50,6 +50,7 @@ Features:
 ### Customize
 
 - Custom Action: [docs/custom-action.md](docs/custom-action.md)
+- Custom Documentation: [docs/custom-living-documentation.md](docs/custom-living-documentation.md)
 - Custom LLM Server: [docs/custom-llm-server.md](docs/custom-llm-server.md)
 - Custom Language: [docs/custom-language.md](docs/custom-language.md)
 

@@ -5,26 +5,26 @@ You can customize your prompt in `Settings` -> `Tools` -> `AutoDev`
 ```json
 {
   "spec": {
-    "controller": "- 在 Controller 中使用 BeanUtils.copyProperties 进行 DTO 转换 Entity\n- 禁止使用 Autowired\n-使用 Swagger Annotation 表明 API 含义\n-Controller 方法应该捕获并处理业务异常，不应该抛出系统异常。",
-    "service": "- Service 层应该使用构造函数注入或者 setter 注入，不要使用 @Autowired 注解注入。",
-    "entity": "- Entity 类应该使用 JPA 注解进行数据库映射\n- 实体类名应该与对应的数据库表名相同。实体类应该使用注解标记主键和表名，例如：@Id、@GeneratedValue、@Table 等。",
-    "repository": "- Repository 接口应该继承 JpaRepository 接口，以获得基本的 CRUD 操作",
-    "ddl": "-  字段应该使用 NOT NULL 约束，确保数据的完整性"
+    "controller": "- Use BeanUtils.copyProperties in the Controller for DTO to Entity conversion.\n- Avoid using Autowired.\n- Use Swagger Annotations to indicate API meanings.\n- Controller methods should capture and handle business exceptions, rather than throwing system exceptions.",
+    "service": "- Service layer should use constructor injection or setter injection; avoid using the @Autowired annotation.",
+    "entity": "- Entity classes should use JPA annotations for database mapping.\n- The entity class name should match the corresponding database table name. Entity classes should use annotations to mark primary keys and table names, for example: @Id, @GeneratedValue, @Table, etc.",
+    "repository": "- Repository interfaces should extend the JpaRepository interface to inherit basic CRUD operations.",
+    "ddl": "- Fields should be constrained with NOT NULL constraints to ensure data integrity."
   },
   "prompts": [
     {
-      "title": "\uD83D\uDE80 \uD83D\uDE80 Code complete",
+      "title": " Code complete",
       "autoInvoke": true,
       "matchRegex": ".*",
       "priority": 1,
       "template": "Code complete:\n${METHOD_INPUT_OUTPUT}\n${SPEC_controller}\n\n${SELECTION}"
     },
     {
-      "title": "\uD83C\uDF10\uD83C\uDF10 Translate to Kotlin",
+      "title": " Translate to Kotlin",
       "autoInvoke": false,
       "matchRegex": ".*",
       "priority": 0,
-      "template": "Translate follow code to Kotlin.\n${SIMILAR_CHUNK}\nCompare this snippets: \n${METHOD_INPUT_OUTPUT}\nHere is the code: \n${SELECTION}"
+      "template": "Translate the following code to Kotlin.\n${SIMILAR_CHUNK}\nCompare these snippets:\n${METHOD_INPUT_OUTPUT}\nHere is the code:\n${SELECTION}"
     }
   ]
 }
