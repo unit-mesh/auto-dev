@@ -20,6 +20,12 @@ class AutoCrudAction : AbstractChatIntention() {
     override fun getText(): String = AutoDevBundle.message("intentions.crud.new.name")
     override fun getFamilyName(): String = AutoDevBundle.message("intentions.crud.new.family.name")
 
+
+    override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
+        val isEnvironmentAvailable = super.isAvailable(project, editor, file)
+        return isEnvironmentAvailable && editor?.selectionModel?.hasSelection() == true
+    }
+
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (editor == null || file == null) return
 
