@@ -7,9 +7,7 @@ import com.intellij.lang.Language
 interface MessageBlock {
     val type: MessageBlockType
     fun getTextContent(): String
-
     fun getMessage(): CompletableMessage
-
     fun addContent(addedContent: String)
     fun replaceContent(content: String)
     fun addTextListener(textListener: MessageBlockTextListener)
