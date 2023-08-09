@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.intentions.task
+package cc.unitmesh.devti.intentions.action.task
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.Editor

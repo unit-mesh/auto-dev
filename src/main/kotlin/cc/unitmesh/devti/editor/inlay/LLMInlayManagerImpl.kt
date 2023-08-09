@@ -1,8 +1,8 @@
 package cc.unitmesh.devti.editor.inlay
 
 import com.intellij.temporary.inlay.presentation.LLMInlayRenderer
-import cc.unitmesh.devti.intentions.task.CodeCompletionTask
-import cc.unitmesh.devti.intentions.task.CodeCompletionRequest
+import cc.unitmesh.devti.intentions.action.task.CodeCompletionTask
+import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
 import com.intellij.injected.editor.EditorWindow
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager

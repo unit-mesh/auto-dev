@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.intentions.task
+package cc.unitmesh.devti.intentions.action.task
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.context.modifier.CodeModifierProvider

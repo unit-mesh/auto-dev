@@ -2,8 +2,8 @@ package cc.unitmesh.devti.intentions.action
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
-import cc.unitmesh.devti.intentions.task.CodeCompletionTask
-import cc.unitmesh.devti.intentions.task.CodeCompletionRequest
+import cc.unitmesh.devti.intentions.action.task.CodeCompletionTask
+import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.actions.EditorActionUtil

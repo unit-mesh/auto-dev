@@ -143,6 +143,11 @@
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
+        <autoDevIntention>
+            <className>cc.unitmesh.devti.intentions.action.LivingDocumentationIntention</className>
+            <bundleName>messages.AutoDevBundle</bundleName>
+            <categoryKey>intention.category.llm</categoryKey>
+        </autoDevIntention>
 
         <chatContextProvider implementation="cc.unitmesh.devti.provider.builtin.LanguageContextProvider"/>
     </extensions>

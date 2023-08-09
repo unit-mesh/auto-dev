@@ -15,7 +15,7 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.util.PsiUtilBase
 
-class GenerateLivingDocIntention : IntentionAction {
+class LivingDocumentationIntention : IntentionAction {
     override fun startInWriteAction(): Boolean = false
 
     override fun getText(): String = AutoDevBundle.message("intentions.living.documentation.name")

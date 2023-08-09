@@ -3,8 +3,8 @@ package cc.unitmesh.devti.intentions.action
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
 import com.intellij.temporary.getElementToAction
-import cc.unitmesh.devti.intentions.task.TestCodeGenRequest
-import cc.unitmesh.devti.intentions.task.TestCodeGenTask
+import cc.unitmesh.devti.intentions.action.task.TestCodeGenRequest
+import cc.unitmesh.devti.intentions.action.task.TestCodeGenTask
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
