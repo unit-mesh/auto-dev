@@ -3,6 +3,8 @@ package cc.unitmesh.idea.provider
 import cc.unitmesh.devti.provider.LivingDocumentation
 import cc.unitmesh.devti.provider.LivingDocumentationType
 import com.intellij.codeInsight.daemon.impl.CollectHighlightsUtil
+import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.SelectionModel
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
@@ -19,24 +21,21 @@ class JavaLivingDocumentation : LivingDocumentation {
 
     override fun updateDoc(psiElement: PsiElement, str: String) {
         val project = psiElement.project
-        val psiElementFactory = JavaPsiFacade.getElementFactory(project)
-        val newDocComment = psiElementFactory.createDocCommentFromText(str)
+        WriteCommandAction.runWriteCommandAction(project, "Living Document", "cc.unitmesh.livingDoc", {
+            val psiElementFactory = JavaPsiFacade.getElementFactory(project)
+            val newDocComment = psiElementFactory.createDocCommentFromText(str)
 
-        if (psiElement is PsiDocCommentOwner) {
-            try {
-                psiElement.docComment?.replace(newDocComment)
-            } catch (e: IncorrectOperationException) {
-                val firstChild = psiElement.firstChild
-                psiElement.addBefore(newDocComment, firstChild)
+            if (psiElement is PsiDocCommentOwner) {
+                val oldDocComment = psiElement.docComment
+                if (oldDocComment != null) {
+                    oldDocComment.replace(newDocComment)
+                } else {
+                    psiElement.addBefore(newDocComment, psiElement.firstChild)
+                }
+            } else {
+                throw IncorrectOperationException("Unable to update documentation")
             }
-        } else {
-            throw IncorrectOperationException("Unable to update documentation")
-        }
-    }
-
-
-    override fun findExampleDoc(psiNameIdentifierOwner: PsiNameIdentifierOwner): String {
-        return ""
+        })
     }
 
     override fun findNearestDocumentationTarget(psiElement: PsiElement): PsiNameIdentifierOwner? {

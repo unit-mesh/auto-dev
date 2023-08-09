@@ -11,7 +11,6 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
@@ -38,6 +37,7 @@ class LivingDocumentationTask(
             }
         }
 
+        println(result)
         documentation.updateDoc(target, result)
     }
 }
@@ -73,25 +73,23 @@ class LivingDocumentationBuilder(
     }
 
     fun buildPrompt(project: Project?, target: PsiNameIdentifierOwner, fallbackText: String): String {
-        val instruction = StringBuilder(fallbackText)
-        val element = this.contextProviders.firstNotNullOfOrNull { contextProvider ->
-            val context = ReadAction.compute<LLMQueryContext?, Throwable> {
-                contextProvider.from(target)
-            }
-            val contextInstruction = contextInstruction(context)
-            contextInstruction
-        } ?: "write documentation for given code"
+        return ReadAction.compute<String, Throwable> {
+            val instruction = StringBuilder(fallbackText)
+            val element = this.contextProviders.firstNotNullOfOrNull { contextProvider ->
+                contextInstruction(contextProvider.from(target))
+            } ?: "write documentation for given code"
 
-        instruction.append(element)
-        instruction.append(" , do not return example code, do not use @author and @version tags")
-        instruction.append(target.text)
+            instruction.append(element)
+            instruction.append(" , do not return example code, do not use @author and @version tags")
+            instruction.append(target.text)
 
-        val elementText = ReadAction.compute<String, Throwable> {
-            """${target.language.displayName}\n${target}\n```"""
+            instruction.append("""${target.language.displayName}\n${target}\n```""")
+
+            val startEndString = documentation.startEndString(type)
+            instruction.append("\nstart your documentation here with ${startEndString.first} and ends with: ${startEndString.second} :\n```")
+
+            instruction.toString()
         }
-        instruction.append(elementText)
-
-        return instruction.toString()
     }
 
 }
