@@ -26,6 +26,8 @@ class LivingDocumentationTask(
         val builder = LivingDocumentationBuilder(editor, target, documentation, type)
         val prompt = builder.buildPrompt(project, target, "")
 
+        println(prompt)
+
         val stream =
             LLMProviderFactory().connector(project).stream(prompt, "")
 
@@ -64,12 +66,12 @@ class LivingDocumentationBuilder(
 
     private fun classInstruction(context: ClassContext): String? {
         if (context.name == null) return null
-        return "Write documentation for given class " + context.name
+        return "Write javadoc for given class " + context.name
     }
 
     private fun methodInstruction(context: MethodContext): String? {
         if (context.name == null) return null
-        return "Write documentation for given method " + context.name
+        return "Write javadoc for given method " + context.name
     }
 
     fun buildPrompt(project: Project?, target: PsiNameIdentifierOwner, fallbackText: String): String {
@@ -81,12 +83,11 @@ class LivingDocumentationBuilder(
 
             instruction.append(element)
             instruction.append(" , do not return example code, do not use @author and @version tags")
-            instruction.append(target.text)
 
-            instruction.append("""${target.language.displayName}\n${target}\n```""")
+            instruction.append("```${target.language.displayName}\n${target.text}\n```")
 
             val startEndString = documentation.startEndString(type)
-            instruction.append("\nstart your documentation here with ${startEndString.first} and ends with: ${startEndString.second} :\n```")
+            instruction.append("\nYou should start with ${startEndString.first}!\nYou should end with ends with: ${startEndString.second}!!\n")
 
             instruction.toString()
         }

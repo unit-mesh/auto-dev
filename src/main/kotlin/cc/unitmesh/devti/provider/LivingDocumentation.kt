@@ -19,7 +19,6 @@ enum class LivingDocumentationType {
  * 3. living documentation
  */
 interface LivingDocumentation {
-    //    val instruction: String
     fun startEndString(type: LivingDocumentationType): Pair<String, String>
 
     fun updateDoc(psiElement: PsiElement, str: String)

@@ -50,7 +50,7 @@ class JavaLivingDocumentation : LivingDocumentation {
 
     }
 
-    fun containsElement(selectionModel: SelectionModel, element: PsiElement): Boolean {
+    private fun containsElement(selectionModel: SelectionModel, element: PsiElement): Boolean {
         return selectionModel.selectionStart <= element.textRange.startOffset && element.textRange.endOffset <= selectionModel.selectionEnd
     }
 
