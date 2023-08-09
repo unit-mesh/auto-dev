@@ -19,7 +19,9 @@ import javax.swing.ScrollPaneConstants
 /**
  * Settings component
  *
- * only provide [AutoDevSettingsState] and with api set it up
+ * @param settings settings to show
+ *
+ * Only show settings provided and sync settings with current UI presenting
  */
 class AppSettingsComponent(settings: AutoDevSettingsState) {
     val panel: JPanel
