@@ -106,7 +106,8 @@ class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRel
         val psiManager: PsiManager = PsiManager.getInstance(element.project)
         return mostRecentFiles.mapNotNull { file ->
             val psiFile = psiManager.findFile(file)
-            psiFile?.text?.split("\n", limit = chunkSize)
+            psiFile?.text
+                ?.split("\n", limit = chunkSize)
                 ?.filter {
                     !it.trim().startsWith("import ") && !it.trim().startsWith("package ")
                 }

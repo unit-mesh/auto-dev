@@ -10,7 +10,8 @@ class SimilarChunkVariableResolver(val element: PsiElement) : VariableResolver {
     override fun resolve(): String {
         return try {
             ReadAction.compute<String, Throwable> {
-                SimilarChunksWithPaths.createQuery(element, 256)
+                val chunks = SimilarChunksWithPaths.createQuery(element) ?: return@compute ""
+                "```${element.language}\n$chunks\n```\n"
             }
         } catch (e: Throwable) {
             ""

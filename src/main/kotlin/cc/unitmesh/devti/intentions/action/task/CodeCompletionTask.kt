@@ -31,7 +31,7 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
     private val writeActionGroupId = "code.complete.intention.write.action"
     private val codeMessage = AutoDevBundle.message("intentions.chat.code.complete.name")
 
-    private val chunksString = SimilarChunksWithPaths.createQuery(request.element, 256)
+    private val chunksString = SimilarChunksWithPaths.createQuery(request.element, 60)
     private val commenter = LanguageCommenters.INSTANCE.forLanguage(request.element.language)
     private val commentPrefix = commenter?.lineCommentPrefix
 
