@@ -3,6 +3,7 @@ package cc.unitmesh.devti.provider
 import cc.unitmesh.devti.custom.LivingDocumentationType
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageExtension
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.SelectionModel
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
@@ -16,7 +17,7 @@ import com.intellij.psi.PsiNameIdentifierOwner
 interface LivingDocumentation {
     fun startEndString(type: LivingDocumentationType): Pair<String, String>
 
-    fun updateDoc(psiElement: PsiElement, str: String)
+    fun updateDoc(psiElement: PsiElement, str: String, type: LivingDocumentationType, editor: Editor)
 
     fun findNearestDocumentationTarget(psiElement: PsiElement): PsiNameIdentifierOwner?
 

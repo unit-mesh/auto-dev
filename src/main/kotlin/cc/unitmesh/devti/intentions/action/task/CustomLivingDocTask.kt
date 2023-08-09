@@ -6,6 +6,7 @@ import cc.unitmesh.devti.custom.LivingDocumentationType
 import cc.unitmesh.devti.llms.LLMProviderFactory
 import cc.unitmesh.devti.provider.LivingDocumentation
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
@@ -20,12 +21,17 @@ class CustomLivingDocTask(
     val config: CustomDocumentationConfig,
 ) :
     Task.Backgroundable(editor.project, config.title) {
+
+    companion object {
+        val logger = logger<CustomLivingDocTask>()
+    }
+
     override fun run(indicator: ProgressIndicator) {
         val documentation = LivingDocumentation.forLanguage(target.language) ?: return
         val builder = CustomLivingDocPromptBuilder(editor, target, config, documentation)
-        val prompt = builder.buildPrompt(project, target, "Write living documentation for given code.")
+        val prompt = builder.buildPrompt(project, target, config.prompt)
 
-        LivingDocumentationTask.logger.info("Prompt: $prompt")
+        logger.warn("Prompt: $prompt")
 
         val stream =
             LLMProviderFactory().connector(project).stream(prompt, "")
@@ -38,9 +44,9 @@ class CustomLivingDocTask(
             }
         }
 
-        LivingDocumentationTask.logger.info("Result: $result")
+        logger.warn("Result: $result")
 
-        documentation.updateDoc(target, result)
+        documentation.updateDoc(target, result, config.type, editor)
     }
 }
 

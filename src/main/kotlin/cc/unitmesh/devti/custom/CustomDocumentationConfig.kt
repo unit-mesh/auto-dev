@@ -19,6 +19,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 class CustomDocumentationConfig(
     val title: String,
+    val prompt: String,
     val start: String,
     val end: String,
     val type: LivingDocumentationType,
@@ -30,9 +31,10 @@ class CustomDocumentationConfig(
         // should only use for default intention, not for custom intention
         fun default(): CustomDocumentationConfig = CustomDocumentationConfig(
             "Nothing",
+            "prompt",
             "/**",
             "*/",
-            LivingDocumentationType.NORMAL,
+            LivingDocumentationType.COMMENT,
             null
         )
     }
@@ -41,7 +43,7 @@ class CustomDocumentationConfig(
 @Serializable
 class CustomDocumentationExample(
     val question: String,
-    val answer: String
+    val answer: String,
 ) {
 
 }
@@ -49,9 +51,11 @@ class CustomDocumentationExample(
 @Serializable
 enum class LivingDocumentationType {
     @SerialName("normal")
-    NORMAL,
+    COMMENT,
+
     @SerialName("annotated")
     ANNOTATED,
+
     @SerialName("custom")
     CUSTOM
 }

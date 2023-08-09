@@ -15,7 +15,7 @@ import kotlinx.coroutines.runBlocking
 class LivingDocumentationTask(
     val editor: Editor,
     val target: PsiNameIdentifierOwner,
-    val type: LivingDocumentationType = LivingDocumentationType.NORMAL,
+    val type: LivingDocumentationType = LivingDocumentationType.COMMENT,
 ) : Task.Backgroundable(editor.project, AutoDevBundle.message("intentions.request.background.process.title")) {
     companion object {
         val logger = logger<LivingDocumentationTask>()
@@ -40,7 +40,7 @@ class LivingDocumentationTask(
 
         logger.info("Result: $result")
 
-        documentation.updateDoc(target, result)
+        documentation.updateDoc(target, result, type, editor)
     }
 }
 
