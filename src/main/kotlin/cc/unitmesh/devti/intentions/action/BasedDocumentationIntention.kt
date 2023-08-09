@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.intentions.action
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.custom.CustomDocumentationConfig
 import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
 import cc.unitmesh.devti.intentions.action.task.LivingDocumentationTask
 import cc.unitmesh.devti.provider.LivingDocumentation
@@ -16,14 +17,10 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.util.PsiUtilBase
 
-class LivingDocumentationIntention : AbstractChatIntention() {
+abstract class BasedDocumentationIntention(val config: CustomDocumentationConfig) : AbstractChatIntention() {
     override fun priority(): Int = 90
 
     override fun startInWriteAction(): Boolean = false
-
-    override fun getText(): String = AutoDevBundle.message("intentions.living.documentation.name")
-
-    override fun getFamilyName(): String = AutoDevBundle.message("intentions.living.documentation.family.name")
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         if (editor == null || file == null) return false

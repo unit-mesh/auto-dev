@@ -16,7 +16,7 @@ import kotlinx.serialization.Serializable
  * }
  */
 @Serializable
-class CustomDocumentation(
+class CustomDocumentationConfig(
     val start: String,
     val end: String,
     val type: LivingDocumentationType,
