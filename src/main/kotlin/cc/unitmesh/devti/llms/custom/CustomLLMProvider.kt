@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.llms.custom
 
-import cc.unitmesh.devti.llms.CodeCopilotProvider
 import cc.unitmesh.devti.custom.CustomPromptConfig
+import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.components.Service
@@ -20,8 +20,10 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
 import java.time.Duration
 
 
@@ -30,7 +32,7 @@ data class CustomRequest(val instruction: String, val input: String)
 
 
 @Service(Service.Level.PROJECT)
-class CustomLLMProvider(val project: Project) : CodeCopilotProvider {
+class CustomLLMProvider(val project: Project) : LLMProvider {
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private val url = autoDevSettingsState.customEngineServer
     private val key = autoDevSettingsState.customEngineToken
@@ -134,15 +136,4 @@ class CustomLLMProvider(val project: Project) : CodeCopilotProvider {
             return ""
         }
     }
-
-    override fun autoComment(text: String): String {
-        val comment = customPromptConfig!!.autoComment
-        return prompt(comment.instruction, comment.input.replace("{code}", text))
-    }
-
-    override fun findBug(text: String): String {
-        val bug = customPromptConfig!!.refactor
-        return prompt(bug.instruction, bug.input.replace("{code}", text))
-    }
-
 }

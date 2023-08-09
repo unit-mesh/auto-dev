@@ -1,14 +1,12 @@
 package cc.unitmesh.devti.llms.openai
 
-import cc.unitmesh.devti.llms.CodeCopilotProvider
-import cc.unitmesh.devti.parser.parseCodeFromString
+import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.OPENAI_MODEL
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.NlsSafe
 import com.theokanning.openai.client.OpenAiApi
 import com.theokanning.openai.completion.chat.ChatCompletionRequest
 import com.theokanning.openai.completion.chat.ChatMessage
@@ -28,8 +26,7 @@ import java.time.Duration
 
 
 @Service(Service.Level.PROJECT)
-class OpenAIProvider(val project: Project) : CodeCopilotProvider {
-    private val promptTemplate = PromptTemplate()
+class OpenAIProvider(val project: Project) : LLMProvider {
     private var service: OpenAiService
 
     private val timeout = Duration.ofSeconds(600)
@@ -116,17 +113,6 @@ class OpenAIProvider(val project: Project) : CodeCopilotProvider {
             .temperature(0.0)
             .messages(messages)
             .build()
-    }
-
-    override fun autoComment(text: @NlsSafe String): String {
-        val promptText = promptTemplate.autoComment(text)
-        val prompt = prompt(promptText)
-        return parseCodeFromString(prompt)[0]
-    }
-
-    override fun findBug(text: String): String {
-        val promptText = promptTemplate.findBug(text)
-        return prompt(promptText)
     }
 
     companion object {

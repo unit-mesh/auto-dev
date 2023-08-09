@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.actions.chat
+package com.intellij.temporary.action
 
 import cc.unitmesh.devti.editor.LLMCoroutineScopeService
 import cc.unitmesh.devti.gui.chat.ChatActionType

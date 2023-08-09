@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.actions.chat
+package com.intellij.temporary.action
 
 import com.intellij.temporary.gui.block.CodeBlockView
 import com.intellij.temporary.gui.block.CodePartEditorInfo

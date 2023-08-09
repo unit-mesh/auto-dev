@@ -11,7 +11,7 @@ import com.intellij.openapi.project.Project
 @Service
 class LLMProviderFactory {
     private val aiEngine: String = AutoDevSettingsState.getInstance().aiEngine ?: DEFAULT_AI_ENGINE
-    fun connector(project: Project): CodeCopilotProvider {
+    fun connector(project: Project): LLMProvider {
         return when (aiEngine) {
             "OpenAI" -> project.getService(OpenAIProvider::class.java)
             "Custom" -> project.getService(CustomLLMProvider::class.java)
