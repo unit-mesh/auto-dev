@@ -19,6 +19,7 @@ import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.refactoring.suggested.range
+import com.intellij.temporary.isInProject
 import kotlin.math.max
 
 object ErrorMessageProcessor {
@@ -37,7 +38,7 @@ object ErrorMessageProcessor {
     private fun extractTextFromRunPanel(
         project: Project, lineFrom: Int,
         lineTo: Int?,
-        consoleEditor: Editor?
+        consoleEditor: Editor?,
     ): String? {
         var editor = consoleEditor
         if (editor == null) editor = getConsoleEditor(project)
@@ -62,15 +63,12 @@ object ErrorMessageProcessor {
     fun extracted(
         project: Project, description: ErrorDescription,
     ): RuntimeErrorExplanationPrompt? {
-        val consoleLineFrom = description.consoleLineFrom
-        val consoleLineTo = description.consoleLineTo
-        val consoleEditor = description.editor
-
         val extractedText =
-            extractTextFromRunPanel(project, consoleLineFrom, consoleLineTo, consoleEditor) ?: return null
+            extractTextFromRunPanel(project, description.consoleLineFrom, description.consoleLineTo, description.editor)
+                ?: return null
 
         val extractedErrorPlaces: List<ErrorPlace> =
-            extractErrorPlaces(project, consoleLineFrom, consoleLineTo, consoleEditor)
+            extractErrorPlaces(project, description.consoleLineFrom, description.consoleLineTo, description.editor)
 
         val errorPromptConstructor = ErrorPromptConstructor(LLM_MAX_TOKEN, TokenizerImpl.INSTANCE)
         return errorPromptConstructor.makePrompt(extractedText, extractedErrorPlaces)
@@ -84,7 +82,7 @@ object ErrorMessageProcessor {
     }
 
     private fun extractErrorPlaceFromHighlighter(
-        consoleText: String, highlighter: RangeHighlighter, project: Project
+        consoleText: String, highlighter: RangeHighlighter, project: Project,
     ): ErrorPlace? {
         val fileHyperlinkInfo: FileHyperlinkInfo = getFileHyperlinkInfo(highlighter) ?: return null
         val descriptor = fileHyperlinkInfo.descriptor ?: return null
@@ -102,7 +100,7 @@ object ErrorMessageProcessor {
     }
 
     private fun extractErrorPlaces(
-        project: Project, consoleLineFrom: Int, consoleLineTo: Int?, consoleEditor: Editor?
+        project: Project, consoleLineFrom: Int, consoleLineTo: Int?, consoleEditor: Editor?,
     ): List<ErrorPlace> {
         val editor = consoleEditor ?: getConsoleEditor(project) ?: return emptyList()
 
