@@ -18,7 +18,7 @@ import java.io.File
  * but JetBrains has no plan to use it. I don't why, but still had lots of bugs. So I just keep it here, and maybe
  * I will re-implementation it in the future.
  */
-class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRelevantFiles: Int = 20) {
+class SimilarChunksWithPaths(private var snippetLength: Int = 60, private var maxRelevantFiles: Int = 20) {
     companion object {
         val INSTANCE: SimilarChunksWithPaths = SimilarChunksWithPaths()
 
@@ -106,9 +106,18 @@ class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRel
         return chunk.split(Regex("[^a-zA-Z0-9]")).filter { it.isNotBlank() }
     }
 
+    /**
+     * ```kotlin
+     * fun calculateJaccardSimilarity(setA: Set<Any>, setB: Set<Any>): Double {
+     *     val intersectionSize = setA.intersect(setB).size.toDouble()
+     *     val unionSize = (setA union setB).size.toDouble()
+     *     return intersectionSize / unionSize
+     * }
+     * ```
+     */
     private fun similarityScore(set1: Set<String>, set2: Set<String>): Double {
-        val intersectionSize: Int = set1.intersect(set2).size
-        val unionSize: Int = set1.union(set2).size
+        val intersectionSize: Int = (set1 intersect set2).size
+        val unionSize: Int = (set1 union set2).size
         return intersectionSize.toDouble() / unionSize.toDouble()
     }
 
@@ -117,11 +126,11 @@ class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRel
         return mostRecentFiles.mapNotNull { file ->
             val psiFile = psiManager.findFile(file)
             psiFile?.text
-                ?.split("\n", limit = chunkSize)
+                ?.split("\n", limit = snippetLength)
                 ?.filter {
                     !it.trim().startsWith("import ") && !it.trim().startsWith("package ")
                 }
-                ?.chunked(chunkSize)?.flatten()
+                ?.chunked(snippetLength)?.flatten()
         }
     }
 
