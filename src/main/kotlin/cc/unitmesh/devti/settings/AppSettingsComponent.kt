@@ -16,26 +16,32 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.ScrollPaneConstants
 
-class AppSettingsComponent {
+/**
+ * Settings component
+ *
+ * @param settings settings to show
+ *
+ * Only show settings provided and sync settings with current UI presenting
+ */
+class AppSettingsComponent(settings: AutoDevSettingsState) {
     val panel: JPanel
-    val openAiKey = JBPasswordField()
-    val githubToken = JBPasswordField()
-    val customOpenAiHost = JBTextField()
-    val openAiModel = ComboBox(OPENAI_MODEL)
+    private val openAiKey = JBPasswordField()
+    private val githubToken = JBPasswordField()
+    private val customOpenAiHost = JBTextField()
+    private val openAiModel = ComboBox(OPENAI_MODEL)
 
-    val aiEngine = ComboBox(AI_ENGINES)
-    val customEngineServer = JBTextField()
-    val customEngineToken = JBTextField()
-    val language = ComboBox(HUMAN_LANGUAGES)
-    val maxTokenLengthInput = JBTextField()
+    private val aiEngine = ComboBox(AI_ENGINES)
+    private val customEngineServer = JBTextField()
+    private val customEngineToken = JBTextField()
+    private val language = ComboBox(HUMAN_LANGUAGES)
+    private val maxTokenLengthInput = JBTextField()
 
-    private var myEditor: EditorEx? = null
     private val customEnginePrompt by lazy {
         val project = ProjectManager.getInstance().openProjects.firstOrNull()
         object : LanguageTextField(JsonLanguage.INSTANCE, project, "") {
 
             override fun createEditor(): EditorEx {
-                myEditor = super.createEditor().apply {
+                return super.createEditor().apply {
                     setShowPlaceholderWhenFocused(true)
                     setHorizontalScrollbarVisible(false)
                     setVerticalScrollbarVisible(true)
@@ -44,8 +50,6 @@ class AppSettingsComponent {
                     val scheme = EditorColorsUtil.getColorSchemeForBackground(this.colorsScheme.defaultBackground)
                     this.colorsScheme = this.createBoundColorSchemeDelegate(scheme)
                 }
-
-                return myEditor!!
             }
         }
     }
@@ -75,48 +79,49 @@ class AppSettingsComponent {
             .addComponentFillVertically(JPanel(), 0)
             .panel
 
+        applySettings(settings)
     }
 
     val preferredFocusedComponent: JComponent
         get() = openAiKey
 
-    fun getOpenAiKey(): String {
-        return openAiKey.text
+    private fun getOpenAiKey(): String {
+        return openAiKey.password.joinToString("")
     }
 
-    fun setOpenAiKey(newText: String) {
+    private fun setOpenAiKey(newText: String) {
         openAiKey.text = newText
     }
 
-    fun getGithubToken(): String {
-        return githubToken.text
+    private fun getGithubToken(): String {
+        return githubToken.password.joinToString("")
     }
 
-    fun setGithubToken(newText: String) {
+    private fun setGithubToken(newText: String) {
         githubToken.text = newText
     }
 
-    fun getOpenAiModel(): String {
+    private fun getOpenAiModel(): String {
         return openAiModel.selectedItem?.toString() ?: OPENAI_MODEL[0]
     }
 
-    fun setOpenAiModel(newText: String) {
+    private fun setOpenAiModel(newText: String) {
         openAiModel.selectedItem = newText
     }
 
-    fun getOpenAiHost(): String {
+    private fun getOpenAiHost(): String {
         return customOpenAiHost.text
     }
 
-    fun setOpenAiHost(newText: String) {
+    private fun setOpenAiHost(newText: String) {
         customOpenAiHost.text = newText
     }
 
-    fun getAiEngine(): String {
+    private fun getAiEngine(): String {
         return aiEngine.selectedItem?.toString() ?: "OpenAI"
     }
 
-    fun setAiEngine(newText: String) {
+    private fun setAiEngine(newText: String) {
         aiEngine.selectedItem = newText
     }
 
@@ -124,44 +129,43 @@ class AppSettingsComponent {
         return customEngineServer.text
     }
 
-    fun setCustomEngineServer(newText: String) {
+    private fun setCustomEngineServer(newText: String) {
         customEngineServer.text = newText
     }
 
-    fun getCustomEngineToken(): String {
+    private fun getCustomEngineToken(): String {
         return customEngineToken.text
     }
 
-    fun setCustomEngineToken(newText: String) {
+    private fun setCustomEngineToken(newText: String) {
         customEngineToken.text = newText
     }
 
-    fun getCustomEnginePrompt(): String {
+    private fun getCustomEnginePrompt(): String {
         return customEnginePrompt.text
     }
 
-    fun setCustomEnginePrompt(newText: String) {
+    private fun setCustomEnginePrompt(newText: String) {
         customEnginePrompt.text = newText
     }
 
-    fun getLanguage(): String {
+    private fun getLanguage(): String {
         return language.selectedItem?.toString() ?: HUMAN_LANGUAGES[0]
     }
 
-    fun setLanguage(newText: String) {
+    private fun setLanguage(newText: String) {
         language.selectedItem = newText
     }
 
-    fun getMaxTokenLength(): String {
+    private fun getMaxTokenLength(): String {
         return maxTokenLengthInput.text
     }
 
-    fun setMaxTokenLength(newText: String) {
+    private fun setMaxTokenLength(newText: String) {
         maxTokenLengthInput.text = newText
     }
 
     fun isModified(settings: AutoDevSettingsState): Boolean {
-        // TODO use data class to avoid manually write this
         return settings.openAiKey != getOpenAiKey() ||
                 settings.githubToken != getGithubToken() ||
                 settings.openAiModel != getOpenAiModel() ||
@@ -172,5 +176,41 @@ class AppSettingsComponent {
                 settings.customEnginePrompts != getCustomEnginePrompt() ||
                 settings.language != getLanguage() ||
                 settings.maxTokenLength != getMaxTokenLength()
+    }
+
+    /**
+     * export settings to [target]
+     */
+    fun exportSettings(target: AutoDevSettingsState) {
+        target.apply {
+            openAiKey = getOpenAiKey()
+            githubToken = getGithubToken()
+            openAiModel = getOpenAiModel()
+            customOpenAiHost = getOpenAiHost()
+            aiEngine = getAiEngine()
+            customEngineServer = getCustomEngineServer()
+            customEngineToken = getCustomEngineToken()
+            customEnginePrompts = getCustomEnginePrompt()
+            language = getLanguage()
+            maxTokenLength = getMaxTokenLength()
+        }
+    }
+
+    /**
+     * apply settings to setting UI
+     */
+    fun applySettings(settings: AutoDevSettingsState) {
+        settings.also {
+            setOpenAiKey(it.openAiKey)
+            setGithubToken(it.githubToken)
+            setOpenAiModel(it.openAiModel)
+            setOpenAiHost(it.customOpenAiHost)
+            setAiEngine(it.aiEngine)
+            setCustomEngineServer(it.customEngineServer)
+            setCustomEngineToken(it.customEngineToken)
+            setCustomEnginePrompt(it.customEnginePrompts)
+            setLanguage(it.language)
+            setMaxTokenLength(it.maxTokenLength)
+        }
     }
 }
