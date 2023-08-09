@@ -13,6 +13,11 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import java.io.File
 
+/**
+ * Those code logic was similar to GitHub Copilot (compare to [https://github.com/mengjian-github/copilot-analysis] )
+ * but JetBrains has no plan to use it. I don't why, but still had lots of bugs. So I just keep it here, and maybe
+ * I will re-implementation it in the future.
+ */
 class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRelevantFiles: Int = 20) {
     companion object {
         val INSTANCE: SimilarChunksWithPaths = SimilarChunksWithPaths()
@@ -53,6 +58,7 @@ class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRel
         val mostRecentFiles = getMostRecentFiles(element)
         val mostRecentFilesRelativePaths = mostRecentFiles.map { INSTANCE.relativePathTo(it, element)!! }
         val chunks = extractChunks(element, mostRecentFiles)
+
         val jaccardSimilarities = tokenLevelJaccardSimilarity(chunks, element)
 
         val paths = mutableListOf<String>()
@@ -73,7 +79,7 @@ class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRel
         return chunks.map { list ->
             list.map {
                 val tokenizedFile: Set<String> = tokenize(it).toSet()
-                jaccardSimilarity(currentFileTokens, tokenizedFile)
+                similarityScore(currentFileTokens, tokenizedFile)
             }
         }
     }
@@ -100,7 +106,7 @@ class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRel
         return chunk.split(Regex("[^a-zA-Z0-9]")).filter { it.isNotBlank() }
     }
 
-    private fun jaccardSimilarity(set1: Set<String>, set2: Set<String>): Double {
+    private fun similarityScore(set1: Set<String>, set2: Set<String>): Double {
         val intersectionSize: Int = set1.intersect(set2).size
         val unionSize: Int = set1.union(set2).size
         return intersectionSize.toDouble() / unionSize.toDouble()

@@ -82,6 +82,10 @@ Video demo (Bilibili) - 中文
 
 **Known License issues**: JetBrain plugin development is no walk in the park! Oops, we cheekily borrowed some code from 
 the JetBrains Community version and the super cool JetBrains AI Assistant plugin in our codebase. 
-But fret not, we are working our magic to clean it up diligently! 🧙‍♂️✨
+But fret not, we are working our magic to clean it up diligently! 🧙‍♂️✨. 
+
+Those code will be removed in the future, you
+ can check it in `src/main/kotlin/com/intellij/temporary`, if you want to use this plugin in your company, 
+please remove those code to avoid any legal issues.
 
 This code is distributed under the MPL 2.0 license. See `LICENSE` in this directory.
