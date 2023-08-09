@@ -1,8 +1,8 @@
 // Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.intellij.temporary.similar.chunks
 
-import cc.unitmesh.devti.llms.tokenizer.TokenizerImpl
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.impl.EditorHistoryManager
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.roots.ProjectFileIndex
@@ -14,8 +14,6 @@ import com.intellij.psi.PsiManager
 import java.io.File
 
 class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRelevantFiles: Int = 20) {
-    private val tokenizer = TokenizerImpl.INSTANCE
-
     companion object {
         val INSTANCE: SimilarChunksWithPaths = SimilarChunksWithPaths()
 
@@ -31,7 +29,15 @@ class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRel
                         return@runReadAction null
                     }
 
-                    return@runReadAction similarChunksWithPaths.toQuery()
+                    val querySize = similarChunksWithPaths.toQuery()
+                    if (querySize.length < 10) {
+                        return@runReadAction null
+                    }
+                    if (querySize.length > 1024) {
+                        logger<SimilarChunksWithPaths>().warn("Query size is too large: ${querySize.length}")
+                        return@runReadAction null
+                    }
+                    return@runReadAction querySize
                 } catch (e: Exception) {
                     return@runReadAction null
                 }
@@ -59,10 +65,10 @@ class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRel
     }
 
     private fun tokenLevelJaccardSimilarity(chunks: List<List<String>>, element: PsiElement): List<List<Double>> {
-        val currentFileTokens: List<Int> = tokenize(element.containingFile.text)
+        val currentFileTokens: Set<String> = tokenize(element.containingFile.text).toSet()
         return chunks.map { list ->
             list.map {
-                val tokenizedFile: List<Int> = tokenize(it)
+                val tokenizedFile: Set<String> = tokenize(it).toSet()
                 jaccardSimilarity(currentFileTokens, tokenizedFile)
             }
         }
@@ -81,13 +87,18 @@ class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRel
         return contentRoot?.let { VfsUtilCore.getRelativePath(relativeFile, it, File.separatorChar) }
     }
 
-    private fun tokenize(chunk: String): List<Int> {
-        return tokenizer.tokenize(chunk)
+    /**
+     * since is slowly will tokenize, we revoke to same way will Copilot:
+     * https://github.com/mengjian-github/copilot-analysis#promptelement%E4%B8%BB%E8%A6%81%E5%86%85%E5%AE%B9
+     *
+     */
+    private fun tokenize(chunk: String): List<String> {
+        return chunk.split(Regex("[^a-zA-Z0-9]")).filter { it.isNotBlank() }
     }
 
-    private fun jaccardSimilarity(left: List<Int>, right: List<Int>): Double {
-        val intersectionSize: Int = left.intersect(right.toSet()).size
-        val unionSize: Int = left.union(right).size
+    private fun jaccardSimilarity(set1: Set<String>, set2: Set<String>): Double {
+        val intersectionSize: Int = set1.intersect(set2).size
+        val unionSize: Int = set1.union(set2).size
         return intersectionSize.toDouble() / unionSize.toDouble()
     }
 
