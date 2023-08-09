@@ -6,7 +6,7 @@ import com.intellij.openapi.editor.SelectionModel
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 
-enum class LivingDocumentationProviderType {
+enum class LivingDocumentationType {
     NORMAL,
     ANNOTATED,
     LIVING
@@ -20,7 +20,7 @@ enum class LivingDocumentationProviderType {
  */
 interface LivingDocumentation {
 //    val instruction: String
-    fun startEndString(type: LivingDocumentationProviderType): Pair<String, String>
+    fun startEndString(type: LivingDocumentationType): Pair<String, String>
 
     fun updateDoc(psiElement: PsiElement, str: String)
 

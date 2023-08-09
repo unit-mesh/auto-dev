@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.intentions.action
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.intentions.action.task.LivingDocumentationTask
 import cc.unitmesh.devti.provider.LivingDocumentation
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.openapi.editor.Editor
@@ -37,14 +38,8 @@ class LivingDocumentationIntention : IntentionAction {
         if (selectedText != null) {
             val owners: List<PsiNameIdentifierOwner> = findSelectedElementToDocument(editor, project, selectionModel)
             for (identifierOwner in owners) {
-                val task: Task.Backgroundable =
-                    object : Task.Backgroundable(project, "Generating Living Documentation") {
-                        override fun run(indicator: ProgressIndicator) {
-                            val documentation = LivingDocumentation.forLanguage(file.language) ?: return
-                            // todo: send prompt to gpt
-                            documentation.updateDoc(identifierOwner, "")
-                        }
-                    }
+                val task: Task.Backgroundable = LivingDocumentationTask(editor, project, identifierOwner)
+
                 ProgressManager.getInstance()
                     .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
             }

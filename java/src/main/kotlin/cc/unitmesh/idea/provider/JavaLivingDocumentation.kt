@@ -1,7 +1,7 @@
 package cc.unitmesh.idea.provider
 
 import cc.unitmesh.devti.provider.LivingDocumentation
-import cc.unitmesh.devti.provider.LivingDocumentationProviderType
+import cc.unitmesh.devti.provider.LivingDocumentationType
 import com.intellij.openapi.editor.SelectionModel
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
@@ -10,11 +10,11 @@ import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.util.PsiTreeUtil
 
 class JavaLivingDocumentation : LivingDocumentation {
-    override fun startEndString(type: LivingDocumentationProviderType): Pair<String, String> {
+    override fun startEndString(type: LivingDocumentationType): Pair<String, String> {
         return when (type) {
-            LivingDocumentationProviderType.NORMAL -> Pair("/**", "*/")
-            LivingDocumentationProviderType.ANNOTATED -> Pair("", "")
-            LivingDocumentationProviderType.LIVING -> Pair("", "")
+            LivingDocumentationType.NORMAL -> Pair("/**", "*/")
+            LivingDocumentationType.ANNOTATED -> Pair("", "")
+            LivingDocumentationType.LIVING -> Pair("", "")
         }
     }
 
