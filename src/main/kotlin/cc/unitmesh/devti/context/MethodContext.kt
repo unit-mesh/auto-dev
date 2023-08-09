@@ -99,10 +99,10 @@ fun signature: ${signature ?: "_"}
             }
 
             context.let { classContext ->
-                result += classContext.toQuery() + "\n\n"
+                result += classContext.toQuery() + "\n"
             }
         }
 
-        return "$result```\n"
+        return "$result\n```\n"
     }
 }
