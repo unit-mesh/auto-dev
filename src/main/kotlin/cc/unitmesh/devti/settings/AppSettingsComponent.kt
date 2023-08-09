@@ -10,11 +10,13 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPasswordField
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.FormBuilder
+import com.jetbrains.jsonSchema.JsonSchemaMappingsProjectConfiguration
+import com.jetbrains.jsonSchema.UserDefinedJsonSchemaConfiguration
+import com.jetbrains.jsonSchema.impl.JsonSchemaVersion
 import java.awt.Dimension
 import java.awt.FontMetrics
 import javax.swing.JComponent
 import javax.swing.JPanel
-import javax.swing.ScrollPaneConstants
 
 /**
  * Settings component
@@ -35,17 +37,31 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
     private val customEngineToken = JBTextField()
     private val language = ComboBox(HUMAN_LANGUAGES)
     private val maxTokenLengthInput = JBTextField()
+//
+//    val promptSchema = AppSettingsComponent::class.java.getResource("/customPromptSchema.json")!!.path
+//    val customPromptSchema = UserDefinedJsonSchemaConfiguration(
+//        "customPrompt",
+//        JsonSchemaVersion.SCHEMA_6,
+//        promptSchema,
+//        false,
+//        emptyList()
+//    )
 
     private val customEnginePrompt by lazy {
         val project = ProjectManager.getInstance().openProjects.firstOrNull()
-        object : LanguageTextField(JsonLanguage.INSTANCE, project, "") {
 
+//        val configuration = JsonSchemaMappingsProjectConfiguration.getInstance(project!!)
+//        configuration.addConfiguration(customPromptSchema)
+
+        object : LanguageTextField(JsonLanguage.INSTANCE, project, "") {
             override fun createEditor(): EditorEx {
+
                 return super.createEditor().apply {
                     setShowPlaceholderWhenFocused(true)
                     setHorizontalScrollbarVisible(false)
                     setVerticalScrollbarVisible(true)
                     setPlaceholder("Enter custom prompt here")
+
 
                     val scheme = EditorColorsUtil.getColorSchemeForBackground(this.colorsScheme.defaultBackground)
                     this.colorsScheme = this.createBoundColorSchemeDelegate(scheme)

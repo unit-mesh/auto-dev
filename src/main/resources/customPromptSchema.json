@@ -1,0 +1,141 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$ref": "#/definitions/CustomPrompt",
+  "definitions": {
+    "CustomPrompt": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "spec": {
+          "$ref": "#/definitions/Spec"
+        },
+        "prompts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Prompt"
+          }
+        },
+        "documentations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Documentation"
+          }
+        }
+      },
+      "required": [
+        "documentations",
+        "prompts",
+        "spec"
+      ],
+      "title": "CustomPrompt"
+    },
+    "Documentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string",
+          "enum": ["normal", "annotated", "custom"]
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "start": {
+          "type": "string"
+        },
+        "end": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "example": {
+          "$ref": "#/definitions/Example"
+        }
+      },
+      "required": [
+        "end",
+        "prompt",
+        "start",
+        "title",
+        "type"
+      ],
+      "title": "Documentation"
+    },
+    "Example": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "question": {
+          "type": "string"
+        },
+        "answer": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "answer",
+        "question"
+      ],
+      "title": "Example"
+    },
+    "Prompt": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "autoInvoke": {
+          "type": "boolean"
+        },
+        "matchRegex": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "integer"
+        },
+        "template": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "autoInvoke",
+        "matchRegex",
+        "priority",
+        "template",
+        "title"
+      ],
+      "title": "Prompt"
+    },
+    "Spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "controller": {
+          "type": "string"
+        },
+        "service": {
+          "type": "string"
+        },
+        "entity": {
+          "type": "string"
+        },
+        "repository": {
+          "type": "string"
+        },
+        "ddl": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "controller",
+        "ddl",
+        "entity",
+        "repository",
+        "service"
+      ],
+      "title": "Spec"
+    }
+  }
+}
