@@ -22,6 +22,19 @@ class CustomIntention(private val intentionConfig: CustomIntentionConfig) : Abst
         return intentionConfig.priority
     }
 
+    override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
+        if (editor == null || file == null) return false
+
+        val filename = file.name
+        val regexString = intentionConfig.matchRegex
+        return try {
+            val regex = Regex(regexString)
+            regex.matches(filename)
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     override fun getActionType(): ChatActionType = ChatActionType.CUSTOM_ACTION
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
