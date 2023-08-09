@@ -19,6 +19,9 @@ enum class LivingDocumentationProviderType {
  * 3. living documentation
  */
 interface LivingDocumentation {
+//    val instruction: String
+    fun startEndString(type: LivingDocumentationProviderType): Pair<String, String>
+
     fun updateDoc(psiElement: PsiElement, str: String)
 
     fun findExampleDoc(psiNameIdentifierOwner: PsiNameIdentifierOwner): String

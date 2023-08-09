@@ -40,8 +40,9 @@ class GenerateLivingDocIntention : IntentionAction {
                 val task: Task.Backgroundable =
                     object : Task.Backgroundable(project, "Generating Living Documentation") {
                         override fun run(indicator: ProgressIndicator) {
-
-
+                            val documentation = LivingDocumentation.forLanguage(file.language) ?: return
+                            // todo: send prompt to gpt
+                            documentation.updateDoc(identifierOwner, "")
                         }
                     }
                 ProgressManager.getInstance()
