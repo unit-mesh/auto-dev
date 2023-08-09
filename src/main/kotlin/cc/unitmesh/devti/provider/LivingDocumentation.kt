@@ -1,16 +1,11 @@
 package cc.unitmesh.devti.provider
 
+import cc.unitmesh.devti.custom.LivingDocumentationType
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageExtension
 import com.intellij.openapi.editor.SelectionModel
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
-
-enum class LivingDocumentationType {
-    NORMAL,
-    ANNOTATED,
-    LIVING
-}
 
 /**
  * The living documentation provider is responsible for providing the living documentation

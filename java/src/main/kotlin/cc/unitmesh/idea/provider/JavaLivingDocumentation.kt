@@ -1,9 +1,8 @@
 package cc.unitmesh.idea.provider
 
 import cc.unitmesh.devti.provider.LivingDocumentation
-import cc.unitmesh.devti.provider.LivingDocumentationType
+import cc.unitmesh.devti.custom.LivingDocumentationType
 import com.intellij.codeInsight.daemon.impl.CollectHighlightsUtil
-import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.SelectionModel
 import com.intellij.psi.*
@@ -15,7 +14,7 @@ class JavaLivingDocumentation : LivingDocumentation {
         return when (type) {
             LivingDocumentationType.NORMAL -> Pair("/**", "*/")
             LivingDocumentationType.ANNOTATED -> Pair("", "")
-            LivingDocumentationType.LIVING -> Pair("", "")
+            LivingDocumentationType.CUSTOM -> Pair("", "")
         }
     }
 

@@ -75,9 +75,9 @@ class LivingDocumentationIntention : AbstractChatIntention() {
     ): List<PsiNameIdentifierOwner> {
         val rootFile = PsiUtilBase.getPsiFileInEditor(editor, project) ?: return emptyList()
         val findFile: PsiFile = PsiManager.getInstance(project).findFile(rootFile.virtualFile) ?: return emptyList()
-        val support = LivingDocumentation.forLanguage(findFile.language) ?: return emptyList()
+        val documentation = LivingDocumentation.forLanguage(findFile.language) ?: return emptyList()
 
-        return support.findDocTargetsInSelection(findFile, selectionModel)
+        return documentation.findDocTargetsInSelection(findFile, selectionModel)
     }
 
 }

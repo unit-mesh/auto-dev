@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.custom
 
-import cc.unitmesh.devti.gui.chat.ChatActionType.*
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.diagnostic.logger
 import kotlinx.serialization.SerialName
@@ -14,6 +13,8 @@ data class CustomPromptConfig(
     val spec: Map<String, String> = mapOf(),
     @SerialName("prompts")
     val prompts: List<CustomIntentionConfig> = listOf(),
+    @SerialName("documentations")
+    val documentations: List<CustomDocumentation> = listOf()
 ) {
     companion object {
         private val logger = logger<CustomPromptConfig>()
@@ -29,8 +30,7 @@ data class CustomPromptConfig(
                 "controller" to "",
                 "service" to "",
                 "entity" to "",
-                "repository" to "",
-                "ddl" to ""
+                "repository" to ""
             )
         )
 
@@ -42,7 +42,7 @@ data class CustomPromptConfig(
             try {
                 return Json.decodeFromString(prompts)
             } catch (e: Exception) {
-                logger.info("Not found custom prompt, will use default: $e")
+                logger.warn("Not found custom prompt, will use default: $e")
             }
 
             return default()

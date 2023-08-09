@@ -5,17 +5,13 @@ import cc.unitmesh.devti.context.*
 import cc.unitmesh.devti.context.base.LLMQueryContext
 import cc.unitmesh.devti.llms.LLMProviderFactory
 import cc.unitmesh.devti.provider.LivingDocumentation
-import cc.unitmesh.devti.provider.LivingDocumentationType
+import cc.unitmesh.devti.custom.LivingDocumentationType
 import com.intellij.openapi.application.ReadAction
-import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.TextRange
-import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiNameIdentifierOwner
-import com.intellij.psi.codeStyle.CodeStyleManager
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
 
