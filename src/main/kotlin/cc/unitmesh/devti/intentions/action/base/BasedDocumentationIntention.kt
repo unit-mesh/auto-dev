@@ -31,7 +31,7 @@ abstract class BasedDocumentationIntention : AbstractChatIntention() {
         if (selectedText != null) {
             val owners: List<PsiNameIdentifierOwner> = findSelectedElementToDocument(editor, project, selectionModel)
             for (identifierOwner in owners) {
-                writeForDocument(editor, identifierOwner)
+                writingDocument(editor, identifierOwner)
             }
 
             return
@@ -39,11 +39,11 @@ abstract class BasedDocumentationIntention : AbstractChatIntention() {
 
         val closestToCaretNamedElement: PsiNameIdentifierOwner? = getClosestToCaretNamedElement(editor)
         if (closestToCaretNamedElement != null) {
-            writeForDocument(editor, closestToCaretNamedElement)
+            writingDocument(editor, closestToCaretNamedElement)
         }
     }
 
-    private fun writeForDocument(editor: Editor, element: PsiNameIdentifierOwner) {
+    open fun writingDocument(editor: Editor, element: PsiNameIdentifierOwner) {
         val task: Task.Backgroundable = LivingDocumentationTask(editor, element)
         ProgressManager.getInstance()
             .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))

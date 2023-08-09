@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 /**
  * Example:
  * {
+ *   "title": "Swagger annotation",
  *   "start": "/**",
  *   "end": "*/",
  *   "type": "normal",
@@ -17,6 +18,7 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 class CustomDocumentationConfig(
+    val title: String,
     val start: String,
     val end: String,
     val type: LivingDocumentationType,
@@ -25,7 +27,9 @@ class CustomDocumentationConfig(
 ) {
 
     companion object {
+        // should only use for default intention, not for custom intention
         fun default(): CustomDocumentationConfig = CustomDocumentationConfig(
+            "Nothing",
             "/**",
             "*/",
             LivingDocumentationType.NORMAL,

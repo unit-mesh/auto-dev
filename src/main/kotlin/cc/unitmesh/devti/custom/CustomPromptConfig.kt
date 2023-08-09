@@ -14,7 +14,7 @@ data class CustomPromptConfig(
     @SerialName("prompts")
     val prompts: List<CustomIntentionConfig> = listOf(),
     @SerialName("documentations")
-    val documentations: List<CustomDocumentationConfig> = listOf()
+    val documentations: List<CustomDocumentationConfig>? = null
 ) {
     companion object {
         private val logger = logger<CustomPromptConfig>()
