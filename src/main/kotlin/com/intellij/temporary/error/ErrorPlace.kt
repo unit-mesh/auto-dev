@@ -32,12 +32,11 @@ data class ErrorPlace(
     fun getMarkDownLanguageSlug(): String? {
         val psiFile = psiFile ?: return null
         val language = psiFile.language
-        val displayNameLowercased = language.displayName.lowercase()
 
-        return when (displayNameLowercased) {
+        return when (val displayNameLowercase = language.displayName.lowercase()) {
             "c#" -> "csharp"
             "c++" -> "cpp"
-            else -> displayNameLowercased
+            else -> displayNameLowercase
         }
     }
 
