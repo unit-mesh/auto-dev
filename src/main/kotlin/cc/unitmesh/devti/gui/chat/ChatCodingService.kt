@@ -3,7 +3,7 @@ package cc.unitmesh.devti.gui.chat
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.llms.LLMProviderFactory
-import cc.unitmesh.devti.editor.LLMCoroutineScopeService
+import cc.unitmesh.devti.LLMCoroutineScope
 import cc.unitmesh.devti.parser.PostCodeProcessor
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
@@ -31,7 +31,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
 
         ApplicationManager.getApplication().executeOnPooledThread {
             val response = this.makeChatBotRequest(requestPrompt)
-            LLMCoroutineScopeService.scope(project).launch {
+            LLMCoroutineScope.scope(project).launch {
                 when {
                     actionType === ChatActionType.REFACTOR -> ui.updateReplaceableContent(response) {
                         context?.replaceSelectedText?.invoke(getCodeSection(it, context.prefixText, context.suffixText))

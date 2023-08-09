@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.editor
+package cc.unitmesh.devti
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -7,8 +7,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlin.coroutines.EmptyCoroutineContext
 
 @Service(Service.Level.PROJECT)
-class LLMCoroutineScopeService(val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)) {
+class LLMCoroutineScope(val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)) {
     companion object {
-        fun scope(project: Project): CoroutineScope = project.service<LLMCoroutineScopeService>().coroutineScope
+        fun scope(project: Project): CoroutineScope = project.service<LLMCoroutineScope>().coroutineScope
     }
 }

@@ -10,7 +10,6 @@ class DevtiAnnotator : Annotator {
 
     companion object {
         val AutoCRUDRegex = Regex("^//\\s+devti://story/(github)/(\\d+)(/.*)?$")
-        val AnalysisStory = Regex("^//\\s+devti://analysis/(github)/(\\d+)(/.*)?$")
 
         fun isAutoCRUD(comment: String): Boolean {
             return AutoCRUDRegex.matches(comment)

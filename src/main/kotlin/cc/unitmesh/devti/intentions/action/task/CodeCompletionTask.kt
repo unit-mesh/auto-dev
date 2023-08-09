@@ -3,7 +3,7 @@ package cc.unitmesh.devti.intentions.action.task
 import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.llms.LLMProviderFactory
-import cc.unitmesh.devti.editor.LLMCoroutineScopeService
+import cc.unitmesh.devti.LLMCoroutineScope
 import cc.unitmesh.devti.intentions.action.CodeCompletionIntention
 import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.application.invokeLater
@@ -42,7 +42,7 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
         logger.info("Prompt: $prompt")
 
         val editor = request.editor
-        LLMCoroutineScopeService.scope(request.project).launch {
+        LLMCoroutineScope.scope(request.project).launch {
             val currentOffset = Ref.IntRef()
             currentOffset.element = request.offset
 
@@ -88,7 +88,7 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
         val prompt = promptText()
 
         logger.warn("Prompt: $prompt")
-        LLMCoroutineScopeService.scope(project).launch {
+        LLMCoroutineScope.scope(project).launch {
             val flow: Flow<String> = LLMProviderFactory.connector(project).stream(prompt, "")
             val suggestion = StringBuilder()
             flow.collect {

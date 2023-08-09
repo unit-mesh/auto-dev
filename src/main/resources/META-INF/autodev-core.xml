@@ -172,7 +172,7 @@
         </action>
 
         <action id="autodev.Vcs.CommitMessage"
-                class="cc.unitmesh.devti.vcs.CommitMessageSuggestionAction" text="Commit Message (AutoDev)"
+                class="cc.unitmesh.devti.actions.chat.vcs.CommitMessageSuggestionAction" text="Commit Message (AutoDev)"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                 description="Ask AI generate commit message">
 
@@ -180,7 +180,7 @@
         </action>
 
         <action id="autodev.Vcs.LLMChangelog"
-                class="cc.unitmesh.devti.vcs.ReleaseNoteSuggestionAction" text="Generate Release Note (AutoDev)"
+                class="cc.unitmesh.devti.actions.chat.vcs.ReleaseNoteSuggestionAction" text="Generate Release Note (AutoDev)"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                 description="Ask AI generate release note">
 

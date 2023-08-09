@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.vcs
+package cc.unitmesh.devti.actions.chat.vcs
 
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatActionType
