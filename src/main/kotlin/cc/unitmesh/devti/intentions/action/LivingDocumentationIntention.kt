@@ -42,6 +42,8 @@ class LivingDocumentationIntention : AbstractChatIntention() {
             for (identifierOwner in owners) {
                 writeForDocument(editor, identifierOwner)
             }
+
+            return
         }
 
         val closestToCaretNamedElement: PsiNameIdentifierOwner? = getClosestToCaretNamedElement(editor)

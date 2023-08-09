@@ -15,8 +15,6 @@ class JavaClassContextBuilder : ClassContextBuilder {
         val supers = psiElement.supers as Array<PsiClass>
         val fields = psiElement.fields.toList()
         val methods = psiElement.methods.toList()
-        val className = psiElement.name
-        val classText = psiElement.text
 
         val destination = ArrayList<String>()
         for (element in supers) {
@@ -27,6 +25,6 @@ class JavaClassContextBuilder : ClassContextBuilder {
         val usages =
             if (gatherUsages) JavaContextCollectionUtilsKt.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
 
-        return ClassContext(psiElement, classText, className, methods, fields, destination, usages)
+        return ClassContext(psiElement, psiElement.text, psiElement.name, methods, fields, destination, usages)
     }
 }

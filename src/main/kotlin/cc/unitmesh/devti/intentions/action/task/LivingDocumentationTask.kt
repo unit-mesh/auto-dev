@@ -19,10 +19,6 @@ import com.intellij.psi.codeStyle.CodeStyleManager
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
 
-
-/**
- *
- */
 class LivingDocumentationTask(
     val editor: Editor,
     val target: PsiNameIdentifierOwner,

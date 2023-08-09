@@ -80,7 +80,7 @@ Video demo (Bilibili) - 中文
 - SimilarFile inspired by: JetBrains and GitHub Copilot
 
 **Known License issues**: JetBrain plugin development is no walk in the park! Oops, we cheekily borrowed some code from 
-the GitHub Copilot, JetBrains Community version and the super cool JetBrains AI Assistant plugin in our codebase. 
+the JetBrains Community version and the super cool JetBrains AI Assistant plugin in our codebase. 
 But fret not, we are working our magic to clean it up diligently! 🧙‍♂️✨
 
 This code is distributed under the MPL 2.0 license. See `LICENSE` in this directory.
