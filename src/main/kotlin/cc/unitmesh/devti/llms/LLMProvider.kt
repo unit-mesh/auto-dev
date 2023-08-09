@@ -19,8 +19,3 @@ interface LLMProvider {
         }
     }
 }
-
-interface CodeCopilotProvider : LLMProvider {
-    fun autoComment(text: String): String
-    fun findBug(text: String): String
-}

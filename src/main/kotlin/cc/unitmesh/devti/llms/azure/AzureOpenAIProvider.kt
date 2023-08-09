@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.llms.azure
 
-import cc.unitmesh.devti.llms.CodeCopilotProvider
 import cc.unitmesh.devti.custom.CustomPromptConfig
+import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.components.Service
@@ -20,8 +20,10 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
 
 
 @Serializable
@@ -37,7 +39,7 @@ data class SimpleOpenAIFormat(val role: String, val content: String) {
 data class SimpleOpenAIBody(val messages: List<SimpleOpenAIFormat>, val temperature: Double, val stream: Boolean)
 
 @Service(Service.Level.PROJECT)
-class AzureOpenAIProvider(val project: Project) : CodeCopilotProvider {
+class AzureOpenAIProvider(val project: Project) : LLMProvider {
     private val logger = logger<AzureOpenAIProvider>()
 
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
@@ -142,16 +144,5 @@ class AzureOpenAIProvider(val project: Project) : CodeCopilotProvider {
 
             close()
         }
-    }
-
-
-    override fun autoComment(text: String): String {
-        val comment = customPromptConfig!!.autoComment
-        return prompt(comment.instruction, comment.input.replace("{code}", text))
-    }
-
-    override fun findBug(text: String): String {
-        val bug = customPromptConfig!!.refactor
-        return prompt(bug.instruction, bug.input.replace("{code}", text))
     }
 }

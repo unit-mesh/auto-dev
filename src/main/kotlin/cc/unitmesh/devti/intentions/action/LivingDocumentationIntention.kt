@@ -1,12 +1,11 @@
 package cc.unitmesh.devti.intentions.action
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
 import cc.unitmesh.devti.intentions.action.task.LivingDocumentationTask
 import cc.unitmesh.devti.provider.LivingDocumentation
-import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.SelectionModel
-import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
@@ -16,7 +15,9 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.util.PsiUtilBase
 
-class LivingDocumentationIntention : IntentionAction {
+class LivingDocumentationIntention : AbstractChatIntention() {
+    override fun priority(): Int = 90
+
     override fun startInWriteAction(): Boolean = false
 
     override fun getText(): String = AutoDevBundle.message("intentions.living.documentation.name")

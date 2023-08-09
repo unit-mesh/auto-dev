@@ -10,21 +10,6 @@ import kotlinx.serialization.json.Json
 
 @Serializable
 data class CustomPromptConfig(
-    @Deprecated("Use [cc.unitmesh.devti.custom.CustomPromptAction] instead")
-    @SerialName("auto_complete")
-    val autoComplete: CustomPromptItem,
-    @Deprecated("Use [cc.unitmesh.devti.custom.CustomPromptAction] instead")
-    @SerialName("auto_comment")
-    val autoComment: CustomPromptItem,
-    @Deprecated("Use [cc.unitmesh.devti.custom.CustomPromptAction] instead")
-    @SerialName("code_review")
-    val codeReview: CustomPromptItem,
-    @Deprecated("Use [cc.unitmesh.devti.custom.CustomPromptAction] instead")
-    @SerialName("refactor")
-    val refactor: CustomPromptItem,
-    @Deprecated("Use [cc.unitmesh.devti.custom.CustomPromptAction] instead")
-    @SerialName("write_test")
-    val writeTest: CustomPromptItem,
     @SerialName("spec")
     val spec: Map<String, String> = mapOf(),
     @SerialName("prompts")
@@ -40,12 +25,6 @@ data class CustomPromptConfig(
         }
 
         fun default(): CustomPromptConfig = CustomPromptConfig(
-            autoComplete = CustomPromptItem(CODE_COMPLETE.instruction(), "{code}"),
-            autoComment = CustomPromptItem(EXPLAIN.instruction(), "{code}"),
-            codeReview = CustomPromptItem("", "{code}"),
-            refactor = CustomPromptItem(REFACTOR.instruction(), "{code}"),
-            writeTest = CustomPromptItem(GENERATE_TEST.instruction(), "{code}"),
-
             mapOf(
                 "controller" to "",
                 "service" to "",
