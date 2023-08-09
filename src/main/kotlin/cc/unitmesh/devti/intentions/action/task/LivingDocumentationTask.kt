@@ -77,12 +77,26 @@ class LivingDocumentationBuilder(
     fun buildPrompt(project: Project?, target: PsiNameIdentifierOwner, fallbackText: String): String {
         return ReadAction.compute<String, Throwable> {
             val instruction = StringBuilder(fallbackText)
+
+            var inOutString = ""
             val element = this.contextProviders.firstNotNullOfOrNull { contextProvider ->
-                contextInstruction(contextProvider.from(target))
+                val llmQueryContext = contextProvider.from(target)
+                when (llmQueryContext) {
+                    is MethodContext -> {
+                        inOutString = llmQueryContext.inputOutputString()
+                    }
+                }
+                contextInstruction(llmQueryContext)
             } ?: "write documentation for given code"
 
             instruction.append(element)
             instruction.append(" , do not return example code, do not use @author and @version tags")
+
+            if (inOutString.isNotEmpty()) {
+                instruction.append("\nCompare this snippet: \n")
+                instruction.append(inOutString)
+                instruction.append("\n")
+            }
 
             instruction.append("```${target.language.displayName}\n${target.text}\n```")
 

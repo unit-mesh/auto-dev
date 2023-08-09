@@ -2,6 +2,8 @@ package cc.unitmesh.devti.context
 
 import cc.unitmesh.devti.context.base.NamedElementContext
 import com.google.gson.Gson
+import com.intellij.lang.LanguageCommenters
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
 
@@ -16,11 +18,15 @@ class MethodContext(
     val paramNames: List<String> = emptyList(),
     val includeClassContext: Boolean = false,
     val usages: List<PsiReference> = emptyList(),
-    val inputOutputClasses: List<PsiElement> = emptyList()
+    val inputOutputClasses: List<PsiElement> = emptyList(),
 ) : NamedElementContext(
     root, text, name
 ) {
     private val classContext: ClassContext?
+    private val commenter = LanguageCommenters.INSTANCE.forLanguage(root.language) ?: null
+    private val commentPrefix = commenter?.lineCommentPrefix ?: ""
+    private val project: Project = root.project
+
 
     init {
         classContext = if (includeClassContext && enclosingClass != null) {
@@ -80,4 +86,23 @@ fun signature: ${signature ?: "_"}
             "class" to classContext?.toJson()
         )
     )
+
+    fun inputOutputString(): String {
+        var result = "```uml\n"
+        this.inputOutputClasses.forEach {
+            val context = ClassContextProvider(false).from(it)
+            val element = context.root
+            val basePath = project.basePath ?: return@forEach
+
+            if (element.containingFile?.virtualFile?.path?.contains(basePath) != true) {
+                return@forEach
+            }
+
+            context.let { classContext ->
+                result += classContext.toQuery() + "\n\n"
+            }
+        }
+
+        return "$result```\n"
+    }
 }
