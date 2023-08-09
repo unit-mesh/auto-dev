@@ -1,12 +1,13 @@
 package cc.unitmesh.devti.context
 
+import cc.unitmesh.devti.context.base.LLMQueryContextProvider
 import cc.unitmesh.devti.context.builder.ClassContextBuilder
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageExtension
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.psi.PsiElement
 
-class ClassContextProvider(private val gatherUsages: Boolean) {
+class ClassContextProvider(private val gatherUsages: Boolean) : LLMQueryContextProvider<PsiElement> {
     private val languageExtension = LanguageExtension<ClassContextBuilder>("cc.unitmesh.classContextBuilder")
     private val providers: List<ClassContextBuilder>
 
@@ -19,7 +20,7 @@ class ClassContextProvider(private val gatherUsages: Boolean) {
         val logger = logger<ClassContextProvider>()
     }
 
-    fun from(psiElement: PsiElement): ClassContext {
+    override fun from(psiElement: PsiElement): ClassContext {
         for (provider in providers) {
             provider.getClassContext(psiElement, gatherUsages)?.let {
                 return it

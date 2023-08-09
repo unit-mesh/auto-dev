@@ -10,6 +10,7 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiNameIdentifierOwner
@@ -39,13 +40,30 @@ class LivingDocumentationIntention : AbstractChatIntention() {
         if (selectedText != null) {
             val owners: List<PsiNameIdentifierOwner> = findSelectedElementToDocument(editor, project, selectionModel)
             for (identifierOwner in owners) {
-                val task: Task.Backgroundable = LivingDocumentationTask(editor, identifierOwner)
-
-                ProgressManager.getInstance()
-                    .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+                writeForDocument(editor, identifierOwner)
             }
         }
 
+        val closestToCaretNamedElement: PsiNameIdentifierOwner? = getClosestToCaretNamedElement(editor)
+        if (closestToCaretNamedElement != null) {
+            writeForDocument(editor, closestToCaretNamedElement)
+        }
+    }
+
+    private fun writeForDocument(editor: Editor, element: PsiNameIdentifierOwner) {
+        val task: Task.Backgroundable = LivingDocumentationTask(editor, element)
+        ProgressManager.getInstance()
+            .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+    }
+
+    private fun getClosestToCaretNamedElement(editor: Editor): PsiNameIdentifierOwner? {
+        val element = PsiUtilBase.getElementAtCaret(editor) ?: return null
+        return getClosestNamedElement(element)
+    }
+
+    private fun getClosestNamedElement(element: PsiElement): PsiNameIdentifierOwner? {
+        val support = LivingDocumentation.forLanguage(element.language) ?: return null
+        return support.findNearestDocumentationTarget(element)
     }
 
     private fun findSelectedElementToDocument(
