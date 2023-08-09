@@ -26,7 +26,6 @@ import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.fileTypes.UnknownFileType
 import com.intellij.openapi.observable.properties.GraphProperty
 import com.intellij.openapi.observable.properties.PropertyGraph
-import com.intellij.openapi.observable.util.whenDisposed
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
@@ -36,9 +35,8 @@ import com.intellij.util.messages.Topic
 import com.intellij.util.ui.JBUI
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.JComponent
-import kotlin.jvm.functions.Function1
 
-open class CodeBlockView(
+class CodeBlockView(
     private val block: CodeBlock,
     private val project: Project,
     private val disposable: Disposable
@@ -47,7 +45,7 @@ open class CodeBlockView(
     private var editorInfo: CodePartEditorInfo? = null
 
     init {
-        getBlock().addTextListener {
+        block.addTextListener {
             if (editorInfo == null) return@addTextListener
             updateOrCreateCodeView()
         }

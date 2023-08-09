@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
-import com.intellij.temporary.gui.block.HtmlContentComponent
+import cc.unitmesh.devti.gui.component.HtmlContentComponent
 import com.intellij.temporary.gui.block.whenDisposed
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.ide.BrowserUtil

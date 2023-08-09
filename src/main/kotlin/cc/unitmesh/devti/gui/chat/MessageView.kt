@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.gui.chat
 
 
+import cc.unitmesh.devti.gui.component.DisplayComponent
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl
 import com.intellij.openapi.application.ApplicationManager

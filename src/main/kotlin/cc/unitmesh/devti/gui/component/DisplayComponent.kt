@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.gui.chat
+package cc.unitmesh.devti.gui.component
 
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.util.ui.JBEmptyBorder

@@ -1,5 +1,4 @@
-// Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
-package com.intellij.temporary.gui.block
+package cc.unitmesh.devti.gui.component
 
 import com.intellij.ide.BrowserUtil
 import javax.swing.JEditorPane
@@ -15,6 +14,7 @@ class HtmlContentComponent(val html: String) : JEditorPane() {
         putClientProperty("JEditorPane.honorDisplayProperties", true)
         setFont(UIManager.getFont("Label.font"))
         text = html
+
         addHyperlinkListener { obj: HyperlinkEvent ->
             if (obj.eventType == HyperlinkEvent.EventType.ACTIVATED) {
                 BrowserUtil.browse(obj.url)

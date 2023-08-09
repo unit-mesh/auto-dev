@@ -18,6 +18,7 @@ import com.intellij.openapi.ui.ComponentValidator
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.impl.InternalDecorator
+import com.intellij.temporary.gui.block.AutoDevCoolBorder
 import com.intellij.ui.content.ContentManager
 import com.intellij.util.EventDispatcher
 import com.intellij.util.ui.JBEmptyBorder

@@ -45,11 +45,11 @@
         </intentionAction>
 
 
-        <highlightErrorFilter implementation="cc.unitmesh.devti.gui.error.CodeBlockHighlightErrorFilter"/>
-        <daemon.highlightInfoFilter implementation="cc.unitmesh.devti.gui.error.CodeBlockHighlightingFilter"/>
+        <highlightErrorFilter implementation="com.intellij.temporary.gui.block.error.CodeBlockHighlightErrorFilter"/>
+        <daemon.highlightInfoFilter implementation="com.intellij.temporary.gui.block.error.CodeBlockHighlightingFilter"/>
         <defaultHighlightingSettingProvider
-                implementation="cc.unitmesh.devti.gui.error.CodeBlockHighlightingSettingsProvider"/>
-        <daemon.intentionActionFilter implementation="cc.unitmesh.devti.gui.error.CodeBlockIntentionActionFilter"/>
+                implementation="com.intellij.temporary.gui.block.error.CodeBlockHighlightingSettingsProvider"/>
+        <daemon.intentionActionFilter implementation="com.intellij.temporary.gui.block.error.CodeBlockIntentionActionFilter"/>
 
     </extensions>
 
