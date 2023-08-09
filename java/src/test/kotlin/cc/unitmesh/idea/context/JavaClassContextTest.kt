@@ -93,7 +93,7 @@ public class BlogService {
         val classContext: ClassContext = ClassContextProvider(false).from(psiElement)
 
         assertEquals(
-            classContext.toQuery(),
+            classContext.format(),
             """class BlogController {
   blogService
   + public BlogController(BlogService blogService)
@@ -112,7 +112,7 @@ public class BlogService {
         val context = MethodContextProvider(false, true).from(psiElement)
 
         assertEquals(
-            context.toQuery(),
+            context.format(),
             """
                |language: Java
                |fun name: createBlog

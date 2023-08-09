@@ -1,10 +1,9 @@
 package cc.unitmesh.devti.context.base
 
 import com.intellij.temporary.AutoPsiUtils
-import com.google.gson.Gson
 import com.intellij.psi.PsiElement
 
-class ElementContext(val element: PsiElement) : LLMQueryContext {
+class ElementContext(val element: PsiElement) : LLMCodeContext {
     val startLineNumber: Int
     val endLineNumber: Int
 
@@ -13,7 +12,7 @@ class ElementContext(val element: PsiElement) : LLMQueryContext {
         endLineNumber = AutoPsiUtils.getLineNumber(element, false)
     }
 
-    fun toQuery(prevLines: Int, postLines: Int, withLineNumbers: Boolean): String {
+    fun format(prevLines: Int, postLines: Int, withLineNumbers: Boolean): String {
         var string: String
         string = if (prevLines == 0 && postLines == 0) {
             element.text
@@ -31,17 +30,7 @@ class ElementContext(val element: PsiElement) : LLMQueryContext {
         return string
     }
 
-    override fun toQuery(): String {
-        return toQuery(0, 0, false)
-    }
-
-    override fun toJson(): String {
-        return Gson().toJson(
-            mapOf<Any, Any>(
-                "startLine" to startLineNumber,
-                "endLine" to endLineNumber,
-                "text" to element.text
-            )
-        )
+    override fun format(): String {
+        return format(0, 0, false)
     }
 }

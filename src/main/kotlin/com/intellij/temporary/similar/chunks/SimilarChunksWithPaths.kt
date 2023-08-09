@@ -30,7 +30,7 @@ class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRel
                     }
 
                     // todo: change to count query by size
-                    val query = similarChunksWithPaths.toQuery()
+                    val query = similarChunksWithPaths.format()
                     if (query.length < 10) {
                         return@runReadAction null
                     }

@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.intentions.action.task
 
 import cc.unitmesh.devti.context.*
-import cc.unitmesh.devti.context.base.LLMQueryContext
+import cc.unitmesh.devti.context.base.LLMCodeContext
 import cc.unitmesh.devti.custom.LivingDocumentationType
 import cc.unitmesh.devti.provider.LivingDocumentation
 import com.intellij.openapi.application.ReadAction
@@ -21,7 +21,7 @@ open class LivingDocPromptBuilder(
         MethodContextProvider(false, false)
     )
 
-    private fun contextInstruction(context: LLMQueryContext?): String? {
+    private fun contextInstruction(context: LLMCodeContext?): String? {
         return when (context) {
             is ClassContext -> classInstruction(context)
             is MethodContext -> methodInstruction(context)

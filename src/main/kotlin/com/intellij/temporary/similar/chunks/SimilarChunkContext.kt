@@ -1,15 +1,14 @@
 // Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.intellij.temporary.similar.chunks
 
-import cc.unitmesh.devti.context.base.LLMQueryContext
-import com.google.gson.Gson
+import cc.unitmesh.devti.context.base.LLMCodeContext
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageCommenters
 
 
 class SimilarChunkContext(val language: Language, val paths: List<String>?, val chunks: List<String>?) :
-    LLMQueryContext {
-    override fun toQuery(): String {
+    LLMCodeContext {
+    override fun format(): String {
         val commenter = LanguageCommenters.INSTANCE.forLanguage(language) ?: return ""
         val commentPrefix = commenter.lineCommentPrefix ?: return ""
 
@@ -26,13 +25,6 @@ class SimilarChunkContext(val language: Language, val paths: List<String>?, val 
 
         return queryBuilder.toString().trim()
     }
-
-    override fun toJson(): String = Gson().toJson(
-        mapOf(
-            "paths" to paths,
-            "chunks" to chunks
-        )
-    )
 
     private fun commentCode(code: String, commentSymbol: String?): String {
         if (commentSymbol == null) return code

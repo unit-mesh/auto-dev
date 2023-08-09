@@ -28,7 +28,7 @@ print(p1.age) """
         psiElement.methods.forEach { println(it.name) }
         val classContext: ClassContext = ClassContextProvider(false).from(psiElement)
 
-        assertEquals(classContext.toQuery(), """class _ {
+        assertEquals(classContext.format(), """class _ {
   
   
 }""");

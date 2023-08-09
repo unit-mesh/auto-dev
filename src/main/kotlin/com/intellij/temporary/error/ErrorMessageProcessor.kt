@@ -19,7 +19,7 @@ import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.refactoring.suggested.range
-import com.intellij.temporary.isInProject
+import cc.unitmesh.devti.isInProject
 import kotlin.math.max
 
 object ErrorMessageProcessor {
@@ -94,7 +94,7 @@ object ErrorMessageProcessor {
         val hyperlinkText = consoleText.substring(range.startOffset, range.endOffset)
         val projectFileIndex: ProjectFileIndex = ProjectFileIndex.getInstance(project)
         val isProjectFile =
-            projectFileIndex.isInProject(virtualFile, project) && !projectFileIndex.isInLibrary(virtualFile)
+            isInProject(virtualFile, project) && !projectFileIndex.isInLibrary(virtualFile)
 
         return ErrorPlace(hyperlinkText, lineNumber, isProjectFile, virtualFile, project)
     }

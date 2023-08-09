@@ -74,7 +74,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         prompter += "\n"
         prompter += ReadAction.compute<String, Throwable> {
             testContext.relatedClasses.joinToString("\n") {
-                it.toQuery()
+                it.format()
             }.lines().joinToString("\n") {
                 "// $it"
             }
