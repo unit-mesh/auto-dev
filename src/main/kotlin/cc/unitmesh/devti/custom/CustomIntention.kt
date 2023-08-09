@@ -58,7 +58,7 @@ class CustomIntention(private val intentionConfig: CustomIntentionConfig) : Abst
             SelectionVariableResolver(psiElement.language.displayName ?: "", selectedText),
         ) + SpecResolverService.getInstance().createResolvers()
 
-        val resolverMap = LinkedHashMap<String, VariableResolver>(10)
+        val resolverMap = LinkedHashMap<String, VariableResolver>(20)
         for (resolver in variableResolvers) {
             resolverMap[resolver.variableName()] = resolver
         }
