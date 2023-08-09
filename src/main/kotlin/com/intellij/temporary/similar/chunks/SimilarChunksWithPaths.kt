@@ -29,15 +29,19 @@ class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRel
                         return@runReadAction null
                     }
 
-                    val querySize = similarChunksWithPaths.toQuery()
-                    if (querySize.length < 10) {
+                    // todo: change to count query by size
+                    val query = similarChunksWithPaths.toQuery()
+                    if (query.length < 10) {
                         return@runReadAction null
                     }
-                    if (querySize.length > 1024) {
-                        logger<SimilarChunksWithPaths>().warn("Query size is too large: ${querySize.length}")
-                        return@runReadAction null
+
+                    if (query.length > 1024) {
+                        logger<SimilarChunksWithPaths>().warn("Query size is too large: ${query.length}")
+                        // split to 1024
+                        return@runReadAction query.substring(0, 1024)
                     }
-                    return@runReadAction querySize
+
+                    return@runReadAction query
                 } catch (e: Exception) {
                     return@runReadAction null
                 }
