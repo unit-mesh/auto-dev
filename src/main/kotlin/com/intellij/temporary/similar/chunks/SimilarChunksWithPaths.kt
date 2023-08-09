@@ -1,6 +1,7 @@
 // Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.intellij.temporary.similar.chunks
 
+import cc.unitmesh.devti.llms.tokenizer.TokenizerImpl
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.fileEditor.impl.EditorHistoryManager
 import com.intellij.openapi.fileTypes.FileType
@@ -13,6 +14,8 @@ import com.intellij.psi.PsiManager
 import java.io.File
 
 class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRelevantFiles: Int = 20) {
+    private val tokenizer = TokenizerImpl.INSTANCE
+
     companion object {
         val INSTANCE: SimilarChunksWithPaths = SimilarChunksWithPaths()
 
@@ -56,10 +59,10 @@ class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRel
     }
 
     private fun tokenLevelJaccardSimilarity(chunks: List<List<String>>, element: PsiElement): List<List<Double>> {
-        val currentFileTokens: Set<String> = tokenize(element.containingFile.text).toSet()
+        val currentFileTokens: List<Int> = tokenize(element.containingFile.text)
         return chunks.map { list ->
             list.map {
-                val tokenizedFile: Set<String> = tokenize(it).toSet()
+                val tokenizedFile: List<Int> = tokenize(it)
                 jaccardSimilarity(currentFileTokens, tokenizedFile)
             }
         }
@@ -78,14 +81,13 @@ class SimilarChunksWithPaths(private var chunkSize: Int = 60, private var maxRel
         return contentRoot?.let { VfsUtilCore.getRelativePath(relativeFile, it, File.separatorChar) }
     }
 
-    private fun tokenize(chunk: String): List<String> {
-        return chunk.split(Regex("[^a-zA-Z0-9]"))
-            .filter { it.isNotBlank() }
+    private fun tokenize(chunk: String): List<Int> {
+        return tokenizer.tokenize(chunk)
     }
 
-    private fun jaccardSimilarity(set1: Set<String>, set2: Set<String>): Double {
-        val intersectionSize: Int = set1.intersect(set2).size
-        val unionSize: Int = set1.union(set2).size
+    private fun jaccardSimilarity(left: List<Int>, right: List<Int>): Double {
+        val intersectionSize: Int = left.intersect(right.toSet()).size
+        val unionSize: Int = left.union(right).size
         return intersectionSize.toDouble() / unionSize.toDouble()
     }
 

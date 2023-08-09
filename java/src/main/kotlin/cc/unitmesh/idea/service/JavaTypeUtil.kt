@@ -35,6 +35,11 @@ object JavaTypeUtil {
         return resolvedClasses
     }
 
+    /**
+     * The resolved classes include all the classes in the method signature. For example, if the method signature is
+     * Int, will return Int, but if the method signature is List<Int>, will return List and Int.
+     * So, remember to filter out the classes that are not needed.
+     */
     fun resolveByMethod(element: PsiElement): MutableMap<String, PsiClass?> {
         val resolvedClasses = mutableMapOf<String, PsiClass?>()
         if (element is PsiMethod) {

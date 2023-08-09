@@ -1,12 +1,11 @@
 package cc.unitmesh.idea.context
 
-import cc.unitmesh.devti.context.builder.MethodContextBuilder
 import cc.unitmesh.devti.context.MethodContext
+import cc.unitmesh.devti.context.builder.MethodContextBuilder
 import cc.unitmesh.idea.service.JavaTypeUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiNameIdentifierOwner
-import com.intellij.psi.impl.source.PsiClassReferenceType
 
 class JavaMethodContextBuilder : MethodContextBuilder {
     override fun getMethodContext(
