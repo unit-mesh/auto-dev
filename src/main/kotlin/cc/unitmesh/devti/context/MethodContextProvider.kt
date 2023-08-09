@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.context
 
-import cc.unitmesh.devti.context.base.LLMQueryContextProvider
+import cc.unitmesh.devti.context.base.LLMCodeContextProvider
 import cc.unitmesh.devti.context.builder.MethodContextBuilder
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageExtension
@@ -8,7 +8,7 @@ import com.intellij.psi.PsiElement
 import org.jetbrains.annotations.NotNull
 
 class MethodContextProvider(private val includeClassContext: Boolean, private val gatherUsages: Boolean):
-    LLMQueryContextProvider<PsiElement> {
+    LLMCodeContextProvider<PsiElement> {
     @NotNull
     private val languageExtension: LanguageExtension<MethodContextBuilder> =
         LanguageExtension("cc.unitmesh.methodContextBuilder")

@@ -2,7 +2,7 @@ package cc.unitmesh.devti.llms.openai
 
 import cc.unitmesh.devti.context.model.DtClass
 import cc.unitmesh.devti.flow.model.SimpleProjectInfo
-import cc.unitmesh.devti.prompting.model.FinalCodePrompt
+import cc.unitmesh.devti.prompting.CodePromptText
 import cc.unitmesh.devti.custom.CustomPromptConfig
 import com.intellij.openapi.util.NlsSafe
 import java.io.InputStream
@@ -81,7 +81,7 @@ class PromptTemplate {
             .replace("{controllerCode}", controller)
     }
 
-    fun updateServiceMethod(finalCode: FinalCodePrompt): String {
+    fun updateServiceMethod(finalCode: CodePromptText): String {
         val promptText: InputStream = getResource("update_service_method")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
         return promptTextString

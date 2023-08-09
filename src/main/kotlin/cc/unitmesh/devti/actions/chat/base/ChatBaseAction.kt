@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.actions.chat
+package cc.unitmesh.devti.actions.chat.base
 
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatContext

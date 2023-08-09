@@ -3,7 +3,7 @@ package com.intellij.temporary.error
 
 import com.intellij.temporary.AutoPsiUtils
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
-import cc.unitmesh.devti.prompting.model.RuntimeErrorExplanationPrompt
+import cc.unitmesh.devti.prompting.BasePromptText
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
@@ -18,7 +18,7 @@ class ErrorPromptBuilder(private val maxLength: Int, private val tokenizer: Toke
         "Please help me understand what the problem is and try to fix the code. Here's the console output and the program text:\nConsole output:\n%s\nTexts of programs:\n%s"
 
     @JvmSynthetic
-    fun buildPrompt(errorText: String, list: List<ErrorPlace>): RuntimeErrorExplanationPrompt {
+    fun buildPrompt(errorText: String, list: List<ErrorPlace>): BasePromptText {
         var sourceCode = ""
         val maxLengthForPiece = (maxLength - (promptTemplate.length - 10)) / 2
         var currentMaxTokenCount = maxLengthForPiece
@@ -44,7 +44,7 @@ class ErrorPromptBuilder(private val maxLength: Int, private val tokenizer: Toke
         val formattedPrompt = format(promptTemplate, "```\n$errorTextTrimmed\n```\n", sourceCode)
         val formattedDisplayText = format(displayText, "```\n$errorTextTrimmed\n```\n", sourceCode)
 
-        return RuntimeErrorExplanationPrompt(formattedDisplayText, formattedPrompt)
+        return BasePromptText(formattedDisplayText, formattedPrompt)
     }
 
     private fun trimByGreedyScopeSelection(errorPlace: ErrorPlace, maxTokenCount: Int): ErrorScope? {

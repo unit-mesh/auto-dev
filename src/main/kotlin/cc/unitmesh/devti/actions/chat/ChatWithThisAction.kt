@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.actions.chat
 
+import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatWindow
 import com.intellij.openapi.actionSystem.AnActionEvent

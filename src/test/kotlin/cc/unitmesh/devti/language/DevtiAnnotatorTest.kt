@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language
 
+import cc.unitmesh.devti.runconfig.DevtiAnnotator
 import org.junit.Test
 
 class DevtiAnnotatorTest {

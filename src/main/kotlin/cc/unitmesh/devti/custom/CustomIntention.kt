@@ -25,11 +25,10 @@ class CustomIntention(private val intentionConfig: CustomIntentionConfig) : Abst
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         if (editor == null || file == null) return false
 
-        val filename = file.name
         val regexString = intentionConfig.matchRegex
         return try {
             val regex = Regex(regexString)
-            regex.matches(filename)
+            regex.matches(file.name)
         } catch (e: Exception) {
             false
         }

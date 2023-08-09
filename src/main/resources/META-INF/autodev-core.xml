@@ -165,14 +165,14 @@
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </group>
 
-        <action id="cc.unitmesh.devti.actions.chat.FixThisAction"
-                class="cc.unitmesh.devti.actions.chat.FixThisAction" text="Fix This (AutoDev)"
+        <action id="cc.unitmesh.devti.actions.console.FixThisAction"
+                class="cc.unitmesh.devti.actions.console.FixThisAction" text="Fix This (AutoDev)"
                 description="Ask AI fi this code">
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
         </action>
 
         <action id="autodev.Vcs.CommitMessage"
-                class="cc.unitmesh.devti.actions.chat.vcs.CommitMessageSuggestionAction" text="Commit Message (AutoDev)"
+                class="cc.unitmesh.devti.actions.vcs.CommitMessageSuggestionAction" text="Commit Message (AutoDev)"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                 description="Ask AI generate commit message">
 
@@ -180,7 +180,7 @@
         </action>
 
         <action id="autodev.Vcs.LLMChangelog"
-                class="cc.unitmesh.devti.actions.chat.vcs.ReleaseNoteSuggestionAction" text="Generate Release Note (AutoDev)"
+                class="cc.unitmesh.devti.actions.vcs.ReleaseNoteSuggestionAction" text="Generate Release Note (AutoDev)"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                 description="Ask AI generate release note">
 

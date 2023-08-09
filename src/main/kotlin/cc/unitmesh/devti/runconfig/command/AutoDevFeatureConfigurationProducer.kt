@@ -1,9 +1,9 @@
 package cc.unitmesh.devti.runconfig.command
 
-import cc.unitmesh.devti.language.DevtiAnnotator
+import cc.unitmesh.devti.runconfig.DevtiAnnotator
 import cc.unitmesh.devti.runconfig.AutoDevConfigurationType
 import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
-import cc.unitmesh.devti.prompting.model.AutoDevStory
+import cc.unitmesh.devti.runconfig.config.AutoDevStory
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.openapi.util.Ref

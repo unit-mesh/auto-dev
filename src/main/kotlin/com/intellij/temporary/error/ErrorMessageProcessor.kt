@@ -3,7 +3,7 @@ package com.intellij.temporary.error
 
 import cc.unitmesh.devti.llms.tokenizer.LLM_MAX_TOKEN
 import cc.unitmesh.devti.llms.tokenizer.TokenizerImpl
-import cc.unitmesh.devti.prompting.model.RuntimeErrorExplanationPrompt
+import cc.unitmesh.devti.prompting.BasePromptText
 import com.intellij.execution.filters.FileHyperlinkInfo
 import com.intellij.execution.impl.ConsoleViewImpl
 import com.intellij.execution.impl.EditorHyperlinkSupport
@@ -62,7 +62,7 @@ object ErrorMessageProcessor {
 
     fun extracted(
         project: Project, description: ErrorDescription,
-    ): RuntimeErrorExplanationPrompt? {
+    ): BasePromptText? {
         val extractedText =
             extractTextFromRunPanel(project, description.consoleLineFrom, description.consoleLineTo, description.editor)
                 ?: return null

@@ -1,12 +1,12 @@
 package cc.unitmesh.devti.context
 
-import cc.unitmesh.devti.context.base.LLMQueryContextProvider
+import cc.unitmesh.devti.context.base.LLMCodeContextProvider
 import cc.unitmesh.devti.context.builder.FileContextBuilder
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageExtension
 import com.intellij.psi.PsiFile
 
-class FileContextProvider: LLMQueryContextProvider<PsiFile> {
+class FileContextProvider: LLMCodeContextProvider<PsiFile> {
     private val languageExtension: LanguageExtension<FileContextBuilder> =
         LanguageExtension("cc.unitmesh.fileContextBuilder")
 

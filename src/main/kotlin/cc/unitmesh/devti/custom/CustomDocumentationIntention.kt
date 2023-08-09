@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.custom
 
-import cc.unitmesh.devti.intentions.action.task.CustomLivingDocTask
+import cc.unitmesh.devti.custom.task.CustomLivingDocTask
 import cc.unitmesh.devti.intentions.action.base.BasedDocumentationIntention
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressManager

@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language
+package cc.unitmesh.devti.runconfig
 
 import cc.unitmesh.devti.flow.model.StoryConfig
 import com.intellij.lang.annotation.AnnotationHolder
