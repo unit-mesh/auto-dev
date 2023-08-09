@@ -93,25 +93,12 @@ open class JavaContextPrompter : ContextPrompter() {
 
         when (action!!) {
             ChatActionType.EXPLAIN -> {
-                val autoComment = customPromptConfig?.autoComment
-                if (autoComment?.instruction?.isNotEmpty() == true) {
-                    prompt = autoComment.instruction
-                }
             }
 
             ChatActionType.REFACTOR -> {
-                val refactor = customPromptConfig?.refactor
-                if (refactor?.instruction?.isNotEmpty() == true) {
-                    prompt = refactor.instruction
-                }
             }
 
             ChatActionType.CODE_COMPLETE -> {
-                val codeComplete = customPromptConfig?.autoComplete
-                if (codeComplete?.instruction?.isNotEmpty() == true) {
-                    prompt = codeComplete.instruction
-                }
-
                 when {
                     MvcUtil.isController(fileName, lang) -> {
                         val spec = CustomPromptConfig.load().spec["controller"]
@@ -135,12 +122,7 @@ open class JavaContextPrompter : ContextPrompter() {
                 }
             }
 
-            ChatActionType.GENERATE_TEST -> {
-                val writeTest = customPromptConfig?.writeTest
-                if (writeTest?.instruction?.isNotEmpty() == true) {
-                    prompt = writeTest.instruction
-                }
-            }
+            ChatActionType.GENERATE_TEST -> {}
 
             ChatActionType.FIX_ISSUE -> {
                 addFixIssueContext(selectedText)
@@ -158,6 +140,7 @@ open class JavaContextPrompter : ContextPrompter() {
 
             ChatActionType.CUSTOM_COMPLETE -> {
             }
+
             ChatActionType.CUSTOM_ACTION -> TODO()
         }
 

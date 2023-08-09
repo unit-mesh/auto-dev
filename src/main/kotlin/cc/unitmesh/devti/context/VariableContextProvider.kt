@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.context
 
+import cc.unitmesh.devti.context.base.LLMQueryContextProvider
 import cc.unitmesh.devti.context.builder.VariableContextBuilder
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageExtension
@@ -9,7 +10,7 @@ class VariableContextProvider(
     private val includeMethodContext: Boolean,
     private val includeClassContext: Boolean,
     private val gatherUsages: Boolean
-) {
+): LLMQueryContextProvider<PsiElement> {
     private val languageExtension: LanguageExtension<VariableContextBuilder> =
         LanguageExtension("cc.unitmesh.variableContextBuilder")
 
@@ -20,7 +21,7 @@ class VariableContextProvider(
         providers = registeredLanguages.mapNotNull(languageExtension::forLanguage)
     }
 
-    fun from(psiElement: PsiElement): VariableContext {
+    override fun from(psiElement: PsiElement): VariableContext {
         for (provider in providers) {
             val variableContext =
                 provider.getVariableContext(psiElement, includeMethodContext, includeClassContext, gatherUsages)

@@ -1,11 +1,12 @@
 package cc.unitmesh.devti.context
 
+import cc.unitmesh.devti.context.base.LLMQueryContextProvider
 import cc.unitmesh.devti.context.builder.FileContextBuilder
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageExtension
 import com.intellij.psi.PsiFile
 
-class FileContextProvider {
+class FileContextProvider: LLMQueryContextProvider<PsiFile> {
     private val languageExtension: LanguageExtension<FileContextBuilder> =
         LanguageExtension("cc.unitmesh.fileContextBuilder")
 
@@ -16,14 +17,14 @@ class FileContextProvider {
         providers = registeredLanguages.mapNotNull { languageExtension.forLanguage(it) }
     }
 
-    fun from(psiFile: PsiFile): FileContext {
+    override fun from(psiElement: PsiFile): FileContext {
         for (provider in providers) {
-            val fileContext = provider.getFileContext(psiFile)
+            val fileContext = provider.getFileContext(psiElement)
             if (fileContext != null) {
                 return fileContext
             }
         }
 
-        return FileContext(psiFile, psiFile.name, psiFile.virtualFile?.path!!)
+        return FileContext(psiElement, psiElement.name, psiElement.virtualFile?.path!!)
     }
 }

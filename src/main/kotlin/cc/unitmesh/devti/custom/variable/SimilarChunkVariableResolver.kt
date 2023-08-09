@@ -8,8 +8,12 @@ class SimilarChunkVariableResolver(val element: PsiElement) : VariableResolver {
     override val type: CustomIntentionVariableType get() = CustomIntentionVariableType.SIMILAR_CHUNK
 
     override fun resolve(): String {
-        return ReadAction.compute<String, Throwable> {
-            SimilarChunksWithPaths.createQuery(element, 256)
+        return try {
+            ReadAction.compute<String, Throwable> {
+                SimilarChunksWithPaths.createQuery(element, 256)
+            }
+        } catch (e: Throwable) {
+            ""
         }
     }
 }

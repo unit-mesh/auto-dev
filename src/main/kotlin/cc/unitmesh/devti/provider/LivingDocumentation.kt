@@ -19,18 +19,13 @@ enum class LivingDocumentationType {
  * 3. living documentation
  */
 interface LivingDocumentation {
-//    val instruction: String
+    //    val instruction: String
     fun startEndString(type: LivingDocumentationType): Pair<String, String>
 
     fun updateDoc(psiElement: PsiElement, str: String)
 
-    fun findExampleDoc(psiNameIdentifierOwner: PsiNameIdentifierOwner): String
-
     fun findNearestDocumentationTarget(psiElement: PsiElement): PsiNameIdentifierOwner?
 
-    /**
-     * Find the documentation targets in the selection, like the method, class
-     */
     fun findDocTargetsInSelection(psiElement: PsiElement, selectionModel: SelectionModel): List<PsiNameIdentifierOwner>
 
     companion object {

@@ -1,6 +1,20 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v1.1.1...v) (2023-08-08)
+# [](https://github.com/unit-mesh/auto-dev/compare/v1.1.2...v) (2023-08-09)
 
 ## [Unreleased]
+
+## [1.1.2](https://github.com/unit-mesh/auto-dev/compare/v1.1.1...v[1.1.2]) (2023-08-09)
+
+### Bug Fixes
+- fix compile issues ([7e2c936](https://github.com/unit-mesh/auto-dev/commit/7e2c936b0db7a475a82242f95629ed3bdbc9fccd))
+- fix crash ([24c3cd7](https://github.com/unit-mesh/auto-dev/commit/24c3cd7a0ee9cae68044571473cb6a0778a93889))
+- fix permissions ([f85a28d](https://github.com/unit-mesh/auto-dev/commit/f85a28d59d5edefbceba571429227856af4d91b3))
+- 修复编译失败 ([ccc539b](https://github.com/unit-mesh/auto-dev/commit/ccc539bb0adba83a72b21e4664a81a255f94eaae))
+
+### Features
+- **doc:** add basic prompt ([4fddd6d](https://github.com/unit-mesh/auto-dev/commit/4fddd6d28777fe973dc2c64f26a3e088feec7ea7))
+- **doc:** init basic intention ([3c050e0](https://github.com/unit-mesh/auto-dev/commit/3c050e091dd177f582eddd0e9548db60efd02400))
+- **doc:** init java living doc ([9a37dce](https://github.com/unit-mesh/auto-dev/commit/9a37dce7135fa118109b232ba847f9067826e3db))
+- **doc:** make it works ([4d65801](https://github.com/unit-mesh/auto-dev/commit/4d658017d68da4215f536add4056a7f7703b5b5c))
 
 ## [1.1.1](https://github.com/unit-mesh/auto-dev/compare/v1.1.0...v[1.1.1]) (2023-08-08)
 
@@ -506,7 +520,8 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/unit-mesh/auto-dev/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/unit-mesh/auto-dev/compare/v1.0.2...v1.1.1
 [1.0.2]: https://github.com/unit-mesh/auto-dev/compare/v1.0.2-beta.1...v1.0.2
 [1.0.2-beta.1]: https://github.com/unit-mesh/auto-dev/compare/v1.0.1...v1.0.2-beta.1
