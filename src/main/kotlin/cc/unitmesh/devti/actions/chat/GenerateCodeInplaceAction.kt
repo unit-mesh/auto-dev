@@ -2,7 +2,7 @@ package cc.unitmesh.devti.actions.chat
 
 import cc.unitmesh.devti.editor.LLMCoroutineScopeService
 import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.llms.ConnectorFactory
+import cc.unitmesh.devti.llms.LLMProviderFactory
 import cc.unitmesh.devti.parser.Code
 import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.provider.builtin.DefaultContextPrompter
@@ -133,7 +133,7 @@ class GenerateCodeInplaceAction : AnAction() {
 
             logger<GenerateCodeInplaceAction>().warn("request prompt: $prompt")
 
-            val stringFlow = ConnectorFactory().connector(project).stream(prompt, "")
+            val stringFlow = LLMProviderFactory().connector(project).stream(prompt, "")
 
             var result = ""
             stringFlow.collect { result += it }

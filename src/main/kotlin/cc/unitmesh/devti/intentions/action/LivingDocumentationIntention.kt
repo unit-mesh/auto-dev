@@ -38,7 +38,7 @@ class LivingDocumentationIntention : IntentionAction {
         if (selectedText != null) {
             val owners: List<PsiNameIdentifierOwner> = findSelectedElementToDocument(editor, project, selectionModel)
             for (identifierOwner in owners) {
-                val task: Task.Backgroundable = LivingDocumentationTask(editor, project, identifierOwner)
+                val task: Task.Backgroundable = LivingDocumentationTask(editor, identifierOwner)
 
                 ProgressManager.getInstance()
                     .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))

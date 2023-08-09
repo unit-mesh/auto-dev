@@ -3,7 +3,7 @@ package cc.unitmesh.devti.runconfig
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.provider.DevFlowProvider
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
-import cc.unitmesh.devti.llms.ConnectorFactory
+import cc.unitmesh.devti.llms.LLMProviderFactory
 import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
 import cc.unitmesh.devti.runconfig.options.AutoDevConfigurationOptions
 import cc.unitmesh.devti.settings.AutoDevSettingsState
@@ -42,7 +42,7 @@ class AutoDevRunProfileState(
             logger.error("current Language don't implementation DevFlow")
             return null
         }
-        val openAIRunner = ConnectorFactory().connector(project)
+        val openAIRunner = LLMProviderFactory().connector(project)
 
         sendToChatPanel(project) { contentPanel, _ ->
             flowProvider.initContext(gitHubIssue, openAIRunner, contentPanel, project)

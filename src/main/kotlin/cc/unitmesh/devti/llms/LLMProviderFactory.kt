@@ -9,7 +9,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 
 @Service
-class ConnectorFactory {
+class LLMProviderFactory {
     private val aiEngine: String = AutoDevSettingsState.getInstance().aiEngine ?: DEFAULT_AI_ENGINE
     fun connector(project: Project): CodeCopilotProvider {
         return when (aiEngine) {

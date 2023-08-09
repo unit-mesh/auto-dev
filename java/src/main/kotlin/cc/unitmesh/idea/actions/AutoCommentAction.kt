@@ -1,7 +1,7 @@
 package cc.unitmesh.idea.actions
 
 import cc.unitmesh.devti.AutoDevIcons
-import cc.unitmesh.devti.llms.ConnectorFactory
+import cc.unitmesh.devti.llms.LLMProviderFactory
 import cc.unitmesh.devti.editor.LLMCoroutineScopeService
 import cc.unitmesh.devti.runconfig.AutoDevRunProfileState
 import com.intellij.openapi.actionSystem.AnAction
@@ -21,7 +21,7 @@ class AutoCommentAction(
 ) : AnAction({ "Auto Comment for $methodName" }, AutoDevIcons.AI_COPILOT) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        val apiExecutor = ConnectorFactory().connector(project)
+        val apiExecutor = LLMProviderFactory().connector(project)
 
         val psiElementFactory = project.let {
             JavaPsiFacade.getElementFactory(it)

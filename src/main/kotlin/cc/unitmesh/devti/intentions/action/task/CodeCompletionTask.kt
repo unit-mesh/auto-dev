@@ -2,7 +2,7 @@ package cc.unitmesh.devti.intentions.action.task
 
 import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
-import cc.unitmesh.devti.llms.ConnectorFactory
+import cc.unitmesh.devti.llms.LLMProviderFactory
 import cc.unitmesh.devti.editor.LLMCoroutineScopeService
 import cc.unitmesh.devti.intentions.action.CodeCompletionIntention
 import com.intellij.lang.LanguageCommenters
@@ -26,7 +26,7 @@ import kotlin.jvm.internal.Ref
 class CodeCompletionTask(private val request: CodeCompletionRequest) :
     Task.Backgroundable(request.project, AutoDevBundle.message("intentions.chat.code.complete.name")) {
 
-    private val connectorFactory = ConnectorFactory()
+    private val LLMProviderFactory = LLMProviderFactory()
 
     private val writeActionGroupId = "code.complete.intention.write.action"
     private val codeMessage = AutoDevBundle.message("intentions.chat.code.complete.name")
@@ -38,7 +38,7 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
     override fun run(indicator: ProgressIndicator) {
         val prompt = promptText()
 
-        val flow: Flow<String> = connectorFactory.connector(request.project).stream(prompt, "")
+        val flow: Flow<String> = LLMProviderFactory.connector(request.project).stream(prompt, "")
         logger.info("Prompt: $prompt")
 
         val editor = request.editor
@@ -89,7 +89,7 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
 
         logger.warn("Prompt: $prompt")
         LLMCoroutineScopeService.scope(project).launch {
-            val flow: Flow<String> = connectorFactory.connector(project).stream(prompt, "")
+            val flow: Flow<String> = LLMProviderFactory.connector(project).stream(prompt, "")
             val suggestion = StringBuilder()
             flow.collect {
                 suggestion.append(it)

@@ -2,7 +2,7 @@ package cc.unitmesh.idea.actions
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
-import cc.unitmesh.devti.llms.ConnectorFactory
+import cc.unitmesh.devti.llms.LLMProviderFactory
 import cc.unitmesh.devti.provider.DevFlowProvider
 import cc.unitmesh.devti.gui.sendToChatPanel
 import com.intellij.openapi.diagnostic.logger
@@ -31,7 +31,7 @@ class AutoCrudAction : AbstractChatIntention() {
         }
 
         sendToChatPanel(project) { contentPanel, _ ->
-            val openAIRunner = ConnectorFactory().connector(project)
+            val openAIRunner = LLMProviderFactory().connector(project)
             val selectedText = editor.selectionModel.selectedText ?: throw IllegalStateException("no select text")
             flowProvider.initContext(null, openAIRunner, contentPanel, project)
             ProgressManager.getInstance().run(executeCrud(flowProvider, project, selectedText))
