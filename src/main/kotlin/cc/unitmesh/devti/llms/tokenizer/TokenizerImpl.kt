@@ -15,6 +15,9 @@ class TokenizerImpl(private val maxTokenLength: Int = 8192) : Tokenizer {
     override fun getMaxLength(): Int = maxTokenLength
 
     override fun count(string: String): Int = encoding.countTokens(string)
+    override fun tokenize(chunk: String): List<Int> {
+        return encoding.encode(chunk, maxTokenLength).tokens
+    }
 
     companion object {
         val INSTANCE = ApplicationManager.getApplication().getService(TokenizerImpl::class.java)
