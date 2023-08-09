@@ -1,8 +1,6 @@
-package cc.unitmesh.devti.intentions.action
+package cc.unitmesh.devti.intentions.action.base
 
-import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.CustomDocumentationConfig
-import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
 import cc.unitmesh.devti.intentions.action.task.LivingDocumentationTask
 import cc.unitmesh.devti.provider.LivingDocumentation
 import com.intellij.openapi.editor.Editor
@@ -17,16 +15,12 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.util.PsiUtilBase
 
-abstract class BasedDocumentationIntention(val config: CustomDocumentationConfig) : AbstractChatIntention() {
+abstract class BasedDocumentationIntention : AbstractChatIntention() {
+    abstract val config: CustomDocumentationConfig
+
     override fun priority(): Int = 90
 
     override fun startInWriteAction(): Boolean = false
-
-    override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
-        if (editor == null || file == null) return false
-
-        return LivingDocumentation.forLanguage(file.language) != null
-    }
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (editor == null || file == null) return

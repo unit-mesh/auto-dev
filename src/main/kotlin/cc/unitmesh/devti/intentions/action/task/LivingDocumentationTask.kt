@@ -105,7 +105,7 @@ class LivingDocumentationBuilder(
             instruction.append("```${target.language.displayName}\n${target.text}\n```")
 
             val startEndString = documentation.startEndString(type)
-            instruction.append("\nYou should start with ${startEndString.first}!\nYou should end with ends with: ${startEndString.second}!!\n")
+            instruction.append("\nYou should start with `${startEndString.first}`\nYou should end with ends with: `${startEndString.second}`\n")
 
             instruction.toString()
         }

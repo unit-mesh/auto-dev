@@ -127,7 +127,7 @@
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
         <autoDevIntention>
-            <className>cc.unitmesh.devti.intentions.action.BasedDocumentationIntention</className>
+            <className>cc.unitmesh.devti.intentions.action.DefaultDocumentationIntention</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>

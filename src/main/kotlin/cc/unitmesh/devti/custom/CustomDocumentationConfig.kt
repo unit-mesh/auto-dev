@@ -24,6 +24,14 @@ class CustomDocumentationConfig(
     val example: CustomDocumentationExample?,
 ) {
 
+    companion object {
+        fun default(): CustomDocumentationConfig = CustomDocumentationConfig(
+            "/**",
+            "*/",
+            LivingDocumentationType.NORMAL,
+            null
+        )
+    }
 }
 
 @Serializable
