@@ -87,10 +87,10 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
         }
 
         val randomController = firstController()
-        val packageStatement = randomController.lookupPackageName()
+        val packageStatement = randomController?.lookupPackageName()
 
         if (packageStatement == null) {
-            log.warn("No package statement found in file ${randomController.name}")
+            log.warn("No package statement found in file ${randomController?.name}")
             return DtClass("", emptyList())
         }
 
@@ -130,8 +130,8 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
 
     override fun createClass(code: String, packageName: String?): DtClass? {
         // controller parent will be ${package}.controller, ${package}.controller parent will be ${package}
-        var parentDirectory = firstController().virtualFile?.parent?.parent ?: return null
-        val fileSystem = firstController().virtualFile?.fileSystem
+        var parentDirectory = firstController()?.virtualFile?.parent?.parent ?: return null
+        val fileSystem = firstController()?.virtualFile?.fileSystem
         ApplicationManager.getApplication().invokeLater {
             runWriteAction {
                 val newClass = psiElementFactory.createClassFromText(code, null)
@@ -176,7 +176,7 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
     }
 
     private fun packageCloseToController(subpackage: String): String? {
-        val firstControllerPkg = firstController().lookupPackageName()?.packageName
+        val firstControllerPkg = firstController()?.lookupPackageName()?.packageName
         if (firstControllerPkg != null) {
             val lastDotIndex = firstControllerPkg.lastIndexOf(".")
             if (lastDotIndex != -1) {
@@ -187,7 +187,7 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
         return firstControllerPkg
     }
 
-    private fun firstController() = getAllControllerFiles().first()
+    private fun firstController(): PsiFile? = getAllControllerFiles().firstOrNull()
 
     private fun createClassByTemplate(
         parentDirectory: VirtualFile,
