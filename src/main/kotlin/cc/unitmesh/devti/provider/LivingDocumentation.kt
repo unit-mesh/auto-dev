@@ -15,6 +15,10 @@ import com.intellij.psi.PsiNameIdentifierOwner
  * 3. living documentation
  */
 interface LivingDocumentation {
+    val docToolName: String
+
+    val forbiddenRules: List<String>
+
     fun startEndString(type: LivingDocumentationType): Pair<String, String>
 
     fun updateDoc(psiElement: PsiElement, str: String, type: LivingDocumentationType, editor: Editor)

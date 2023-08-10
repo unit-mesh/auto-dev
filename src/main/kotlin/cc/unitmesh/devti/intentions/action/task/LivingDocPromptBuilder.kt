@@ -15,6 +15,8 @@ open class LivingDocPromptBuilder(
     open val documentation: LivingDocumentation,
     val type: LivingDocumentationType,
 ) {
+    private val toolName = documentation.docToolName
+
     protected val contextProviders = listOf(
         VariableContextProvider(false, false, false),
         ClassContextProvider(false),
@@ -31,12 +33,12 @@ open class LivingDocPromptBuilder(
 
     private fun classInstruction(context: ClassContext): String? {
         if (context.name == null) return null
-        return "Write javadoc for given class " + context.name
+        return "Write $toolName for given class " + context.name + "."
     }
 
     private fun methodInstruction(context: MethodContext): String? {
         if (context.name == null) return null
-        return "Write javadoc for given method " + context.name
+        return "Write $toolName for given method " + context.name + "."
     }
 
     open fun buildPrompt(project: Project?, target: PsiNameIdentifierOwner, fallbackText: String): String {
@@ -44,7 +46,7 @@ open class LivingDocPromptBuilder(
             val instruction = StringBuilder(fallbackText)
 
             var inOutString = ""
-            val element = this.contextProviders.firstNotNullOfOrNull { contextProvider ->
+            val basicInstruction = this.contextProviders.firstNotNullOfOrNull { contextProvider ->
                 val llmQueryContext = contextProvider.from(target)
                 when (llmQueryContext) {
                     is MethodContext -> {
@@ -52,10 +54,10 @@ open class LivingDocPromptBuilder(
                     }
                 }
                 contextInstruction(llmQueryContext)
-            } ?: "write documentation for given code"
+            } ?: "Write documentation for given code"
 
-            instruction.append(element)
-            instruction.append(" , do not return example code, do not use @author and @version tags")
+            instruction.append(basicInstruction)
+            instruction.append(documentation.forbiddenRules.joinToString { "\n- $it" })
 
             if (inOutString.isNotEmpty()) {
                 instruction.append("\nCompare this snippet: \n")
