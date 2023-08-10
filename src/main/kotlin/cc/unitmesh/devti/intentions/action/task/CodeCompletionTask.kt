@@ -12,6 +12,7 @@ import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Document
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
@@ -74,19 +75,28 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
                 suggestion.append(it)
                 invokeLater {
                     if (!isCanceled) {
-                        WriteCommandAction.runWriteCommandAction(project, codeMessage, writeActionGroupId, {
-                            insertStringAndSaveChange(project, it, editor.document, currentOffset.element, false)
-                        })
-
-                        currentOffset.element += it.length
-                        editor.caretModel.moveToOffset(currentOffset.element)
-                        editor.scrollingModel.scrollToCaret(ScrollType.MAKE_VISIBLE)
+                        insertStreamingToDoc(project, it, editor, currentOffset)
                     }
                 }
             }
 
             logger.info("Suggestion: $suggestion")
         }
+    }
+
+    private fun insertStreamingToDoc(
+        project: Project,
+        char: String,
+        editor: Editor,
+        currentOffset: Ref.IntRef,
+    ) {
+        WriteCommandAction.runWriteCommandAction(project, codeMessage, writeActionGroupId, {
+            insertStringAndSaveChange(project, char, editor.document, currentOffset.element, false)
+        })
+
+        currentOffset.element += char.length
+        editor.caretModel.moveToOffset(currentOffset.element)
+        editor.scrollingModel.scrollToCaret(ScrollType.MAKE_VISIBLE)
     }
 
     override fun onCancel() {
