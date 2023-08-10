@@ -75,7 +75,8 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
                 suggestion.append(it)
                 invokeLater {
                     if (!isCanceled) {
-                        insertStreamingToDoc(project, it, editor, currentOffset)
+                        insertStreamingToDoc(project, it, editor, currentOffset.element)
+                        currentOffset.element += it.length
                     }
                 }
             }
@@ -84,18 +85,13 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
         }
     }
 
-    private fun insertStreamingToDoc(
-        project: Project,
-        char: String,
-        editor: Editor,
-        currentOffset: Ref.IntRef,
-    ) {
+    fun insertStreamingToDoc(project: Project, char: String, editor: Editor, currentOffset: Int) {
         WriteCommandAction.runWriteCommandAction(project, codeMessage, writeActionGroupId, {
-            insertStringAndSaveChange(project, char, editor.document, currentOffset.element, false)
+            insertStringAndSaveChange(project, char, editor.document, currentOffset, false)
         })
 
-        currentOffset.element += char.length
-        editor.caretModel.moveToOffset(currentOffset.element)
+
+        editor.caretModel.moveToOffset(currentOffset + char.length)
         editor.scrollingModel.scrollToCaret(ScrollType.MAKE_VISIBLE)
     }
 
