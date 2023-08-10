@@ -4,23 +4,16 @@ import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.llms.LLMProviderFactory
 import cc.unitmesh.devti.LLMCoroutineScope
+import cc.unitmesh.devti.InsertUtil
 import cc.unitmesh.devti.intentions.action.CodeCompletionIntention
 import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.actionSystem.CustomShortcutSet
 import com.intellij.openapi.actionSystem.KeyboardShortcut
 import com.intellij.openapi.application.invokeLater
-import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.editor.Document
-import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.DumbAwareAction
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.TextRange
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.codeStyle.CodeStyleManager
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
@@ -34,9 +27,6 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
     Task.Backgroundable(request.project, AutoDevBundle.message("intentions.chat.code.complete.name")) {
 
     private val LLMProviderFactory = LLMProviderFactory()
-
-    private val writeActionGroupId = "code.complete.intention.write.action"
-    private val codeMessage = AutoDevBundle.message("intentions.chat.code.complete.name")
 
     private val chunksString = SimilarChunksWithPaths.createQuery(request.element, 60)
     private val commenter = LanguageCommenters.INSTANCE.forLanguage(request.element.language)
@@ -75,7 +65,7 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
                 suggestion.append(it)
                 invokeLater {
                     if (!isCanceled) {
-                        insertStreamingToDoc(project, it, editor, currentOffset.element)
+                        InsertUtil.insertStreamingToDoc(project, it, editor, currentOffset.element)
                         currentOffset.element += it.length
                     }
                 }
@@ -83,16 +73,6 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
 
             logger.info("Suggestion: $suggestion")
         }
-    }
-
-    fun insertStreamingToDoc(project: Project, char: String, editor: Editor, currentOffset: Int) {
-        WriteCommandAction.runWriteCommandAction(project, codeMessage, writeActionGroupId, {
-            insertStringAndSaveChange(project, char, editor.document, currentOffset, false)
-        })
-
-
-        editor.caretModel.moveToOffset(currentOffset + char.length)
-        editor.scrollingModel.scrollToCaret(ScrollType.MAKE_VISIBLE)
     }
 
     override fun onCancel() {
@@ -120,24 +100,6 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
 
     companion object {
         val logger = logger<CodeCompletionIntention>()
-
-        fun insertStringAndSaveChange(
-            project: Project,
-            suggestion: String,
-            document: Document,
-            startOffset: Int,
-            withReformat: Boolean,
-        ) {
-            document.insertString(startOffset, suggestion)
-            PsiDocumentManager.getInstance(project).commitDocument(document)
-
-            if (!withReformat) return
-
-            val psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document)
-            psiFile?.let { file ->
-                val reformatRange = TextRange(startOffset, startOffset + suggestion.length)
-                CodeStyleManager.getInstance(project).reformatText(file, listOf(reformatRange))
-            }
-        }
     }
 }
+

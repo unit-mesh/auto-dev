@@ -8,6 +8,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.psi.PsiNameIdentifierOwner
+import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
 
@@ -35,7 +36,7 @@ class CustomLivingDocTask(
         var result = ""
 
         runBlocking {
-            stream.collect {
+            stream.cancellable().collect {
                 result += it
             }
         }
