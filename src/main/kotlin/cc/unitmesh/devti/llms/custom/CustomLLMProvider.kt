@@ -26,10 +26,8 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import java.time.Duration
 
-
 @Serializable
-data class CustomRequest(val instruction: String, val input: String)
-
+data class Message(val role: String, val content: String)
 
 @Service(Service.Level.PROJECT)
 class CustomLLMProvider(val project: Project) : LLMProvider {
@@ -39,6 +37,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
     private var customPromptConfig: CustomPromptConfig? = null
     private var client = OkHttpClient()
     private val timeout = Duration.ofSeconds(600)
+    private val messages: MutableList<Message> = ArrayList()
 
     init {
         val prompts = autoDevSettingsState.customEnginePrompts
@@ -53,7 +52,9 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun stream(promptText: String, systemPrompt: String): Flow<String> {
-        val requestContent = Json.encodeToString<CustomRequest>(CustomRequest(promptText, ""))
+        messages += Message(promptText, systemPrompt)
+
+        val requestContent = Json.encodeToString<List<Message>>(messages)
         val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), requestContent)
         logger.warn("Requesting from $body")
 
@@ -103,8 +104,8 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
     }
 
     fun prompt(instruction: String, input: String): String {
-        // encode the request as JSON with kotlinx.serialization
-        val requestContent = Json.encodeToString(CustomRequest(instruction, input))
+        messages += Message(instruction, input)
+        val requestContent = Json.encodeToString<List<Message>>(messages)
         val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), requestContent)
 
         logger.warn("Requesting from $body")

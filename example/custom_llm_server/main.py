@@ -1,8 +1,8 @@
-import json
 from typing import List
 from urllib.request import Request
 
 import requests
+import sseclient
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel
@@ -16,17 +16,6 @@ class Message(BaseModel):
     role: str
     content: str
 
-
-class CustomInput(BaseModel):
-    text: str
-    history: List[str]
-
-
-class MessageInput(BaseModel):
-    instruction: str
-    input: str
-
-
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     exc_str = f'{exc}'.replace('\n', ' ').replace('   ', ' ')
@@ -36,14 +25,20 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 
 @app.post("/chat")
-async def chat(data: MessageInput):
-    input = {
-        "text": data.instruction,
-        "history": []
+async def chat(data: List[Message]):
+    headers = {
+        'Accept': 'text/event-stream',
+        "Authorization": "",
     }
 
-    response = requests.post("http://10.207.8.18:11000/components/easy_chat/api/predict/", json={
-        "data": [json.dumps(input), 2000, 0.1, 0.1, "chatglm_4bit_seldon"]
-    }).json()
+    response = requests.post("http://sz.private.gluon-meson.tech:8000/messages/stream", headers=headers, json=data, stream=True)
+    print(response)
 
-    return response["data"][0]
+    client = sseclient.SSEClient(response)
+
+    for event in client.events():
+        try:
+            yield 'data: ' + event.data + '\n\n'
+        except Exception as e:
+            print("OpenAI Response (Streaming) Error: " + str(e))
+
