@@ -2,7 +2,6 @@ package cc.unitmesh.devti.llms.openai
 
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
-import cc.unitmesh.devti.settings.OPENAI_MODEL
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
@@ -14,11 +13,9 @@ import com.theokanning.openai.completion.chat.ChatMessageRole
 import com.theokanning.openai.service.OpenAiService
 import com.theokanning.openai.service.OpenAiService.defaultClient
 import com.theokanning.openai.service.OpenAiService.defaultObjectMapper
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.jackson.JacksonConverterFactory
@@ -27,38 +24,40 @@ import java.time.Duration
 
 @Service(Service.Level.PROJECT)
 class OpenAIProvider(val project: Project) : LLMProvider {
-    private var service: OpenAiService
+    private val service: OpenAiService
+        get() {
+            if (openAiKey.isEmpty()) {
+                logger.error("openAiKey is empty")
+                throw IllegalStateException("openAiKey is empty")
+            }
+
+            val openAiProxy = AutoDevSettingsState.getInstance().customOpenAiHost
+            return if (openAiProxy.isEmpty()) {
+                OpenAiService(openAiKey, timeout)
+            } else {
+                val mapper = defaultObjectMapper()
+                val client = defaultClient(openAiKey, timeout)
+
+                val retrofit = Retrofit.Builder()
+                    .baseUrl(openAiProxy)
+                    .client(client)
+                    .addConverterFactory(JacksonConverterFactory.create(mapper))
+                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                    .build()
+
+                val api = retrofit.create(OpenAiApi::class.java)
+                OpenAiService(api)
+            }
+        }
 
     private val timeout = Duration.ofSeconds(600)
-    private val openAiVersion: String = AutoDevSettingsState.getInstance()?.openAiModel ?: OPENAI_MODEL[0]
-    private val openAiKey: String = AutoDevSettingsState.getInstance()?.openAiKey ?: ""
-    private val maxTokenLength: Int = AutoDevSettingsState.maxTokenLength
+    private val openAiVersion: String
+        get() = AutoDevSettingsState.getInstance().openAiModel
+    private val openAiKey: String
+        get() = AutoDevSettingsState.getInstance().openAiKey
 
-    init {
-
-        if (openAiKey.isEmpty()) {
-            logger.error("openAiKey is empty")
-            throw Exception("openAiKey is empty")
-        }
-
-        val openAiProxy = AutoDevSettingsState.getInstance()?.customOpenAiHost
-        if (openAiProxy.isNullOrEmpty()) {
-            service = OpenAiService(openAiKey, timeout)
-        } else {
-            val mapper = defaultObjectMapper()
-            val client = defaultClient(openAiKey, timeout)
-
-            val retrofit = Retrofit.Builder()
-                .baseUrl(openAiProxy)
-                .client(client)
-                .addConverterFactory(JacksonConverterFactory.create(mapper))
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .build()
-
-            val api = retrofit.create(OpenAiApi::class.java)
-            service = OpenAiService(api)
-        }
-    }
+    private val maxTokenLength: Int
+        get() = AutoDevSettingsState.maxTokenLength
 
     private val messages: MutableList<ChatMessage> = ArrayList()
     private var historyMessageLength: Int = 0
@@ -80,7 +79,10 @@ class OpenAIProvider(val project: Project) : LLMProvider {
         return callbackFlow {
             withContext(Dispatchers.IO) {
                 service.streamChatCompletion(completionRequest)
-                    .doOnError(Throwable::printStackTrace)
+                    .doOnError{ error ->
+                        logger.error("Error in stream", error)
+                        trySend(error.message ?: "Error occurs")
+                    }
                     .blockingForEach { response ->
                         val completion = response.choices[0].message
                         if (completion != null && completion.content != null) {

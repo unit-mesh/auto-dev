@@ -205,11 +205,13 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         myList.add(messageView)
 
         var text = ""
-        content.collect {
-            text += it
-            messageView.updateSourceContent(text)
-            messageView.updateContent(text)
-            messageView.scrollToBottom()
+        runCatching {
+            content.collect {
+                text += it
+                messageView.updateSourceContent(text)
+                messageView.updateContent(text)
+                messageView.scrollToBottom()
+            }
         }
 
         messageView.reRenderAssistantOutput()
