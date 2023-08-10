@@ -1,7 +1,7 @@
 package cc.unitmesh.idea.contributor
 
 import cc.unitmesh.devti.AutoDevIcons
-import cc.unitmesh.devti.language.DevtiAnnotator
+import cc.unitmesh.devti.runconfig.DevtiAnnotator
 import cc.unitmesh.devti.runconfig.command.AutoDevFeatureConfigurationProducer
 import com.intellij.execution.lineMarker.ExecutorAction
 import com.intellij.execution.lineMarker.RunLineMarkerContributor

@@ -1,7 +1,9 @@
 package cc.unitmesh.devti.context
 
 import cc.unitmesh.devti.context.base.NamedElementContext
-import com.google.gson.Gson
+import cc.unitmesh.devti.isInProject
+import com.intellij.lang.LanguageCommenters
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
 
@@ -16,11 +18,15 @@ class MethodContext(
     val paramNames: List<String> = emptyList(),
     val includeClassContext: Boolean = false,
     val usages: List<PsiReference> = emptyList(),
-    val inputOutputClasses: List<PsiElement> = emptyList()
+    val inputOutputClasses: List<PsiElement> = emptyList(),
 ) : NamedElementContext(
     root, text, name
 ) {
     private val classContext: ClassContext?
+    private val commenter = LanguageCommenters.INSTANCE.forLanguage(root.language) ?: null
+    private val commentPrefix = commenter?.lineCommentPrefix ?: ""
+    private val project: Project = root.project
+
 
     init {
         classContext = if (includeClassContext && enclosingClass != null) {
@@ -30,7 +36,7 @@ class MethodContext(
         }
     }
 
-    override fun toQuery(): String {
+    override fun format(): String {
         val usageString = usages.joinToString("\n") {
             val classFile = it.element.containingFile
             val useText = it.element.text
@@ -46,38 +52,27 @@ fun signature: ${signature ?: "_"}
         }
 
         if (classContext != null) {
-            query += classContext.toQuery()
+            query += classContext.format()
         }
 
         return query
     }
 
-    /**
-     * convert code method to UML, like:
-     * ```java
-     * @GetMapping("/blog")
-     * public List<BlogPost> getBlog() {
-     *     return blogService.getAllBlogPosts();
-     * }
-     * ```
-     * will be converted to:
-     * ```plantuml
-     * + getBlog(): List<BlogPost>
-     * ```
-     */
-    override fun toUML(): String {
-        return signature ?: ""
-    }
+    fun inputOutputString(): String {
+        var result = "```uml\n"
+        this.inputOutputClasses.forEach {
+            val context = ClassContextProvider(false).from(it)
+            val element = context.root
 
-    override fun toJson(): String = Gson().toJson(
-        mapOf(
-            "text" to text,
-            "name" to name,
-            "signature" to signature,
-            "returnType" to returnType,
-            "paramNames" to paramNames,
-            "language" to language,
-            "class" to classContext?.toJson()
-        )
-    )
+            if (!isInProject(element.containingFile?.virtualFile!!, project)) {
+                return@forEach
+            }
+
+            context.let { classContext ->
+                result += classContext.format() + "\n"
+            }
+        }
+
+        return "$result\n```\n"
+    }
 }

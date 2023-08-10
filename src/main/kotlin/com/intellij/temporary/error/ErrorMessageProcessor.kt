@@ -3,7 +3,7 @@ package com.intellij.temporary.error
 
 import cc.unitmesh.devti.llms.tokenizer.LLM_MAX_TOKEN
 import cc.unitmesh.devti.llms.tokenizer.TokenizerImpl
-import cc.unitmesh.devti.prompting.model.RuntimeErrorExplanationPrompt
+import cc.unitmesh.devti.prompting.BasePromptText
 import com.intellij.execution.filters.FileHyperlinkInfo
 import com.intellij.execution.impl.ConsoleViewImpl
 import com.intellij.execution.impl.EditorHyperlinkSupport
@@ -19,6 +19,7 @@ import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.refactoring.suggested.range
+import cc.unitmesh.devti.isInProject
 import kotlin.math.max
 
 object ErrorMessageProcessor {
@@ -37,7 +38,7 @@ object ErrorMessageProcessor {
     private fun extractTextFromRunPanel(
         project: Project, lineFrom: Int,
         lineTo: Int?,
-        consoleEditor: Editor?
+        consoleEditor: Editor?,
     ): String? {
         var editor = consoleEditor
         if (editor == null) editor = getConsoleEditor(project)
@@ -61,19 +62,16 @@ object ErrorMessageProcessor {
 
     fun extracted(
         project: Project, description: ErrorDescription,
-    ): RuntimeErrorExplanationPrompt? {
-        val consoleLineFrom = description.consoleLineFrom
-        val consoleLineTo = description.consoleLineTo
-        val consoleEditor = description.editor
-
+    ): BasePromptText? {
         val extractedText =
-            extractTextFromRunPanel(project, consoleLineFrom, consoleLineTo, consoleEditor) ?: return null
+            extractTextFromRunPanel(project, description.consoleLineFrom, description.consoleLineTo, description.editor)
+                ?: return null
 
         val extractedErrorPlaces: List<ErrorPlace> =
-            extractErrorPlaces(project, consoleLineFrom, consoleLineTo, consoleEditor)
+            extractErrorPlaces(project, description.consoleLineFrom, description.consoleLineTo, description.editor)
 
-        val errorPromptConstructor = ErrorPromptConstructor(LLM_MAX_TOKEN, TokenizerImpl.INSTANCE)
-        return errorPromptConstructor.makePrompt(extractedText, extractedErrorPlaces)
+        val errorPromptBuilder = ErrorPromptBuilder(LLM_MAX_TOKEN, TokenizerImpl.INSTANCE)
+        return errorPromptBuilder.buildPrompt(extractedText, extractedErrorPlaces)
     }
 
     private fun getFileHyperlinkInfo(rangeHighlighter: RangeHighlighter): FileHyperlinkInfo? {
@@ -84,7 +82,7 @@ object ErrorMessageProcessor {
     }
 
     private fun extractErrorPlaceFromHighlighter(
-        consoleText: String, highlighter: RangeHighlighter, project: Project
+        consoleText: String, highlighter: RangeHighlighter, project: Project,
     ): ErrorPlace? {
         val fileHyperlinkInfo: FileHyperlinkInfo = getFileHyperlinkInfo(highlighter) ?: return null
         val descriptor = fileHyperlinkInfo.descriptor ?: return null
@@ -96,13 +94,13 @@ object ErrorMessageProcessor {
         val hyperlinkText = consoleText.substring(range.startOffset, range.endOffset)
         val projectFileIndex: ProjectFileIndex = ProjectFileIndex.getInstance(project)
         val isProjectFile =
-            projectFileIndex.isInProject(virtualFile, project) && !projectFileIndex.isInLibrary(virtualFile)
+            isInProject(virtualFile, project) && !projectFileIndex.isInLibrary(virtualFile)
 
         return ErrorPlace(hyperlinkText, lineNumber, isProjectFile, virtualFile, project)
     }
 
     private fun extractErrorPlaces(
-        project: Project, consoleLineFrom: Int, consoleLineTo: Int?, consoleEditor: Editor?
+        project: Project, consoleLineFrom: Int, consoleLineTo: Int?, consoleEditor: Editor?,
     ): List<ErrorPlace> {
         val editor = consoleEditor ?: getConsoleEditor(project) ?: return emptyList()
 

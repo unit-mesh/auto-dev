@@ -12,10 +12,6 @@
                                  id="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                                  displayName="AutoDev"/>
 
-        <applicationService
-                serviceInterface="cc.unitmesh.devti.editor.inlay.LLMInlayManager"
-                serviceImplementation="cc.unitmesh.devti.editor.inlay.LLMInlayManagerImpl"/>
-
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.AutoDevSettingsState"/>
 
         <runConfigurationProducer
@@ -35,9 +31,6 @@
         <notificationGroup id="AI notification group" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
                            key="notification.group.name"/>
 
-        <!--        <editorFactoryListener implementation="cc.unitmesh.devti.editor.inlay.AutoDevEditorListener"/>-->
-        <!--        <typedHandler order="first, before completionAutoPopup"-->
-        <!--                      implementation="cc.unitmesh.devti.editor.inlay.TypeOverHandler"/>-->
 
         <intentionAction>
             <className>cc.unitmesh.devti.intentions.AutoDevIntentionHelper</className>
@@ -45,11 +38,11 @@
         </intentionAction>
 
 
-        <highlightErrorFilter implementation="cc.unitmesh.devti.gui.error.CodeBlockHighlightErrorFilter"/>
-        <daemon.highlightInfoFilter implementation="cc.unitmesh.devti.gui.error.CodeBlockHighlightingFilter"/>
+        <highlightErrorFilter implementation="cc.unitmesh.devti.gui.snippet.error.CodeBlockHighlightErrorFilter"/>
+        <daemon.highlightInfoFilter implementation="cc.unitmesh.devti.gui.snippet.error.CodeBlockHighlightingFilter"/>
         <defaultHighlightingSettingProvider
-                implementation="cc.unitmesh.devti.gui.error.CodeBlockHighlightingSettingsProvider"/>
-        <daemon.intentionActionFilter implementation="cc.unitmesh.devti.gui.error.CodeBlockIntentionActionFilter"/>
+                implementation="cc.unitmesh.devti.gui.snippet.error.CodeBlockHighlightingSettingsProvider"/>
+        <daemon.intentionActionFilter implementation="cc.unitmesh.devti.gui.snippet.error.CodeBlockIntentionActionFilter"/>
 
     </extensions>
 
@@ -117,11 +110,6 @@
                         dynamic="true"/>
     </extensionPoints>
 
-    <!--    <projectListeners>-->
-    <!--        <listener topic="com.intellij.openapi.command.CommandListener"-->
-    <!--                  class="cc.unitmesh.devti.editor.inlay.LLMCommandListener"/>-->
-    <!--    </projectListeners>-->
-
     <extensions defaultExtensionNs="cc.unitmesh">
         <autoDevIntention>
             <className>cc.unitmesh.devti.intentions.action.NewChatWithCodeIntention</className>
@@ -134,17 +122,12 @@
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
         <autoDevIntention>
-            <className>cc.unitmesh.devti.intentions.action.CodeCompletionInlayIntention</className>
-            <bundleName>messages.AutoDevBundle</bundleName>
-            <categoryKey>intention.category.llm</categoryKey>
-        </autoDevIntention>
-        <autoDevIntention>
             <className>cc.unitmesh.devti.intentions.action.AutoTestThisIntention</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
         <autoDevIntention>
-            <className>cc.unitmesh.devti.intentions.action.LivingDocumentationIntention</className>
+            <className>cc.unitmesh.devti.intentions.action.DefaultDocumentationIntention</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
@@ -153,13 +136,6 @@
     </extensions>
 
     <actions>
-        <action id="llm.applyInlays"
-                class="cc.unitmesh.devti.actions.LLMApplyInlaysAction">
-            <keyboard-shortcut first-keystroke="TAB" keymap="$default"/>
-            <override-text place="MainMenu" text="Apply Completions to Editor"/>
-            <override-text place="EditorPopup" text="Accept"/>
-        </action>
-
         <group id="AutoDevIntentionsActionGroup" class="cc.unitmesh.devti.intentions.IntentionsActionGroup"
                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT" searchable="false">
             <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
@@ -189,14 +165,14 @@
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </group>
 
-        <action id="cc.unitmesh.devti.actions.chat.FixThisAction"
-                class="cc.unitmesh.devti.actions.chat.FixThisAction" text="Fix This (AutoDev)"
+        <action id="cc.unitmesh.devti.actions.console.FixThisAction"
+                class="cc.unitmesh.devti.actions.console.FixThisAction" text="Fix This (AutoDev)"
                 description="Ask AI fi this code">
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
         </action>
 
         <action id="autodev.Vcs.CommitMessage"
-                class="cc.unitmesh.devti.vcs.CommitMessageSuggestionAction" text="Commit Message (AutoDev)"
+                class="cc.unitmesh.devti.actions.vcs.CommitMessageSuggestionAction" text="Commit Message (AutoDev)"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                 description="Ask AI generate commit message">
 
@@ -204,7 +180,7 @@
         </action>
 
         <action id="autodev.Vcs.LLMChangelog"
-                class="cc.unitmesh.devti.vcs.ReleaseNoteSuggestionAction" text="Generate Release Note (AutoDev)"
+                class="cc.unitmesh.devti.actions.vcs.ReleaseNoteSuggestionAction" text="Generate Release Note (AutoDev)"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                 description="Ask AI generate release note">
 

@@ -9,7 +9,6 @@ import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl
 import com.intellij.openapi.application.ReadAction
-import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
@@ -26,7 +25,6 @@ import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.fileTypes.UnknownFileType
 import com.intellij.openapi.observable.properties.GraphProperty
 import com.intellij.openapi.observable.properties.PropertyGraph
-import com.intellij.openapi.observable.util.whenDisposed
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
@@ -36,9 +34,8 @@ import com.intellij.util.messages.Topic
 import com.intellij.util.ui.JBUI
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.JComponent
-import kotlin.jvm.functions.Function1
 
-open class CodeBlockView(
+class CodeBlockView(
     private val block: CodeBlock,
     private val project: Project,
     private val disposable: Disposable
@@ -47,7 +44,7 @@ open class CodeBlockView(
     private var editorInfo: CodePartEditorInfo? = null
 
     init {
-        getBlock().addTextListener {
+        block.addTextListener {
             if (editorInfo == null) return@addTextListener
             updateOrCreateCodeView()
         }
@@ -198,41 +195,6 @@ open class CodeBlockView(
 
             return CodePartEditorInfo(graphProperty, editorFragment.getContent(), editor, createCodeViewerFile)
         }
-
-        fun createStrippedCodeViewer(
-            project: Project,
-            graphProperty: GraphProperty<String>,
-            disposable: Disposable,
-            language: Language
-        ): CodePartEditorInfo {
-            val createCodeViewerFile: LightVirtualFile = createCodeViewerFile(language, graphProperty.get())
-            val document: Document = createCodeViewerFile.findDocument()
-                ?: throw java.lang.IllegalStateException("Can't create inmemory document")
-            val editor: EditorEx = createCodeViewerEditor(
-                project,
-                createCodeViewerFile,
-                document,
-                disposable
-            )
-            graphProperty.afterChange { newDocText -> updateDocument(project, document, newDocText) }
-            val component = editor.component
-            return CodePartEditorInfo(graphProperty, component, editor, createCodeViewerFile)
-        }
-
-        fun updateDocument(project: Project, document: Document, newDocText: String) {
-            if (newDocText.startsWith(document.text)) {
-                val newPart = newDocText.substring(document.text.length)
-                WriteCommandAction.runWriteCommandAction(project) {
-                    document.insertString(document.textLength, newPart)
-                }
-                return
-            }
-
-            WriteCommandAction.runWriteCommandAction(project) {
-                document.setText(newDocText)
-            }
-        }
-
     }
 }
 

@@ -2,7 +2,7 @@ package cc.unitmesh.idea.promting
 
 import cc.unitmesh.devti.context.model.DtClass
 import cc.unitmesh.devti.provider.PromptStrategy
-import cc.unitmesh.devti.prompting.model.FinalCodePrompt
+import cc.unitmesh.devti.prompting.CodePromptText
 import cc.unitmesh.idea.fromJavaFile
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiClass
@@ -16,10 +16,10 @@ class JvmPromptStrategy : PromptStrategy() {
         return 3072
     }
 
-    override fun advice(prefixCode: String, suffixCode: String): FinalCodePrompt {
+    override fun advice(prefixCode: String, suffixCode: String): CodePromptText {
         val tokenCount: Int = this.count(prefixCode)
         if (tokenCount < tokenLength) {
-            return FinalCodePrompt(prefixCode, suffixCode)
+            return CodePromptText(prefixCode, suffixCode)
         }
 
         // remove all `import` syntax in java code, should contain with new line
@@ -28,14 +28,14 @@ class JvmPromptStrategy : PromptStrategy() {
         val tokenCountWithoutImport: Int = this.count(prefixCodeWithoutImport)
 
         if (tokenCountWithoutImport < tokenLength) {
-            return FinalCodePrompt(prefixCodeWithoutImport, suffixCode)
+            return CodePromptText(prefixCodeWithoutImport, suffixCode)
         }
 
         // keep only the service calling?
-        return FinalCodePrompt(prefixCodeWithoutImport, suffixCode)
+        return CodePromptText(prefixCodeWithoutImport, suffixCode)
     }
 
-    override fun advice(psiFile: PsiElement, calleeName: String): FinalCodePrompt {
+    override fun advice(psiFile: PsiElement, calleeName: String): CodePromptText {
         return when (psiFile) {
             is PsiJavaFile -> {
                 adviceFile(psiFile, calleeName)
@@ -46,38 +46,38 @@ class JvmPromptStrategy : PromptStrategy() {
             }
 
             else -> {
-                FinalCodePrompt("", "")
+                CodePromptText("", "")
             }
         }
     }
 
-    private fun adviceFile(javaFile: PsiJavaFile, calleeName: String = ""): FinalCodePrompt {
+    private fun adviceFile(javaFile: PsiJavaFile, calleeName: String = ""): CodePromptText {
         val code = javaFile.text
         if (this.count(code) < tokenLength) {
-            return FinalCodePrompt(code, "")
+            return CodePromptText(code, "")
         }
 
         // strategy 1: remove class code without the imports
         val javaCode = javaFile.classes[0]
         val countTokens = this.count(javaCode.text)
         if (countTokens < tokenLength) {
-            return FinalCodePrompt(javaCode.text, "")
+            return CodePromptText(javaCode.text, "")
         }
 
         return adviceClass(javaCode, calleeName)
     }
 
-    fun adviceClass(javaCode: PsiClass, calleeName: String = ""): FinalCodePrompt {
+    fun adviceClass(javaCode: PsiClass, calleeName: String = ""): CodePromptText {
         val codeString = javaCode.text
         val textbase = advice(codeString, "")
         if (this.count(textbase.prefixCode) < tokenLength) {
-            return FinalCodePrompt(codeString, "")
+            return CodePromptText(codeString, "")
         }
 
         // for Web controller, service, repository, etc.
         val fields = filterFieldsByName(javaCode, calleeName)
         if (fields.isEmpty()) {
-            return FinalCodePrompt(codeString, "")
+            return CodePromptText(codeString, "")
         }
 
         val targetField = fields[0]
@@ -86,12 +86,12 @@ class JvmPromptStrategy : PromptStrategy() {
         // strategy 2: if all method contains the field, we should return all method
         val methodCodes = getByMethods(javaCode, targetFieldRegex)
         if (this.count(methodCodes) < tokenLength) {
-            return FinalCodePrompt(methodCodes, "")
+            return CodePromptText(methodCodes, "")
         }
 
         // strategy 3: if all line contains the field, we should return all line
         val lines = getByFields(codeString, targetFieldRegex)
-        return FinalCodePrompt(lines, "")
+        return CodePromptText(lines, "")
     }
 
     private fun filterFieldsByName(
@@ -132,19 +132,19 @@ class JvmPromptStrategy : PromptStrategy() {
         return lines.joinToString("") { "        {some other code}\n$it\n" }
     }
 
-    override fun advice(psiFile: PsiElement, usedMethod: List<String>, noExistMethods: List<String>): FinalCodePrompt {
+    override fun advice(psiFile: PsiElement, usedMethod: List<String>, noExistMethods: List<String>): CodePromptText {
         return when (psiFile) {
             is PsiJavaFile -> {
                 advice(psiFile, usedMethod, noExistMethods)
             }
 
             else -> {
-                FinalCodePrompt("", "")
+                CodePromptText("", "")
             }
         }
     }
 
-    fun advice(serviceFile: PsiJavaFile, usedMethod: List<String>, noExistMethods: List<String>): FinalCodePrompt {
+    fun advice(serviceFile: PsiJavaFile, usedMethod: List<String>, noExistMethods: List<String>): CodePromptText {
         val code = serviceFile.text
         val filterNeedImplementMethods = usedMethod.filter {
             noExistMethods.any { noExistMethod ->
@@ -158,11 +158,11 @@ class JvmPromptStrategy : PromptStrategy() {
             | // TODO: implement the method $suffixCode
         """.trimMargin()
         if (this.count(finalPrompt) < tokenLength) {
-            return FinalCodePrompt(code, suffixCode)
+            return CodePromptText(code, suffixCode)
         }
 
         val javaCode = DtClass.fromJavaFile(serviceFile).format()
 
-        return FinalCodePrompt(javaCode, suffixCode)
+        return CodePromptText(javaCode, suffixCode)
     }
 }

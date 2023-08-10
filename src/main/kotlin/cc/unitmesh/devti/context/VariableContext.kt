@@ -34,19 +34,11 @@ class VariableContext(
         }
     }
 
-    override fun toQuery(): String {
+    override fun format(): String {
         return """
             var name: ${name ?: "_"}
             var method name: ${methodContext?.name ?: "_"}
             var class name: ${classContext?.name ?: "_"}
         """.trimIndent()
     }
-
-    override fun toJson(): String = Gson().toJson(
-        mapOf(
-            "name" to name,
-            "methodName" to (methodContext?.name),
-            "className" to (classContext?.name)
-        )
-    )
 }

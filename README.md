@@ -50,6 +50,7 @@ Features:
 ### Customize
 
 - Custom Action: [docs/custom-action.md](docs/custom-action.md)
+- Custom Documentation: [docs/custom-living-documentation.md](docs/custom-living-documentation.md)
 - Custom LLM Server: [docs/custom-llm-server.md](docs/custom-llm-server.md)
 - Custom Language: [docs/custom-language.md](docs/custom-language.md)
 
@@ -80,7 +81,11 @@ Video demo (Bilibili) - 中文
 - SimilarFile inspired by: JetBrains and GitHub Copilot
 
 **Known License issues**: JetBrain plugin development is no walk in the park! Oops, we cheekily borrowed some code from 
-the GitHub Copilot, JetBrains Community version and the super cool JetBrains AI Assistant plugin in our codebase. 
-But fret not, we are working our magic to clean it up diligently! 🧙‍♂️✨
+the JetBrains Community version and the super cool JetBrains AI Assistant plugin in our codebase. 
+But fret not, we are working our magic to clean it up diligently! 🧙‍♂️✨. 
+
+Those code will be removed in the future, you
+ can check it in `src/main/kotlin/com/intellij/temporary`, if you want to use this plugin in your company, 
+please remove those code to avoid any legal issues.
 
 This code is distributed under the MPL 2.0 license. See `LICENSE` in this directory.

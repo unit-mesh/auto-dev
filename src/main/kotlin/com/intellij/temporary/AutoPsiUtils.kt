@@ -11,8 +11,8 @@ import com.intellij.psi.util.PsiUtilBase
 
 
 object AutoPsiUtils {
-    fun getStartOffset(element: PsiElement): Int = element.textRange.startOffset
-    fun getEndOffset(element: PsiElement): Int = element.textRange.endOffset
+    private fun getStartOffset(element: PsiElement): Int = element.textRange.startOffset
+    private fun getEndOffset(element: PsiElement): Int = element.textRange.endOffset
 
     fun getLineStartOffset(psiFile: PsiFile, line: Int): Int? {
         var document = psiFile.viewProvider.document
@@ -53,7 +53,6 @@ object AutoPsiUtils {
         return document.getLineNumber(index)
     }
 
-    const val EMPTY_DATA = "_"
     fun addLineNumbers(string: String): String {
         return string.lines().mapIndexed { index, line -> "${index + 1} $line" }.joinToString("\n")
     }

@@ -1,39 +1,65 @@
 package cc.unitmesh.idea.provider
 
+import cc.unitmesh.devti.custom.LivingDocumentationType
 import cc.unitmesh.devti.provider.LivingDocumentation
-import cc.unitmesh.devti.provider.LivingDocumentationType
 import com.intellij.codeInsight.daemon.impl.CollectHighlightsUtil
-import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.SelectionModel
 import com.intellij.psi.*
+import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.IncorrectOperationException
 
 class JavaLivingDocumentation : LivingDocumentation {
+    override val docToolName: String = "javadoc"
+    override val forbiddenRules: List<String> = listOf(
+        "do not return example code",
+        "do not use @author and @version tags"
+    )
+
     override fun startEndString(type: LivingDocumentationType): Pair<String, String> {
         return when (type) {
-            LivingDocumentationType.NORMAL -> Pair("/**", "*/")
+            LivingDocumentationType.COMMENT -> Pair("/**", "*/")
             LivingDocumentationType.ANNOTATED -> Pair("", "")
-            LivingDocumentationType.LIVING -> Pair("", "")
+            LivingDocumentationType.CUSTOM -> Pair("", "")
         }
     }
 
-    override fun updateDoc(psiElement: PsiElement, str: String) {
+    override fun updateDoc(psiElement: PsiElement, str: String, type: LivingDocumentationType, editor: Editor) {
         val project = psiElement.project
+        val codeStyleManager = CodeStyleManager.getInstance(project)
+        val file = psiElement.containingFile
         WriteCommandAction.runWriteCommandAction(project, "Living Document", "cc.unitmesh.livingDoc", {
-            val psiElementFactory = JavaPsiFacade.getElementFactory(project)
-            val newDocComment = psiElementFactory.createDocCommentFromText(str)
+            val startOffset = psiElement.textRange.startOffset
+            val newEndOffset = startOffset + str.length
 
-            if (psiElement is PsiDocCommentOwner) {
-                val oldDocComment = psiElement.docComment
-                if (oldDocComment != null) {
-                    oldDocComment.replace(newDocComment)
-                } else {
-                    psiElement.addBefore(newDocComment, psiElement.firstChild)
+            when (type) {
+                LivingDocumentationType.COMMENT -> {
+                    val psiElementFactory = JavaPsiFacade.getElementFactory(project)
+                    val newDocComment = psiElementFactory.createDocCommentFromText(str)
+
+                    if (psiElement is PsiDocCommentOwner) {
+                        val oldDocComment = psiElement.docComment
+                        if (oldDocComment != null) {
+                            oldDocComment.replace(newDocComment)
+                        } else {
+                            psiElement.addBefore(newDocComment, psiElement.firstChild)
+                        }
+                    } else {
+                        throw IncorrectOperationException("Unable to update documentation")
+                    }
                 }
-            } else {
-                throw IncorrectOperationException("Unable to update documentation")
+
+                LivingDocumentationType.ANNOTATED -> {
+                    editor.document.insertString(startOffset, str)
+                    codeStyleManager.reformatText(file, startOffset, newEndOffset)
+                }
+
+                LivingDocumentationType.CUSTOM -> {
+                    editor.document.insertString(startOffset, str)
+                    codeStyleManager.reformatText(file, startOffset, newEndOffset)
+                }
             }
         })
     }
@@ -50,7 +76,7 @@ class JavaLivingDocumentation : LivingDocumentation {
 
     }
 
-    fun containsElement(selectionModel: SelectionModel, element: PsiElement): Boolean {
+    private fun containsElement(selectionModel: SelectionModel, element: PsiElement): Boolean {
         return selectionModel.selectionStart <= element.textRange.startOffset && element.textRange.endOffset <= selectionModel.selectionEnd
     }
 

@@ -31,7 +31,6 @@ class RustContextPrompter : ContextPrompter() {
     }
 
     override fun displayPrompt(): String {
-
         return runBlocking {
             additionContext = collectionContext(creationContext)
             return@runBlocking "${action!!.instruction(lang)}\n```$lang\n$selectedText\n```"

@@ -22,7 +22,7 @@ class ClassContext(
         MethodContextProvider(false, gatherUsages = false).from(it).signature
     }
 
-    override fun toQuery(): String {
+    override fun format(): String {
         val className = name ?: "_"
         val classFields = getFieldNames().joinToString(separator = "\n  ")
         val methodSignatures = getMethodSignatures()
@@ -37,12 +37,4 @@ class ClassContext(
         |}
     """.trimMargin()
     }
-
-    override fun toJson(): String = Gson().toJson({
-        mapOf(
-            "name" to name,
-            "methods" to getMethodSignatures(),
-            "fields" to getFieldNames()
-        )
-    }).toString()
 }

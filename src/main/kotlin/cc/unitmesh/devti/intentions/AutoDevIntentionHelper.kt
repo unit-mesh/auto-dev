@@ -2,6 +2,7 @@ package cc.unitmesh.devti.intentions
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
+import cc.unitmesh.devti.custom.CustomDocumentationIntention
 import cc.unitmesh.devti.custom.CustomIntention
 import cc.unitmesh.devti.intentions.ui.CustomPopupStep
 import cc.unitmesh.devti.custom.CustomPromptConfig
@@ -54,11 +55,16 @@ class AutoDevIntentionHelper : IntentionAction, Iconable {
                 .filter { it.isAvailable(project, editor, file) }
                 .toList()
 
-            val customIntentions: List<IntentionAction> = CustomPromptConfig.load().prompts.map {
+            val promptConfig = CustomPromptConfig.load()
+            val customIntentions: List<IntentionAction> = promptConfig.prompts.map {
                 CustomIntention.create(it)
             }
 
-            val actionList = builtinIntentions + customIntentions
+            val livingDocIntentions: List<IntentionAction> = promptConfig.documentations?.map {
+                CustomDocumentationIntention.create(it)
+            } ?: emptyList()
+
+            val actionList = builtinIntentions + customIntentions + livingDocIntentions
             return actionList.map { it as AbstractChatIntention }.sortedByDescending { it.priority() }
         }
     }

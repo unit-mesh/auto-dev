@@ -31,13 +31,6 @@ class AIAssistantFoldLabel(side: ChatRole) : JBLabel("", 0) {
         setOpaque(true)
         isVisible = false
     }
-
-    override fun setBackground(bg: Color?) {
-    }
-
-    fun setBackgroundReal(bg: Color) {
-        super.setBackground(bg)
-    }
 }
 
 

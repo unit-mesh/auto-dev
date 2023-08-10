@@ -24,11 +24,11 @@ class OcClassContextBuilder : ClassContextBuilder {
 
         val functionDecls: List<PsiElement> =
             getChildrenOfTypeAsList(locateDefinition, OCFunctionDeclaration::class.java)
-        val decls: List<*> = getChildrenOfTypeAsList(locateDefinition, OCDeclaration::class.java)
+        val decls: List<OCDeclaration> = getChildrenOfTypeAsList(locateDefinition, OCDeclaration::class.java)
 
         val fields: MutableList<PsiElement> = mutableListOf()
         for (decl in decls) {
-            if ((decl as OCDeclaration).declarators.isNotEmpty()) {
+            if (decl.declarators.isNotEmpty()) {
                 fields.add(decl)
             }
         }

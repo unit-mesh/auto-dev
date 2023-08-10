@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.context
 
-import cc.unitmesh.devti.context.base.LLMQueryContext
-import com.google.gson.Gson
+import cc.unitmesh.devti.context.base.LLMCodeContext
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 
@@ -13,12 +12,12 @@ class FileContext(
     val imports: List<PsiElement> = emptyList(),
     val classes: List<PsiElement> = emptyList(),
     val methods: List<PsiElement> = emptyList(),
-) : LLMQueryContext {
+) : LLMCodeContext {
     private fun getClassDetail(): List<String> = classes.map {
-        ClassContextProvider(false).from(it).toQuery()
+        ClassContextProvider(false).from(it).format()
     }
 
-    override fun toQuery(): String {
+    override fun format(): String {
         fun getFieldString(fieldName: String, fieldValue: String): String {
             return if (fieldValue.isNotBlank()) {
                 "$fieldName: $fieldValue"
@@ -33,7 +32,10 @@ class FileContext(
             if (imports.isNotEmpty()) imports.joinToString(" ", transform = { it.text }) else ""
         )
         val classDetails =
-            getFieldString("file classes", if (getClassDetail().isNotEmpty()) getClassDetail().joinToString(", ") else "")
+            getFieldString(
+                "file classes",
+                if (getClassDetail().isNotEmpty()) getClassDetail().joinToString(", ") else ""
+            )
         val filePath = getFieldString("file path", path)
 
         return buildString {
@@ -43,15 +45,5 @@ class FileContext(
             if (classDetails.isNotEmpty()) append("$classDetails\n")
             append("$filePath\n")
         }
-    }
-
-    override fun toJson(): String {
-        return Gson().toJson(
-            mapOf(
-                "name" to name,
-                "path" to path,
-                "package" to packageString
-            )
-        )
     }
 }
