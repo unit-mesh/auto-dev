@@ -1,15 +1,11 @@
 package cc.unitmesh.devti.settings
 
 import cc.unitmesh.devti.AutoDevBundle
-import com.intellij.collaboration.messages.CollaborationToolsBundle
 import com.intellij.json.JsonLanguage
-import com.intellij.jsonpath.JsonPathFileType
-import com.intellij.jsonpath.psi.JsonPathFile
 import com.intellij.openapi.editor.colors.EditorColorsUtil
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.ui.ComboBox
-import com.intellij.ui.EditorTextField
 import com.intellij.ui.LanguageTextField
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPasswordField
@@ -38,15 +34,16 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
     private val customEngineServer = JBTextField()
     private val customEngineToken = JBTextField()
     val project = ProjectManager.getInstance().openProjects.firstOrNull()
-
-    private val customEngineResponseFormat by lazy {
-        object : EditorTextField(project, JsonPathFileType.INSTANCE) {
-
-        }.apply {
-            setOneLineMode(true)
-            setPlaceholder(AutoDevBundle.message("autodev.custom.response.format.placeholder"))
-        }
-    }
+        private val customEngineResponseFormat = JBTextField()
+    // the JsonPathFileType
+//    private val customEngineResponseFormat by lazy {
+//        object : EditorTextField(project, JsonPathFileType.INSTANCE) {
+//
+//        }.apply {
+//            setOneLineMode(true)
+//            setPlaceholder(AutoDevBundle.message("autodev.custom.response.format.placeholder"))
+//        }
+//    }
 
     private val language = ComboBox(HUMAN_LANGUAGES)
     private val maxTokenLengthInput = JBTextField()
