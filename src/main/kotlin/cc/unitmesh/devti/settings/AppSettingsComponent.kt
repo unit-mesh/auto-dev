@@ -10,9 +10,6 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPasswordField
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.FormBuilder
-import com.jetbrains.jsonSchema.JsonSchemaMappingsProjectConfiguration
-import com.jetbrains.jsonSchema.UserDefinedJsonSchemaConfiguration
-import com.jetbrains.jsonSchema.impl.JsonSchemaVersion
 import java.awt.Dimension
 import java.awt.FontMetrics
 import javax.swing.JComponent
@@ -35,7 +32,7 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
     private val aiEngine = ComboBox(AI_ENGINES)
     private val customEngineServer = JBTextField()
     private val customEngineToken = JBTextField()
-    private val customEngineResponse = JBTextField()
+    private val customEngineResponseFormat = JBTextField()
     private val language = ComboBox(HUMAN_LANGUAGES)
     private val maxTokenLengthInput = JBTextField()
 //
@@ -93,7 +90,12 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
             .addSeparator()
             .addLabeledComponent(JBLabel("Custom Engine Server: "), customEngineServer, 1, false)
             .addLabeledComponent(JBLabel("Custom Engine Token: "), customEngineToken, 1, false)
-            .addLabeledComponent(JBLabel("Custom Engine Response (Json Path): "), customEngineResponse, 1, false)
+            .addLabeledComponent(
+                JBLabel("Custom Engine Response Format (Json Path): "),
+                customEngineResponseFormat,
+                1,
+                false
+            )
             .addVerticalGap(2)
             .addSeparator()
             .addLabeledComponent(JBLabel("Customize Prompt (Json): "), customEnginePrompt, 1, true)
@@ -162,19 +164,19 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
         customEngineToken.text = newText
     }
 
-    private fun getCustomEngineResponse(): String {
-        return customEngineResponse.text
+    private fun getCustomEngineResponseFormat(): String {
+        return customEngineResponseFormat.text
     }
 
-    private fun setCustomEngineResponse(newText: String) {
-        customEngineResponse.text = newText
+    private fun setCustomEngineResponseFormat(newText: String) {
+        customEngineResponseFormat.text = newText
     }
 
     private fun getCustomEnginePrompt(): String {
         return customEnginePrompt.text
     }
 
-    private fun setCustomEnginePrompt(newText: String) {
+    private fun setCustomPrompts(newText: String) {
         customEnginePrompt.text = newText
     }
 
@@ -203,7 +205,7 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
                 settings.aiEngine != getAiEngine() ||
                 settings.customEngineServer != getCustomEngineServer() ||
                 settings.customEngineToken != getCustomEngineToken() ||
-                settings.customEnginePrompts != getCustomEnginePrompt() ||
+                settings.customPrompts != getCustomEnginePrompt() ||
                 settings.language != getLanguage() ||
                 settings.maxTokenLength != getMaxTokenLength()
     }
@@ -220,7 +222,8 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
             aiEngine = getAiEngine()
             customEngineServer = getCustomEngineServer()
             customEngineToken = getCustomEngineToken()
-            customEnginePrompts = getCustomEnginePrompt()
+            customPrompts = getCustomEnginePrompt()
+            customEngineResponseFormat = getCustomEngineResponseFormat()
             language = getLanguage()
             maxTokenLength = getMaxTokenLength()
         }
@@ -238,7 +241,8 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
             setAiEngine(it.aiEngine)
             setCustomEngineServer(it.customEngineServer)
             setCustomEngineToken(it.customEngineToken)
-            setCustomEnginePrompt(it.customEnginePrompts)
+            setCustomPrompts(it.customPrompts)
+            setCustomEngineResponseFormat(it.customEngineResponseFormat)
             setLanguage(it.language)
             setMaxTokenLength(it.maxTokenLength)
         }

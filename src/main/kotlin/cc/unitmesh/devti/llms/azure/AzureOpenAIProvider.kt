@@ -49,7 +49,7 @@ class AzureOpenAIProvider(val project: Project) : LLMProvider {
     private val openAiVersion: String
 
     init {
-        val prompts = autoDevSettingsState.customEnginePrompts
+        val prompts = autoDevSettingsState.customPrompts
         openAiVersion = AutoDevSettingsState.getInstance().openAiModel
         customPromptConfig = CustomPromptConfig.tryParse(prompts)
     }

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.jayway.jsonpath.JsonPath
 import com.theokanning.openai.completion.chat.ChatCompletionResult
 import com.theokanning.openai.service.SSE
 import io.reactivex.BackpressureStrategy
@@ -34,13 +35,14 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private val url = autoDevSettingsState.customEngineServer
     private val key = autoDevSettingsState.customEngineToken
+    private val engineFormat = autoDevSettingsState.customEngineResponseFormat
     private var customPromptConfig: CustomPromptConfig? = null
     private var client = OkHttpClient()
     private val timeout = Duration.ofSeconds(600)
     private val messages: MutableList<Message> = ArrayList()
 
     init {
-        val prompts = autoDevSettingsState.customEnginePrompts
+        val prompts = autoDevSettingsState.customPrompts
         customPromptConfig = CustomPromptConfig.tryParse(prompts)
     }
 
@@ -84,11 +86,18 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
                     sseFlowable
                         .doOnError(Throwable::printStackTrace)
                         .blockingForEach { sse ->
-                            val result: ChatCompletionResult =
-                                ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
-                            val completion = result.choices[0].message
-                            if (completion != null && completion.content != null) {
-                                trySend(completion.content)
+                            if (engineFormat.isNotEmpty()) {
+                                JsonPath.parse(sse.data).read(engineFormat, String::class.java).let {
+                                    trySend(it)
+                                }
+                            } else {
+                                val result: ChatCompletionResult =
+                                    ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
+
+                                val completion = result.choices[0].message
+                                if (completion != null && completion.content != null) {
+                                    trySend(completion.content)
+                                }
                             }
                         }
 

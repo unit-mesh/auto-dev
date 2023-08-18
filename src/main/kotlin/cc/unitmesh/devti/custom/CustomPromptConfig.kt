@@ -20,7 +20,7 @@ data class CustomPromptConfig(
         private val logger = logger<CustomPromptConfig>()
 
         fun load(): CustomPromptConfig {
-            val config = tryParse(AutoDevSettingsState.getInstance().customEnginePrompts)
+            val config = tryParse(AutoDevSettingsState.getInstance().customPrompts)
             logger.info("Loaded prompt config: $config")
             return config
         }

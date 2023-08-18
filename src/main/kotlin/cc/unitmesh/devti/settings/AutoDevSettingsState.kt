@@ -16,7 +16,12 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
     var customOpenAiHost = ""
     var customEngineServer = ""
     var customEngineToken = ""
-    var customEnginePrompts = ""
+    var customPrompts = ""
+
+    /**
+     * should be a json path
+     */
+    var customEngineResponseFormat = ""
     var language = DEFAULT_HUMAN_LANGUAGE
     var maxTokenLength = MAX_TOKEN_LENGTH.toString()
 
