@@ -77,7 +77,7 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
         panel = FormBuilder.createFormBuilder()
             .addLabeledComponent(JBLabel("Language: "), language, 1, false)
             .addSeparator()
-            .addTooltip("For Custom LLM, config Custom Engine Server & Custom Engine Token & Custom Engine Response ")
+            .addTooltip("For Custom LLM, config Custom Engine Server & Custom Engine Token & Custom Response Format")
             .addLabeledComponent(JBLabel("AI Engine: "), aiEngine, 1, false)
             .addLabeledComponent(JBLabel("Max Token Length: "), maxTokenLengthInput, 1, false)
             .addSeparator()
@@ -91,7 +91,7 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
             .addLabeledComponent(JBLabel("Custom Engine Server: "), customEngineServer, 1, false)
             .addLabeledComponent(JBLabel("Custom Engine Token: "), customEngineToken, 1, false)
             .addLabeledComponent(
-                JBLabel("Custom Engine Response Format (Json Path): "),
+                JBLabel("Custom Response Format (Json Path): "),
                 customEngineResponseFormat,
                 1,
                 false

@@ -7,9 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
-import com.jayway.jsonpath.Option
 import com.theokanning.openai.completion.chat.ChatCompletionResult
 import com.theokanning.openai.service.SSE
 import io.reactivex.BackpressureStrategy
@@ -94,7 +92,8 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
                         .doOnError(Throwable::printStackTrace)
                         .blockingForEach { sse ->
                             if (engineFormat.isNotEmpty()) {
-                                val chunk: String = parseChunkFromData(sse!!.data)
+                                val chunk: String = JsonPath.parse(sse!!.data)?.read(engineFormat)
+                                    ?: throw Exception("Failed to parse chunk")
                                 trySend(chunk)
                             } else {
                                 val result: ChatCompletionResult =
@@ -115,18 +114,6 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
             return callbackFlow {
                 close()
             }
-        }
-    }
-
-    private fun parseChunkFromData(content: String): String {
-        try {
-            val conf = Configuration.defaultConfiguration().addOptions(Option.DEFAULT_PATH_LEAF_TO_NULL)
-            val document = conf.jsonProvider().parse(content)
-
-            return JsonPath.using(conf).parse(document).read(engineFormat)
-        } catch (e: Exception) {
-            logger.error("Failed to parse chunk from data", e)
-            return ""
         }
     }
 

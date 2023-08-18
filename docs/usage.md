@@ -33,7 +33,7 @@
 2. select `AI Engine` -> `Custom`
 3. fill `Custom Engine Server`
 4. fill `Custom Engine Token` if needed.
-5. config response format by `json.path` (optional), if not set, will use OpenAI's format as default.
+5. config `Custom Response Format` by [JsonPath](https://github.com/json-path/JsonPath) (for example: `$.choices[0].content`), if not set, will use OpenAI's format as default.
 6. Apply and OK.
 
 the request format logic:
@@ -59,9 +59,9 @@ The response format logic:
 
 ```kotlin
 if (engineFormat.isNotEmpty()) {
-    JsonPath.parse(sse.data).read(engineFormat, String::class.java).let {
-        trySend(it)
-    }
+    val chunk: String = JsonPath.parse(sse!!.data)?.read(engineFormat)
+        ?: throw Exception("Failed to parse chunk")
+    trySend(chunk)
 } else {
     val result: ChatCompletionResult =
         ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
