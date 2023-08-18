@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.settings
 
 import com.intellij.json.JsonLanguage
+import com.intellij.jsonpath.psi.JsonPathFile
 import com.intellij.openapi.editor.colors.EditorColorsUtil
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.ProjectManager
@@ -35,21 +36,9 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
     private val customEngineResponseFormat = JBTextField()
     private val language = ComboBox(HUMAN_LANGUAGES)
     private val maxTokenLengthInput = JBTextField()
-//
-//    val promptSchema = AppSettingsComponent::class.java.getResource("/customPromptSchema.json")!!.path
-//    val customPromptSchema = UserDefinedJsonSchemaConfiguration(
-//        "customPrompt",
-//        JsonSchemaVersion.SCHEMA_6,
-//        promptSchema,
-//        false,
-//        emptyList()
-//    )
 
     private val customEnginePrompt by lazy {
         val project = ProjectManager.getInstance().openProjects.firstOrNull()
-
-//        val configuration = JsonSchemaMappingsProjectConfiguration.getInstance(project!!)
-//        configuration.addConfiguration(customPromptSchema)
 
         object : LanguageTextField(JsonLanguage.INSTANCE, project, "") {
             override fun createEditor(): EditorEx {
