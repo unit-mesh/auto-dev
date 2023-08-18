@@ -86,6 +86,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
             }, BackpressureStrategy.BUFFER)
 
         try {
+            logger.warn("Starting to stream:")
             return callbackFlow {
                 withContext(Dispatchers.IO) {
                     sseFlowable
@@ -94,6 +95,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
                             if (engineFormat.isNotEmpty()) {
                                 val chunk: String = JsonPath.parse(sse!!.data)?.read(engineFormat)
                                     ?: throw Exception("Failed to parse chunk")
+                                logger.warn(" $chunk")
                                 trySend(chunk)
                             } else {
                                 val result: ChatCompletionResult =
