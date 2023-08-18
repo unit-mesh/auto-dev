@@ -192,7 +192,7 @@ project(":plugin") {
         implementation(project(":pycharm"))
         implementation(project(":webstorm"))
         implementation(project(":goland"))
-        implementation(project(":clion"))
+        implementation(project(":rust"))
     }
 
     // Collects all jars produced by compilation of project modules and merges them into singe one.
@@ -511,7 +511,7 @@ project(":kotlin") {
     }
 }
 
-project(":clion") {
+project(":rust") {
     intellij {
         version.set(clionVersion)
         plugins.set(clionPlugins)
