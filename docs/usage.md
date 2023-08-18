@@ -52,7 +52,7 @@ You can:
 
 For more, see [Custom Action](docs/custom-action.md)
 
-### AutoCRUD mode
+### AutoCRUD mode （Only support Java/Kotlin project)
 
 1. add `// devti://story/github/1` comments in your code.
 2. configure GitHub repository for Run Configuration.
