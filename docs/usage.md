@@ -33,7 +33,45 @@
 2. select `AI Engine` -> `Custom`
 3. fill `Custom Engine Server`
 4. fill `Custom Engine Token` if needed.
-5. Apply and OK.
+5. config response format by `json.path` (optional), if not set, will use OpenAI's format as default.
+6. Apply and OK.
+
+the request format logic:
+
+```kotlin
+/**
+ * request format:
+ * {
+ *  "messages": [
+ *    { "role": "user", "message": "I'm Nihillum." },
+ *    { "role": "assistant", "message": "OK" },
+ *    { "role": "user", "message": "What did I just say?" }
+ *  ]
+ *}
+ */
+@Serializable
+data class Message(val role: String, val content: String)
+val messages += Message("user", promptText)
+val requestContent = Json.encodeToString<List<Message>>(messages)
+```
+
+The response format logic:
+
+```kotlin
+if (engineFormat.isNotEmpty()) {
+    JsonPath.parse(sse.data).read(engineFormat, String::class.java).let {
+        trySend(it)
+    }
+} else {
+    val result: ChatCompletionResult =
+        ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
+
+    val completion = result.choices[0].message
+    if (completion != null && completion.content != null) {
+        trySend(completion.content)
+    }
+}
+```
 
 ## Features
 

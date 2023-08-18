@@ -54,7 +54,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun stream(promptText: String, systemPrompt: String): Flow<String> {
-        messages += Message(promptText, systemPrompt)
+        messages += Message("user", promptText)
 
         val requestContent = Json.encodeToString<List<Message>>(messages)
         val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), requestContent)
@@ -113,7 +113,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
     }
 
     fun prompt(instruction: String, input: String): String {
-        messages += Message(instruction, input)
+        messages += Message("user", instruction)
         val requestContent = Json.encodeToString<List<Message>>(messages)
         val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), requestContent)
 
