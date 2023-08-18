@@ -206,6 +206,7 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
                 settings.customEngineServer != getCustomEngineServer() ||
                 settings.customEngineToken != getCustomEngineToken() ||
                 settings.customPrompts != getCustomEnginePrompt() ||
+                settings.customEngineResponseFormat != getCustomEngineResponseFormat() ||
                 settings.language != getLanguage() ||
                 settings.maxTokenLength != getMaxTokenLength()
     }

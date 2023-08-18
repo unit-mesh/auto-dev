@@ -7,7 +7,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
+import com.jayway.jsonpath.Option
 import com.theokanning.openai.completion.chat.ChatCompletionResult
 import com.theokanning.openai.service.SSE
 import io.reactivex.BackpressureStrategy
@@ -28,7 +30,10 @@ import okhttp3.RequestBody
 import java.time.Duration
 
 @Serializable
-data class Message(val role: String, val content: String)
+data class Message(val role: String, val message: String)
+
+@Serializable
+data class CustomRequest(val messages: List<Message>)
 
 @Service(Service.Level.PROJECT)
 class CustomLLMProvider(val project: Project) : LLMProvider {
@@ -56,7 +61,9 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
     override fun stream(promptText: String, systemPrompt: String): Flow<String> {
         messages += Message("user", promptText)
 
-        val requestContent = Json.encodeToString<List<Message>>(messages)
+        val customRequest = CustomRequest(messages)
+        val requestContent = Json.encodeToString<CustomRequest>(customRequest)
+
         val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), requestContent)
         logger.warn("Requesting from $body")
 
@@ -87,9 +94,8 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
                         .doOnError(Throwable::printStackTrace)
                         .blockingForEach { sse ->
                             if (engineFormat.isNotEmpty()) {
-                                JsonPath.parse(sse.data).read(engineFormat, String::class.java).let {
-                                    trySend(it)
-                                }
+                                val chunk: String = parseChunkFromData(sse!!.data)
+                                trySend(chunk)
                             } else {
                                 val result: ChatCompletionResult =
                                     ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
@@ -112,9 +118,23 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
         }
     }
 
+    private fun parseChunkFromData(content: String): String {
+        try {
+            val conf = Configuration.defaultConfiguration().addOptions(Option.DEFAULT_PATH_LEAF_TO_NULL)
+            val document = conf.jsonProvider().parse(content)
+
+            return JsonPath.using(conf).parse(document).read(engineFormat)
+        } catch (e: Exception) {
+            logger.error("Failed to parse chunk from data", e)
+            return ""
+        }
+    }
+
     fun prompt(instruction: String, input: String): String {
         messages += Message("user", instruction)
-        val requestContent = Json.encodeToString<List<Message>>(messages)
+        val customRequest = CustomRequest(messages)
+        val requestContent = Json.encodeToString<CustomRequest>(customRequest)
+
         val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), requestContent)
 
         logger.warn("Requesting from $body")

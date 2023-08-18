@@ -6,13 +6,23 @@ from fastapi import FastAPI, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+from typing import List
 from starlette import status
 from starlette.responses import JSONResponse
 
 app = FastAPI()
 
 
-async def fetch_chat_completion(prompt: str):
+class Message(BaseModel):
+    role: str
+    message: str
+
+
+class ChatInput(BaseModel):
+    messages: List[Message]
+
+
+async def fetch_chat_completion(messages: List[Message]):
     url = "https://api.aios.chat/v1/chat/completions"
     headers = {
         'Accept': 'text/event-stream',
@@ -21,7 +31,7 @@ async def fetch_chat_completion(prompt: str):
     data = {
         "model": "gpt-3.5-turbo",
         "messages": [
-            {"role": "user", "content": prompt}
+            {"role": "user", "content": messages[-1].message},
         ],
         "temperature": 0,
         "max_tokens": 4000,
@@ -33,16 +43,20 @@ async def fetch_chat_completion(prompt: str):
 
     for event in client.events():
         try:
+            print(event.data)
             yield 'data: ' + event.data + '\n\n'
         except Exception as e:
             print("OpenAI Response (Streaming) Error: " + str(e))
 
-class ChatInput(BaseModel):
-    instruction: str
-    input: str
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    exc_str = f'{exc}'.replace('\n', ' ').replace('   ', ' ')
+    print(f"{request}: {exc_str}")
+    content = {'status_code': 10422, 'message': exc_str, 'data': None}
+    return JSONResponse(content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
 @app.post("/api/chat", response_class=Response)
-async def chat(input: ChatInput):
-    print(input)
-    return StreamingResponse(fetch_chat_completion(input.instruction), media_type="text/event-stream")
+async def chat(msg: ChatInput):
+    return StreamingResponse(fetch_chat_completion(msg.messages), media_type="text/event-stream")

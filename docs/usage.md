@@ -50,7 +50,7 @@ the request format logic:
  *}
  */
 @Serializable
-data class Message(val role: String, val content: String)
+data class Message(val role: String, val message: String)
 val messages += Message("user", promptText)
 val requestContent = Json.encodeToString<List<Message>>(messages)
 ```

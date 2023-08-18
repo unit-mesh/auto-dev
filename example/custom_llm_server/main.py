@@ -32,8 +32,6 @@ async def chat(data: List[Message]):
     }
 
     response = requests.post("http://sz.private.gluon-meson.tech:8000/messages/stream", headers=headers, json=data, stream=True)
-    print(response)
-
     client = sseclient.SSEClient(response)
 
     for event in client.events():

@@ -74,6 +74,11 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
                         emitter.onNext(sse)
                         null
                     }
+                    // starts with event:
+                    line!!.startsWith("event:") -> {
+                        // do nothing
+                        null
+                    }
 
                     else -> {
                         throw SSEFormatException("Invalid sse format! $line")
