@@ -1,11 +1,15 @@
 package cc.unitmesh.devti.settings
 
+import cc.unitmesh.devti.AutoDevBundle
+import com.intellij.collaboration.messages.CollaborationToolsBundle
 import com.intellij.json.JsonLanguage
+import com.intellij.jsonpath.JsonPathFileType
 import com.intellij.jsonpath.psi.JsonPathFile
 import com.intellij.openapi.editor.colors.EditorColorsUtil
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.ui.EditorTextField
 import com.intellij.ui.LanguageTextField
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPasswordField
@@ -33,13 +37,21 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
     private val aiEngine = ComboBox(AI_ENGINES)
     private val customEngineServer = JBTextField()
     private val customEngineToken = JBTextField()
-    private val customEngineResponseFormat = JBTextField()
+    val project = ProjectManager.getInstance().openProjects.firstOrNull()
+
+    private val customEngineResponseFormat by lazy {
+        object : EditorTextField(project, JsonPathFileType.INSTANCE) {
+
+        }.apply {
+            setOneLineMode(true)
+            setPlaceholder(AutoDevBundle.message("autodev.custom.response.format.placeholder"))
+        }
+    }
+
     private val language = ComboBox(HUMAN_LANGUAGES)
     private val maxTokenLengthInput = JBTextField()
 
     private val customEnginePrompt by lazy {
-        val project = ProjectManager.getInstance().openProjects.firstOrNull()
-
         object : LanguageTextField(JsonLanguage.INSTANCE, project, "") {
             override fun createEditor(): EditorEx {
 
@@ -47,7 +59,7 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
                     setShowPlaceholderWhenFocused(true)
                     setHorizontalScrollbarVisible(false)
                     setVerticalScrollbarVisible(true)
-                    setPlaceholder("Enter custom prompt here")
+                    setPlaceholder(AutoDevBundle.message("autodev.custom.prompt.placeholder"))
 
 
                     val scheme = EditorColorsUtil.getColorSchemeForBackground(this.colorsScheme.defaultBackground)
