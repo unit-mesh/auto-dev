@@ -35,6 +35,7 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
     private val aiEngine = ComboBox(AI_ENGINES)
     private val customEngineServer = JBTextField()
     private val customEngineToken = JBTextField()
+    private val customEngineResponse = JBTextField()
     private val language = ComboBox(HUMAN_LANGUAGES)
     private val maxTokenLengthInput = JBTextField()
 //
@@ -78,10 +79,12 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
 
         panel = FormBuilder.createFormBuilder()
             .addLabeledComponent(JBLabel("Language: "), language, 1, false)
+            .addSeparator()
+            .addTooltip("For Custom LLM, config Custom Engine Server & Custom Engine Token & Custom Engine Response ")
             .addLabeledComponent(JBLabel("AI Engine: "), aiEngine, 1, false)
             .addLabeledComponent(JBLabel("Max Token Length: "), maxTokenLengthInput, 1, false)
             .addSeparator()
-            .addTooltip("GitHub Token is for AutoDev")
+            .addTooltip("GitHub Token is for AutoCRUD Model")
             .addLabeledComponent(JBLabel("GitHub Token: "), githubToken, 1, false)
             .addSeparator()
             .addLabeledComponent(JBLabel("OpenAI Model: "), openAiModel, 1, false)
@@ -90,8 +93,10 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
             .addSeparator()
             .addLabeledComponent(JBLabel("Custom Engine Server: "), customEngineServer, 1, false)
             .addLabeledComponent(JBLabel("Custom Engine Token: "), customEngineToken, 1, false)
+            .addLabeledComponent(JBLabel("Custom Engine Response (Json Path): "), customEngineResponse, 1, false)
             .addVerticalGap(2)
-            .addLabeledComponent(JBLabel("Custom Engine Prompt (Json): "), customEnginePrompt, 1, true)
+            .addSeparator()
+            .addLabeledComponent(JBLabel("Customize Prompt (Json): "), customEnginePrompt, 1, true)
             .addComponentFillVertically(JPanel(), 0)
             .panel
 
@@ -157,6 +162,14 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
         customEngineToken.text = newText
     }
 
+    private fun getCustomEngineResponse(): String {
+        return customEngineResponse.text
+    }
+
+    private fun setCustomEngineResponse(newText: String) {
+        customEngineResponse.text = newText
+    }
+
     private fun getCustomEnginePrompt(): String {
         return customEnginePrompt.text
     }
@@ -180,6 +193,7 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
     private fun setMaxTokenLength(newText: String) {
         maxTokenLengthInput.text = newText
     }
+
 
     fun isModified(settings: AutoDevSettingsState): Boolean {
         return settings.openAiKey != getOpenAiKey() ||
