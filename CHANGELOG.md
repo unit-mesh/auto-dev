@@ -1,6 +1,42 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v1.1.2...v) (2023-08-09)
+# [](https://github.com/unit-mesh/auto-dev/compare/v1.1.4...v) (2023-08-18)
 
 ## [Unreleased]
+
+## [1.1.4](https://github.com/unit-mesh/auto-dev/compare/v1.1.3...v[1.1.4]) (2023-08-18)
+
+### Features
+- add json path for config ([46efe24](https://github.com/unit-mesh/auto-dev/commit/46efe24a63009dde13142ba941463efa11239293))
+
+## [1.1.3](https://github.com/unit-mesh/auto-dev/compare/v1.1.2...v[1.1.3]) (2023-08-18)
+
+### Bug Fixes
+- add lost for match string ([bf0e1a4](https://github.com/unit-mesh/auto-dev/commit/bf0e1a446ffc94460ec99d9f0d93364a376b507f))
+- align cutom LLM server api to OpenAI API ([a718ed1](https://github.com/unit-mesh/auto-dev/commit/a718ed1944faca6554db7b2234d2e95572a6b9dd))
+- AutoCrud Action only available when editor has selection ([cf49bd1](https://github.com/unit-mesh/auto-dev/commit/cf49bd1d86f7d56bf714ef5a099a684f10695aa5))
+- change default json path lib to Kotlin version && done [#25](https://github.com/unit-mesh/auto-dev/issues/25) ([4d5e573](https://github.com/unit-mesh/auto-dev/commit/4d5e5739562de032997a1ef82f4a9752aad61ccc))
+- **doc:** fix format issues ([6e9c1a5](https://github.com/unit-mesh/auto-dev/commit/6e9c1a50746e37700315368c723a97a4b7e9a583))
+- fix no returns ([87d688f](https://github.com/unit-mesh/auto-dev/commit/87d688f144af0465bcb9f95bf99a8e6e5936eed6))
+- fix typos ([23effbd](https://github.com/unit-mesh/auto-dev/commit/23effbd0337c19a0fa712e252f6ad0778cdadc04))
+- openai setting change not affect in same project lifecycle (will affect after reopen project) ([eb74909](https://github.com/unit-mesh/auto-dev/commit/eb74909f08d89d42fbdb10d896df8f8201ea1f3b))
+- remove correnct line in duplicated ([6758260](https://github.com/unit-mesh/auto-dev/commit/67582604967a60558af94b8f6ab36ef434a9b48d))
+- **similar:** fix lost chunk issues ([e003da9](https://github.com/unit-mesh/auto-dev/commit/e003da9ea192d18ebb99383b37d960c0bea5e1b9))
+
+### Features
+- add basic ins cancel logic for code complete ([018a82e](https://github.com/unit-mesh/auto-dev/commit/018a82e7a012cb71ef00db4ef6d437e6106e2823))
+- add json path lib as design for [#25](https://github.com/unit-mesh/auto-dev/issues/25) ([2c85f40](https://github.com/unit-mesh/auto-dev/commit/2c85f40b93ff93f9bff56451763646986e22f5d9))
+- add lost docs adn closed [#27](https://github.com/unit-mesh/auto-dev/issues/27) ([daa43c1](https://github.com/unit-mesh/auto-dev/commit/daa43c18af93f1b40dd3fd0e67e51429df9a5308))
+- add tips for Autocrud mode && closed [#28](https://github.com/unit-mesh/auto-dev/issues/28) ([bc837ca](https://github.com/unit-mesh/auto-dev/commit/bc837ca54352ca95b2cf9b904efbb6e2b7cac9e2))
+- **custom:** fix new line issues ([6da2821](https://github.com/unit-mesh/auto-dev/commit/6da282106be8b862514c8fae846c258dc14d264d))
+- **doc:** add result as context ([c8ebf40](https://github.com/unit-mesh/auto-dev/commit/c8ebf40dbc9d1954e6e9b8a83672ee3332e79d01))
+- **docs:** add living documentation example ([2f9de5d](https://github.com/unit-mesh/auto-dev/commit/2f9de5d38c88a65457239fccc3d91645ba28be8b))
+- **docs:** add living documentation examples ([1b8c42f](https://github.com/unit-mesh/auto-dev/commit/1b8c42f18ade8907497ae9ef80feb07049566466))
+- init basic doc for [#25](https://github.com/unit-mesh/auto-dev/issues/25) ([1e2199c](https://github.com/unit-mesh/auto-dev/commit/1e2199c13746424ebdae38b9a41ce31090e9989a))
+- init custom doc config ([bcee2a5](https://github.com/unit-mesh/auto-dev/commit/bcee2a5210f050893b0e03b49d0adcbe206bdb87))
+- init ui config for custom json format [#25](https://github.com/unit-mesh/auto-dev/issues/25) ([b249f72](https://github.com/unit-mesh/auto-dev/commit/b249f72987e11dec62fa8c582ba699c442fd8584))
+- **similar:** fix query size issue ([220eb29](https://github.com/unit-mesh/auto-dev/commit/220eb296e2b55adecec11af950b527cfccd6c96d))
+- try to add json path && but server crash :crying: [#25](https://github.com/unit-mesh/auto-dev/issues/25) ([88cbb9d](https://github.com/unit-mesh/auto-dev/commit/88cbb9d68865db420ca03dbfd131650529b78801))
+- try to add prompot schema ([1aff07e](https://github.com/unit-mesh/auto-dev/commit/1aff07e4e17004815cc80f6ccaa48e623942ed6e))
+- update for app settings ui [#25](https://github.com/unit-mesh/auto-dev/issues/25) ([5cef076](https://github.com/unit-mesh/auto-dev/commit/5cef07684a7f5c0ffa7f5b8fc22a66fd0cb27d06))
 
 ## [1.1.2](https://github.com/unit-mesh/auto-dev/compare/v1.1.1...v[1.1.2]) (2023-08-09)
 
@@ -11,7 +47,7 @@
 - 修复编译失败 ([ccc539b](https://github.com/unit-mesh/auto-dev/commit/ccc539bb0adba83a72b21e4664a81a255f94eaae))
 
 ### Features
-- **doc:** add basic prompt ([4fddd6d](https://github.com/unit-mesh/auto-dev/commit/4fddd6d28777fe973dc2c64f26a3e088feec7ea7))
+- **doc:** add basdic prompt ([4fddd6d](https://github.com/unit-mesh/auto-dev/commit/4fddd6d28777fe973dc2c64f26a3e088feec7ea7))
 - **doc:** init basic intention ([3c050e0](https://github.com/unit-mesh/auto-dev/commit/3c050e091dd177f582eddd0e9548db60efd02400))
 - **doc:** init java living doc ([9a37dce](https://github.com/unit-mesh/auto-dev/commit/9a37dce7135fa118109b232ba847f9067826e3db))
 - **doc:** make it works ([4d65801](https://github.com/unit-mesh/auto-dev/commit/4d658017d68da4215f536add4056a7f7703b5b5c))
@@ -520,7 +556,9 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.1.2...HEAD
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.1.4...HEAD
+[1.1.4]: https://github.com/unit-mesh/auto-dev/compare/v1.1.3...v1.1.4
+[1.1.3]: https://github.com/unit-mesh/auto-dev/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/unit-mesh/auto-dev/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/unit-mesh/auto-dev/compare/v1.0.2...v1.1.1
 [1.0.2]: https://github.com/unit-mesh/auto-dev/compare/v1.0.2-beta.1...v1.0.2
