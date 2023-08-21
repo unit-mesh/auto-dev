@@ -3,7 +3,6 @@ package cc.unitmesh.devti.llms
 import cc.unitmesh.devti.llms.azure.AzureOpenAIProvider
 import cc.unitmesh.devti.llms.custom.CustomLLMProvider
 import cc.unitmesh.devti.llms.openai.OpenAIProvider
-import cc.unitmesh.devti.llms.palm2.PaLM2Provider
 import cc.unitmesh.devti.llms.xianghuo.XingHuoProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.components.Service
