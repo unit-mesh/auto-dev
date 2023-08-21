@@ -24,6 +24,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.time.Duration
 
 
@@ -34,8 +35,11 @@ data class CustomRequest(val instruction: String, val input: String)
 @Service(Service.Level.PROJECT)
 class CustomLLMProvider(val project: Project) : LLMProvider {
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
-    private val url = autoDevSettingsState.customEngineServer
-    private val key = autoDevSettingsState.customEngineToken
+    private val url: String
+        get() = autoDevSettingsState.customEngineServer
+    private val key: String
+        get() = autoDevSettingsState.customEngineToken
+
     private var customPromptConfig: CustomPromptConfig? = null
     private var client = OkHttpClient()
     private val timeout = Duration.ofSeconds(600)
@@ -77,26 +81,22 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
                 call.enqueue(cc.unitmesh.devti.llms.azure.ResponseBodyCallback(emitter, emitDone))
             }, BackpressureStrategy.BUFFER)
 
-        try {
-            return callbackFlow {
-                withContext(Dispatchers.IO) {
-                    sseFlowable
-                        .doOnError(Throwable::printStackTrace)
-                        .blockingForEach { sse ->
-                            val result: ChatCompletionResult =
-                                ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
-                            val completion = result.choices[0].message
-                            if (completion != null && completion.content != null) {
-                                trySend(completion.content)
-                            }
-                        }
 
-                    close()
-                }
-            }
-        } catch (e: Exception) {
-            logger.error("Failed to stream", e)
-            return callbackFlow {
+        return callbackFlow {
+            // TODO inject coroutine scope
+            withContext(Dispatchers.IO) {
+                sseFlowable
+                    .doOnError {
+                        trySend("failed")
+                    }.blockingForEach { sse ->
+                        val result: ChatCompletionResult =
+                            ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
+                        val completion = result.choices[0].message
+                        if (completion != null && completion.content != null) {
+                            trySend(completion.content)
+                        }
+                    }
+
                 close()
             }
         }
@@ -105,7 +105,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
     fun prompt(instruction: String, input: String): String {
         // encode the request as JSON with kotlinx.serialization
         val requestContent = Json.encodeToString(CustomRequest(instruction, input))
-        val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), requestContent)
+        val body = requestContent.toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
 
         logger.warn("Requesting from $body")
         val builder = Request.Builder()
