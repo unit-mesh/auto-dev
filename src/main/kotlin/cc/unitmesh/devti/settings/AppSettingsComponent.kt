@@ -33,6 +33,11 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
     private val aiEngine = ComboBox(AI_ENGINES)
     private val customEngineServer = JBTextField()
     private val customEngineToken = JBTextField()
+
+    private val xingHuoAppId = JBTextField()
+    private val xingHuoApiKey = JBPasswordField()
+    private val xingHuoApiSecret = JBPasswordField()
+
     val project = ProjectManager.getInstance().openProjects.firstOrNull()
         private val customEngineResponseFormat = JBTextField()
     // the JsonPathFileType
@@ -94,6 +99,10 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
                 1,
                 false
             )
+            .addSeparator()
+            .addLabeledComponent(JBLabel("XingHuo AppId: "), xingHuoAppId, 1, false)
+            .addLabeledComponent(JBLabel("XingHuo ApiKey: "), xingHuoApiKey, 1, false)
+            .addLabeledComponent(JBLabel("XingHuo ApiSecret: "), xingHuoApiSecret, 1, false)
             .addVerticalGap(2)
             .addSeparator()
             .addLabeledComponent(JBLabel("Customize Prompt (Json): "), customEnginePrompt, 1, true)
@@ -194,6 +203,30 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
         maxTokenLengthInput.text = newText
     }
 
+    private fun setXingHuoAppId(newText: String) {
+        xingHuoAppId.text = newText
+    }
+
+    private fun getXingHuoAppId(): String {
+        return xingHuoAppId.text
+    }
+
+    private fun setXingHuoAppKey(newText: String) {
+        xingHuoApiKey.text = newText
+    }
+
+    private fun getXingHuoApiKey(): String {
+        return xingHuoApiKey.text
+    }
+
+    private fun setXingHuoApiSecret(newText: String) {
+        xingHuoApiSecret.text = newText
+    }
+
+    private fun getXingHuoAppSecret(): String {
+        return xingHuoApiSecret.text
+    }
+
 
     fun isModified(settings: AutoDevSettingsState): Boolean {
         return settings.openAiKey != getOpenAiKey() ||
@@ -206,7 +239,11 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
                 settings.customPrompts != getCustomEnginePrompt() ||
                 settings.customEngineResponseFormat != getCustomEngineResponseFormat() ||
                 settings.language != getLanguage() ||
-                settings.maxTokenLength != getMaxTokenLength()
+                settings.maxTokenLength != getMaxTokenLength() ||
+                settings.xingHuoAppId != getXingHuoAppId() ||
+                settings.xingHuoApiKey != getXingHuoApiKey() ||
+                settings.xingHuoSecrectKey != getXingHuoAppSecret()
+
     }
 
     /**
@@ -225,6 +262,9 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
             customEngineResponseFormat = getCustomEngineResponseFormat()
             language = getLanguage()
             maxTokenLength = getMaxTokenLength()
+            xingHuoAppId = getXingHuoAppId()
+            xingHuoApiKey = getXingHuoApiKey()
+            xingHuoSecrectKey = getXingHuoAppSecret()
         }
     }
 
@@ -244,6 +284,9 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
             setCustomEngineResponseFormat(it.customEngineResponseFormat)
             setLanguage(it.language)
             setMaxTokenLength(it.maxTokenLength)
+            setXingHuoAppId(it.xingHuoAppId)
+            setXingHuoAppKey(it.xingHuoApiKey)
+            setXingHuoApiSecret(it.xingHuoSecrectKey)
         }
     }
 }
