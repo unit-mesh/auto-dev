@@ -21,6 +21,7 @@
 //SOFTWARE.
 package cc.unitmesh.devti.llms.azure
 
+import com.intellij.openapi.diagnostic.logger
 import com.theokanning.openai.service.OpenAiService
 import com.theokanning.openai.service.SSE
 import com.theokanning.openai.service.SSEFormatException
@@ -73,6 +74,11 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
                         emitter.onNext(sse)
                         null
                     }
+                    // starts with event:
+                    line!!.startsWith("event:") -> {
+                        // do nothing
+                        null
+                    }
 
                     else -> {
                         throw SSEFormatException("Invalid sse format! $line")
@@ -82,6 +88,7 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
 
             emitter.onComplete()
         } catch (t: Throwable) {
+            logger<ResponseBodyCallback>().error("Error while reading SSE", t)
             onFailure(call, IOException(t))
         } finally {
             if (reader != null) {

@@ -192,7 +192,7 @@ project(":plugin") {
         implementation(project(":pycharm"))
         implementation(project(":webstorm"))
         implementation(project(":goland"))
-        implementation(project(":clion"))
+        implementation(project(":rust"))
     }
 
     // Collects all jars produced by compilation of project modules and merges them into singe one.
@@ -325,6 +325,8 @@ project(":") {
 
         implementation(libs.bundles.openai)
         implementation(libs.bundles.markdown)
+
+        implementation(libs.json.path)
 
         implementation("org.jetbrains:markdown:0.2.0.pre-55")
         implementation(libs.kotlinx.serialization.json)
@@ -511,7 +513,7 @@ project(":kotlin") {
     }
 }
 
-project(":clion") {
+project(":rust") {
     intellij {
         version.set(clionVersion)
         plugins.set(clionPlugins)

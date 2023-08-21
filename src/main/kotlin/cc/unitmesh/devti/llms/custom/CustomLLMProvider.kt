@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.jayway.jsonpath.JsonPath
 import com.theokanning.openai.completion.chat.ChatCompletionResult
 import com.theokanning.openai.service.SSE
 import io.reactivex.BackpressureStrategy
@@ -24,28 +25,27 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import java.time.Duration
 
+@Serializable
+data class Message(val role: String, val message: String)
 
 @Serializable
-data class CustomRequest(val instruction: String, val input: String)
-
+data class CustomRequest(val messages: List<Message>)
 
 @Service(Service.Level.PROJECT)
 class CustomLLMProvider(val project: Project) : LLMProvider {
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
-    private val url: String
-        get() = autoDevSettingsState.customEngineServer
-    private val key: String
-        get() = autoDevSettingsState.customEngineToken
-
+    private val url = autoDevSettingsState.customEngineServer
+    private val key = autoDevSettingsState.customEngineToken
+    private val engineFormat = autoDevSettingsState.customEngineResponseFormat
     private var customPromptConfig: CustomPromptConfig? = null
     private var client = OkHttpClient()
     private val timeout = Duration.ofSeconds(600)
+    private val messages: MutableList<Message> = ArrayList()
 
     init {
-        val prompts = autoDevSettingsState.customEnginePrompts
+        val prompts = autoDevSettingsState.customPrompts
         customPromptConfig = CustomPromptConfig.tryParse(prompts)
     }
 
@@ -57,7 +57,11 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun stream(promptText: String, systemPrompt: String): Flow<String> {
-        val requestContent = Json.encodeToString<CustomRequest>(CustomRequest(promptText, ""))
+        messages += Message("user", promptText)
+
+        val customRequest = CustomRequest(messages)
+        val requestContent = Json.encodeToString<CustomRequest>(customRequest)
+
         val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), requestContent)
         logger.warn("Requesting from $body")
 
@@ -81,31 +85,46 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
                 call.enqueue(cc.unitmesh.devti.llms.azure.ResponseBodyCallback(emitter, emitDone))
             }, BackpressureStrategy.BUFFER)
 
+        try {
+            logger.warn("Starting to stream:")
+            return callbackFlow {
+                withContext(Dispatchers.IO) {
+                    sseFlowable
+                        .doOnError(Throwable::printStackTrace)
+                        .blockingForEach { sse ->
+                            if (engineFormat.isNotEmpty()) {
+                                val chunk: String = JsonPath.parse(sse!!.data)?.read(engineFormat)
+                                    ?: throw Exception("Failed to parse chunk")
+                                logger.warn(" $chunk")
+                                trySend(chunk)
+                            } else {
+                                val result: ChatCompletionResult =
+                                    ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
 
-        return callbackFlow {
-            // TODO inject coroutine scope
-            withContext(Dispatchers.IO) {
-                sseFlowable
-                    .doOnError {
-                        trySend("failed")
-                    }.blockingForEach { sse ->
-                        val result: ChatCompletionResult =
-                            ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
-                        val completion = result.choices[0].message
-                        if (completion != null && completion.content != null) {
-                            trySend(completion.content)
+                                val completion = result.choices[0].message
+                                if (completion != null && completion.content != null) {
+                                    trySend(completion.content)
+                                }
+                            }
                         }
-                    }
 
+                    close()
+                }
+            }
+        } catch (e: Exception) {
+            logger.error("Failed to stream", e)
+            return callbackFlow {
                 close()
             }
         }
     }
 
     fun prompt(instruction: String, input: String): String {
-        // encode the request as JSON with kotlinx.serialization
-        val requestContent = Json.encodeToString(CustomRequest(instruction, input))
-        val body = requestContent.toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
+        messages += Message("user", instruction)
+        val customRequest = CustomRequest(messages)
+        val requestContent = Json.encodeToString<CustomRequest>(customRequest)
+
+        val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), requestContent)
 
         logger.warn("Requesting from $body")
         val builder = Request.Builder()

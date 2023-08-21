@@ -1,0 +1,18 @@
+<idea-plugin package="cc.unitmesh.rust">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+        <plugin id="com.intellij.clion"/>
+        <plugin id="com.intellij.cidr.base"/>
+
+        <module name="org.rust.lang"/>
+    </dependencies>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <classContextBuilder language="Rust"
+                             implementationClass="cc.unitmesh.rust.context.RustClassContextBuilder"/>
+        <methodContextBuilder language="Rust"
+                              implementationClass="cc.unitmesh.rust.context.RustMethodContextBuilder"/>
+
+        <contextPrompter language="Rust" implementation="cc.unitmesh.rust.provider.RustContextPrompter"/>
+    </extensions>
+</idea-plugin>

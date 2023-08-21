@@ -47,7 +47,7 @@ open class JavaContextPrompter : ContextPrompter() {
     }
 
     init {
-        val prompts = autoDevSettingsState.customEnginePrompts
+        val prompts = autoDevSettingsState.customPrompts
         customPromptConfig = CustomPromptConfig.tryParse(prompts)
     }
 

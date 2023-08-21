@@ -12,6 +12,6 @@ include(
     "kotlin",
     "webstorm",
     "goland",
-    "clion",
+    "rust",
     "csharp",
 )

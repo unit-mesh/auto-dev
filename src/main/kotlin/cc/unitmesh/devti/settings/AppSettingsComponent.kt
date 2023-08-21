@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.settings
 
+import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.json.JsonLanguage
 import com.intellij.openapi.editor.colors.EditorColorsUtil
 import com.intellij.openapi.editor.ex.EditorEx
@@ -10,9 +11,6 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPasswordField
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.FormBuilder
-import com.jetbrains.jsonSchema.JsonSchemaMappingsProjectConfiguration
-import com.jetbrains.jsonSchema.UserDefinedJsonSchemaConfiguration
-import com.jetbrains.jsonSchema.impl.JsonSchemaVersion
 import java.awt.Dimension
 import java.awt.FontMetrics
 import javax.swing.JComponent
@@ -35,24 +33,22 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
     private val aiEngine = ComboBox(AI_ENGINES)
     private val customEngineServer = JBTextField()
     private val customEngineToken = JBTextField()
+    val project = ProjectManager.getInstance().openProjects.firstOrNull()
+        private val customEngineResponseFormat = JBTextField()
+    // the JsonPathFileType
+//    private val customEngineResponseFormat by lazy {
+//        object : EditorTextField(project, JsonPathFileType.INSTANCE) {
+//
+//        }.apply {
+//            setOneLineMode(true)
+//            setPlaceholder(AutoDevBundle.message("autodev.custom.response.format.placeholder"))
+//        }
+//    }
+
     private val language = ComboBox(HUMAN_LANGUAGES)
     private val maxTokenLengthInput = JBTextField()
-//
-//    val promptSchema = AppSettingsComponent::class.java.getResource("/customPromptSchema.json")!!.path
-//    val customPromptSchema = UserDefinedJsonSchemaConfiguration(
-//        "customPrompt",
-//        JsonSchemaVersion.SCHEMA_6,
-//        promptSchema,
-//        false,
-//        emptyList()
-//    )
 
     private val customEnginePrompt by lazy {
-        val project = ProjectManager.getInstance().openProjects.firstOrNull()
-
-//        val configuration = JsonSchemaMappingsProjectConfiguration.getInstance(project!!)
-//        configuration.addConfiguration(customPromptSchema)
-
         object : LanguageTextField(JsonLanguage.INSTANCE, project, "") {
             override fun createEditor(): EditorEx {
 
@@ -60,7 +56,7 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
                     setShowPlaceholderWhenFocused(true)
                     setHorizontalScrollbarVisible(false)
                     setVerticalScrollbarVisible(true)
-                    setPlaceholder("Enter custom prompt here")
+                    setPlaceholder(AutoDevBundle.message("autodev.custom.prompt.placeholder"))
 
 
                     val scheme = EditorColorsUtil.getColorSchemeForBackground(this.colorsScheme.defaultBackground)
@@ -78,10 +74,12 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
 
         panel = FormBuilder.createFormBuilder()
             .addLabeledComponent(JBLabel("Language: "), language, 1, false)
+            .addSeparator()
+            .addTooltip("For Custom LLM, config Custom Engine Server & Custom Engine Token & Custom Response Format")
             .addLabeledComponent(JBLabel("AI Engine: "), aiEngine, 1, false)
             .addLabeledComponent(JBLabel("Max Token Length: "), maxTokenLengthInput, 1, false)
             .addSeparator()
-            .addTooltip("GitHub Token is for AutoDev")
+            .addTooltip("GitHub Token is for AutoCRUD Model")
             .addLabeledComponent(JBLabel("GitHub Token: "), githubToken, 1, false)
             .addSeparator()
             .addLabeledComponent(JBLabel("OpenAI Model: "), openAiModel, 1, false)
@@ -90,8 +88,15 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
             .addSeparator()
             .addLabeledComponent(JBLabel("Custom Engine Server: "), customEngineServer, 1, false)
             .addLabeledComponent(JBLabel("Custom Engine Token: "), customEngineToken, 1, false)
+            .addLabeledComponent(
+                JBLabel("Custom Response Format (Json Path): "),
+                customEngineResponseFormat,
+                1,
+                false
+            )
             .addVerticalGap(2)
-            .addLabeledComponent(JBLabel("Custom Engine Prompt (Json): "), customEnginePrompt, 1, true)
+            .addSeparator()
+            .addLabeledComponent(JBLabel("Customize Prompt (Json): "), customEnginePrompt, 1, true)
             .addComponentFillVertically(JPanel(), 0)
             .panel
 
@@ -157,11 +162,19 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
         customEngineToken.text = newText
     }
 
+    private fun getCustomEngineResponseFormat(): String {
+        return customEngineResponseFormat.text
+    }
+
+    private fun setCustomEngineResponseFormat(newText: String) {
+        customEngineResponseFormat.text = newText
+    }
+
     private fun getCustomEnginePrompt(): String {
         return customEnginePrompt.text
     }
 
-    private fun setCustomEnginePrompt(newText: String) {
+    private fun setCustomPrompts(newText: String) {
         customEnginePrompt.text = newText
     }
 
@@ -181,6 +194,7 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
         maxTokenLengthInput.text = newText
     }
 
+
     fun isModified(settings: AutoDevSettingsState): Boolean {
         return settings.openAiKey != getOpenAiKey() ||
                 settings.githubToken != getGithubToken() ||
@@ -189,7 +203,8 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
                 settings.aiEngine != getAiEngine() ||
                 settings.customEngineServer != getCustomEngineServer() ||
                 settings.customEngineToken != getCustomEngineToken() ||
-                settings.customEnginePrompts != getCustomEnginePrompt() ||
+                settings.customPrompts != getCustomEnginePrompt() ||
+                settings.customEngineResponseFormat != getCustomEngineResponseFormat() ||
                 settings.language != getLanguage() ||
                 settings.maxTokenLength != getMaxTokenLength()
     }
@@ -206,7 +221,8 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
             aiEngine = getAiEngine()
             customEngineServer = getCustomEngineServer()
             customEngineToken = getCustomEngineToken()
-            customEnginePrompts = getCustomEnginePrompt()
+            customPrompts = getCustomEnginePrompt()
+            customEngineResponseFormat = getCustomEngineResponseFormat()
             language = getLanguage()
             maxTokenLength = getMaxTokenLength()
         }
@@ -224,7 +240,8 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
             setAiEngine(it.aiEngine)
             setCustomEngineServer(it.customEngineServer)
             setCustomEngineToken(it.customEngineToken)
-            setCustomEnginePrompt(it.customEnginePrompts)
+            setCustomPrompts(it.customPrompts)
+            setCustomEngineResponseFormat(it.customEngineResponseFormat)
             setLanguage(it.language)
             setMaxTokenLength(it.maxTokenLength)
         }
