@@ -15,11 +15,12 @@ class LLMProviderFactory {
         get() = AutoDevSettingsState.getInstance().aiEngine
     fun connector(project: Project): LLMProvider {
         return when (aiEngine) {
+            // TODO use mapping and avoid hard code engine name
             "OpenAI" -> project.getService(OpenAIProvider::class.java)
             "Custom" -> project.getService(CustomLLMProvider::class.java)
             "Azure" -> project.getService(AzureOpenAIProvider::class.java)
+            "XingHuo" -> project.getService(XingHuoProvider::class.java)
             else -> project.getService(OpenAIProvider::class.java)
         }
     }
-
 }

@@ -18,6 +18,10 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
     var customEngineToken = ""
     var customPrompts = ""
 
+    var xingHuoAppId = ""
+    var xingHuoSecrectKey = ""
+    var xingHuoApiKey = ""
+
     /**
      * should be a json path
      */
