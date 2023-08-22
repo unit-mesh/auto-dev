@@ -30,6 +30,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     private val xingHuoAppIDParam by LLMParam.creating { Editable(settings.xingHuoAppId) }
     private val xingHuoApiKeyParam by LLMParam.creating { Password(settings.xingHuoApiKey) }
     private val xingHuoApiSecretParam by LLMParam.creating { Password(settings.xingHuoApiSecrect) }
+    private val customEngineResponseFormatParam by LLMParam.creating { Editable(settings.customEngineResponseFormat) }
 
 
     val project = ProjectManager.getInstance().openProjects.firstOrNull()
@@ -70,6 +71,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
         AIEngines.Custom to listOf(
             customEngineServerParam,
             customEngineTokenParam,
+            customEngineResponseFormatParam,
         ),
         AIEngines.XingHuo to listOf(
             xingHuoAppIDParam,
@@ -78,7 +80,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
         ),
     )
 
-    val paramToComponent: MutableMap<LLMParam, JComponent> = mutableMapOf()
 
     private val onSelectedEngineChanged: () -> Unit = {
         applySettings(settings, updateParams = false)
@@ -164,6 +165,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             languageParam.value = language
             aiEngineParam.value = aiEngine
             customEnginePrompt.text = customPrompts
+            customEngineResponseFormatParam.value = customEngineResponseFormat
         }
     }
     fun exportSettings(destination: AutoDevSettingsState) {
@@ -181,7 +183,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             customEngineToken = customEngineTokenParam.value
             customPrompts = customEnginePrompt.text
             openAiModel = openAIModelsParam.value
-
+            customEngineResponseFormat = customEngineResponseFormatParam.value
         }
     }
 
@@ -199,7 +201,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
                 settings.customPrompts != customEnginePrompt.text ||
                 settings.openAiModel != openAIModelsParam.value ||
                 settings.customOpenAiHost != customOpenAIHostParam.value ||
-                settings.customEngineResponseFormat != customEnginePrompt.text
+                settings.customEngineResponseFormat != customEngineResponseFormatParam.value
     }
 
     init {
