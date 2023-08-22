@@ -88,7 +88,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
 
     private val currentLLMParams: List<LLMParam>
         get() {
-            println("current engine: ${_currentSelectedEngine}")
             return llmGroups[_currentSelectedEngine] ?: throw IllegalStateException("Unknown engine: ${settings.aiEngine}")
         }
 
@@ -131,7 +130,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
 
 
     fun applySettings(settings: AutoDevSettingsState, updateParams: Boolean = false) {
-        println("applySettings ${panel.components.size}")
         panel.removeAll()
         if (updateParams) {
             updateParams(settings)

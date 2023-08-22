@@ -56,8 +56,8 @@ fun ReactivePasswordField(param: LLMParam, initBlock: JBPasswordField.(LLMParam)
 
     component.initBlock(reactive.value)
     component.document.addUndoableEditListener {
-        if (component.text == param.value) return@addUndoableEditListener
-        reactive.value.value = component.text
+        if (component.password.joinToString("") == param.value) return@addUndoableEditListener
+        reactive.value.value = component.password.joinToString("")
     }
 
     return component
@@ -74,7 +74,6 @@ fun ReactiveComboBox(param: LLMParam, initBlock: ComboBox<String>.(LLMParam) -> 
     component.initBlock(reactive)
     component.addItemListener {
         if (it.stateChange == ItemEvent.SELECTED) {
-            println("item changed to ${component.selectedItem}")
             reactive.value = component.selectedItem as String
         }
     }
@@ -111,7 +110,6 @@ class LLMParam(
     val isEditable: Boolean = true,
     val type: ParamType = ParamType.Text,
     var items: List<String> = emptyList(),
-    var visible: Boolean = true,
 ) {
     enum class ParamType {
         Text, Password, ComboBox, Separator
@@ -126,7 +124,6 @@ class LLMParam(
             val changed = field != newValue
             field = newValue
             if (changed) {
-                println("value changed $newValue $value")
                 onChange?.invoke(this, newValue)
             }
         }
@@ -165,8 +162,6 @@ class LLMParam(
 
         fun ComboBox(value: String, items: List<String>) =
             LLMParam(value = value, type = ParamType.ComboBox, items = items.toList())
-
-        fun Separator() = LLMParam(type = ParamType.Separator)
     }
 }
 
