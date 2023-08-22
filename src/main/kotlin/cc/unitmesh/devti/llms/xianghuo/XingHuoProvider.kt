@@ -25,7 +25,7 @@ import javax.crypto.spec.SecretKeySpec
 class XingHuoProvider(val project: Project) : LLMProvider {
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private val secrectKey: String
-        get() = autoDevSettingsState.xingHuoSecrectKey
+        get() = autoDevSettingsState.xingHuoApiSecrect
 
 
     private val appid: String
@@ -37,12 +37,13 @@ class XingHuoProvider(val project: Project) : LLMProvider {
     private val hmacsha256Algorithms = "hmacsha256"
     private val uid = UUID.randomUUID().toString().substring(0, 32)
 
-    private val hmacsha256 by lazy {
-        val hmac = Mac.getInstance(hmacsha256Algorithms)
-        val keySpec = SecretKeySpec(secrectKey.toByteArray(), hmacsha256Algorithms)
-        hmac.init(keySpec)
-        hmac
-    }
+    private val hmacsha256: Mac
+        get() {
+            val hmac = Mac.getInstance(hmacsha256Algorithms)
+            val keySpec = SecretKeySpec(secrectKey.toByteArray(), hmacsha256Algorithms)
+            hmac.init(keySpec)
+            return hmac
+        }
 
     override fun prompt(promptText: String): String {
         // prompt 接口看似是无用的废弃接口，因为所有 LLM 请求都只能异步返回，不可能直接返回同步结果
@@ -54,12 +55,9 @@ class XingHuoProvider(val project: Project) : LLMProvider {
     override fun stream(promptText: String, systemPrompt: String): Flow<String> {
         return callbackFlow {
             val client = OkHttpClient()
-            client.newWebSocket(request, MyListener(this, onSocketOpend = {
+            client.newWebSocket(request, MyListener(this, onSocketOpen = {
                 val msg = getSendBody(promptText)
-                println("sending $msg")
                 send(msg)
-            }, onSocketClosed = {
-                close()
             }))
             awaitClose()
         }
@@ -68,20 +66,18 @@ class XingHuoProvider(val project: Project) : LLMProvider {
 
     class MyListener(
         private val producerScope: ProducerScope<String>,
-        private val onSocketOpend: WebSocket.() -> Unit,
-        private val onSocketClosed: WebSocket.() -> Unit
+        private val onSocketOpen: WebSocket.() -> Unit,
     ) : WebSocketListener() {
 
         private var sockedOpen = false
         override fun onOpen(webSocket: WebSocket, response: Response) {
-            webSocket.onSocketOpend()
-            producerScope.trySend("WebSocket connected\n")
+            webSocket.onSocketOpen()
             sockedOpen = true
         }
 
-        override fun onMessage(webSocket: WebSocket, body: String) {
-            return runCatching {
-                val element = Json.parseToJsonElement(body)
+        override fun onMessage(webSocket: WebSocket, text: String) {
+            runCatching {
+                val element = Json.parseToJsonElement(text)
                 val choices = element.jsonObject["payload"]!!.jsonObject["choices"]!!
                 val statusCode: Int = choices.jsonObject["status"]?.jsonPrimitive?.int!!
                 val message = choices.jsonObject["text"]!!.jsonArray[0]
@@ -102,6 +98,7 @@ class XingHuoProvider(val project: Project) : LLMProvider {
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
             // WebSocket connection failed
+            println("failure ${t.message} ${response?.body} ${response?.message} ${response?.code}")
             producerScope.trySend("onFailure ${response?.body} ${response?.message} ${response?.code}")
             producerScope.close()
         }
@@ -119,10 +116,8 @@ class XingHuoProvider(val project: Project) : LLMProvider {
             |GET /v1.1/chat HTTP/1.1
         """.trimMargin()
             val signature = hmacsha256.doFinal(header.toByteArray()).encodeBase64()
-            System.err.println(signature)
             val authorization =
                 """api_key="$apikey", algorithm="hmac-sha256", headers="host date request-line", signature="$signature""""
-            System.err.println(authorization)
 
             val params = mapOf(
                 "authorization" to authorization.toByteArray().encodeBase64(),
