@@ -6,20 +6,19 @@ import org.jetbrains.annotations.Nullable
 import javax.swing.JComponent
 
 class AutoDevSettingsConfigurable : Configurable {
-    private lateinit var component: AppSettingsComponent
+    private val component: LLMSettingComponent = LLMSettingComponent(AutoDevSettingsState.getInstance())
 
     @Nls(capitalization = Nls.Capitalization.Title)
     override fun getDisplayName(): String {
         return "AutoDev"
     }
 
-    override fun getPreferredFocusedComponent(): JComponent {
-        return component.preferredFocusedComponent
+    override fun getPreferredFocusedComponent(): JComponent? {
+        return null
     }
 
     @Nullable
     override fun createComponent(): JComponent {
-        component = AppSettingsComponent(AutoDevSettingsState.getInstance())
         return component.panel
     }
 
@@ -29,7 +28,7 @@ class AutoDevSettingsConfigurable : Configurable {
     }
 
     override fun apply() {
-        component.exportSettings(target = AutoDevSettingsState.getInstance())
+        component.exportSettings(AutoDevSettingsState.getInstance())
     }
 
     override fun reset() {

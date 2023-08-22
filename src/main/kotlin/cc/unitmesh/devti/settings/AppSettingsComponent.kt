@@ -242,7 +242,7 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
                 settings.maxTokenLength != getMaxTokenLength() ||
                 settings.xingHuoAppId != getXingHuoAppId() ||
                 settings.xingHuoApiKey != getXingHuoApiKey() ||
-                settings.xingHuoSecrectKey != getXingHuoAppSecret()
+                settings.xingHuoApiSecrect != getXingHuoAppSecret()
 
     }
 
@@ -264,7 +264,7 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
             maxTokenLength = getMaxTokenLength()
             xingHuoAppId = getXingHuoAppId()
             xingHuoApiKey = getXingHuoApiKey()
-            xingHuoSecrectKey = getXingHuoAppSecret()
+            xingHuoApiSecrect = getXingHuoAppSecret()
         }
     }
 
@@ -286,7 +286,7 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
             setMaxTokenLength(it.maxTokenLength)
             setXingHuoAppId(it.xingHuoAppId)
             setXingHuoAppKey(it.xingHuoApiKey)
-            setXingHuoApiSecret(it.xingHuoSecrectKey)
+            setXingHuoApiSecret(it.xingHuoApiSecrect)
         }
     }
 }

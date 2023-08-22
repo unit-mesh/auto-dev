@@ -19,7 +19,7 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
     var customPrompts = ""
 
     var xingHuoAppId = ""
-    var xingHuoSecrectKey = ""
+    var xingHuoApiSecrect = ""
     var xingHuoApiKey = ""
 
     /**

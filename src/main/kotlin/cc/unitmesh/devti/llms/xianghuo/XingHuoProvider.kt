@@ -25,7 +25,7 @@ import javax.crypto.spec.SecretKeySpec
 class XingHuoProvider(val project: Project) : LLMProvider {
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private val secrectKey: String
-        get() = autoDevSettingsState.xingHuoSecrectKey
+        get() = autoDevSettingsState.xingHuoApiSecrect
 
 
     private val appid: String
@@ -75,7 +75,6 @@ class XingHuoProvider(val project: Project) : LLMProvider {
         private var sockedOpen = false
         override fun onOpen(webSocket: WebSocket, response: Response) {
             webSocket.onSocketOpend()
-            producerScope.trySend("WebSocket connected\n")
             sockedOpen = true
         }
 
@@ -97,7 +96,7 @@ class XingHuoProvider(val project: Project) : LLMProvider {
         }
 
         override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-            producerScope.close()
+            webSocket.onSocketClosed()
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
@@ -119,10 +118,8 @@ class XingHuoProvider(val project: Project) : LLMProvider {
             |GET /v1.1/chat HTTP/1.1
         """.trimMargin()
             val signature = hmacsha256.doFinal(header.toByteArray()).encodeBase64()
-            System.err.println(signature)
             val authorization =
                 """api_key="$apikey", algorithm="hmac-sha256", headers="host date request-line", signature="$signature""""
-            System.err.println(authorization)
 
             val params = mapOf(
                 "authorization" to authorization.toByteArray().encodeBase64(),
@@ -134,7 +131,6 @@ class XingHuoProvider(val project: Project) : LLMProvider {
                 urlBuilder.addQueryParameter(it.key, it.value)
             }
             val url = urlBuilder.build().toString().replace("https://", "wss://")
-            println(url)
             return Request.Builder().url(url).build()
         }
 
