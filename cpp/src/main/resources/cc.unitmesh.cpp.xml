@@ -1,0 +1,9 @@
+<idea-plugin package="cc.unitmesh.cpp">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+        <plugin id="com.intellij.modules.clion"/>
+    </dependencies>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+    </extensions>
+</idea-plugin>
