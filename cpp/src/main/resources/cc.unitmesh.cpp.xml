@@ -5,5 +5,6 @@
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
+        <chatContextProvider implementation="cc.unitmesh.cpp.provider.CLionWorkspaceContextProvider"/>
     </extensions>
 </idea-plugin>
