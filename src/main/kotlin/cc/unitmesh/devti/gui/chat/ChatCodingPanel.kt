@@ -44,19 +44,6 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
     private var panelContent: DialogPanel
     private val myScrollPane: JBScrollPane
 
-    private val welcomeMessage: String = """
-        <div>
-            <p>Hi, welcome to use <b>AutoDev</b>, how can I help you?</p>
-            <p>I’m powered by AI, so surprises and mistakes are possible. Make sure
-             to verify any generated code or suggestions, and <a href="https://github.com/unit-mesh/auto-dev">
-             share feedback</a> so that we can learn and improve.</p>
-        </div>
-
-    """.trimIndent()
-    private val welcomeComponent = HtmlContentComponent(welcomeMessage)
-    private var hasMessage = false
-
-
     init {
         focusMouseListener = object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
@@ -226,6 +213,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
 
     // TODO: add session and stop manage
     fun clearChat() {
+        chatCodingService.clearSession()
         progressBar.isVisible = false
         myList.removeAll()
         updateUI()

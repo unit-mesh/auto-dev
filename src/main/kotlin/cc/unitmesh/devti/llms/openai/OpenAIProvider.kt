@@ -62,6 +62,11 @@ class OpenAIProvider(val project: Project) : LLMProvider {
     private val messages: MutableList<ChatMessage> = ArrayList()
     private var historyMessageLength: Int = 0
 
+    override fun clearMessage() {
+        messages.clear()
+        historyMessageLength = 0
+    }
+
     override fun prompt(promptText: String): String {
         val completionRequest = prepareRequest(promptText, "")
 

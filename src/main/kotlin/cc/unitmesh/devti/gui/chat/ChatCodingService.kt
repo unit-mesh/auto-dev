@@ -78,4 +78,8 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
 
         return PostCodeProcessor(prefixText, suffixText, content).execute()
     }
+
+    fun clearSession() {
+        LLMProviderFactory.connector(project).clearMessage()
+    }
 }

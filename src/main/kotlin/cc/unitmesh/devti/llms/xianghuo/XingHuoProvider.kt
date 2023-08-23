@@ -50,6 +50,9 @@ class XingHuoProvider(val project: Project) : LLMProvider {
         TODO()
     }
 
+    override fun clearMessage() {
+        TODO()
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun stream(promptText: String, systemPrompt: String): Flow<String> {
