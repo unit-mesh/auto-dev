@@ -113,6 +113,8 @@ allprojects {
     idea {
         module {
             generatedSourceDirs.add(file("src/gen"))
+            isDownloadJavadoc=true
+            isDownloadSources=true
         }
     }
 
@@ -331,8 +333,17 @@ project(":") {
 
         implementation("org.jetbrains:markdown:0.2.0.pre-55")
         implementation(libs.kotlinx.serialization.json)
+
+        // gitlab4j-api
+        implementation("org.gitlab4j:gitlab4j-api:4.17.0"){
+            exclude(module = "jackson-core")
+            exclude(module = "jackson-databind")
+            exclude(module = "jackson-annotations")
+//            exclude("com.fasterxml.jackson.module.kotlin", "kotlin-module")
+
+        }
         // jackson-module-kotlin
-        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2") {
+        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.2") {
             exclude(module = "jackson-core")
             exclude(module = "jackson-databind")
             exclude(module = "jackson-annotations")

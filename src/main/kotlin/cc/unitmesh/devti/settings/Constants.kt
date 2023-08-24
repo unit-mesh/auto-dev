@@ -7,6 +7,8 @@ enum class AIEngines {
     OpenAI, Custom, Azure, XingHuo
 }
 
+val GIT_TYPE = arrayOf("Github" , "Gitlab")
+val DEFAULT_GIT_TYPE = GIT_TYPE[0]
 val DEFAULT_AI_ENGINE = AI_ENGINES[0]
 
 val HUMAN_LANGUAGES = arrayOf("English", "中文")
