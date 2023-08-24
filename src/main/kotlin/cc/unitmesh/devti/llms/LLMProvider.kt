@@ -17,4 +17,8 @@ interface LLMProvider {
             awaitClose()
         }
     }
+
+    fun clearMessage() {
+
+    }
 }

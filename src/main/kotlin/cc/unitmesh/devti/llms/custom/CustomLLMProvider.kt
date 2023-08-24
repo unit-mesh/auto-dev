@@ -51,6 +51,10 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
 
     private val logger = logger<CustomLLMProvider>()
 
+    override fun clearMessage() {
+        messages.clear()
+    }
+
     override fun prompt(promptText: String): String {
         return this.prompt(promptText, "")
     }

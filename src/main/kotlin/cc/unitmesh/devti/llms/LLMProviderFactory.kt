@@ -12,7 +12,9 @@ import com.intellij.openapi.project.Project
 @Service
 class LLMProviderFactory {
     private val aiEngine: AIEngines
-        get() = AIEngines.values().find { it.name.lowercase() == AutoDevSettingsState.getInstance().aiEngine.lowercase() } ?: AIEngines.OpenAI
+        get() = AIEngines.values()
+            .find { it.name.lowercase() == AutoDevSettingsState.getInstance().aiEngine.lowercase() } ?: AIEngines.OpenAI
+
     fun connector(project: Project): LLMProvider {
         return when (aiEngine) {
             AIEngines.OpenAI -> project.getService(OpenAIProvider::class.java)

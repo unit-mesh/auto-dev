@@ -61,6 +61,11 @@ class AzureOpenAIProvider(val project: Project) : LLMProvider {
     private val messages: MutableList<SimpleOpenAIFormat> = ArrayList()
     private var historyMessageLength: Int = 0
 
+    override fun clearMessage() {
+        messages.clear()
+        historyMessageLength = 0
+    }
+
     fun prompt(instruction: String, input: String): String {
         val promptText = "$instruction\n$input"
         val systemMessage = ChatMessage(ChatMessageRole.USER.value(), promptText)

@@ -193,6 +193,7 @@ project(":plugin") {
         implementation(project(":webstorm"))
         implementation(project(":goland"))
         implementation(project(":rust"))
+        implementation(project(":cpp"))
     }
 
     // Collects all jars produced by compilation of project modules and merges them into singe one.
@@ -514,6 +515,16 @@ project(":kotlin") {
 }
 
 project(":rust") {
+    intellij {
+        version.set(clionVersion)
+        plugins.set(clionPlugins)
+    }
+    dependencies {
+        implementation(project(":"))
+    }
+}
+
+project(":cpp") {
     intellij {
         version.set(clionVersion)
         plugins.set(clionPlugins)

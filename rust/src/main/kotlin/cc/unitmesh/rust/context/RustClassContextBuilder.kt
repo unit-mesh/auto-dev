@@ -12,7 +12,15 @@ class RustClassContextBuilder : ClassContextBuilder {
         if (psiElement !is RsStructOrEnumItemElement) return null
         when (psiElement) {
             is RsStructItem -> {
-                // TODO: Implement
+                return ClassContext(
+                    psiElement,
+                    psiElement.text,
+                    psiElement.name,
+                    emptyList(),
+                    emptyList(),
+                    emptyList(),
+                    emptyList()
+                )
             }
 
             is RsEnumItem -> {
