@@ -23,6 +23,11 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     private val openAIModelsParam by LLMParam.creating { ComboBox(settings.openAiModel, OPENAI_MODEL.toList()) }
     private val openAIKeyParam by LLMParam.creating { Password(settings.openAiKey) }
     private val customOpenAIHostParam: LLMParam by LLMParam.creating { Editable(settings.customOpenAiHost) }
+
+    private val gitTypeParam: LLMParam by LLMParam.creating { ComboBox(settings.gitType, GIT_TYPE.toList()) }
+    private val gitLabUrlParam: LLMParam by LLMParam.creating { Editable(settings.gitlabUrl) }
+    private val gitLabTokenParam: LLMParam by LLMParam.creating { Editable(settings.gitlabToken) }
+
     private val gitHubTokenParam by LLMParam.creating { Password(settings.githubToken) }
     private val customEngineServerParam by LLMParam.creating { Editable(settings.customEngineServer) }
     private val customEngineTokenParam by LLMParam.creating { Password(settings.customEngineToken) }
@@ -83,12 +88,13 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     private val onSelectedEngineChanged: () -> Unit = {
         applySettings(settings, updateParams = false)
     }
-    private val _currentSelectedEngine:AIEngines
+    private val _currentSelectedEngine: AIEngines
         get() = AIEngines.values().first { it.name.lowercase() == aiEngineParam.value.lowercase() }
 
     private val currentLLMParams: List<LLMParam>
         get() {
-            return llmGroups[_currentSelectedEngine] ?: throw IllegalStateException("Unknown engine: ${settings.aiEngine}")
+            return llmGroups[_currentSelectedEngine]
+                ?: throw IllegalStateException("Unknown engine: ${settings.aiEngine}")
         }
 
     private fun FormBuilder.addLLMParams(llmParams: List<LLMParam>): FormBuilder = apply {
@@ -128,7 +134,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     val panel: JPanel get() = formBuilder.panel
 
 
-
     fun applySettings(settings: AutoDevSettingsState, updateParams: Boolean = false) {
         panel.removeAll()
         if (updateParams) {
@@ -142,8 +147,13 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             .addLLMParam(aiEngineParam)
             .addLLMParam(maxTokenLengthParam)
             .addSeparator()
+            .addTooltip("Select Git Type")
+            .addLLMParam(gitTypeParam)
             .addTooltip("GitHub Token is for AutoCRUD Model")
             .addLLMParam(gitHubTokenParam)
+            .addTooltip("GitLab options is for AutoCRUD Model")
+            .addLLMParam(gitLabUrlParam)
+            .addLLMParam(gitLabTokenParam)
             .addSeparator()
             .addLLMParams(currentLLMParams)
             .addVerticalGap(2)
@@ -159,7 +169,10 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     private fun updateParams(settings: AutoDevSettingsState) {
         settings.apply {
             maxTokenLengthParam.value = maxTokenLength
+            gitTypeParam.value = gitType
             gitHubTokenParam.value = githubToken
+            gitLabTokenParam.value = gitlabToken
+            gitLabUrlParam.value = gitlabUrl
             openAIKeyParam.value = openAiKey
             customOpenAIHostParam.value = customOpenAiHost
             customEngineServerParam.value = customEngineServer
@@ -174,10 +187,14 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             customEngineResponseFormatParam.value = customEngineResponseFormat
         }
     }
+
     fun exportSettings(destination: AutoDevSettingsState) {
         destination.apply {
             maxTokenLength = maxTokenLengthParam.value
+            gitType = gitTypeParam.value
             githubToken = gitHubTokenParam.value
+            gitlabUrl = gitLabUrlParam.value
+            gitlabToken = gitLabTokenParam.value
             openAiKey = openAIKeyParam.value
             customOpenAiHost = customOpenAIHostParam.value
             xingHuoApiSecrect = xingHuoApiSecretParam.value
@@ -195,7 +212,10 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
 
     fun isModified(settings: AutoDevSettingsState): Boolean {
         return settings.maxTokenLength != maxTokenLengthParam.value ||
+                settings.gitType != gitTypeParam.value ||
                 settings.githubToken != gitHubTokenParam.value ||
+                settings.gitlabUrl != gitLabUrlParam.value ||
+                settings.gitlabToken != gitLabTokenParam.value ||
                 settings.openAiKey != openAIKeyParam.value ||
                 settings.xingHuoApiSecrect != xingHuoApiSecretParam.value ||
                 settings.xingHuoAppId != xingHuoAppIDParam.value ||
