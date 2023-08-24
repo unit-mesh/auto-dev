@@ -10,7 +10,6 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.FormBuilder
 import java.awt.Dimension
 import java.awt.FontMetrics
-import javax.swing.JComponent
 import javax.swing.JPanel
 
 class LLMSettingComponent(private val settings: AutoDevSettingsState) {
@@ -138,7 +137,14 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
 
         formBuilder
             .addLLMParam(languageParam)
+            .addSeparator()
+            .addTooltip("For Custom LLM, config Custom Engine Server & Custom Engine Token & Custom Response Format")
             .addLLMParam(aiEngineParam)
+            .addLLMParam(maxTokenLengthParam)
+            .addSeparator()
+            .addTooltip("GitHub Token is for AutoCRUD Model")
+            .addLLMParam(gitHubTokenParam)
+            .addSeparator()
             .addLLMParams(currentLLMParams)
             .addVerticalGap(2)
             .addSeparator()
