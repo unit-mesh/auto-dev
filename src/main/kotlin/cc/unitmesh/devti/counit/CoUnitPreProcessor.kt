@@ -2,7 +2,7 @@ package cc.unitmesh.devti.counit
 
 import cc.unitmesh.devti.LLMCoroutineScope
 import cc.unitmesh.devti.counit.dto.ExplainQuery
-import cc.unitmesh.devti.counit.dto.QueryResponse
+import cc.unitmesh.devti.counit.dto.QueryResult
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.gui.chat.ChatRole
@@ -69,7 +69,7 @@ class CoUnitPreProcessor(val project: Project) {
             llmProvider.appendLocalMessage(searchTip, ChatRole.User)
             ui.addMessage(searchTip, true, searchTip)
 
-            val queryResult = coUnitPromptGenerator.queryTool(explain.query, explain.hypotheticalDocument)
+            val queryResult = coUnitPromptGenerator.semanticQuery(explain)
 
             val related = buildDocAsContext(queryResult)
             llmProvider.appendLocalMessage(related, ChatRole.User)
@@ -80,24 +80,30 @@ class CoUnitPreProcessor(val project: Project) {
         }
     }
 
-    private fun buildDocAsContext(queryResult: Pair<QueryResponse?, QueryResponse?>): String {
+    private fun buildDocAsContext(queryResult: QueryResult): String {
         val sb = StringBuilder()
-        val normalDoc = queryResult.first
-        if (normalDoc != null && normalDoc.data.isNotEmpty()) {
+        val normalDoc = queryResult.normalQuery
+        if (normalDoc.isNotEmpty()) {
             sb.append("here is related API to origin query's result: \n```markdown\n")
-            sb.append(Json.encodeToString(normalDoc.data[0].displayText))
+            sb.append(Json.encodeToString(normalDoc[0].displayText))
             sb.append("\n```\n")
         }
 
-        val hypoDoc = queryResult.second
-        if (hypoDoc != null && hypoDoc.data.isNotEmpty()) {
-            sb.append("here is hypothetical document which related to origin query's result: \n```markdown\n")
-            sb.append(Json.encodeToString(hypoDoc.data[0].displayText))
+        val nature = queryResult.natureLangQuery
+        if (nature.isNotEmpty()) {
+            sb.append("here is nature language query's result: \n```markdown\n")
+            sb.append(Json.encodeToString(nature[0].displayText))
             sb.append("\n```\n")
         }
 
-        val related = sb.toString()
-        return related
+        val hyde = queryResult.hypotheticalDocument
+        if (hyde.isNotEmpty()) {
+            sb.append("here is hypothetical document's result: \n```markdown\n")
+            sb.append(Json.encodeToString(hyde[0].displayText))
+            sb.append("\n```\n")
+        }
+
+        return sb.toString()
     }
 
     private fun fix(result: String): String {

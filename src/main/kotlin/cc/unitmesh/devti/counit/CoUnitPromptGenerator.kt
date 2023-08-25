@@ -1,8 +1,10 @@
 package cc.unitmesh.devti.counit
 
 import cc.unitmesh.devti.counit.client.CoUnitApi
+import cc.unitmesh.devti.counit.dto.ExplainQuery
 import cc.unitmesh.devti.counit.dto.PayloadType
 import cc.unitmesh.devti.counit.dto.QueryResponse
+import cc.unitmesh.devti.counit.dto.QueryResult
 import cc.unitmesh.devti.settings.configurable.coUnitSettings
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
@@ -23,10 +25,15 @@ class CoUnitPromptGenerator(val project: Project) {
         return body?.prompt
     }
 
-    fun queryTool(query: String, hypotheticalDocument: String): Pair<QueryResponse?, QueryResponse?> {
-        val normalQuery: QueryResponse? = service.query(query, PayloadType.OpenApi).execute().body()
-        val hydeDoc: QueryResponse? = service.query(hypotheticalDocument, PayloadType.OpenApi).execute().body()
+    fun semanticQuery(query: ExplainQuery): QueryResult {
+        val normalQuery: QueryResponse? = service.query(query.query, PayloadType.OpenApi).execute().body()
+        val hydeDoc: QueryResponse? = service.query(query.hypotheticalDocument, PayloadType.OpenApi).execute().body()
+        val natureLangQuery: QueryResponse? = service.query(query.natureLangQuery, PayloadType.OpenApi).execute().body()
 
-        return Pair(normalQuery, hydeDoc)
+        return QueryResult(
+            normalQuery?.data ?: emptyList(),
+            natureLangQuery?.data ?: emptyList(),
+            hydeDoc?.data ?: emptyList()
+        )
     }
 }
