@@ -83,9 +83,7 @@ And custom the origin keys for `role`, `messsage`
 {
   "customHeaders": { "my header": "my value" },
   "customFields": {"user": "userid", "date": "2012"},
-  "messageKeys": [
-    {"role": "role", "content": "message"}
-  ]
+  "messageKeys": {"role": "role", "content": "message"}
 }
 ```
 
@@ -94,6 +92,6 @@ and the request body will be:
 ```json
 {
 	"user": "userid",
-    "messages": [{"role": "user", "content": "..."}]
+    "messages": [{"role": "user", "message": "..."}]
   }
 ```
