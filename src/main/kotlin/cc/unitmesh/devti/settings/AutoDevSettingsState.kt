@@ -30,6 +30,10 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
      * should be a json path
      */
     var customEngineResponseFormat = ""
+    var customEngineRequestHeaderFormat = ""
+    var customEngineRequestBodyFormat = ""
+
+
     var language = DEFAULT_HUMAN_LANGUAGE
     var maxTokenLength = MAX_TOKEN_LENGTH.toString()
 

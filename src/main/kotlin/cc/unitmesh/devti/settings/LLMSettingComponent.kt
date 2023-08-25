@@ -36,6 +36,8 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     private val xingHuoApiKeyParam by LLMParam.creating { Password(settings.xingHuoApiKey) }
     private val xingHuoApiSecretParam by LLMParam.creating { Password(settings.xingHuoApiSecrect) }
     private val customEngineResponseFormatParam by LLMParam.creating { Editable(settings.customEngineResponseFormat) }
+    private val customEngineRequestBodyFormatParam by LLMParam.creating { Editable(settings.customEngineRequestBodyFormat) }
+    private val customEngineRequestHeaderFormatParam by LLMParam.creating { Editable(settings.customEngineRequestHeaderFormat) }
 
 
     val project = ProjectManager.getInstance().openProjects.firstOrNull()
@@ -62,27 +64,29 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
         }
     }
 
-    val llmGroups = mapOf<AIEngines, List<LLMParam>>(
-        AIEngines.Azure to listOf(
-            openAIModelsParam,
-            openAIKeyParam,
-            customOpenAIHostParam,
-        ),
-        AIEngines.OpenAI to listOf(
-            openAIModelsParam,
-            openAIKeyParam,
-            customOpenAIHostParam,
-        ),
-        AIEngines.Custom to listOf(
-            customEngineServerParam,
-            customEngineTokenParam,
-            customEngineResponseFormatParam,
-        ),
-        AIEngines.XingHuo to listOf(
-            xingHuoAppIDParam,
-            xingHuoApiKeyParam,
-            xingHuoApiSecretParam,
-        ),
+    private val llmGroups = mapOf<AIEngines, List<LLMParam>>(
+            AIEngines.Azure to listOf(
+                    openAIModelsParam,
+                    openAIKeyParam,
+                    customOpenAIHostParam,
+            ),
+            AIEngines.OpenAI to listOf(
+                    openAIModelsParam,
+                    openAIKeyParam,
+                    customOpenAIHostParam,
+            ),
+            AIEngines.Custom to listOf(
+                    customEngineServerParam,
+                    customEngineTokenParam,
+                    customEngineResponseFormatParam,
+                    customEngineRequestBodyFormatParam,
+                    customEngineRequestHeaderFormatParam,
+            ),
+            AIEngines.XingHuo to listOf(
+                    xingHuoAppIDParam,
+                    xingHuoApiKeyParam,
+                    xingHuoApiSecretParam,
+            ),
     )
 
 
@@ -95,7 +99,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     private val currentLLMParams: List<LLMParam>
         get() {
             return llmGroups[_currentSelectedEngine]
-                ?: throw IllegalStateException("Unknown engine: ${settings.aiEngine}")
+                    ?: throw IllegalStateException("Unknown engine: ${settings.aiEngine}")
         }
 
     private fun FormBuilder.addLLMParams(llmParams: List<LLMParam>): FormBuilder = apply {
@@ -142,27 +146,27 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
         }
 
         formBuilder
-            .addLLMParam(languageParam)
+                .addLLMParam(languageParam)
+                .addSeparator()
+                .addTooltip("For Custom LLM, config Custom Engine Server & Custom Engine Token & Custom Response Format")
+                .addLLMParam(aiEngineParam)
+                .addLLMParam(maxTokenLengthParam)
+                .addLLMParam(delaySecondsParam)
             .addSeparator()
-            .addTooltip("For Custom LLM, config Custom Engine Server & Custom Engine Token & Custom Response Format")
-            .addLLMParam(aiEngineParam)
-            .addLLMParam(maxTokenLengthParam)
-            .addLLMParam(delaySecondsParam)
-            .addSeparator()
-            .addTooltip("Select Git Type")
+                .addTooltip("Select Git Type")
             .addLLMParam(gitTypeParam)
             .addTooltip("GitHub Token is for AutoCRUD Model")
-            .addLLMParam(gitHubTokenParam)
+                .addLLMParam(gitHubTokenParam)
             .addTooltip("GitLab options is for AutoCRUD Model")
             .addLLMParam(gitLabUrlParam)
             .addLLMParam(gitLabTokenParam)
-            .addSeparator()
-            .addLLMParams(currentLLMParams)
-            .addVerticalGap(2)
-            .addSeparator()
-            .addLabeledComponent(JBLabel("Custom Engine Prompt (Json): "), customEnginePrompt, 1, true)
-            .addComponentFillVertically(JPanel(), 0)
-            .panel
+                .addSeparator()
+                .addLLMParams(currentLLMParams)
+                .addVerticalGap(2)
+                .addSeparator()
+                .addLabeledComponent(JBLabel("Custom Engine Prompt (Json): "), customEnginePrompt, 1, true)
+                .addComponentFillVertically(JPanel(), 0)
+                .panel
 
         panel.invalidate()
         panel.repaint()
@@ -187,6 +191,8 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             aiEngineParam.value = aiEngine
             customEnginePrompt.text = customPrompts
             customEngineResponseFormatParam.value = customEngineResponseFormat
+            customEngineRequestBodyFormatParam.value = customEngineRequestBodyFormat
+            customEngineRequestHeaderFormatParam.value = customEngineRequestHeaderFormat
             delaySecondsParam.value = delaySeconds
         }
     }
@@ -210,6 +216,8 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             customPrompts = customEnginePrompt.text
             openAiModel = openAIModelsParam.value
             customEngineResponseFormat = customEngineResponseFormatParam.value
+            customEngineRequestBodyFormat = customEngineRequestBodyFormatParam.value
+            customEngineRequestHeaderFormat = customEngineRequestHeaderFormatParam.value
             delaySeconds = delaySecondsParam.value
         }
     }
@@ -232,6 +240,8 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
                 settings.openAiModel != openAIModelsParam.value ||
                 settings.customOpenAiHost != customOpenAIHostParam.value ||
                 settings.customEngineResponseFormat != customEngineResponseFormatParam.value ||
+                settings.customEngineRequestBodyFormat != customEngineRequestBodyFormatParam.value ||
+                settings.customEngineRequestHeaderFormat != customEngineRequestHeaderFormatParam.value ||
                 settings.delaySeconds != delaySecondsParam.value
     }
 
