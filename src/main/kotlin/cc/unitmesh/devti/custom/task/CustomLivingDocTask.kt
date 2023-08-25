@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.custom.task
 
 import cc.unitmesh.devti.custom.CustomDocumentationConfig
-import cc.unitmesh.devti.llms.LLMProviderFactory
+import cc.unitmesh.devti.llms.LlmProviderFactory
 import cc.unitmesh.devti.provider.LivingDocumentation
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
@@ -31,7 +31,7 @@ class CustomLivingDocTask(
         logger.warn("Prompt: $prompt")
 
         val stream =
-            LLMProviderFactory().connector(project).stream(prompt, "")
+            LlmProviderFactory().connector(project).stream(prompt, "")
 
         var result = ""
 
