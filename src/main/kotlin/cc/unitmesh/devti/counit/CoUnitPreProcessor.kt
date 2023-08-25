@@ -80,15 +80,15 @@ class CoUnitPreProcessor(val project: Project) {
         val sb = StringBuilder()
         val normalDoc = queryResult.first
         if (normalDoc != null && normalDoc.data.isNotEmpty()) {
-            sb.append("here is related API to origin query's result: \n```json\n")
+            sb.append("here is related API to origin query's result: \n```markdown\n")
             sb.append(Json.encodeToString(normalDoc.data[0].displayText))
             sb.append("\n```\n")
         }
 
         val hypoDoc = queryResult.second
         if (hypoDoc != null && hypoDoc.data.isNotEmpty()) {
-            sb.append("here is hypothetical document which related to origin query's result: \n```json\n")
-            sb.append(Json.encodeToString(hypoDoc))
+            sb.append("here is hypothetical document which related to origin query's result: \n```markdown\n")
+            sb.append(Json.encodeToString(hypoDoc.data[0].displayText))
             sb.append("\n```\n")
         }
 
