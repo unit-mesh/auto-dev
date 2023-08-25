@@ -21,11 +21,13 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
+import org.jetbrains.annotations.VisibleForTesting
+import org.jetbrains.kotlin.idea.gradleTooling.get
 import java.time.Duration
 
 @Serializable
@@ -165,5 +167,64 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
             logger.error("Failed to set timeout", e)
             return ""
         }
+    }
+}
+
+@VisibleForTesting
+fun Request.Builder.appendCustomHeaders(customRequestHeader: String): Request.Builder = apply {
+    runCatching {
+        Json.parseToJsonElement(customRequestHeader)
+                .jsonObject["customHeaders"].let { customFields ->
+            customFields?.jsonObject?.forEach { (key, value) ->
+                header(key, value.jsonPrimitive.content)
+            }
+        }
+    }.onFailure {
+        logger<CustomLLMProvider>().error("Failed to parse custom request header", it)
+    }
+}
+
+@VisibleForTesting
+fun JsonObject.updateCustomBody(customRequest: String): JsonObject {
+    return runCatching {
+        buildJsonObject {
+            // copy origin object
+            this@updateCustomBody.forEach { u, v -> put(u, v) }
+
+            val customRequestJson = Json.parseToJsonElement(customRequest).jsonObject
+
+            customRequestJson["customFields"]?.let { customFields ->
+                customFields.jsonObject.forEach { (key, value) ->
+                    put(key, value.jsonPrimitive.content)
+                }
+            }
+
+
+
+            // TODO clean code with magic literals
+            var roleKey = "role"
+            var contentKey  = "message"
+            customRequestJson.jsonObject["messageKeys"]?.let {
+                roleKey = it.jsonObject["role"]?.jsonPrimitive?.content ?: "role"
+                contentKey = it.jsonObject["content"]?.jsonPrimitive?.content ?: "message"
+            }
+
+            val messages: JsonArray = this@updateCustomBody["messages"]?.jsonArray ?: buildJsonArray { }
+
+
+            this.put("messages", buildJsonArray {
+                messages.forEach { message ->
+                    val role: String = message.jsonObject["role"]?.jsonPrimitive?.content ?: "user"
+                    val content: String = message.jsonObject["message"]?.jsonPrimitive?.content ?: ""
+                    add(buildJsonObject {
+                        put(roleKey, role)
+                        put(contentKey, content)
+                    })
+                }
+            })
+        }
+    }.getOrElse {
+        logger<CustomLLMProvider>().error("Failed to parse custom request body", it)
+        this
     }
 }
