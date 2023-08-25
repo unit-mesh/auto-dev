@@ -7,6 +7,7 @@ import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.llms.LlmProviderFactory
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.settings.configurable.coUnitSettings
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.launch
@@ -44,30 +45,42 @@ class CoUnitPreProcessor(val project: Project) {
             val intentionFlow = llmProviderFactory.connector(project).stream(response, "")
             val result = ui.updateMessage(intentionFlow)
 
-            try {
-                val explain: ExplainQuery = json.decodeFromString(result)
-                ui.addMessage("search by query and hyde doc", true, "search by query and hyde doc")
-                val queryResult = coUnitPromptGenerator.queryTool(explain.query, explain.hypotheticalDocument)
-
-                val sb = StringBuilder()
-                if (queryResult.first != null) {
-                    sb.append("query result: \n```json\n")
-                    sb.append(Json.encodeToString(queryResult.first))
-                    sb.append("\n\n")
-                }
-
-                if (queryResult.second != null) {
-                    sb.append("hyde doc result: \n```json\n")
-                    sb.append(Json.encodeToString(queryResult.second))
-                    sb.append("\n\n")
-                }
-
-                val related = sb.toString()
-                ui.addMessage(related, true, related)
+            val explain = try {
+                val fixedResult = fix(result)
+                val explain: ExplainQuery = json.decodeFromString(fixedResult)
+                explain
             } catch (e: Exception) {
                 throw Exception("parse result error: $e")
             }
+
+            ui.addMessage("search by query and hyde doc", true, "search by query and hyde doc")
+            val queryResult = coUnitPromptGenerator.queryTool(explain.query, explain.hypotheticalDocument)
+
+            val sb = StringBuilder()
+            if (queryResult.first != null) {
+                sb.append("query result: \n```json\n")
+                sb.append(Json.encodeToString(queryResult.first))
+                sb.append("\n```\n")
+            }
+
+            if (queryResult.second != null) {
+                sb.append("hyde doc result: \n```json\n")
+                sb.append(Json.encodeToString(queryResult.second))
+                sb.append("\n```\n")
+            }
+
+            val related = sb.toString()
+            ApplicationManager.getApplication().invokeLater {
+                ui.addMessage(related, true, related)
+            }
         }
+    }
+
+    private fun fix(result: String): String {
+        // remove start and end ```json
+        return result
+            .removePrefix("```json")
+            .removeSuffix("```")
     }
 }
 
