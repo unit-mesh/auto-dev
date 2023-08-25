@@ -72,6 +72,13 @@ class CoUnitPreProcessor(val project: Project) {
             val queryResult = coUnitPromptGenerator.semanticQuery(explain)
 
             val related = buildDocAsContext(queryResult)
+            if (related.isEmpty()) {
+                val noResultTip = "no related API found"
+                llmProvider.appendLocalMessage(noResultTip, ChatRole.Assistant)
+                ui.addMessage(noResultTip, false, noResultTip)
+                return@launch
+            }
+
             llmProvider.appendLocalMessage(related, ChatRole.User)
 
             ApplicationManager.getApplication().invokeLater {
@@ -85,21 +92,21 @@ class CoUnitPreProcessor(val project: Project) {
         val normalDoc = queryResult.normalQuery
         if (normalDoc.isNotEmpty()) {
             sb.append("here is related API to origin query's result: \n```markdown\n")
-            sb.append(Json.encodeToString(normalDoc[0].displayText))
+            sb.append(normalDoc[0].displayText)
             sb.append("\n```\n")
         }
 
         val nature = queryResult.natureLangQuery
         if (nature.isNotEmpty()) {
             sb.append("here is nature language query's result: \n```markdown\n")
-            sb.append(Json.encodeToString(nature[0].displayText))
+            sb.append(nature[0].displayText)
             sb.append("\n```\n")
         }
 
         val hyde = queryResult.hypotheticalDocument
         if (hyde.isNotEmpty()) {
             sb.append("here is hypothetical document's result: \n```markdown\n")
-            sb.append(Json.encodeToString(hyde[0].displayText))
+            sb.append(hyde[0].displayText)
             sb.append("\n```\n")
         }
 
