@@ -21,16 +21,13 @@ import kotlinx.serialization.json.Json
 class CoUnitPreProcessor(val project: Project) {
     private val llmProviderFactory = LlmProviderFactory()
 
+    private val coUnitPromptGenerator = CoUnitPromptGenerator(project)
+    private val json = Json { ignoreUnknownKeys = true }
+    private val llmProvider = llmProviderFactory.connector(project)
+
     fun isCoUnit(input: String): Boolean {
         return project.coUnitSettings.enableCoUnit && input.startsWith("/counit")
     }
-
-    private val coUnitPromptGenerator = CoUnitPromptGenerator(project)
-
-    private val json = Json { ignoreUnknownKeys = true }
-
-    val llmProvider = llmProviderFactory.connector(project)
-
 
     fun handleChat(prompter: ContextPrompter, ui: ChatCodingPanel, context: ChatContext?) {
         val originRequest = prompter.requestPrompt()
