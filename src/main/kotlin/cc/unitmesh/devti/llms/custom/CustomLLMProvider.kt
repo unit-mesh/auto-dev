@@ -27,7 +27,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import org.jetbrains.annotations.VisibleForTesting
-import org.jetbrains.kotlin.idea.gradleTooling.get
 import java.time.Duration
 
 @Serializable
@@ -41,9 +40,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private val url get() = autoDevSettingsState.customEngineServer
     private val key get() = autoDevSettingsState.customEngineToken
-
-    private val requestHeaderFormat: String get() = autoDevSettingsState.customEngineRequestHeaderFormat
-    private val requestBodyFormat: String get() = autoDevSettingsState.customEngineRequestBodyFormat
+    private val requestFormat: String get() = autoDevSettingsState.customEngineRequestFormat
     private val responseFormat get() = autoDevSettingsState.customEngineResponseFormat
     private val customPromptConfig: CustomPromptConfig
         get() {
@@ -73,15 +70,17 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
         messages += Message("user", promptText)
 
         val customRequest = CustomRequest(messages)
-        val requestContent = Json.encodeToString<CustomRequest>(customRequest)
+        val requestContent = customRequest.updateCustomFormat(requestFormat)
 
         val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), requestContent)
-        logger.warn("Requesting from $body")
 
         val builder = Request.Builder()
         if (key.isNotEmpty()) {
             builder.addHeader("Authorization", "Bearer $key")
+            builder.addHeader("Content-Type", "application/json")
         }
+        builder.appendCustomHeaders(requestFormat)
+
         client = client.newBuilder()
                 .readTimeout(timeout)
                 .build()
@@ -99,16 +98,18 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
                 }, BackpressureStrategy.BUFFER)
 
         try {
-            logger.warn("Starting to stream:")
             return callbackFlow {
                 withContext(Dispatchers.IO) {
                     sseFlowable
-                            .doOnError(Throwable::printStackTrace)
+                            .doOnError{
+                                it.printStackTrace()
+                                close()
+                            }
                             .blockingForEach { sse ->
                                 if (responseFormat.isNotEmpty()) {
                                     val chunk: String = JsonPath.parse(sse!!.data)?.read(responseFormat)
                                             ?: throw Exception("Failed to parse chunk")
-                                    logger.warn(" $chunk")
+                                    logger.warn("got msg: $chunk")
                                     trySend(chunk)
                                 } else {
                                     val result: ChatCompletionResult =
@@ -139,7 +140,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
 
         val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), requestContent)
 
-        logger.warn("Requesting from $body")
+        logger.warn("Requesting form: $requestContent ${body.toString()}")
         val builder = Request.Builder()
         if (key.isNotEmpty()) {
             builder.addHeader("Authorization", "Bearer $key")
@@ -180,7 +181,8 @@ fun Request.Builder.appendCustomHeaders(customRequestHeader: String): Request.Bu
             }
         }
     }.onFailure {
-        logger<CustomLLMProvider>().error("Failed to parse custom request header", it)
+        // should I warn user?
+        println("Failed to parse custom request header ${it.message}")
     }
 }
 
@@ -200,10 +202,9 @@ fun JsonObject.updateCustomBody(customRequest: String): JsonObject {
             }
 
 
-
             // TODO clean code with magic literals
             var roleKey = "role"
-            var contentKey  = "message"
+            var contentKey = "message"
             customRequestJson.jsonObject["messageKeys"]?.let {
                 roleKey = it.jsonObject["role"]?.jsonPrimitive?.content ?: "role"
                 contentKey = it.jsonObject["content"]?.jsonPrimitive?.content ?: "message"
@@ -227,4 +228,10 @@ fun JsonObject.updateCustomBody(customRequest: String): JsonObject {
         logger<CustomLLMProvider>().error("Failed to parse custom request body", it)
         this
     }
+}
+
+fun CustomRequest.updateCustomFormat(format: String): String {
+    val requestContentOri = Json.encodeToString<CustomRequest>(this)
+    return Json.parseToJsonElement(requestContentOri)
+            .jsonObject.updateCustomBody(format).toString()
 }

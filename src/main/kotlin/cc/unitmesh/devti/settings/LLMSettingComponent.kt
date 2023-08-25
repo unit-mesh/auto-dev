@@ -36,8 +36,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     private val xingHuoApiKeyParam by LLMParam.creating { Password(settings.xingHuoApiKey) }
     private val xingHuoApiSecretParam by LLMParam.creating { Password(settings.xingHuoApiSecrect) }
     private val customEngineResponseFormatParam by LLMParam.creating { Editable(settings.customEngineResponseFormat) }
-    private val customEngineRequestBodyFormatParam by LLMParam.creating { Editable(settings.customEngineRequestBodyFormat) }
-    private val customEngineRequestHeaderFormatParam by LLMParam.creating { Editable(settings.customEngineRequestHeaderFormat) }
+    private val customEngineRequestBodyFormatParam by LLMParam.creating { Editable(settings.customEngineRequestFormat) }
 
 
     val project = ProjectManager.getInstance().openProjects.firstOrNull()
@@ -80,7 +79,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
                     customEngineTokenParam,
                     customEngineResponseFormatParam,
                     customEngineRequestBodyFormatParam,
-                    customEngineRequestHeaderFormatParam,
             ),
             AIEngines.XingHuo to listOf(
                     xingHuoAppIDParam,
@@ -191,8 +189,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             aiEngineParam.value = aiEngine
             customEnginePrompt.text = customPrompts
             customEngineResponseFormatParam.value = customEngineResponseFormat
-            customEngineRequestBodyFormatParam.value = customEngineRequestBodyFormat
-            customEngineRequestHeaderFormatParam.value = customEngineRequestHeaderFormat
+            customEngineRequestBodyFormatParam.value = customEngineRequestFormat
             delaySecondsParam.value = delaySeconds
         }
     }
@@ -216,8 +213,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             customPrompts = customEnginePrompt.text
             openAiModel = openAIModelsParam.value
             customEngineResponseFormat = customEngineResponseFormatParam.value
-            customEngineRequestBodyFormat = customEngineRequestBodyFormatParam.value
-            customEngineRequestHeaderFormat = customEngineRequestHeaderFormatParam.value
+            customEngineRequestFormat = customEngineRequestBodyFormatParam.value
             delaySeconds = delaySecondsParam.value
         }
     }
@@ -240,8 +236,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
                 settings.openAiModel != openAIModelsParam.value ||
                 settings.customOpenAiHost != customOpenAIHostParam.value ||
                 settings.customEngineResponseFormat != customEngineResponseFormatParam.value ||
-                settings.customEngineRequestBodyFormat != customEngineRequestBodyFormatParam.value ||
-                settings.customEngineRequestHeaderFormat != customEngineRequestHeaderFormatParam.value ||
+                settings.customEngineRequestFormat != customEngineRequestBodyFormatParam.value ||
                 settings.delaySeconds != delaySecondsParam.value
     }
 

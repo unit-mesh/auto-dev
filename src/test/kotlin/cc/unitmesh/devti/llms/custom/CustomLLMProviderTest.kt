@@ -45,7 +45,7 @@ class CustomLLMProviderTest {
         val customRequest = """
             {
                 "messageKeys": 
-                   {"content": "message"}
+                   {"content": "content"}
             }
         """.trimIndent()
         val request = CustomRequest(listOf(
@@ -58,8 +58,28 @@ class CustomLLMProviderTest {
 
         val messageObj = newObj.jsonObject["messages"]!!.jsonArray
         assertEquals(1, messageObj.size)
-        assertEquals("this is message", messageObj[0].jsonObject["message"]!!.jsonPrimitive.content)
+        assertEquals("this is message", messageObj[0].jsonObject["content"]!!.jsonPrimitive.content)
     }
 
+    @Test
+    fun testCustomRequestUpdate() {
+        val customRequestFormat = """
+            {
+                "customFields": 
+                    {"user": "userid", "date": "2012"},
+                "messageKeys": 
+                   {"content": "anyContentKey", "role": "anyRoleKey"}
+            }
+        """.trimIndent()
+
+        val customRequest = CustomRequest(listOf(
+                Message("robot", "hello")
+        ))
+
+        val request = customRequest.updateCustomFormat(customRequestFormat)
+        assertEquals("""
+            {"messages":[{"anyRoleKey":"robot","anyContentKey":"hello"}],"user":"userid","date":"2012"}
+        """.trimIndent(), request)
+    }
 
 }
