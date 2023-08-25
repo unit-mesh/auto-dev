@@ -18,6 +18,8 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
+const val CO_UNIT = "/counit"
+
 @Service(Service.Level.PROJECT)
 class CoUnitPreProcessor(val project: Project) {
     private val llmProviderFactory = LlmProviderFactory()
@@ -27,14 +29,14 @@ class CoUnitPreProcessor(val project: Project) {
     private val llmProvider = llmProviderFactory.connector(project)
 
     fun isCoUnit(input: String): Boolean {
-        return project.coUnitSettings.enableCoUnit && input.startsWith("/counit")
+        return project.coUnitSettings.enableCoUnit && input.startsWith(CO_UNIT)
     }
 
     fun handleChat(prompter: ContextPrompter, ui: ChatCodingPanel, context: ChatContext?) {
         val originRequest = prompter.requestPrompt()
         ui.addMessage(originRequest, true, originRequest)
 
-        val request = originRequest.removePrefix("/counit").trim()
+        val request = originRequest.removePrefix(CO_UNIT).trim()
 
         val response = coUnitPromptGenerator.findIntention(request)
         if (response == null) {
