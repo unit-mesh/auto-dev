@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.llms.openai
 
+import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.components.Service
@@ -65,6 +66,11 @@ class OpenAIProvider(val project: Project) : LLMProvider {
     override fun clearMessage() {
         messages.clear()
         historyMessageLength = 0
+    }
+
+    override fun appendLocalMessage(msg: String, role: ChatRole) {
+        val message = ChatMessage(role.roleName(), msg)
+        messages.add(message)
     }
 
     override fun prompt(promptText: String): String {

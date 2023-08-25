@@ -2,7 +2,7 @@ package cc.unitmesh.devti.intentions.action.task
 
 import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
-import cc.unitmesh.devti.llms.LLMProviderFactory
+import cc.unitmesh.devti.llms.LlmProviderFactory
 import cc.unitmesh.devti.LLMCoroutineScope
 import cc.unitmesh.devti.InsertUtil
 import cc.unitmesh.devti.intentions.action.CodeCompletionIntention
@@ -26,7 +26,7 @@ import kotlin.jvm.internal.Ref
 class CodeCompletionTask(private val request: CodeCompletionRequest) :
     Task.Backgroundable(request.project, AutoDevBundle.message("intentions.chat.code.complete.name")) {
 
-    private val LLMProviderFactory = LLMProviderFactory()
+    private val LLMProviderFactory = LlmProviderFactory()
 
     private val chunksString = SimilarChunksWithPaths.createQuery(request.element, 60)
     private val commenter = LanguageCommenters.INSTANCE.forLanguage(request.element.language)

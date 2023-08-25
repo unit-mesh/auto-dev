@@ -3,5 +3,9 @@ package cc.unitmesh.devti.gui.chat
 enum class ChatRole {
     System,
     Assistant,
-    User
+    User;
+
+    fun roleName(): String {
+        return this.name.lowercase()
+    }
 }

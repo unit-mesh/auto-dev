@@ -26,7 +26,10 @@ import javax.swing.JPanel
 class AppSettingsComponent(settings: AutoDevSettingsState) {
     val panel: JPanel
     private val openAiKey = JBPasswordField()
+    private val gitType = ComboBox(GIT_TYPE)
     private val githubToken = JBPasswordField()
+    private val gitlabToken = JBPasswordField()
+    private val gitlabUrl = JBTextField()
     private val customOpenAiHost = JBTextField()
     private val openAiModel = ComboBox(OPENAI_MODEL)
 
@@ -85,7 +88,13 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
             .addLabeledComponent(JBLabel("Max Token Length: "), maxTokenLengthInput, 1, false)
             .addSeparator()
             .addTooltip("GitHub Token is for AutoCRUD Model")
+            .addTooltip("Select the Git Type")
+            .addLabeledComponent(JBLabel("Type: "), gitType, 1, false)
+            .addTooltip("GitHub Token is for AutoDev")
             .addLabeledComponent(JBLabel("GitHub Token: "), githubToken, 1, false)
+            .addTooltip("GitLab URL & Token is for AutoDev")
+            .addLabeledComponent(JBLabel("GitLab URL: "), gitlabUrl, 1, false)
+            .addLabeledComponent(JBLabel("GitLab Token: "), gitlabToken, 1, false)
             .addSeparator()
             .addLabeledComponent(JBLabel("OpenAI Model: "), openAiModel, 1, false)
             .addLabeledComponent(JBLabel("OpenAI Key: "), openAiKey, 1, false)
@@ -131,12 +140,36 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
         githubToken.text = newText
     }
 
+    private fun getGitlabToken(): String {
+        return gitlabToken.password.joinToString("")
+    }
+
+    private fun setGitlabToken(newText: String) {
+        gitlabToken.text = newText
+    }
+
+    private fun getGitlabUrl(): String {
+        return gitlabUrl.text
+    }
+
+    private fun setGitlabUrl(newText: String) {
+        gitlabUrl.text = newText
+    }
+
     private fun getOpenAiModel(): String {
         return openAiModel.selectedItem?.toString() ?: OPENAI_MODEL[0]
     }
 
     private fun setOpenAiModel(newText: String) {
         openAiModel.selectedItem = newText
+    }
+
+    private fun getGitType(): String {
+        return gitType.selectedItem?.toString() ?: DEFAULT_GIT_TYPE
+    }
+
+    private fun setGitType(newText: String) {
+        gitType.selectedItem = newText
     }
 
     private fun getOpenAiHost(): String {
@@ -231,6 +264,9 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
     fun isModified(settings: AutoDevSettingsState): Boolean {
         return settings.openAiKey != getOpenAiKey() ||
                 settings.githubToken != getGithubToken() ||
+                settings.gitType != getGitType() ||
+                settings.gitlabUrl != getGitlabUrl() ||
+                settings.gitlabToken != getGitlabToken() ||
                 settings.openAiModel != getOpenAiModel() ||
                 settings.customOpenAiHost != getOpenAiHost() ||
                 settings.aiEngine != getAiEngine() ||
@@ -252,7 +288,10 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
     fun exportSettings(target: AutoDevSettingsState) {
         target.apply {
             openAiKey = getOpenAiKey()
+            gitType = getGitType()
             githubToken = getGithubToken()
+            gitlabUrl = getGitlabUrl()
+            gitlabToken = getGitlabToken()
             openAiModel = getOpenAiModel()
             customOpenAiHost = getOpenAiHost()
             aiEngine = getAiEngine()
@@ -274,7 +313,10 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
     fun applySettings(settings: AutoDevSettingsState) {
         settings.also {
             setOpenAiKey(it.openAiKey)
+            setGitType(it.gitType)
             setGithubToken(it.githubToken)
+            setGitlabToken(it.gitlabToken)
+            setGitlabUrl(it.gitlabUrl)
             setOpenAiModel(it.openAiModel)
             setOpenAiHost(it.customOpenAiHost)
             setAiEngine(it.aiEngine)

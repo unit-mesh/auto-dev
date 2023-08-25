@@ -4,11 +4,7 @@ import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.modules
 import com.jetbrains.python.PythonLanguage
-import com.jetbrains.python.packaging.PyPackage
-import com.jetbrains.python.packaging.tryCreateCustomPackageManager
-import com.jetbrains.python.sdk.configuration.PyProjectSdkConfigurationExtension
 
 class PythonFrameworkContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {

@@ -123,7 +123,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         }
     }
 
-    fun addMessage(message: String, isMe: Boolean = false, displayPrompt: String = "") {
+    fun addMessage(message: String, isMe: Boolean = false, displayPrompt: String = ""): MessageView {
         val role = if (isMe) ChatRole.User else ChatRole.Assistant
         val displayText = displayPrompt.ifEmpty { message }
 
@@ -134,6 +134,8 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         scrollToBottom()
         progressBar.isIndeterminate = true
         updateUI()
+
+        return messageView
     }
 
     private fun updateLayout() {

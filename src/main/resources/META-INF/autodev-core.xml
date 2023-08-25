@@ -12,6 +12,12 @@
                                  id="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                                  displayName="AutoDev"/>
 
+        <projectService serviceImplementation="cc.unitmesh.devti.settings.configurable.CoUnitProjectSettingsService"/>
+        <projectConfigurable provider="cc.unitmesh.devti.settings.configurable.CoUnitToolConfigurableProvider"
+                             parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
+                             id="cc.unitmesh.counit"
+                             bundle="messages.AutoDevBundle" key="settings.external.counit.name"/>
+
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.AutoDevSettingsState"/>
 
         <runConfigurationProducer

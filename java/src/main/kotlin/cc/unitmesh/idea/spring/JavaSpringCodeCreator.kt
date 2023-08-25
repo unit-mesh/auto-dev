@@ -233,9 +233,9 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
             project: Project,
             elementFactory: PsiElementFactory
         ) {
-            ApplicationManager.getApplication().runReadAction {
+            ApplicationManager.getApplication().invokeLater {
                 val targetControllerClass = PsiTreeUtil.findChildrenOfType(targetFile, PsiClass::class.java)
-                    .firstOrNull() ?: return@runReadAction // Return from the lambda if the class is not found
+                    .firstOrNull() ?: return@invokeLater // Return from the lambda if the class is not found
 
                 var method = code
                 if (code.contains("class $targetClass")) {
