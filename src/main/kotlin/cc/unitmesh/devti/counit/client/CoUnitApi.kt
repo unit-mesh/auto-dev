@@ -8,12 +8,12 @@ import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface CoUnitApi {
-    @GET("/api/prompt/explain")
+    @GET("/api/agent/prompt/explain")
     fun explainQuery(@Query("q") q: String): Call<PromptResult>
 
-    @POST("/api/prompt/functions/matching")
+    @POST("/api/agent/prompt/functions/matching")
     fun toolPrompter(@Query("q") q: String): Call<PromptResult>
 
-    @GET("/api/prompt/functions/list")
+    @GET("/api/agent/prompt/functions/list")
     fun functions(): Call<List<Tool>>
 }

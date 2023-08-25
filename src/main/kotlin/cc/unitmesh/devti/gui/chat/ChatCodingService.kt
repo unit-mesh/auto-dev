@@ -1,17 +1,19 @@
 package cc.unitmesh.devti.gui.chat
 
-import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.LLMCoroutineScope
+import cc.unitmesh.devti.counit.CoUnitPreProcessor
 import cc.unitmesh.devti.llms.LlmProviderFactory
 import cc.unitmesh.devti.parser.PostCodeProcessor
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 class ChatCodingService(var actionType: ChatActionType, val project: Project) {
     private val llmProviderFactory = LlmProviderFactory()
+    private val counitProcessor = project.service<CoUnitPreProcessor>()
 
     val action = actionType.instruction()
 
@@ -22,12 +24,19 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
 
     fun handlePromptAndResponse(
         ui: ChatCodingPanel,
-        prompt: ContextPrompter,
+        prompter: ContextPrompter,
         context: ChatContext? = null
     ) {
-        val requestPrompt = prompt.requestPrompt()
-        ui.addMessage(requestPrompt, true, prompt.displayPrompt())
-        ui.addMessage(AutoDevBundle.message("devti.loading"))
+        val requestPrompt = prompter.requestPrompt()
+
+        counitProcessor.isCoUnit(requestPrompt).let {
+            if (it) {
+                counitProcessor.handleChat(prompter, ui, context)
+                return
+            }
+        }
+
+        ui.addMessage(requestPrompt, true, prompter.displayPrompt())
 
         ApplicationManager.getApplication().executeOnPooledThread {
             val response = this.makeChatBotRequest(requestPrompt)

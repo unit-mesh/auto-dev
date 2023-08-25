@@ -5,11 +5,13 @@ import cc.unitmesh.devti.settings.configurable.coUnitSettings
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 @Service(Service.Level.PROJECT)
 class CoUnitPromptGenerator(val project: Project) {
-    var retrofit = Retrofit.Builder()
+    private var retrofit = Retrofit.Builder()
         .baseUrl(project.coUnitSettings.serverAddress)
+        .addConverterFactory(GsonConverterFactory.create())
         .build()
 
     var service: CoUnitApi = retrofit.create(CoUnitApi::class.java)
