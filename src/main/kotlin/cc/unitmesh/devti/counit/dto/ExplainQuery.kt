@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.counit.model
+package cc.unitmesh.devti.counit.dto
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -7,7 +7,6 @@ import kotlinx.serialization.Serializable
 data class ExplainQuery(
     val domain: String,
     val query: String,
-    @SerialName("hypothetical_document")
     val hypotheticalDocument: String
 )
 
