@@ -39,8 +39,11 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private val url get() = autoDevSettingsState.customEngineServer
     private val key get() = autoDevSettingsState.customEngineToken
-    private val engineFormat get() = autoDevSettingsState.customEngineResponseFormat
-    private val customPromptConfig: CustomPromptConfig?
+
+    private val requestHeaderFormat: String get() = autoDevSettingsState.customEngineRequestHeaderFormat
+    private val requestBodyFormat: String get() = autoDevSettingsState.customEngineRequestBodyFormat
+    private val responseFormat get() = autoDevSettingsState.customEngineResponseFormat
+    private val customPromptConfig: CustomPromptConfig
         get() {
             val prompts = autoDevSettingsState.customPrompts
             return CustomPromptConfig.tryParse(prompts)
@@ -100,8 +103,8 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
                     sseFlowable
                             .doOnError(Throwable::printStackTrace)
                             .blockingForEach { sse ->
-                                if (engineFormat.isNotEmpty()) {
-                                    val chunk: String = JsonPath.parse(sse!!.data)?.read(engineFormat)
+                                if (responseFormat.isNotEmpty()) {
+                                    val chunk: String = JsonPath.parse(sse!!.data)?.read(responseFormat)
                                             ?: throw Exception("Failed to parse chunk")
                                     logger.warn(" $chunk")
                                     trySend(chunk)
