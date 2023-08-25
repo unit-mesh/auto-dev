@@ -11,6 +11,7 @@ import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.settings.configurable.coUnitSettings
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
@@ -36,7 +37,10 @@ class CoUnitPreProcessor(val project: Project) {
         val request = originRequest.removePrefix("/counit").trim()
 
         val response = coUnitPromptGenerator.findIntention(request)
-            ?: throw Exception("CoUnit response is null, please check your CoUnit server address")
+        if (response == null) {
+            LOG.error("can not find intention for request: $request")
+            return
+        }
 
         ui.addMessage(response, true, response)
 
@@ -55,7 +59,8 @@ class CoUnitPreProcessor(val project: Project) {
                 val explain: ExplainQuery = json.decodeFromString(fixedResult)
                 explain
             } catch (e: Exception) {
-                throw Exception("parse result error: $e")
+                LOG.error("parse result error: $e")
+                return@launch
             }
 
             val searchTip = "search API by query and hypothetical document"
@@ -98,6 +103,10 @@ class CoUnitPreProcessor(val project: Project) {
         return result
             .removePrefix("```json")
             .removeSuffix("```")
+    }
+
+    companion object {
+        private val LOG = logger<CoUnitPreProcessor>()
     }
 }
 

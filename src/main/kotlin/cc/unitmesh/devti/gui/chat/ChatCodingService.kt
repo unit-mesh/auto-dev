@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.gui.chat
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.LLMCoroutineScope
 import cc.unitmesh.devti.counit.CoUnitPreProcessor
 import cc.unitmesh.devti.llms.LlmProviderFactory
@@ -37,6 +38,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         }
 
         ui.addMessage(requestPrompt, true, prompter.displayPrompt())
+        ui.addMessage(AutoDevBundle.message("autodev.assistant.placeholder"))
 
         ApplicationManager.getApplication().executeOnPooledThread {
             val response = this.makeChatBotRequest(requestPrompt)
