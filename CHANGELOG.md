@@ -2,6 +2,39 @@
 
 ## [Unreleased]
 
+## [1.2.0] - 2023-08-25
+
+### Bug Fixes
+- [#36](https://github.com/unit-mesh/auto-dev/issues/36) 添加漏掉的 GitHub Token 选项 ([cfb6a60](https://github.com/unit-mesh/auto-dev/commit/cfb6a608d9bb620e99ba0b4783f712605e7f6e04))
+- add clear message for [#35](https://github.com/unit-mesh/auto-dev/issues/35) ([cf60775](https://github.com/unit-mesh/auto-dev/commit/cf607755a4254052461ff0dbf8da5125ebee0fbb))
+- change current selected engine not apply(until reopen project) ([01ea78a](https://github.com/unit-mesh/auto-dev/commit/01ea78a031585b24a49f76048f00a1047fdfb7bc))
+- **counit:** fix syntax error issue ([f532d1e](https://github.com/unit-mesh/auto-dev/commit/f532d1e6d8fdac56461fe5fac9f1e2d5005eee22))
+- Custom LLM engin server not work when change(until reopen project) ([dd488de](https://github.com/unit-mesh/auto-dev/commit/dd488de3e7a1c450c9bc2876f948f9242ed3187e))
+- fix ci ([9b8859b](https://github.com/unit-mesh/auto-dev/commit/9b8859b02e8b394db8f2ea4d6f52ef4262e70acc))
+- fix lost user information issue ([2bfc82a](https://github.com/unit-mesh/auto-dev/commit/2bfc82ab80616c1aec617762e0569713cec33d01))
+- fix role issues ([fe75364](https://github.com/unit-mesh/auto-dev/commit/fe753645bc5e44a90101e5ba914267cb82f4b3f7))
+- fix url path issue ([b4c2001](https://github.com/unit-mesh/auto-dev/commit/b4c2001b0434f99b627eb1f8b8e13ed1944f1c55))
+- if already used Custom Engine config will not work after changed until reopen project. close [#31](https://github.com/unit-mesh/auto-dev/issues/31) ([624b0bc](https://github.com/unit-mesh/auto-dev/commit/624b0bcfe156012dfb0f26e885c202e0f715da8d))
+- 添加漏掉的 custome request format 选项 ([abfd500](https://github.com/unit-mesh/auto-dev/commit/abfd500b64700fc7c141fe9b6749170c30631c67))
+
+### Features
+- add clion context   as example ([4489358](https://github.com/unit-mesh/auto-dev/commit/4489358a36522a8d2842a5f2a0015f21abac200b))
+- **counit:** align to new APIs datastructure ([1150f54](https://github.com/unit-mesh/auto-dev/commit/1150f54f5ba8cb422aecc36867504400870d0942))
+- **counit:** fix format ([a010536](https://github.com/unit-mesh/auto-dev/commit/a0105368d5e9c81cc1968210db78763aee191317))
+- **counit:** init basic apis ([e78f864](https://github.com/unit-mesh/auto-dev/commit/e78f864afdc3a5c4e6869d2bc8109fb059cc7247))
+- **counit:** init basic prompter ([1a30643](https://github.com/unit-mesh/auto-dev/commit/1a306437275b12c81cd1bc783ec75b0485fbc25d))
+- **counit:** init counit setting service ([51bc5fb](https://github.com/unit-mesh/auto-dev/commit/51bc5fb8f74ca873cbe141e55ffaaa22b3fce885))
+- **counit:** init for tool panel ([b2215ba](https://github.com/unit-mesh/auto-dev/commit/b2215ba8928d8f83e9d2fa32579eb3e7db00ab49))
+- **counit:** make basic work flows ([21c25c7](https://github.com/unit-mesh/auto-dev/commit/21c25c774647eec638a3571de43553da574f9614))
+- **document:** revert for json path language because different IDE product issue ([acae8ea](https://github.com/unit-mesh/auto-dev/commit/acae8eadebf335a18a213b7fefd9d6290f718921))
+- init cpp module for ruipeng ([f74f094](https://github.com/unit-mesh/auto-dev/commit/f74f0949f3f12aae6dabbeacde86933c8be66987))
+- **kanban:** add GitLabIssue implementation ([ab0d91d](https://github.com/unit-mesh/auto-dev/commit/ab0d91d1d7084b3f90f3bad56451d6e4af4eaec6))
+- **rust:** init context ([4e7cd19](https://github.com/unit-mesh/auto-dev/commit/4e7cd19ba30f98ecf2649f844e0bcd4e4e085b00))
+- **settings:** add GitLab options ([36548b5](https://github.com/unit-mesh/auto-dev/commit/36548b5975710870ba661f44eb67d975410c1991))
+- **settings:** add new LLMParam components ([946f5a0](https://github.com/unit-mesh/auto-dev/commit/946f5a083b8a1fde8ac5f39f1ef76a87634d58b1))
+- **settings:** add new LLMParam components ([dac557b](https://github.com/unit-mesh/auto-dev/commit/dac557be7ee264907da6a85c9836df008b58a95a))
+- **settings:** add XingHuo provider configuration close [#29](https://github.com/unit-mesh/auto-dev/issues/29) ([cca35c6](https://github.com/unit-mesh/auto-dev/commit/cca35c6d8136dc7d4a81edf96e3a38692dbc6746))
+
 ## [1.1.4](https://github.com/unit-mesh/auto-dev/compare/v1.1.3...v[1.1.4]) (2023-08-18)
 
 ### Features
@@ -556,7 +589,8 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.1.4...HEAD
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/unit-mesh/auto-dev/compare/v1.1.4...v1.2.0
 [1.1.4]: https://github.com/unit-mesh/auto-dev/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/unit-mesh/auto-dev/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/unit-mesh/auto-dev/compare/v1.1.1...v1.1.2
