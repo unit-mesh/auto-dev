@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.llms.custom
 
 import cc.unitmesh.devti.custom.CustomPromptConfig
+import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -53,6 +54,10 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
 
     override fun clearMessage() {
         messages.clear()
+    }
+
+    override fun appendLocalMessage(msg: String, role: ChatRole) {
+        messages += Message(role.roleName(), msg)
     }
 
     override fun prompt(promptText: String): String {

@@ -4,6 +4,7 @@ import cc.unitmesh.devti.LLMCoroutineScope
 import cc.unitmesh.devti.counit.dto.ExplainQuery
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatContext
+import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.llms.LlmProviderFactory
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.settings.configurable.coUnitSettings
@@ -27,6 +28,9 @@ class CoUnitPreProcessor(val project: Project) {
 
     private val json = Json { ignoreUnknownKeys = true }
 
+    val llmProvider = llmProviderFactory.connector(project)
+
+
     fun handleChat(prompter: ContextPrompter, ui: ChatCodingPanel, context: ChatContext?) {
         val originRequest = prompter.requestPrompt()
         ui.addMessage(originRequest, true, originRequest)
@@ -41,9 +45,14 @@ class CoUnitPreProcessor(val project: Project) {
         // add for laoding
         ui.addMessage("start to identify intention", false, "start to identify intention")
 
+
         LLMCoroutineScope.scope(project).launch {
-            val intentionFlow = llmProviderFactory.connector(project).stream(response, "")
+            llmProvider.appendLocalMessage(response, ChatRole.User)
+
+            val intentionFlow = llmProvider.stream(response, "")
             val result = ui.updateMessage(intentionFlow)
+
+            llmProvider.appendLocalMessage(result, ChatRole.Assistant)
 
             val explain = try {
                 val fixedResult = fix(result)
@@ -53,7 +62,11 @@ class CoUnitPreProcessor(val project: Project) {
                 throw Exception("parse result error: $e")
             }
 
-            ui.addMessage("search by query and hyde doc", true, "search by query and hyde doc")
+            val searchTip = "search by query and hyde doc"
+
+            llmProvider.appendLocalMessage(searchTip, ChatRole.User)
+            ui.addMessage(searchTip, true, searchTip)
+
             val queryResult = coUnitPromptGenerator.queryTool(explain.query, explain.hypotheticalDocument)
 
             val sb = StringBuilder()
@@ -70,6 +83,8 @@ class CoUnitPreProcessor(val project: Project) {
             }
 
             val related = sb.toString()
+            llmProvider.appendLocalMessage(related, ChatRole.User)
+
             ApplicationManager.getApplication().invokeLater {
                 ui.addMessage(related, true, related)
             }
