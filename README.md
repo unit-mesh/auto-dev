@@ -21,21 +21,20 @@
 
 Features:
 
-- Languages support: Java, Kotlin, Python, JavaScript, or others...
-- Auto development mode. 
+- Languages support: Java, Kotlin, Python, JavaScript or others...
+- Auto development mode.
     - With DevTi Protocol (like `devti://story/github/1102`) will auto generate
-    Model-Controller-Service-Repository code.
+      Model-Controller-Service-Repository code.
     - AutoCRUD mode (Java/Kotlin Language only）. Auto generate CRUD code.
     - Auto Testing. create unit test intention, auto run unit test and try to fix test.
-- Smart code completion.
-    - Pattern specific.Based on your code context like (Controller, Service `import`), AutoDev will suggest you the
-      best code.
+- Copilot mode
+    - Pattern specific.Based on your code context like (Controller, Service `import`), AutoDev will suggest you the best
+      code.
     - Related code. Based on recently file changes, AutoDev will call calculate similar chunk to generate best code.
-- Copilot mode 
     - AutoDev will help you find bug, explain code, trace exception, generate commits, and more.
 - Chat mode
     - Chat with AI.
-    - Chat with this.
+    - Chat with selection code.
 - Customize.
     - Custom specification of prompt.
     - Custom intention action. You can add your own intention action.
@@ -52,9 +51,12 @@ Features:
 - Custom Action: [docs/custom-action.md](docs/custom-action.md)
 - Custom Documentation: [docs/custom-living-documentation.md](docs/custom-living-documentation.md)
 - Custom LLM Server: [docs/custom-llm-server.md](docs/custom-llm-server.md)
+
+### Development
+
 - Custom Language: [docs/custom-language.md](docs/custom-language.md)
 
-## Demo
+### Demo
 
 Video demo (Youtube) - English
 
@@ -63,7 +65,6 @@ Video demo (Youtube) - English
 Video demo (Bilibili) - 中文
 
 [![Watch the video](https://img.youtube.com/vi/gVBTBdFV5hA/sddefault.jpg)](https://www.bilibili.com/video/BV1yV4y1i74c/)
-
 
 ## Useful Links
 
@@ -80,12 +81,12 @@ Video demo (Bilibili) - 中文
   by: [https://github.com/intellij-rust/intellij-rust](https://github.com/intellij-rust/intellij-rust)
 - SimilarFile inspired by: JetBrains and GitHub Copilot
 
-**Known License issues**: JetBrain plugin development is no walk in the park! Oops, we cheekily borrowed some code from 
-the JetBrains Community version and the super cool JetBrains AI Assistant plugin in our codebase. 
-But fret not, we are working our magic to clean it up diligently! 🧙‍♂️✨. 
+**Known License issues**: JetBrain plugin development is no walk in the park! Oops, we cheekily borrowed some code from
+the JetBrains Community version and the super cool JetBrains AI Assistant plugin in our codebase.
+But fret not, we are working our magic to clean it up diligently! 🧙‍♂️✨.
 
 Those code will be removed in the future, you
- can check it in `src/main/kotlin/com/intellij/temporary`, if you want to use this plugin in your company, 
+can check it in `src/main/kotlin/com/intellij/temporary`, if you want to use this plugin in your company,
 please remove those code to avoid any legal issues.
 
 This code is distributed under the MPL 2.0 license. See `LICENSE` in this directory.
