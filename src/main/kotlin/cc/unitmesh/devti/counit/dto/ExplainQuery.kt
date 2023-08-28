@@ -12,8 +12,18 @@ data class ExplainQuery(
 )
 
 class QueryResult(
-    val normalQuery: List<CodePayload>,
-    val natureLangQuery: List<CodePayload>,
+    /**
+     * the software source code was written in English, so query in English will be more accurate.
+     */
+    val englishQuery: List<CodePayload>,
+    /**
+     * the document, wiki, comments or OpenAPI's title was written by natural language, so query in natural
+     * language will be more accurate.
+     */
+    val naturalLangQuery: List<CodePayload>,
+    /**
+     * with hypothetical document, we can get more accurate result in some cases.
+     */
     val hypotheticalDocument: List<CodePayload>,
 )
 

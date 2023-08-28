@@ -15,7 +15,6 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 const val CO_UNIT = "/counit"
@@ -89,16 +88,16 @@ class CoUnitPreProcessor(val project: Project) {
 
     private fun buildDocAsContext(queryResult: QueryResult): String {
         val sb = StringBuilder()
-        val normalDoc = queryResult.normalQuery
+        val normalDoc = queryResult.englishQuery
         if (normalDoc.isNotEmpty()) {
             sb.append("here is related API to origin query's result: \n```markdown\n")
             sb.append(normalDoc[0].displayText)
             sb.append("\n```\n")
         }
 
-        val nature = queryResult.natureLangQuery
+        val nature = queryResult.naturalLangQuery
         if (nature.isNotEmpty()) {
-            sb.append("here is nature language query's result: \n```markdown\n")
+            sb.append("here is natural language query's result: \n```markdown\n")
             sb.append(nature[0].displayText)
             sb.append("\n```\n")
         }
