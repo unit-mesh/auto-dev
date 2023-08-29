@@ -1,8 +1,6 @@
 package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.gui.component.HtmlContentComponent
-import com.intellij.temporary.gui.block.whenDisposed
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.Disposable
@@ -10,6 +8,7 @@ import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.NullableComponent
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.IdeFocusManager
+import com.intellij.temporary.gui.block.whenDisposed
 import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.ActionLink
@@ -22,8 +21,10 @@ import com.intellij.ui.dsl.gridLayout.VerticalAlign
 import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.withContext
 import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -123,7 +124,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         }
     }
 
-    fun addMessage(message: String, isMe: Boolean = false, displayPrompt: String = "") {
+    fun addMessage(message: String, isMe: Boolean = false, displayPrompt: String = ""): MessageView {
         val role = if (isMe) ChatRole.User else ChatRole.Assistant
         val displayText = displayPrompt.ifEmpty { message }
 
@@ -134,6 +135,8 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         scrollToBottom()
         progressBar.isIndeterminate = true
         updateUI()
+
+        return messageView
     }
 
     private fun updateLayout() {
@@ -199,6 +202,11 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
                 messageView.updateContent(text)
                 messageView.scrollToBottom()
             }
+        }
+
+        // waiting for the last message to be rendered, like sleep 5 ms?
+        withContext(Dispatchers.IO) {
+            Thread.sleep(10)
         }
 
         messageView.reRenderAssistantOutput()

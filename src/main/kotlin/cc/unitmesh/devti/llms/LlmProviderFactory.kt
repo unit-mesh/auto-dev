@@ -10,7 +10,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 
 @Service
-class LLMProviderFactory {
+class LlmProviderFactory {
     private val aiEngine: AIEngines
         get() = AIEngines.values()
             .find { it.name.lowercase() == AutoDevSettingsState.getInstance().aiEngine.lowercase() } ?: AIEngines.OpenAI
@@ -21,7 +21,6 @@ class LLMProviderFactory {
             AIEngines.Custom -> project.getService(CustomLLMProvider::class.java)
             AIEngines.Azure -> project.getService(AzureOpenAIProvider::class.java)
             AIEngines.XingHuo -> project.getService(XingHuoProvider::class.java)
-            else -> project.getService(OpenAIProvider::class.java)
         }
     }
 }

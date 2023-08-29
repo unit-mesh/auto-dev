@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.llms.custom
 
 import cc.unitmesh.devti.custom.CustomPromptConfig
+import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -36,23 +37,26 @@ data class CustomRequest(val messages: List<Message>)
 @Service(Service.Level.PROJECT)
 class CustomLLMProvider(val project: Project) : LLMProvider {
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
-    private val url = autoDevSettingsState.customEngineServer
-    private val key = autoDevSettingsState.customEngineToken
-    private val engineFormat = autoDevSettingsState.customEngineResponseFormat
-    private var customPromptConfig: CustomPromptConfig? = null
+    private val url get() = autoDevSettingsState.customEngineServer
+    private val key get() = autoDevSettingsState.customEngineToken
+    private val engineFormat get() = autoDevSettingsState.customEngineResponseFormat
+    private val customPromptConfig: CustomPromptConfig?
+        get() {
+            val prompts = autoDevSettingsState.customPrompts
+            return CustomPromptConfig.tryParse(prompts)
+        }
     private var client = OkHttpClient()
     private val timeout = Duration.ofSeconds(600)
     private val messages: MutableList<Message> = ArrayList()
-
-    init {
-        val prompts = autoDevSettingsState.customPrompts
-        customPromptConfig = CustomPromptConfig.tryParse(prompts)
-    }
 
     private val logger = logger<CustomLLMProvider>()
 
     override fun clearMessage() {
         messages.clear()
+    }
+
+    override fun appendLocalMessage(msg: String, role: ChatRole) {
+        messages += Message(role.roleName(), msg)
     }
 
     override fun prompt(promptText: String): String {
@@ -74,43 +78,43 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
             builder.addHeader("Authorization", "Bearer $key")
         }
         client = client.newBuilder()
-            .readTimeout(timeout)
-            .build()
+                .readTimeout(timeout)
+                .build()
         val request = builder
-            .url(url)
-            .post(body)
-            .build()
+                .url(url)
+                .post(body)
+                .build()
 
         val call = client.newCall(request)
         val emitDone = false
 
         val sseFlowable = Flowable
-            .create({ emitter: FlowableEmitter<SSE> ->
-                call.enqueue(cc.unitmesh.devti.llms.azure.ResponseBodyCallback(emitter, emitDone))
-            }, BackpressureStrategy.BUFFER)
+                .create({ emitter: FlowableEmitter<SSE> ->
+                    call.enqueue(cc.unitmesh.devti.llms.azure.ResponseBodyCallback(emitter, emitDone))
+                }, BackpressureStrategy.BUFFER)
 
         try {
             logger.warn("Starting to stream:")
             return callbackFlow {
                 withContext(Dispatchers.IO) {
                     sseFlowable
-                        .doOnError(Throwable::printStackTrace)
-                        .blockingForEach { sse ->
-                            if (engineFormat.isNotEmpty()) {
-                                val chunk: String = JsonPath.parse(sse!!.data)?.read(engineFormat)
-                                    ?: throw Exception("Failed to parse chunk")
-                                logger.warn(" $chunk")
-                                trySend(chunk)
-                            } else {
-                                val result: ChatCompletionResult =
-                                    ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
+                            .doOnError(Throwable::printStackTrace)
+                            .blockingForEach { sse ->
+                                if (engineFormat.isNotEmpty()) {
+                                    val chunk: String = JsonPath.parse(sse!!.data)?.read(engineFormat)
+                                            ?: throw Exception("Failed to parse chunk")
+                                    logger.warn(" $chunk")
+                                    trySend(chunk)
+                                } else {
+                                    val result: ChatCompletionResult =
+                                            ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
 
-                                val completion = result.choices[0].message
-                                if (completion != null && completion.content != null) {
-                                    trySend(completion.content)
+                                    val completion = result.choices[0].message
+                                    if (completion != null && completion.content != null) {
+                                        trySend(completion.content)
+                                    }
                                 }
                             }
-                        }
 
                     close()
                 }
@@ -138,13 +142,13 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
 
         try {
             client = client.newBuilder()
-                .readTimeout(timeout)
-                .build()
+                    .readTimeout(timeout)
+                    .build()
 
             val request = builder
-                .url(url)
-                .post(body)
-                .build()
+                    .url(url)
+                    .post(body)
+                    .build()
 
             val response = client.newCall(request).execute()
 

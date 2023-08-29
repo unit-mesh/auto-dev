@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.llms.azure
 
 import cc.unitmesh.devti.custom.CustomPromptConfig
+import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -64,6 +65,12 @@ class AzureOpenAIProvider(val project: Project) : LLMProvider {
     override fun clearMessage() {
         messages.clear()
         historyMessageLength = 0
+    }
+
+    override fun appendLocalMessage(msg: String, role: ChatRole) {
+        val message = SimpleOpenAIFormat(role.roleName(), msg)
+        messages.add(message)
+        historyMessageLength += msg.length
     }
 
     fun prompt(instruction: String, input: String): String {

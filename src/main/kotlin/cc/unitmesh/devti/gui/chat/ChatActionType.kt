@@ -15,7 +15,8 @@ enum class ChatActionType {
     FIX_ISSUE,
     CREATE_CHANGELOG,
     CUSTOM_COMPLETE,
-    CUSTOM_ACTION
+    CUSTOM_ACTION,
+    COUNIT
     ;
 
     override fun toString(): String {
@@ -80,6 +81,7 @@ $diff
             CHAT -> ""
             CUSTOM_COMPLETE -> ""
             CUSTOM_ACTION -> ""
+            COUNIT -> ""
         }
     }
 }

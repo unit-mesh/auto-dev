@@ -8,7 +8,6 @@ import com.intellij.util.xmlb.XmlSerializerUtil
 
 @State(name = "cc.unitmesh.devti.settings.DevtiSettingsState", storages = [Storage("DevtiSettings.xml")])
 class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
-
     var gitType = DEFAULT_GIT_TYPE
     var githubToken = ""
     var gitlabToken = ""

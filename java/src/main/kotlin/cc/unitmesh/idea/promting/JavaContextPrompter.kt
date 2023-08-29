@@ -141,7 +141,8 @@ open class JavaContextPrompter : ContextPrompter() {
             ChatActionType.CUSTOM_COMPLETE -> {
             }
 
-            ChatActionType.CUSTOM_ACTION -> TODO()
+            ChatActionType.CUSTOM_ACTION -> {}
+            ChatActionType.COUNIT -> {}
         }
 
         return prompt

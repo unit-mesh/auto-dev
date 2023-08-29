@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.intentions.action.task
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.llms.LLMProviderFactory
+import cc.unitmesh.devti.llms.LlmProviderFactory
 import cc.unitmesh.devti.provider.LivingDocumentation
 import cc.unitmesh.devti.custom.LivingDocumentationType
 import com.intellij.openapi.diagnostic.logger
@@ -28,7 +28,7 @@ class LivingDocumentationTask(
         logger.info("Prompt: $prompt")
 
         val stream =
-            LLMProviderFactory().connector(project).stream(prompt, "")
+            LlmProviderFactory().connector(project).stream(prompt, "")
 
         var result = ""
 
