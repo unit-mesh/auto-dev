@@ -28,10 +28,7 @@ import kotlinx.coroutines.withContext
 import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.JButton
-import javax.swing.JPanel
-import javax.swing.JProgressBar
-import javax.swing.ScrollPaneConstants
+import javax.swing.*
 
 
 class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disposable: Disposable?) :
@@ -165,8 +162,10 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
     }
 
     private fun scrollToBottom() {
-        val verticalScrollBar = myScrollPane.verticalScrollBar
-        verticalScrollBar.value = verticalScrollBar.maximum
+        SwingUtilities.invokeLater {
+            val verticalScrollBar = myScrollPane.verticalScrollBar
+            verticalScrollBar.value = verticalScrollBar.maximum
+        }
     }
 
     override fun isNull(): Boolean {
