@@ -9,7 +9,7 @@ class DevtiAnnotator : Annotator {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) = Unit
 
     companion object {
-        val AutoCRUDRegex = Regex("^//\\s+devti://story/(github)/(\\d+)(/.*)?$")
+        val AutoCRUDRegex = Regex("^//\\s+devti://story/(github|gitlab)/(\\d+)(/.*)?$")
 
         fun isAutoCRUD(comment: String): Boolean {
             return AutoCRUDRegex.matches(comment)
