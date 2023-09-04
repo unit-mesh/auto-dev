@@ -36,13 +36,14 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
     private val aiEngine = ComboBox(AI_ENGINES)
     private val customEngineServer = JBTextField()
     private val customEngineToken = JBTextField()
+    private val delaySeconds = JBTextField()
 
     private val xingHuoAppId = JBTextField()
     private val xingHuoApiKey = JBPasswordField()
     private val xingHuoApiSecret = JBPasswordField()
 
     val project = ProjectManager.getInstance().openProjects.firstOrNull()
-        private val customEngineResponseFormat = JBTextField()
+    private val customEngineResponseFormat = JBTextField()
     // the JsonPathFileType
 //    private val customEngineResponseFormat by lazy {
 //        object : EditorTextField(project, JsonPathFileType.INSTANCE) {
@@ -86,6 +87,7 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
             .addTooltip("For Custom LLM, config Custom Engine Server & Custom Engine Token & Custom Response Format")
             .addLabeledComponent(JBLabel("AI Engine: "), aiEngine, 1, false)
             .addLabeledComponent(JBLabel("Max Token Length: "), maxTokenLengthInput, 1, false)
+            .addLabeledComponent(JBLabel("Quest Delay Seconds: "), delaySeconds, 1, false)
             .addSeparator()
             .addTooltip("GitHub Token is for AutoCRUD Model")
             .addTooltip("Select the Git Type")
@@ -260,6 +262,13 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
         return xingHuoApiSecret.text
     }
 
+    private fun setDelaySeconds(newText: String) {
+        delaySeconds.text = newText
+    }
+
+    private fun getDelaySeconds(): String {
+        return delaySeconds.text
+    }
 
     fun isModified(settings: AutoDevSettingsState): Boolean {
         return settings.openAiKey != getOpenAiKey() ||
@@ -278,7 +287,8 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
                 settings.maxTokenLength != getMaxTokenLength() ||
                 settings.xingHuoAppId != getXingHuoAppId() ||
                 settings.xingHuoApiKey != getXingHuoApiKey() ||
-                settings.xingHuoApiSecrect != getXingHuoAppSecret()
+                settings.xingHuoApiSecrect != getXingHuoAppSecret() ||
+                settings.delaySeconds != getDelaySeconds()
 
     }
 
@@ -304,6 +314,7 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
             xingHuoAppId = getXingHuoAppId()
             xingHuoApiKey = getXingHuoApiKey()
             xingHuoApiSecrect = getXingHuoAppSecret()
+            delaySeconds = getDelaySeconds()
         }
     }
 
