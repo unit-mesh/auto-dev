@@ -19,6 +19,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     private val aiEngineParam by LLMParam.creating(onChange = { onSelectedEngineChanged() }) {
         ComboBox(settings.aiEngine, AIEngines.values().toList().map { it.name })
     }
+    private val delaySecondsParam by LLMParam.creating { Editable(settings.delaySeconds) }
     private val maxTokenLengthParam by LLMParam.creating { Editable(settings.maxTokenLength) }
     private val openAIModelsParam by LLMParam.creating { ComboBox(settings.openAiModel, OPENAI_MODEL.toList()) }
     private val openAIKeyParam by LLMParam.creating { Password(settings.openAiKey) }
@@ -146,6 +147,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             .addTooltip("For Custom LLM, config Custom Engine Server & Custom Engine Token & Custom Response Format")
             .addLLMParam(aiEngineParam)
             .addLLMParam(maxTokenLengthParam)
+            .addLLMParam(delaySecondsParam)
             .addSeparator()
             .addTooltip("Select Git Type")
             .addLLMParam(gitTypeParam)
@@ -185,6 +187,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             aiEngineParam.value = aiEngine
             customEnginePrompt.text = customPrompts
             customEngineResponseFormatParam.value = customEngineResponseFormat
+            delaySecondsParam.value = delaySeconds
         }
     }
 
@@ -207,6 +210,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             customPrompts = customEnginePrompt.text
             openAiModel = openAIModelsParam.value
             customEngineResponseFormat = customEngineResponseFormatParam.value
+            delaySeconds = delaySecondsParam.value
         }
     }
 
@@ -227,7 +231,8 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
                 settings.customPrompts != customEnginePrompt.text ||
                 settings.openAiModel != openAIModelsParam.value ||
                 settings.customOpenAiHost != customOpenAIHostParam.value ||
-                settings.customEngineResponseFormat != customEngineResponseFormatParam.value
+                settings.customEngineResponseFormat != customEngineResponseFormatParam.value ||
+                settings.delaySeconds != delaySecondsParam.value
     }
 
     init {

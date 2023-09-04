@@ -14,6 +14,7 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
     var gitlabUrl = ""
     var openAiKey = ""
     var openAiModel = ""
+    var delaySeconds = ""
 
     var aiEngine = DEFAULT_AI_ENGINE
     var customOpenAiHost = ""

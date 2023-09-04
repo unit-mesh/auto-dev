@@ -2,6 +2,7 @@ package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.ui.DialogPanel
@@ -41,6 +42,8 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
     private val focusMouseListener: MouseAdapter
     private var panelContent: DialogPanel
     private val myScrollPane: JBScrollPane
+    private val delaySeconds: String
+        get() = AutoDevSettingsState.getInstance().delaySeconds
 
     init {
         focusMouseListener = object : MouseAdapter() {
@@ -192,6 +195,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
     private suspend fun updateMessageInUi(content: Flow<String>): String {
         val messageView = MessageView("", ChatRole.Assistant, "")
         myList.add(messageView)
+        val startTime = System.currentTimeMillis() // 记录代码开始执行的时间
 
         var text = ""
         runCatching {
@@ -203,9 +207,14 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
             }
         }
 
+        val elapsedTime = System.currentTimeMillis() - startTime
+
         // waiting for the last message to be rendered, like sleep 5 ms?
         withContext(Dispatchers.IO) {
-            Thread.sleep(10)
+            val delaySec = delaySeconds.toLong() ?: 1L
+            val remainingTime = maxOf(delaySec * 1000 - elapsedTime, 0) // 计算剩余等待时间（最小为0）
+            // 等待剩余时间
+            Thread.sleep(remainingTime)
         }
 
         messageView.reRenderAssistantOutput()
