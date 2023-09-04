@@ -26,7 +26,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
 
     private val gitTypeParam: LLMParam by LLMParam.creating { ComboBox(settings.gitType, GIT_TYPE.toList()) }
     private val gitLabUrlParam: LLMParam by LLMParam.creating { Editable(settings.gitlabUrl) }
-    private val gitLabTokenParam: LLMParam by LLMParam.creating { Editable(settings.gitlabToken) }
+    private val gitLabTokenParam: LLMParam by LLMParam.creating { Password(settings.gitlabToken) }
 
     private val gitHubTokenParam by LLMParam.creating { Password(settings.githubToken) }
     private val customEngineServerParam by LLMParam.creating { Editable(settings.customEngineServer) }
