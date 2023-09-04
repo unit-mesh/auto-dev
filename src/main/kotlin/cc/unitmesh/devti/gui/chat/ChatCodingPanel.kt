@@ -23,6 +23,7 @@ import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.withContext
@@ -210,11 +211,12 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         val elapsedTime = System.currentTimeMillis() - startTime
 
         // waiting for the last message to be rendered, like sleep 5 ms?
+        // 此处的 20s 出自 openAI 免费账户访问 3/min
         withContext(Dispatchers.IO) {
-            val delaySec = delaySeconds.toLong() ?: 1L
-            val remainingTime = maxOf(delaySec * 1000 - elapsedTime, 0) // 计算剩余等待时间（最小为0）
-            // 等待剩余时间
-            Thread.sleep(remainingTime)
+
+            val delaySec = delaySeconds.toLong() ?: 20L
+            val remainingTime = maxOf(delaySec * 1000 - elapsedTime, 0)
+            delay(remainingTime)
         }
 
         messageView.reRenderAssistantOutput()
