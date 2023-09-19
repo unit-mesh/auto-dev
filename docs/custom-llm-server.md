@@ -4,7 +4,7 @@ See in: [ChatGLM2 SSE Server](../example/custom_llm_server/chatglm_sse.py)
 
 Your LLM API example:
 
-```http request
+```http-request
 POST http://127.0.0.1:8000/chat
 Content-Type: application/json
 
