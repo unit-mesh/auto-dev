@@ -128,7 +128,6 @@ class CodeBlockView(
                 it.isRightMarginShown = false
                 it.isShowIntentionBulb = false
                 it.isUseSoftWraps = true
-                it.setPaintSoftWraps(false)
                 it.isRefrainFromScrolling = true
                 it.isAdditionalPageAtBottom = false
                 it.isCaretRowShown = false
