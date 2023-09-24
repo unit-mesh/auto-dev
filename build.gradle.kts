@@ -331,7 +331,7 @@ project(":") {
 
         implementation(libs.json.path)
 
-        implementation("org.jetbrains:markdown:0.2.0.pre-55")
+        implementation("org.jetbrains:markdown:0.5.1")
         implementation(libs.kotlinx.serialization.json)
 
         // gitlab4j-api
@@ -339,9 +339,9 @@ project(":") {
             exclude(module = "jackson-core")
             exclude(module = "jackson-databind")
             exclude(module = "jackson-annotations")
-//            exclude("com.fasterxml.jackson.module.kotlin", "kotlin-module")
 
         }
+
         // jackson-module-kotlin
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.2") {
             exclude(module = "jackson-core")
