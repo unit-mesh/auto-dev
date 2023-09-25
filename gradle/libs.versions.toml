@@ -47,8 +47,7 @@ okhttp = "com.squareup.okhttp3:okhttp:4.4.1"
 okhttp-sse = "com.squareup.okhttp3:okhttp-sse:4.4.1"
 
 comate-spec-lang = "org.archguard.comate:spec-lang:0.2.0"
-#json-path = "com.jayway.jsonpath:json-path:2.8.0"
-json-path = "com.nfeld.jsonpathkt:jsonpathkt:2.0.1"
+json-path = "com.jayway.jsonpath:json-path:2.8.0"
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
