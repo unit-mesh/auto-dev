@@ -208,15 +208,15 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
             }
         }
 
-        val elapsedTime = System.currentTimeMillis() - startTime
-
-        // waiting for the last message to be rendered, like sleep 5 ms?
-        // 此处的 20s 出自 openAI 免费账户访问 3/min
-        withContext(Dispatchers.IO) {
-
-            val delaySec = delaySeconds.toLong() ?: 20L
-            val remainingTime = maxOf(delaySec * 1000 - elapsedTime, 0)
-            delay(remainingTime)
+        if (delaySeconds.isNotEmpty()) {
+            val elapsedTime = System.currentTimeMillis() - startTime
+            // waiting for the last message to be rendered, like sleep 5 ms?
+            // 此处的 20s 出自 openAI 免费账户访问 3/min
+            withContext(Dispatchers.IO) {
+                val delaySec = delaySeconds.toLong() ?: 20L
+                val remainingTime = maxOf(delaySec * 1000 - elapsedTime, 0)
+                delay(remainingTime)
+            }
         }
 
         messageView.reRenderAssistantOutput()
