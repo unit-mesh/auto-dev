@@ -1,7 +1,7 @@
 # AutoDev
 
 <p align="center">
-  <img src="plugin/src/main/resources/META-INF/pluginIcon.svg" width="64px" height="64px" />
+  <img src="plugin/src/main/resources/META-INF/pluginIcon.svg" width="160px" height="160px" />
 </p>
 
 <p align="center">
