@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Quick Start
+title: Prompt Strategy
 nav_order: 98
 permalink: /development
 ---
