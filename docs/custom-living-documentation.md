@@ -1,3 +1,10 @@
+---
+layout: default
+title: Custom Living Documentation
+nav_order: 12
+permalink: /custom/living-documentation
+---
+
 # Custom Living Documentation
 
 ```json

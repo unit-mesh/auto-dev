@@ -1,3 +1,10 @@
+---
+layout: default
+title: Quick Start
+nav_order: 98
+permalink: /development
+---
+
 # Prompt Strategy
 
 simliar to JetBrains LLM and GitHub Copilot, will be implementation like this:

@@ -1,3 +1,10 @@
+---
+layout: default
+title: Quick Start
+nav_order: 2
+permalink: /quick-start
+---
+
 # Usage
 
 1. Install from JetBrains Plugin Repository: [AutoDev](https://plugins.jetbrains.com/plugin/21520-autodev)
