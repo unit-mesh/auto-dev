@@ -7,7 +7,7 @@ permalink: /
 ---
 
 <p align="center">
-  <img src="../plugin/src/main/resources/META-INF/pluginIcon.svg" width="160px" height="160px" />
+  <img src="https://plugins.jetbrains.com/files/21520/412905/icon/pluginIcon.svg" width="160px" height="160px" />
 </p>
 
 <p align="center">
