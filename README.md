@@ -1,7 +1,7 @@
 # AutoDev
 
 <p align="center">
-  <img src="plugin/src/main/resources/META-INF/pluginIcon.svg" width="64px" height="64px" />
+  <img src="plugin/src/main/resources/META-INF/pluginIcon.svg" width="160px" height="160px"  alt="logo" />
 </p>
 
 <p align="center">
@@ -19,6 +19,8 @@
 > 🧙‍AutoDev: The AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, and a helpful
 > bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Testing feature 🧪 included! 🚀
 
+[Read the docs →](https://ide.unitmesh.cc/)
+
 Features:
 
 - Languages support: Java, Kotlin, Python, JavaScript or others...
@@ -30,7 +32,7 @@ Features:
 - Copilot mode
     - Pattern specific.Based on your code context like (Controller, Service `import`), AutoDev will suggest you the best
       code.
-    - Related code. Based on recently file changes, AutoDev will call calculate similar chunk to generate best code.
+    - Related code. Based on recent file changes, AutoDev will call calculate similar chunk to generate best code.
     - AutoDev will help you find bug, explain code, trace exception, generate commits, and more.
 - Chat mode
     - Chat with AI.
@@ -40,25 +42,13 @@ Features:
     - Custom intention action. You can add your own intention action.
     - Custom LLM Server. You can customize your LLM Server in `Settings` -> `Tools` -> `AutoDev`
 
-## Document
-
-- Usage: [docs/usage.md](docs/usage.md)
-- Development: [docs/development.md](docs/development.md)
-- Prompt Strategy: [docs/prompt-strategy.md](docs/prompt-strategy.md)
-
-### Customize
-
-- Custom Action: [docs/custom-action.md](docs/custom-action.md)
-- Custom Documentation: [docs/custom-living-documentation.md](docs/custom-living-documentation.md)
-- Custom LLM Server: [docs/custom-llm-server.md](docs/custom-llm-server.md)
-
 ### Development
 
 - Custom Language: [docs/custom-language.md](docs/custom-language.md)
 
 ### Demo
 
-Video demo (Youtube) - English
+Video demo (Youtube) — English
 
 [![Watch the video](https://img.youtube.com/vi/gVBTBdFV5hA/sddefault.jpg)](https://youtu.be/gVBTBdFV5hA)
 
@@ -68,9 +58,9 @@ Video demo (Bilibili) - 中文
 
 ## Useful Links
 
-- [Copilot-Explorer](https://github.com/thakkarparth007/copilot-explorer)  Hacky repo to see what the Copilot extension
+- [Copilot-Explorer](https://github.com/thakkarparth007/copilot-explorer) Hacky repo to see what the Copilot extension
   sends to the server.
-- [Github Copilot](https://github.com/saschaschramm/github-copilot) a small part about Copilot Performance logs.
+- [GitHub Copilot](https://github.com/saschaschramm/github-copilot) a small part of Copilot Performance logs.
 - [花了大半个月，我终于逆向分析了Github Copilot](https://github.com/mengjian-github/copilot-analysis)
 
 ## License

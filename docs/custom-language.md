@@ -1,3 +1,10 @@
+---
+layout: default
+title: Custom Language
+nav_order: 11
+permalink: /custom/language
+---
+
 # Custom Language
 
 ## improve language support

@@ -1,0 +1,47 @@
+---
+layout: default
+title: Home
+description: 🧙‍AutoDev - The AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, and a helpful bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Testing feature 🧪 included! 🚀
+nav_order: 1
+permalink: /
+---
+
+<p align="center">
+  <img src="../plugin/src/main/resources/META-INF/pluginIcon.svg" width="160px" height="160px" />
+</p>
+
+<p align="center">
+  <a href="https://github.com/unit-mesh/auto-dev/actions/workflows/build.yml">
+    <img src="https://github.com/unit-mesh/auto-dev/actions/workflows/build.yml/badge.svg" alt="Build">
+  </a>
+  <a href="https://plugins.jetbrains.com/plugin/21520-autodev">
+    <img src="https://img.shields.io/jetbrains/plugin/v/21520-autodev.svg" alt="Version">
+  </a>
+  <a href="https://plugins.jetbrains.com/plugin/21520-autodev">
+    <img src="https://img.shields.io/jetbrains/plugin/d/21520-autodev.svg" alt="Downloads">
+  </a>
+</p>
+
+> 🧙‍AutoDev: The AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, and a helpful
+> bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Testing feature 🧪 included! 🚀
+
+Features:
+
+- Languages support: Java, Kotlin, Python, JavaScript or others...
+- Auto development mode.
+    - With DevTi Protocol (like `devti://story/github/1102`) will auto generate
+      Model-Controller-Service-Repository code.
+    - AutoCRUD mode (Java/Kotlin Language only）. Auto generate CRUD code.
+    - Auto Testing. create unit test intention, auto run unit test and try to fix test.
+- Copilot mode
+    - Pattern specific.Based on your code context like (Controller, Service `import`), AutoDev will suggest you the best
+      code.
+    - Related code. Based on recent file changes, AutoDev will call calculate similar chunk to generate the best code.
+    - AutoDev will help you find bug, explain code, trace exception, generate commits, and more.
+- Chat mode
+    - Chat with AI.
+    - Chat with selection code.
+- Customize.
+    - Custom specification of prompt.
+    - Custom intention action. You can add your own intention action.
+    - Custom LLM Server. You can customize your LLM Server in `Settings` -> `Tools` -> `AutoDev`

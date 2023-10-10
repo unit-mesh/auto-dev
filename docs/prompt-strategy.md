@@ -1,3 +1,10 @@
+---
+layout: default
+title: Prompt Strategy
+nav_order: 98
+permalink: /strategy/prompt
+---
+
 # Prompt Strategy
 
 simliar to JetBrains LLM and GitHub Copilot, will be implementation like this:

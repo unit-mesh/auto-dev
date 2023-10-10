@@ -1,3 +1,10 @@
+---
+layout: default
+title: Custom Action
+nav_order: 10
+permalink: /custom/action
+---
+
 # Custom Action
 
 You can customize your prompt in `Settings` -> `Tools` -> `AutoDev`

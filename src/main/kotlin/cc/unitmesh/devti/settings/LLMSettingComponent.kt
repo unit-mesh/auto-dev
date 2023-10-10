@@ -41,7 +41,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
 
     val project = ProjectManager.getInstance().openProjects.firstOrNull()
     private val customEnginePrompt by lazy {
-        object : LanguageTextField(JsonLanguage.INSTANCE, project, "") {
+        object : LanguageTextField(JsonLanguage.INSTANCE, project, settings.customPrompts) {
             override fun createEditor(): EditorEx {
 
                 return super.createEditor().apply {

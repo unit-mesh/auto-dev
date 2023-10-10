@@ -1,3 +1,10 @@
+---
+layout: default
+title: Custom LLm Server
+nav_order: 14
+permalink: /custom/llm-server
+---
+
 # Custom Server API example (ChatGLM2)
 
 See in: [ChatGLM2 SSE Server](../example/custom_llm_server/chatglm_sse.py)
