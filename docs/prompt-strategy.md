@@ -2,7 +2,7 @@
 layout: default
 title: Prompt Strategy
 nav_order: 98
-permalink: /development
+permalink: /strategy/prompt
 ---
 
 # Prompt Strategy
