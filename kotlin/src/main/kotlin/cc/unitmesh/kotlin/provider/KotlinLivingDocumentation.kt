@@ -17,7 +17,7 @@ import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtNamedFunction
 
 class KotlinLivingDocumentation : LivingDocumentation {
-    override val docToolName: String = "Kotlin docs"
+    override val docToolName: String = "KDoc"
     override val forbiddenRules: List<String> = listOf(
         "do not return example code",
         "do not use @author and @version tags"
