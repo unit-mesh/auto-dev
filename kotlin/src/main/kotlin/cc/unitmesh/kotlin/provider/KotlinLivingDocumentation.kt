@@ -4,6 +4,7 @@ import cc.unitmesh.devti.custom.LivingDocumentationType
 import cc.unitmesh.devti.provider.LivingDocumentation
 import com.intellij.codeInsight.daemon.impl.CollectHighlightsUtil
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.SelectionModel
 import com.intellij.psi.*
@@ -17,6 +18,10 @@ import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtNamedFunction
 
 class KotlinLivingDocumentation : LivingDocumentation {
+    companion object {
+        private val logger = logger<KotlinLivingDocumentation>()
+    }
+
     override val docToolName: String = "KDoc"
     override val forbiddenRules: List<String> = listOf(
         "do not return example code",
@@ -41,13 +46,17 @@ class KotlinLivingDocumentation : LivingDocumentation {
 
             when (type) {
                 LivingDocumentationType.COMMENT -> {
-                    val ktDeclaration = (if (target is KtDeclaration) target else null)
-                        ?: throw IncorrectOperationException()
-                    val createKDocFromText: PsiElement = KDocElementFactory(project).createKDocFromText(newDoc)
-                    val docComment = (target as KtDeclaration).docComment
+                    try {
+                        val ktDeclaration = (if (target is KtDeclaration) target else null)
+                            ?: throw IncorrectOperationException()
+                        val createKDocFromText: PsiElement = KDocElementFactory(project).createKDocFromText(newDoc)
+                        val docComment = (target as KtDeclaration).docComment
 
-                    if (docComment?.replace(createKDocFromText) == null) {
-                        ktDeclaration.addBefore(createKDocFromText, ktDeclaration.firstChild)
+                        if (docComment?.replace(createKDocFromText) == null) {
+                            ktDeclaration.addBefore(createKDocFromText, ktDeclaration.firstChild)
+                        }
+                    } catch (e: IncorrectOperationException) {
+                        logger.error("Failed to update documentation for $target, doc: $newDoc")
                     }
                 }
 
