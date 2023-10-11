@@ -1,9 +1,7 @@
-# AutoDev
-
 <p align="center">
   <img src="plugin/src/main/resources/META-INF/pluginIcon.svg" width="160px" height="160px"  alt="logo" />
 </p>
-
+<h1 align="center">AutoDev</h1>
 <p align="center">
   <a href="https://github.com/unit-mesh/auto-dev/actions/workflows/build.yml">
     <img src="https://github.com/unit-mesh/auto-dev/actions/workflows/build.yml/badge.svg" alt="Build">
