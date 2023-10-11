@@ -26,25 +26,25 @@ class JavaLivingDocumentation : LivingDocumentation {
         }
     }
 
-    override fun updateDoc(psiElement: PsiElement, str: String, type: LivingDocumentationType, editor: Editor) {
-        val project = psiElement.project
+    override fun updateDoc(target: PsiElement, newDoc: String, type: LivingDocumentationType, editor: Editor) {
+        val project = target.project
         val codeStyleManager = CodeStyleManager.getInstance(project)
-        val file = psiElement.containingFile
+        val file = target.containingFile
         WriteCommandAction.runWriteCommandAction(project, "Living Document", "cc.unitmesh.livingDoc", {
-            val startOffset = psiElement.textRange.startOffset
-            val newEndOffset = startOffset + str.length
+            val startOffset = target.textRange.startOffset
+            val newEndOffset = startOffset + newDoc.length
 
             when (type) {
                 LivingDocumentationType.COMMENT -> {
                     val psiElementFactory = JavaPsiFacade.getElementFactory(project)
-                    val newDocComment = psiElementFactory.createDocCommentFromText(str)
+                    val newDocComment = psiElementFactory.createDocCommentFromText(newDoc)
 
-                    if (psiElement is PsiDocCommentOwner) {
-                        val oldDocComment = psiElement.docComment
+                    if (target is PsiDocCommentOwner) {
+                        val oldDocComment = target.docComment
                         if (oldDocComment != null) {
                             oldDocComment.replace(newDocComment)
                         } else {
-                            psiElement.addBefore(newDocComment, psiElement.firstChild)
+                            target.addBefore(newDocComment, target.firstChild)
                         }
                     } else {
                         throw IncorrectOperationException("Unable to update documentation")
@@ -52,12 +52,12 @@ class JavaLivingDocumentation : LivingDocumentation {
                 }
 
                 LivingDocumentationType.ANNOTATED -> {
-                    editor.document.insertString(startOffset, str)
+                    editor.document.insertString(startOffset, newDoc)
                     codeStyleManager.reformatText(file, startOffset, newEndOffset)
                 }
 
                 LivingDocumentationType.CUSTOM -> {
-                    editor.document.insertString(startOffset, str)
+                    editor.document.insertString(startOffset, newDoc)
                     codeStyleManager.reformatText(file, startOffset, newEndOffset)
                 }
             }
@@ -81,11 +81,11 @@ class JavaLivingDocumentation : LivingDocumentation {
     }
 
     override fun findDocTargetsInSelection(
-        psiElement: PsiElement,
+        root: PsiElement,
         selectionModel: SelectionModel,
     ): List<PsiNameIdentifierOwner> {
         val findCommonParent = CollectHighlightsUtil.findCommonParent(
-            psiElement,
+            root,
             selectionModel.selectionStart,
             selectionModel.selectionEnd
         ) ?: return emptyList()

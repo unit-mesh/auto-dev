@@ -21,11 +21,11 @@ interface LivingDocumentation {
 
     fun startEndString(type: LivingDocumentationType): Pair<String, String>
 
-    fun updateDoc(psiElement: PsiElement, str: String, type: LivingDocumentationType, editor: Editor)
+    fun updateDoc(target: PsiElement, newDoc: String, type: LivingDocumentationType, editor: Editor)
 
     fun findNearestDocumentationTarget(psiElement: PsiElement): PsiNameIdentifierOwner?
 
-    fun findDocTargetsInSelection(psiElement: PsiElement, selectionModel: SelectionModel): List<PsiNameIdentifierOwner>
+    fun findDocTargetsInSelection(root: PsiElement, selectionModel: SelectionModel): List<PsiNameIdentifierOwner>
 
     companion object {
         private val languageExtension: LanguageExtension<LivingDocumentation> =

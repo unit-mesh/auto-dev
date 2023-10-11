@@ -11,6 +11,9 @@
 
         <chatContextProvider implementation="cc.unitmesh.kotlin.provider.KotlinTestContextProvider"/>
 
+        <livingDocumentation language="kotlin"
+                             implementationClass="cc.unitmesh.kotlin.provider.KotlinLivingDocumentation"/>
+
         <classContextBuilder language="kotlin"
                              implementationClass="cc.unitmesh.kotlin.context.KotlinClassContextBuilder"/>
 
