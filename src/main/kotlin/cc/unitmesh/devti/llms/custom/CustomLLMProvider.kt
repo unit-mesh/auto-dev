@@ -8,7 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.jayway.jsonpath.JsonPath
+import com.nfeld.jsonpathkt.JsonPath
+import com.nfeld.jsonpathkt.extension.read
 import com.theokanning.openai.completion.chat.ChatCompletionResult
 import com.theokanning.openai.service.SSE
 import io.reactivex.BackpressureStrategy
@@ -101,9 +102,8 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
                             .doOnError(Throwable::printStackTrace)
                             .blockingForEach { sse ->
                                 if (engineFormat.isNotEmpty()) {
-                                    val chunk: String = JsonPath.parse(sse!!.data)?.read(engineFormat)
-                                            ?: throw Exception("Failed to parse chunk")
-                                    logger.warn(" $chunk")
+                                    val chunk: String = JsonPath.parse(sse!!.data)?.read<String>(engineFormat)
+                                            ?: throw Exception("Failed to parse chunk: ${sse.data}, format: $engineFormat")
                                     trySend(chunk)
                                 } else {
                                     val result: ChatCompletionResult =

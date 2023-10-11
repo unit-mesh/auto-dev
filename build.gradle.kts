@@ -329,7 +329,7 @@ project(":") {
         implementation(libs.bundles.openai)
         implementation(libs.bundles.markdown)
 
-        implementation(libs.json.path)
+        implementation(libs.json.pathkt)
 
         implementation("org.jetbrains:markdown:0.5.1")
         implementation(libs.kotlinx.serialization.json)
