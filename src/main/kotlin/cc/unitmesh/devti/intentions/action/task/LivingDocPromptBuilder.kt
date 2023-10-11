@@ -70,6 +70,11 @@ open class LivingDocPromptBuilder(
             val startEndString = documentation.startEndString(type)
             instruction.append("\nYou should start with `${startEndString.first}`\nYou should end with ends with: `${startEndString.second}`\n")
 
+            documentation.forbiddenRules.forEach {
+                instruction.append("- $it\n")
+            }
+
+            instruction.append("Return your comment here, no code.\n")
             instruction.toString()
         }
     }
