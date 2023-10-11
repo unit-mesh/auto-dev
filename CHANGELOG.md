@@ -1,8 +1,33 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v1.1.4...v) (2023-08-18)
+# [](https://github.com/unit-mesh/auto-dev/compare/v1.2.4...v) (2023-10-11)
 
 ## [Unreleased]
 
-## [1.2.0] - 2023-08-25
+## [1.2.4](https://github.com/unit-mesh/auto-dev/compare/v1.2.3...v[1.2.4]) (2023-10-11)
+
+### Bug Fixes
+- change jsonpath to https://github.com/codeniko/JsonPathKt && fixed [#48](https://github.com/unit-mesh/auto-dev/issues/48) ([7973211](https://github.com/unit-mesh/auto-dev/commit/79732111cb903f3e62d8256de2d66a753bd3702a))
+
+### Features
+- **docs:** adjust prompt ([d12ea4a](https://github.com/unit-mesh/auto-dev/commit/d12ea4a71bfb9b53472268ae2238076063bd5f6c))
+- **docs:** init kotlin living documentation ([abf3d74](https://github.com/unit-mesh/auto-dev/commit/abf3d743d4a06b4959e6eaba1ca1e505d582ec93))
+
+## [1.2.3](https://github.com/unit-mesh/auto-dev/compare/v1.2.2...v[1.2.3]) (2023-10-09)
+
+### Bug Fixes
+- add fix for [#47](https://github.com/unit-mesh/auto-dev/issues/47) ([04f9c1b](https://github.com/unit-mesh/auto-dev/commit/04f9c1bd694336402c57c00208d5400e6dda5c59))
+- fix custom prompt emoji issue ([13e7061](https://github.com/unit-mesh/auto-dev/commit/13e7061a54bab06b2b00c07e0a6d5c9119fd0f3c))
+
+## [1.2.2](https://github.com/unit-mesh/auto-dev/compare/v1.2.1...v[1.2.2]) (2023-09-24)
+
+### Bug Fixes
+- [#40](https://github.com/unit-mesh/auto-dev/issues/40) ([010d142](https://github.com/unit-mesh/auto-dev/commit/010d142d630a23f02cdde153483467ad4dedf493))
+- add sleep for debug mode, if machine is slowly ([06a6dbe](https://github.com/unit-mesh/auto-dev/commit/06a6dbe3358f6cc62e413d3e8f8b55dfd19bd55b))
+
+### Features
+- **chat:** add delay before rendering last message  The default delay is 20 seconds, but it can be customized. ([17e5585](https://github.com/unit-mesh/auto-dev/commit/17e5585612c7338ab4a17635a2ec1fa35949785e))
+- **settings:** add quest delay seconds parameter ([f423caf](https://github.com/unit-mesh/auto-dev/commit/f423caf969f8a6490221d35b5449276549853e38)), closes [#21](https://github.com/unit-mesh/auto-dev/issues/21)
+
+## [1.2.1](https://github.com/unit-mesh/auto-dev/compare/v1.2.0...v[1.2.1]) (2023-08-25)
 
 ### Bug Fixes
 - [#36](https://github.com/unit-mesh/auto-dev/issues/36) 添加漏掉的 GitHub Token 选项 ([cfb6a60](https://github.com/unit-mesh/auto-dev/commit/cfb6a608d9bb620e99ba0b4783f712605e7f6e04))
@@ -589,8 +614,11 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.2.0...HEAD
-[1.2.0]: https://github.com/unit-mesh/auto-dev/compare/v1.1.4...v1.2.0
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.2.4...HEAD
+[1.2.4]: https://github.com/unit-mesh/auto-dev/compare/v1.2.3...v1.2.4
+[1.2.3]: https://github.com/unit-mesh/auto-dev/compare/v1.2.2...v1.2.3
+[1.2.2]: https://github.com/unit-mesh/auto-dev/compare/v1.2.1...v1.2.2
+[1.2.1]: https://github.com/unit-mesh/auto-dev/compare/v1.1.4...v1.2.1
 [1.1.4]: https://github.com/unit-mesh/auto-dev/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/unit-mesh/auto-dev/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/unit-mesh/auto-dev/compare/v1.1.1...v1.1.2
