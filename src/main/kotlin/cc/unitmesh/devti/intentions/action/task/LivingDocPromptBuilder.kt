@@ -54,7 +54,7 @@ open class LivingDocPromptBuilder(
                     }
                 }
                 contextInstruction(llmQueryContext)
-            } ?: "Write documentation for given code"
+            } ?: "Write documentation for given code, no return code."
 
             instruction.append(basicInstruction)
             instruction.append(documentation.forbiddenRules.joinToString { "\n- $it" })
@@ -74,7 +74,7 @@ open class LivingDocPromptBuilder(
                 instruction.append("- $it\n")
             }
 
-            instruction.append("Return your comment here, no code.\n")
+            instruction.append("Start your comment here, no code.\n")
             instruction.toString()
         }
     }

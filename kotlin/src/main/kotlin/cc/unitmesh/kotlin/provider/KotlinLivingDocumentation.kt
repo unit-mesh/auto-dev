@@ -39,7 +39,6 @@ class KotlinLivingDocumentation : LivingDocumentation {
     override fun updateDoc(target: PsiElement, newDoc: String, type: LivingDocumentationType, editor: Editor) {
         val project = target.project
         val codeStyleManager = CodeStyleManager.getInstance(project)
-        val file = target.containingFile
         WriteCommandAction.runWriteCommandAction(project, "Living Document", "cc.unitmesh.livingDoc", {
             val startOffset = target.textRange.startOffset
             val newEndOffset = startOffset + newDoc.length
@@ -55,19 +54,19 @@ class KotlinLivingDocumentation : LivingDocumentation {
                         if (docComment?.replace(createKDocFromText) == null) {
                             ktDeclaration.addBefore(createKDocFromText, ktDeclaration.firstChild)
                         }
-                    } catch (e: IncorrectOperationException) {
+                    } catch (e: Exception) {
                         logger.error("Failed to update documentation for $target, doc: $newDoc")
                     }
                 }
 
                 LivingDocumentationType.ANNOTATED -> {
                     editor.document.insertString(startOffset, newDoc)
-                    codeStyleManager.reformatText(file, startOffset, newEndOffset)
+                    codeStyleManager.reformatText(target.containingFile, startOffset, newEndOffset)
                 }
 
                 LivingDocumentationType.CUSTOM -> {
                     editor.document.insertString(startOffset, newDoc)
-                    codeStyleManager.reformatText(file, startOffset, newEndOffset)
+                    codeStyleManager.reformatText(target.containingFile, startOffset, newEndOffset)
                 }
             }
         })
