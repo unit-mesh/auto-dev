@@ -72,49 +72,45 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
         val requestContent = Json.encodeToString<CustomRequest>(customRequest)
 
         val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), requestContent)
-        logger.warn("Requesting from $body")
+        logger.info("Requesting from $body")
 
         val builder = Request.Builder()
         if (key.isNotEmpty()) {
             builder.addHeader("Authorization", "Bearer $key")
         }
-        client = client.newBuilder()
-                .readTimeout(timeout)
-                .build()
-        val request = builder
-                .url(url)
-                .post(body)
-                .build()
+
+        client = client.newBuilder().readTimeout(timeout).build()
+        val request = builder.url(url).post(body).build()
 
         val call = client.newCall(request)
         val emitDone = false
 
         val sseFlowable = Flowable
-                .create({ emitter: FlowableEmitter<SSE> ->
-                    call.enqueue(cc.unitmesh.devti.llms.azure.ResponseBodyCallback(emitter, emitDone))
-                }, BackpressureStrategy.BUFFER)
+            .create({ emitter: FlowableEmitter<SSE> ->
+                call.enqueue(cc.unitmesh.devti.llms.azure.ResponseBodyCallback(emitter, emitDone))
+            }, BackpressureStrategy.BUFFER)
 
         try {
-            logger.warn("Starting to stream:")
+            logger.info("Starting to stream:")
             return callbackFlow {
                 withContext(Dispatchers.IO) {
                     sseFlowable
-                            .doOnError(Throwable::printStackTrace)
-                            .blockingForEach { sse ->
-                                if (engineFormat.isNotEmpty()) {
-                                    val chunk: String = JsonPath.parse(sse!!.data)?.read<String>(engineFormat)
-                                            ?: throw Exception("Failed to parse chunk: ${sse.data}, format: $engineFormat")
-                                    trySend(chunk)
-                                } else {
-                                    val result: ChatCompletionResult =
-                                            ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
+                        .doOnError(Throwable::printStackTrace)
+                        .blockingForEach { sse ->
+                            if (engineFormat.isNotEmpty()) {
+                                val chunk: String = JsonPath.parse(sse!!.data)?.read<String>(engineFormat)
+                                    ?: throw Exception("Failed to parse chunk: ${sse.data}, format: $engineFormat")
+                                trySend(chunk)
+                            } else {
+                                val result: ChatCompletionResult =
+                                    ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
 
-                                    val completion = result.choices[0].message
-                                    if (completion != null && completion.content != null) {
-                                        trySend(completion.content)
-                                    }
+                                val completion = result.choices[0].message
+                                if (completion != null && completion.content != null) {
+                                    trySend(completion.content)
                                 }
                             }
+                        }
 
                     close()
                 }
@@ -134,22 +130,16 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
 
         val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), requestContent)
 
-        logger.warn("Requesting from $body")
+        logger.info("Requesting from $body")
         val builder = Request.Builder()
         if (key.isNotEmpty()) {
             builder.addHeader("Authorization", "Bearer $key")
         }
 
         try {
-            client = client.newBuilder()
-                    .readTimeout(timeout)
-                    .build()
+            client = client.newBuilder().readTimeout(timeout).build()
 
-            val request = builder
-                    .url(url)
-                    .post(body)
-                    .build()
-
+            val request = builder.url(url).post(body).build()
             val response = client.newCall(request).execute()
 
             if (!response.isSuccessful) {
