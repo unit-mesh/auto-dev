@@ -37,7 +37,7 @@ open class LivingDocPromptBuilder(
 
     private fun classInstruction(context: ClassContext): String? {
         if (context.name == null) return null
-        return "Write documentation for given class " + context.name + "."
+        return "Write documentation for given class " + context.name + ". You should just document the class, not the methods."
     }
 
     private fun methodInstruction(context: MethodContext): String? {
@@ -73,8 +73,9 @@ open class LivingDocPromptBuilder(
                         inOutString = llmQueryContext.inputOutputString()
                     }
                 }
+
                 contextInstruction(llmQueryContext)
-            } ?: "Write documentation for given code. You should no return code, just documentation."
+            } ?: "Write documentation for given code. "
 
             instruction.append(basicInstruction)
 
@@ -91,7 +92,7 @@ open class LivingDocPromptBuilder(
 
             instruction.append(documentation.forbiddenRules.joinToString { "\n- $it" })
 
-            instruction.append("Start your document here, no return code.\n")
+            instruction.append("Start your documentation here, no return code.\n")
             instruction.toString()
         }
     }
