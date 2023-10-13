@@ -12,7 +12,6 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.IncorrectOperationException
 
 class JavaLivingDocumentation : LivingDocumentation {
-    override val docToolName: String = "javadoc"
     override val forbiddenRules: List<String> = listOf(
         "do not return example code",
         "do not use @author and @version tags"

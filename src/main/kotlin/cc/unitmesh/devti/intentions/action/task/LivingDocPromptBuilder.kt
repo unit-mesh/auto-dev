@@ -15,8 +15,6 @@ open class LivingDocPromptBuilder(
     open val documentation: LivingDocumentation,
     val type: LivingDocumentationType,
 ) {
-    private val toolName = documentation.docToolName
-
     protected val contextProviders = listOf(
         VariableContextProvider(false, false, false),
         ClassContextProvider(false),
@@ -79,7 +77,6 @@ open class LivingDocPromptBuilder(
             } ?: "Write documentation for given code. You should no return code, just documentation."
 
             instruction.append(basicInstruction)
-            instruction.append(documentation.forbiddenRules.joinToString { "\n- $it" })
 
             if (inOutString.isNotEmpty()) {
                 instruction.append("\nCompare this snippet: \n")
@@ -92,9 +89,7 @@ open class LivingDocPromptBuilder(
             val startEndString = documentation.startEndString(type)
             instruction.append("\nYou should start with `${startEndString.first}`\nYou should end with ends with: `${startEndString.second}`\n")
 
-            documentation.forbiddenRules.forEach {
-                instruction.append("- $it\n")
-            }
+            instruction.append(documentation.forbiddenRules.joinToString { "\n- $it" })
 
             instruction.append("Start your document here, no return code.\n")
             instruction.toString()

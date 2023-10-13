@@ -22,7 +22,6 @@ class KotlinLivingDocumentation : LivingDocumentation {
         private val logger = logger<KotlinLivingDocumentation>()
     }
 
-    override val docToolName: String = "KDoc"
     override val forbiddenRules: List<String> = listOf(
         "do not return code, just comments",
         "do not use @author and @version tags"
