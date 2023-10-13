@@ -19,6 +19,9 @@ interface LivingDocumentation {
 
     val forbiddenRules: List<String>
 
+    val parameterTagInstruction: String get() = "use @param tag"
+    val returnTagInstruction: String get() = "use @return tag"
+
     fun startEndString(type: LivingDocumentationType): Pair<String, String>
 
     fun updateDoc(target: PsiElement, newDoc: String, type: LivingDocumentationType, editor: Editor)

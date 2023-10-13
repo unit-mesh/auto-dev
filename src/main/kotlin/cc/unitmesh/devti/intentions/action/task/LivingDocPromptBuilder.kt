@@ -27,18 +27,40 @@ open class LivingDocPromptBuilder(
         return when (context) {
             is ClassContext -> classInstruction(context)
             is MethodContext -> methodInstruction(context)
+            is VariableContext -> variableInstruction(context)
             else -> null
         }
     }
 
+    private fun variableInstruction(context: VariableContext): String? {
+        if (context.name == null) return null
+        return "Write documentation for given variable " + context.name + "."
+    }
+
     private fun classInstruction(context: ClassContext): String? {
         if (context.name == null) return null
-        return "Write $toolName for given class " + context.name + "."
+        return "Write documentation for given class " + context.name + "."
     }
 
     private fun methodInstruction(context: MethodContext): String? {
         if (context.name == null) return null
-        return "Write $toolName for given method " + context.name + "."
+        var instruction = "Write documentation for given method " + context.name + "."
+        if (context.paramNames.isNotEmpty()) {
+            instruction = """
+                $instruction
+                ${documentation.parameterTagInstruction}
+                """.trimIndent()
+        }
+
+        val returnType = context.returnType
+        if (!returnType.isNullOrEmpty()) {
+            instruction = """
+                $instruction
+                ${documentation.returnTagInstruction}
+                """.trimIndent()
+        }
+
+        return instruction
     }
 
     open fun buildPrompt(project: Project?, target: PsiNameIdentifierOwner, fallbackText: String): String {
@@ -54,7 +76,7 @@ open class LivingDocPromptBuilder(
                     }
                 }
                 contextInstruction(llmQueryContext)
-            } ?: "Write documentation for given code, no return code."
+            } ?: "Write documentation for given code. You should no return code, just documentation."
 
             instruction.append(basicInstruction)
             instruction.append(documentation.forbiddenRules.joinToString { "\n- $it" })
@@ -74,7 +96,7 @@ open class LivingDocPromptBuilder(
                 instruction.append("- $it\n")
             }
 
-            instruction.append("Start your comment here, no code.\n")
+            instruction.append("Start your document here, no return code.\n")
             instruction.toString()
         }
     }
