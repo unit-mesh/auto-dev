@@ -40,10 +40,6 @@ Features:
     - Custom intention action. You can add your own intention action.
     - Custom LLM Server. You can customize your LLM Server in `Settings` -> `Tools` -> `AutoDev`
 
-### Development
-
-- Custom Language: [docs/custom-language.md](docs/custom-language.md)
-
 ### Demo
 
 Video demo (Youtube) — English
