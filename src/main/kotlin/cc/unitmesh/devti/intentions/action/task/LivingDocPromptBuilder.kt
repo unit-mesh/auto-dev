@@ -92,7 +92,7 @@ open class LivingDocPromptBuilder(
 
             instruction.append(documentation.forbiddenRules.joinToString { "\n- $it" })
 
-            instruction.append("Start your documentation here, no return code.\n")
+            instruction.append("\n\nStart your documentation here, no return code.\n")
             instruction.toString()
         }
     }
