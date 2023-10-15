@@ -59,7 +59,7 @@ fun signature: ${signature ?: "_"}
     }
 
     fun inputOutputString(): String {
-        var result = "```uml\n"
+        var result = ""
         this.inputOutputClasses.forEach {
             val context = ClassContextProvider(false).from(it)
             val element = context.root
@@ -73,6 +73,10 @@ fun signature: ${signature ?: "_"}
             }
         }
 
-        return "$result\n```\n"
+        if (result.isEmpty()) {
+            return ""
+        }
+
+        return "```uml\n$result\n```\n"
     }
 }
