@@ -23,8 +23,8 @@ class KotlinLivingDocumentation : LivingDocumentation {
     }
 
     override val forbiddenRules: List<String> = listOf(
-        "do not return code, just comments",
-        "do not use @author and @version tags"
+        "do not return code, just documentation.",
+        "do not use @author and @version tags."
     )
 
     override fun startEndString(type: LivingDocumentationType): Pair<String, String> {
