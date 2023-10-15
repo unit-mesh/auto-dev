@@ -1,11 +1,24 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v1.2.4...v) (2023-10-11)
+# [](https://github.com/unit-mesh/auto-dev/compare/v1.2.5...v) (2023-10-15)
 
 ## [Unreleased]
 
-## [1.2.4](https://github.com/unit-mesh/auto-dev/compare/v1.2.3...v[1.2.4]) (2023-10-11)
+## [1.2.5-SNAPSHOT] - 2023-10-15
 
 ### Bug Fixes
 - change jsonpath to https://github.com/codeniko/JsonPathKt && fixed [#48](https://github.com/unit-mesh/auto-dev/issues/48) ([7973211](https://github.com/unit-mesh/auto-dev/commit/79732111cb903f3e62d8256de2d66a753bd3702a))
+- fix inout empty issue ([13e0ab1](https://github.com/unit-mesh/auto-dev/commit/13e0ab11337c03f44b7d26074b0758cbd61fe2c8))
+- fix prompt ([215e7d8](https://github.com/unit-mesh/auto-dev/commit/215e7d85d99c42f73e3c148882b3f2427194d952))
+
+### Features
+- **docs:** adjust prompt ([d12ea4a](https://github.com/unit-mesh/auto-dev/commit/d12ea4a71bfb9b53472268ae2238076063bd5f6c))
+- **docs:** init kotlin living documentation ([abf3d74](https://github.com/unit-mesh/auto-dev/commit/abf3d743d4a06b4959e6eaba1ca1e505d582ec93))
+
+## [1.2.5](https://github.com/unit-mesh/auto-dev/compare/v1.2.3...v[1.2.5]) (2023-10-15)
+
+### Bug Fixes
+- change jsonpath to https://github.com/codeniko/JsonPathKt && fixed [#48](https://github.com/unit-mesh/auto-dev/issues/48) ([7973211](https://github.com/unit-mesh/auto-dev/commit/79732111cb903f3e62d8256de2d66a753bd3702a))
+- fix inout empty issue ([13e0ab1](https://github.com/unit-mesh/auto-dev/commit/13e0ab11337c03f44b7d26074b0758cbd61fe2c8))
+- fix prompt ([215e7d8](https://github.com/unit-mesh/auto-dev/commit/215e7d85d99c42f73e3c148882b3f2427194d952))
 
 ### Features
 - **docs:** adjust prompt ([d12ea4a](https://github.com/unit-mesh/auto-dev/commit/d12ea4a71bfb9b53472268ae2238076063bd5f6c))
@@ -614,8 +627,9 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.2.4...HEAD
-[1.2.4]: https://github.com/unit-mesh/auto-dev/compare/v1.2.3...v1.2.4
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.2.5-SNAPSHOT...HEAD
+[1.2.5]: https://github.com/unit-mesh/auto-dev/compare/v1.2.3...v1.2.5
+[1.2.5-SNAPSHOT]: https://github.com/unit-mesh/auto-dev/compare/v1.2.5...v1.2.5-SNAPSHOT
 [1.2.3]: https://github.com/unit-mesh/auto-dev/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/unit-mesh/auto-dev/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/unit-mesh/auto-dev/compare/v1.1.4...v1.2.1
