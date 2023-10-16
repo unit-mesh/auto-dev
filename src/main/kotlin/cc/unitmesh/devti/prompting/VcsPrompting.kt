@@ -28,10 +28,7 @@ import com.intellij.openapi.diff.impl.patch.UnifiedDiffWriter
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.openapi.vcs.VcsException
-import com.intellij.openapi.vcs.changes.Change
-import com.intellij.openapi.vcs.changes.CommitContext
-import com.intellij.openapi.vcs.changes.ContentRevision
-import com.intellij.openapi.vcs.changes.CurrentContentRevision
+import com.intellij.openapi.vcs.changes.*
 import com.intellij.project.stateStore
 import com.intellij.vcs.log.VcsFullCommitDetails
 import git4idea.repo.GitRepositoryManager
@@ -73,6 +70,51 @@ class VcsPrompting(private val project: Project) {
         } catch (e: VcsException) {
             throw RuntimeException("Error calculating diff: ${e.message}", e)
         }
+    }
+
+    fun prepareContext(): String {
+        val changeListManager = ChangeListManagerImpl.getInstance(project)
+        val changes = changeListManager.changeLists.flatMap {
+            it.changes
+        }
+
+        return this.calculateDiff(changes, project)
+    }
+
+    @Throws(VcsException::class, IOException::class)
+    fun calculateDiff(list: List<VcsFullCommitDetails>, project: Project): Pair<List<String>, String> {
+        val writer = StringWriter()
+        val summary: MutableList<String> = ArrayList()
+        for (detail in list) {
+            writer.write("""Commit Message: ${detail.fullMessage}\n\nCode Changes:\n\n""")
+            val subject = detail.subject
+
+            summary.add('"'.toString() + subject + "\"")
+            val filteredChanges = detail.changes.stream()
+                .filter { change -> !isBinaryOrTooLarge(change!!) }
+                .toList()
+
+            val patches = IdeaTextPatchBuilder.buildPatch(
+                project,
+                filteredChanges.subList(0, min(filteredChanges.size, 500)),
+                Path.of(project.basePath!!),
+                false,
+                true
+            )
+
+            UnifiedDiffWriter.write(
+                project,
+                project.stateStore.projectBasePath,
+                patches,
+                writer,
+                "\n",
+                null, emptyList()
+            )
+        }
+
+        val stringWriter = writer.toString()
+        val diff = trimDiff(stringWriter)
+        return Pair<List<String>, String>(summary, diff)
     }
 
     fun computeDiff(includedChanges: List<Change>): String {
@@ -142,9 +184,25 @@ class VcsPrompting(private val project: Project) {
         return Pair<List<String>, String>(summary, diff)
     }
 
-    private fun trimDiff(@NotNull diffString: String): String {
+    val revisionRegex = Regex("\\(revision [^)]+\\)")
+
+    @NotNull
+    fun trimDiff(@NotNull diffString: String): String {
+        val lines = diffString.lines()
         val destination = ArrayList<String>()
-        diffString.lines().filterNotTo(destination) { it.startsWith("diff --git ") || it.startsWith("index ") }
+        for (line in lines) {
+            if (line.startsWith("diff --git ") || line.startsWith("index ") || line.startsWith("Index ")) continue
+
+            if (line == "===================================================================") continue
+
+            if (line.startsWith("---") || line.startsWith("+++")) {
+                // remove revision number with regex
+                val result = revisionRegex.replace(line, "")
+                destination.add(result)
+            } else {
+                destination.add(line)
+            }
+        }
         return destination.joinToString("\n")
     }
 
@@ -158,5 +216,4 @@ class VcsPrompting(private val project: Project) {
             virtualFile.length
         )))
     }
-
 }

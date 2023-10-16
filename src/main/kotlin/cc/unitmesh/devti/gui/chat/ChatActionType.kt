@@ -2,6 +2,7 @@ package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.prompting.VcsPrompting
 import com.intellij.openapi.components.service
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.vcs.changes.ChangeListManagerImpl
 
@@ -16,7 +17,8 @@ enum class ChatActionType {
     CREATE_CHANGELOG,
     CUSTOM_COMPLETE,
     CUSTOM_ACTION,
-    COUNIT
+    COUNIT,
+    CODE_REVIEW
     ;
 
     override fun toString(): String {
@@ -25,13 +27,9 @@ enum class ChatActionType {
 
     private fun prepareVcsContext(): String {
         val project = ProjectManager.getInstance().openProjects.firstOrNull() ?: return ""
-        val changeListManager = ChangeListManagerImpl.getInstance(project)
-        val changes = changeListManager.changeLists.flatMap {
-            it.changes
-        }
-
         val prompting = project.service<VcsPrompting>()
-        return prompting.calculateDiff(changes, project)
+
+        return prompting.prepareContext()
     }
 
     val old_commit_prompt = """suggest 10 commit messages based on the following diff:
@@ -82,6 +80,7 @@ $diff
             CUSTOM_COMPLETE -> ""
             CUSTOM_ACTION -> ""
             COUNIT -> ""
+            CODE_REVIEW -> ""
         }
     }
 }

@@ -143,6 +143,7 @@ open class JavaContextPrompter : ContextPrompter() {
 
             ChatActionType.CUSTOM_ACTION -> {}
             ChatActionType.COUNIT -> {}
+            ChatActionType.CODE_REVIEW -> {}
         }
 
         return prompt

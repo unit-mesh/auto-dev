@@ -197,6 +197,14 @@
             <add-to-group group-id="Vcs.Log.ContextMenu" relative-to-action="Vcs.ShowDiffWithLocal" anchor="after"/>
         </action>
 
+        <action id="autodev.Vcs.CodeReview"
+                class="cc.unitmesh.devti.actions.vcs.CodeReviewAction" text="CodeReview (AutoDev)"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+                description="Ask AI to review code">
+
+            <add-to-group group-id="Vcs.Log.ContextMenu" relative-to-action="Vcs.ShowDiffWithLocal" anchor="after"/>
+        </action>
+
         <action id="cc.unitmesh.devti.actions.chat.CodeCompleteChatAction"
                 class="cc.unitmesh.devti.actions.chat.CodeCompleteChatAction" text="Code Complete (AutoDev)"
                 description="Ask AI about this code">
