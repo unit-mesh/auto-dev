@@ -89,6 +89,12 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
             "// here are related classes:\n$relatedClasses"
         }
 
+        if (testContext.currentClass != null) {
+            prompter += "\n"
+            prompter += "// here is current class information:\n"
+            prompter += testContext.currentClass.format()
+        }
+
         prompter += "\n```${lang.lowercase()}\n${request.selectText}\n```\n"
         prompter += if (!testContext.isNewFile) {
             "Start test code with `@Test` syntax here:  \n"

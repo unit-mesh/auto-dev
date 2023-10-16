@@ -30,7 +30,7 @@ class JavaScriptWriteTestService : WriteTestService() {
 
         val testFile = LocalFileSystem.getInstance().findFileByPath(targetFilePath)
         if (testFile != null) {
-            return TestFileContext(false, testFile, emptyList(), null, language)
+            return TestFileContext(false, testFile, emptyList(), null, language, null)
         }
 
         val testFileName = targetFilePath.substringAfterLast("/")
@@ -39,7 +39,7 @@ class JavaScriptWriteTestService : WriteTestService() {
             PsiFileFactory.getInstance(project).createFileFromText(testFileName, language, testFileText)
         }
 
-        return TestFileContext(true, testFilePsi.virtualFile, emptyList(), null, language)
+        return TestFileContext(true, testFilePsi.virtualFile, emptyList(), null, language, null)
     }
 
     override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {
