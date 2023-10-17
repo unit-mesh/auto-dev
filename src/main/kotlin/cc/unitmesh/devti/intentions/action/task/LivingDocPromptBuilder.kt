@@ -9,6 +9,32 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiNameIdentifierOwner
 
+/**
+ * The `LivingDocPromptBuilder` class is responsible for building prompts for writing documentation.
+ * It provides methods to generate instructions for documenting various code elements such as classes, methods, and variables.
+ * The prompts are generated based on the provided `editor`, `target`, `documentation`, and `type`.
+ * The class also contains a list of `contextProviders` that determine the context in which the documentation is being written.
+ *
+ * To use the `LivingDocPromptBuilder`, create an instance of the class and call the `buildPrompt` method.
+ * The `buildPrompt` method takes the `project`, `target`, and `fallbackText` as parameters and returns the generated prompt.
+ * The generated prompt includes instructions for documenting the code element specified by the `target`.
+ *
+ * Note that the `LivingDocPromptBuilder` is an open class, which means it can be subclassed and overridden.
+ * It provides default implementations for the `editor`, `target`, `documentation`, and `type` properties,
+ * but these can be overridden in subclasses if needed.
+ *
+ * Example usage:
+ * ```
+ * val promptBuilder = LivingDocPromptBuilder(editor, target, documentation, type)
+ * val prompt = promptBuilder.buildPrompt(project, target, fallbackText)
+ * ```
+ *
+ * @property editor The editor in which the documentation is being written.
+ * @property target The code element for which the documentation is being written.
+ * @property documentation The living documentation instance used for generating instructions.
+ * @property type The type of living documentation being written.
+ * @property contextProviders The list of context providers used to determine the context in which the documentation is being written.
+ */
 open class LivingDocPromptBuilder(
     open val editor: Editor,
     open val target: PsiNameIdentifierOwner,
@@ -37,7 +63,7 @@ open class LivingDocPromptBuilder(
 
     private fun classInstruction(context: ClassContext): String? {
         if (context.name == null) return null
-        return "Write documentation for given class " + context.name + "."
+        return "Write documentation for given class " + context.name + ". You should not add documentation for methods."
     }
 
     private fun methodInstruction(context: MethodContext): String? {
@@ -78,7 +104,6 @@ open class LivingDocPromptBuilder(
             } ?: "Write documentation for given code. "
 
             instruction.append(basicInstruction)
-            instruction.append("\nYou should just document the class, not the methods.\n")
 
             if (inOutString.isNotEmpty()) {
                 instruction.append("\nCompare this snippet: \n")
@@ -91,9 +116,7 @@ open class LivingDocPromptBuilder(
             val startEndString = documentation.startEndString(type)
             instruction.append(documentation.forbiddenRules.joinToString { "\n- $it" })
 
-            instruction.append("""You should end with: `${startEndString.second}`""")
-
-            instruction.append("\n\nStart your documentation with ${startEndString.first}, no return code.\n")
+            instruction.append("\n\nStart your documentation with ${startEndString.first} here, and ends with `${startEndString.second}`.\n")
             instruction.toString()
         }
     }

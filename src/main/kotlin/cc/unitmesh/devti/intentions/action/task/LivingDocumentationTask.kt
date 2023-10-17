@@ -12,6 +12,13 @@ import com.intellij.psi.PsiNameIdentifierOwner
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
 
+/**
+ * The `LivingDocumentationTask` class represents a background task for generating living documentation.
+ *
+ * @property editor The editor in which the task is performed.
+ * @property target The target element for which the living documentation is generated.
+ * @property type The type of living documentation to be generated, defaulting to `LivingDocumentationType.COMMENT`.
+ */
 class LivingDocumentationTask(
     val editor: Editor,
     val target: PsiNameIdentifierOwner,
