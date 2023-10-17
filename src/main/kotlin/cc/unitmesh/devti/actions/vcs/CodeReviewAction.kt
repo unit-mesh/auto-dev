@@ -30,9 +30,7 @@ class CodeReviewAction : ChatBaseAction() {
 
         // Make changes available for diff action
         val vcsLog = e.getData(VcsLogDataKeys.VCS_LOG)
-        val details = vcsLog?.let { log ->
-            log.selectedDetails
-        }?.toList() ?: return
+        val details = vcsLog?.selectedDetails?.toList() ?: return
 
         val vcsPrompting = project.service<VcsPrompting>()
         val diff = vcsPrompting.calculateDiff(details, project)
@@ -50,6 +48,8 @@ class CodeReviewAction : ChatBaseAction() {
         """.trimMargin()
 
         prompt += diff.second
+
+        prompt += """As your Tech lead, I am only concerned with a few key code review issues. Please provide me with a critical summary."""
 
         log.info("prompt: $prompt")
 

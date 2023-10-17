@@ -184,7 +184,7 @@ class VcsPrompting(private val project: Project) {
         return Pair<List<String>, String>(summary, diff)
     }
 
-    val revisionRegex = Regex("\\(revision [^)]+\\)")
+    private val revisionRegex = Regex("\\(revision [^)]+\\)")
 
     @NotNull
     fun trimDiff(@NotNull diffString: String): String {
