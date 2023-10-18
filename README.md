@@ -4,14 +4,17 @@
 <h1 align="center">AutoDev</h1>
 <p align="center">
   <a href="https://github.com/unit-mesh/auto-dev/actions/workflows/build.yml">
-    <img src="https://github.com/unit-mesh/auto-dev/actions/workflows/build.yml/badge.svg" alt="Build">
+    <img src="https://github.com/unit-mesh/auto-dev/actions/workflows/build.yml/badge.svg" alt="Build" />
   </a>
   <a href="https://plugins.jetbrains.com/plugin/21520-autodev">
-    <img src="https://img.shields.io/jetbrains/plugin/v/21520-autodev.svg" alt="Version">
+    <img src="https://img.shields.io/jetbrains/plugin/v/21520-autodev.svg" alt="Version" />
   </a>
   <a href="https://plugins.jetbrains.com/plugin/21520-autodev">
-    <img src="https://img.shields.io/jetbrains/plugin/d/21520-autodev.svg" alt="Downloads">
+    <img src="https://img.shields.io/jetbrains/plugin/d/21520-autodev.svg" alt="Downloads" />
   </a>
+  <a href="https://github.com/unit-mesh/chocolate-factory">
+    <img src="https://img.shields.io/badge/powered_by-chocolate_factory-blue?logo=kotlin&logoColor=fff" alt="Powered By" />
+  </a>  
 </p>
 
 > 🧙‍AutoDev: The AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, and a helpful
