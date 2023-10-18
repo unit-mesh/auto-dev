@@ -35,21 +35,20 @@ class CodeReviewAction : ChatBaseAction() {
         val vcsPrompting = project.service<VcsPrompting>()
         val diff = vcsPrompting.calculateDiff(details, project)
 
-        var prompt = """You are a seasoned software developer, and I'm seeking your expertise to review the following code:
+        var prompt =
+            """You are a seasoned software developer, and I'm seeking your expertise to review the following code:
             |
-            |- Please provide an overview of the business objectives and the context behind this commit. This will ensure that the code aligns with the project's requirements and goals.
             |- Focus on critical algorithms, logical flow, and design decisions within the code. Discuss how these changes impact the core functionality and the overall structure of the code.
             |- Identify and highlight any potential issues or risks introduced by these code changes. This will help reviewers pay special attention to areas that may require improvement or further analysis.
             |- Emphasize the importance of compatibility and consistency with the existing codebase. Ensure that the code adheres to the established standards and practices for code uniformity and long-term maintainability.
-            |- Lastly, provide a concise high-level summary that encapsulates the key aspects of this commit. This summary should enable reviewers to quickly grasp the major changes in this update.
-            |
-            |PS: Your insights and feedback are invaluable in ensuring the quality and reliability of this code. Thank you for your assistance.
             |
         """.trimMargin()
 
         prompt += diff.second
 
-        prompt += """As your Tech lead, I am only concerned with a few key code review issues. Please provide me with a critical summary."""
+        prompt += """As your Tech lead, I am only concerned with key code review issues. Please provide me with a critical summary. 
+            | Submit your summary under 7 sentences in here:"""
+            .trimMargin()
 
         log.info("prompt: $prompt")
 
