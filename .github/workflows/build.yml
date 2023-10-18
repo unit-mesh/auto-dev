@@ -97,23 +97,23 @@ jobs:
           files: ${{ github.workspace }}/build/reports/kover/xml/report.xml
 
       # Cache Plugin Verifier IDEs
-#      - name: Setup Plugin Verifier IDEs Cache
-#        uses: actions/cache@v3
-#        with:
-#          path: ${{ steps.properties.outputs.pluginVerifierHomeDir }}/ides
-#          key: plugin-verifier-${{ hashFiles('plugin/build/listProductsReleases.txt') }}
-#
-#      # Run Verify Plugin task and IntelliJ Plugin Verifier tool
-#      - name: Run Plugin Verification tasks
-#        run: ./gradlew :plugin:runPluginVerifier -Dplugin.verifier.home.dir=${{ steps.properties.outputs.pluginVerifierHomeDir }}
-#
-#      # Collect Plugin Verifier Result
-#      - name: Collect Plugin Verifier Result
-#        if: ${{ always() }}
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: pluginVerifier-result
-#          path: ${{ github.workspace }}/plugin/build/reports/pluginVerifier
+      - name: Setup Plugin Verifier IDEs Cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.properties.outputs.pluginVerifierHomeDir }}/ides
+          key: plugin-verifier-${{ hashFiles('plugin/build/listProductsReleases.txt') }}
+
+      # Run Verify Plugin task and IntelliJ Plugin Verifier tool
+      - name: Run Plugin Verification tasks
+        run: ./gradlew :plugin:runPluginVerifier -Dplugin.verifier.home.dir=${{ steps.properties.outputs.pluginVerifierHomeDir }}
+
+      # Collect Plugin Verifier Result
+      - name: Collect Plugin Verifier Result
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: pluginVerifier-result
+          path: ${{ github.workspace }}/plugin/build/reports/pluginVerifier
 
       # Run Qodana inspections
       #      - name: Qodana - Code Inspection
