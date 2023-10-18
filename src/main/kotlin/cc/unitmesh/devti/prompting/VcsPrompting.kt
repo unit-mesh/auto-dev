@@ -103,7 +103,7 @@ class VcsPrompting(private val project: Project) {
 
         val summary: MutableList<String> = ArrayList()
         for (detail in list) {
-            writer.write("""Commit Message: ${detail.fullMessage}\n\nCode Changes:\n\n""")
+            writer.write("Commit Message: ${detail.fullMessage}\n\nCode Changes:\n\n")
             val subject = detail.subject
 
             summary.add('"'.toString() + subject + "\"")
