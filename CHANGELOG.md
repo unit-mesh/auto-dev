@@ -1,17 +1,20 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v1.2.5...v) (2023-10-15)
+# [](https://github.com/unit-mesh/auto-dev/compare/v1.3.0...v) (2023-10-18)
 
 ## [Unreleased]
 
-## [1.2.5-SNAPSHOT] - 2023-10-15
+## [1.3.0] - 2023-10-18
 
 ### Bug Fixes
-- change jsonpath to https://github.com/codeniko/JsonPathKt && fixed [#48](https://github.com/unit-mesh/auto-dev/issues/48) ([7973211](https://github.com/unit-mesh/auto-dev/commit/79732111cb903f3e62d8256de2d66a753bd3702a))
-- fix inout empty issue ([13e0ab1](https://github.com/unit-mesh/auto-dev/commit/13e0ab11337c03f44b7d26074b0758cbd61fe2c8))
-- fix prompt ([215e7d8](https://github.com/unit-mesh/auto-dev/commit/215e7d85d99c42f73e3c148882b3f2427194d952))
+- fix document erorr issues ([efedf72](https://github.com/unit-mesh/auto-dev/commit/efedf72c0798c15777a7f69cab5fe3cee907d3d5))
+- **test:** fix instruction error issue ([f7c9e03](https://github.com/unit-mesh/auto-dev/commit/f7c9e0305d823dbca7e6e8d408d09dd3c5867c4d))
+- **test:** fix lost current class for method testing ([7d81858](https://github.com/unit-mesh/auto-dev/commit/7d8185878e0c4d17aa99c15e09c80fbdb3b8af19))
 
 ### Features
-- **docs:** adjust prompt ([d12ea4a](https://github.com/unit-mesh/auto-dev/commit/d12ea4a71bfb9b53472268ae2238076063bd5f6c))
-- **docs:** init kotlin living documentation ([abf3d74](https://github.com/unit-mesh/auto-dev/commit/abf3d743d4a06b4959e6eaba1ca1e505d582ec93))
+- init commits for changes ([a6d1d82](https://github.com/unit-mesh/auto-dev/commit/a6d1d82d0ed3ed3f50999d80c94e122ba621c25a))
+- **reivew:** init fetch github issue by story ids ([2b79429](https://github.com/unit-mesh/auto-dev/commit/2b79429b67bb311d05514c5035719e382fb4bd42))
+- **review:** add chinese context to full context ([8bcd37b](https://github.com/unit-mesh/auto-dev/commit/8bcd37b0b970a6fe24e209b7b778365f071abfcc))
+- **review:** init default file ignore for patterns ([48ee07f](https://github.com/unit-mesh/auto-dev/commit/48ee07f8da7040ea23460b6ce5953e65c034ef9b))
+- **review:** make fetch github issue works ([285da68](https://github.com/unit-mesh/auto-dev/commit/285da68ef7afd5c24a20b3c47162cfd40364d3e7))
 
 ## [1.2.5](https://github.com/unit-mesh/auto-dev/compare/v1.2.3...v[1.2.5]) (2023-10-15)
 
@@ -627,9 +630,9 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.2.5-SNAPSHOT...HEAD
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/unit-mesh/auto-dev/compare/v1.2.5...v1.3.0
 [1.2.5]: https://github.com/unit-mesh/auto-dev/compare/v1.2.3...v1.2.5
-[1.2.5-SNAPSHOT]: https://github.com/unit-mesh/auto-dev/compare/v1.2.5...v1.2.5-SNAPSHOT
 [1.2.3]: https://github.com/unit-mesh/auto-dev/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/unit-mesh/auto-dev/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/unit-mesh/auto-dev/compare/v1.1.4...v1.2.1
