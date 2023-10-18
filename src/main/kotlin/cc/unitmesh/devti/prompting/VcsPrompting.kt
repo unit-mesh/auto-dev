@@ -103,7 +103,7 @@ class VcsPrompting(private val project: Project) {
                     val filePath = it.afterRevision?.file
                     if (filePath != null) {
                         ignoreFilePatterns.none { pattern ->
-                            pattern.matches(Path.of(it.afterRevision?.file?.path))
+                            pattern.matches(Path.of(it.afterRevision!!.file.path))
                         }
                     } else {
                         true
