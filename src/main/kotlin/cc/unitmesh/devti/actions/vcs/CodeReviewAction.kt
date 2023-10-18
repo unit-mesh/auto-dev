@@ -8,6 +8,10 @@ import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.prompting.VcsPrompting
 import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.provider.context.ChatContextItem
+import cc.unitmesh.devti.provider.context.ChatContextProvider
+import cc.unitmesh.devti.provider.context.ChatCreationContext
+import cc.unitmesh.devti.provider.context.ChatOrigin
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.dvcs.repo.Repository
 import com.intellij.dvcs.repo.VcsRepositoryManager
@@ -77,6 +81,18 @@ class CodeReviewAction : ChatBaseAction() {
             |- Emphasize the importance of compatibility and consistency with the existing codebase. Ensure that the code adheres to the established standards and practices for code uniformity and long-term maintainability.
             |
         """.trimMargin()
+
+
+        val creationContext =
+            ChatCreationContext(ChatOrigin.Intention, getActionType(), null, listOf(), null)
+
+        val contextItems: List<ChatContextItem> = kotlinx.coroutines.runBlocking {
+            return@runBlocking ChatContextProvider.collectChatContextList(project, creationContext)
+        }
+
+        contextItems.forEach {
+            prompt += it.text + "\n"
+        }
 
         if (stories.isNotEmpty()) {
             prompt += "The following user stories are related to these changes:\n"
