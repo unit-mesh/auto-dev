@@ -82,6 +82,16 @@ class VcsPrompting(private val project: Project) {
         return this.calculateDiff(changes, project)
     }
 
+    /**
+     * Builds a diff prompt for a list of VcsFullCommitDetails.
+     *
+     * @param list The list of VcsFullCommitDetails containing commit details.
+     * @param project The Project object representing the current project.
+     * @param ignoreFilePatterns The list of PathMatcher objects representing file patterns to be ignored during diff generation. Default value is an empty list.
+     * @return A Pair object containing a list of commit message summaries and the generated diff prompt as a string. Returns null if the list is empty or no valid changes are found.
+     * @throws VcsException If an error occurs during VCS operations.
+     * @throws IOException If an I/O error occurs.
+     */
     @Throws(VcsException::class, IOException::class)
     fun buildDiffPrompt(
         list: List<VcsFullCommitDetails>,

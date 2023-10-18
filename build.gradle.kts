@@ -334,6 +334,8 @@ project(":") {
         implementation("org.jetbrains:markdown:0.5.1")
         implementation(libs.kotlinx.serialization.json)
 
+        implementation("cc.unitmesh:git-commit-message:0.3.8")
+
         // gitlab4j-api
         implementation("org.gitlab4j:gitlab4j-api:4.17.0"){
             exclude(module = "jackson-core")
