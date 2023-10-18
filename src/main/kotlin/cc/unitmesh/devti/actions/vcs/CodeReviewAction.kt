@@ -22,7 +22,6 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.vcs.log.VcsFullCommitDetails
 import com.intellij.vcs.log.VcsLogDataKeys
 import git4idea.repo.GitRepository
-import io.kotest.common.runBlocking
 import org.changelog.CommitParser
 import java.nio.file.FileSystems
 import java.nio.file.PathMatcher
@@ -52,10 +51,8 @@ class CodeReviewAction : ChatBaseAction() {
 
         var stories: List<String> = listOf()
         ProgressManager.getInstance().runProcessWithProgressSynchronously(Runnable {
-            val repository = runBlocking {
-                val repositoryManager: VcsRepositoryManager = VcsRepositoryManager.getInstance(project)
-                repositoryManager.getRepositoryForFile(project.baseDir)
-            }
+            val repositoryManager: VcsRepositoryManager = VcsRepositoryManager.getInstance(project)
+            val repository = repositoryManager.getRepositoryForFile(project.baseDir)
 
             if (repository == null) {
                 AutoDevNotifications.notify(project, "No git repository found.")
