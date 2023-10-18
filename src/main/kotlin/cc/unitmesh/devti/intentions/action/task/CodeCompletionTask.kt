@@ -23,10 +23,30 @@ import java.awt.event.KeyEvent
 import javax.swing.KeyStroke
 import kotlin.jvm.internal.Ref
 
+/**
+ * The `CodeCompletionTask` class is responsible for performing code completion tasks in the background.
+ * It extends the `Task.Backgroundable` class and is used to complete code based on a given code completion request.
+ *
+ * The class has the following properties:
+ * - `request`: A private property of type `CodeCompletionRequest` that represents the code completion request.
+ * - `LLMProviderFactory`: A private property of type `LlmProviderFactory` that is used to create an instance of the LLM provider factory.
+ * - `chunksString`: A private property of type `String` that represents the query for similar chunks with paths.
+ * - `commenter`: A private property of type `Commenter` that represents the commenter for the language of the code.
+ * - `commentPrefix`: A private property of type `String` that represents the line comment prefix for the language of the code.
+ * - `isCanceled`: A private property of type `Boolean` that indicates whether the code completion task has been canceled.
+ * - `logger`: A companion object property of type `Logger` that is used for logging purposes.
+ *
+ * The class has the following methods:
+ * - `run`: An overridden method that performs the code completion task. It takes a `ProgressIndicator` as a parameter.
+ * - `onCancel`: An overridden method that is called when the code completion task is canceled.
+ * - `promptText`: A private method that returns the prompt text for the code completion task.
+ *
+ * Note: This class does not have any public methods.
+ */
 class CodeCompletionTask(private val request: CodeCompletionRequest) :
     Task.Backgroundable(request.project, AutoDevBundle.message("intentions.chat.code.complete.name")) {
 
-    private val LLMProviderFactory = LlmProviderFactory()
+    private val providerFactory = LlmProviderFactory()
 
     private val chunksString = SimilarChunksWithPaths.createQuery(request.element, 60)
     private val commenter = LanguageCommenters.INSTANCE.forLanguage(request.element.language)
@@ -36,7 +56,7 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
     override fun run(indicator: ProgressIndicator) {
         val prompt = promptText()
 
-        val flow: Flow<String> = LLMProviderFactory.connector(request.project).stream(prompt, "")
+        val flow: Flow<String> = providerFactory.connector(request.project).stream(prompt, "")
         logger.info("Prompt: $prompt")
 
         DumbAwareAction.create {
@@ -89,13 +109,11 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
             text.substring(0, request.offset)
         }
 
-        val prompt = if (chunksString == null) {
+        return if (chunksString == null) {
             "complete code for given code: \n$prefix"
         } else {
             "complete code for given code: \n$commentPrefix\n$chunksString\n$prefix"
         }
-
-        return prompt
     }
 
     companion object {
