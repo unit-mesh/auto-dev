@@ -6,20 +6,15 @@ import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.gui.sendToChatPanel
-import cc.unitmesh.devti.intentions.action.task.LivingDocumentationTask
 import cc.unitmesh.devti.prompting.VcsPrompting
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.dvcs.repo.Repository
 import com.intellij.dvcs.repo.VcsRepositoryManager
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.Task
-import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.vcs.log.VcsFullCommitDetails
 import com.intellij.vcs.log.VcsLogDataKeys
 import git4idea.repo.GitRepository
@@ -52,24 +47,6 @@ class CodeReviewAction : ChatBaseAction() {
         val details: List<VcsFullCommitDetails> = vcsLog?.selectedDetails?.toList() ?: return
 
         var stories: List<String> = listOf()
-//        val task: Task.Backgroundable = object : Task.Backgroundable(project, "Generating living documentation...") {
-//            override fun run(indicator: ProgressIndicator) {
-//                val repository = runBlocking {
-//                    val repositoryManager: VcsRepositoryManager = VcsRepositoryManager.getInstance(project)
-//                    repositoryManager.getRepositoryForFile(project.baseDir)
-//                }
-//
-//                if (repository == null) {
-//                    AutoDevNotifications.notify(project, "No git repository found.")
-//                    return
-//                }
-//
-//                stories = fetchKanbanByCommits(repository, details)
-//            }
-//        }
-
-//        ProgressManager.getInstance()
-//            .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
         ProgressManager.getInstance().runProcessWithProgressSynchronously(Runnable {
             val repository = runBlocking {
                 val repositoryManager: VcsRepositoryManager = VcsRepositoryManager.getInstance(project)
@@ -110,7 +87,7 @@ class CodeReviewAction : ChatBaseAction() {
         prompt += diff.second
 
         prompt += """As your Tech lead, I am only concerned with key code review issues. Please provide me with a critical summary. 
-            | Submit your summary under 7 sentences in here:"""
+            | Submit your key insights under 5 sentences in here:"""
             .trimMargin()
 
         log.info("prompt: $prompt")
@@ -129,22 +106,20 @@ class CodeReviewAction : ChatBaseAction() {
         val stories: MutableList<String> = mutableListOf()
         when (repository) {
             is GitRepository -> {
-//                val presentableUrl = repository.presentableUrl
                 val remote = repository.info.remotes.firstOrNull() ?: return stories
                 val url = remote.firstUrl ?: return stories
+                if (!url.matches(githubUrlRegex)) return stories
 
-                if (url.matches(githubUrlRegex)) {
-                    val github = GitHubIssue(url, AutoDevSettingsState.getInstance().githubToken)
-                    details
-                        .map {
-                            commitParser.parse(it.subject).references
-                        }
-                        .flatten()
-                        .forEach {
-                            val simpleStory = github.getStoryById(it.issue)
-                            stories += simpleStory.title
-                        }
-                }
+                val github = GitHubIssue(url, AutoDevSettingsState.getInstance().githubToken)
+                details
+                    .map {
+                        commitParser.parse(it.subject).references
+                    }
+                    .flatten()
+                    .forEach {
+                        val simpleStory = github.getStoryById(it.issue)
+                        stories += simpleStory.title
+                    }
             }
         }
 
