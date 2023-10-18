@@ -36,6 +36,7 @@ import org.jetbrains.annotations.NotNull
 import java.io.IOException
 import java.io.StringWriter
 import java.nio.file.Path
+import java.nio.file.PathMatcher
 import java.util.stream.Collectors
 import kotlin.math.min
 
@@ -82,8 +83,14 @@ class VcsPrompting(private val project: Project) {
     }
 
     @Throws(VcsException::class, IOException::class)
-    fun calculateDiff(list: List<VcsFullCommitDetails>, project: Project): Pair<List<String>, String> {
+    fun buildDiffPrompt(
+        list: List<VcsFullCommitDetails>,
+        project: Project,
+        ignoreFilePatterns: List<PathMatcher> = listOf(),
+    ): Pair<List<String>, String>? {
         val writer = StringWriter()
+        var isEmpty = true
+
         val summary: MutableList<String> = ArrayList()
         for (detail in list) {
             writer.write("""Commit Message: ${detail.fullMessage}\n\nCode Changes:\n\n""")
@@ -92,7 +99,21 @@ class VcsPrompting(private val project: Project) {
             summary.add('"'.toString() + subject + "\"")
             val filteredChanges = detail.changes.stream()
                 .filter { change -> !isBinaryOrTooLarge(change!!) }
+                .filter {
+                    val filePath = it.afterRevision?.file
+                    if (filePath != null) {
+                        ignoreFilePatterns.none { pattern ->
+                            pattern.matches(Path.of(it.afterRevision?.file?.path))
+                        }
+                    } else {
+                        true
+                    }
+                }
                 .toList()
+
+            if (filteredChanges.isEmpty()) {
+                continue
+            }
 
             val patches = IdeaTextPatchBuilder.buildPatch(
                 project,
@@ -102,6 +123,8 @@ class VcsPrompting(private val project: Project) {
                 true
             )
 
+            isEmpty = false
+
             UnifiedDiffWriter.write(
                 project,
                 project.stateStore.projectBasePath,
@@ -110,6 +133,10 @@ class VcsPrompting(private val project: Project) {
                 "\n",
                 null, emptyList()
             )
+        }
+
+        if (isEmpty) {
+            return null
         }
 
         val stringWriter = writer.toString()

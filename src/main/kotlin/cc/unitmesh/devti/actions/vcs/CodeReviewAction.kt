@@ -1,5 +1,7 @@
 package cc.unitmesh.devti.actions.vcs
 
+import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatContext
@@ -9,14 +11,10 @@ import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.diff.impl.patch.IdeaTextPatchBuilder
-import com.intellij.openapi.util.io.FileUtilRt
-import com.intellij.openapi.vcs.VcsDataKeys
-import com.intellij.openapi.vcs.changes.Change
-import com.intellij.openapi.vcs.changes.ContentRevision
-import com.intellij.openapi.vcs.changes.CurrentContentRevision
+import com.intellij.vcs.log.VcsFullCommitDetails
 import com.intellij.vcs.log.VcsLogDataKeys
-import org.jetbrains.annotations.NotNull
+import java.nio.file.FileSystems
+import java.nio.file.PathMatcher
 
 class CodeReviewAction : ChatBaseAction() {
     override fun getActionType(): ChatActionType = ChatActionType.CODE_REVIEW
@@ -25,15 +23,26 @@ class CodeReviewAction : ChatBaseAction() {
         val log = logger<CodeReviewAction>()
     }
 
+    val defaultIgnoreFilePatterns: List<PathMatcher> = listOf(
+        "**/*.md", "**/*.json", "**/*.txt", "**/*.xml", "**/*.yml", "**/*.yaml",
+    ).map {
+        FileSystems.getDefault().getPathMatcher("glob:$it")
+    }
+
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
 
         // Make changes available for diff action
         val vcsLog = e.getData(VcsLogDataKeys.VCS_LOG)
-        val details = vcsLog?.selectedDetails?.toList() ?: return
+        val details: List<VcsFullCommitDetails> = vcsLog?.selectedDetails?.toList() ?: return
 
         val vcsPrompting = project.service<VcsPrompting>()
-        val diff = vcsPrompting.calculateDiff(details, project)
+        val diff = vcsPrompting.buildDiffPrompt(details, project, defaultIgnoreFilePatterns)
+
+        if (diff == null) {
+            AutoDevNotifications.notify(project, "No code to review.")
+            return
+        }
 
         var prompt =
             """You are a seasoned software developer, and I'm seeking your expertise to review the following code:
