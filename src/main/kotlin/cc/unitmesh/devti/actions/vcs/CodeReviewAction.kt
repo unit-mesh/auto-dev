@@ -6,19 +6,24 @@ import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.gui.sendToChatPanel
+import cc.unitmesh.devti.intentions.action.task.LivingDocumentationTask
 import cc.unitmesh.devti.prompting.VcsPrompting
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.dvcs.repo.Repository
 import com.intellij.dvcs.repo.VcsRepositoryManager
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.vcs.log.VcsFullCommitDetails
 import com.intellij.vcs.log.VcsLogDataKeys
 import git4idea.repo.GitRepository
+import io.kotest.common.runBlocking
 import org.changelog.CommitParser
 import java.nio.file.FileSystems
 import java.nio.file.PathMatcher
@@ -32,11 +37,7 @@ class CodeReviewAction : ChatBaseAction() {
 
     private val commitParser: CommitParser = CommitParser()
 
-    companion object {
-        val log = logger<CodeReviewAction>()
-    }
-
-    val defaultIgnoreFilePatterns: List<PathMatcher> = listOf(
+    private val defaultIgnoreFilePatterns: List<PathMatcher> = listOf(
         "**/*.md", "**/*.json", "**/*.txt", "**/*.xml", "**/*.yml", "**/*.yaml",
     ).map {
         FileSystems.getDefault().getPathMatcher("glob:$it")
@@ -45,18 +46,43 @@ class CodeReviewAction : ChatBaseAction() {
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
 
-        val repositoryManager: VcsRepositoryManager = VcsRepositoryManager.getInstance(project)
-        val repository = repositoryManager.getRepositoryForFile(project.baseDir)
-        if (repository == null) {
-            AutoDevNotifications.notify(project, "No git repository found.")
-            return
-        }
 
         // Make changes available for diff action
         val vcsLog = event.getData(VcsLogDataKeys.VCS_LOG)
         val details: List<VcsFullCommitDetails> = vcsLog?.selectedDetails?.toList() ?: return
 
-        val stories: List<String> = fetchKanbanByCommits(repository, details)
+        var stories: List<String> = listOf()
+//        val task: Task.Backgroundable = object : Task.Backgroundable(project, "Generating living documentation...") {
+//            override fun run(indicator: ProgressIndicator) {
+//                val repository = runBlocking {
+//                    val repositoryManager: VcsRepositoryManager = VcsRepositoryManager.getInstance(project)
+//                    repositoryManager.getRepositoryForFile(project.baseDir)
+//                }
+//
+//                if (repository == null) {
+//                    AutoDevNotifications.notify(project, "No git repository found.")
+//                    return
+//                }
+//
+//                stories = fetchKanbanByCommits(repository, details)
+//            }
+//        }
+
+//        ProgressManager.getInstance()
+//            .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+        ProgressManager.getInstance().runProcessWithProgressSynchronously(Runnable {
+            val repository = runBlocking {
+                val repositoryManager: VcsRepositoryManager = VcsRepositoryManager.getInstance(project)
+                repositoryManager.getRepositoryForFile(project.baseDir)
+            }
+
+            if (repository == null) {
+                AutoDevNotifications.notify(project, "No git repository found.")
+                return@Runnable
+            }
+
+            stories = fetchKanbanByCommits(repository, details)
+        }, "Prepare repository", true, project)
 
         val vcsPrompting = project.service<VcsPrompting>()
         val diff = vcsPrompting.buildDiffPrompt(details, project, defaultIgnoreFilePatterns)
@@ -103,10 +129,12 @@ class CodeReviewAction : ChatBaseAction() {
         val stories: MutableList<String> = mutableListOf()
         when (repository) {
             is GitRepository -> {
-                // check repository.presentableUrl is a github  url
-                val presentableUrl = repository.presentableUrl
-                if (presentableUrl.matches(githubUrlRegex)) {
-                    val github = GitHubIssue(presentableUrl, AutoDevSettingsState.getInstance().githubToken)
+//                val presentableUrl = repository.presentableUrl
+                val remote = repository.info.remotes.firstOrNull() ?: return stories
+                val url = remote.firstUrl ?: return stories
+
+                if (url.matches(githubUrlRegex)) {
+                    val github = GitHubIssue(url, AutoDevSettingsState.getInstance().githubToken)
                     details
                         .map {
                             commitParser.parse(it.subject).references
@@ -121,5 +149,9 @@ class CodeReviewAction : ChatBaseAction() {
         }
 
         return stories
+    }
+
+    companion object {
+        val log = logger<CodeReviewAction>()
     }
 }

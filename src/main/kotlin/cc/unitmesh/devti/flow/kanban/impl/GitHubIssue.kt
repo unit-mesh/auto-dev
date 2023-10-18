@@ -6,10 +6,14 @@ import cc.unitmesh.devti.flow.model.SimpleStory
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
 
-class GitHubIssue(val repoUrl: String, val token: String) : Kanban {
+class GitHubIssue(var repoUrl: String, val token: String) : Kanban {
     private val gitHub: GitHub
 
     init {
+        if (repoUrl.startsWith("https") || repoUrl.startsWith("git")) {
+            repoUrl = formatUrl(repoUrl)
+        }
+
         try {
             gitHub = GitHubBuilder()
                 .withOAuthToken(token)
@@ -17,6 +21,12 @@ class GitHubIssue(val repoUrl: String, val token: String) : Kanban {
         } catch (e: Exception) {
             throw e
         }
+    }
+
+    fun formatUrl(repoUrl: String): String {
+        var url = repoUrl.split("/").takeLast(2).joinToString("/")
+        url = if (url.endsWith(".git")) url.substring(0, url.length - 4) else url
+        return url
     }
 
     override fun getProjectInfo(): SimpleProjectInfo {
