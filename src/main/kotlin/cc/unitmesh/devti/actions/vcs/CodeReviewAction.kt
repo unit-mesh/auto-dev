@@ -65,9 +65,9 @@ class CodeReviewAction : ChatBaseAction() {
         }, "Prepare repository", true, project)
 
         val vcsPrompting = project.service<VcsPrompting>()
-        val diff = vcsPrompting.buildDiffPrompt(details, selectList, project, defaultIgnoreFilePatterns)
+        val fullChangeContent = vcsPrompting.buildDiffPrompt(details, selectList.toList(), project, defaultIgnoreFilePatterns)
 
-        if (diff == null) {
+        if (fullChangeContent == null) {
             AutoDevNotifications.notify(project, "No code to review.")
             return
         }
@@ -99,7 +99,7 @@ class CodeReviewAction : ChatBaseAction() {
             prompt += "\n"
         }
 
-        prompt += diff.second
+        prompt += fullChangeContent
 
         prompt += """As your Tech lead, I am only concerned with key code review issues. Please provide me with a critical summary. 
             | Submit your key insights under 5 sentences in here:"""
