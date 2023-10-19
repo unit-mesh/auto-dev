@@ -85,7 +85,7 @@ class VcsPrompting(private val project: Project) {
     /**
      * Builds a diff prompt for a list of VcsFullCommitDetails.
      *
-     * @param list The list of VcsFullCommitDetails containing commit details.
+     * @param details The list of VcsFullCommitDetails containing commit details.
      * @param project The Project object representing the current project.
      * @param ignoreFilePatterns The list of PathMatcher objects representing file patterns to be ignored during diff generation. Default value is an empty list.
      * @return A Pair object containing a list of commit message summaries and the generated diff prompt as a string. Returns null if the list is empty or no valid changes are found.
@@ -94,7 +94,8 @@ class VcsPrompting(private val project: Project) {
      */
     @Throws(VcsException::class, IOException::class)
     fun buildDiffPrompt(
-        list: List<VcsFullCommitDetails>,
+        details: List<VcsFullCommitDetails>,
+        selectList: Array<Change>,
         project: Project,
         ignoreFilePatterns: List<PathMatcher> = listOf(),
     ): Pair<List<String>, String>? {
@@ -102,7 +103,7 @@ class VcsPrompting(private val project: Project) {
         var isEmpty = true
 
         val summary: MutableList<String> = ArrayList()
-        for (detail in list) {
+        for (detail in details) {
             writer.write("Commit Message: ${detail.fullMessage}\n\nCode Changes:\n\n")
             val subject = detail.subject
 

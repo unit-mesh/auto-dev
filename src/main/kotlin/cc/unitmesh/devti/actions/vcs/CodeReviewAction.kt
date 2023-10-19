@@ -19,6 +19,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.vcs.VcsDataKeys
 import com.intellij.vcs.log.VcsFullCommitDetails
 import com.intellij.vcs.log.VcsLogDataKeys
 import git4idea.repo.GitRepository
@@ -48,6 +49,7 @@ class CodeReviewAction : ChatBaseAction() {
         // Make changes available for diff action
         val vcsLog = event.getData(VcsLogDataKeys.VCS_LOG)
         val details: List<VcsFullCommitDetails> = vcsLog?.selectedDetails?.toList() ?: return
+        val selectList = event.getData(VcsDataKeys.SELECTED_CHANGES) ?: return
 
         var stories: List<String> = listOf()
         ProgressManager.getInstance().runProcessWithProgressSynchronously(Runnable {
@@ -63,7 +65,7 @@ class CodeReviewAction : ChatBaseAction() {
         }, "Prepare repository", true, project)
 
         val vcsPrompting = project.service<VcsPrompting>()
-        val diff = vcsPrompting.buildDiffPrompt(details, project, defaultIgnoreFilePatterns)
+        val diff = vcsPrompting.buildDiffPrompt(details, selectList, project, defaultIgnoreFilePatterns)
 
         if (diff == null) {
             AutoDevNotifications.notify(project, "No code to review.")
