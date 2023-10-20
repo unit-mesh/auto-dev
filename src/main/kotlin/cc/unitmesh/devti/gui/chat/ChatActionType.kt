@@ -33,20 +33,7 @@ enum class ChatActionType {
         return prompting.prepareContext()
     }
 
-    val old_commit_prompt = """suggest 10 commit messages based on the following diff:
-        commit messages should:
-         - follow conventional commits
-         - message format should be: <type>[scope]: <description>
-        
-        examples:
-         - fix(authentication): add password regex pattern
-         - feat(storage): add new test cases
-         
-         {{diff}}
-         """.trimIndent()
-
-
-    fun generateCommitMessage(diff: String): String {
+    private fun generateCommitMessage(diff: String): String {
         return """Write a cohesive yet descriptive commit message for a given diff. 
 Make sure to include both information What was changed and Why.
 Start with a short sentence in imperative form, no more than 50 characters long.
