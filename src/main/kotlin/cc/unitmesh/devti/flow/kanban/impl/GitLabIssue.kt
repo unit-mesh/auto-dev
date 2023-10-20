@@ -28,14 +28,14 @@ class GitLabIssue(private val apiUrl: String, private val personalAccessToken: S
     }
 
     override fun getStoryById(storyId: String): SimpleStory {
-        val issue: Issue = gitLabApi.issuesApi.getIssue(apiUrl, storyId.toInt())
+        val issue: Issue = gitLabApi.issuesApi.getIssue(apiUrl, storyId.toLong())
         return SimpleStory(issue.iid.toString(), issue.title, issue.description)
     }
 
 
     override fun updateStoryDetail(simpleStory: SimpleStory) {
         // Create a note as a comment on the issue
-        val issue: Issue = gitLabApi.issuesApi.getIssue(apiUrl, simpleStory.id.toInt())
+        val issue: Issue = gitLabApi.issuesApi.getIssue(apiUrl, simpleStory.id.toLong())
         gitLabApi.notesApi.createIssueNote(apiUrl, issue.iid, simpleStory.description)
     }
 
