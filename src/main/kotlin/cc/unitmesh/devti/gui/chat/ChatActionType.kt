@@ -15,6 +15,7 @@ enum class ChatActionType {
     GEN_COMMIT_MESSAGE,
     FIX_ISSUE,
     CREATE_CHANGELOG,
+    CREATE_GENIUS,
     CUSTOM_COMPLETE,
     CUSTOM_ACTION,
     COUNIT,
