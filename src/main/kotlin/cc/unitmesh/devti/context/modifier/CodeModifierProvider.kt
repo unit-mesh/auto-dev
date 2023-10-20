@@ -18,5 +18,4 @@ class CodeModifierProvider {
     }
 
     // get file by directory
-
 }

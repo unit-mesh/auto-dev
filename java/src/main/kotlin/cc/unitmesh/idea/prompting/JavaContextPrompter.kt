@@ -1,4 +1,4 @@
-package cc.unitmesh.idea.promting
+package cc.unitmesh.idea.prompting
 
 import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.gui.chat.ChatActionType

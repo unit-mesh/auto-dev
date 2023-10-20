@@ -52,7 +52,8 @@
         <daemon.highlightInfoFilter implementation="cc.unitmesh.devti.gui.snippet.error.CodeBlockHighlightingFilter"/>
         <defaultHighlightingSettingProvider
                 implementation="cc.unitmesh.devti.gui.snippet.error.CodeBlockHighlightingSettingsProvider"/>
-        <daemon.intentionActionFilter implementation="cc.unitmesh.devti.gui.snippet.error.CodeBlockIntentionActionFilter"/>
+        <daemon.intentionActionFilter
+                implementation="cc.unitmesh.devti.gui.snippet.error.CodeBlockIntentionActionFilter"/>
 
     </extensions>
 
@@ -67,6 +68,12 @@
                         beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
             <with attribute="implementationClass"
                   implements="cc.unitmesh.devti.context.builder.FileContextBuilder"/>
+        </extensionPoint>
+
+        <extensionPoint qualifiedName="cc.unitmesh.buildSystem"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass"
+                  implements="cc.unitmesh.devti.provider.BuildSystemProvider"/>
         </extensionPoint>
 
         <extensionPoint qualifiedName="cc.unitmesh.classContextBuilder"
@@ -202,7 +209,8 @@
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                 description="Ask AI to review code">
 
-            <add-to-group group-id="Vcs.Log.ChangesBrowser.Popup" relative-to-action="Vcs.RepositoryChangesBrowserMenu" anchor="after"/>
+            <add-to-group group-id="Vcs.Log.ChangesBrowser.Popup" relative-to-action="Vcs.RepositoryChangesBrowserMenu"
+                          anchor="after"/>
             <add-to-group group-id="Vcs.Log.ContextMenu" relative-to-action="Vcs.ShowDiffWithLocal" anchor="after"/>
         </action>
 
