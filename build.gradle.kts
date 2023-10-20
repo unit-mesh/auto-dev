@@ -337,7 +337,7 @@ project(":") {
         implementation("cc.unitmesh:git-commit-message:0.3.8")
 
         // gitlab4j-api
-        implementation("org.gitlab4j:gitlab4j-api:4.17.0"){
+        implementation("org.gitlab4j:gitlab4j-api:5.3.0"){
             exclude(module = "jackson-core")
             exclude(module = "jackson-databind")
             exclude(module = "jackson-annotations")
