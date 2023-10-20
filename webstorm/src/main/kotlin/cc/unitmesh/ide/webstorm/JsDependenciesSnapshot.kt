@@ -18,12 +18,12 @@ class JsDependenciesSnapshot(
     companion object {
         fun create(
             project: Project,
-            creationContext: ChatCreationContext
+            creationContext: ChatCreationContext?
         ): JsDependenciesSnapshot {
             var packageJsonFiles = emptySet<VirtualFile>()
             var resolvedPackageJson = false
 
-            val virtualFile = creationContext.sourceFile?.virtualFile
+            val virtualFile = creationContext?.sourceFile?.virtualFile
             if (virtualFile != null) {
                 val packageJson = PackageJsonUtil.findUpPackageJson(virtualFile)
                 if (packageJson != null) {
