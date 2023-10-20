@@ -2,9 +2,7 @@ package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.prompting.VcsPrompting
 import com.intellij.openapi.components.service
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
-import com.intellij.openapi.vcs.changes.ChangeListManagerImpl
 
 enum class ChatActionType {
     CHAT,
