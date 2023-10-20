@@ -73,15 +73,14 @@ $diff
             CODE_COMPLETE -> "Complete $lang code, return rest code, no explaining"
             GENERATE_TEST -> "Write unit test for given $lang code"
             FIX_ISSUE -> "Help me fix this issue"
-            GEN_COMMIT_MESSAGE -> {
-                generateCommitMessage(prepareVcsContext())
-            }
+            GEN_COMMIT_MESSAGE -> generateCommitMessage(prepareVcsContext())
             CREATE_CHANGELOG -> "generate release note"
             CHAT -> ""
             CUSTOM_COMPLETE -> ""
             CUSTOM_ACTION -> ""
             COUNIT -> ""
             CODE_REVIEW -> ""
+            CREATE_GENIUS -> ""
         }
     }
 }

@@ -92,12 +92,6 @@ open class JavaContextPrompter : ContextPrompter() {
         var prompt = action!!.instruction(lang)
 
         when (action!!) {
-            ChatActionType.EXPLAIN -> {
-            }
-
-            ChatActionType.REFACTOR -> {
-            }
-
             ChatActionType.CODE_COMPLETE -> {
                 when {
                     MvcUtil.isController(fileName, lang) -> {
@@ -121,29 +115,12 @@ open class JavaContextPrompter : ContextPrompter() {
                     }
                 }
             }
+            ChatActionType.FIX_ISSUE -> addFixIssueContext(selectedText)
+            ChatActionType.CREATE_CHANGELOG -> prompt = "generate release note base on the follow commit"
 
-            ChatActionType.GENERATE_TEST -> {}
-
-            ChatActionType.FIX_ISSUE -> {
-                addFixIssueContext(selectedText)
+            else -> {
+                // ignore else
             }
-
-            ChatActionType.GEN_COMMIT_MESSAGE -> {
-            }
-
-            ChatActionType.CREATE_CHANGELOG -> {
-                prompt = "generate release note base on the follow commit"
-            }
-
-            ChatActionType.CHAT -> {
-            }
-
-            ChatActionType.CUSTOM_COMPLETE -> {
-            }
-
-            ChatActionType.CUSTOM_ACTION -> {}
-            ChatActionType.COUNIT -> {}
-            ChatActionType.CODE_REVIEW -> {}
         }
 
         return prompt
