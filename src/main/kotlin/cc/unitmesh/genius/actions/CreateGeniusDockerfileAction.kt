@@ -37,6 +37,9 @@ class CreateGeniusDockerfileAction : AnAction(AutoDevBundle.message("action.new.
             // if Dockerfile exit, send to chat
         }
 
+        // first we need to guess language
+//        val context = BuildSystemProvider.instance("JavaScript")?.collect(project);
+
         val task: Task.Backgroundable = DockerFileGenerateTask(project, result)
         ProgressManager.getInstance()
             .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))

@@ -1,6 +1,8 @@
 package cc.unitmesh.devti.provider
 
 import cc.unitmesh.devti.template.DockerfileContext
+import com.intellij.lang.Language
+import com.intellij.lang.LanguageExtension
 import com.intellij.openapi.project.Project
 
 /**
@@ -11,4 +13,13 @@ import com.intellij.openapi.project.Project
  */
 interface BuildSystemProvider {
     fun collect(project: Project): DockerfileContext
+
+    companion object {
+        private val languageExtension: LanguageExtension<BuildSystemProvider> =
+            LanguageExtension("cc.unitmesh.buildSystemProvider")
+
+        fun instance(lang: Language): BuildSystemProvider? {
+            return languageExtension.forLanguage(lang)
+        }
+    }
 }
