@@ -70,7 +70,7 @@
                   implements="cc.unitmesh.devti.context.builder.FileContextBuilder"/>
         </extensionPoint>
 
-        <extensionPoint qualifiedName="cc.unitmesh.buildSystem"
+        <extensionPoint qualifiedName="cc.unitmesh.buildSystemProvider"
                         beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
             <with attribute="implementationClass"
                   implements="cc.unitmesh.devti.provider.BuildSystemProvider"/>
