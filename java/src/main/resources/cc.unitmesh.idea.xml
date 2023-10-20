@@ -20,6 +20,7 @@
 
         <codeModifier language="JAVA"
                       implementationClass="cc.unitmesh.idea.context.JavaCodeModifier"/>
+
         <livingDocumentation language="JAVA"
                              implementationClass="cc.unitmesh.idea.provider.JavaLivingDocumentation"/>
 

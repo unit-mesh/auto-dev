@@ -2,14 +2,13 @@ package cc.unitmesh.idea.provider
 
 import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.template.DockerfileContext
-import com.intellij.openapi.externalSystem.model.ProjectSystemId
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.project.Project
 import com.intellij.util.lang.JavaVersion
 import org.jetbrains.plugins.gradle.util.GradleConstants
 
 
-class JavaBuildSystemProvider : BuildSystemProvider {
+open class JavaBuildSystemProvider : BuildSystemProvider {
     override fun collect(project: Project): DockerfileContext {
         val projectDataManager = ProjectDataManager.getInstance()
         var buildToolName = ""
