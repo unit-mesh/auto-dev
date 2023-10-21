@@ -67,8 +67,18 @@ data class TeamActionPrompt(
                 val frontMatter = matchResult.groupValues[1]
                 val yaml = Yaml()
                 val frontMatterMap = yaml.load<Map<String, Any>>(frontMatter)
-                prompt.interaction = InteractionType.valueOf(frontMatterMap["interaction"] as String)
-                prompt.priority = frontMatterMap["priority"] as Int
+                prompt.interaction = try {
+                    InteractionType.valueOf(frontMatterMap["interaction"] as String)
+                } catch (e: Exception) {
+                    InteractionType.AppendCursorStream
+                }
+
+                prompt.priority = try {
+                    frontMatterMap["priority"] as Int
+                } catch (e: Exception) {
+                    0
+                }
+
                 prompt.other = frontMatterMap.filterKeys { it != "interaction" && it != "priority" }
 
                 val chatContent = matchResult?.groupValues?.get(2) ?: content
@@ -82,10 +92,14 @@ data class TeamActionPrompt(
         }
 
         private fun parseChatMessage(chatContent: String): List<LlmMsg.ChatMessage> {
-            val msgs = TemplateRoleSplitter().split(chatContent)
-            val messages = LlmMsg.fromMap(msgs).toMutableList()
+            try {
+                val msgs = TemplateRoleSplitter().split(chatContent)
+                val messages = LlmMsg.fromMap(msgs).toMutableList()
 
-            return messages
+                return messages
+            } catch (e: Exception) {
+                return listOf(LlmMsg.ChatMessage(LlmMsg.ChatRole.User, chatContent, null))
+            }
         }
     }
 }

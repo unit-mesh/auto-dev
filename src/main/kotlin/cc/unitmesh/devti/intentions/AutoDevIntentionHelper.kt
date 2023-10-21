@@ -69,7 +69,7 @@ class AutoDevIntentionHelper : IntentionAction, Iconable {
 
             val teamPromptsIntentions: List<IntentionAction> = project.service<TeamPromptsBuilder>().build().map {
                 TeamPromptIntention.create(it)
-            } ?: emptyList()
+            }
 
             val actionList = builtinIntentions + customIntentions + livingDocIntentions + teamPromptsIntentions
             return actionList.map { it as AbstractChatIntention }.sortedByDescending { it.priority() }
