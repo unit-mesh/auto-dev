@@ -1,20 +1,21 @@
 package cc.unitmesh.devti.custom.team
 
 import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
 import com.intellij.lang.Language
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.NlsSafe
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import kotlinx.coroutines.runBlocking
 import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.Velocity
 import java.io.StringWriter
+import com.intellij.psi.PsiNameIdentifierOwner
 
-class TeamPromptTemplateCompiler(val language: Language, val file: PsiFile) {
+class TeamPromptTemplateCompiler(val language: Language, val file: PsiFile, val element: PsiElement?) {
     private val velocityContext = VelocityContext()
 
     companion object {
@@ -22,6 +23,13 @@ class TeamPromptTemplateCompiler(val language: Language, val file: PsiFile) {
     }
 
     fun compile(template: String): String {
+        velocityContext.put("fileName", file.name)
+        velocityContext.put("filePath", file.virtualFile?.path ?: "")
+        velocityContext.put("methodName", when(element) {
+            is PsiNameIdentifierOwner -> element.nameIdentifier?.text ?: ""
+            else -> ""
+        })
+
         configForLanguage()
         configForFramework()
 
@@ -44,6 +52,7 @@ class TeamPromptTemplateCompiler(val language: Language, val file: PsiFile) {
 
         val sw = StringWriter()
         try {
+            velocityContext.put("context", SimpleTeamContextProvider())
             Velocity.evaluate(velocityContext, sw, "#" + this.javaClass.name, template)
         } catch (e: Exception) {
             log.error("Failed to compile template: $template", e)
