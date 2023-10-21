@@ -328,6 +328,7 @@ project(":") {
 
         implementation(libs.bundles.openai)
         implementation(libs.bundles.markdown)
+        implementation(libs.yaml)
 
         implementation(libs.json.pathkt)
 

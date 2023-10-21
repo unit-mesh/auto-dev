@@ -44,6 +44,9 @@ comate-spec-lang = "org.archguard.comate:spec-lang:0.2.0"
 # json-path = "com.jayway.jsonpath:json-path:2.8.0"
 json-pathkt = "com.nfeld.jsonpathkt:jsonpathkt:2.0.1"
 
+# implementation("org.yaml:snakeyaml:2.2")
+yaml = "org.yaml:snakeyaml:2.2"
+
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
