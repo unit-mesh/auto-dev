@@ -1,14 +1,17 @@
 ---
 interaction: AppendCursorStream
 ---
-
 ```user```
 
 你是一个资深的软件开发工程师，你擅长使用 TDD 的方式来开发软件，你需要根据新的测试用例，来改进原有的代码实现。
 
-原有的实现代码是：$context.getTargetFileCode($testName)
+原有的实现代码是：$context.underTestFileCode($methodName)
 
-$context.getTargetMethodCode($testName)
+$context.underTestMethodCode($methodName)
 
-新的测试方法是：${selection}
+新的测试代码是：
+
+${selection}
+
+请根据新的测试，优化 class under test 部分的代码。请返回对应的方法的代码：
 

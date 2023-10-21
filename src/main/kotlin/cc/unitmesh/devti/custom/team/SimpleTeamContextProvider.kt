@@ -1,14 +1,17 @@
 package cc.unitmesh.devti.custom.team
 
-class SimpleTeamContextProvider : TeamContextProvider {
+import com.intellij.psi.PsiElement
+
+class SimpleTeamContextProvider(val element: PsiElement?) : TeamContextProvider {
     /**
      * Retrieves the code of the target file associated with the given test name.
      */
-    override fun getTargetFileCode(fileName: String): String {
+    override fun underTestFileCode(methodName: String): String {
+        // according to the test name, find the under test file name
         return "TODO"
     }
 
-    override fun getTargetMethodCode(testName: String): String {
+    override fun underTestMethodCode(testName: String): String {
         return "TODO"
     }
 }

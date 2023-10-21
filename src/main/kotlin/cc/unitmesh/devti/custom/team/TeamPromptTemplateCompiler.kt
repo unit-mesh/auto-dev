@@ -52,7 +52,7 @@ class TeamPromptTemplateCompiler(val language: Language, val file: PsiFile, val 
 
         val sw = StringWriter()
         try {
-            velocityContext.put("context", SimpleTeamContextProvider())
+            velocityContext.put("context", SimpleTeamContextProvider(element))
             Velocity.evaluate(velocityContext, sw, "#" + this.javaClass.name, template)
         } catch (e: Exception) {
             log.error("Failed to compile template: $template", e)
