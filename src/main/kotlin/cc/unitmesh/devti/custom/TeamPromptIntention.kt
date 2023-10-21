@@ -27,7 +27,7 @@ class TeamPromptIntention(private val intentionConfig: TeamPromptAction) : Abstr
         val language = file.language
         val element = file.findElementAt(editor.caretModel.offset)
 
-        val templateCompiler = TeamPromptTemplateCompiler(language, file, element)
+        val templateCompiler = TeamPromptTemplateCompiler(language, file, element, editor)
         templateCompiler.set("selection", range.first)
         templateCompiler.set("beforeCursor", file.text.substring(0, editor.caretModel.offset))
         templateCompiler.set("afterCursor", file.text.substring(editor.caretModel.offset))

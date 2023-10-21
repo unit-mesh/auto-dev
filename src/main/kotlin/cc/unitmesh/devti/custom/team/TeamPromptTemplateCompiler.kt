@@ -6,6 +6,7 @@ import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
 import com.intellij.lang.Language
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -15,7 +16,7 @@ import org.apache.velocity.app.Velocity
 import java.io.StringWriter
 import com.intellij.psi.PsiNameIdentifierOwner
 
-class TeamPromptTemplateCompiler(val language: Language, val file: PsiFile, val element: PsiElement?) {
+class TeamPromptTemplateCompiler(val language: Language, val file: PsiFile, val element: PsiElement?, val editor: Editor) {
     private val velocityContext = VelocityContext()
 
     companion object {
@@ -52,7 +53,7 @@ class TeamPromptTemplateCompiler(val language: Language, val file: PsiFile, val 
 
         val sw = StringWriter()
         try {
-            velocityContext.put("context", SimpleTeamContextProvider(element))
+            velocityContext.put("context", SimpleTeamContextProvider(element, editor))
             Velocity.evaluate(velocityContext, sw, "#" + this.javaClass.name, template)
         } catch (e: Exception) {
             log.error("Failed to compile template: $template", e)
