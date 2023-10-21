@@ -19,6 +19,7 @@ class TeamPromptsBuilder(private val project: Project) {
             // load content of the prompt file
             val promptContent = runReadAction { it.inputStream.readBytes().toString(Charsets.UTF_8) }
             val actionPrompt = TeamActionPrompt.fromContent(promptContent)
+
             TeamPromptAction(promptName, actionPrompt)
         }
     }

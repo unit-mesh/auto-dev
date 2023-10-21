@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.gui.chat
 
+import cc.unitmesh.cf.core.llms.LlmMsg
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.LLMCoroutineScope
 import cc.unitmesh.devti.counit.CoUnitPreProcessor
@@ -54,6 +55,25 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
 
                     else -> ui.updateMessage(response)
                 }
+            }
+        }
+    }
+
+    fun handleMsgsAndResponse(
+        ui: ChatCodingPanel,
+        messages: List<LlmMsg.ChatMessage>,
+    ) {
+        val requestPrompt = messages.filter { it.role == LlmMsg.ChatRole.User }.joinToString("\n")
+        val systemPrompt = messages.filter { it.role == LlmMsg.ChatRole.System }.joinToString("\n")
+
+        ui.addMessage(requestPrompt, true, requestPrompt)
+        ui.addMessage(AutoDevBundle.message("autodev.assistant.placeholder"))
+
+        ApplicationManager.getApplication().executeOnPooledThread {
+            val response = llmProviderFactory.connector(project).stream(requestPrompt, systemPrompt)
+
+            LLMCoroutineScope.scope(project).launch {
+                ui.updateMessage(response)
             }
         }
     }

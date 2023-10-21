@@ -2,16 +2,19 @@ package cc.unitmesh.devti.custom.team
 
 import cc.unitmesh.cf.core.llms.LlmMsg
 import cc.unitmesh.template.TemplateRoleSplitter
+import com.intellij.openapi.diagnostic.logger
 import org.yaml.snakeyaml.Yaml
 
 data class TeamActionPrompt(
     var interaction: InteractionType = InteractionType.AppendCursorStream,
     var priority: Int = 0,
     var other: Map<String, Any> = mapOf(),
-    // the rest of content is the chat messages
+    // the rest of the content is the chat messages
     var msgs: List<LlmMsg.ChatMessage> = listOf(),
 ) {
     companion object {
+        val logger = logger<TeamActionPrompt>()
+
         /**
          * Parses the given content and returns a TeamActionPrompt object.
          *
@@ -87,18 +90,17 @@ data class TeamActionPrompt(
                 prompt.msgs = parseChatMessage(content)
             }
 
-            // the rest of content is the chat messages
+            // the rest of the content is the chat messages
             return prompt
         }
 
         private fun parseChatMessage(chatContent: String): List<LlmMsg.ChatMessage> {
-            try {
+            return try {
                 val msgs = TemplateRoleSplitter().split(chatContent)
-                val messages = LlmMsg.fromMap(msgs).toMutableList()
-
-                return messages
+                LlmMsg.fromMap(msgs).toMutableList()
             } catch (e: Exception) {
-                return listOf(LlmMsg.ChatMessage(LlmMsg.ChatRole.User, chatContent, null))
+                logger.warn("Failed to parse chat message: $chatContent", e)
+                listOf(LlmMsg.ChatMessage(LlmMsg.ChatRole.User, chatContent, null))
             }
         }
     }
