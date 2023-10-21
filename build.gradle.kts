@@ -343,8 +343,10 @@ project(":") {
             exclude(module = "jackson-core")
             exclude(module = "jackson-databind")
             exclude(module = "jackson-annotations")
-
         }
+
+        implementation("org.apache.velocity:velocity-engine-core:2.3")
+        // logback
 
         // jackson-module-kotlin
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.2") {
