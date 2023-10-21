@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.custom.team
 
 import com.intellij.lang.Language
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.NlsSafe
 import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.Velocity
@@ -8,12 +9,22 @@ import java.io.StringWriter
 
 class TeamPromptTemplateCompiler(val language: Language) {
     private val velocityContext = VelocityContext()
+    companion object {
+        val log = logger<TeamPromptTemplateCompiler>()
+    }
+
     fun compile(template: String): String {
         configForLanguage()
         configForFramework()
 
         val sw = StringWriter()
-        Velocity.evaluate(velocityContext, sw, "#" + this.javaClass.name, template)
+        try {
+            Velocity.evaluate(velocityContext, sw, "#" + this.javaClass.name, template)
+        } catch (e: Exception) {
+            log.error("Failed to compile template: $template", e)
+            sw.write(template)
+        }
+
         return sw.toString()
     }
 
