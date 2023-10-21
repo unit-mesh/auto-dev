@@ -3,11 +3,7 @@ package cc.unitmesh.ide.webstorm.provider
 import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.template.DockerfileContext
 import cc.unitmesh.ide.webstorm.JsDependenciesSnapshot
-import com.intellij.javascript.nodejs.packageJson.PackageJsonFileManager
-import com.intellij.json.psi.JsonFile
-import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiManager
 
 
 class JavaScriptBuildSystemProvider : BuildSystemProvider() {
