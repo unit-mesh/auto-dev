@@ -9,7 +9,7 @@ import com.intellij.openapi.project.guessProjectDir
 @Service(Service.Level.PROJECT)
 class TeamPromptsBuilder(private val project: Project) {
     val settings = project.teamPromptsSettings
-    fun parsePromptsByDirectory(): List<TeamPromptAction> {
+    fun build(): List<TeamPromptAction> {
         val path = settings.state.teamPromptsDir
         val promptsDir = project.guessProjectDir()?.findChild(path) ?: return emptyList()
 

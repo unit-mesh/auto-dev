@@ -4,6 +4,7 @@ import cc.unitmesh.cf.core.llms.LlmMsg
 
 data class TeamActionPrompt(
     val interaction: InteractionType = InteractionType.AppendCursorStream,
+    val priority: Int = 0,
     val msgs: List<LlmMsg.ChatMessage> = listOf(),
 ) {
     companion object {

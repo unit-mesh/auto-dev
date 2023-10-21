@@ -6,10 +6,13 @@ import cc.unitmesh.devti.custom.CustomDocumentationIntention
 import cc.unitmesh.devti.custom.CustomIntention
 import cc.unitmesh.devti.intentions.ui.CustomPopupStep
 import cc.unitmesh.devti.custom.CustomPromptConfig
+import cc.unitmesh.devti.custom.TeamPromptIntention
+import cc.unitmesh.devti.custom.team.TeamPromptsBuilder
 import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.IntentionActionBean
 import com.intellij.lang.injection.InjectedLanguageManager
+import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
@@ -64,7 +67,11 @@ class AutoDevIntentionHelper : IntentionAction, Iconable {
                 CustomDocumentationIntention.create(it)
             } ?: emptyList()
 
-            val actionList = builtinIntentions + customIntentions + livingDocIntentions
+            val teamPromptsIntentions: List<IntentionAction> = project.service<TeamPromptsBuilder>().build().map {
+                TeamPromptIntention.create(it)
+            } ?: emptyList()
+
+            val actionList = builtinIntentions + customIntentions + livingDocIntentions + teamPromptsIntentions
             return actionList.map { it as AbstractChatIntention }.sortedByDescending { it.priority() }
         }
     }
