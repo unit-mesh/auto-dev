@@ -1,7 +1,6 @@
 package cc.unitmesh.genius.actions
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.llms.LlmProviderFactory
 import cc.unitmesh.devti.provider.BuildSystemProvider
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -12,34 +11,30 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
-import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.runBlocking
 
 private const val DOCKERFILE = "Dockerfile"
 
 class CreateGeniusDockerfileAction : AnAction(AutoDevBundle.message("action.new.genius.dockerfile")) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        val stream =
-            LlmProviderFactory().connector(project).stream("TODO", "")
-
-        var result = ""
-
-        runBlocking {
-            stream.cancellable().collect {
-                result += it
-            }
-        }
 
         val root = project.guessProjectDir()!!
         val dockerfile = root.findFileByRelativePath(DOCKERFILE)
         if (dockerfile?.exists() == true) {
-            // if Dockerfile exit, send to chat
+            // current Dockerfile to context
         }
 
         // first we need to guess language
         val contexts = BuildSystemProvider.guess(project);
+        val result = ""
+
+//        val stream =
+//            LlmProviderFactory().connector(project).stream("TODO", "")
+//        runBlocking {
+//            stream.cancellable().collect {
+//                result += it
+//            }
+//        }
 
         val task: Task.Backgroundable = DockerFileGenerateTask(project, result)
         ProgressManager.getInstance()

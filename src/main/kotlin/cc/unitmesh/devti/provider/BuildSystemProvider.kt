@@ -13,7 +13,7 @@ import com.intellij.util.xmlb.annotations.Attribute
  * This interface is used in conjunction with the [cc.unitmesh.devti.template.DockerfileContext] class.
  */
 abstract class BuildSystemProvider : LazyExtensionInstance<BuildSystemProvider>() {
-    abstract fun collect(project: Project): DockerfileContext
+    abstract fun collect(project: Project): DockerfileContext?
 
     @Attribute("implementationClass")
     var implementationClass: String? = null
@@ -27,7 +27,7 @@ abstract class BuildSystemProvider : LazyExtensionInstance<BuildSystemProvider>(
             ExtensionPointName.create("cc.unitmesh.buildSystemProvider")
 
         fun guess(project: Project): List<DockerfileContext> {
-            return EP_NAME.extensionList.map {
+            return EP_NAME.extensionList.mapNotNull {
                 it.collect(project)
             }
         }

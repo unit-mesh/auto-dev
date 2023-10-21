@@ -35,7 +35,7 @@
                 language="kotlin"
                 implementation="cc.unitmesh.kotlin.provider.KotlinWriteTestService"/>
 
-        <buildSystemProvider
-                implementation="cc.unitmesh.kotlin.provider.KotlinBuildSystemProvider"/>
+<!--        <buildSystemProvider-->
+<!--                implementation="cc.unitmesh.kotlin.provider.KotlinBuildSystemProvider"/>-->
     </extensions>
 </idea-plugin>

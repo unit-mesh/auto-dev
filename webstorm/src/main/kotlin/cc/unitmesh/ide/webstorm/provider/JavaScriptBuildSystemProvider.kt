@@ -5,9 +5,13 @@ import cc.unitmesh.devti.template.DockerfileContext
 import cc.unitmesh.ide.webstorm.JsDependenciesSnapshot
 import com.intellij.openapi.project.Project
 
-class JavaScriptBuildSystemProvider : BuildSystemProvider {
-    override fun collect(project: Project): DockerfileContext {
+class JavaScriptBuildSystemProvider : BuildSystemProvider() {
+    override fun collect(project: Project): DockerfileContext? {
         val snapshot = JsDependenciesSnapshot.create(project, null)
+        if (snapshot.packages.isEmpty()) {
+            return null
+        }
+
         var language = "JavaScript"
         var languageVersion = "ES5"
         val buildTool = "NPM"
