@@ -4,7 +4,7 @@ import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ConfigurableProvider
 import com.intellij.openapi.project.Project
 
-class PromptLibraryConfigurableProvider (private val project: Project) : ConfigurableProvider() {
+class TeamPromptsConfigurableProvider (private val project: Project) : ConfigurableProvider() {
     override fun createConfigurable(): Configurable {
         return PromptLibraryConfigurable(project)
     }

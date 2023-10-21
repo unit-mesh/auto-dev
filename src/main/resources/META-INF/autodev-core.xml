@@ -18,11 +18,11 @@
                              id="cc.unitmesh.counit"
                              bundle="messages.AutoDevBundle" key="settings.external.counit.name"/>
 
-        <projectService serviceImplementation="cc.unitmesh.devti.settings.custom.PromptLibraryProjectSettingsService"/>
-        <projectConfigurable provider="cc.unitmesh.devti.settings.custom.PromptLibraryConfigurableProvider"
+        <projectService serviceImplementation="cc.unitmesh.devti.settings.custom.TeamPromptsProjectSettingsService"/>
+        <projectConfigurable provider="cc.unitmesh.devti.settings.custom.TeamPromptsConfigurableProvider"
                              parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                              id="cc.unitmesh.promptLibrary"
-                             bundle="messages.AutoDevBundle" key="settings.external.prompt.library.name"/>
+                             bundle="messages.AutoDevBundle" key="settings.external.team.prompts.name"/>
 
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.AutoDevSettingsState"/>
 
