@@ -2,6 +2,7 @@ package cc.unitmesh.genius.actions
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.llms.LlmProviderFactory
+import cc.unitmesh.devti.provider.BuildSystemProvider
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.command.WriteCommandAction
@@ -38,7 +39,7 @@ class CreateGeniusDockerfileAction : AnAction(AutoDevBundle.message("action.new.
         }
 
         // first we need to guess language
-//        val context = BuildSystemProvider.instance("JavaScript")?.collect(project);
+        val contexts = BuildSystemProvider.guess(project);
 
         val task: Task.Backgroundable = DockerFileGenerateTask(project, result)
         ProgressManager.getInstance()

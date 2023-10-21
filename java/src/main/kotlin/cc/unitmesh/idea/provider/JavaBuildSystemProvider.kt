@@ -8,7 +8,7 @@ import com.intellij.util.lang.JavaVersion
 import org.jetbrains.plugins.gradle.util.GradleConstants
 
 
-open class JavaBuildSystemProvider : BuildSystemProvider {
+open class JavaBuildSystemProvider : BuildSystemProvider() {
     override fun collect(project: Project): DockerfileContext {
         val projectDataManager = ProjectDataManager.getInstance()
         var buildToolName = ""

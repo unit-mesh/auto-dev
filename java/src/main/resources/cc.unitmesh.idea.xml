@@ -43,8 +43,7 @@
                 implementation="cc.unitmesh.idea.service.JavaWriteTestService"/>
 
         <buildSystemProvider
-                language="JAVA"
-                implementationClass="cc.unitmesh.idea.provider.JavaBuildSystemProvider" />
+                implementation="cc.unitmesh.idea.provider.JavaBuildSystemProvider" />
 
         <autoDevIntention>
             <className>cc.unitmesh.idea.actions.AutoCrudAction</className>

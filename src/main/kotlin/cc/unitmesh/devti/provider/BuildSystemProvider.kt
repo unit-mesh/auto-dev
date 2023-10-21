@@ -1,9 +1,10 @@
 package cc.unitmesh.devti.provider
 
 import cc.unitmesh.devti.template.DockerfileContext
-import com.intellij.lang.Language
-import com.intellij.lang.LanguageExtension
+import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
+import com.intellij.serviceContainer.LazyExtensionInstance
+import com.intellij.util.xmlb.annotations.Attribute
 
 /**
  * The `BuildSystemProvider` interface represents a provider for build system information.
@@ -11,15 +12,24 @@ import com.intellij.openapi.project.Project
  *
  * This interface is used in conjunction with the [cc.unitmesh.devti.template.DockerfileContext] class.
  */
-interface BuildSystemProvider {
-    fun collect(project: Project): DockerfileContext
+abstract class BuildSystemProvider : LazyExtensionInstance<BuildSystemProvider>() {
+    abstract fun collect(project: Project): DockerfileContext
+
+    @Attribute("implementationClass")
+    var implementationClass: String? = null
+
+    override fun getImplementationClassName(): String? {
+        return implementationClass
+    }
 
     companion object {
-        private val languageExtension: LanguageExtension<BuildSystemProvider> =
-            LanguageExtension("cc.unitmesh.buildSystemProvider")
+        private val EP_NAME: ExtensionPointName<BuildSystemProvider> =
+            ExtensionPointName.create("cc.unitmesh.buildSystemProvider")
 
-        fun instance(lang: Language): BuildSystemProvider? {
-            return languageExtension.forLanguage(lang)
+        fun guess(project: Project): List<DockerfileContext> {
+            return EP_NAME.extensionList.map {
+                it.collect(project)
+            }
         }
     }
 }
