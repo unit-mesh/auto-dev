@@ -1,14 +1,22 @@
 package cc.unitmesh.devti.custom.team
 
+import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.chat.ChatContext
+import cc.unitmesh.devti.provider.context.ChatContextProvider
+import cc.unitmesh.devti.provider.context.ChatCreationContext
+import cc.unitmesh.devti.provider.context.ChatOrigin
 import com.intellij.lang.Language
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.NlsSafe
+import com.intellij.psi.PsiFile
+import kotlinx.coroutines.runBlocking
 import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.Velocity
 import java.io.StringWriter
 
-class TeamPromptTemplateCompiler(val language: Language) {
+class TeamPromptTemplateCompiler(val language: Language, val file: PsiFile) {
     private val velocityContext = VelocityContext()
+
     companion object {
         val log = logger<TeamPromptTemplateCompiler>()
     }
@@ -47,7 +55,19 @@ class TeamPromptTemplateCompiler(val language: Language) {
     }
 
     private fun configForFramework() {
-//        frameworkContext
+        runBlocking {
+            val context = ChatCreationContext(
+                ChatOrigin.Intention,
+                ChatActionType.CUSTOM_ACTION,
+                file,
+                listOf(),
+                null
+            )
+            val collectChatContextList = ChatContextProvider.collectChatContextList(file.project, context)
+            velocityContext.put("frameworkContext", collectChatContextList.joinToString("\n") {
+                it.text
+            })
+        }
     }
 
     private fun configForLanguage() {
