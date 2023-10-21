@@ -17,6 +17,23 @@ class TeamPromptTemplateCompiler(val language: Language) {
         configForLanguage()
         configForFramework()
 
+        // without the following class loader initialization, I get the
+        // following exception when running as Eclipse plugin:
+        // org.apache.velocity.exception.VelocityException: The specified
+        // class for ResourceManager
+        // (org.apache.velocity.runtime.resource.ResourceManagerImpl) does not
+        // implement org.apache.velocity.runtime.resource.ResourceManager;
+        // Velocity is not initialized correctly.
+        // without the following class loader initialization, I get the
+        // following exception when running as Eclipse plugin:
+        // org.apache.velocity.exception.VelocityException: The specified
+        // class for ResourceManager
+        // (org.apache.velocity.runtime.resource.ResourceManagerImpl) does not
+        // implement org.apache.velocity.runtime.resource.ResourceManager;
+        // Velocity is not initialized correctly.
+        val oldContextClassLoader = Thread.currentThread().getContextClassLoader()
+        Thread.currentThread().setContextClassLoader(TeamPromptTemplateCompiler::class.java.getClassLoader())
+
         val sw = StringWriter()
         try {
             Velocity.evaluate(velocityContext, sw, "#" + this.javaClass.name, template)
@@ -25,6 +42,7 @@ class TeamPromptTemplateCompiler(val language: Language) {
             sw.write(template)
         }
 
+        Thread.currentThread().setContextClassLoader(oldContextClassLoader)
         return sw.toString()
     }
 

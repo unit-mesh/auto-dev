@@ -27,7 +27,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
     fun handlePromptAndResponse(
         ui: ChatCodingPanel,
         prompter: ContextPrompter,
-        context: ChatContext? = null
+        context: ChatContext? = null,
     ) {
         val requestPrompt = prompter.requestPrompt()
 
@@ -63,8 +63,8 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         ui: ChatCodingPanel,
         messages: List<LlmMsg.ChatMessage>,
     ) {
-        val requestPrompt = messages.filter { it.role == LlmMsg.ChatRole.User }.joinToString("\n")
-        val systemPrompt = messages.filter { it.role == LlmMsg.ChatRole.System }.joinToString("\n")
+        val requestPrompt = messages.filter { it.role == LlmMsg.ChatRole.User }.joinToString("\n") { it.content }
+        val systemPrompt = messages.filter { it.role == LlmMsg.ChatRole.System }.joinToString("\n") { it.content }
 
         ui.addMessage(requestPrompt, true, requestPrompt)
         ui.addMessage(AutoDevBundle.message("autodev.assistant.placeholder"))
