@@ -9,8 +9,6 @@ permalink: /custom/team-prompts
 
 AutoDev 当前采用的是 Apache Velocity 模板引擎，可以通过修改模板文件来定制自己的 Team Prompts。
 
-更多的变量可以参考 [AutoDev 模板变量](/docs/variables)。
-
 示例：
 
 ```vtl
@@ -40,3 +38,5 @@ Given 乘客上车后还没开车（0公里），等待10分钟，When 计费，
 Question: 网约车计费系统，它的计算规则是这样的： 起步价8元，里程费1.59元/公里，时长费0.49元/分钟，长途费1.1元/公里（8公里后加长途费）收费），夜场费为0.7元/公里（23:00——05:00时）。}
 Answer:
 ```
+
+更多的变量可以参考 [AutoDev 模板变量](/variables)。
