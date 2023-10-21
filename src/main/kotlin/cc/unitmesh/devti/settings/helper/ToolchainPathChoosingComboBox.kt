@@ -2,7 +2,7 @@
  * Use of this source code is governed by the MIT license that can be
  * found in the LICENSE file.
  */
-package cc.unitmesh.devti.settings.configurable
+package cc.unitmesh.devti.settings.helper
 
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
@@ -16,7 +16,7 @@ import java.nio.file.Paths
 import javax.swing.event.DocumentEvent
 import javax.swing.plaf.basic.BasicComboBoxEditor
 
-class CoUnitToolchainPathChoosingComboBox(onTextChanged: () -> Unit = {}) :
+class ToolchainPathChoosingComboBox(onTextChanged: () -> Unit = {}) :
     ComponentWithBrowseButton<ComboBoxWithWidePopup<Path>>(ComboBoxWithWidePopup(), null) {
     private val editor: BasicComboBoxEditor = object : BasicComboBoxEditor() {
         override fun createEditorComponent(): ExtendableTextField = ExtendableTextField()

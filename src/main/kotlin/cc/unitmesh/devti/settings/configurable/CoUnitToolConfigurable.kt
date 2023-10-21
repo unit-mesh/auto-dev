@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.settings.configurable
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.settings.helper.ToolchainPathChoosingComboBox
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.BoundConfigurable
@@ -15,7 +16,7 @@ import javax.swing.JTextField
 class CoUnitToolConfigurable(project: Project) :
     BoundConfigurable(AutoDevBundle.message("settings.external.counit.name")), Disposable {
 
-    private val pathToToolchainComboBox = CoUnitToolchainPathChoosingComboBox()
+    private val pathToToolchainComboBox = ToolchainPathChoosingComboBox()
     private val serverAddress = JTextField()
 
     val settings = project.service<CoUnitProjectSettingsService>()
