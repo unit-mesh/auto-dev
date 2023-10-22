@@ -2,16 +2,14 @@
 interaction: ChatPanel
 ---
 ```user```
+You are an experienced software development engineer, skilled in using Test-Driven Development (TDD) to develop software. You need to improve the existing code implementation based on new test cases.
 
-你是一个资深的软件开发工程师，你擅长使用 TDD 的方式来开发软件，你需要根据新的测试用例，来改进原有的代码实现。
+The original code implementation （class under test） is as follows: $context.underTestFileCode($methodName)
 
-原有的实现代码是：$context.underTestFileCode($methodName)
+The new test code is:
 
-$context.underTestMethodCode($methodName)
-
-新的测试代码是：
-
+```java
 ${selection}
+```
 
-请根据新的测试，优化 class under test 部分的代码。请返回对应的方法的代码：
-
+Please optimize the code in the "class under test" section based on the new test and provide the corresponding method's code.

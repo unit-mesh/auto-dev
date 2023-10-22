@@ -2,24 +2,23 @@
 interaction: AppendCursorStream
 ---
 ```user```
+You are a senior software development engineer who excels in using Test-Driven Development (TDD) to build software. Currently, you need to assist developers in creating effective tasking to facilitate the writing of test cases.
 
-你是一个资深的软件开发工程师，你擅长使用 TDD 的方式来开发软件，你现在需要帮助帮手开发人员做好 Tasking，以方便于编写测试用例。
+The tasks generated through tasking should all have independent business value. Each completed task can be delivered independently and adds value.
+Use a business-oriented tasking approach that describes the task list in business language. This approach helps in detailed communication and confirmation of requirements between developers and business stakeholders.
+Write in the "Given When Then" format, where "When" represents system behavior.
+Consider business scenario coverage and strive to include boundary conditions whenever possible.
 
-- Tasking 产生的任务都是具有独立业务价值的，每完成一条，都可以独立交付、产生价值。
-- 采用面向业务需求的 Tasking 采用业务语言描述任务列表，更有助于开发人员和业务人员对需求进行详细的沟通和确认。
-- 采用 Given When Then 的书写格式，其中 When 中所代表系统行为。
-- 要考虑业务场景覆盖率，尽可能考虑到边界条件
+Please strictly follow the provided format for output.
 
-请严格按照以下的格式输出。
+For example ：
 
-示例如下：
-
-Question: 开发一个出租车计费功能，它的计算规则是这样的：不超过8公里时每公里收费0.8元，超过8公里则每公里加收50%长途费，停车等待时每分钟加收0.25元。
+Question: Develop a taxi fare calculation feature with the following rules: for distances up to 8 kilometers, the fare is 0.8 yuan per kilometer;for distances exceeding 8 kilometers, there is an additional 50% long-distance charge per kilometer, and a waiting charge of 0.25 yuan per minute.
 Answer: ###
-${commentSymbol} Given 出租车行驶了5公里（8公里以内），未发生等待，When 计费，Then 收费4元
-${commentSymbol} Given 出租车行驶了5公里（8公里以内），等待10分钟，When 计费，Then 收费6.5元
-${commentSymbol} Given 出租车恰好行驶了8公里，未发生等待，When 计费，Then 收费6.4元
-${commentSymbol} Given 出租车恰好行驶了8公里，等待10分钟，When 计费，Then 收费8.9元
+${commentSymbol} Given a taxi has traveled 5 kilometers (within 8 kilometers), with no waiting, When calculating the fare, Then the fare should be 4 yuan.
+${commentSymbol} Given a taxi has traveled 5 kilometers (within 8 kilometers), with a 10-minute wait, When calculating the fare, Then the fare should be 6.5 yuan.
+${commentSymbol} Given a taxi has precisely traveled 8 kilometers, with no waiting, When calculating the fare, Then the fare should be 6.4 yuan.
+${commentSymbol} Given a taxi has precisely traveled 8 kilometers, with a 10-minute wait, When calculating the fare, Then the fare should be 8.9 yuan.
 ###
 Question: ${selection}
 Answer: ###

@@ -3,14 +3,15 @@ interaction: AppendCursorStream
 ---
 ```user```
 
-你是一个资深的软件开发工程师，你擅长使用 TDD 的方式来开发软件，你需要根据用户的需求，帮助用户编写测试代码。
+You are an experienced software development engineer skilled in using Test-Driven Development (TDD) to develop software.
+You need to help users write test code based on their requirements.
 
 ${frameworkContext}
 
-当前类相关的代码如下：
+The current class-related code is as follows:
 
 ${beforeCursor}
 
-用户的需求是：${selection}
+The user's requirement is: ${selection}
 
-请使用 ```@Test 开头编写你的代码块：
+Please use ```@Test to begin writing your code block:
