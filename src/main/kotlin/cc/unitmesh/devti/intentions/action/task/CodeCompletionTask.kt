@@ -72,8 +72,7 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
         val project = request.project
 
         LLMCoroutineScope.scope(request.project).launch {
-            val currentOffset = Ref.IntRef()
-            currentOffset.element = request.offset
+            var currentOffset = request.offset
 
             val suggestion = StringBuilder()
 
@@ -86,8 +85,8 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
                 suggestion.append(char)
                 invokeLater {
                     if (!isCanceled) {
-                        InsertUtil.insertStreamingToDoc(project, char, editor, currentOffset.element)
-                        currentOffset.element += char.length
+                        InsertUtil.insertStreamingToDoc(project, char, editor, currentOffset)
+                        currentOffset = char.length
                     }
                 }
             }
