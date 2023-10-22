@@ -48,3 +48,5 @@ Features:
     - Custom specification of prompt.
     - Custom intention action. You can add your own intention action.
     - Custom LLM Server. You can customize your LLM Server in `Settings` -> `Tools` -> `AutoDev`
+- Team prompts.
+  - Customize your team prompts in codebase, and distribute to your team.
