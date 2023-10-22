@@ -6,26 +6,53 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
 import com.intellij.testIntegration.TestFinderHelper
 
+/**
+ * The `SimpleTeamContextProvider` class is an implementation of the `TeamContextProvider` interface.
+ * It provides methods to retrieve code snippets related to the current context in a team collaboration environment.
+ *
+ * @property element The `PsiElement` representing the current context.
+ * @property editor The `Editor` used for displaying the code snippets.
+ */
 class SimpleTeamContextProvider(val element: PsiElement?, val editor: Editor) : TeamContextProvider {
+
     /**
-     * Retrieves the code of the target file associated with the given test name.
+     * Retrieves the code snippet of the file under test that contains the specified method.
+     *
+     * @param fileName The name of the method.
+     * @return The code snippet of the file under test that contains the specified method, or an empty string if not found.
      */
-    override fun underTestFileCode(methodName: String): String {
+    override fun underTestFileCode(fileName: String): String {
         val psiElement = element ?: return ""
         val sourceElement = TestFinderHelper.findClassesForTest(psiElement)
         return sourceElement?.first()?.text ?: ""
     }
 
+    /**
+     * Retrieves the code snippet of the test method with the specified name.
+     *
+     * @param testName The name of the test method.
+     * @return The code snippet of the test method, or an empty string if not found.
+     */
     override fun underTestMethodCode(testName: String): String {
         val psiElement = element ?: return ""
         return ""
     }
 
+    /**
+     * Retrieves the similar code chunks in the current context.
+     *
+     * @return The similar code chunks in the current context.
+     */
     override fun similarChunks(): String {
         val psiElement = element ?: return ""
         return SimilarChunkVariableResolver(psiElement).resolve()
     }
 
+    /**
+     * Retrieves the related code snippets in the current context.
+     *
+     * @return The related code snippets in the current context.
+     */
     override fun relatedCode(): String {
         val psiElement = element ?: return ""
         return MethodInputOutputVariableResolver(psiElement).resolve()
