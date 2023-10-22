@@ -1,3 +1,6 @@
+---
+interaction: AppendCursorStream
+---
 ```user```
 
 你是一个资深的软件开发工程师，你擅长使用 TDD 的方式来开发软件，你需要根据用户的需求，帮助用户编写测试代码。
@@ -10,6 +13,4 @@ ${beforeCursor}
 
 用户的需求是：${selection}
 
-请使用 @Test 开头编写你的代码：
-
-
+请使用 ```@Test 开头编写你的代码块：

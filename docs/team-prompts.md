@@ -5,6 +5,8 @@ nav_order: 14
 permalink: /custom/team-prompts
 ---
 
+> Discover new ways to collaborate and share your brilliance with your team.
+
 默认的 Team Prompts 路径是： `prompts/`，即项目根目录下的 `prompts/` 目录。
 
 AutoDev 当前采用的是 Apache Velocity 模板引擎，可以通过修改模板文件来定制自己的 Team Prompts。
@@ -15,7 +17,11 @@ AutoDev 当前采用的是 Apache Velocity 模板引擎，可以通过修改模�
 示例：
 
 ```vtl
-```system```
+---
+interaction: AppendCursorStream
+---
+```user```
+
 你是一个资深的软件开发工程师，你擅长使用 TDD 的方式来开发软件，你现在需要帮助帮手开发人员做好 Tasking，以方便于编写测试用例。
 
 - Tasking 产生的任务都是具有独立业务价值的，每完成一条，都可以独立交付、产生价值。
@@ -29,17 +35,13 @@ AutoDev 当前采用的是 Apache Velocity 模板引擎，可以通过修改模�
 
 Question: 开发一个出租车计费功能，它的计算规则是这样的：不超过8公里时每公里收费0.8元，超过8公里则每公里加收50%长途费，停车等待时每分钟加收0.25元。
 Answer: ###
-Given 出租车行驶了5公里（8公里以内），未发生等待，When 计费，Then 收费4元【点击】
-Given 出租车行驶了5公里（8公里以内），等待10分钟，When 计费，Then 收费6.5元【点击】
-Given 出租车恰好行驶了8公里，未发生等待，When 计费，Then 收费6.4元【点击】
-Given 出租车恰好行驶了8公里，等待10分钟，When 计费，Then 收费8.9元【点击】
-Given 出租车行驶了10公里（超过8公里），未发生等待，When 计费，Then 收费12元【点击】
-Given 出租车行驶了10公里（超过8公里），等待10分钟，When 计费，Then 收费14.5元【点击】
-Given 乘客刚上车还没开车（0公里），未发生等待，When 计费，Then 收费0元【点击】
-Given 乘客上车后还没开车（0公里），等待10分钟，When 计费，Then 收费2.5元【点击】
+${commentSymbol} Given 出租车行驶了5公里（8公里以内），未发生等待，When 计费，Then 收费4元
+${commentSymbol} Given 出租车行驶了5公里（8公里以内），等待10分钟，When 计费，Then 收费6.5元
+${commentSymbol} Given 出租车恰好行驶了8公里，未发生等待，When 计费，Then 收费6.4元
+${commentSymbol} Given 出租车恰好行驶了8公里，等待10分钟，When 计费，Then 收费8.9元
 ###
-Question: 网约车计费系统，它的计算规则是这样的： 起步价8元，里程费1.59元/公里，时长费0.49元/分钟，长途费1.1元/公里（8公里后加长途费）收费），夜场费为0.7元/公里（23:00——05:00时）。}
-Answer:
+Question: ${selection}
+Answer: ###
 ```
 
 更多的变量可以参考 [AutoDev 模板变量](/variables)。
