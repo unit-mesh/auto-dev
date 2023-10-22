@@ -18,10 +18,10 @@ class SimpleTeamContextProvider(val element: PsiElement?, val editor: Editor) : 
     /**
      * Retrieves the code snippet of the file under test that contains the specified method.
      *
-     * @param fileName The name of the method.
+     * @param methodName The name of the method.
      * @return The code snippet of the file under test that contains the specified method, or an empty string if not found.
      */
-    override fun underTestFileCode(fileName: String): String {
+    override fun underTestFileCode(methodName: String): String {
         val psiElement = element ?: return ""
         val sourceElement = TestFinderHelper.findClassesForTest(psiElement)
         return sourceElement?.first()?.text ?: ""
