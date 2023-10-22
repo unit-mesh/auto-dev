@@ -84,7 +84,11 @@ class OpenAIProvider(val project: Project) : LLMProvider {
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun stream(promptText: String, systemPrompt: String): Flow<String> {
+    override fun stream(promptText: String, systemPrompt: String, keepHistory: Boolean): Flow<String> {
+        if (!keepHistory) {
+            clearMessage()
+        }
+
         val completionRequest = prepareRequest(promptText, systemPrompt)
 
         return callbackFlow {

@@ -51,11 +51,15 @@ class XingHuoProvider(val project: Project) : LLMProvider {
     }
 
     override fun clearMessage() {
-        TODO()
+        //
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun stream(promptText: String, systemPrompt: String): Flow<String> {
+    override fun stream(promptText: String, systemPrompt: String, keepHistory: Boolean): Flow<String> {
+        if (!keepHistory) {
+            clearMessage()
+        }
+
         return callbackFlow {
             val client = OkHttpClient()
             client.newWebSocket(request, MyListener(this, onSocketOpen = {

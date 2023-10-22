@@ -112,12 +112,13 @@ class AzureOpenAIProvider(val project: Project) : LLMProvider {
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun stream(promptText: String, systemPrompt: String): Flow<String> {
+    override fun stream(promptText: String, systemPrompt: String, keepHistory: Boolean): Flow<String> {
         val promptText1 = "$promptText\n${""}"
         val systemMessage = ChatMessage(ChatMessageRole.USER.value(), promptText1)
-        if (historyMessageLength > 8192) {
+        if (historyMessageLength > 8192 || !keepHistory) {
             messages.clear()
         }
+
         messages.add(SimpleOpenAIFormat.fromChatMessage(systemMessage))
         val openAIBody = SimpleOpenAIBody(
             messages,

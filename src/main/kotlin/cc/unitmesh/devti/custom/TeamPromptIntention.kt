@@ -60,9 +60,8 @@ class TeamPromptIntention(private val intentionConfig: TeamPromptAction) : Abstr
                 val msgString = systemPrompt + "\n" + userPrompt
                 val request = CodeCompletionRequest.create(editor, offset, element!!, msgString, "") ?: return
                 val task = object : BaseCompletionTask(request) {
-                    override fun promptText(): String {
-                        return msgString
-                    }
+                    override fun keepHistory(): Boolean = false
+                    override fun promptText(): String = msgString
                 }
 
                 ProgressManager.getInstance()

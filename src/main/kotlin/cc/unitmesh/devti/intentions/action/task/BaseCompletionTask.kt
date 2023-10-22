@@ -26,9 +26,11 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
     private var isCanceled: Boolean = false
     abstract fun promptText(): String
 
+    open fun keepHistory(): Boolean = true
+
     override fun run(indicator: ProgressIndicator) {
         val prompt = promptText()
-        val flow: Flow<String> = LlmProviderFactory().connector(request.project).stream(prompt, "")
+        val flow: Flow<String> = LlmProviderFactory().connector(request.project).stream(prompt, "", keepHistory())
         logger.info("Prompt: $prompt")
 
         DumbAwareAction.create {
