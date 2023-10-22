@@ -69,24 +69,25 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
         )
 
         val editor = request.editor
+        val project = request.project
+
         LLMCoroutineScope.scope(request.project).launch {
             val currentOffset = Ref.IntRef()
             currentOffset.element = request.offset
 
-            val project = request.project
             val suggestion = StringBuilder()
 
-            flow.cancellable().collect {
+            flow.cancellable().collect { char ->
                 if (isCanceled) {
                     cancel()
                     return@collect
                 }
 
-                suggestion.append(it)
+                suggestion.append(char)
                 invokeLater {
                     if (!isCanceled) {
-                        InsertUtil.insertStreamingToDoc(project, it, editor, currentOffset.element)
-                        currentOffset.element += it.length
+                        InsertUtil.insertStreamingToDoc(project, char, editor, currentOffset.element)
+                        currentOffset.element += char.length
                     }
                 }
             }
@@ -110,9 +111,9 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
         }
 
         return if (chunksString == null) {
-            "complete code for given code: \n$prefix"
+            "code complete for given code, just return rest part of code. \n$prefix\n\nreturn rest code:"
         } else {
-            "complete code for given code: \n$commentPrefix\n$chunksString\n$prefix"
+            "complete code for given code, just return rest part of code.: \n$commentPrefix\n$chunksString\n$prefix\n\nreturn rest code:"
         }
     }
 
