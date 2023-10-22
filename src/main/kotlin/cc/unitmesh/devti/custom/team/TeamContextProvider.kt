@@ -16,4 +16,23 @@ interface TeamContextProvider {
      * @return the code of the target method as a string
      */
     fun underTestMethodCode(testName: String): String
+
+    /**
+     * Returns a list of similar chunks.
+     *
+     * This method retrieves a list of similar chunks based on a certain criteria. The chunks are represented as strings.
+     *
+     * @return a list of similar chunks as strings
+     */
+    fun similarChunks(): String
+
+    /**
+     * Returns the related code for the given method.
+     *
+     * This method retrieves the related code that is associated with the current method. The related code
+     * can be used to understand the context or dependencies of the method.
+     *
+     * @return The related code as a string.
+     */
+    fun relatedCode(): String
 }
