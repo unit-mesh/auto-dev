@@ -43,63 +43,12 @@ import kotlin.jvm.internal.Ref
  *
  * Note: This class does not have any public methods.
  */
-class CodeCompletionTask(private val request: CodeCompletionRequest) :
-    Task.Backgroundable(request.project, AutoDevBundle.message("intentions.chat.code.complete.name")) {
-
-    private val providerFactory = LlmProviderFactory()
-
+class CodeCompletionTask(private val request: CodeCompletionRequest) : BaseCompletionTask(request) {
     private val chunksString = SimilarChunksWithPaths.createQuery(request.element, 60)
     private val commenter = LanguageCommenters.INSTANCE.forLanguage(request.element.language)
     private val commentPrefix = commenter?.lineCommentPrefix
-    private var isCanceled: Boolean = false
 
-    override fun run(indicator: ProgressIndicator) {
-        val prompt = promptText()
-
-        val flow: Flow<String> = providerFactory.connector(request.project).stream(prompt, "")
-        logger.info("Prompt: $prompt")
-
-        DumbAwareAction.create {
-            isCanceled = true
-        }.registerCustomShortcutSet(
-            CustomShortcutSet(
-                KeyboardShortcut(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), null),
-            ),
-            request.editor.component
-        )
-
-        val editor = request.editor
-        val project = request.project
-        var currentOffset = request.offset
-
-        LLMCoroutineScope.scope(request.project).launch {
-            val suggestion = StringBuilder()
-
-            flow.cancellable().collect { char ->
-                if (isCanceled) {
-                    cancel()
-                    return@collect
-                }
-
-                suggestion.append(char)
-                invokeLater {
-                    if (!isCanceled) {
-                        InsertUtil.insertStreamingToDoc(project, char, editor, currentOffset)
-                        currentOffset += char.length
-                    }
-                }
-            }
-
-            logger.info("Suggestion: $suggestion")
-        }
-    }
-
-    override fun onCancel() {
-        this.isCanceled = true
-        super.onCancel()
-    }
-
-    private fun promptText(): String {
+    override fun promptText(): String {
         val documentLength = request.editor.document.textLength
         val prefix = if (request.offset > documentLength) {
             request.prefixText

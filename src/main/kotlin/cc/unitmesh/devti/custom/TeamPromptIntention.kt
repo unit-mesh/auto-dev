@@ -7,6 +7,7 @@ import cc.unitmesh.devti.custom.team.TeamPromptTemplateCompiler
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
+import cc.unitmesh.devti.intentions.action.task.BaseCompletionTask
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionTask
 import com.intellij.openapi.editor.Editor
@@ -54,10 +55,16 @@ class TeamPromptIntention(private val intentionConfig: TeamPromptAction) : Abstr
             }
 
             InteractionType.AppendCursor,
-            InteractionType.AppendCursorStream -> {
+            InteractionType.AppendCursorStream,
+            -> {
                 val msgString = systemPrompt + "\n" + userPrompt
                 val request = CodeCompletionRequest.create(editor, offset, element!!, msgString, "") ?: return
-                val task = CodeCompletionTask(request)
+                val task = object : BaseCompletionTask(request) {
+                    override fun promptText(): String {
+                        return msgString
+                    }
+                }
+
                 ProgressManager.getInstance()
                     .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
             }
