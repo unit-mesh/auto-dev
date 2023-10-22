@@ -9,6 +9,9 @@ permalink: /custom/team-prompts
 
 AutoDev 当前采用的是 Apache Velocity 模板引擎，可以通过修改模板文件来定制自己的 Team Prompts。
 
+{: .warning }
+如果你修改了模板文件，需要确保保存，否则 IDE 无法识别到你的修改。
+
 示例：
 
 ```vtl
