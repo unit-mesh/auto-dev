@@ -16,7 +16,12 @@ import org.apache.velocity.app.Velocity
 import java.io.StringWriter
 import com.intellij.psi.PsiNameIdentifierOwner
 
-class TeamPromptTemplateCompiler(val language: Language, val file: PsiFile, val element: PsiElement?, val editor: Editor) {
+class TeamPromptTemplateCompiler(
+    val language: Language,
+    val file: PsiFile,
+    val element: PsiElement?,
+    val editor: Editor,
+) {
     private val velocityContext = VelocityContext()
 
     companion object {
@@ -26,10 +31,12 @@ class TeamPromptTemplateCompiler(val language: Language, val file: PsiFile, val 
     fun compile(template: String): String {
         velocityContext.put("fileName", file.name)
         velocityContext.put("filePath", file.virtualFile?.path ?: "")
-        velocityContext.put("methodName", when(element) {
-            is PsiNameIdentifierOwner -> element.nameIdentifier?.text ?: ""
-            else -> ""
-        })
+        velocityContext.put(
+            "methodName", when (element) {
+                is PsiNameIdentifierOwner -> element.nameIdentifier?.text ?: ""
+                else -> ""
+            }
+        )
 
         configForLanguage()
         configForFramework()
@@ -73,6 +80,7 @@ class TeamPromptTemplateCompiler(val language: Language, val file: PsiFile, val 
                 listOf(),
                 null
             )
+
             val collectChatContextList = ChatContextProvider.collectChatContextList(file.project, context)
             velocityContext.put("frameworkContext", collectChatContextList.joinToString("\n") {
                 it.text
@@ -81,7 +89,6 @@ class TeamPromptTemplateCompiler(val language: Language, val file: PsiFile, val 
     }
 
     private fun configForLanguage() {
-        // frameworkContext
         velocityContext.put("language", language.displayName)
         velocityContext.put(
             "commentSymbol", when (language.displayName.lowercase()) {
