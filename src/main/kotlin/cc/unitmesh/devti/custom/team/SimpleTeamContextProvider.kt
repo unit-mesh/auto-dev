@@ -37,7 +37,7 @@ class SimpleTeamContextProvider(val element: PsiElement?, val editor: Editor) : 
      */
     override fun underTestMethodCode(testName: String): String {
         val psiElement = element ?: return ""
-        CustomPromptProvider.forLanguage(psiElement.language)?.underTestMethodCode(psiElement)
+        CustomPromptProvider.forLanguage(psiElement.language)?.underTestMethodCode(editor.project!!, psiElement)
             ?.let { return it.joinToString("\n") }
         // TODO: this API need to analysis by different language
         return ""

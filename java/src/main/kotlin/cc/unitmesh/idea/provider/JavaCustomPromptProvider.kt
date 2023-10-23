@@ -1,10 +1,15 @@
 package cc.unitmesh.idea.provider
 
 import cc.unitmesh.devti.provider.CustomPromptProvider
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiMethodCallExpression
-import com.intellij.psi.util.childrenOfType
+import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.SearchScope
+import com.intellij.psi.search.searches.ClassInheritorsSearch
+import com.intellij.psi.search.searches.MethodReferencesSearch
+import com.intellij.psi.util.PsiTreeUtil
 
 class JavaCustomPromptProvider : CustomPromptProvider {
     /**
@@ -24,12 +29,34 @@ class JavaCustomPromptProvider : CustomPromptProvider {
      * }
      * ```
      */
-    override fun underTestMethodCode(element: PsiElement): List<String> {
+    override fun underTestMethodCode(project: Project, element: PsiElement): List<String> {
+        val searchScope = GlobalSearchScope.allScope(project)
+
         when (element) {
             is PsiMethod -> {
-                val statements = element.body?.statements ?: return emptyList()
-                val calls = statements.map { it.childrenOfType<PsiMethodCallExpression>() }.flatten()
-                return calls.map { it.text }
+                val calls: List<PsiMethodCallExpression> =
+                    PsiTreeUtil.findChildrenOfAnyType(element.body, PsiMethodCallExpression::class.java)
+                        .toList()
+
+                val strings = calls
+                    .mapNotNull { it ->
+                        it.methodExpression.resolve()?.let {
+                            it as PsiMethod
+                        }
+                    }
+                    .filter {
+                        if (it.containingClass == null) return@filter false
+
+                        val isEmpty = ClassInheritorsSearch.search(it.containingClass!!, searchScope, true)
+                            .findAll().isEmpty()
+
+                        !isEmpty
+                    }
+                    .map {
+                        it.text
+                    }
+
+                return strings
             }
         }
 

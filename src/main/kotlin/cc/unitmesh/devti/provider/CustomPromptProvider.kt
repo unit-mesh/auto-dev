@@ -2,6 +2,7 @@ package cc.unitmesh.devti.provider
 
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageExtension
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 
 /**
@@ -15,7 +16,7 @@ interface CustomPromptProvider {
     /**
      * Retrieves the code snippet of the test method with the specified name.
      */
-    fun underTestMethodCode(element: PsiElement): List<String>
+    fun underTestMethodCode(project: Project, element: PsiElement): List<String>
 
     companion object {
         private val languageExtension: LanguageExtension<CustomPromptProvider> =
