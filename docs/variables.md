@@ -30,14 +30,6 @@ interface TeamContextProvider {
     fun underTestFileCode(fileName: String): String
 
     /**
-     * Retrieves the code of the target method associated with the given test name.
-     *
-     * @param testName the name of the test for which to retrieve the target method code
-     * @return the code of the target method as a string
-     */
-    fun underTestMethodCode(testName: String): String
-
-    /**
      * Returns a list of similar chunks.
      *
      * This method retrieves a list of similar chunks based on a certain criteria. The chunks are represented as strings.
