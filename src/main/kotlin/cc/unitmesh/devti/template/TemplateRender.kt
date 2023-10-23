@@ -1,16 +1,19 @@
 package cc.unitmesh.devti.template
 
 import cc.unitmesh.cf.core.llms.LlmMsg
+import cc.unitmesh.devti.custom.team.TeamPromptTemplateCompiler
 import cc.unitmesh.template.TemplateRoleSplitter
-import cc.unitmesh.template.VelocityCompiler
+import org.apache.velocity.VelocityContext
+import org.apache.velocity.app.Velocity
+import java.io.StringWriter
 import java.nio.charset.Charset
 
 class TemplateRender(pathPrefix: String) {
     private val classLoader: ClassLoader = this.javaClass.classLoader
     private val defaultPrefix: String = pathPrefix.trimEnd('/')
-    protected val template = VelocityCompiler()
+    private val velocityContext = VelocityContext()
     protected val splitter = TemplateRoleSplitter()
-    protected val context: TemplateContext = object : TemplateContext {}
+    var context: Any = ""
 
     fun getTemplate(filename: String): String {
         val path = "$defaultPrefix/$filename"
@@ -24,12 +27,17 @@ class TemplateRender(pathPrefix: String) {
         val msgs = splitter.split(prompt)
         val messages = LlmMsg.fromMap(msgs).toMutableList()
 
+        val oldContextClassLoader = Thread.currentThread().getContextClassLoader()
+        Thread.currentThread().setContextClassLoader(TemplateRender::class.java.getClassLoader())
+
         messages.map {
-            if (it.role == LlmMsg.ChatRole.User) {
-                template.append("context", context)
-                it.content = template.compileToString(it.content)
-            }
+            velocityContext.put("context", context)
+            val sw = StringWriter()
+            Velocity.evaluate(velocityContext, sw, "#" + this.javaClass.name, it.content)
+            it.content = sw.toString()
         }
+
+        Thread.currentThread().setContextClassLoader(oldContextClassLoader)
 
         return messages
     }

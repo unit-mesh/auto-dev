@@ -1,6 +1,6 @@
 Please write a Dockerfile with minimal steps.
 
--${context.buildSystem}
+${context.buildContext}
 - I need the building to be done in separate base image than running the build
 - I need the application port to be 3000
 
