@@ -45,6 +45,10 @@
         <buildSystemProvider
                 implementation="cc.unitmesh.idea.provider.JavaBuildSystemProvider" />
 
+        <customPromptProvider
+                language="JAVA"
+                implementationClass="cc.unitmesh.idea.provider.JavaCustomPromptProvider" />
+
         <autoDevIntention>
             <className>cc.unitmesh.idea.actions.AutoCrudAction</className>
             <bundleName>messages.AutoDevBundle</bundleName>

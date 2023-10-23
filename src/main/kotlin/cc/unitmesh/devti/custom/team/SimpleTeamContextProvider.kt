@@ -2,6 +2,7 @@ package cc.unitmesh.devti.custom.team
 
 import cc.unitmesh.devti.custom.variable.MethodInputOutputVariableResolver
 import cc.unitmesh.devti.custom.variable.SimilarChunkVariableResolver
+import cc.unitmesh.devti.provider.CustomPromptProvider
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
 import com.intellij.testIntegration.TestFinderHelper
@@ -36,6 +37,8 @@ class SimpleTeamContextProvider(val element: PsiElement?, val editor: Editor) : 
      */
     override fun underTestMethodCode(testName: String): String {
         val psiElement = element ?: return ""
+        CustomPromptProvider.forLanguage(psiElement.language)?.underTestMethodCode(psiElement)
+            ?.let { return it.joinToString("\n") }
         // TODO: this API need to analysis by different language
         return ""
     }
