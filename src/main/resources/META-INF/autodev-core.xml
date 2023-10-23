@@ -53,7 +53,6 @@
             <categoryKey>intention.category.llm</categoryKey>
         </intentionAction>
 
-
         <highlightErrorFilter implementation="cc.unitmesh.devti.gui.snippet.error.CodeBlockHighlightErrorFilter"/>
         <daemon.highlightInfoFilter implementation="cc.unitmesh.devti.gui.snippet.error.CodeBlockHighlightingFilter"/>
         <defaultHighlightingSettingProvider
@@ -106,7 +105,13 @@
         </extensionPoint>
 
         <extensionPoint qualifiedName="cc.unitmesh.buildSystemProvider"
-                        interface="cc.unitmesh.devti.provider.BuildSystemProvider" dynamic="true"/>
+                        interface="cc.unitmesh.devti.provider.BuildSystemProvider"
+                        dynamic="true"/>
+
+        <extensionPoint qualifiedName="cc.unitmesh.customPromptProvider"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass" implements="cc.unitmesh.devti.provider.CustomPromptProvider"/>
+        </extensionPoint>
 
         <extensionPoint qualifiedName="cc.unitmesh.devFlowProvider"
                         interface="cc.unitmesh.devti.provider.DevFlowProvider"
@@ -161,6 +166,7 @@
             <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
         </group>
 
+        <!-- For right click -->
         <group id="org.intellij.sdk.action.GroupedActions" popup="true" text="AutoDev Chat" description="AutoDev chat">
             <action id="cc.unitmesh.devti.actions.chat.ChatBotExplainAction"
                     class="cc.unitmesh.devti.actions.chat.ChatBotExplainAction" text="Explain This"

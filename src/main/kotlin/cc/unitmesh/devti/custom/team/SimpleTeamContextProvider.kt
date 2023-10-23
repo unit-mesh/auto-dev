@@ -4,8 +4,6 @@ import cc.unitmesh.devti.custom.variable.MethodInputOutputVariableResolver
 import cc.unitmesh.devti.custom.variable.SimilarChunkVariableResolver
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiMethod
-import com.intellij.psi.PsiMethodCallExpression
 import com.intellij.testIntegration.TestFinderHelper
 
 
