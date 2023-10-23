@@ -15,6 +15,8 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
+import com.intellij.temporary.calculateFrontendElementToExplain
+import io.kotest.mpp.file
 
 class TeamPromptIntention(private val intentionConfig: TeamPromptAction) : AbstractChatIntention() {
     override fun getActionType(): ChatActionType {
@@ -32,7 +34,9 @@ class TeamPromptIntention(private val intentionConfig: TeamPromptAction) : Abstr
         val range = elementWithRange(editor, file, project) ?: return
 
         val language = file.language
-        val element = file.findElementAt(editor.caretModel.offset)
+        val textRange = getCurrentSelectionAsRange(editor)
+        val element = calculateFrontendElementToExplain(project, file, textRange)
+
         val offset = editor.caretModel.offset
 
         val templateCompiler = TeamPromptTemplateCompiler(language, file, element, editor)
