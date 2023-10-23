@@ -79,7 +79,7 @@ url: "https://ide.unitmesh.cc" # the base hostname & protocol for your site
 # Aux links for the upper right navigation
 aux_links:
   "View in on GitHub":
-    - "//github.com/unit-mesh/autodev"
+    - "//github.com/unit-mesh/auto-dev"
 
 # Makes Aux links open in a new tab. Default is false
 aux_links_new_tab: true
