@@ -7,7 +7,7 @@
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <codeModifier language="kotlin"
-                      implementationClass="cc.unitmesh.kotlin.context.KotlinCodeModifier"/>
+                      implementationClass="cc.unitmesh.kotlin.provider.KotlinCodeModifier"/>
 
         <chatContextProvider implementation="cc.unitmesh.kotlin.provider.KotlinTestContextProvider"/>
 
