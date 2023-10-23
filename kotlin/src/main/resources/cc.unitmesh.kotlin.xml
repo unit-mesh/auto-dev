@@ -35,6 +35,10 @@
                 language="kotlin"
                 implementation="cc.unitmesh.kotlin.provider.KotlinWriteTestService"/>
 
+        <customPromptProvider
+                language="kotlin"
+                implementationClass="cc.unitmesh.kotlin.provider.KotlinCustomPromptProvider" />
+
 <!--        <buildSystemProvider-->
 <!--                implementation="cc.unitmesh.kotlin.provider.KotlinBuildSystemProvider"/>-->
     </extensions>
