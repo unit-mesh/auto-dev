@@ -9,10 +9,12 @@ permalink: /custom/team-prompts
 
 The default Team Prompts path is prompts/, which is the prompts/ directory located in the project's root directory.
 
-AutoDev currently utilizes the Apache Velocity template engine, allowing you to customize your Team Prompts by modifying template files.
+AutoDev currently utilizes the Apache Velocity template engine, allowing you to customize your Team Prompts by modifying
+template files.
 
 {: .warning }
-If you make changes to the template files, make sure to save them, as otherwise, the IDE won't recognize your modifications.
+If you make changes to the template files, make sure to save them, as otherwise, the IDE won't recognize your
+modifications.
 
 ## Format
 
@@ -30,9 +32,13 @@ The Team Prompts file format is .vtl, which is the Velocity Template Language fi
 ```
 ---
 interaction: AppendCursorStream # the interaction type, support AppendCursorStream, ChatPanel, AppendCursor
-priority: 99 # the order in context menu
+priority: 99
 ---    
 ```
+
+Priority is the prompt priority, the higher the priority, the higher the prompt will be displayed in top.
+
+- the default action priority is 900~999, like `Chat with xx`, `Code complete` etc.
 
 interaction type:
 
@@ -64,7 +70,8 @@ The user's requirement is: ${selection}
 Please use ```@Test to begin writing your code block:
 ```
 
-full TDD example: [https://github.com/unit-mesh/untitled/tree/english/prompts](https://github.com/unit-mesh/untitled/tree/english/prompts)
+full TDD
+example: [https://github.com/unit-mesh/untitled/tree/english/prompts](https://github.com/unit-mesh/untitled/tree/english/prompts)
 
 ## 中文示例（Chinese example)：
 
@@ -98,4 +105,5 @@ Question: ${selection}
 Answer: ###
 ```
 
-完整的 TDD 示例：[https://github.com/unit-mesh/untitled/tree/master/prompts](https://github.com/unit-mesh/untitled/tree/master/prompts)
+完整的 TDD
+示例：[https://github.com/unit-mesh/untitled/tree/master/prompts](https://github.com/unit-mesh/untitled/tree/master/prompts)
