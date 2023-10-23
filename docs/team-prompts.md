@@ -7,14 +7,42 @@ permalink: /custom/team-prompts
 
 > Discover new ways to collaborate and share your brilliance with your team.
 
-默认的 Team Prompts 路径是： `prompts/`，即项目根目录下的 `prompts/` 目录。
+The default Team Prompts path is prompts/, which is the prompts/ directory located in the project's root directory.
 
-AutoDev 当前采用的是 Apache Velocity 模板引擎，可以通过修改模板文件来定制自己的 Team Prompts。
+AutoDev currently utilizes the Apache Velocity template engine, allowing you to customize your Team Prompts by modifying template files.
 
 {: .warning }
-如果你修改了模板文件，需要确保保存，否则 IDE 无法识别到你的修改。
+If you make changes to the template files, make sure to save them, as otherwise, the IDE won't recognize your modifications.
 
-示例：
+## English Examples
+
+variables list: [https://ide.unitmesh.cc/variables](https://ide.unitmesh.cc/variables)
+
+```vtl
+---
+interaction: AppendCursorStream
+---
+```user```
+
+You are an experienced software development engineer skilled in using Test-Driven Development (TDD) to develop software.
+You need to help users write test code based on their requirements.
+
+${frameworkContext}
+
+The current class-related code is as follows:
+
+${beforeCursor}
+
+The user's requirement is: ${selection}
+
+Please use ```@Test to begin writing your code block:
+```
+
+full TDD example: [https://github.com/unit-mesh/untitled/tree/english/prompts](https://github.com/unit-mesh/untitled/tree/english/prompts)
+
+## 中文示例（Chinese example)：
+
+变量列表： [AutoDev 模板变量](/variables)。
 
 ```vtl
 ---
@@ -44,4 +72,4 @@ Question: ${selection}
 Answer: ###
 ```
 
-更多的变量可以参考 [AutoDev 模板变量](/variables)。
+完整的 TDD 示例：[https://github.com/unit-mesh/untitled/tree/master/prompts](https://github.com/unit-mesh/untitled/tree/master/prompts)

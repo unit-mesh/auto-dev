@@ -7,6 +7,21 @@ permalink: /variables
 
 # Variables
 
+## English version
+
+- selection: Used to get the currently selected text.
+- commentSymbol: Used to get the comment symbol of the current language, for example: `//`, `#`, `--`, `/* */`, etc.
+- beforeCursor: Used to get the text before the current cursor.
+- afterCursor: Used to get the text after the current cursor.
+- language: Used to get the language of the current file, for example: `kotlin`, `java`, `python`, `javascript`, etc.
+- fileName: Used to get the file name of the current file.
+- filePath: Used to get the file path of the current file.
+- methodName: Used to get the method name of the current method.
+- frameworkContext: Used to get the framework context of the current file, for example: `spring`, `junit`, `mockito`,
+  etc.
+
+## 中文版本（Chinese version）
+
 - selection: 用于获取当前选中的文本。
 - commentSymbol: 用于获取当前语言的注释符号，例如：`//`、`#`、`--`、`/* */` 等。
 - beforeCursor: 用于获取当前光标前的文本。
@@ -18,6 +33,8 @@ permalink: /variables
 - frameworkContext: 用于获取当前文件的框架上下文，例如：`spring`、`junit`、`mockito` 等。
 
 # Methods
+
+use `@context.methodName()` to call the method.
 
 ```
 interface TeamContextProvider {
