@@ -8,8 +8,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.util.lang.JavaVersion
 import org.jetbrains.plugins.gradle.service.project.GradleTasksIndices
-import org.jetbrains.plugins.gradle.service.project.GradleTasksIndicesImpl
-import org.jetbrains.plugins.gradle.service.project.GradleTasksIndicesImpl.Companion.GRADLE_COMPLETION_COMPARATOR
 import org.jetbrains.plugins.gradle.util.GradleConstants
 
 
@@ -45,5 +43,23 @@ open class JavaBuildSystemProvider : BuildSystemProvider() {
             languageVersion = javaVersionStr,
             taskString = taskString
         )
+    }
+
+    companion object {
+        val GRADLE_COMPLETION_COMPARATOR = Comparator<String> { o1, o2 ->
+            when {
+                o1.startsWith("--") && o2.startsWith("--") -> o1.compareTo(o2)
+                o1.startsWith("-") && o2.startsWith("--") -> -1
+                o1.startsWith("--") && o2.startsWith("-") -> 1
+                o1.startsWith(":") && o2.startsWith(":") -> o1.compareTo(o2)
+                o1.startsWith(":") && o2.startsWith("-") -> -1
+                o1.startsWith("-") && o2.startsWith(":") -> 1
+                o2.startsWith("-") -> -1
+                o2.startsWith(":") -> -1
+                o1.startsWith("-") -> 1
+                o1.startsWith(":") -> 1
+                else -> o1.compareTo(o2)
+            }
+        }
     }
 }
