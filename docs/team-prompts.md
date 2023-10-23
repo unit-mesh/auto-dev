@@ -14,6 +14,32 @@ AutoDev currently utilizes the Apache Velocity template engine, allowing you to 
 {: .warning }
 If you make changes to the template files, make sure to save them, as otherwise, the IDE won't recognize your modifications.
 
+## Format
+
+The Team Prompts file format is .vtl, which is the Velocity Template Language file format. Will be include three parts:
+
+- frontmatter config, which is the prompt config with YAML format
+- chat role, like `system`, `user`, will start with \`\`\` and end with \`\`\`, like:
+  ```vtl
+  ```system```
+  ```
+- chat content, aka prompt content
+
+## FrontMatter Config
+
+```
+---
+interaction: AppendCursorStream # the interaction type, support AppendCursorStream, ChatPanel, AppendCursor
+priority: 99 # the order in context menu
+---    
+```
+
+interaction type:
+
+- AppendCursor, the prompt will be inserted at the cursor position
+- AppendCursorStream, the prompt will be inserted at the cursor position
+- ChatPanel, the prompt will be inserted in the chat panel
+
 ## English Examples
 
 variables list: [https://ide.unitmesh.cc/variables](https://ide.unitmesh.cc/variables)
