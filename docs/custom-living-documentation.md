@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Custom Living Documentation
+title: Custom Documentation
 nav_order: 12
 permalink: /custom/living-documentation
 ---
 
-# Custom Living Documentation
+# Custom Documentation
 
 ```json
 {
