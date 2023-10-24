@@ -8,6 +8,7 @@ import chapi.ast.javaast.JavaAnalyser
 import chapi.domain.core.CodeDataStruct
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
@@ -19,7 +20,6 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import org.archguard.scanner.analyser.backend.JavaApiAnalyser
-import java.awt.EventQueue.invokeLater
 
 class TalkWithApiAction : AbstractChatIntention() {
     override fun priority(): Int = 800
