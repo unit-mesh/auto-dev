@@ -110,5 +110,6 @@ enum class InteractionType {
     ChatPanel,
     AppendCursor,
     AppendCursorStream,
+    OutputFile,
     ;
 }

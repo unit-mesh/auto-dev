@@ -2,6 +2,9 @@ package cc.unitmesh.devti.custom
 
 import cc.unitmesh.cf.core.llms.LlmMsg
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.InsertUtil
+import cc.unitmesh.devti.LLMCoroutineScope
+import cc.unitmesh.devti.custom.tasks.FileGenerateTask
 import cc.unitmesh.devti.custom.team.InteractionType
 import cc.unitmesh.devti.custom.team.TeamPromptAction
 import cc.unitmesh.devti.custom.team.TeamPromptTemplateCompiler
@@ -10,6 +13,8 @@ import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
 import cc.unitmesh.devti.intentions.action.task.BaseCompletionTask
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
+import cc.unitmesh.devti.llms.LlmFactory
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
@@ -20,6 +25,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.temporary.calculateFrontendElementToExplain
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 /**
  * The `TeamPromptIntention` class represents an intention for team prompts in a chat application.
@@ -105,6 +115,13 @@ class TeamPromptExecTask(
                     override fun promptText(): String = msgString
                 }
 
+                ProgressManager.getInstance()
+                    .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+            }
+
+            InteractionType.OutputFile -> {
+                val fileName = intentionConfig.actionPrompt.other.getOrDefault("fileName", "output.txt") as String
+                val task = FileGenerateTask(project, msgs, fileName)
                 ProgressManager.getInstance()
                     .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
             }
