@@ -10,6 +10,7 @@ import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
 import cc.unitmesh.devti.intentions.action.task.BaseCompletionTask
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
@@ -79,7 +80,7 @@ class TeamPromptExecTask(
 ) :
     Task.Backgroundable(project, AutoDevBundle.message("intentions.request.background.process.title")) {
     override fun run(indicator: ProgressIndicator) {
-        val offset = editor.caretModel.offset
+        val offset = runReadAction { editor.caretModel.offset }
 
         val userPrompt = msgs.filter { it.role == LlmMsg.ChatRole.User }.joinToString("\n") { it.content }
         val systemPrompt = msgs.filter { it.role == LlmMsg.ChatRole.System }.joinToString("\n") { it.content }
@@ -95,7 +96,10 @@ class TeamPromptExecTask(
             InteractionType.AppendCursorStream,
             -> {
                 val msgString = systemPrompt + "\n" + userPrompt
-                val request = CodeCompletionRequest.create(editor, offset, element!!, msgString, "") ?: return
+                val request = runReadAction {
+                    CodeCompletionRequest.create(editor, offset, element!!, null, msgString)
+                } ?: return
+
                 val task = object : BaseCompletionTask(request) {
                     override fun keepHistory(): Boolean = false
                     override fun promptText(): String = msgString

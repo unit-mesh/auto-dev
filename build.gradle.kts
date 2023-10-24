@@ -335,8 +335,8 @@ project(":") {
         implementation("org.jetbrains:markdown:0.5.1")
         implementation(libs.kotlinx.serialization.json)
 
-        implementation("cc.unitmesh:cocoa-core:0.4.0")
-        implementation("cc.unitmesh:git-commit-message:0.4.0")
+        implementation("cc.unitmesh:cocoa-core:0.4.1")
+        implementation("cc.unitmesh:git-commit-message:0.4.1")
 
         // gitlab4j-api
         implementation("org.gitlab4j:gitlab4j-api:5.3.0"){
