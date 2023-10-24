@@ -26,12 +26,6 @@ class CreateGeniusDockerfileAction : AnAction(AutoDevBundle.message("action.new.
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
 
-        val root = project.guessProjectDir()!!
-        val dockerfile = root.findFileByRelativePath(DOCKERFILE)
-        if (dockerfile?.exists() == true) {
-            // current Dockerfile to context
-        }
-
         // first, we need to guess language
         val dockerContexts = BuildSystemProvider.guess(project);
         val templateRender = TemplateRender("genius/sre")
