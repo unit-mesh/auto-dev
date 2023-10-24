@@ -1,5 +1,6 @@
-package cc.unitmesh.devti.custom
+package cc.unitmesh.devti.custom.action
 
+import cc.unitmesh.devti.custom.document.CustomDocumentationConfig
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.diagnostic.logger
 import kotlinx.serialization.SerialName

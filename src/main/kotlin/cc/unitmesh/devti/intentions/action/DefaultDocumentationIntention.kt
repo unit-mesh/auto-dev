@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.intentions.action
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.custom.CustomDocumentationConfig
+import cc.unitmesh.devti.custom.document.CustomDocumentationConfig
 import cc.unitmesh.devti.intentions.action.base.BasedDocumentationIntention
 import cc.unitmesh.devti.provider.LivingDocumentation
 import com.intellij.openapi.editor.Editor

@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.custom.variable
 
-import cc.unitmesh.devti.custom.CustomPromptConfig
+import cc.unitmesh.devti.custom.action.CustomPromptConfig
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 

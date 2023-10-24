@@ -1,6 +1,6 @@
 package cc.unitmesh.kotlin.provider
 
-import cc.unitmesh.devti.custom.LivingDocumentationType
+import cc.unitmesh.devti.custom.document.LivingDocumentationType
 import cc.unitmesh.devti.provider.LivingDocumentation
 import com.intellij.codeInsight.daemon.impl.CollectHighlightsUtil
 import com.intellij.openapi.command.WriteCommandAction

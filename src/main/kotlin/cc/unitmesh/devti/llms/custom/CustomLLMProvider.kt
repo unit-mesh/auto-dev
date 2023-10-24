@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.llms.custom
 
-import cc.unitmesh.devti.custom.CustomPromptConfig
+import cc.unitmesh.devti.custom.action.CustomPromptConfig
 import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState

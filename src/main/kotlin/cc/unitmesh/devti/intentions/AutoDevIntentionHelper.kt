@@ -3,9 +3,9 @@ package cc.unitmesh.devti.intentions
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.custom.CustomDocumentationIntention
-import cc.unitmesh.devti.custom.CustomIntention
+import cc.unitmesh.devti.custom.CustomActionIntention
 import cc.unitmesh.devti.intentions.ui.CustomPopupStep
-import cc.unitmesh.devti.custom.CustomPromptConfig
+import cc.unitmesh.devti.custom.action.CustomPromptConfig
 import cc.unitmesh.devti.custom.TeamPromptIntention
 import cc.unitmesh.devti.custom.team.TeamPromptsBuilder
 import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
@@ -59,8 +59,8 @@ class AutoDevIntentionHelper : IntentionAction, Iconable {
                 .toList()
 
             val promptConfig = CustomPromptConfig.load()
-            val customIntentions: List<IntentionAction> = promptConfig.prompts.map {
-                CustomIntention.create(it)
+            val customActionIntentions: List<IntentionAction> = promptConfig.prompts.map {
+                CustomActionIntention.create(it)
             }
 
             val livingDocIntentions: List<IntentionAction> = promptConfig.documentations?.map {
@@ -71,7 +71,7 @@ class AutoDevIntentionHelper : IntentionAction, Iconable {
                 TeamPromptIntention.create(it)
             }
 
-            val actionList = builtinIntentions + customIntentions + livingDocIntentions + teamPromptsIntentions
+            val actionList = builtinIntentions + customActionIntentions + livingDocIntentions + teamPromptsIntentions
             return actionList.map { it as AbstractChatIntention }.sortedByDescending { it.priority() }
         }
     }

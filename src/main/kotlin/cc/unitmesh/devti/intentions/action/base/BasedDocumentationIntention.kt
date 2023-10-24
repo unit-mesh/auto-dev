@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.intentions.action.base
 
-import cc.unitmesh.devti.custom.CustomDocumentationConfig
+import cc.unitmesh.devti.custom.document.CustomDocumentationConfig
 import cc.unitmesh.devti.intentions.action.task.LivingDocumentationTask
 import cc.unitmesh.devti.provider.LivingDocumentation
 import com.intellij.openapi.editor.Editor

@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.custom
+package cc.unitmesh.devti.custom.action
 
 import cc.unitmesh.devti.provider.context.ChatContextItem
 

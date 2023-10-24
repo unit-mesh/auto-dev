@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.provider
 
-import cc.unitmesh.devti.custom.LivingDocumentationType
+import cc.unitmesh.devti.custom.document.LivingDocumentationType
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageExtension
 import com.intellij.openapi.editor.Editor

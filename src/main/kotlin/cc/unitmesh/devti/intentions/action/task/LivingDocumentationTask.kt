@@ -3,7 +3,7 @@ package cc.unitmesh.devti.intentions.action.task
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.provider.LivingDocumentation
-import cc.unitmesh.devti.custom.LivingDocumentationType
+import cc.unitmesh.devti.custom.document.LivingDocumentationType
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator

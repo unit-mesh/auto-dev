@@ -2,7 +2,7 @@ package cc.unitmesh.idea.prompting
 
 import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.custom.CustomPromptConfig
+import cc.unitmesh.devti.custom.action.CustomPromptConfig
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin

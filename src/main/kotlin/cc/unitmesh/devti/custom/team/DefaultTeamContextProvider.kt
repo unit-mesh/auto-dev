@@ -15,7 +15,7 @@ import com.intellij.testIntegration.TestFinderHelper
  * @property element The `PsiElement` representing the current context.
  * @property editor The `Editor` used for displaying the code snippets.
  */
-class SimpleTeamContextProvider(val element: PsiElement?, val editor: Editor) : TeamContextProvider {
+class DefaultTeamContextProvider(val element: PsiElement?, val editor: Editor) : TeamContextProvider {
 
     /**
      * Retrieves the code snippet of the file under test that contains the specified method.
@@ -32,15 +32,15 @@ class SimpleTeamContextProvider(val element: PsiElement?, val editor: Editor) : 
     /**
      * Retrieves the code snippet of the test method with the specified name.
      *
-     * @param testName The name of the test method.
+     * @param methodName The name of the test method.
      * @return The code snippet of the test method, or an empty string if not found.
      */
-    override fun underTestMethodCode(testName: String): String {
+    override fun underTestMethodCode(methodName: String): String {
         val psiElement = element ?: return ""
-        CustomPromptProvider.forLanguage(psiElement.language)?.underTestMethodCode(editor.project!!, psiElement)
-            ?.let { return it.joinToString("\n") }
-        // TODO: this API need to analysis by different language
-        return ""
+
+        val promptProvider = CustomPromptProvider.forLanguage(element.language)
+
+        return promptProvider?.underTestMethodCode(editor.project!!, psiElement)?.joinToString("\n") ?: ""
     }
 
     /**

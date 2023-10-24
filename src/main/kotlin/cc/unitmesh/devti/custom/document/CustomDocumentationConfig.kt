@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.custom
+package cc.unitmesh.devti.custom.document
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

@@ -1,8 +1,6 @@
-package cc.unitmesh.devti.custom.task
+package cc.unitmesh.devti.custom.document
 
 import cc.unitmesh.devti.context.MethodContext
-import cc.unitmesh.devti.custom.CustomDocumentationConfig
-import cc.unitmesh.devti.custom.LivingDocumentationType
 import cc.unitmesh.devti.intentions.action.task.LivingDocPromptBuilder
 import cc.unitmesh.devti.provider.LivingDocumentation
 import com.intellij.openapi.application.ReadAction

@@ -2,7 +2,7 @@ package cc.unitmesh.devti.intentions.action.task
 
 import cc.unitmesh.devti.context.*
 import cc.unitmesh.devti.context.base.LLMCodeContext
-import cc.unitmesh.devti.custom.LivingDocumentationType
+import cc.unitmesh.devti.custom.document.LivingDocumentationType
 import cc.unitmesh.devti.provider.LivingDocumentation
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.Editor

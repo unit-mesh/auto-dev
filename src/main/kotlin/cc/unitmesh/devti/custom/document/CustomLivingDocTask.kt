@@ -1,6 +1,5 @@
-package cc.unitmesh.devti.custom.task
+package cc.unitmesh.devti.custom.document
 
-import cc.unitmesh.devti.custom.CustomDocumentationConfig
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.provider.LivingDocumentation
 import com.intellij.openapi.diagnostic.logger
