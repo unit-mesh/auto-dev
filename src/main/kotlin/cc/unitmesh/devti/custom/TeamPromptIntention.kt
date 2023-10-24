@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.custom
 
 import cc.unitmesh.cf.core.llms.LlmMsg
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.team.InteractionType
 import cc.unitmesh.devti.custom.team.TeamPromptAction
 import cc.unitmesh.devti.custom.team.TeamPromptTemplateCompiler
@@ -9,14 +10,15 @@ import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
 import cc.unitmesh.devti.intentions.action.task.BaseCompletionTask
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
-import cc.unitmesh.devti.intentions.action.task.CodeCompletionTask
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.temporary.calculateFrontendElementToExplain
-import io.kotest.mpp.file
 
 class TeamPromptIntention(private val intentionConfig: TeamPromptAction) : AbstractChatIntention() {
     override fun getActionType(): ChatActionType {
@@ -37,8 +39,6 @@ class TeamPromptIntention(private val intentionConfig: TeamPromptAction) : Abstr
         val textRange = getCurrentSelectionAsRange(editor)
         val element = calculateFrontendElementToExplain(project, file, textRange)
 
-        val offset = editor.caretModel.offset
-
         val templateCompiler = TeamPromptTemplateCompiler(language, file, element, editor)
         templateCompiler.set("selection", range.first)
         templateCompiler.set("beforeCursor", file.text.substring(0, editor.caretModel.offset))
@@ -47,6 +47,35 @@ class TeamPromptIntention(private val intentionConfig: TeamPromptAction) : Abstr
         val msgs = intentionConfig.actionPrompt.msgs.map {
             it.copy(content = templateCompiler.compile(it.content))
         }
+
+        val task: Task.Backgroundable = TeamPromptExecTask(project, msgs, editor, intentionConfig, element)
+        ProgressManager.getInstance()
+            .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+    }
+
+    override fun priority(): Int {
+        return intentionConfig.actionPrompt.priority
+    }
+
+    override fun getText(): String {
+        return intentionConfig.actionName
+    }
+
+    override fun getFamilyName(): String {
+        return intentionConfig.actionName
+    }
+}
+
+class TeamPromptExecTask(
+    @JvmField val project: Project,
+    val msgs: List<LlmMsg.ChatMessage>,
+    val editor: Editor,
+    val intentionConfig: TeamPromptAction,
+    val element: PsiElement?,
+) :
+    Task.Backgroundable(project, AutoDevBundle.message("intentions.request.background.process.title")) {
+    override fun run(indicator: ProgressIndicator) {
+        val offset = editor.caretModel.offset
 
         val userPrompt = msgs.filter { it.role == LlmMsg.ChatRole.User }.joinToString("\n") { it.content }
         val systemPrompt = msgs.filter { it.role == LlmMsg.ChatRole.System }.joinToString("\n") { it.content }
@@ -74,15 +103,4 @@ class TeamPromptIntention(private val intentionConfig: TeamPromptAction) : Abstr
         }
     }
 
-    override fun priority(): Int {
-        return intentionConfig.actionPrompt.priority
-    }
-
-    override fun getText(): String {
-        return intentionConfig.actionName
-    }
-
-    override fun getFamilyName(): String {
-        return intentionConfig.actionName
-    }
 }
