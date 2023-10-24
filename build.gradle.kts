@@ -113,8 +113,8 @@ allprojects {
     idea {
         module {
             generatedSourceDirs.add(file("src/gen"))
-            isDownloadJavadoc=true
-            isDownloadSources=true
+            isDownloadJavadoc = true
+            isDownloadSources = true
         }
     }
 
@@ -323,8 +323,6 @@ project(":") {
     }
 
     dependencies {
-        implementation(libs.github.api)
-
         implementation(libs.bundles.openai)
         implementation(libs.bundles.markdown)
         implementation(libs.yaml)
@@ -337,28 +335,13 @@ project(":") {
         implementation("cc.unitmesh:cocoa-core:0.4.1")
         implementation("cc.unitmesh:git-commit-message:0.4.1")
 
-        // gitlab4j-api
-        implementation("org.gitlab4j:gitlab4j-api:5.3.0"){
-            exclude(module = "jackson-core")
-            exclude(module = "jackson-databind")
-            exclude(module = "jackson-annotations")
-        }
+        // kanban
+        implementation(libs.github.api)
+        implementation("org.gitlab4j:gitlab4j-api:5.3.0")
 
         implementation("org.apache.velocity:velocity-engine-core:2.3")
-        // logback
 
-        // jackson-module-kotlin
-        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.2") {
-            exclude(module = "jackson-core")
-            exclude(module = "jackson-databind")
-            exclude(module = "jackson-annotations")
-        }
-
-        implementation("org.archguard.comate:spec-lang:0.2.0") {
-            exclude(module = "jackson-core")
-            exclude(module = "jackson-databind")
-            exclude(module = "jackson-annotations")
-        }
+        implementation(libs.jackson.module.kotlin)
 
         implementation("com.knuddels:jtokkit:0.6.1")
 
