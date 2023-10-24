@@ -2,8 +2,6 @@ package cc.unitmesh.devti.custom
 
 import cc.unitmesh.cf.core.llms.LlmMsg
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.InsertUtil
-import cc.unitmesh.devti.LLMCoroutineScope
 import cc.unitmesh.devti.custom.tasks.FileGenerateTask
 import cc.unitmesh.devti.custom.team.InteractionType
 import cc.unitmesh.devti.custom.team.TeamPromptAction
@@ -13,8 +11,6 @@ import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
 import cc.unitmesh.devti.intentions.action.task.BaseCompletionTask
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
-import cc.unitmesh.devti.llms.LlmFactory
-import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
@@ -22,14 +18,10 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.temporary.calculateFrontendElementToExplain
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 
 /**
  * The `TeamPromptIntention` class represents an intention for team prompts in a chat application.
@@ -121,7 +113,12 @@ class TeamPromptExecTask(
 
             InteractionType.OutputFile -> {
                 val fileName = intentionConfig.actionPrompt.other.getOrDefault("fileName", "output.txt") as String
-                val task = FileGenerateTask(project, msgs, fileName)
+                val filename = project.guessProjectDir()!!.toNioPath().resolve(fileName).toFile()
+                if (!filename.exists()) {
+                    filename.createNewFile()
+                }
+
+                val task = FileGenerateTask(project, msgs, filename)
                 ProgressManager.getInstance()
                     .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
             }

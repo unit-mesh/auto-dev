@@ -10,6 +10,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
+import com.intellij.openapi.project.guessProjectDir
 
 
 const val DOCKERFILE = "Dockerfile"
@@ -28,7 +29,12 @@ class GenerateDockerfileAction : AnAction(AutoDevBundle.message("action.new.geni
 
         val msgs = templateRender.create(template)
 
-        val task: Task.Backgroundable = FileGenerateTask(project, msgs, DOCKERFILE)
+        val fileDir = project.guessProjectDir()!!.toNioPath().resolve(DOCKERFILE).toFile()
+        if (!fileDir.exists()) {
+            fileDir.createNewFile()
+        }
+
+        val task: Task.Backgroundable = FileGenerateTask(project, msgs, fileDir)
         ProgressManager.getInstance()
             .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
     }

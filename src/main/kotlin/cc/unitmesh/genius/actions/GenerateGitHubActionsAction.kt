@@ -10,6 +10,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
+import com.intellij.openapi.project.guessProjectDir
+import kotlin.io.path.createDirectories
 
 
 class GenerateGitHubActionsAction : AnAction(AutoDevBundle.message("action.new.genius.cicd.github")) {
@@ -22,11 +24,20 @@ class GenerateGitHubActionsAction : AnAction(AutoDevBundle.message("action.new.g
         templateRender.context = DevOpsContext.from(dockerContexts)
 
         val template = templateRender
-            .getTemplate("create-dockerfile.vm")
+            .getTemplate("create-github-action.vm")
+
+
+        val dir = project.guessProjectDir()!!.toNioPath().resolve(".github").resolve("workflows")
+            .createDirectories()
+
+        val filename = dir.resolve("ci.yml").toFile()
+        if (!filename.exists()) {
+            filename.createNewFile()
+        }
 
         val msgs = templateRender.create(template)
 
-        val task: Task.Backgroundable = FileGenerateTask(project, msgs, DOCKERFILE)
+        val task: Task.Backgroundable = FileGenerateTask(project, msgs, filename)
         ProgressManager.getInstance()
             .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
     }
