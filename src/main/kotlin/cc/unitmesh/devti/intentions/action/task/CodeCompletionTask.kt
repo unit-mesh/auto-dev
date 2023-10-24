@@ -1,27 +1,9 @@
 package cc.unitmesh.devti.intentions.action.task
 
-import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
-import cc.unitmesh.devti.llms.LlmProviderFactory
-import cc.unitmesh.devti.LLMCoroutineScope
-import cc.unitmesh.devti.InsertUtil
 import cc.unitmesh.devti.intentions.action.CodeCompletionIntention
 import com.intellij.lang.LanguageCommenters
-import com.intellij.openapi.actionSystem.CustomShortcutSet
-import com.intellij.openapi.actionSystem.KeyboardShortcut
-import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.Task
-import com.intellij.openapi.project.DumbAwareAction
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
-import java.awt.event.KeyEvent
-import javax.swing.KeyStroke
-import kotlin.jvm.internal.Ref
 
 /**
  * The `CodeCompletionTask` class is responsible for performing code completion tasks in the background.

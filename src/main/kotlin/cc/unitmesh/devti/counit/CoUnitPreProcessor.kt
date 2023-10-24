@@ -6,7 +6,7 @@ import cc.unitmesh.devti.counit.dto.QueryResult
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.gui.chat.ChatRole
-import cc.unitmesh.devti.llms.LlmProviderFactory
+import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.settings.configurable.coUnitSettings
 import com.intellij.openapi.application.ApplicationManager
@@ -21,11 +21,11 @@ const val CO_UNIT = "/counit"
 
 @Service(Service.Level.PROJECT)
 class CoUnitPreProcessor(val project: Project) {
-    private val llmProviderFactory = LlmProviderFactory()
+    private val llmFactory = LlmFactory()
 
     private val coUnitPromptGenerator = CoUnitPromptGenerator(project)
     private val json = Json { ignoreUnknownKeys = true }
-    private val llmProvider = llmProviderFactory.connector(project)
+    private val llmProvider = llmFactory.create(project)
 
     fun isCoUnit(input: String): Boolean {
         return project.coUnitSettings.enableCoUnit && input.startsWith(CO_UNIT)

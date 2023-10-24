@@ -2,7 +2,7 @@ package cc.unitmesh.genius.actions
 
 import cc.unitmesh.cf.core.llms.LlmMsg
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.llms.LlmProviderFactory
+import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.template.DockerfileContext
 import cc.unitmesh.devti.template.TemplateRender
@@ -15,7 +15,6 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
-import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
@@ -75,7 +74,7 @@ class DockerFileGenerateTask(@JvmField val project: Project, val messages: List<
         val systemPrompt = messages.filter { it.role == LlmMsg.ChatRole.System }.joinToString("\n") { it.content }
 
         val stream =
-            LlmProviderFactory().connector(project).stream(requestPrompt, systemPrompt)
+            LlmFactory().create(project).stream(requestPrompt, systemPrompt)
 
         var result = ""
         runBlocking {

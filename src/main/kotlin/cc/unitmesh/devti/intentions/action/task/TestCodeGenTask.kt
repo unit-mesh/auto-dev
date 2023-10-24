@@ -4,7 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.context.modifier.CodeModifierProvider
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.intentions.action.AutoTestThisIntention
-import cc.unitmesh.devti.llms.LlmProviderFactory
+import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.provider.WriteTestService
 import cc.unitmesh.devti.provider.context.TestFileContext
@@ -103,7 +103,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         }
 
         val flow: Flow<String> =
-            LlmProviderFactory().connector(request.project).stream(prompter, "")
+            LlmFactory().create(request.project).stream(prompter, "")
 
         logger<AutoTestThisIntention>().info("Prompt: $prompter")
 

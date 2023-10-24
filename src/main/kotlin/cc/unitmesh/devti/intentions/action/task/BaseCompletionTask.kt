@@ -4,7 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.InsertUtil
 import cc.unitmesh.devti.LLMCoroutineScope
 import cc.unitmesh.devti.intentions.action.CodeCompletionIntention
-import cc.unitmesh.devti.llms.LlmProviderFactory
+import cc.unitmesh.devti.llms.LlmFactory
 import com.intellij.openapi.actionSystem.CustomShortcutSet
 import com.intellij.openapi.actionSystem.KeyboardShortcut
 import com.intellij.openapi.application.invokeLater
@@ -30,7 +30,7 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
 
     override fun run(indicator: ProgressIndicator) {
         val prompt = promptText()
-        val flow: Flow<String> = LlmProviderFactory().connector(request.project).stream(prompt, "", keepHistory())
+        val flow: Flow<String> = LlmFactory().create(request.project).stream(prompt, "", keepHistory())
         logger.info("Prompt: $prompt")
 
         DumbAwareAction.create {
