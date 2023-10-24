@@ -20,10 +20,26 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.temporary.calculateFrontendElementToExplain
 
+/**
+ * The `TeamPromptIntention` class represents an intention for team prompts in a chat application.
+ * It extends the `AbstractChatIntention` class and provides functionality to handle team prompt actions.
+ *
+ * @property intentionConfig The configuration for the team prompt action.
+ *
+ * @constructor Creates a `TeamPromptIntention` with the specified intention configuration.
+ *
+ * @param intentionConfig The configuration for the team prompt action.
+ *
+ */
 class TeamPromptIntention(private val intentionConfig: TeamPromptAction) : AbstractChatIntention() {
-    override fun getActionType(): ChatActionType {
-        return ChatActionType.CUSTOM_ACTION
-    }
+
+    override fun priority(): Int = intentionConfig.actionPrompt.priority
+
+    override fun getText(): String = intentionConfig.actionName
+
+    override fun getFamilyName(): String = intentionConfig.actionName
+
+    override fun getActionType(): ChatActionType = ChatActionType.CUSTOM_ACTION
 
     companion object {
         fun create(intentionConfig: TeamPromptAction): TeamPromptIntention {
@@ -51,18 +67,6 @@ class TeamPromptIntention(private val intentionConfig: TeamPromptAction) : Abstr
         val task: Task.Backgroundable = TeamPromptExecTask(project, msgs, editor, intentionConfig, element)
         ProgressManager.getInstance()
             .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
-    }
-
-    override fun priority(): Int {
-        return intentionConfig.actionPrompt.priority
-    }
-
-    override fun getText(): String {
-        return intentionConfig.actionName
-    }
-
-    override fun getFamilyName(): String {
-        return intentionConfig.actionName
     }
 }
 
