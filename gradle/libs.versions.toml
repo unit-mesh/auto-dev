@@ -25,8 +25,6 @@ openai-gpt3 = "com.theokanning.openai-gpt3-java:service:0.14.0"
 commonmark-core = "org.commonmark:commonmark:0.21.0"
 commonmark-gfm-tables = "org.commonmark:commonmark-ext-gfm-tables:0.21.0"
 
-dotenv = "io.github.cdimascio:dotenv-kotlin:6.4.1"
-
 github-api = "org.kohsuke:github-api:1.314"
 
 kotlinx-serialization-json = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0"

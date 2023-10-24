@@ -324,7 +324,6 @@ project(":") {
 
     dependencies {
         implementation(libs.github.api)
-        implementation(libs.dotenv)
 
         implementation(libs.bundles.openai)
         implementation(libs.bundles.markdown)
