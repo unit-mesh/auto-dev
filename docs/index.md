@@ -30,7 +30,7 @@ permalink: /
 
 Features:
 
-- Languages support: Java, Kotlin, Python, JavaScript or others...
+- Languages support: Java, Kotlin, Python, JavaScript/TypeScript, Goland, Rust or others...
 - Auto development mode.
     - With DevTi Protocol (like `devti://story/github/1102`) will auto generate
       Model-Controller-Service-Repository code.
@@ -39,7 +39,7 @@ Features:
 - Copilot mode
     - Pattern specific.Based on your code context like (Controller, Service `import`), AutoDev will suggest you the best
       code.
-    - Related code. Based on recent file changes, AutoDev will call calculate similar chunk to generate the best code.
+    - Related code. Based on recent file changes, AutoDev will call calculate similar chunk to generate best code.
     - AutoDev will help you find bug, explain code, trace exception, generate commits, and more.
 - Chat mode
     - Chat with AI.
@@ -48,5 +48,8 @@ Features:
     - Custom specification of prompt.
     - Custom intention action. You can add your own intention action.
     - Custom LLM Server. You can customize your LLM Server in `Settings` -> `Tools` -> `AutoDev`
-- Team prompts.
-  - Customize your team prompts in codebase, and distribute to your team.
+    - Custom Living documentation.
+    - Team prompts. Customize your team prompts in codebase, and distribute to your team.
+- Miscellaneous
+    - CI/CD support. AutoDev will auto generate CI/CD config file.
+    - Dockerfile support. AutoDev will auto generate Dockerfile.

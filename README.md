@@ -24,7 +24,7 @@
 
 Features:
 
-- Languages support: Java, Kotlin, Python, JavaScript or others...
+- Languages support: Java, Kotlin, Python, JavaScript/TypeScript, Goland, Rust or others...
 - Auto development mode.
     - With DevTi Protocol (like `devti://story/github/1102`) will auto generate
       Model-Controller-Service-Repository code.
@@ -42,8 +42,11 @@ Features:
     - Custom specification of prompt.
     - Custom intention action. You can add your own intention action.
     - Custom LLM Server. You can customize your LLM Server in `Settings` -> `Tools` -> `AutoDev`
-- Team prompts. 
-    - Customize your team prompts in codebase, and distribute to your team.
+    - Custom Living documentation.
+    - Team prompts. Customize your team prompts in codebase, and distribute to your team.
+- Miscellaneous
+    - CI/CD support. AutoDev will auto generate CI/CD config file.
+    - Dockerfile support. AutoDev will auto generate Dockerfile.
 
 ### Demo
 
