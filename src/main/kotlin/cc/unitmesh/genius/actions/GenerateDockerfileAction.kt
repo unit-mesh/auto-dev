@@ -19,8 +19,7 @@ class GenerateDockerfileAction : AnAction(AutoDevBundle.message("action.new.geni
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
 
-        // first, we need to guess language
-        val dockerContexts = BuildSystemProvider.guess(project);
+        val dockerContexts = BuildSystemProvider.guess(project)
         val templateRender = TemplateRender("genius/sre")
         templateRender.context = DevOpsContext.from(dockerContexts)
 

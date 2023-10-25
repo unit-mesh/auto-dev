@@ -39,7 +39,7 @@ Features:
 - Copilot mode
     - Pattern specific.Based on your code context like (Controller, Service `import`), AutoDev will suggest you the best
       code.
-    - Related code. Based on recent file changes, AutoDev will call calculate similar chunk to generate best code.
+    - Related code. Based on recent file changes, AutoDev will call calculate similar chunk to generate the best code.
     - AutoDev will help you find bug, explain code, trace exception, generate commits, and more.
 - Chat mode
     - Chat with AI.

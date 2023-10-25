@@ -54,8 +54,12 @@ class FileGenerateTask(@JvmField val project: Project, val messages: List<LlmMsg
                         if (virtualFile == null) {
                             VfsUtil.markDirtyAndRefresh(true, true, true, parentDir)
                         } else {
-                            FileEditorManager.getInstance(project).openFile(virtualFile, true)
-                            return
+                            try {
+                                FileEditorManager.getInstance(project).openFile(virtualFile, true)
+                                return
+                            } catch (e: Exception) {
+                                //
+                            }
                         }
                     }
                 }
