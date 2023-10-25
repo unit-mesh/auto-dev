@@ -106,15 +106,19 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
             return callbackFlow {
                 withContext(Dispatchers.IO) {
                     sseFlowable
-                        .doOnError(Throwable::printStackTrace)
-                        .blockingForEach { sse ->
-                            if (responseFormat.isNotEmpty()) {
-                                val chunk: String = JsonPath.parse(sse!!.data)?.read<String>(responseFormat)
-                                    ?: throw Exception("Failed to parse chunk: ${sse.data}, format: $engineFormat")
-                                trySend(chunk)
-                            } else {
-                                val result: ChatCompletionResult =
-                                    ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
+                            .doOnError{
+                                it.printStackTrace()
+                                close()
+                            }
+                            .blockingForEach { sse ->
+                                if (responseFormat.isNotEmpty()) {
+                                    val chunk: String = JsonPath.parse(sse!!.data)?.read(responseFormat)
+                                            ?: throw Exception("Failed to parse chunk")
+                                    logger.warn("got msg: $chunk")
+                                    trySend(chunk)
+                                } else {
+                                    val result: ChatCompletionResult =
+                                            ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
 
                                 val completion = result.choices[0].message
                                 if (completion != null && completion.content != null) {
