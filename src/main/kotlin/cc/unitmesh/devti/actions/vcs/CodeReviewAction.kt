@@ -65,7 +65,8 @@ class CodeReviewAction : ChatBaseAction() {
         }, "Prepare repository", true, project)
 
         val vcsPrompting = project.service<VcsPrompting>()
-        val fullChangeContent = vcsPrompting.buildDiffPrompt(details, selectList.toList(), project, defaultIgnoreFilePatterns)
+        val fullChangeContent =
+            vcsPrompting.buildDiffPrompt(details, selectList.toList(), project, defaultIgnoreFilePatterns)
 
         if (fullChangeContent == null) {
             AutoDevNotifications.notify(project, "No code to review.")
@@ -145,3 +146,9 @@ class CodeReviewAction : ChatBaseAction() {
         val log = logger<CodeReviewAction>()
     }
 }
+
+data class CodeReviewContext(
+    val frameworkContext: String,
+    val stories: MutableList<String>,
+    val diffContext: String,
+)
