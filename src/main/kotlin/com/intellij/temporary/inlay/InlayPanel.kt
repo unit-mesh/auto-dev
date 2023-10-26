@@ -76,14 +76,16 @@ open class InlayPanel<T : JComponent?>(var component: T) : JPanel() {
         fun add(editor: EditorEx, offset: Int, component: QuickPrompt): InlayPanel<QuickPrompt>? {
             val properties = InlayProperties().showAbove(false).showWhenFolded(true);
 
-            val inlayRender = InlayRender(component)
             val inlayPanel = InlayPanel(component)
+            val inlayRenderer = InlayRenderer(inlayPanel)
 
             val inlayElement =
-                editor.inlayModel.addBlockElement(offset, properties, inlayRender) ?: return null
+                editor.inlayModel.addBlockElement(offset, properties, inlayRenderer) ?: return null
+
+
+            ComponentInlaysContainer.addInlay(inlayElement)
 
             inlayPanel.setupPane(inlayElement)
-            editor.contentComponent.add(inlayPanel)
 
             return inlayPanel
         }

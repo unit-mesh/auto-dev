@@ -13,7 +13,7 @@ import javax.swing.JComponent
 import kotlin.math.max
 
 class InlayLayoutManager(val inlay: Inlay<*>) : LayoutManager {
-    private val gap: Int = JBUI.scale(5)
+    private val gap: Int = JBUI.scale(0)
 
     override fun addLayoutComponent(name: String?, comp: Component?) {}
     override fun removeLayoutComponent(comp: Component?) {}
