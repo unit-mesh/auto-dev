@@ -191,6 +191,11 @@
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </group>
 
+        <action id="cc.unitmesh.devti.QuickAssistant"
+                class="cc.unitmesh.devti.actions.quick.QuickAssistantAction">
+            <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
+        </action>
+
         <action id="cc.unitmesh.devti.actions.console.FixThisAction"
                 class="cc.unitmesh.devti.actions.console.FixThisAction" text="Fix This (AutoDev)"
                 description="Ask AI fi this code">
