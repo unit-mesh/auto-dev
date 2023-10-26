@@ -73,36 +73,33 @@ open class InlayPanel<T : JComponent?>(var component: T) : JPanel() {
             override fun preferredLayoutSize(parent: Container?): Dimension {
                 if (!inlay.isValid || parent == null) return Dimension(0, 0)
 
-                val it: Dimension = component!!.preferredSize
-                val xOffsetPosition = it.width + getXOffsetPosition(inlay)
+                val dimension: Dimension = component!!.preferredSize
+                val xOffsetPosition = dimension.width + getXOffsetPosition(inlay)
                 val insets = component!!.getInsets()
 
-                return Dimension(xOffsetPosition, it.height + insets.height)
+                return Dimension(xOffsetPosition, dimension.height + insets.height)
             }
 
             override fun minimumLayoutSize(parent: Container?): Dimension {
                 if (!inlay.isValid || parent == null) return Dimension(0, 0)
 
-                val it: Dimension = component!!.getMinimumSize()
-                val xOffsetPosition = it.width + getXOffsetPosition(inlay)
+                val size: Dimension = component!!.getMinimumSize()
+                val xOffsetPosition = size.width + getXOffsetPosition(inlay)
                 val insets = component!!.getInsets()
 
-                return Dimension(xOffsetPosition, it.height + insets.height)
+                return Dimension(xOffsetPosition, size.height + insets.height)
             }
 
             override fun layoutContainer(parent: Container?) {
-                if (inlay.isValid) {
-                    var size = parent?.size
-                    if (size == null) {
-                        size = Dimension(0, 0)
-                    }
-                    val size2: Dimension = size
-                    val x = getXOffsetPosition(inlay)
-                    component!!.setBounds(x, 0, size2.width - x, size2.height)
+                if (!inlay.isValid) return
 
-                    val scrollPane = (inlay.editor as EditorEx).scrollPane
-                    panel.setBounds(scrollPane.viewport.viewRect.x - 1, 0, 5, size2.height)
-                }
+                val size = parent?.size ?: Dimension(0, 0)
+
+                val x = getXOffsetPosition(inlay)
+                component!!.setBounds(x, 0, size.width - x, size.height)
+
+                val scrollPane = (inlay.editor as EditorEx).scrollPane
+                panel.setBounds(scrollPane.viewport.viewRect.x - 1, 0, 5, size.height)
             }
         })
     }
