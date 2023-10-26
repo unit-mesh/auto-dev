@@ -30,13 +30,7 @@ import javax.swing.KeyStroke
  * user can input custom text to call with LLM.
  */
 class QuickAssistantAction : AnAction() {
-    private val currentPromptInlayRef = AtomicReference<Inlay<InlayComponent<QuickPrompt>>?>(null)
-    private var currentPromptInlay: Inlay<InlayComponent<QuickPrompt>>?
-        get() = currentPromptInlayRef.get()
-        set(inlay) {
-            val disposable: Disposable = currentPromptInlayRef.getAndSet(inlay) ?: return
-            Disposer.dispose(disposable)
-        }
+    private var currentPromptInlay: Inlay<InlayComponent<QuickPrompt>>? = null
 
     override fun actionPerformed(e: AnActionEvent) {
         val dataContext = e.dataContext
