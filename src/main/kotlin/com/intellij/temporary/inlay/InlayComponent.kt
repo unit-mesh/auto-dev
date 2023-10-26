@@ -28,7 +28,7 @@ class InlayComponent<T : JComponent?>(@JvmField var component: T) : JComponent()
     }
 
     init {
-        border = JBUI.Borders.empty()
+        setOpaque(false)
     }
 
     fun updateWidth(maxWidth: Int) {
