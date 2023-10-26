@@ -23,8 +23,7 @@ class GenerateDockerfileAction : AnAction(AutoDevBundle.message("action.new.geni
         val templateRender = TemplateRender("genius/sre")
         templateRender.context = DevOpsContext.from(dockerContexts)
 
-        val template = templateRender
-            .getTemplate("create-dockerfile.vm")
+        val template = templateRender.getTemplate("generate-dockerfile.vm")
 
         val msgs = templateRender.create(template)
 

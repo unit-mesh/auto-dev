@@ -23,9 +23,7 @@ class GenerateGitHubActionsAction : AnAction(AutoDevBundle.message("action.new.g
         val templateRender = TemplateRender("genius/cicd")
         templateRender.context = DevOpsContext.from(dockerContexts)
 
-        val template = templateRender
-            .getTemplate("create-github-action.vm")
-
+        val template = templateRender.getTemplate("generate-github-action.vm")
 
         val dir = project.guessProjectDir()!!.toNioPath().resolve(".github").resolve("workflows")
             .createDirectories()
