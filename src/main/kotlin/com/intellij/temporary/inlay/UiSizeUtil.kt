@@ -1,5 +1,5 @@
 // Copyright 2000-2023 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
-package cc.unitmesh.devti.actions.quick
+package com.intellij.temporary.inlay
 
 import com.intellij.openapi.ui.popup.JBPopup
 import com.intellij.openapi.util.NlsSafe

@@ -192,7 +192,10 @@
         </group>
 
         <action id="cc.unitmesh.devti.QuickAssistant"
-                class="cc.unitmesh.devti.actions.quick.QuickAssistantAction">
+                class="cc.unitmesh.devti.actions.quick.QuickAssistantAction"
+                text="Quick Assistant"
+                description="You can custom any assistant as you want!"
+        >
             <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
         </action>
 
