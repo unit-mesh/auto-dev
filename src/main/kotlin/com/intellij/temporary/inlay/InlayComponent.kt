@@ -33,37 +33,39 @@ class InlayComponent<T : JComponent?>(@JvmField var component: T) : JComponent()
     }
 
     companion object {
-        fun <T : JComponent?> add(
-            editor: EditorEx,
-            offset: Int,
-            properties: InlayProperties,
-            component: T,
-        ): Inlay<InlayComponent<T>>? {
-            val inlayComponent: InlayComponent<T> = InlayComponent(component)
-            inlayComponent.updateWidth(calculateMaxWidth(editor.scrollPane))
-
-            val inlayElement =
-                editor.inlayModel.addBlockElement(offset, properties, inlayComponent)
-                    ?: return null
-
-            inlayComponent.add(component)
-            editor.contentComponent.add(inlayComponent)
-
-            val componentListener: ComponentListener = object : ComponentAdapter() {
-                override fun componentResized(e: ComponentEvent?) {
-                    inlayComponent.updateWidth(calculateMaxWidth(editor.scrollPane))
-                    inlayElement.update()
-                }
-            }
-
-            editor.scrollPane.viewport.addComponentListener(componentListener)
-            inlayElement.whenDisposed {
-                editor.contentComponent.remove(inlayComponent)
-                editor.scrollPane.viewport.removeComponentListener(componentListener)
-            }
-
-            return inlayElement
-        }
+//        fun <T : JComponent?> add(
+//            editor: EditorEx,
+//            offset: Int,
+//            component: T,
+//        ): Inlay<InlayComponent<T>>? {
+//            val properties = InlayProperties().showAbove(true)
+//                .showWhenFolded(true);
+//
+//            val inlayComponent: InlayComponent<T> = InlayComponent(component)
+//            inlayComponent.updateWidth(calculateMaxWidth(editor.scrollPane))
+//
+//            val inlayElement =
+//                editor.inlayModel.addBlockElement(offset, properties, inlayComponent)
+//                    ?: return null
+//
+//            inlayComponent.add(component)
+//            editor.contentComponent.add(inlayComponent)
+//
+//            val componentListener: ComponentListener = object : ComponentAdapter() {
+//                override fun componentResized(e: ComponentEvent?) {
+//                    inlayComponent.updateWidth(calculateMaxWidth(editor.scrollPane))
+//                    inlayElement.update()
+//                }
+//            }
+//
+//            editor.scrollPane.viewport.addComponentListener(componentListener)
+//            inlayElement.whenDisposed {
+//                editor.contentComponent.remove(inlayComponent)
+//                editor.scrollPane.viewport.removeComponentListener(componentListener)
+//            }
+//
+//            return inlayElement
+//        }
 
         fun calculateMaxWidth(scrollPane: JScrollPane): Int {
             return max(0, scrollPane.viewport.width - scrollPane.verticalScrollBar.width)
