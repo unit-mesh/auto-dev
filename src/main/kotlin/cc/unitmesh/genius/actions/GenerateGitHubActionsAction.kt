@@ -22,7 +22,6 @@ class GenerateGitHubActionsAction : AnAction(AutoDevBundle.message("action.new.g
         val dockerContexts = BuildSystemProvider.guess(project);
         val templateRender = TemplateRender("genius/cicd")
         templateRender.context = DevOpsContext.from(dockerContexts)
-
         val template = templateRender.getTemplate("generate-github-action.vm")
 
         val dir = project.guessProjectDir()!!.toNioPath().resolve(".github").resolve("workflows")
@@ -33,7 +32,7 @@ class GenerateGitHubActionsAction : AnAction(AutoDevBundle.message("action.new.g
             filename.createNewFile()
         }
 
-        val msgs = templateRender.create(template)
+        val msgs = templateRender.buildMsgs(template)
 
         val task: Task.Backgroundable = FileGenerateTask(project, msgs, filename)
         ProgressManager.getInstance()

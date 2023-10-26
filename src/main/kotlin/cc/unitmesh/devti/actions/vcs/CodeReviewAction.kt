@@ -4,21 +4,21 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.prompting.VcsPrompting
-import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
 import cc.unitmesh.devti.settings.AutoDevSettingsState
+import cc.unitmesh.devti.template.TemplateRender
 import com.intellij.dvcs.repo.Repository
 import com.intellij.dvcs.repo.VcsRepositoryManager
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.VcsDataKeys
 import com.intellij.vcs.log.VcsFullCommitDetails
 import com.intellij.vcs.log.VcsLogDataKeys
@@ -73,16 +73,6 @@ class CodeReviewAction : ChatBaseAction() {
             return
         }
 
-        var prompt =
-            """You are a seasoned software developer, and I'm seeking your expertise to review the following code:
-            |
-            |- Focus on critical algorithms, logical flow, and design decisions within the code. Discuss how these changes impact the core functionality and the overall structure of the code.
-            |- Identify and highlight any potential issues or risks introduced by these code changes. This will help reviewers pay special attention to areas that may require improvement or further analysis.
-            |- Emphasize the importance of compatibility and consistency with the existing codebase. Ensure that the code adheres to the established standards and practices for code uniformity and long-term maintainability.
-            |
-        """.trimMargin()
-
-
         val creationContext =
             ChatCreationContext(ChatOrigin.Intention, getActionType(), null, listOf(), null)
 
@@ -90,31 +80,25 @@ class CodeReviewAction : ChatBaseAction() {
             return@runBlocking ChatContextProvider.collectChatContextList(project, creationContext)
         }
 
-        contextItems.forEach {
-            prompt += it.text + "\n"
-        }
+        val context = CodeReviewContext(
+            frameworkContext = contextItems.joinToString("\n") { it.text },
+            stories = stories.toMutableList(),
+            diffContext = fullChangeContent,
+        )
 
-        if (stories.isNotEmpty()) {
-            prompt += "The following user stories are related to these changes:\n"
-            prompt += stories.joinToString("\n")
-            prompt += "\n"
-        }
+        doCodeReview(project, context)
+    }
 
-        prompt += fullChangeContent
+    private fun doCodeReview(project: Project, context: CodeReviewContext) {
+        val templateRender = TemplateRender("genius/practises")
+        val template = templateRender.getTemplate("code-review.vm")
+        templateRender.context = context
+        val messages = templateRender.buildMsgs(template)
 
-        prompt += """As your Tech lead, I am only concerned with key code review issues. Please provide me with a critical summary. 
-            | Submit your key insights under 5 sentences in here:"""
-            .trimMargin()
-
-        log.info("prompt: $prompt")
+        log.info("messages: $messages")
 
         sendToChatPanel(project) { panel, service ->
-            val chatContext = ChatContext(null, "", "")
-
-            service.handlePromptAndResponse(panel, object : ContextPrompter() {
-                override fun displayPrompt() = prompt
-                override fun requestPrompt() = prompt
-            }, chatContext)
+            service.handleMsgsAndResponse(panel, messages)
         }
     }
 
@@ -148,7 +132,7 @@ class CodeReviewAction : ChatBaseAction() {
 }
 
 data class CodeReviewContext(
-    val frameworkContext: String,
-    val stories: MutableList<String>,
-    val diffContext: String,
+    var frameworkContext: String = "",
+    val stories: MutableList<String> = mutableListOf(),
+    var diffContext: String = "",
 )

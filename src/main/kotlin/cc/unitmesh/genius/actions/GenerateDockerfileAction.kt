@@ -25,7 +25,7 @@ class GenerateDockerfileAction : AnAction(AutoDevBundle.message("action.new.geni
 
         val template = templateRender.getTemplate("generate-dockerfile.vm")
 
-        val msgs = templateRender.create(template)
+        val msgs = templateRender.buildMsgs(template)
 
         val fileDir = project.guessProjectDir()!!.toNioPath().resolve(DOCKERFILE).toFile()
         if (!fileDir.exists()) {

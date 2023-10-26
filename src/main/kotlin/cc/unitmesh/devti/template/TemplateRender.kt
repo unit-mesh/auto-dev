@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.template
 
 import cc.unitmesh.cf.core.llms.LlmMsg
-import cc.unitmesh.devti.custom.team.TeamPromptTemplateCompiler
 import cc.unitmesh.template.TemplateRoleSplitter
 import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.Velocity
@@ -22,8 +21,7 @@ class TemplateRender(pathPrefix: String) {
         return String(bytes, Charset.forName("UTF-8"))
     }
 
-
-    fun create(prompt: String): List<LlmMsg.ChatMessage> {
+    fun buildMsgs(prompt: String): List<LlmMsg.ChatMessage> {
         val msgs = splitter.split(prompt)
         val messages = LlmMsg.fromMap(msgs).toMutableList()
 
@@ -41,7 +39,6 @@ class TemplateRender(pathPrefix: String) {
 
         return messages
     }
-
 }
 
 class TemplateNotFoundError(path: String) : Exception("Prompt not found at path: $path")
