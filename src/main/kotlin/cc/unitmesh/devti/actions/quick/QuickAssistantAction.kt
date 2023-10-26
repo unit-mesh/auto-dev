@@ -16,8 +16,7 @@ import com.intellij.temporary.inlay.minimumWidth
 import com.intellij.ui.scale.JBUIScale
 import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
-import java.awt.event.KeyEvent.VK_ENTER
-import java.awt.event.KeyEvent.VK_RIGHT
+import java.awt.event.KeyEvent.*
 import javax.swing.AbstractAction
 import javax.swing.JTextField
 import javax.swing.KeyStroke
@@ -65,16 +64,16 @@ class QuickAssistantAction : AnAction() {
 class QuickPrompt : JTextField(), KeyboardAwareFocusOwner {
     override fun skipKeyEventDispatcher(event: KeyEvent): Boolean = true
 
-    companion object {
-        const val QUICK_ASSISTANT_CANCEL_ACTION = "quick.assistant.cancel"
-        const val QUICK_ASSISTANT_SUBMIT_ACTION = "quick.assistant.submit"
-    }
-
     init {
         this.minimumWidth = JBUIScale.scale(480)
         this.preferredSize = this.minimumSize
 
-        inputMap.put(KeyStroke.getKeyStroke(VK_RIGHT, 0), QUICK_ASSISTANT_CANCEL_ACTION)
+        inputMap.put(KeyStroke.getKeyStroke(VK_ESCAPE, 0), QUICK_ASSISTANT_CANCEL_ACTION)
         inputMap.put(KeyStroke.getKeyStroke(VK_ENTER, 0), QUICK_ASSISTANT_SUBMIT_ACTION)
+    }
+
+    companion object {
+        const val QUICK_ASSISTANT_CANCEL_ACTION = "quick.assistant.cancel"
+        const val QUICK_ASSISTANT_SUBMIT_ACTION = "quick.assistant.submit"
     }
 }

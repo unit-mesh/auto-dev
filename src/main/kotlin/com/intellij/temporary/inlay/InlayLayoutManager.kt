@@ -48,7 +48,7 @@ class InlayLayoutManager(val inlay: Inlay<*>) : LayoutManager {
 
         parent.components.forEachIndexed { index, item ->
             val jComponent = item as? JComponent ?: error("Assertion failed")
-            val x = Companion.getXOffsetPosition(inlay)
+            val x = getXOffsetPosition(inlay)
 
             if (index > 0) {
                 height += gap

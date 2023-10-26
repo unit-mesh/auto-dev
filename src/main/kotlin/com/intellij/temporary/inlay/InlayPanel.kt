@@ -8,15 +8,14 @@ import com.intellij.openapi.editor.event.VisibleAreaEvent
 import com.intellij.openapi.editor.event.VisibleAreaListener
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.rd.paint2DLine
+import com.intellij.temporary.inlay.InlayLayoutManager.Companion.getXOffsetPosition
 import com.intellij.ui.JBColor
 import com.intellij.ui.paint.LinePainter2D
 import com.intellij.util.ui.JBPoint
 import com.intellij.util.ui.JBUI
-import java.awt.Graphics
-import java.awt.Graphics2D
+import java.awt.*
 import javax.swing.JComponent
 import javax.swing.JPanel
-import javax.swing.border.Border
 
 open class InlayPanel<T : JComponent?>(var component: T) : JPanel() {
     val panel: JPanel
@@ -28,7 +27,7 @@ open class InlayPanel<T : JComponent?>(var component: T) : JPanel() {
         panel = object : JPanel() {
             init {
                 setOpaque(false)
-                setBorder(JBUI.Borders.empty() as Border)
+                setBorder(JBUI.Borders.empty())
             }
 
             override fun paintComponent(g: Graphics) {
@@ -40,7 +39,7 @@ open class InlayPanel<T : JComponent?>(var component: T) : JPanel() {
                         JBPoint(0, height),
                         LinePainter2D.StrokeType.INSIDE,
                         3.0,
-                        JBColor(10582004, 5782906)
+                        JBColor(Color(0, 100, 89, 100), Color(0, 0, 0, 90))
                     )
 
                     create.dispose()
@@ -65,11 +64,47 @@ open class InlayPanel<T : JComponent?>(var component: T) : JPanel() {
         add(panel)
         add(component)
         setOpaque(true)
-        setBackground(JBColor(16446975, 16446975))
 
         inlay.editor.scrollingModel.addVisibleAreaListener(visibleAreaListener, (inlay as Disposable))
 
-        setLayout(InlayLayoutManager(inlay))
+        setLayout(object : LayoutManager {
+            override fun addLayoutComponent(name: String, comp: Component?) {}
+            override fun removeLayoutComponent(comp: Component?) {}
+            override fun preferredLayoutSize(parent: Container?): Dimension {
+                if (!inlay.isValid || parent == null) return Dimension(0, 0)
+
+                val it: Dimension = component!!.preferredSize
+                val xOffsetPosition = it.width + getXOffsetPosition(inlay)
+                val insets = component!!.getInsets()
+
+                return Dimension(xOffsetPosition, it.height + insets.height)
+            }
+
+            override fun minimumLayoutSize(parent: Container?): Dimension {
+                if (!inlay.isValid || parent == null) return Dimension(0, 0)
+
+                val it: Dimension = component!!.getMinimumSize()
+                val xOffsetPosition = it.width + getXOffsetPosition(inlay)
+                val insets = component!!.getInsets()
+
+                return Dimension(xOffsetPosition, it.height + insets.height)
+            }
+
+            override fun layoutContainer(parent: Container?) {
+                if (inlay.isValid) {
+                    var size = parent?.size
+                    if (size == null) {
+                        size = Dimension(0, 0)
+                    }
+                    val size2: Dimension = size
+                    val x = getXOffsetPosition(inlay)
+                    component!!.setBounds(x, 0, size2.width - x, size2.height)
+
+                    val scrollPane = (inlay.editor as EditorEx).scrollPane
+                    panel.setBounds(scrollPane.viewport.viewRect.x - 1, 0, 5, size2.height)
+                }
+            }
+        })
     }
 
     companion object {
@@ -81,7 +116,6 @@ open class InlayPanel<T : JComponent?>(var component: T) : JPanel() {
 
             val inlayElement =
                 editor.inlayModel.addBlockElement(offset, properties, inlayRenderer) ?: return null
-
 
             ComponentInlaysContainer.addInlay(inlayElement)
 
