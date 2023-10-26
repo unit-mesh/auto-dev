@@ -6,13 +6,11 @@ import com.intellij.ide.KeyboardAwareFocusOwner
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.editor.Inlay
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.psi.PsiFile
-import com.intellij.temporary.inlay.InlayComponent
 import com.intellij.temporary.inlay.InlayPanel
 import com.intellij.temporary.inlay.minimumWidth
 import com.intellij.ui.scale.JBUIScale

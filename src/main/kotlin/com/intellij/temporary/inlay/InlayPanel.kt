@@ -2,7 +2,6 @@ package com.intellij.temporary.inlay
 
 import cc.unitmesh.devti.actions.quick.QuickPrompt
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.editor.EditorCustomElementRenderer
 import com.intellij.openapi.editor.Inlay
 import com.intellij.openapi.editor.InlayProperties
 import com.intellij.openapi.editor.event.VisibleAreaEvent
@@ -32,9 +31,9 @@ open class InlayPanel<T : JComponent?>(var component: T) : JPanel() {
                 setBorder(JBUI.Borders.empty() as Border)
             }
 
-            override fun paintComponent(g: Graphics?) {
+            override fun paintComponent(g: Graphics) {
                 super.paintComponent(g)
-                val create: Graphics2D? = g?.create() as Graphics2D?
+                val create: Graphics2D? = g.create() as Graphics2D?
                 try {
                     create!!.paint2DLine(
                         JBPoint(0, 0),
@@ -75,16 +74,13 @@ open class InlayPanel<T : JComponent?>(var component: T) : JPanel() {
 
     companion object {
         fun add(editor: EditorEx, offset: Int, component: QuickPrompt): InlayPanel<QuickPrompt>? {
+            val properties = InlayProperties().showAbove(false).showWhenFolded(true);
+
+            val inlayRender = InlayRender(component)
             val inlayPanel = InlayPanel(component)
 
-            val properties = InlayProperties().showAbove(true)
-                .showWhenFolded(true);
-
-            val inlayComponent = InlayComponent(component)
-            inlayComponent.updateWidth(InlayComponent.calculateMaxWidth(editor.scrollPane))
-
             val inlayElement =
-                editor.inlayModel.addBlockElement(offset, properties, inlayComponent) ?: return null
+                editor.inlayModel.addBlockElement(offset, properties, inlayRender) ?: return null
 
             inlayPanel.setupPane(inlayElement)
             editor.contentComponent.add(inlayPanel)
