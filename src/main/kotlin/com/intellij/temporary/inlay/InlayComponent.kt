@@ -6,13 +6,10 @@ import com.intellij.openapi.editor.InlayProperties
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.observable.util.whenDisposed
-import com.intellij.temporary.inlay.presentation.LLMTextInlayPainter
-import com.intellij.util.ui.JBUI
 import java.awt.*
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.awt.event.ComponentListener
-import java.awt.geom.Rectangle2D
 import javax.swing.JComponent
 import javax.swing.JScrollPane
 import kotlin.math.max
@@ -24,10 +21,6 @@ class InlayComponent<T : JComponent?>(@JvmField var component: T) : JComponent()
     override fun paint(inlay: Inlay<*>, g: Graphics, targetRegion: Rectangle, textAttributes: TextAttributes) {
         if (bounds == inlay.bounds || inlay.bounds == null) return
         this.component!!.size = inlay.bounds!!.size
-    }
-
-    override fun paint(inlay: Inlay<*>, g: Graphics2D, targetRegion: Rectangle2D, textAttributes: TextAttributes) {
-        super<EditorCustomElementRenderer>.paint(inlay, g, targetRegion, textAttributes)
     }
 
     init {
@@ -44,33 +37,32 @@ class InlayComponent<T : JComponent?>(@JvmField var component: T) : JComponent()
             editor: EditorEx,
             offset: Int,
             properties: InlayProperties,
-            com: T,
+            component: T,
         ): Inlay<InlayComponent<T>>? {
-            val inlayComponent: InlayComponent<T> = InlayComponent(com)
+            val inlayComponent: InlayComponent<T> = InlayComponent(component)
             inlayComponent.updateWidth(calculateMaxWidth(editor.scrollPane))
 
-            val addBlockElement =
-                editor.inlayModel.addBlockElement(offset, properties, inlayComponent as EditorCustomElementRenderer)
+            val inlayElement =
+                editor.inlayModel.addBlockElement(offset, properties, inlayComponent)
                     ?: return null
 
-            inlayComponent.add(com)
+            inlayComponent.add(component)
             editor.contentComponent.add(inlayComponent)
 
             val componentListener: ComponentListener = object : ComponentAdapter() {
                 override fun componentResized(e: ComponentEvent?) {
-                    val calculateMaxWidth: Int = calculateMaxWidth(editor.scrollPane)
-                    inlayComponent.updateWidth(calculateMaxWidth)
-                    addBlockElement.update()
+                    inlayComponent.updateWidth(calculateMaxWidth(editor.scrollPane))
+                    inlayElement.update()
                 }
             }
 
             editor.scrollPane.viewport.addComponentListener(componentListener)
-            addBlockElement.whenDisposed {
+            inlayElement.whenDisposed {
                 editor.contentComponent.remove(inlayComponent)
                 editor.scrollPane.viewport.removeComponentListener(componentListener)
             }
 
-            return addBlockElement as Inlay<InlayComponent<T>>
+            return inlayElement
         }
 
         fun calculateMaxWidth(scrollPane: JScrollPane): Int {
