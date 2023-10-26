@@ -8,15 +8,15 @@ import java.io.StringWriter
 import java.nio.charset.Charset
 
 class TemplateRender(pathPrefix: String) {
-    private val classLoader: ClassLoader = this.javaClass.classLoader
     private val defaultPrefix: String = pathPrefix.trimEnd('/')
     private val velocityContext = VelocityContext()
     protected val splitter = TemplateRoleSplitter()
     var context: Any = ""
 
+    // todo: add default
     fun getTemplate(filename: String): String {
         val path = "$defaultPrefix/$filename"
-        val resourceUrl = classLoader.getResource(path) ?: throw TemplateNotFoundError(path)
+        val resourceUrl = javaClass.classLoader.getResource(path) ?: throw TemplateNotFoundError(path)
         val bytes = resourceUrl.readBytes()
         return String(bytes, Charset.forName("UTF-8"))
     }

@@ -27,9 +27,7 @@ import org.changelog.CommitParser
 import java.nio.file.FileSystems
 import java.nio.file.PathMatcher
 
-
 val githubUrlRegex: Regex = Regex("^(https?://|git://)?(www\\.)?github\\.com/[\\w-]+/[\\w-]+(/.*)?\$")
-
 
 class CodeReviewAction : ChatBaseAction() {
     override fun getActionType(): ChatActionType = ChatActionType.CODE_REVIEW
@@ -44,7 +42,6 @@ class CodeReviewAction : ChatBaseAction() {
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
-
 
         // Make changes available for diff action
         val vcsLog = event.getData(VcsLogDataKeys.VCS_LOG)
