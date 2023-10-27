@@ -50,12 +50,7 @@ open class InlayPanel<T : JComponent?>(var component: T) : JPanel() {
             }
         }
 
-        visibleAreaListener =
-            VisibleAreaListener { v1: VisibleAreaEvent? ->
-                if (v1 != null) {
-                    invalidate()
-                }
-            }
+        visibleAreaListener = VisibleAreaListener { invalidate() }
     }
 
     protected open fun setupPane(inlay: Inlay<*>) {
