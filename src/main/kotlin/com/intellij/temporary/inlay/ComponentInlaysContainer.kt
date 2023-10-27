@@ -54,6 +54,7 @@ internal class ComponentInlaysContainer(val editor: Editor) : JComponent() {
 
         bounds = SwingUtilities.calculateInnerArea(content, null as Rectangle?)
         inlays.forEach {
+//             it.renderer.component.setSize(bounds.width, it.renderer.inlaySize.height)
             it.renderer.component.size = it.renderer.inlaySize
         }
     }
@@ -64,13 +65,13 @@ internal class ComponentInlaysContainer(val editor: Editor) : JComponent() {
             val editor: Editor = inlay.editor
             var component = editor.getUserData(INLAYS_CONTAINER)
             if (component == null) {
-                val componentInlaysContainer = ComponentInlaysContainer(editor)
-                editor.putUserData(INLAYS_CONTAINER, componentInlaysContainer)
+                val newContainer = ComponentInlaysContainer(editor)
+                editor.putUserData(INLAYS_CONTAINER, newContainer)
 
-                editor.contentComponent.add(componentInlaysContainer)
-                editor.contentComponent.addComponentListener(componentInlaysContainer.editorResizeListener)
+                editor.contentComponent.add(newContainer)
+                editor.contentComponent.addComponentListener(newContainer.editorResizeListener)
 
-                component = componentInlaysContainer
+                component = newContainer
             }
 
             component.getInlays().add(inlay)

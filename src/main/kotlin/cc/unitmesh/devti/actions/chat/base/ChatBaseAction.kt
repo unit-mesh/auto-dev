@@ -12,7 +12,7 @@ import com.intellij.openapi.diagnostic.logger
 
 abstract class ChatBaseAction : AnAction() {
     companion object {
-        private val logger = logger<OpenAIProvider>()
+        private val logger = logger<ChatBaseAction>()
     }
 
     open fun getReplaceableAction(event: AnActionEvent): ((response: String) -> Unit)? = null
@@ -38,7 +38,9 @@ abstract class ChatBaseAction : AnAction() {
         val suffixText = document?.text?.substring(lineEndOffset) ?: ""
 
         val prompter = ContextPrompter.prompter(file?.language?.displayName ?: "")
+
         logger.info("use prompter: ${prompter.javaClass}")
+
         val element = event.getData(CommonDataKeys.PSI_ELEMENT)
 
         prompter.initContext(getActionType(), prefixText, file, project, caretModel?.offset ?: 0, element)
