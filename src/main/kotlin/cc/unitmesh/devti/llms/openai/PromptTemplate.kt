@@ -60,20 +60,6 @@ class PromptTemplate {
             .replace("{spec}", spec ?: "")
     }
 
-    fun autoComment(methodCode: String): String {
-        val promptText: InputStream = getResource("copilot/code_comments")!!
-        val promptTextString = promptText.bufferedReader().use { it.readText() }
-        return promptTextString
-            .replace("{code}", methodCode)
-    }
-
-    fun findBug(text: String): String {
-        val promptText: InputStream = getResource("copilot/find_bug")!!
-        val promptTextString = promptText.bufferedReader().use { it.readText() }
-        return promptTextString
-            .replace("{code}", text)
-    }
-
     fun createServiceAndRepository(controller: @NlsSafe String): String {
         val promptText: InputStream = getResource("create_service_and_repository")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
