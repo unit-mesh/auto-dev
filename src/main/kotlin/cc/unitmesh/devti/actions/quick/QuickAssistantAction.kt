@@ -14,6 +14,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.temporary.inlay.InlayPanel
 import com.intellij.temporary.inlay.minimumWidth
 import com.intellij.ui.scale.JBUIScale
@@ -32,15 +33,15 @@ class QuickAssistantAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val dataContext = e.dataContext
         val editor = dataContext.getData(CommonDataKeys.EDITOR) ?: return
-        val sourceFile = dataContext.getData(CommonDataKeys.PSI_FILE) ?: return
         val offset = editor.caretModel.offset
         val project = dataContext.getData(CommonDataKeys.PROJECT) ?: return
         val element = e.getData(CommonDataKeys.PSI_ELEMENT)
+        val sourceFile = dataContext.getData(CommonDataKeys.PSI_FILE) ?: return
 
         val promptInlay: InlayPanel<QuickPrompt>? =
             InlayPanel.add(editor as EditorEx, offset, QuickPrompt())
 
-        promptInlay?.let { doExecute(it, project, editor, element) }
+        promptInlay?.let { doExecute(it, project, editor, element, sourceFile) }
     }
 
     private var isCanceled: Boolean = false
@@ -49,14 +50,21 @@ class QuickAssistantAction : AnAction() {
         inlay: InlayPanel<QuickPrompt>,
         project: Project,
         editor: EditorEx,
-        element: PsiElement?
+        element: PsiElement?,
+        sourceFile: PsiFile,
     ) {
         val component = inlay.component
 
         val actionMap = component.actionMap
+        val language = sourceFile.language
+
         actionMap.put(QUICK_ASSISTANT_SUBMIT_ACTION, object : AbstractAction() {
             override fun actionPerformed(e: ActionEvent?) {
-                val text = component.getText()
+                val text =
+                    """Generate a concise code snippet with no extra text, description, or comments. 
+                        |The code should achieve the following task: ${component.getText()}"""
+                        .trimMargin()
+
                 val offset = editor.caretModel.offset
 
                 val request = runReadAction {

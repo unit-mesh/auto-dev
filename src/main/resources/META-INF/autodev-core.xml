@@ -196,6 +196,8 @@
                 text="Quick Assistant"
                 description="You can custom any assistant as you want!"
         >
+            <keyboard-shortcut keymap="$default" first-keystroke="control BACK_SLASH"/>
+
             <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
         </action>
 
