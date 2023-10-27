@@ -1,26 +1,22 @@
 package cc.unitmesh.devti.actions.quick
 
-import cc.unitmesh.devti.InsertUtil
-import cc.unitmesh.devti.LLMCoroutineScope
 import cc.unitmesh.devti.actions.quick.QuickPrompt.Companion.QUICK_ASSISTANT_CANCEL_ACTION
 import cc.unitmesh.devti.actions.quick.QuickPrompt.Companion.QUICK_ASSISTANT_SUBMIT_ACTION
-import cc.unitmesh.devti.llms.LlmFactory
+import cc.unitmesh.devti.intentions.action.task.BaseCompletionTask
+import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
 import com.intellij.ide.KeyboardAwareFocusOwner
 import com.intellij.openapi.actionSystem.*
-import com.intellij.openapi.application.invokeLater
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.ex.EditorEx
-import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFocusManager
-import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiElement
 import com.intellij.temporary.inlay.InlayPanel
 import com.intellij.temporary.inlay.minimumWidth
 import com.intellij.ui.scale.JBUIScale
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
 import java.awt.event.KeyEvent.*
@@ -39,50 +35,41 @@ class QuickAssistantAction : AnAction() {
         val sourceFile = dataContext.getData(CommonDataKeys.PSI_FILE) ?: return
         val offset = editor.caretModel.offset
         val project = dataContext.getData(CommonDataKeys.PROJECT) ?: return
+        val element = e.getData(CommonDataKeys.PSI_ELEMENT)
 
         val promptInlay: InlayPanel<QuickPrompt>? =
             InlayPanel.add(editor as EditorEx, offset, QuickPrompt())
 
-        promptInlay?.let { doExecute(it, sourceFile, project, editor) }
+        promptInlay?.let { doExecute(it, project, editor, element) }
     }
 
     private var isCanceled: Boolean = false
 
-    private fun doExecute(inlay: InlayPanel<QuickPrompt>, sourceFile: PsiFile, project: Project, editor: EditorEx) {
+    private fun doExecute(
+        inlay: InlayPanel<QuickPrompt>,
+        project: Project,
+        editor: EditorEx,
+        element: PsiElement?
+    ) {
         val component = inlay.component
 
         val actionMap = component.actionMap
         actionMap.put(QUICK_ASSISTANT_SUBMIT_ACTION, object : AbstractAction() {
             override fun actionPerformed(e: ActionEvent?) {
                 val text = component.getText()
-                val flow = LlmFactory().create(project).stream(text, "")
-                var currentOffset = editor.caretModel.offset
+                val offset = editor.caretModel.offset
 
-                DumbAwareAction.create {
-                    isCanceled = true
-                }.registerCustomShortcutSet(
-                    CustomShortcutSet(
-                        KeyboardShortcut(KeyStroke.getKeyStroke(VK_ESCAPE, 0), null),
-                    ),
-                    editor.component
-                )
+                val request = runReadAction {
+                    CodeCompletionRequest.create(editor, offset, element, null, text)
+                } ?: return
 
-                LLMCoroutineScope.scope(project).launch {
-                    flow.cancellable().collect { char ->
-                        if (isCanceled) {
-                            cancel()
-                            return@collect
-                        }
-
-                        invokeLater {
-                            if (!isCanceled) {
-                                InsertUtil.insertStreamingToDoc(project, char, editor, currentOffset)
-                                currentOffset += char.length
-                            }
-                        }
-                    }
+                val task = object : BaseCompletionTask(request) {
+                    override fun keepHistory(): Boolean = false
+                    override fun promptText(): String = text
                 }
 
+                ProgressManager.getInstance()
+                    .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
                 Disposer.dispose(inlay.inlay!!)
             }
         })
