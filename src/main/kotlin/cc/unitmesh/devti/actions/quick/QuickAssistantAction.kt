@@ -1,10 +1,10 @@
 package cc.unitmesh.devti.actions.quick
 
-import cc.unitmesh.devti.actions.quick.QuickPrompt.Companion.QUICK_ASSISTANT_CANCEL_ACTION
-import cc.unitmesh.devti.actions.quick.QuickPrompt.Companion.QUICK_ASSISTANT_SUBMIT_ACTION
+import cc.unitmesh.devti.gui.quick.QuickPromptField
+import cc.unitmesh.devti.gui.quick.QuickPromptField.Companion.QUICK_ASSISTANT_CANCEL_ACTION
+import cc.unitmesh.devti.gui.quick.QuickPromptField.Companion.QUICK_ASSISTANT_SUBMIT_ACTION
 import cc.unitmesh.devti.intentions.action.task.BaseCompletionTask
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
-import com.intellij.ide.KeyboardAwareFocusOwner
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.ex.EditorEx
@@ -16,14 +16,8 @@ import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.temporary.inlay.InlayPanel
-import com.intellij.temporary.inlay.minimumWidth
-import com.intellij.ui.scale.JBUIScale
 import java.awt.event.ActionEvent
-import java.awt.event.KeyEvent
-import java.awt.event.KeyEvent.*
 import javax.swing.AbstractAction
-import javax.swing.JTextField
-import javax.swing.KeyStroke
 
 /**
  * A quick insight action is an action that can be triggered by a user,
@@ -38,16 +32,14 @@ class QuickAssistantAction : AnAction() {
         val element = e.getData(CommonDataKeys.PSI_ELEMENT)
         val sourceFile = dataContext.getData(CommonDataKeys.PSI_FILE) ?: return
 
-        val promptInlay: InlayPanel<QuickPrompt>? =
-            InlayPanel.add(editor as EditorEx, offset, QuickPrompt())
+        val promptInlay: InlayPanel<QuickPromptField>? =
+            InlayPanel.add(editor as EditorEx, offset, QuickPromptField())
 
         promptInlay?.let { doExecute(it, project, editor, element, sourceFile) }
     }
 
-    private var isCanceled: Boolean = false
-
     private fun doExecute(
-        inlay: InlayPanel<QuickPrompt>,
+        inlay: InlayPanel<QuickPromptField>,
         project: Project,
         editor: EditorEx,
         element: PsiElement?,
@@ -56,7 +48,6 @@ class QuickAssistantAction : AnAction() {
         val component = inlay.component
 
         val actionMap = component.actionMap
-        val language = sourceFile.language
 
         actionMap.put(QUICK_ASSISTANT_SUBMIT_ACTION, object : AbstractAction() {
             override fun actionPerformed(e: ActionEvent?) {
@@ -92,19 +83,3 @@ class QuickAssistantAction : AnAction() {
     }
 }
 
-class QuickPrompt : JTextField(), KeyboardAwareFocusOwner {
-    override fun skipKeyEventDispatcher(event: KeyEvent): Boolean = true
-
-    init {
-        this.minimumWidth = JBUIScale.scale(480)
-        this.preferredSize = this.minimumSize
-
-        inputMap.put(KeyStroke.getKeyStroke(VK_ESCAPE, 0), QUICK_ASSISTANT_CANCEL_ACTION)
-        inputMap.put(KeyStroke.getKeyStroke(VK_ENTER, 0), QUICK_ASSISTANT_SUBMIT_ACTION)
-    }
-
-    companion object {
-        const val QUICK_ASSISTANT_CANCEL_ACTION = "quick.assistant.cancel"
-        const val QUICK_ASSISTANT_SUBMIT_ACTION = "quick.assistant.submit"
-    }
-}

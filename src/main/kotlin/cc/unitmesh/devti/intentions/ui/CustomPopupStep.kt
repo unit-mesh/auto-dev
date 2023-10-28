@@ -7,7 +7,6 @@ import com.intellij.openapi.ui.popup.ListSeparator
 import com.intellij.openapi.ui.popup.PopupStep
 import com.intellij.openapi.ui.popup.util.BaseListPopupStep
 import com.intellij.psi.PsiFile
-import org.jetbrains.annotations.Nls
 import kotlin.jvm.internal.Intrinsics
 
 class CustomPopupStep(
@@ -15,7 +14,7 @@ class CustomPopupStep(
     val project: Project,
     val editor: Editor,
     val psiFile: PsiFile,
-    val popupTitle: @Nls String
+    val popupTitle: String,
 ) : BaseListPopupStep<IntentionAction>(popupTitle, intentionAction) {
     override fun getTextFor(value: IntentionAction): String = value.text
 
@@ -23,7 +22,8 @@ class CustomPopupStep(
         if (value != null && Intrinsics.areEqual(value, intentionAction)) ListSeparator() else null
 
     override fun onChosen(selectedValue: IntentionAction?, finalChoice: Boolean): PopupStep<*>? {
-        val runnable = Runnable { selectedValue!!.invoke(project, editor, psiFile) }
-        return doFinalStep(runnable)
+        return doFinalStep {
+            selectedValue!!.invoke(project, editor, psiFile)
+        }
     }
 }

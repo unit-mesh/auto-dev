@@ -2,9 +2,9 @@ package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
-import cc.unitmesh.devti.llms.tokenizer.LLM_MAX_TOKEN
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.llms.tokenizer.TokenizerImpl
+import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Presentation
@@ -170,7 +170,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         val text = input.getDocument().text
         val textLength = (this.tokenizer)?.count(text) ?: text.length
 
-        val exceed: Int = textLength - LLM_MAX_TOKEN
+        val exceed: Int = textLength - AutoDevSettingsState.maxTokenLength
         if (exceed <= 0) return null
 
         val errorMessage = AutoDevBundle.message("chat.too.long.user.message", exceed)

@@ -1,9 +1,10 @@
 // Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.intellij.temporary.error
 
-import cc.unitmesh.devti.llms.tokenizer.LLM_MAX_TOKEN
+import cc.unitmesh.devti.isInProject
 import cc.unitmesh.devti.llms.tokenizer.TokenizerImpl
 import cc.unitmesh.devti.prompting.BasePromptText
+import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.execution.filters.FileHyperlinkInfo
 import com.intellij.execution.impl.ConsoleViewImpl
 import com.intellij.execution.impl.EditorHyperlinkSupport
@@ -19,7 +20,6 @@ import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.refactoring.suggested.range
-import cc.unitmesh.devti.isInProject
 import kotlin.math.max
 
 object ErrorMessageProcessor {
@@ -70,7 +70,7 @@ object ErrorMessageProcessor {
         val extractedErrorPlaces: List<ErrorPlace> =
             extractErrorPlaces(project, description.consoleLineFrom, description.consoleLineTo, description.editor)
 
-        val errorPromptBuilder = ErrorPromptBuilder(LLM_MAX_TOKEN, TokenizerImpl.INSTANCE)
+        val errorPromptBuilder = ErrorPromptBuilder(AutoDevSettingsState.maxTokenLength, TokenizerImpl.INSTANCE)
         return errorPromptBuilder.buildPrompt(extractedText, extractedErrorPlaces)
     }
 

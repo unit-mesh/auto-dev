@@ -7,9 +7,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.command.WriteCommandAction
 
 class CodeCompleteChatAction : ChatBaseAction() {
-    override fun getActionType(): ChatActionType {
-        return ChatActionType.CODE_COMPLETE
-    }
+    override fun getActionType(): ChatActionType = ChatActionType.CODE_COMPLETE
 
     override fun getReplaceableAction(event: AnActionEvent): (response: String) -> Unit {
         val editor = event.getRequiredData(CommonDataKeys.EDITOR)

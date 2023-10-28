@@ -4,7 +4,5 @@ import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 
 class GenerateTestAction : ChatBaseAction() {
-    override fun getActionType(): ChatActionType {
-        return ChatActionType.GENERATE_TEST
-    }
+    override fun getActionType(): ChatActionType = ChatActionType.GENERATE_TEST
 }

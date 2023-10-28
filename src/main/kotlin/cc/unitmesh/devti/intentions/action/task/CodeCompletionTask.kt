@@ -45,9 +45,5 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) : BaseCompl
             "complete code for given code, just return rest part of code.: \n$commentPrefix\n$chunksString\n$prefix\n\nreturn rest code:"
         }
     }
-
-    companion object {
-        val logger = logger<CodeCompletionIntention>()
-    }
 }
 

@@ -19,7 +19,6 @@ class ReleaseNoteSuggestionAction : AnAction() {
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project
-
         val vcsLog = e.getData(VcsLogDataKeys.VCS_LOG)
         val stringList = vcsLog?.let { log ->
             log.selectedShortDetails.map { it.fullMessage }
@@ -37,13 +36,12 @@ class ReleaseNoteSuggestionAction : AnAction() {
         contentManager?.addContent(content!!)
 
         val commitMsgs = stringList.joinToString(",")
+        val prompt = "generate release note based on follow info: $commitMsgs"
+
         toolWindowManager?.activate {
             chatCodingService.handlePromptAndResponse(contentPanel, object : ContextPrompter() {
-                override fun displayPrompt(): String =
-                    "generate release note based on follow info: $commitMsgs"
-
-                override fun requestPrompt(): String =
-                    "generate release note based on follow info: $commitMsgs"
+                override fun displayPrompt(): String = prompt
+                override fun requestPrompt(): String = prompt
             }, null)
         }
     }

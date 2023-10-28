@@ -44,9 +44,7 @@ class CustomDocumentationConfig(
 class CustomDocumentationExample(
     val question: String,
     val answer: String,
-) {
-
-}
+)
 
 @Serializable
 enum class LivingDocumentationType {

@@ -1,10 +1,9 @@
 package com.intellij.temporary.inlay
 
-import cc.unitmesh.devti.actions.quick.QuickPrompt
+import cc.unitmesh.devti.gui.quick.QuickPromptField
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.Inlay
 import com.intellij.openapi.editor.InlayProperties
-import com.intellij.openapi.editor.event.VisibleAreaEvent
 import com.intellij.openapi.editor.event.VisibleAreaListener
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.rd.paint2DLine
@@ -100,7 +99,7 @@ open class InlayPanel<T : JComponent?>(var component: T) : JPanel() {
     }
 
     companion object {
-        fun add(editor: EditorEx, offset: Int, component: QuickPrompt): InlayPanel<QuickPrompt>? {
+        fun add(editor: EditorEx, offset: Int, component: QuickPromptField): InlayPanel<QuickPromptField>? {
             val properties = InlayProperties().showAbove(false).showWhenFolded(true);
 
             val inlayPanel = InlayPanel(component)

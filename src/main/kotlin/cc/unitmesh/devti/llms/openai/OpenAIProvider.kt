@@ -58,7 +58,7 @@ class OpenAIProvider(val project: Project) : LLMProvider {
         get() = AutoDevSettingsState.getInstance().openAiKey
 
     private val maxTokenLength: Int
-        get() = AutoDevSettingsState.maxTokenLength
+        get() = AutoDevSettingsState.getInstance().fetchMaxTokenLength()
 
     private val messages: MutableList<ChatMessage> = ArrayList()
     private var historyMessageLength: Int = 0
