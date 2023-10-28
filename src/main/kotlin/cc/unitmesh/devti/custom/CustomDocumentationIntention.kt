@@ -23,8 +23,7 @@ class CustomDocumentationIntention(override val config: CustomDocumentationConfi
     }
 
     companion object {
-        fun create(it: CustomDocumentationConfig): CustomDocumentationIntention {
-            return CustomDocumentationIntention(it)
-        }
+        fun create(config: CustomDocumentationConfig): CustomDocumentationIntention =
+            CustomDocumentationIntention(config)
     }
 }

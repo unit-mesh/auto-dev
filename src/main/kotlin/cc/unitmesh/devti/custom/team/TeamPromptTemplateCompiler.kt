@@ -7,14 +7,13 @@ import cc.unitmesh.devti.provider.context.ChatOrigin
 import com.intellij.lang.Language
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiNameIdentifierOwner
 import kotlinx.coroutines.runBlocking
 import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.Velocity
 import java.io.StringWriter
-import com.intellij.psi.PsiNameIdentifierOwner
 
 class TeamPromptTemplateCompiler(
     val language: Language,
@@ -41,20 +40,6 @@ class TeamPromptTemplateCompiler(
         configForLanguage()
         configForFramework()
 
-        // without the following class loader initialization, I get the
-        // following exception when running as Eclipse plugin:
-        // org.apache.velocity.exception.VelocityException: The specified
-        // class for ResourceManager
-        // (org.apache.velocity.runtime.resource.ResourceManagerImpl) does not
-        // implement org.apache.velocity.runtime.resource.ResourceManager;
-        // Velocity is not initialized correctly.
-        // without the following class loader initialization, I get the
-        // following exception when running as Eclipse plugin:
-        // org.apache.velocity.exception.VelocityException: The specified
-        // class for ResourceManager
-        // (org.apache.velocity.runtime.resource.ResourceManagerImpl) does not
-        // implement org.apache.velocity.runtime.resource.ResourceManager;
-        // Velocity is not initialized correctly.
         val oldContextClassLoader = Thread.currentThread().getContextClassLoader()
         Thread.currentThread().setContextClassLoader(TeamPromptTemplateCompiler::class.java.getClassLoader())
 
@@ -102,7 +87,7 @@ class TeamPromptTemplateCompiler(
         )
     }
 
-    fun set(key: String, value: @NlsSafe String) {
+    fun set(key: String, value: String) {
         velocityContext.put(key, value)
     }
 }

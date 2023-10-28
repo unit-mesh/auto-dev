@@ -4,7 +4,7 @@ class SelectionVariableResolver(
     val languageName: String,
     val code: String,
 ) : VariableResolver {
-    override val type: CustomIntentionVariableType = CustomIntentionVariableType.SELECTION
+    override val type: CustomVariableType = CustomVariableType.SELECTION
 
     override fun resolve(): String {
         return """

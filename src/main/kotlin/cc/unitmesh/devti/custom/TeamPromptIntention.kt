@@ -35,26 +35,26 @@ class TeamPromptIntention(private val intentionConfig: TeamPromptAction) : Abstr
     override fun getActionType(): ChatActionType = ChatActionType.CUSTOM_ACTION
 
     companion object {
-        fun create(intentionConfig: TeamPromptAction): TeamPromptIntention {
-            return TeamPromptIntention(intentionConfig)
-        }
+        fun create(intentionConfig: TeamPromptAction): TeamPromptIntention = TeamPromptIntention(intentionConfig)
     }
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (editor == null || file == null) return
-        val range = elementWithRange(editor, file, project) ?: return
+        val elementPair = elementWithRange(editor, file, project) ?: return
+        val textRange = getCurrentSelectionAsRange(editor)
 
         val language = file.language
-        val textRange = getCurrentSelectionAsRange(editor)
         val element = calculateFrontendElementToExplain(project, file, textRange)
 
-        val templateCompiler = TeamPromptTemplateCompiler(language, file, element, editor)
-        templateCompiler.set("selection", range.first)
-        templateCompiler.set("beforeCursor", file.text.substring(0, editor.caretModel.offset))
-        templateCompiler.set("afterCursor", file.text.substring(editor.caretModel.offset))
+        val compiler = TeamPromptTemplateCompiler(language, file, element, editor)
 
-        val msgs = intentionConfig.actionPrompt.msgs.map {
-            it.copy(content = templateCompiler.compile(it.content))
+        compiler.set("selection", elementPair.first)
+        compiler.set("beforeCursor", file.text.substring(0, editor.caretModel.offset))
+        compiler.set("afterCursor", file.text.substring(editor.caretModel.offset))
+
+        val chatMessages = intentionConfig.actionPrompt.msgs
+        val msgs = chatMessages.map {
+            it.copy(content = compiler.compile(it.content))
         }
 
         val task: Task.Backgroundable = TeamPromptExecTask(project, msgs, editor, intentionConfig, element)
