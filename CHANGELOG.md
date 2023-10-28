@@ -1,6 +1,35 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v1.3.0...v) (2023-10-18)
+# [](https://github.com/unit-mesh/auto-dev/compare/v1.4.1...v) (2023-10-28)
 
 ## [Unreleased]
+
+## [1.4.1](https://github.com/unit-mesh/auto-dev/compare/v1.4.0...v[1.4.1]) (2023-10-28)
+
+### Bug Fixes
+- fix deps issues ([9bd7e8f](https://github.com/unit-mesh/auto-dev/commit/9bd7e8f3ecee4496bd7c397581dfec007979e653))
+- fix isue ([31c0ffe](https://github.com/unit-mesh/auto-dev/commit/31c0ffe44bba839ef76f7ee3bd30230f40fc1e6d))
+- fix js/ts scripts issues ([5b6f892](https://github.com/unit-mesh/auto-dev/commit/5b6f89206e240e21b3b9edb61be252fea807e0ec))
+- fix method no found issue ([8117c6a](https://github.com/unit-mesh/auto-dev/commit/8117c6a2ad2561a9c16917b480ed1b4842700558))
+- fix select element error issue ([a297df8](https://github.com/unit-mesh/auto-dev/commit/a297df87bf0a4ea9bfe64292fa9cc9c11c2ecd4c))
+- fix some read run action issue ([0368563](https://github.com/unit-mesh/auto-dev/commit/0368563b7b21927dcc31f06e1d8bc5d00d05ead4))
+- fix typos ([6d97635](https://github.com/unit-mesh/auto-dev/commit/6d97635b274a810ee14680bbcf411b995a738b7d))
+- fix write to test issues ([6ed83be](https://github.com/unit-mesh/auto-dev/commit/6ed83bec092971cf8116fb4e50c6d7a4a534ce83))
+
+### Features
+- **custom:** add support for kotlin language [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([b212ee2](https://github.com/unit-mesh/auto-dev/commit/b212ee22b85a2275d023faa1cd28f275c413a2c2))
+- **custom:** init for psi method [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([f7b057f](https://github.com/unit-mesh/auto-dev/commit/f7b057f26d7b61b6758d4863eb7221a8e808d451))
+- **custom:** init test method api for java [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([d67bdb1](https://github.com/unit-mesh/auto-dev/commit/d67bdb18befe7befb19db3ae6011a306aa036b27))
+- init custom promtp context provider for [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([3d912f2](https://github.com/unit-mesh/auto-dev/commit/3d912f2d26f7d95abc5d49048287800ac3c5a2d5))
+- **quick:** add dispose ([f1c2b9e](https://github.com/unit-mesh/auto-dev/commit/f1c2b9e7cf3ae30de260f3ed5aed74c15cfd7715))
+- **quick:** add quick keyboard short ([21eea39](https://github.com/unit-mesh/auto-dev/commit/21eea39c162ded942f38e06826d4e71e2f9fe9cd))
+- **quick:** init basic code insights ([c1df643](https://github.com/unit-mesh/auto-dev/commit/c1df6438f755c494bc4dc8560a50d03185b33fbe))
+- **quick:** init basic quick prompt ([232720f](https://github.com/unit-mesh/auto-dev/commit/232720f4faa4ecfef9250223194ec583d0f1cf06))
+- **quick:** init inlay panel layout ([20116b7](https://github.com/unit-mesh/auto-dev/commit/20116b7bedc816315dc150f3b59b025f8be3fbe6))
+- **quick:** make quick action works ([efaff71](https://github.com/unit-mesh/auto-dev/commit/efaff7183b922dd3bb9d1f77f88e3c8875f89869))
+- **quick:** make simplae code works ([b68f836](https://github.com/unit-mesh/auto-dev/commit/b68f8369e4ba79f122228adf493aca6034c1a8fb))
+- **sre:** add lost genius docker file support ([de075e8](https://github.com/unit-mesh/auto-dev/commit/de075e8a40ac35f45142d8f7c7ec4207157be378))
+- **sre:** init github actions support ([f7fcb86](https://github.com/unit-mesh/auto-dev/commit/f7fcb86316c1d5608f1d94409f04e53152621c37))
+- **sre:** make github action works ([bfd91bb](https://github.com/unit-mesh/auto-dev/commit/bfd91bbf22dd771879df7999cd3654d8f7c19e35))
+- **team:** add output to file support [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([094421f](https://github.com/unit-mesh/auto-dev/commit/094421f9c0d7b81fda54a8b2b4e7e4bb983d7974))
 
 ## [1.4.0](https://github.com/unit-mesh/auto-dev/compare/v1.3.0...v[1.4.0]) (2023-10-22)
 
@@ -667,7 +696,8 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.4.1...HEAD
+[1.4.1]: https://github.com/unit-mesh/auto-dev/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/unit-mesh/auto-dev/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/unit-mesh/auto-dev/compare/v1.2.5...v1.3.0
 [1.2.5]: https://github.com/unit-mesh/auto-dev/compare/v1.2.3...v1.2.5
