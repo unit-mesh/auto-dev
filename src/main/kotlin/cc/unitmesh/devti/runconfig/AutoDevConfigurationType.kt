@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.runconfig
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
 import cc.unitmesh.devti.runconfig.options.AutoDevConfigurationOptions
@@ -11,7 +12,12 @@ import com.intellij.openapi.components.BaseState
 import com.intellij.openapi.project.Project
 
 class AutoDevConfigurationType :
-    ConfigurationTypeBase("AutoDevConfiguration", "AutoDev", "AutoDev generator", AutoDevIcons.STORY) {
+    ConfigurationTypeBase(
+        "AutoDevConfiguration",
+        AutoDevBundle.message("name"),
+        "AutoDev generator",
+        AutoDevIcons.STORY
+    ) {
     val factory: ConfigurationFactory get() = configurationFactories.single()
 
     init {
