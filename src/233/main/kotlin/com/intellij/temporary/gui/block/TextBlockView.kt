@@ -96,7 +96,6 @@ class TextBlockView(private val block: MessageBlock) : MessageBlockView {
 
 
 internal class LineSpacingExtension(val lineSpacing: Float) : ExtendableHTMLViewFactory.Extension {
-
     override operator fun invoke(elem: Element, defaultView: View): View? {
         return if (defaultView !is ParagraphView) null
         else object : ParagraphView(elem) {
