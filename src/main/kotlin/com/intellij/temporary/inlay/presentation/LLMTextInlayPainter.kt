@@ -26,9 +26,9 @@ class LLMTextInlayPainter : ICodeVisionEntryBasePainter<String> {
         state: RangeCodeVisionModel.InlayState,
         hovered: Boolean,
     ) {
-        val point = Rectangle2D.Double(point.x.toDouble(), point.y.toDouble(), 0.0, 0.0)
+        val p = Rectangle2D.Double(point.x.toDouble(), point.y.toDouble(), 0.0, 0.0)
 
-        renderCodeBlock(editor, value, value.split("\n"), g, point, textAttributes)
+        renderCodeBlock(editor, value, value.split("\n"), g, p, textAttributes)
     }
 
     override fun size(editor: Editor, state: RangeCodeVisionModel.InlayState, value: String): Dimension {

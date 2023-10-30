@@ -6,12 +6,10 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorCustomElementRenderer
 import com.intellij.openapi.editor.Inlay
 import com.intellij.openapi.editor.markup.TextAttributes
-import org.apache.commons.lang.StringUtils
-import org.jetbrains.annotations.NonNls
 import java.awt.Graphics
 import java.awt.Rectangle
 
-class LLMInlayRenderer(editor: Editor, lines: List<String?>) : EditorCustomElementRenderer {
+class LLMInlayRenderer(editor: Editor, lines: List<String>) : EditorCustomElementRenderer {
     private val lines: List<String>
     private val content: String
     fun setCachedWidth(cachedWidth: Int) {
@@ -37,7 +35,7 @@ class LLMInlayRenderer(editor: Editor, lines: List<String?>) : EditorCustomEleme
 
     init {
         this.lines = replaceLeadingTabs(lines, 4)
-        content = StringUtils.join(lines, "\n")
+        content = lines.joinToString("\n")
         textAttributes = getTextAttributes(editor)
     }
 
@@ -53,9 +51,7 @@ class LLMInlayRenderer(editor: Editor, lines: List<String?>) : EditorCustomEleme
         return lines
     }
 
-    override fun getContextMenuGroupId(inlay: Inlay<*>): @NonNls String {
-        return "copilot.inlayContextMenu"
-    }
+    override fun getContextMenuGroupId(inlay: Inlay<*>): String = "copilot.inlayContextMenu"
 
     override fun calcHeightInPixels(inlay: Inlay<*>): Int {
         return if (cachedHeight < 0) {
