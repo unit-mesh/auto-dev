@@ -374,6 +374,7 @@ project(":") {
         implementation("com.knuddels:jtokkit:0.6.1")
 
         // junit
+        testImplementation("io.kotest:kotest-assertions-core:5.7.2")
         testImplementation("junit:junit:4.13.2")
         testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.9.3")
     }
