@@ -158,6 +158,4 @@ class LLMTextInlayPainter : ICodeVisionEntryBasePainter<String> {
             g2.dispose()
         }
     }
-
 }
-

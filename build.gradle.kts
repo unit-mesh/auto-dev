@@ -81,7 +81,7 @@ val ideaPlugins =
     )
 
 val baseIDE = prop("baseIDE")
-val platformVersion = prop("globalPlatformVersion").toInt()
+val platformVersion = prop("platformVersion").toInt()
 val ideaVersion = prop("ideaVersion")
 val golandVersion = prop("golandVersion")
 val pycharmVersion = prop("pycharmVersion")
@@ -155,6 +155,27 @@ allprojects {
 
     val testOutput = configurations.create("testOutput")
 
+
+    sourceSets {
+        main {
+            java.srcDirs("src/gen")
+            resources.srcDirs("src/$platformVersion/main/resources")
+        }
+        test {
+            resources.srcDirs("src/$platformVersion/test/resources")
+        }
+    }
+    kotlin {
+        sourceSets {
+            main {
+                kotlin.srcDirs("src/$platformVersion/main/kotlin")
+            }
+            test {
+                kotlin.srcDirs("src/$platformVersion/test/kotlin")
+            }
+        }
+    }
+
     dependencies {
         compileOnly(kotlin("stdlib-jdk8"))
         testOutput(sourceSets.getByName("test").output.classesDirs)
@@ -168,13 +189,12 @@ changelog {
     repositoryUrl.set(properties("pluginRepositoryUrl"))
 }
 
-
 project(":plugin") {
     apply {
         plugin("org.jetbrains.changelog")
     }
 
-    version = prop("pluginVersion")
+    version = prop("pluginVersion") + "-$platformVersion"
 
     intellij {
         pluginName.set(basePluginArchiveName)
@@ -320,6 +340,13 @@ project(":") {
     intellij {
         version.set(ideaVersion)
         plugins.set(ideaPlugins)
+    }
+
+    sourceSets {
+        main {
+            resources.srcDirs("src/main/resources-stable")
+            resources.srcDirs("src/$platformVersion/main/resources-stable")
+        }
     }
 
     dependencies {
