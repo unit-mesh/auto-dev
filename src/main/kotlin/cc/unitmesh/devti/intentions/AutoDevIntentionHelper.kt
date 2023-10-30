@@ -35,7 +35,7 @@ class AutoDevIntentionHelper : IntentionAction, Iconable {
     }
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
-        val intentions = getAiAssistantIntentions(project, editor, file)
+        val intentions = Util.getAiAssistantIntentions(project, editor, file)
 
         val title = AutoDevBundle.message("intentions.assistant.popup.title")
         val popupStep = CustomPopupStep(intentions, project, editor, file, title)
@@ -45,16 +45,14 @@ class AutoDevIntentionHelper : IntentionAction, Iconable {
         popup.showInBestPositionFor(editor)
     }
 
-    companion object {
-        val EP_NAME: ExtensionPointName<IntentionActionBean> =
-            ExtensionPointName<IntentionActionBean>("cc.unitmesh.autoDevIntention")
-
+    object Util {
+        val EP_NAME: ExtensionPointName<IntentionActionBean> = ExtensionPointName("cc.unitmesh.autoDevIntention")
         fun getAiAssistantIntentions(project: Project, editor: Editor, file: PsiFile): List<IntentionAction> {
             val extensionList = EP_NAME.extensionList
 
             val builtinIntentions = extensionList
                 .asSequence()
-                .map { (it as IntentionActionBean).instance }
+                .map { it.instance.asIntention() }
                 .filter { it.isAvailable(project, editor, file) }
                 .toList()
 
@@ -75,4 +73,5 @@ class AutoDevIntentionHelper : IntentionAction, Iconable {
             return actionList.map { it as AbstractChatIntention }.sortedByDescending { it.priority() }
         }
     }
+
 }
