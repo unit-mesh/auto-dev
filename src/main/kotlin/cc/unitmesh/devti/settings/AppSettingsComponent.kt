@@ -44,15 +44,6 @@ class AppSettingsComponent(settings: AutoDevSettingsState) {
 
     val project = ProjectManager.getInstance().openProjects.firstOrNull()
     private val customEngineResponseFormat = JBTextField()
-    // the JsonPathFileType
-//    private val customEngineResponseFormat by lazy {
-//        object : EditorTextField(project, JsonPathFileType.INSTANCE) {
-//
-//        }.apply {
-//            setOneLineMode(true)
-//            setPlaceholder(AutoDevBundle.message("autodev.custom.response.format.placeholder"))
-//        }
-//    }
 
     private val language = ComboBox(HUMAN_LANGUAGES)
     private val maxTokenLengthInput = JBTextField()

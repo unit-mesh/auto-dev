@@ -19,7 +19,7 @@ class DevtiAnnotator : Annotator {
             val (storySource, storyIdStr, acs) = matchResult.destructured
             val storyId = storyIdStr.toIntOrNull() ?: return null
 
-            val acList = acs.split(",").filter { it.isNotEmpty() }
+            val acList = acs.split(",").filter(String::isNotEmpty)
             return StoryConfig(storyId, storySource, acList)
         }
     }

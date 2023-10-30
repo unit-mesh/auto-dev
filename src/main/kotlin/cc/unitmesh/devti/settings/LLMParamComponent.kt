@@ -28,9 +28,7 @@ operator fun <V> Reactive<V>.setValue(thisRef: Any?, property: KProperty<*>, val
     onChange(value)
 }
 
-operator fun <V> Reactive<V>.getValue(thisRef: Any?, property: KProperty<*>): V {
-    return this.value
-}
+operator fun <V> Reactive<V>.getValue(thisRef: Any?, property: KProperty<*>): V = this.value
 
 fun ReactiveTextField(param: LLMParam, initBlock: JBTextField.(LLMParam) -> Unit = {}): JBTextField {
     val component = JBTextField(param.value)
