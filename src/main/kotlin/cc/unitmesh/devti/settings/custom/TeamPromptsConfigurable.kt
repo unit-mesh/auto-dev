@@ -18,7 +18,13 @@ class PromptLibraryConfigurable(project: Project) : BoundConfigurable(AutoDevBun
 
     override fun createPanel(): DialogPanel = panel {
         row(AutoDevBundle.message("settings.external.team.prompts.path")) {
+            // TODO: spike better way for support 213 and 221
             fullWidthCell(teamPromptsField)
+                .bind(
+                    componentGet = { it.text },
+                    componentSet = { component, value -> component.text = value },
+                    prop = state::teamPromptsDir.toMutableProperty()
+                )
         }
 
         onApply {

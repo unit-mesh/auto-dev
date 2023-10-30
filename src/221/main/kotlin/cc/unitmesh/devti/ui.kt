@@ -9,3 +9,4 @@ fun <T : JComponent> Row.fullWidthCell(component: T): Cell<T> {
     return cell(component)
         .horizontalAlign(HorizontalAlign.FILL)
 }
+

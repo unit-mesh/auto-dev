@@ -30,7 +30,13 @@ class CoUnitToolConfigurable(project: Project) :
         }
 
         row(AutoDevBundle.message("settings.external.counit.server.address.label")) {
+            // TODO: spike better way for support 213 and 221
             fullWidthCell(serverAddress)
+                .bind(
+                    componentGet = { it.text },
+                    componentSet = { component, value -> component.text = value },
+                    prop = state::serverAddress.toMutableProperty()
+                )
         }
 
         row(AutoDevBundle.message("settings.external.counit.location.label")) {
