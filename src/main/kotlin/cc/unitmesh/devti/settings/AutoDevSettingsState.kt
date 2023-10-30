@@ -13,7 +13,7 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
     var gitlabToken = ""
     var gitlabUrl = ""
     var openAiKey = ""
-    var openAiModel = ""
+    var openAiModel = DEFAULT_AI_MODEL
     var delaySeconds = ""
 
     var aiEngine = DEFAULT_AI_ENGINE
