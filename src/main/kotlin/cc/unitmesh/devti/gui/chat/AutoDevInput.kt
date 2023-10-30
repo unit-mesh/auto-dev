@@ -56,7 +56,7 @@ class AutoDevInput(
             it.putUserData(IncrementalFindAction.SEARCH_DISABLED, true)
             it.colorsScheme.lineSpacing = 1.0f
             it.settings.isUseSoftWraps = true
-            it.settings.isPaintSoftWraps = false
+//            it.settings.isPaintSoftWraps = false
             it.isEmbeddedIntoDialogWrapper = true
             it.contentComponent.setOpaque(false)
         }

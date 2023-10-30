@@ -239,8 +239,13 @@ class VcsPrompting(private val project: Project) {
 
     private fun isBinaryOrTooLarge(revision: ContentRevision?): Boolean {
         val virtualFile = (revision as? CurrentContentRevision)?.virtualFile
-        return revision != null && (IdeaTextPatchBuilder.isBinaryRevision(revision) || (virtualFile != null && FileUtilRt.isTooLarge(
+        return revision != null && (isBinaryRevision(revision) || (virtualFile != null && FileUtilRt.isTooLarge(
             virtualFile.length
         )))
     }
+}
+
+fun isBinaryRevision(cr: ContentRevision?): Boolean {
+    if (cr == null) return false
+    return if (cr is BinaryContentRevision) true else cr.file.fileType.isBinary
 }

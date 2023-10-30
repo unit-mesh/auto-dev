@@ -128,10 +128,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         val jComponent = this as JComponent
 
         setBorder(AutoDevCoolBorder(editorEx as EditorEx, jComponent))
-        UIUtil.forEachComponentInHierarchy(jComponent) { component: Component ->
-            (component as JComponent).setOpaque(false)
-            component.revalidate()
-        }
+        UIUtil.setOpaqueRecursively(jComponent, false)
+        jComponent.revalidate()
     }
 
 
