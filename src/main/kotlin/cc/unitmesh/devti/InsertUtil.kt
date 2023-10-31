@@ -33,7 +33,7 @@ object InsertUtil {
         WriteCommandAction.runWriteCommandAction(
             project,
             AutoDevBundle.message("intentions.chat.code.complete.name"),
-            "code.complete.intention.write.action",
+            "intentions.write.action",
             {
                 insertStringAndSaveChange(project, char, editor.document, currentOffset, false)
             })

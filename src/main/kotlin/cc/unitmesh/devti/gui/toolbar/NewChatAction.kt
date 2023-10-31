@@ -12,7 +12,6 @@ import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.components.panels.Wrapper
 import com.intellij.util.ui.JBInsets
 import com.intellij.util.ui.JBUI
-import java.awt.event.ActionEvent
 import javax.swing.JButton
 import javax.swing.JComponent
 
@@ -22,7 +21,7 @@ class NewChatAction : DumbAwareAction(), CustomComponentAction {
     }
 
     override fun createCustomComponent(presentation: Presentation, place: String): JComponent {
-        val message = AutoDevBundle.message("devti.chat.new")
+        val message = AutoDevBundle.message("autodev.chat.new")
         val button: JButton = object : JButton(message) {
             init {
                 putClientProperty("ActionToolbar.smallVariant", true)

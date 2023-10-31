@@ -58,7 +58,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
 
     init {
-        val presentation = Presentation(AutoDevBundle.message("devti.chat.send"))
+        val presentation = Presentation(AutoDevBundle.message("autodev.chat.send"))
         presentation.setIcon(AutoDevIcons.Send)
         buttonPresentation = presentation
         button = ActionButton(

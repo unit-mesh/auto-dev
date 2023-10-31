@@ -6,7 +6,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="AutoDev.notification.group" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
-                           key="notification.group.name"/>
+                           key="name"/>
 
         <applicationConfigurable parentId="tools" instance="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                                  id="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
@@ -16,7 +16,7 @@
         <projectConfigurable provider="cc.unitmesh.devti.settings.configurable.CoUnitToolConfigurableProvider"
                              parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                              id="cc.unitmesh.counit"
-                             bundle="messages.AutoDevBundle" key="settings.external.counit.name"/>
+                             bundle="messages.AutoDevBundle" key="counit.name"/>
 
         <projectService serviceImplementation="cc.unitmesh.devti.settings.custom.TeamPromptsProjectSettingsService"/>
         <projectConfigurable provider="cc.unitmesh.devti.settings.custom.TeamPromptsConfigurableProvider"
@@ -45,8 +45,7 @@
                     factoryClass="cc.unitmesh.devti.gui.AutoDevToolWindowFactory"/>
 
         <notificationGroup id="AI notification group" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
-                           key="notification.group.name"/>
-
+                           key="name"/>
 
         <intentionAction>
             <className>cc.unitmesh.devti.intentions.AutoDevIntentionHelper</className>

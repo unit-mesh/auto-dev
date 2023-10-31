@@ -286,7 +286,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
     private fun executePrompt(promptText: String): String {
         ui.addMessage(promptText, false, promptText)
         // for answer
-        ui.addMessage(AutoDevBundle.message("devti.loading"))
+        ui.addMessage(AutoDevBundle.message("autodev.loading"))
 
         return runBlocking {
             val prompt = connector.stream(promptText, "")

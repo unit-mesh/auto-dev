@@ -180,7 +180,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         myList.remove(myList.componentCount - 1)
         val text = updateMessageInUi(content)
 
-        val jButton = JButton(AutoDevBundle.message("devti.chat.replaceSelection"))
+        val jButton = JButton(AutoDevBundle.message("autodev.chat.replaceSelection"))
         val listener = ActionListener {
             replaceSelectedText(text)
             myList.remove(myList.componentCount - 1)
