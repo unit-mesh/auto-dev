@@ -22,6 +22,7 @@
 //SOFTWARE.
 
 import groovy.xml.XmlParser
+import org.gradle.api.JavaVersion.VERSION_17
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.intellij.tasks.PatchPluginXmlTask
 import org.jetbrains.intellij.tasks.PublishPluginTask
@@ -126,14 +127,14 @@ allprojects {
     }
 
     configure<JavaPluginExtension> {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = VERSION_17
+        targetCompatibility = VERSION_17
     }
 
     tasks {
         withType<KotlinCompile> {
             kotlinOptions {
-                jvmTarget = JavaVersion.VERSION_11.toString()
+                jvmTarget = VERSION_17.toString()
                 languageVersion = "1.8"
                 // see https://plugins.jetbrains.com/docs/intellij/using-kotlin.html#kotlin-standard-library
                 apiVersion = "1.7"
