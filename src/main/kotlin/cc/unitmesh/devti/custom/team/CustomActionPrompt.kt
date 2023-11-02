@@ -5,15 +5,21 @@ import cc.unitmesh.template.TemplateRoleSplitter
 import com.intellij.openapi.diagnostic.logger
 import org.yaml.snakeyaml.Yaml
 
-data class TeamActionPrompt(
+enum class CustomActionType {
+    Default,
+    QuickAction,
+}
+
+data class CustomActionPrompt(
     var interaction: InteractionType = InteractionType.AppendCursorStream,
     var priority: Int = 0,
+    var type: CustomActionType = CustomActionType.Default,
     var other: Map<String, Any> = mapOf(),
     // the rest of the content is the chat messages
     var msgs: List<LlmMsg.ChatMessage> = listOf(),
 ) {
     companion object {
-        val logger = logger<TeamActionPrompt>()
+        val logger = logger<CustomActionPrompt>()
 
         /**
          * Parses the given content and returns a TeamActionPrompt object.
@@ -61,11 +67,11 @@ data class TeamActionPrompt(
          * )
          * ```
          */
-        fun fromContent(content: String): TeamActionPrompt {
+        fun fromContent(content: String): CustomActionPrompt {
             val regex = """^---\s*\n(.*?)\n---\s*\n(.*)$""".toRegex(RegexOption.DOT_MATCHES_ALL)
             val matchResult = regex.find(content)
 
-            val prompt = TeamActionPrompt()
+            val prompt = CustomActionPrompt()
             if (matchResult != null) {
                 val frontMatter = matchResult.groupValues[1]
                 val yaml = Yaml()
@@ -82,7 +88,15 @@ data class TeamActionPrompt(
                     0
                 }
 
-                prompt.other = frontMatterMap.filterKeys { it != "interaction" && it != "priority" }
+                prompt.type = try {
+                    CustomActionType.valueOf(frontMatterMap["type"] as String)
+                } catch (e: Exception) {
+                    CustomActionType.Default
+                }
+
+                prompt.other = frontMatterMap.filterKeys {
+                    it != "interaction" && it != "priority" && it != "type"
+                }
 
                 val chatContent = matchResult?.groupValues?.get(2) ?: content
                 prompt.msgs = parseChatMessage(chatContent)
