@@ -24,7 +24,7 @@ import com.intellij.temporary.calculateFrontendElementToExplain
  * @param intentionConfig The configuration for the team prompt action.
  *
  */
-class TeamPromptIntention(val intentionConfig: TeamPromptAction) : AbstractChatIntention() {
+class TeamPromptIntention(val intentionConfig: TeamPromptAction, val trySelectElement: Boolean) : AbstractChatIntention() {
     override fun priority(): Int = intentionConfig.actionPrompt.priority
     override fun getText(): String = intentionConfig.actionName
     override fun getFamilyName(): String = intentionConfig.actionName
@@ -36,7 +36,11 @@ class TeamPromptIntention(val intentionConfig: TeamPromptAction) : AbstractChatI
         val textRange = getCurrentSelectionAsRange(editor)
 
         val language = file.language
-        val element = calculateFrontendElementToExplain(project, file, textRange)
+        val element = if (trySelectElement) {
+            calculateFrontendElementToExplain(project, file, textRange)
+        } else {
+            elementPair?.second
+        }
 
         val compiler = TeamPromptTemplateCompiler(language, file, element, editor, elementPair?.first ?: "")
 
@@ -51,6 +55,7 @@ class TeamPromptIntention(val intentionConfig: TeamPromptAction) : AbstractChatI
     }
 
     companion object {
-        fun create(intentionConfig: TeamPromptAction): TeamPromptIntention = TeamPromptIntention(intentionConfig)
+        fun create(intentionConfig: TeamPromptAction, trySelectElement: Boolean = true): TeamPromptIntention =
+            TeamPromptIntention(intentionConfig, trySelectElement)
     }
 }

@@ -35,7 +35,7 @@ object IntentionHelperUtil {
         } ?: emptyList()
 
         val teamPromptsIntentions: List<IntentionAction> = project.service<TeamPromptsBuilder>().default().map {
-            TeamPromptIntention.create(it)
+            TeamPromptIntention.create(it, true)
         }
 
         val actionList = builtinIntentions + customActionIntentions + livingDocIntentions + teamPromptsIntentions

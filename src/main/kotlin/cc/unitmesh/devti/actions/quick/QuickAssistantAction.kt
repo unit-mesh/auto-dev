@@ -57,7 +57,9 @@ class QuickAssistantAction : AnAction() {
     ) {
         val cursorPosition = editor.visualPositionToXY(editor.caretModel.visualPosition)
 
-        val promptIntentions: List<TeamPromptIntention> = quickPrompts.map(TeamPromptIntention.Companion::create)
+        val promptIntentions: List<TeamPromptIntention> = quickPrompts.map {
+            TeamPromptIntention.create(it, trySelectElement = false)
+        }
 
         var awareActions: Array<AnAction> = arrayOf()
         val categoryMap = promptIntentions.groupBy {

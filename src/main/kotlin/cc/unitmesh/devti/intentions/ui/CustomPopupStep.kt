@@ -19,7 +19,7 @@ class CustomPopupStep(
     override fun getTextFor(value: IntentionAction): String = value.text
 
     override fun getSeparatorAbove(value: IntentionAction?): ListSeparator? =
-        if (value != null && Intrinsics.areEqual(value, intentionAction)) ListSeparator() else null
+        if (value != null && value == intentionAction) ListSeparator() else null
 
     override fun onChosen(selectedValue: IntentionAction?, finalChoice: Boolean): PopupStep<*>? {
         return doFinalStep {

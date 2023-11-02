@@ -42,7 +42,7 @@ class TeamPromptExecTask(
             -> {
                 val msgString = systemPrompt + "\n" + userPrompt
                 val request = runReadAction {
-                    CodeCompletionRequest.create(editor, offset, element!!, null, msgString)
+                    CodeCompletionRequest.create(editor, offset, element, null, msgString)
                 } ?: return
 
                 val task = object : BaseCompletionTask(request) {
