@@ -26,7 +26,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 
-
 @Serializable
 data class SimpleOpenAIFormat(val role: String, val content: String) {
     companion object {

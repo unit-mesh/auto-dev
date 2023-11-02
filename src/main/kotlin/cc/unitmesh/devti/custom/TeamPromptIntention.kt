@@ -25,18 +25,10 @@ import com.intellij.temporary.calculateFrontendElementToExplain
  *
  */
 class TeamPromptIntention(private val intentionConfig: TeamPromptAction) : AbstractChatIntention() {
-
     override fun priority(): Int = intentionConfig.actionPrompt.priority
-
     override fun getText(): String = intentionConfig.actionName
-
     override fun getFamilyName(): String = intentionConfig.actionName
-
     override fun getActionType(): ChatActionType = ChatActionType.CUSTOM_ACTION
-
-    companion object {
-        fun create(intentionConfig: TeamPromptAction): TeamPromptIntention = TeamPromptIntention(intentionConfig)
-    }
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (editor == null || file == null) return
@@ -60,5 +52,9 @@ class TeamPromptIntention(private val intentionConfig: TeamPromptAction) : Abstr
         val task: Task.Backgroundable = TeamPromptExecTask(project, msgs, editor, intentionConfig, element)
         ProgressManager.getInstance()
             .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+    }
+
+    companion object {
+        fun create(intentionConfig: TeamPromptAction): TeamPromptIntention = TeamPromptIntention(intentionConfig)
     }
 }
