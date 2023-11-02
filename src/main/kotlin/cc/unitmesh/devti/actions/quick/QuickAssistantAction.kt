@@ -7,6 +7,7 @@ import cc.unitmesh.devti.intentions.action.task.BaseCompletionTask
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.ex.util.EditorUtil
 import com.intellij.openapi.progress.ProgressManager
@@ -33,6 +34,17 @@ class QuickAssistantAction : AnAction() {
         val element = e.getData(CommonDataKeys.PSI_ELEMENT)
         val sourceFile = dataContext.getData(CommonDataKeys.PSI_FILE) ?: return
 
+        // get prompts from context
+        useInlayMode(editor, offset, project, element, sourceFile)
+    }
+
+    private fun useInlayMode(
+        editor: Editor,
+        offset: Int,
+        project: Project,
+        element: PsiElement?,
+        sourceFile: PsiFile
+    ) {
         val promptInlay: InlayPanel<QuickPromptField>? =
             InlayPanel.add(editor as EditorEx, offset, QuickPromptField())
 
