@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.actions.quick
 
 import cc.unitmesh.devti.custom.TeamPromptIntention
+import cc.unitmesh.devti.custom.team.TeamPromptAction
 import cc.unitmesh.devti.custom.team.TeamPromptsBuilder
 import cc.unitmesh.devti.gui.quick.QuickPromptField
 import cc.unitmesh.devti.gui.quick.QuickPromptField.Companion.QUICK_ASSISTANT_CANCEL_ACTION
@@ -44,23 +45,45 @@ class QuickAssistantAction : AnAction() {
         if (quickPrompts.isEmpty()) {
             useInlayMode(editor, offset, project, element, sourceFile!!)
         } else {
-            val cursorPosition = editor.visualPositionToXY(editor.caretModel.visualPosition)
+            useQuickMode(editor, quickPrompts, project, sourceFile)
+        }
+    }
 
-            val promptIntentions = quickPrompts.map { TeamPromptIntention.create(it) }
-            val awareActions: Array<AnAction> = promptIntentions.map { action ->
-                DumbAwareAction.create(action.text) {
+    private fun useQuickMode(
+        editor: Editor,
+        quickPrompts: List<TeamPromptAction>,
+        project: Project,
+        sourceFile: PsiFile?
+    ) {
+        val cursorPosition = editor.visualPositionToXY(editor.caretModel.visualPosition)
+
+        val promptIntentions: List<TeamPromptIntention> = quickPrompts.map(TeamPromptIntention.Companion::create)
+
+        var awareActions: Array<AnAction> = arrayOf()
+        val categoryMap = promptIntentions.groupBy {
+            it.intentionConfig.actionPrompt.other["category"] ?: ""
+        }
+
+        categoryMap.forEach { (category, intentions) ->
+            val intentionList = intentions.map { action ->
+                val actionName: String? = action.intentionConfig.actionPrompt.other["name"] as? String
+                val actionText: String = actionName ?: action.text
+                DumbAwareAction.create(actionText) {
                     action.invoke(project, editor, sourceFile)
                 }
             }.toTypedArray()
 
-            val popupMenu = ActionManager.getInstance()
-                .createActionPopupMenu("QuickAssistantAction", object : ActionGroup("QuickAssistantAction", true),
-                    DumbAware {
-                    override fun getChildren(e: AnActionEvent?): Array<AnAction> = awareActions
-                })
-
-            popupMenu.component.show(editor.contentComponent, cursorPosition.x, cursorPosition.y)
+            awareActions += intentionList
+            awareActions += Separator.getInstance()
         }
+
+        val popupMenu = ActionManager.getInstance()
+            .createActionPopupMenu("QuickAction", object : ActionGroup("QuickAction", true),
+                DumbAware {
+                override fun getChildren(e: AnActionEvent?): Array<AnAction> = awareActions
+            })
+
+        popupMenu.component.show(editor.contentComponent, cursorPosition.x, cursorPosition.y)
     }
 
     private fun useInlayMode(

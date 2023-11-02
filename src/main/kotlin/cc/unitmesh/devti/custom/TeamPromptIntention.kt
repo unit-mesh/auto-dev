@@ -24,7 +24,7 @@ import com.intellij.temporary.calculateFrontendElementToExplain
  * @param intentionConfig The configuration for the team prompt action.
  *
  */
-class TeamPromptIntention(private val intentionConfig: TeamPromptAction) : AbstractChatIntention() {
+class TeamPromptIntention(val intentionConfig: TeamPromptAction) : AbstractChatIntention() {
     override fun priority(): Int = intentionConfig.actionPrompt.priority
     override fun getText(): String = intentionConfig.actionName
     override fun getFamilyName(): String = intentionConfig.actionName
