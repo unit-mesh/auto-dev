@@ -20,11 +20,18 @@ class TeamPromptTemplateCompiler(
     val file: PsiFile,
     val element: PsiElement?,
     val editor: Editor,
+    val selectedText: String = "",
 ) {
     private val velocityContext = VelocityContext()
 
-    companion object {
-        val log = logger<TeamPromptTemplateCompiler>()
+    init {
+        this.set("selection", selectedText)
+        this.set("beforeCursor", file.text.substring(0, editor.caretModel.offset))
+        this.set("afterCursor", file.text.substring(editor.caretModel.offset))
+    }
+
+    fun set(key: String, value: String) {
+        velocityContext.put(key, value)
     }
 
     fun compile(template: String): String {
@@ -87,7 +94,7 @@ class TeamPromptTemplateCompiler(
         )
     }
 
-    fun set(key: String, value: String) {
-        velocityContext.put(key, value)
+    companion object {
+        val log = logger<TeamPromptTemplateCompiler>()
     }
 }

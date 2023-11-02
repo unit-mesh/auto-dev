@@ -38,11 +38,7 @@ class TeamPromptIntention(private val intentionConfig: TeamPromptAction) : Abstr
         val language = file.language
         val element = calculateFrontendElementToExplain(project, file, textRange)
 
-        val compiler = TeamPromptTemplateCompiler(language, file, element, editor)
-
-        compiler.set("selection", elementPair.first)
-        compiler.set("beforeCursor", file.text.substring(0, editor.caretModel.offset))
-        compiler.set("afterCursor", file.text.substring(editor.caretModel.offset))
+        val compiler = TeamPromptTemplateCompiler(language, file, element, editor, elementPair.first)
 
         val chatMessages = intentionConfig.actionPrompt.msgs
         val msgs = chatMessages.map {
