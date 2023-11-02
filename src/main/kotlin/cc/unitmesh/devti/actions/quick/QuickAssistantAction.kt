@@ -8,6 +8,7 @@ import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.editor.ex.util.EditorUtil
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
@@ -69,6 +70,7 @@ class QuickAssistantAction : AnAction() {
 
                 ProgressManager.getInstance()
                     .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+
                 Disposer.dispose(inlay.inlay!!)
             }
         })
@@ -80,6 +82,7 @@ class QuickAssistantAction : AnAction() {
         })
 
         IdeFocusManager.getInstance(project).requestFocus(component, false)
+        EditorUtil.disposeWithEditor(editor, inlay.inlay!!)
     }
 }
 
