@@ -32,13 +32,13 @@ class TeamPromptIntention(private val intentionConfig: TeamPromptAction) : Abstr
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (editor == null || file == null) return
-        val elementPair = elementWithRange(editor, file, project) ?: return
+        val elementPair = elementWithRange(editor, file, project)
         val textRange = getCurrentSelectionAsRange(editor)
 
         val language = file.language
         val element = calculateFrontendElementToExplain(project, file, textRange)
 
-        val compiler = TeamPromptTemplateCompiler(language, file, element, editor, elementPair.first)
+        val compiler = TeamPromptTemplateCompiler(language, file, element, editor, elementPair?.first ?: "")
 
         val chatMessages = intentionConfig.actionPrompt.msgs
         val msgs = chatMessages.map {

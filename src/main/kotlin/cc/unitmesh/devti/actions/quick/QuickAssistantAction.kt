@@ -1,5 +1,7 @@
 package cc.unitmesh.devti.actions.quick
 
+import cc.unitmesh.devti.custom.TeamPromptIntention
+import cc.unitmesh.devti.custom.team.TeamPromptsBuilder
 import cc.unitmesh.devti.gui.quick.QuickPromptField
 import cc.unitmesh.devti.gui.quick.QuickPromptField.Companion.QUICK_ASSISTANT_CANCEL_ACTION
 import cc.unitmesh.devti.gui.quick.QuickPromptField.Companion.QUICK_ASSISTANT_SUBMIT_ACTION
@@ -7,11 +9,14 @@ import cc.unitmesh.devti.intentions.action.task.BaseCompletionTask
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.ex.util.EditorUtil
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
+import com.intellij.openapi.project.DumbAware
+import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFocusManager
@@ -32,10 +37,30 @@ class QuickAssistantAction : AnAction() {
         val offset = editor.caretModel.offset
         val project = dataContext.getData(CommonDataKeys.PROJECT) ?: return
         val element = e.getData(CommonDataKeys.PSI_ELEMENT)
-        val sourceFile = dataContext.getData(CommonDataKeys.PSI_FILE) ?: return
+        val sourceFile = dataContext.getData(CommonDataKeys.PSI_FILE)
 
-        // get prompts from context
-        useInlayMode(editor, offset, project, element, sourceFile)
+        val quickPrompts = project.service<TeamPromptsBuilder>().quickPrompts()
+
+        if (quickPrompts.isEmpty()) {
+            useInlayMode(editor, offset, project, element, sourceFile!!)
+        } else {
+            val cursorPosition = editor.visualPositionToXY(editor.caretModel.visualPosition)
+
+            val promptIntentions = quickPrompts.map { TeamPromptIntention.create(it) }
+            val awareActions: Array<AnAction> = promptIntentions.map { action ->
+                DumbAwareAction.create(action.text) {
+                    action.invoke(project, editor, sourceFile)
+                }
+            }.toTypedArray()
+
+            val popupMenu = ActionManager.getInstance()
+                .createActionPopupMenu("QuickAssistantAction", object : ActionGroup("QuickAssistantAction", true),
+                    DumbAware {
+                    override fun getChildren(e: AnActionEvent?): Array<AnAction> = awareActions
+                })
+
+            popupMenu.component.show(editor.contentComponent, cursorPosition.x, cursorPosition.y)
+        }
     }
 
     private fun useInlayMode(
