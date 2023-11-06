@@ -99,9 +99,11 @@ class OpenAIProvider(val project: Project) : LLMProvider {
                         trySend(error.message ?: "Error occurs")
                     }
                     .blockingForEach { response ->
-                        val completion = response.choices[0].message
-                        if (completion != null && completion.content != null) {
-                            trySend(completion.content)
+                        if (response.choices.isNotEmpty()) {
+                            val completion = response.choices[0].message
+                            if (completion != null && completion.content != null) {
+                                trySend(completion.content)
+                            }
                         }
                     }
 
