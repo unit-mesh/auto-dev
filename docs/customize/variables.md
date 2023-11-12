@@ -1,8 +1,9 @@
 ---
 layout: default
 title: Variables
+parent: Customize
 nav_order: 20
-permalink: /variables
+permalink: /customize/variables
 ---
 
 # Variables

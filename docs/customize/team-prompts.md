@@ -1,6 +1,7 @@
 ---
 layout: default
 title: Team Prompts
+parent: Customize
 nav_order: 14
 permalink: /custom/team-prompts
 ---

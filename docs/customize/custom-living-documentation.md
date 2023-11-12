@@ -1,6 +1,7 @@
 ---
 layout: default
 title: Custom Documentation
+parent: Customize
 nav_order: 12
 permalink: /custom/living-documentation
 ---
