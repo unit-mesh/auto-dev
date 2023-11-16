@@ -10,6 +10,7 @@ enum class ChatActionType {
     EXPLAIN,
     CODE_COMPLETE,
     GENERATE_TEST,
+    GENERATE_TEST_DATA,
     GEN_COMMIT_MESSAGE,
     FIX_ISSUE,
     CREATE_CHANGELOG,
@@ -66,6 +67,7 @@ $diff
             COUNIT -> ""
             CODE_REVIEW -> ""
             CREATE_GENIUS -> ""
+            GENERATE_TEST_DATA -> ""
         }
     }
 }

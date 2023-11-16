@@ -187,6 +187,11 @@
                     description="Ask AI write this code">
             </action>
 
+            <action id="cc.unitmesh.devti.actions.chat.GenTestDataAction"
+                    class="cc.unitmesh.devti.actions.chat.GenTestDataAction" text="Generate Test data (APIs)"
+                    description="Ask AI write this code">
+            </action>
+
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </group>
 
