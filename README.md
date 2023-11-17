@@ -22,6 +22,12 @@
 
 [Read the docs →](https://ide.unitmesh.cc/)
 
+AutoDev Overview:
+
+<p align="center">
+  <img src="docs/autodev-overview.svg" width="100%" height="100%"  alt="Overview" />
+</p>
+
 Features:
 
 - Languages support: Java, Kotlin, Python, JavaScript/TypeScript, Goland, Rust or others...

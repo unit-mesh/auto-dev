@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="947px" height="242px" viewBox="0 0 947 242" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 62 (91390) - https://sketch.com -->
+    <title>Group</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(-1.000000, 0.000000)">
+            <line x1="3.5" y1="167.5" x2="946.5" y2="167.5" id="Line" stroke="#979797" stroke-width="3" stroke-linecap="square" stroke-dasharray="12,12"></line>
+            <text id="Custom" font-family="Comfortaa-SemiBold, Comfortaa" font-size="24" font-weight="500" fill="#000000">
+                <tspan x="0.335694336" y="229">Custom</tspan>
+            </text>
+            <text id="Built-in" font-family="Comfortaa-SemiBold, Comfortaa" font-size="24" font-weight="500" fill="#000000">
+                <tspan x="3.47787354" y="127">Built-in</tspan>
+            </text>
+            <rect id="Rectangle" fill="#013D4F" x="130" y="105" width="144" height="41" rx="8"></rect>
+            <rect id="Rectangle" fill="#013D4F" x="338" y="105" width="144" height="41" rx="8"></rect>
+            <rect id="Rectangle" fill="#013D4F" x="546" y="105" width="144" height="41" rx="8"></rect>
+            <rect id="Rectangle" fill="#013D4F" x="754" y="105" width="144" height="41" rx="8"></rect>
+            <text id="analysis" font-family="Comfortaa-SemiBold, Comfortaa" font-size="24" font-weight="500" fill="#FFFFFF">
+                <tspan x="151.535087" y="132">analysis</tspan>
+            </text>
+            <rect id="Rectangle" fill="#013D4F" x="130" y="105" width="144" height="41" rx="8"></rect>
+            <text id="analysis" font-family="Comfortaa-SemiBold, Comfortaa" font-size="24" font-weight="500" fill="#FFFFFF">
+                <tspan x="151.535087" y="132">analysis</tspan>
+            </text>
+            <rect id="Rectangle" fill="#48A178" x="130" y="201" width="144" height="41" rx="8"></rect>
+            <text id="custom-action" font-family="Comfortaa-SemiBold, Comfortaa" font-size="16" font-weight="500" fill="#FFFFFF">
+                <tspan x="142.315697" y="227">custom action</tspan>
+            </text>
+            <rect id="Rectangle" fill="#48A178" x="298" y="201" width="144" height="41" rx="8"></rect>
+            <text id="team-prompts" font-family="Comfortaa-SemiBold, Comfortaa" font-size="16" font-weight="500" fill="#FFFFFF">
+                <tspan x="311.00554" y="227">team prompts</tspan>
+            </text>
+            <rect id="Rectangle" fill="#48A178" x="466" y="201" width="144" height="41" rx="8"></rect>
+            <text id="custom-spec" font-family="Comfortaa-SemiBold, Comfortaa" font-size="16" font-weight="500" fill="#FFFFFF">
+                <tspan x="485.241234" y="227">custom spec</tspan>
+            </text>
+            <rect id="Rectangle" fill="#48A178" x="634" y="201" width="144" height="41" rx="8"></rect>
+            <text id="custom-doc" font-family="Comfortaa-SemiBold, Comfortaa" font-size="16" font-weight="500" fill="#FFFFFF">
+                <tspan x="657.113231" y="227">custom doc</tspan>
+            </text>
+            <rect id="Rectangle" fill="#48A178" x="802" y="201" width="144" height="41" rx="8"></rect>
+            <text id="prompt-override" font-family="Comfortaa-SemiBold, Comfortaa" font-size="16" font-weight="500" fill="#FFFFFF">
+                <tspan x="805.118172" y="227">prompt override</tspan>
+            </text>
+            <text id="1.-Chat-2.-Business" font-family="Comfortaa-SemiBold, Comfortaa" font-size="16" font-weight="500" fill="#000000">
+                <tspan x="117" y="50">1. Chat </tspan>
+                <tspan x="117" y="68">2. Business Analysis</tspan>
+                <tspan x="117" y="86">3. Chat by Scene</tspan>
+            </text>
+            <text id="1.-Code-complete-2." font-family="Comfortaa-SemiBold, Comfortaa" font-size="16" font-weight="500" fill="#000000">
+                <tspan x="325" y="14">1. Code complete </tspan>
+                <tspan x="325" y="32">2. Commit Msg</tspan>
+                <tspan x="325" y="50">3. Error fix</tspan>
+                <tspan x="325" y="68">4. Refactor</tspan>
+                <tspan x="325" y="86">5. documentation</tspan>
+            </text>
+            <text id="1.-Code-Review-2.-Un" font-family="Comfortaa-SemiBold, Comfortaa" font-size="16" font-weight="500">
+                <tspan x="533" y="50" fill="#000000">1. Code Review</tspan>
+                <tspan x="533" y="68" fill="#000000">2. Unit Test</tspan>
+                <tspan x="533" y="86" font-family="Comfortaa-Bold, Comfortaa" font-weight="bold" fill="#F7B500">3. Test/Mock data</tspan>
+            </text>
+            <text id="1.-CI/CD-config-2.-D" font-family="Comfortaa-SemiBold, Comfortaa" font-size="16" font-weight="500">
+                <tspan x="740" y="50" fill="#000000">1. CI/CD config</tspan>
+                <tspan x="740" y="68" fill="#000000">2. Docker config</tspan>
+                <tspan x="740" y="86" font-family="Comfortaa-Bold, Comfortaa" font-weight="bold" fill="#F7B500">3. Bug fixes</tspan>
+            </text>
+            <text id="coding" font-family="Comfortaa-SemiBold, Comfortaa" font-size="24" font-weight="500" fill="#FFFFFF">
+                <tspan x="366.417852" y="132">coding</tspan>
+            </text>
+            <text id="quality" font-family="Comfortaa-SemiBold, Comfortaa" font-size="24" font-weight="500" fill="#FFFFFF">
+                <tspan x="574.868314" y="132">quality</tspan>
+            </text>
+            <text id="DevOps" font-family="Comfortaa-SemiBold, Comfortaa" font-size="24" font-weight="500" fill="#FFFFFF">
+                <tspan x="776.141236" y="132">DevOps</tspan>
+            </text>
+        </g>
+    </g>
+</svg>
