@@ -19,9 +19,7 @@ class MethodContext(
     val includeClassContext: Boolean = false,
     val usages: List<PsiReference> = emptyList(),
     val inputOutputClasses: List<PsiElement> = emptyList(),
-) : NamedElementContext(
-    root, text, name
-) {
+) : NamedElementContext(root, text, name) {
     private val classContext: ClassContext?
     private val commenter = LanguageCommenters.INSTANCE.forLanguage(root.language) ?: null
     private val commentPrefix = commenter?.lineCommentPrefix ?: ""
