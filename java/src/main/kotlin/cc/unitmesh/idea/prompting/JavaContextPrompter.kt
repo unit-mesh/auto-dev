@@ -1,8 +1,8 @@
 package cc.unitmesh.idea.prompting
 
-import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
-import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.context.MethodContextProvider
 import cc.unitmesh.devti.custom.action.CustomPromptConfig
+import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
@@ -16,6 +16,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
 import kotlinx.coroutines.runBlocking
 
 open class JavaContextPrompter : ContextPrompter() {
@@ -115,8 +116,10 @@ open class JavaContextPrompter : ContextPrompter() {
                     }
                 }
             }
+
             ChatActionType.FIX_ISSUE -> addFixIssueContext(selectedText)
             ChatActionType.CREATE_CHANGELOG -> prompt = "generate release note base on the follow commit"
+            ChatActionType.GENERATE_TEST_DATA -> prepareDataStructure(creationContext)
 
             else -> {
                 // ignore else
@@ -124,6 +127,15 @@ open class JavaContextPrompter : ContextPrompter() {
         }
 
         return prompt
+    }
+
+    private fun prepareDataStructure(creationContext: ChatCreationContext) {
+        val element = creationContext.element!!
+
+        val methodContext = MethodContextProvider(false, false).from(element)
+        val currentContext = methodContext.inputOutputString()
+
+        additionContext += "input data structures: ```$lang\n$currentContext\n```\n"
     }
 
     private fun addFixIssueContext(selectedText: String) {
