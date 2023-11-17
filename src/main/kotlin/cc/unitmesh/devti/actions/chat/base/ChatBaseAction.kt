@@ -9,6 +9,9 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.editor.Editor
+import com.intellij.psi.PsiElement
+import com.intellij.temporary.getElementToAction
 
 abstract class ChatBaseAction : AnAction() {
     companion object {
@@ -41,7 +44,10 @@ abstract class ChatBaseAction : AnAction() {
 
         logger.info("use prompter: ${prompter.javaClass}")
 
-        val element = event.getData(CommonDataKeys.PSI_ELEMENT)
+        val editor = event.getData(CommonDataKeys.EDITOR) ?: return
+
+        val element = getElementToAction(project, editor) ?: return
+        selectElement(element, editor)
 
         prompter.initContext(getActionType(), prefixText, file, project, caretModel?.offset ?: 0, element)
 
@@ -54,5 +60,12 @@ abstract class ChatBaseAction : AnAction() {
 
             service.handlePromptAndResponse(panel, prompter, chatContext)
         }
+    }
+
+    private fun selectElement(elementToExplain: PsiElement, editor: Editor) {
+        val startOffset = elementToExplain.textRange.startOffset
+        val endOffset = elementToExplain.textRange.endOffset
+
+        editor.selectionModel.setSelection(startOffset, endOffset)
     }
 }

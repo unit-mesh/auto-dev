@@ -130,12 +130,16 @@ open class JavaContextPrompter : ContextPrompter() {
     }
 
     private fun prepareDataStructure(creationContext: ChatCreationContext) {
-        val element = creationContext.element!!
+        val element = creationContext.element ?: return logger.error("element is null")
 
         val methodContext = MethodContextProvider(false, false).from(element)
-        val currentContext = methodContext.inputOutputString()
+        selectedText = methodContext.text
 
-        additionContext += "input data structures: ```$lang\n$currentContext\n```\n"
+        val datastructures = methodContext.inputOutputString()
+        additionContext += """
+input and output's Class/DataStructures: 
+$datastructures
+"""
     }
 
     private fun addFixIssueContext(selectedText: String) {
