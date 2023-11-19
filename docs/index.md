@@ -31,7 +31,7 @@ permalink: /
 AutoDev Overview:
 
 <p align="center">
-  <img src="docs/autodev-overview.svg" width="100%" height="100%"  alt="Overview" />
+  <img src="autodev-overview.svg" width="100%" height="100%"  alt="Overview" />
 </p>
 
 Features:
