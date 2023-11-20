@@ -5,6 +5,7 @@ import cc.unitmesh.devti.isInProject
 import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiField
 import com.intellij.psi.PsiReference
 
 class MethodContext(
@@ -56,10 +57,17 @@ fun signature: ${signature ?: "_"}
         return query
     }
 
-    fun inputOutputString(): String {
+    fun inputOutputString(withChild: Boolean = false): String {
+        if (fanInOut.isEmpty()) return ""
+
+        // !!!
+        if (withChild) {
+            return inputOutputStringWithChild()
+        }
+
         var result = ""
         this.fanInOut.forEach {
-            val context = ClassContextProvider(false).from(it)
+            val context: ClassContext = ClassContextProvider(false).from(it)
             val element = context.root
 
             if (!isInProject(element.containingFile?.virtualFile!!, project)) {
@@ -76,5 +84,46 @@ fun signature: ${signature ?: "_"}
         }
 
         return "```uml\n$result\n```\n"
+    }
+
+    val nestedNodes: MutableMap<String, ClassContext> = mutableMapOf()
+    private fun inputOutputStringWithChild(): String {
+        val result = StringBuilder()
+        this.fanInOut.forEach {
+            val context: ClassContext = ClassContextProvider(false).from(it)
+            val element = context.root
+
+            if (!isInProject(element.containingFile?.virtualFile!!, project)) {
+                return@forEach
+            }
+
+            result.append(context.format())
+            result.append("\n")
+
+            createForFields(context)
+
+            nestedNodes.forEach {
+                result.append("\n")
+                result.append(context.format())
+            }
+        }
+
+        return result.toString()
+    }
+
+    private fun createForFields(context: ClassContext) {
+        val filterFields: List<PsiElement> = context.fields.filter {
+            isInProject(it.containingFile?.virtualFile!!, project)
+        }
+
+        filterFields.forEach {
+            val variableContext: VariableContext = VariableContextProvider(false, false, false).from(it)
+            variableContext.text
+            val classContext: ClassContext = ClassContextProvider(false).from(it)
+            if (classContext.name != null) {
+                nestedNodes[classContext.name] = classContext
+                createForFields(classContext)
+            }
+        }
     }
 }

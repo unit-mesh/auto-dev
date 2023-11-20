@@ -135,9 +135,10 @@ open class JavaContextPrompter : ContextPrompter() {
         val methodContext = MethodContextProvider(false, false).from(element)
         selectedText = methodContext.text
 
-        val datastructures = methodContext.inputOutputString()
+        val datastructures = methodContext.inputOutputString(true)
         additionContext += """
-input and output's Class/DataStructures: 
+// input and output's Class/DataStructures:
+
 $datastructures
 """
     }
