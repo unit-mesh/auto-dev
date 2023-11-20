@@ -90,7 +90,12 @@ object JavaContextCollectionUtilsKt {
      * @param type the PsiType to be checked
      * @return true if the given type is a boxed type, false otherwise
      */
-    private fun isPsiBoxedType(type: PsiType): Boolean {
-        return type is PsiClassReferenceType && type.resolve() == null
+    fun isPsiBoxedType(type: PsiType): Boolean {
+        if (type !is PsiClassReferenceType) return false
+
+        // For Testing ??
+        if (type.resolve() == null) return true
+
+        return type.resolve()?.qualifiedName?.startsWith("java.lang") == true
     }
 }
