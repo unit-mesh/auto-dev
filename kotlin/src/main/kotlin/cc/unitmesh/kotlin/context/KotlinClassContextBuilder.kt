@@ -2,13 +2,12 @@ package cc.unitmesh.kotlin.context
 
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.builder.ClassContextBuilder
-import cc.unitmesh.idea.context.JavaContextCollectionUtilsKt
+import cc.unitmesh.idea.context.JavaContextCollection
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import org.jetbrains.annotations.Nullable
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtFunction
-import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtParameter
 
 class KotlinClassContextBuilder : ClassContextBuilder {
@@ -27,7 +26,7 @@ class KotlinClassContextBuilder : ClassContextBuilder {
         val primaryConstructorFields = getPrimaryConstructorFields(psiElement)
         val allFields = ktNamedFunctions + primaryConstructorFields
         val usages =
-            if (gatherUsages) JavaContextCollectionUtilsKt.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
+            if (gatherUsages) JavaContextCollection.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
 
         return ClassContext(psiElement, text, name, ktNamedFunctions, allFields, null, usages)
     }

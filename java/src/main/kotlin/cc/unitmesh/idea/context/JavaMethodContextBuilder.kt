@@ -21,7 +21,7 @@ class JavaMethodContextBuilder : MethodContextBuilder {
         val variableContextList = parameterList.map { it }
 
         val usagesList = if (gatherUsages) {
-            JavaContextCollectionUtilsKt.findUsages(psiElement as PsiNameIdentifierOwner)
+            JavaContextCollection.findUsages(psiElement as PsiNameIdentifierOwner)
         } else {
             emptyList()
         }

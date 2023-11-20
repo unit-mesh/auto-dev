@@ -8,7 +8,7 @@ import com.intellij.psi.search.SearchScope
 import com.intellij.psi.search.searches.MethodReferencesSearch
 import com.intellij.psi.search.searches.ReferencesSearch
 
-object JavaContextCollectionUtilsKt {
+object JavaContextCollection {
     fun findUsages(nameIdentifierOwner: PsiNameIdentifierOwner): List<PsiReference> {
         val project = nameIdentifierOwner.project
         val searchScope = GlobalSearchScope.allScope(project) as SearchScope

@@ -2,7 +2,7 @@ package cc.unitmesh.kotlin.context
 
 import cc.unitmesh.devti.context.MethodContext
 import cc.unitmesh.devti.context.builder.MethodContextBuilder
-import cc.unitmesh.idea.context.JavaContextCollectionUtilsKt
+import cc.unitmesh.idea.context.JavaContextCollection
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import org.jetbrains.kotlin.idea.quickfix.createFromUsage.callableBuilder.getReturnTypeReference
@@ -23,7 +23,7 @@ class KotlinMethodContextBuilder : MethodContextBuilder {
         val displayName = psiElement.language.displayName
         val valueParameters = psiElement.valueParameters.mapNotNull { it.name }
         val usages =
-            if (gatherUsages) JavaContextCollectionUtilsKt.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
+            if (gatherUsages) JavaContextCollection.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
 
         return MethodContext(
             psiElement,
