@@ -43,6 +43,7 @@ class User {
                 "\n" +
                 "class User {\n" +
                 "  id: long\n" +
+                "  name: String\n" +
                 "}\n")
     }
 }

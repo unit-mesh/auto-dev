@@ -7,6 +7,7 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.SearchScope
 import com.intellij.psi.search.searches.MethodReferencesSearch
 import com.intellij.psi.search.searches.ReferencesSearch
+import io.ktor.util.reflect.*
 import org.jetbrains.kotlin.psi.psiUtil.contains
 
 object JavaContextCollectionUtilsKt {
@@ -44,26 +45,46 @@ object JavaContextCollectionUtilsKt {
     fun dataStructure(clazz: PsiClass): SimpleClassStructure {
         val project = clazz.project
         val searchScope = GlobalSearchScope.allScope(project) as SearchScope
-        return createSimpleStructure(clazz ,searchScope)
+        return createSimpleStructure(clazz, searchScope)
     }
 
     private fun createSimpleStructure(clazz: PsiClass, searchScope: SearchScope): SimpleClassStructure {
         val fields = clazz.fields
         val children = fields.mapNotNull { field ->
             when {
-                field.type is PsiClassReferenceType -> {
-                    val classStructure =
-                        (field.type as PsiClassType).resolve()?.let { createSimpleStructure(it, searchScope) } ?: return@mapNotNull null
-                    classStructure.builtIn = false
-                    classStructure
+                // like: int, long, boolean, etc.
+                field.type is PsiPrimitiveType -> {
+                    SimpleClassStructure(field.name, field.type.presentableText, emptyList(), builtIn = true)
+                }
+
+                // like: String, List, etc.
+                isPsiBoxedType(field.type)  -> {
+                    SimpleClassStructure(field.name, field.type.presentableText, emptyList(), builtIn = true)
                 }
 
                 else -> {
-                    SimpleClassStructure(field.name, field.type.presentableText, emptyList(), builtIn = true)
+                    val classStructure =
+                        (field.type as PsiClassType).resolve()?.let { createSimpleStructure(it, searchScope) }
+                            ?: return@mapNotNull null
+                    classStructure.builtIn = false
+                    classStructure
                 }
             }
         }
 
         return SimpleClassStructure(clazz.name ?: "", clazz.name ?: "", children)
+    }
+
+    /**
+     * Checks if the given PsiType is a boxed type.
+     *
+     * A boxed type refers to a type that is represented by a PsiClassReferenceType and its resolve() method returns null.
+     * This typically occurs when the type is a generic type parameter or a type that cannot be resolved in the current context.
+     *
+     * @param type the PsiType to be checked
+     * @return true if the given type is a boxed type, false otherwise
+     */
+    private fun isPsiBoxedType(type: PsiType): Boolean {
+        return type is PsiClassReferenceType && type.resolve() == null
     }
 }
