@@ -2,10 +2,12 @@ package cc.unitmesh.idea.context
 
 import cc.unitmesh.devti.context.SimpleClassStructure
 import com.intellij.psi.*
+import com.intellij.psi.impl.source.PsiClassReferenceType
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.SearchScope
 import com.intellij.psi.search.searches.MethodReferencesSearch
 import com.intellij.psi.search.searches.ReferencesSearch
+import org.jetbrains.kotlin.psi.psiUtil.contains
 
 object JavaContextCollectionUtilsKt {
     fun findUsages(nameIdentifierOwner: PsiNameIdentifierOwner): List<PsiReference> {
@@ -31,31 +33,37 @@ object JavaContextCollectionUtilsKt {
      *
      * For example, if a BlogPost class includes a Comment class, and the Comment class includes a User class, then the resulting tree will be:
      *
+     * ```
      * parent: BlogPost Psi
-     *    child: I'd
-     *    child: Comment psi
-     *        child: User psi
+     *    child: id
+     *    child: Comment
+     *        child: User
+     *          child: name
+     *```
      */
-    fun dataStructure(clazz: PsiClass): HashMap<String, SimpleClassStructure> {
-        val classTree = HashMap<String, SimpleClassStructure>()
-        buildSimpleClassStructure(clazz, classTree)
-        return classTree
+    fun dataStructure(clazz: PsiClass): SimpleClassStructure {
+        val project = clazz.project
+        val searchScope = GlobalSearchScope.allScope(project) as SearchScope
+        return createSimpleStructure(clazz ,searchScope)
     }
 
-    private fun buildSimpleClassStructure(clazz: PsiClass, classTree: HashMap<String, SimpleClassStructure>) {
+    private fun createSimpleStructure(clazz: PsiClass, searchScope: SearchScope): SimpleClassStructure {
         val fields = clazz.fields
-        val children = fields.mapNotNull {
-            if (it.type is PsiClass) {
-                val childSimpleClassStructure = SimpleClassStructure(it.name, it.type.canonicalText, emptyList())
-                buildSimpleClassStructure(it.type as PsiClass, classTree)
-                childSimpleClassStructure
-            } else {
-                SimpleClassStructure(it.name, it.type.canonicalText, emptyList())
+        val children = fields.mapNotNull { field ->
+            when {
+                field.type is PsiClassReferenceType -> {
+                    val classStructure =
+                        (field.type as PsiClassType).resolve()?.let { createSimpleStructure(it, searchScope) } ?: return@mapNotNull null
+                    classStructure.builtIn = false
+                    classStructure
+                }
+
+                else -> {
+                    SimpleClassStructure(field.name, field.type.presentableText, emptyList(), builtIn = true)
+                }
             }
         }
 
-        val classSimpleClassStructure =
-            SimpleClassStructure(clazz.name ?: "Unknown", clazz.qualifiedName ?: "Unknown", children)
-        classTree[clazz.name ?: "Unknown"] = classSimpleClassStructure
+        return SimpleClassStructure(clazz.name ?: "", clazz.name ?: "", children)
     }
 }

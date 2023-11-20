@@ -1,21 +1,88 @@
 package cc.unitmesh.devti.context
 
-data class SimpleClassStructure(val fieldName: String, val fieldType: String, val children: List<SimpleClassStructure>) {
-    override fun toString(): String {
-        return buildPumlRepresentation(this)
+data class SimpleClassStructure(
+    val fieldName: String,
+    var fieldType: String,
+    val children: List<SimpleClassStructure>,
+    var builtIn: Boolean = false
+) {
+    val childPuml: MutableMap<String, String> = mutableMapOf()
+
+
+    /**
+     * Returns a PlantUML string representation of the class structure
+     * for example:
+     * ```
+     * class BlogPost {
+     *     long id;
+     *     Comment comment;
+     * }
+     * class Comment {
+     *     User user;
+     * }
+     * class User {
+     *     String name;
+     * }
+     *```
+     *
+     * will be represented as:
+     *
+     * ```puml
+     * class BlogPost {
+     *    long id;
+     *    Comment comment;
+     *}
+     *```
+     */
+    private fun simplePuml(simpleClassStructure: SimpleClassStructure): String {
+        return "class ${simpleClassStructure.fieldType} {\n" +
+                simpleClassStructure.children.joinToString("\n") { "  ${it.fieldName}: ${it.fieldType}" } +
+                "\n}\n"
     }
 
-    private fun buildPumlRepresentation(node: SimpleClassStructure, indent: String = ""): String {
-        val stringBuilder = StringBuilder()
 
-        stringBuilder.append("class ${node.fieldName} {\n")
+    /**
+     * Returns a PlantUML string representation of the class structure.
+     *
+     * This method generates a PlantUML string representation of the class structure based on the current object and its child objects. The resulting string is built using the buildPuml() method and the childPuml map. The resulting string will be a tree-like structure that shows the relationships between the classes.
+     *
+     * @return the PlantUML string representation of the class structure
+     *
+     * For example, if a BlogPost class includes a Comment class, and the Comment class includes a User class, then the resulting tree will be:
+     *
+     * ```puml
+     * class BlogPost {
+     *  id: long
+     *  comment: Comment
+     *}
+     *
+     * class Comment {
+     *   user: User
+     * }
+     *
+     * class User {
+     *  name: String
+     * }
+     *```
+     */
+    override fun toString(): String {
+        val puml = StringBuilder()
+        puml.append(simplePuml(this))
 
-        for (child in node.children) {
-            stringBuilder.append("  ${child.fieldName}: ${child.fieldType}\n")
+        createChildPuml(children)
+
+        childPuml.forEach {
+            puml.append("\n")
+            puml.append(it.value)
         }
 
-        stringBuilder.append("}\n")
+        return puml.toString()
+    }
 
-        return stringBuilder.toString()
+    private fun createChildPuml(data: List<SimpleClassStructure>) {
+        data.filter { !it.builtIn }.forEach {
+            childPuml[it.fieldType] = simplePuml(it)
+            createChildPuml(it.children)
+        }
     }
 }

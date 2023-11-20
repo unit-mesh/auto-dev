@@ -16,9 +16,11 @@ class SimpleClassStructureTest : LightJavaCodeInsightFixtureTestCase() {
     Comment comment;
 }
 class Comment {
+    long id;
     User user;
 }
 class User {
+    long id;
     String name;
 }
 """
@@ -26,11 +28,21 @@ class User {
         val psiFile = fileFactory.createFileFromText(JavaLanguage.INSTANCE, javaCode)
         val classes = PsiTreeUtil.findChildrenOfType(psiFile, PsiClass::class.java)
 
-        val blogpost = classes.filter { it.name == "BlogPost" }.first()
-        val tree = JavaContextCollectionUtilsKt.dataStructure(blogpost)
-        TestCase.assertEquals(tree["BlogPost"]?.toString(), "class BlogPost {\n" +
+        val blogpost = classes.first { it.name == "BlogPost" }
+        val structure = JavaContextCollectionUtilsKt.dataStructure(blogpost)
+        TestCase.assertEquals(structure.children.size, 2)
+        TestCase.assertEquals(structure.toString(), "class BlogPost {\n" +
                 "  id: long\n" +
-                "  comment: Comment\n" +
+                "  Comment: Comment\n" +
+                "}\n" +
+                "\n" +
+                "class Comment {\n" +
+                "  id: long\n" +
+                "  User: User\n" +
+                "}\n" +
+                "\n" +
+                "class User {\n" +
+                "  id: long\n" +
                 "}\n")
     }
 }
