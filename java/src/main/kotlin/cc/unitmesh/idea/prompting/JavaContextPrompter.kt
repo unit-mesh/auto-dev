@@ -9,6 +9,7 @@ import cc.unitmesh.devti.provider.context.ChatOrigin
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.idea.MvcUtil
 import cc.unitmesh.idea.flow.MvcContextService
+import cc.unitmesh.idea.provider.JavaTestDataBuilder
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -132,15 +133,13 @@ open class JavaContextPrompter : ContextPrompter() {
     private fun prepareDataStructure(creationContext: ChatCreationContext) {
         val element = creationContext.element ?: return logger.error("element is null")
 
-        val methodContext = MethodContextProvider(false, false).from(element)
-        selectedText = methodContext.text
-
-        val datastructures = methodContext.inputOutputString()
-        additionContext += """
-// input and output's Class/DataStructures:
-
-$datastructures
-"""
+        val testDataBuilder = JavaTestDataBuilder()
+        testDataBuilder.inBoundData(element).forEach { (key, value) ->
+            additionContext += "input Class\n$value\n"
+        }
+        testDataBuilder.outBoundData(element).forEach { (key, value) ->
+            additionContext += "output Class\n$value\n"
+        }
     }
 
     private fun addFixIssueContext(selectedText: String) {

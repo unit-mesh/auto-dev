@@ -41,7 +41,7 @@ object JavaContextCollection {
      *```
      */
     fun dataStructure(clazz: PsiClass): SimpleClassStructure {
-        return createSimpleStructure(clazz)
+        return simpleStructure(clazz)
     }
 
     /**
@@ -54,7 +54,7 @@ object JavaContextCollection {
      * If the field type is a custom class, the method recursively creates a SimpleClassStructure object for that class.
      * If the field type cannot be resolved, it is skipped.
      */
-    private fun createSimpleStructure(clazz: PsiClass): SimpleClassStructure {
+    fun simpleStructure(clazz: PsiClass): SimpleClassStructure {
         val fields = clazz.fields
         val children = fields.mapNotNull { field ->
             when {
@@ -70,7 +70,7 @@ object JavaContextCollection {
 
                 else -> {
                     val classStructure =
-                        (field.type as PsiClassType).resolve()?.let { createSimpleStructure(it) }
+                        (field.type as PsiClassType).resolve()?.let { simpleStructure(it) }
                             ?: return@mapNotNull null
                     classStructure.builtIn = false
                     classStructure
