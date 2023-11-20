@@ -8,6 +8,8 @@ permalink: /custom/living-documentation
 
 # Custom Documentation
 
+goto: `Settings` -> `Tools` -> `AutoDev` -> `Customize Engine prompt`, and add your own prompt.
+
 ```json
 {
   "spec": {
