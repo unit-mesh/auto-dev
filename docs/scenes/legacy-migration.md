@@ -3,7 +3,7 @@ layout: default
 title: Legacy Migration
 nav_order: 1
 parent: Scenes
-permalink: /scenes
+permalink: /scenes/legacy-migration
 ---
 
 Scene: Legacy Migration

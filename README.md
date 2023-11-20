@@ -72,6 +72,10 @@ Video demo (Bilibili) - 中文
 - [GitHub Copilot](https://github.com/saschaschramm/github-copilot) a small part of Copilot Performance logs.
 - [花了大半个月，我终于逆向分析了Github Copilot](https://github.com/mengjian-github/copilot-analysis)
 
+## Who is using AutoDev?
+
+
+
 ## License
 
 - ChatUI based
