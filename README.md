@@ -74,7 +74,9 @@ Video demo (Bilibili) - 中文
 
 ## Who is using AutoDev?
 
+Welcome to add your company here.
 
+- Thoughtworks, a leading technology consultancy.
 
 ## License
 
