@@ -135,10 +135,10 @@ open class JavaContextPrompter : ContextPrompter() {
 
         val testDataBuilder = JavaTestDataBuilder()
         testDataBuilder.inBoundData(element).forEach { (key, value) ->
-            additionContext += "input Class\n$value\n"
+            additionContext += "//input Classes: \n$value\n"
         }
         testDataBuilder.outBoundData(element).forEach { (key, value) ->
-            additionContext += "output Class\n$value\n"
+            additionContext += "//output Class: \n$value\n"
         }
     }
 
