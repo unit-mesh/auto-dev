@@ -7,8 +7,6 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.SearchScope
 import com.intellij.psi.search.searches.MethodReferencesSearch
 import com.intellij.psi.search.searches.ReferencesSearch
-import io.ktor.util.reflect.*
-import org.jetbrains.kotlin.psi.psiUtil.contains
 
 object JavaContextCollectionUtilsKt {
     fun findUsages(nameIdentifierOwner: PsiNameIdentifierOwner): List<PsiReference> {
@@ -30,7 +28,7 @@ object JavaContextCollectionUtilsKt {
      * This method takes a PsiClass object as input and builds a tree of the class and its fields, including the fields of the fields, and so on. The resulting tree is represented as a HashMap where the keys are the PsiClass objects and the values are ArrayLists of PsiField objects.
      *
      * @param clazz the PsiClass object for which the tree needs to be built
-     * @return a HashMap where the keys are the PsiClass objects and the values are ArrayLists of PsiField objects
+     * @return a HashMap where the keys are the PsiClass objects, and the values are ArrayLists of PsiField objects
      *
      * For example, if a BlogPost class includes a Comment class, and the Comment class includes a User class, then the resulting tree will be:
      *
@@ -43,12 +41,20 @@ object JavaContextCollectionUtilsKt {
      *```
      */
     fun dataStructure(clazz: PsiClass): SimpleClassStructure {
-        val project = clazz.project
-        val searchScope = GlobalSearchScope.allScope(project) as SearchScope
-        return createSimpleStructure(clazz, searchScope)
+        return createSimpleStructure(clazz)
     }
 
-    private fun createSimpleStructure(clazz: PsiClass, searchScope: SearchScope): SimpleClassStructure {
+    /**
+     * Creates a simple class structure for the given PsiClass and search scope.
+     *
+     * @param clazz the PsiClass for which the simple class structure needs to be created.
+     * @return a SimpleClassStructure object representing the simple class structure of the given PsiClass.
+     * The object contains the name of the class, the name of the fields, their types, and whether they are built-in or not.
+     * If the field type is a primitive type or a boxed type, it is marked as built-in.
+     * If the field type is a custom class, the method recursively creates a SimpleClassStructure object for that class.
+     * If the field type cannot be resolved, it is skipped.
+     */
+    private fun createSimpleStructure(clazz: PsiClass): SimpleClassStructure {
         val fields = clazz.fields
         val children = fields.mapNotNull { field ->
             when {
@@ -58,13 +64,13 @@ object JavaContextCollectionUtilsKt {
                 }
 
                 // like: String, List, etc.
-                isPsiBoxedType(field.type)  -> {
+                isPsiBoxedType(field.type) -> {
                     SimpleClassStructure(field.name, field.type.presentableText, emptyList(), builtIn = true)
                 }
 
                 else -> {
                     val classStructure =
-                        (field.type as PsiClassType).resolve()?.let { createSimpleStructure(it, searchScope) }
+                        (field.type as PsiClassType).resolve()?.let { createSimpleStructure(it) }
                             ?: return@mapNotNull null
                     classStructure.builtIn = false
                     classStructure
