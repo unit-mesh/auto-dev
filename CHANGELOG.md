@@ -1,8 +1,8 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v1.4.2...v) (2023-11-10)
+# [](https://github.com/unit-mesh/auto-dev/compare/v1.4.3...v) (2023-11-22)
 
 ## [Unreleased]
 
-## [1.4.2] - 2023-11-10
+## [1.4.3](https://github.com/unit-mesh/auto-dev/compare/v1.4.1...v[1.4.3]) (2023-11-20)
 
 ### Bug Fixes
 - add disposed ([b7e467f](https://github.com/unit-mesh/auto-dev/commit/b7e467f66b60d67cfe1d8573360bd81106d41199))
@@ -10,11 +10,21 @@
 - fix build typos ([34b9b15](https://github.com/unit-mesh/auto-dev/commit/34b9b15f1141b27b311707b4cf6653f5017918fd))
 - fix config isseu ([d9d5133](https://github.com/unit-mesh/auto-dev/commit/d9d5133dea363fd553584ccd8c869d1a1efab018))
 - fix deps for 233 ([225cf49](https://github.com/unit-mesh/auto-dev/commit/225cf49b8b928e598a65001cfcc22ca9252c6d60))
+- fix testing issue ([7fac889](https://github.com/unit-mesh/auto-dev/commit/7fac88917f15e5cd974efbdcf28dc1f37d50ec64))
 - potential IndexOutOfBoundsException when streaming response ([c3f8c43](https://github.com/unit-mesh/auto-dev/commit/c3f8c43bc3501f16d790a0549d893e2094ca7c59))
+- try to six string type issue ([f7aee83](https://github.com/unit-mesh/auto-dev/commit/f7aee83c98b8e0b4d5e6fb1637e70c99d5f45cb9))
 
 ### Features
 - **213:** fix some deps version issues ([aad9032](https://github.com/unit-mesh/auto-dev/commit/aad90321518a0ca3a23ac82fa43dfacecc8fc6ff))
+- add collect for class data structure [#52](https://github.com/unit-mesh/auto-dev/issues/52) ([e0d9d89](https://github.com/unit-mesh/auto-dev/commit/e0d9d89f2e5788ce7b1135fb20ade673059b9885))
+- add gen for test data [#52](https://github.com/unit-mesh/auto-dev/issues/52) ([dc2bd1a](https://github.com/unit-mesh/auto-dev/commit/dc2bd1a803ec391becf9e4c3a39da255373a5c44))
+- add lost boxed type for convert inout bound [#52](https://github.com/unit-mesh/auto-dev/issues/52) ([ed67f2a](https://github.com/unit-mesh/auto-dev/commit/ed67f2ab4f45cce7aface52f1a4ad7ea44071cf0))
+- impl output bound data [#52](https://github.com/unit-mesh/auto-dev/issues/52) ([1a2e01e](https://github.com/unit-mesh/auto-dev/commit/1a2e01e973cb5a357914e15523c8200b246eb590))
+- init render option for children [#52](https://github.com/unit-mesh/auto-dev/issues/52) ([610e33b](https://github.com/unit-mesh/auto-dev/commit/610e33b143a4d8aea423591152aa039937fdc24e))
 - make custom quick action works [#57](https://github.com/unit-mesh/auto-dev/issues/57) ([f7e12e0](https://github.com/unit-mesh/auto-dev/commit/f7e12e0566198817ed14c7841eabda1d693126eb))
+- make java lang works and closed [#52](https://github.com/unit-mesh/auto-dev/issues/52) ([b1b7440](https://github.com/unit-mesh/auto-dev/commit/b1b7440db7c08147fb82570e6bf7bf23ef2705b1))
+- **migration:** init generate test data enterpoint [#52](https://github.com/unit-mesh/auto-dev/issues/52) ([486e5a0](https://github.com/unit-mesh/auto-dev/commit/486e5a053a2dbcb55ac51a554a030b228322d568))
+- thinking in prepare context for input and output [#52](https://github.com/unit-mesh/auto-dev/issues/52) ([1923476](https://github.com/unit-mesh/auto-dev/commit/1923476f344b5ea706815717b0d53900fc524275))
 - **writing:** add prompt type for custom action prompt ([0bae8b0](https://github.com/unit-mesh/auto-dev/commit/0bae8b08d1200ef9a9fe94d72a9c5ca7ea0a8401))
 
 ### Reverts
@@ -648,8 +658,8 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.4.2...HEAD
-[1.4.2]: https://github.com/unit-mesh/auto-dev/compare/v1.4.1...v1.4.2
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.4.3...HEAD
+[1.4.3]: https://github.com/unit-mesh/auto-dev/compare/v1.4.1...v1.4.3
 [1.4.1]: https://github.com/unit-mesh/auto-dev/compare/v1.2.5...v1.4.1
 [1.2.5]: https://github.com/unit-mesh/auto-dev/compare/v1.2.3...v1.2.5
 [1.2.3]: https://github.com/unit-mesh/auto-dev/compare/v1.2.2...v1.2.3
