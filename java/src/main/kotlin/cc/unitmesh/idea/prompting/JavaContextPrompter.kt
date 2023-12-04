@@ -1,6 +1,5 @@
 package cc.unitmesh.idea.prompting
 
-import cc.unitmesh.devti.context.MethodContextProvider
 import cc.unitmesh.devti.custom.action.CustomPromptConfig
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.ContextPrompter
@@ -134,10 +133,10 @@ open class JavaContextPrompter : ContextPrompter() {
         val element = creationContext.element ?: return logger.error("element is null")
 
         val testDataBuilder = JavaTestDataBuilder()
-        testDataBuilder.inBoundData(element).forEach { (key, value) ->
+        testDataBuilder.inBoundData(element).forEach { (_, value) ->
             additionContext += "//input Classes: \n$value\n"
         }
-        testDataBuilder.outBoundData(element).forEach { (key, value) ->
+        testDataBuilder.outBoundData(element).forEach { (_, value) ->
             additionContext += "//output Class: \n$value\n"
         }
     }
