@@ -43,7 +43,7 @@ class AzureOpenAIProvider(val project: Project) : LLMProvider {
     private val logger = logger<AzureOpenAIProvider>()
 
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
-    private val url get() = autoDevSettingsState.customEngineServer
+    private val url get() = autoDevSettingsState.customOpenAiHost
     private var customPromptConfig: CustomPromptConfig? = null
     private var client = OkHttpClient()
     private val openAiVersion: String
