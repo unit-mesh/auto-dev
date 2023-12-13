@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Variables
-parent: Customize
+parent: Customize Features
 nav_order: 20
 permalink: /customize/variables
 ---

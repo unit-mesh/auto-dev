@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Custom Action
-parent: Customize
+parent: Customize Features
 nav_order: 10
 permalink: /custom/action
 ---

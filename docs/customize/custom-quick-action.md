@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Custom Quick Action
-parent: Customize
+parent: Customize Features
 nav_order: 10
 permalink: /custom/quick-action
 ---

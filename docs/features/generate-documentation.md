@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Generate Doc
-parent: Features
+parent: Basic Features
 nav_order: 6
 permalink: /features/gen-doc
 ---

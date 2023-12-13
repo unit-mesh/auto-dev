@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Fix error
-parent: Features
+parent: Basic Features
 nav_order: 5
 permalink: /features/fix-error
 ---

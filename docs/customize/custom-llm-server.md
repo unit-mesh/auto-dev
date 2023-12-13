@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Custom LLm Server
-parent: Customize
+parent: Customize Features
 nav_order: 14
 permalink: /custom/llm-server
 ---

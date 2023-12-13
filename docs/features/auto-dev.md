@@ -1,7 +1,7 @@
 ---
 layout: default
 title: AutoDev
-parent: Features
+parent: Basic Features
 nav_order: 1
 permalink: /features/auto-dev
 ---

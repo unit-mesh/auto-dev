@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Use AI in Editor
-parent: Features
+parent: Basic Features
 nav_order: 4
 permalink: /features/use-ai-in-editor
 ---

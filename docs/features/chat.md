@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Normal Chat
-parent: Features
+parent: Basic Features
 nav_order: 2
 permalink: /features/chat
 ---
