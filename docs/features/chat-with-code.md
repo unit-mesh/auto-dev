@@ -23,3 +23,57 @@ permalink: /features/chat-width-code
 ## Generate test data (APIs)
 
 support language: Java
+
+1. right-click the function/method and selection `Generate test data (APIs)`
+
+AutoDev with analysis input and output data structure
+
+```java
+@ApiOperation(value = "Create a new blog")
+@PostMapping("/")
+public BlogPost createBlog(@RequestBody CreateBlogRequest request) {
+    CreateBlogResponse response = new CreateBlogResponse();
+    BlogPost blogPost = new BlogPost();
+    BeanUtils.copyProperties(request, blogPost);
+    BlogPost createdBlog = blogService.createBlog(blogPost);
+    BeanUtils.copyProperties(createdBlog, response);
+    return createdBlog;
+}
+```
+
+convert it to uml
+
+```plantuml
+//input Classes: 
+class CreateBlogRequest {
+  title: String
+  content: String
+  User: User
+}
+
+class User {
+  id: Long
+  name: String
+}
+
+//output Class: 
+class BlogPost {
+  id: Long
+  title: String
+  content: String
+  author: String
+}
+```
+
+AI will gen to
+
+```json
+{
+  "title": "Sample Blog",
+  "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+  "User": {
+    "id": 1,
+    "name": "John Doe"
+  }
+}
+```
