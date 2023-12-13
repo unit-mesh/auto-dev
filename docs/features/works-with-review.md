@@ -1,7 +1,7 @@
 ---
 layout: default
-title: Works with Git
-parent: Code Review
+title: Code Review
+parent: Basic Features
 nav_order: 9
 permalink: /features/code-review
 ---
