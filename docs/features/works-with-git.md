@@ -2,7 +2,7 @@
 layout: default
 title: Works with Git
 parent: Basic Features
-nav_order: 7
+nav_order: 8
 permalink: /features/works-with-git
 ---
 
