@@ -6,10 +6,10 @@ nav_order: 8
 permalink: /features/works-with-git
 ---
 
-![AutoDev with AI](https://unitmesh.cc/auto-dev/works-with-git.png)
-
 ## Generate commit messages
 
-## Code Review
+![AutoDev with AI](https://unitmesh.cc/auto-dev/gen-commit.png)
 
-## Generate ReleaseNote
+## Generate Release Note
+
+![AutoDev with AI](https://unitmesh.cc/auto-dev/works-with-git.png)
