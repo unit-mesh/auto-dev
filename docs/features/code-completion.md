@@ -8,6 +8,8 @@ permalink: /features/code-completion
 
 ## Chat code completion
 
+with feature: load custom spec 
+
 1. Right-click it to open the context menu. (AutoDev Chat)
 
 ![AutoDev with AI](https://unitmesh.cc/auto-dev/chat-code-completion.png)
