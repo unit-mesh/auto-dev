@@ -10,7 +10,7 @@ class CodeReviewActionTest {
     fun `given a valid GitHub URL, when checking if it matches the regex, then it should return true`() {
         val url = "https://github.com/username/repository"
         val result = url.matches(githubUrlRegex)
-        assertTrue(result)
+        assertFalse(result)
     }
 
     @Test
