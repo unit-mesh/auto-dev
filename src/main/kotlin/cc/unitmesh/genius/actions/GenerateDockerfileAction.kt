@@ -22,7 +22,6 @@ class GenerateDockerfileAction : AnAction(AutoDevBundle.message("action.new.geni
         val dockerContexts = BuildSystemProvider.guess(project)
         val templateRender = TemplateRender("genius/sre")
         templateRender.context = DevOpsContext.from(dockerContexts)
-
         val template = templateRender.getTemplate("generate-dockerfile.vm")
 
         val msgs = templateRender.buildMsgs(template)

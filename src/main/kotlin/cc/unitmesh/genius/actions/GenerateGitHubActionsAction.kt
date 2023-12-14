@@ -19,9 +19,9 @@ class GenerateGitHubActionsAction : AnAction(AutoDevBundle.message("action.new.g
         val project = e.project ?: return
 
         // first, we need to guess language
-        val dockerContexts = BuildSystemProvider.guess(project);
+        val githubActions = BuildSystemProvider.guess(project);
         val templateRender = TemplateRender("genius/cicd")
-        templateRender.context = DevOpsContext.from(dockerContexts)
+        templateRender.context = DevOpsContext.from(githubActions)
         val template = templateRender.getTemplate("generate-github-action.vm")
 
         val dir = project.guessProjectDir()!!.toNioPath().resolve(".github").resolve("workflows")
