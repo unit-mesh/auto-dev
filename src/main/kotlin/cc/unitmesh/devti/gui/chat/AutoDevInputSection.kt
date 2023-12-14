@@ -2,9 +2,9 @@ package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
-import cc.unitmesh.devti.llms.tokenizer.LLM_MAX_TOKEN
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.llms.tokenizer.TokenizerImpl
+import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Presentation
@@ -58,7 +58,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
 
     init {
-        val presentation = Presentation(AutoDevBundle.message("devti.chat.send"))
+        val presentation = Presentation(AutoDevBundle.message("autodev.chat.send"))
         presentation.setIcon(AutoDevIcons.Send)
         buttonPresentation = presentation
         button = ActionButton(
@@ -128,10 +128,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         val jComponent = this as JComponent
 
         setBorder(AutoDevCoolBorder(editorEx as EditorEx, jComponent))
-        UIUtil.forEachComponentInHierarchy(jComponent) { component: Component ->
-            (component as JComponent).setOpaque(false)
-            component.revalidate()
-        }
+        UIUtil.setOpaqueRecursively(jComponent, false)
+        jComponent.revalidate()
     }
 
 
@@ -170,7 +168,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         val text = input.getDocument().text
         val textLength = (this.tokenizer)?.count(text) ?: text.length
 
-        val exceed: Int = textLength - LLM_MAX_TOKEN
+        val exceed: Int = textLength - AutoDevSettingsState.maxTokenLength
         if (exceed <= 0) return null
 
         val errorMessage = AutoDevBundle.message("chat.too.long.user.message", exceed)

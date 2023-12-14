@@ -17,12 +17,12 @@ class CodeCompletionRequest(
     val prefixText: String,
     val offset: Int,
     val documentVersion: Long,
-    val element: PsiElement,
+    val element: PsiElement?,
     val editor: Editor,
     val suffixText: String
 ) : Disposable {
     companion object {
-        fun create(editor: Editor, offset: Int, element: PsiElement, prefix: String?, suffix: String?): CodeCompletionRequest? {
+        fun create(editor: Editor, offset: Int, element: PsiElement?, prefix: String?, suffix: String?): CodeCompletionRequest? {
             val project = editor.project ?: return null
             val document = editor.document
             val file = PsiDocumentManager.getInstance(project).getPsiFile(document) ?: return null

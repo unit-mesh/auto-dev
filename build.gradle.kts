@@ -29,6 +29,7 @@ import org.jetbrains.intellij.tasks.PublishPluginTask
 import org.jetbrains.intellij.tasks.RunIdeTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+// The same as `--stacktrace` param
 gradle.startParameter.showStacktrace = ShowStacktrace.ALWAYS
 
 @Suppress("DSL_SCOPE_VIOLATION")
@@ -81,7 +82,7 @@ val ideaPlugins =
     )
 
 val baseIDE = prop("baseIDE")
-val platformVersion = prop("globalPlatformVersion").toInt()
+val platformVersion = prop("platformVersion").toInt()
 val ideaVersion = prop("ideaVersion")
 val golandVersion = prop("golandVersion")
 val pycharmVersion = prop("pycharmVersion")
@@ -155,6 +156,27 @@ allprojects {
 
     val testOutput = configurations.create("testOutput")
 
+
+    sourceSets {
+        main {
+            java.srcDirs("src/gen")
+            resources.srcDirs("src/$platformVersion/main/resources")
+        }
+        test {
+            resources.srcDirs("src/$platformVersion/test/resources")
+        }
+    }
+    kotlin {
+        sourceSets {
+            main {
+                kotlin.srcDirs("src/$platformVersion/main/kotlin")
+            }
+            test {
+                kotlin.srcDirs("src/$platformVersion/test/kotlin")
+            }
+        }
+    }
+
     dependencies {
         compileOnly(kotlin("stdlib-jdk8"))
         testOutput(sourceSets.getByName("test").output.classesDirs)
@@ -168,13 +190,12 @@ changelog {
     repositoryUrl.set(properties("pluginRepositoryUrl"))
 }
 
-
 project(":plugin") {
     apply {
         plugin("org.jetbrains.changelog")
     }
 
-    version = prop("pluginVersion")
+    version = prop("pluginVersion") + "-$platformVersion"
 
     intellij {
         pluginName.set(basePluginArchiveName)
@@ -322,6 +343,13 @@ project(":") {
         plugins.set(ideaPlugins)
     }
 
+    sourceSets {
+        main {
+            resources.srcDirs("src/main/resources-stable")
+            resources.srcDirs("src/$platformVersion/main/resources-stable")
+        }
+    }
+
     dependencies {
         implementation(libs.bundles.openai)
         implementation(libs.bundles.markdown)
@@ -332,8 +360,8 @@ project(":") {
         implementation("org.jetbrains:markdown:0.5.1")
         implementation(libs.kotlinx.serialization.json)
 
-        implementation("cc.unitmesh:cocoa-core:0.4.1")
-        implementation("cc.unitmesh:git-commit-message:0.4.1")
+        implementation("cc.unitmesh:cocoa-core:0.4.2")
+        implementation("cc.unitmesh:git-commit-message:0.4.2")
 
         // kanban
         implementation(libs.github.api)
@@ -346,6 +374,7 @@ project(":") {
         implementation("com.knuddels:jtokkit:0.6.1")
 
         // junit
+        testImplementation("io.kotest:kotest-assertions-core:5.7.2")
         testImplementation("junit:junit:4.13.2")
         testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.9.3")
     }

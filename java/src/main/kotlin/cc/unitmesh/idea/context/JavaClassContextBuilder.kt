@@ -23,7 +23,7 @@ class JavaClassContextBuilder : ClassContextBuilder {
         }
 
         val usages =
-            if (gatherUsages) JavaContextCollectionUtilsKt.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
+            if (gatherUsages) JavaContextCollection.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
 
         return ClassContext(psiElement, psiElement.text, psiElement.name, methods, fields, destination, usages)
     }

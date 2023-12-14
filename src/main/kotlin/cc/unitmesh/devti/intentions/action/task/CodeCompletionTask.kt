@@ -26,8 +26,8 @@ import com.intellij.openapi.diagnostic.logger
  * Note: This class does not have any public methods.
  */
 class CodeCompletionTask(private val request: CodeCompletionRequest) : BaseCompletionTask(request) {
-    private val chunksString = SimilarChunksWithPaths.createQuery(request.element, 60)
-    private val commenter = LanguageCommenters.INSTANCE.forLanguage(request.element.language)
+    private val chunksString = SimilarChunksWithPaths.createQuery(request.element!!, 60)
+    private val commenter = LanguageCommenters.INSTANCE.forLanguage(request.element!!.language)
     private val commentPrefix = commenter?.lineCommentPrefix
 
     override fun promptText(): String {
@@ -44,10 +44,6 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) : BaseCompl
         } else {
             "complete code for given code, just return rest part of code.: \n$commentPrefix\n$chunksString\n$prefix\n\nreturn rest code:"
         }
-    }
-
-    companion object {
-        val logger = logger<CodeCompletionIntention>()
     }
 }
 

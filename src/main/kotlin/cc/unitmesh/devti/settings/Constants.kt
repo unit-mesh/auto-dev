@@ -25,6 +25,8 @@ enum class XingHuoApiVersion(val value: Int) {
 
 val DEFAULT_AI_ENGINE = AI_ENGINES[0]
 
+val DEFAULT_AI_MODEL = OPENAI_MODEL[0]
+
 val HUMAN_LANGUAGES = arrayOf("English", "中文")
 val DEFAULT_HUMAN_LANGUAGE = HUMAN_LANGUAGES[0]
 val MAX_TOKEN_LENGTH = 4000

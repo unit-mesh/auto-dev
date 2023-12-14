@@ -16,10 +16,6 @@ class ClassContextProvider(private val gatherUsages: Boolean) : LLMCodeContextPr
         providers = registeredLanguages.mapNotNull(languageExtension::forLanguage)
     }
 
-    companion object {
-        val logger = logger<ClassContextProvider>()
-    }
-
     override fun from(psiElement: PsiElement): ClassContext {
         for (provider in providers) {
             provider.getClassContext(psiElement, gatherUsages)?.let {

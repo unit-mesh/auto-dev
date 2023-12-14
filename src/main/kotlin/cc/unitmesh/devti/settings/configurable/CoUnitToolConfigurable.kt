@@ -13,9 +13,7 @@ import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import javax.swing.JComponent
 import javax.swing.JTextField
 
-class CoUnitToolConfigurable(project: Project) :
-    BoundConfigurable(AutoDevBundle.message("settings.external.counit.name")), Disposable {
-
+class CoUnitToolConfigurable(project: Project) : BoundConfigurable(AutoDevBundle.message("counit.name")), Disposable {
     private val pathToToolchainComboBox = ToolchainPathChoosingComboBox()
     private val serverAddress = JTextField()
 
@@ -24,12 +22,13 @@ class CoUnitToolConfigurable(project: Project) :
 
     override fun createPanel(): DialogPanel = panel {
         row {
-            checkBox(AutoDevBundle.message("settings.external.counit.enable.label"))
-                .comment(AutoDevBundle.message("settings.external.counit.enable.label.comment"))
+            checkBox(AutoDevBundle.message("counit.enable.label"))
+                .comment(AutoDevBundle.message("counit.enable.label.comment"))
                 .bindSelected(state::enableCoUnit)
         }
 
-        row(AutoDevBundle.message("settings.external.counit.server.address.label")) {
+        row(AutoDevBundle.message("counit.server.address.label")) {
+            // TODO: spike better way for support 213 and 221
             fullWidthCell(serverAddress)
                 .bind(
                     componentGet = { it.text },
@@ -38,7 +37,7 @@ class CoUnitToolConfigurable(project: Project) :
                 )
         }
 
-        row(AutoDevBundle.message("settings.external.counit.location.label")) {
+        row(AutoDevBundle.message("counit.location.label")) {
             fullWidthCell(pathToToolchainComboBox)
         }
 

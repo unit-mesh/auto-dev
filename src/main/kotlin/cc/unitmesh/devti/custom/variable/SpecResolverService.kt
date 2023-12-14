@@ -8,15 +8,12 @@ import com.intellij.openapi.components.Service
 class SpecResolverService {
     private val specs = CustomPromptConfig.load().spec
 
-    fun createResolvers(): List<SpecVariableResolver> {
-        return specs.map { (key, value) ->
-            SpecVariableResolver("SPEC_$key", value)
-        }
+    fun resolvers(): List<SpecVariableResolver> = specs.map { (key, value) ->
+        SpecVariableResolver("SPEC_$key", value)
     }
 
     companion object {
-        fun getInstance(): SpecResolverService {
-            return ApplicationManager.getApplication().getService(SpecResolverService::class.java)
-        }
+        fun getInstance(): SpecResolverService =
+            ApplicationManager.getApplication().getService(SpecResolverService::class.java)
     }
 }

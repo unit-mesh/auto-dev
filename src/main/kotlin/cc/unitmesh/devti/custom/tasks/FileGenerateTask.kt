@@ -39,9 +39,7 @@ class FileGenerateTask(@JvmField val project: Project, val messages: List<LlmMsg
             }
         }
 
-        // sometimes, the result is markdown codeblock, so we need to parse it to get the code
-        val code = MarkdownCode.parse(result).text
-        fileName.writeText(code)
+        fileName.writeText(result)
         refreshAndOpenInEditor(Path(projectRoot.path), projectRoot)
     }
 

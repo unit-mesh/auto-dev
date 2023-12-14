@@ -18,10 +18,8 @@ class MethodContext(
     val paramNames: List<String> = emptyList(),
     val includeClassContext: Boolean = false,
     val usages: List<PsiReference> = emptyList(),
-    val inputOutputClasses: List<PsiElement> = emptyList(),
-) : NamedElementContext(
-    root, text, name
-) {
+    val fanInOut: List<PsiElement> = emptyList(),
+) : NamedElementContext(root, text, name) {
     private val classContext: ClassContext?
     private val commenter = LanguageCommenters.INSTANCE.forLanguage(root.language) ?: null
     private val commentPrefix = commenter?.lineCommentPrefix ?: ""
@@ -59,9 +57,11 @@ fun signature: ${signature ?: "_"}
     }
 
     fun inputOutputString(): String {
+        if (fanInOut.isEmpty()) return ""
+
         var result = ""
-        this.inputOutputClasses.forEach {
-            val context = ClassContextProvider(false).from(it)
+        this.fanInOut.forEach {
+            val context: ClassContext = ClassContextProvider(false).from(it)
             val element = context.root
 
             if (!isInProject(element.containingFile?.virtualFile!!, project)) {

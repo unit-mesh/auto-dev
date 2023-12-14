@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.gui.snippet
 
-import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.Presentation
@@ -41,10 +40,6 @@ class AutoDevLanguageLabelAction : DumbAwareAction(), CustomComponentAction {
         val file: VirtualFile = FileDocumentManager.getInstance().getFile(data.document) ?: return
         val lightVirtualFile = file as LightVirtualFile
         e.presentation.putClientProperty(LANGUAGE_PRESENTATION_KEY, lightVirtualFile.language.displayName)
-    }
-
-    override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.EDT
     }
 
     private fun snippetLanguageName(presentation: Presentation): String {

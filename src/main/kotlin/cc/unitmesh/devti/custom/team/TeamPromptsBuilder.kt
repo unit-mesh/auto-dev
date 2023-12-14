@@ -5,20 +5,35 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.vfs.VirtualFile
 
 @Service(Service.Level.PROJECT)
 class TeamPromptsBuilder(private val project: Project) {
     val settings = project.teamPromptsSettings
-    fun build(): List<TeamPromptAction> {
+    fun default(): List<TeamPromptAction> {
         val path = settings.state.teamPromptsDir
         val promptsDir = project.guessProjectDir()?.findChild(path) ?: return emptyList()
 
-        return promptsDir.children.filter { it.name.endsWith(".vm") }.map {
+        val filterPrompts = promptsDir.children.filter { it.name.endsWith(".vm") }
+        return buildPrompts(filterPrompts)
+    }
+
+    fun quickPrompts(): List<TeamPromptAction> {
+        val baseDir = settings.state.teamPromptsDir
+        val promptsDir = project.guessProjectDir()?.findChild(baseDir) ?: return emptyList()
+        val quickPromptDir = promptsDir.findChild("quick") ?: return emptyList()
+        val quickPromptFiles = quickPromptDir.children.filter { it.name.endsWith(".vm") }
+
+        return buildPrompts(quickPromptFiles)
+    }
+
+    private fun buildPrompts(prompts: List<VirtualFile>): List<TeamPromptAction> {
+        return prompts.map {
             // a prompt should be named as <actionName>.vm, and we need to replace - with " "
             val promptName = it.nameWithoutExtension.replace("-", " ")
             // load content of the prompt file
             val promptContent = runReadAction { it.inputStream.readBytes().toString(Charsets.UTF_8) }
-            val actionPrompt = TeamActionPrompt.fromContent(promptContent)
+            val actionPrompt = CustomActionPrompt.fromContent(promptContent)
 
             TeamPromptAction(promptName, actionPrompt)
         }
@@ -27,5 +42,5 @@ class TeamPromptsBuilder(private val project: Project) {
 
 data class TeamPromptAction(
     val actionName: String,
-    val actionPrompt: TeamActionPrompt = TeamActionPrompt(),
+    val actionPrompt: CustomActionPrompt = CustomActionPrompt(),
 )

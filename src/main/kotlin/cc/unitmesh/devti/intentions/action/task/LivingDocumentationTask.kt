@@ -24,9 +24,6 @@ class LivingDocumentationTask(
     val target: PsiNameIdentifierOwner,
     val type: LivingDocumentationType = LivingDocumentationType.COMMENT,
 ) : Task.Backgroundable(editor.project, AutoDevBundle.message("intentions.request.background.process.title")) {
-    companion object {
-        val logger = logger<LivingDocumentationTask>()
-    }
     override fun run(indicator: ProgressIndicator) {
         val documentation = LivingDocumentation.forLanguage(target.language) ?: return
         val builder = LivingDocPromptBuilder(editor, target, documentation, type)
@@ -48,6 +45,10 @@ class LivingDocumentationTask(
         logger.info("Result: $result")
 
         documentation.updateDoc(target, result, type, editor)
+    }
+
+    companion object {
+        val logger = logger<LivingDocumentationTask>()
     }
 }
 

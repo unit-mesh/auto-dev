@@ -7,7 +7,6 @@ import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.XingHuoApiVersion
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import io.ktor.util.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.channels.awaitClose
@@ -171,4 +170,8 @@ class XingHuoProvider(val project: Project) : LLMProvider {
             }
         }""".trimIndent()
     }
+}
+
+private fun ByteArray.encodeBase64(): String {
+    return Base64.getEncoder().encodeToString(this)
 }

@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.runconfig.config
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.flow.model.StoryConfig
 import cc.unitmesh.devti.runconfig.command.BaseConfig
 
@@ -8,7 +9,7 @@ class AutoDevStory(
     private val storySource: String,
     private val acs: List<String> = listOf()
 ) : BaseConfig() {
-    override var configurationName = "DevTi Create Story"
+    override var configurationName = AutoDevBundle.message("name") + "Create Story"
 
     init {
         if (storyId <= 0) {

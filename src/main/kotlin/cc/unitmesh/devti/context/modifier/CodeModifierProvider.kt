@@ -13,9 +13,5 @@ class CodeModifierProvider {
         providers = registeredLanguages.mapNotNull(languageExtension::forLanguage)
     }
 
-    fun modifier(lang: Language): CodeModifier? {
-        return providers.find { it.isApplicable(lang) }
-    }
-
-    // get file by directory
+    fun modifier(lang: Language): CodeModifier? = providers.find { it.isApplicable(lang) }
 }

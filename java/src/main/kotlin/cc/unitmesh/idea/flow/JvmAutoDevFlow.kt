@@ -38,7 +38,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
         kanban: Kanban?,
         aiRunner: LLMProvider,
         component: ChatCodingPanel,
-        project: Project
+        project: Project,
     ) {
         this.kanban = kanban
         this.connector = aiRunner
@@ -210,7 +210,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
     private fun createCode(
         code: String,
         controllerName: String,
-        isNeedCreateController: Boolean
+        isNeedCreateController: Boolean,
     ) {
         when {
             isNeedCreateController || processor.isController(code) -> {
@@ -256,7 +256,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
         targetEndpoint: String,
         clazz: DtClass,
         storyDetail: String,
-        isNewController: Boolean
+        isNewController: Boolean,
     ): String {
         val allModels = processor.modelList().map { it }
         val relevantName = targetEndpoint.replace("Controller", "")
@@ -286,7 +286,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
     private fun executePrompt(promptText: String): String {
         ui.addMessage(promptText, false, promptText)
         // for answer
-        ui.addMessage(AutoDevBundle.message("devti.loading"))
+        ui.addMessage(AutoDevBundle.message("autodev.loading"))
 
         return runBlocking {
             val prompt = connector.stream(promptText, "")

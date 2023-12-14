@@ -18,7 +18,6 @@ class RustMethodContextBuilder : MethodContextBuilder {
         val text = psiElement.text
         val returnType = psiElement.retType?.text ?: ""
         val language = psiElement.language.displayName
-        val implLookup = psiElement.implLookup
 
         val signature = StringBuilder()
         psiElement.signature(signature)

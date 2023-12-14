@@ -22,11 +22,9 @@ class GenerateDockerfileAction : AnAction(AutoDevBundle.message("action.new.geni
         val dockerContexts = BuildSystemProvider.guess(project)
         val templateRender = TemplateRender("genius/sre")
         templateRender.context = DevOpsContext.from(dockerContexts)
+        val template = templateRender.getTemplate("generate-dockerfile.vm")
 
-        val template = templateRender
-            .getTemplate("create-dockerfile.vm")
-
-        val msgs = templateRender.create(template)
+        val msgs = templateRender.buildMsgs(template)
 
         val fileDir = project.guessProjectDir()!!.toNioPath().resolve(DOCKERFILE).toFile()
         if (!fileDir.exists()) {

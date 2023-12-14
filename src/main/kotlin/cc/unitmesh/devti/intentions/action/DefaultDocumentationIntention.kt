@@ -9,8 +9,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
 class DefaultDocumentationIntention: BasedDocumentationIntention() {
-    override val config: CustomDocumentationConfig
-        get() = CustomDocumentationConfig.default()
+    override val config: CustomDocumentationConfig = CustomDocumentationConfig.default()
 
     override fun getText(): String = AutoDevBundle.message("intentions.living.documentation.name")
 

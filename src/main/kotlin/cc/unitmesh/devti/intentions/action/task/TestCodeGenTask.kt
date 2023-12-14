@@ -27,6 +27,7 @@ import kotlinx.coroutines.runBlocking
 
 class TestCodeGenTask(val request: TestCodeGenRequest) :
     Task.Backgroundable(request.project, AutoDevBundle.message("intentions.chat.code.test.name")) {
+
     private val actionType = ChatActionType.GENERATE_TEST
     private val lang = request.file.language.displayName
     private val writeTestService = WriteTestService.context(request.element)
@@ -52,12 +53,12 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         var prompter = if (testContext.isNewFile) {
             """Write unit test for following code. 
                                     |You MUST return code only, not explain.
-                                    | """.trimMargin()
+                                    |""".trimMargin()
         } else {
             """Write unit test for following code. 
                                     |You MUST return method code only, no explain.
                                     |You MUST return start with @Test annotation.
-                                    | """.trimMargin()
+                                    |""".trimMargin()
         }
 
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.collect-context")

@@ -9,7 +9,6 @@ import org.gitlab4j.api.models.Issue
 class GitLabIssue(private val apiUrl: String, private val personalAccessToken: String, gitlabUrl: String) : Kanban {
     private lateinit var gitLabApi: GitLabApi
 
-    // Initialize the GitLabApi instance
     init {
         initializeGitLabApi(gitlabUrl, personalAccessToken)
     }

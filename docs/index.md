@@ -28,6 +28,12 @@ permalink: /
 > 🧙‍AutoDev: The AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, and a helpful
 > bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Testing feature 🧪 included! 🚀
 
+AutoDev Overview:
+
+<p align="center">
+  <img src="autodev-overview.svg" width="100%" height="100%"  alt="Overview" />
+</p>
+
 Features:
 
 - Languages support: Java, Kotlin, Python, JavaScript/TypeScript, Goland, Rust or others...

@@ -17,7 +17,7 @@ class JavaVariableContextBuilder : VariableContextBuilder {
         val containingClass = psiElement.getContainingClass()
 
         val references =
-            if (gatherUsages) JavaContextCollectionUtilsKt.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
+            if (gatherUsages) JavaContextCollection.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
 
         return VariableContext(
             psiElement,

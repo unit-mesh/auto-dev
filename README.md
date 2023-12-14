@@ -22,6 +22,12 @@
 
 [Read the docs →](https://ide.unitmesh.cc/)
 
+AutoDev Overview:
+
+<p align="center">
+  <img src="docs/autodev-overview.svg" width="100%" height="100%"  alt="Overview" />
+</p>
+
 Features:
 
 - Languages support: Java, Kotlin, Python, JavaScript/TypeScript, Goland, Rust or others...
@@ -44,6 +50,7 @@ Features:
     - Custom LLM Server. You can customize your LLM Server in `Settings` -> `Tools` -> `AutoDev`
     - Custom Living documentation.
     - Team prompts. Customize your team prompts in codebase, and distribute to your team.
+    - Custom Quick Action. You can add your own quick action.
 - Miscellaneous
     - CI/CD support. AutoDev will auto generate CI/CD config file.
     - Dockerfile support. AutoDev will auto generate Dockerfile.
@@ -64,6 +71,12 @@ Video demo (Bilibili) - 中文
   sends to the server.
 - [GitHub Copilot](https://github.com/saschaschramm/github-copilot) a small part of Copilot Performance logs.
 - [花了大半个月，我终于逆向分析了Github Copilot](https://github.com/mengjian-github/copilot-analysis)
+
+## Who is using AutoDev?
+
+Welcome to add your company here.
+
+- Thoughtworks, a leading technology consultancy.
 
 ## License
 

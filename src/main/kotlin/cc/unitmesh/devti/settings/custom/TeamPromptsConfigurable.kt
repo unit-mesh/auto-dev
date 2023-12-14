@@ -1,13 +1,12 @@
 package cc.unitmesh.devti.settings.custom
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.fullWidthCell
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.dsl.builder.*
-import com.intellij.ui.dsl.gridLayout.HorizontalAlign
-import javax.swing.JComponent
 import javax.swing.JTextField
 
 class PromptLibraryConfigurable(project: Project) : BoundConfigurable(AutoDevBundle.message("settings.external.team.prompts.name")) {
@@ -19,6 +18,7 @@ class PromptLibraryConfigurable(project: Project) : BoundConfigurable(AutoDevBun
 
     override fun createPanel(): DialogPanel = panel {
         row(AutoDevBundle.message("settings.external.team.prompts.path")) {
+            // TODO: spike better way for support 213 and 221
             fullWidthCell(teamPromptsField)
                 .bind(
                     componentGet = { it.text },
@@ -35,7 +35,3 @@ class PromptLibraryConfigurable(project: Project) : BoundConfigurable(AutoDevBun
     }
 }
 
-fun <T : JComponent> Row.fullWidthCell(component: T): Cell<T> {
-    return cell(component)
-        .horizontalAlign(HorizontalAlign.FILL)
-}

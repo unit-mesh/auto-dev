@@ -7,25 +7,31 @@ import cc.unitmesh.devti.provider.context.ChatOrigin
 import com.intellij.lang.Language
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiNameIdentifierOwner
 import kotlinx.coroutines.runBlocking
 import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.Velocity
 import java.io.StringWriter
-import com.intellij.psi.PsiNameIdentifierOwner
 
 class TeamPromptTemplateCompiler(
     val language: Language,
     val file: PsiFile,
     val element: PsiElement?,
     val editor: Editor,
+    val selectedText: String = "",
 ) {
     private val velocityContext = VelocityContext()
 
-    companion object {
-        val log = logger<TeamPromptTemplateCompiler>()
+    init {
+        this.set("selection", selectedText)
+        this.set("beforeCursor", file.text.substring(0, editor.caretModel.offset))
+        this.set("afterCursor", file.text.substring(editor.caretModel.offset))
+    }
+
+    fun set(key: String, value: String) {
+        velocityContext.put(key, value)
     }
 
     fun compile(template: String): String {
@@ -41,20 +47,6 @@ class TeamPromptTemplateCompiler(
         configForLanguage()
         configForFramework()
 
-        // without the following class loader initialization, I get the
-        // following exception when running as Eclipse plugin:
-        // org.apache.velocity.exception.VelocityException: The specified
-        // class for ResourceManager
-        // (org.apache.velocity.runtime.resource.ResourceManagerImpl) does not
-        // implement org.apache.velocity.runtime.resource.ResourceManager;
-        // Velocity is not initialized correctly.
-        // without the following class loader initialization, I get the
-        // following exception when running as Eclipse plugin:
-        // org.apache.velocity.exception.VelocityException: The specified
-        // class for ResourceManager
-        // (org.apache.velocity.runtime.resource.ResourceManagerImpl) does not
-        // implement org.apache.velocity.runtime.resource.ResourceManager;
-        // Velocity is not initialized correctly.
         val oldContextClassLoader = Thread.currentThread().getContextClassLoader()
         Thread.currentThread().setContextClassLoader(TeamPromptTemplateCompiler::class.java.getClassLoader())
 
@@ -102,7 +94,7 @@ class TeamPromptTemplateCompiler(
         )
     }
 
-    fun set(key: String, value: @NlsSafe String) {
-        velocityContext.put(key, value)
+    companion object {
+        val log = logger<TeamPromptTemplateCompiler>()
     }
 }

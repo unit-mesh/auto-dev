@@ -26,7 +26,7 @@ class AutoDevRunProfileState(
     val environment: ExecutionEnvironment,
     private val configuration: AutoDevConfiguration,
     val project: Project,
-    val options: AutoDevConfigurationOptions
+    val options: AutoDevConfigurationOptions,
 ) : RunProfileState {
     private val githubToken: String
     private val gitlabToken: String
@@ -42,11 +42,19 @@ class AutoDevRunProfileState(
     }
 
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
-        val gitHubIssue : Kanban
-        if ("Github" == gitType) {
-            gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)
-        } else {
-            gitHubIssue = GitLabIssue(options.githubRepo(), gitlabToken, gitlabUrl)
+        val gitHubIssue: Kanban
+        when (gitType.lowercase()) {
+            "gitlab" -> {
+                gitHubIssue = GitLabIssue(options.githubRepo(), gitlabToken, gitlabUrl)
+            }
+
+            "github" -> {
+                gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)
+            }
+
+            else -> {
+                gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)
+            }
         }
 
 

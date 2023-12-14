@@ -70,10 +70,10 @@ class CustomActionIntention(private val intentionConfig: CustomIntentionConfig) 
             MethodInputOutputVariableResolver(psiElement),
             SimilarChunkVariableResolver(psiElement),
             SelectionVariableResolver(psiElement.language.displayName ?: "", selectedText),
-        ) + SpecResolverService.getInstance().createResolvers()
+        ) + SpecResolverService.getInstance().resolvers()
 
         val resolverMap = LinkedHashMap<String, VariableResolver>(20)
-        for (resolver in variableResolvers) {
+        variableResolvers.forEach { resolver ->
             resolverMap[resolver.variableName()] = resolver
         }
 

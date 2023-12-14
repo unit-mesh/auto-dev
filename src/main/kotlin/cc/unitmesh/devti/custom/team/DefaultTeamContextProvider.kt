@@ -38,9 +38,9 @@ class DefaultTeamContextProvider(val element: PsiElement?, val editor: Editor) :
     override fun underTestMethodCode(methodName: String): String {
         val psiElement = element ?: return ""
 
-        val promptProvider = CustomPromptProvider.forLanguage(element.language)
+        val provider = CustomPromptProvider.forLanguage(element.language)
 
-        return promptProvider?.underTestMethodCode(editor.project!!, psiElement)?.joinToString("\n") ?: ""
+        return provider?.underTestMethodCode(editor.project!!, psiElement)?.joinToString("\n") ?: ""
     }
 
     /**

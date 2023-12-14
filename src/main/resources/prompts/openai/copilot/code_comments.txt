@@ -1,9 +1,0 @@
-Add comments inside follow function. Here are your requirements:
-
-1. comments should be clear and easy to understand.
-2. comments should inside the code, not in the end of the code, not in the beginning of the code.
-3. should only return with origin code, not explanation.
-
-###
-{code}
-###

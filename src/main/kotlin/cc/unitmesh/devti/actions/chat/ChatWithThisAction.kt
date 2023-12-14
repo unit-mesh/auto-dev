@@ -7,9 +7,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 
 class ChatWithThisAction : ChatBaseAction() {
-    override fun getActionType(): ChatActionType {
-        return ChatActionType.CHAT
-    }
+    override fun getActionType(): ChatActionType = ChatActionType.CHAT
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
