@@ -206,7 +206,6 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         }.catch {
             it.printStackTrace()
         }.collect {
-            println("got message $it")
             text += it
 
             // 以下两个 API 设计不合理，如果必须要同时调用，那就只提供一个就好了

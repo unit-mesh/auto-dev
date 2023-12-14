@@ -8,8 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.nfeld.jsonpathkt.JsonPath
-import com.nfeld.jsonpathkt.extension.read
+import com.jayway.jsonpath.JsonPath
 import com.theokanning.openai.completion.chat.ChatCompletionResult
 import com.theokanning.openai.service.SSE
 import io.reactivex.BackpressureStrategy
@@ -19,7 +18,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -49,7 +47,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
     private val requestFormat: String
         get() = autoDevSettingsState.customEngineRequestFormat
     private val responseFormat
-        get() = autoDevSettingsState.customEngineResponseType
+        get() = autoDevSettingsState.customEngineResponseFormat
 
     private var client = OkHttpClient()
     private val timeout = Duration.ofSeconds(600)
@@ -99,8 +97,6 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
     }
 
 
-    private val _responseFlow = MutableSharedFlow<String>()
-
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun streamJson(call: Call): Flow<String> = callbackFlow {
         call.enqueue(JSONBodyResponseCallback(responseFormat) {
@@ -114,11 +110,9 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun streamSSE(call: Call): Flow<String> {
-        val emitDone = false
-
         val sseFlowable = Flowable
             .create({ emitter: FlowableEmitter<SSE> ->
-                call.enqueue(cc.unitmesh.devti.llms.azure.ResponseBodyCallback(emitter, emitDone))
+                call.enqueue(cc.unitmesh.devti.llms.azure.ResponseBodyCallback(emitter, true))
             }, BackpressureStrategy.BUFFER)
 
         try {
@@ -132,8 +126,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
                         .blockingForEach { sse ->
                             if (responseFormat.isNotEmpty()) {
                                 val chunk: String = JsonPath.parse(sse!!.data)?.read(responseFormat)
-                                    ?: throw Exception("Failed to parse chunk")
-                                logger.warn("got msg: $chunk")
+                                    ?: throw Exception("Failed to parse chunk: ${sse.data}")
                                 trySend(chunk)
                             } else {
                                 val result: ChatCompletionResult =
@@ -215,7 +208,7 @@ fun JsonObject.updateCustomBody(customRequest: String): JsonObject {
 
             customRequestJson["customFields"]?.let { customFields ->
                 customFields.jsonObject.forEach { (key, value) ->
-                    put(key, value.jsonPrimitive.content)
+                    put(key, value.jsonPrimitive)
                 }
             }
 
