@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Domain Driven Design
-nav_order: 1
+nav_order: 2
 parent: Scenes
 permalink: /scenes/domain-drive-design
 ---
