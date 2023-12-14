@@ -23,7 +23,6 @@ class MessageView(private val message: String, val role: ChatRole, private val d
     JBPanel<MessageView>() {
     private val myNameLabel: Component
     private val component: DisplayComponent = DisplayComponent(message)
-    private var answer: String? = null
     private var centerPanel: JPanel = JPanel(VerticalLayout(JBUI.scale(8)))
 
     init {
@@ -106,7 +105,7 @@ class MessageView(private val message: String, val role: ChatRole, private val d
     }
 
     fun updateSourceContent(source: String?) {
-        answer = source
+        component.text = source
     }
 
     fun scrollToBottom() {

@@ -1,9 +1,9 @@
 package cc.unitmesh.devti.llms.custom
 
-import cc.unitmesh.devti.custom.action.CustomPromptConfig
 import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
+import cc.unitmesh.devti.settings.ResponseType
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
@@ -17,12 +17,15 @@ import io.reactivex.Flowable
 import io.reactivex.FlowableEmitter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
+import okhttp3.Call
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -39,15 +42,15 @@ data class CustomRequest(val messages: List<Message>)
 @Service(Service.Level.PROJECT)
 class CustomLLMProvider(val project: Project) : LLMProvider {
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
-    private val url get() = autoDevSettingsState.customEngineServer
-    private val key get() = autoDevSettingsState.customEngineToken
-    private val requestFormat: String get() = autoDevSettingsState.customEngineRequestFormat
-    private val responseFormat get() = autoDevSettingsState.customEngineResponseFormat
-    private val customPromptConfig: CustomPromptConfig
-        get() {
-            val prompts = autoDevSettingsState.customPrompts
-            return CustomPromptConfig.tryParse(prompts)
-        }
+    private val url
+        get() = autoDevSettingsState.customEngineServer
+    private val key
+        get() = autoDevSettingsState.customEngineToken
+    private val requestFormat: String
+        get() = autoDevSettingsState.customEngineRequestFormat
+    private val responseFormat
+        get() = autoDevSettingsState.customEngineResponseType
+
     private var client = OkHttpClient()
     private val timeout = Duration.ofSeconds(600)
     private val messages: MutableList<Message> = ArrayList()
@@ -66,7 +69,6 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
         return this.prompt(promptText, "")
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     override fun stream(promptText: String, systemPrompt: String, keepHistory: Boolean): Flow<String> {
         if (!keepHistory) {
             clearMessage()
@@ -86,15 +88,32 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
         }
         builder.appendCustomHeaders(requestFormat)
 
-        client = client.newBuilder()
-                .readTimeout(timeout)
-                .build()
-        val request = builder
-                .url(url)
-                .post(body)
-                .build()
+        client = client.newBuilder().readTimeout(timeout).build()
+        val call = client.newCall(builder.url(url).post(body).build())
 
-        val call = client.newCall(request)
+        if (autoDevSettingsState.customEngineResponseType == ResponseType.SSE.name) {
+            return streamSSE(call)
+        } else {
+            return streamJson(call)
+        }
+    }
+
+
+    private val _responseFlow = MutableSharedFlow<String>()
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun streamJson(call: Call): Flow<String> = callbackFlow {
+        call.enqueue(JSONBodyResponseCallback(responseFormat) {
+            withContext(Dispatchers.IO) {
+                send(it)
+            }
+            close()
+        })
+        awaitClose()
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun streamSSE(call: Call): Flow<String> {
         val emitDone = false
 
         val sseFlowable = Flowable
@@ -106,19 +125,19 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
             return callbackFlow {
                 withContext(Dispatchers.IO) {
                     sseFlowable
-                            .doOnError{
-                                it.printStackTrace()
-                                close()
-                            }
-                            .blockingForEach { sse ->
-                                if (responseFormat.isNotEmpty()) {
-                                    val chunk: String = JsonPath.parse(sse!!.data)?.read(responseFormat)
-                                            ?: throw Exception("Failed to parse chunk")
-                                    logger.warn("got msg: $chunk")
-                                    trySend(chunk)
-                                } else {
-                                    val result: ChatCompletionResult =
-                                            ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
+                        .doOnError {
+                            it.printStackTrace()
+                            close()
+                        }
+                        .blockingForEach { sse ->
+                            if (responseFormat.isNotEmpty()) {
+                                val chunk: String = JsonPath.parse(sse!!.data)?.read(responseFormat)
+                                    ?: throw Exception("Failed to parse chunk")
+                                logger.warn("got msg: $chunk")
+                                trySend(chunk)
+                            } else {
+                                val result: ChatCompletionResult =
+                                    ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
 
                                 val completion = result.choices[0].message
                                 if (completion != null && completion.content != null) {
@@ -126,9 +145,9 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
                                 }
                             }
                         }
-
                     close()
                 }
+                awaitClose()
             }
         } catch (e: Exception) {
             logger.error("Failed to stream", e)
@@ -174,7 +193,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
 fun Request.Builder.appendCustomHeaders(customRequestHeader: String): Request.Builder = apply {
     runCatching {
         Json.parseToJsonElement(customRequestHeader)
-                .jsonObject["customHeaders"].let { customFields ->
+            .jsonObject["customHeaders"].let { customFields ->
             customFields?.jsonObject?.forEach { (key, value) ->
                 header(key, value.jsonPrimitive.content)
             }
@@ -232,5 +251,5 @@ fun JsonObject.updateCustomBody(customRequest: String): JsonObject {
 fun CustomRequest.updateCustomFormat(format: String): String {
     val requestContentOri = Json.encodeToString<CustomRequest>(this)
     return Json.parseToJsonElement(requestContentOri)
-            .jsonObject.updateCustomBody(format).toString()
+        .jsonObject.updateCustomBody(format).toString()
 }

@@ -22,6 +22,18 @@ enum class XingHuoApiVersion(val value: Int) {
     }
 }
 
+enum class ResponseType {
+    SSE, JSON;
+
+    companion object {
+        fun of(str: String): ResponseType = when (str) {
+            "SSE" -> SSE
+            "JSON" -> JSON
+            else -> JSON
+        }
+    }
+}
+
 
 val DEFAULT_AI_ENGINE = AI_ENGINES[0]
 
