@@ -4,7 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.context.modifier.CodeModifierProvider
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.intentions.action.AutoTestThisIntention
-import cc.unitmesh.devti.llms.LLMProviderFactory
+import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.provider.WriteTestService
 import cc.unitmesh.devti.provider.context.TestFileContext
@@ -51,34 +51,50 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
 
         var prompter = if (testContext.isNewFile) {
             """Write unit test for following code. 
-                                    | You MUST return code only, not explain.
+                                    |You MUST return code only, not explain.
                                     | """.trimMargin()
         } else {
             """Write unit test for following code. 
-                                    | You MUST return method code only, no explain.
-                                    | You MUST return start with @Test annotation.
+                                    |You MUST return method code only, no explain.
+                                    |You MUST return start with @Test annotation.
                                     | """.trimMargin()
         }
 
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.collect-context")
         indicator.fraction = 0.3
 
-        val creationContext = ChatCreationContext(ChatOrigin.Intention, actionType, request.file, listOf(), element = request.element)
+        val creationContext =
+            ChatCreationContext(ChatOrigin.Intention, actionType, request.file, listOf(), element = request.element)
+
         val contextItems: List<ChatContextItem> = runBlocking {
             return@runBlocking ChatContextProvider.collectChatContextList(request.project, creationContext)
         }
+
         contextItems.forEach {
-            prompter += it.text
+            prompter += it.text + "\n"
         }
 
         prompter += "\n"
         prompter += ReadAction.compute<String, Throwable> {
-            testContext.relatedClasses.joinToString("\n") {
+            if (testContext.relatedClasses.isEmpty()) {
+                return@compute ""
+            }
+
+            val relatedClasses = testContext.relatedClasses.joinToString("\n") {
                 it.format()
             }.lines().joinToString("\n") {
                 "// $it"
             }
+
+            "// here are related classes:\n$relatedClasses"
         }
+
+        if (testContext.currentClass != null) {
+            prompter += "\n"
+            prompter += "// here is current class information:\n"
+            prompter += testContext.currentClass.format()
+        }
+
         prompter += "\n```${lang.lowercase()}\n${request.selectText}\n```\n"
         prompter += if (!testContext.isNewFile) {
             "Start test code with `@Test` syntax here:  \n"
@@ -87,7 +103,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         }
 
         val flow: Flow<String> =
-            LLMProviderFactory().connector(request.project).stream(prompter, "")
+            LlmFactory().create(request.project).stream(prompter, "")
 
         logger<AutoTestThisIntention>().info("Prompt: $prompter")
 

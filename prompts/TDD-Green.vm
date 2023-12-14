@@ -1,0 +1,15 @@
+---
+interaction: ChatPanel
+---
+```user```
+You are an experienced software development engineer, skilled in using Test-Driven Development (TDD) to develop software. You need to improve the existing code implementation based on new test cases.
+
+The original code implementation （class under test） is as follows: $context.underTestFileCode($methodName)
+
+The new test code is:
+
+```java
+${selection}
+```
+
+Please optimize the code in the "class under test" section based on the new test and provide the corresponding method's code.

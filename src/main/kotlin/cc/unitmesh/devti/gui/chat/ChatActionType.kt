@@ -3,7 +3,6 @@ package cc.unitmesh.devti.gui.chat
 import cc.unitmesh.devti.prompting.VcsPrompting
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.ProjectManager
-import com.intellij.openapi.vcs.changes.ChangeListManagerImpl
 
 enum class ChatActionType {
     CHAT,
@@ -14,8 +13,11 @@ enum class ChatActionType {
     GEN_COMMIT_MESSAGE,
     FIX_ISSUE,
     CREATE_CHANGELOG,
+    CREATE_GENIUS,
     CUSTOM_COMPLETE,
-    CUSTOM_ACTION
+    CUSTOM_ACTION,
+    COUNIT,
+    CODE_REVIEW
     ;
 
     override fun toString(): String {
@@ -24,29 +26,12 @@ enum class ChatActionType {
 
     private fun prepareVcsContext(): String {
         val project = ProjectManager.getInstance().openProjects.firstOrNull() ?: return ""
-        val changeListManager = ChangeListManagerImpl.getInstance(project)
-        val changes = changeListManager.changeLists.flatMap {
-            it.changes
-        }
-
         val prompting = project.service<VcsPrompting>()
-        return prompting.calculateDiff(changes, project)
+
+        return prompting.prepareContext()
     }
 
-    val old_commit_prompt = """suggest 10 commit messages based on the following diff:
-        commit messages should:
-         - follow conventional commits
-         - message format should be: <type>[scope]: <description>
-        
-        examples:
-         - fix(authentication): add password regex pattern
-         - feat(storage): add new test cases
-         
-         {{diff}}
-         """.trimIndent()
-
-
-    fun generateCommitMessage(diff: String): String {
+    private fun generateCommitMessage(diff: String): String {
         return """Write a cohesive yet descriptive commit message for a given diff. 
 Make sure to include both information What was changed and Why.
 Start with a short sentence in imperative form, no more than 50 characters long.
@@ -73,13 +58,14 @@ $diff
             CODE_COMPLETE -> "Complete $lang code, return rest code, no explaining"
             GENERATE_TEST -> "Write unit test for given $lang code"
             FIX_ISSUE -> "Help me fix this issue"
-            GEN_COMMIT_MESSAGE -> {
-                generateCommitMessage(prepareVcsContext())
-            }
+            GEN_COMMIT_MESSAGE -> generateCommitMessage(prepareVcsContext())
             CREATE_CHANGELOG -> "generate release note"
             CHAT -> ""
             CUSTOM_COMPLETE -> ""
             CUSTOM_ACTION -> ""
+            COUNIT -> ""
+            CODE_REVIEW -> ""
+            CREATE_GENIUS -> ""
         }
     }
 }

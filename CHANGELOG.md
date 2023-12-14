@@ -1,6 +1,117 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v1.1.4...v) (2023-08-18)
+# [](https://github.com/unit-mesh/auto-dev/compare/v1.3.0...v) (2023-10-18)
 
 ## [Unreleased]
+
+## [1.4.0](https://github.com/unit-mesh/auto-dev/compare/v1.3.0...v[1.4.0]) (2023-10-22)
+
+### Bug Fixes
+- add basic handle for error [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([3d0afcc](https://github.com/unit-mesh/auto-dev/commit/3d0afcc7fd12f21e97d5153e2ba83c80114ee46b))
+- fix import ([37e1f7f](https://github.com/unit-mesh/auto-dev/commit/37e1f7f87cfebfb8fab6d07882bc008634a1ebd7))
+- fix message issue for item ([1fc0b50](https://github.com/unit-mesh/auto-dev/commit/1fc0b50a9f86664ce222f803eddf9796baad6e8b))
+- fix nou found issue ([a9c80fd](https://github.com/unit-mesh/auto-dev/commit/a9c80fd340145c30e993d262c8cbec45a06c744a))
+- **team:** fix split crash [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([bdda28b](https://github.com/unit-mesh/auto-dev/commit/bdda28b1200e439f45103cca8524c984ef8c8b25))
+- update code complete code ([99699a1](https://github.com/unit-mesh/auto-dev/commit/99699a13a87cab66737cf5d9d890502e1813f10a))
+
+### Features
+- add config for ramework context [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([09d4fe9](https://github.com/unit-mesh/auto-dev/commit/09d4fe9f0ac346a955f6fced84aed8e313e9618e))
+- add more for related code [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([6aefbc5](https://github.com/unit-mesh/auto-dev/commit/6aefbc5ed583886ecd37e91437c50b9ea43d7359))
+- add test finder to lookup tests [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([4c4e8ae](https://github.com/unit-mesh/auto-dev/commit/4c4e8ae79cb285f56c4901a44bd8e908e90b5bc1))
+- create conttext for keep team prompt context ([ac50592](https://github.com/unit-mesh/auto-dev/commit/ac505929fdd4702c937e917807f68d28f76cc3dd))
+- enable keep history parameters for fix issues [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([9200fac](https://github.com/unit-mesh/auto-dev/commit/9200fac46239664a71a8e62120ff03b90f0cacc1))
+- enable to get tasking infos ([1e5b35b](https://github.com/unit-mesh/auto-dev/commit/1e5b35ba8cb3791b39d17aae5ee4fc801810f23a))
+- init basic context ([dd047fa](https://github.com/unit-mesh/auto-dev/commit/dd047fa6852a5c423597c884c113d03a8b6f3a28))
+- init basic insert for curost ([56dc114](https://github.com/unit-mesh/auto-dev/commit/56dc11428144e2f027a0c8ec9093830ce0d6a666))
+- init basic workflow for chat with msg [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([2d7aa42](https://github.com/unit-mesh/auto-dev/commit/2d7aa422d493149000295edc5eb9ac63ae9aa1a2))
+- init team prompt intentions [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([d7172ef](https://github.com/unit-mesh/auto-dev/commit/d7172ef2013ec1b58f617c0729460df91f1c755f))
+- **review:** add code review to changesbrowser ([8adef80](https://github.com/unit-mesh/auto-dev/commit/8adef807f226c394773ba51fbd4eec39b4c1b758))
+- **sre:** add basic tasks for design ([4559c2c](https://github.com/unit-mesh/auto-dev/commit/4559c2ce4484defb78b850529822a8320f467782))
+- **sre:** add extension point build system provider ([789435e](https://github.com/unit-mesh/auto-dev/commit/789435ea86f74cbe7930692050ad670331d9c849))
+- **sre:** add group actions for SRE ([72c0d99](https://github.com/unit-mesh/auto-dev/commit/72c0d9918ab36aee6f08cbeae313dcde810a0923))
+- **sre:** init basic template loader for render items ([1c87cc9](https://github.com/unit-mesh/auto-dev/commit/1c87cc9c2b9706dea7c83c1207d9b61fdf40e6b2))
+- **sre:** init builder for build system ([f452f94](https://github.com/unit-mesh/auto-dev/commit/f452f940a04010607ad9d71f196f29d20e7f2b90))
+- **sre:** init java build system provider ([ce31c9e](https://github.com/unit-mesh/auto-dev/commit/ce31c9eddf640ae74d8ad2b993724a6de7353d0f))
+- **sre:** init JavaScript build system provider ([2085c64](https://github.com/unit-mesh/auto-dev/commit/2085c648a5eaf9e81a2c098a624e0e467efa55e9))
+- **sre:** init Kotlin build system provider ([7dd2b79](https://github.com/unit-mesh/auto-dev/commit/7dd2b79833da39d8d54250db49cf3f80b3529d35))
+- **team:** add basic handler for prompt builder [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([5140049](https://github.com/unit-mesh/auto-dev/commit/51400494d32b653c2cfbdac33ef83a513d0353b6))
+- **team:** add parser for action prompt [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([665d36d](https://github.com/unit-mesh/auto-dev/commit/665d36d5058fb49a786670e49dbce3f8a47b39a2))
+- **team:** create team prompt intention action [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([71019c6](https://github.com/unit-mesh/auto-dev/commit/71019c61daba56dce68afb7fe73a0375bc1a2b50))
+- **team:** init basic config frontmatter for prompt config [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([18f52c7](https://github.com/unit-mesh/auto-dev/commit/18f52c7e36dd8d1cb0c2826c918d1259424d9284))
+- **team:** init prompt library for design ([55c8349](https://github.com/unit-mesh/auto-dev/commit/55c8349ce52f22d7513c9a935317427c8902294b))
+- try to use appen stream [#49](https://github.com/unit-mesh/auto-dev/issues/49) ([1231a23](https://github.com/unit-mesh/auto-dev/commit/1231a23fd305a78251aefa5d95d8c9dbab0b8732))
+
+## [1.3.0] - 2023-10-18
+
+### Bug Fixes
+- fix document erorr issues ([efedf72](https://github.com/unit-mesh/auto-dev/commit/efedf72c0798c15777a7f69cab5fe3cee907d3d5))
+- **test:** fix instruction error issue ([f7c9e03](https://github.com/unit-mesh/auto-dev/commit/f7c9e0305d823dbca7e6e8d408d09dd3c5867c4d))
+- **test:** fix lost current class for method testing ([7d81858](https://github.com/unit-mesh/auto-dev/commit/7d8185878e0c4d17aa99c15e09c80fbdb3b8af19))
+
+### Features
+- init commits for changes ([a6d1d82](https://github.com/unit-mesh/auto-dev/commit/a6d1d82d0ed3ed3f50999d80c94e122ba621c25a))
+- **reivew:** init fetch github issue by story ids ([2b79429](https://github.com/unit-mesh/auto-dev/commit/2b79429b67bb311d05514c5035719e382fb4bd42))
+- **review:** add chinese context to full context ([8bcd37b](https://github.com/unit-mesh/auto-dev/commit/8bcd37b0b970a6fe24e209b7b778365f071abfcc))
+- **review:** init default file ignore for patterns ([48ee07f](https://github.com/unit-mesh/auto-dev/commit/48ee07f8da7040ea23460b6ce5953e65c034ef9b))
+- **review:** make fetch github issue works ([285da68](https://github.com/unit-mesh/auto-dev/commit/285da68ef7afd5c24a20b3c47162cfd40364d3e7))
+
+## [1.2.5](https://github.com/unit-mesh/auto-dev/compare/v1.2.3...v[1.2.5]) (2023-10-15)
+
+### Bug Fixes
+- change jsonpath to https://github.com/codeniko/JsonPathKt && fixed [#48](https://github.com/unit-mesh/auto-dev/issues/48) ([7973211](https://github.com/unit-mesh/auto-dev/commit/79732111cb903f3e62d8256de2d66a753bd3702a))
+- fix inout empty issue ([13e0ab1](https://github.com/unit-mesh/auto-dev/commit/13e0ab11337c03f44b7d26074b0758cbd61fe2c8))
+- fix prompt ([215e7d8](https://github.com/unit-mesh/auto-dev/commit/215e7d85d99c42f73e3c148882b3f2427194d952))
+
+### Features
+- **docs:** adjust prompt ([d12ea4a](https://github.com/unit-mesh/auto-dev/commit/d12ea4a71bfb9b53472268ae2238076063bd5f6c))
+- **docs:** init kotlin living documentation ([abf3d74](https://github.com/unit-mesh/auto-dev/commit/abf3d743d4a06b4959e6eaba1ca1e505d582ec93))
+
+## [1.2.3](https://github.com/unit-mesh/auto-dev/compare/v1.2.2...v[1.2.3]) (2023-10-09)
+
+### Bug Fixes
+- add fix for [#47](https://github.com/unit-mesh/auto-dev/issues/47) ([04f9c1b](https://github.com/unit-mesh/auto-dev/commit/04f9c1bd694336402c57c00208d5400e6dda5c59))
+- fix custom prompt emoji issue ([13e7061](https://github.com/unit-mesh/auto-dev/commit/13e7061a54bab06b2b00c07e0a6d5c9119fd0f3c))
+
+## [1.2.2](https://github.com/unit-mesh/auto-dev/compare/v1.2.1...v[1.2.2]) (2023-09-24)
+
+### Bug Fixes
+- [#40](https://github.com/unit-mesh/auto-dev/issues/40) ([010d142](https://github.com/unit-mesh/auto-dev/commit/010d142d630a23f02cdde153483467ad4dedf493))
+- add sleep for debug mode, if machine is slowly ([06a6dbe](https://github.com/unit-mesh/auto-dev/commit/06a6dbe3358f6cc62e413d3e8f8b55dfd19bd55b))
+
+### Features
+- **chat:** add delay before rendering last message  The default delay is 20 seconds, but it can be customized. ([17e5585](https://github.com/unit-mesh/auto-dev/commit/17e5585612c7338ab4a17635a2ec1fa35949785e))
+- **settings:** add quest delay seconds parameter ([f423caf](https://github.com/unit-mesh/auto-dev/commit/f423caf969f8a6490221d35b5449276549853e38)), closes [#21](https://github.com/unit-mesh/auto-dev/issues/21)
+
+## [1.2.1](https://github.com/unit-mesh/auto-dev/compare/v1.2.0...v[1.2.1]) (2023-08-25)
+
+### Bug Fixes
+- [#36](https://github.com/unit-mesh/auto-dev/issues/36) 添加漏掉的 GitHub Token 选项 ([cfb6a60](https://github.com/unit-mesh/auto-dev/commit/cfb6a608d9bb620e99ba0b4783f712605e7f6e04))
+- add clear message for [#35](https://github.com/unit-mesh/auto-dev/issues/35) ([cf60775](https://github.com/unit-mesh/auto-dev/commit/cf607755a4254052461ff0dbf8da5125ebee0fbb))
+- change current selected engine not apply(until reopen project) ([01ea78a](https://github.com/unit-mesh/auto-dev/commit/01ea78a031585b24a49f76048f00a1047fdfb7bc))
+- **counit:** fix syntax error issue ([f532d1e](https://github.com/unit-mesh/auto-dev/commit/f532d1e6d8fdac56461fe5fac9f1e2d5005eee22))
+- Custom LLM engin server not work when change(until reopen project) ([dd488de](https://github.com/unit-mesh/auto-dev/commit/dd488de3e7a1c450c9bc2876f948f9242ed3187e))
+- fix ci ([9b8859b](https://github.com/unit-mesh/auto-dev/commit/9b8859b02e8b394db8f2ea4d6f52ef4262e70acc))
+- fix lost user information issue ([2bfc82a](https://github.com/unit-mesh/auto-dev/commit/2bfc82ab80616c1aec617762e0569713cec33d01))
+- fix role issues ([fe75364](https://github.com/unit-mesh/auto-dev/commit/fe753645bc5e44a90101e5ba914267cb82f4b3f7))
+- fix url path issue ([b4c2001](https://github.com/unit-mesh/auto-dev/commit/b4c2001b0434f99b627eb1f8b8e13ed1944f1c55))
+- if already used Custom Engine config will not work after changed until reopen project. close [#31](https://github.com/unit-mesh/auto-dev/issues/31) ([624b0bc](https://github.com/unit-mesh/auto-dev/commit/624b0bcfe156012dfb0f26e885c202e0f715da8d))
+- 添加漏掉的 custome request format 选项 ([abfd500](https://github.com/unit-mesh/auto-dev/commit/abfd500b64700fc7c141fe9b6749170c30631c67))
+
+### Features
+- add clion context   as example ([4489358](https://github.com/unit-mesh/auto-dev/commit/4489358a36522a8d2842a5f2a0015f21abac200b))
+- **counit:** align to new APIs datastructure ([1150f54](https://github.com/unit-mesh/auto-dev/commit/1150f54f5ba8cb422aecc36867504400870d0942))
+- **counit:** fix format ([a010536](https://github.com/unit-mesh/auto-dev/commit/a0105368d5e9c81cc1968210db78763aee191317))
+- **counit:** init basic apis ([e78f864](https://github.com/unit-mesh/auto-dev/commit/e78f864afdc3a5c4e6869d2bc8109fb059cc7247))
+- **counit:** init basic prompter ([1a30643](https://github.com/unit-mesh/auto-dev/commit/1a306437275b12c81cd1bc783ec75b0485fbc25d))
+- **counit:** init counit setting service ([51bc5fb](https://github.com/unit-mesh/auto-dev/commit/51bc5fb8f74ca873cbe141e55ffaaa22b3fce885))
+- **counit:** init for tool panel ([b2215ba](https://github.com/unit-mesh/auto-dev/commit/b2215ba8928d8f83e9d2fa32579eb3e7db00ab49))
+- **counit:** make basic work flows ([21c25c7](https://github.com/unit-mesh/auto-dev/commit/21c25c774647eec638a3571de43553da574f9614))
+- **document:** revert for json path language because different IDE product issue ([acae8ea](https://github.com/unit-mesh/auto-dev/commit/acae8eadebf335a18a213b7fefd9d6290f718921))
+- init cpp module for ruipeng ([f74f094](https://github.com/unit-mesh/auto-dev/commit/f74f0949f3f12aae6dabbeacde86933c8be66987))
+- **kanban:** add GitLabIssue implementation ([ab0d91d](https://github.com/unit-mesh/auto-dev/commit/ab0d91d1d7084b3f90f3bad56451d6e4af4eaec6))
+- **rust:** init context ([4e7cd19](https://github.com/unit-mesh/auto-dev/commit/4e7cd19ba30f98ecf2649f844e0bcd4e4e085b00))
+- **settings:** add GitLab options ([36548b5](https://github.com/unit-mesh/auto-dev/commit/36548b5975710870ba661f44eb67d975410c1991))
+- **settings:** add new LLMParam components ([946f5a0](https://github.com/unit-mesh/auto-dev/commit/946f5a083b8a1fde8ac5f39f1ef76a87634d58b1))
+- **settings:** add new LLMParam components ([dac557b](https://github.com/unit-mesh/auto-dev/commit/dac557be7ee264907da6a85c9836df008b58a95a))
+- **settings:** add XingHuo provider configuration close [#29](https://github.com/unit-mesh/auto-dev/issues/29) ([cca35c6](https://github.com/unit-mesh/auto-dev/commit/cca35c6d8136dc7d4a81edf96e3a38692dbc6746))
 
 ## [1.1.4](https://github.com/unit-mesh/auto-dev/compare/v1.1.3...v[1.1.4]) (2023-08-18)
 
@@ -556,7 +667,13 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.1.4...HEAD
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/unit-mesh/auto-dev/compare/v1.3.0...v1.4.0
+[1.3.0]: https://github.com/unit-mesh/auto-dev/compare/v1.2.5...v1.3.0
+[1.2.5]: https://github.com/unit-mesh/auto-dev/compare/v1.2.3...v1.2.5
+[1.2.3]: https://github.com/unit-mesh/auto-dev/compare/v1.2.2...v1.2.3
+[1.2.2]: https://github.com/unit-mesh/auto-dev/compare/v1.2.1...v1.2.2
+[1.2.1]: https://github.com/unit-mesh/auto-dev/compare/v1.1.4...v1.2.1
 [1.1.4]: https://github.com/unit-mesh/auto-dev/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/unit-mesh/auto-dev/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/unit-mesh/auto-dev/compare/v1.1.1...v1.1.2

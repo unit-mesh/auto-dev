@@ -20,6 +20,7 @@
 
         <codeModifier language="JAVA"
                       implementationClass="cc.unitmesh.idea.context.JavaCodeModifier"/>
+
         <livingDocumentation language="JAVA"
                              implementationClass="cc.unitmesh.idea.provider.JavaLivingDocumentation"/>
 
@@ -29,17 +30,24 @@
 
         <contextPrompter
                 language="JAVA"
-                implementation="cc.unitmesh.idea.promting.JavaContextPrompter"/>
+                implementation="cc.unitmesh.idea.prompting.JavaContextPrompter"/>
         <devFlowProvider
                 language="JAVA"
                 implementation="cc.unitmesh.idea.flow.JvmAutoDevFlow"/>
         <promptStrategy
                 language="JAVA"
-                implementation="cc.unitmesh.idea.promting.JvmPromptStrategy"/>
+                implementation="cc.unitmesh.idea.prompting.JvmPromptStrategy"/>
 
         <testContextProvider
                 language="JAVA"
                 implementation="cc.unitmesh.idea.service.JavaWriteTestService"/>
+
+        <buildSystemProvider
+                implementation="cc.unitmesh.idea.provider.JavaBuildSystemProvider" />
+
+        <customPromptProvider
+                language="JAVA"
+                implementationClass="cc.unitmesh.idea.provider.JavaCustomPromptProvider" />
 
         <autoDevIntention>
             <className>cc.unitmesh.idea.actions.AutoCrudAction</className>

@@ -10,7 +10,6 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.FormBuilder
 import java.awt.Dimension
 import java.awt.FontMetrics
-import javax.swing.JComponent
 import javax.swing.JPanel
 
 class LLMSettingComponent(private val settings: AutoDevSettingsState) {
@@ -20,10 +19,16 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     private val aiEngineParam by LLMParam.creating(onChange = { onSelectedEngineChanged() }) {
         ComboBox(settings.aiEngine, AIEngines.values().toList().map { it.name })
     }
+    private val delaySecondsParam by LLMParam.creating { Editable(settings.delaySeconds) }
     private val maxTokenLengthParam by LLMParam.creating { Editable(settings.maxTokenLength) }
     private val openAIModelsParam by LLMParam.creating { ComboBox(settings.openAiModel, OPENAI_MODEL.toList()) }
     private val openAIKeyParam by LLMParam.creating { Password(settings.openAiKey) }
     private val customOpenAIHostParam: LLMParam by LLMParam.creating { Editable(settings.customOpenAiHost) }
+
+    private val gitTypeParam: LLMParam by LLMParam.creating { ComboBox(settings.gitType, GIT_TYPE.toList()) }
+    private val gitLabUrlParam: LLMParam by LLMParam.creating { Editable(settings.gitlabUrl) }
+    private val gitLabTokenParam: LLMParam by LLMParam.creating { Password(settings.gitlabToken) }
+
     private val gitHubTokenParam by LLMParam.creating { Password(settings.githubToken) }
     private val customEngineServerParam by LLMParam.creating { Editable(settings.customEngineServer) }
     private val customEngineTokenParam by LLMParam.creating { Password(settings.customEngineToken) }
@@ -34,11 +39,13 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     private val xingHuoAppIDParam by LLMParam.creating { Editable(settings.xingHuoAppId) }
     private val xingHuoApiKeyParam by LLMParam.creating { Password(settings.xingHuoApiKey) }
     private val xingHuoApiSecretParam by LLMParam.creating { Password(settings.xingHuoApiSecrect) }
+    private val customEngineResponseFormatParam by LLMParam.creating { Editable(settings.customEngineResponseFormat) }
+    private val customEngineRequestBodyFormatParam by LLMParam.creating { Editable(settings.customEngineRequestFormat) }
 
 
     val project = ProjectManager.getInstance().openProjects.firstOrNull()
     private val customEnginePrompt by lazy {
-        object : LanguageTextField(JsonLanguage.INSTANCE, project, "") {
+        object : LanguageTextField(JsonLanguage.INSTANCE, project, settings.customPrompts) {
             override fun createEditor(): EditorEx {
 
                 return super.createEditor().apply {
@@ -60,40 +67,42 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
         }
     }
 
-    val llmGroups = mapOf<AIEngines, List<LLMParam>>(
-        AIEngines.Azure to listOf(
-            openAIModelsParam,
-            openAIKeyParam,
-            customOpenAIHostParam,
-        ),
-        AIEngines.OpenAI to listOf(
-            openAIModelsParam,
-            openAIKeyParam,
-            customOpenAIHostParam,
-        ),
-        AIEngines.Custom to listOf(
-            customEngineServerParam,
-            customEngineTokenParam,
-        ),
-        AIEngines.XingHuo to listOf(
-            xingHuoApiVersionParam,
+    private val llmGroups = mapOf<AIEngines, List<LLMParam>>(
+            AIEngines.Azure to listOf(
+                    openAIModelsParam,
+                    openAIKeyParam,
+                    customOpenAIHostParam,
+            ),
+            AIEngines.OpenAI to listOf(
+                    openAIModelsParam,
+                    openAIKeyParam,
+                    customOpenAIHostParam,
+            ),
+            AIEngines.Custom to listOf(
+                    customEngineServerParam,
+                    customEngineTokenParam,
+                    customEngineResponseFormatParam,
+                    customEngineRequestBodyFormatParam,
+            ),
+            AIEngines.XingHuo to listOf(
+                    xingHuoApiVersionParam,
             xingHuoAppIDParam,
             xingHuoApiKeyParam,
             xingHuoApiSecretParam,
         ),
     )
 
-    val paramToComponent: MutableMap<LLMParam, JComponent> = mutableMapOf()
 
     private val onSelectedEngineChanged: () -> Unit = {
         applySettings(settings, updateParams = false)
     }
-    private val _currentSelectedEngine:AIEngines
+    private val _currentSelectedEngine: AIEngines
         get() = AIEngines.values().first { it.name.lowercase() == aiEngineParam.value.lowercase() }
 
     private val currentLLMParams: List<LLMParam>
         get() {
-            return llmGroups[_currentSelectedEngine] ?: throw IllegalStateException("Unknown engine: ${settings.aiEngine}")
+            return llmGroups[_currentSelectedEngine]
+                    ?: throw IllegalStateException("Unknown engine: ${settings.aiEngine}")
         }
 
     private fun FormBuilder.addLLMParams(llmParams: List<LLMParam>): FormBuilder = apply {
@@ -133,7 +142,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     val panel: JPanel get() = formBuilder.panel
 
 
-
     fun applySettings(settings: AutoDevSettingsState, updateParams: Boolean = false) {
         panel.removeAll()
         if (updateParams) {
@@ -141,14 +149,27 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
         }
 
         formBuilder
-            .addLLMParam(languageParam)
-            .addLLMParam(aiEngineParam)
-            .addLLMParams(currentLLMParams)
-            .addVerticalGap(2)
+                .addLLMParam(languageParam)
+                .addSeparator()
+                .addTooltip("For Custom LLM, config Custom Engine Server & Custom Engine Token & Custom Response Format")
+                .addLLMParam(aiEngineParam)
+                .addLLMParam(maxTokenLengthParam)
+                .addLLMParam(delaySecondsParam)
             .addSeparator()
-            .addLabeledComponent(JBLabel("Custom Engine Prompt (Json): "), customEnginePrompt, 1, true)
-            .addComponentFillVertically(JPanel(), 0)
-            .panel
+                .addTooltip("Select Git Type")
+            .addLLMParam(gitTypeParam)
+            .addTooltip("GitHub Token is for AutoCRUD Model")
+                .addLLMParam(gitHubTokenParam)
+            .addTooltip("GitLab options is for AutoCRUD Model")
+            .addLLMParam(gitLabUrlParam)
+            .addLLMParam(gitLabTokenParam)
+                .addSeparator()
+                .addLLMParams(currentLLMParams)
+                .addVerticalGap(2)
+                .addSeparator()
+                .addLabeledComponent(JBLabel("Custom Engine Prompt (Json): "), customEnginePrompt, 1, true)
+                .addComponentFillVertically(JPanel(), 0)
+                .panel
 
         panel.invalidate()
         panel.repaint()
@@ -157,7 +178,10 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     private fun updateParams(settings: AutoDevSettingsState) {
         settings.apply {
             maxTokenLengthParam.value = maxTokenLength
+            gitTypeParam.value = gitType
             gitHubTokenParam.value = githubToken
+            gitLabTokenParam.value = gitlabToken
+            gitLabUrlParam.value = gitlabUrl
             openAIKeyParam.value = openAiKey
             customOpenAIHostParam.value = customOpenAiHost
             customEngineServerParam.value = customEngineServer
@@ -170,12 +194,19 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             languageParam.value = language
             aiEngineParam.value = aiEngine
             customEnginePrompt.text = customPrompts
+            customEngineResponseFormatParam.value = customEngineResponseFormat
+            customEngineRequestBodyFormatParam.value = customEngineRequestFormat
+            delaySecondsParam.value = delaySeconds
         }
     }
+
     fun exportSettings(destination: AutoDevSettingsState) {
         destination.apply {
             maxTokenLength = maxTokenLengthParam.value
+            gitType = gitTypeParam.value
             githubToken = gitHubTokenParam.value
+            gitlabUrl = gitLabUrlParam.value
+            gitlabToken = gitLabTokenParam.value
             openAiKey = openAIKeyParam.value
             customOpenAiHost = customOpenAIHostParam.value
             xingHuoApiSecrect = xingHuoApiSecretParam.value
@@ -188,13 +219,18 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             customEngineToken = customEngineTokenParam.value
             customPrompts = customEnginePrompt.text
             openAiModel = openAIModelsParam.value
-
+            customEngineResponseFormat = customEngineResponseFormatParam.value
+            customEngineRequestFormat = customEngineRequestBodyFormatParam.value
+            delaySeconds = delaySecondsParam.value
         }
     }
 
     fun isModified(settings: AutoDevSettingsState): Boolean {
         return settings.maxTokenLength != maxTokenLengthParam.value ||
+                settings.gitType != gitTypeParam.value ||
                 settings.githubToken != gitHubTokenParam.value ||
+                settings.gitlabUrl != gitLabUrlParam.value ||
+                settings.gitlabToken != gitLabTokenParam.value ||
                 settings.openAiKey != openAIKeyParam.value ||
                 settings.xingHuoApiSecrect != xingHuoApiSecretParam.value ||
                 settings.xingHuoApiVersion != XingHuoApiVersion.of(xingHuoApiVersionParam.value) ||
@@ -207,7 +243,9 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
                 settings.customPrompts != customEnginePrompt.text ||
                 settings.openAiModel != openAIModelsParam.value ||
                 settings.customOpenAiHost != customOpenAIHostParam.value ||
-                settings.customEngineResponseFormat != customEnginePrompt.text
+                settings.customEngineResponseFormat != customEngineResponseFormatParam.value ||
+                settings.customEngineRequestFormat != customEngineRequestBodyFormatParam.value ||
+                settings.delaySeconds != delaySecondsParam.value
     }
 
     init {

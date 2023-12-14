@@ -1,3 +1,10 @@
+---
+layout: default
+title: Development
+nav_order: 99
+permalink: /development
+---
+
 # Development
 
 1. `git clone https://github.com/unit-mesh/auto-dev/`

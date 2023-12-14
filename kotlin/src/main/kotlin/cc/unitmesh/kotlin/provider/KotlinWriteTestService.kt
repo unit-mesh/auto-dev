@@ -49,7 +49,8 @@ class KotlinWriteTestService : WriteTestService() {
             parentDir?.path
         }
 
-        val relatedModels = lookupRelevantClass(project, element)
+        var relatedModels = lookupRelevantClass(project, element)
+        // should add current class to relatedModels
 
         if (!parentDirPath?.contains("/src/main/kotlin/")!!) {
             log.error("Source file is not in the src/main/java directory: ${parentDirPath}")
@@ -88,11 +89,12 @@ class KotlinWriteTestService : WriteTestService() {
 
         project.guessProjectDir()?.refresh(true, true)
 
+        val currentClass =  ClassContextProvider(false).from(element)
         return if (testFile != null) {
-            TestFileContext(isNewFile, testFile, relatedModels, className, sourceFile.language)
+            TestFileContext(isNewFile, testFile, relatedModels, className, sourceFile.language, currentClass)
         } else {
             val targetFile = createTestFile(sourceFile, testDir!!, packageName, project)
-            TestFileContext(isNewFile = true, targetFile, relatedModels, "", sourceFile.language)
+            TestFileContext(isNewFile = true, targetFile, relatedModels, "", sourceFile.language, currentClass)
         }
     }
 

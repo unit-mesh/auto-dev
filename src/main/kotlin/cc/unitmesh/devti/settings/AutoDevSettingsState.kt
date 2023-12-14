@@ -8,9 +8,13 @@ import com.intellij.util.xmlb.XmlSerializerUtil
 
 @State(name = "cc.unitmesh.devti.settings.DevtiSettingsState", storages = [Storage("DevtiSettings.xml")])
 class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
+    var gitType = DEFAULT_GIT_TYPE
     var githubToken = ""
+    var gitlabToken = ""
+    var gitlabUrl = ""
     var openAiKey = ""
     var openAiModel = ""
+    var delaySeconds = ""
 
     var aiEngine = DEFAULT_AI_ENGINE
     var customOpenAiHost = ""
@@ -28,6 +32,19 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
      * should be a json path
      */
     var customEngineResponseFormat = ""
+    /**
+     * should be a json
+     * {
+     *     'customHeaders': { 'headerName': 'headerValue', 'headerName2': 'headerValue2' ... },
+     *     'customFields' : { 'bodyFieldName': 'bodyFieldValue', 'bodyFieldName2': 'bodyFieldValue2' ... }
+     *     'messageKey': {'role': 'roleKeyName', 'content': 'contentKeyName'}
+     * }
+     *
+     * @see docs/custom-llm-server.md
+     */
+    var customEngineRequestFormat = ""
+
+
     var language = DEFAULT_HUMAN_LANGUAGE
     var maxTokenLength = MAX_TOKEN_LENGTH.toString()
 

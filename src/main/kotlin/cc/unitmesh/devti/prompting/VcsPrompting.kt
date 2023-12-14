@@ -28,10 +28,7 @@ import com.intellij.openapi.diff.impl.patch.UnifiedDiffWriter
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.openapi.vcs.VcsException
-import com.intellij.openapi.vcs.changes.Change
-import com.intellij.openapi.vcs.changes.CommitContext
-import com.intellij.openapi.vcs.changes.ContentRevision
-import com.intellij.openapi.vcs.changes.CurrentContentRevision
+import com.intellij.openapi.vcs.changes.*
 import com.intellij.project.stateStore
 import com.intellij.vcs.log.VcsFullCommitDetails
 import git4idea.repo.GitRepositoryManager
@@ -39,6 +36,7 @@ import org.jetbrains.annotations.NotNull
 import java.io.IOException
 import java.io.StringWriter
 import java.nio.file.Path
+import java.nio.file.PathMatcher
 import java.util.stream.Collectors
 import kotlin.math.min
 
@@ -46,18 +44,38 @@ import kotlin.math.min
 class VcsPrompting(private val project: Project) {
     private val gitRepositoryManager = GitRepositoryManager.getInstance(project)
 
-    fun calculateDiff(collection: List<Change>, project: Project): String {
+    fun calculateDiff(changes: List<Change>, project: Project, ignoreFilePatterns: List<PathMatcher>): String {
         try {
             val writer = StringWriter()
-            val destination = collection.filterNot { isBinaryOrTooLarge(it) }
             val basePath = project.basePath ?: throw RuntimeException("Project base path is null.")
+
+            val filteredChanges = changes.stream()
+                .filter { change -> !isBinaryOrTooLarge(change!!) }
+                .filter {
+                    val filePath = it.afterRevision?.file
+                    if (filePath != null) {
+                        ignoreFilePatterns.none { pattern ->
+                            pattern.matches(Path.of(it.afterRevision!!.file.path))
+                        }
+                    } else {
+                        true
+                    }
+                }
+                .toList()
+
+            if (filteredChanges.isEmpty()) {
+                return ""
+            }
+
             val patches = IdeaTextPatchBuilder.buildPatch(
                 project,
-                destination,
+                filteredChanges.subList(0, min(filteredChanges.size, 500)),
                 Path.of(basePath),
                 false,
                 true
             )
+
+
 
             UnifiedDiffWriter.write(
                 project,
@@ -73,6 +91,51 @@ class VcsPrompting(private val project: Project) {
         } catch (e: VcsException) {
             throw RuntimeException("Error calculating diff: ${e.message}", e)
         }
+    }
+
+    fun prepareContext(): String {
+        val changeListManager = ChangeListManagerImpl.getInstance(project)
+        val changes = changeListManager.changeLists.flatMap {
+            it.changes
+        }
+
+        return this.calculateDiff(changes, project, listOf())
+    }
+
+    /**
+     * Builds a diff prompt for a list of VcsFullCommitDetails.
+     *
+     * @param details The list of VcsFullCommitDetails containing commit details.
+     * @param project The Project object representing the current project.
+     * @param ignoreFilePatterns The list of PathMatcher objects representing file patterns to be ignored during diff generation. Default value is an empty list.
+     * @return A Pair object containing a list of commit message summaries and the generated diff prompt as a string. Returns null if the list is empty or no valid changes are found.
+     * @throws VcsException If an error occurs during VCS operations.
+     * @throws IOException If an I/O error occurs.
+     */
+    @Throws(VcsException::class, IOException::class)
+    fun buildDiffPrompt(
+        details: List<VcsFullCommitDetails>,
+        selectList: List<Change>,
+        project: Project,
+        ignoreFilePatterns: List<PathMatcher> = listOf(),
+    ): String? {
+        val writer = StringWriter()
+        writer.write("Commit Message: ")
+
+        details.forEach { writer.write(it.fullMessage + "\n\n") }
+
+        writer.write("Changes:\n\n")
+        val changeText = calculateDiff(selectList, project, ignoreFilePatterns)
+
+        if (changeText.isEmpty()) {
+            return null
+        }
+
+        writer.write("```patch\n\n")
+        writer.write(trimDiff(changeText))
+        writer.write("\n\n```\n\n")
+
+        return writer.toString()
     }
 
     fun computeDiff(includedChanges: List<Change>): String {
@@ -142,9 +205,31 @@ class VcsPrompting(private val project: Project) {
         return Pair<List<String>, String>(summary, diff)
     }
 
-    private fun trimDiff(@NotNull diffString: String): String {
+    private val revisionRegex = Regex("\\(revision [^)]+\\)")
+    private val lineTip = "\\ No newline at end of file"
+
+    @NotNull
+    fun trimDiff(@NotNull diffString: String): String {
+        val lines = diffString.lines()
         val destination = ArrayList<String>()
-        diffString.lines().filterNotTo(destination) { it.startsWith("diff --git ") || it.startsWith("index ") }
+        lines.forEach { line ->
+            if (line.startsWith("diff --git ") || line.startsWith("index ") || line.startsWith("Index ")) return@forEach
+
+            if (line == "===================================================================") return@forEach
+
+            // if a patch includes `\ No newline at the end of file` remove it
+            if (line.contains(lineTip)) {
+                return@forEach
+            }
+
+            if (line.startsWith("---") || line.startsWith("+++")) {
+                // remove revision number with regex
+                val result = revisionRegex.replace(line, "")
+                destination.add(result)
+            } else {
+                destination.add(line)
+            }
+        }
         return destination.joinToString("\n")
     }
 
@@ -158,5 +243,4 @@ class VcsPrompting(private val project: Project) {
             virtualFile.length
         )))
     }
-
 }

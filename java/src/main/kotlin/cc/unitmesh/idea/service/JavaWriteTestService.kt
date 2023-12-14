@@ -82,10 +82,10 @@ class JavaWriteTestService : WriteTestService() {
         project.guessProjectDir()?.refresh(true, true)
 
         return if (testFile != null) {
-            TestFileContext(isNewFile, testFile, relatedModels, className, sourceFile.language)
+            TestFileContext(isNewFile, testFile, relatedModels, className, sourceFile.language, null)
         } else {
             val targetFile = createTestFile(sourceFile, testDir!!, packageName, project)
-            TestFileContext(isNewFile = true, targetFile, relatedModels, "", sourceFile.language)
+            TestFileContext(isNewFile = true, targetFile, relatedModels, "", sourceFile.language, null)
         }
     }
 

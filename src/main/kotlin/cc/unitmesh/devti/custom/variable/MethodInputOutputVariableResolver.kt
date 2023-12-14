@@ -1,10 +1,6 @@
 package cc.unitmesh.devti.custom.variable
 
-import cc.unitmesh.devti.context.ClassContextProvider
-import cc.unitmesh.devti.context.MethodContext
 import cc.unitmesh.devti.context.MethodContextProvider
-import com.intellij.lang.LanguageCommenters
-import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 
 class MethodInputOutputVariableResolver(val element: PsiElement) : VariableResolver {

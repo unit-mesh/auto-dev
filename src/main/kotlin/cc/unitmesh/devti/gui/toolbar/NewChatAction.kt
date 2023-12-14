@@ -34,11 +34,14 @@ class NewChatAction : DumbAwareAction(), CustomComponentAction {
                         AutoDevToolWindowFactory.Util.id
                     )
                     val contentManager = toolWindowManager?.contentManager
-                    contentManager?.component?.components?.filterIsInstance<ChatCodingPanel>()?.firstOrNull()
-                        ?.clearChat()
+                    val codingPanel =
+                        contentManager?.component?.components?.filterIsInstance<ChatCodingPanel>()?.firstOrNull()
+
+                    codingPanel?.clearChat()
                 }
             }
         }
+
         return Wrapper(button).also {
             it.setBorder(JBUI.Borders.empty(0, 10))
         }

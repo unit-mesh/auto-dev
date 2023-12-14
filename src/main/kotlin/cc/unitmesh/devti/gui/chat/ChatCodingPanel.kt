@@ -1,15 +1,15 @@
 package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.gui.component.HtmlContentComponent
-import com.intellij.temporary.gui.block.whenDisposed
 import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.NullableComponent
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.IdeFocusManager
+import com.intellij.temporary.gui.block.whenDisposed
 import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.ActionLink
@@ -22,15 +22,16 @@ import com.intellij.ui.dsl.gridLayout.VerticalAlign
 import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.withContext
 import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.JButton
-import javax.swing.JPanel
-import javax.swing.JProgressBar
-import javax.swing.ScrollPaneConstants
+import javax.swing.*
 
 
 class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disposable: Disposable?) :
@@ -43,19 +44,8 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
     private val focusMouseListener: MouseAdapter
     private var panelContent: DialogPanel
     private val myScrollPane: JBScrollPane
-
-    private val welcomeMessage: String = """
-        <div>
-            <p>Hi, welcome to use <b>AutoDev</b>, how can I help you?</p>
-            <p>I’m powered by AI, so surprises and mistakes are possible. Make sure
-             to verify any generated code or suggestions, and <a href="https://github.com/unit-mesh/auto-dev">
-             share feedback</a> so that we can learn and improve.</p>
-        </div>
-
-    """.trimIndent()
-    private val welcomeComponent = HtmlContentComponent(welcomeMessage)
-    private var hasMessage = false
-
+    private val delaySeconds: String
+        get() = AutoDevSettingsState.getInstance().delaySeconds
 
     init {
         focusMouseListener = object : MouseAdapter() {
@@ -136,7 +126,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         }
     }
 
-    fun addMessage(message: String, isMe: Boolean = false, displayPrompt: String = "") {
+    fun addMessage(message: String, isMe: Boolean = false, displayPrompt: String = ""): MessageView {
         val role = if (isMe) ChatRole.User else ChatRole.Assistant
         val displayText = displayPrompt.ifEmpty { message }
 
@@ -147,6 +137,8 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         scrollToBottom()
         progressBar.isIndeterminate = true
         updateUI()
+
+        return messageView
     }
 
     private fun updateLayout() {
@@ -175,8 +167,10 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
     }
 
     private fun scrollToBottom() {
-        val verticalScrollBar = myScrollPane.verticalScrollBar
-        verticalScrollBar.value = verticalScrollBar.maximum
+        SwingUtilities.invokeLater {
+            val verticalScrollBar = myScrollPane.verticalScrollBar
+            verticalScrollBar.value = verticalScrollBar.maximum
+        }
     }
 
     override fun isNull(): Boolean {
@@ -203,14 +197,29 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
     private suspend fun updateMessageInUi(content: Flow<String>): String {
         val messageView = MessageView("", ChatRole.Assistant, "")
         myList.add(messageView)
+        val startTime = System.currentTimeMillis() // 记录代码开始执行的时间
 
         var text = ""
-        runCatching {
-            content.collect {
-                text += it
-                messageView.updateSourceContent(text)
-                messageView.updateContent(text)
-                messageView.scrollToBottom()
+        content.catch {
+            it.printStackTrace()
+        }.collect {
+            text += it
+
+            // 以下两个 API 设计不合理，如果必须要同时调用，那就只提供一个就好了
+            messageView.updateSourceContent(text)
+            messageView.updateContent(text)
+
+            messageView.scrollToBottom()
+        }
+
+        if (delaySeconds.isNotEmpty()) {
+            val elapsedTime = System.currentTimeMillis() - startTime
+            // waiting for the last message to be rendered, like sleep 5 ms?
+            // 此处的 20s 出自 openAI 免费账户访问 3/min
+            withContext(Dispatchers.IO) {
+                val delaySec = delaySeconds.toLong() ?: 20L
+                val remainingTime = maxOf(delaySec * 1000 - elapsedTime, 0)
+                delay(remainingTime)
             }
         }
 
@@ -226,6 +235,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
 
     // TODO: add session and stop manage
     fun clearChat() {
+        chatCodingService.clearSession()
         progressBar.isVisible = false
         myList.removeAll()
         updateUI()

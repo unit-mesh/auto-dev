@@ -3,13 +3,16 @@ package cc.unitmesh.devti.intentions
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.custom.CustomDocumentationIntention
-import cc.unitmesh.devti.custom.CustomIntention
+import cc.unitmesh.devti.custom.CustomActionIntention
 import cc.unitmesh.devti.intentions.ui.CustomPopupStep
-import cc.unitmesh.devti.custom.CustomPromptConfig
+import cc.unitmesh.devti.custom.action.CustomPromptConfig
+import cc.unitmesh.devti.custom.TeamPromptIntention
+import cc.unitmesh.devti.custom.team.TeamPromptsBuilder
 import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.IntentionActionBean
 import com.intellij.lang.injection.InjectedLanguageManager
+import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
@@ -56,15 +59,19 @@ class AutoDevIntentionHelper : IntentionAction, Iconable {
                 .toList()
 
             val promptConfig = CustomPromptConfig.load()
-            val customIntentions: List<IntentionAction> = promptConfig.prompts.map {
-                CustomIntention.create(it)
+            val customActionIntentions: List<IntentionAction> = promptConfig.prompts.map {
+                CustomActionIntention.create(it)
             }
 
             val livingDocIntentions: List<IntentionAction> = promptConfig.documentations?.map {
                 CustomDocumentationIntention.create(it)
             } ?: emptyList()
 
-            val actionList = builtinIntentions + customIntentions + livingDocIntentions
+            val teamPromptsIntentions: List<IntentionAction> = project.service<TeamPromptsBuilder>().build().map {
+                TeamPromptIntention.create(it)
+            }
+
+            val actionList = builtinIntentions + customActionIntentions + livingDocIntentions + teamPromptsIntentions
             return actionList.map { it as AbstractChatIntention }.sortedByDescending { it.priority() }
         }
     }

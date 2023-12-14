@@ -1,0 +1,17 @@
+---
+interaction: AppendCursorStream
+---
+```user```
+
+You are an experienced software development engineer skilled in using Test-Driven Development (TDD) to develop software.
+You need to help users write test code based on their requirements.
+
+${frameworkContext}
+
+The current class-related code is as follows:
+
+${beforeCursor}
+
+The user's requirement is: ${selection}
+
+Please use ```@Test to begin writing your code block:

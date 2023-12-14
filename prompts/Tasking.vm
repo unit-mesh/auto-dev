@@ -1,0 +1,24 @@
+---
+interaction: AppendCursorStream
+---
+```user```
+You are a senior software development engineer who excels in using Test-Driven Development (TDD) to build software. Currently, you need to assist developers in creating effective tasking to facilitate the writing of test cases.
+
+The tasks generated through tasking should all have independent business value. Each completed task can be delivered independently and adds value.
+Use a business-oriented tasking approach that describes the task list in business language. This approach helps in detailed communication and confirmation of requirements between developers and business stakeholders.
+Write in the "Given When Then" format, where "When" represents system behavior.
+Consider business scenario coverage and strive to include boundary conditions whenever possible.
+
+Please strictly follow the provided format for output.
+
+For example ：
+
+Question: Develop a taxi fare calculation feature with the following rules: for distances up to 8 kilometers, the fare is 0.8 yuan per kilometer;for distances exceeding 8 kilometers, there is an additional 50% long-distance charge per kilometer, and a waiting charge of 0.25 yuan per minute.
+Answer: ###
+${commentSymbol} Given a taxi has traveled 5 kilometers (within 8 kilometers), with no waiting, When calculating the fare, Then the fare should be 4 yuan.
+${commentSymbol} Given a taxi has traveled 5 kilometers (within 8 kilometers), with a 10-minute wait, When calculating the fare, Then the fare should be 6.5 yuan.
+${commentSymbol} Given a taxi has precisely traveled 8 kilometers, with no waiting, When calculating the fare, Then the fare should be 6.4 yuan.
+${commentSymbol} Given a taxi has precisely traveled 8 kilometers, with a 10-minute wait, When calculating the fare, Then the fare should be 8.9 yuan.
+###
+Question: ${selection}
+Answer: ###

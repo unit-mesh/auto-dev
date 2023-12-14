@@ -113,6 +113,8 @@ allprojects {
     idea {
         module {
             generatedSourceDirs.add(file("src/gen"))
+            isDownloadJavadoc = true
+            isDownloadSources = true
         }
     }
 
@@ -193,6 +195,7 @@ project(":plugin") {
         implementation(project(":webstorm"))
         implementation(project(":goland"))
         implementation(project(":rust"))
+        implementation(project(":cpp"))
     }
 
     // Collects all jars produced by compilation of project modules and merges them into singe one.
@@ -320,28 +323,25 @@ project(":") {
     }
 
     dependencies {
-        implementation(libs.github.api)
-        implementation(libs.dotenv)
-
         implementation(libs.bundles.openai)
         implementation(libs.bundles.markdown)
+        implementation(libs.yaml)
 
-        implementation(libs.json.path)
+        implementation(libs.json.pathkt)
 
-        implementation("org.jetbrains:markdown:0.2.0.pre-55")
+        implementation("org.jetbrains:markdown:0.5.1")
         implementation(libs.kotlinx.serialization.json)
-        // jackson-module-kotlin
-        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2") {
-            exclude(module = "jackson-core")
-            exclude(module = "jackson-databind")
-            exclude(module = "jackson-annotations")
-        }
 
-        implementation("org.archguard.comate:spec-lang:0.2.0") {
-            exclude(module = "jackson-core")
-            exclude(module = "jackson-databind")
-            exclude(module = "jackson-annotations")
-        }
+        implementation("cc.unitmesh:cocoa-core:0.4.1")
+        implementation("cc.unitmesh:git-commit-message:0.4.1")
+
+        // kanban
+        implementation(libs.github.api)
+        implementation("org.gitlab4j:gitlab4j-api:5.3.0")
+
+        implementation("org.apache.velocity:velocity-engine-core:2.3")
+
+        implementation(libs.jackson.module.kotlin)
 
         implementation("com.knuddels:jtokkit:0.6.1")
 
@@ -514,6 +514,16 @@ project(":kotlin") {
 }
 
 project(":rust") {
+    intellij {
+        version.set(clionVersion)
+        plugins.set(clionPlugins)
+    }
+    dependencies {
+        implementation(project(":"))
+    }
+}
+
+project(":cpp") {
     intellij {
         version.set(clionVersion)
         plugins.set(clionPlugins)

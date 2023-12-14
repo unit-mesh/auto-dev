@@ -1,9 +1,9 @@
 package cc.unitmesh.devti.intentions.action.task
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.llms.LLMProviderFactory
+import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.provider.LivingDocumentation
-import cc.unitmesh.devti.custom.LivingDocumentationType
+import cc.unitmesh.devti.custom.document.LivingDocumentationType
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
@@ -12,6 +12,13 @@ import com.intellij.psi.PsiNameIdentifierOwner
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
 
+/**
+ * The `LivingDocumentationTask` class represents a background task for generating living documentation.
+ *
+ * @property editor The editor in which the task is performed.
+ * @property target The target element for which the living documentation is generated.
+ * @property type The type of living documentation to be generated, defaulting to `LivingDocumentationType.COMMENT`.
+ */
 class LivingDocumentationTask(
     val editor: Editor,
     val target: PsiNameIdentifierOwner,
@@ -28,7 +35,7 @@ class LivingDocumentationTask(
         logger.info("Prompt: $prompt")
 
         val stream =
-            LLMProviderFactory().connector(project).stream(prompt, "")
+            LlmFactory().create(project).stream(prompt, "")
 
         var result = ""
 

@@ -14,4 +14,5 @@ include(
     "goland",
     "rust",
     "csharp",
+    "cpp",
 )

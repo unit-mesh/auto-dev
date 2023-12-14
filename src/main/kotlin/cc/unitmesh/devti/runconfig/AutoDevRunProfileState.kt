@@ -1,13 +1,15 @@
 package cc.unitmesh.devti.runconfig
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.provider.DevFlowProvider
+import cc.unitmesh.devti.flow.kanban.Kanban
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
-import cc.unitmesh.devti.llms.LLMProviderFactory
+import cc.unitmesh.devti.flow.kanban.impl.GitLabIssue
+import cc.unitmesh.devti.gui.sendToChatPanel
+import cc.unitmesh.devti.llms.LlmFactory
+import cc.unitmesh.devti.provider.DevFlowProvider
 import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
 import cc.unitmesh.devti.runconfig.options.AutoDevConfigurationOptions
 import cc.unitmesh.devti.settings.AutoDevSettingsState
-import cc.unitmesh.devti.gui.sendToChatPanel
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
@@ -27,14 +29,26 @@ class AutoDevRunProfileState(
     val options: AutoDevConfigurationOptions
 ) : RunProfileState {
     private val githubToken: String
+    private val gitlabToken: String
+    private val gitType: String
+    private val gitlabUrl: String
 
     init {
         val instance = AutoDevSettingsState.getInstance()
         githubToken = instance.githubToken
+        gitlabToken = instance.gitlabToken
+        gitType = instance.gitType
+        gitlabUrl = instance.gitlabUrl
     }
 
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
-        val gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)
+        val gitHubIssue : Kanban
+        if ("Github" == gitType) {
+            gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)
+        } else {
+            gitHubIssue = GitLabIssue(options.githubRepo(), gitlabToken, gitlabUrl)
+        }
+
 
         // TODO: support other language
         val flowProvider = DevFlowProvider.flowProvider("java")
@@ -42,7 +56,7 @@ class AutoDevRunProfileState(
             logger.error("current Language don't implementation DevFlow")
             return null
         }
-        val openAIRunner = LLMProviderFactory().connector(project)
+        val openAIRunner = LlmFactory().create(project)
 
         sendToChatPanel(project) { contentPanel, _ ->
             flowProvider.initContext(gitHubIssue, openAIRunner, contentPanel, project)

@@ -26,6 +26,7 @@ class CodeCompletionIntention : AbstractChatIntention() {
         val document = editor.document
         val offset = editor.caretModel.offset
         val promptLength = 512
+
         var promptStart = (offset - promptLength).coerceAtLeast(0)
         val isOutBoundary = !EditorActionUtil.isWordBoundary(editor.document.text, promptStart, false, false)
         while (promptStart < offset && isOutBoundary) {

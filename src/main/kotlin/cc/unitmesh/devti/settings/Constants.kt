@@ -7,6 +7,8 @@ enum class AIEngines {
     OpenAI, Custom, Azure, XingHuo
 }
 
+val GIT_TYPE = arrayOf("Github" , "Gitlab")
+val DEFAULT_GIT_TYPE = GIT_TYPE[0]
 enum class XingHuoApiVersion(val value: Int) {
     V1(1), V2(2), V3(3);
 
