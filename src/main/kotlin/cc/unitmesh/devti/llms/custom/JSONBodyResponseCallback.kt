@@ -16,6 +16,7 @@ class JSONBodyResponseCallback(private val responseFormat: String,private val ca
     }
 
     override fun onResponse(call: Call, response: Response) {
+        println("got response ${response.body?.string()}")
         val responseContent: String = JsonPath.parse(response.body?.string())?.read(responseFormat) ?: ""
 
         runBlocking() {

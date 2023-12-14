@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.settings
 
-import org.junit.Assert.*
+import com.jayway.jsonpath.JsonPath
+import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class LLMSettingComponentKtTest {
@@ -88,6 +89,14 @@ class LLMSettingComponentKtTest {
         s = 2
         assertEquals("callback should be called", 1, count)
         assertEquals("s should be changed to 2", 2, s)
+    }
 
+    @Test
+    fun testJsonPath() {
+        val content = """
+            {"id":"chatcmpl-8Vf3lDVkktbu4v1SYXGt0LTzCVgdC","object":"chat.completion.chunk","created":1702556693,"model":"gpt-35-turbo-16k","system_fingerprint":null,"choices":[{"index":0,"delta":{"role":"assistant","content":"abc"},"finish_reason":null}]}
+            """
+        val result = JsonPath.parse(content)?.read<String>("\$.choices[0].delta.content")
+        println("result is $result")
     }
 }

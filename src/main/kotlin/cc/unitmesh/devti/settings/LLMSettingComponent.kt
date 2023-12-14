@@ -40,7 +40,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     private val xingHuoApiKeyParam by LLMParam.creating { Password(settings.xingHuoApiKey) }
     private val xingHuoApiSecretParam by LLMParam.creating { Password(settings.xingHuoApiSecrect) }
 
-    private val customEngineResponseTypeParam by LLMParam.creating { ComboBox(ResponseType.of(settings.customEngineResponseType).name, ResponseType.values().map { it.name }.toList()) }
+    private val customEngineResponseTypeParam by LLMParam.creating { ComboBox(settings.customEngineResponseType, ResponseType.values().map { it.name }.toList()) }
     private val customEngineResponseFormatParam by LLMParam.creating { Editable(settings.customEngineResponseFormat) }
     private val customEngineRequestBodyFormatParam by LLMParam.creating { Editable(settings.customEngineRequestFormat) }
 
@@ -224,7 +224,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             customEngineToken = customEngineTokenParam.value
             customPrompts = customEnginePrompt.text
             openAiModel = openAIModelsParam.value
-            customEngineResponseType = customEngineResponseFormatParam.value
+            customEngineResponseFormat = customEngineResponseFormatParam.value
             customEngineRequestFormat = customEngineRequestBodyFormatParam.value
             delaySeconds = delaySecondsParam.value
         }
