@@ -27,6 +27,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.withContext
 import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
@@ -152,7 +153,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
 
     suspend fun updateMessage(content: Flow<String>): String {
         if (myList.componentCount > 0) {
-            myList.remove(myList.componentCount - 1)
+           myList.remove(myList.componentCount - 1)
         }
 
         progressBar.isVisible = true
@@ -200,9 +201,12 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         val startTime = System.currentTimeMillis() // 记录代码开始执行的时间
 
         var text = ""
-        content.catch {
+        content.onCompletion {
+            println("onCompletion ${it?.message}")
+        }.catch {
             it.printStackTrace()
         }.collect {
+            println("got message $it")
             text += it
 
             // 以下两个 API 设计不合理，如果必须要同时调用，那就只提供一个就好了

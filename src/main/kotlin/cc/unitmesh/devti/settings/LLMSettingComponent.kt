@@ -39,6 +39,8 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     private val xingHuoAppIDParam by LLMParam.creating { Editable(settings.xingHuoAppId) }
     private val xingHuoApiKeyParam by LLMParam.creating { Password(settings.xingHuoApiKey) }
     private val xingHuoApiSecretParam by LLMParam.creating { Password(settings.xingHuoApiSecrect) }
+
+    private val customEngineResponseTypeParam by LLMParam.creating { ComboBox(ResponseType.of(settings.customEngineResponseType).name, ResponseType.values().map { it.name }.toList()) }
     private val customEngineResponseFormatParam by LLMParam.creating { Editable(settings.customEngineResponseFormat) }
     private val customEngineRequestBodyFormatParam by LLMParam.creating { Editable(settings.customEngineRequestFormat) }
 
@@ -79,6 +81,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
                     customOpenAIHostParam,
             ),
             AIEngines.Custom to listOf(
+                    customEngineResponseTypeParam,
                     customEngineServerParam,
                     customEngineTokenParam,
                     customEngineResponseFormatParam,
@@ -185,6 +188,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             openAIKeyParam.value = openAiKey
             customOpenAIHostParam.value = customOpenAiHost
             customEngineServerParam.value = customEngineServer
+            customEngineResponseTypeParam.value = customEngineResponseType
             customEngineTokenParam.value = customEngineToken
             openAIModelsParam.value = openAiModel
             xingHuoApiVersionParam.value = xingHuoApiVersion.toString()
@@ -216,10 +220,11 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             aiEngine = aiEngineParam.value
             language = languageParam.value
             customEngineServer = customEngineServerParam.value
+            customEngineResponseType = customEngineResponseTypeParam.value
             customEngineToken = customEngineTokenParam.value
             customPrompts = customEnginePrompt.text
             openAiModel = openAIModelsParam.value
-            customEngineResponseFormat = customEngineResponseFormatParam.value
+            customEngineResponseType = customEngineResponseFormatParam.value
             customEngineRequestFormat = customEngineRequestBodyFormatParam.value
             delaySeconds = delaySecondsParam.value
         }
@@ -239,6 +244,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
                 settings.aiEngine != aiEngineParam.value ||
                 settings.language != languageParam.value ||
                 settings.customEngineServer != customEngineServerParam.value ||
+                settings.customEngineResponseType != customEngineResponseTypeParam.value ||
                 settings.customEngineToken != customEngineTokenParam.value ||
                 settings.customPrompts != customEnginePrompt.text ||
                 settings.openAiModel != openAIModelsParam.value ||
