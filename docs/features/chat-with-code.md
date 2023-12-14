@@ -9,7 +9,7 @@ permalink: /features/chat-width-code
 1. Select a code fragment and right-click it to open the context menu. (AutoDev Chat)
 2. Select AI Actions 
 
-![AutoDev Chat](https://unitmesh.cc/auto-dev/chat-with-code.png)
+<img src="https://unitmesh.cc/auto-dev/chat-with-code.png" alt="Chat code completion" width="400px"/>
 
 ## Explain this
 

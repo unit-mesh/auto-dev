@@ -6,5 +6,6 @@ nav_order: 9
 permalink: /features/code-review
 ---
 
-![AutoDev with AI](https://unitmesh.cc/auto-dev/works-with-git.png)
+1. select commit in Git panel, and right-click to show the context-menu 
 
+<img src="https://unitmesh.cc/auto-dev/works-with-git.png" alt="Code Review" width="400px"/>

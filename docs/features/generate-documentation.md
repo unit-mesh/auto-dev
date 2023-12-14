@@ -9,7 +9,7 @@ permalink: /features/gen-doc
 1. Select a code fragment and right-click to open the context menu.
 2. Press `⌥` + `↩` Enter. Select AI actions and then `Generate documentation`.
 
-![AutoDev Fix this](https://unitmesh.cc/auto-dev/gen-doc.png)
+<img src="https://unitmesh.cc/auto-dev/gen-doc.png" alt="Generate doc" width="400px"/>
 
 ## Generate Custom Living documentation
 

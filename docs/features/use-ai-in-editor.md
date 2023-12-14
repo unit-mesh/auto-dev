@@ -10,9 +10,10 @@ permalink: /features/use-ai-in-editor
    Alternatively, place the caret anywhere in the editor and press `⌥` + `Enter`
 2. Select AI Actions
 
-![AutoDev with AI](https://unitmesh.cc/auto-dev/autodev-autotest.png)
+<img src="https://unitmesh.cc/auto-dev/autodev-autotest.png" alt="AutoDev" width="400px"/>
 
 ## Chat with this code
 
 ## Test this
 
+AutoDev will auto create test file, and insert code to test file

@@ -12,12 +12,14 @@ with feature: load custom spec
 
 1. Right-click it to open the context menu. (AutoDev Chat)
 
-![AutoDev with AI](https://unitmesh.cc/auto-dev/chat-code-completion.png)
+<img src="https://unitmesh.cc/auto-dev/chat-code-completion.png" alt="Chat code completion" width="400px"/>
 
 ## Streaming code completion
 
 1. anywhere in the editor and press `⌥` + `Enter`
 
-![AutoDev with AI](https://unitmesh.cc/auto-dev/stream-code-completion.png)
+<img src="https://unitmesh.cc/auto-dev/stream-code-completion.png" alt="Chat code completion" width="400px"/>
 
+## Inlay code completion (Deprecated)
 
+since I don't have enough speed machines.

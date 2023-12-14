@@ -8,8 +8,8 @@ permalink: /features/works-with-git
 
 ## Generate commit messages
 
-![AutoDev with AI](https://unitmesh.cc/auto-dev/gen-commit.png)
+<img src="https://unitmesh.cc/auto-dev/gen-commit.png" alt="gen commit" width="400px"/>
 
 ## Generate Release Note
 
-![AutoDev with AI](https://unitmesh.cc/auto-dev/works-with-git.png)
+<img src="https://unitmesh.cc/auto-dev/gen-commit.png" alt="ReleaseNote" width="400px"/>
