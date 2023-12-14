@@ -27,6 +27,10 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     private val gitHubTokenParam by LLMParam.creating { Password(settings.githubToken) }
     private val customEngineServerParam by LLMParam.creating { Editable(settings.customEngineServer) }
     private val customEngineTokenParam by LLMParam.creating { Password(settings.customEngineToken) }
+
+    private val xingHuoApiVersionParam by LLMParam.creating {
+        ComboBox("${settings.xingHuoApiVersion}", XingHuoApiVersion.values().toList().map { it.toString() })
+    }
     private val xingHuoAppIDParam by LLMParam.creating { Editable(settings.xingHuoAppId) }
     private val xingHuoApiKeyParam by LLMParam.creating { Password(settings.xingHuoApiKey) }
     private val xingHuoApiSecretParam by LLMParam.creating { Password(settings.xingHuoApiSecrect) }
@@ -72,6 +76,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             customEngineTokenParam,
         ),
         AIEngines.XingHuo to listOf(
+            xingHuoApiVersionParam,
             xingHuoAppIDParam,
             xingHuoApiKeyParam,
             xingHuoApiSecretParam,
@@ -158,6 +163,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             customEngineServerParam.value = customEngineServer
             customEngineTokenParam.value = customEngineToken
             openAIModelsParam.value = openAiModel
+            xingHuoApiVersionParam.value = xingHuoApiVersion.toString()
             xingHuoAppIDParam.value = xingHuoAppId
             xingHuoApiKeyParam.value = xingHuoApiKey
             xingHuoApiSecretParam.value = xingHuoApiSecrect
@@ -173,6 +179,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             openAiKey = openAIKeyParam.value
             customOpenAiHost = customOpenAIHostParam.value
             xingHuoApiSecrect = xingHuoApiSecretParam.value
+            xingHuoApiVersion = XingHuoApiVersion.of(xingHuoApiVersionParam.value)
             xingHuoAppId = xingHuoAppIDParam.value
             xingHuoApiKey = xingHuoApiKeyParam.value
             aiEngine = aiEngineParam.value
@@ -190,6 +197,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
                 settings.githubToken != gitHubTokenParam.value ||
                 settings.openAiKey != openAIKeyParam.value ||
                 settings.xingHuoApiSecrect != xingHuoApiSecretParam.value ||
+                settings.xingHuoApiVersion != XingHuoApiVersion.of(xingHuoApiVersionParam.value) ||
                 settings.xingHuoAppId != xingHuoAppIDParam.value ||
                 settings.xingHuoApiKey != xingHuoApiKeyParam.value ||
                 settings.aiEngine != aiEngineParam.value ||

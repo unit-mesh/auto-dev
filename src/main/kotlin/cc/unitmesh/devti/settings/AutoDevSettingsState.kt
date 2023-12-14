@@ -18,6 +18,8 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
     var customEngineToken = ""
     var customPrompts = ""
 
+    // 星火有三个版本 https://console.xfyun.cn/services/bm3
+    var xingHuoApiVersion = XingHuoApiVersion.V3
     var xingHuoAppId = ""
     var xingHuoApiSecrect = ""
     var xingHuoApiKey = ""
