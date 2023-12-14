@@ -22,6 +22,8 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
     var customEngineToken = ""
     var customPrompts = ""
 
+    // 星火有三个版本 https://console.xfyun.cn/services/bm3
+    var xingHuoApiVersion = XingHuoApiVersion.V3
     var xingHuoAppId = ""
     var xingHuoApiSecrect = ""
     var xingHuoApiKey = ""
@@ -30,6 +32,19 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
      * should be a json path
      */
     var customEngineResponseFormat = ""
+    /**
+     * should be a json
+     * {
+     *     'customHeaders': { 'headerName': 'headerValue', 'headerName2': 'headerValue2' ... },
+     *     'customFields' : { 'bodyFieldName': 'bodyFieldValue', 'bodyFieldName2': 'bodyFieldValue2' ... }
+     *     'messageKey': {'role': 'roleKeyName', 'content': 'contentKeyName'}
+     * }
+     *
+     * @see docs/custom-llm-server.md
+     */
+    var customEngineRequestFormat = ""
+
+
     var language = DEFAULT_HUMAN_LANGUAGE
     var maxTokenLength = MAX_TOKEN_LENGTH.toString()
 

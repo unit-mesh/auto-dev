@@ -4,6 +4,7 @@ package cc.unitmesh.devti.llms.xianghuo
 
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
+import cc.unitmesh.devti.settings.XingHuoApiVersion
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -26,6 +27,14 @@ class XingHuoProvider(val project: Project) : LLMProvider {
     private val secrectKey: String
         get() = autoDevSettingsState.xingHuoApiSecrect
 
+    private val apiVersion: XingHuoApiVersion
+        get() = autoDevSettingsState.xingHuoApiVersion
+    private val XingHuoApiVersion.asGeneralDomain
+        get() = when (this) {
+            XingHuoApiVersion.V1 -> ""
+            XingHuoApiVersion.V2 -> "v2"
+            else -> "v3"
+        }
 
     private val appid: String
         get() = autoDevSettingsState.xingHuoAppId
@@ -119,7 +128,7 @@ class XingHuoProvider(val project: Project) : LLMProvider {
             val header = """
             |host: spark-api.xf-yun.com
             |date: $date
-            |GET /v1.1/chat HTTP/1.1
+            |GET /v${apiVersion.value}.1/chat HTTP/1.1
         """.trimMargin()
             val signature = hmacsha256.doFinal(header.toByteArray()).encodeBase64()
             val authorization =
@@ -130,7 +139,7 @@ class XingHuoProvider(val project: Project) : LLMProvider {
                 "date" to date,
                 "host" to "spark-api.xf-yun.com"
             )
-            val urlBuilder = "https://spark-api.xf-yun.com/v1.1/chat".toHttpUrl().newBuilder()
+            val urlBuilder = "https://spark-api.xf-yun.com/v${apiVersion.value}.1/chat".toHttpUrl().newBuilder()
             params.forEach {
                 urlBuilder.addQueryParameter(it.key, it.value)
             }
@@ -147,7 +156,7 @@ class XingHuoProvider(val project: Project) : LLMProvider {
             },
             "parameter": {
                 "chat": {
-                    "domain": "general",
+                    "domain": "general${apiVersion.asGeneralDomain}",
                     "temperature": 0.5,
                     "max_tokens": 1024
                 }
