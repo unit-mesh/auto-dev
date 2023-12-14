@@ -2,7 +2,7 @@ package cc.unitmesh.devti.llms.custom
 
 import com.nfeld.jsonpathkt.JsonPath
 import com.nfeld.jsonpathkt.extension.read
-import io.kotest.common.runBlocking
+import kotlinx.coroutines.runBlocking
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
