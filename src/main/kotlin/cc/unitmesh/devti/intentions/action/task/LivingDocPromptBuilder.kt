@@ -116,7 +116,7 @@ open class LivingDocPromptBuilder(
             val startEndString = documentation.startEndString(type)
             instruction.append(documentation.forbiddenRules.joinToString { "\n- $it" })
 
-            instruction.append("\n\nStart your documentation with ${startEndString.first} here, and ends with `${startEndString.second}`.\n")
+            instruction.append("\n\nStart your documentation with ${startEndString.first} here, no code, and ends with `${startEndString.second}`.\n")
             instruction.toString()
         }
     }

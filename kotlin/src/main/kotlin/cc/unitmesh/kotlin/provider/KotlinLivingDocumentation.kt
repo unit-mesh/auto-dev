@@ -57,7 +57,7 @@ class KotlinLivingDocumentation : LivingDocumentation {
     }
 
     override val forbiddenRules: List<String> = listOf(
-        "do not return code, just documentation.",
+        "do not return any code, just documentation.",
         "do not use @author and @version tags."
     )
 
