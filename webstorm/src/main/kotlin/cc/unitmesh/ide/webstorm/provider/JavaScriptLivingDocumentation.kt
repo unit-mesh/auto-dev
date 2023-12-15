@@ -35,28 +35,7 @@ class JavaScriptLivingDocumentation : LivingDocumentation {
     }
 
     override fun findNearestDocumentationTarget(psiElement: PsiElement): PsiNameIdentifierOwner? {
-        var candidate: PsiElement? = null
-
-        // lookup
-        if (psiElement is PsiWhiteSpace) {
-            val parent = psiElement.parent
-            when (parent) {
-                is JSFile, is JSEmbeddedContent, is JSObjectLiteralExpression, is JSBlockStatement, is TypeScriptObjectType -> {
-                    candidate = PsiTreeUtil.skipWhitespacesAndCommentsForward(psiElement)
-                }
-                is JSClass -> {
-                    val next = PsiTreeUtil.skipWhitespacesAndCommentsForward(psiElement)
-                    if (JSUtils.isMember(next)) {
-                        candidate = next
-                    }
-                }
-            }
-        }
-
-        // find to parent
-        if (candidate == null) {
-            candidate = psiElement.parentOfTypes(PsiNameIdentifierOwner::class, JSSourceElement::class)
-        }
+        var candidate: PsiElement? = psiElement.parentOfTypes(PsiNameIdentifierOwner::class, JSSourceElement::class)
 
         if (candidate is JSParameter) {
             candidate = candidate.declaringFunction
