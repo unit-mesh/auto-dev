@@ -4,15 +4,20 @@ import cc.unitmesh.devti.custom.document.LivingDocumentationType
 import cc.unitmesh.devti.provider.LivingDocumentation
 import com.intellij.codeInsight.daemon.impl.CollectHighlightsUtil
 import com.intellij.lang.ecmascript6.psi.ES6ExportDefaultAssignment
+import com.intellij.lang.ecmascript6.psi.ES6ImportSpecifier
+import com.intellij.lang.ecmascript6.psi.ES6ImportSpecifierAlias
+import com.intellij.lang.ecmascript6.psi.ES6ImportedBinding
 import com.intellij.lang.javascript.psi.*
-import com.intellij.lang.javascript.psi.ecma6.TypeScriptObjectType
+import com.intellij.lang.javascript.psi.ecma6.TypeScriptModule
 import com.intellij.lang.javascript.psi.ecmal4.JSClass
+import com.intellij.lang.javascript.psi.util.JSStubBasedPsiTreeUtil
 import com.intellij.lang.javascript.psi.util.JSUtils
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.SelectionModel
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNameIdentifierOwner
-import com.intellij.psi.PsiWhiteSpace
+import com.intellij.psi.ResolveState
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.parentOfTypes
 
@@ -52,12 +57,15 @@ class JavaScriptLivingDocumentation : LivingDocumentation {
                     }
                 }
             }
+
             is ES6ExportDefaultAssignment -> {
                 candidate = psiElement.expression
             }
+
             is JSProperty, is JSFunction, is JSVariable, is JSClass, is JSField -> {
                 candidate = psiElement
             }
+
             is JSVarStatement -> {
                 val variables = psiElement.variables
                 if (variables.isNotEmpty()) {
@@ -73,16 +81,59 @@ class JavaScriptLivingDocumentation : LivingDocumentation {
         root: PsiElement,
         selectionModel: SelectionModel
     ): List<PsiNameIdentifierOwner> {
-        val findCommonParent = CollectHighlightsUtil.findCommonParent(
+        val commonParent = CollectHighlightsUtil.findCommonParent(
             root,
             selectionModel.selectionStart,
             selectionModel.selectionEnd
         ) ?: return emptyList()
 
-        return emptyList()
+        val decls: MutableList<PsiNameIdentifierOwner> = mutableListOf()
+        JSStubBasedPsiTreeUtil.processDeclarationsInScope(
+            commonParent,
+            { element: PsiElement, _: ResolveState ->
+                if (element is PsiNameIdentifierOwner) {
+                    decls.add(element)
+                }
+                true
+            },
+            true
+        )
+
+        val list = decls.filter {
+            containsElement(selectionModel, it as PsiElement)
+                    && isMeaningfulToDocumentInSelection(it as PsiElement)
+        }.toList()
+
+        return list.ifEmpty {
+            listOfNotNull(findNearestDocumentationTarget(commonParent))
+        }
     }
 
     private fun containsElement(selectionModel: SelectionModel, element: PsiElement): Boolean {
         return selectionModel.selectionStart <= element.textRange.startOffset && element.textRange.endOffset <= selectionModel.selectionEnd
+    }
+
+    private fun isMeaningfulToDocumentInSelection(element: PsiElement?): Boolean {
+        if ((element is ES6ImportedBinding) || (element is ES6ImportSpecifierAlias) || (element is ES6ImportSpecifier)) {
+            return false
+        }
+
+        if (element is JSVariable && !JSUtils.isMember(element)) {
+            val initializerOrStub = element.initializerOrStub
+            if (initializerOrStub is JSFunctionExpression) {
+                return true
+            }
+
+            if (initializerOrStub is JSCallExpression && initializerOrStub.isRequireCall) {
+                return false
+            }
+
+            val parentOfType = PsiTreeUtil.getParentOfType(element, JSSourceElement::class.java, true)
+            val scope = parentOfType?.parent
+
+            return scope is PsiFile || scope is JSEmbeddedContent || scope is TypeScriptModule
+        }
+
+        return true
     }
 }
