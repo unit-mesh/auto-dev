@@ -415,9 +415,9 @@ project(":experiment") {
         implementation(project(":"))
         implementation(project(":java"))
 
-        implementation("com.phodal.chapi:chapi-domain:2.1.2")
-        implementation("com.phodal.chapi:chapi-ast-java:2.1.2")
-        implementation("org.archguard.scanner:feat_apicalls:2.0.1")
+        implementation("com.phodal.chapi:chapi-domain:2.1.3")
+        implementation("com.phodal.chapi:chapi-ast-java:2.1.3")
+        implementation("org.archguard.scanner:feat_apicalls:2.0.7")
     }
 
     // Collects all jars produced by compilation of project modules and merges them into singe one.
