@@ -15,24 +15,21 @@ class JavaScriptMethodContextBuilder : MethodContextBuilder {
         includeClassContext: Boolean,
         gatherUsages: Boolean
     ): MethodContext? {
-        if (psiElement !is JSFunction) {
-            return null
-        }
-        val jsFunction = psiElement
+        if (psiElement !is JSFunction) return null
 
-        val functionSignature = JSFormatUtil.buildFunctionSignaturePresentation(jsFunction)
-        val containingClass: PsiElement = JSUtils.getMemberContainingClass(jsFunction)
-        val languageDisplayName = jsFunction.language.displayName
-        val returnType = jsFunction.returnType
+        val functionSignature = JSFormatUtil.buildFunctionSignaturePresentation(psiElement)
+        val containingClass: PsiElement? = JSUtils.getMemberContainingClass(psiElement)
+        val languageDisplayName = psiElement.language.displayName
+        val returnType = psiElement.returnType
         val returnTypeText = returnType?.substitute()?.getTypeText(JSType.TypeTextFormat.CODE)
 
-        val parameterNames = jsFunction.parameters.mapNotNull { it.name }
+        val parameterNames = psiElement.parameters.mapNotNull { it.name }
 
         val usages =
-            if (gatherUsages) JavaScriptClassContextBuilder.findUsages(jsFunction as PsiNameIdentifierOwner) else emptyList()
+            if (gatherUsages) JavaScriptClassContextBuilder.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
 
         return MethodContext(
-            jsFunction, jsFunction.text, jsFunction.name!!, functionSignature, containingClass, languageDisplayName,
+            psiElement, psiElement.text, psiElement.name!!, functionSignature, containingClass, languageDisplayName,
             returnTypeText, parameterNames, includeClassContext, usages
         )
     }

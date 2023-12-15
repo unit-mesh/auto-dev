@@ -10,16 +10,21 @@ import com.intellij.lang.ecmascript6.psi.ES6ImportedBinding
 import com.intellij.lang.javascript.psi.*
 import com.intellij.lang.javascript.psi.ecma6.TypeScriptModule
 import com.intellij.lang.javascript.psi.ecmal4.JSClass
+import com.intellij.lang.javascript.psi.impl.JSChangeUtil
+import com.intellij.lang.javascript.psi.impl.JSPsiElementFactory
 import com.intellij.lang.javascript.psi.util.JSStubBasedPsiTreeUtil
 import com.intellij.lang.javascript.psi.util.JSUtils
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.SelectionModel
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.ResolveState
+import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.parentOfTypes
+import com.intellij.util.IncorrectOperationException
 
 class JavaScriptLivingDocumentation : LivingDocumentation {
     override val forbiddenRules: List<String> = listOf(
@@ -36,7 +41,32 @@ class JavaScriptLivingDocumentation : LivingDocumentation {
     }
 
     override fun updateDoc(target: PsiElement, newDoc: String, type: LivingDocumentationType, editor: Editor) {
-        TODO("Not yet implemented")
+        val project = target.project
+        val codeStyleManager = CodeStyleManager.getInstance(project)
+        WriteCommandAction.runWriteCommandAction(project, "Living Document", "cc.unitmesh.livingDoc", {
+            val startOffset = target.textRange.startOffset
+            val newEndOffset = startOffset + newDoc.length
+
+            when (type) {
+                LivingDocumentationType.COMMENT -> {
+                    val createJSDocComment: PsiElement = JSPsiElementFactory.createJSDocComment(newDoc, target)
+                    val parent = target.parent
+                    parent.addBefore(createJSDocComment, target)
+                    JSChangeUtil.addWs(parent.node, target.node, "\n")
+                }
+
+                LivingDocumentationType.ANNOTATED -> {
+                    editor.document.insertString(startOffset, newDoc)
+                    codeStyleManager.reformatText(target.containingFile, startOffset, newEndOffset)
+                }
+
+                LivingDocumentationType.CUSTOM -> {
+                    editor.document.insertString(startOffset, newDoc)
+                    codeStyleManager.reformatText(target.containingFile, startOffset, newEndOffset)
+                }
+            }
+        })
+
     }
 
     override fun findNearestDocumentationTarget(psiElement: PsiElement): PsiNameIdentifierOwner? {
