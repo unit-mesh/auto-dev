@@ -7,24 +7,23 @@ import com.intellij.lang.ecmascript6.psi.ES6ExportDefaultAssignment
 import com.intellij.lang.ecmascript6.psi.ES6ImportSpecifier
 import com.intellij.lang.ecmascript6.psi.ES6ImportSpecifierAlias
 import com.intellij.lang.ecmascript6.psi.ES6ImportedBinding
+import com.intellij.lang.javascript.documentation.JSDocumentationUtils
 import com.intellij.lang.javascript.psi.*
 import com.intellij.lang.javascript.psi.ecma6.TypeScriptModule
 import com.intellij.lang.javascript.psi.ecmal4.JSClass
 import com.intellij.lang.javascript.psi.impl.JSChangeUtil
 import com.intellij.lang.javascript.psi.impl.JSPsiElementFactory
+import com.intellij.lang.javascript.psi.jsdoc.JSDocComment
+import com.intellij.lang.javascript.psi.util.JSDestructuringUtil
 import com.intellij.lang.javascript.psi.util.JSStubBasedPsiTreeUtil
 import com.intellij.lang.javascript.psi.util.JSUtils
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.SelectionModel
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiNameIdentifierOwner
-import com.intellij.psi.ResolveState
+import com.intellij.psi.*
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.parentOfTypes
-import com.intellij.util.IncorrectOperationException
 
 class JavaScriptLivingDocumentation : LivingDocumentation {
     override val forbiddenRules: List<String> = listOf(
@@ -49,10 +48,18 @@ class JavaScriptLivingDocumentation : LivingDocumentation {
 
             when (type) {
                 LivingDocumentationType.COMMENT -> {
+                    val existingComment = JSDocumentationUtils.findOwnDocComment(target)
+                        ?: findDocFallback(target)
+
                     val createJSDocComment: PsiElement = JSPsiElementFactory.createJSDocComment(newDoc, target)
-                    val parent = target.parent
-                    parent.addBefore(createJSDocComment, target)
-                    JSChangeUtil.addWs(parent.node, target.node, "\n")
+
+                    if (existingComment != null) {
+                        existingComment.replace(createJSDocComment)
+                    } else {
+                        val parent = target.parent
+                        parent.addBefore(createJSDocComment, target)
+                        JSChangeUtil.addWs(parent.node, target.node, "\n")
+                    }
                 }
 
                 LivingDocumentationType.ANNOTATED -> {
@@ -66,7 +73,35 @@ class JavaScriptLivingDocumentation : LivingDocumentation {
                 }
             }
         })
+    }
 
+    private fun findDocFallback(documentationTarget: PsiElement): JSDocComment? {
+        val parentOfDestructuring: PsiElement? by lazy {
+            var context = documentationTarget.context
+            while (JSDestructuringUtil.isDestructuring(context)) {
+                val psiElement = context
+                context = psiElement?.context
+            }
+
+            context
+        }
+
+        val filterIsInstanceFunctions = sequenceOf(
+            { PsiTreeUtil.skipWhitespacesBackward(documentationTarget) },
+            { parentOfDestructuring?.let { PsiTreeUtil.skipWhitespacesBackward(it) } },
+            {
+                parentOfDestructuring?.firstChild?.let { firstChild ->
+                    if (firstChild is PsiWhiteSpace) {
+                        PsiTreeUtil.skipWhitespacesForward(firstChild)
+                    } else {
+                        firstChild
+                    }
+                }
+            }
+        )
+
+        val filteredSequence = filterIsInstanceFunctions.mapNotNull { it.invoke() }
+        return filteredSequence.filterIsInstance<JSDocComment>().firstOrNull()
     }
 
     override fun findNearestDocumentationTarget(psiElement: PsiElement): PsiNameIdentifierOwner? {
