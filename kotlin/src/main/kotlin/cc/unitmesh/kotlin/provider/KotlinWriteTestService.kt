@@ -50,7 +50,7 @@ class KotlinWriteTestService : WriteTestService() {
             parentDir?.path
         }
 
-        var relatedModels = lookupRelevantClass(project, element)
+        val relatedModels = lookupRelevantClass(project, element)
         // should add current class to relatedModels
 
         if (!parentDirPath?.contains("/src/main/kotlin/")!!) {
