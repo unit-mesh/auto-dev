@@ -94,12 +94,20 @@ class JavaWriteTestService : WriteTestService() {
             val elements = mutableListOf<ClassContext>()
             val projectPath = project.guessProjectDir()?.path
 
-            val resolvedClasses = JavaTypeUtil.resolveByMethod(element)
+            val resolvedClasses: MutableMap<String, PsiClass?> = mutableMapOf()
             resolvedClasses.putAll(JavaTypeUtil.resolveByField(element))
 
-            if (element is PsiClass) {
-                element.methods.forEach { method ->
-                    resolvedClasses.putAll(JavaTypeUtil.resolveByMethod(method))
+            when (element) {
+                is PsiClass -> {
+                    element.methods.forEach { method ->
+                        resolvedClasses.putAll(JavaTypeUtil.resolveByMethod(method))
+                    }
+                }
+
+                is PsiMethod -> {
+                    JavaRelatedContext.findRelatedClassesAndCleanUp(element).forEach { psiClass ->
+                        resolvedClasses[psiClass.name!!] = psiClass
+                    }
                 }
             }
 
