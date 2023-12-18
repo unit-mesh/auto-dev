@@ -105,7 +105,8 @@ class JavaWriteTestService : WriteTestService() {
                 }
 
                 is PsiMethod -> {
-                    JavaRelatedContext.findRelatedClassesAndCleanUp(element).forEach { psiClass ->
+                    val findRelatedClassesAndCleanUp = JavaRelatedContext.findRelatedClassesAndCleanUp(element)
+                    findRelatedClassesAndCleanUp.forEach { psiClass ->
                         resolvedClasses[psiClass.name!!] = psiClass
                     }
                 }

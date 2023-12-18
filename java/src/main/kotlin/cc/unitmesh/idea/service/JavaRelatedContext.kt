@@ -65,10 +65,10 @@ object JavaRelatedContext {
     private fun findSuperClasses(psiClass: PsiClass): List<PsiClass> {
         val superClass = psiClass.superClass ?: return emptyList()
         if (isProjectContent(superClass)) {
-            return listOf(psiClass.superClass!!)
+            return listOf(psiClass.superClass!!, psiClass)
         }
 
-        return emptyList()
+        return listOf(psiClass)
     }
 
     private fun canBeRemoved(member: PsiMember): Boolean {
