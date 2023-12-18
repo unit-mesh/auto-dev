@@ -46,7 +46,8 @@ object JavaTypeUtil {
             element.parameterList.parameters.filter {
                 it.type is PsiClassReferenceType
             }.map {
-                resolvedClasses[it.name] = (it.type as PsiClassReferenceType).resolve()
+                val resolve = (it.type as PsiClassReferenceType).resolve() ?: return@map null
+                resolvedClasses[it.name] = JavaRelatedContext.cleanUp(resolve)
             }
 
             val outputType = element.returnTypeElement?.type

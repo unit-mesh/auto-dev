@@ -43,7 +43,7 @@ object JavaRelatedContext {
         return containingClass
     }
 
-    private fun cleanUp(psiClass: PsiClass): PsiClass {
+    fun cleanUp(psiClass: PsiClass): PsiClass {
         val psiElement = psiClass.copy() as PsiClass
         psiElement.containingFile.setName(psiClass.containingFile.name)
         val members = PsiTreeUtil.findChildrenOfType(psiElement, PsiMember::class.java)
