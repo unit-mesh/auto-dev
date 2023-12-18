@@ -51,7 +51,6 @@ class KotlinWriteTestService : WriteTestService() {
         }
 
         val relatedModels = lookupRelevantClass(project, element)
-        // should add current class to relatedModels
 
         if (!parentDirPath?.contains("/src/main/kotlin/")!!) {
             log.error("Source file is not in the src/main/java directory: ${parentDirPath}")

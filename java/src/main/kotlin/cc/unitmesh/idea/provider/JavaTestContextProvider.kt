@@ -26,19 +26,25 @@ open class JavaTestContextProvider : ChatContextProvider {
         val baseTestPrompt = """
             |You MUST use should_xx_xx style for test method name.
             |You MUST use given-when-then style.
+            |- Test file should be complete and compilable, without need for further actions.
+            |- Ensure that each test focuses on a single use case to maintain clarity and readability.
+            |- Instead of using `@BeforeEach` methods for setup, include all necessary code initialization within each individual test method, do not write parameterized tests.
             |""".trimMargin()
 
         items += when {
             isController -> {
                 val testControllerPrompt = baseTestPrompt + """
-                            |You MUST use MockMvc and test API only.
+                            |- You MUST use MockMvc and test API only.
+                            |- Use appropriate Spring test annotations such as `@MockBean`, `@Autowired`, `@WebMvcTest`, `@DataJpaTest`, `@AutoConfigureTestDatabase`, `@AutoConfigureMockMvc`, `@SpringBootTest` etc.
                             |""".trimMargin()
                 ChatContextItem(JavaTestContextProvider::class, testControllerPrompt)
             }
 
             isService -> {
                 val testServicePrompt = baseTestPrompt + """
-                            |You MUST use Mock library and test service only.
+                            |- Use appropriate Spring test annotations such as `@MockBean`, `@Autowired`, `@WebMvcTest`, `@DataJpaTest`, `@AutoConfigureTestDatabase`, `@AutoConfigureMockMvc`, `@SpringBootTest` etc.
+                            |- Follow the common Spring code style by using the AssertJ library.
+                            |- Assume that the database is empty before each test and create valid entities with consideration for data constraints (jakarta.validation.constraints).
                             |""".trimMargin()
 
                 ChatContextItem(JavaTestContextProvider::class, testServicePrompt)
