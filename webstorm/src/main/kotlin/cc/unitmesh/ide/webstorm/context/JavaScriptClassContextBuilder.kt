@@ -23,7 +23,10 @@ class JavaScriptClassContextBuilder : ClassContextBuilder {
             emptyList()
         }
 
-        return ClassContext(psiElement, psiElement.text, psiElement.name, methods, fields, null, references)
+        val supers = psiElement.supers
+        val superClasses = supers.filterIsInstance<JSClass>().mapNotNull { it.name }
+
+        return ClassContext(psiElement, psiElement.text, psiElement.name, methods, fields, superClasses, references)
     }
 
     companion object {
