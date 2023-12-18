@@ -56,21 +56,30 @@ class KotlinCodeModifier : CodeModifier {
                 return@runReadAction psiClass
             } ?: return@invokeLater
 
+            try {
+                val newTestMethod = KtPsiFactory(project).createFunction(code)
+                if (rootElement.findMethodsByName(newTestMethod.name, false).isNotEmpty()) {
+                    log.error("Method already exists in the class: ${newTestMethod.name}")
+                }
 
-            val newTestMethod =  KtPsiFactory(project).createFunction(code)
-            if (rootElement.findMethodsByName(newTestMethod.name, false).isNotEmpty()) {
-                log.error("Method already exists in the class: ${newTestMethod.name}")
-            }
+                log.info("newTestMethod: ${newTestMethod.text}")
 
-            log.info("newTestMethod: ${newTestMethod.text}")
+                WriteCommandAction.runWriteCommandAction(project) {
+                    val lastMethod = rootElement.methods.lastOrNull()
+                    val lastMethodEndOffset = lastMethod?.textRange?.endOffset ?: 0
 
-            WriteCommandAction.runWriteCommandAction(project) {
-                val lastMethod = rootElement.methods.lastOrNull()
-                val lastMethodEndOffset = lastMethod?.textRange?.endOffset ?: 0
-
-                val document = PsiDocumentManager.getInstance(project).getDocument(rootElement.containingFile)
-                document?.insertString(lastMethodEndOffset, "\n    ")
-                document?.insertString(lastMethodEndOffset, newTestMethod.text)
+                    val document = PsiDocumentManager.getInstance(project).getDocument(rootElement.containingFile)
+                    document?.insertString(lastMethodEndOffset, "\n    ")
+                    document?.insertString(lastMethodEndOffset, newTestMethod.text)
+                }
+            } catch (e: Exception) {
+                log.warn("Failed to insert method: $code", e)
+                // append to the end of the file
+                WriteCommandAction.runWriteCommandAction(project) {
+                    val document = PsiDocumentManager.getInstance(project).getDocument(rootElement.containingFile)!!
+                    document?.insertString(document.textLength, "\n    ")
+                    document?.insertString(document.textLength, code)
+                }
             }
 
             project.guessProjectDir()?.refresh(true, true)
