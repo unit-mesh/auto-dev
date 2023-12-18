@@ -139,6 +139,11 @@
                         dynamic="true"/>
     </extensionPoints>
 
+    <applicationListeners>
+        <listener topic="com.intellij.ide.plugins.DynamicPluginListener"
+                  class="cc.unitmesh.devti.AutoDevUnloadListener"/>
+    </applicationListeners>
+
     <extensions defaultExtensionNs="cc.unitmesh">
         <autoDevIntention>
             <className>cc.unitmesh.devti.intentions.action.NewChatWithCodeIntention</className>
