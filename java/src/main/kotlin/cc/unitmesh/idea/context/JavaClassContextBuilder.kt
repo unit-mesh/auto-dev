@@ -16,15 +16,11 @@ class JavaClassContextBuilder : ClassContextBuilder {
         val fields = psiElement.fields.toList()
         val methods = psiElement.methods.toList()
 
-        val destination = ArrayList<String>()
-        for (element in supers) {
-            val name = element.name
-            if (name != null) destination.add(name)
-        }
+        val superClasses = supers.mapNotNull { it.name }
 
         val usages =
             if (gatherUsages) JavaContextCollection.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
 
-        return ClassContext(psiElement, psiElement.text, psiElement.name, methods, fields, destination, usages)
+        return ClassContext(psiElement, psiElement.text, psiElement.name, methods, fields, superClasses, usages)
     }
 }

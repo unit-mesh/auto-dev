@@ -94,7 +94,7 @@ class JavaWriteTestService : WriteTestService() {
             val elements = mutableListOf<ClassContext>()
             val projectPath = project.guessProjectDir()?.path
 
-            val resolvedClasses: MutableMap<String, PsiClass?> = mutableMapOf()
+            val resolvedClasses: MutableMap<String, PsiClass> = mutableMapOf()
             resolvedClasses.putAll(JavaTypeUtil.resolveByField(element))
 
             when (element) {
@@ -105,8 +105,7 @@ class JavaWriteTestService : WriteTestService() {
                 }
 
                 is PsiMethod -> {
-                    val findRelatedClassesAndCleanUp = JavaRelatedContext.findRelatedClassesAndCleanUp(element)
-                    findRelatedClassesAndCleanUp.forEach { psiClass ->
+                    JavaRelatedContext.findRelatedClassesAndCleanUp(element).forEach { psiClass ->
                         resolvedClasses[psiClass.name!!] = psiClass
                     }
                 }
@@ -114,7 +113,7 @@ class JavaWriteTestService : WriteTestService() {
 
             // find the class in the same project
             resolvedClasses.forEach { (_, psiClass) ->
-                val classPath = psiClass?.containingFile?.virtualFile?.path
+                val classPath = psiClass.containingFile?.virtualFile?.path
                 if (classPath?.contains(projectPath!!) == true) {
                     elements += ClassContextProvider(false).from(psiClass)
                 }

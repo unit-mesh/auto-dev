@@ -68,7 +68,11 @@ object JavaRelatedContext {
             return listOf(psiClass.superClass!!, psiClass)
         }
 
-        return listOf(psiClass)
+        if (isProjectContent(psiClass)) {
+            return listOf(psiClass)
+        }
+
+        return emptyList()
     }
 
     private fun canBeRemoved(member: PsiMember): Boolean {

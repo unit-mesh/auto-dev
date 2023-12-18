@@ -30,7 +30,7 @@ class ClassContext(
                 "+ $method"
             }
 
-        val filePath = runReadAction { root.containingFile.virtualFile.path }
+        val filePath = runReadAction { root.containingFile?.virtualFile?.path }
 
         return """
         |'filePath: $filePath
