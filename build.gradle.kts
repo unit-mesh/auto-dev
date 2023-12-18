@@ -360,8 +360,8 @@ project(":") {
         implementation("org.jetbrains:markdown:0.5.1")
         implementation(libs.kotlinx.serialization.json)
 
-        implementation("cc.unitmesh:cocoa-core:0.4.2")
-        implementation("cc.unitmesh:git-commit-message:0.4.2")
+        implementation("cc.unitmesh:cocoa-core:0.4.5")
+        implementation("cc.unitmesh:git-commit-message:0.4.5")
 
         // kanban
         implementation(libs.github.api)

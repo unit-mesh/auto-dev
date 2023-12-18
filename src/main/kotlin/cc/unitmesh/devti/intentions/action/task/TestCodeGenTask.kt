@@ -14,6 +14,7 @@ import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.progress.ProgressIndicator
@@ -93,7 +94,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         if (testContext.currentClass != null) {
             prompter += "\n"
             prompter += "// here is current class information:\n"
-            prompter += testContext.currentClass.format()
+            prompter += runReadAction { testContext.currentClass.format() }
         }
 
         prompter += "\n```${lang.lowercase()}\n${request.selectText}\n```\n"
