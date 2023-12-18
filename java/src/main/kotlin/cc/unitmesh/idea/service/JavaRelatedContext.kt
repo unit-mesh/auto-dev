@@ -63,6 +63,7 @@ object JavaRelatedContext {
     }
 
     private fun findSuperClasses(psiClass: PsiClass): List<PsiClass> {
+        if (!isProjectContent(psiClass)) return emptyList()
         return generateSequence(psiClass) { it.superClass }.toList()
     }
 
