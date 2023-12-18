@@ -17,7 +17,7 @@ open class SpringContextProvider : ChatContextProvider {
     }
 
     private fun hasProjectLibraries(project: Project): Boolean {
-        prepareLibraryData(project)?.forEach {
+        Companion.prepareLibraryData(project)?.forEach {
             if (it.groupId?.contains("org.springframework") == true) {
                 return true
             }
@@ -68,23 +68,8 @@ open class SpringContextProvider : ChatContextProvider {
         )
     }
 
-    private fun prepareLibraryData(project: Project): List<LibraryData>? {
-        val basePath = project.basePath ?: return null
-        val projectData = ProjectDataManager.getInstance().getExternalProjectData(
-            project, GradleConstants.SYSTEM_ID, basePath
-        )
-
-        val libraryDataList = projectData?.externalProjectStructure?.children?.filter {
-            it.data is LibraryData
-        }?.map {
-            it.data as LibraryData
-        }
-
-        return libraryDataList
-    }
-
     private fun prepareLibrary(project: Project): TestStack {
-        val libraryDataList = prepareLibraryData(project)
+        val libraryDataList = Companion.prepareLibraryData(project)
 
         val testStack = TestStack()
         var hasMatchSpringMvc = false
@@ -138,5 +123,22 @@ open class SpringContextProvider : ChatContextProvider {
         }
 
         return testStack
+    }
+
+    companion object {
+        fun prepareLibraryData(project: Project): List<LibraryData>? {
+            val basePath = project.basePath ?: return null
+            val projectData = ProjectDataManager.getInstance().getExternalProjectData(
+                project, GradleConstants.SYSTEM_ID, basePath
+            )
+
+            val libraryDataList = projectData?.externalProjectStructure?.children?.filter {
+                it.data is LibraryData
+            }?.map {
+                it.data as LibraryData
+            }
+
+            return libraryDataList
+        }
     }
 }

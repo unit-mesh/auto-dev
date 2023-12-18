@@ -28,7 +28,7 @@ open class JavaTestContextProvider : ChatContextProvider {
 
         val isSpringRelated = creationContext.element?.let { isSpringRelated(it) } ?: false
 
-        val baseTestPrompt = """
+        var baseTestPrompt = """
             |You MUST use should_xx_xx style for test method name.
             |You MUST use given-when-then style.
             |- Test file should be complete and compilable, without need for further actions.
@@ -36,7 +36,7 @@ open class JavaTestContextProvider : ChatContextProvider {
             |- Instead of using `@BeforeEach` methods for setup, include all necessary code initialization within each individual test method, do not write parameterized tests.
             |""".trimMargin()
 
-        // todo: check is spring project
+        baseTestPrompt += junitRule(project)
 
         items += when {
             isController && isSpringRelated -> {
@@ -62,6 +62,19 @@ open class JavaTestContextProvider : ChatContextProvider {
         }
 
         return items
+    }
+
+    private fun junitRule(project: Project): String {
+        SpringContextProvider.prepareLibraryData(project)?.forEach {
+            if (it.groupId?.contains("org.junit.jupiter") == true) {
+                return "| This project uses JUnit 5, you should import `org.junit.jupiter.api.Test` and use `@Test` annotation."
+            }
+            if (it.groupId?.contains("org.junit") == true) {
+                return "| This project uses JUnit 4, you should import `org.junit.Test` and use `@Test` annotation."
+            }
+        }
+
+        return ""
     }
 
     private fun isSpringRelated(method: PsiElement): Boolean {
