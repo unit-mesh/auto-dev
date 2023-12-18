@@ -63,8 +63,12 @@ object JavaRelatedContext {
     }
 
     private fun findSuperClasses(psiClass: PsiClass): List<PsiClass> {
-        if (!isProjectContent(psiClass)) return emptyList()
-        return generateSequence(psiClass) { it.superClass }.toList()
+        val superClass = psiClass.superClass ?: return emptyList()
+        if (isProjectContent(superClass)) {
+            return listOf(psiClass.superClass!!)
+        }
+
+        return emptyList()
     }
 
     private fun canBeRemoved(member: PsiMember): Boolean {
@@ -90,7 +94,7 @@ object JavaRelatedContext {
         return projectContentClasses.toList()
     }
 
-    private fun isProjectContent(element: PsiElement): Boolean {
+    fun isProjectContent(element: PsiElement): Boolean {
         val virtualFile = PsiUtil.getVirtualFile(element)
         return virtualFile == null || ProjectFileIndex.getInstance(element.project).isInContent(virtualFile)
     }

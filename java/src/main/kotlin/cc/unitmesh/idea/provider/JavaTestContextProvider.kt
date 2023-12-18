@@ -10,6 +10,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
+import org.jetbrains.kotlin.idea.util.application.runReadAction
 
 open class JavaTestContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
@@ -26,7 +27,7 @@ open class JavaTestContextProvider : ChatContextProvider {
         val isController = fileName?.let { MvcUtil.isController(it, langFileSuffix()) } ?: false
         val isService = fileName?.let { MvcUtil.isService(it, langFileSuffix()) } ?: false
 
-        val isSpringRelated = creationContext.element?.let { isSpringRelated(it) } ?: false
+        val isSpringRelated = runReadAction { creationContext.element?.let { isSpringRelated(it) } ?: false }
 
         var baseTestPrompt = """
             |You MUST use should_xx_xx style for test method name.

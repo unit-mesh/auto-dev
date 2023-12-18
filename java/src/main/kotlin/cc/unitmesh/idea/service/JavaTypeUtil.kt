@@ -47,6 +47,10 @@ object JavaTypeUtil {
                 it.type is PsiClassReferenceType
             }.map {
                 val resolve = (it.type as PsiClassReferenceType).resolve() ?: return@map null
+                if (!JavaRelatedContext.isProjectContent(resolve)) {
+                    return@map null
+                }
+
                 resolvedClasses[it.name] = JavaRelatedContext.cleanUp(resolve)
             }
 
