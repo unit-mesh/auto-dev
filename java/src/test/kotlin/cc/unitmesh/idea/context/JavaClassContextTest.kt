@@ -94,7 +94,8 @@ public class BlogService {
 
         assertEquals(
             classContext.format(),
-            """class BlogController {
+            """'filePath: /foo.bar
+class BlogController {
   blogService
   + public BlogController(BlogService blogService)
   + @PostMapping("/blog")     public BlogPost createBlog(CreateBlogDto blogDto)
