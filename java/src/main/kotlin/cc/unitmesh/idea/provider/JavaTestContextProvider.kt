@@ -6,11 +6,11 @@ import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.idea.MvcUtil
 import com.intellij.lang.java.JavaLanguage
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
-import org.jetbrains.kotlin.idea.util.application.runReadAction
 
 open class JavaTestContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
