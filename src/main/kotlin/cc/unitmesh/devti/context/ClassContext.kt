@@ -1,9 +1,9 @@
 package cc.unitmesh.devti.context
 
 import cc.unitmesh.devti.context.base.NamedElementContext
+import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
-import org.jetbrains.kotlin.idea.util.application.runReadAction
 
 class ClassContext(
     override val root: PsiElement,
