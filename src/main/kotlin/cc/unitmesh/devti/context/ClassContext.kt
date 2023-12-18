@@ -1,9 +1,9 @@
 package cc.unitmesh.devti.context
 
 import cc.unitmesh.devti.context.base.NamedElementContext
-import com.google.gson.Gson
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
+import org.jetbrains.kotlin.idea.util.application.runReadAction
 
 class ClassContext(
     override val root: PsiElement,
@@ -30,7 +30,10 @@ class ClassContext(
                 "+ $method"
             }
 
+        val filePath = runReadAction { root.containingFile.virtualFile.path }
+
         return """
+        |'filePath: $filePath
         |class $className {
         |  $classFields
         |  $methodSignatures
