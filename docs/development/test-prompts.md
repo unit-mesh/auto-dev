@@ -9,8 +9,7 @@ permalink: /scenes/domain-drive-design
 ## Test Prompts
 
 Write unit test for following code.
-You MUST return method code only, no explain.
-You MUST return start with @Test annotation.
+You MUST return code only, not explain.
 You MUST Use English to reply me!
 You are working on a project that uses Spring MVC,Spring WebFlux,JDBC to build RESTful APIs.
 You MUST use should_xx_xx style for test method name.
@@ -31,35 +30,40 @@ You MUST use given-when-then style.
 //   + public BlogPost updateBlog(Long id, BlogPost blogDto)
 //   + public void deleteBlog(Long id)
 // }
-// 'filePath: null
+// 'filePath: /Users/phodal/IdeaProjects/untitled/src/main/java/cc/unitmesh/untitled/demo/dto/CreateBlogRequest.java
 // class CreateBlogRequest {
-//   
+//   title
+//   content
+//   user
 //   
 // }
-// 'filePath: null
+// 'filePath: /Users/phodal/IdeaProjects/untitled/src/main/java/cc/unitmesh/untitled/demo/entity/BlogPost.java
 // class BlogPost {
 //   id
-//   + public BlogPost(String title, String content, String author);
-//   + public BlogPost();
-//   + public void setId(Long id);
-//   + public Long getId();
-//   + public String getTitle();
-//   + public void setTitle(String title);
-//   + public String getContent();
-//   + public void setContent(String content);
-//   + public String getAuthor();
-//   + public void setAuthor(String author);
+//   title
+//   content
+//   author
+//   + public BlogPost(String title, String content, String author)
+//   + public BlogPost()
+//   + public void setId(Long id)
+//   + public Long getId()
+//   + public String getTitle()
+//   + public void setTitle(String title)
+//   + public String getContent()
+//   + public void setContent(String content)
+//   + public String getAuthor()
+//   + public void setAuthor(String author)
 // }
 ```java
 @ApiOperation(value = "Create a new blog")
-@PostMapping("/")
-public BlogPost createBlog(@RequestBody CreateBlogRequest request) {
-  CreateBlogResponse response = new CreateBlogResponse();
-  BlogPost blogPost = new BlogPost();
-  BeanUtils.copyProperties(request, blogPost);
-  BlogPost createdBlog = blogService.createBlog(blogPost);
-  BeanUtils.copyProperties(createdBlog, response);
-  return createdBlog;
-}
+    @PostMapping("/")
+    public BlogPost createBlog(@RequestBody CreateBlogRequest request) {
+        CreateBlogResponse response = new CreateBlogResponse();
+        BlogPost blogPost = new BlogPost();
+        BeanUtils.copyProperties(request, blogPost);
+        BlogPost createdBlog = blogService.createBlog(blogPost);
+        BeanUtils.copyProperties(createdBlog, response);
+        return createdBlog;
+    }
 ```
-Start test code with `@Test` syntax here:  
+Start  with `import` syntax here:  

@@ -1,7 +1,9 @@
 package cc.unitmesh.idea.service
 
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiClassReferenceType
+import com.intellij.psi.util.PsiUtil
 
 object JavaTypeUtil {
     private fun resolveByType(outputType: PsiType?): Map<String, PsiClass> {
@@ -21,7 +23,7 @@ object JavaTypeUtil {
             }
         }
 
-        return resolvedClasses.filter { JavaRelatedContext.isProjectContent(it.value) }.toMap()
+        return resolvedClasses.filter { isProjectContent(it.value) }.toMap()
     }
 
     fun resolveByField(element: PsiElement): Map<String, PsiClass> {
@@ -34,7 +36,7 @@ object JavaTypeUtil {
             }
         }
 
-        return resolvedClasses.filter { JavaRelatedContext.isProjectContent(it.value) }.toMap()
+        return resolvedClasses.filter { isProjectContent(it.value) }.toMap()
     }
 
     /**
@@ -49,17 +51,22 @@ object JavaTypeUtil {
                 it.type is PsiClassReferenceType
             }.map {
                 val resolve = (it.type as PsiClassReferenceType).resolve() ?: return@map null
-                if (!JavaRelatedContext.isProjectContent(resolve)) {
+                if (!isProjectContent(resolve)) {
                     return@map null
                 }
 
-                resolvedClasses[it.name] = JavaRelatedContext.cleanUp(resolve)
+                resolvedClasses[it.name] = resolve
             }
 
             val outputType = element.returnTypeElement?.type
             resolvedClasses.putAll(resolveByType(outputType))
         }
 
-        return resolvedClasses.filter { JavaRelatedContext.isProjectContent(it.value) }.toMap()
+        return resolvedClasses.filter { isProjectContent(it.value) }.toMap()
     }
+}
+
+fun isProjectContent(element: PsiElement): Boolean {
+    val virtualFile = PsiUtil.getVirtualFile(element)
+    return virtualFile == null || ProjectFileIndex.getInstance(element.project).isInContent(virtualFile)
 }

@@ -105,9 +105,7 @@ class JavaWriteTestService : WriteTestService() {
                 }
 
                 is PsiMethod -> {
-                    JavaRelatedContext.findRelatedClassesAndCleanUp(element).forEach { psiClass ->
-                        resolvedClasses[psiClass.name!!] = psiClass
-                    }
+                    resolvedClasses.putAll(JavaTypeUtil.resolveByMethod(element))
                 }
             }
 
