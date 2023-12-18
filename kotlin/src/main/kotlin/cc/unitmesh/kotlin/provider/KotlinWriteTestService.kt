@@ -7,6 +7,7 @@ import cc.unitmesh.devti.provider.WriteTestService
 import cc.unitmesh.kotlin.context.KotlinClassContextBuilder
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -89,7 +90,7 @@ class KotlinWriteTestService : WriteTestService() {
 
         project.guessProjectDir()?.refresh(true, true)
 
-        val currentClass =  ClassContextProvider(false).from(element)
+        val currentClass =  runReadAction { ClassContextProvider(false).from(element) }
         return if (testFile != null) {
             TestFileContext(isNewFile, testFile, relatedModels, className, sourceFile.language, currentClass)
         } else {
