@@ -7,6 +7,9 @@ import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.idea.MvcUtil
 import com.intellij.lang.java.JavaLanguage
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiMethod
 
 open class JavaTestContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
@@ -23,6 +26,8 @@ open class JavaTestContextProvider : ChatContextProvider {
         val isController = fileName?.let { MvcUtil.isController(it, langFileSuffix()) } ?: false
         val isService = fileName?.let { MvcUtil.isService(it, langFileSuffix()) } ?: false
 
+        val isSpringRelated = creationContext.element?.let { isSpringRelated(it) } ?: false
+
         val baseTestPrompt = """
             |You MUST use should_xx_xx style for test method name.
             |You MUST use given-when-then style.
@@ -31,8 +36,10 @@ open class JavaTestContextProvider : ChatContextProvider {
             |- Instead of using `@BeforeEach` methods for setup, include all necessary code initialization within each individual test method, do not write parameterized tests.
             |""".trimMargin()
 
+        // todo: check is spring project
+
         items += when {
-            isController -> {
+            isController && isSpringRelated -> {
                 val testControllerPrompt = baseTestPrompt + """
                             |- You MUST use MockMvc and test API only.
                             |- Use appropriate Spring test annotations such as `@MockBean`, `@Autowired`, `@WebMvcTest`, `@DataJpaTest`, `@AutoConfigureTestDatabase`, `@AutoConfigureMockMvc`, `@SpringBootTest` etc.
@@ -40,9 +47,8 @@ open class JavaTestContextProvider : ChatContextProvider {
                 ChatContextItem(JavaTestContextProvider::class, testControllerPrompt)
             }
 
-            isService -> {
+            isService && isSpringRelated -> {
                 val testServicePrompt = baseTestPrompt + """
-                            |- Use appropriate Spring test annotations such as `@MockBean`, `@Autowired`, `@WebMvcTest`, `@DataJpaTest`, `@AutoConfigureTestDatabase`, `@AutoConfigureMockMvc`, `@SpringBootTest` etc.
                             |- Follow the common Spring code style by using the AssertJ library.
                             |- Assume that the database is empty before each test and create valid entities with consideration for data constraints (jakarta.validation.constraints).
                             |""".trimMargin()
@@ -58,4 +64,29 @@ open class JavaTestContextProvider : ChatContextProvider {
         return items
     }
 
+    private fun isSpringRelated(method: PsiElement): Boolean {
+        when (method) {
+            is PsiMethod -> {
+                val annotations = method.annotations
+                for (annotation in annotations) {
+                    val fqn = annotation.qualifiedName
+                    if (fqn != null && fqn.startsWith("org.springframework")) {
+                        return true
+                    }
+                }
+            }
+
+            is PsiClass -> {
+                val annotations = method.annotations
+                for (annotation in annotations) {
+                    val fqn = annotation.qualifiedName
+                    if (fqn != null && fqn.startsWith("org.springframework")) {
+                        return true
+                    }
+                }
+            }
+        }
+
+        return false
+    }
 }
