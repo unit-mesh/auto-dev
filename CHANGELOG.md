@@ -1,6 +1,58 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v1.4.3...v) (2023-11-22)
+# [](https://github.com/unit-mesh/auto-dev/compare/v1.5.0...v) (2023-12-19)
 
 ## [Unreleased]
+
+## [1.5.0] - 2023-12-19
+
+### Bug Fixes
+- **doc:** update doc by experience ([1b374de](https://github.com/unit-mesh/auto-dev/commit/1b374def5805425592ffdc63dcc38f44cd08e14c))
+- fix compile issue ([71a7eb1](https://github.com/unit-mesh/auto-dev/commit/71a7eb129feb8353d7d1f45b977750c3ded5efdc))
+- fix erro action again ([9cdadd2](https://github.com/unit-mesh/auto-dev/commit/9cdadd2c25cf1345a86edb635f0ee0dc83cf6d78))
+- fix import issue ([9dba8db](https://github.com/unit-mesh/auto-dev/commit/9dba8dbfe4a604d296f8e8bd86adc2bf8f9f7f71))
+- fix imports ([36f39d2](https://github.com/unit-mesh/auto-dev/commit/36f39d23f7e6bddfb61a24d3681db004f161cbbf))
+- fix imports ([ed3db21](https://github.com/unit-mesh/auto-dev/commit/ed3db21eff80a87e800544cddf87b167468767f0))
+- fix kotlin code modifier issue ([501fccc](https://github.com/unit-mesh/auto-dev/commit/501fccc2f6c911e97848c4f599e3a0e8f1f56a91))
+- fix kotlin read issue ([96b13cb](https://github.com/unit-mesh/auto-dev/commit/96b13cb14db7bc445931c951d1192ed7e3844f25))
+- fix python test isse ([e407586](https://github.com/unit-mesh/auto-dev/commit/e40758644411303351db8e4d18ea0772cde1dd52))
+- fix strategy issues ([333b75e](https://github.com/unit-mesh/auto-dev/commit/333b75e82974454370ea954950d11a5b68dc6445))
+- fix super class lost issue ([31907a6](https://github.com/unit-mesh/auto-dev/commit/31907a6b3d58e78cc3807487ee657018ac2f0110))
+- fix test ([7a70f8b](https://github.com/unit-mesh/auto-dev/commit/7a70f8b5c77082e3bd00d59f9d0316b750401aba))
+- fix test issues ([4a9ea9c](https://github.com/unit-mesh/auto-dev/commit/4a9ea9c095ef531b7e259edbc106ae99f273b506))
+- fix tests ([ab69050](https://github.com/unit-mesh/auto-dev/commit/ab69050f36f71dcca4b4f2b073babfefad2e5fb7))
+- is some super class no in project will be crash ([d203734](https://github.com/unit-mesh/auto-dev/commit/d2037344a0e5779466181995aa4e31388b1a4868))
+- 修复前一提交 SSE 的问题 ([54457f5](https://github.com/unit-mesh/auto-dev/commit/54457f558ce1f8c939fead5562835a6e7a6c13ae))
+
+### Features
+- add cleanup for kotlin code ([dd84795](https://github.com/unit-mesh/auto-dev/commit/dd847957bd08c4bf44ea5da37407591391c09b87))
+- add for junit rules ([dc5289d](https://github.com/unit-mesh/auto-dev/commit/dc5289dba409b3ef46752cff95e66869a2e2a9fd))
+- add for test file path ([16fc139](https://github.com/unit-mesh/auto-dev/commit/16fc139f1ad8dde10c939e01c8578fcdb250ced9))
+- **js:** add documentation support ([f6b0136](https://github.com/unit-mesh/auto-dev/commit/f6b0136892b1471a4c6d5c4cb263f32a4926bc79))
+- **js:** make doc better ([c69a335](https://github.com/unit-mesh/auto-dev/commit/c69a3350ecfe5b8919c7623c1e1516da7db28d51))
+- try to add unload listener ([11f7c28](https://github.com/unit-mesh/auto-dev/commit/11f7c287cba32b4d43157a5c84b23e22f9731789))
+- update java prompts ([d321afe](https://github.com/unit-mesh/auto-dev/commit/d321afe66d2c6e8e87ef2d5f768b6c33dcd34df0))
+
+## [1.4.4](https://github.com/unit-mesh/auto-dev/compare/v1.4.3...[1.4.4]) (2023-12-14)
+
+### Bug Fixes
+- customEngineServer -> customOpenAiHost ([cf03a2b](https://github.com/unit-mesh/auto-dev/commit/cf03a2b46607880e20d68763bf8266c1aac1b31f)), closes [#62](https://github.com/unit-mesh/auto-dev/issues/62)
+- demo issue ([434cd77](https://github.com/unit-mesh/auto-dev/commit/434cd7717c6f0aaa7e145421a83e1a447d8161bf))
+- fix import runblocking issue ([439b136](https://github.com/unit-mesh/auto-dev/commit/439b136b5337ea7205463ee560489b1837283c1b))
+- fix lint ([fe52832](https://github.com/unit-mesh/auto-dev/commit/fe52832442bc61642428245246016f8024dd7898))
+- fix syntax error issue ([8642d8d](https://github.com/unit-mesh/auto-dev/commit/8642d8d0e070c27039ebef1e8d847fc43f3f5ec9))
+- fix 助手回答为空的情况。 ([e0cca51](https://github.com/unit-mesh/auto-dev/commit/e0cca51f80c4488ddab5c4cf74dc277ddd207a76))
+- state 改为 getter 避免配置更新不生效 ([d53c6aa](https://github.com/unit-mesh/auto-dev/commit/d53c6aaa24cc5988e2301ee8741fd9fac13a9f2b)), closes [#62](https://github.com/unit-mesh/auto-dev/issues/62)
+- state 改为 getter 避免配置更新不生效 ([a3b22ae](https://github.com/unit-mesh/auto-dev/commit/a3b22ae1db2dad0ade8c3d5a4834b39b31ddd28f)), closes [#62](https://github.com/unit-mesh/auto-dev/issues/62)
+
+### Features
+- add request format complete ([07bfced](https://github.com/unit-mesh/auto-dev/commit/07bfced3e4960f1dbc013d5f0fcf4aa753adce7c))
+- add request format complete ([f341134](https://github.com/unit-mesh/auto-dev/commit/f341134f055a4be599f79906dc7409f938768596))
+- add request format config ([e0f040e](https://github.com/unit-mesh/auto-dev/commit/e0f040ece73505afa312a484da0351e57eb5e465))
+- add request format config ([ac03af8](https://github.com/unit-mesh/auto-dev/commit/ac03af87f2440a9e10c4b3517eaccc70f71d1fd0))
+- add request format logic-1 ([054b587](https://github.com/unit-mesh/auto-dev/commit/054b587f71d794506ce638dafa594e92112ffd7a))
+- add request format logic-1 ([20132e4](https://github.com/unit-mesh/auto-dev/commit/20132e4565a87d4d2a6cd434f12142ce1c434fde))
+- add xinghuo api version config setting ([d6d035a](https://github.com/unit-mesh/auto-dev/commit/d6d035aace1f423bf6e0ec4c89ef5caeaf6be542))
+- **ts:** init basic doc writing listener ([3786575](https://github.com/unit-mesh/auto-dev/commit/3786575ceaa7b37bde31c553b4d0eeb2ef8fcdd9))
+- 增加自定义请求。可修改请求 Header 及 reqeust body ([a72f085](https://github.com/unit-mesh/auto-dev/commit/a72f0857bd9bec59a63b335cdea4d033027d850b))
 
 ## [1.4.3](https://github.com/unit-mesh/auto-dev/compare/v1.4.1...v[1.4.3]) (2023-11-20)
 
@@ -658,7 +710,9 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.4.3...HEAD
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/unit-mesh/auto-dev/compare/v1.4.4...v1.5.0
+[1.4.4]: https://github.com/unit-mesh/auto-dev/compare/v1.4.3...v1.4.4
 [1.4.3]: https://github.com/unit-mesh/auto-dev/compare/v1.4.1...v1.4.3
 [1.4.1]: https://github.com/unit-mesh/auto-dev/compare/v1.2.5...v1.4.1
 [1.2.5]: https://github.com/unit-mesh/auto-dev/compare/v1.2.3...v1.2.5
