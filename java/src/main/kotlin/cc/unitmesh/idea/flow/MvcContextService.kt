@@ -67,14 +67,14 @@ ${relevantModel?.joinToString("\n")}
     fun controllerPrompt(psiFile: PsiFile?): String {
         val file = psiFile as? PsiJavaFileImpl
         val context = prepareControllerContext(file)
-        val services = context?.services?.distinctBy { it.qualifiedName }?.map(DtClass.Companion::formatPsi)
-        val models = context?.models?.distinctBy { it.qualifiedName }?.map(DtClass.Companion::formatPsi)
+        val services = context?.services?.distinctBy { it.qualifiedName }
+        val models = context?.models?.distinctBy { it.qualifiedName }
 
         val relevantModel = (services ?: emptyList()) + (models ?: emptyList())
 
         val clazz = fromJavaFile(file)
         return """
-${relevantModel.joinToString("\n")}
+${relevantModel.joinToString("\n", transform = DtClass.Companion::formatPsi)}
 //current path: ${clazz.path}
 """
     }

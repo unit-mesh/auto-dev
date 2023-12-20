@@ -1,17 +1,30 @@
 package cc.unitmesh.devti.actions.chat
 
-import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.chat.ChatCodingPanel
+import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.ChatContext
-import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.provider.ContextPrompter
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
+import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.temporary.getElementToAction
 
 class CodeCompleteChatAction : AnAction() {
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.BGT
+    }
+
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val document = e.getData(CommonDataKeys.EDITOR)?.document
@@ -28,19 +41,43 @@ class CodeCompleteChatAction : AnAction() {
         val suffixText = document?.text?.substring(lineEndOffset) ?: ""
 
         val editor = e.getData(CommonDataKeys.EDITOR) ?: return
+        ApplicationManager.getApplication().invokeLater {
 
-        val prompter = ContextPrompter.prompter(file?.language?.displayName ?: "")
+//        ProgressManager.getInstance()
+//            .run(object : Task.Backgroundable(project, "Building contextual call graph", true) {
+//                override fun run(indicator: ProgressIndicator) {
+            val prompter = ContextPrompter.prompter(file?.language?.displayName ?: "")
 
-        val element = runReadAction { getElementToAction(project, editor) }
-        prompter.initContext(ChatActionType.CODE_COMPLETE, prefixText, file, project, caretModel?.offset ?: 0, element)
-
-        sendToChatPanel(project) { panel, service ->
-            val chatContext = ChatContext(
-                null,
-                prefixText,
-                suffixText
+            val element = runReadAction { getElementToAction(project, editor) }
+            prompter.initContext(
+                ChatActionType.CODE_COMPLETE, prefixText, file, project, caretModel?.offset ?: 0, element
             )
-            service.handlePromptAndResponse(panel, prompter, chatContext)
+
+            val actionType = ChatActionType.CODE_COMPLETE
+            val chatCodingService = ChatCodingService(actionType, project)
+            val toolWindowManager =
+                ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolWindowFactory.Util.id) ?: run {
+                    logger<ChatCodingService>().warn("Tool window not found")
+                    return@invokeLater
+                }
+
+            val contentManager = toolWindowManager.contentManager
+            val contentPanel = ChatCodingPanel(chatCodingService, toolWindowManager.disposable)
+
+            runReadAction {
+                val content = contentManager.factory.createContent(contentPanel, chatCodingService.getLabel(), false)
+                contentManager.removeAllContents(true)
+                contentManager.addContent(content)
+
+                toolWindowManager.activate {
+                    val chatContext = ChatContext(
+                        null, prefixText, suffixText
+                    )
+                    chatCodingService.handlePromptAndResponse(contentPanel, prompter, chatContext)
+                }
+            }
+//                }
+//            })
         }
     }
 }

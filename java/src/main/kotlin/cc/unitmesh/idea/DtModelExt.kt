@@ -7,17 +7,27 @@ import cc.unitmesh.devti.context.model.DtParameter
 import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiMethod
 import com.intellij.psi.impl.source.PsiJavaFileImpl
 
+private val classCache = mutableMapOf<String, DtClass>()
+private val fileCache = mutableMapOf<String, DtClass>()
+
 fun fromJavaFile(file: PsiJavaFileImpl?): DtClass {
+    val path = file?.virtualFile?.path ?: ""
+    val cachedClass = fileCache[path]
+    if (cachedClass != null) {
+        return cachedClass
+    }
+
     return runReadAction {
         val psiClass = file?.classes?.firstOrNull() ?: return@runReadAction DtClass("", emptyList())
-        return@runReadAction DtClass.fromPsi(psiClass)
+        val fromPsi = DtClass.fromPsi(psiClass)
+        fileCache[path] = fromPsi
+
+        return@runReadAction fromPsi
     }
 }
-
-private val classCache = mutableMapOf<String, DtClass>()
-
 
 fun DtClass.Companion.formatPsi(psiClass: PsiClass): String {
     return fromPsi(psiClass).commentFormat()
@@ -43,28 +53,35 @@ fun DtClass.Companion.fromPsi(originClass: PsiClass): DtClass {
         )
     }
 
-    val methods = psiClass.methods.map { method ->
-        // if method is getter or setter, skip
-        val isGetter = method.name.startsWith("get")
-                && method.parameters.isEmpty()
-                && !(method.name.contains("By") || method.name.contains("With") || method.name.contains("And"))
+    val methods = runReadAction {
+        psiClass.methods.map { m ->
+            val method = m.copy() as PsiMethod
 
-        val isSetter = method.name.startsWith("set") && method.parameters.size == 1
-        if (isGetter || isSetter) {
-            return@map null
-        }
+            // if method is getter or setter, skip
+            val parameters = method.parameters
+            val methodName = method.name
 
-        DtMethod(
-            name = method.name,
-            returnType = method.returnType?.presentableText ?: "",
-            parameters = method.parameters.map { parameter ->
-                DtParameter(
-                    name = parameter.name ?: "",
-                    type = parameter.type.toString().replace("PsiType:", "")
-                )
+            val isGetter = methodName.startsWith("get")
+                    && parameters.isEmpty()
+                    && !(methodName.contains("By") || methodName.contains("With") || methodName.contains("And"))
+
+            val isSetter = methodName.startsWith("set") && parameters.size == 1
+            if (isGetter || isSetter) {
+                return@map null
             }
-        )
-    }.filterNotNull()
+
+            DtMethod(
+                name = methodName,
+                returnType = method.returnType?.presentableText ?: "",
+                parameters = parameters.map { parameter ->
+                    DtParameter(
+                        name = parameter.name ?: "",
+                        type = parameter.type.toString().replace("PsiType:", "")
+                    )
+                }
+            )
+        }.filterNotNull()
+    }
 
     val dtClass = DtClass(
         packageName = psiClass.qualifiedName ?: "",
