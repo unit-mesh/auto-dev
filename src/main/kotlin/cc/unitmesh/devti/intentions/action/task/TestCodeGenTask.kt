@@ -7,11 +7,7 @@ import cc.unitmesh.devti.intentions.action.AutoTestThisIntention
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.provider.WriteTestService
-import cc.unitmesh.devti.provider.context.TestFileContext
-import cc.unitmesh.devti.provider.context.ChatContextItem
-import cc.unitmesh.devti.provider.context.ChatContextProvider
-import cc.unitmesh.devti.provider.context.ChatCreationContext
-import cc.unitmesh.devti.provider.context.ChatOrigin
+import cc.unitmesh.devti.provider.context.*
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
@@ -23,7 +19,6 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
 
 class TestCodeGenTask(val request: TestCodeGenRequest) :
