@@ -43,7 +43,12 @@ fun DtClass.Companion.fromPsi(originClass: PsiClass): DtClass {
 
     val methods = psiClass.methods.map { method ->
         // if method is getter or setter, skip
-        if (method.name.startsWith("get") || method.name.startsWith("set")) {
+        val isGetter = method.name.startsWith("get")
+                && method.parameters.isEmpty()
+                && !(method.name.contains("By") || method.name.contains("With") || method.name.contains("And"))
+
+        val isSetter = method.name.startsWith("set") && method.parameters.size == 1
+        if (isGetter || isSetter) {
             return@map null
         }
 
