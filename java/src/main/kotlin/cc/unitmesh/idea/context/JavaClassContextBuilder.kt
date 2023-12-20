@@ -10,7 +10,9 @@ class JavaClassContextBuilder : ClassContextBuilder {
     override fun getClassContext(psiElement: PsiElement, gatherUsages: Boolean): ClassContext? {
         if (psiElement !is PsiClass) return null
 
-        val supers = psiElement.supers.filter { it.qualifiedName != "java.lang.Object" }.mapNotNull { it.qualifiedName }
+        val supers = psiElement.extendsList?.referenceElements?.mapNotNull {
+            it.text
+        }
 
         val fields = psiElement.fields.toList()
         val methods = psiElement.methods.toList()
