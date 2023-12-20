@@ -39,7 +39,7 @@ class ClassContext(
 
         return """
         |'package: $filePath
-        |class $className $superClasses {
+        |class $className$superClasses {
         |  $classFields
         |  $methodSignatures
         |}
