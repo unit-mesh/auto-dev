@@ -25,6 +25,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
+import java.time.Duration
 
 
 @Serializable
@@ -46,7 +47,8 @@ class AzureOpenAIProvider(val project: Project) : LLMProvider {
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private val url get() = autoDevSettingsState.customOpenAiHost
     private var customPromptConfig: CustomPromptConfig? = null
-    private var client = OkHttpClient()
+    private val timeout = Duration.ofSeconds(600)
+    private var client = OkHttpClient().newBuilder().readTimeout(timeout).build()
     private val openAiVersion: String
 
     init {
