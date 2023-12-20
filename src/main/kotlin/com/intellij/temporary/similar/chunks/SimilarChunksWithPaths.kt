@@ -98,9 +98,8 @@ class SimilarChunksWithPaths(private var snippetLength: Int = 60, private var ma
     }
 
     /**
-     * since is slowly will tokenize, we revoke to same way will Copilot:
+     * since is slowly will tokenize, we revoke the same way will Copilot:
      * https://github.com/mengjian-github/copilot-analysis#promptelement%E4%B8%BB%E8%A6%81%E5%86%85%E5%AE%B9
-     *
      */
     private fun tokenize(chunk: String): List<String> {
         return chunk.split(Regex("[^a-zA-Z0-9]")).filter { it.isNotBlank() }
@@ -130,7 +129,6 @@ class SimilarChunksWithPaths(private var snippetLength: Int = 60, private var ma
                 ?.filter {
                     !it.trim().startsWith("import ") && !it.trim().startsWith("package ")
                 }
-                ?.chunked(snippetLength)?.flatten()
         }
     }
 
