@@ -81,6 +81,10 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
             override fun onSubmit(component: AutoDevInputSection, trigger: AutoDevInputTrigger) {
                 val prompt = component.text
                 component.text = ""
+                if (prompt.isEmpty()) {
+                    return
+                }
+
                 val context = ChatContext(null, "", "")
 
                 chatCodingService.actionType = ChatActionType.CHAT
@@ -153,7 +157,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
 
     suspend fun updateMessage(content: Flow<String>): String {
         if (myList.componentCount > 0) {
-           myList.remove(myList.componentCount - 1)
+            myList.remove(myList.componentCount - 1)
         }
 
         progressBar.isVisible = true

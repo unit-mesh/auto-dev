@@ -96,7 +96,7 @@ class MessageView(private val message: String, val role: ChatRole, private val d
             }
             blockView.initialize()
             blockView.getComponent()?.setForeground(JBUI.CurrentTheme.Label.foreground())
-            centerPanel.add(blockView.getComponent())
+            blockView.getComponent()?.let { component -> centerPanel.add(component) }
         }
     }
 
