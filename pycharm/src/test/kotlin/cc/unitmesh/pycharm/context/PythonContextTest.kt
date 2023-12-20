@@ -28,7 +28,7 @@ print(p1.age) """
         psiElement.methods.forEach { println(it.name) }
         val classContext: ClassContext = ClassContextProvider(false).from(psiElement)
 
-        assertEquals(classContext.format(), """'filePath: /foo.bar
+        assertEquals(classContext.format(), """'package: /foo.bar
 class _ {
   
   
