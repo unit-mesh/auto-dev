@@ -38,7 +38,10 @@ class DtClass(
         var getterSetter: List<String> = listOf()
         val methodsWithoutGetterSetter = methods
             .filter { method ->
-                val isGetter = method.name.startsWith("get") && method.parameters.isEmpty()
+                val isGetter = method.name.startsWith("get")
+                        && method.parameters.isEmpty()
+                        && !(method.name.contains("By") || method.name.contains("With") || method.name.contains("And"))
+
                 val isSetter = method.name.startsWith("set") && method.parameters.size == 1
                 if (isGetter || isSetter) {
                     getterSetter = listOf(method.name)

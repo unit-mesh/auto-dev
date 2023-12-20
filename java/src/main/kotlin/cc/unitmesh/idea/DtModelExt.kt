@@ -16,6 +16,9 @@ fun fromJavaFile(file: PsiJavaFileImpl?): DtClass {
     }
 }
 
+private val classCache = mutableMapOf<String, DtClass>()
+
+
 fun DtClass.Companion.formatPsi(psiClass: PsiClass): String {
     return fromPsi(psiClass).commentFormat()
 }
@@ -24,39 +27,46 @@ fun DtClass.Companion.fromJavaFile(file: PsiFile): DtClass {
     return fromJavaFile(file as? PsiJavaFileImpl)
 }
 
-fun DtClass.Companion.fromPsi(psiClass: PsiClass): DtClass {
-    return runReadAction {
-        val fields = psiClass.fields.map { field ->
-            DtField(
-                name = field.name,
-                type = field.type.canonicalText
-            )
-        }
+fun DtClass.Companion.fromPsi(originClass: PsiClass): DtClass {
+    classCache[originClass.qualifiedName ?: ""]?.let {
+        return it
+    }
 
-        val methods = psiClass.methods.map { method ->
-            // if method is getter or setter, skip
-            if (method.name.startsWith("get") || method.name.startsWith("set")) {
-                return@map null
-            }
+    val psiClass = runReadAction { originClass.copy() as PsiClass }
 
-            DtMethod(
-                name = method.name,
-                returnType = method.returnType?.presentableText ?: "",
-                parameters = method.parameters.map { parameter ->
-                    DtParameter(
-                        name = parameter.name ?: "",
-                        type = parameter.type.toString().replace("PsiType:", "")
-                    )
-                }
-            )
-        }.filterNotNull()
-
-        return@runReadAction DtClass(
-            packageName = psiClass.qualifiedName ?: "",
-            path = psiClass.containingFile?.virtualFile?.path ?: "",
-            name = psiClass.name ?: "",
-            methods = methods,
-            fields = fields
+    val fields = psiClass.fields.map { field ->
+        DtField(
+            name = field.name,
+            type = field.type.toString().replace("PsiType:", "")
         )
     }
+
+    val methods = psiClass.methods.map { method ->
+        // if method is getter or setter, skip
+        if (method.name.startsWith("get") || method.name.startsWith("set")) {
+            return@map null
+        }
+
+        DtMethod(
+            name = method.name,
+            returnType = method.returnType?.presentableText ?: "",
+            parameters = method.parameters.map { parameter ->
+                DtParameter(
+                    name = parameter.name ?: "",
+                    type = parameter.type.toString().replace("PsiType:", "")
+                )
+            }
+        )
+    }.filterNotNull()
+
+    val dtClass = DtClass(
+        packageName = psiClass.qualifiedName ?: "",
+        path = psiClass.containingFile?.virtualFile?.path ?: "",
+        name = psiClass.name ?: "",
+        methods = methods,
+        fields = fields
+    )
+
+    classCache[psiClass.qualifiedName ?: ""] = dtClass
+    return dtClass
 }

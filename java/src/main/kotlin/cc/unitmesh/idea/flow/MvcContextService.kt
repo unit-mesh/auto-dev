@@ -32,13 +32,17 @@ class MvcContextService(private val project: Project) {
         }
     }
 
-    private fun filterImportByRegex(allImportStatements: Array<out PsiImportStatementBase>?, regex: Regex) =
-        allImportStatements?.filter {
+    private val importCache = mutableMapOf<String, List<PsiClass>>()
+    private fun filterImportByRegex(allImportStatements: Array<out PsiImportStatementBase>?, regex: Regex): List<PsiClass> {
+        return allImportStatements?.filter {
             it.importReference?.text?.lowercase()?.matches(regex) ?: false
         }?.mapNotNull {
             val importText = it.importReference?.text ?: return@mapNotNull null
-            javaPsiFacade.findClass(importText, searchScope)
-        } ?: emptyList()
+            importCache.getOrPut(importText) {
+                javaPsiFacade.findClasses(importText, searchScope).toList()
+            }
+        }?.flatten() ?: emptyList()
+    }
 
     fun servicePrompt(psiFile: PsiFile?): String {
         val file = psiFile as? PsiJavaFileImpl
@@ -63,8 +67,8 @@ ${relevantModel?.joinToString("\n")}
     fun controllerPrompt(psiFile: PsiFile?): String {
         val file = psiFile as? PsiJavaFileImpl
         val context = prepareControllerContext(file)
-        val services = context?.services?.map(DtClass.Companion::formatPsi)
-        val models = context?.models?.map(DtClass.Companion::formatPsi)
+        val services = context?.services?.distinctBy { it.qualifiedName }?.map(DtClass.Companion::formatPsi)
+        val models = context?.models?.distinctBy { it.qualifiedName }?.map(DtClass.Companion::formatPsi)
 
         val relevantModel = (services ?: emptyList()) + (models ?: emptyList())
 
