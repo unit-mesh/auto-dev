@@ -54,9 +54,7 @@ fun DtClass.Companion.fromPsi(originClass: PsiClass): DtClass {
     }
 
     val methods = runReadAction {
-        psiClass.methods.map { m ->
-            val method = m.copy() as PsiMethod
-
+        psiClass.methods.map { method ->
             // if method is getter or setter, skip
             val parameters = method.parameters
             val methodName = method.name

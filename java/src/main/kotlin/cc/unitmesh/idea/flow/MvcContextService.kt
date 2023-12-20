@@ -23,7 +23,8 @@ class MvcContextService(private val project: Project) {
         return runReadAction {
             if (controllerFile == null) return@runReadAction null
 
-            val allImportStatements = controllerFile.importList?.allImportStatements
+            val allImportStatements =
+                controllerFile.importList?.allImportStatements?.clone()
 
             return@runReadAction ControllerContext(
                 services = filterImportByRegex(allImportStatements, serviceRegex),

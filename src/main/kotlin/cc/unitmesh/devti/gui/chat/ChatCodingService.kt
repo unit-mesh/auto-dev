@@ -30,6 +30,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         context: ChatContext? = null,
     ) {
         val requestPrompt = prompter.requestPrompt()
+        val displayPrompt = prompter.displayPrompt()
 
         counitProcessor.isCoUnit(requestPrompt).let {
             if (it) {
@@ -38,7 +39,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
             }
         }
 
-        ui.addMessage(requestPrompt, true, prompter.displayPrompt())
+        ui.addMessage(requestPrompt, true, displayPrompt)
         ui.addMessage(AutoDevBundle.message("autodev.loading"))
 
         ApplicationManager.getApplication().executeOnPooledThread {

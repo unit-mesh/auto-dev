@@ -13,9 +13,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.Task
+import com.intellij.openapi.project.IndexNotReadyException
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.temporary.getElementToAction
 
@@ -41,31 +39,29 @@ class CodeCompleteChatAction : AnAction() {
         val suffixText = document?.text?.substring(lineEndOffset) ?: ""
 
         val editor = e.getData(CommonDataKeys.EDITOR) ?: return
-        ApplicationManager.getApplication().invokeLater {
 
-//        ProgressManager.getInstance()
-//            .run(object : Task.Backgroundable(project, "Building contextual call graph", true) {
-//                override fun run(indicator: ProgressIndicator) {
-            val prompter = ContextPrompter.prompter(file?.language?.displayName ?: "")
+        ApplicationManager.getApplication().runReadAction {
+            try {
+                val prompter = ContextPrompter.prompter(file?.language?.displayName ?: "")
 
-            val element = runReadAction { getElementToAction(project, editor) }
-            prompter.initContext(
-                ChatActionType.CODE_COMPLETE, prefixText, file, project, caretModel?.offset ?: 0, element
-            )
+                val element = getElementToAction(project, editor)
+                prompter.initContext(
+                    ChatActionType.CODE_COMPLETE, prefixText, file, project, caretModel?.offset ?: 0, element
+                )
 
-            val actionType = ChatActionType.CODE_COMPLETE
-            val chatCodingService = ChatCodingService(actionType, project)
-            val toolWindowManager =
-                ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolWindowFactory.Util.id) ?: run {
-                    logger<ChatCodingService>().warn("Tool window not found")
-                    return@invokeLater
-                }
+                val actionType = ChatActionType.CODE_COMPLETE
+                val chatCodingService = ChatCodingService(actionType, project)
+                val toolWindowManager =
+                    ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolWindowFactory.Util.id) ?: run {
+                        logger<ChatCodingService>().warn("Tool window not found")
+                        return@runReadAction
+                    }
 
-            val contentManager = toolWindowManager.contentManager
-            val contentPanel = ChatCodingPanel(chatCodingService, toolWindowManager.disposable)
+                val contentManager = toolWindowManager.contentManager
+                val contentPanel = ChatCodingPanel(chatCodingService, toolWindowManager.disposable)
 
-            runReadAction {
-                val content = contentManager.factory.createContent(contentPanel, chatCodingService.getLabel(), false)
+                val content =
+                    contentManager.factory.createContent(contentPanel, chatCodingService.getLabel(), false)
                 contentManager.removeAllContents(true)
                 contentManager.addContent(content)
 
@@ -75,9 +71,9 @@ class CodeCompleteChatAction : AnAction() {
                     )
                     chatCodingService.handlePromptAndResponse(contentPanel, prompter, chatContext)
                 }
+            } catch (ignore: IndexNotReadyException) {
+                return@runReadAction
             }
-//                }
-//            })
         }
     }
 }
