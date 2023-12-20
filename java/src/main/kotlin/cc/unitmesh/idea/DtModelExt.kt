@@ -32,6 +32,8 @@ fun DtClass.Companion.fromPsi(originClass: PsiClass): DtClass {
         return it
     }
 
+
+    val path = originClass.containingFile?.virtualFile?.path ?: ""
     val psiClass = runReadAction { originClass.copy() as PsiClass }
 
     val fields = psiClass.fields.map { field ->
@@ -66,7 +68,7 @@ fun DtClass.Companion.fromPsi(originClass: PsiClass): DtClass {
 
     val dtClass = DtClass(
         packageName = psiClass.qualifiedName ?: "",
-        path = psiClass.containingFile?.virtualFile?.path ?: "",
+        path = path,
         name = psiClass.name ?: "",
         methods = methods,
         fields = fields
