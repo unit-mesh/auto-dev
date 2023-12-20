@@ -105,7 +105,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         logger<AutoTestThisIntention>().info("Prompt: $prompter")
 
         indicator.fraction = 0.8
-        indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.prompt")
+        indicator.text = AutoDevBundle.message("intentions.request.background.process.title")
 
         runBlocking {
             writeTestToFile(request.project, flow, testContext)

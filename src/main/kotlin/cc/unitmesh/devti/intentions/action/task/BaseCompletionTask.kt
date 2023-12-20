@@ -29,6 +29,10 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
     open fun keepHistory(): Boolean = true
 
     override fun run(indicator: ProgressIndicator) {
+        indicator.isIndeterminate = true
+        indicator.fraction = 0.1
+        indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.prepare-context")
+
         val prompt = promptText()
         val flow: Flow<String> = LlmFactory().create(request.project).stream(prompt, "", keepHistory())
         logger.info("Prompt: $prompt")
@@ -45,6 +49,10 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
         val editor = request.editor
         val project = request.project
         var currentOffset = request.offset
+
+        indicator.isIndeterminate = true
+        indicator.fraction = 0.8
+        indicator.text = AutoDevBundle.message("intentions.request.background.process.title")
 
         LLMCoroutineScope.scope(request.project).launch {
             val suggestion = StringBuilder()
