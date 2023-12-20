@@ -18,7 +18,9 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
 
 class TestCodeGenTask(val request: TestCodeGenRequest) :
@@ -115,13 +117,16 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         }
     }
 
+    @OptIn(InternalCoroutinesApi::class)
     private suspend fun writeTestToFile(
         project: Project,
         flow: Flow<String>,
         context: TestFileContext,
     ) {
         val suggestion = StringBuilder()
-        flow.collect(suggestion::append)
+        flow.collect {
+            suggestion.append(it)
+        }
 
         logger.info("LLM suggestion: $suggestion")
 

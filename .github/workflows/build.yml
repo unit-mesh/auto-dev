@@ -31,7 +31,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        platform-version: [ 221, 233 ]
+        platform-version: [ 222, 233 ]
     env:
       ORG_GRADLE_PROJECT_platformVersion: ${{ matrix.platform-version }}
 
