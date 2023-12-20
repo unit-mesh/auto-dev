@@ -48,16 +48,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
             return
         }
 
-        var prompter = if (testContext.isNewFile) {
-            """Write unit test for following code. 
-                                    |You MUST return code only, not explain.
-                                    |""".trimMargin()
-        } else {
-            """Write unit test for following code. 
-                                    |You MUST return method code only, no explain.
-                                    |You MUST return start with @Test annotation.
-                                    |""".trimMargin()
-        }
+        var prompter = "Write unit test for following code. "
 
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.collect-context")
         indicator.fraction = 0.3
@@ -94,7 +85,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
             prompter += runReadAction { testContext.currentClass.format() }
         }
 
-        prompter += "\n```${lang.lowercase()}\n${request.selectText}\n```\n"
+        prompter += "\n```${lang.lowercase()}\nCode:\n${request.selectText}\n```\n"
         prompter += if (!testContext.isNewFile) {
             "Start test code with `@Test` syntax here:  \n"
         } else {
