@@ -34,7 +34,8 @@ open class JavaCodeModifier : CodeModifier {
     override fun insertTestCode(sourceFile: VirtualFile, project: Project, code: String): Boolean {
         log.info("methodCode: $code")
         if (!code.contains("@Test")) {
-            log.error("methodCode does not contain @Test annotation: $code")
+            log.warn("methodCode does not contain @Test annotation: $code")
+            insertMethod(sourceFile, project, code)
             return false
         }
 
