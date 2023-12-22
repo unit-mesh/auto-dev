@@ -32,7 +32,6 @@ open class JavaCodeModifier : CodeModifier {
     ) = PsiManager.getInstance(project).findFile(sourceFile) as PsiJavaFile
 
     override fun insertTestCode(sourceFile: VirtualFile, project: Project, code: String): Boolean {
-        log.info("methodCode: $code")
         if (!code.contains("@Test")) {
             log.warn("methodCode does not contain @Test annotation: $code")
             insertMethod(sourceFile, project, code)
@@ -82,7 +81,6 @@ open class JavaCodeModifier : CodeModifier {
     }
 
     override fun insertClass(sourceFile: VirtualFile, project: Project, code: String): Boolean {
-        log.info("start insertClassCode: $code")
         return WriteCommandAction.runWriteCommandAction<Boolean>(project) {
             val psiFile = lookupFile(project, sourceFile)
             val document = psiFile.viewProvider.document!!
