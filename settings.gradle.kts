@@ -1,4 +1,4 @@
-rootProject.name = "intellij-autodev"
+rootProject.name = "AutoDev-Intellij"
 
 enableFeaturePreview("VERSION_CATALOGS")
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
