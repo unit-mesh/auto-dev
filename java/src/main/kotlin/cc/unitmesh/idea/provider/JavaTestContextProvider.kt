@@ -66,7 +66,7 @@ open class JavaTestContextProvider : ChatContextProvider {
     }
 
     private fun junitRule(project: Project): String {
-        SpringContextProvider.prepareLibraryData(project)?.forEach {
+        prepareLibraryData(project)?.forEach {
             if (it.groupId?.contains("org.junit.jupiter") == true) {
                 return "| This project uses JUnit 5, you should import `org.junit.jupiter.api.Test` and use `@Test` annotation."
             }
