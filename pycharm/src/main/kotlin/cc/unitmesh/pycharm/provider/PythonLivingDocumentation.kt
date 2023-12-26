@@ -1,3 +1,19 @@
+/*
+ * Copyright 2000-2014 JetBrains s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package cc.unitmesh.pycharm.provider
 
 import cc.unitmesh.devti.custom.document.LivingDocumentationType
@@ -9,10 +25,8 @@ import com.intellij.openapi.editor.SelectionModel
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
-import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.psi.util.PsiUtilBase
 import com.intellij.util.IncorrectOperationException
 import com.jetbrains.python.documentation.docstrings.PyDocstringGenerator
 import com.jetbrains.python.psi.*
@@ -34,31 +48,14 @@ class PythonLivingDocumentation : LivingDocumentation {
         docstringGenerator.buildAndInsert(newDoc, target)
     }
 
-//    fun findNearestDocumentationTargetForCaret(editor: Editor): PsiNameIdentifierOwner? {
-//        val element = PsiUtilBase.getElementAtCaret(editor) ?: return null
-//
-//        val pyFile = PsiTreeUtil.getParentOfType(element, PsiNamedElement::class.java, false) as? PyFile
-//        val caretOffset = editor.caretModel.offset
-//
-//        return when {
-//            pyFile is PyFile -> {
-//                return (pyFile.topLevelClasses + pyFile.topLevelFunctions)
-//                    .filterIsInstance<PsiNameIdentifierOwner>()
-//                    .filter { it.textRange.startOffset >= caretOffset }
-//                    .minByOrNull { it.textRange.startOffset - caretOffset }
-//            }
-//
-//            else -> findNearestDocumentationTarget(element)
-//        }
-//    }
-
-    override fun findNearestDocumentationTarget(element: PsiElement): PsiNameIdentifierOwner? {
+    override fun findNearestDocumentationTarget(psiElement: PsiElement): PsiNameIdentifierOwner? {
         return when {
-            element is PyFunction || element is PyClass -> element as PsiNameIdentifierOwner
+            psiElement is PyFunction || psiElement is PyClass -> psiElement as PsiNameIdentifierOwner
             else -> {
-                val closestIdentifierOwner = PsiTreeUtil.getParentOfType(element, PsiNameIdentifierOwner::class.java)
+                val closestIdentifierOwner = PsiTreeUtil.getParentOfType(psiElement, PsiNameIdentifierOwner::class.java)
                 if (closestIdentifierOwner !is PyFunction) {
-                    val psiNameIdentifierOwner = PsiTreeUtil.getParentOfType(element, PyFunction::class.java) as? PsiNameIdentifierOwner
+                    val psiNameIdentifierOwner =
+                        PsiTreeUtil.getParentOfType(psiElement, PyFunction::class.java) as? PsiNameIdentifierOwner
                     return psiNameIdentifierOwner ?: closestIdentifierOwner
                 }
                 closestIdentifierOwner
@@ -83,18 +80,14 @@ class PythonLivingDocumentation : LivingDocumentation {
             }
 
             is PyClass -> {
-                val documentationTarget = findNearestDocumentationTarget(commonParent) ?: return emptyList()
+                val psiNameId = findNearestDocumentationTarget(commonParent) ?: return emptyList()
 
-                if (documentationTarget is PyClass && !containsElement(
-                        selectionModel,
-                        documentationTarget as PsiElement
-                    )
-                ) {
-                    val nestedClasses = documentationTarget.nestedClasses.toList()
-                    val methods = documentationTarget.methods.toList()
+                if (psiNameId is PyClass && !containsElement(selectionModel, psiNameId as PsiElement)) {
+                    val nestedClasses = psiNameId.nestedClasses.toList()
+                    val methods = psiNameId.methods.toList()
                     getSelectedClassesAndFunctions(nestedClasses, methods, selectionModel)
                 } else {
-                    listOf(documentationTarget)
+                    listOf(psiNameId)
                 }
             }
 
@@ -117,15 +110,11 @@ class PythonLivingDocumentation : LivingDocumentation {
         return selectionModel.selectionStart < element.textRange.endOffset && selectionModel.selectionEnd > element.textRange.startOffset
     }
 
-    fun containsElement(selectionModel: SelectionModel, element: PsiElement): Boolean {
+    private fun containsElement(selectionModel: SelectionModel, element: PsiElement): Boolean {
         return selectionModel.selectionStart <= element.textRange.startOffset && element.textRange.endOffset <= selectionModel.selectionEnd
     }
 
 }
-
-//private fun PyDocstringGenerator.buildAndInsert(newDoc: String) {
-//    TODO("Not yet implemented")
-//}
 
 fun PyDocstringGenerator.buildAndInsert(replacementText: String, myDocStringOwner: PyDocStringOwner): PyDocStringOwner {
     val project: Project = myDocStringOwner.getProject()
