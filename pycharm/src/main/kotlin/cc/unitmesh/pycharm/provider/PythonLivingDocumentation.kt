@@ -19,21 +19,23 @@ package cc.unitmesh.pycharm.provider
 import cc.unitmesh.devti.custom.document.LivingDocumentationType
 import cc.unitmesh.devti.provider.LivingDocumentation
 import com.intellij.codeInsight.daemon.impl.CollectHighlightsUtil
-import com.intellij.openapi.editor.Document
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.SelectionModel
-import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.IncorrectOperationException
-import com.jetbrains.python.documentation.docstrings.PyDocstringGenerator
 import com.jetbrains.python.psi.*
 
 
 class PythonLivingDocumentation : LivingDocumentation {
-    override val forbiddenRules: List<String> = listOf()
+    override val forbiddenRules: List<String> = listOf(
+        "do not return any code, just documentation.",
+        "write Docstring",
+    )
 
     override fun startEndString(type: LivingDocumentationType): Pair<String, String> {
         return Pair("\"\"\"", "\"\"\"")
@@ -44,8 +46,9 @@ class PythonLivingDocumentation : LivingDocumentation {
             throw IncorrectOperationException()
         }
 
-        val docstringGenerator = PyDocstringGenerator.forDocStringOwner((target as PyDocStringOwner?)!!)
-        docstringGenerator.buildAndInsert(newDoc, target)
+        WriteCommandAction.runWriteCommandAction(target.project, "Living Document", "cc.unitmesh.livingDoc", {
+            buildAndInsert(newDoc, target)
+        });
     }
 
     override fun findNearestDocumentationTarget(psiElement: PsiElement): PsiNameIdentifierOwner? {
@@ -113,47 +116,47 @@ class PythonLivingDocumentation : LivingDocumentation {
     private fun containsElement(selectionModel: SelectionModel, element: PsiElement): Boolean {
         return selectionModel.selectionStart <= element.textRange.startOffset && element.textRange.endOffset <= selectionModel.selectionEnd
     }
-
 }
 
-fun PyDocstringGenerator.buildAndInsert(replacementText: String, myDocStringOwner: PyDocStringOwner): PyDocStringOwner {
-    val project: Project = myDocStringOwner.getProject()
-    val elementGenerator = PyElementGenerator.getInstance(project)
+fun buildAndInsert(replacementText: String, anchor: PyDocStringOwner): PyDocStringOwner {
+    val elementGenerator = PyElementGenerator.getInstance(anchor.project)
     val replacement = elementGenerator.createDocstring(replacementText)
 
-    val docStringExpression: PyStringLiteralExpression? = myDocStringOwner.getDocStringExpression()
+    val docStringExpression: PyStringLiteralExpression? = anchor.docStringExpression
     if (docStringExpression != null) {
         docStringExpression.replace(replacement.expression)
-    } else {
-        val container = PyUtil.`as`(
-            myDocStringOwner,
-            PyStatementListContainer::class.java
-        ) ?: throw IncorrectOperationException("Cannot find container for docstring, Should be a function or class")
+        return anchor
+    }
 
-        val statements = container.statementList
-        val indentation = PyIndentUtil.getElementIndent(statements)
+    val container = PyUtil.`as`(
+        anchor,
+        PyStatementListContainer::class.java
+    ) ?: throw IncorrectOperationException("Cannot find container for docstring, Should be a function or class")
 
-        PyUtil.updateDocumentUnblockedAndCommitted(myDocStringOwner) { document: Document ->
-            val beforeStatements = statements.prevSibling
-            var replacementWithLineBreaks = """
+    val statements = container.statementList
+    val indentation = PyIndentUtil.getElementIndent(statements)
+
+    val manager = PsiDocumentManager.getInstance(anchor.project)
+    val document = manager.getDocument(anchor.containingFile)!!
+    val beforeStatements = statements.prevSibling
+    var replacementWithLineBreaks = """
                 
                 $indentation$replacementText
                 """.trimIndent()
-            if (statements.statements.isNotEmpty()) {
-                replacementWithLineBreaks += """
+    if (statements.statements.isNotEmpty()) {
+        replacementWithLineBreaks += """
                     
                     $indentation
                     """.trimIndent()
-            }
-            val range = beforeStatements.textRange
-            if (beforeStatements !is PsiWhiteSpace) {
-                document.insertString(range.endOffset, replacementWithLineBreaks)
-            } else if (statements.statements.isEmpty() && beforeStatements.textContains('\n')) {
-                document.insertString(range.startOffset, replacementWithLineBreaks)
-            } else {
-                document.replaceString(range.startOffset, range.endOffset, replacementWithLineBreaks)
-            }
-        }
     }
-    return myDocStringOwner
+    val range = beforeStatements.textRange
+    if (beforeStatements !is PsiWhiteSpace) {
+        document.insertString(range.endOffset, replacementWithLineBreaks)
+    } else if (statements.statements.isEmpty() && beforeStatements.textContains('\n')) {
+        document.insertString(range.startOffset, replacementWithLineBreaks)
+    } else {
+        document.replaceString(range.startOffset, range.endOffset, replacementWithLineBreaks)
+    }
+
+    return anchor
 }

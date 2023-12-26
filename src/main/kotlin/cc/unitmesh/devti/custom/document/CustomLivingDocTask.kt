@@ -27,7 +27,7 @@ class CustomLivingDocTask(
         val builder = CustomLivingDocPromptBuilder(editor, target, config, documentation)
         val prompt = builder.buildPrompt(project, target, config.prompt)
 
-        logger.warn("Prompt: $prompt")
+        logger.info("Prompt: $prompt")
 
         val stream =
             LlmFactory().create(project).stream(prompt, "")
@@ -40,7 +40,7 @@ class CustomLivingDocTask(
             }
         }
 
-        logger.warn("Result: $result")
+        logger.info("Result: $result")
 
         documentation.updateDoc(target, result, config.type, editor)
     }
