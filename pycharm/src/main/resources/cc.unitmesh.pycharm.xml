@@ -14,6 +14,9 @@
         <variableContextBuilder language="Python"
                                 implementationClass="cc.unitmesh.pycharm.context.PythonVariableContextBuilder"/>
 
+        <livingDocumentation language="Python"
+                             implementationClass="cc.unitmesh.pycharm.provider.PythonLivingDocumentation"/>
+
         <chatContextProvider implementation="cc.unitmesh.pycharm.PythonFrameworkContextProvider"/>
 
         <contextPrompter
