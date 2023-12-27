@@ -126,6 +126,7 @@ class OpenAIProvider(val project: Project) : LLMProvider {
         }
 
         messages.add(systemMessage)
+        logger.info("messages length: ${messages.size}")
 
         return ChatCompletionRequest.builder()
             .model(openAiVersion)

@@ -50,6 +50,9 @@ class AzureOpenAIProvider(val project: Project) : LLMProvider {
     private val timeout = Duration.ofSeconds(600)
     private var client = OkHttpClient().newBuilder().readTimeout(timeout).build()
     private val openAiVersion: String
+    private val maxTokenLength: Int
+        get() = AutoDevSettingsState.getInstance().fetchMaxTokenLength()
+
 
     init {
         val prompts = autoDevSettingsState.customPrompts
@@ -78,9 +81,10 @@ class AzureOpenAIProvider(val project: Project) : LLMProvider {
     fun prompt(instruction: String, input: String): String {
         val promptText = "$instruction\n$input"
         val systemMessage = ChatMessage(ChatMessageRole.USER.value(), promptText)
-        if (historyMessageLength > 8192) {
+        if (historyMessageLength > maxTokenLength) {
             messages.clear()
         }
+
         messages.add(SimpleOpenAIFormat.fromChatMessage(systemMessage))
         val requestText = Json.encodeToString<SimpleOpenAIBody>(
             SimpleOpenAIBody(
