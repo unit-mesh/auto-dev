@@ -11,7 +11,6 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.IndexNotReadyException
 import com.intellij.openapi.wm.ToolWindowManager
@@ -69,7 +68,7 @@ class CodeCompleteChatAction : AnAction() {
                     val chatContext = ChatContext(
                         null, prefixText, suffixText
                     )
-                    chatCodingService.handlePromptAndResponse(contentPanel, prompter, chatContext)
+                    chatCodingService.handlePromptAndResponse(contentPanel, prompter, chatContext, false)
                 }
             } catch (ignore: IndexNotReadyException) {
                 return@runReadAction

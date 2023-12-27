@@ -26,7 +26,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.withContext
 import java.awt.event.ActionListener
@@ -91,7 +90,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
                 chatCodingService.handlePromptAndResponse(this@ChatCodingPanel, object : ContextPrompter() {
                     override fun displayPrompt() = prompt
                     override fun requestPrompt() = prompt
-                }, context)
+                }, context, false)
             }
         })
 

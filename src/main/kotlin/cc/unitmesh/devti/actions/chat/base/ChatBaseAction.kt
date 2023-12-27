@@ -2,10 +2,8 @@ package cc.unitmesh.devti.actions.chat.base
 
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatContext
-import cc.unitmesh.devti.llms.openai.OpenAIProvider
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.gui.sendToChatPanel
-import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -59,7 +57,7 @@ abstract class ChatBaseAction : AnAction() {
                 suffixText
             )
 
-            service.handlePromptAndResponse(panel, prompter, chatContext)
+            service.handlePromptAndResponse(panel, prompter, chatContext, newChatContext = true)
         }
     }
 
