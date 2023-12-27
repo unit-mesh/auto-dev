@@ -48,7 +48,7 @@ abstract class ChatBaseAction : AnAction() {
         val editor = event.getData(CommonDataKeys.EDITOR) ?: return
 
         val element = getElementToAction(project, editor) ?: return
-        selectElement(element, editor)
+//        selectElement(element, editor)
 
         prompter.initContext(getActionType(), prefixText, file, project, caretModel?.offset ?: 0, element)
 
