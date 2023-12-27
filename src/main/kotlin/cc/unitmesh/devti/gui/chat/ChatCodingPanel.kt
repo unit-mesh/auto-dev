@@ -32,6 +32,7 @@ import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
+import kotlinx.coroutines.flow.collect
 
 
 class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disposable: Disposable?) :
