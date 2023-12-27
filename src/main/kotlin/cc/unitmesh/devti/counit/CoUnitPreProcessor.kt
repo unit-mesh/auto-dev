@@ -14,7 +14,6 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.launch
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 const val CO_UNIT = "/counit"
@@ -22,6 +21,7 @@ const val CO_UNIT = "/counit"
 @Service(Service.Level.PROJECT)
 class CoUnitPreProcessor(val project: Project) {
     private val llmFactory = LlmFactory()
+    private val logger = logger<CoUnitPreProcessor>()
 
     private val coUnitPromptGenerator = CoUnitPromptGenerator(project)
     private val json = Json { ignoreUnknownKeys = true }
@@ -39,7 +39,7 @@ class CoUnitPreProcessor(val project: Project) {
 
         val response = coUnitPromptGenerator.findIntention(request)
         if (response == null) {
-            LOG.error("can not find intention for request: $request")
+            logger.error("can not find intention for request: $request")
             return
         }
 
@@ -60,7 +60,7 @@ class CoUnitPreProcessor(val project: Project) {
                 val explain: ExplainQuery = json.decodeFromString(fixedResult)
                 explain
             } catch (e: Exception) {
-                LOG.error("parse result error: $e")
+                logger.error("parse result error: $e")
                 return@launch
             }
 
@@ -113,14 +113,9 @@ class CoUnitPreProcessor(val project: Project) {
     }
 
     private fun fix(result: String): String {
-        // remove start and end ```json
         return result
             .removePrefix("```json")
             .removeSuffix("```")
-    }
-
-    companion object {
-        private val LOG = logger<CoUnitPreProcessor>()
     }
 }
 
