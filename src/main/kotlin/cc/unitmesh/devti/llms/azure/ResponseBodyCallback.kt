@@ -81,7 +81,7 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
                     }
 
                     else -> {
-                        throw SSEFormatException("Invalid sse format! $line")
+                        throw SSEFormatException("Invalid sse format! '$line'")
                     }
                 }
             }
