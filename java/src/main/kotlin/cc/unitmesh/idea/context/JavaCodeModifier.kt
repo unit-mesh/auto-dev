@@ -60,12 +60,17 @@ open class JavaCodeModifier : CodeModifier {
 
         val newTestMethod = ReadAction.compute<PsiMethod, Throwable> {
             val psiElementFactory = PsiElementFactory.getInstance(project)
-            val methodCode = psiElementFactory.createMethodFromText(code, rootElement)
-            if (rootElement.findMethodsByName(methodCode.name, false).isNotEmpty()) {
-                log.error("Method already exists in the class: ${methodCode.name}")
-            }
+            try {
+                val methodCode = psiElementFactory.createMethodFromText(code, rootElement)
+                if (rootElement.findMethodsByName(methodCode.name, false).isNotEmpty()) {
+                    log.error("Method already exists in the class: ${methodCode.name}")
+                }
 
-            methodCode
+                methodCode
+            } catch (e: Throwable) {
+                log.error("Failed to create method from text: $code", e)
+                return@compute null
+            }
         }
 
         WriteCommandAction.runWriteCommandAction(project) {
