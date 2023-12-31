@@ -2,8 +2,14 @@ package cc.unitmesh.devti.llms.openai
 
 import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.llms.LLMProvider
+import cc.unitmesh.devti.recording.EmptyRecording
+import cc.unitmesh.devti.recording.JsonlRecording
+import cc.unitmesh.devti.recording.Recording
+import cc.unitmesh.devti.recording.RecordingInstruction
 import cc.unitmesh.devti.settings.AutoDevSettingsState
+import cc.unitmesh.devti.settings.custom.teamPromptsSettings
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -63,6 +69,14 @@ class OpenAIProvider(val project: Project) : LLMProvider {
     private val messages: MutableList<ChatMessage> = ArrayList()
     private var historyMessageLength: Int = 0
 
+    private val recording: Recording
+        get() {
+            if (project.teamPromptsSettings.state.recordingInLocal) {
+                return project.service<JsonlRecording>()
+            }
+            return EmptyRecording()
+        }
+
     override fun clearMessage() {
         messages.clear()
         historyMessageLength = 0
@@ -89,12 +103,13 @@ class OpenAIProvider(val project: Project) : LLMProvider {
             clearMessage()
         }
 
+        var output = ""
         val completionRequest = prepareRequest(promptText, systemPrompt)
 
         return callbackFlow {
             withContext(Dispatchers.IO) {
                 service.streamChatCompletion(completionRequest)
-                    .doOnError{ error ->
+                    .doOnError { error ->
                         logger.error("Error in stream", error)
                         trySend(error.message ?: "Error occurs")
                     }
@@ -102,11 +117,13 @@ class OpenAIProvider(val project: Project) : LLMProvider {
                         if (response.choices.isNotEmpty()) {
                             val completion = response.choices[0].message
                             if (completion != null && completion.content != null) {
+                                output += completion.content
                                 trySend(completion.content)
                             }
                         }
                     }
 
+                recording.write(RecordingInstruction(promptText, output))
                 close()
             }
         }

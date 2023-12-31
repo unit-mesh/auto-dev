@@ -3,9 +3,15 @@ package cc.unitmesh.devti.llms.azure
 import cc.unitmesh.devti.custom.action.CustomPromptConfig
 import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.llms.LLMProvider
+import cc.unitmesh.devti.recording.EmptyRecording
+import cc.unitmesh.devti.recording.JsonlRecording
+import cc.unitmesh.devti.recording.Recording
+import cc.unitmesh.devti.recording.RecordingInstruction
 import cc.unitmesh.devti.settings.AutoDevSettingsState
+import cc.unitmesh.devti.settings.custom.teamPromptsSettings
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.theokanning.openai.completion.chat.ChatCompletionResult
@@ -52,6 +58,14 @@ class AzureOpenAIProvider(val project: Project) : LLMProvider {
     private val openAiVersion: String
     private val maxTokenLength: Int
         get() = AutoDevSettingsState.getInstance().fetchMaxTokenLength()
+
+    private val recording: Recording
+        get() {
+            if (project.teamPromptsSettings.state.recordingInLocal) {
+                return project.service<JsonlRecording>()
+            }
+            return EmptyRecording()
+        }
 
 
     init {
@@ -149,6 +163,8 @@ class AzureOpenAIProvider(val project: Project) : LLMProvider {
                 call.enqueue(cc.unitmesh.devti.llms.azure.ResponseBodyCallback(emitter, emitDone))
             }, BackpressureStrategy.BUFFER)
 
+        var output = ""
+
         return callbackFlow {
             sseFlowable
                 .doOnError(Throwable::printStackTrace)
@@ -160,6 +176,8 @@ class AzureOpenAIProvider(val project: Project) : LLMProvider {
                         trySend(completion.content)
                     }
                 }
+
+            recording.write(RecordingInstruction(promptText, output))
 
             close()
         }
