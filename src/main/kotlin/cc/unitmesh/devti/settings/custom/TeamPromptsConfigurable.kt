@@ -7,11 +7,13 @@ import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.dsl.builder.*
+import javax.swing.JCheckBox
 import javax.swing.JTextField
 
 class PromptLibraryConfigurable(project: Project) : BoundConfigurable(AutoDevBundle.message("settings.external.team.prompts.name")) {
 
     private val teamPromptsField = JTextField()
+    private val recordingInLocalField = JCheckBox()
 
     val settings = project.service<TeamPromptsProjectSettingsService>()
     val state = settings.state.copy()
@@ -26,10 +28,19 @@ class PromptLibraryConfigurable(project: Project) : BoundConfigurable(AutoDevBun
                     prop = state::teamPromptsDir.toMutableProperty()
                 )
         }
+        row(AutoDevBundle.message("settings.external.team.prompts.recordingInLocal")) {
+            fullWidthCell(recordingInLocalField)
+                .bind(
+                    componentGet = { it.isSelected },
+                    componentSet = { component, value -> component.isSelected = value },
+                    prop = state::recordingInLocal.toMutableProperty()
+                )
+        }
 
         onApply {
             settings.modify {
                 it.teamPromptsDir = state.teamPromptsDir
+                it.recordingInLocal = state.recordingInLocal
             }
         }
     }
