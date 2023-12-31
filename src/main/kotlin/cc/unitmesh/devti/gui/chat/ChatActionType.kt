@@ -1,9 +1,5 @@
 package cc.unitmesh.devti.gui.chat
 
-import cc.unitmesh.devti.prompting.VcsPrompting
-import com.intellij.openapi.components.service
-import com.intellij.openapi.project.ProjectManager
-
 enum class ChatActionType {
     CHAT,
     REFACTOR,

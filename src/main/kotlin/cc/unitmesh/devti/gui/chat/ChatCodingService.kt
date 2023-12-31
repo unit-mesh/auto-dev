@@ -55,6 +55,10 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
                         context?.replaceSelectedText?.invoke(getCodeSection(it, context.prefixText, context.suffixText))
                     }
 
+                    actionType === ChatActionType.GEN_COMMIT_MESSAGE -> ui.updateReplaceableContent(response) {
+                        context?.replaceSelectedText?.invoke(it)
+                    }
+
                     else -> ui.updateMessage(response)
                 }
             }
