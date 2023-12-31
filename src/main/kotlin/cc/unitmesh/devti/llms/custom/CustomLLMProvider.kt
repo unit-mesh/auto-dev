@@ -52,8 +52,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
 
     private var client = OkHttpClient()
     private val timeout = Duration.ofSeconds(600)
-    private val messages: MutableList<Message> = ArrayList()
-
+    private val messages: MutableList<Message> = mutableListOf()
     private val logger = logger<CustomLLMProvider>()
 
     override fun clearMessage() {
@@ -139,6 +138,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
                                 }
                             }
                         }
+
                     close()
                 }
                 awaitClose()

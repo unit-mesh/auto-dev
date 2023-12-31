@@ -173,6 +173,7 @@ class AzureOpenAIProvider(val project: Project) : LLMProvider {
                         ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
                     val completion = result.choices[0].message
                     if (completion != null && completion.content != null) {
+                        output += completion.content
                         trySend(completion.content)
                     }
                 }
