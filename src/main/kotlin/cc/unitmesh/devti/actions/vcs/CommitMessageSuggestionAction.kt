@@ -2,9 +2,11 @@ package cc.unitmesh.devti.actions.vcs
 
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.gui.sendToChatWindow
+import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.prompting.VcsPrompting
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -14,6 +16,8 @@ import com.intellij.openapi.vcs.VcsConfiguration
 import com.intellij.openapi.vcs.VcsDataKeys
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.ui.CommitMessage
+import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.runBlocking
 
 class CommitMessageSuggestionAction : ChatBaseAction() {
     override fun getActionType(): ChatActionType = ChatActionType.GEN_COMMIT_MESSAGE
@@ -33,18 +37,12 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
 
         val commitMessageUi = event.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL)
 
-        sendToChatWindow(project, getActionType()) { panel, service ->
-            val chatContext = ChatContext(
-                { response ->
-                    (commitMessageUi as CommitMessage).editorField.text += response
-                    VcsConfiguration.getInstance(project).saveCommitMessage(response)
-                }, prompt, ""
-            )
+        val stream = LlmFactory().create(project).stream(prompt, "")
 
-            service.handlePromptAndResponse(panel, object : ContextPrompter() {
-                override fun displayPrompt(): String = prompt
-                override fun requestPrompt(): String = prompt
-            }, chatContext, newChatContext = true)
+        runBlocking {
+            stream.cancellable().collect {
+                (commitMessageUi as CommitMessage).editorField.text += it
+            }
         }
     }
 
