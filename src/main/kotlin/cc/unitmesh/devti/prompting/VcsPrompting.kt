@@ -76,7 +76,6 @@ class VcsPrompting(private val project: Project) {
             )
 
 
-
             UnifiedDiffWriter.write(
                 project,
                 project.stateStore.projectBasePath,

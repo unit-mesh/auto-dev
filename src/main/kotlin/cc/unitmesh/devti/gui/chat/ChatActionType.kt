@@ -24,34 +24,6 @@ enum class ChatActionType {
     override fun toString(): String {
         return instruction()
     }
-
-    private fun prepareVcsContext(): String {
-        val project = ProjectManager.getInstance().openProjects.firstOrNull() ?: return ""
-        val prompting = project.service<VcsPrompting>()
-
-        return prompting.prepareContext()
-    }
-
-    private fun generateCommitMessage(diff: String): String {
-        return """Write a cohesive yet descriptive commit message for a given diff. 
-Make sure to include both information What was changed and Why.
-Start with a short sentence in imperative form, no more than 50 characters long.
-Then leave an empty line and continue with a more detailed explanation, if necessary.
-Explanation should have less than 200 characters.
-
-examples:
-- fix(authentication): add password regex pattern
-- feat(storage): add new test cases
-
-Diff:
-
-```diff
-$diff
-```
-
-"""
-    }
-
     fun instruction(lang: String = ""): String {
         return when (this) {
             EXPLAIN -> "Explain selected $lang code"
@@ -59,7 +31,7 @@ $diff
             CODE_COMPLETE -> "Complete $lang code, return rest code, no explaining"
             GENERATE_TEST -> "Write unit test for given $lang code"
             FIX_ISSUE -> "Help me fix this issue"
-            GEN_COMMIT_MESSAGE -> generateCommitMessage(prepareVcsContext())
+            GEN_COMMIT_MESSAGE -> ""
             CREATE_CHANGELOG -> "generate release note"
             CHAT -> ""
             CUSTOM_COMPLETE -> ""
