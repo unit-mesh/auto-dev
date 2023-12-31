@@ -242,6 +242,15 @@ class VcsPrompting(private val project: Project) {
             virtualFile.length
         )))
     }
+
+    fun hasChanges(): List<Change> {
+        val changeListManager = ChangeListManagerImpl.getInstance(project)
+        val changes = changeListManager.changeLists.flatMap {
+            it.changes
+        }
+
+        return changes
+    }
 }
 
 fun isBinaryRevision(cr: ContentRevision?): Boolean {

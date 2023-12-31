@@ -7,13 +7,22 @@ import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.prompting.VcsPrompting
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.ProjectManager
-import com.intellij.temporary.getElementToAction
+import com.intellij.openapi.vcs.VcsDataKeys
+import com.intellij.openapi.vcs.changes.Change
 
 class CommitMessageSuggestionAction : ChatBaseAction() {
     override fun getActionType(): ChatActionType = ChatActionType.GEN_COMMIT_MESSAGE
+
+    override fun update(e: AnActionEvent) {
+        val prompting = e.project?.service<VcsPrompting>()
+
+        val data = e.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL)
+        val changes: List<Change> = prompting?.hasChanges() ?: listOf()
+
+        e.presentation.isEnabled = data != null && changes.isNotEmpty()
+    }
 
     override fun executeAction(event: AnActionEvent) {
         val project = event.project ?: return
