@@ -54,17 +54,15 @@ Features:
 - Miscellaneous
     - CI/CD support. AutoDev will auto generate CI/CD config file.
     - Dockerfile support. AutoDev will auto generate Dockerfile.
-- Built-in LLM Fine-tune by [UnitEval](https://github.com/unit-mesh/unit-eval) 
+- Built-in LLM Fine-tune by [UnitEval](https://github.com/unit-mesh/unit-eval)
 
 AutoDev fine-tune models:
 
 download from [HuggingFace](https://huggingface.co/unit-mesh)
 
-| name          | model download (HuggingFace)                                                                                  | finetune Notebook                    | jupyter notebook Log                                                     | model download (OpenBayes)                                                                                           |
-|---------------|---------------------------------------------------------------------------------------------------------------|--------------------------------------|--------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
-| DeepSeek 6.7B | [unit-mesh/autodev-deepseek-6.7b-finetunes](https://huggingface.co/unit-mesh/autodev-deepseek-6.7b-finetunes) | [finetune.ipynb](finetunes/deepseek) | [OpenBayes](https://openbayes.com/console/phodal/containers/mzEofYrqrfc) | [deepseek-coder-6.7b-instruct-finetune-100steps](https://openbayes.com/console/phodal/models/XAyeQEC0h4Q/1/overview) |
-| CodeGeeX2 6B  | TODO                                                                                                          | TODO                                 | TODO                                                                     |
-
+| name          | model download (HuggingFace)                                    | finetune Notebook                    | model download (OpenBayes)                                                          |
+|---------------|-----------------------------------------------------------------|--------------------------------------|-------------------------------------------------------------------------------------|
+| DeepSeek 6.7B | [AutoDev Coder](https://huggingface.co/unit-mesh/autodev-coder) | [finetune.ipynb](finetunes/deepseek) | [AutoDev Coder](https://openbayes.com/console/phodal/models/rCmer1KQSgp/9/overview) |
 
 ### Demo
 
