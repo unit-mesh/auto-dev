@@ -27,7 +27,6 @@ open class JavaContextPrompter : ContextPrompter() {
     private lateinit var mvcContextService: MvcContextService
     private var fileName = ""
     private lateinit var creationContext: ChatCreationContext
-    private val promptCache = mutableMapOf<String, String>()
 
     override fun appendAdditionContext(context: String) {
         additionContext += context
@@ -67,10 +66,6 @@ open class JavaContextPrompter : ContextPrompter() {
     }
 
     override fun requestPrompt(): String {
-        if (promptCache.containsKey(selectedText)) {
-            return promptCache[selectedText]!!
-        }
-
         return runBlocking {
             val instruction = createPrompt(selectedText)
             val chatContext = collectionContext(creationContext)
@@ -90,7 +85,6 @@ open class JavaContextPrompter : ContextPrompter() {
             println("final prompt: $finalPrompt")
             logger.info("final prompt: $finalPrompt")
 
-            promptCache[selectedText] = finalPrompt
             return@runBlocking finalPrompt
         }
     }
