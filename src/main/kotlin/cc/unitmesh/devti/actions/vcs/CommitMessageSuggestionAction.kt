@@ -2,22 +2,17 @@ package cc.unitmesh.devti.actions.vcs
 
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.gui.chat.ChatCodingService
-import cc.unitmesh.devti.gui.chat.ChatContext
-import cc.unitmesh.devti.gui.sendToChatPanel
-import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.prompting.VcsPrompting
-import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.ProjectManager
-import com.intellij.openapi.vcs.VcsConfiguration
 import com.intellij.openapi.vcs.VcsDataKeys
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.ui.CommitMessage
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.collect
 
 class CommitMessageSuggestionAction : ChatBaseAction() {
     override fun getActionType(): ChatActionType = ChatActionType.GEN_COMMIT_MESSAGE
