@@ -174,10 +174,6 @@ class JavaScriptLivingDocumentation : LivingDocumentation {
         }
     }
 
-    private fun containsElement(selectionModel: SelectionModel, element: PsiElement): Boolean {
-        return selectionModel.selectionStart <= element.textRange.startOffset && element.textRange.endOffset <= selectionModel.selectionEnd
-    }
-
     private fun isMeaningfulToDocumentInSelection(element: PsiElement?): Boolean {
         if ((element is ES6ImportedBinding) || (element is ES6ImportSpecifierAlias) || (element is ES6ImportSpecifier)) {
             return false

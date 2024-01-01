@@ -112,10 +112,6 @@ class PythonLivingDocumentation : LivingDocumentation {
     private fun intersectsElement(selectionModel: SelectionModel, element: PsiElement): Boolean {
         return selectionModel.selectionStart < element.textRange.endOffset && selectionModel.selectionEnd > element.textRange.startOffset
     }
-
-    private fun containsElement(selectionModel: SelectionModel, element: PsiElement): Boolean {
-        return selectionModel.selectionStart <= element.textRange.startOffset && element.textRange.endOffset <= selectionModel.selectionEnd
-    }
 }
 
 fun buildAndInsert(replacementText: String, anchor: PyDocStringOwner): PyDocStringOwner {
