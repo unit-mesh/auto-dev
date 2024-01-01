@@ -16,5 +16,9 @@
         <contextPrompter language="Rust" implementation="cc.unitmesh.rust.provider.RustContextPrompter"/>
 
         <chatContextProvider implementation="cc.unitmesh.rust.provider.RustContextProvider"/>
+
+        <livingDocumentation language="Rust"
+                             implementationClass="cc.unitmesh.rust.provider.RustLivingDocumentation"/>
+
     </extensions>
 </idea-plugin>

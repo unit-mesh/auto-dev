@@ -27,6 +27,9 @@ interface LivingDocumentation {
     fun findNearestDocumentationTarget(psiElement: PsiElement): PsiNameIdentifierOwner?
 
     fun findDocTargetsInSelection(root: PsiElement, selectionModel: SelectionModel): List<PsiNameIdentifierOwner>
+    fun containsElement(selectionModel: SelectionModel, element: PsiElement): Boolean {
+        return selectionModel.selectionStart <= element.textRange.startOffset && element.textRange.endOffset <= selectionModel.selectionEnd
+    }
 
     companion object {
         private val languageExtension: LanguageExtension<LivingDocumentation> =

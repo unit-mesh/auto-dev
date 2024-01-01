@@ -137,10 +137,6 @@ class KotlinLivingDocumentation : LivingDocumentation {
         })
     }
 
-    private fun containsElement(selectionModel: SelectionModel, element: PsiElement): Boolean {
-        return selectionModel.selectionStart <= element.textRange.startOffset && element.textRange.endOffset <= selectionModel.selectionEnd
-    }
-
     override fun findDocTargetsInSelection(
         root: PsiElement,
         selectionModel: SelectionModel,
