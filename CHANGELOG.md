@@ -1,35 +1,63 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v1.5.0...v) (2023-12-19)
+# [](https://github.com/unit-mesh/auto-dev/compare/v1.5.1...v) (2024-01-01)
 
 ## [Unreleased]
 
-## [1.5.0] - 2023-12-19
+## [1.5.1](https://github.com/unit-mesh/auto-dev/compare/1.4.4...v[1.5.1]) (2024-01-01)
 
 ### Bug Fixes
+- add lost messages for Azure ([468a5ce](https://github.com/unit-mesh/auto-dev/commit/468a5ce4c3fe27960d31fd73ee9e1818fdf16025))
+- disable default choice for chat base action ([53a192b](https://github.com/unit-mesh/auto-dev/commit/53a192b7ec18e2cb2a966437d951a838f38f5cda))
+- disable file cache ([97a793a](https://github.com/unit-mesh/auto-dev/commit/97a793aba43049726ebe24d336002c99ec987fc5))
 - **doc:** update doc by experience ([1b374de](https://github.com/unit-mesh/auto-dev/commit/1b374def5805425592ffdc63dcc38f44cd08e14c))
+- fix auto completion lost request ([7914ec2](https://github.com/unit-mesh/auto-dev/commit/7914ec23531aec21dca5a56a0a52e80996109d14))
+- fix axure auto service issue ([2ad6f43](https://github.com/unit-mesh/auto-dev/commit/2ad6f43f2ca456a1fe9c06f4320c4d4dca8aa87b))
+- fix build & Depecrated 213 && 221 && closed [#59](https://github.com/unit-mesh/auto-dev/issues/59) ([1221128](https://github.com/unit-mesh/auto-dev/commit/1221128f9a59425bb9f81d79f965f03eb4d8e9e8))
+- fix commit message gen issues ([149069a](https://github.com/unit-mesh/auto-dev/commit/149069a7089eff89e9c0407b3c28a921ba75cad6))
 - fix compile issue ([71a7eb1](https://github.com/unit-mesh/auto-dev/commit/71a7eb129feb8353d7d1f45b977750c3ded5efdc))
+- fix empty input issue ([aa2846b](https://github.com/unit-mesh/auto-dev/commit/aa2846b245bf2334bc58cbd31300be7003482d64))
 - fix erro action again ([9cdadd2](https://github.com/unit-mesh/auto-dev/commit/9cdadd2c25cf1345a86edb635f0ee0dc83cf6d78))
+- fix get issues ([02979db](https://github.com/unit-mesh/auto-dev/commit/02979db1b37aeed713e8e9258d30762bd355483a))
 - fix import issue ([9dba8db](https://github.com/unit-mesh/auto-dev/commit/9dba8dbfe4a604d296f8e8bd86adc2bf8f9f7f71))
+- fix imports ([463dc13](https://github.com/unit-mesh/auto-dev/commit/463dc1355bab485d47a0fb8054ac69c0924d5612))
 - fix imports ([36f39d2](https://github.com/unit-mesh/auto-dev/commit/36f39d23f7e6bddfb61a24d3681db004f161cbbf))
 - fix imports ([ed3db21](https://github.com/unit-mesh/auto-dev/commit/ed3db21eff80a87e800544cddf87b167468767f0))
+- fix int autodev llm server error issue ([04691fc](https://github.com/unit-mesh/auto-dev/commit/04691fcd15cfbb2d707dc82731fcf70b2fbd2015))
 - fix kotlin code modifier issue ([501fccc](https://github.com/unit-mesh/auto-dev/commit/501fccc2f6c911e97848c4f599e3a0e8f1f56a91))
 - fix kotlin read issue ([96b13cb](https://github.com/unit-mesh/auto-dev/commit/96b13cb14db7bc445931c951d1192ed7e3844f25))
 - fix python test isse ([e407586](https://github.com/unit-mesh/auto-dev/commit/e40758644411303351db8e4d18ea0772cde1dd52))
+- fix replace issue in comment ([0683e6f](https://github.com/unit-mesh/auto-dev/commit/0683e6f96915c59252d8f4251dda7459de16d416))
 - fix strategy issues ([333b75e](https://github.com/unit-mesh/auto-dev/commit/333b75e82974454370ea954950d11a5b68dc6445))
 - fix super class lost issue ([31907a6](https://github.com/unit-mesh/auto-dev/commit/31907a6b3d58e78cc3807487ee657018ac2f0110))
 - fix test ([7a70f8b](https://github.com/unit-mesh/auto-dev/commit/7a70f8b5c77082e3bd00d59f9d0316b750401aba))
 - fix test issues ([4a9ea9c](https://github.com/unit-mesh/auto-dev/commit/4a9ea9c095ef531b7e259edbc106ae99f273b506))
+- fix test prompt issue ([ec89161](https://github.com/unit-mesh/auto-dev/commit/ec89161d896c5bc8b68a64d4b2e6ec656ea925d4))
+- fix tests ([f452428](https://github.com/unit-mesh/auto-dev/commit/f452428f8dd43c8b49294009bc558612fc482770))
 - fix tests ([ab69050](https://github.com/unit-mesh/auto-dev/commit/ab69050f36f71dcca4b4f2b073babfefad2e5fb7))
+- fix typos ([95e1a9f](https://github.com/unit-mesh/auto-dev/commit/95e1a9f78bbba9b75828cd7a9ebd584c3c4e761f))
 - is some super class no in project will be crash ([d203734](https://github.com/unit-mesh/auto-dev/commit/d2037344a0e5779466181995aa4e31388b1a4868))
 - 修复前一提交 SSE 的问题 ([54457f5](https://github.com/unit-mesh/auto-dev/commit/54457f558ce1f8c939fead5562835a6e7a6c13ae))
 
 ### Features
+- add catch for not ready action ([79286b0](https://github.com/unit-mesh/auto-dev/commit/79286b022a2d759d7198d912afaa1e37714712f6))
 - add cleanup for kotlin code ([dd84795](https://github.com/unit-mesh/auto-dev/commit/dd847957bd08c4bf44ea5da37407591391c09b87))
 - add for junit rules ([dc5289d](https://github.com/unit-mesh/auto-dev/commit/dc5289dba409b3ef46752cff95e66869a2e2a9fd))
 - add for test file path ([16fc139](https://github.com/unit-mesh/auto-dev/commit/16fc139f1ad8dde10c939e01c8578fcdb250ced9))
+- add timeout for handler ([687b04a](https://github.com/unit-mesh/auto-dev/commit/687b04aabfe76f8ef9227f721843288e0c6ec843))
+- enable recording datasets works in local ([2fcab1c](https://github.com/unit-mesh/auto-dev/commit/2fcab1c532933f461627504eafa11de48098d27a))
+- init recording local param for [#54](https://github.com/unit-mesh/auto-dev/issues/54) ([f24cc6a](https://github.com/unit-mesh/auto-dev/commit/f24cc6a90b2c1200c254cab255869c441cd4ca57))
 - **js:** add documentation support ([f6b0136](https://github.com/unit-mesh/auto-dev/commit/f6b0136892b1471a4c6d5c4cb263f32a4926bc79))
 - **js:** make doc better ([c69a335](https://github.com/unit-mesh/auto-dev/commit/c69a3350ecfe5b8919c7623c1e1516da7db28d51))
+- **python:** add lookup funciton for target ([6a828df](https://github.com/unit-mesh/auto-dev/commit/6a828df2d313a6f3b16dadeffaed01486801ebd8))
+- **python:** fix insert issues ([6786175](https://github.com/unit-mesh/auto-dev/commit/6786175c34ea9a50d8f69935c099c880d359355e))
+- **python:** init python doc ([c30111d](https://github.com/unit-mesh/auto-dev/commit/c30111de7ea3b43d34e0f4c99c96efc8b3c2586e))
+- **rust:** fix for insert issue ([9ce7734](https://github.com/unit-mesh/auto-dev/commit/9ce7734e41943160a153adb3e72bc935d682b143))
+- **rust:** init basic documentation ([a63049b](https://github.com/unit-mesh/auto-dev/commit/a63049b672ef8ae1e017dab445f631a305f68523))
 - try to add unload listener ([11f7c28](https://github.com/unit-mesh/auto-dev/commit/11f7c287cba32b4d43157a5c84b23e22f9731789))
+- try to handle for basic class issues ([2897dd7](https://github.com/unit-mesh/auto-dev/commit/2897dd743638ed9504a3c49752ab1b56b1704b52))
 - update java prompts ([d321afe](https://github.com/unit-mesh/auto-dev/commit/d321afe66d2c6e8e87ef2d5f768b6c33dcd34df0))
+
+### Reverts
+- Revert "refactor: clean code" ([afe5460](https://github.com/unit-mesh/auto-dev/commit/afe54608c6028b2530b2c734d1e136785300c6b5))
 
 ## [1.4.4](https://github.com/unit-mesh/auto-dev/compare/v1.4.3...[1.4.4]) (2023-12-14)
 
@@ -710,8 +738,8 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.5.0...HEAD
-[1.5.0]: https://github.com/unit-mesh/auto-dev/compare/v1.4.4...v1.5.0
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.5.1...HEAD
+[1.5.1]: https://github.com/unit-mesh/auto-dev/compare/v1.4.4...v1.5.1
 [1.4.4]: https://github.com/unit-mesh/auto-dev/compare/v1.4.3...v1.4.4
 [1.4.3]: https://github.com/unit-mesh/auto-dev/compare/v1.4.1...v1.4.3
 [1.4.1]: https://github.com/unit-mesh/auto-dev/compare/v1.2.5...v1.4.1
