@@ -91,6 +91,8 @@ object JavaContextCollection {
                     if (isPopularFrameworks(qualifiedName) == true) return@mapNotNull null
 
                     val resolve = (field.type as PsiClassType).resolve() ?: return@mapNotNull null
+                    if (resolve.qualifiedName?.startsWith("java.") == true) return@mapNotNull null
+
                     if (resolve.qualifiedName == qualifiedName) return@mapNotNull null
                     val classStructure = simpleStructure(resolve)
                     classStructure.builtIn = false
