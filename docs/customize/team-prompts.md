@@ -32,7 +32,7 @@ The Team Prompts file format is .vtl, which is the Velocity Template Language fi
 
 ```
 ---
-interaction: AppendCursorStream # the interaction type, support AppendCursorStream, ChatPanel, AppendCursor
+interaction: AppendCursorStream # the interaction type, support AppendCursorStream, ChatPanel, AppendCursor, OutputFile
 priority: 99
 ---    
 ```
@@ -46,6 +46,8 @@ interaction type:
 - AppendCursor, the prompt will be inserted at the cursor position
 - AppendCursorStream, the prompt will be inserted at the cursor position
 - ChatPanel, the prompt will be inserted in the chat panel
+- OutputFile, the prompt will be inserted in the output file, `output-{timestamp}.{extension}`, the extension will be
+  parsed from the result's language.
 
 ## English Examples
 
