@@ -1,7 +1,9 @@
 package cc.unitmesh.idea.context
 
 import cc.unitmesh.devti.context.SimpleClassStructure
+import cc.unitmesh.devti.isInProject
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiClassReferenceType
 import com.intellij.psi.search.GlobalSearchScope
@@ -46,6 +48,8 @@ object JavaContextCollection {
         return simpleStructure(clazz)
     }
 
+    val psiStructureCache = mutableMapOf<String, SimpleClassStructure?>()
+
     /**
      * Creates a simple class structure for the given PsiClass and search scope.
      *
@@ -57,12 +61,21 @@ object JavaContextCollection {
      * If the field type cannot be resolved, it is skipped.
      */
     fun simpleStructure(clazz: PsiClass): SimpleClassStructure {
+        val qualifiedName = clazz.qualifiedName
+        if (psiStructureCache.containsKey(qualifiedName)) {
+            return psiStructureCache[qualifiedName]!!
+        }
+
         val fields = clazz.fields
         val children = fields.mapNotNull { field ->
             // if current field same to parent class, skip it
             if (field.type == clazz) return@mapNotNull null
 
-            when {
+            psiStructureCache[field.type.canonicalText]?.let {
+                return@mapNotNull it
+            }
+
+            val simpleClassStructure = when {
                 // like: int, long, boolean, etc.
                 field.type is PsiPrimitiveType -> {
                     SimpleClassStructure(field.name, field.type.presentableText, emptyList(), builtIn = true)
@@ -74,20 +87,43 @@ object JavaContextCollection {
                 }
 
                 field.type is PsiClassType -> {
+                    // skip for some frameworks like, org.springframework, etc.
+                    if (isPopularFrameworks(qualifiedName) == true) return@mapNotNull null
+
                     val resolve = (field.type as PsiClassType).resolve() ?: return@mapNotNull null
+                    if (resolve.qualifiedName == qualifiedName) return@mapNotNull null
                     val classStructure = simpleStructure(resolve)
                     classStructure.builtIn = false
                     classStructure
                 }
 
                 else -> {
+                    psiStructureCache[field.type.canonicalText] = null
                     logger.warn("Unknown type: ${field.type}")
-                    null
+                    return@mapNotNull null
                 }
             }
+
+            psiStructureCache[field.type.canonicalText] = simpleClassStructure
+            simpleClassStructure
         }
 
-        return SimpleClassStructure(clazz.name ?: "", clazz.name ?: "", children)
+        val simpleClassStructure = SimpleClassStructure(clazz.name ?: "", clazz.name ?: "", children)
+        if (qualifiedName != null) {
+            psiStructureCache[qualifiedName] = simpleClassStructure
+        }
+
+        return simpleClassStructure
+    }
+
+    private fun isPopularFrameworks(qualifiedName: @NlsSafe String?): Boolean? {
+        return qualifiedName?.startsWith("org.springframework") == true
+                || qualifiedName?.startsWith("org.apache") == true
+                || qualifiedName?.startsWith("org.hibernate") == true
+                || qualifiedName?.startsWith("org.slf4j") == true
+                || qualifiedName?.startsWith("org.apache") == true
+                || qualifiedName?.startsWith("org.junit") == true
+                || qualifiedName?.startsWith("org.mockito") == true
     }
 
     /**
@@ -99,12 +135,15 @@ object JavaContextCollection {
      * @param type the PsiType to be checked
      * @return true if the given type is a boxed type, false otherwise
      */
-    fun isPsiBoxedType(type: PsiType): Boolean {
+    private fun isPsiBoxedType(type: PsiType): Boolean {
         if (type !is PsiClassReferenceType) return false
 
-        // For Testing ??
-        val resolve = type.resolve() ?: return true
+        val resolve = try {
+            type.resolve() ?: return true
+        } catch (e: Exception) {
+            return false
+        }
 
-        return resolve.qualifiedName?.startsWith("java.lang") == true
+        return resolve.qualifiedName?.startsWith("java.") == true
     }
 }
