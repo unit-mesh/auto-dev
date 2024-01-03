@@ -4,6 +4,7 @@ import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.provider.ContextPrompter
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
@@ -24,11 +25,13 @@ fun sendToChatWindow(
     val contentPanel = ChatCodingPanel(chatCodingService, toolWindowManager.disposable)
     val content = contentManager.factory.createContent(contentPanel, chatCodingService.getLabel(), false)
 
-    contentManager.removeAllContents(true)
-    contentManager.addContent(content)
+    ApplicationManager.getApplication().invokeLater {
+        contentManager.removeAllContents(false)
+        contentManager.addContent(content)
 
-    toolWindowManager.activate {
-        runnable(contentPanel, chatCodingService)
+        toolWindowManager.activate {
+            runnable(contentPanel, chatCodingService)
+        }
     }
 }
 

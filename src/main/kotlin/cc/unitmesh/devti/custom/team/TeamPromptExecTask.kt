@@ -3,7 +3,9 @@ package cc.unitmesh.devti.custom.team
 import cc.unitmesh.cf.core.llms.LlmMsg
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.tasks.FileGenerateTask
+import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatPanel
+import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.intentions.action.task.BaseCompletionTask
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
 import com.intellij.openapi.application.runReadAction
@@ -32,7 +34,7 @@ class TeamPromptExecTask(
 
         when (intentionConfig.actionPrompt.interaction) {
             InteractionType.ChatPanel -> {
-                sendToChatPanel(project) { panel, service ->
+                sendToChatWindow(project, ChatActionType.CHAT) { panel, service ->
                     service.handleMsgsAndResponse(panel, msgs)
                 }
             }
