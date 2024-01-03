@@ -59,7 +59,9 @@ Features:
 - Miscellaneous
     - CI/CD support. AutoDev will auto generate CI/CD config file.
     - Dockerfile support. AutoDev will auto generate Dockerfile.
-- Built-in LLM Fine-tune by [UnitEval](https://github.com/unit-mesh/unit-eval)
+- Built-in LLM Fine-tune
+    - [UnitEval](https://github.com/unit-mesh/unit-eval) evaluate llm result
+    - [UnitGen](https://github.com/unit-mesh/unit-gen) generate fine-tune data.
 
 AutoDev fine-tune models:
 
