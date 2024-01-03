@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.runBlocking
 import java.nio.file.Path
 import kotlin.io.path.Path
+import kotlinx.coroutines.flow.collect
 
 class FileGenerateTask(@JvmField val project: Project, val messages: List<LlmMsg.ChatMessage>, val fileName: String?) :
     Task.Backgroundable(project, AutoDevBundle.message("intentions.request.background.process.title")) {
