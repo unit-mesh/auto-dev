@@ -1,6 +1,7 @@
 package cc.unitmesh.idea.context
 
 import cc.unitmesh.devti.context.SimpleClassStructure
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiClassReferenceType
 import com.intellij.psi.search.GlobalSearchScope
@@ -9,6 +10,7 @@ import com.intellij.psi.search.searches.MethodReferencesSearch
 import com.intellij.psi.search.searches.ReferencesSearch
 
 object JavaContextCollection {
+    val logger = logger<JavaContextCollection>()
     fun findUsages(nameIdentifierOwner: PsiNameIdentifierOwner): List<PsiReference> {
         val project = nameIdentifierOwner.project
         val searchScope = GlobalSearchScope.allScope(project) as SearchScope
@@ -57,6 +59,9 @@ object JavaContextCollection {
     fun simpleStructure(clazz: PsiClass): SimpleClassStructure {
         val fields = clazz.fields
         val children = fields.mapNotNull { field ->
+            // if current field same to parent class, skip it
+            if (field.type == clazz) return@mapNotNull null
+
             when {
                 // like: int, long, boolean, etc.
                 field.type is PsiPrimitiveType -> {
@@ -68,12 +73,16 @@ object JavaContextCollection {
                     SimpleClassStructure(field.name, field.type.presentableText, emptyList(), builtIn = true)
                 }
 
-                else -> {
-                    val classStructure =
-                        (field.type as PsiClassType).resolve()?.let { simpleStructure(it) }
-                            ?: return@mapNotNull null
+                field.type is PsiClassType -> {
+                    val resolve = (field.type as PsiClassType).resolve() ?: return@mapNotNull null
+                    val classStructure = simpleStructure(resolve)
                     classStructure.builtIn = false
                     classStructure
+                }
+
+                else -> {
+                    logger.warn("Unknown type: ${field.type}")
+                    null
                 }
             }
         }
@@ -94,8 +103,8 @@ object JavaContextCollection {
         if (type !is PsiClassReferenceType) return false
 
         // For Testing ??
-        if (type.resolve() == null) return true
+        val resolve = type.resolve() ?: return true
 
-        return type.resolve()?.qualifiedName?.startsWith("java.lang") == true
+        return resolve.qualifiedName?.startsWith("java.lang") == true
     }
 }
