@@ -4,7 +4,6 @@ import cc.unitmesh.cf.core.llms.LlmMsg
 import cc.unitmesh.cf.core.parser.MarkdownCode
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.llms.LlmFactory
-import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
@@ -15,13 +14,11 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
-import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.Path
 
-class FileGenerateTask(@JvmField val project: Project, val messages: List<LlmMsg.ChatMessage>, val fileName: File) :
+class FileGenerateTask(@JvmField val project: Project, val messages: List<LlmMsg.ChatMessage>, val fileName: String?) :
     Task.Backgroundable(project, AutoDevBundle.message("intentions.request.background.process.title")) {
     private val projectRoot = project.guessProjectDir()!!
 
@@ -39,7 +36,20 @@ class FileGenerateTask(@JvmField val project: Project, val messages: List<LlmMsg
             }
         }
 
-        fileName.writeText(result)
+        val inferFileName = if (fileName == null) {
+            val language = MarkdownCode.parse(result).language
+            val timestamp = System.currentTimeMillis()
+            "output-" + timestamp + if (language.isEmpty()) ".txt" else ".$language"
+        } else {
+            fileName
+        }
+
+        val file = project.guessProjectDir()!!.toNioPath().resolve(inferFileName).toFile()
+        if (!file.exists()) {
+            file.createNewFile()
+        }
+
+        file.writeText(result)
         refreshAndOpenInEditor(Path(projectRoot.path), projectRoot)
     }
 

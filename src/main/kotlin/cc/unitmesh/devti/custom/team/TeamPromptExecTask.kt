@@ -4,7 +4,6 @@ import cc.unitmesh.cf.core.llms.LlmMsg
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.tasks.FileGenerateTask
 import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.intentions.action.task.BaseCompletionTask
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
@@ -15,7 +14,6 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.guessProjectDir
 import com.intellij.psi.PsiElement
 
 class TeamPromptExecTask(
@@ -57,13 +55,9 @@ class TeamPromptExecTask(
             }
 
             InteractionType.OutputFile -> {
-                val fileName = intentionConfig.actionPrompt.other.getOrDefault("fileName", "output.txt") as String
-                val filename = project.guessProjectDir()!!.toNioPath().resolve(fileName).toFile()
-                if (!filename.exists()) {
-                    filename.createNewFile()
-                }
+                val fileName = intentionConfig.actionPrompt.other["fileName"] as String?
 
-                val task = FileGenerateTask(project, msgs, filename)
+                val task = FileGenerateTask(project, msgs, fileName)
                 ProgressManager.getInstance()
                     .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
             }

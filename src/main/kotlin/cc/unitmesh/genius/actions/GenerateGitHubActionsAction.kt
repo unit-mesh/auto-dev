@@ -27,14 +27,9 @@ class GenerateGitHubActionsAction : AnAction(AutoDevBundle.message("action.new.g
         val dir = project.guessProjectDir()!!.toNioPath().resolve(".github").resolve("workflows")
             .createDirectories()
 
-        val filename = dir.resolve("ci.yml").toFile()
-        if (!filename.exists()) {
-            filename.createNewFile()
-        }
-
         val msgs = templateRender.buildMsgs(template)
 
-        val task: Task.Backgroundable = FileGenerateTask(project, msgs, filename)
+        val task: Task.Backgroundable = FileGenerateTask(project, msgs, "ci.yml")
         ProgressManager.getInstance()
             .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
     }

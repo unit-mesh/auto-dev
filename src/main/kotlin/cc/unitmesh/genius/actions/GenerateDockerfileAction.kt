@@ -26,12 +26,7 @@ class GenerateDockerfileAction : AnAction(AutoDevBundle.message("action.new.geni
 
         val msgs = templateRender.buildMsgs(template)
 
-        val fileDir = project.guessProjectDir()!!.toNioPath().resolve(DOCKERFILE).toFile()
-        if (!fileDir.exists()) {
-            fileDir.createNewFile()
-        }
-
-        val task: Task.Backgroundable = FileGenerateTask(project, msgs, fileDir)
+        val task: Task.Backgroundable = FileGenerateTask(project, msgs, DOCKERFILE)
         ProgressManager.getInstance()
             .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
     }
