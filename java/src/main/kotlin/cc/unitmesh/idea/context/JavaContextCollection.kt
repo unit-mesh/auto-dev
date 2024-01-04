@@ -1,7 +1,6 @@
 package cc.unitmesh.idea.context
 
 import cc.unitmesh.devti.context.SimpleClassStructure
-import cc.unitmesh.devti.isInProject
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.*
@@ -65,7 +64,8 @@ object JavaContextCollection {
         if ((qualifiedName != null) && psiStructureCache.containsKey(clazz)) {
             return psiStructureCache[clazz]!!
         }
-        if (isJavaBuiltin(clazz) == true || isPopularFrameworks(qualifiedName) == true) {
+
+        if (isJavaBuiltin(qualifiedName) == true || isPopularFrameworks(qualifiedName) == true) {
             return null
         }
 
@@ -89,10 +89,12 @@ object JavaContextCollection {
                 field.type is PsiClassType -> {
                     // skip for some frameworks like, org.springframework, etc.
                     val resolve = (field.type as PsiClassType).resolve() ?: return@mapNotNull null
-                    if (isJavaBuiltin(resolve) == true) return@mapNotNull null
-                    if (isPopularFrameworks(resolve.qualifiedName) == true) return@mapNotNull null
-
                     if (resolve.qualifiedName == qualifiedName) return@mapNotNull null
+
+                    if (isJavaBuiltin(resolve.qualifiedName) == true || isPopularFrameworks(resolve.qualifiedName) == true) {
+                        return@mapNotNull null
+                    }
+
                     val classStructure = simpleStructure(resolve) ?: return@mapNotNull null
                     classStructure.fieldName = field.name
                     classStructure.builtIn = false
@@ -114,13 +116,11 @@ object JavaContextCollection {
     }
 
     private fun isPopularFrameworks(qualifiedName: @NlsSafe String?): Boolean? {
-        return qualifiedName?.startsWith("org.springframework") == true
-                || qualifiedName?.startsWith("org.apache") == true
-                || qualifiedName?.startsWith("org.hibernate") == true
-                || qualifiedName?.startsWith("org.slf4j") == true
-                || qualifiedName?.startsWith("org.apache") == true
-                || qualifiedName?.startsWith("org.junit") == true
-                || qualifiedName?.startsWith("org.mockito") == true
+        return qualifiedName?.startsWith("org.springframework") == true || qualifiedName?.startsWith("org.apache") == true || qualifiedName?.startsWith(
+            "org.hibernate"
+        ) == true || qualifiedName?.startsWith("org.slf4j") == true || qualifiedName?.startsWith("org.apache") == true || qualifiedName?.startsWith(
+            "org.junit"
+        ) == true || qualifiedName?.startsWith("org.mockito") == true
     }
 
     /**
@@ -141,8 +141,8 @@ object JavaContextCollection {
             return false
         }
 
-        return isJavaBuiltin(resolve) == true
+        return isJavaBuiltin(resolve.qualifiedName) == true
     }
 
-    private fun isJavaBuiltin(resolve: PsiClass) = resolve.qualifiedName?.startsWith("java.")
+    private fun isJavaBuiltin(qualifiedName: String?) = qualifiedName?.startsWith("java.")
 }
