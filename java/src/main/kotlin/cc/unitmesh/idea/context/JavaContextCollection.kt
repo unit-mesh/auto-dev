@@ -60,7 +60,7 @@ object JavaContextCollection {
      * If the field type is a custom class, the method recursively creates a SimpleClassStructure object for that class.
      * If the field type cannot be resolved, it is skipped.
      */
-    fun simpleStructure(clazz: PsiClass): SimpleClassStructure? {
+    private fun simpleStructure(clazz: PsiClass): SimpleClassStructure? {
         val qualifiedName = clazz.qualifiedName
         if ((qualifiedName != null) && psiStructureCache.containsKey(clazz)) {
             return psiStructureCache[clazz]!!
@@ -94,7 +94,7 @@ object JavaContextCollection {
 
                     if (resolve.qualifiedName == qualifiedName) return@mapNotNull null
                     val classStructure = simpleStructure(resolve) ?: return@mapNotNull null
-
+                    classStructure.fieldName = field.name
                     classStructure.builtIn = false
                     classStructure
                 }

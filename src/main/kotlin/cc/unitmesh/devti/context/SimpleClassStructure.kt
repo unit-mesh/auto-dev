@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.context
 
 data class SimpleClassStructure(
-    val fieldName: String,
+    var fieldName: String,
     var fieldType: String,
     val children: List<SimpleClassStructure>,
     var builtIn: Boolean = false
@@ -35,8 +35,9 @@ data class SimpleClassStructure(
      *```
      */
     private fun simplePuml(simpleClassStructure: SimpleClassStructure): String {
+        val children = simpleClassStructure.children.joinToString("\n") { "  ${it.fieldName}: ${it.fieldType}" }
         return "class ${simpleClassStructure.fieldType} {\n" +
-                simpleClassStructure.children.joinToString("\n") { "  ${it.fieldName}: ${it.fieldType}" } +
+                children +
                 "\n}\n"
     }
 
