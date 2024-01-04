@@ -3,10 +3,8 @@ package cc.unitmesh.idea.provider
 import cc.unitmesh.devti.provider.TestDataBuilder
 import cc.unitmesh.idea.context.JavaContextCollection
 import com.intellij.openapi.util.NlsSafe
-import com.intellij.psi.PsiClassType
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiMethod
-import com.intellij.psi.PsiParameter
+import com.intellij.psi.*
+import com.intellij.psi.impl.source.PsiClassReferenceType
 
 class JavaTestDataBuilder : TestDataBuilder {
     override fun inBoundData(element: PsiElement): Map<String, String> {
@@ -29,14 +27,33 @@ class JavaTestDataBuilder : TestDataBuilder {
         return emptyMap()
     }
 
+    private fun processing(returnType: PsiType): Map<@NlsSafe String, String> {
+        when {
+            returnType is PsiClassType -> {
+                return processingClassType(returnType)
+            }
+        }
+
+        return mapOf()
+    }
+
     private fun processingClassType(type: PsiClassType): Map<@NlsSafe String, String> {
+        val result = mutableMapOf<String, String>()
+        when (type) {
+            is PsiClassReferenceType -> {
+                type.reference.typeParameters.forEach {
+                    result += processing(it)
+                }
+            }
+        }
+
         type.resolve()?.let {
             val qualifiedName = it.qualifiedName!!
             val simpleClassStructure = JavaContextCollection.dataStructure(it)
-            return mapOf(qualifiedName to simpleClassStructure.toString())
+            result += mapOf(qualifiedName to simpleClassStructure.toString())
         }
 
-        return emptyMap()
+        return result
     }
 
     override fun outBoundData(element: PsiElement): Map<String, String> {
@@ -45,18 +62,7 @@ class JavaTestDataBuilder : TestDataBuilder {
         val result = mutableMapOf<String, String>()
         val returnType = element.returnType ?: return emptyMap()
 
-//        val typeParameters = (returnType as PsiClassReferenceType).reference.typeParameters
-//        typeParameters.forEach {
-//            val qualifiedName = it.canonicalText
-//            val simpleClassStructure = JavaContextCollection.dataStructure(it)
-//            result[qualifiedName] = simpleClassStructure.toString()
-//        }
-
-        when {
-            returnType is PsiClassType -> {
-                result += processingClassType(returnType)
-            }
-        }
+        result += processing(returnType)
 
         return result
     }

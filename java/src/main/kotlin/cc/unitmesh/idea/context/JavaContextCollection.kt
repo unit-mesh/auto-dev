@@ -48,7 +48,7 @@ object JavaContextCollection {
         return simpleStructure(clazz)
     }
 
-    val psiStructureCache = mutableMapOf<String, SimpleClassStructure?>()
+    val psiStructureCache = mutableMapOf<PsiClass, SimpleClassStructure?>()
 
     /**
      * Creates a simple class structure for the given PsiClass and search scope.
@@ -62,18 +62,15 @@ object JavaContextCollection {
      */
     fun simpleStructure(clazz: PsiClass): SimpleClassStructure {
         val qualifiedName = clazz.qualifiedName
-        if (psiStructureCache.containsKey(qualifiedName)) {
-            return psiStructureCache[qualifiedName]!!
+        if ((qualifiedName != null) && psiStructureCache.containsKey(clazz)) {
+            return psiStructureCache[clazz]!!
         }
 
         val fields = clazz.fields
         val children = fields.mapNotNull { field ->
             // if current field same to parent class, skip it
             if (field.type == clazz) return@mapNotNull null
-
-            psiStructureCache[field.type.canonicalText]?.let {
-                return@mapNotNull it
-            }
+            if (field.type is PsiTypeParameter) return@mapNotNull null
 
             val simpleClassStructure = when {
                 // like: int, long, boolean, etc.
@@ -101,21 +98,16 @@ object JavaContextCollection {
                 }
 
                 else -> {
-                    psiStructureCache[field.type.canonicalText] = null
                     logger.warn("Unknown supported type: ${field.type}")
                     return@mapNotNull null
                 }
             }
 
-            psiStructureCache[field.type.canonicalText] = simpleClassStructure
             simpleClassStructure
         }
 
         val simpleClassStructure = SimpleClassStructure(clazz.name ?: "", clazz.name ?: "", children)
-        if (qualifiedName != null) {
-            psiStructureCache[qualifiedName] = simpleClassStructure
-        }
-
+        psiStructureCache[clazz] = simpleClassStructure
         return simpleClassStructure
     }
 
