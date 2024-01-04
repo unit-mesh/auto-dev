@@ -60,6 +60,9 @@ object JavaContextCollection {
      * If the field type cannot be resolved, it is skipped.
      */
     private fun simpleStructure(clazz: PsiClass): SimpleClassStructure? {
+        // skip for generic
+        if (clazz.name?.uppercase() == clazz.name && clazz.name?.length == 1) return null
+
         val qualifiedName = clazz.qualifiedName
         if ((qualifiedName != null) && psiStructureCache.containsKey(clazz)) {
             return psiStructureCache[clazz]!!
@@ -84,6 +87,10 @@ object JavaContextCollection {
                 // like: String, List, etc.
                 isPsiBoxedType(field.type) -> {
                     SimpleClassStructure(field.name, field.type.presentableText, emptyList(), builtIn = true)
+                }
+
+                field.type is PsiTypeParameter -> {
+                    null
                 }
 
                 field.type is PsiClassType -> {
