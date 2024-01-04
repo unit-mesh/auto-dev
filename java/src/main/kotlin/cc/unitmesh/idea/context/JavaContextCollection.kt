@@ -91,7 +91,8 @@ object JavaContextCollection {
                     if (isPopularFrameworks(qualifiedName) == true) return@mapNotNull null
 
                     val resolve = (field.type as PsiClassType).resolve() ?: return@mapNotNull null
-                    if (resolve.qualifiedName?.startsWith("java.") == true) return@mapNotNull null
+                    if (isJavaBuiltin(resolve) == true) return@mapNotNull null
+                    if (resolve is PsiTypeParameter) return@mapNotNull null
 
                     if (resolve.qualifiedName == qualifiedName) return@mapNotNull null
                     val classStructure = simpleStructure(resolve)
@@ -101,7 +102,7 @@ object JavaContextCollection {
 
                 else -> {
                     psiStructureCache[field.type.canonicalText] = null
-                    logger.warn("Unknown type: ${field.type}")
+                    logger.warn("Unknown supported type: ${field.type}")
                     return@mapNotNull null
                 }
             }
@@ -146,6 +147,8 @@ object JavaContextCollection {
             return false
         }
 
-        return resolve.qualifiedName?.startsWith("java.") == true
+        return isJavaBuiltin(resolve) == true
     }
+
+    private fun isJavaBuiltin(resolve: PsiClass) = resolve.qualifiedName?.startsWith("java.")
 }
