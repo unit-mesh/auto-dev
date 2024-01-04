@@ -31,19 +31,23 @@ class User {
         val blogpost = classes.first { it.name == "BlogPost" }
         val structure = JavaContextCollection.dataStructure(blogpost)!!
         TestCase.assertEquals(structure.children.size, 2)
-        TestCase.assertEquals(structure.toString(), "class BlogPost {\n" +
-                "  id: long\n" +
-                "  Comment: Comment\n" +
-                "}\n" +
-                "\n" +
-                "class Comment {\n" +
-                "  id: long\n" +
-                "  User: User\n" +
-                "}\n" +
-                "\n" +
-                "class User {\n" +
-                "  id: long\n" +
-                "  name: String\n" +
-                "}\n")
+        TestCase.assertEquals(structure.toString(), """
+            class BlogPost {
+              id: long
+              comment: Comment
+            }
+            
+            class Comment {
+              id: long
+              user: User
+            }
+            
+            class User {
+              id: long
+              name: String
+            }
+            
+            """.trimIndent()
+        )
     }
 }
