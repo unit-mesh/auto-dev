@@ -44,11 +44,11 @@ object JavaContextCollection {
      *          child: name
      *```
      */
-    fun dataStructure(clazz: PsiClass): SimpleClassStructure {
+    fun dataStructure(clazz: PsiClass): SimpleClassStructure? {
         return simpleStructure(clazz)
     }
 
-    val psiStructureCache = mutableMapOf<PsiClass, SimpleClassStructure?>()
+    private val psiStructureCache = mutableMapOf<PsiClass, SimpleClassStructure?>()
 
     /**
      * Creates a simple class structure for the given PsiClass and search scope.
@@ -60,10 +60,13 @@ object JavaContextCollection {
      * If the field type is a custom class, the method recursively creates a SimpleClassStructure object for that class.
      * If the field type cannot be resolved, it is skipped.
      */
-    fun simpleStructure(clazz: PsiClass): SimpleClassStructure {
+    fun simpleStructure(clazz: PsiClass): SimpleClassStructure? {
         val qualifiedName = clazz.qualifiedName
         if ((qualifiedName != null) && psiStructureCache.containsKey(clazz)) {
             return psiStructureCache[clazz]!!
+        }
+        if (isJavaBuiltin(clazz) == true || isPopularFrameworks(qualifiedName) == true) {
+            return null
         }
 
         val fields = clazz.fields
@@ -85,14 +88,13 @@ object JavaContextCollection {
 
                 field.type is PsiClassType -> {
                     // skip for some frameworks like, org.springframework, etc.
-                    if (isPopularFrameworks(qualifiedName) == true) return@mapNotNull null
-
                     val resolve = (field.type as PsiClassType).resolve() ?: return@mapNotNull null
                     if (isJavaBuiltin(resolve) == true) return@mapNotNull null
-                    if (resolve is PsiTypeParameter) return@mapNotNull null
+                    if (isPopularFrameworks(resolve.qualifiedName) == true) return@mapNotNull null
 
                     if (resolve.qualifiedName == qualifiedName) return@mapNotNull null
-                    val classStructure = simpleStructure(resolve)
+                    val classStructure = simpleStructure(resolve) ?: return@mapNotNull null
+
                     classStructure.builtIn = false
                     classStructure
                 }

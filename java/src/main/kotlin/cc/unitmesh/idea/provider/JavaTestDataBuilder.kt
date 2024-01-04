@@ -49,8 +49,9 @@ class JavaTestDataBuilder : TestDataBuilder {
 
         type.resolve()?.let {
             val qualifiedName = it.qualifiedName!!
-            val simpleClassStructure = JavaContextCollection.dataStructure(it)
-            result += mapOf(qualifiedName to simpleClassStructure.toString())
+            JavaContextCollection.dataStructure(it)?.let { simpleClassStructure ->
+                result += mapOf(qualifiedName to simpleClassStructure.toString())
+            }
         }
 
         return result

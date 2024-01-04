@@ -29,7 +29,7 @@ class User {
         val classes = PsiTreeUtil.findChildrenOfType(psiFile, PsiClass::class.java)
 
         val blogpost = classes.first { it.name == "BlogPost" }
-        val structure = JavaContextCollection.dataStructure(blogpost)
+        val structure = JavaContextCollection.dataStructure(blogpost)!!
         TestCase.assertEquals(structure.children.size, 2)
         TestCase.assertEquals(structure.toString(), "class BlogPost {\n" +
                 "  id: long\n" +
