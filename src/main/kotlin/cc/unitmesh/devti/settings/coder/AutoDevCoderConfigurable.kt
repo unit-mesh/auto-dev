@@ -15,6 +15,8 @@ class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBund
     private val disableAdvanceContextCheckBox = JCheckBox()
     private val inEditorCompletionCheckBox = JCheckBox()
     private val explainCodeField = JTextField()
+    private val refactorCodeField = JTextField()
+    private val fixIssueCodeField = JTextField()
 
     val settings = project.service<AutoDevCoderSettingService>()
     val state = settings.state.copy()
@@ -53,6 +55,22 @@ class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBund
                     prop = state::explainCode.toMutableProperty()
                 )
         }
+        row(AutoDevBundle.message("settings.autodev.coder.refactorCode")) {
+            fullWidthCell(refactorCodeField)
+                .bind(
+                    componentGet = { it.text },
+                    componentSet = { component, value -> component.text = value },
+                    prop = state::refactorCode.toMutableProperty()
+                )
+        }
+        row(AutoDevBundle.message("settings.autodev.coder.fixIssueCode")) {
+            fullWidthCell(fixIssueCodeField)
+                .bind(
+                    componentGet = { it.text },
+                    componentSet = { component, value -> component.text = value },
+                    prop = state::fixIssueCode.toMutableProperty()
+                )
+        }
 
         onApply {
             settings.modify {
@@ -60,6 +78,8 @@ class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBund
                 it.disableAdvanceContext = state.disableAdvanceContext
                 it.inEditorCompletion = state.inEditorCompletion
                 it.explainCode = state.explainCode
+                it.refactorCode = state.refactorCode
+                it.fixIssueCode = state.fixIssueCode
             }
         }
     }

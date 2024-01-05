@@ -24,9 +24,11 @@ enum class ChatActionType {
     ;
 
     fun instruction(lang: String = "", project: Project?): String {
+        val devCoderSettings = project?.coderSetting?.state
+
         return when (this) {
             EXPLAIN -> {
-                project?.coderSetting?.state?.explainCode.let {
+                devCoderSettings?.explainCode.let {
                     if (it.isNullOrEmpty()) {
                         "Explain $lang code"
                     } else {
@@ -34,10 +36,26 @@ enum class ChatActionType {
                     }
                 }
             }
-            REFACTOR -> "Refactor the given $lang code"
+            REFACTOR -> {
+                devCoderSettings?.refactorCode.let {
+                    if (it.isNullOrEmpty()) {
+                        "Refactor the given $lang code"
+                    } else {
+                        it.replace("\$lang", lang)
+                    }
+                }
+            }
             CODE_COMPLETE -> "Complete $lang code, return rest code, no explaining"
             GENERATE_TEST -> "Write unit test for given $lang code"
-            FIX_ISSUE -> "Help me fix this issue"
+            FIX_ISSUE -> {
+                devCoderSettings?.fixIssueCode.let {
+                    if (it.isNullOrEmpty()) {
+                        "Help me fix this issue"
+                    } else {
+                        it.replace("\$lang", lang)
+                    }
+                }
+            }
             GEN_COMMIT_MESSAGE -> ""
             CREATE_CHANGELOG -> "generate release note"
             CHAT -> ""
