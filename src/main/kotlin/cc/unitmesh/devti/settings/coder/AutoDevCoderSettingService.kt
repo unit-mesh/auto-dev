@@ -21,6 +21,7 @@ class AutoDevCoderSettingService(
     class AutoDevCoderSettings : AdProjectSettingsBase<AutoDevCoderSettings>() {
         var recordingInLocal by property(false)
         var disableAdvanceContext by property(false)
+        var inEditorCompletion by property(false)
 
         override fun copy(): AutoDevCoderSettings {
             val state = AutoDevCoderSettings()

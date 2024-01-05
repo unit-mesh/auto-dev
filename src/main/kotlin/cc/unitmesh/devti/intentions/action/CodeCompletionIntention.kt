@@ -4,6 +4,9 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
 import cc.unitmesh.devti.intentions.action.task.SimilarCodeCompletionTask
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
+import cc.unitmesh.devti.intentions.action.task.RelatedCodeCompletionTask
+import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.settings.coder.coderSetting
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.actions.EditorActionUtil
@@ -48,9 +51,16 @@ class CodeCompletionIntention : AbstractChatIntention() {
         val suffix = document.getText(TextRange(offset, suffixEnd))
 
         val request = CodeCompletionRequest.create(editor, offset, element, prefix, suffix) ?: return
-        val task = SimilarCodeCompletionTask(request)
-        ProgressManager.getInstance()
-            .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+
+        if (project.coderSetting.state.inEditorCompletion) {
+            val task = RelatedCodeCompletionTask(request)
+            ProgressManager.getInstance()
+                .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+        } else {
+            val task = SimilarCodeCompletionTask(request)
+            ProgressManager.getInstance()
+                .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+        }
     }
 
     companion object {

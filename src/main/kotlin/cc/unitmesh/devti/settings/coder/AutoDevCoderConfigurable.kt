@@ -12,12 +12,13 @@ import javax.swing.JCheckBox
 class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBundle.message("settings.autodev.coder")) {
     private val recordingInLocalField = JCheckBox()
     private val disableAdvanceContextField = JCheckBox()
+    private val inEditorCompletionField = JCheckBox()
 
     val settings = project.service<AutoDevCoderSettingService>()
     val state = settings.state.copy()
 
     override fun createPanel(): DialogPanel = panel {
-        row(AutoDevBundle.message("settings.external.team.prompts.recordingInLocal")) {
+        row(AutoDevBundle.message("settings.autodev.coder.recordingInLocal")) {
             fullWidthCell(recordingInLocalField)
                 .bind(
                     componentGet = { it.isSelected },
@@ -26,7 +27,7 @@ class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBund
                 )
         }
 
-        row(AutoDevBundle.message("settings.external.team.prompts.disableAdvanceContext")) {
+        row(AutoDevBundle.message("settings.autodev.coder.disableAdvanceContext")) {
             fullWidthCell(disableAdvanceContextField)
                 .bind(
                     componentGet = { it.isSelected },
@@ -34,11 +35,20 @@ class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBund
                     prop = state::disableAdvanceContext.toMutableProperty()
                 )
         }
+        row(AutoDevBundle.message("settings.autodev.coder.inEditorCompletion")) {
+            fullWidthCell(inEditorCompletionField)
+                .bind(
+                    componentGet = { it.isSelected },
+                    componentSet = { component, value -> component.isSelected = value },
+                    prop = state::inEditorCompletion.toMutableProperty()
+                )
+        }
 
         onApply {
             settings.modify {
                 it.recordingInLocal = state.recordingInLocal
                 it.disableAdvanceContext = state.disableAdvanceContext
+                it.inEditorCompletion = state.inEditorCompletion
             }
         }
     }
