@@ -2,9 +2,6 @@ package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.settings.coder.coderSetting
 import com.intellij.openapi.project.Project
-import org.apache.velocity.VelocityContext
-import org.apache.velocity.app.Velocity
-import java.io.StringWriter
 
 enum class ChatActionType {
     CHAT,
@@ -29,31 +26,22 @@ enum class ChatActionType {
         return when (this) {
             EXPLAIN -> {
                 devCoderSettings?.explainCode.let {
-                    if (it.isNullOrEmpty()) {
-                        "Explain $lang code"
-                    } else {
-                        it.replace("\$lang", lang)
-                    }
+                    val defaultPrompt = "Explain $lang code"
+                    compilePrompt(it, defaultPrompt, lang)
                 }
             }
             REFACTOR -> {
                 devCoderSettings?.refactorCode.let {
-                    if (it.isNullOrEmpty()) {
-                        "Refactor the given $lang code"
-                    } else {
-                        it.replace("\$lang", lang)
-                    }
+                    val defaultPrompt = "Refactor the given $lang code"
+                    compilePrompt(it, defaultPrompt, lang)
                 }
             }
             CODE_COMPLETE -> "Complete $lang code, return rest code, no explaining"
             GENERATE_TEST -> "Write unit test for given $lang code"
             FIX_ISSUE -> {
                 devCoderSettings?.fixIssueCode.let {
-                    if (it.isNullOrEmpty()) {
-                        "Help me fix this issue"
-                    } else {
-                        it.replace("\$lang", lang)
-                    }
+                    val defaultPrompt = "Help me fix this issue"
+                    compilePrompt(it, defaultPrompt, lang)
                 }
             }
             GEN_COMMIT_MESSAGE -> ""
@@ -69,5 +57,11 @@ enum class ChatActionType {
                     "For example, if the code is a function that returns a list of users, " +
                     "the JSON should contain a list of users, not just a list of user objects."
         }
+    }
+
+    private fun compilePrompt(it: String?, defaultPrompt: String, lang: String) = if (it.isNullOrEmpty()) {
+        defaultPrompt
+    } else {
+        it.replace("\$lang", lang)
     }
 }
