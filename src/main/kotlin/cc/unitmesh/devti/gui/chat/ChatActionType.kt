@@ -57,10 +57,7 @@ enum class ChatActionType {
             COUNIT -> ""
             CODE_REVIEW -> ""
             CREATE_GENIUS -> ""
-            GENERATE_TEST_DATA -> "Generate JSON for given $lang code. So that we can use it to test for APIs. \n" +
-                    "Make sure JSON contains real business logic, not just data structure. \n" +
-                    "For example, if the code is a function that returns a list of users, " +
-                    "the JSON should contain a list of users, not just a list of user objects."
+            GENERATE_TEST_DATA -> "Generate JSON for given $lang code. So that we can use it to test for APIs. \n"
         }
     }
 

@@ -4,6 +4,7 @@ import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.ResponseType
+import cc.unitmesh.devti.settings.coder.coderSetting
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
@@ -70,6 +71,9 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
     override fun stream(promptText: String, systemPrompt: String, keepHistory: Boolean): Flow<String> {
         if (!keepHistory) {
             clearMessage()
+        }
+        if (project.coderSetting.state.noChatHistory) {
+            messages.clear()
         }
 
         messages += Message("user", promptText)

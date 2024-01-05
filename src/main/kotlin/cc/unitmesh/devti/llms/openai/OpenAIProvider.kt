@@ -103,6 +103,10 @@ class OpenAIProvider(val project: Project) : LLMProvider {
             clearMessage()
         }
 
+        if (project.coderSetting.state.noChatHistory) {
+            messages.clear()
+        }
+
         var output = ""
         val completionRequest = prepareRequest(promptText, systemPrompt)
 

@@ -14,6 +14,8 @@ class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBund
     private val recordingInLocalCheckBox = JCheckBox()
     private val disableAdvanceContextCheckBox = JCheckBox()
     private val inEditorCompletionCheckBox = JCheckBox()
+    private val noChatHistoryCheckBox = JCheckBox()
+
     private val explainCodeField = JTextField()
     private val refactorCodeField = JTextField()
     private val fixIssueCodeField = JTextField()
@@ -40,6 +42,16 @@ class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBund
                     prop = state::disableAdvanceContext.toMutableProperty()
                 )
         }
+
+        row(AutoDevBundle.message("settings.autodev.coder.noChatHistory")) {
+            fullWidthCell(noChatHistoryCheckBox)
+                .bind(
+                    componentGet = { it.isSelected },
+                    componentSet = { component, value -> component.isSelected = value },
+                    prop = state::noChatHistory.toMutableProperty()
+                )
+        }
+
         row(AutoDevBundle.message("settings.autodev.coder.inEditorCompletion")) {
             fullWidthCell(inEditorCompletionCheckBox)
                 .bind(
@@ -90,6 +102,7 @@ class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBund
                 it.refactorCode = state.refactorCode
                 it.fixIssueCode = state.fixIssueCode
                 it.generateTest = state.generateTest
+                it.noChatHistory = state.noChatHistory
             }
         }
     }

@@ -98,6 +98,9 @@ class AzureOpenAIProvider(val project: Project) : LLMProvider {
         if (historyMessageLength > maxTokenLength) {
             messages.clear()
         }
+        if (project.coderSetting.state.noChatHistory) {
+            messages.clear()
+        }
 
         messages.add(SimpleOpenAIFormat.fromChatMessage(systemMessage))
         val requestText = Json.encodeToString<SimpleOpenAIBody>(
