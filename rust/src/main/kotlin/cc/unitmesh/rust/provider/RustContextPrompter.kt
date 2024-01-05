@@ -33,14 +33,14 @@ class RustContextPrompter : ContextPrompter() {
     override fun displayPrompt(): String {
         return runBlocking {
             additionContext = collectionContext(creationContext)
-            return@runBlocking "${action!!.instruction(lang)}\n```$lang\n$selectedText\n```"
+            return@runBlocking "${action!!.instruction(lang, project)}\n```$lang\n$selectedText\n```"
         }
     }
 
     override fun requestPrompt(): String {
         return runBlocking {
             additionContext = collectionContext(creationContext)
-            val finalPrompt = "${action!!.instruction(lang)}:\n$additionContext\n```${lang}\n$selectedText\n```"
+            val finalPrompt = "${action!!.instruction(lang, project)}:\n$additionContext\n```${lang}\n$selectedText\n```"
             log.info("context: $finalPrompt")
             return@runBlocking finalPrompt
         }

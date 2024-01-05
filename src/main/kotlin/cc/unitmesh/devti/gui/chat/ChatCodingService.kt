@@ -17,7 +17,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
     private val llmFactory = LlmFactory()
     private val counitProcessor = project.service<CoUnitPreProcessor>()
 
-    val action = actionType.instruction()
+    val action = actionType.instruction(project = project)
 
     fun getLabel(): String {
         val capitalizedAction = actionType

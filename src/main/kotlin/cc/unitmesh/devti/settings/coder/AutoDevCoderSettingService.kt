@@ -22,6 +22,7 @@ class AutoDevCoderSettingService(
         var recordingInLocal by property(false)
         var disableAdvanceContext by property(false)
         var inEditorCompletion by property(false)
+        var explainCode: String by property("Explain \$lang code") { it.isEmpty() }
 
         override fun copy(): AutoDevCoderSettings {
             val state = AutoDevCoderSettings()

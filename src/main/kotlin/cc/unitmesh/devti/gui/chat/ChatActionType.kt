@@ -1,5 +1,11 @@
 package cc.unitmesh.devti.gui.chat
 
+import cc.unitmesh.devti.settings.coder.coderSetting
+import com.intellij.openapi.project.Project
+import org.apache.velocity.VelocityContext
+import org.apache.velocity.app.Velocity
+import java.io.StringWriter
+
 enum class ChatActionType {
     CHAT,
     REFACTOR,
@@ -17,12 +23,17 @@ enum class ChatActionType {
     CODE_REVIEW
     ;
 
-    override fun toString(): String {
-        return instruction()
-    }
-    fun instruction(lang: String = ""): String {
+    fun instruction(lang: String = "", project: Project?): String {
         return when (this) {
-            EXPLAIN -> "Explain selected $lang code"
+            EXPLAIN -> {
+                project?.coderSetting?.state?.explainCode.let {
+                    if (it.isNullOrEmpty()) {
+                        "Explain $lang code"
+                    } else {
+                        it.replace("\$lang", lang)
+                    }
+                }
+            }
             REFACTOR -> "Refactor the given $lang code"
             CODE_COMPLETE -> "Complete $lang code, return rest code, no explaining"
             GENERATE_TEST -> "Write unit test for given $lang code"

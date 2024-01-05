@@ -6,14 +6,15 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
-import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.dsl.builder.toMutableProperty
+import com.intellij.ui.dsl.builder.*
 import javax.swing.JCheckBox
+import javax.swing.JTextField
 
 class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBundle.message("settings.autodev.coder")) {
     private val recordingInLocalCheckBox = JCheckBox()
     private val disableAdvanceContextCheckBox = JCheckBox()
     private val inEditorCompletionCheckBox = JCheckBox()
+    private val explainCodeField = JTextField()
 
     val settings = project.service<AutoDevCoderSettingService>()
     val state = settings.state.copy()
@@ -44,13 +45,21 @@ class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBund
                     prop = state::inEditorCompletion.toMutableProperty()
                 )
         }
-
+        row(AutoDevBundle.message("settings.autodev.coder.explainCode")) {
+            fullWidthCell(explainCodeField)
+                .bind(
+                    componentGet = { it.text },
+                    componentSet = { component, value -> component.text = value },
+                    prop = state::explainCode.toMutableProperty()
+                )
+        }
 
         onApply {
             settings.modify {
                 it.recordingInLocal = state.recordingInLocal
                 it.disableAdvanceContext = state.disableAdvanceContext
                 it.inEditorCompletion = state.inEditorCompletion
+                it.explainCode = state.explainCode
             }
         }
     }

@@ -11,7 +11,6 @@ import cc.unitmesh.idea.flow.MvcContextService
 import cc.unitmesh.idea.provider.JavaTestDataBuilder
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiElement
@@ -92,7 +91,7 @@ open class JavaContextPrompter : ContextPrompter() {
 
     private fun createPrompt(selectedText: String): String {
         additionContext = ""
-        var prompt = action!!.instruction(lang)
+        var prompt = action!!.instruction(lang, project)
 
         when (action!!) {
             ChatActionType.CODE_COMPLETE -> {
