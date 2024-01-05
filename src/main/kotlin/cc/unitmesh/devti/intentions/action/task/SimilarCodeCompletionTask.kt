@@ -1,9 +1,7 @@
 package cc.unitmesh.devti.intentions.action.task
 
 import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
-import cc.unitmesh.devti.intentions.action.CodeCompletionIntention
 import com.intellij.lang.LanguageCommenters
-import com.intellij.openapi.diagnostic.logger
 
 /**
  * The `CodeCompletionTask` class is responsible for performing code completion tasks in the background.
@@ -25,7 +23,7 @@ import com.intellij.openapi.diagnostic.logger
  *
  * Note: This class does not have any public methods.
  */
-class CodeCompletionTask(private val request: CodeCompletionRequest) : BaseCompletionTask(request) {
+class SimilarCodeCompletionTask(private val request: CodeCompletionRequest) : BaseCompletionTask(request) {
     private val chunksString = SimilarChunksWithPaths.createQuery(request.element!!, 60)
     private val commenter = LanguageCommenters.INSTANCE.forLanguage(request.element!!.language)
     private val commentPrefix = commenter?.lineCommentPrefix

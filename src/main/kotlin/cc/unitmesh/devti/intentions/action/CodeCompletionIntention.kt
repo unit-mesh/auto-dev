@@ -2,7 +2,7 @@ package cc.unitmesh.devti.intentions.action
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
-import cc.unitmesh.devti.intentions.action.task.CodeCompletionTask
+import cc.unitmesh.devti.intentions.action.task.SimilarCodeCompletionTask
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
@@ -48,7 +48,7 @@ class CodeCompletionIntention : AbstractChatIntention() {
         val suffix = document.getText(TextRange(offset, suffixEnd))
 
         val request = CodeCompletionRequest.create(editor, offset, element, prefix, suffix) ?: return
-        val task = CodeCompletionTask(request)
+        val task = SimilarCodeCompletionTask(request)
         ProgressManager.getInstance()
             .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
     }
