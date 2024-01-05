@@ -59,7 +59,7 @@ class CodeReviewAction : ChatBaseAction() {
             }
 
             stories = fetchKanbanByCommits(repository, details)
-        }, "Prepare repository", true, project)
+        }, "Prepare Repository", true, project)
 
         val vcsPrompting = project.service<VcsPrompting>()
         val fullChangeContent =
