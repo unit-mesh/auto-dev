@@ -7,7 +7,7 @@ import cc.unitmesh.devti.recording.JsonlRecording
 import cc.unitmesh.devti.recording.Recording
 import cc.unitmesh.devti.recording.RecordingInstruction
 import cc.unitmesh.devti.settings.AutoDevSettingsState
-import cc.unitmesh.devti.settings.custom.teamPromptsSettings
+import cc.unitmesh.devti.settings.coder.coderSetting
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
@@ -71,7 +71,7 @@ class OpenAIProvider(val project: Project) : LLMProvider {
 
     private val recording: Recording
         get() {
-            if (project.teamPromptsSettings.state.recordingInLocal) {
+            if (project.coderSetting.state.recordingInLocal) {
                 return project.service<JsonlRecording>()
             }
             return EmptyRecording()

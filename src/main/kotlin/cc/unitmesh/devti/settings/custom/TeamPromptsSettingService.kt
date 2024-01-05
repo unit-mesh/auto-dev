@@ -20,8 +20,6 @@ class TeamPromptsProjectSettingsService(
 
     class TeamPromptsSettings : AdProjectSettingsBase<TeamPromptsSettings>() {
         var teamPromptsDir by property("prompts") { it.isEmpty() }
-        var recordingInLocal by property(false)
-        var disableAdvanceContext by property(false)
 
         override fun copy(): TeamPromptsSettings {
             val state = TeamPromptsSettings()
