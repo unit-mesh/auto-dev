@@ -6,20 +6,21 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
-import com.intellij.ui.dsl.builder.*
+import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.dsl.builder.toMutableProperty
 import javax.swing.JCheckBox
 
 class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBundle.message("settings.autodev.coder")) {
-    private val recordingInLocalField = JCheckBox()
-    private val disableAdvanceContextField = JCheckBox()
-    private val inEditorCompletionField = JCheckBox()
+    private val recordingInLocalCheckBox = JCheckBox()
+    private val disableAdvanceContextCheckBox = JCheckBox()
+    private val inEditorCompletionCheckBox = JCheckBox()
 
     val settings = project.service<AutoDevCoderSettingService>()
     val state = settings.state.copy()
 
     override fun createPanel(): DialogPanel = panel {
         row(AutoDevBundle.message("settings.autodev.coder.recordingInLocal")) {
-            fullWidthCell(recordingInLocalField)
+            fullWidthCell(recordingInLocalCheckBox)
                 .bind(
                     componentGet = { it.isSelected },
                     componentSet = { component, value -> component.isSelected = value },
@@ -28,7 +29,7 @@ class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBund
         }
 
         row(AutoDevBundle.message("settings.autodev.coder.disableAdvanceContext")) {
-            fullWidthCell(disableAdvanceContextField)
+            fullWidthCell(disableAdvanceContextCheckBox)
                 .bind(
                     componentGet = { it.isSelected },
                     componentSet = { component, value -> component.isSelected = value },
@@ -36,13 +37,14 @@ class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBund
                 )
         }
         row(AutoDevBundle.message("settings.autodev.coder.inEditorCompletion")) {
-            fullWidthCell(inEditorCompletionField)
+            fullWidthCell(inEditorCompletionCheckBox)
                 .bind(
                     componentGet = { it.isSelected },
                     componentSet = { component, value -> component.isSelected = value },
                     prop = state::inEditorCompletion.toMutableProperty()
                 )
         }
+
 
         onApply {
             settings.modify {
