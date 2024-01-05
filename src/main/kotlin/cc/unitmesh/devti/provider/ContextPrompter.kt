@@ -4,6 +4,7 @@ import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.builtin.DefaultContextPrompter
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
+import cc.unitmesh.devti.settings.custom.teamPromptsSettings
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
@@ -24,6 +25,10 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
     private val chatContextCache: MutableMap<ChatCreationContext, String> = mutableMapOf()
 
     suspend fun collectionContext(creationContext: ChatCreationContext): String {
+        if (project?.teamPromptsSettings?.state?.disableAdvanceContext == true) {
+            return ""
+        }
+
         if (chatContextCache.containsKey(creationContext)) {
             val cachedContent = chatContextCache[creationContext]!!
             if (cachedContent.isNotEmpty()) {

@@ -14,6 +14,7 @@ class PromptLibraryConfigurable(project: Project) : BoundConfigurable(AutoDevBun
 
     private val teamPromptsField = JTextField()
     private val recordingInLocalField = JCheckBox()
+    private val disableAdvanceContextField = JCheckBox()
 
     val settings = project.service<TeamPromptsProjectSettingsService>()
     val state = settings.state.copy()
@@ -37,10 +38,20 @@ class PromptLibraryConfigurable(project: Project) : BoundConfigurable(AutoDevBun
                 )
         }
 
+        row(AutoDevBundle.message("settings.external.team.prompts.disableAdvanceContext")) {
+            fullWidthCell(disableAdvanceContextField)
+                .bind(
+                    componentGet = { it.isSelected },
+                    componentSet = { component, value -> component.isSelected = value },
+                    prop = state::disableAdvanceContext.toMutableProperty()
+                )
+        }
+
         onApply {
             settings.modify {
                 it.teamPromptsDir = state.teamPromptsDir
                 it.recordingInLocal = state.recordingInLocal
+                it.disableAdvanceContext
             }
         }
     }
