@@ -29,7 +29,7 @@
         <projectConfigurable provider="cc.unitmesh.devti.settings.coder.AutoDevCoderConfigurableProvider"
                              parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                              id="cc.unitmesh.autodevCoder"
-                             bundle="messages.AutoDevBundle" key="settings.external.team.prompts.name"/>
+                             bundle="messages.AutoDevBundle" key="settings.autodev.coder"/>
 
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.AutoDevSettingsState"/>
 

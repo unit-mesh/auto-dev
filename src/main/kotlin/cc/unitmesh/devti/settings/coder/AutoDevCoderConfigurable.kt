@@ -38,7 +38,7 @@ class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBund
         onApply {
             settings.modify {
                 it.recordingInLocal = state.recordingInLocal
-                it.disableAdvanceContext
+                it.disableAdvanceContext = state.disableAdvanceContext
             }
         }
     }
