@@ -5,6 +5,7 @@ import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.prompting.VcsPrompting
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.vcs.VcsDataKeys
@@ -48,9 +49,11 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
 
         val stream = LlmFactory().create(project).stream(prompt, "", false)
 
-        runBlocking {
-            stream.cancellable().collect {
-                commitMessageUi.editorField.text += it
+        invokeLater {
+            runBlocking {
+                stream.cancellable().collect {
+                    commitMessageUi.editorField.text += it
+                }
             }
         }
     }
