@@ -32,11 +32,14 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
 
         val commitMessageUi = event.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL)
 
-        val stream = LlmFactory().create(project).stream(prompt, "")
+        // empty commit message before generating
+        (commitMessageUi as CommitMessage).editorField.text = ""
+
+        val stream = LlmFactory().create(project).stream(prompt, "", false)
 
         runBlocking {
             stream.cancellable().collect {
-                (commitMessageUi as CommitMessage).editorField.text += it
+                commitMessageUi.editorField.text += it
             }
         }
     }
