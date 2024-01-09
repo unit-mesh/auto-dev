@@ -43,6 +43,9 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         // empty commit message before generating
         (commitMessageUi as CommitMessage).editorField.text = ""
 
+        logger.info("Start generating commit message.")
+        logger.info(prompt)
+
         val stream = LlmFactory().create(project).stream(prompt, "", false)
 
         runBlocking {
