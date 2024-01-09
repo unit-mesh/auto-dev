@@ -5,9 +5,9 @@ import com.intellij.lang.LanguageExtension
 import com.intellij.psi.PsiElement
 
 interface TestDataBuilder {
-    fun inBoundData(element: PsiElement): Map<String, String> = mapOf()
+    fun inboundData(element: PsiElement): Map<String, String> = mapOf()
 
-    fun outBoundData(element: PsiElement): Map<String, String> = mapOf()
+    fun outboundData(element: PsiElement): Map<String, String> = mapOf()
 
     companion object {
         private val languageExtension: LanguageExtension<TestDataBuilder> =

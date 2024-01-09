@@ -14,6 +14,9 @@
         <livingDocumentation language="kotlin"
                              implementationClass="cc.unitmesh.kotlin.provider.KotlinLivingDocumentation"/>
 
+        <testDataBuilder language="kotlin"
+                         implementationClass="cc.unitmesh.kotlin.provider.KotlinTestDataBuilder"/>
+
         <classContextBuilder language="kotlin"
                              implementationClass="cc.unitmesh.kotlin.context.KotlinClassContextBuilder"/>
 

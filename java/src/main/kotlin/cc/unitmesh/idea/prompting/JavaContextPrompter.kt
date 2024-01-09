@@ -3,6 +3,7 @@ package cc.unitmesh.idea.prompting
 import cc.unitmesh.devti.custom.action.CustomPromptConfig
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.provider.TestDataBuilder
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
 import cc.unitmesh.devti.settings.AutoDevSettingsState
@@ -20,7 +21,9 @@ import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
 import kotlinx.coroutines.runBlocking
 
 open class JavaContextPrompter : ContextPrompter() {
-    private var additionContext: String = ""
+    protected var additionContext: String = ""
+    protected open val testDataBuilder: TestDataBuilder = JavaTestDataBuilder()
+
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private var customPromptConfig: CustomPromptConfig? = null
     private lateinit var mvcContextService: MvcContextService
@@ -130,14 +133,12 @@ open class JavaContextPrompter : ContextPrompter() {
         return prompt
     }
 
-    private fun prepareDataStructure(creationContext: ChatCreationContext) {
+    open fun prepareDataStructure(creationContext: ChatCreationContext) {
         val element = creationContext.element ?: return logger.error("element is null")
-
-        val testDataBuilder = JavaTestDataBuilder()
-        testDataBuilder.inBoundData(element).forEach { (_, value) ->
+        testDataBuilder.inboundData(element).forEach { (_, value) ->
             additionContext += "//request body info: \n$value\n"
         }
-        testDataBuilder.outBoundData(element).forEach { (_, value) ->
+        testDataBuilder.outboundData(element).forEach { (_, value) ->
             additionContext += "//response info: \n$value\n"
         }
     }

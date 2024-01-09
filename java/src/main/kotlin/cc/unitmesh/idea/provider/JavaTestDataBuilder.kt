@@ -6,8 +6,8 @@ import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiClassReferenceType
 
-class JavaTestDataBuilder : TestDataBuilder {
-    override fun inBoundData(element: PsiElement): Map<String, String> {
+open class JavaTestDataBuilder : TestDataBuilder {
+    override fun inboundData(element: PsiElement): Map<String, String> {
         if (element !is PsiMethod) return emptyMap()
 
         val result = mutableMapOf<String, String>()
@@ -15,7 +15,6 @@ class JavaTestDataBuilder : TestDataBuilder {
         for (parameter in parameters) {
             result += handleFromType(parameter)
         }
-
         return result
     }
 
@@ -57,7 +56,7 @@ class JavaTestDataBuilder : TestDataBuilder {
         return result
     }
 
-    override fun outBoundData(element: PsiElement): Map<String, String> {
+    override fun outboundData(element: PsiElement): Map<String, String> {
         if (element !is PsiMethod) return emptyMap()
 
         val result = mutableMapOf<String, String>()
