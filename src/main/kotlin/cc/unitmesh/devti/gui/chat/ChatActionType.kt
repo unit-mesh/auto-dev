@@ -30,12 +30,14 @@ enum class ChatActionType {
                     compilePrompt(it, defaultPrompt, lang)
                 }
             }
+
             REFACTOR -> {
                 devCoderSettings?.refactorCode.let {
                     val defaultPrompt = "Refactor the given $lang code"
                     compilePrompt(it, defaultPrompt, lang)
                 }
             }
+
             CODE_COMPLETE -> "Complete $lang code, return rest code, no explaining"
             GENERATE_TEST -> {
                 devCoderSettings?.generateTest.let {
@@ -43,12 +45,14 @@ enum class ChatActionType {
                     compilePrompt(it, defaultPrompt, lang)
                 }
             }
+
             FIX_ISSUE -> {
                 devCoderSettings?.fixIssueCode.let {
                     val defaultPrompt = "Help me fix this issue"
                     compilePrompt(it, defaultPrompt, lang)
                 }
             }
+
             GEN_COMMIT_MESSAGE -> ""
             CREATE_CHANGELOG -> "generate release note"
             CHAT -> ""
@@ -57,7 +61,12 @@ enum class ChatActionType {
             COUNIT -> ""
             CODE_REVIEW -> ""
             CREATE_GENIUS -> ""
-            GENERATE_TEST_DATA -> "Generate JSON for given $lang code. So that we can use it to test for APIs. \n"
+            GENERATE_TEST_DATA -> "Generate JSON data based on given $lang code and request/response info." +
+                    "So that we can use it to test for APIs. \n response format: \n" +
+                    "  action: // request method," +
+                    "  url: // the request url\n" +
+                    "  body: // the request body \n" +
+                    "  response: // the response body in json"
         }
     }
 
