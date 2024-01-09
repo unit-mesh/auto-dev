@@ -6,7 +6,7 @@ import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.prompting.VcsPrompting
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
-import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.vcs.VcsDataKeys
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.ui.CommitMessage
@@ -15,6 +15,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.flow.collect
 
 class CommitMessageSuggestionAction : ChatBaseAction() {
+    val logger = logger<CommitMessageSuggestionAction>()
+
     override fun getActionType(): ChatActionType = ChatActionType.GEN_COMMIT_MESSAGE
 
     override fun update(e: AnActionEvent) {
@@ -28,7 +30,13 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
 
     override fun executeAction(event: AnActionEvent) {
         val project = event.project ?: return
-        val prompt = generateCommitMessage(prepareVcsContext())
+        val diffContext = project.service<VcsPrompting>().prepareContext()
+        if (diffContext.isEmpty() || diffContext == "\n") {
+            logger.warn("Diff context is empty or cannot get enough useful context.")
+            return
+        }
+
+        val prompt = generateCommitMessage(diffContext)
 
         val commitMessageUi = event.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL)
 
@@ -42,13 +50,6 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
                 commitMessageUi.editorField.text += it
             }
         }
-    }
-
-    private fun prepareVcsContext(): String {
-        val project = ProjectManager.getInstance().openProjects.firstOrNull() ?: return ""
-        val prompting = project.service<VcsPrompting>()
-
-        return prompting.prepareContext()
     }
 
     private fun generateCommitMessage(diff: String): String {
