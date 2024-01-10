@@ -1,17 +1,9 @@
 package cc.unitmesh.kotlin.context;
 
-import cc.unitmesh.devti.context.ClassContext
-import cc.unitmesh.devti.context.builder.ClassContextBuilder
-import cc.unitmesh.idea.context.JavaContextCollection
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testFramework.LightPlatformTestCase
 import junit.framework.TestCase
-import org.jetbrains.annotations.Nullable
 import org.jetbrains.kotlin.psi.KtClassOrObject
-import org.jetbrains.kotlin.psi.KtFunction
-import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.psi.KtPsiFactory
 
 class KotlinClassContextBuilderTest: LightPlatformTestCase() {
