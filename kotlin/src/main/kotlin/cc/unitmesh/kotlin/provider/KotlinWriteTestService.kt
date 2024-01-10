@@ -19,6 +19,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.idea.quickfix.createFromUsage.callableBuilder.getReturnTypeReference
 import org.jetbrains.kotlin.idea.references.mainReference
@@ -89,7 +90,18 @@ class KotlinWriteTestService : WriteTestService() {
 
         project.guessProjectDir()?.refresh(true, true)
 
-        val currentClass = runReadAction { ClassContextProvider(false).from(element) }
+        val currentClass = runReadAction {
+            when (element) {
+                is KtClassOrObject -> ClassContextProvider(false).from(element)
+                is KtNamedFunction -> {
+                    PsiTreeUtil.getParentOfType(element, KtClassOrObject::class.java)?.let {
+                        return@runReadAction ClassContextProvider(false).from(it)
+                    } ?: return@runReadAction null
+                }
+
+                else -> null
+            }
+        }
         val imports: List<String> = runReadAction {
             (sourceFile as KtFile).importList?.imports?.map { it.text } ?: emptyList()
         }

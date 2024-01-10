@@ -38,7 +38,7 @@ class ClassContext(
         val filePath = displayName ?: runReadAction { root.containingFile?.virtualFile?.path }
 
         return """
-        |'package: $filePath
+        |'path: $filePath
         |class $className$superClasses {
         |  $classFields
         |  $methodSignatures
