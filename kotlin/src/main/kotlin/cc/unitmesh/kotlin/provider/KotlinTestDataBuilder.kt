@@ -43,6 +43,9 @@ class KotlinTestDataBuilder : TestDataBuilder {
     }
 
     override fun outboundData(element: PsiElement): Map<String, String> {
+        if (element is KtClass) {
+            return processingMethodsOutbound(element)
+        }
         if (element !is KtNamedFunction) return emptyMap()
 
         val returnType = element.getReturnTypeReference() ?: return emptyMap()
@@ -50,6 +53,23 @@ class KotlinTestDataBuilder : TestDataBuilder {
         val result = mutableMapOf<String, String>()
 
         result += processing(returnType)
+
+        return result
+    }
+
+    /**
+     * Processes the outbound methods of a Kotlin class and returns a map of method names and their return types.
+     *
+     * @param element The Kotlin class element to process.
+     * @return A map of method names and their return types.
+     */
+    private fun processingMethodsOutbound(element: KtClass): Map<String, String> {
+        val result = mutableMapOf<String, String>()
+        val methods = element.declarations.filterIsInstance<KtNamedFunction>()
+        for (method in methods) {
+            val returnType = method.getReturnTypeReference() ?: continue
+            result += processing(returnType)
+        }
 
         return result
     }
@@ -73,8 +93,5 @@ fun KtReferenceExpression.resolveMainReference(): PsiElement? =
     try {
         mainReference.resolve()
     } catch (e: Exception) {
-        if (e is ControlFlowException) throw e
-        throw KotlinExceptionWithAttachments("Unable to resolve reference", e)
-            .withPsiAttachment("reference.txt", this)
-            .withPsiAttachment("file.kt", containingFile)
+        null
     }
