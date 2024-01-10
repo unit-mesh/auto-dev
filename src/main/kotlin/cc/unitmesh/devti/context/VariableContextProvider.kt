@@ -25,6 +25,7 @@ class VariableContextProvider(
         for (provider in providers) {
             val variableContext =
                 provider.getVariableContext(psiElement, includeMethodContext, includeClassContext, gatherUsages)
+
             if (variableContext != null) {
                 return variableContext
             }
