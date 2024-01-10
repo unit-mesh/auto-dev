@@ -85,7 +85,17 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
             prompter += runReadAction { testContext.currentClass.format() }
         }
 
-        prompter += "\n```Code:\n${lang.lowercase()}\n${request.selectText}\n```\n"
+
+        prompter += "Code:"
+        prompter += testContext.imports.joinToString("\n") {
+            "// $it"
+        }
+
+        prompter += """
+            ```${lang.lowercase()}
+            ${request.selectText}
+            ```
+            """.trimIndent()
         prompter += if (!testContext.isNewFile) {
             "Start test code with `@Test` syntax here:  \n"
         } else {
