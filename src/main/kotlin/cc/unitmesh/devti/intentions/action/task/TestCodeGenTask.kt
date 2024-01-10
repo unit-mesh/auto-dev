@@ -88,7 +88,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
 
         prompter += "Code:"
         prompter += testContext.imports.joinToString("\n") {
-            "//import $it"
+            "//$it"
         }
 
         prompter += "\n```${lang.lowercase()}\n${request.selectText}\n```"

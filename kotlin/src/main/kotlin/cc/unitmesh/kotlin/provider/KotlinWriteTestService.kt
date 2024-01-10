@@ -91,7 +91,7 @@ class KotlinWriteTestService : WriteTestService() {
 
         val currentClass = runReadAction { ClassContextProvider(false).from(element) }
         val imports: List<String> = runReadAction {
-            (sourceFile as KtFile).importList?.imports?.map { it.importedFqName?.asString() ?: "" } ?: emptyList()
+            (sourceFile as KtFile).importList?.imports?.map { it.text } ?: emptyList()
         }
 
         return if (testFile != null) {
