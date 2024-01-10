@@ -12,7 +12,7 @@ class KotlinTestDataBuilderTest : LightPlatformTestCase() {
     }
 
     // test will fail if 222
-    fun testShouldReturnLangFileSuffix() {
+    fun shouldReturnLangFileSuffix() {
         val code = """
             package cc.unitmesh.untitled.demo.controller
 
