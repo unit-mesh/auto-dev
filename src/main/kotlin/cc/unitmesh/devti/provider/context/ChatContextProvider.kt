@@ -51,7 +51,7 @@ interface ChatContextProvider {
 
             elements.addAll(chatCreationContext.extraItems)
 
-            return elements
+            return elements.distinctBy { it.text }
         }
 
         suspend fun collectChatContext(
