@@ -20,18 +20,18 @@ open class JavaTestContextProvider : ChatContextProvider {
 
     open fun langFileSuffix() = "java"
 
-    override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
-        val fileName = creationContext.sourceFile?.name
-
-        val isSpringRelated = checkIsSpringRelated(creationContext)
-
-        var baseTestPrompt = """
+    var baseTestPrompt = """
             |- You MUST use should_xx_xx style for test method name.
             |- You MUST use given-when-then style.
             |- Test file should be complete and compilable, without need for further actions.
             |- Ensure that each test focuses on a single use case to maintain clarity and readability.
             |- Instead of using `@BeforeEach` methods for setup, include all necessary code initialization within each individual test method, do not write parameterized tests.
             |""".trimMargin()
+
+    override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
+        val fileName = creationContext.sourceFile?.name
+
+        val isSpringRelated = checkIsSpringRelated(creationContext)
 
         baseTestPrompt += junitRule(project)
 
@@ -63,13 +63,13 @@ open class JavaTestContextProvider : ChatContextProvider {
     open fun checkIsSpringRelated(creationContext: ChatCreationContext) =
         runReadAction { creationContext.element?.let { isSpringRelated(it) } ?: false }
 
-    private fun isService(fileName: @NlsSafe String?) =
+    protected fun isService(fileName: @NlsSafe String?) =
         fileName?.let { MvcUtil.isService(it, langFileSuffix()) } ?: false
 
-    private fun isController(fileName: @NlsSafe String?) =
+    protected fun isController(fileName: @NlsSafe String?) =
         fileName?.let { MvcUtil.isController(it, langFileSuffix()) } ?: false
 
-    private fun junitRule(project: Project): String {
+    protected fun junitRule(project: Project): String {
         prepareLibraryData(project)?.forEach {
             if (it.groupId?.contains("org.junit.jupiter") == true) {
                 return "- This project uses JUnit 5, you should import `org.junit.jupiter.api.Test` and use `@Test` annotation."
