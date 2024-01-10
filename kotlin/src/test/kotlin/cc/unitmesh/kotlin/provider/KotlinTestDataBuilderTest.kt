@@ -44,7 +44,7 @@ class KotlinTestDataBuilderTest : LightPlatformTestCase() {
 
         assertEquals(outboundData.size, 1)
         assertEquals(
-            outboundData["cc.unitmesh.untitled.demo.controller.UserDTO"], "'package: null\n" +
+            outboundData["cc.unitmesh.untitled.demo.controller.UserDTO"], "'package: cc.unitmesh.untitled.demo.controller.UserDTO\n" +
                     "class UserDTO {\n" +
                     "  \n" +
                     "  \n" +

@@ -28,7 +28,8 @@ class KotlinClassContextBuilder : ClassContextBuilder {
         val usages =
             if (gatherUsages) JavaContextCollection.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
 
-        return ClassContext(psiElement, text, name, ktNamedFunctions, allFields, null, usages)
+        val displayName = psiElement.fqName?.asString() ?: psiElement.name ?: ""
+        return ClassContext(psiElement, text, name, ktNamedFunctions, allFields, null, usages, displayName = displayName)
     }
 
     companion object {
