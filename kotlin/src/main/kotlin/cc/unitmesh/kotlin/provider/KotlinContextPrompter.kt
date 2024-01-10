@@ -4,5 +4,4 @@ import cc.unitmesh.idea.prompting.JavaContextPrompter
 
 class KotlinContextPrompter: JavaContextPrompter() {
     override val testDataBuilder = KotlinTestDataBuilder()
-
 }

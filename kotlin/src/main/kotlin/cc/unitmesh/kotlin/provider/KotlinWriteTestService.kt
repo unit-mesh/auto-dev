@@ -2,6 +2,7 @@ package cc.unitmesh.kotlin.provider
 
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
+import cc.unitmesh.devti.isInProject
 import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.devti.provider.WriteTestService
 import cc.unitmesh.kotlin.context.KotlinClassContextBuilder
@@ -53,7 +54,7 @@ class KotlinWriteTestService : WriteTestService() {
         val relatedModels = lookupRelevantClass(project, element)
 
         if (!parentDirPath?.contains("/src/main/kotlin/")!!) {
-            log.error("Source file is not in the src/main/java directory: ${parentDirPath}")
+            log.error("Source file is not in the src/main/java directory: $parentDirPath")
             return null
         }
 

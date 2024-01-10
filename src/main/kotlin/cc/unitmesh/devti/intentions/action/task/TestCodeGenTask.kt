@@ -86,9 +86,9 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         }
 
 
-        prompter += "Code:"
+        prompter += "\nCode:\n"
         prompter += testContext.imports.joinToString("\n") {
-            "//$it"
+            "// $it"
         }
 
         prompter += "\n```${lang.lowercase()}\n${request.selectText}\n```"

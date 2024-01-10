@@ -20,9 +20,9 @@ open class JavaTestContextProvider : ChatContextProvider {
     open fun langFileSuffix() = "java"
 
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
-        val items = mutableListOf<ChatContextItem>()
-
         val fileName = creationContext.sourceFile?.name
+
+        //
 
         val isController = fileName?.let { MvcUtil.isController(it, langFileSuffix()) } ?: false
         val isService = fileName?.let { MvcUtil.isService(it, langFileSuffix()) } ?: false
@@ -39,7 +39,7 @@ open class JavaTestContextProvider : ChatContextProvider {
 
         baseTestPrompt += junitRule(project)
 
-        items += when {
+        val finalPrompt = when {
             isController && isSpringRelated -> {
                 val testControllerPrompt = baseTestPrompt + """
                             |- Use appropriate Spring test annotations such as `@MockBean`, `@Autowired`, `@WebMvcTest`, `@DataJpaTest`, `@AutoConfigureTestDatabase`, `@AutoConfigureMockMvc`, `@SpringBootTest` etc.
@@ -61,7 +61,7 @@ open class JavaTestContextProvider : ChatContextProvider {
             }
         }
 
-        return items
+        return listOf(finalPrompt)
     }
 
     private fun junitRule(project: Project): String {
@@ -77,10 +77,10 @@ open class JavaTestContextProvider : ChatContextProvider {
         return ""
     }
 
-    private fun isSpringRelated(method: PsiElement): Boolean {
-        when (method) {
+    open fun isSpringRelated(element: PsiElement): Boolean {
+        when (element) {
             is PsiMethod -> {
-                val annotations = method.annotations
+                val annotations = element.annotations
                 for (annotation in annotations) {
                     val fqn = annotation.qualifiedName
                     if (fqn != null && fqn.startsWith("org.springframework")) {
@@ -90,7 +90,7 @@ open class JavaTestContextProvider : ChatContextProvider {
             }
 
             is PsiClass -> {
-                val annotations = method.annotations
+                val annotations = element.annotations
                 for (annotation in annotations) {
                     val fqn = annotation.qualifiedName
                     if (fqn != null && fqn.startsWith("org.springframework")) {
