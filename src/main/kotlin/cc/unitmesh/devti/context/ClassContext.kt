@@ -13,7 +13,8 @@ class ClassContext(
     val fields: List<PsiElement> = emptyList(),
     val superClasses: List<String>? = null,
     val usages: List<PsiReference> = emptyList(),
-    val displayName: String? = null
+    val displayName: String? = null,
+    val annotations: List<String> = mutableListOf(),
 ) : NamedElementContext(root, text, name) {
     private fun getFieldNames(): List<String> = fields.mapNotNull {
         VariableContextProvider(false, false, false).from(it).name
@@ -36,9 +37,14 @@ class ClassContext(
             }
 
         val filePath = displayName ?: runReadAction { root.containingFile?.virtualFile?.path }
+        val annotations = if (annotations.isEmpty()) {
+            ""
+        } else {
+            "\n'" + annotations.joinToString(separator = ", ")
+        }
 
         return """
-        |'package: $filePath
+        |'package: $filePath$annotations
         |class $className$superClasses {
         |  $classFields
         |  $methodSignatures
