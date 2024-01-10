@@ -71,6 +71,7 @@ Explanation should have less than 200 characters.
 examples:
 - fix(authentication): add password regex pattern
 - feat(storage): add new test cases
+- test(java): fix test case for user controller
 
 Diff:
 
