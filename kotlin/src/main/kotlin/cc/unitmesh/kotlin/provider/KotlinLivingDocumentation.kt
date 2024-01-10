@@ -149,9 +149,7 @@ class KotlinLivingDocumentation : LivingDocumentation {
         }
 
         val nearestDocumentationTarget = findNearestDocumentationTarget(commonParent!!)
-        if (nearestDocumentationTarget !is KtClassOrObject ||
-            containsElement(selectionModel, nearestDocumentationTarget)
-        ) {
+        if (nearestDocumentationTarget !is KtClassOrObject || containsElement(selectionModel, nearestDocumentationTarget)) {
             return listOf(nearestDocumentationTarget!!)
         }
 

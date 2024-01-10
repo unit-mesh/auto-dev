@@ -83,7 +83,6 @@ class KotlinWriteTestService : WriteTestService() {
             return null
         }
 
-
         // Test directory already exists, find the corresponding test file
         val testFilePath = testDirPath + "/" + sourceFile.name.replace(".kt", "Test.kt")
         val testFile = LocalFileSystem.getInstance().findFileByPath(testFilePath)

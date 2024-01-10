@@ -8,6 +8,7 @@ import cc.unitmesh.idea.MvcUtil
 import com.intellij.lang.java.JavaLanguage
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
@@ -22,12 +23,7 @@ open class JavaTestContextProvider : ChatContextProvider {
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         val fileName = creationContext.sourceFile?.name
 
-        //
-
-        val isController = fileName?.let { MvcUtil.isController(it, langFileSuffix()) } ?: false
-        val isService = fileName?.let { MvcUtil.isService(it, langFileSuffix()) } ?: false
-
-        val isSpringRelated = runReadAction { creationContext.element?.let { isSpringRelated(it) } ?: false }
+        val isSpringRelated = checkIsSpringRelated(creationContext)
 
         var baseTestPrompt = """
             |- You MUST use should_xx_xx style for test method name.
@@ -40,14 +36,14 @@ open class JavaTestContextProvider : ChatContextProvider {
         baseTestPrompt += junitRule(project)
 
         val finalPrompt = when {
-            isController && isSpringRelated -> {
+            isController(fileName) && isSpringRelated -> {
                 val testControllerPrompt = baseTestPrompt + """
                             |- Use appropriate Spring test annotations such as `@MockBean`, `@Autowired`, `@WebMvcTest`, `@DataJpaTest`, `@AutoConfigureTestDatabase`, `@AutoConfigureMockMvc`, `@SpringBootTest` etc.
                             |""".trimMargin()
                 ChatContextItem(JavaTestContextProvider::class, testControllerPrompt)
             }
 
-            isService && isSpringRelated -> {
+            isService(fileName) && isSpringRelated -> {
                 val testServicePrompt = baseTestPrompt + """
                             |- Follow the common Spring code style by using the AssertJ library.
                             |- Assume that the database is empty before each test and create valid entities with consideration for data constraints (jakarta.validation.constraints).
@@ -64,13 +60,22 @@ open class JavaTestContextProvider : ChatContextProvider {
         return listOf(finalPrompt)
     }
 
+    open fun checkIsSpringRelated(creationContext: ChatCreationContext) =
+        runReadAction { creationContext.element?.let { isSpringRelated(it) } ?: false }
+
+    private fun isService(fileName: @NlsSafe String?) =
+        fileName?.let { MvcUtil.isService(it, langFileSuffix()) } ?: false
+
+    private fun isController(fileName: @NlsSafe String?) =
+        fileName?.let { MvcUtil.isController(it, langFileSuffix()) } ?: false
+
     private fun junitRule(project: Project): String {
         prepareLibraryData(project)?.forEach {
             if (it.groupId?.contains("org.junit.jupiter") == true) {
-                return "| This project uses JUnit 5, you should import `org.junit.jupiter.api.Test` and use `@Test` annotation."
+                return "- This project uses JUnit 5, you should import `org.junit.jupiter.api.Test` and use `@Test` annotation."
             }
             if (it.groupId?.contains("org.junit") == true) {
-                return "| This project uses JUnit 4, you should import `org.junit.Test` and use `@Test` annotation."
+                return "- This project uses JUnit 4, you should import `org.junit.Test` and use `@Test` annotation."
             }
         }
 
