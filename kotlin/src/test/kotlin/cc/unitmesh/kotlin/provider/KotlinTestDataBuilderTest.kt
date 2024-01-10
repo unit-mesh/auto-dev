@@ -37,8 +37,11 @@ class KotlinTestDataBuilderTest : LightPlatformTestCase() {
         val firstFunction = PsiTreeUtil.findChildOfType(createFile, KtNamedFunction::class.java)!!
         val outboundData = builder.outboundData(firstFunction)
 
-        println(outboundData)
         assertEquals(outboundData.size, 1)
-        assertEquals(outboundData["cc.unitmesh.untitled.demo.controller.UserDTO"], "")
+        assertEquals(outboundData["cc.unitmesh.untitled.demo.controller.UserDTO"], "'package: null\n" +
+                "class UserDTO {\n" +
+                "  \n" +
+                "  \n" +
+                "}")
     }
 }

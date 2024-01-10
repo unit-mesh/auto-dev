@@ -2,12 +2,13 @@ package cc.unitmesh.kotlin.provider
 
 import cc.unitmesh.devti.provider.TestDataBuilder
 import cc.unitmesh.kotlin.context.KotlinClassContextBuilder
+import com.intellij.openapi.diagnostic.ControlFlowException
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.idea.caches.resolve.analyze
-import org.jetbrains.kotlin.idea.caches.resolve.resolveMainReference
 import org.jetbrains.kotlin.idea.quickfix.createFromUsage.callableBuilder.getReturnTypeReference
+import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.utils.KotlinExceptionWithAttachments
 
 class KotlinTestDataBuilder : TestDataBuilder {
     override fun inboundData(element: PsiElement): Map<String, String> {
@@ -67,3 +68,13 @@ class KotlinTestDataBuilder : TestDataBuilder {
         return result
     }
 }
+
+fun KtReferenceExpression.resolveMainReference(): PsiElement? =
+    try {
+        mainReference.resolve()
+    } catch (e: Exception) {
+        if (e is ControlFlowException) throw e
+        throw KotlinExceptionWithAttachments("Unable to resolve reference", e)
+            .withPsiAttachment("reference.txt", this)
+            .withPsiAttachment("file.kt", containingFile)
+    }
