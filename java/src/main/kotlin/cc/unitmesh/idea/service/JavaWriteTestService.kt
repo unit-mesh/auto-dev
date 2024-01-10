@@ -7,6 +7,7 @@ import cc.unitmesh.devti.provider.WriteTestService
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.lang.Language
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -16,6 +17,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.*
+import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration
 import java.io.File
 
@@ -81,11 +83,16 @@ class JavaWriteTestService : WriteTestService() {
 
         project.guessProjectDir()?.refresh(true, true)
 
+        val imports = runReadAction {
+            val importList = PsiTreeUtil.getChildrenOfTypeAsList(sourceFile, PsiImportList::class.java)
+            importList.flatMap { it.allImportStatements.map { import -> import.text } }
+        }
+
         return if (testFile != null) {
-            TestFileContext(isNewFile, testFile, relatedModels, className, sourceFile.language, null)
+            TestFileContext(isNewFile, testFile, relatedModels, className, sourceFile.language, null, imports)
         } else {
             val targetFile = createTestFile(sourceFile, testDir!!, packageName, project)
-            TestFileContext(isNewFile = true, targetFile, relatedModels, "", sourceFile.language, null)
+            TestFileContext(isNewFile = true, targetFile, relatedModels, "", sourceFile.language, null, imports)
         }
     }
 

@@ -11,4 +11,5 @@ data class TestFileContext(
     val testClassName: String?,
     val language: Language,
     val currentClass: ClassContext? = null,
+    val imports: List<String> = emptyList(),
 )

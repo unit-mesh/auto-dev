@@ -89,12 +89,16 @@ class KotlinWriteTestService : WriteTestService() {
 
         project.guessProjectDir()?.refresh(true, true)
 
-        val currentClass =  runReadAction { ClassContextProvider(false).from(element) }
+        val currentClass = runReadAction { ClassContextProvider(false).from(element) }
+        val imports: List<String> = runReadAction {
+            (sourceFile as KtFile).importList?.imports?.map { it.importedFqName?.asString() ?: "" } ?: emptyList()
+        }
+
         return if (testFile != null) {
-            TestFileContext(isNewFile, testFile, relatedModels, className, sourceFile.language, currentClass)
+            TestFileContext(isNewFile, testFile, relatedModels, className, sourceFile.language, currentClass, imports)
         } else {
             val targetFile = createTestFile(sourceFile, testDir!!, packageName, project)
-            TestFileContext(isNewFile = true, targetFile, relatedModels, "", sourceFile.language, currentClass)
+            TestFileContext(isNewFile = true, targetFile, relatedModels, "", sourceFile.language, currentClass, imports)
         }
     }
 

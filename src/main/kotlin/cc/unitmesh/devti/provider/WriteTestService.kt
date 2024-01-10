@@ -77,7 +77,6 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
             val service = if (testServices.isNotEmpty()) {
                 testServices.first()
             } else {
-                // if lang == "TypeScript JSX", we just use TypeScript
                 val firstPartLang = lang.split(" ")[0]
                 val partLang = filterByLang(extensionList, firstPartLang)
                 if (partLang.isNotEmpty()) {
