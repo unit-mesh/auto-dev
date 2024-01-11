@@ -118,10 +118,12 @@ class VcsPrompting(private val project: Project) {
         project: Project,
         ignoreFilePatterns: List<PathMatcher> = listOf(),
     ): String? {
-        val writer = StringWriter()
-        writer.write("Commit Message: ")
 
-        details.forEach { writer.write(it.fullMessage + "\n\n") }
+        val writer = StringWriter()
+        if (details.isNotEmpty()) {
+            writer.write("Commit Message: ")
+            details.forEach { writer.write(it.fullMessage + "\n\n") }
+        }
 
         writer.write("Changes:\n\n")
         val changeText = calculateDiff(selectList, project, ignoreFilePatterns)

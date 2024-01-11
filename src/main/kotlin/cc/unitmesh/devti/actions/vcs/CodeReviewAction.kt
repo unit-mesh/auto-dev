@@ -20,16 +20,18 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.VcsDataKeys
+import com.intellij.openapi.vcs.changes.Change
 import com.intellij.vcs.log.VcsFullCommitDetails
 import com.intellij.vcs.log.VcsLogDataKeys
 import git4idea.repo.GitRepository
+import kotlinx.coroutines.runBlocking
 import org.changelog.CommitParser
 import java.nio.file.FileSystems
 import java.nio.file.PathMatcher
 
 val githubUrlRegex: Regex = Regex("^(https?://|git://)?(www\\.)?github\\.com/[\\w-]+/[\\w-]+(/.*)?\$")
 
-class CodeReviewAction : ChatBaseAction() {
+open class CodeReviewAction : ChatBaseAction() {
     override fun getActionType(): ChatActionType = ChatActionType.CODE_REVIEW
 
     private val commitParser: CommitParser = CommitParser()
@@ -61,6 +63,15 @@ class CodeReviewAction : ChatBaseAction() {
             stories = fetchKanbanByCommits(repository, details)
         }, "Prepare Repository", true, project)
 
+        doReviewWithChanges(project, details, selectList, stories)
+    }
+
+    fun doReviewWithChanges(
+        project: Project,
+        details: List<VcsFullCommitDetails>,
+        selectList: Array<out Change>,
+        stories: List<String>
+    ) {
         val vcsPrompting = project.service<VcsPrompting>()
         val fullChangeContent =
             vcsPrompting.buildDiffPrompt(details, selectList.toList(), project, defaultIgnoreFilePatterns)
@@ -73,7 +84,7 @@ class CodeReviewAction : ChatBaseAction() {
         val creationContext =
             ChatCreationContext(ChatOrigin.Intention, getActionType(), null, listOf(), null)
 
-        val contextItems: List<ChatContextItem> = kotlinx.coroutines.runBlocking {
+        val contextItems: List<ChatContextItem> = runBlocking {
             return@runBlocking ChatContextProvider.collectChatContextList(project, creationContext)
         }
 
@@ -86,7 +97,7 @@ class CodeReviewAction : ChatBaseAction() {
         doCodeReview(project, context)
     }
 
-    private fun doCodeReview(project: Project, context: CodeReviewContext) {
+    fun doCodeReview(project: Project, context: CodeReviewContext) {
         val templateRender = TemplateRender("genius/practises")
         val template = templateRender.getTemplate("code-review.vm")
         templateRender.context = context

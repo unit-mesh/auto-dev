@@ -254,7 +254,16 @@
             <add-to-group group-id="Vcs.Log.ContextMenu" relative-to-action="Vcs.ShowDiffWithLocal" anchor="after"/>
 
             <!-- Todo: spike when in Group -->
-            <add-to-group group-id="ChangesViewToolbar" relative-to-action="ChangesView.Revert" anchor="after"/>
+        </action>
+
+        <action id="autodev.Vcs.PrepushReview"
+                class="cc.unitmesh.devti.actions.vcs.PrepushReviewAction" text="Prepush Review (AutoDev)"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+                description="Ask AI to review code">
+
+            <add-to-group group-id="ChangesViewToolbar" anchor="last"/>
+            <add-to-group group-id="ChangesViewPopupMenu" relative-to-action="ChangesView.Revert" anchor="after"/>
+
         </action>
 
         <action id="cc.unitmesh.devti.actions.chat.CodeCompleteChatAction"
