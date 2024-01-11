@@ -57,8 +57,8 @@ class DiffSimplifier(val project: Project) {
                 null as CommitContext?,
                 emptyList()
             )
-            val diffString = writer.toString()
-            return postProcess(diffString)
+
+            return postProcess(writer.toString())
         } catch (e: VcsException) {
             throw RuntimeException("Error calculating diff: ${e.message}", e)
         }
@@ -66,7 +66,7 @@ class DiffSimplifier(val project: Project) {
 
     companion object {
         private val revisionRegex = Regex("\\(revision [^)]+\\)")
-        private val lineTip = "\\ No newline at end of file"
+        private const val lineTip = "\\ No newline at end of file"
 
         @NotNull
         fun postProcess(@NotNull diffString: String): String {
