@@ -35,6 +35,7 @@ class KotlinCodeModifier : CodeModifier {
     override fun insertTestCode(sourceFile: VirtualFile, project: Project, code: String): Boolean {
         if (!code.contains("@Test")) {
             log.error("methodCode does not contain @Test annotation: $code")
+            insertMethod(sourceFile, project, code)
             return false
         }
 
