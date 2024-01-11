@@ -97,7 +97,7 @@ class DiffSimplifier(val project: Project) {
                     continue
                 }
 
-                if (line.startsWith("--- /dev/null")) {
+                if (line.startsWith("---\t/dev/null")) {
                     index++
                     continue
                 }
@@ -129,7 +129,7 @@ class DiffSimplifier(val project: Project) {
                     if (nextLine.startsWith("rename to")) {
                         val from = line.substring("rename from ".length)
                         val to = nextLine.substring("rename to ".length)
-                        destination.add("rename file $from $to")
+                        destination.add("rename file from $from to $to")
                         // The next value will be "---" and the value after that will be "+++".
                         index += 4
                         continue
@@ -218,8 +218,11 @@ class DiffSimplifier(val project: Project) {
                     val nextLine = lines[index + 1]
                     if (nextLine.startsWith("+++")) {
                         // remove end date
-                        val startLine = line.substring("--- a/".length).trim()
-                        val withoutEnd = nextLine.substring("+++ b/".length, nextLine.indexOf("(date ")).trim()
+                        val substringBefore = line.substringBefore("(revision")
+
+                        val startLine = substringBefore
+                            .substring("--- a/".length).trim()
+                        val withoutEnd = nextLine.substring("+++ b/".length, nextLine.indexOf("(date")).trim()
 
                         if (startLine == withoutEnd) {
                             index += 2

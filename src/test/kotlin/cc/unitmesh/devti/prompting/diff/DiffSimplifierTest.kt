@@ -37,7 +37,7 @@ class DiffSimplifierTest {
         val postProcess = DiffSimplifier.postProcess(diff)
         assertEquals(
             postProcess,
-            """rename file server/src/main/kotlin/com/thoughtworks/archguard/code/module/domain/model/LeafManger.kt server/metric-service/src/main/kotlin/org/archguard/arch/LeafManger.kt""".trimMargin()
+            """rename file from server/src/main/kotlin/com/thoughtworks/archguard/code/module/domain/model/LeafManger.kt to server/metric-service/src/main/kotlin/org/archguard/arch/LeafManger.kt""".trimMargin()
         )
     }
 
@@ -106,7 +106,7 @@ change import from com.thoughtworks.archguard.code.module.domain.dubbo.ServiceCo
         val postProcess = DiffSimplifier.postProcess(code)
         assertEquals(
             postProcess,
-            """rename file server/src/main/kotlin/com/thoughtworks/archguard/code/module/domain/model/LeafManger.kt server/metric-service/src/main/kotlin/org/archguard/arch/LeafManger.kt
+            """rename file from server/src/main/kotlin/com/thoughtworks/archguard/code/module/domain/model/LeafManger.kt to server/metric-service/src/main/kotlin/org/archguard/arch/LeafManger.kt
 change import from com.thoughtworks.archguard.code.module.domain.dubbo.ServiceConfig to org.archguard.protocol.dubbo.ServiceConfig"""
         )
     }
