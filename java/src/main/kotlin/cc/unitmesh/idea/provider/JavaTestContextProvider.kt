@@ -33,18 +33,19 @@ open class JavaTestContextProvider : ChatContextProvider {
 
         val isSpringRelated = checkIsSpringRelated(creationContext)
 
-        baseTestPrompt += junitRule(project)
+        val prompt = baseTestPrompt + junitRule(project)
 
         val finalPrompt = when {
             isController(fileName) && isSpringRelated -> {
-                val testControllerPrompt = baseTestPrompt + """
+                val testControllerPrompt = prompt + """
                             |- Use appropriate Spring test annotations such as `@MockBean`, `@Autowired`, `@WebMvcTest`, `@DataJpaTest`, `@AutoConfigureTestDatabase`, `@AutoConfigureMockMvc`, `@SpringBootTest` etc.
                             |""".trimMargin()
+
                 ChatContextItem(JavaTestContextProvider::class, testControllerPrompt)
             }
 
             isService(fileName) && isSpringRelated -> {
-                val testServicePrompt = baseTestPrompt + """
+                val testServicePrompt = prompt + """
                             |- Follow the common Spring code style by using the AssertJ library.
                             |- Assume that the database is empty before each test and create valid entities with consideration for data constraints (jakarta.validation.constraints).
                             |""".trimMargin()
@@ -53,7 +54,7 @@ open class JavaTestContextProvider : ChatContextProvider {
             }
 
             else -> {
-                ChatContextItem(JavaTestContextProvider::class, baseTestPrompt)
+                ChatContextItem(JavaTestContextProvider::class, prompt)
             }
         }
 
@@ -70,16 +71,21 @@ open class JavaTestContextProvider : ChatContextProvider {
         fileName?.let { MvcUtil.isController(it, langFileSuffix()) } ?: false
 
     protected fun junitRule(project: Project): String {
+        var rule = ""
         prepareLibraryData(project)?.forEach {
             if (it.groupId?.contains("org.junit.jupiter") == true) {
-                return "- This project uses JUnit 5, you should import `org.junit.jupiter.api.Test` and use `@Test` annotation."
+                rule =
+                    "- This project uses JUnit 5, you should import `org.junit.jupiter.api.Test` and use `@Test` annotation."
+                return@forEach
             }
+
             if (it.groupId?.contains("org.junit") == true) {
-                return "- This project uses JUnit 4, you should import `org.junit.Test` and use `@Test` annotation."
+                rule = "- This project uses JUnit 4, you should import `org.junit.Test` and use `@Test` annotation."
+                return@forEach
             }
         }
 
-        return ""
+        return rule
     }
 
     open fun isSpringRelated(element: PsiElement): Boolean {

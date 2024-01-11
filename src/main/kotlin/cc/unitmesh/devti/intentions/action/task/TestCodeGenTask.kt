@@ -48,7 +48,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
             return
         }
 
-        var prompter = "Write unit test for following code. "
+        var prompter = "Write unit test for following ${request.element.language} code."
 
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.collect-context")
         indicator.fraction = 0.3
