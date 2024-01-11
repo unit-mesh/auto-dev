@@ -80,7 +80,7 @@ class DiffSimplifier(val project: Project) {
 
                 val line = lines[index]
 
-                if (line.startsWith("diff --git ") || line.startsWith("index ") || line.startsWith("Index ")) {
+                if (line.startsWith("diff --git ") || line.startsWith("index:") || line.startsWith("Index:")) {
                     index++
                     continue
                 }
@@ -116,6 +116,19 @@ class DiffSimplifier(val project: Project) {
                         val withoutFooter = withoutHead.substring(0, withoutHead.indexOf("\t"))
                         destination.add("new file $withoutFooter")
                         index += 3
+                        continue
+                    }
+                }
+
+                // handle for rename
+                if (line.startsWith("rename from")) {
+                    val nextLine = lines[index + 1]
+                    if (nextLine.startsWith("rename to")) {
+                        val from = line.substring("rename from ".length)
+                        val to = nextLine.substring("rename to ".length)
+                        destination.add("rename file $from $to")
+                        // The next value will be "---" and the value after that will be "+++".
+                        index += 4
                         continue
                     }
                 }
