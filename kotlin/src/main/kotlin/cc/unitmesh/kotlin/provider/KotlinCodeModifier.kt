@@ -27,7 +27,10 @@ class KotlinCodeModifier : CodeModifier {
     fun lookupFile(
         project: Project,
         sourceFile: VirtualFile
-    ) = PsiManager.getInstance(project).findFile(sourceFile) as KtFile
+    ): KtFile? {
+        val psiFile = PsiManager.getInstance(project).findFile(sourceFile) ?: return null
+        return psiFile as KtFile
+    }
 
     override fun insertTestCode(sourceFile: VirtualFile, project: Project, code: String): Boolean {
         if (!code.contains("@Test")) {
@@ -47,7 +50,7 @@ class KotlinCodeModifier : CodeModifier {
         ApplicationManager.getApplication().invokeLater {
             val rootElement = runReadAction {
                 val ktFile = lookupFile(project, sourceFile)
-                val psiClass = ktFile.classes.firstOrNull()
+                val psiClass = ktFile?.classes?.firstOrNull()
                 if (psiClass == null) {
                     log.error("Failed to find PsiClass in the source file: $ktFile, code: $code")
                     return@runReadAction null
@@ -76,7 +79,7 @@ class KotlinCodeModifier : CodeModifier {
                 log.warn("Failed to insert method: $code", e)
                 // append to the end of the file
                 WriteCommandAction.runWriteCommandAction(project) {
-                    val document = PsiDocumentManager.getInstance(project).getDocument(rootElement.containingFile)!!
+                    val document = PsiDocumentManager.getInstance(project).getDocument(rootElement.containingFile)
                     document?.insertString(document.textLength, "\n    ")
                     document?.insertString(document.textLength, code)
                 }
@@ -92,8 +95,8 @@ class KotlinCodeModifier : CodeModifier {
         log.info("start insertClassCode: $code")
         WriteCommandAction.runWriteCommandAction(project) {
             val psiFile = lookupFile(project, sourceFile)
-            val document = psiFile.viewProvider.document!!
-            document.insertString(document.textLength, code)
+            val document = psiFile?.viewProvider?.document
+            document?.insertString(document.textLength, code)
         }
 
         return true
