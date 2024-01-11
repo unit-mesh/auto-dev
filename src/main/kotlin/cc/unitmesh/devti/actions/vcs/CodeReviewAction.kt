@@ -66,7 +66,7 @@ open class CodeReviewAction : ChatBaseAction() {
         doReviewWithChanges(project, details, selectList, stories)
     }
 
-    fun doReviewWithChanges(
+    open fun doReviewWithChanges(
         project: Project,
         details: List<VcsFullCommitDetails>,
         selectList: Array<out Change>,
