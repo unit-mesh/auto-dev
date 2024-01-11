@@ -29,6 +29,7 @@
         <variableContextBuilder language="kotlin"
                                 implementationClass="cc.unitmesh.kotlin.context.KotlinVariableContextBuilder"/>
 
+        <chatContextProvider implementation="cc.unitmesh.kotlin.provider.KotlinVersionProvider"/>
         <chatContextProvider implementation="cc.unitmesh.kotlin.provider.KotlinTestContextProvider"/>
 
         <contextPrompter
