@@ -13,6 +13,7 @@ import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
 
+
 open class JavaTestContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
         return creationContext.action == ChatActionType.GENERATE_TEST && creationContext.sourceFile?.language is JavaLanguage
@@ -70,21 +71,39 @@ open class JavaTestContextProvider : ChatContextProvider {
     protected fun isController(fileName: @NlsSafe String?) =
         fileName?.let { MvcUtil.isController(it, langFileSuffix()) } ?: false
 
+
+    // todo: lookup module deps
+    // val module = ModuleUtilCore.findModuleForPsiElement(sourceFile!!)
+
+    val projectJunitCache = mutableMapOf<Project, String>()
     protected fun junitRule(project: Project): String {
+        if (projectJunitCache.containsKey(project)) {
+            return projectJunitCache[project]!!
+        }
+
         var rule = ""
+        var hasJunit5 = false
+        var hasJunit4 = false
         prepareLibraryData(project)?.forEach {
-            if (it.groupId?.contains("org.junit.jupiter") == true) {
-                rule =
-                    "- This project uses JUnit 5, you should import `org.junit.jupiter.api.Test` and use `@Test` annotation."
+            if (it.groupId == "org.junit.jupiter") {
+                hasJunit5 = true
                 return@forEach
             }
 
-            if (it.groupId?.contains("org.junit") == true) {
-                rule = "- This project uses JUnit 4, you should import `org.junit.Test` and use `@Test` annotation."
+            if (it.groupId == "junit") {
+                hasJunit4 = true
                 return@forEach
             }
         }
 
+        if (hasJunit5) {
+            rule =
+                "- This project uses JUnit 5, you should import `org.junit.jupiter.api.Test` and use `@Test` annotation."
+        } else if (hasJunit4) {
+            rule = "- This project uses JUnit 4, you should import `org.junit.Test` and use `@Test` annotation."
+        }
+
+        projectJunitCache[project] = rule
         return rule
     }
 

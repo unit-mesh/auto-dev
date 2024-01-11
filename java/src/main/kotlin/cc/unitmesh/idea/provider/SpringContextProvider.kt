@@ -7,8 +7,15 @@ import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.idea.context.library.SpringLibrary
 import com.intellij.openapi.externalSystem.model.project.LibraryData
+import com.intellij.openapi.externalSystem.model.project.ModuleDependencyData
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
+import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ModuleRootManager
+import com.intellij.openapi.roots.OrderEnumerator
+import com.intellij.openapi.roots.OrderRootType
+import com.intellij.openapi.roots.libraries.Library
+import com.intellij.psi.util.CachedValuesManager
 import org.jetbrains.plugins.gradle.util.GradleConstants
 
 open class SpringContextProvider : ChatContextProvider {
@@ -26,7 +33,7 @@ open class SpringContextProvider : ChatContextProvider {
         return false
     }
 
-    override suspend  fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
+    override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         val techStacks = prepareLibrary(project)
 
         if (techStacks.coreFrameworks().isEmpty() && techStacks.testFrameworks().isEmpty()) {
@@ -132,7 +139,7 @@ fun prepareLibraryData(project: Project): List<LibraryData>? {
         project, GradleConstants.SYSTEM_ID, basePath
     )
 
-    val libraryDataList = projectData?.externalProjectStructure?.children?.filter {
+    val libraryDataList: List<LibraryData>? = projectData?.externalProjectStructure?.children?.filter {
         it.data is LibraryData
     }?.map {
         it.data as LibraryData
@@ -140,3 +147,11 @@ fun prepareLibraryData(project: Project): List<LibraryData>? {
 
     return libraryDataList
 }
+
+private fun prepareLibraryData(module: Module): List<LibraryData>? {
+    val moduleRootManager = ModuleRootManager.getInstance(module)
+    val libraryOrderEntries: OrderEnumerator = moduleRootManager.orderEntries().librariesOnly()
+
+    return listOf()
+}
+
