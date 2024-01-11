@@ -1,6 +1,7 @@
 package cc.unitmesh.kotlin.provider
 
 import cc.unitmesh.devti.provider.TestDataBuilder
+import cc.unitmesh.idea.service.isProjectContent
 import cc.unitmesh.kotlin.context.KotlinClassContextBuilder
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiElement
@@ -45,21 +46,23 @@ class KotlinTestDataBuilder : TestDataBuilder {
         val result = mutableMapOf<String, String>()
         val parameters = element.valueParameters
         for (parameter in parameters) {
-            result += handleFromType(parameter)
+            result += handleFromType(parameter, element)
         }
         return result
     }
 
-    private fun handleFromType(parameter: KtParameter): Map<@NlsSafe String, String> {
+    private fun handleFromType(parameter: KtParameter, element: PsiElement): Map<@NlsSafe String, String> {
         when (val type = parameter.typeReference?.typeElement) {
-            is KtClass -> processingClassType(type)
+            is KtClass -> processingClassType(type, element)
         }
 
         return emptyMap()
     }
 
 
-    private fun processingClassType(type: KtClass): Map<@NlsSafe String, String> {
+    private fun processingClassType(type: KtClass, element: PsiElement): Map<@NlsSafe String, String> {
+        if (!isProjectContent(type)) return emptyMap()
+
         val result = mutableMapOf<String, String>()
         val fqn = type.fqName?.asString() ?: return result
 
@@ -78,11 +81,7 @@ class KotlinTestDataBuilder : TestDataBuilder {
 
         val returnType = element.getReturnTypeReference() ?: return emptyMap()
 
-        val result = mutableMapOf<String, String>()
-
-        result += processing(returnType)
-
-        return result
+        return processing(returnType, element)
     }
 
     /**
@@ -96,19 +95,23 @@ class KotlinTestDataBuilder : TestDataBuilder {
         val methods = element.declarations.filterIsInstance<KtNamedFunction>()
         for (method in methods) {
             val returnType = method.getReturnTypeReference() ?: continue
-            result += processing(returnType)
+            result += processing(returnType, element)
         }
 
         return result
     }
 
-    private fun processing(returnType: KtTypeReference): Map<String, String> {
+    private fun processing(returnType: KtTypeReference, element: PsiElement): Map<String, String> {
         val result = mutableMapOf<String, String>()
         when (val typeElement = returnType.typeElement) {
             is KtUserType -> {
                 val referenceExpression = typeElement.referenceExpression?.resolveMainReference()
                 if (referenceExpression is KtClass) {
-                    result += processingClassType(referenceExpression)
+                    result += processingClassType(referenceExpression, element)
+                }
+
+                typeElement.typeArgumentsAsTypes.forEach {
+                    result += processing(it, element)
                 }
             }
         }
@@ -120,7 +123,7 @@ class KotlinTestDataBuilder : TestDataBuilder {
 internal fun KtStringTemplateExpression.literalContents(): String? {
     val escaper = createLiteralTextEscaper()
     val ssb = StringBuilder()
-    return when(escaper.decode(getContentRange(), ssb)) {
+    return when (escaper.decode(getContentRange(), ssb)) {
         true -> ssb.toString()
         false -> null
     }
