@@ -4,11 +4,41 @@ import cc.unitmesh.devti.provider.TestDataBuilder
 import cc.unitmesh.kotlin.context.KotlinClassContextBuilder
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiNameIdentifierOwner
+import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.idea.quickfix.createFromUsage.callableBuilder.getReturnTypeReference
 import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.psi.psiUtil.getContentRange
 
 class KotlinTestDataBuilder : TestDataBuilder {
+    override fun baseRoute(element: PsiElement): String {
+        if (element !is KtNamedFunction) return ""
+
+        val clazz = PsiTreeUtil.getParentOfType(element, PsiNameIdentifierOwner::class.java)
+        if (clazz !is KtClass) return ""
+
+        clazz.annotationEntries.forEach {
+            if (it.shortName?.asString() == "RequestMapping") {
+                return when (val value = it.valueArguments.firstOrNull()?.getArgumentExpression()) {
+                    is KtStringTemplateExpression -> {
+                        value.literalContents() ?: value.text
+                    }
+
+                    is KtSimpleNameExpression -> {
+                        value.getReferencedName()
+                    }
+
+                    else -> {
+                        "null"
+                    }
+                }
+            }
+        }
+
+        return ""
+    }
+
     override fun inboundData(element: PsiElement): Map<String, String> {
         if (element !is KtNamedFunction) return emptyMap()
 
@@ -84,6 +114,15 @@ class KotlinTestDataBuilder : TestDataBuilder {
         }
 
         return result
+    }
+}
+
+internal fun KtStringTemplateExpression.literalContents(): String? {
+    val escaper = createLiteralTextEscaper()
+    val ssb = StringBuilder()
+    return when(escaper.decode(getContentRange(), ssb)) {
+        true -> ssb.toString()
+        false -> null
     }
 }
 
