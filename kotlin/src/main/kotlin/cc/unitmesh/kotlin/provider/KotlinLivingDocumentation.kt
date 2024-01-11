@@ -57,7 +57,8 @@ class KotlinLivingDocumentation : LivingDocumentation {
     }
 
     override val forbiddenRules: List<String> = listOf(
-        "do not return any code, just documentation.",
+        "When given a class, do not return code, just documentation. For example, do not return `class MyClass { ... }`," +
+                " just return /** ... */ comment",
         "do not use @author and @version tags."
     )
 
@@ -149,7 +150,11 @@ class KotlinLivingDocumentation : LivingDocumentation {
         }
 
         val nearestDocumentationTarget = findNearestDocumentationTarget(commonParent!!)
-        if (nearestDocumentationTarget !is KtClassOrObject || containsElement(selectionModel, nearestDocumentationTarget)) {
+        if (nearestDocumentationTarget !is KtClassOrObject || containsElement(
+                selectionModel,
+                nearestDocumentationTarget
+            )
+        ) {
             return listOf(nearestDocumentationTarget!!)
         }
 

@@ -22,8 +22,7 @@ open class JavaTestContextProvider : ChatContextProvider {
     open fun langFileSuffix() = "java"
 
     var baseTestPrompt = """
-            |- You MUST use should_xx_xx style for test method name.
-            |- You MUST use given-when-then style.
+            |- You MUST use should_xx_xx style for test method name, You MUST use given-when-then style.
             |- Test file should be complete and compilable, without need for further actions.
             |- Ensure that each test focuses on a single use case to maintain clarity and readability.
             |- Instead of using `@BeforeEach` methods for setup, include all necessary code initialization within each individual test method, do not write parameterized tests.
