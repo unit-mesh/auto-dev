@@ -3,7 +3,6 @@ package cc.unitmesh.kotlin.provider
 import cc.unitmesh.devti.provider.TestDataBuilder
 import cc.unitmesh.idea.service.isProjectContent
 import cc.unitmesh.kotlin.context.KotlinClassContextBuilder
-import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.util.PsiTreeUtil
@@ -51,16 +50,16 @@ class KotlinTestDataBuilder : TestDataBuilder {
         return result
     }
 
-    private fun handleFromType(parameter: KtParameter, element: PsiElement): Map<@NlsSafe String, String> {
+    private fun handleFromType(parameter: KtParameter, element: PsiElement): Map<String, String> {
         when (val type = parameter.typeReference?.typeElement) {
-            is KtClass -> processingClassType(type, element)
+            is KtClass -> processingClassType(type)
         }
 
         return emptyMap()
     }
 
 
-    private fun processingClassType(type: KtClass, element: PsiElement): Map<@NlsSafe String, String> {
+    private fun processingClassType(type: KtClass): Map<String, String> {
         if (!isProjectContent(type)) return emptyMap()
 
         val result = mutableMapOf<String, String>()
@@ -107,7 +106,7 @@ class KotlinTestDataBuilder : TestDataBuilder {
             is KtUserType -> {
                 val referenceExpression = typeElement.referenceExpression?.resolveMainReference()
                 if (referenceExpression is KtClass) {
-                    result += processingClassType(referenceExpression, element)
+                    result += processingClassType(referenceExpression)
                 }
 
                 typeElement.typeArgumentsAsTypes.forEach {

@@ -1,4 +1,4 @@
-package cc.unitmesh.kotlin.provider;
+package cc.unitmesh.kotlin.provider
 
 import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.psi.util.PsiTreeUtil
