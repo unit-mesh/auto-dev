@@ -72,10 +72,21 @@ open class JavaTestContextProvider : ChatContextProvider {
         fileName?.let { MvcUtil.isController(it, langFileSuffix()) } ?: false
 
 
+    val projectJunitCache = mutableMapOf<Project, String>()
+
+    /**
+     * Returns a string representing the JUnit rule for the given project.
+     *
+     * @param project The project for which to retrieve the JUnit rule.
+     * @return A string representing the JUnit rule for the project.
+     *
+     * This method checks if the project already has a JUnit rule in the projectJunitCache.
+     * If it does, it returns the cached rule. Otherwise, it prepares the library data for the project
+     * and checks if the project uses JUnit 5 or JUnit 4. Based on the result, it sets the rule string
+     * accordingly. Finally, it adds the rule to the projectJunitCache and returns the rule string.
+     */
     // todo: lookup module deps
     // val module = ModuleUtilCore.findModuleForPsiElement(sourceFile!!)
-
-    val projectJunitCache = mutableMapOf<Project, String>()
     protected fun junitRule(project: Project): String {
         if (projectJunitCache.containsKey(project)) {
             return projectJunitCache[project]!!
