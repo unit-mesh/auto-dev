@@ -37,7 +37,9 @@ import java.nio.file.PathMatcher
 @Service(Service.Level.PROJECT)
 class VcsPrompting(private val project: Project) {
     private val defaultIgnoreFilePatterns: List<PathMatcher> = listOf(
-        "**/*.md", "**/*.json", "**/*.txt", "**/*.xml", "**/*.yml", "**/*.yaml",
+        "**/*.md", "**/*.json", "**/*.jsonl", "**/*.txt", "**/*.xml", "**/*.yml", "**/*.yaml", "**/*.html",
+        "**/*.log", "**/*.tmp", "**/*.temp", "**/*.bak", "**/*.swp",
+         "**/*.svg",
     ).map {
         FileSystems.getDefault().getPathMatcher("glob:$it")
     }
