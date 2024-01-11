@@ -135,6 +135,12 @@ open class JavaContextPrompter : ContextPrompter() {
 
     open fun prepareDataStructure(creationContext: ChatCreationContext) {
         val element = creationContext.element ?: return logger.error("element is null")
+        testDataBuilder.baseRoute(element).let {
+            if (it.isNotEmpty()) {
+                additionContext += "//base URL route: \n$it\n"
+            }
+        }
+
         testDataBuilder.inboundData(element).forEach { (_, value) ->
             additionContext += "//request body info: \n$value\n"
         }
