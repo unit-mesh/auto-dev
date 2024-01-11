@@ -25,18 +25,18 @@ class KotlinTestContextProvider : JavaTestContextProvider() {
 
         val isSpringRelated = checkIsSpringRelated(creationContext)
 
-        baseTestPrompt += junitRule(project)
+        val prompt = baseTestPrompt + junitRule(project)
 
         val finalPrompt = when {
             isController(fileName) && isSpringRelated -> {
-                val testControllerPrompt = baseTestPrompt + "\n" + """
+                val testControllerPrompt = prompt + "\n" + """
                             |- Use appropriate Spring test annotations such as `@MockBean`, `@Autowired`, `@WebMvcTest`, `@DataJpaTest`, `@AutoConfigureTestDatabase`, `@AutoConfigureMockMvc`, `@SpringBootTest` etc.
                             |""".trimMargin()
                 ChatContextItem(JavaTestContextProvider::class, testControllerPrompt)
             }
 
             isService(fileName) && isSpringRelated -> {
-                val testServicePrompt = baseTestPrompt + "\n" + """
+                val testServicePrompt = prompt + "\n" + """
                             |- Follow the common Spring code style by using the AssertJ library.
                             |- Assume that the database is empty before each test and create valid entities with consideration for data constraints (jakarta.validation.constraints).
                             |""".trimMargin()
@@ -45,7 +45,7 @@ class KotlinTestContextProvider : JavaTestContextProvider() {
             }
 
             else -> {
-                ChatContextItem(JavaTestContextProvider::class, baseTestPrompt)
+                ChatContextItem(JavaTestContextProvider::class, prompt)
             }
         }
 
