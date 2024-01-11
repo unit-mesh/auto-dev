@@ -142,10 +142,10 @@ open class JavaContextPrompter : ContextPrompter() {
         }
 
         testDataBuilder.inboundData(element).forEach { (_, value) ->
-            additionContext += "//request body info: \n$value\n"
+            additionContext += "// compare this request body relate info: \n$value\n"
         }
         testDataBuilder.outboundData(element).forEach { (_, value) ->
-            additionContext += "//response info: \n$value\n"
+            additionContext += "// compare this response relate classes : \n$value\n"
         }
     }
 
