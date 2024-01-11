@@ -82,6 +82,15 @@ class DiffSimplifier(val project: Project) {
                     return@forEach
                 }
 
+                // skip for empty lines
+                if (line.startsWith("--- /dev/null")) {
+                    return@forEach
+                }
+
+                if (line.startsWith("@@") && line.endsWith("@@")) {
+                    return@forEach
+                }
+
                 if (line.startsWith("---") || line.startsWith("+++")) {
                     // remove revision number with regex
                     val result = revisionRegex.replace(line, "")
