@@ -214,6 +214,20 @@ class DiffSimplifier(val project: Project) {
                 }
 
                 if (line.startsWith("---") || line.startsWith("+++")) {
+                    // next line
+                    val nextLine = lines[index + 1]
+                    if (nextLine.startsWith("+++")) {
+                        // remove end date
+                        val startLine = line.substring("--- a/".length).trim()
+                        val withoutEnd = nextLine.substring("+++ b/".length, nextLine.indexOf("(date ")).trim()
+
+                        if (startLine == withoutEnd) {
+                            index += 2
+                            destination.add("modify file $startLine")
+                            continue
+                        }
+                    }
+
                     // remove revision number with regex
                     val result = revisionRegex.replace(line, "").trim()
                     if (result.isNotEmpty()) {

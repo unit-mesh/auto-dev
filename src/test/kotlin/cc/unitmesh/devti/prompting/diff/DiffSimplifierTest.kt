@@ -81,8 +81,7 @@ class DiffSimplifierTest {
         val postProcess = DiffSimplifier.postProcess(code)
         assertEquals(
             postProcess,
-            """--- a/server/src/main/kotlin/com/thoughtworks/archguard/code/module/infrastructure/dubbo/DubboConfigRepositoryImpl.kt
-+++ b/server/src/main/kotlin/com/thoughtworks/archguard/code/module/infrastructure/dubbo/DubboConfigRepositoryImpl.kt	(date 1704766567000)
+            """modify file server/src/main/kotlin/com/thoughtworks/archguard/code/module/infrastructure/dubbo/DubboConfigRepositoryImpl.kt
 change import from com.thoughtworks.archguard.code.module.domain.dubbo.ServiceConfig to org.archguard.protocol.dubbo.ServiceConfig"""
         )
     }
@@ -109,6 +108,19 @@ change import from com.thoughtworks.archguard.code.module.domain.dubbo.ServiceCo
             postProcess,
             """rename file server/src/main/kotlin/com/thoughtworks/archguard/code/module/domain/model/LeafManger.kt server/metric-service/src/main/kotlin/org/archguard/arch/LeafManger.kt
 change import from com.thoughtworks.archguard.code.module.domain.dubbo.ServiceConfig to org.archguard.protocol.dubbo.ServiceConfig"""
+        )
+    }
+
+    @Test
+    fun testHandleForFileChange() {
+        val code = """--- a/server/src/test/kotlin/com/thoughtworks/archguard/code/clazz/domain/CodeTreeTest.kt
++++ b/server/src/test/kotlin/com/thoughtworks/archguard/code/clazz/domain/CodeTreeTest.kt	(date 1704769088000)
+@@ -1,4 +1,4 @@"""
+
+        val postProcess = DiffSimplifier.postProcess(code)
+        assertEquals(
+            postProcess,
+            """modify file server/src/test/kotlin/com/thoughtworks/archguard/code/clazz/domain/CodeTreeTest.kt"""
         )
     }
 }
