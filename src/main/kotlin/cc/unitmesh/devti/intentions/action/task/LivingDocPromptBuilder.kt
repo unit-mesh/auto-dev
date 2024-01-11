@@ -63,12 +63,13 @@ open class LivingDocPromptBuilder(
 
     private fun classInstruction(context: ClassContext): String? {
         if (context.name == null) return null
-        return "Write documentation for given ${context.root.language} language class " + context.name + "."
+        return "Write documentation for given ${context.root.language.displayName} language class " + context.name + "."
     }
 
     private fun methodInstruction(context: MethodContext): String? {
         if (context.name == null) return null
-        var instruction = "Write documentation for given ${context.root.language} language method " + context.name + "."
+
+        var instruction = "Write documentation for given ${context.root.language.displayName} language method " + context.name + "."
         if (context.paramNames.isNotEmpty()) {
             instruction = """
                 $instruction
@@ -84,7 +85,7 @@ open class LivingDocPromptBuilder(
                 """.trimIndent()
         }
 
-        return instruction
+        return instruction.trimStart()
     }
 
     open fun buildPrompt(project: Project?, target: PsiNameIdentifierOwner, fallbackText: String): String {
@@ -101,7 +102,7 @@ open class LivingDocPromptBuilder(
                 }
 
                 contextInstruction(llmQueryContext)
-            } ?: "Write documentation for given ${target.language} language code."
+            } ?: "Write documentation for given ${target.language.displayName} language code."
 
             instruction.append(basicInstruction)
 
