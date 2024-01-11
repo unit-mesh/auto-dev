@@ -36,12 +36,6 @@ open class CodeReviewAction : ChatBaseAction() {
 
     private val commitParser: CommitParser = CommitParser()
 
-    private val defaultIgnoreFilePatterns: List<PathMatcher> = listOf(
-        "**/*.md", "**/*.json", "**/*.txt", "**/*.xml", "**/*.yml", "**/*.yaml",
-    ).map {
-        FileSystems.getDefault().getPathMatcher("glob:$it")
-    }
-
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
 
@@ -74,7 +68,7 @@ open class CodeReviewAction : ChatBaseAction() {
     ) {
         val vcsPrompting = project.service<VcsPrompting>()
         val fullChangeContent =
-            vcsPrompting.buildDiffPrompt(details, selectList.toList(), project, defaultIgnoreFilePatterns)
+            vcsPrompting.buildDiffPrompt(details, selectList.toList(), project)
 
         if (fullChangeContent == null) {
             AutoDevNotifications.notify(project, "No code to review.")

@@ -31,10 +31,16 @@ import com.intellij.openapi.vcs.changes.*
 import com.intellij.vcs.log.VcsFullCommitDetails
 import java.io.IOException
 import java.io.StringWriter
+import java.nio.file.FileSystems
 import java.nio.file.PathMatcher
 
 @Service(Service.Level.PROJECT)
 class VcsPrompting(private val project: Project) {
+    private val defaultIgnoreFilePatterns: List<PathMatcher> = listOf(
+        "**/*.md", "**/*.json", "**/*.txt", "**/*.xml", "**/*.yml", "**/*.yaml",
+    ).map {
+        FileSystems.getDefault().getPathMatcher("glob:$it")
+    }
 
     fun prepareContext(): String {
         val changeListManager = ChangeListManagerImpl.getInstance(project)
@@ -42,7 +48,7 @@ class VcsPrompting(private val project: Project) {
             it.changes
         }
 
-        val context = project.service<DiffSimplifier>().simplify(changes, listOf())
+        val context = project.service<DiffSimplifier>().simplify(changes, defaultIgnoreFilePatterns)
         return context
     }
 
@@ -61,7 +67,7 @@ class VcsPrompting(private val project: Project) {
         details: List<VcsFullCommitDetails>,
         selectList: List<Change>,
         project: Project,
-        ignoreFilePatterns: List<PathMatcher> = listOf(),
+        ignoreFilePatterns: List<PathMatcher> = defaultIgnoreFilePatterns,
     ): String? {
 
         val writer = StringWriter()
