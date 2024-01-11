@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.prompting.diff;
 
 import junit.framework.TestCase.assertEquals
+import org.junit.Ignore
 import org.junit.Test
 
 class DiffSimplifierTest {
@@ -59,5 +60,55 @@ class DiffSimplifierTest {
             """delete file server/src/main/kotlin/com/thoughtworks/archguard/metrics/domain/dfms/ModuleDfms.kt""".trimMargin()
         )
     }
-}
 
+    @Test
+    fun testModifyImportChange() {
+        val code = """
+            Index: server/src/main/kotlin/com/thoughtworks/archguard/code/module/infrastructure/dubbo/DubboConfigRepositoryImpl.kt
+            --- a/server/src/main/kotlin/com/thoughtworks/archguard/code/module/infrastructure/dubbo/DubboConfigRepositoryImpl.kt	
+            +++ b/server/src/main/kotlin/com/thoughtworks/archguard/code/module/infrastructure/dubbo/DubboConfigRepositoryImpl.kt	(date 1704766567000)
+            @@ -2,7 +2,7 @@
+             
+             import com.thoughtworks.archguard.code.module.domain.dubbo.DubboConfigRepository
+             import org.archguard.protocol.dubbo.ReferenceConfig
+            -import com.thoughtworks.archguard.code.module.domain.dubbo.ServiceConfig
+            +import org.archguard.protocol.dubbo.ServiceConfig
+             import org.archguard.protocol.dubbo.SubModuleDubbo
+             import org.assertj.core.api.Assertions.assertThat
+             import org.junit.jupiter.api.Test
+        """.trimIndent()
+
+        val postProcess = DiffSimplifier.postProcess(code)
+        assertEquals(
+            postProcess,
+            """--- a/server/src/main/kotlin/com/thoughtworks/archguard/code/module/infrastructure/dubbo/DubboConfigRepositoryImpl.kt
++++ b/server/src/main/kotlin/com/thoughtworks/archguard/code/module/infrastructure/dubbo/DubboConfigRepositoryImpl.kt	(date 1704766567000)
+change import from com.thoughtworks.archguard.code.module.domain.dubbo.ServiceConfig to org.archguard.protocol.dubbo.ServiceConfig"""
+        )
+    }
+
+    @Test
+    fun handleForRenameAndChangeImport() {
+        val code = """
+            Index: server/src/main/kotlin/com/thoughtworks/archguard/code/module/domain/model/LeafManger.kt
+            rename from server/src/main/kotlin/com/thoughtworks/archguard/code/module/domain/model/LeafManger.kt
+            rename to server/metric-service/src/main/kotlin/org/archguard/arch/LeafManger.kt
+            @@ -2,7 +2,7 @@
+             
+             import com.thoughtworks.archguard.code.module.domain.dubbo.DubboConfigRepository
+             import org.archguard.protocol.dubbo.ReferenceConfig
+            -import com.thoughtworks.archguard.code.module.domain.dubbo.ServiceConfig
+            +import org.archguard.protocol.dubbo.ServiceConfig
+             import org.archguard.protocol.dubbo.SubModuleDubbo
+             import org.assertj.core.api.Assertions.assertThat
+             import org.junit.jupiter.api.Test
+        """.trimIndent()
+
+        val postProcess = DiffSimplifier.postProcess(code)
+        assertEquals(
+            postProcess,
+            """rename file server/src/main/kotlin/com/thoughtworks/archguard/code/module/domain/model/LeafManger.kt server/metric-service/src/main/kotlin/org/archguard/arch/LeafManger.kt
+change import from com.thoughtworks.archguard.code.module.domain.dubbo.ServiceConfig to org.archguard.protocol.dubbo.ServiceConfig"""
+        )
+    }
+}

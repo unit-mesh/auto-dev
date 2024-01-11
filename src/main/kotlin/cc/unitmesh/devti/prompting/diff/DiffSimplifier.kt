@@ -136,6 +136,57 @@ class DiffSimplifier(val project: Project) {
                     }
                 }
 
+                // handle for java and kotlin import change
+                if (line.startsWith(" import")) {
+//                    val nextLine = lines[index + 1]
+                    val nextLine = lines.getOrNull(index + 1)
+                    if (nextLine?.startsWith(" import") == true) {
+                        var oldImportLine = ""
+                        var newImportLine = ""
+                        // search all import lines until the next line starts with "Index:"
+                        val importLines = ArrayList<String>()
+                        importLines.add(line)
+                        importLines.add(nextLine)
+
+                        var tryToFindIndex = index + 2
+                        while (true) {
+                            if (tryToFindIndex >= length) {
+                                break
+                            }
+
+                            val tryLine = lines[tryToFindIndex]
+                            if (tryLine.startsWith("Index:")) {
+                                break
+                            }
+
+                            if (tryLine.startsWith(" import")) {
+                                importLines.add(tryLine)
+                            }
+
+
+                            if (tryLine.startsWith("-import ")) {
+                                oldImportLine = tryLine.substring("-import ".length)
+                                importLines.add(tryLine)
+                            }
+
+                            if (tryLine.startsWith("+import ")) {
+                                newImportLine = tryLine.substring("+import ".length)
+                                importLines.add(tryLine)
+                            }
+
+                            tryToFindIndex++
+                        }
+
+                        if (oldImportLine.isNotEmpty() && newImportLine.isNotEmpty()) {
+                            if (importLines.size == tryToFindIndex - index) {
+                                index = tryToFindIndex
+                                destination.add("change import from $oldImportLine to $newImportLine")
+                                continue
+                            }
+                        }
+                    }
+                }
+
                 // handle for delete
                 if (line.startsWith("deleted file mode")) {
                     val nextLine = lines[index + 1]
@@ -164,10 +215,14 @@ class DiffSimplifier(val project: Project) {
 
                 if (line.startsWith("---") || line.startsWith("+++")) {
                     // remove revision number with regex
-                    val result = revisionRegex.replace(line, "")
-                    destination.add(result)
+                    val result = revisionRegex.replace(line, "").trim()
+                    if (result.isNotEmpty()) {
+                        destination.add(result)
+                    }
                 } else {
-                    destination.add(line)
+                    if (line.trim().isNotEmpty()) {
+                        destination.add(line)
+                    }
                 }
 
                 index++
