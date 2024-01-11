@@ -72,23 +72,52 @@ class DiffSimplifier(val project: Project) {
         fun postProcess(@NotNull diffString: String): String {
             val lines = diffString.lines()
             val destination = ArrayList<String>()
-            lines.forEach { line ->
-                if (line.startsWith("diff --git ") || line.startsWith("index ") || line.startsWith("Index ")) return@forEach
+            var index = 0
+            while (true) {
+                if (index >= lines.size) {
+                    break
+                }
 
-                if (line == "===================================================================") return@forEach
+                val line = lines[index]
+
+                if (line.startsWith("diff --git ") || line.startsWith("index ") || line.startsWith("Index ")) {
+                    index++
+                    continue
+                }
+
+                if (line == "===================================================================") {
+                    index++
+                    continue
+                }
 
                 // if a patch includes `\ No newline at the end of file` remove it
                 if (line.contains(lineTip)) {
-                    return@forEach
+                    index++
+                    continue
                 }
 
-                // skip for empty lines
                 if (line.startsWith("--- /dev/null")) {
-                    return@forEach
+                    index++
+                    continue
                 }
 
                 if (line.startsWith("@@") && line.endsWith("@@")) {
-                    return@forEach
+                    index++
+                    continue
+                }
+
+                // handle for new file
+                if (line.startsWith("new file mode")) {
+                    val nextLine = lines[index + 1]
+                    if (nextLine.startsWith("--- /dev/null")) {
+                        val nextNextLine = lines[index + 2]
+                        val withoutHead = nextNextLine.substring("+++ b/".length)
+                        // footer: 	(date 1704768267000)
+                        val withoutFooter = withoutHead.substring(0, withoutHead.indexOf("\t"))
+                        destination.add("new file $withoutFooter")
+                        index += 3
+                        continue
+                    }
                 }
 
                 if (line.startsWith("---") || line.startsWith("+++")) {
@@ -98,6 +127,8 @@ class DiffSimplifier(val project: Project) {
                 } else {
                     destination.add(line)
                 }
+
+                index++
             }
 
             return destination.joinToString("\n")
