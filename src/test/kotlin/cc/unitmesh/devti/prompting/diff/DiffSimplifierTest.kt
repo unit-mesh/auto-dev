@@ -39,4 +39,25 @@ class DiffSimplifierTest {
             """rename file server/src/main/kotlin/com/thoughtworks/archguard/code/module/domain/model/LeafManger.kt server/metric-service/src/main/kotlin/org/archguard/arch/LeafManger.kt""".trimMargin()
         )
     }
+
+    @Test
+    fun testHandleForDelete() {
+        val diff = """
+            Index: server/src/main/kotlin/com/thoughtworks/archguard/metrics/domain/dfms/ModuleDfms.kt
+            deleted file mode 100644
+            --- a/server/src/main/kotlin/com/thoughtworks/archguard/metrics/domain/dfms/ModuleDfms.kt	
+            +++ /dev/null	
+            @@ -1,13 +0,0 @@
+            -package com.thoughtworks.archguard.metrics.domain.dfms
+            -
+            Index: server/src/main/kotlin/com/thoughtworks/archguard/metrics/domain/dfms/ClassDfms.kt
+            """.trimIndent()
+
+        val postProcess = DiffSimplifier.postProcess(diff)
+        assertEquals(
+            postProcess,
+            """delete file server/src/main/kotlin/com/thoughtworks/archguard/metrics/domain/dfms/ModuleDfms.kt""".trimMargin()
+        )
+    }
 }
+

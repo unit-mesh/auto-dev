@@ -71,6 +71,7 @@ class DiffSimplifier(val project: Project) {
         @NotNull
         fun postProcess(@NotNull diffString: String): String {
             val lines = diffString.lines()
+            val length = lines.size
             val destination = ArrayList<String>()
             var index = 0
             while (true) {
@@ -101,6 +102,8 @@ class DiffSimplifier(val project: Project) {
                     continue
                 }
 
+
+                // todo: spike for handle for new file
                 if (line.startsWith("@@") && line.endsWith("@@")) {
                     index++
                     continue
@@ -129,6 +132,32 @@ class DiffSimplifier(val project: Project) {
                         destination.add("rename file $from $to")
                         // The next value will be "---" and the value after that will be "+++".
                         index += 4
+                        continue
+                    }
+                }
+
+                // handle for delete
+                if (line.startsWith("deleted file mode")) {
+                    val nextLine = lines[index + 1]
+                    if (nextLine.startsWith("--- a/")) {
+                        val withoutHead = nextLine.substring("--- a/".length)
+                        // footer: 	(date 1704768267000)
+                        val withoutFooter = withoutHead.substring(0, withoutHead.indexOf("\t"))
+                        destination.add("delete file $withoutFooter")
+                        // search for the next line starts with "Index:"
+                        while (true) {
+                            if (index + 2 >= length) {
+                                break
+                            }
+
+                            val nextNextLine = lines[index + 2]
+                            if (nextNextLine.startsWith("Index:")) {
+                                index += 3
+                                break
+                            }
+                            index++
+                        }
+
                         continue
                     }
                 }
