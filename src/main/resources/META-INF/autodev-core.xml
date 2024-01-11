@@ -252,6 +252,9 @@
             <add-to-group group-id="Vcs.Log.ChangesBrowser.Popup" relative-to-action="Vcs.RepositoryChangesBrowserMenu"
                           anchor="after"/>
             <add-to-group group-id="Vcs.Log.ContextMenu" relative-to-action="Vcs.ShowDiffWithLocal" anchor="after"/>
+
+            <!-- Todo: spike when in Group -->
+            <add-to-group group-id="ChangesViewToolbar" relative-to-action="ChangesView.Revert" anchor="after"/>
         </action>
 
         <action id="cc.unitmesh.devti.actions.chat.CodeCompleteChatAction"
