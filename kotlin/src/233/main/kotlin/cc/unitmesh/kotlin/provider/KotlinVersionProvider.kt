@@ -7,7 +7,6 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.idea.base.projectStructure.languageVersionSettings
-import kotlin.coroutines.Continuation
 
 class KotlinVersionProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {

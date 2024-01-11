@@ -137,7 +137,7 @@ open class JavaContextPrompter : ContextPrompter() {
         val element = creationContext.element ?: return logger.error("element is null")
         testDataBuilder.baseRoute(element).let {
             if (it.isNotEmpty()) {
-                additionContext += "//base URL route: \n$it\n"
+                additionContext += "// base URL route: \n$it\n"
             }
         }
 
