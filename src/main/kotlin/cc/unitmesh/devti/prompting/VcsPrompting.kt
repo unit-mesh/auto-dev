@@ -39,7 +39,7 @@ class VcsPrompting(private val project: Project) {
     private val defaultIgnoreFilePatterns: List<PathMatcher> = listOf(
         "**/*.md", "**/*.json", "**/*.jsonl", "**/*.txt", "**/*.xml", "**/*.yml", "**/*.yaml", "**/*.html",
         "**/*.log", "**/*.tmp", "**/*.temp", "**/*.bak", "**/*.swp",
-         "**/*.svg",
+        "**/*.svg",
     ).map {
         FileSystems.getDefault().getPathMatcher("glob:$it")
     }
@@ -71,6 +71,13 @@ class VcsPrompting(private val project: Project) {
         project: Project,
         ignoreFilePatterns: List<PathMatcher> = defaultIgnoreFilePatterns,
     ): String? {
+        val changeText = project.service<DiffSimplifier>().simplify(selectList, ignoreFilePatterns)
+
+        if (changeText.isEmpty()) {
+            return null
+        }
+
+        val processedText = DiffSimplifier.postProcess(changeText)
 
         val writer = StringWriter()
         if (details.isNotEmpty()) {
@@ -78,29 +85,22 @@ class VcsPrompting(private val project: Project) {
             details.forEach { writer.write(it.fullMessage + "\n\n") }
         }
 
-        writer.write("Changes:\n\n")
-        val changeText = project.service<DiffSimplifier>().simplify(selectList, ignoreFilePatterns)
-
-        if (changeText.isEmpty()) {
-            return null
-        }
-
-
-
-        writer.write("```patch\n\n")
-        writer.write(DiffSimplifier.postProcess(changeText))
-        writer.write("\n\n```\n\n")
+        writer.write(
+            """
+            Changes:
+            
+            ```patch
+            $processedText
+            ```
+            """.trimIndent()
+        )
 
         return writer.toString()
     }
 
 
     fun hasChanges(): List<Change> {
-        val changeListManager = ChangeListManagerImpl.getInstance(project)
-        val changes = changeListManager.changeLists.flatMap {
-            it.changes
-        }
-
-        return changes
+        val changeListManager = ChangeListManager.getInstance(project)
+        return changeListManager.changeLists.flatMap { it.changes }
     }
 }
