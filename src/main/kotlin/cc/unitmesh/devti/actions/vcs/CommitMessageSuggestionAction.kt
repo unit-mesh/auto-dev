@@ -23,12 +23,15 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
     override fun getActionType(): ChatActionType = ChatActionType.GEN_COMMIT_MESSAGE
 
     override fun update(e: AnActionEvent) {
-        val prompting = e.project?.service<VcsPrompting>()
-
         val data = e.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL)
-        val changes: List<Change> = prompting?.hasChanges() ?: listOf()
+        if (data == null) {
+            e.presentation.isEnabled = false
+            return
+        }
 
-        e.presentation.isEnabled = data != null && changes.isNotEmpty()
+        val prompting = e.project?.service<VcsPrompting>()
+        val changes: List<Change> = prompting?.hasChanges() ?: listOf()
+        e.presentation.isEnabled = changes.isNotEmpty()
     }
 
     override fun executeAction(event: AnActionEvent) {
