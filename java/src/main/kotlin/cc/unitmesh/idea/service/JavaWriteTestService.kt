@@ -42,7 +42,7 @@ class JavaWriteTestService : WriteTestService() {
             parentDir?.path
         }
 
-        val relatedModels = lookupRelevantClass(project, element)
+        val relatedModels = lookupRelevantClass(project, element).distinctBy { it.name }
 
         // Check if the source file is in the src/main/java directory
         if (!parentDirPath?.contains("/src/main/java/")!!) {

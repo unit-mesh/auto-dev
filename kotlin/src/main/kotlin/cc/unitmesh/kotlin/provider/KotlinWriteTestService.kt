@@ -52,7 +52,7 @@ class KotlinWriteTestService : WriteTestService() {
             parentDir?.path
         }
 
-        val relatedModels = lookupRelevantClass(project, element)
+        val relatedModels = lookupRelevantClass(project, element).distinctBy { it.name }
 
         if (!parentDirPath?.contains("/src/main/kotlin/")!!) {
             log.error("Source file is not in the src/main/java directory: $parentDirPath")
