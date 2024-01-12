@@ -1,0 +1,304 @@
+<idea-plugin allow-bundled-update="true">
+    <resource-bundle>messages.AutoDevBundle</resource-bundle>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>Git4Idea</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="AutoDev.notification.group" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
+                           key="name"/>
+
+        <applicationConfigurable parentId="tools" instance="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
+                                 id="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
+                                 displayName="AutoDev"/>
+
+        <projectService serviceImplementation="cc.unitmesh.devti.settings.configurable.CoUnitProjectSettingsService"/>
+        <projectConfigurable provider="cc.unitmesh.devti.settings.configurable.CoUnitToolConfigurableProvider"
+                             parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
+                             id="cc.unitmesh.counit"
+                             bundle="messages.AutoDevBundle" key="counit.name"/>
+
+        <projectService serviceImplementation="cc.unitmesh.devti.settings.custom.TeamPromptsProjectSettingsService"/>
+        <projectConfigurable provider="cc.unitmesh.devti.settings.custom.TeamPromptsConfigurableProvider"
+                             parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
+                             id="cc.unitmesh.promptLibrary"
+                             bundle="messages.AutoDevBundle" key="settings.external.team.prompts.name"/>
+
+
+        <projectService serviceImplementation="cc.unitmesh.devti.settings.coder.AutoDevCoderSettingService"/>
+        <projectConfigurable provider="cc.unitmesh.devti.settings.coder.AutoDevCoderConfigurableProvider"
+                             parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
+                             id="cc.unitmesh.autodevCoder"
+                             bundle="messages.AutoDevBundle" key="settings.autodev.coder"/>
+
+        <applicationService serviceImplementation="cc.unitmesh.devti.settings.AutoDevSettingsState"/>
+
+        <runConfigurationProducer
+                implementation="cc.unitmesh.devti.runconfig.command.AutoDevFeatureConfigurationProducer"/>
+        <runConfigurationProducer
+                implementation="cc.unitmesh.devti.runconfig.command.CompositeAutoBaseRunConfigurationProducer"/>
+
+        <configurationType implementation="cc.unitmesh.devti.runconfig.AutoDevConfigurationType"/>
+
+        <!-- Run Configurations -->
+        <programRunner implementation="cc.unitmesh.devti.runconfig.AutoDevCommandRunner"/>
+
+        <toolWindow id="AutoDev"
+                    doNotActivateOnStart="true"
+                    anchor="right"
+                    secondary="true"
+                    canCloseContents="true"
+                    icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+                    factoryClass="cc.unitmesh.devti.gui.AutoDevToolWindowFactory"/>
+
+        <notificationGroup id="AI notification group" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
+                           key="name"/>
+
+        <intentionAction>
+            <className>cc.unitmesh.devti.intentions.AutoDevIntentionHelper</className>
+            <categoryKey>intention.category.llm</categoryKey>
+        </intentionAction>
+
+        <highlightErrorFilter implementation="cc.unitmesh.devti.gui.snippet.error.CodeBlockHighlightErrorFilter"/>
+        <daemon.highlightInfoFilter implementation="cc.unitmesh.devti.gui.snippet.error.CodeBlockHighlightingFilter"/>
+        <defaultHighlightingSettingProvider
+                implementation="cc.unitmesh.devti.gui.snippet.error.CodeBlockHighlightingSettingsProvider"/>
+        <daemon.intentionActionFilter
+                implementation="cc.unitmesh.devti.gui.snippet.error.CodeBlockIntentionActionFilter"/>
+
+    </extensions>
+
+    <extensionPoints>
+        <extensionPoint qualifiedName="cc.unitmesh.autoDevIntention"
+                        beanClass="com.intellij.codeInsight.intention.IntentionActionBean"
+                        dynamic="true">
+            <with tag="className" implements="com.intellij.codeInsight.intention.IntentionAction"/>
+        </extensionPoint>
+
+        <extensionPoint qualifiedName="cc.unitmesh.fileContextBuilder"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass"
+                  implements="cc.unitmesh.devti.context.builder.FileContextBuilder"/>
+        </extensionPoint>
+
+        <extensionPoint qualifiedName="cc.unitmesh.classContextBuilder"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass"
+                  implements="cc.unitmesh.devti.context.builder.ClassContextBuilder"/>
+        </extensionPoint>
+
+        <extensionPoint qualifiedName="cc.unitmesh.methodContextBuilder"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass"
+                  implements="cc.unitmesh.devti.context.builder.MethodContextBuilder"/>
+        </extensionPoint>
+
+        <extensionPoint qualifiedName="cc.unitmesh.codeModifier"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass"
+                  implements="cc.unitmesh.devti.context.builder.CodeModifier"/>
+        </extensionPoint>
+
+        <extensionPoint qualifiedName="cc.unitmesh.variableContextBuilder"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass"
+                  implements="cc.unitmesh.devti.context.builder.VariableContextBuilder"/>
+        </extensionPoint>
+
+        <extensionPoint qualifiedName="cc.unitmesh.livingDocumentation"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass" implements="cc.unitmesh.devti.provider.LivingDocumentation"/>
+        </extensionPoint>
+
+        <extensionPoint qualifiedName="cc.unitmesh.testDataBuilder"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass" implements="cc.unitmesh.devti.provider.TestDataBuilder"/>
+        </extensionPoint>
+
+        <extensionPoint qualifiedName="cc.unitmesh.buildSystemProvider"
+                        interface="cc.unitmesh.devti.provider.BuildSystemProvider"
+                        dynamic="true"/>
+
+        <extensionPoint qualifiedName="cc.unitmesh.customPromptProvider"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass" implements="cc.unitmesh.devti.provider.CustomPromptProvider"/>
+        </extensionPoint>
+
+        <extensionPoint qualifiedName="cc.unitmesh.devFlowProvider"
+                        interface="cc.unitmesh.devti.provider.DevFlowProvider"
+                        dynamic="true"/>
+
+        <!-- TODO: find better way to share context -->
+        <extensionPoint qualifiedName="cc.unitmesh.contextPrompter"
+                        interface="cc.unitmesh.devti.provider.ContextPrompter"
+                        dynamic="true"/>
+
+        <extensionPoint qualifiedName="cc.unitmesh.promptStrategy"
+                        interface="cc.unitmesh.devti.provider.PromptStrategy"
+                        dynamic="true"/>
+
+        <extensionPoint qualifiedName="cc.unitmesh.testContextProvider"
+                        interface="cc.unitmesh.devti.provider.WriteTestService"
+                        dynamic="true"/>
+
+        <extensionPoint qualifiedName="cc.unitmesh.chatContextProvider"
+                        interface="cc.unitmesh.devti.provider.context.ChatContextProvider"
+                        dynamic="true"/>
+    </extensionPoints>
+
+    <applicationListeners>
+        <listener topic="com.intellij.ide.plugins.DynamicPluginListener"
+                  class="cc.unitmesh.devti.AutoDevUnloadListener"/>
+    </applicationListeners>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <autoDevIntention>
+            <className>cc.unitmesh.devti.intentions.action.NewChatWithCodeIntention</className>
+            <bundleName>messages.AutoDevBundle</bundleName>
+            <categoryKey>intention.category.llm</categoryKey>
+        </autoDevIntention>
+        <autoDevIntention>
+            <className>cc.unitmesh.devti.intentions.action.CodeCompletionIntention</className>
+            <bundleName>messages.AutoDevBundle</bundleName>
+            <categoryKey>intention.category.llm</categoryKey>
+        </autoDevIntention>
+        <autoDevIntention>
+            <className>cc.unitmesh.devti.intentions.action.AutoTestThisIntention</className>
+            <bundleName>messages.AutoDevBundle</bundleName>
+            <categoryKey>intention.category.llm</categoryKey>
+        </autoDevIntention>
+        <autoDevIntention>
+            <className>cc.unitmesh.devti.intentions.action.DefaultDocumentationIntention</className>
+            <bundleName>messages.AutoDevBundle</bundleName>
+            <categoryKey>intention.category.llm</categoryKey>
+        </autoDevIntention>
+
+        <chatContextProvider implementation="cc.unitmesh.devti.provider.builtin.LanguageContextProvider"/>
+    </extensions>
+
+    <actions>
+        <group id="AutoDevIntentionsActionGroup" class="cc.unitmesh.devti.intentions.IntentionsActionGroup"
+               icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT" searchable="false">
+
+            <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
+            <add-to-group group-id="Floating.CodeToolbar" anchor="first"/>
+        </group>
+
+        <!-- For right click -->
+        <group id="org.intellij.sdk.action.GroupedActions" popup="true" text="AutoDev Chat" description="AutoDev chat">
+            <action id="cc.unitmesh.devti.actions.chat.ChatBotExplainAction"
+                    class="cc.unitmesh.devti.actions.chat.ChatBotExplainAction" text="Explain This"
+                    description="Ask AI about this code">
+            </action>
+
+            <action id="cc.unitmesh.devti.actions.chat.ChatBotRefactorAction"
+                    class="cc.unitmesh.devti.actions.chat.ChatBotRefactorAction" text="Refactor This"
+                    description="Ask AI refactor this code">
+            </action>
+
+            <action id="cc.unitmesh.devti.actions.chat.ChatWithThisAction"
+                    class="cc.unitmesh.devti.actions.chat.ChatWithThisAction" text="Chat with This"
+                    description="Ask AI chat with this code">
+            </action>
+
+            <action id="cc.unitmesh.devti.actions.chat.GenerateTestAction"
+                    class="cc.unitmesh.devti.actions.chat.GenerateTestAction" text="Write Test for This"
+                    description="Ask AI write this code">
+            </action>
+
+            <action id="cc.unitmesh.devti.actions.chat.GenTestDataAction"
+                    class="cc.unitmesh.devti.actions.chat.GenTestDataAction" text="Generate Test data (APIs)"
+                    description="Ask AI write this code">
+            </action>
+
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+        </group>
+
+        <action id="cc.unitmesh.devti.QuickAssistant"
+                class="cc.unitmesh.devti.actions.quick.QuickAssistantAction"
+                text="Quick Assistant"
+                description="You can custom any assistant as you want!"
+        >
+            <keyboard-shortcut keymap="$default" first-keystroke="control BACK_SLASH"/>
+
+            <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
+        </action>
+
+        <action id="cc.unitmesh.devti.actions.console.FixThisAction"
+                class="cc.unitmesh.devti.actions.console.FixThisAction" text="Fix This (AutoDev)"
+                description="Ask AI fi this code">
+            <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
+        </action>
+
+        <action id="autodev.Vcs.CommitMessage"
+                class="cc.unitmesh.devti.actions.vcs.CommitMessageSuggestionAction" text="Commit Message (AutoDev)"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+                description="Ask AI generate commit message">
+
+            <add-to-group group-id="Vcs.MessageActionGroup"/>
+        </action>
+
+        <action id="autodev.Vcs.LLMChangelog"
+                class="cc.unitmesh.devti.actions.vcs.ReleaseNoteSuggestionAction" text="Generate Release Note (AutoDev)"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+                description="Ask AI generate release note">
+
+            <add-to-group group-id="Vcs.Log.ContextMenu" relative-to-action="Vcs.ShowDiffWithLocal" anchor="after"/>
+        </action>
+
+        <action id="autodev.Vcs.CodeReview"
+                class="cc.unitmesh.devti.actions.vcs.CodeReviewAction" text="CodeReview (AutoDev)"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+                description="Ask AI to review code">
+
+            <add-to-group group-id="Vcs.Log.ChangesBrowser.Popup" relative-to-action="Vcs.RepositoryChangesBrowserMenu"
+                          anchor="after"/>
+            <add-to-group group-id="Vcs.Log.ContextMenu" relative-to-action="Vcs.ShowDiffWithLocal" anchor="after"/>
+
+            <!-- Todo: spike when in Group -->
+        </action>
+
+        <action id="autodev.Vcs.PrepushReview"
+                class="cc.unitmesh.devti.actions.vcs.PrepushReviewAction" text="Prepush Review (AutoDev)"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+                description="Ask AI to review code">
+
+            <add-to-group group-id="ChangesViewToolbar" anchor="last"/>
+            <add-to-group group-id="ChangesViewPopupMenu" relative-to-action="ChangesView.Revert" anchor="after"/>
+
+        </action>
+
+        <action id="cc.unitmesh.devti.actions.chat.CodeCompleteChatAction"
+                class="cc.unitmesh.devti.actions.chat.CodeCompleteChatAction" text="Code Complete (AutoDev)"
+                description="Ask AI about this code">
+
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+        </action>
+
+        <group id="AutoDev.ToolWindow.Snippet.Toolbar">
+            <action id="AutoDev.ToolWindow.Snippet.LanguageLabelAction"
+                    class="cc.unitmesh.devti.gui.snippet.AutoDevLanguageLabelAction"/>
+
+            <action id="AutoDev.ToolWindow.Snippet.CopyToClipboard"
+                    icon="AllIcons.Actions.Copy"
+                    class="cc.unitmesh.devti.gui.snippet.AutoDevCopyToClipboardAction"/>
+        </group>
+
+        <group id="AutoDev.ToolWindow.Chat.TitleActions">
+            <action id="AutoDev.ToolWindow.NewChatAction" class="cc.unitmesh.devti.gui.toolbar.NewChatAction"/>
+        </group>
+
+        <group id="AutoDev.ToolWindow.Message.Toolbar.Assistant">
+            <action id="AutoDev.ToolWindow.Message.Like"
+                    class="cc.unitmesh.devti.gui.chat.message.AutoDevRateMessageAction$Like"/>
+        </group>
+
+        <group id="DevOpsGenius.NewActions" popup="true" icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
+            <separator/>
+            <action id="GeniusDockerfile" class="cc.unitmesh.genius.actions.GenerateDockerfileAction"/>
+            <action id="GeniusGitHubActions" class="cc.unitmesh.genius.actions.GenerateGitHubActionsAction"/>
+
+            <add-to-group group-id="NewGroup" anchor="last"/>
+        </group>
+    </actions>
+</idea-plugin>
