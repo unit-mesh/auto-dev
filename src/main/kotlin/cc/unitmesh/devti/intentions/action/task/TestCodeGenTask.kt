@@ -81,23 +81,14 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
 
         if (testContext.currentClass != null) {
             val currentClassInfo = runReadAction { testContext.currentClass.format() }
-            prompter += """
-                // here is current class information:
-                $currentClassInfo
-                """.trimIndent()
+            prompter += "\n// here is current class information:\n$currentClassInfo\n"
         }
 
         val importString = testContext.imports.joinToString("\n") {
             "// $it"
         }
 
-        prompter += """
-Code:
-$importString
-```${lang.lowercase()}
-${request.selectText}
-```
-"""
+        prompter += "\nCode:\n$importString\n```${lang.lowercase()}\n${request.selectText}\n```\n"
 
         prompter += if (!testContext.isNewFile) {
             "\nStart test code with `@Test` syntax here:  \n"
