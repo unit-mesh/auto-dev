@@ -180,7 +180,17 @@ object KotlinContextCollector {
     }
 }
 
-private fun KtTypeReference?.getTypeText(): String? {
+fun KtNamedDeclaration.getReturnTypeReferences(): List<KtTypeReference> {
+    return when (this) {
+        is KtCallableDeclaration -> listOfNotNull(typeReference)
+        is KtClassOrObject -> superTypeListEntries.mapNotNull { it.typeReference }
+        is KtScript -> emptyList()
+        else -> throw AssertionError("Unexpected declaration kind: $text")
+    }
+}
+
+
+fun KtTypeReference?.getTypeText(): String? {
     if (this == null) return null
 
     val typeElement = this.typeElement

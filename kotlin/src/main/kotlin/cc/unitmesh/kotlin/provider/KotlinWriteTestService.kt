@@ -23,6 +23,7 @@ import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.idea.quickfix.createFromUsage.callableBuilder.getReturnTypeReference
 import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.psi.psiUtil.getValueParameters
 import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration
 import java.io.File
 
@@ -144,10 +145,10 @@ class KotlinWriteTestService : WriteTestService() {
         val resolvedClasses = mutableMapOf<String, KtClass?>()
         element.primaryConstructorParameters.forEach {
             val typeReference = it.typeReference
-            val type = resolveType(typeReference)
-            if (type != null) {
-                if (type is KtClass) {
-                    resolvedClasses[type.name!!] = type
+            val elements = resolveType(typeReference)
+            elements.forEach { element ->
+                if (element is KtClass) {
+                    resolvedClasses[element.name!!] = element
                 }
             }
         }
@@ -158,20 +159,26 @@ class KotlinWriteTestService : WriteTestService() {
 
     private fun resolveByMethod(element: PsiElement): MutableMap<String, KtClass?> {
         val resolvedClasses = mutableMapOf<String, KtClass?>()
-        if (element is KtFunction) {
-            element.valueParameters.mapNotNull {
-                val typeReference = it.typeReference
-                resolveType(typeReference)
-            }.forEach {
-                if (it is KtClass) {
-                    resolvedClasses[it.name!!] = it
+        when (element) {
+            is KtNamedDeclaration -> {
+                element.getValueParameters().map {
+                    val typeReference = it.typeReference
+                    resolveType(typeReference)
+                }.forEach {
+                    if (it is KtClass) {
+                        resolvedClasses[it.name!!] = it
+                    }
                 }
-            }
 
-            val outputType = resolveType(element.getReturnTypeReference())
-            if (outputType != null) {
-                if (outputType is KtClass) {
-                    resolvedClasses[outputType.name!!] = outputType
+                // with Generic returnType, like: ResponseEntity<List<Item>>
+                val returnTypeReferences = element.getReturnTypeReferences()
+                returnTypeReferences.forEach {
+                    val outputType = resolveType(it)
+                    outputType.forEach { element ->
+                        if (element is KtClass) {
+                            resolvedClasses[element.name!!] = element
+                        }
+                    }
                 }
             }
         }
@@ -179,17 +186,23 @@ class KotlinWriteTestService : WriteTestService() {
         return resolvedClasses
     }
 
-    private fun resolveType(typeReference: KtTypeReference?): PsiElement? {
-        if (typeReference == null) return null
+    private fun resolveType(typeReference: KtTypeReference?): List<PsiElement> {
+        if (typeReference == null) return emptyList()
+        val result = mutableListOf<PsiElement>()
         if (typeReference.typeElement is KtUserType) {
             val typeElement = typeReference.typeElement as KtUserType
+            typeElement.typeArguments.forEach {
+                val type = resolveType(it.typeReference)
+                result += type
+            }
+
             val typeElementReference = typeElement.referenceExpression?.mainReference?.resolve()
             if (typeElementReference is KtClass) {
-                return typeElementReference
+                result += typeElementReference
             }
         }
 
-        return null
+        return result
     }
 
     private fun createTestFile(
