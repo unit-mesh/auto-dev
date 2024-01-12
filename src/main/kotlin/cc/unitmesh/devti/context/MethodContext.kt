@@ -2,7 +2,6 @@ package cc.unitmesh.devti.context
 
 import cc.unitmesh.devti.context.base.NamedElementContext
 import cc.unitmesh.devti.isInProject
-import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
@@ -18,11 +17,9 @@ class MethodContext(
     val paramNames: List<String> = emptyList(),
     val includeClassContext: Boolean = false,
     val usages: List<PsiReference> = emptyList(),
-    val fanInOut: List<PsiElement> = emptyList(),
+    private val fanInOut: List<PsiElement> = emptyList(),
 ) : NamedElementContext(root, text, name) {
     private val classContext: ClassContext?
-    private val commenter = LanguageCommenters.INSTANCE.forLanguage(root.language) ?: null
-    private val commentPrefix = commenter?.lineCommentPrefix ?: ""
     private val project: Project = root.project
 
 
@@ -41,10 +38,12 @@ class MethodContext(
             "${classFile.name} -> $useText"
         }
 
-        var query = """language: ${language ?: "_"}
-fun name: ${name ?: "_"}
-fun signature: ${signature ?: "_"}
-"""
+        var query = """
+            language: ${language ?: "_"}
+            fun name: ${name ?: "_"}
+            fun signature: ${signature ?: "_"}
+            """.trimIndent()
+
         if (usageString.isNotEmpty()) {
             query += "usages: \n$usageString"
         }
@@ -69,7 +68,7 @@ fun signature: ${signature ?: "_"}
             }
 
             context.let { classContext ->
-                result += classContext.format() + "\n"
+                result += "${classContext.format()}\n"
             }
         }
 
@@ -77,6 +76,10 @@ fun signature: ${signature ?: "_"}
             return ""
         }
 
-        return "```uml\n$result\n```\n"
+        return """
+            ```uml
+            $result
+            ```
+            """.trimIndent()
     }
 }
