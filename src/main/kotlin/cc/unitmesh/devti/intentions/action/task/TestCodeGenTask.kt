@@ -96,10 +96,10 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
             "\nStart ${testContext.testClassName} with `import` syntax here:  \n"
         }
 
+        logger<AutoTestThisIntention>().info("Prompt: $prompter")
+
         val flow: Flow<String> =
             LlmFactory().create(request.project).stream(prompter, "")
-
-        logger<AutoTestThisIntention>().info("Prompt: $prompter")
 
         indicator.fraction = 0.8
         indicator.text = AutoDevBundle.message("intentions.request.background.process.title")
