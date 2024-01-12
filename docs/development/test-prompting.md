@@ -1,9 +1,8 @@
 ---
 layout: default
-title: Domain Driven Design
+title: Test Prompts
 nav_order: 2
-parent: Scenes
-permalink: /scenes/domain-drive-design
+parent: Development
 ---
 
 ## Test Prompts
