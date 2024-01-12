@@ -57,6 +57,5 @@ class KotlinMethodContextBuilder : MethodContextBuilder {
             return substring.replace('\n', ' ').trim()
         }
     }
-
 }
 
