@@ -3,11 +3,10 @@ package cc.unitmesh.devti.gui.toolbar
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.Presentation
+import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.DumbAwareAction
-import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.components.panels.Wrapper
 import com.intellij.util.ui.JBInsets
@@ -16,6 +15,8 @@ import javax.swing.JButton
 import javax.swing.JComponent
 
 class NewChatAction : DumbAwareAction(), CustomComponentAction {
+    val logger = logger<NewChatAction>()
+
     override fun actionPerformed(e: AnActionEvent) {
 
     }
@@ -28,13 +29,24 @@ class NewChatAction : DumbAwareAction(), CustomComponentAction {
                 putClientProperty("customButtonInsets", JBInsets(1, 1, 1, 1).asUIResource())
                 setOpaque(false)
                 addActionListener {
-                    val project = ProjectManager.getInstance().openProjects.firstOrNull() ?: return@addActionListener
+                    val dataContext: DataContext = ActionToolbar.getDataContextFor(this)
+                    val project = dataContext.getData(CommonDataKeys.PROJECT)
+                    if (project == null) {
+                        logger.error("project is null")
+                        return@addActionListener
+                    }
+
                     val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(
                         AutoDevToolWindowFactory.Util.id
                     )
                     val contentManager = toolWindowManager?.contentManager
                     val codingPanel =
                         contentManager?.component?.components?.filterIsInstance<ChatCodingPanel>()?.firstOrNull()
+
+                    if (codingPanel == null) {
+                        AutoDevToolWindowFactory().createToolWindowContent(project, toolWindowManager!!)
+                        return@addActionListener
+                    }
 
                     codingPanel?.clearChat()
                 }
