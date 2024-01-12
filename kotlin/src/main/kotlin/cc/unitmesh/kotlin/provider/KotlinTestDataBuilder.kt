@@ -42,15 +42,18 @@ class KotlinTestDataBuilder : TestDataBuilder {
     override fun inboundData(element: PsiElement): Map<String, String> {
         if (element !is KtNamedFunction) return emptyMap()
 
+        return handleParameters(element.valueParameters)
+    }
+
+    private fun handleParameters(ktParameters: MutableList<KtParameter>): MutableMap<String, String> {
         val result = mutableMapOf<String, String>()
-        val parameters = element.valueParameters
-        for (parameter in parameters) {
-            result += handleFromType(parameter, element)
+        ktParameters.map { parameter ->
+            result += handleFromType(parameter)
         }
         return result
     }
 
-    private fun handleFromType(parameter: KtParameter, element: PsiElement): Map<String, String> {
+    private fun handleFromType(parameter: KtParameter): Map<String, String> {
         when (val type = parameter.typeReference?.typeElement) {
             is KtClass -> processingClassType(type)
         }
@@ -76,6 +79,7 @@ class KotlinTestDataBuilder : TestDataBuilder {
         if (element is KtClass) {
             return processingMethodsOutbound(element)
         }
+
         if (element !is KtNamedFunction) return emptyMap()
 
         val returnType = element.getReturnTypeReference() ?: return emptyMap()
@@ -93,6 +97,9 @@ class KotlinTestDataBuilder : TestDataBuilder {
         val result = mutableMapOf<String, String>()
         val methods = element.declarations.filterIsInstance<KtNamedFunction>()
         for (method in methods) {
+            val parameters = handleParameters(method.valueParameters)
+            result += parameters
+
             val returnType = method.getReturnTypeReference() ?: continue
             result += processing(returnType, element)
         }

@@ -76,7 +76,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
                 "// $it"
             }
 
-            "// here are related classes:\n$relatedClasses"
+            "// here are related classes:\n$relatedClasses\n"
         }
 
         if (testContext.currentClass != null) {
