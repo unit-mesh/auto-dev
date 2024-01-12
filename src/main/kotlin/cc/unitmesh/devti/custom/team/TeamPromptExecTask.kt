@@ -16,11 +16,22 @@ import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 
+/**
+ * The `TeamPromptExecTask` class is a background task that executes a team prompt action in the context of a project.
+ * It is responsible for handling different types of interactions based on the provided `intentionConfig` and `msgs`.
+ *
+ * @property project The project in which the team prompt action is executed.
+ * @property msgs The list of chat messages associated with the team prompt action.
+ * @property editor The editor in which the team prompt action is triggered.
+ * @property intentionConfig The configuration of the team prompt action.
+ * @property element The PSI element associated with the team prompt action.
+ * @constructor Creates a `TeamPromptExecTask` with the specified project, chat messages, editor, intention configuration, and PSI element.
+ */
 class TeamPromptExecTask(
     @JvmField val project: Project,
-    val msgs: List<LlmMsg.ChatMessage>,
+    private val msgs: List<LlmMsg.ChatMessage>,
     val editor: Editor,
-    val intentionConfig: TeamPromptAction,
+    private val intentionConfig: TeamPromptAction,
     val element: PsiElement?,
 ) :
     Task.Backgroundable(project, AutoDevBundle.message("intentions.request.background.process.title")) {

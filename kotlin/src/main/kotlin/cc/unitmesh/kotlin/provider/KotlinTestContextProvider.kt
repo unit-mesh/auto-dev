@@ -1,9 +1,11 @@
 package cc.unitmesh.kotlin.provider
 
+import cc.unitmesh.devti.custom.test.TemplatedTestPrompt
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.idea.provider.JavaTestContextProvider
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.idea.KotlinLanguage
@@ -25,26 +27,45 @@ class KotlinTestContextProvider : JavaTestContextProvider() {
 
         val isSpringRelated = checkIsSpringRelated(creationContext)
 
-        val prompt = baseTestPrompt + junitRule(project)
+        var prompt = baseTestPrompt + junitRule(project)
+
+        val language = creationContext.sourceFile?.language?.displayName ?: "Kotlin"
 
         val finalPrompt = when {
             isController(fileName) && isSpringRelated -> {
-                val testControllerPrompt = prompt + "\n" + """
+                var testControllerPrompt = prompt + "\n" + """
                             |- Use appropriate Spring test annotations such as `@MockBean`, `@Autowired`, `@WebMvcTest`, `@DataJpaTest`, `@AutoConfigureTestDatabase`, `@AutoConfigureMockMvc`, `@SpringBootTest` etc.
                             |""".trimMargin()
+
+                val lookup = project.service<TemplatedTestPrompt>().lookup("ControllerTest.kt")
+                if (lookup != null) {
+                    testControllerPrompt += "Here is a template as example\n```$language\n$lookup\n```\n"
+                }
+
                 ChatContextItem(JavaTestContextProvider::class, testControllerPrompt)
             }
 
             isService(fileName) && isSpringRelated -> {
-                val testServicePrompt = prompt + "\n" + """
+                var testServicePrompt = prompt + "\n" + """
                             |- Follow the common Spring code style by using the AssertJ library.
                             |- Assume that the database is empty before each test and create valid entities with consideration for data constraints (jakarta.validation.constraints).
                             |""".trimMargin()
+
+
+                val lookup = project.service<TemplatedTestPrompt>().lookup("ServiceTest.kt")
+                if (lookup != null) {
+                    testServicePrompt += "Here is a template as example\n```$language\n$lookup\n```\n"
+                }
 
                 ChatContextItem(JavaTestContextProvider::class, testServicePrompt)
             }
 
             else -> {
+                val lookup = project.service<TemplatedTestPrompt>().lookup("Test.java")
+                if (lookup != null) {
+                    prompt += "Here is a template as example\n```$language\n$lookup\n```\n"
+                }
+
                 ChatContextItem(JavaTestContextProvider::class, prompt)
             }
         }
