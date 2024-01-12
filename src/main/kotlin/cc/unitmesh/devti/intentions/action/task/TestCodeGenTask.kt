@@ -80,7 +80,9 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         }
 
         if (testContext.currentClass != null) {
-            val currentClassInfo = runReadAction { testContext.currentClass.format() }
+            val currentClassInfo = runReadAction { testContext.currentClass.format() }.lines().joinToString("\n") {
+                "// $it"
+            }
             prompter += "\n// here is current class information:\n$currentClassInfo\n"
         }
 
