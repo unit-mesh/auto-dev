@@ -147,11 +147,3 @@ fun prepareLibraryData(project: Project): List<LibraryData>? {
 
     return libraryDataList
 }
-
-private fun prepareLibraryData(module: Module): List<LibraryData>? {
-    val moduleRootManager = ModuleRootManager.getInstance(module)
-    val libraryOrderEntries: OrderEnumerator = moduleRootManager.orderEntries().librariesOnly()
-
-    return listOf()
-}
-
