@@ -31,6 +31,22 @@ interface LivingDocumentation {
         return selectionModel.selectionStart <= element.textRange.startOffset && element.textRange.endOffset <= selectionModel.selectionEnd
     }
 
+    fun buildDocFromSuggestion(suggestion: String, commentStart: String, commentEnd: String): String {
+        val startIndex = suggestion.indexOf(commentStart)
+        if (startIndex < 0) {
+            return ""
+        }
+
+        val docComment = suggestion.substring(startIndex)
+        val endIndex = docComment.indexOf(commentEnd, commentStart.length)
+        if (endIndex < 0) {
+            return docComment + commentEnd
+        }
+
+        val substring = docComment.substring(0, endIndex + commentEnd.length)
+        return substring
+    }
+
     companion object {
         private val languageExtension: LanguageExtension<LivingDocumentation> =
             LanguageExtension("cc.unitmesh.livingDocumentation")

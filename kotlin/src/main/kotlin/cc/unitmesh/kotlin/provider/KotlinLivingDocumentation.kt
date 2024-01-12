@@ -7,6 +7,7 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.SelectionModel
+import com.intellij.openapi.project.Project
 import com.intellij.psi.*
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
@@ -112,15 +113,19 @@ class KotlinLivingDocumentation : LivingDocumentation {
             when (type) {
                 LivingDocumentationType.COMMENT -> {
                     try {
-                        val ktDeclaration = (if (target is KtDeclaration) target else null)
-                            ?: throw IncorrectOperationException()
-                        val createKDocFromText: PsiElement = KDocElementFactory(project).createKDocFromText(newDoc)
-                        val docComment = (target as KtDeclaration).docComment
-
-                        if (docComment?.replace(createKDocFromText) == null) {
-                            ktDeclaration.addBefore(createKDocFromText, ktDeclaration.firstChild)
-                        }
+                        doInsertComment(target, project, newDoc)
                     } catch (e: Exception) {
+                        val fromSuggestion = buildDocFromSuggestion(newDoc, "/**", "*/")
+                        if (fromSuggestion.isNotEmpty()) {
+                            try {
+                                doInsertComment(target, project, fromSuggestion)
+                            } catch (e: Exception) {
+                                logger.error("Failed to update documentation for $target, doc: $newDoc")
+                            }
+
+                            return@runWriteCommandAction
+                        }
+
                         logger.error("Failed to update documentation for $target, doc: $newDoc")
                     }
                 }
@@ -136,6 +141,18 @@ class KotlinLivingDocumentation : LivingDocumentation {
                 }
             }
         })
+    }
+
+    private fun doInsertComment(target: PsiElement, project: Project, newDoc: String) {
+        val ktDeclaration = (if (target is KtDeclaration) target else null)
+            ?: throw IncorrectOperationException()
+
+        val createKDocFromText: PsiElement = KDocElementFactory(project).createKDocFromText(newDoc)
+        val docComment = (target as KtDeclaration).docComment
+
+        if (docComment?.replace(createKDocFromText) == null) {
+            ktDeclaration.addBefore(createKDocFromText, ktDeclaration.firstChild)
+        }
     }
 
     override fun findDocTargetsInSelection(

@@ -121,5 +121,4 @@ open class LivingDocPromptBuilder(
             instruction.toString()
         }
     }
-
 }
