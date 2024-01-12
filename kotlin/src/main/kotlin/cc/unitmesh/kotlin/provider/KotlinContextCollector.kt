@@ -155,3 +155,17 @@ object KotlinContextCollector {
         return KtPsiFactory(project, false).createComment(this.placeholderMessage)
     }
 }
+
+private fun KtTypeReference?.getTypeText(): String? {
+    if (this == null) return null
+
+    val typeElement = this.typeElement
+    if (typeElement is KtUserType) {
+        val typeElementReference = typeElement.referenceExpression?.mainReference?.resolve()
+        if (typeElementReference is KtClass) {
+            return typeElementReference.name
+        }
+    }
+
+    return this.text
+}
