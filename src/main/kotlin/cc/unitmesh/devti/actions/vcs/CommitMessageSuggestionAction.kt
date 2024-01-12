@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.actions.vcs
 
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.llms.LlmFactory
@@ -35,6 +36,7 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         val diffContext = project.service<VcsPrompting>().prepareContext()
         if (diffContext.isEmpty() || diffContext == "\n") {
             logger.warn("Diff context is empty or cannot get enough useful context.")
+            AutoDevNotifications.notify(project, "Diff context is empty or cannot get enough useful context.")
             return
         }
 
