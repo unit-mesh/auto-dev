@@ -11,6 +11,9 @@ object AutoDevIcons {
     val AI_COPILOT: Icon = IconLoader.getIcon("/icons/ai-copilot.svg", AutoDevIcons::class.java)
 
     @JvmField
+    val DARK: Icon = IconLoader.getIcon("/icons/autodev-dark.svg", AutoDevIcons::class.java)
+
+    @JvmField
     val Send: Icon = IconLoader.getIcon("/icons/send.svg", AutoDevIcons::class.java)
 
     @JvmField
