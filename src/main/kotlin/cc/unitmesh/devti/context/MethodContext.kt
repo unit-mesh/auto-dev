@@ -45,7 +45,7 @@ class MethodContext(
             """.trimIndent()
 
         if (usageString.isNotEmpty()) {
-            query += "usages: \n$usageString"
+            query += "\nusages: \n$usageString"
         }
 
         if (classContext != null) {
