@@ -1,19 +1,79 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v1.5.1...v) (2024-01-01)
+# [](https://github.com/unit-mesh/auto-dev/compare/v1.5.3...v) (2024-01-12)
 
 ## [Unreleased]
 
-## [1.5.1](https://github.com/unit-mesh/auto-dev/compare/1.4.4...v[1.5.1]) (2024-01-01)
+## [1.5.3](https://github.com/unit-mesh/auto-dev/compare/v1.5.2...v[1.5.3]) (2024-01-12)
+
+### Bug Fixes
+- **commit:** empty commit message before generate ([25c4559](https://github.com/unit-mesh/auto-dev/commit/25c4559cb559679680d25ec1ca439bc2b159dcf6))
+- **diff:** fix file rename message formatting ([2039103](https://github.com/unit-mesh/auto-dev/commit/203910341cc114310f4a0a2b12ac27a235d7739b))
+- ignore test for 222 version ([bcd208d](https://github.com/unit-mesh/auto-dev/commit/bcd208d07847aab542a077a6288c5785122f0c9f))
+- **kotlin:** update Kotlin API version message ([e3cee52](https://github.com/unit-mesh/auto-dev/commit/e3cee52e62843d657b22fe8c80ed8dfe4e7d9297))
+- **provider:** fix KotlinTestDataBuilderTest and KotlinClassContextBuilder ([d23b9d5](https://github.com/unit-mesh/auto-dev/commit/d23b9d59d2ec772f341cc53fe23db6978ec4e30e))
+- **provider:** insert method if code does not contain @Test annotation ([d49f41f](https://github.com/unit-mesh/auto-dev/commit/d49f41f6b095d4be9923c135b302e3d3ecffd199))
+- **provider:** refactor KotlinTestContextProvider ([fa3364a](https://github.com/unit-mesh/auto-dev/commit/fa3364a274bba9faa89815e40c3407820f5c70ec))
+- **vcs:** fix CommitMessageSuggestionAction not updating editorField text ([ef6c680](https://github.com/unit-mesh/auto-dev/commit/ef6c6802d0a91085d96e66225ddcce65eca80c5a))
+
+### Features
+- **code-review:** add action to ChangesViewToolbar ([6ccb3e7](https://github.com/unit-mesh/auto-dev/commit/6ccb3e7b5242793b2ebead802728c71eaf29b460))
+- **context:** add support for annotations in ClassContext ([abc5305](https://github.com/unit-mesh/auto-dev/commit/abc53050c13ed5fa99f605bb31b6670f882e9b9b))
+- **context:** add support for parsing Java annotations ([520ad09](https://github.com/unit-mesh/auto-dev/commit/520ad095065655298819ce2ec15ed433bfe7e9fc))
+- **context:** update ClassContext to include package information ([b0f9fcb](https://github.com/unit-mesh/auto-dev/commit/b0f9fcb5ebdc5a4df1089916b5f2315ce04aecda))
+- **diff:** add handling for delete files ([72724da](https://github.com/unit-mesh/auto-dev/commit/72724da5c629c784f0169336467ad969c29fe214))
+- **diff:** add test case for DiffSimplifier ([f6dde52](https://github.com/unit-mesh/auto-dev/commit/f6dde52a680a0fb5ab8812700fbbcb40bb70f080))
+- **java:** add base route retrieval to JavaTestDataBuilder ([df4d12e](https://github.com/unit-mesh/auto-dev/commit/df4d12eb70e2af7f5db235709af138d9776dae21))
+- **java:** add JUnit rule caching mechanism ([21b5ae2](https://github.com/unit-mesh/auto-dev/commit/21b5ae2666c0a444ff25cd1952af42530a72d086))
+- **kotlin:** add baseRoute method to KotlinTestDataBuilder ([3da7e16](https://github.com/unit-mesh/auto-dev/commit/3da7e16f9e65215a5383be828ec6a53082b213cb))
+- **kotlin:** add getTypeText() function to KotlinContextCollector ([0f29abe](https://github.com/unit-mesh/auto-dev/commit/0f29abeff8cab49ea6d764b992e3e66e77c4e960))
+- **kotlin:** add KotlinContextCollector class ([8845285](https://github.com/unit-mesh/auto-dev/commit/8845285a0b03111aa6c251b17afbb0d3d1ecbe45))
+- **kotlin:** add KotlinVersionProvider ([c75e0fc](https://github.com/unit-mesh/auto-dev/commit/c75e0fc1ddc330ed6fd0e99246f756c8bb11d901))
+- **kotlin:** add KotlinVersionProvider ([92c6611](https://github.com/unit-mesh/auto-dev/commit/92c661160490ceb39f6d9af7abf240d31b452502))
+- **kotlin:** add test case for KotlinTestDataBuilder ([bca537e](https://github.com/unit-mesh/auto-dev/commit/bca537e75279b523edf5b798b8a7122bce17ac81))
+- **living documentation:** add functionality to build documentation from suggestion ([8bc6677](https://github.com/unit-mesh/auto-dev/commit/8bc66777e2d51947333378fb7485417d48010e70))
+- **livingdoc:** improve prompt builder instructions ([e4f319a](https://github.com/unit-mesh/auto-dev/commit/e4f319a35956769c6f782e710439d763ed21c107))
+- **livingdoc:** improve prompt builder instructions ([08111fb](https://github.com/unit-mesh/auto-dev/commit/08111fb5be6e9b0cebe6bb1777bfcb849aacc1ea))
+- **prompting:** add more file patterns to default ignore list ([19e58e8](https://github.com/unit-mesh/auto-dev/commit/19e58e861e69750471995729fbd97ee27aa9e701))
+- **provider:** add imports to TestFileContext ([05419e5](https://github.com/unit-mesh/auto-dev/commit/05419e5ace469bebb425c3c72759539b32d3a9d2))
+- **provider:** add isSpringRelated method to KotlinTestContextProvider ([06173db](https://github.com/unit-mesh/auto-dev/commit/06173dbb8f0316f3ab923231f0bb5e9201a39528))
+- **provider:** add KotlinTestContextProvider ([c5903df](https://github.com/unit-mesh/auto-dev/commit/c5903df38c859ebe52366bf5b2913280fa3f1a9f))
+- **provider:** add KotlinTestDataBuilder implementation ([559fcd4](https://github.com/unit-mesh/auto-dev/commit/559fcd4fe76c3cdcf2c19693050128ccdf77a39a))
+- **provider:** add module dependency lookup ([e1a8da6](https://github.com/unit-mesh/auto-dev/commit/e1a8da68531ba12b9b57488c2741367352f3dc30))
+- **provider:** add support for Spring annotations ([296169d](https://github.com/unit-mesh/auto-dev/commit/296169dc8b599386b5e96c96ba9009bd3ab269a1))
+- **provider:** add templated test prompts ([94d588a](https://github.com/unit-mesh/auto-dev/commit/94d588a1aea6c8d09da86feab3d0d474c6e38c6a))
+- **readme:** update installation instructions ([582b337](https://github.com/unit-mesh/auto-dev/commit/582b337169bce343fbb244bc94839f969e8a702b))
+- **review:** remove unused methods and refactor computeDiff ([5c59c2e](https://github.com/unit-mesh/auto-dev/commit/5c59c2e6d5ceaceb0515de96ceb4c510f39cc488))
+- **runConfigurations:** add BuildPlugin.xml ([3e92547](https://github.com/unit-mesh/auto-dev/commit/3e925470a12835741eba51b765d20c5e9fc990d7))
+- **test:** add KotlinMethodContextBuilderTest ([11536f3](https://github.com/unit-mesh/auto-dev/commit/11536f36a2e279b149665db59ad75657f02af1a2))
+- **test:** add logging for prompter ([2cae29e](https://github.com/unit-mesh/auto-dev/commit/2cae29eb656236c73313ebff1876b6d801d91251))
+- **test:** add test case for MethodController ([776dab5](https://github.com/unit-mesh/auto-dev/commit/776dab52d77c678ea34a923f63d48473b12b7d27))
+- **testing:** update test prompt with language information ([ce2abef](https://github.com/unit-mesh/auto-dev/commit/ce2abefdd16b9b742c57551a8f9d3d8a60d54367))
+- **tests:** add code snippet to prompter ([b5a24ae](https://github.com/unit-mesh/auto-dev/commit/b5a24ae62a588e7bb155399c1e52bd8c65359f46))
+- **tests:** add KotlinTestDataBuilderTest and KotlinTestDataBuilder ([07a0dd9](https://github.com/unit-mesh/auto-dev/commit/07a0dd98fbb59563b522a57cd730192e9fc84222))
+- **vcs:** add asynchronous commit message suggestion ([6bfd34c](https://github.com/unit-mesh/auto-dev/commit/6bfd34c59ec431f68c01935afa19098a4bf87ecd))
+- **vcs:** add logging for empty diff context ([16ab325](https://github.com/unit-mesh/auto-dev/commit/16ab32516085b3e52dc9a0678692ca50ab8f142f))
+- **vcs:** add notification for empty diff context ([f2382c5](https://github.com/unit-mesh/auto-dev/commit/f2382c5d75612fd3fa78520dadff418cec623c15))
+- **vcs:** add PrepushReviewAction ([d16bb38](https://github.com/unit-mesh/auto-dev/commit/d16bb38bde4339c8388976fac07b26a4e711c760))
+- **vcs:** add VcsPrompting import and service ([d25f92b](https://github.com/unit-mesh/auto-dev/commit/d25f92be86d38635097c1972e0a28414bb3256a7))
+- **vcs:** generate commit message with prompt ([8d6932e](https://github.com/unit-mesh/auto-dev/commit/8d6932e252a29898204e65a9bedf501a6e056d54))
+
+## [1.5.2](https://github.com/unit-mesh/auto-dev/compare/1.4.4...v[1.5.2]) (2024-01-05)
 
 ### Bug Fixes
 - add lost messages for Azure ([468a5ce](https://github.com/unit-mesh/auto-dev/commit/468a5ce4c3fe27960d31fd73ee9e1818fdf16025))
+- **apidata:** disable java in qualified name ([db4646a](https://github.com/unit-mesh/auto-dev/commit/db4646a68960f4c10e228a95e0fca5884439535e))
+- **apidata:** fix fieldName erorr for class strcuture ([af5a87b](https://github.com/unit-mesh/auto-dev/commit/af5a87b43c09a47f5fac6e841248335964899510))
+- **apidata:** fix simple handle for uppsercase ([6152514](https://github.com/unit-mesh/auto-dev/commit/61525145e6b21d9db8f54410324b47425ddc9fad))
 - disable default choice for chat base action ([53a192b](https://github.com/unit-mesh/auto-dev/commit/53a192b7ec18e2cb2a966437d951a838f38f5cda))
 - disable file cache ([97a793a](https://github.com/unit-mesh/auto-dev/commit/97a793aba43049726ebe24d336002c99ec987fc5))
 - **doc:** update doc by experience ([1b374de](https://github.com/unit-mesh/auto-dev/commit/1b374def5805425592ffdc63dcc38f44cd08e14c))
+- fix 222 build issue on import ([fb468a4](https://github.com/unit-mesh/auto-dev/commit/fb468a4dbbaef48e1fe8725b9eb8b415d5711d8a))
 - fix auto completion lost request ([7914ec2](https://github.com/unit-mesh/auto-dev/commit/7914ec23531aec21dca5a56a0a52e80996109d14))
 - fix axure auto service issue ([2ad6f43](https://github.com/unit-mesh/auto-dev/commit/2ad6f43f2ca456a1fe9c06f4320c4d4dca8aa87b))
 - fix build & Depecrated 213 && 221 && closed [#59](https://github.com/unit-mesh/auto-dev/issues/59) ([1221128](https://github.com/unit-mesh/auto-dev/commit/1221128f9a59425bb9f81d79f965f03eb4d8e9e8))
+- fix chat panel crash issue ([2818699](https://github.com/unit-mesh/auto-dev/commit/28186993d32c067d8d18ba95cc09c302b26b0b3b))
 - fix commit message gen issues ([149069a](https://github.com/unit-mesh/auto-dev/commit/149069a7089eff89e9c0407b3c28a921ba75cad6))
 - fix compile issue ([71a7eb1](https://github.com/unit-mesh/auto-dev/commit/71a7eb129feb8353d7d1f45b977750c3ded5efdc))
+- fix config issues ([5c75798](https://github.com/unit-mesh/auto-dev/commit/5c75798eec41a1f4e99e93931f9ff88558d6558d))
 - fix empty input issue ([aa2846b](https://github.com/unit-mesh/auto-dev/commit/aa2846b245bf2334bc58cbd31300be7003482d64))
 - fix erro action again ([9cdadd2](https://github.com/unit-mesh/auto-dev/commit/9cdadd2c25cf1345a86edb635f0ee0dc83cf6d78))
 - fix get issues ([02979db](https://github.com/unit-mesh/auto-dev/commit/02979db1b37aeed713e8e9258d30762bd355483a))
@@ -31,18 +91,28 @@
 - fix test ([7a70f8b](https://github.com/unit-mesh/auto-dev/commit/7a70f8b5c77082e3bd00d59f9d0316b750401aba))
 - fix test issues ([4a9ea9c](https://github.com/unit-mesh/auto-dev/commit/4a9ea9c095ef531b7e259edbc106ae99f273b506))
 - fix test prompt issue ([ec89161](https://github.com/unit-mesh/auto-dev/commit/ec89161d896c5bc8b68a64d4b2e6ec656ea925d4))
+- fix tests ([688499c](https://github.com/unit-mesh/auto-dev/commit/688499c4ec5bf4b1fbd10cdf87e9d907d80378f5))
 - fix tests ([f452428](https://github.com/unit-mesh/auto-dev/commit/f452428f8dd43c8b49294009bc558612fc482770))
 - fix tests ([ab69050](https://github.com/unit-mesh/auto-dev/commit/ab69050f36f71dcca4b4f2b073babfefad2e5fb7))
 - fix typos ([95e1a9f](https://github.com/unit-mesh/auto-dev/commit/95e1a9f78bbba9b75828cd7a9ebd584c3c4e761f))
 - is some super class no in project will be crash ([d203734](https://github.com/unit-mesh/auto-dev/commit/d2037344a0e5779466181995aa4e31388b1a4868))
+- make output in file better ([6a25cf3](https://github.com/unit-mesh/auto-dev/commit/6a25cf3375a0ae654e1ee20e41501b0b7b1c13c1))
 - 修复前一提交 SSE 的问题 ([54457f5](https://github.com/unit-mesh/auto-dev/commit/54457f558ce1f8c939fead5562835a6e7a6c13ae))
 
 ### Features
 - add catch for not ready action ([79286b0](https://github.com/unit-mesh/auto-dev/commit/79286b022a2d759d7198d912afaa1e37714712f6))
 - add cleanup for kotlin code ([dd84795](https://github.com/unit-mesh/auto-dev/commit/dd847957bd08c4bf44ea5da37407591391c09b87))
+- add config for disable advanced prompt ([40b61f1](https://github.com/unit-mesh/auto-dev/commit/40b61f16d2ec6b64e35b57f26e7215a72ed08184))
+- add filter for caches and skip for popular frameworks ([6e4c205](https://github.com/unit-mesh/auto-dev/commit/6e4c205faa1b18dc34dfc5728764f651f5b2e662))
 - add for junit rules ([dc5289d](https://github.com/unit-mesh/auto-dev/commit/dc5289dba409b3ef46752cff95e66869a2e2a9fd))
 - add for test file path ([16fc139](https://github.com/unit-mesh/auto-dev/commit/16fc139f1ad8dde10c939e01c8578fcdb250ced9))
+- add more for overvide prompts [#54](https://github.com/unit-mesh/auto-dev/issues/54) ([f9b37b8](https://github.com/unit-mesh/auto-dev/commit/f9b37b8f49ba33adbd4b4d7c32736b3a89fe5673))
 - add timeout for handler ([687b04a](https://github.com/unit-mesh/auto-dev/commit/687b04aabfe76f8ef9227f721843288e0c6ec843))
+- **coder:** add custom for generate test [#54](https://github.com/unit-mesh/auto-dev/issues/54) ([b10a0f5](https://github.com/unit-mesh/auto-dev/commit/b10a0f503f2aa6be02a001e45dc7ddd5dafd6102))
+- **coder:** add disable history messages [#54](https://github.com/unit-mesh/auto-dev/issues/54) ([265d343](https://github.com/unit-mesh/auto-dev/commit/265d343ca896ec5206a32ea9df1b02809c35500b))
+- **coder:** enable custom txt for prompt ([019ae0d](https://github.com/unit-mesh/auto-dev/commit/019ae0d6a94d8132af8df383f00c9e6e6459a039))
+- **coder:** init for setting config ([6db0dc8](https://github.com/unit-mesh/auto-dev/commit/6db0dc8b6b961a5abe39c340b7efe7c35cf95e4f))
+- **coder:** init local completion for sample code ([c7b8d21](https://github.com/unit-mesh/auto-dev/commit/c7b8d2141bacc08bee95ece6d25a2568371ef683))
 - enable recording datasets works in local ([2fcab1c](https://github.com/unit-mesh/auto-dev/commit/2fcab1c532933f461627504eafa11de48098d27a))
 - init recording local param for [#54](https://github.com/unit-mesh/auto-dev/issues/54) ([f24cc6a](https://github.com/unit-mesh/auto-dev/commit/f24cc6a90b2c1200c254cab255869c441cd4ca57))
 - **js:** add documentation support ([f6b0136](https://github.com/unit-mesh/auto-dev/commit/f6b0136892b1471a4c6d5c4cb263f32a4926bc79))
@@ -738,8 +808,9 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.5.1...HEAD
-[1.5.1]: https://github.com/unit-mesh/auto-dev/compare/v1.4.4...v1.5.1
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.5.3...HEAD
+[1.5.3]: https://github.com/unit-mesh/auto-dev/compare/v1.5.2...v1.5.3
+[1.5.2]: https://github.com/unit-mesh/auto-dev/compare/v1.4.4...v1.5.2
 [1.4.4]: https://github.com/unit-mesh/auto-dev/compare/v1.4.3...v1.4.4
 [1.4.3]: https://github.com/unit-mesh/auto-dev/compare/v1.4.1...v1.4.3
 [1.4.1]: https://github.com/unit-mesh/auto-dev/compare/v1.2.5...v1.4.1
