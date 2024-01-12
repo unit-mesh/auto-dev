@@ -96,6 +96,20 @@ object KotlinContextCollector {
         return copiedElement
     }
 
+    /**
+     * Generates a summary for the given Kotlin language PsiElement.
+     *
+     * @param psiElement The PsiElement to generate the summary for.
+     * @return The generated summary as a String, or null if the PsiElement is not applicable.
+     *
+     * If the PsiElement is a KtFile, it creates a copy of it and removes the function implementations.
+     * Then it summarizes each class or object in the file.
+     *
+     * If the PsiElement is a KtClassOrObject, it creates a copy of it and summarizes the class or object.
+     *
+     * The generated summary is returned as a String.
+     * If the PsiElement is not applicable, null is returned.
+     */
     fun generateSummary(psiElement: PsiElement): String? {
         if (psiElement.language != KotlinLanguage.INSTANCE || psiElement is KtDecompiledFile) {
             return null
@@ -143,6 +157,16 @@ object KotlinContextCollector {
     }
 
     private const val placeholderMessage = "/* implementation omitted for shortness */"
+    /**
+     * Removes the implementation of a function.
+     *
+     * @param project the project context
+     * @param function the function to remove the implementation from
+     *
+     * This method removes the implementation of the given function by deleting the child range of the body expression.
+     * If the length of the placeholder message is greater than or equal to the length of the body expression, no changes are made.
+     * After removing the implementation, a placeholder is added as the first child of the body expression.
+     */
     private fun removeFunctionImplementation(project: Project, function: KtFunction) {
         val bodyExpression = function.bodyExpression ?: return
         if (placeholderMessage.length >= bodyExpression.textLength) return
