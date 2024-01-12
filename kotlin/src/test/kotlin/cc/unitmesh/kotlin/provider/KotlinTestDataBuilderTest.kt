@@ -115,4 +115,57 @@ class KotlinTestDataBuilderTest : LightPlatformTestCase() {
                     "}"
         )
     }
+
+    fun testShouldHandleWithResponse() {
+        if(!isLatest()) {
+            println("skip testShouldReturnLangFileSuffix")
+            return
+        }
+
+        val code = """
+            package com.thoughtworks.archguard.code.method.controller
+
+            import org.springframework.http.ResponseEntity
+            import org.springframework.web.bind.annotation.GetMapping
+            import org.springframework.web.bind.annotation.PathVariable
+            import org.springframework.web.bind.annotation.RequestMapping
+            import org.springframework.web.bind.annotation.RequestParam
+            import org.springframework.web.bind.annotation.RestController
+            
+            @Serializable
+            data class JMethod(
+                val id: String,
+                val name: String,
+                val clazz: String,
+                val module: String?,
+                val returnType: String,
+                val argumentTypes: List<String>
+            )
+            
+            @RestController
+            @RequestMapping("/api/systems/{systemId}/methods")
+            class MethodController(val methodService: MethodService) {
+                @GetMapping("/callees")
+                fun getMethodCallees(
+                    @PathVariable("systemId") systemId: Long,
+                    @RequestParam("name") methodName: String,
+                    @RequestParam(value = "clazz") clazzName: String,
+                    @RequestParam(value = "deep", required = false, defaultValue = "3") deep: Int,
+                    @RequestParam(value = "needIncludeImpl", required = false, defaultValue = "true") needIncludeImpl: Boolean,
+                    @RequestParam(value = "module") moduleName: String
+                ): ResponseEntity<List<JMethod>> {
+                    val jMethod = listOf(JMethod("1", "methodName", "TestClass", null, "void", listOf("String")))
+                    return ResponseEntity.ok(jMethod)
+                }
+            }
+            
+        """.trimIndent()
+
+        val createFile = KtPsiFactory(project).createFile("MethodController.kt", code)
+        val builder = KotlinTestDataBuilder()
+
+        val firstFunction = PsiTreeUtil.findChildOfType(createFile, KtNamedFunction::class.java)!!
+        val outboundData = builder.outboundData(firstFunction)
+        println(outboundData)
+    }
 }
