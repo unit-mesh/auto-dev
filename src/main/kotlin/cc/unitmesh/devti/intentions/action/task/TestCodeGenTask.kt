@@ -92,17 +92,17 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         }
 
         prompter += """
-            Code:
-            $importString
-            ```${lang.lowercase()}
-            ${request.selectText}
-            ```
-            """.trimIndent()
+Code:
+$importString
+```${lang.lowercase()}
+${request.selectText}
+```
+"""
 
         prompter += if (!testContext.isNewFile) {
-            "Start test code with `@Test` syntax here:  \n"
+            "\nStart test code with `@Test` syntax here:  \n"
         } else {
-            "Start ${testContext.testClassName} with `import` syntax here:  \n"
+            "\nStart ${testContext.testClassName} with `import` syntax here:  \n"
         }
 
         val flow: Flow<String> =

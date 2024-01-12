@@ -22,7 +22,7 @@ class KotlinVersionProvider : ChatContextProvider {
         } ?: return emptyList()
 
         val languageVersion = languageVersionSettings.languageVersion.versionString
-        return listOf(ChatContextItem(KotlinVersionProvider::class, "Kotlin API version: $languageVersion"))
+        return listOf(ChatContextItem(KotlinVersionProvider::class, "- Kotlin API version: $languageVersion"))
     }
 }
 
