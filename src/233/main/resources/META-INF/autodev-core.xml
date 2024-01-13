@@ -205,7 +205,7 @@
             </action>
 
             <action id="cc.unitmesh.devti.actions.chat.GenTestDataAction"
-                    class="cc.unitmesh.devti.actions.chat.GenTestDataAction" text="Generate Test data (APIs)"
+                    class="cc.unitmesh.devti.actions.chat.GenTestDataAction" text="Generate Test Data (APIs)"
                     description="Ask AI write this code">
             </action>
 

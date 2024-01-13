@@ -12,20 +12,16 @@
                                  id="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                                  displayName="AutoDev"/>
 
-        <projectService serviceImplementation="cc.unitmesh.devti.settings.configurable.CoUnitProjectSettingsService"/>
         <projectConfigurable provider="cc.unitmesh.devti.settings.configurable.CoUnitToolConfigurableProvider"
                              parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                              id="cc.unitmesh.counit"
                              bundle="messages.AutoDevBundle" key="counit.name"/>
 
-        <projectService serviceImplementation="cc.unitmesh.devti.settings.custom.TeamPromptsProjectSettingsService"/>
         <projectConfigurable provider="cc.unitmesh.devti.settings.custom.TeamPromptsConfigurableProvider"
                              parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                              id="cc.unitmesh.promptLibrary"
                              bundle="messages.AutoDevBundle" key="settings.external.team.prompts.name"/>
 
-
-        <projectService serviceImplementation="cc.unitmesh.devti.settings.coder.AutoDevCoderSettingService"/>
         <projectConfigurable provider="cc.unitmesh.devti.settings.coder.AutoDevCoderConfigurableProvider"
                              parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                              id="cc.unitmesh.autodevCoder"
@@ -183,6 +179,7 @@
                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT" searchable="false">
 
             <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
+            <add-to-group group-id="Floating.CodeToolbar" anchor="first"/>
         </group>
 
         <!-- For right click -->
@@ -208,7 +205,7 @@
             </action>
 
             <action id="cc.unitmesh.devti.actions.chat.GenTestDataAction"
-                    class="cc.unitmesh.devti.actions.chat.GenTestDataAction" text="Generate Test data (APIs)"
+                    class="cc.unitmesh.devti.actions.chat.GenTestDataAction" text="Generate Test Data (APIs)"
                     description="Ask AI write this code">
             </action>
 
