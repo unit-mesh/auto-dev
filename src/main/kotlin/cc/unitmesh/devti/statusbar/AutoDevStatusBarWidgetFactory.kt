@@ -8,6 +8,10 @@ import com.intellij.openapi.wm.StatusBarWidgetFactory
 import org.jetbrains.annotations.NonNls
 
 class AutoDevStatusBarWidgetFactory : StatusBarWidgetFactory {
+    override fun isAvailable(project: Project): Boolean {
+        return true
+    }
+
     override fun getId(): @NonNls String = "AutoDev"
 
     override fun getDisplayName(): @NlsContexts.ConfigurableName String {

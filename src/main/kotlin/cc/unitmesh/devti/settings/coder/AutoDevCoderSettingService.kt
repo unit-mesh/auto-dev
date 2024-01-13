@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 val Project.coderSetting: AutoDevCoderSettingService
     get() = service<AutoDevCoderSettingService>()
 
+@Service(Service.Level.PROJECT)
 @State(name = "AutoDevCoderSettings", storages = [Storage("autodev-coder.xml")])
 class AutoDevCoderSettingService(
     val project: Project,

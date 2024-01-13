@@ -33,6 +33,8 @@
 
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.AutoDevSettingsState"/>
 
+        <statusBarWidgetFactory id="AIAssistant" implementation="cc.unitmesh.devti.statusbar.AutoDevStatusBarWidgetFactory"/>
+
         <runConfigurationProducer
                 implementation="cc.unitmesh.devti.runconfig.command.AutoDevFeatureConfigurationProducer"/>
         <runConfigurationProducer
@@ -298,6 +300,10 @@
             <action id="GeniusGitHubActions" class="cc.unitmesh.genius.actions.GenerateGitHubActionsAction"/>
 
             <add-to-group group-id="NewGroup" anchor="last"/>
+        </group>
+
+        <group id="autodev.statusBarPopup">
+            <reference id="cc.unitmesh.devti.QuickAssistant"/>
         </group>
     </actions>
 </idea-plugin>

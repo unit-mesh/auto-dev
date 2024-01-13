@@ -12,20 +12,16 @@
                                  id="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                                  displayName="AutoDev"/>
 
-        <projectService serviceImplementation="cc.unitmesh.devti.settings.configurable.CoUnitProjectSettingsService"/>
         <projectConfigurable provider="cc.unitmesh.devti.settings.configurable.CoUnitToolConfigurableProvider"
                              parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                              id="cc.unitmesh.counit"
                              bundle="messages.AutoDevBundle" key="counit.name"/>
 
-        <projectService serviceImplementation="cc.unitmesh.devti.settings.custom.TeamPromptsProjectSettingsService"/>
         <projectConfigurable provider="cc.unitmesh.devti.settings.custom.TeamPromptsConfigurableProvider"
                              parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                              id="cc.unitmesh.promptLibrary"
                              bundle="messages.AutoDevBundle" key="settings.external.team.prompts.name"/>
 
-
-        <projectService serviceImplementation="cc.unitmesh.devti.settings.coder.AutoDevCoderSettingService"/>
         <projectConfigurable provider="cc.unitmesh.devti.settings.coder.AutoDevCoderConfigurableProvider"
                              parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                              id="cc.unitmesh.autodevCoder"
@@ -301,6 +297,10 @@
             <action id="GeniusGitHubActions" class="cc.unitmesh.genius.actions.GenerateGitHubActionsAction"/>
 
             <add-to-group group-id="NewGroup" anchor="last"/>
+        </group>
+
+        <group id="autodev.statusBarPopup">
+            <reference id="cc.unitmesh.devti.QuickAssistant"/>
         </group>
     </actions>
 </idea-plugin>

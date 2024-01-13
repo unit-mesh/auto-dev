@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 val Project.coUnitSettings: CoUnitProjectSettingsService
     get() = service<CoUnitProjectSettingsService>()
 
+@Service(Service.Level.PROJECT)
 @State(name = "CoUnitProjectSettings", storages = [Storage(StoragePathMacros.WORKSPACE_FILE)])
 class CoUnitProjectSettingsService(
     val project: Project,

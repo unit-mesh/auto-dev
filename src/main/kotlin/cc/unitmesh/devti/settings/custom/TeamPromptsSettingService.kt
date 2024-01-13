@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 val Project.teamPromptsSettings: TeamPromptsProjectSettingsService
     get() = service<TeamPromptsProjectSettingsService>()
 
+@Service(Service.Level.PROJECT)
 @State(name = "AutoDevTeamPromptProjectSettings", storages = [Storage(StoragePathMacros.WORKSPACE_FILE)])
 class TeamPromptsProjectSettingsService(
     val project: Project,
