@@ -63,7 +63,7 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         logger.info("Start generating commit message.")
         logger.info(prompt)
 
-        event.presentation.setIcon(AutoDevStatus.InProgress.icon)
+        event.presentation.icon = AutoDevStatus.InProgress.icon
         val stream = LlmFactory().create(project).stream(prompt, "", false)
 
         ApplicationManager.getApplication().executeOnPooledThread() {
@@ -74,7 +74,7 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
                     }
                 }
 
-                event.presentation.setIcon(AutoDevStatus.Ready.icon)
+                event.presentation.icon = AutoDevStatus.Ready.icon
             }
         }
     }
