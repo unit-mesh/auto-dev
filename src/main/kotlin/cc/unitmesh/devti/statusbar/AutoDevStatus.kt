@@ -4,6 +4,7 @@ import cc.unitmesh.devti.AutoDevIcons
 import javax.swing.Icon
 
 enum class AutoDevStatus {
+    WAITING,
     Ready,
     InProgress,
     Error;
@@ -11,7 +12,8 @@ enum class AutoDevStatus {
     val icon: Icon
         get() {
             return when (this) {
-                Ready -> AutoDevIcons.DARK
+                WAITING -> AutoDevIcons.DARK
+                Ready -> AutoDevIcons.AI_COPILOT
                 InProgress -> AutoDevIcons.IntProgress
                 Error -> AutoDevIcons.ERROR
             }

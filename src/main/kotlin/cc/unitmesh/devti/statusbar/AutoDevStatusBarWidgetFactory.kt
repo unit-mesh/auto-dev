@@ -21,4 +21,8 @@ class AutoDevStatusBarWidgetFactory : StatusBarWidgetFactory {
     override fun createWidget(project: Project): StatusBarWidget {
         return AutoDevStatusBarWidget(project)
     }
+
+    override fun disposeWidget(widget: StatusBarWidget) {
+        widget.dispose()
+    }
 }

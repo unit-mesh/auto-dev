@@ -5,6 +5,7 @@ import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.prompting.VcsPrompting
+import cc.unitmesh.devti.statusbar.AutoDevStatus
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.invokeLater
@@ -15,22 +16,31 @@ import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.ui.CommitMessage
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.flow.collect
 
 class CommitMessageSuggestionAction : ChatBaseAction() {
     val logger = logger<CommitMessageSuggestionAction>()
 
     override fun getActionType(): ChatActionType = ChatActionType.GEN_COMMIT_MESSAGE
 
+    private var statusEventProducer: StatusEventProducer = StatusEventProducer()
+
     override fun update(e: AnActionEvent) {
         val data = e.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL)
         if (data == null) {
+            e.presentation.icon = AutoDevStatus.WAITING.icon
             e.presentation.isEnabled = false
             return
         }
 
         val prompting = e.project?.service<VcsPrompting>()
         val changes: List<Change> = prompting?.hasChanges() ?: listOf()
+
+        e.presentation.icon = AutoDevStatus.Ready.icon
+        statusEventProducer.setOnEventListener(object : OnEventListener {
+            override fun onEventOccurred(status: AutoDevStatus) {
+                e.presentation.icon = status.icon
+            }
+        })
         e.presentation.isEnabled = changes.isNotEmpty()
     }
 
@@ -53,6 +63,7 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         logger.info("Start generating commit message.")
         logger.info(prompt)
 
+        statusEventProducer.triggerEvent(AutoDevStatus.InProgress)
         val stream = LlmFactory().create(project).stream(prompt, "", false)
 
         ApplicationManager.getApplication().executeOnPooledThread() {
@@ -62,6 +73,8 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
                         commitMessageUi.editorField.text += it
                     }
                 }
+
+                statusEventProducer.triggerEvent(AutoDevStatus.Ready)
             }
         }
     }
