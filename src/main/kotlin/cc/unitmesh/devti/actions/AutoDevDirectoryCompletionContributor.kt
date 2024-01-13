@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.custom
+package cc.unitmesh.devti.actions
 
 import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.ide.actions.CreateDirectoryCompletionContributor
@@ -8,6 +8,7 @@ import org.jetbrains.jps.model.java.JavaResourceRootType
 import java.io.File
 
 class AutoDevDirectoryCompletionContributor : CreateDirectoryCompletionContributor {
+
     override fun getDescription(): @Nls(capitalization = Nls.Capitalization.Sentence) String {
         return AutoDevBundle.message("autodev.directory.completion.description")
     }

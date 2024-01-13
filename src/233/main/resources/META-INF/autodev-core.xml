@@ -38,7 +38,7 @@
                 implementation="cc.unitmesh.devti.runconfig.command.CompositeAutoBaseRunConfigurationProducer"/>
 
         <configurationType implementation="cc.unitmesh.devti.runconfig.AutoDevConfigurationType"/>
-        <createDirectoryCompletionContributor implementation="cc.unitmesh.devti.custom.AutoDevDirectoryCompletionContributor"/>
+        <createDirectoryCompletionContributor implementation="cc.unitmesh.devti.actions.AutoDevDirectoryCompletionContributor"/>
         <!-- Run Configurations -->
         <programRunner implementation="cc.unitmesh.devti.runconfig.AutoDevCommandRunner"/>
 
@@ -291,6 +291,11 @@
             <action id="AutoDev.ToolWindow.Message.Like"
                     class="cc.unitmesh.devti.gui.chat.message.AutoDevRateMessageAction$Like"/>
         </group>
+
+        <action id="AutoDev.NewPromptTemplate" class="cc.unitmesh.devti.actions.template.NewPromptTemplateAction"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
+            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFromTemplate"/>
+        </action>
 
         <group id="DevOpsGenius.NewActions" popup="true" icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
             <separator/>
