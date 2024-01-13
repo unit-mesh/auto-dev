@@ -4,10 +4,9 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.Pair
-import com.intellij.util.messages.Topic
 import io.opentelemetry.api.internal.GuardedBy
 
-class AutoDevStatusService : Disposable {
+class AutoDevStatusService : AutoDevStatusListener, Disposable {
     private val lock = Any()
 
     @GuardedBy("lock")
@@ -16,11 +15,10 @@ class AutoDevStatusService : Disposable {
     @GuardedBy("lock")
     private var message: String? = null
 
-
     init {
         ApplicationManager.getApplication().messageBus
             .connect(this)
-            .subscribe(TOPIC, this)
+            .subscribe(AutoDevStatusListener.TOPIC, this)
     }
 
     override fun dispose() {
@@ -31,7 +29,7 @@ class AutoDevStatusService : Disposable {
         synchronized(lock) { return Pair.create(status, message) }
     }
 
-    fun onCopilotStatus(status: AutoDevStatus, customMessage: String?) {
+    override fun onCopilotStatus(status: AutoDevStatus, customMessage: String?) {
         synchronized(lock) {
             this.status = status
             message = customMessage
@@ -55,7 +53,6 @@ class AutoDevStatusService : Disposable {
     }
 
     companion object {
-        val TOPIC = Topic.create("autodev.status", AutoDevStatusService::class.java)
 
         val currentStatus: Pair<AutoDevStatus, String?>
             get() = ApplicationManager.getApplication().getService(AutoDevStatusService::class.java).getStatus()
@@ -63,7 +60,7 @@ class AutoDevStatusService : Disposable {
         @JvmOverloads
         fun notifyApplication(status: AutoDevStatus, customMessage: String? = null) {
             ApplicationManager.getApplication().messageBus
-                .syncPublisher(TOPIC)
+                .syncPublisher(AutoDevStatusListener.TOPIC)
                 .onCopilotStatus(status, customMessage)
         }
 
