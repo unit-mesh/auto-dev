@@ -61,7 +61,7 @@ class KotlinTestContextProvider : JavaTestContextProvider() {
             }
 
             else -> {
-                val lookup = project.service<TemplatedTestPrompt>().lookup("Test.java")
+                val lookup = project.service<TemplatedTestPrompt>().lookup("Test.kt")
                 if (lookup != null) {
                     prompt += "Here is a template as example\n```$language\n$lookup\n```\n"
                 }

@@ -1,9 +1,7 @@
 package cc.unitmesh.kotlin.provider;
 
-import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testFramework.LightPlatformTestCase
 import junit.framework.TestCase
-import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtPsiFactory
 
 class KotlinContextCollectorTest : LightPlatformTestCase() {

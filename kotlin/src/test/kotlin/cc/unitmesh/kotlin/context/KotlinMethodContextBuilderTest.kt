@@ -34,5 +34,4 @@ class KotlinMethodContextBuilderTest : LightPlatformTestCase() {
     fun main() {
         println("Hello, World!")
     }
-
 }
