@@ -8,6 +8,8 @@ import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.parser.parseCodeFromString
 import cc.unitmesh.devti.provider.WriteTestService
 import cc.unitmesh.devti.provider.context.*
+import cc.unitmesh.devti.statusbar.AutoDevStatus
+import cc.unitmesh.devti.statusbar.AutoDevStatusService
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
@@ -35,6 +37,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         indicator.fraction = 0.1
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.prepare-context")
 
+        AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
         val testContext = writeTestService?.findOrCreateTestFile(request.file, request.project, request.element)
         DumbService.getInstance(request.project).waitForSmartMode()
 
@@ -100,16 +103,24 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
 
         logger<AutoTestThisIntention>().info("Prompt: $prompter")
 
-        val flow: Flow<String> =
-            LlmFactory().create(request.project).stream(prompter, "")
 
         indicator.fraction = 0.8
         indicator.text = AutoDevBundle.message("intentions.request.background.process.title")
+
+        val flow: Flow<String> = try {
+            LlmFactory().create(request.project).stream(prompter, "")
+        } catch (e: Exception) {
+            AutoDevStatusService.notifyApplication(AutoDevStatus.Error)
+            logger.error("Failed to create LLM for: $lang", e)
+            return
+        }
 
         runBlocking {
             writeTestToFile(request.project, flow, testContext)
             navigateTestFile(testContext.file, request.project)
             writeTestService?.runTest(request.project, testContext.file)
+
+            AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)
             indicator.fraction = 1.0
         }
     }
