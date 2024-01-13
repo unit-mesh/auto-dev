@@ -20,6 +20,8 @@ class AutoDevStatusBarWidget(project: Project) : EditorBasedStatusBarPopup(proje
     }
 
     override fun createPopup(context: DataContext): ListPopup? {
+//      TODO: show different status in menu
+//        val currentStatus = AutoDevStatusService.currentStatus.first
         val statusGroup = DefaultActionGroup()
 
         val configuredGroup = ActionManager.getInstance().getAction("autodev.statusBarPopup") as? ActionGroup

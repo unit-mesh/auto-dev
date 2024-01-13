@@ -1,6 +1,7 @@
 package cc.unitmesh.devti
 
 import com.intellij.openapi.util.IconLoader
+import com.intellij.ui.AnimatedIcon
 import javax.swing.Icon
 
 object AutoDevIcons {
@@ -12,6 +13,12 @@ object AutoDevIcons {
 
     @JvmField
     val DARK: Icon = IconLoader.getIcon("/icons/autodev-dark.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val ERROR: Icon = IconLoader.getIcon("/icons/autodev-error.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val IntProgress = AnimatedIcon.Default()
 
     @JvmField
     val Send: Icon = IconLoader.getIcon("/icons/send.svg", AutoDevIcons::class.java)
