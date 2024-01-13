@@ -2,15 +2,12 @@ package cc.unitmesh.idea.java
 
 import cc.unitmesh.idea.flow.JavaCodeProcessor
 import com.intellij.lang.java.JavaLanguage
-import com.intellij.psi.JavaPsiFacade
-import com.intellij.psi.PsiElementFactory
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiJavaFile
 import com.intellij.testFramework.LightPlatformTestCase
 import junit.framework.TestCase
 
 class JavaCodeProcessorTest : LightPlatformTestCase() {
-    private val javaFactory: PsiElementFactory get() = JavaPsiFacade.getElementFactory(project)
     private val fileFactory: PsiFileFactory get() = PsiFileFactory.getInstance(project)
 
     private val originCode = """

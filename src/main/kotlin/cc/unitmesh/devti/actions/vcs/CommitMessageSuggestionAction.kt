@@ -6,6 +6,7 @@ import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.prompting.VcsPrompting
 import cc.unitmesh.devti.statusbar.AutoDevStatus
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.invokeLater
@@ -19,11 +20,14 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.flow.collect
 
 class CommitMessageSuggestionAction : ChatBaseAction() {
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.BGT
+    }
+
     val logger = logger<CommitMessageSuggestionAction>()
 
     override fun getActionType(): ChatActionType = ChatActionType.GEN_COMMIT_MESSAGE
-
-    private var statusEventProducer: StatusEventProducer = StatusEventProducer()
 
     override fun update(e: AnActionEvent) {
         val data = e.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL)
@@ -37,11 +41,6 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         val changes: List<Change> = prompting?.hasChanges() ?: listOf()
 
         e.presentation.icon = AutoDevStatus.Ready.icon
-        statusEventProducer.setOnEventListener(object : OnEventListener {
-            override fun onEventOccurred(status: AutoDevStatus) {
-                e.presentation.icon = status.icon
-            }
-        })
         e.presentation.isEnabled = changes.isNotEmpty()
     }
 
@@ -64,7 +63,7 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         logger.info("Start generating commit message.")
         logger.info(prompt)
 
-        statusEventProducer.triggerEvent(AutoDevStatus.InProgress)
+        event.presentation.setIcon(AutoDevStatus.InProgress.icon)
         val stream = LlmFactory().create(project).stream(prompt, "", false)
 
         ApplicationManager.getApplication().executeOnPooledThread() {
@@ -74,9 +73,9 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
                         commitMessageUi.editorField.text += it
                     }
                 }
-            }
 
-            statusEventProducer.triggerEvent(AutoDevStatus.Ready)
+                event.presentation.setIcon(AutoDevStatus.Ready.icon)
+            }
         }
     }
 

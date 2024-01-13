@@ -2,10 +2,9 @@ package cc.unitmesh.devti.intentions.action
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
-import cc.unitmesh.devti.intentions.action.task.SimilarCodeCompletionTask
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
 import cc.unitmesh.devti.intentions.action.task.RelatedCodeCompletionTask
-import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.intentions.action.task.SimilarCodeCompletionTask
 import cc.unitmesh.devti.settings.coder.coderSetting
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor

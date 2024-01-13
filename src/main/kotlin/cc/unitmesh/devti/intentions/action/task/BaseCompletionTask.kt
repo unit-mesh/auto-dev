@@ -5,6 +5,8 @@ import cc.unitmesh.devti.InsertUtil
 import cc.unitmesh.devti.LLMCoroutineScope
 import cc.unitmesh.devti.intentions.action.CodeCompletionIntention
 import cc.unitmesh.devti.llms.LlmFactory
+import cc.unitmesh.devti.statusbar.AutoDevStatus
+import cc.unitmesh.devti.statusbar.AutoDevStatusService
 import com.intellij.openapi.actionSystem.CustomShortcutSet
 import com.intellij.openapi.actionSystem.KeyboardShortcut
 import com.intellij.openapi.application.invokeLater
@@ -32,6 +34,8 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
         indicator.isIndeterminate = true
         indicator.fraction = 0.1
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.prepare-context")
+
+        AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
 
         val prompt = promptText()
         val flow: Flow<String> = LlmFactory().create(request.project).stream(prompt, "", keepHistory())
@@ -72,6 +76,7 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
                 }
             }
 
+            AutoDevStatusService.notifyApplication(AutoDevStatus.Done)
             logger.info("Suggestion: $suggestion")
         }
     }

@@ -7,7 +7,8 @@ enum class AutoDevStatus {
     WAITING,
     Ready,
     InProgress,
-    Error;
+    Error,
+    Done;
 
     val icon: Icon
         get() {
@@ -16,6 +17,7 @@ enum class AutoDevStatus {
                 Ready -> AutoDevIcons.AI_COPILOT
                 InProgress -> AutoDevIcons.IntProgress
                 Error -> AutoDevIcons.ERROR
+                Done -> AutoDevIcons.AI_COPILOT
             }
         }
 }

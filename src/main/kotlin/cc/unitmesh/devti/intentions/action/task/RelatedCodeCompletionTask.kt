@@ -2,8 +2,7 @@ package cc.unitmesh.devti.intentions.action.task
 
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.ContextPrompter
-import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
-import com.intellij.lang.LanguageCommenters
+import com.intellij.openapi.application.runReadAction
 
 /**
  * The `CodeCompletionTask` class is responsible for performing code completion tasks in the background.
@@ -33,7 +32,7 @@ class RelatedCodeCompletionTask(private val request: CodeCompletionRequest) : Ba
             .initContext(
                 ChatActionType.CODE_COMPLETE,
                 request.prefixText,
-                request.element.containingFile,
+                runReadAction { request.element.containingFile },
                 project,
                 request.offset,
                 request.element

@@ -4,6 +4,8 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.provider.LivingDocumentation
 import cc.unitmesh.devti.custom.document.LivingDocumentationType
+import cc.unitmesh.devti.statusbar.AutoDevStatus
+import cc.unitmesh.devti.statusbar.AutoDevStatusService
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
@@ -28,6 +30,7 @@ class LivingDocumentationTask(
         val documentation = LivingDocumentation.forLanguage(target.language) ?: return
         val builder = LivingDocPromptBuilder(editor, target, documentation, type)
         val prompt = builder.buildPrompt(project, target, "")
+        AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
 
         logger.info("Prompt: $prompt")
 
@@ -45,6 +48,7 @@ class LivingDocumentationTask(
         logger.info("Result: $result")
 
         documentation.updateDoc(target, result, type, editor)
+        AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)
     }
 
     companion object {
