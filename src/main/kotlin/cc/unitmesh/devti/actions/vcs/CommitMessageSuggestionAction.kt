@@ -74,9 +74,9 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
                         commitMessageUi.editorField.text += it
                     }
                 }
-
-                statusEventProducer.triggerEvent(AutoDevStatus.Ready)
             }
+
+            statusEventProducer.triggerEvent(AutoDevStatus.Ready)
         }
     }
 
