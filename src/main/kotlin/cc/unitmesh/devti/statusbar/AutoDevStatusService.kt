@@ -2,6 +2,7 @@ package cc.unitmesh.devti.statusbar
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.Pair
 import com.intellij.util.messages.Topic
 import io.opentelemetry.api.internal.GuardedBy
@@ -30,11 +31,41 @@ class AutoDevStatusService : Disposable {
         synchronized(lock) { return Pair.create(status, message) }
     }
 
+    fun onCopilotStatus(status: AutoDevStatus, customMessage: String?) {
+        synchronized(lock) {
+            this.status = status
+            message = customMessage
+        }
+
+        updateAllStatusBarIcons()
+    }
+
+    private fun updateAllStatusBarIcons() {
+        val action = Runnable {
+            ProjectManager.getInstance().openProjects
+                .filterNot { it.isDisposed }
+                .forEach { AutoDevStatusBarWidget.update(it) }
+        }
+        val application = ApplicationManager.getApplication()
+        if (application.isDispatchThread) {
+            action.run()
+        } else {
+            application.invokeLater(action)
+        }
+    }
+
     companion object {
         val TOPIC = Topic.create("autodev.status", AutoDevStatusService::class.java)
 
         val currentStatus: Pair<AutoDevStatus, String?>
             get() = ApplicationManager.getApplication().getService(AutoDevStatusService::class.java).getStatus()
+
+        @JvmOverloads
+        fun notifyApplication(status: AutoDevStatus, customMessage: String? = null) {
+            ApplicationManager.getApplication().messageBus
+                .syncPublisher(TOPIC)
+                .onCopilotStatus(status, customMessage)
+        }
 
     }
 }

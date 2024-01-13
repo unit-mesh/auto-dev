@@ -11,17 +11,16 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.ListPopup
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.StatusBarWidget
+import com.intellij.openapi.wm.WindowManager
 import com.intellij.openapi.wm.impl.status.EditorBasedStatusBarPopup
 
 class AutoDevStatusBarWidget(project: Project) : EditorBasedStatusBarPopup(project, false) {
-    override fun ID(): String = "AutoDev"
+    override fun ID(): String = AutoDevBundle.message("autodev.statusbar.id")
     override fun createInstance(project: Project): StatusBarWidget {
         return AutoDevStatusBarWidget(project)
     }
 
     override fun createPopup(context: DataContext): ListPopup? {
-//      TODO: show different status in menu
-//        val currentStatus = AutoDevStatusService.currentStatus.first
         val statusGroup = DefaultActionGroup()
 
         val configuredGroup = ActionManager.getInstance().getAction("autodev.statusBarPopup") as? ActionGroup
@@ -39,11 +38,24 @@ class AutoDevStatusBarWidget(project: Project) : EditorBasedStatusBarPopup(proje
 
     override fun getWidgetState(file: VirtualFile?): WidgetState {
         val widgetState = WidgetState("", "", true)
-        widgetState.icon = AutoDevIcons.AI_COPILOT
+        val currentStatus = AutoDevStatusService.currentStatus.first
+        widgetState.icon = currentStatus.icon
         return widgetState
     }
 
     override fun dispose() {
         super.dispose()
+    }
+
+    companion object {
+        fun update(project: Project) {
+            val bar = WindowManager.getInstance().getStatusBar(project)
+            val barWidget =
+                bar.getWidget(AutoDevBundle.message("autodev.statusbar.id")) as? AutoDevStatusBarWidget ?: return
+
+            barWidget.update {
+                barWidget.myStatusBar?.updateWidget(AutoDevBundle.message("autodev.statusbar.id"))
+            }
+        }
     }
 }
