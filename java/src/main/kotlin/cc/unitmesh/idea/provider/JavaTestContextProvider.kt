@@ -47,7 +47,7 @@ open class JavaTestContextProvider : ChatContextProvider {
 
                 val lookup = project.service<TemplatedTestPrompt>().lookup("ControllerTest.java")
                 if (lookup != null) {
-                    testControllerPrompt += "Here is a template as example\n```$language\n$lookup\n```\n"
+                    testControllerPrompt += "\nHere is the Test code template as example\n```$language\n$lookup\n```\n"
                 }
 
                 ChatContextItem(JavaTestContextProvider::class, testControllerPrompt)
@@ -61,7 +61,7 @@ open class JavaTestContextProvider : ChatContextProvider {
 
                 val lookup = project.service<TemplatedTestPrompt>().lookup("ServiceTest.java")
                 if (lookup != null) {
-                    testServicePrompt += "Here is a template as example\n```$language\n$lookup\n```\n"
+                    testServicePrompt += "\nHere is the Test code template as example\n```$language\n$lookup\n```\n"
                 }
 
                 ChatContextItem(JavaTestContextProvider::class, testServicePrompt)
@@ -70,7 +70,7 @@ open class JavaTestContextProvider : ChatContextProvider {
             else -> {
                 val lookup = project.service<TemplatedTestPrompt>().lookup("Test.java")
                 if (lookup != null) {
-                    prompt += "Here is a template as example\n```$language\n$lookup\n```\n"
+                    prompt += "\nHere is the Test code template as example\n```$language\n$lookup\n```\n"
                 }
                 ChatContextItem(JavaTestContextProvider::class, prompt)
             }

@@ -1,3 +1,4 @@
+// Here is the Test template code.
 // for test intellij plugin
 import com.intellij.testFramework.LightPlatformTestCase
 class /*TestClassName*/Test : LightPlatformTestCase() {

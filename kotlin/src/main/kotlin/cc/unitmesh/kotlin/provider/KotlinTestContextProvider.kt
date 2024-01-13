@@ -39,7 +39,7 @@ class KotlinTestContextProvider : JavaTestContextProvider() {
 
                 val lookup = project.service<TemplatedTestPrompt>().lookup("ControllerTest.kt")
                 if (lookup != null) {
-                    testControllerPrompt += "Here is a template as example\n```$language\n$lookup\n```\n"
+                    testControllerPrompt += "\nHere is the Test code template as example\n```$language\n$lookup\n```\n"
                 }
 
                 ChatContextItem(JavaTestContextProvider::class, testControllerPrompt)
@@ -54,7 +54,7 @@ class KotlinTestContextProvider : JavaTestContextProvider() {
 
                 val lookup = project.service<TemplatedTestPrompt>().lookup("ServiceTest.kt")
                 if (lookup != null) {
-                    testServicePrompt += "Here is a template as example\n```$language\n$lookup\n```\n"
+                    testServicePrompt += "\nHere is the Test code template as example\n```$language\n$lookup\n```\n"
                 }
 
                 ChatContextItem(JavaTestContextProvider::class, testServicePrompt)
@@ -63,7 +63,8 @@ class KotlinTestContextProvider : JavaTestContextProvider() {
             else -> {
                 val lookup = project.service<TemplatedTestPrompt>().lookup("Test.kt")
                 if (lookup != null) {
-                    prompt += "Here is a template as example\n```$language\n$lookup\n```\n"
+                    prompt += "\n" +
+                            "Here is the Test code template as example\n```$language\n$lookup\n```\n"
                 }
 
                 ChatContextItem(JavaTestContextProvider::class, prompt)

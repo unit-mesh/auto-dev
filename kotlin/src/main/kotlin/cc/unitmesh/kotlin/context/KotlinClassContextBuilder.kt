@@ -22,7 +22,7 @@ class KotlinClassContextBuilder : ClassContextBuilder {
 
         val text = psiElement.text
         val name = psiElement.name
-        val ktNamedFunctions = Companion.getFunctions(psiElement)
+        val ktNamedFunctions = getFunctions(psiElement)
         val primaryConstructorFields = getPrimaryConstructorFields(psiElement)
         val allFields = ktNamedFunctions + primaryConstructorFields
         val usages =
