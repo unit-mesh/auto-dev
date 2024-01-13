@@ -38,7 +38,7 @@
                 implementation="cc.unitmesh.devti.runconfig.command.CompositeAutoBaseRunConfigurationProducer"/>
 
         <configurationType implementation="cc.unitmesh.devti.runconfig.AutoDevConfigurationType"/>
-
+        <createDirectoryCompletionContributor implementation="cc.unitmesh.devti.custom.AutoDevDirectoryCompletionContributor"/>
         <!-- Run Configurations -->
         <programRunner implementation="cc.unitmesh.devti.runconfig.AutoDevCommandRunner"/>
 
