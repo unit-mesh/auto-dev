@@ -2,10 +2,10 @@ package cc.unitmesh.idea.service
 
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
-import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.devti.provider.WriteTestService
+import cc.unitmesh.devti.provider.context.TestFileContext
 import com.intellij.execution.configurations.RunProfile
-import com.intellij.lang.Language
+import com.intellij.lang.java.JavaLanguage
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
@@ -27,7 +27,7 @@ class JavaWriteTestService : WriteTestService() {
     }
 
     override fun isApplicable(element: PsiElement): Boolean {
-        return element.language == Language.findLanguageByID("JAVA")
+        return element.language is JavaLanguage
     }
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
