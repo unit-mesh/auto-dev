@@ -120,7 +120,13 @@ class JvmPromptStrategy : PromptStrategy() {
         return methodCodes
     }
 
-    // get all line when match by field usage (by Regex)
+    /**
+     * Retrieves all lines from the given code string that match the specified field regex.
+     *
+     * @param codeString The code string to search for field usage.
+     * @param firstFieldRegex The regular expression pattern to match the first field usage in each line.
+     * @return A string containing all the lines that match the field regex, with additional code added before each line.
+     */
     private fun getByFields(
         codeString: @NlsSafe String,
         firstFieldRegex: Regex
@@ -144,6 +150,14 @@ class JvmPromptStrategy : PromptStrategy() {
         }
     }
 
+    /**
+     * Generates a code prompt text for implementing missing methods in a given service file.
+     *
+     * @param serviceFile the PsiJavaFile representing the service file
+     * @param usedMethod a list of used methods in the service file
+     * @param noExistMethods a list of methods that do not exist in the service file
+     * @return a CodePromptText object containing the generated code prompt text
+     */
     fun advice(serviceFile: PsiJavaFile, usedMethod: List<String>, noExistMethods: List<String>): CodePromptText {
         val code = serviceFile.text
         val filterNeedImplementMethods = usedMethod.filter {

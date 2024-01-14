@@ -21,7 +21,7 @@ import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
 import kotlinx.coroutines.runBlocking
 
 open class JavaContextPrompter : ContextPrompter() {
-    protected var additionContext: String = ""
+    private var additionContext: String = ""
     protected open val testDataBuilder: TestDataBuilder = JavaTestDataBuilder()
 
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()

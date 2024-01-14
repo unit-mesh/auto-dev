@@ -74,10 +74,14 @@ open class JavaCodeModifier : CodeModifier {
         }
 
         WriteCommandAction.runWriteCommandAction(project) {
-            val classEndOffset = rootElement.textRange.endOffset
-            val document = PsiDocumentManager.getInstance(project).getDocument(rootElement.containingFile)
-            document?.insertString(classEndOffset - 1, "\n    ")
-            document?.insertString(classEndOffset - 1 + "\n    ".length, newTestMethod.text)
+            try {
+                rootElement.add(newTestMethod)
+            } catch (e: Throwable) {
+                val classEndOffset = rootElement.textRange.endOffset
+                val document = PsiDocumentManager.getInstance(project).getDocument(rootElement.containingFile)
+                document?.insertString(classEndOffset - 1, "\n    ")
+                document?.insertString(classEndOffset - 1 + "\n    ".length, newTestMethod.text)
+            }
         }
 
         project.guessProjectDir()?.refresh(true, true)
