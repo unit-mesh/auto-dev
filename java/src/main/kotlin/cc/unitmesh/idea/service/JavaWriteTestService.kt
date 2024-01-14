@@ -46,14 +46,14 @@ class JavaWriteTestService : WriteTestService() {
 
         // Check if the source file is in the src/main/java directory
         if (!parentDirPath?.contains("/src/main/java/")!!) {
-            log.error("Source file is not in the src/main/java directory: ${parentDirPath}")
+            log.error("Source file is not in the src/main/java directory: $parentDirPath")
             return null
         }
 
         var isNewFile = false
 
         // Find the test directory
-        val testDirPath = parentDir.path.replace("/src/main/java/", "/src/test/java/")
+        val testDirPath = parentDirPath.replace("/src/main/java/", "/src/test/java/")
         var testDir = LocalFileSystem.getInstance().findFileByPath(testDirPath)
 
         if (testDir == null || !testDir.isDirectory) {

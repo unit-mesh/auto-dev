@@ -9,17 +9,16 @@ object JavaTypeUtil {
     private fun resolveByType(outputType: PsiType?): Map<String, PsiClass> {
         val resolvedClasses = mutableMapOf<String, PsiClass>()
         if (outputType is PsiClassReferenceType) {
-            if (outputType.parameters.isNotEmpty()) {
-                outputType.parameters.forEach {
-                    if (it is PsiClassReferenceType && outputType.resolve() != null) {
-                        resolvedClasses[it.canonicalText] = outputType.resolve()!!
-                    }
+            val resolveClz = outputType.resolve()
+            outputType.parameters.filterIsInstance<PsiClassReferenceType>().forEach {
+                if (resolveClz != null) {
+                    resolvedClasses[it.canonicalText] = resolveClz
                 }
             }
 
             val canonicalText = outputType.canonicalText
-            if (outputType.resolve() != null) {
-                resolvedClasses[canonicalText] = outputType.resolve()!!
+            if (resolveClz != null) {
+                resolvedClasses[canonicalText] = resolveClz
             }
         }
 
