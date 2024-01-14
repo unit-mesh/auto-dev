@@ -18,7 +18,7 @@
 </p>
 
 > 🧙‍AutoDev: The AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, and a helpful
-> bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Testing feature 🧪 included! 🚀
+> bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Dev/Testing feature 🧪 included! 🚀
 
 [Read the docs →](https://ide.unitmesh.cc/)
 
@@ -68,7 +68,7 @@ download from [HuggingFace](https://huggingface.co/unit-mesh)
 
 ### Demo
 
-Video demo (Youtube) — English
+Video demo (YouTube) — English
 
 [![Watch the video](https://img.youtube.com/vi/gVBTBdFV5hA/sddefault.jpg)](https://youtu.be/gVBTBdFV5hA)
 
@@ -101,8 +101,8 @@ Welcome to add your company here.
 the JetBrains Community version and the super cool JetBrains AI Assistant plugin in our codebase.
 But fret not, we are working our magic to clean it up diligently! 🧙‍♂️✨.
 
-Those code will be removed in the future, you
+Those codes will be removed in the future, you
 can check it in `src/main/kotlin/com/intellij/temporary`, if you want to use this plugin in your company,
-please remove those code to avoid any legal issues.
+please remove those codes to avoid any legal issues.
 
 This code is distributed under the MPL 2.0 license. See `LICENSE` in this directory.
