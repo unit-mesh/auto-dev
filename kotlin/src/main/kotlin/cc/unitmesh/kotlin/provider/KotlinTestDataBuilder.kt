@@ -30,7 +30,7 @@ class KotlinTestDataBuilder : TestDataBuilder {
                     }
 
                     else -> {
-                        "null"
+                        ""
                     }
                 }
             }
