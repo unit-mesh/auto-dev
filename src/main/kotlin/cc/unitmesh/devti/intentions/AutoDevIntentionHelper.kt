@@ -32,7 +32,6 @@ class AutoDevIntentionHelper : IntentionAction, Iconable {
         val popupStep = CustomPopupStep(intentions, project, editor, file, title)
         val popup = JBPopupFactory.getInstance().createListPopup(popupStep)
 
-        // TODO: after 2023.2 we can use this
         popup.showInBestPositionFor(editor)
     }
 

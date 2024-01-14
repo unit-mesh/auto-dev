@@ -22,9 +22,7 @@ class GitLabIssue(private val apiUrl: String, private val personalAccessToken: S
         return SimpleProjectInfo(project.nameWithNamespace, project.name, project.description ?: "")
     }
 
-    override fun getStories(): List<SimpleStory> {
-        TODO("Not yet implemented")
-    }
+    override fun getStories(): List<SimpleStory> = listOf()
 
     override fun getStoryById(storyId: String): SimpleStory {
         val issue: Issue = gitLabApi.issuesApi.getIssue(apiUrl, storyId.toLong())

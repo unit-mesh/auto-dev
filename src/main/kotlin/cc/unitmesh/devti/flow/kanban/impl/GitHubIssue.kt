@@ -34,9 +34,7 @@ class GitHubIssue(var repoUrl: String, val token: String) : Kanban {
         return SimpleProjectInfo(repo.fullName, repo.name, repo.description ?: "")
     }
 
-    override fun getStories(): List<SimpleStory> {
-        TODO("Not yet implemented")
-    }
+    override fun getStories(): List<SimpleStory> = listOf()
 
     override fun getStoryById(storyId: String): SimpleStory {
         val issue = gitHub.getRepository(repoUrl).getIssue(Integer.parseInt(storyId))
