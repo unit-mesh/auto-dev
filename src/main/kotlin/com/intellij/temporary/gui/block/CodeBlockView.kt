@@ -69,7 +69,7 @@ class CodeBlockView(
         }
     }
 
-    fun updateOrCreateCodeView(): CodePartEditorInfo? {
+    private fun updateOrCreateCodeView(): CodePartEditorInfo? {
         val code: Code = getBlock().code
         if (editorInfo == null) {
             val graphProperty = PropertyGraph(null, false).property(code.text)
@@ -176,8 +176,9 @@ class CodeBlockView(
 
                 toolbar.setBackground(editor.backgroundColor)
                 toolbar.setOpaque(true)
-                toolbar.setTargetComponent(editor.contentComponent)
+                toolbar.targetComponent = editor.contentComponent
                 editor.headerComponent = toolbar
+
                 val connect = project.messageBus.connect(disposable)
                 val topic: Topic<EditorColorsListener> = EditorColorsManager.TOPIC
                 connect.subscribe(topic, EditorColorsListener {

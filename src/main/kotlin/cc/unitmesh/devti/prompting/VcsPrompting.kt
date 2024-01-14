@@ -83,15 +83,7 @@ class VcsPrompting(private val project: Project) {
             details.forEach { writer.write(it.fullMessage + "\n\n") }
         }
 
-        writer.write(
-            """
-            Changes:
-            
-            ```patch
-            $processedText
-            ```
-            """.trimIndent()
-        )
+        writer.write("Changes:\n\n```patch\n$processedText\n```")
 
         return writer.toString()
     }

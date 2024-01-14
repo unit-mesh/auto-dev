@@ -16,6 +16,14 @@ import kotlin.math.min
 
 @Service(Service.Level.PROJECT)
 class DiffSimplifier(val project: Project) {
+    /**
+     * Simplifies the given list of changes and returns the resulting diff as a string.
+     *
+     * @param changes The list of changes to be simplified.
+     * @param ignoreFilePatterns The list of file patterns to be ignored during simplification.
+     * @return The simplified diff as a string.
+     * @throws RuntimeException if the project base path is null or if there is an error calculating the diff.
+     */
     fun simplify(changes: List<Change>, ignoreFilePatterns: List<PathMatcher>): String {
         try {
             val writer = StringWriter()
@@ -68,6 +76,12 @@ class DiffSimplifier(val project: Project) {
         private val revisionRegex = Regex("\\(revision [^)]+\\)")
         private const val lineTip = "\\ No newline at end of file"
 
+        /**
+         * This method is used to process the given diff string and extract relevant information from it.
+         *
+         * @param diffString The diff string to be processed.
+         * @return The processed string containing the extracted information.
+         */
         @NotNull
         fun postProcess(@NotNull diffString: String): String {
             val lines = diffString.lines()

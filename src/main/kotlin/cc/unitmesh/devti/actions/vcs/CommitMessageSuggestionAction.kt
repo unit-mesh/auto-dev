@@ -55,10 +55,10 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
 
         val prompt = generateCommitMessage(diffContext)
 
-        val commitMessageUi = event.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL)
+        val commitMessageUi = event.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL) as CommitMessage
 
         // empty commit message before generating
-        (commitMessageUi as CommitMessage).editorField.text = ""
+        commitMessageUi.editorField.text = ""
 
         logger.info("Start generating commit message.")
         logger.info(prompt)

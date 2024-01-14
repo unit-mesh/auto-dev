@@ -41,7 +41,7 @@ class TextBlockView(private val block: MessageBlock) : MessageBlockView {
 
     private fun createComponent(): JEditorPane {
         val jEditorPane = createBaseComponent()
-        jEditorPane.addHyperlinkListener { it: HyperlinkEvent ->
+        jEditorPane.addHyperlinkListener {
             if (it.eventType == HyperlinkEvent.EventType.ACTIVATED) {
                 BrowserUtil.browse(it.url)
             }
@@ -55,7 +55,7 @@ class TextBlockView(private val block: MessageBlock) : MessageBlockView {
         return jEditorPane
     }
 
-    fun parseText(txt: String): String {
+    private fun parseText(txt: String): String {
         if (getBlock().getMessage().getRole() === ChatRole.Assistant) {
             return convertMarkdownToHtml(txt)
         }
