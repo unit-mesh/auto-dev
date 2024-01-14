@@ -305,8 +305,16 @@
             <add-to-group group-id="NewGroup" anchor="last"/>
         </group>
 
+        <action id="cc.unitmesh.devti.OpenSettings"
+                class="cc.unitmesh.devti.actions.AutoDevOpenSettingsAction"
+                text="Open Settings"
+                description="Open AutoDev Settings"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
+        </action>
+
         <group id="autodev.statusBarPopup">
             <reference id="cc.unitmesh.devti.QuickAssistant"/>
+            <reference id="cc.unitmesh.devti.OpenSettings"/>
         </group>
     </actions>
 </idea-plugin>
