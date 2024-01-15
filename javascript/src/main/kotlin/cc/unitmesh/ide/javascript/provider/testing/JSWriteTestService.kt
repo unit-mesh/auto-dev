@@ -31,17 +31,17 @@ class JSWriteTestService : WriteTestService() {
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
         val language = sourceFile.language
-        val targetFilePath = sourceFile.name.replace(".ts", ".test.ts")
+        val testFilePath = Util.getTestFilePath(element)?.toString() ?: return null
 
         val elementToTest = Util.getElementToTest(element) ?: return null
         val elementName = JSPsiUtil.elementName(elementToTest) ?: return null
 
-        val testFile = LocalFileSystem.getInstance().findFileByPath(targetFilePath)
+        val testFile = LocalFileSystem.getInstance().findFileByPath(testFilePath)
         if (testFile != null) {
             return TestFileContext(false, testFile, emptyList(), null, language, null)
         }
 
-        val testFileName = Path(targetFilePath).nameWithoutExtension
+        val testFileName = Path(testFilePath).nameWithoutExtension
         val testFileText = ""
         val testFilePsi = ReadAction.compute<PsiFile, Throwable> {
             PsiFileFactory.getInstance(project).createFileFromText(testFileName, language, testFileText)
