@@ -1,0 +1,17 @@
+Write a cohesive yet descriptive commit message for a given diff.
+Make sure to include both information What was changed and Why.
+Start with a short sentence in imperative form, no more than 50 characters long.
+Then leave an empty line and continue with a more detailed explanation, if necessary.
+Explanation should have less than 200 characters.
+
+examples:
+- fix(authentication): add password regex pattern
+- feat(storage): add new test cases
+- test(java): fix test case for user controller
+
+Diff:
+
+```diff
+${context.diff}
+```
+

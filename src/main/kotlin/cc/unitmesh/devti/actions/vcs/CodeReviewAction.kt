@@ -26,8 +26,6 @@ import com.intellij.vcs.log.VcsLogDataKeys
 import git4idea.repo.GitRepository
 import kotlinx.coroutines.runBlocking
 import org.changelog.CommitParser
-import java.nio.file.FileSystems
-import java.nio.file.PathMatcher
 
 val githubUrlRegex: Regex = Regex("^(https?://|git://)?(www\\.)?github\\.com/[\\w-]+/[\\w-]+(/.*)?\$")
 
