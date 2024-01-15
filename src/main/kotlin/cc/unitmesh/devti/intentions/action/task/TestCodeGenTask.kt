@@ -5,7 +5,7 @@ import cc.unitmesh.devti.context.modifier.CodeModifierProvider
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.intentions.action.AutoTestThisIntention
 import cc.unitmesh.devti.llms.LlmFactory
-import cc.unitmesh.devti.parser.parseCodeFromString
+import cc.unitmesh.devti.util.parser.parseCodeFromString
 import cc.unitmesh.devti.provider.WriteTestService
 import cc.unitmesh.devti.provider.context.*
 import cc.unitmesh.devti.statusbar.AutoDevStatus

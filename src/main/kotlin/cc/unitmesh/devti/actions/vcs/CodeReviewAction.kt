@@ -5,7 +5,7 @@ import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatPanel
-import cc.unitmesh.devti.prompting.VcsPrompting
+import cc.unitmesh.devti.vcs.VcsPrompting
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext

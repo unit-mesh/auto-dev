@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.parser
+package cc.unitmesh.devti.util.parser
 
 import com.intellij.lang.Language
 

@@ -2,7 +2,7 @@ package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.temporary.gui.block.findDocument
-import cc.unitmesh.devti.parser.Code.Companion.findLanguage
+import cc.unitmesh.devti.util.parser.Code.Companion.findLanguage
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ex.AnActionListener

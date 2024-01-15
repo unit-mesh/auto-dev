@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.prompting
 
-import cc.unitmesh.devti.parser.parseCodeFromString
+import cc.unitmesh.devti.util.parser.parseCodeFromString
 import cc.unitmesh.devti.custom.action.CustomPromptConfig
 import junit.framework.TestCase.assertNotNull
 import org.junit.Test

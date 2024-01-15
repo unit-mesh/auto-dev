@@ -20,9 +20,8 @@
 //OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //SOFTWARE.
 
-package cc.unitmesh.devti.prompting
+package cc.unitmesh.devti.vcs
 
-import cc.unitmesh.devti.prompting.diff.DiffSimplifier
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project

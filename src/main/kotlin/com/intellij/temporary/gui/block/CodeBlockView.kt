@@ -2,7 +2,7 @@
 package com.intellij.temporary.gui.block
 
 import cc.unitmesh.devti.gui.chat.ChatRole
-import cc.unitmesh.devti.parser.Code
+import cc.unitmesh.devti.util.parser.Code
 import com.intellij.lang.Language
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionPlaces

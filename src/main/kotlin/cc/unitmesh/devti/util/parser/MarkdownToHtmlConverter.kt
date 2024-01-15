@@ -1,5 +1,5 @@
 // Copyright 2000-2021 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
-package cc.unitmesh.devti.parser
+package cc.unitmesh.devti.util.parser
 
 import com.intellij.openapi.util.NlsSafe
 import org.intellij.markdown.IElementType

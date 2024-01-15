@@ -4,7 +4,7 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.llms.LlmFactory
-import cc.unitmesh.devti.prompting.VcsPrompting
+import cc.unitmesh.devti.vcs.VcsPrompting
 import cc.unitmesh.devti.statusbar.AutoDevStatus
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -17,7 +17,6 @@ import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.ui.CommitMessage
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.flow.collect
 
 class CommitMessageSuggestionAction : ChatBaseAction() {
 

@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.prompting.diff;
 
+import cc.unitmesh.devti.vcs.DiffSimplifier
 import junit.framework.TestCase.assertEquals
-import org.junit.Ignore
 import org.junit.Test
 
 class DiffSimplifierTest {

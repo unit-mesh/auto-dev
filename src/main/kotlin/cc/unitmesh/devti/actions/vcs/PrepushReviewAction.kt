@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.actions.vcs
 
-import cc.unitmesh.devti.prompting.VcsPrompting
+import cc.unitmesh.devti.vcs.VcsPrompting
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
 import com.intellij.openapi.vcs.VcsDataKeys

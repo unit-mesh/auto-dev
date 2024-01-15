@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.prompting.diff
+package cc.unitmesh.devti.vcs
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diff.impl.patch.IdeaTextPatchBuilder

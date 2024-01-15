@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.parser
 
+import cc.unitmesh.devti.util.parser.Code
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
 import org.junit.Test

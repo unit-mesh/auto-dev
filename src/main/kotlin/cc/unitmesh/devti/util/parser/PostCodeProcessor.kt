@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.parser
+package cc.unitmesh.devti.util.parser
 
 /**
  * will format complete code by prefix code and suffix code
