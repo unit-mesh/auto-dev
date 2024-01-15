@@ -11,6 +11,9 @@ permalink: /
 </p>
 
 <p align="center">
+  <a href="https://codecov.io/gh/unit-mesh/auto-dev" > 
+    <img src="https://codecov.io/gh/unit-mesh/auto-dev/graph/badge.svg?token=5RzcndjFPx"/> 
+  </a>
   <a href="https://github.com/unit-mesh/auto-dev/actions/workflows/build.yml">
     <img src="https://github.com/unit-mesh/auto-dev/actions/workflows/build.yml/badge.svg" alt="Build">
   </a>
