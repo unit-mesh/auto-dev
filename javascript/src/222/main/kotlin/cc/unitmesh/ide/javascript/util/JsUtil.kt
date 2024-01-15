@@ -1,4 +1,4 @@
-package cc.unitmesh.ide.webstorm.util
+package cc.unitmesh.ide.javascript.util
 
 import com.intellij.psi.PsiFile
 
