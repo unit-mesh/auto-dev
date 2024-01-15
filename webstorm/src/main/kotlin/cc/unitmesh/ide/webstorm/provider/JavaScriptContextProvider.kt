@@ -6,6 +6,7 @@ import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.ide.webstorm.JsDependenciesSnapshot
 import cc.unitmesh.ide.webstorm.LanguageApplicableUtil
+import cc.unitmesh.ide.webstorm.util.JsUtil.guessTestFrameworkName
 import com.intellij.javascript.nodejs.PackageJsonDependency
 import com.intellij.javascript.testing.JSTestRunnerManager
 import com.intellij.openapi.diagnostic.logger
@@ -78,14 +79,6 @@ class JavaScriptContextProvider : ChatContextProvider {
             JavaScriptContextProvider::class,
             "The project uses the following JavaScript packages: ${dependencies.joinToString(", ")}"
         )
-    }
-
-    private fun guessTestFrameworkName(file: PsiFile): String? {
-        val findPackageDependentProducers =
-            JSTestRunnerManager.getInstance().findPackageDependentProducers(file)
-
-        val testRunConfigurationProducer = findPackageDependentProducers.firstOrNull()
-        return testRunConfigurationProducer?.configurationType?.displayName
     }
 
     private fun getTypeScriptLanguageContext(snapshot: JsDependenciesSnapshot): ChatContextItem? {
