@@ -301,9 +301,9 @@
 
 
         <action id="cc.unitmesh.devti.OpenSettings"
-                class="cc.unitmesh.devti.actions.AutoDevOpenSettingsAction"
-                text="Open Settings"
-                description="Open AutoDev Settings"
+                class="cc.unitmesh.devti.actions.EditSettingsAction"
+                text="Edit Settings"
+                description="Edit AutoDev Settings"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
         </action>
 
