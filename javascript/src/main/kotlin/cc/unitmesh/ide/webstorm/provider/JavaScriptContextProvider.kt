@@ -5,13 +5,11 @@ import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.ide.webstorm.JsDependenciesSnapshot
-import cc.unitmesh.ide.webstorm.LanguageApplicableUtil
+import cc.unitmesh.ide.webstorm.util.LanguageApplicableUtil
 import cc.unitmesh.ide.webstorm.util.JsUtil.guessTestFrameworkName
 import com.intellij.javascript.nodejs.PackageJsonDependency
-import com.intellij.javascript.testing.JSTestRunnerManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 
 class JavaScriptContextProvider : ChatContextProvider {

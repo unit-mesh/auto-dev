@@ -3,7 +3,7 @@ package cc.unitmesh.ide.webstorm.provider
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
-import cc.unitmesh.ide.webstorm.LanguageApplicableUtil
+import cc.unitmesh.ide.webstorm.util.LanguageApplicableUtil
 import com.intellij.openapi.project.Project
 
 class JavaScriptVersionProvider : ChatContextProvider {

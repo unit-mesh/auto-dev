@@ -1,6 +1,6 @@
 package cc.unitmesh.ide.webstorm.provider.testing
 
-import cc.unitmesh.ide.webstorm.LanguageApplicableUtil
+import cc.unitmesh.ide.webstorm.util.LanguageApplicableUtil
 import com.intellij.lang.Language
 import com.intellij.lang.javascript.psi.JSFile
 import com.intellij.openapi.command.WriteCommandAction

@@ -1,4 +1,4 @@
-package cc.unitmesh.ide.webstorm
+package cc.unitmesh.ide.webstorm.util
 
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import com.intellij.json.JsonLanguage
