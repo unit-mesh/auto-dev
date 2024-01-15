@@ -7,8 +7,11 @@ import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.ide.webstorm.JsDependenciesSnapshot
 import cc.unitmesh.ide.webstorm.LanguageApplicableUtil
 import com.intellij.javascript.nodejs.PackageJsonDependency
+import com.intellij.javascript.testing.JSTestRunnerManager
+import com.intellij.javascript.testing.JsPackageDependentTestRunConfigurationProducer
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 
 class JavaScriptContextProvider : ChatContextProvider {
@@ -44,6 +47,16 @@ class JavaScriptContextProvider : ChatContextProvider {
             )
 
             results.add(testChatContext)
+        } else {
+            val testFrameworkName = guessTestFrameworkName(creationContext.sourceFile ?: return emptyList())
+            if (testFrameworkName != null) {
+                val testChatContext = ChatContextItem(
+                    JavaScriptContextProvider::class,
+                    "\nUse $testFrameworkName JavaScript test framework."
+                )
+
+                results.add(testChatContext)
+            }
         }
 
         return results
@@ -66,6 +79,14 @@ class JavaScriptContextProvider : ChatContextProvider {
             JavaScriptContextProvider::class,
             "The project uses the following JavaScript packages: ${dependencies.joinToString(", ")}"
         )
+    }
+
+    private fun guessTestFrameworkName(file: PsiFile): String? {
+        val findPackageDependentProducers =
+            JSTestRunnerManager.getInstance().findPackageDependentProducers(file)
+
+        val testRunConfigurationProducer = findPackageDependentProducers.firstOrNull()
+        return testRunConfigurationProducer?.configurationType?.displayName
     }
 
     private fun getTypeScriptLanguageContext(snapshot: JsDependenciesSnapshot): ChatContextItem? {
@@ -103,6 +124,7 @@ class JavaScriptContextProvider : ChatContextProvider {
                             }
                         }
                     }
+
                     else -> {}
                 }
             }
