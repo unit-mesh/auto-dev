@@ -18,7 +18,7 @@ class JavaScriptWriteTestServiceTest: LightPlatformTestCase() {
 
 //        JSPsiElementFactory.createJSClass(code, null)
 //        val scriptScope: JSExecutionScope = TypeScriptService.getForFile(project, null)
-//        val jsClazz = JSPsiElementFactory.createJSSourceElement(code, null as PsiElement, JSClass::class.java)
-//        val result = JavaScriptWriteTestService.isExportedClass(jsClazz)
+        val jsClazz = JSPsiElementFactory.createJSSourceElement(code, null as PsiElement, JSClass::class.java)
+        val result = JavaScriptWriteTestService.isExportedClass(jsClazz)
     }
 }

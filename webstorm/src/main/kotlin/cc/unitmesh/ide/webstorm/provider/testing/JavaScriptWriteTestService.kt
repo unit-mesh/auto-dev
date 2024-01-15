@@ -17,11 +17,12 @@ import com.intellij.lang.javascript.psi.ecmal4.JSQualifiedNamedElement
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.util.PsiTreeUtil
+import kotlin.io.path.Path
+import kotlin.io.path.nameWithoutExtension
 
 
 class JavaScriptWriteTestService : WriteTestService() {
@@ -38,23 +39,71 @@ class JavaScriptWriteTestService : WriteTestService() {
         val language = sourceFile.language
         val targetFilePath = sourceFile.name.replace(".ts", ".test.ts")
 
+        val elementToTest = getElementToTest(element) ?: return null
+        val elementName = elementName(elementToTest) ?: return null
+
         val testFile = LocalFileSystem.getInstance().findFileByPath(targetFilePath)
         if (testFile != null) {
             return TestFileContext(false, testFile, emptyList(), null, language, null)
         }
 
-        val testFileName = targetFilePath.substringAfterLast("/")
+        val testFileName = Path(targetFilePath).nameWithoutExtension
         val testFileText = ""
         val testFilePsi = ReadAction.compute<PsiFile, Throwable> {
             PsiFileFactory.getInstance(project).createFileFromText(testFileName, language, testFileText)
         }
 
-        return TestFileContext(true, testFilePsi.virtualFile, emptyList(), null, language, null)
+        return TestFileContext(true, testFilePsi.virtualFile, emptyList(), elementName, language, null)
     }
 
     override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {
         return emptyList()
     }
+
+    /**
+     * In JavaScript/TypeScript a testable element is a function, a class or a variable.
+     *
+     * Function:
+     * ```javascript
+     * function testableFunction() {}
+     * export testableFunction
+     * ```
+     *
+     * Class:
+     * ```javascript
+     * export class TestableClass {}
+     * ```
+     *
+     * Variable:
+     * ```javascript
+     * var functionA = function() {}
+     * export functionA
+     * ```
+     */
+    fun getElementToTest(psiElement: PsiElement): PsiElement? {
+        val jsFunc = PsiTreeUtil.getParentOfType(psiElement, JSFunction::class.java, false)
+        val jsVarStatement = PsiTreeUtil.getParentOfType(psiElement, JSVarStatement::class.java, false)
+        val jsClazz = PsiTreeUtil.getParentOfType(psiElement, JSClass::class.java, false)
+
+        val elementForTests: PsiElement? = when {
+            jsFunc != null -> jsFunc
+            jsVarStatement != null -> jsVarStatement
+            jsClazz != null -> jsClazz
+            else -> null
+        }
+
+        if (elementForTests == null) return null
+
+        return if (isExportedClassPublicMethod(elementForTests) ||
+            isExportedFileFunction(elementForTests) ||
+            isExportedClass(elementForTests)
+        ) {
+            elementForTests
+        } else {
+            null
+        }
+    }
+
 
     companion object {
         fun isExportedFileFunction(element: PsiElement): Boolean {
@@ -67,6 +116,7 @@ class JavaScriptWriteTestService : WriteTestService() {
                         val variable = variables.firstOrNull()
                         variable != null && variable.initializerOrStub is JSFunction && exported(variable)
                     }
+
                     is JSFunction -> exported(element)
                     else -> false
                 }
@@ -83,20 +133,16 @@ class JavaScriptWriteTestService : WriteTestService() {
         }
 
         fun isExportedClassPublicMethod(element: PsiElement): Boolean {
-            val jsClass = PsiTreeUtil.getParentOfType(element, JSClass::class.java, true)
+            val jsClass = PsiTreeUtil.getParentOfType(element, JSClass::class.java, true) ?: return false
 
-            if (jsClass == null || !exported(jsClass as PsiElement)) {
-                return false
-            }
+            if (!exported(jsClass as PsiElement)) return false
 
             val jsFunction = PsiTreeUtil.getParentOfType(element, JSFunction::class.java, true)
             return jsFunction != null && jsFunction.isExported && !isPrivateMember(jsFunction)
         }
 
         fun exported(element: PsiElement): Boolean {
-            if (element !is JSElementBase) {
-                return false
-            }
+            if (element !is JSElementBase) return false
 
             if (element.isExported || element.isExportedWithDefault) {
                 return true
@@ -107,13 +153,25 @@ class JavaScriptWriteTestService : WriteTestService() {
             }
 
             val containingFile = element.containingFile ?: return false
-            val exportDeclarations = PsiTreeUtil.getChildrenOfTypeAsList(containingFile, ES6ExportDeclaration::class.java)
+            val exportDeclarations =
+                PsiTreeUtil.getChildrenOfTypeAsList(containingFile, ES6ExportDeclaration::class.java)
 
             return exportDeclarations.any { exportDeclaration ->
                 exportDeclaration.exportSpecifiers
                     .asSequence()
                     .any { it.alias?.findAliasedElement() == element }
             }
+        }
+
+        fun elementName(psiElement: PsiElement): String? {
+            if (psiElement !is JSVarStatement) {
+                if (psiElement !is JSNamedElement) return null
+
+                return psiElement.name
+            }
+
+            val jSVariable = psiElement.variables.firstOrNull() ?: return null
+            return jSVariable.name
         }
 
         fun isPrivateMember(element: PsiElement): Boolean {
