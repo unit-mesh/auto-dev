@@ -8,7 +8,6 @@ import cc.unitmesh.ide.webstorm.JsDependenciesSnapshot
 import cc.unitmesh.ide.webstorm.LanguageApplicableUtil
 import com.intellij.javascript.nodejs.PackageJsonDependency
 import com.intellij.javascript.testing.JSTestRunnerManager
-import com.intellij.javascript.testing.JsPackageDependentTestRunConfigurationProducer
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement

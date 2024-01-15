@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.launch
 import java.awt.event.KeyEvent
 import javax.swing.KeyStroke
+import kotlinx.coroutines.flow.collect
 
 abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
     Task.Backgroundable(request.project, AutoDevBundle.message("intentions.chat.code.complete.name")) {
