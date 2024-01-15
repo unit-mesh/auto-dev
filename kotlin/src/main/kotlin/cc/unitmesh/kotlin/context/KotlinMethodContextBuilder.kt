@@ -42,26 +42,19 @@ class KotlinMethodContextBuilder : MethodContextBuilder {
     }
 
     object Util {
-        fun getSignatureString(ktNamedFunction: KtNamedFunction): String {
-            val bodyBlockExpression = ktNamedFunction.bodyBlockExpression
+
+        fun getSignatureString(signatureString: KtNamedFunction): String {
+            val bodyBlockExpression = signatureString.bodyBlockExpression
             val startOffsetInParent = if (bodyBlockExpression != null) {
                 bodyBlockExpression.startOffsetInParent
             } else {
-                val bodyExpression = ktNamedFunction.bodyExpression
-                bodyExpression?.startOffsetInParent ?: ktNamedFunction.textLength
+                val bodyExpression = signatureString.bodyExpression
+                bodyExpression?.startOffsetInParent ?: signatureString.textLength
             }
 
-            val docEnd = ktNamedFunction.docComment?.endOffset ?: 0
-
-            val text = ktNamedFunction.text
-
-            val result = if (docEnd < startOffsetInParent) {
-                text.substring(docEnd, startOffsetInParent)
-            } else {
-                text.substring(ktNamedFunction.startOffsetInParent, startOffsetInParent)
-            }
-
-            return result.replace("\n", " ").trim()
+            val text = signatureString.text
+            val substring = text.substring(0, startOffsetInParent)
+            return substring.replace('\n', ' ').trim()
         }
     }
 }

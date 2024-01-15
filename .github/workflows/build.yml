@@ -94,6 +94,10 @@ jobs:
           name: tests-result
           path: ${{ github.workspace }}/build/reports/tests
 
+      # Run tests
+      - name: Build Plugin
+        run: ./gradlew :plugin:buildPlugin
+
       # Upload Kover report to CodeCov
       - name: Upload Code Coverage Report
         uses: codecov/codecov-action@v3
@@ -102,15 +106,6 @@ jobs:
 
         with:
           files: ${{ github.workspace }}/build/reports/kover/xml/report.xml
-
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
-      # Run tests
-      - name: Build Plugin
-        run: ./gradlew :plugin:buildPlugin
 
       # Prepare plugin archive content for creating artifact
       - name: Prepare Plugin Artifact
