@@ -28,10 +28,40 @@ class KotlinMethodContextBuilderTest : LightPlatformTestCase() {
         TestCase.assertEquals(signatureString, "fun main()")
     }
 
-    /**
-     * It's a hello, world.
-     */
-    fun main() {
-        println("Hello, World!")
+    fun shouldIgnoreClassFunctionComment() {
+        // given
+        val code = """
+            class UserController {
+                /**
+                 * It's a hello, world.
+                 */
+                fun main() {
+                    println("Hello, World!")
+                }
+            }
+            """.trimIndent()
+
+        val createFile = KtPsiFactory(project).createFile("UserController.kt", code)
+        val clz = PsiTreeUtil.findChildOfType(createFile, KtNamedFunction::class.java)!!
+
+        val signatureString = KotlinMethodContextBuilder.Util.getSignatureString(clz)
+        TestCase.assertEquals(signatureString, "fun main()")
+    }
+
+    fun testShouldHandleNormalClassFunctionComment() {
+        // given
+        val code = """
+            class UserController {
+                fun main() {
+                    println("Hello, World!")
+                }
+            }
+            """.trimIndent()
+
+        val createFile = KtPsiFactory(project).createFile("UserController.kt", code)
+        val clz = PsiTreeUtil.findChildOfType(createFile, KtNamedFunction::class.java)!!
+
+        val signatureString = KotlinMethodContextBuilder.Util.getSignatureString(clz)
+        TestCase.assertEquals(signatureString, "fun main()")
     }
 }

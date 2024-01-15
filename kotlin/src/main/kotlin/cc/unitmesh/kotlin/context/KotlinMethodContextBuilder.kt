@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.idea.quickfix.createFromUsage.callableBuilder.getRet
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.psiUtil.containingClass
 import org.jetbrains.kotlin.psi.psiUtil.endOffset
+import org.jetbrains.kotlin.psi.psiUtil.startOffsetSkippingComments
 
 class KotlinMethodContextBuilder : MethodContextBuilder {
     override fun getMethodContext(
@@ -53,11 +54,14 @@ class KotlinMethodContextBuilder : MethodContextBuilder {
             val docEnd = ktNamedFunction.docComment?.endOffset ?: 0
 
             val text = ktNamedFunction.text
-            if (docEnd < startOffsetInParent) {
-                return text.substring(docEnd, startOffsetInParent)
+
+            val result = if (docEnd < startOffsetInParent) {
+                text.substring(docEnd, startOffsetInParent)
+            } else {
+                text.substring(ktNamedFunction.startOffsetInParent, startOffsetInParent)
             }
 
-            return text.substring(docEnd, startOffsetInParent)
+            return result.replace("\n", " ").trim()
         }
     }
 }
