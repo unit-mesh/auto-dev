@@ -26,9 +26,6 @@
         <contextPrompter language="JavaScript" implementation="cc.unitmesh.ide.javascript.provider.JavaScriptContextPrompter"/>
         <contextPrompter language="TypeScript" implementation="cc.unitmesh.ide.javascript.provider.JavaScriptContextPrompter"/>
 
-        <devFlowProvider language="JavaScript" implementation="cc.unitmesh.ide.javascript.provider.JavaScriptAutoDevFlow"/>
-        <devFlowProvider language="TypeScript" implementation="cc.unitmesh.ide.javascript.provider.JavaScriptAutoDevFlow"/>
-
         <promptStrategy language="JavaScript" implementation="cc.unitmesh.ide.javascript.provider.JavaScriptPromptStrategyAdvisor"/>
         <promptStrategy language="TypeScript" implementation="cc.unitmesh.ide.javascript.provider.JavaScriptPromptStrategyAdvisor"/>
 
