@@ -104,9 +104,6 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-        with:
-          files: ${{ github.workspace }}/build/reports/kover/xml/report.xml
-
       # Prepare plugin archive content for creating artifact
       - name: Prepare Plugin Artifact
         id: artifact

@@ -12,6 +12,7 @@ import com.intellij.lang.javascript.psi.ecmal4.JSClass
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
@@ -21,9 +22,7 @@ import kotlin.io.path.Path
 import kotlin.io.path.nameWithoutExtension
 
 class JSWriteTestService : WriteTestService() {
-    override fun runConfigurationClass(project: Project): Class<out RunProfile> {
-        return NpmRunConfiguration::class.java
-    }
+    override fun runConfigurationClass(project: Project): Class<out RunProfile> = NpmRunConfiguration::class.java
 
     override fun isApplicable(element: PsiElement): Boolean {
         val sourceFile: PsiFile = element.containingFile ?: return false
@@ -52,7 +51,34 @@ class JSWriteTestService : WriteTestService() {
     }
 
     override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {
-        return emptyList()
+        return ReadAction.compute<List<ClassContext>, Throwable> {
+            val elements = mutableListOf<ClassContext>()
+            val projectPath = project.guessProjectDir()?.path
+
+            when (element) {
+                is JSClass -> {
+                    element.functions.map {
+                        resolveByFunction(it)
+                    }
+                }
+
+                is JSFunction -> {
+                    resolveByFunction(element)
+                }
+            }
+
+            return@compute listOf()
+        }
+    }
+
+    private fun resolveByFunction(jsFunction: JSFunction): Map<String, ClassContext> {
+        jsFunction.parameterList?.parameters?.map {
+
+        }
+
+        val resolveClass = jsFunction.returnTypeElement
+
+        return mapOf()
     }
 
     object Util {
