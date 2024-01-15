@@ -9,6 +9,16 @@ import com.intellij.psi.PsiElement
 import com.intellij.serviceContainer.LazyExtensionInstance
 import com.intellij.util.xmlb.annotations.Attribute
 
+/**
+ * The `PromptStrategy` class is an abstract class that represents a strategy for providing code prompt advice.
+ * It extends the `LazyExtensionInstance` class, which allows for lazy initialization of the strategy instance.
+ *
+ * @property language The language associated with the strategy.
+ * @property implementationClass The fully qualified name of the implementation class.
+ * @property tokenizer The tokenizer used for tokenizing code.
+ *
+ * @constructor Creates a new instance of the `PromptStrategy` class.
+ */
 abstract class PromptStrategy : LazyExtensionInstance<PromptStrategy>() {
     @Attribute("language")
     var language: String? = null

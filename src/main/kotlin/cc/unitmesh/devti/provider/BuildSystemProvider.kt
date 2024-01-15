@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.provider
 
-import cc.unitmesh.devti.template.DockerfileContext
+import cc.unitmesh.devti.template.context.DockerfileContext
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.serviceContainer.LazyExtensionInstance

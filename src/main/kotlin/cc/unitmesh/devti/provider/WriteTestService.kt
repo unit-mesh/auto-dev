@@ -17,6 +17,15 @@ import com.intellij.psi.PsiFile
 import com.intellij.serviceContainer.LazyExtensionInstance
 import com.intellij.util.xmlb.annotations.Attribute
 
+/**
+ * The `WriteTestService` class is an abstract class that provides a base implementation for writing tests in different programming languages.
+ * It extends the `LazyExtensionInstance` class, which allows lazy initialization of the `WriteTestService` instances.
+ *
+ * @property language The programming language for which the test service is applicable.
+ * @property implementationClass The fully qualified name of the implementation class.
+ *
+ * @constructor Creates a new instance of the `WriteTestService` class.
+ */
 abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
     @Attribute("language")
     var language: String? = null

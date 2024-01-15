@@ -2,10 +2,10 @@ package cc.unitmesh.devti.llms.openai
 
 import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.llms.LLMProvider
-import cc.unitmesh.devti.recording.EmptyRecording
-import cc.unitmesh.devti.recording.JsonlRecording
-import cc.unitmesh.devti.recording.Recording
-import cc.unitmesh.devti.recording.RecordingInstruction
+import cc.unitmesh.devti.coder.recording.EmptyRecording
+import cc.unitmesh.devti.coder.recording.JsonlRecording
+import cc.unitmesh.devti.coder.recording.Recording
+import cc.unitmesh.devti.coder.recording.RecordingInstruction
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.coder.coderSetting
 import com.intellij.openapi.components.Service

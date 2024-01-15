@@ -1,7 +1,7 @@
 package cc.unitmesh.idea.provider
 
 import cc.unitmesh.devti.provider.BuildSystemProvider
-import cc.unitmesh.devti.template.DockerfileContext
+import cc.unitmesh.devti.template.context.DockerfileContext
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.externalSystem.service.ui.completion.TextCompletionInfo
 import com.intellij.openapi.project.Project
@@ -37,8 +37,8 @@ open class JavaBuildSystemProvider : BuildSystemProvider() {
         val javaVersionStr = "${javaVersion.feature}"
 
         return DockerfileContext(
-            buildToolVersion = "",
             buildToolName = buildToolName,
+            buildToolVersion = "",
             languageName = "Java",
             languageVersion = javaVersionStr,
             taskString = taskString

@@ -1,6 +1,6 @@
 package cc.unitmesh.genius.actions.context
 
-import cc.unitmesh.devti.template.DockerfileContext
+import cc.unitmesh.devti.template.context.DockerfileContext
 
 data class DevOpsContext(
     val buildContext: String,

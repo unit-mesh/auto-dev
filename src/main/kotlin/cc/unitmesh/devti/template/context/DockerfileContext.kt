@@ -1,11 +1,10 @@
-package cc.unitmesh.devti.template
+package cc.unitmesh.devti.template.context
 
 class DockerfileContext(
     val buildToolName: String,
     val buildToolVersion: String,
     val languageName: String,
     val languageVersion: String,
-    val port: Int = 3000,
     /**
      * The `taskString` variable represents a string that can be used to store various types of task information or commands.
      *

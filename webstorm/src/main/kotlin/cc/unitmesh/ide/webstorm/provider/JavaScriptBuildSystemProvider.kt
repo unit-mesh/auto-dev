@@ -1,7 +1,7 @@
 package cc.unitmesh.ide.webstorm.provider
 
 import cc.unitmesh.devti.provider.BuildSystemProvider
-import cc.unitmesh.devti.template.DockerfileContext
+import cc.unitmesh.devti.template.context.DockerfileContext
 import cc.unitmesh.ide.webstorm.JsDependenciesSnapshot
 import com.intellij.lang.javascript.buildTools.npm.NpmScriptsUtil
 import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil

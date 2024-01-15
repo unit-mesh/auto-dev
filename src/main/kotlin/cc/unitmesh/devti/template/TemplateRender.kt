@@ -10,10 +10,16 @@ import java.nio.charset.Charset
 class TemplateRender(pathPrefix: String) {
     private val defaultPrefix: String = pathPrefix.trimEnd('/')
     private val velocityContext = VelocityContext()
-    protected val splitter = TemplateRoleSplitter()
+    private val splitter = TemplateRoleSplitter()
     var context: Any = ""
 
-    // todo: add default
+    /**
+     * Retrieves the template content from the specified file.
+     *
+     * @param filename the name of the file containing the template
+     * @return the content of the template as a string
+     * @throws TemplateNotFoundError if the specified file cannot be found
+     */
     fun getTemplate(filename: String): String {
         val path = "$defaultPrefix/$filename"
         val resourceUrl = javaClass.classLoader.getResource(path) ?: throw TemplateNotFoundError(path)

@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.recording
+package cc.unitmesh.devti.coder.recording
 
 class EmptyRecording: Recording {
     override fun write(instruction: RecordingInstruction) {
