@@ -21,11 +21,11 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.parents
 import kotlin.io.path.Path
 import kotlin.io.path.nameWithoutExtension
 
-
-class JavaScriptWriteTestService : WriteTestService() {
+class JSWriteTestService : WriteTestService() {
     override fun runConfigurationClass(project: Project): Class<out RunProfile> {
         return NpmRunConfiguration::class.java
     }
@@ -132,13 +132,23 @@ class JavaScriptWriteTestService : WriteTestService() {
             return elementForTests is JSClass && elementForTests.isExported
         }
 
-        fun isExportedClassPublicMethod(element: PsiElement): Boolean {
-            val jsClass = PsiTreeUtil.getParentOfType(element, JSClass::class.java, true) ?: return false
-
+        fun isExportedClassPublicMethod(psiElement: PsiElement): Boolean {
+            val jsClass = PsiTreeUtil.getParentOfType(psiElement, JSClass::class.java, true) ?: return false
             if (!exported(jsClass as PsiElement)) return false
 
-            val jsFunction = PsiTreeUtil.getParentOfType(element, JSFunction::class.java, true)
-            return jsFunction != null && jsFunction.isExported && !isPrivateMember(jsFunction)
+            val parentElement = psiElement.parents(true).firstOrNull() ?: return false
+            if (isPrivateMember(parentElement)) return false
+
+            return when (parentElement) {
+                is JSFunction -> !parentElement.isConstructor
+                is JSVarStatement -> {
+                    val variables = parentElement.variables
+                    val jSVariable = variables.firstOrNull()
+                    (jSVariable?.initializerOrStub as? JSFunction) != null
+                }
+
+                else -> false
+            }
         }
 
         fun exported(element: PsiElement): Boolean {
