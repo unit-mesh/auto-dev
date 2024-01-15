@@ -53,8 +53,11 @@ class KotlinMethodContextBuilder : MethodContextBuilder {
             val docEnd = ktNamedFunction.docComment?.endOffset ?: 0
 
             val text = ktNamedFunction.text
-            val substring = text.substring(docEnd, startOffsetInParent)
-            return substring.replace('\n', ' ').trim()
+            if (docEnd < startOffsetInParent) {
+                return text.substring(docEnd, startOffsetInParent)
+            }
+
+            return text.substring(docEnd, startOffsetInParent)
         }
     }
 }
