@@ -2,7 +2,7 @@
 package com.intellij.temporary.gui.block
 
 import cc.unitmesh.devti.gui.chat.ChatRole
-import cc.unitmesh.devti.parser.convertMarkdownToHtml
+import cc.unitmesh.devti.util.parser.convertMarkdownToHtml
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.util.ui.ExtendableHTMLViewFactory

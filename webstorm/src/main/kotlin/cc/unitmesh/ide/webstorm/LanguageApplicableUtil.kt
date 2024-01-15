@@ -5,6 +5,7 @@ import com.intellij.json.JsonLanguage
 import com.intellij.lang.Language
 import com.intellij.lang.html.HTMLLanguage
 import com.intellij.lang.html.HtmlCompatibleFile
+import com.intellij.lang.javascript.DialectDetector
 import com.intellij.lang.javascript.JavaScriptSupportLoader
 import com.intellij.lang.javascript.JavascriptLanguage
 import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil
@@ -19,12 +20,16 @@ object LanguageApplicableUtil {
     fun isJavaScriptApplicable(language: Language) =
         supportedLanguages.contains(language.id) || language is HTMLLanguage || language is JsonLanguage || language is TypeScriptJSXLanguageDialect
 
+    fun isPreferTypeScript(creationContext: ChatCreationContext): Boolean {
+        val sourceFile = creationContext.sourceFile?: return false
+        return DialectDetector.isTypeScript(sourceFile)
+    }
+
     @RequiresReadLock
     @ApiStatus.Internal
     fun isWebChatCreationContextSupported(creationContext: ChatCreationContext): Boolean {
-        if (PlatformUtils.isWebStorm()) {
-            return true
-        }
+        if (PlatformUtils.isWebStorm()) return true
+
         return isWebLLMContext(creationContext.sourceFile)
     }
 
