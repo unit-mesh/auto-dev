@@ -9,7 +9,7 @@ import com.intellij.openapi.project.Project
 class JavaScriptVersionProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
         val language = creationContext.sourceFile?.language ?: return false
-        return LanguageApplicableUtil.isJavaScriptApplicable(language)
+        return LanguageApplicableUtil.isWebChatCreationContextSupported(creationContext.sourceFile)
     }
 
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {

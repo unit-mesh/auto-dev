@@ -21,16 +21,16 @@ object LanguageApplicableUtil {
         supportedLanguages.contains(language.id) || language is HTMLLanguage || language is JsonLanguage || language is TypeScriptJSXLanguageDialect
 
     fun isPreferTypeScript(creationContext: ChatCreationContext): Boolean {
-        val sourceFile = creationContext.sourceFile?: return false
+        val sourceFile = creationContext.sourceFile ?: return false
         return DialectDetector.isTypeScript(sourceFile)
     }
 
     @RequiresReadLock
     @ApiStatus.Internal
-    fun isWebChatCreationContextSupported(creationContext: ChatCreationContext): Boolean {
+    fun isWebChatCreationContextSupported(psiFile: PsiFile?): Boolean {
         if (PlatformUtils.isWebStorm()) return true
 
-        return isWebLLMContext(creationContext.sourceFile)
+        return isWebLLMContext(psiFile)
     }
 
     @ApiStatus.Internal

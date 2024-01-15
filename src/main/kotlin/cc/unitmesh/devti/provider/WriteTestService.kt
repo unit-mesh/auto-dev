@@ -41,8 +41,7 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
 
     fun runTest(project: Project, virtualFile: VirtualFile) {
         val runManager = RunManager.getInstance(project)
-        val allConfigurationsList = runManager.allConfigurationsList
-        val testConfig = allConfigurationsList.firstOrNull {
+        val testConfig = runManager.allConfigurationsList.firstOrNull {
             val runConfigureClass = runConfigurationClass(project)
             it.name == virtualFile.nameWithoutExtension && (it.javaClass == runConfigureClass)
         }
@@ -79,35 +78,17 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
             ExtensionPointName.create("cc.unitmesh.testContextProvider")
 
         fun context(psiElement: PsiElement): WriteTestService? {
-            val lang = psiElement.language.displayName.lowercase()
             val extensionList = EP_NAME.extensionList
-            val testServices = filterByLang(extensionList, lang)
-
-            val service = if (testServices.isNotEmpty()) {
-                testServices.first()
-            } else {
-                val firstPartLang = lang.split(" ")[0]
-                val partLang = filterByLang(extensionList, firstPartLang)
-                if (partLang.isNotEmpty()) {
-                    partLang[0]
-                } else {
-                    logger<WriteTestService>().warn("No context prompter found for language $lang, will use default")
-                    return null
-                }
+            val writeTestService = extensionList.firstOrNull {
+                it.isApplicable(psiElement)
             }
 
-            return service
-        }
-
-        private fun filterByLang(
-            extensionList: List<WriteTestService>,
-            langLowercase: String
-        ): List<WriteTestService> {
-            val contextPrompter = extensionList.filter {
-                it.language?.lowercase() == langLowercase
+            if (writeTestService == null) {
+                log.warn("Could not find WriteTestService for: ${psiElement.language}")
+                return null
             }
 
-            return contextPrompter
+            return writeTestService
         }
     }
 }

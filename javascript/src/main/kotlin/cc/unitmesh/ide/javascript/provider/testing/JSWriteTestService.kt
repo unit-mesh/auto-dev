@@ -11,6 +11,7 @@ import com.intellij.lang.javascript.psi.*
 import com.intellij.lang.javascript.psi.ecmal4.JSClass
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -26,7 +27,7 @@ class JSWriteTestService : WriteTestService() {
 
     override fun isApplicable(element: PsiElement): Boolean {
         val sourceFile: PsiFile = element.containingFile ?: return false
-        return LanguageApplicableUtil.isJavaScriptApplicable(sourceFile.language)
+        return LanguageApplicableUtil.isWebChatCreationContextSupported(sourceFile)
     }
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
@@ -137,13 +138,14 @@ class JSWriteTestService : WriteTestService() {
         }
 
         private fun suggestTestDirectory(element: PsiElement): PsiDirectory? {
-            val project: Project = element.project
-            val elementDirectory = runReadAction {
-                element.containingFile
-            }
+            val project: Project = runReadAction { element.project }
+            val elementDirectory = runReadAction { element.containingFile }
 
             val parentDir = elementDirectory?.virtualFile?.parent ?: return null
-            val childDir = parentDir.createChildDirectory(this, "test")
+            val childDir = runWriteAction {
+                parentDir.createChildDirectory(this, "test")
+            }
+
             return PsiManager.getInstance(project).findDirectory(childDir)
         }
 
