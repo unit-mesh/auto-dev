@@ -60,6 +60,13 @@ class JavaScriptContextProvider : ChatContextProvider {
         return results
     }
 
+    /**
+     * Retrieves the most popular packages used in a given JavaScript dependencies snapshot.
+     *
+     * @param snapshot the JavaScript dependencies snapshot to analyze
+     * @return a ChatContextItem object representing the context of the most popular packages used in the project,
+     *         or null if no popular packages are found
+     */
     private fun getMostPopularPackagesContext(snapshot: JsDependenciesSnapshot): ChatContextItem? {
         val dependencies = snapshot.packages
             .asSequence()
