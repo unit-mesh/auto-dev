@@ -10,7 +10,7 @@ include(
     "pycharm",
     "java",
     "kotlin",
-    "webstorm",
+    "javascript",
     "goland",
     "rust",
     "csharp",

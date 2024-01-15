@@ -1,7 +1,6 @@
 package cc.unitmesh.ide.webstorm
 
 import cc.unitmesh.devti.provider.context.ChatCreationContext
-import cc.unitmesh.ide.webstorm.provider.MOST_POPULAR_PACKAGES
 import com.intellij.javascript.nodejs.PackageJsonData
 import com.intellij.javascript.nodejs.packageJson.PackageJsonFileManager
 import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil

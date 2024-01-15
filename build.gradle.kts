@@ -213,7 +213,7 @@ project(":plugin") {
         implementation(project(":java"))
         implementation(project(":kotlin"))
         implementation(project(":pycharm"))
-        implementation(project(":webstorm"))
+        implementation(project(":javascript"))
         implementation(project(":goland"))
         implementation(project(":rust"))
         implementation(project(":cpp"))
@@ -521,7 +521,7 @@ project(":java") {
     }
 }
 
-project(":webstorm") {
+project(":javascript") {
     intellij {
         version.set(ideaVersion)
         plugins.set(javaScriptPlugins)
