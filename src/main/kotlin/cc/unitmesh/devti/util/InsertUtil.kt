@@ -1,5 +1,6 @@
-package cc.unitmesh.devti
+package cc.unitmesh.devti.util
 
+import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor

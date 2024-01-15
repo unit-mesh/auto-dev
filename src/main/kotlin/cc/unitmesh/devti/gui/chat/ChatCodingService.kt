@@ -2,7 +2,7 @@ package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.cf.core.llms.LlmMsg
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.LLMCoroutineScope
+import cc.unitmesh.devti.util.LLMCoroutineScope
 import cc.unitmesh.devti.counit.CoUnitPreProcessor
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.parser.PostCodeProcessor

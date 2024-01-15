@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.context
 
 import cc.unitmesh.devti.context.base.NamedElementContext
-import cc.unitmesh.devti.isInProject
+import cc.unitmesh.devti.util.isInProject
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference

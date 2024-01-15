@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.counit
 
-import cc.unitmesh.devti.LLMCoroutineScope
+import cc.unitmesh.devti.util.LLMCoroutineScope
 import cc.unitmesh.devti.counit.dto.ExplainQuery
 import cc.unitmesh.devti.counit.dto.QueryResult
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
@@ -14,7 +14,6 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.launch
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 const val CO_UNIT = "/counit"

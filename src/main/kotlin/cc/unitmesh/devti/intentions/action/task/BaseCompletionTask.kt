@@ -1,8 +1,8 @@
 package cc.unitmesh.devti.intentions.action.task
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.InsertUtil
-import cc.unitmesh.devti.LLMCoroutineScope
+import cc.unitmesh.devti.util.InsertUtil
+import cc.unitmesh.devti.util.LLMCoroutineScope
 import cc.unitmesh.devti.intentions.action.CodeCompletionIntention
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.statusbar.AutoDevStatus
@@ -17,7 +17,6 @@ import com.intellij.openapi.project.DumbAwareAction
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.awt.event.KeyEvent
 import javax.swing.KeyStroke
