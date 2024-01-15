@@ -1,4 +1,4 @@
-package cc.unitmesh.ide.webstorm.context
+package cc.unitmesh.ide.javascript.context
 
 import cc.unitmesh.devti.context.MethodContext
 import cc.unitmesh.devti.context.builder.MethodContextBuilder

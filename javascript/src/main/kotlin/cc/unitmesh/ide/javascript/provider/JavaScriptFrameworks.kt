@@ -1,4 +1,4 @@
-package cc.unitmesh.ide.webstorm.provider
+package cc.unitmesh.ide.javascript.provider
 
 enum class JsWebFrameworks(val presentation: String, val packageName: String) {
     React("React", "react"),

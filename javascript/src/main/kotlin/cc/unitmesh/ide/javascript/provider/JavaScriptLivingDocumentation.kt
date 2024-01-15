@@ -1,4 +1,4 @@
-package cc.unitmesh.ide.webstorm.provider
+package cc.unitmesh.ide.javascript.provider
 
 import cc.unitmesh.devti.custom.document.LivingDocumentationType
 import cc.unitmesh.devti.provider.LivingDocumentation

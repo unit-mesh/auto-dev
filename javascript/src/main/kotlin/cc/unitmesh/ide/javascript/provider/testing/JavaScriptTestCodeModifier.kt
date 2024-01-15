@@ -1,4 +1,4 @@
-package cc.unitmesh.ide.webstorm.provider.testing
+package cc.unitmesh.ide.javascript.provider.testing
 
 import cc.unitmesh.devti.context.builder.CodeModifier
 

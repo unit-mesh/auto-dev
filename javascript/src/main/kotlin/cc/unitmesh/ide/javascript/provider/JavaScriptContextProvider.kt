@@ -1,12 +1,12 @@
-package cc.unitmesh.ide.webstorm.provider
+package cc.unitmesh.ide.javascript.provider
 
 import cc.unitmesh.devti.prompting.code.TestStack
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
-import cc.unitmesh.ide.webstorm.JsDependenciesSnapshot
-import cc.unitmesh.ide.webstorm.util.LanguageApplicableUtil
-import cc.unitmesh.ide.webstorm.util.JsUtil.guessTestFrameworkName
+import cc.unitmesh.ide.javascript.JsDependenciesSnapshot
+import cc.unitmesh.ide.javascript.util.LanguageApplicableUtil
+import cc.unitmesh.ide.javascript.util.JsUtil.guessTestFrameworkName
 import com.intellij.javascript.nodejs.PackageJsonDependency
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project

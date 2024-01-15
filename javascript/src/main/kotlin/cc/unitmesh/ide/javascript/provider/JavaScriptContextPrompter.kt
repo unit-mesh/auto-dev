@@ -1,4 +1,4 @@
-package cc.unitmesh.ide.webstorm.provider
+package cc.unitmesh.ide.javascript.provider
 
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.ContextPrompter

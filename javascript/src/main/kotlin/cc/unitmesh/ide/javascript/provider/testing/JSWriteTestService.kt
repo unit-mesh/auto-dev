@@ -1,10 +1,10 @@
-package cc.unitmesh.ide.webstorm.provider.testing
+package cc.unitmesh.ide.javascript.provider.testing
 
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.provider.WriteTestService
 import cc.unitmesh.devti.provider.context.TestFileContext
-import cc.unitmesh.ide.webstorm.util.LanguageApplicableUtil
-import cc.unitmesh.ide.webstorm.util.JSPsiUtil
+import cc.unitmesh.ide.javascript.util.LanguageApplicableUtil
+import cc.unitmesh.ide.javascript.util.JSPsiUtil
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.lang.javascript.buildTools.npm.rc.NpmRunConfiguration
 import com.intellij.lang.javascript.psi.*

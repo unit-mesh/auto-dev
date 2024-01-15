@@ -1,0 +1,43 @@
+<idea-plugin package="cc.unitmesh.ide.javascript">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+        <plugin id="JavaScript"/>
+    </dependencies>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <classContextBuilder language="JavaScript" implementationClass="cc.unitmesh.ide.javascript.context.JavaScriptClassContextBuilder"/>
+        <classContextBuilder language="Typescript" implementationClass="cc.unitmesh.ide.javascript.context.JavaScriptClassContextBuilder"/>
+
+        <methodContextBuilder language="JavaScript" implementationClass="cc.unitmesh.ide.javascript.context.JavaScriptMethodContextBuilder"/>
+        <methodContextBuilder language="Typescript" implementationClass="cc.unitmesh.ide.javascript.context.JavaScriptMethodContextBuilder"/>
+
+        <fileContextBuilder language="JavaScript" implementationClass="cc.unitmesh.ide.javascript.context.JavaScriptFileContextBuilder"/>
+        <fileContextBuilder language="Typescript" implementationClass="cc.unitmesh.ide.javascript.context.JavaScriptFileContextBuilder"/>
+
+        <variableContextBuilder language="JavaScript" implementationClass="cc.unitmesh.ide.javascript.context.JavaScriptVariableContextBuilder"/>
+        <variableContextBuilder language="Typescript" implementationClass="cc.unitmesh.ide.javascript.context.JavaScriptVariableContextBuilder"/>
+
+        <chatContextProvider implementation="cc.unitmesh.ide.javascript.provider.JavaScriptContextProvider"/>
+        <chatContextProvider implementation="cc.unitmesh.ide.javascript.provider.JavaScriptVersionProvider"/>
+
+        <codeModifier language="JavaScript" implementationClass="cc.unitmesh.ide.javascript.provider.testing.JestCodeModifier"/>
+        <codeModifier language="TypeScript" implementationClass="cc.unitmesh.ide.javascript.provider.testing.JestCodeModifier"/>
+
+        <contextPrompter language="JavaScript" implementation="cc.unitmesh.ide.javascript.provider.JavaScriptContextPrompter"/>
+        <contextPrompter language="Typescript" implementation="cc.unitmesh.ide.javascript.provider.JavaScriptContextPrompter"/>
+
+        <devFlowProvider language="JavaScript" implementation="cc.unitmesh.ide.javascript.provider.JavaScriptAutoDevFlow"/>
+        <devFlowProvider language="Typescript" implementation="cc.unitmesh.ide.javascript.provider.JavaScriptAutoDevFlow"/>
+
+        <promptStrategy language="JavaScript" implementation="cc.unitmesh.ide.javascript.provider.JavaScriptPromptStrategyAdvisor"/>
+        <promptStrategy language="Typescript" implementation="cc.unitmesh.ide.javascript.provider.JavaScriptPromptStrategyAdvisor"/>
+
+        <testContextProvider language="JavaScript" implementation="cc.unitmesh.ide.javascript.provider.testing.JSWriteTestService"/>
+        <testContextProvider language="Typescript" implementation="cc.unitmesh.ide.javascript.provider.testing.JSWriteTestService"/>
+
+        <livingDocumentation language="JavaScript"
+                             implementationClass="cc.unitmesh.ide.javascript.provider.JavaScriptLivingDocumentation"/>
+
+        <buildSystemProvider implementation="cc.unitmesh.ide.javascript.provider.JavaScriptBuildSystemProvider" />
+    </extensions>
+</idea-plugin>

@@ -1,4 +1,4 @@
-package cc.unitmesh.ide.webstorm.provider
+package cc.unitmesh.ide.javascript.provider
 
 import cc.unitmesh.devti.flow.kanban.Kanban
 import cc.unitmesh.devti.prompting.code.TargetEndpoint
