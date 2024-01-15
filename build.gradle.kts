@@ -103,6 +103,7 @@ allprojects {
         plugin("idea")
         plugin("kotlin")
         plugin("org.jetbrains.intellij")
+        plugin("org.jetbrains.kotlinx.kover")
     }
 
     repositories {
@@ -377,6 +378,16 @@ project(":") {
         testImplementation("io.kotest:kotest-assertions-core:5.7.2")
         testImplementation("junit:junit:4.13.2")
         testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.9.3")
+
+        kover(project(":"))
+        kover(project(":cpp"))
+        kover(project(":csharp"))
+        kover(project(":goland"))
+        kover(project(":java"))
+        kover(project(":javascript"))
+        kover(project(":kotlin"))
+        kover(project(":pycharm"))
+        kover(project(":rust"))
     }
 
     task("resolveDependencies") {
