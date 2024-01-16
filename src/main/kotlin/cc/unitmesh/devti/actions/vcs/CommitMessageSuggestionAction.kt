@@ -15,9 +15,8 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.vcs.VcsDataKeys
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.ui.CommitMessage
-import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.*
 
 class CommitMessageSuggestionAction : ChatBaseAction() {
 

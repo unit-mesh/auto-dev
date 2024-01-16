@@ -1,5 +1,6 @@
 package cc.unitmesh.ide.javascript.util
 
+import cc.unitmesh.devti.util.isInProject
 import com.intellij.lang.ecmascript6.psi.ES6ExportDeclaration
 import com.intellij.lang.ecmascript6.psi.ES6ExportDefaultAssignment
 import com.intellij.lang.javascript.frameworks.commonjs.CommonJSUtil
@@ -40,7 +41,7 @@ object JSPsiUtil {
         val virtualFile = resolved.containingFile?.virtualFile
 
         if (virtualFile == null ||
-            !ProjectFileIndex.getInstance(node.project).isInProject(virtualFile) ||
+            !node.project.isInProject(virtualFile) ||
             ProjectFileIndex.getInstance(node.project).isInLibrary(virtualFile)
         ) {
             return JSStubBasedPsiTreeUtil.resolveReferenceLocally(node as PsiPolyVariantReference, node.referenceName)

@@ -18,3 +18,7 @@ fun isInProject(virtualFile: VirtualFile, project: Project): Boolean {
 
     return false
 }
+
+fun Project.isInProject(virtualFile: VirtualFile): Boolean {
+    return isInProject(virtualFile, this)
+}
