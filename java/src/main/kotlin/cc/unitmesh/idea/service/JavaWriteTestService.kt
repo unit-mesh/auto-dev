@@ -22,18 +22,13 @@ import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration
 import java.io.File
 
 class JavaWriteTestService : WriteTestService() {
-    override fun runConfigurationClass(project: Project): Class<out RunProfile> {
-        return GradleRunConfiguration::class.java
-    }
-
-    override fun isApplicable(element: PsiElement): Boolean {
-        return element.language is JavaLanguage
-    }
+    override fun runConfigurationClass(project: Project): Class<out RunProfile> = GradleRunConfiguration::class.java
+    override fun isApplicable(element: PsiElement): Boolean = element.language is JavaLanguage
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
         val sourceFilePath = sourceFile.virtualFile
         val parentDir = sourceFilePath.parent
-        val className = sourceFile.name.replace(".java", "") + "Test"
+        val testFileName = sourceFile.name.replace(".java", "") + "Test"
 
         val packageName = ReadAction.compute<String, Throwable> {
             (sourceFile as PsiJavaFile).packageName
@@ -89,7 +84,7 @@ class JavaWriteTestService : WriteTestService() {
         }
 
         return if (testFile != null) {
-            TestFileContext(isNewFile, testFile, relatedModels, className, sourceFile.language, null, imports)
+            TestFileContext(isNewFile, testFile, relatedModels, testFileName, sourceFile.language, null, imports)
         } else {
             val targetFile = createTestFile(sourceFile, testDir!!, packageName, project)
             TestFileContext(isNewFile = true, targetFile, relatedModels, "", sourceFile.language, null, imports)

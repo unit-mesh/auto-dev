@@ -91,7 +91,7 @@ val webstormVersion = prop("webstormVersion")
 val baseVersion = when (baseIDE) {
     "idea" -> ideaVersion
     "pycharm" -> pycharmVersion
-    "go" -> golandVersion
+    "goland" -> golandVersion
     "clion" -> clionVersion
     "rider" -> riderVersion
     "javascript" -> webstormVersion

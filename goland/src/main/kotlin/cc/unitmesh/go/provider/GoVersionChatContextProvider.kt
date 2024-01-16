@@ -7,6 +7,8 @@ import com.goide.psi.GoFile
 import com.goide.sdk.GoSdkService
 import com.goide.sdk.GoTargetSdkVersionProvider
 import com.goide.util.GoUtil
+import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 
 class GoVersionChatContextProvider : ChatContextProvider {
@@ -17,15 +19,17 @@ class GoVersionChatContextProvider : ChatContextProvider {
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         val sourceFile = creationContext.sourceFile ?: return emptyList()
 
-        val goVersion = GoSdkService.getInstance(project).getSdk(GoUtil.module(sourceFile)).version
-        val targetVersion = GoTargetSdkVersionProvider.getTargetGoSdkVersion(sourceFile).toString()
+        return ReadAction.compute<List<ChatContextItem>, Throwable> {
+            val goVersion = GoSdkService.getInstance(project).getSdk(GoUtil.module(sourceFile)).version
+            val targetVersion = GoTargetSdkVersionProvider.getTargetGoSdkVersion(sourceFile).toString()
 
-        return listOf(
-            ChatContextItem(
-                GoVersionChatContextProvider::class,
-                "Go Version: $goVersion, Target Version: $targetVersion"
+            listOf(
+                ChatContextItem(
+                    GoVersionChatContextProvider::class,
+                    "Go Version: $goVersion, Target Version: $targetVersion"
+                )
             )
-        )
+        }
     }
 }
 
