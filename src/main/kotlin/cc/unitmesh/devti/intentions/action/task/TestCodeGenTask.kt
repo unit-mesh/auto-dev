@@ -61,10 +61,12 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
 
         if (testContext == null) {
             if (writeTestService == null) {
+                AutoDevStatusService.notifyApplication(AutoDevStatus.Error)
                 logger.error("Could not find WriteTestService for: ${request.file}")
                 return
             }
 
+            AutoDevStatusService.notifyApplication(AutoDevStatus.Error)
             logger.error("Failed to create test file for: ${request.file}")
             return
         }
@@ -98,7 +100,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         testPromptContext.imports = testContext.imports.joinToString("\n") {
             "$comment $it"
         }
-        //         prompter += "\nCode:\n$importString\n```${lang.lowercase()}\n${request.selectText}\n```\n"
+
         testPromptContext.sourceCode = request.selectText
         testPromptContext.isNewFile = testContext.isNewFile
 
