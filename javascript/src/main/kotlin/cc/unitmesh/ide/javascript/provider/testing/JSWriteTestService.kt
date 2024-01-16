@@ -19,6 +19,7 @@ import com.intellij.lang.javascript.psi.util.JSStubBasedPsiTreeUtil
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -31,6 +32,7 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 
 class JSWriteTestService : WriteTestService() {
+    val log = logger<JSWriteTestService>()
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = NpmRunConfiguration::class.java
 
     override fun isApplicable(element: PsiElement): Boolean {
@@ -40,10 +42,23 @@ class JSWriteTestService : WriteTestService() {
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
         val language = sourceFile.language
-        val testFilePath = Util.getTestFilePath(element)?.toString() ?: return null
+        val testFilePath = Util.getTestFilePath(element)?.toString()
+        if (testFilePath == null) {
+            log.warn("Failed to find test file path for: $element")
+            return null
+        }
 
-        val elementToTest = runReadAction { Util.getElementToTest(element) } ?: return null
-        val elementName = JSPsiUtil.elementName(elementToTest) ?: return null
+        val elementToTest = runReadAction { Util.getElementToTest(element) }
+        if (elementToTest == null) {
+            log.warn("Failed to find element to test for: ${element}, check your function is exported.")
+            return null
+        }
+
+        val elementName = JSPsiUtil.elementName(elementToTest)
+        if (elementName == null) {
+            log.warn("Failed to find element name for: $element")
+            return null
+        }
 
         var testFile = LocalFileSystem.getInstance().findFileByPath(testFilePath)
         if (testFile != null) {
