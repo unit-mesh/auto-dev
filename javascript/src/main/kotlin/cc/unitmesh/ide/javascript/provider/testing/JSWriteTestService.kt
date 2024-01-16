@@ -152,13 +152,13 @@ class JSWriteTestService : WriteTestService() {
                     }
 
                     else -> {
-                        println("resolveReferenceLocally is not TypeScriptInterface")
+                        log.warn("resolveReferenceLocally is not TypeScriptInterface: $resolveReferenceLocally")
                     }
                 }
             }
 
             else -> {
-                println("returnType is not TypeScriptSingleType")
+                log.warn("returnType is not TypeScriptSingleType: $returnType")
             }
         }
 
