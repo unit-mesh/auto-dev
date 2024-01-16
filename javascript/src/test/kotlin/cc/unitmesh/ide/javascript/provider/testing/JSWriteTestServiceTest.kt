@@ -8,6 +8,7 @@ import com.intellij.lang.javascript.psi.ecmal4.JSClass
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testFramework.LightPlatformTestCase
+import junit.framework.TestCase
 import java.io.File
 
 class JSWriteTestServiceTest : LightPlatformTestCase() {
@@ -85,6 +86,8 @@ class JSWriteTestServiceTest : LightPlatformTestCase() {
         val function = PsiTreeUtil.findChildOfType(clazz, JSFunction::class.java)!!
 
         val relevantClass = JSWriteTestService().lookupRelevantClass(project, function)
-        println(relevantClass)
+
+        TestCase.assertEquals(relevantClass.size, 2)
+        println(relevantClass.map { it.format() })
     }
 }

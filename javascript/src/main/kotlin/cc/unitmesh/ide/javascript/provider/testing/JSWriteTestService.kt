@@ -57,9 +57,13 @@ class JSWriteTestService : WriteTestService() {
             }
 
         val underTestObj = ReadAction.compute<String, Throwable> {
-            val underTestObj = JavaScriptClassContextBuilder().getClassContext(elementToTest, false)?.format()
+            val underTestObj = JavaScriptClassContextBuilder()
+                .getClassContext(elementToTest, false)?.format()
+
             if (underTestObj == null) {
-                val funcObj = JavaScriptMethodContextBuilder().getMethodContext(elementToTest, false, false)?.format()
+                val funcObj = JavaScriptMethodContextBuilder()
+                    .getMethodContext(elementToTest, false, false)?.format()
+
                 return@compute funcObj ?: ""
             } else {
                 return@compute underTestObj
@@ -94,7 +98,7 @@ class JSWriteTestService : WriteTestService() {
         val result = mutableMapOf<String, ClassContext>()
         jsFunction.parameterList?.parameters?.map {
             it.typeElement?.let { typeElement ->
-                resolveByType(typeElement, it.typeElement!!.text)
+                result += resolveByType(typeElement, it.typeElement!!.text)
             }
         }
 
@@ -123,11 +127,13 @@ class JSWriteTestService : WriteTestService() {
                             result += mapOf(typeName to it)
                         }
                     }
+
                     else -> {
                         println("resolveReferenceLocally is not TypeScriptInterface")
                     }
                 }
             }
+
             else -> {
                 println("returnType is not TypeScriptSingleType")
             }
