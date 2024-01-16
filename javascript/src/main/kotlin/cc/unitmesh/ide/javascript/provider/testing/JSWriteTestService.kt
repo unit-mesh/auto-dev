@@ -93,26 +93,43 @@ class JSWriteTestService : WriteTestService() {
     private fun resolveByFunction(jsFunction: JSFunction): Map<String, ClassContext> {
         val result = mutableMapOf<String, ClassContext>()
         jsFunction.parameterList?.parameters?.map {
-
+            it.typeElement?.let { typeElement ->
+                resolveByType(typeElement, it.typeElement!!.text)
+            }
         }
 
-        val returnType = jsFunction.returnTypeElement
+        result += jsFunction.returnTypeElement?.let {
+            resolveByType(it, jsFunction.returnType!!.resolvedTypeText)
+        } ?: emptyMap()
+
+        return result
+    }
+
+    private fun resolveByType(
+        returnType: PsiElement?,
+        typeName: String
+    ): MutableMap<String, ClassContext> {
+        val result = mutableMapOf<String, ClassContext>()
         when (returnType) {
             is TypeScriptSingleType -> {
-                val typeName = jsFunction.returnType!!.resolvedTypeText
-
                 val resolveReferenceLocally = JSStubBasedPsiTreeUtil.resolveLocally(
                     typeName,
                     returnType
                 )
 
-                when(resolveReferenceLocally) {
+                when (resolveReferenceLocally) {
                     is TypeScriptInterface -> {
-                           JavaScriptClassContextBuilder().getClassContext(resolveReferenceLocally, false)?.let {
-                               result += mapOf(typeName to it)
-                           }
+                        JavaScriptClassContextBuilder().getClassContext(resolveReferenceLocally, false)?.let {
+                            result += mapOf(typeName to it)
+                        }
+                    }
+                    else -> {
+                        println("resolveReferenceLocally is not TypeScriptInterface")
                     }
                 }
+            }
+            else -> {
+                println("returnType is not TypeScriptSingleType")
             }
         }
 

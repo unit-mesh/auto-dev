@@ -116,6 +116,7 @@ class BlogController {
         assertEquals(
             context.format(),
             """
+               |path: /src/cc/unitmesh/untitled/demo/service/BlogService.java
                |language: Java
                |fun name: createBlog
                |fun signature: public BlogPost createBlog(BlogPost blogDto)
