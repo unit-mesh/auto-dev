@@ -8,6 +8,17 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 
+/**
+ * Represents a snapshot of JavaScript dependencies in a Kotlin language project.
+ *
+ * This class provides information about the JavaScript dependencies in the project, including the package.json files,
+ * whether the package.json files have been resolved, the tsconfig.json files, and the packages defined in the package.json files.
+ *
+ * @property packageJsonFiles The set of package.json files in the project.
+ * @property resolvedPackageJson A flag indicating whether the package.json files have been resolved.
+ * @property tsConfigs The set of tsconfig.json files in the project.
+ * @property packages The map of package names to their corresponding PackageJsonDependencyEntry objects.
+ */
 class JsDependenciesSnapshot(
     val packageJsonFiles: Set<VirtualFile>,
     val resolvedPackageJson: Boolean,

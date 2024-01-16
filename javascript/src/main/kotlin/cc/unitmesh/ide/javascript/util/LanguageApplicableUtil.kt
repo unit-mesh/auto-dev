@@ -39,6 +39,6 @@ object LanguageApplicableUtil {
             return true
         }
 
-        return psiFile.language.isKindOf(JavascriptLanguage.INSTANCE) || psiFile.language.isKindOf(HTMLLanguage.INSTANCE)
+        return isJavaScriptApplicable(psiFile.language)
     }
 }

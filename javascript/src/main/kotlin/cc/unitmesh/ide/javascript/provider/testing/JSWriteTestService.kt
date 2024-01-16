@@ -47,9 +47,6 @@ class JSWriteTestService : WriteTestService() {
             return TestFileContext(false, testFile, emptyList(), null, language, null)
         }
 
-        // create test file
-
-
         WriteCommandAction.writeCommandAction(sourceFile.project).withName("Generate Unit Tests")
             .compute<Unit, Throwable> {
                 val parentDir = VfsUtil.createDirectoryIfMissing(Path(testFilePath).parent.toString())
@@ -64,7 +61,6 @@ class JSWriteTestService : WriteTestService() {
     override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {
         return ReadAction.compute<List<ClassContext>, Throwable> {
             val elements = mutableListOf<ClassContext>()
-            val projectPath = project.guessProjectDir()?.path
 
             when (element) {
                 is JSClass -> {

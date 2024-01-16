@@ -101,7 +101,7 @@ object JSPsiUtil {
      * @param element the PSI element to check
      * @return `true` if the element is a private member, `false` otherwise
      */
-    fun isPrivateMember(element: PsiElement): Boolean {
+    private fun isPrivateMember(element: PsiElement): Boolean {
         if (element is JSQualifiedNamedElement && element.isPrivateName) {
             return true
         }
