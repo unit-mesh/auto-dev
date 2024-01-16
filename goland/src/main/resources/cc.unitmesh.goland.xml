@@ -2,9 +2,11 @@
     <!--suppress PluginXmlValidity -->
     <dependencies>
         <plugin id="org.jetbrains.plugins.go"/>
+        <plugin id="com.intellij.modules.goland"/>
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
+        <classContextBuilder language="go" implementationClass="cc.unitmesh.go.context.GoStructContextBuilder"/>
         <methodContextBuilder language="go" implementationClass="cc.unitmesh.go.context.GoMethodContextBuilder"/>
 
         <chatContextProvider implementation="cc.unitmesh.go.provider.GoVersionChatContextProvider"/>
