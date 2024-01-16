@@ -12,12 +12,15 @@ import com.intellij.lang.javascript.psi.ecmal4.JSClass
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 import java.io.File
+import java.io.IOException
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.nameWithoutExtension
@@ -118,19 +121,19 @@ class JSWriteTestService : WriteTestService() {
 
             if (elementForTests == null) return null
 
-            return if (JSPsiUtil.isExportedClassPublicMethod(elementForTests) ||
-                JSPsiUtil.isExportedFileFunction(elementForTests) ||
-                JSPsiUtil.isExportedClass(elementForTests)
-            ) {
-                elementForTests
-            } else {
-                null
+            return when {
+                JSPsiUtil.isExportedClassPublicMethod(elementForTests) -> elementForTests
+                JSPsiUtil.isExportedFileFunction(elementForTests) -> elementForTests
+                JSPsiUtil.isExportedClass(elementForTests) -> elementForTests
+                else -> {
+                    null
+                }
             }
         }
 
         fun getTestFilePath(element: PsiElement): Path? {
             val testDirectory = suggestTestDirectory(element) ?: return null
-            val containingFile: PsiFile = element.containingFile ?: return null
+            val containingFile: PsiFile = runReadAction { element.containingFile } ?: return null
             val extension = containingFile.virtualFile?.extension ?: return null
             val elementName = JSPsiUtil.elementName(element) ?: return null
             val testFile: Path = generateUniqueTestFile(elementName, containingFile, testDirectory, extension).toPath()
@@ -138,15 +141,18 @@ class JSWriteTestService : WriteTestService() {
         }
 
         private fun suggestTestDirectory(element: PsiElement): PsiDirectory? {
-            val project: Project = runReadAction { element.project }
+            val project: Project = element.project
             val elementDirectory = runReadAction { element.containingFile }
 
             val parentDir = elementDirectory?.virtualFile?.parent ?: return null
-            val childDir = runWriteAction {
-                parentDir.createChildDirectory(this, "test")
-            }
 
-            return PsiManager.getInstance(project).findDirectory(childDir)
+            return WriteCommandAction.writeCommandAction(project, elementDirectory)
+                .withName("Creating Directory For Tests")
+                .compute<VirtualFile?, IOException> {
+                    return@compute parentDir.createChildDirectory(this, "test")
+                }?.let {
+                    return runReadAction { PsiManager.getInstance(project).findDirectory(it) }
+                }
         }
 
         private fun generateUniqueTestFile(
