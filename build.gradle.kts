@@ -588,6 +588,9 @@ project(":csharp") {
 project(":goland") {
     intellij {
         version.set(golandVersion)
+        type.set("GO")
+
+        // required if Go language API is needed:
         plugins.set(listOf("org.jetbrains.plugins.go"))
     }
     dependencies {

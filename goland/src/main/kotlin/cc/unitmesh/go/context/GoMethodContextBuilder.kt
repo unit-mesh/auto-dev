@@ -4,7 +4,6 @@ import cc.unitmesh.devti.context.MethodContext
 import cc.unitmesh.devti.context.builder.MethodContextBuilder
 import com.goide.psi.GoFunctionOrMethodDeclaration
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiNameIdentifierOwner
 
 class GoMethodContextBuilder : MethodContextBuilder {
     override fun getMethodContext(

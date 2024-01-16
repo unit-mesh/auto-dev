@@ -2,6 +2,8 @@
     <!--suppress PluginXmlValidity -->
     <dependencies>
         <plugin id="org.jetbrains.plugins.go"/>
+        <plugin id="com.intellij.modules.go-capable"/>
+        <plugin id="com.intellij.modules.platform"/>
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
