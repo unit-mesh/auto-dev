@@ -13,6 +13,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
 class JavaScriptContextProvider : ChatContextProvider {
+    private val log = logger<JavaScriptContextProvider>()
+
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
         val sourceFile: PsiFile = creationContext.sourceFile ?: return false
         return LanguageApplicableUtil.isJavaScriptApplicable(sourceFile.language)
@@ -29,7 +31,7 @@ class JavaScriptContextProvider : ChatContextProvider {
         if (mostPopularPackagesContext != null) results.add(mostPopularPackagesContext)
 
         val techStack = prepareStack(snapshot)
-        logger<JavaScriptContextProvider>().warn("Tech stack: $techStack")
+        log.info("Tech stack: $techStack")
         if (techStack.coreFrameworks().isNotEmpty()) {
             val element = ChatContextItem(
                 JavaScriptContextProvider::class,
@@ -94,7 +96,7 @@ class JavaScriptContextProvider : ChatContextProvider {
             "The project uses TypeScript language" + (version?.let { ", version: $version" } ?: ""))
     }
 
-    fun prepareStack(snapshot: JsDependenciesSnapshot): TestStack {
+    private fun prepareStack(snapshot: JsDependenciesSnapshot): TestStack {
         val devDependencies = mutableMapOf<String, String>()
         val dependencies = mutableMapOf<String, String>()
 

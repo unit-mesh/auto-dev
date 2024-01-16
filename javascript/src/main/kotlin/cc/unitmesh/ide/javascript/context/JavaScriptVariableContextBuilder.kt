@@ -24,7 +24,7 @@ class JavaScriptVariableContextBuilder : VariableContextBuilder {
         val parentOfType: PsiElement? = PsiTreeUtil.getParentOfType(psiElement, JSFunction::class.java, true)
         val memberContainingClass: PsiElement = JSUtils.getMemberContainingClass(psiElement)
         val psiReferences: List<PsiReference> = if (gatherUsages) {
-            JavaScriptClassContextBuilder.findUsages(psiElement as PsiNameIdentifierOwner)
+            findUsages(psiElement as PsiNameIdentifierOwner)
         } else {
             emptyList()
         }

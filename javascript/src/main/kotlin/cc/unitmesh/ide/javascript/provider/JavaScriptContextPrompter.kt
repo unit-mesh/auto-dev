@@ -31,7 +31,6 @@ class JavaScriptContextPrompter : ContextPrompter() {
     }
 
     override fun displayPrompt(): String {
-
         return runBlocking {
             additionContext = collectionContext(creationContext)
             return@runBlocking "${action!!.instruction(lang, project)}\n```$lang\n$selectedText\n```"

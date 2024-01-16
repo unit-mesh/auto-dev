@@ -26,7 +26,7 @@ class JavaScriptMethodContextBuilder : MethodContextBuilder {
         val parameterNames = psiElement.parameters.mapNotNull { it.name }
 
         val usages =
-            if (gatherUsages) JavaScriptClassContextBuilder.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
+            if (gatherUsages) findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
 
         return MethodContext(
             psiElement, psiElement.text, psiElement.name!!, functionSignature, containingClass, languageDisplayName,

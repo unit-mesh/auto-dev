@@ -28,14 +28,12 @@ class JavaScriptClassContextBuilder : ClassContextBuilder {
 
         return ClassContext(psiElement, psiElement.text, psiElement.name, methods, fields, superClasses, references)
     }
+}
 
-    companion object {
-        fun findUsages(psiElement: PsiElement): List<PsiReference> {
-            val globalSearchScope = GlobalSearchScope.allScope(psiElement.project)
+fun findUsages(psiElement: PsiElement): List<PsiReference> {
+    val globalSearchScope = GlobalSearchScope.allScope(psiElement.project)
 
-            return ReferencesSearch.search(psiElement, globalSearchScope, true)
-                .findAll()
-                .toList()
-        }
-    }
+    return ReferencesSearch.search(psiElement, globalSearchScope, true)
+        .findAll()
+        .toList()
 }
