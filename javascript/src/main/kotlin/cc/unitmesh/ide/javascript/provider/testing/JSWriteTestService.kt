@@ -4,6 +4,7 @@ import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.provider.WriteTestService
 import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.ide.javascript.context.JavaScriptClassContextBuilder
+import cc.unitmesh.ide.javascript.context.JavaScriptMethodContextBuilder
 import cc.unitmesh.ide.javascript.util.JSPsiUtil
 import cc.unitmesh.ide.javascript.util.LanguageApplicableUtil
 import com.intellij.execution.configurations.RunProfile
@@ -15,7 +16,6 @@ import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.psi.PsiDirectory
@@ -53,9 +53,12 @@ class JSWriteTestService : WriteTestService() {
                 testFile = parentDir?.createChildData(this, Path(testFilePath).fileName.toString())
             }
 
-        val currentClz = JavaScriptClassContextBuilder().getClassContext(elementToTest, false)
+        var underTestObj = JavaScriptClassContextBuilder().getClassContext(elementToTest, false)?.format()
+        if (underTestObj == null) {
+            underTestObj = JavaScriptMethodContextBuilder().getMethodContext(elementToTest, false, false)?.format()
+        }
 
-        return TestFileContext(true, testFile!!, emptyList(), elementName, language, currentClz)
+        return TestFileContext(true, testFile!!, emptyList(), elementName, language, underTestObj)
     }
 
     override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {

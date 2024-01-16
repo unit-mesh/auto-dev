@@ -18,8 +18,8 @@ ${context.sourceCode}
 
 ## if newFile
 #if( $context.isNewFile )
-Start method test code here:
+Start method test code with Markdown code block here:
 #else
-Start ${context.testClassName} test code here:
+Start ${context.testClassName} test code with Markdown code block here:
 #end
 

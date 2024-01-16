@@ -10,6 +10,11 @@ data class TestFileContext(
     val relatedClasses: List<ClassContext> = emptyList(),
     val testClassName: String?,
     val language: Language,
-    val currentClass: ClassContext? = null,
+    /**
+     * In Java, it is the current class.
+     * In Kotlin, it is the current class or current function.
+     * In JavaScript, it is the current class or current function.
+     */
+    val currentObject: String? = null,
     val imports: List<String> = emptyList(),
 )

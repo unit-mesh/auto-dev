@@ -101,7 +101,8 @@ class KotlinWriteTestService : WriteTestService() {
 
                 else -> null
             }
-        }
+        }?.format()
+
         val imports: List<String> = runReadAction {
             (sourceFile as KtFile).importList?.imports?.map { it.text } ?: emptyList()
         }
