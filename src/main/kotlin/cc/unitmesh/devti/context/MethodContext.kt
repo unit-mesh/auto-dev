@@ -22,7 +22,6 @@ class MethodContext(
     private val classContext: ClassContext?
     private val project: Project = root.project
 
-
     init {
         classContext = if (includeClassContext && enclosingClass != null) {
             ClassContextProvider(false).from(enclosingClass)
@@ -39,6 +38,7 @@ class MethodContext(
         }
 
         var query = """
+            path: ${root.containingFile?.virtualFile?.path ?: "_"}
             language: ${language ?: "_"}
             fun name: ${name ?: "_"}
             fun signature: ${signature ?: "_"}

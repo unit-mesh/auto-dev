@@ -39,7 +39,7 @@ class JSWriteTestService : WriteTestService() {
         val language = sourceFile.language
         val testFilePath = Util.getTestFilePath(element)?.toString() ?: return null
 
-        val elementToTest = Util.getElementToTest(element) ?: return null
+        val elementToTest = runReadAction { Util.getElementToTest(element) } ?: return null
         val elementName = JSPsiUtil.elementName(elementToTest) ?: return null
 
         var testFile = LocalFileSystem.getInstance().findFileByPath(testFilePath)
