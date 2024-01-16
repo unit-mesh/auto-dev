@@ -211,8 +211,13 @@ class JSWriteTestService : WriteTestService() {
         }
 
         fun getTestFilePath(element: PsiElement): Path? {
-            val testDirectory = suggestTestDirectory(element) ?: return null
-            val containingFile: PsiFile = runReadAction { element.containingFile } ?: return null
+            val testDirectory = suggestTestDirectory(element)
+            if (testDirectory == null) {
+                log.warn("Failed to find test directory for: $element")
+                return null
+            }
+
+            val containingFile: PsiFile = runReadAction { element.containingFile }?: return null
             val extension = containingFile.virtualFile?.extension ?: return null
             val elementName = JSPsiUtil.elementName(element) ?: return null
             val testFile: Path = generateUniqueTestFile(elementName, containingFile, testDirectory, extension).toPath()

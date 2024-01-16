@@ -85,10 +85,12 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
 
         testPromptContext.frameworkedContext = contextItems.joinToString("\n", transform = ChatContextItem::text)
         ReadAction.compute<Unit, Throwable> {
-            testPromptContext.relatedClasses = testContext.relatedClasses.joinToString("\n") {
-                it.format()
-            }.lines().joinToString("\n") {
-                "$comment $it"
+            if (testContext.relatedClasses.isNotEmpty()) {
+                testPromptContext.relatedClasses = testContext.relatedClasses.joinToString("\n") {
+                    it.format()
+                }.lines().joinToString("\n") {
+                    "$comment $it"
+                }
             }
 
             testPromptContext.currentClass =

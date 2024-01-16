@@ -2,8 +2,9 @@ Write unit test for following ${context.lang} code.
 
 ${context.frameworkedContext}
 
+#if( $context.relatedClasses.length() > 0 )
 ${context.relatedClasses}
-
+#end
 #if( $context.currentClass.length() > 0 )
 Here is current class information:
 ${context.currentClass}
