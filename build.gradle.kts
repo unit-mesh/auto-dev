@@ -599,7 +599,7 @@ project(":goland") {
         updateSinceUntilBuild.set(false)
 
         // required if Go language API is needed:
-        plugins.set(prop("goPlugins").split(',').map(String::trim).filter(String::isNotEmpty))
+        plugins.set(prop("goPlugin$platformVersion").split(',').map(String::trim).filter(String::isNotEmpty))
     }
     dependencies {
         implementation(project(":"))
