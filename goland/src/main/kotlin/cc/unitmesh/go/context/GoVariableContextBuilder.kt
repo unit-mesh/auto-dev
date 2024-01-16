@@ -16,7 +16,6 @@ class GoVariableContextBuilder : VariableContextBuilder {
             return null
         }
 
-
         val name = psiElement.name
 
         return VariableContext(

@@ -2,7 +2,9 @@ package cc.unitmesh.go.context
 
 import cc.unitmesh.devti.context.MethodContext
 import cc.unitmesh.devti.context.builder.MethodContextBuilder
+import com.goide.psi.GoFunctionDeclaration
 import com.goide.psi.GoFunctionOrMethodDeclaration
+import com.goide.psi.GoMethodDeclaration
 import com.intellij.psi.PsiElement
 
 class GoMethodContextBuilder : MethodContextBuilder {
@@ -16,7 +18,21 @@ class GoMethodContextBuilder : MethodContextBuilder {
             return null
         }
 
-        val functionSignature = psiElement.signature?.text
+
+        var funcName = ""
+        val functionSignature: String = when (psiElement) {
+            is GoMethodDeclaration -> {
+                funcName = psiElement.receiver?.text ?: ""
+                psiElement.signature?.text ?: ""
+            }
+
+            is GoFunctionDeclaration -> {
+                funcName = psiElement.name ?: ""
+                psiElement.signature?.text ?: ""
+            }
+
+            else -> ""
+        }
         val returnType = psiElement.signature?.resultType?.text
         val languages = psiElement.language.displayName
         val returnTypeText = returnType
@@ -25,7 +41,7 @@ class GoMethodContextBuilder : MethodContextBuilder {
         }.orEmpty()
 
         return MethodContext(
-            psiElement, psiElement.text, psiElement.name!!, functionSignature, null, languages,
+            psiElement, psiElement.text, funcName, functionSignature, null, languages,
             returnTypeText, parameterNames, includeClassContext, emptyList()
         )
 
