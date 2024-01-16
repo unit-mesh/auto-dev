@@ -1,8 +1,7 @@
-<idea-plugin package="cc.unitmesh.goland">
+<idea-plugin package="cc.unitmesh.go">
     <!--suppress PluginXmlValidity -->
     <dependencies>
         <plugin id="org.jetbrains.plugins.go"/>
-        <plugin id="com.intellij.modules.goland"/>
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
