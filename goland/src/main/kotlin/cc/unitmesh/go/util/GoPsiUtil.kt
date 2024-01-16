@@ -1,12 +1,20 @@
 package cc.unitmesh.go.util
 
-import com.goide.psi.GoFunctionOrMethodDeclaration
-import com.goide.psi.GoTypeList
-import com.goide.psi.GoTypeSpec
+import com.goide.psi.*
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.psi.PsiElement
 
 object GoPsiUtil {
+    fun getDeclarationName(psiElement: PsiElement): String? {
+        return when (psiElement) {
+            is GoNamedElement -> psiElement.name
+            is GoTypeDeclaration -> psiElement.typeSpecList.singleOrNull()?.name
+            is GoVarOrConstDeclaration<*> -> (psiElement.specList.singleOrNull() as? GoVarOrConstSpec)?.definitionList?.singleOrNull()?.name
+            is GoVarOrConstSpec<*> -> psiElement.definitionList.singleOrNull()?.name
+            else -> null
+        }
+    }
+
     fun findRelatedTypes(declaration: GoFunctionOrMethodDeclaration): List<GoTypeSpec> {
         val signature = declaration.signature ?: return emptyList()
 

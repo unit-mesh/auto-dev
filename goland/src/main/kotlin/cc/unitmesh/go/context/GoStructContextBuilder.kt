@@ -2,6 +2,7 @@ package cc.unitmesh.go.context
 
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.builder.ClassContextBuilder
+import cc.unitmesh.go.util.GoPsiUtil
 import com.goide.psi.GoMethodDeclaration
 import com.goide.psi.GoTypeDeclaration
 import com.goide.psi.GoTypeSpec
@@ -27,13 +28,7 @@ class GoStructContextBuilder : ClassContextBuilder {
         val methods = methodPairs.map { it.first }
             .filterIsInstance<GoMethodDeclaration>()
 
-        val name = when (psiElement) {
-            is GoTypeSpec -> psiElement.name
-            is GoTypeDeclaration -> {
-                psiElement.typeSpecList.first().name
-            }
-            else -> null
-        }
+        val name = GoPsiUtil.getDeclarationName(psiElement)
 
         return ClassContext(
             psiElement, psiElement.text, name, methods, emptyList(), emptyList(), emptyList()
