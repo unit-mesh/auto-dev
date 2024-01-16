@@ -18,6 +18,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.findDirectory
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 import java.io.File
@@ -157,9 +158,11 @@ class JSWriteTestService : WriteTestService() {
             val elementDirectory = runReadAction { element.containingFile }
 
             val parentDir = elementDirectory?.virtualFile?.parent ?: return null
-            val testDir = runReadAction { parentDir.findChild("test") }
+            val psiManager = PsiManager.getInstance(project)
+
+            val testDir = runReadAction { parentDir.findDirectory("test") }
             testDir?.let {
-                return runReadAction { PsiManager.getInstance(project).findDirectory(it) }
+                return runReadAction { psiManager.findDirectory(it) }
             }
 
             val outputFile = WriteCommandAction.writeCommandAction(project, elementDirectory)
@@ -168,7 +171,7 @@ class JSWriteTestService : WriteTestService() {
                     return@compute parentDir.createChildDirectory(this, "test")
                 } ?: return null
 
-            return runReadAction { PsiManager.getInstance(project).findDirectory(outputFile) }
+            return runReadAction { psiManager.findDirectory(outputFile) }
         }
 
         private fun generateUniqueTestFile(
