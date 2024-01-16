@@ -3,6 +3,7 @@ package cc.unitmesh.ide.javascript.provider.testing
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.provider.WriteTestService
 import cc.unitmesh.devti.provider.context.TestFileContext
+import cc.unitmesh.devti.util.isInProject
 import cc.unitmesh.ide.javascript.context.JavaScriptClassContextBuilder
 import cc.unitmesh.ide.javascript.context.JavaScriptMethodContextBuilder
 import cc.unitmesh.ide.javascript.util.JSPsiUtil
@@ -11,17 +12,19 @@ import com.intellij.execution.configurations.RunProfile
 import com.intellij.lang.javascript.buildTools.npm.rc.NpmRunConfiguration
 import com.intellij.lang.javascript.psi.JSFunction
 import com.intellij.lang.javascript.psi.JSVarStatement
+import com.intellij.lang.javascript.psi.ecma6.TypeScriptInterface
+import com.intellij.lang.javascript.psi.ecma6.TypeScriptSingleType
 import com.intellij.lang.javascript.psi.ecmal4.JSClass
+import com.intellij.lang.javascript.psi.util.JSStubBasedPsiTreeUtil
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
-import com.intellij.psi.PsiDirectory
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiManager
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 import java.io.File
 import java.nio.file.Path
@@ -69,30 +72,58 @@ class JSWriteTestService : WriteTestService() {
     override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {
         return ReadAction.compute<List<ClassContext>, Throwable> {
             val elements = mutableListOf<ClassContext>()
-
             when (element) {
                 is JSClass -> {
                     element.functions.map {
-                        resolveByFunction(it)
+                        elements += resolveByFunction(it).values
                     }
                 }
 
                 is JSFunction -> {
-                    resolveByFunction(element)
+                    elements += resolveByFunction(element).values
                 }
+
+                else -> {}
             }
 
-            return@compute listOf()
+            return@compute elements
         }
     }
 
     private fun resolveByFunction(jsFunction: JSFunction): Map<String, ClassContext> {
+        val result = mutableMapOf<String, ClassContext>()
         jsFunction.parameterList?.parameters?.map {
 
         }
 
-        val resolveClass = jsFunction.returnTypeElement
-        return mapOf()
+        val returnType = jsFunction.returnTypeElement
+        when (returnType) {
+            is TypeScriptSingleType -> {
+                val typeName = jsFunction.returnType!!.resolvedTypeText
+
+                val resolveReferenceLocally = JSStubBasedPsiTreeUtil.resolveLocally(
+                    typeName,
+                    returnType
+                )
+
+                when(resolveReferenceLocally) {
+                    is TypeScriptInterface -> {
+                           JavaScriptClassContextBuilder().getClassContext(resolveReferenceLocally, false)?.let {
+                               result += mapOf(typeName to it)
+                           }
+                    }
+                }
+            }
+        }
+
+        return result
+    }
+
+    private fun isInProject(
+        project: Project,
+        virtualFile: VirtualFile
+    ): Boolean {
+        return project.isInProject(virtualFile) || ProjectFileIndex.getInstance(project).isInLibrary(virtualFile)
     }
 
     object Util {

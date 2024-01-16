@@ -22,7 +22,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.parents
 
 object JSPsiUtil {
-    private fun resolveReference(node: JSReferenceExpression, scope: PsiElement): PsiElement? {
+    fun resolveReference(node: JSReferenceExpression, scope: PsiElement): PsiElement? {
         val resolveReference = JSResolveResult.resolveReference(node)
         var resolved = resolveReference.firstOrNull() as? JSImplicitElement
 
@@ -30,7 +30,7 @@ object JSPsiUtil {
             resolved = resolved.parent as? JSImplicitElement
         }
 
-        if (resolved is JSFunction && resolved.isConstructor()) {
+        if (resolved is JSFunction && resolved.isConstructor) {
             resolved = JSUtils.getMemberContainingClass(resolved) as? JSImplicitElement
         }
 
