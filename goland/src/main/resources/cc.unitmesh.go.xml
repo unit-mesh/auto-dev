@@ -12,6 +12,8 @@
         <methodContextBuilder language="go" implementationClass="cc.unitmesh.go.context.GoMethodContextBuilder"/>
         <variableContextBuilder language="go" implementationClass="cc.unitmesh.go.context.GoVariableContextBuilder"/>
 
+        <testContextProvider language="go" implementation="cc.unitmesh.go.provider.testing.GoWriteTestService"/>
+
         <chatContextProvider implementation="cc.unitmesh.go.provider.GoVersionChatContextProvider"/>
     </extensions>
 </idea-plugin>
