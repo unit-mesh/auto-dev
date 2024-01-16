@@ -90,4 +90,37 @@ class JSWriteTestServiceTest : LightPlatformTestCase() {
         TestCase.assertEquals(relevantClass.size, 2)
         println(relevantClass.map { it.format() })
     }
+
+    fun testShouldHandleReactPropsAsRelevant() {
+        val code = """
+            import React, { useCallback, useState } from "react";
+            
+            interface CoreEditorProps {
+              value: string;
+              onChange: (value: string) => any;
+              onSave: (value: string) => any;
+            }
+
+            function CoreEditor(props: CoreEditorProps) {
+               return (<div />); 
+            }
+            
+            export default CoreEditor;
+            """.trimIndent()
+
+        val fileType = TypeScriptFileType.INSTANCE
+        val psiFile = PsiFileFactory.getInstance(project).createFileFromText(
+            "Foo." + fileType.defaultExtension,
+            fileType,
+            code,
+        )
+
+        val function = PsiTreeUtil.findChildrenOfAnyType(psiFile, JSFunction::class.java).toList()[2]
+
+        val relevantClass = JSWriteTestService().lookupRelevantClass(project, function)
+
+        TestCase.assertEquals(relevantClass.size, 1)
+
+        println(relevantClass.map { it.format() })
+    }
 }

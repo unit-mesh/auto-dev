@@ -24,7 +24,6 @@ class JSPsiUtilTest : LightPlatformTestCase() {
         assertTrue(result)
     }
 
-
     fun testShouldIdentifyIsExportedClassPublicMethod() {
         val code = """
             export class Foo {
