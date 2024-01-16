@@ -86,13 +86,13 @@ val platformVersion = prop("platformVersion").toInt()
 val ideaVersion = prop("ideaVersion")
 val golandVersion = prop("golandVersion")
 val pycharmVersion = prop("pycharmVersion")
-
+val webstormVersion = prop("webstormVersion")
 
 val baseVersion = when (baseIDE) {
     "idea" -> ideaVersion
     "pycharm" -> pycharmVersion
     "goland" -> golandVersion
-//    "webstorm" -> prop("webstormVersion")
+//    "javascript" -> webstormVersion
     "clion" -> clionVersion
     "rider" -> riderVersion
     else -> error("Unexpected IDE name: `$baseIDE`")

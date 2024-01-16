@@ -8,7 +8,8 @@ import cc.unitmesh.ide.javascript.util.JSPsiUtil
 import cc.unitmesh.ide.javascript.util.LanguageApplicableUtil
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.lang.javascript.buildTools.npm.rc.NpmRunConfiguration
-import com.intellij.lang.javascript.psi.*
+import com.intellij.lang.javascript.psi.JSFunction
+import com.intellij.lang.javascript.psi.JSVarStatement
 import com.intellij.lang.javascript.psi.ecmal4.JSClass
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
@@ -17,12 +18,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.findDirectory
-import com.intellij.psi.*
+import com.intellij.psi.PsiDirectory
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiTreeUtil
 import java.io.File
-import java.io.IOException
 import java.nio.file.Path
 import kotlin.io.path.Path
 

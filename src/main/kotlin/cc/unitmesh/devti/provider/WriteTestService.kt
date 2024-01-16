@@ -52,7 +52,7 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
         }
 
         val configurationSettings =
-            runManager.findConfigurationByTypeAndName(testConfig.getType(), testConfig.name)
+            runManager.findConfigurationByTypeAndName(testConfig.type, testConfig.name)
 
         if (configurationSettings == null) {
             log.warn("Failed to find test configuration for: ${virtualFile.nameWithoutExtension}")
