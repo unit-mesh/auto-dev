@@ -10,6 +10,7 @@ import cc.unitmesh.devti.provider.WriteTestService
 import cc.unitmesh.devti.provider.context.*
 import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.statusbar.AutoDevStatusService
+import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
@@ -31,6 +32,9 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
     private val actionType = ChatActionType.GENERATE_TEST
     private val lang = request.file.language.displayName
     private val writeTestService = WriteTestService.context(request.element)
+
+    val commenter = LanguageCommenters.INSTANCE.forLanguage(request.file.language) ?: null
+    val comment = commenter?.lineCommentPrefix ?: "//"
 
     override fun run(indicator: ProgressIndicator) {
         indicator.isIndeterminate = true
@@ -76,21 +80,21 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
             val relatedClasses = testContext.relatedClasses.joinToString("\n") {
                 it.format()
             }.lines().joinToString("\n") {
-                "// $it"
+                "$comment $it"
             }
 
-            "// here are related classes:\n$relatedClasses\n"
+            "$comment here are related classes:\n$relatedClasses\n"
         }
 
         if (testContext.currentClass != null) {
             val currentClassInfo = runReadAction { testContext.currentClass.format() }.lines().joinToString("\n") {
-                "// $it"
+                "$comment $it"
             }
-            prompter += "\n// here is current class information:\n$currentClassInfo\n"
+            prompter += "\n$comment here is current class information:\n$currentClassInfo\n"
         }
 
         val importString = testContext.imports.joinToString("\n") {
-            "// $it"
+            "$comment $it"
         }
 
         prompter += "\nCode:\n$importString\n```${lang.lowercase()}\n${request.selectText}\n```\n"
