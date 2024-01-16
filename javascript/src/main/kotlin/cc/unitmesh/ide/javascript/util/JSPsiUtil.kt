@@ -4,15 +4,81 @@ import com.intellij.lang.ecmascript6.psi.ES6ExportDeclaration
 import com.intellij.lang.ecmascript6.psi.ES6ExportDefaultAssignment
 import com.intellij.lang.javascript.frameworks.commonjs.CommonJSUtil
 import com.intellij.lang.javascript.psi.*
+import com.intellij.lang.javascript.psi.ecma6.TypeScriptGenericOrMappedTypeParameter
 import com.intellij.lang.javascript.psi.ecmal4.JSAttributeList
 import com.intellij.lang.javascript.psi.ecmal4.JSAttributeListOwner
 import com.intellij.lang.javascript.psi.ecmal4.JSClass
 import com.intellij.lang.javascript.psi.ecmal4.JSQualifiedNamedElement
+import com.intellij.lang.javascript.psi.resolve.JSResolveResult
+import com.intellij.lang.javascript.psi.stubs.JSImplicitElement
+import com.intellij.lang.javascript.psi.util.JSDestructuringUtil
+import com.intellij.lang.javascript.psi.util.JSStubBasedPsiTreeUtil
+import com.intellij.lang.javascript.psi.util.JSUtils
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.parents
 
 object JSPsiUtil {
+    private fun resolveReference(node: JSReferenceExpression, scope: PsiElement): PsiElement? {
+        val resolveReference = JSResolveResult.resolveReference(node)
+        var resolved = resolveReference.firstOrNull() as? JSImplicitElement
+
+        if (resolved != null) {
+            resolved = resolved.parent as? JSImplicitElement
+        }
+
+        if (resolved is JSFunction && resolved.isConstructor()) {
+            resolved = JSUtils.getMemberContainingClass(resolved) as? JSImplicitElement
+        }
+
+        if (resolved == null || skipDeclaration(resolved)) {
+            return null
+        }
+
+        val virtualFile = resolved.containingFile?.virtualFile
+
+        if (virtualFile == null ||
+            !ProjectFileIndex.getInstance(node.project).isInProject(virtualFile) ||
+            ProjectFileIndex.getInstance(node.project).isInLibrary(virtualFile)
+        ) {
+            return JSStubBasedPsiTreeUtil.resolveReferenceLocally(node as PsiPolyVariantReference, node.referenceName)
+        }
+
+        val jSImplicitElement = resolved
+
+        return if (jSImplicitElement.textLength == 0 || !PsiTreeUtil.isAncestor(scope, jSImplicitElement, true)) {
+            jSImplicitElement
+        } else {
+            null
+        }
+    }
+
+    private fun skipDeclaration(element: PsiElement): Boolean {
+        return when (element) {
+            is JSParameter, is TypeScriptGenericOrMappedTypeParameter -> true
+            is JSField -> {
+                element.initializerOrStub !is JSFunctionExpression
+            }
+
+            is JSVariable -> {
+                var initializer = JSDestructuringUtil.getNearestDestructuringInitializer(element)
+                if (initializer == null) {
+                    initializer = element.initializerOrStub ?: return true
+                }
+
+                !(initializer is JSCallExpression
+                        || initializer is JSFunctionExpression
+                        || initializer is JSObjectLiteralExpression
+                        )
+            }
+
+            else -> false
+        }
+    }
+
+
     fun isExportedFileFunction(element: PsiElement): Boolean {
         when (val parent = element.parent) {
             is JSFile, is JSEmbeddedContent -> {
