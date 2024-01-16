@@ -4,8 +4,8 @@ import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.provider.WriteTestService
 import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.ide.javascript.context.JavaScriptClassContextBuilder
-import cc.unitmesh.ide.javascript.util.LanguageApplicableUtil
 import cc.unitmesh.ide.javascript.util.JSPsiUtil
+import cc.unitmesh.ide.javascript.util.LanguageApplicableUtil
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.lang.javascript.buildTools.npm.rc.NpmRunConfiguration
 import com.intellij.lang.javascript.psi.*
@@ -13,10 +13,10 @@ import com.intellij.lang.javascript.psi.ecmal4.JSClass
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.findDirectory
 import com.intellij.psi.*
@@ -25,7 +25,6 @@ import java.io.File
 import java.io.IOException
 import java.nio.file.Path
 import kotlin.io.path.Path
-import kotlin.io.path.nameWithoutExtension
 
 class JSWriteTestService : WriteTestService() {
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = NpmRunConfiguration::class.java
@@ -42,27 +41,23 @@ class JSWriteTestService : WriteTestService() {
         val elementToTest = Util.getElementToTest(element) ?: return null
         val elementName = JSPsiUtil.elementName(elementToTest) ?: return null
 
-        val testFile = LocalFileSystem.getInstance().findFileByPath(testFilePath)
+        var testFile = LocalFileSystem.getInstance().findFileByPath(testFilePath)
         if (testFile != null) {
             return TestFileContext(false, testFile, emptyList(), null, language, null)
         }
 
-        val testFileName = Path(testFilePath).nameWithoutExtension
-        val testFileText = ""
-        val testFilePsi = ReadAction.compute<PsiFile, Throwable> {
-            PsiFileFactory.getInstance(project).createFileFromText(testFileName, language, testFileText)
-        }
+        // create test file
 
-        // write test file
-        WriteCommandAction.runWriteCommandAction(project) {
-            val document = testFilePsi.viewProvider.document!!
-            document.insertString(document.textLength, testFileText)
-            FileDocumentManager.getInstance().saveDocument(document)
-        }
+
+        WriteCommandAction.writeCommandAction(sourceFile.project).withName("Generate Unit Tests")
+            .compute<Unit, Throwable> {
+                val parentDir = VfsUtil.createDirectoryIfMissing(Path(testFilePath).parent.toString())
+                testFile = parentDir?.createChildData(this, Path(testFilePath).fileName.toString())
+            }
 
         val currentClz = JavaScriptClassContextBuilder().getClassContext(elementToTest, false)
 
-        return TestFileContext(true, testFilePsi.virtualFile, emptyList(), elementName, language, currentClz)
+        return TestFileContext(true, testFile!!, emptyList(), elementName, language, currentClz)
     }
 
     override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {
@@ -153,26 +148,22 @@ class JSWriteTestService : WriteTestService() {
         /**
          * Todo: since in JavaScript has different test framework, we need to find the test directory by the framework.
          */
-        private fun suggestTestDirectory(element: PsiElement): PsiDirectory? {
-            val project: Project = element.project
-            val elementDirectory = runReadAction { element.containingFile }
+        private fun suggestTestDirectory(element: PsiElement): PsiDirectory? =
+            ReadAction.compute<PsiDirectory?, Throwable> {
+                val project: Project = element.project
+                val elementDirectory = element.containingFile
 
-            val parentDir = elementDirectory?.virtualFile?.parent ?: return null
-            val psiManager = PsiManager.getInstance(project)
+                val parentDir = elementDirectory?.virtualFile?.parent ?: return@compute null
+                val psiManager = PsiManager.getInstance(project)
 
-            val testDir = runReadAction { parentDir.findDirectory("test") }
-            testDir?.let {
-                return runReadAction { psiManager.findDirectory(it) }
+                val findDirectory = psiManager.findDirectory(parentDir)
+                if (findDirectory != null) {
+                    return@compute findDirectory
+                }
+
+                val createChildDirectory = parentDir.createChildDirectory(this, "test")
+                return@compute psiManager.findDirectory(createChildDirectory)
             }
-
-            val outputFile = WriteCommandAction.writeCommandAction(project, elementDirectory)
-                .withName("Creating Directory For Tests")
-                .compute<VirtualFile?, IOException> {
-                    return@compute parentDir.createChildDirectory(this, "test")
-                } ?: return null
-
-            return runReadAction { psiManager.findDirectory(outputFile) }
-        }
 
         private fun generateUniqueTestFile(
             elementName: String?,
