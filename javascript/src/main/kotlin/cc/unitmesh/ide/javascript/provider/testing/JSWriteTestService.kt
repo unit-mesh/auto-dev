@@ -10,11 +10,13 @@ import cc.unitmesh.ide.javascript.util.JSPsiUtil
 import cc.unitmesh.ide.javascript.util.LanguageApplicableUtil
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.lang.javascript.buildTools.npm.rc.NpmRunConfiguration
+import com.intellij.lang.javascript.psi.JSFile
 import com.intellij.lang.javascript.psi.JSFunction
 import com.intellij.lang.javascript.psi.JSVarStatement
 import com.intellij.lang.javascript.psi.ecma6.TypeScriptInterface
 import com.intellij.lang.javascript.psi.ecma6.TypeScriptSingleType
 import com.intellij.lang.javascript.psi.ecmal4.JSClass
+import com.intellij.lang.javascript.psi.ecmal4.JSImportStatement
 import com.intellij.lang.javascript.psi.util.JSStubBasedPsiTreeUtil
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
@@ -85,7 +87,13 @@ class JSWriteTestService : WriteTestService() {
             }
         }
 
-        return TestFileContext(true, testFile!!, emptyList(), elementName, language, underTestObj)
+        val imports: List<String> = (sourceFile as? JSFile)?.let {
+            PsiTreeUtil.findChildrenOfType(it, JSImportStatement::class.java)
+        }?.map {
+            it.text
+        } ?: emptyList()
+
+        return TestFileContext(true, testFile!!, emptyList(), elementName, language, underTestObj, imports)
     }
 
     override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {
