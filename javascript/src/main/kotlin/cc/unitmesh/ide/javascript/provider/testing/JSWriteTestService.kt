@@ -3,6 +3,7 @@ package cc.unitmesh.ide.javascript.provider.testing
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.provider.WriteTestService
 import cc.unitmesh.devti.provider.context.TestFileContext
+import cc.unitmesh.ide.javascript.context.JavaScriptClassContextBuilder
 import cc.unitmesh.ide.javascript.util.LanguageApplicableUtil
 import cc.unitmesh.ide.javascript.util.JSPsiUtil
 import com.intellij.execution.configurations.RunProfile
@@ -11,7 +12,6 @@ import com.intellij.lang.javascript.psi.*
 import com.intellij.lang.javascript.psi.ecmal4.JSClass
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
-import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
@@ -51,7 +51,9 @@ class JSWriteTestService : WriteTestService() {
             PsiFileFactory.getInstance(project).createFileFromText(testFileName, language, testFileText)
         }
 
-        return TestFileContext(true, testFilePsi.virtualFile, emptyList(), elementName, language, null)
+        val currentClz = JavaScriptClassContextBuilder().getClassContext(elementToTest, false)
+
+        return TestFileContext(true, testFilePsi.virtualFile, emptyList(), elementName, language, currentClz)
     }
 
     override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {

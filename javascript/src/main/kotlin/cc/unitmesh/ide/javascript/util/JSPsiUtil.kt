@@ -14,24 +14,28 @@ import com.intellij.psi.util.parents
 
 object JSPsiUtil {
     fun isExportedFileFunction(element: PsiElement): Boolean {
-        val parent = element.parent
+        when (val parent = element.parent) {
+            is JSFile, is JSEmbeddedContent -> {
+                return when (element) {
+                    is JSVarStatement -> {
+                        val variables = element.variables
+                        val variable = variables.firstOrNull() ?: return false
+                        variable.initializerOrStub is JSFunction && exported(variable)
+                    }
 
-        if ((parent is JSFile) || (parent is JSEmbeddedContent)) {
-            return when (element) {
-                is JSVarStatement -> {
-                    val variables = element.variables
-                    val variable = variables.firstOrNull()
-                    variable != null && variable.initializerOrStub is JSFunction && exported(variable)
+                    is JSFunction -> exported(element)
+                    else -> false
                 }
-
-                is JSFunction -> exported(element)
-                else -> false
             }
-        } else if (parent is JSVariable) {
-            val varStatement = parent.parent as? JSVarStatement
-            return varStatement != null && varStatement.parent is JSFile && exported(parent)
-        } else {
-            return parent is ES6ExportDefaultAssignment
+
+            is JSVariable -> {
+                val varStatement = parent.parent as? JSVarStatement ?: return false
+                return varStatement.parent is JSFile && exported(parent)
+            }
+
+            else -> {
+                return parent is ES6ExportDefaultAssignment
+            }
         }
     }
 
@@ -58,7 +62,7 @@ object JSPsiUtil {
         }
     }
 
-    fun exported(element: PsiElement): Boolean {
+    private fun exported(element: PsiElement): Boolean {
         if (element !is JSElementBase) return false
 
         if (element.isExported || element.isExportedWithDefault) {
@@ -91,6 +95,12 @@ object JSPsiUtil {
         return jSVariable.name
     }
 
+    /**
+     * Determines whether the given [element] is a private member.
+     *
+     * @param element the PSI element to check
+     * @return `true` if the element is a private member, `false` otherwise
+     */
     fun isPrivateMember(element: PsiElement): Boolean {
         if (element is JSQualifiedNamedElement && element.isPrivateName) {
             return true
