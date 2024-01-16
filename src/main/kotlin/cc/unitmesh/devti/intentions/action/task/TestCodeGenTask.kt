@@ -27,11 +27,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 
 data class TestGenPromptContext(
-    var language: String = "",
+    var lang: String = "",
     var imports: String = "",
     var frameworkedContext: String = "",
     var currentClass: String = "",
     var relatedClasses: String = "",
+    var sourceCode: String = "",
     var testClassName: String = "",
     var isNewFile: Boolean = true,
 )
@@ -97,6 +98,8 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         testPromptContext.imports = testContext.imports.joinToString("\n") {
             "$comment $it"
         }
+        //         prompter += "\nCode:\n$importString\n```${lang.lowercase()}\n${request.selectText}\n```\n"
+        testPromptContext.sourceCode = request.selectText
         testPromptContext.isNewFile = testContext.isNewFile
 
         templateRender.context = testPromptContext
@@ -117,8 +120,8 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
 
         runBlocking {
             writeTestToFile(request.project, flow, testContext)
-            navigateTestFile(testContext.file, request.project)
-            writeTestService?.runTest(request.project, testContext.file)
+            navigateTestFile(testContext.outputFile, request.project)
+            writeTestService?.runTest(request.project, testContext.outputFile)
 
             AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)
             indicator.fraction = 1.0
@@ -142,7 +145,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
             ?: throw IllegalStateException("Unsupported language: ${context.language}")
 
         parseCodeFromString(suggestion.toString()).forEach {
-            modifier.insertTestCode(context.file, project, it)
+            modifier.insertTestCode(context.outputFile, project, it)
         }
     }
 

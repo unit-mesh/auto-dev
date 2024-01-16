@@ -18,6 +18,12 @@ open class JavaScriptTestCodeModifier : CodeModifier {
     }
 
     override fun insertTestCode(sourceFile: VirtualFile, project: Project, code: String): Boolean {
+        val isExit = sourceFile as? JSFile
+        if (isExit == null) {
+            insertClass(sourceFile, project, code)
+            return true
+        }
+
         insertMethod(sourceFile, project, code)
         return true
     }

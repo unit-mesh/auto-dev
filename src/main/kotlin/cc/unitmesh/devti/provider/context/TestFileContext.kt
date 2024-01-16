@@ -6,7 +6,7 @@ import com.intellij.openapi.vfs.VirtualFile
 
 data class TestFileContext(
     val isNewFile: Boolean,
-    val file: VirtualFile,
+    val outputFile: VirtualFile,
     val relatedClasses: List<ClassContext> = emptyList(),
     val testClassName: String?,
     val language: Language,

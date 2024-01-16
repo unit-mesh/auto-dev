@@ -13,6 +13,7 @@ import com.intellij.lang.javascript.psi.ecmal4.JSClass
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -51,6 +52,13 @@ class JSWriteTestService : WriteTestService() {
             PsiFileFactory.getInstance(project).createFileFromText(testFileName, language, testFileText)
         }
 
+        // write test file
+        WriteCommandAction.runWriteCommandAction(project) {
+            val document = testFilePsi.viewProvider.document!!
+            document.insertString(document.textLength, testFileText)
+            FileDocumentManager.getInstance().saveDocument(document)
+        }
+
         val currentClz = JavaScriptClassContextBuilder().getClassContext(elementToTest, false)
 
         return TestFileContext(true, testFilePsi.virtualFile, emptyList(), elementName, language, currentClz)
@@ -83,7 +91,6 @@ class JSWriteTestService : WriteTestService() {
         }
 
         val resolveClass = jsFunction.returnTypeElement
-
         return mapOf()
     }
 
@@ -142,19 +149,26 @@ class JSWriteTestService : WriteTestService() {
             return testFile
         }
 
+        /**
+         * Todo: since in JavaScript has different test framework, we need to find the test directory by the framework.
+         */
         private fun suggestTestDirectory(element: PsiElement): PsiDirectory? {
             val project: Project = element.project
             val elementDirectory = runReadAction { element.containingFile }
 
             val parentDir = elementDirectory?.virtualFile?.parent ?: return null
+            val testDir = runReadAction { parentDir.findChild("test") }
+            testDir?.let {
+                return runReadAction { PsiManager.getInstance(project).findDirectory(it) }
+            }
 
-            return WriteCommandAction.writeCommandAction(project, elementDirectory)
+            val outputFile = WriteCommandAction.writeCommandAction(project, elementDirectory)
                 .withName("Creating Directory For Tests")
                 .compute<VirtualFile?, IOException> {
                     return@compute parentDir.createChildDirectory(this, "test")
-                }?.let {
-                    return runReadAction { PsiManager.getInstance(project).findDirectory(it) }
-                }
+                } ?: return null
+
+            return runReadAction { PsiManager.getInstance(project).findDirectory(outputFile) }
         }
 
         private fun generateUniqueTestFile(

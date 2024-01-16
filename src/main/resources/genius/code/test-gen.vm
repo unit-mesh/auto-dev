@@ -9,13 +9,17 @@ Here is current class information:
 ${context.currentClass}
 #end
 
+Here is the source code to be tested:
+
+```$context.lang
 ${context.imports}
+${context.sourceCode}
+```
 
 ## if newFile
 #if( $context.isNewFile )
 Start method test code here:
 #else
-Start ${context.testClassName} with `import` syntax here:
+Start ${context.testClassName} test code here:
 #end
-
 
