@@ -29,7 +29,9 @@ class GoStructContextBuilder : ClassContextBuilder {
 
         val name = when (psiElement) {
             is GoTypeSpec -> psiElement.name
-            is GoTypeDeclaration -> psiElement.text
+            is GoTypeDeclaration -> {
+                psiElement.typeSpecList.first().name
+            }
             else -> null
         }
 

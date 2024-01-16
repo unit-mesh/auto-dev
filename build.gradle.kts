@@ -91,11 +91,15 @@ val webstormVersion = prop("webstormVersion")
 val baseVersion = when (baseIDE) {
     "idea" -> ideaVersion
     "pycharm" -> pycharmVersion
-    "goland" -> golandVersion
-//    "javascript" -> webstormVersion
+    "go" -> golandVersion
     "clion" -> clionVersion
     "rider" -> riderVersion
+    "javascript" -> webstormVersion
     else -> error("Unexpected IDE name: `$baseIDE`")
+}
+
+repositories {
+    mavenCentral()
 }
 
 allprojects {
@@ -108,8 +112,6 @@ allprojects {
 
     repositories {
         mavenCentral()
-        maven("https://cache-redirector.jetbrains.com/repo.maven.apache.org/maven2")
-        maven("https://cache-redirector.jetbrains.com/intellij-dependencies")
     }
 
     idea {
@@ -201,13 +203,18 @@ project(":plugin") {
     intellij {
         pluginName.set(basePluginArchiveName)
         val pluginList: MutableList<String> = mutableListOf("Git4Idea")
-        if (baseIDE == "idea") {
-            pluginList += javaPlugins
-        } else if (baseIDE == "pycharm") {
-            pluginList += pycharmPlugins
-        } else if (baseIDE == "goland") {
-            pluginList += listOf("org.jetbrains.plugins.go")
+        when (baseIDE) {
+            "idea" -> {
+                pluginList += javaPlugins
+            }
+            "pycharm" -> {
+                pluginList += pycharmPlugins
+            }
+            "go" -> {
+                pluginList += listOf("org.jetbrains.plugins.go")
+            }
         }
+
         plugins.set(pluginList)
     }
 
@@ -327,7 +334,7 @@ project(":plugin") {
                         Changelog.OutputType.HTML,
                     )
                 }
-            });
+            })
         }
 
         withType<PublishPluginTask> {
@@ -483,8 +490,8 @@ project(":experiment") {
 
     tasks {
         buildPlugin {
-//            dependsOn(createSourceJar)
-//            from(createSourceJar) { into("lib/src") }
+            dependsOn(createSourceJar)
+            from(createSourceJar) { into("lib/src") }
             // Set proper name for final plugin zip.
             // Otherwise, base name is the same as gradle module name
             archiveBaseName.set(basePluginArchiveName)
@@ -587,11 +594,12 @@ project(":csharp") {
 
 project(":goland") {
     intellij {
-        version.set(golandVersion)
-        type.set("GO")
+        version.set(ideaVersion)
+        type.set("IU")
+        updateSinceUntilBuild.set(false)
 
         // required if Go language API is needed:
-        plugins.set(listOf("org.jetbrains.plugins.go"))
+        plugins.set(prop("goPlugins").split(',').map(String::trim).filter(String::isNotEmpty))
     }
     dependencies {
         implementation(project(":"))
