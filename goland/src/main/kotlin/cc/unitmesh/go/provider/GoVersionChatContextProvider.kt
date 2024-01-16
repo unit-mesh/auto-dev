@@ -6,7 +6,6 @@ import cc.unitmesh.devti.provider.context.ChatCreationContext
 import com.goide.sdk.GoSdkService
 import com.goide.sdk.GoTargetSdkVersionProvider
 import com.goide.util.GoUtil
-import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 
 class GoVersionChatContextProvider : ChatContextProvider {

@@ -5,8 +5,10 @@
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
+        <fileContextBuilder language="go" implementationClass="cc.unitmesh.go.context.GoFileContextBuilder"/>
         <classContextBuilder language="go" implementationClass="cc.unitmesh.go.context.GoStructContextBuilder"/>
         <methodContextBuilder language="go" implementationClass="cc.unitmesh.go.context.GoMethodContextBuilder"/>
+        <variableContextBuilder language="go" implementationClass="cc.unitmesh.go.context.GoVariableContextBuilder"/>
 
         <chatContextProvider implementation="cc.unitmesh.go.provider.GoVersionChatContextProvider"/>
     </extensions>

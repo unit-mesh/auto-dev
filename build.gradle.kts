@@ -205,6 +205,8 @@ project(":plugin") {
             pluginList += javaPlugins
         } else if (baseIDE == "pycharm") {
             pluginList += pycharmPlugins
+        } else if (baseIDE == "goland") {
+            pluginList += listOf("org.jetbrains.plugins.go")
         }
         plugins.set(pluginList)
     }
