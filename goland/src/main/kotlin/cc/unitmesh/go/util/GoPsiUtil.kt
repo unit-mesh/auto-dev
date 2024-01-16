@@ -6,14 +6,29 @@ import com.intellij.psi.PsiElement
 
 object GoPsiUtil {
     fun getDeclarationName(psiElement: PsiElement): String? {
-        return when (psiElement) {
-            is GoNamedElement -> psiElement.name
-            is GoTypeDeclaration -> psiElement.typeSpecList.singleOrNull()?.name
-            is GoVarOrConstDeclaration<*> -> (psiElement.specList.singleOrNull() as? GoVarOrConstSpec)?.definitionList?.singleOrNull()?.name
-            is GoVarOrConstSpec<*> -> psiElement.definitionList.singleOrNull()?.name
+        return singleNamedDescendant(psiElement)?.name
+    }
+
+    /**
+     * Returns the single named descendant of the given [element].
+     *
+     * @param element the PsiElement to find the single named descendant from
+     * @return the single named descendant of the given [element], or null if there is none
+     */
+    fun singleNamedDescendant(element: PsiElement): GoNamedElement? {
+        return when (element) {
+            is GoNamedElement -> element
+            is GoTypeDeclaration -> element.typeSpecList.singleOrNull()
+            is GoVarOrConstSpec<*> -> element.definitionList.singleOrNull()
+            is GoVarOrConstDeclaration<*> -> {
+                (element.specList.singleOrNull() as? GoVarOrConstSpec)?.definitionList?.singleOrNull()
+            }
+
+            is GoImportDeclaration -> element.importSpecList.singleOrNull()
             else -> null
         }
     }
+
 
     fun findRelatedTypes(declaration: GoFunctionOrMethodDeclaration): List<GoTypeSpec> {
         val signature = declaration.signature ?: return emptyList()

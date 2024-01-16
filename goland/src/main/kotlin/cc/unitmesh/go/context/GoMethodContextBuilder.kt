@@ -19,15 +19,14 @@ class GoMethodContextBuilder : MethodContextBuilder {
         }
 
 
-        var funcName = ""
+        val funcName = psiElement.name ?: ""
+
         val functionSignature: String = when (psiElement) {
             is GoMethodDeclaration -> {
-                funcName = psiElement.receiver?.text ?: ""
                 psiElement.signature?.text ?: ""
             }
 
             is GoFunctionDeclaration -> {
-                funcName = psiElement.name ?: ""
                 psiElement.signature?.text ?: ""
             }
 

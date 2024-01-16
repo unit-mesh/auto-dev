@@ -20,7 +20,6 @@ class GoVersionChatContextProvider : ChatContextProvider {
         val goVersion = GoSdkService.getInstance(project).getSdk(GoUtil.module(sourceFile)).version
         val targetVersion = GoTargetSdkVersionProvider.getTargetGoSdkVersion(sourceFile).toString()
 
-
         return listOf(
             ChatContextItem(
                 GoVersionChatContextProvider::class,
