@@ -53,9 +53,14 @@ class JSWriteTestService : WriteTestService() {
                 testFile = parentDir?.createChildData(this, Path(testFilePath).fileName.toString())
             }
 
-        var underTestObj = JavaScriptClassContextBuilder().getClassContext(elementToTest, false)?.format()
-        if (underTestObj == null) {
-            underTestObj = JavaScriptMethodContextBuilder().getMethodContext(elementToTest, false, false)?.format()
+        val underTestObj = ReadAction.compute<String, Throwable> {
+            val underTestObj = JavaScriptClassContextBuilder().getClassContext(elementToTest, false)?.format()
+            if (underTestObj == null) {
+                val funcObj = JavaScriptMethodContextBuilder().getMethodContext(elementToTest, false, false)?.format()
+                return@compute funcObj ?: ""
+            } else {
+                return@compute underTestObj
+            }
         }
 
         return TestFileContext(true, testFile!!, emptyList(), elementName, language, underTestObj)
