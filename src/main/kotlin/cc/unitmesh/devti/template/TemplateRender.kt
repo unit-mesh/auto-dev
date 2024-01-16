@@ -45,6 +45,20 @@ class TemplateRender(pathPrefix: String) {
 
         return messages
     }
+
+    fun renderTemplate(template: String): String {
+        val oldContextClassLoader = Thread.currentThread().getContextClassLoader()
+        Thread.currentThread().setContextClassLoader(TemplateRender::class.java.getClassLoader())
+
+        velocityContext.put("context", context)
+        val sw = StringWriter()
+        Velocity.evaluate(velocityContext, sw, "#" + this.javaClass.name, template)
+        val result = sw.toString()
+
+        Thread.currentThread().setContextClassLoader(oldContextClassLoader)
+
+        return result
+    }
 }
 
 class TemplateNotFoundError(path: String) : Exception("Prompt not found at path: $path")

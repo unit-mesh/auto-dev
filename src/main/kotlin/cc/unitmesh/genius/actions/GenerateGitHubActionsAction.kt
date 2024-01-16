@@ -44,7 +44,7 @@ class GenerateGitHubActionsAction : AnAction(AutoDevBundle.message("action.new.g
         templateRender.context = DevOpsContext.from(githubActions)
         val template = templateRender.getTemplate("generate-github-action.vm")
 
-        val dir = project.guessProjectDir()!!.toNioPath().resolve(".github").resolve("workflows")
+        project.guessProjectDir()!!.toNioPath().resolve(".github").resolve("workflows")
             .createDirectories()
 
         val msgs = templateRender.buildMsgs(template)

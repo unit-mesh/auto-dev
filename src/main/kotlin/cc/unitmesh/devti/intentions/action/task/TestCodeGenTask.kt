@@ -10,6 +10,7 @@ import cc.unitmesh.devti.provider.WriteTestService
 import cc.unitmesh.devti.provider.context.*
 import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.statusbar.AutoDevStatusService
+import cc.unitmesh.devti.template.TemplateRender
 import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
@@ -23,8 +24,17 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
+
+data class TestGenPromptContext(
+    var language: String = "",
+    var imports: String = "",
+    var frameworkedContext: String = "",
+    var currentClass: String = "",
+    var relatedClasses: String = "",
+    var testClassName: String = "",
+    var isNewFile: Boolean = true,
+)
 
 class TestCodeGenTask(val request: TestCodeGenRequest) :
     Task.Backgroundable(request.project, AutoDevBundle.message("intentions.chat.code.test.name")) {
@@ -35,6 +45,9 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
 
     val commenter = LanguageCommenters.INSTANCE.forLanguage(request.file.language) ?: null
     val comment = commenter?.lineCommentPrefix ?: "//"
+
+    val templateRender = TemplateRender("genius/code")
+    val template = templateRender.getTemplate("test-gen.vm")
 
     override fun run(indicator: ProgressIndicator) {
         indicator.isIndeterminate = true
@@ -55,10 +68,10 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
             return
         }
 
-        var prompter = "Write unit test for following $lang code."
-
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.collect-context")
         indicator.fraction = 0.3
+
+        val testPromptContext = TestGenPromptContext()
 
         val creationContext =
             ChatCreationContext(ChatOrigin.Intention, actionType, request.file, listOf(), element = request.element)
@@ -67,46 +80,29 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
             return@runBlocking ChatContextProvider.collectChatContextList(request.project, creationContext)
         }
 
-        contextItems.forEach {
-            prompter += it.text + "\n"
-        }
-
-        prompter += "\n"
-        prompter += ReadAction.compute<String, Throwable> {
-            if (testContext.relatedClasses.isEmpty()) {
-                return@compute ""
-            }
-
-            val relatedClasses = testContext.relatedClasses.joinToString("\n") {
+        testPromptContext.frameworkedContext = contextItems.joinToString("\n", transform = ChatContextItem::text)
+        ReadAction.compute<Unit, Throwable> {
+            testPromptContext.relatedClasses = testContext.relatedClasses.joinToString("\n") {
                 it.format()
             }.lines().joinToString("\n") {
                 "$comment $it"
             }
 
-            "$comment here are related classes:\n$relatedClasses\n"
+            testPromptContext.currentClass =
+                runReadAction { testContext.currentClass?.format() }?.lines()?.joinToString("\n") {
+                    "$comment $it"
+                } ?: ""
         }
 
-        if (testContext.currentClass != null) {
-            val currentClassInfo = runReadAction { testContext.currentClass.format() }.lines().joinToString("\n") {
-                "$comment $it"
-            }
-            prompter += "\n$comment here is current class information:\n$currentClassInfo\n"
-        }
-
-        val importString = testContext.imports.joinToString("\n") {
+        testPromptContext.imports = testContext.imports.joinToString("\n") {
             "$comment $it"
         }
+        testPromptContext.isNewFile = testContext.isNewFile
 
-        prompter += "\nCode:\n$importString\n```${lang.lowercase()}\n${request.selectText}\n```\n"
-
-        prompter += if (!testContext.isNewFile) {
-            "\nStart test code with `@Test` syntax here:  \n"
-        } else {
-            "\nStart ${testContext.testClassName} with `import` syntax here:  \n"
-        }
+        templateRender.context = testPromptContext
+        val prompter = templateRender.renderTemplate(template)
 
         logger<AutoTestThisIntention>().info("Prompt: $prompter")
-
 
         indicator.fraction = 0.8
         indicator.text = AutoDevBundle.message("intentions.request.background.process.title")
