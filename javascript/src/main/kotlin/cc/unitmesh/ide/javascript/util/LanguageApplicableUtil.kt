@@ -16,9 +16,8 @@ import com.intellij.util.concurrency.annotations.RequiresReadLock
 import org.jetbrains.annotations.ApiStatus
 
 object LanguageApplicableUtil {
-    private val supportedLanguages = setOf(JavascriptLanguage.INSTANCE.id, JavaScriptSupportLoader.TYPESCRIPT.id)
     fun isJavaScriptApplicable(language: Language) =
-        supportedLanguages.contains(language.id) || language is HTMLLanguage || language is JsonLanguage || language is TypeScriptJSXLanguageDialect
+        language.isKindOf(JavascriptLanguage.INSTANCE) || language.isKindOf(HTMLLanguage.INSTANCE)
 
     fun isPreferTypeScript(creationContext: ChatCreationContext): Boolean {
         val sourceFile = creationContext.sourceFile ?: return false
