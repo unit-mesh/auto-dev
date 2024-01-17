@@ -19,7 +19,7 @@ class CLionWorkspaceContextProvider : ChatContextProvider {
     )
 
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
-        return creationContext.sourceFile?.language == OCLanguage.getInstance()
+        return creationContext.sourceFile?.language is OCLanguage
     }
 
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
@@ -66,7 +66,7 @@ class CLionWorkspaceContextProvider : ChatContextProvider {
             return null
         }
 
-        cmakeWorkspace.cMakeDependencyFiles.forEach { file ->
+        cmakeWorkspace.cMakeResourceFiles.forEach { file ->
             val text = file.readText()
             if (text.contains("gtest") || text.contains("gmock")) {
                 return ChatContextItem(

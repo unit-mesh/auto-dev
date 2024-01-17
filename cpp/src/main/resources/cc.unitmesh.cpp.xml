@@ -15,5 +15,9 @@
 
         <chatContextProvider implementation="cc.unitmesh.cpp.provider.CLionWorkspaceContextProvider"/>
         <testContextProvider language="ObjectiveC" implementation="cc.unitmesh.cpp.provider.testing.CppWriteTestService"/>
+
+        <codeModifier
+                language="ObjectiveC"
+                implementationClass="cc.unitmesh.cpp.provider.CppCodeModifier"/>
     </extensions>
 </idea-plugin>
