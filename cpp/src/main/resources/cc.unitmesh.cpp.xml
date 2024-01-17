@@ -1,5 +1,4 @@
 <idea-plugin package="cc.unitmesh.cpp">
-    <!--suppress PluginXmlValidity -->
     <dependencies>
         <plugin id="com.intellij.modules.clion"/>
     </dependencies>
@@ -15,5 +14,6 @@
                                 implementationClass="cc.unitmesh.cpp.context.CppVariableContextBuilder"/>
 
         <chatContextProvider implementation="cc.unitmesh.cpp.provider.CLionWorkspaceContextProvider"/>
+        <testContextProvider language="ObjectiveC" implementation="cc.unitmesh.cpp.provider.testing.CppWriteTestService"/>
     </extensions>
 </idea-plugin>

@@ -7,7 +7,6 @@ import com.intellij.execution.wsl.WslPath
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.util.PlatformUtils
 import com.jetbrains.cidr.lang.OCLanguage
 import com.jetbrains.cidr.project.workspace.CidrWorkspace
 
