@@ -1,12 +1,8 @@
 package cc.unitmesh.cpp.util;
 
-import com.intellij.psi.PsiComment
-import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.jetbrains.cidr.lang.psi.*
-import org.junit.Assert.assertEquals
-import org.junit.Test
 
 class CppContextPrettifyTest : BasePlatformTestCase() {
 
@@ -35,7 +31,7 @@ class CppContextPrettifyTest : BasePlatformTestCase() {
         val struct = PsiTreeUtil.getChildrenOfTypeAsList(type, OCStructLike::class.java).first()
 
         // when
-        val result = CppContextPrettify.extractStructureText(struct as OCStruct)
+        val result = CppContextPrettify.printStructure(struct as OCStruct)
 
         // then
         val expected = """
