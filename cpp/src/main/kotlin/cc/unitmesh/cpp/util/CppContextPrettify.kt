@@ -4,7 +4,13 @@ import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.util.PsiTreeUtil
-import com.jetbrains.cidr.lang.psi.*
+import com.jetbrains.cidr.lang.psi.OCFunctionDeclaration
+import com.jetbrains.cidr.lang.psi.OCDeclaration
+import com.jetbrains.cidr.lang.psi.OCStruct
+import com.jetbrains.cidr.lang.psi.OCStructLike
+import com.jetbrains.cidr.lang.psi.OCConceptDeclaration
+import com.jetbrains.cidr.lang.psi.OCTemplateArgumentList
+import com.jetbrains.cidr.lang.psi.OCTemplateParameterList
 import com.jetbrains.cidr.lang.symbols.OCResolveContext
 
 object CppContextPrettify {
