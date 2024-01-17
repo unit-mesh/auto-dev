@@ -66,21 +66,24 @@ class CLionWorkspaceContextProvider : ChatContextProvider {
             return null
         }
 
-        cmakeWorkspace.cMakeResourceFiles.forEach { file ->
-            val text = file.readText()
-            if (text.contains("gtest") || text.contains("gmock")) {
-                return ChatContextItem(
-                    CLionWorkspaceContextProvider::class,
-                    "The project uses Google Test framework."
-                )
-            }
+        val cmakeLists = File(project.basePath, "CMakeLists.txt")
+        if (!cmakeLists.exists()) {
+            return null
+        }
 
-            if (text.contains("catch")) {
-                return ChatContextItem(
-                    CLionWorkspaceContextProvider::class,
-                    "The project uses Catch2 framework."
-                )
-            }
+        val text = cmakeLists.readText()
+        if (text.contains("gtest") || text.contains("gmock")) {
+            return ChatContextItem(
+                CLionWorkspaceContextProvider::class,
+                "The project uses Google Test framework."
+            )
+        }
+
+        if (text.contains("catch") || text.contains("Catch")) {
+            return ChatContextItem(
+                CLionWorkspaceContextProvider::class,
+                "The project uses Catch2 framework."
+            )
         }
 
         return null
