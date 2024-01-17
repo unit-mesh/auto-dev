@@ -2,8 +2,6 @@
     <!--suppress PluginXmlValidity -->
     <dependencies>
         <plugin id="com.intellij.modules.clion"/>
-        <plugin id="com.intellij.modules.cidr.lang"/>
-        <plugin id="com.intellij.modules.cidr.debugger"/>
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
