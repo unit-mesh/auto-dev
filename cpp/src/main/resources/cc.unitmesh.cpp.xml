@@ -7,6 +7,8 @@
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
+        <fileContextBuilder language="ObjectiveC"
+                            implementationClass="cc.unitmesh.cpp.context.CppFileContextBuilder"/>
         <classContextBuilder language="ObjectiveC"
                              implementationClass="cc.unitmesh.cpp.context.CppStructContextBuilder"/>
         <methodContextBuilder language="ObjectiveC"
