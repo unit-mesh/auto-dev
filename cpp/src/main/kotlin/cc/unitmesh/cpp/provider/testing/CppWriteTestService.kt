@@ -11,6 +11,7 @@ import com.intellij.psi.PsiFile
 import com.jetbrains.cidr.cpp.execution.testing.CMakeTestRunConfiguration
 import com.jetbrains.cidr.lang.psi.OCFunctionDeclaration
 
+// use Google Test or CATCH?
 class CppWriteTestService : WriteTestService() {
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = CMakeTestRunConfiguration::class.java
 
@@ -40,7 +41,7 @@ class CppWriteTestService : WriteTestService() {
     }
 
     override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {
-        TODO("Not yet implemented")
+        return listOf()
     }
 
 }
