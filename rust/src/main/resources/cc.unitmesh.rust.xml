@@ -12,6 +12,8 @@
                              implementationClass="cc.unitmesh.rust.context.RustClassContextBuilder"/>
         <methodContextBuilder language="Rust"
                               implementationClass="cc.unitmesh.rust.context.RustMethodContextBuilder"/>
+        <variableContextBuilder language="Rust"
+                                implementationClass="cc.unitmesh.rust.context.RustVariableContextBuilder"/>
 
         <contextPrompter language="Rust" implementation="cc.unitmesh.rust.provider.RustContextPrompter"/>
 

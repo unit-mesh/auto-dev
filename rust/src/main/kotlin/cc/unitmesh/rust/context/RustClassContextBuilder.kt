@@ -11,6 +11,7 @@ import org.rust.lang.core.psi.ext.fields
 class RustClassContextBuilder : ClassContextBuilder {
     override fun getClassContext(psiElement: PsiElement, gatherUsages: Boolean): ClassContext? {
         if (psiElement !is RsStructOrEnumItemElement) return null
+
         when (psiElement) {
             is RsStructItem -> {
                 val fields: List<PsiElement> = psiElement.fields.map {
@@ -29,7 +30,7 @@ class RustClassContextBuilder : ClassContextBuilder {
             }
 
             is RsEnumItem -> {
-
+                // TODO: Implement
             }
         }
 
