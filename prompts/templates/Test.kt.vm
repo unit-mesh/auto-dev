@@ -1,5 +1,6 @@
-// Here is the Test template code.
-// for test intellij plugin
+// Here is the Test template code, please copy and paste to the test file
+// and replace the class name and the test method name
+//
 //import com.intellij.testFramework.LightPlatformTestCase
 //class /*TestClassName*/Test : LightPlatformTestCase() {
 //    // the Intellij test should start with test
