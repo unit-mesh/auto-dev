@@ -7,7 +7,7 @@
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
-        <classContextBuilder language="C++"
+        <classContextBuilder language="ObjectiveC"
                              implementationClass="cc.unitmesh.cpp.context.CppClassContextBuilder"/>
 
         <chatContextProvider implementation="cc.unitmesh.cpp.provider.CLionWorkspaceContextProvider"/>
