@@ -19,7 +19,7 @@ class CppMethodContextBuilder : MethodContextBuilder {
 
         val symbol: OCSymbolWithQualifiedName = psiElement.symbol ?: return null
         val locateDefinition = symbol.locateDefinition(psiElement.project) ?: return null
-        val function = (locateDefinition as? OCFunctionDefinition) ?: return null
+        val function = (psiElement as? OCFunctionDefinition) ?: return null
 
         val structDeclaration = if (includeClassContext) (psiElement as? OCMethod)?.containingClass else null
 
@@ -33,7 +33,7 @@ class CppMethodContextBuilder : MethodContextBuilder {
             function.name!!,
             symbol.getSignature(psiElement.project),
             structDeclaration,
-            "Cpp",
+            "c++",
             returnType,
             parameterList,
             includeClassContext,

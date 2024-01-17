@@ -29,15 +29,17 @@ class CppMethodContextBuilderTest : BasePlatformTestCase() {
         val type = PsiTreeUtil.getChildrenOfTypeAsList(decl, OCTypeElement::class.java).first()
         val clz = PsiTreeUtil.getChildrenOfTypeAsList(type, OCStructLike::class.java).first()
         val function = PsiTreeUtil.getChildrenOfTypeAsList(clz, OCFunctionDeclaration::class.java).first()
-        println(function.text)
 
 //        // when
-//        val result = CppMethodContextBuilder()
-//            .getMethodContext(function, true, true)!!
+        val result = CppMethodContextBuilder()
+            .getMethodContext(function, false, true)!!
 //
 //        // then
-//        assertEquals("drive", result.name)
-//        assertEquals(1, result.paramNames)
-//        assertEquals(result.format(), "")
+        assertEquals("drive", result.name)
+        assertEquals("distance", result.paramNames.joinToString(", "))
+        assertEquals(result.format(), """path: /src/Car.h
+language: c++
+fun name: drive
+fun signature: void drive(int distance)""")
     }
 }

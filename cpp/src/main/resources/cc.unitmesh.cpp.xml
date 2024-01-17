@@ -13,6 +13,8 @@
                              implementationClass="cc.unitmesh.cpp.context.CppStructContextBuilder"/>
         <methodContextBuilder language="ObjectiveC"
                               implementationClass="cc.unitmesh.cpp.context.CppMethodContextBuilder"/>
+        <variableContextBuilder language="ObjectiveC"
+                                implementationClass="cc.unitmesh.cpp.context.CppVariableContextBuilder"/>
 
         <chatContextProvider implementation="cc.unitmesh.cpp.provider.CLionWorkspaceContextProvider"/>
     </extensions>
