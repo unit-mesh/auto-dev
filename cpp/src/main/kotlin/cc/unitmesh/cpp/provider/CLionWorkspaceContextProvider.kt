@@ -6,19 +6,11 @@ import cc.unitmesh.devti.provider.context.ChatCreationContext
 import com.intellij.execution.wsl.WslPath
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.guessProjectDir
-import com.intellij.openapi.roots.ProjectRootManager
-import com.intellij.openapi.vfs.VirtualFile
-import com.jetbrains.cidr.cpp.cmake.workspace.CMakeWorkspace
 import com.jetbrains.cidr.lang.OCLanguage
 import com.jetbrains.cidr.project.workspace.CidrWorkspace
 import java.io.File
 
 class CLionWorkspaceContextProvider : ChatContextProvider {
-    private val configFiles = listOf(
-        "CMakeLists.txt", "meson.build", "Makefile", "ninja.build",
-        "vcpkg.json", "BUILD", "sln", "vcxproj", "vcproj"
-    )
 
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
         return creationContext.sourceFile?.language is OCLanguage
@@ -44,7 +36,7 @@ class CLionWorkspaceContextProvider : ChatContextProvider {
     }
 
     private fun createConfigFilesItem(project: Project): ChatContextItem {
-        val configFiles = collectConfigFiles(project)
+        val configFiles = CMakefileUtil.collectConfigFiles(project)
         val configFileNames = configFiles.joinToString(", ") { it.name }
         return ChatContextItem(
             CLionWorkspaceContextProvider::class,
@@ -110,14 +102,4 @@ class CLionWorkspaceContextProvider : ChatContextProvider {
         }
     }
 
-    private fun collectConfigFiles(project: Project): Collection<VirtualFile> =
-        ProjectRootManager.getInstance(project).contentRoots
-            .asSequence()
-            .filter { it.isDirectory }
-            .map { it.children }
-            .map { file ->
-                file.filter { configFiles.contains(it.name) || configFiles.contains(it.extension) }
-            }
-            .flatten()
-            .toList()
 }

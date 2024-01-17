@@ -23,5 +23,6 @@
         <livingDocumentation language="Rust"
                              implementationClass="cc.unitmesh.rust.provider.RustLivingDocumentation"/>
 
+        <testContextProvider implementation="cc.unitmesh.rust.provider.RustTestContextProvider"/>
     </extensions>
 </idea-plugin>
