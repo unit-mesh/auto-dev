@@ -6,6 +6,7 @@ import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.go.context.GoMethodContextBuilder
 import cc.unitmesh.go.context.GoStructContextBuilder
 import cc.unitmesh.go.util.GoPsiUtil
+import com.goide.GoLanguage
 import com.goide.execution.testing.GoTestRunConfiguration
 import com.goide.psi.*
 import com.intellij.execution.configurations.RunProfile
@@ -19,7 +20,7 @@ import com.intellij.testIntegration.TestFinderHelper
 import com.intellij.util.PlatformUtils
 
 class GoWriteTestService : WriteTestService() {
-    override fun isApplicable(element: PsiElement): Boolean = PlatformUtils.isGoIde()
+    override fun isApplicable(element: PsiElement): Boolean = element.containingFile?.language == GoLanguage.INSTANCE
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = GoTestRunConfiguration::class.java
 
     override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {

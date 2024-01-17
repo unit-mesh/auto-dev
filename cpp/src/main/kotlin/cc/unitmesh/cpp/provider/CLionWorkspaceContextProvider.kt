@@ -18,7 +18,7 @@ class CLionWorkspaceContextProvider : ChatContextProvider {
     )
 
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
-        return PlatformUtils.isCLion() || creationContext.sourceFile?.language == OCLanguage.getInstance()
+        return creationContext.sourceFile?.language == OCLanguage.getInstance()
     }
 
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {

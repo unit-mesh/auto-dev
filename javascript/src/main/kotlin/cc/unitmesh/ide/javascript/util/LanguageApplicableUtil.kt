@@ -24,20 +24,13 @@ object LanguageApplicableUtil {
         return DialectDetector.isTypeScript(sourceFile)
     }
 
-    @RequiresReadLock
-    @ApiStatus.Internal
     fun isWebChatCreationContextSupported(psiFile: PsiFile?): Boolean {
-        if (PlatformUtils.isWebStorm()) return true
-
         return isWebLLMContext(psiFile)
     }
 
-    @ApiStatus.Internal
     private fun isWebLLMContext(psiFile: PsiFile?): Boolean {
         if (psiFile == null) return false
-        if ((psiFile is HtmlCompatibleFile) || PackageJsonUtil.isPackageJsonFile(psiFile)) {
-            return true
-        }
+        if (PackageJsonUtil.isPackageJsonFile(psiFile)) return true
 
         return isJavaScriptApplicable(psiFile.language)
     }
