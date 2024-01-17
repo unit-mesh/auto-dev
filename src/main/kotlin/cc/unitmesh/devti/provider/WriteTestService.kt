@@ -34,9 +34,36 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
     var implementationClass: String? = null
 
     override fun getImplementationClassName(): String? = implementationClass
+    /**
+     * Retrieves the run configuration class for the given project.
+     *
+     * @param project The project for which to retrieve the run configuration class.
+     * @return The run configuration class for the project.
+     */
     abstract fun runConfigurationClass(project: Project): Class<out RunProfile>
     abstract fun isApplicable(element: PsiElement): Boolean
+    /**
+     * Finds or creates a test file for the given source file, project, and element.
+     *
+     * @param sourceFile The source file for which to find or create a test file.
+     * @param project The project in which the test file should be created.
+     * @param element The element for which the test file should be created.
+     * @return The TestFileContext object representing the found or created test file, or null if it could not be found or created.
+     *
+     * This method is responsible for locating an existing test file associated with the given source file and element,
+     * or creating a new test file if one does not already exist. The test file is typically used for unit testing purposes.
+     * The source file, project, and element parameters are used to determine the context in which the test file should be created.
+     * If a test file is found or created successfully, a TestFileContext object representing the test file is returned.
+     * If a test file cannot be found or created, null is returned.
+     */
     abstract fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext?
+    /**
+     * Looks up the relevant classes in the project for the given element.
+     *
+     * @param project the project in which to perform the lookup
+     * @param element the element for which to find the relevant classes
+     * @return a list of ClassContext objects representing the relevant classes found in the project
+     */
     abstract fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext>
 
     fun runTest(project: Project, virtualFile: VirtualFile) {
