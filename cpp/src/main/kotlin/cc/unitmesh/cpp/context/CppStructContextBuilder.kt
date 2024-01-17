@@ -29,7 +29,7 @@ import com.jetbrains.cidr.lang.psi.OCStructLike
  *
  * will be converted to: [ClassContext]
  */
-class CppClassContextBuilder : ClassContextBuilder {
+class CppStructContextBuilder : ClassContextBuilder {
     override fun getClassContext(psiElement: PsiElement, gatherUsages: Boolean): ClassContext? {
         if (psiElement !is OCStructLike) {
             return null

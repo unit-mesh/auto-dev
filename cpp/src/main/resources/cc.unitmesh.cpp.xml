@@ -8,7 +8,9 @@
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <classContextBuilder language="ObjectiveC"
-                             implementationClass="cc.unitmesh.cpp.context.CppClassContextBuilder"/>
+                             implementationClass="cc.unitmesh.cpp.context.CppStructContextBuilder"/>
+        <methodContextBuilder language="ObjectiveC"
+                              implementationClass="cc.unitmesh.cpp.context.CppMethodContextBuilder"/>
 
         <chatContextProvider implementation="cc.unitmesh.cpp.provider.CLionWorkspaceContextProvider"/>
     </extensions>

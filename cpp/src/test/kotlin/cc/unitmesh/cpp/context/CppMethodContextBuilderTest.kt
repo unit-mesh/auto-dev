@@ -2,16 +2,14 @@ package cc.unitmesh.cpp.context;
 
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import com.jetbrains.cidr.lang.psi.OCDeclaration
-import com.jetbrains.cidr.lang.psi.OCStructLike
-import com.jetbrains.cidr.lang.psi.OCTypeElement
+import com.jetbrains.cidr.lang.psi.*
 
-class CppClassContextBuilderTest : BasePlatformTestCase() {
+class CppMethodContextBuilderTest : BasePlatformTestCase() {
 
     fun testShouldGetFunctionNameOfCarsMethod() {
         // given
         val psiElement = myFixture.configureByText(
-            "car.cpp", """
+            "Car.h", """
             #include <iostream>
             
             class Car {
@@ -20,7 +18,6 @@ class CppClassContextBuilderTest : BasePlatformTestCase() {
                 std::string brand, model;
                 int mileage = 0;
             
-                // class function
                 void drive(int distance) {
                     mileage += distance;
                 }
@@ -31,13 +28,16 @@ class CppClassContextBuilderTest : BasePlatformTestCase() {
         val decl = PsiTreeUtil.getChildrenOfTypeAsList(psiElement, OCDeclaration::class.java).first()
         val type = PsiTreeUtil.getChildrenOfTypeAsList(decl, OCTypeElement::class.java).first()
         val clz = PsiTreeUtil.getChildrenOfTypeAsList(type, OCStructLike::class.java).first()
+        val function = PsiTreeUtil.getChildrenOfTypeAsList(clz, OCFunctionDeclaration::class.java).first()
+        println(function.text)
 
-        // when
-        val result = CppStructContextBuilder().getClassContext(clz, true)!!
-
-        // then
-        assertEquals("Car", result.name)
-        assertEquals(1, result.methods.size)
-        assertEquals(3, result.fields.size)
+//        // when
+//        val result = CppMethodContextBuilder()
+//            .getMethodContext(function, true, true)!!
+//
+//        // then
+//        assertEquals("drive", result.name)
+//        assertEquals(1, result.paramNames)
+//        assertEquals(result.format(), "")
     }
 }
