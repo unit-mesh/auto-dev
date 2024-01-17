@@ -4,7 +4,9 @@ import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import com.intellij.execution.wsl.WslPath
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.jetbrains.cidr.cpp.cmake.workspace.CMakeWorkspace
@@ -61,13 +63,9 @@ class CLionWorkspaceContextProvider : ChatContextProvider {
     }
 
     private fun createTestFrameworkItem(project: Project, creationContext: ChatCreationContext): ChatContextItem? {
-        val cmakeWorkspace = CMakeWorkspace.getInstance(project)
-        if (!cmakeWorkspace.isInitialized) {
-            return null
-        }
-
         val cmakeLists = File(project.basePath, "CMakeLists.txt")
         if (!cmakeLists.exists()) {
+            logger<CLionWorkspaceContextProvider>().warn("CMakeLists.txt does not exist in the project.")
             return null
         }
 
