@@ -3,11 +3,12 @@
     <dependencies>
         <plugin id="com.intellij.clion"/>
         <plugin id="com.intellij.cidr.base"/>
-
         <module name="org.rust.lang"/>
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
+        <fileContextBuilder language="Rust"
+                            implementationClass="cc.unitmesh.rust.context.RustFileContextBuilder"/>
         <classContextBuilder language="Rust"
                              implementationClass="cc.unitmesh.rust.context.RustClassContextBuilder"/>
         <methodContextBuilder language="Rust"
