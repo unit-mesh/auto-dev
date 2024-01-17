@@ -69,6 +69,17 @@ download from [HuggingFace](https://huggingface.co/unit-mesh)
 |---------------|-----------------------------------------------------------------|--------------------------------------|-------------------------------------------------------------------------------------|
 | DeepSeek 6.7B | [AutoDev Coder](https://huggingface.co/unit-mesh/autodev-coder) | [finetune.ipynb](finetunes/deepseek) | [AutoDev Coder](https://openbayes.com/console/phodal/models/rCmer1KQSgp/9/overview) |
 
+## Advanced Language Features
+
+| Features                  | Java | Kotlin | JS/TS | Rust | Python | Go | C++ |
+|---------------------------|------|--------|-------|------|--------|----|-----|
+| Chat Language Context     | ✅    | ✅      | ✅     | ✅    | ✅      |    | ✅   |     |
+| Structure AST             | ✅    | ✅      | ✅     |      |        |    | ✅   |  ✅   |
+| AutoCRUD                  | ✅    | ✅      |       |      |        |    |     |     |
+| Doc Generation            | ✅    | ✅      | ✅     | ✅    | ✅      | ✅  |     |     |
+| Precision Test Generation | ✅    | ✅      | ✅     | ✅    | ✅      |    |     |     |
+| Precision Code Generation | ✅    | ✅      |       |      |        |    |     |     |
+
 ### Demo
 
 Video demo (YouTube) — English
