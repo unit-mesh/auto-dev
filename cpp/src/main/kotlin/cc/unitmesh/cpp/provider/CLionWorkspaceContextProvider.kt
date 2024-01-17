@@ -7,6 +7,8 @@ import com.intellij.execution.wsl.WslPath
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.util.PlatformUtils
+import com.jetbrains.cidr.lang.OCLanguage
 import com.jetbrains.cidr.project.workspace.CidrWorkspace
 
 class CLionWorkspaceContextProvider : ChatContextProvider {
@@ -16,7 +18,7 @@ class CLionWorkspaceContextProvider : ChatContextProvider {
     )
 
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
-        return true
+        return PlatformUtils.isCLion() || creationContext.sourceFile?.language == OCLanguage.getInstance()
     }
 
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
@@ -29,10 +31,8 @@ class CLionWorkspaceContextProvider : ChatContextProvider {
     }
 
     private fun createProjectNameItem(project: Project): ChatContextItem {
-        return ChatContextItem(
-            CLionWorkspaceContextProvider::class,
-            "You are working on project named \"${project.name}\""
-        )
+        val text = "You are working on project named \"${project.name}\""
+        return ChatContextItem(CLionWorkspaceContextProvider::class, text)
     }
 
     private fun createConfigFilesItem(project: Project): ChatContextItem {
@@ -54,26 +54,25 @@ class CLionWorkspaceContextProvider : ChatContextProvider {
         }
     }
 
-    private fun createPreferredLanguageItem(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
+    private fun createPreferredLanguageItem(
+        project: Project,
+        creationContext: ChatCreationContext
+    ): List<ChatContextItem> {
         val sourceFile = creationContext.sourceFile
         return if (sourceFile != null) {
-            listOf(
-                ChatContextItem(
-                    CLionWorkspaceContextProvider::class,
-                    "Prefer ${sourceFile.language.displayName} language if the used language and toolset are not defined below or in the user messages."
-                )
-            )
+            val text =
+                "Prefer ${sourceFile.language.displayName} language if the used language and toolset are not defined below or in the user messages."
+
+            listOf(ChatContextItem(CLionWorkspaceContextProvider::class, text))
         } else {
             val initializedWorkspaces = CidrWorkspace.getInitializedWorkspaces(project)
             if (initializedWorkspaces.isEmpty()) {
                 emptyList()
             } else {
-                listOf(
-                    ChatContextItem(
-                        CLionWorkspaceContextProvider::class,
-                        "Prefer C++ and C languages if the used language and toolset are not defined below or in the user messages."
-                    )
-                )
+                val text =
+                    "Prefer C++ and C languages if the used language and toolset are not defined below or in the user messages."
+
+                listOf(ChatContextItem(CLionWorkspaceContextProvider::class, text))
             }
         }
     }
