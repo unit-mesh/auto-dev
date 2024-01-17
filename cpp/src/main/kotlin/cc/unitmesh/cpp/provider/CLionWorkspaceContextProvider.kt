@@ -7,8 +7,10 @@ import com.intellij.execution.wsl.WslPath
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.vfs.VirtualFile
+import com.jetbrains.cidr.cpp.cmake.workspace.CMakeWorkspace
 import com.jetbrains.cidr.lang.OCLanguage
 import com.jetbrains.cidr.project.workspace.CidrWorkspace
+import java.io.File
 
 class CLionWorkspaceContextProvider : ChatContextProvider {
     private val configFiles = listOf(
@@ -26,7 +28,12 @@ class CLionWorkspaceContextProvider : ChatContextProvider {
         val isUnderWslItem = createIsUnderWslItem(project)
         val preferredLanguageItem = createPreferredLanguageItem(project, creationContext)
 
-        return (listOf(projectNameItem, configFileItem) + isUnderWslItem + preferredLanguageItem)
+        val testFrameworkItem = createTestFrameworkItem(project, creationContext)
+
+        return (listOf(
+            projectNameItem,
+            configFileItem
+        ) + isUnderWslItem + preferredLanguageItem + testFrameworkItem).filterNotNull()
     }
 
     private fun createProjectNameItem(project: Project): ChatContextItem {
@@ -51,6 +58,32 @@ class CLionWorkspaceContextProvider : ChatContextProvider {
         } else {
             emptyList()
         }
+    }
+
+    private fun createTestFrameworkItem(project: Project, creationContext: ChatCreationContext): ChatContextItem? {
+        val cmakeWorkspace = CMakeWorkspace.getInstance(project)
+        if (!cmakeWorkspace.isInitialized) {
+            return null
+        }
+
+        cmakeWorkspace.cMakeDependencyFiles.forEach { file ->
+            val text = file.readText()
+            if (text.contains("gtest") || text.contains("gmock")) {
+                return ChatContextItem(
+                    CLionWorkspaceContextProvider::class,
+                    "The project uses Google Test framework."
+                )
+            }
+
+            if (text.contains("catch")) {
+                return ChatContextItem(
+                    CLionWorkspaceContextProvider::class,
+                    "The project uses Catch2 framework."
+                )
+            }
+        }
+
+        return null
     }
 
     private fun createPreferredLanguageItem(
