@@ -1,25 +1,22 @@
 package cc.unitmesh.rust.context;
 
-import cc.unitmesh.devti.context.ClassContext
-import cc.unitmesh.devti.context.builder.ClassContextBuilder
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFileFactory
+import cc.unitmesh.devti.context.VariableContextProvider
+import cc.unitmesh.devti.context.builder.VariableContextBuilder
+import com.intellij.lang.LanguageExtension
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.extensions.ExtensionPoint
+import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import com.jetbrains.cidr.lang.psi.OCDeclaration
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Test
-import org.rust.lang.core.psi.RsEnumItem
+import com.intellij.testFramework.registerExtension
 import org.rust.lang.core.psi.RsStructItem
-import org.rust.lang.core.psi.ext.RsStructOrEnumItemElement
-import org.rust.lang.core.psi.ext.fields
 
 class RustClassContextBuilderTest: BasePlatformTestCase() {
 
     fun testShouldFormatStruct() {
         // given
-        val code = myFixture.configureByText("test.rs", """
+        val code = myFixture.configureByText(
+            "test.rs", """
         use crate::embedding::Embedding;
         use crate::similarity::{CosineSimilarity, RelevanceScore};
         
@@ -35,20 +32,31 @@ class RustClassContextBuilderTest: BasePlatformTestCase() {
                 Entry { id, embedding, embedded }
             }
         }
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         // when
         val decl = PsiTreeUtil.getChildrenOfTypeAsList(code, RsStructItem::class.java).first()
 
+        ApplicationManager.getApplication().extensionArea.registerExtensionPoint(
+            "cc.unitmesh.variableContextBuilder",
+            "cc.unitmesh.devti.context.builder.VariableContextBuilder",
+            ExtensionPoint.Kind.BEAN_CLASS,
+            true
+        )
+
         // then
         val result = RustClassContextBuilder().getClassContext(decl, false)!!
         assertEquals("Entry", result.name)
-        assertEquals(result.format(), """
+        assertEquals(
+            result.format(), """
             'package: Entry
             class Entry {
               
               
             }
-            """.trimIndent())
+            """.trimIndent()
+        )
     }
 }
+

@@ -11,8 +11,6 @@ class VariableContextProvider(
     private val includeClassContext: Boolean,
     private val gatherUsages: Boolean
 ): LLMCodeContextProvider<PsiElement> {
-    private val languageExtension: LanguageExtension<VariableContextBuilder> =
-        LanguageExtension("cc.unitmesh.variableContextBuilder")
 
     private val providers: List<VariableContextBuilder>
 
@@ -33,4 +31,12 @@ class VariableContextProvider(
 
         return VariableContext(psiElement, psiElement.text, null)
     }
+
+    companion object {
+        val languageExtension: LanguageExtension<VariableContextBuilder> =
+            LanguageExtension("cc.unitmesh.variableContextBuilder")
+
+        val EP_NAME: LanguageExtension<VariableContextBuilder> = languageExtension
+    }
 }
+

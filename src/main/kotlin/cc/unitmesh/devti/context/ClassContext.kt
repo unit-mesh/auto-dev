@@ -17,7 +17,8 @@ class ClassContext(
     val annotations: List<String> = mutableListOf(),
 ) : NamedElementContext(root, text, name) {
     private fun getFieldNames(): List<String> = fields.mapNotNull {
-        VariableContextProvider(false, false, false).from(it).name
+        val variableContextProvider = VariableContextProvider(false, false, false)
+        variableContextProvider.from(it).name
     }
 
     private fun getMethodSignatures(): List<String> = methods.mapNotNull {
