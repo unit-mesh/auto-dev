@@ -10,7 +10,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.util.IncorrectOperationException
 import org.rust.lang.core.psi.RsFunction
 import org.rust.lang.core.psi.ext.RsNameIdentifierOwner
 import org.rust.lang.core.psi.ext.RsStructOrEnumItemElement
@@ -32,7 +31,7 @@ class RustLivingDocumentation : LivingDocumentation {
             val startOffset = target.textRange.startOffset
             val newEndOffset = startOffset + newDoc.length
 
-           when (type) {
+            when (type) {
                 LivingDocumentationType.COMMENT -> {
                     val psiElementFactory = org.rust.lang.core.psi.RsPsiFactory(project)
                     val newDocComment = psiElementFactory.createBlockComment(newDoc)
@@ -65,12 +64,12 @@ class RustLivingDocumentation : LivingDocumentation {
     override fun findNearestDocumentationTarget(psiElement: PsiElement): PsiNameIdentifierOwner? {
         if (psiElement is RsNameIdentifierOwner) return psiElement
 
-        val closestIdentifierOwner = PsiTreeUtil.getParentOfType(psiElement, PsiNameIdentifierOwner::class.java)
-        if (closestIdentifierOwner !is RsFunction) {
-            return PsiTreeUtil.getParentOfType(psiElement, RsFunction::class.java) ?: closestIdentifierOwner
+        val identifierOwner = PsiTreeUtil.getParentOfType(psiElement, PsiNameIdentifierOwner::class.java)
+        if (identifierOwner !is RsFunction) {
+            return PsiTreeUtil.getParentOfType(psiElement, RsFunction::class.java) ?: identifierOwner
         }
 
-        return closestIdentifierOwner
+        return identifierOwner
     }
 
     override fun findDocTargetsInSelection(
@@ -80,27 +79,19 @@ class RustLivingDocumentation : LivingDocumentation {
         val commonParent: PsiElement? =
             CollectHighlightsUtil.findCommonParent(root, selectionModel.selectionStart, selectionModel.selectionEnd)
 
-        if (commonParent is RsStructOrEnumItemElement) {
-            return listOf(commonParent)
-        }
+        if (commonParent is RsStructOrEnumItemElement) return listOf(commonParent)
 
-        val nearestDocumentationTarget = findNearestDocumentationTarget(commonParent!!)
-        if (nearestDocumentationTarget !is RsFunction ||
-            containsElement(selectionModel, nearestDocumentationTarget)
-        ) {
-            return listOf(nearestDocumentationTarget!!)
-        }
+        val target = findNearestDocumentationTarget(commonParent!!)
+        if (target !is RsFunction || containsElement(selectionModel, target)) return listOf(target!!)
 
-        val classDeclarations = nearestDocumentationTarget.children
-        return filterAndCollectNameIdentifierOwners(classDeclarations, selectionModel)
+        return filterAndCollectNameIdentifierOwners(target.children, selectionModel)
     }
 
     private fun filterAndCollectNameIdentifierOwners(
         declarations: Array<PsiElement>,
         selectionModel: SelectionModel,
     ): List<PsiNameIdentifierOwner> {
-        val filteredElements = declarations.filterIsInstance<PsiNameIdentifierOwner>()
-            .filter { containsElement(selectionModel, it) }
-        return filteredElements.toList()
+        return declarations.filterIsInstance<PsiNameIdentifierOwner>()
+            .filter { containsElement(selectionModel, it) }.toList()
     }
 }
