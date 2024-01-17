@@ -17,8 +17,7 @@ import org.rust.lang.doc.psi.RsDocComment
 import org.rust.lang.doc.psi.ext.containingDoc
 
 class RustLivingDocumentation : LivingDocumentation {
-    override val forbiddenRules: List<String>
-        get() = listOf()
+    override val forbiddenRules: List<String> = listOf()
 
     override fun startEndString(type: LivingDocumentationType): Pair<String, String> {
         return Pair("///", "///")
