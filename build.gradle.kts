@@ -66,6 +66,7 @@ val clionPlugins = listOf(
     "com.intellij.cidr.lang",
 //    "com.jetbrains:clion:233.13135.93",
     "com.intellij.clion",
+//    prop("rustPlugin"),
     "org.rust.lang:0.4.186.5143-223",
     "org.toml.lang"
 )
@@ -489,7 +490,7 @@ project(":goland") {
         updateSinceUntilBuild.set(false)
 
         // required if Go language API is needed:
-        plugins.set(prop("goPlugin$platformVersion").split(',').map(String::trim).filter(String::isNotEmpty))
+        plugins.set(prop("goPlugin").split(',').map(String::trim).filter(String::isNotEmpty))
     }
     dependencies {
         implementation(project(":"))
