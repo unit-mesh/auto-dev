@@ -1,4 +1,4 @@
-package cc.unitmesh.pycharm.provider
+package cc.unitmesh.python.provider
 
 import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.gui.chat.ChatActionType

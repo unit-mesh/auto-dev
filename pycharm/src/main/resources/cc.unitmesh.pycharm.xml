@@ -1,4 +1,4 @@
-<idea-plugin package="cc.unitmesh.pycharm">
+<idea-plugin package="cc.unitmesh.python">
     <!--suppress PluginXmlValidity -->
     <dependencies>
         <plugin id="com.intellij.modules.python"/>
@@ -6,33 +6,33 @@
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <classContextBuilder language="Python"
-                             implementationClass="cc.unitmesh.pycharm.context.PythonClassContextBuilder"/>
+                             implementationClass="cc.unitmesh.python.context.PythonClassContextBuilder"/>
         <fileContextBuilder language="Python"
-                            implementationClass="cc.unitmesh.pycharm.context.PythonFileContextBuilder"/>
+                            implementationClass="cc.unitmesh.python.context.PythonFileContextBuilder"/>
         <methodContextBuilder language="Python"
-                              implementationClass="cc.unitmesh.pycharm.context.PythonMethodContextBuilder"/>
+                              implementationClass="cc.unitmesh.python.context.PythonMethodContextBuilder"/>
         <variableContextBuilder language="Python"
-                                implementationClass="cc.unitmesh.pycharm.context.PythonVariableContextBuilder"/>
+                                implementationClass="cc.unitmesh.python.context.PythonVariableContextBuilder"/>
 
         <livingDocumentation language="Python"
-                             implementationClass="cc.unitmesh.pycharm.provider.PythonLivingDocumentation"/>
+                             implementationClass="cc.unitmesh.python.provider.PythonLivingDocumentation"/>
 
-        <chatContextProvider implementation="cc.unitmesh.pycharm.PythonFrameworkContextProvider"/>
+        <chatContextProvider implementation="cc.unitmesh.python.PythonFrameworkContextProvider"/>
 
         <contextPrompter
                 language="Python"
-                implementation="cc.unitmesh.pycharm.provider.PythonContextPrompter"/>
+                implementation="cc.unitmesh.python.provider.PythonContextPrompter"/>
 
         <devFlowProvider
                 language="Python"
-                implementation="cc.unitmesh.pycharm.provider.PythonAutoDevFlow"/>
+                implementation="cc.unitmesh.python.provider.PythonAutoDevFlow"/>
         <promptStrategy
                 language="Python"
-                implementation="cc.unitmesh.pycharm.provider.PythonPromptStrategyAdvisor"/>
+                implementation="cc.unitmesh.python.provider.PythonPromptStrategyAdvisor"/>
 
         <testContextProvider
                 language="Python"
-                implementation="cc.unitmesh.pycharm.provider.PythonWriteTestService"/>
+                implementation="cc.unitmesh.python.provider.PythonWriteTestService"/>
 
     </extensions>
 </idea-plugin>

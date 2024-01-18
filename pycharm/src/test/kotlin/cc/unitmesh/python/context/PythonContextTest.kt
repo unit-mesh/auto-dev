@@ -1,4 +1,4 @@
-package cc.unitmesh.pycharm.context
+package cc.unitmesh.python.context
 
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider

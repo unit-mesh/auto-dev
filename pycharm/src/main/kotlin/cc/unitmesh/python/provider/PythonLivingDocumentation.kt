@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cc.unitmesh.pycharm.provider
+package cc.unitmesh.python.provider
 
 import cc.unitmesh.devti.custom.document.LivingDocumentationType
 import cc.unitmesh.devti.provider.LivingDocumentation

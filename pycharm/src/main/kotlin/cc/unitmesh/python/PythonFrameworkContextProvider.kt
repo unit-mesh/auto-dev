@@ -1,4 +1,4 @@
-package cc.unitmesh.pycharm
+package cc.unitmesh.python
 
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider

@@ -1,4 +1,4 @@
-package cc.unitmesh.pycharm.provider
+package cc.unitmesh.python.provider
 
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.provider.WriteTestService
