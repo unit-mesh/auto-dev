@@ -43,7 +43,7 @@ class RustMethodContextBuilderTest : BasePlatformTestCase() {
             path: /src/test.rs
             language: Rust
             fun name: new
-            fun signature:  function
+            fun signature: fn <b>new</b>(id: String, embedding: Embedding, embedded: Document) -&gt; Self   
             """.trimIndent()
         )
     }

@@ -14,7 +14,7 @@ import org.rust.lang.RsLanguage
 import org.rust.lang.core.psi.RsFunction
 import org.rust.lang.core.psi.RsUseItem
 
-class RustTestContextProvider : WriteTestService() {
+class RustTestService : WriteTestService() {
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = CargoCommandConfiguration::class.java
 
     override fun isApplicable(element: PsiElement): Boolean {

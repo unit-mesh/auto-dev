@@ -20,7 +20,7 @@ class RustMethodContextBuilder : MethodContextBuilder {
 
         val signature = StringBuilder()
         psiElement.presentationInfo?.let {
-            signature.append(" ").append(it.type)
+            signature.append(it.signatureText)
         }
 
         return MethodContext(
