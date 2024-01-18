@@ -1,4 +1,4 @@
-package cc.unitmesh.rust.context;
+package cc.unitmesh.rust.context
 
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
@@ -8,7 +8,7 @@ import org.rust.lang.core.psi.RsMembers
 
 class RustMethodContextBuilderTest : BasePlatformTestCase() {
 
-    fun shouldFormatMethodStruct() {
+    fun testShouldFormatMethodStruct() {
         // given
         val psiFile = myFixture.configureByText(
             "test.rs", """
@@ -40,11 +40,10 @@ class RustMethodContextBuilderTest : BasePlatformTestCase() {
         assertEquals("new", result.name)
         assertEquals(
             result.format(), """
-            'package: Entry
-            class Entry {
-              
-              
-            }
+            path: /src/test.rs
+            language: Rust
+            fun name: new
+            fun signature:  function
             """.trimIndent()
         )
     }

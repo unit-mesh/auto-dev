@@ -1,4 +1,4 @@
-package cc.unitmesh.rust.context;
+package cc.unitmesh.rust.context
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.extensions.ExtensionPoint
@@ -8,7 +8,7 @@ import org.rust.lang.core.psi.RsStructItem
 
 class RustClassContextBuilderTest: BasePlatformTestCase() {
 
-    fun shouldFormatStruct() {
+    fun testShouldFormatStruct() {
         // given
         val code = myFixture.configureByText(
             "test.rs", """
