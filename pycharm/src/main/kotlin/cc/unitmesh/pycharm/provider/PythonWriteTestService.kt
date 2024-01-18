@@ -11,10 +11,16 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilBase
+import com.jetbrains.python.PythonLanguage
 import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFunction
+import com.jetbrains.python.run.PythonRunConfiguration
 
 class PythonWriteTestService : WriteTestService() {
+    override fun isApplicable(element: PsiElement): Boolean = element.language is PythonLanguage
+
+    override fun runConfigurationClass(project: Project): Class<out RunProfile> = PythonRunConfiguration::class.java
+
     fun getElementForTests(project: Project, editor: Editor): PsiElement? {
         val element = PsiUtilBase.getElementAtCaret(editor) ?: return null
         val containingFile: PsiFile = element.containingFile ?: return null
@@ -32,14 +38,6 @@ class PythonWriteTestService : WriteTestService() {
         }
 
         return PsiTreeUtil.getParentOfType(element, PyClass::class.java, false) ?: containingFile
-    }
-
-    override fun runConfigurationClass(project: Project): Class<out RunProfile> {
-        TODO("Not yet implemented")
-    }
-
-    override fun isApplicable(element: PsiElement): Boolean {
-        TODO("Not yet implemented")
     }
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
