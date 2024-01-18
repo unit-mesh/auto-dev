@@ -16,6 +16,13 @@ class CLionWorkspaceContextProvider : ChatContextProvider {
         return creationContext.sourceFile?.language is OCLanguage
     }
 
+    /**
+     * Collects a list of ChatContextItem objects based on the given project and creation context.
+     *
+     * @param project The project in which the chat is being created.
+     * @param creationContext The context in which the chat is being created.
+     * @return A list of ChatContextItem objects representing various context items related to the project and creation context.
+     */
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         val projectNameItem = createProjectNameItem(project)
         val configFileItem = createConfigFilesItem(project)
@@ -38,10 +45,8 @@ class CLionWorkspaceContextProvider : ChatContextProvider {
     private fun createConfigFilesItem(project: Project): ChatContextItem {
         val configFiles = CMakefileUtil.collectConfigFiles(project)
         val configFileNames = configFiles.joinToString(", ") { it.name }
-        return ChatContextItem(
-            CLionWorkspaceContextProvider::class,
-            "The project has the following config files: $configFileNames."
-        )
+        val text = "The project has the following config files: $configFileNames."
+        return ChatContextItem(CLionWorkspaceContextProvider::class, text)
     }
 
     private fun createIsUnderWslItem(project: Project): List<ChatContextItem> {
@@ -61,19 +66,15 @@ class CLionWorkspaceContextProvider : ChatContextProvider {
             return null
         }
 
-        val text = cmakeLists.readText()
-        if (text.contains("gtest") || text.contains("gmock")) {
-            return ChatContextItem(
-                CLionWorkspaceContextProvider::class,
-                "The project uses Google Test framework."
-            )
+        val cmakelist = cmakeLists.readText()
+        if (cmakelist.contains("gtest") || cmakelist.contains("gmock")) {
+            val text = "The project uses Google Test framework."
+            return ChatContextItem(CLionWorkspaceContextProvider::class, text)
         }
 
-        if (text.contains("catch") || text.contains("Catch")) {
-            return ChatContextItem(
-                CLionWorkspaceContextProvider::class,
-                "The project uses Catch2 framework."
-            )
+        if (cmakelist.contains("catch") || cmakelist.contains("Catch")) {
+            val text = "The project uses Catch2 framework."
+            return ChatContextItem(CLionWorkspaceContextProvider::class, text)
         }
 
         return null

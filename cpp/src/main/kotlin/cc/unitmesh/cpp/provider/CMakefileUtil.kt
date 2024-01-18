@@ -5,7 +5,7 @@ import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.vfs.VirtualFile
 
 object CMakefileUtil {
-    val configFiles = listOf(
+    private val configFiles = listOf(
         "CMakeLists.txt", "meson.build", "Makefile", "ninja.build",
         "vcpkg.json", "BUILD", "sln", "vcxproj", "vcproj"
     )

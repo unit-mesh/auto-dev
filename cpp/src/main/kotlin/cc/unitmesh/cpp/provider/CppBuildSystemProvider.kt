@@ -20,7 +20,7 @@ class CppBuildSystemProvider : BuildSystemProvider() {
         return null
     }
 
-    val cmakeMinimumRequiredRegex = Regex("""\bcmake_minimum_required\s*\(\s*VERSION\s*(\d+(\.\d+)*)\s*\)""")
+    private val cmakeMinimumRequiredRegex = Regex("""\bcmake_minimum_required\s*\(\s*VERSION\s*(\d+(\.\d+)*)\s*\)""")
     private fun buildCMakefileContext(config: Collection<VirtualFile>, project: Project): DockerfileContext? {
         val buildToolName = "CMake"
         val buildToolVersion = config.firstOrNull()?.let {
