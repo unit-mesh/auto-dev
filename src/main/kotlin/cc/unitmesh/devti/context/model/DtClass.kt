@@ -109,5 +109,8 @@ class DtClass(
 
         return output.toString()
     }
+
+    /// Don't remove this, it's used by [cc.unitmesh.idea.DtModelExt] which is Kotlin compiler requirements.
+    companion object
 }
 

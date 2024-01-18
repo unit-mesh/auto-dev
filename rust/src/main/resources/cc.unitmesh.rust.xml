@@ -24,5 +24,6 @@
                              implementationClass="cc.unitmesh.rust.provider.RustLivingDocumentation"/>
 
         <testContextProvider implementation="cc.unitmesh.rust.provider.RustTestContextProvider"/>
+        <codeModifier language="Rust" implementationClass="cc.unitmesh.rust.provider.RustCodeModifier"/>
     </extensions>
 </idea-plugin>
