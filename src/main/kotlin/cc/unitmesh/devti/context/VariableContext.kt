@@ -34,6 +34,16 @@ class VariableContext(
         }
     }
 
+    /**
+     * Returns a formatted string representation of the method.
+     *
+     * The returned string includes the following information:
+     * - The name of the method, or "_" if the name is null.
+     * - The name of the method's context, or "_" if the context is null.
+     * - The name of the class's context, or "_" if the context is null.
+     *
+     * @return A formatted string representation of the method.
+     */
     override fun format(): String {
         return """
             var name: ${name ?: "_"}

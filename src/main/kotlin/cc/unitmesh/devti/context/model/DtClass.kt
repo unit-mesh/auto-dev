@@ -109,9 +109,5 @@ class DtClass(
 
         return output.toString()
     }
-
-    companion object {
-        fun from() {}
-    }
 }
 
