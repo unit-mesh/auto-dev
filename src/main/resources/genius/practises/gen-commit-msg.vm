@@ -10,8 +10,12 @@ examples:
 - test(java): fix test case for user controller
 
 Diff:
+#if( $context.historyExamples.length() > 0 )
+History Examples:
+$context.historyExamples
+#end
 
 ```diff
-${context.diff}
+${context.diffContent}
 ```
 

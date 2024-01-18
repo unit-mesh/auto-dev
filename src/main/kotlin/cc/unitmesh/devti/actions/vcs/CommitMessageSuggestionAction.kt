@@ -6,6 +6,7 @@ import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.vcs.VcsPrompting
 import cc.unitmesh.devti.statusbar.AutoDevStatus
+import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.vcs.VcsUtil
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -129,27 +130,23 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
     }
 
     private fun generateCommitMessage(diff: String, project: Project): String {
-        return """Write a cohesive yet descriptive commit message for a given diff. 
-Make sure to include both information What was changed and Why.
-Start with a short sentence in imperative form, no more than 50 characters long.
-Then leave an empty line and continue with a more detailed explanation, if necessary.
-Explanation should have less than 200 characters.
+        val templateRender = TemplateRender("genius/practises")
+        val template = templateRender.getTemplate("gen-commit-msg.vm")
 
-Examples:
-- fix(authentication): add password regex pattern
-- feat(storage): add new test cases
-- test(java): fix test case for user controller
-History Examples:
-${findExampleCommitMessages(project) ?: "No example found."}
+        val historyExample = findExampleCommitMessages(project) ?: ""
+        templateRender.context = CommitMsgGenContext(
+            historyExample = historyExample,
+            diffContent = diff,
+        )
+        val prompter = templateRender.renderTemplate(template)
 
-Diff:
-
-```diff
-$diff
-```
-
-"""
+        logger.info("Prompt: $prompter")
+        return prompter
     }
-
 }
 
+
+data class CommitMsgGenContext(
+    var historyExample: String = "",
+    var diffContent: String = "",
+)
