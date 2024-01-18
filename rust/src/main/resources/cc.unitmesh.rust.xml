@@ -3,6 +3,7 @@
     <dependencies>
         <plugin id="com.intellij.clion"/>
         <plugin id="com.intellij.cidr.base"/>
+        <plugin id="com.jetbrains.rust"/>
         <module name="org.rust.lang"/>
     </dependencies>
 

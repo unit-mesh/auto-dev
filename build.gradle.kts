@@ -66,8 +66,7 @@ val clionPlugins = listOf(
     "com.intellij.cidr.lang",
 //    "com.jetbrains:clion:233.13135.93",
     "com.intellij.clion",
-//    prop("rustPlugin"),
-    "org.rust.lang:0.4.186.5143-223",
+    prop("rustPlugin"),
     "org.toml.lang"
 )
 val riderVersion = prop("riderVersion")

@@ -1,19 +1,14 @@
 package cc.unitmesh.rust.context;
 
-import cc.unitmesh.devti.context.VariableContextProvider
-import cc.unitmesh.devti.context.builder.VariableContextBuilder
-import com.intellij.lang.LanguageExtension
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.extensions.ExtensionPoint
-import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import com.intellij.testFramework.registerExtension
 import org.rust.lang.core.psi.RsStructItem
 
 class RustClassContextBuilderTest: BasePlatformTestCase() {
 
-    fun testShouldFormatStruct() {
+    fun shouldFormatStruct() {
         // given
         val code = myFixture.configureByText(
             "test.rs", """

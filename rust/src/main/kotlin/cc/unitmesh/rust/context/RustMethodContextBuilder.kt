@@ -3,9 +3,8 @@ package cc.unitmesh.rust.context
 import cc.unitmesh.devti.context.MethodContext
 import cc.unitmesh.devti.context.builder.MethodContextBuilder
 import com.intellij.psi.PsiElement
-import org.rust.ide.docs.signature
-import org.rust.lang.core.psi.RsFunction
-import org.rust.lang.core.types.implLookup
+import org.rust.ide.presentation.presentationInfo
+import org.rust.lang.core.psi.*
 
 class RustMethodContextBuilder : MethodContextBuilder {
     override fun getMethodContext(
@@ -20,7 +19,9 @@ class RustMethodContextBuilder : MethodContextBuilder {
         val language = psiElement.language.displayName
 
         val signature = StringBuilder()
-        psiElement.signature(signature)
+        psiElement.presentationInfo?.let {
+            signature.append(" ").append(it.type)
+        }
 
         return MethodContext(
             psiElement,
