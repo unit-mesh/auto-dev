@@ -1,4 +1,5 @@
 <idea-plugin package="cc.unitmesh.cpp">
+    <!--suppress PluginXmlValidity -->
     <dependencies>
         <plugin id="com.intellij.modules.clion"/>
     </dependencies>
