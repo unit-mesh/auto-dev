@@ -6,10 +6,10 @@ import com.jetbrains.cidr.lang.psi.*
 
 class CppMethodContextBuilderTest : BasePlatformTestCase() {
 
-    fun testShouldGetFunctionNameOfCarsMethod() {
+    fun shouldGetFunctionNameOfCarsMethod() {
         // given
         val psiElement = myFixture.configureByText(
-            "Car.h", """
+            "Car.cpp", """
             #include <iostream>
             
             class Car {

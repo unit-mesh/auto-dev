@@ -68,6 +68,11 @@ val clionPlugins = listOf(
     prop("rustPlugin"),
     "org.toml.lang"
 )
+val rustPlugins = listOf(
+    prop("rustPlugin"),
+    "org.toml.lang"
+)
+
 val riderVersion = prop("riderVersion")
 val riderPlugins: List<String> = listOf()
 
@@ -453,8 +458,8 @@ project(":kotlin") {
 
 project(":rust") {
     intellij {
-        version.set(clionVersion)
-        plugins.set(clionPlugins)
+        version.set(ideaVersion)
+        plugins.set(rustPlugins)
     }
     dependencies {
         implementation(project(":"))
@@ -484,7 +489,7 @@ project(":csharp") {
 project(":goland") {
     intellij {
         version.set(ideaVersion)
-        type.set("IU")
+//        type.set("IU")
         updateSinceUntilBuild.set(false)
 
         // required if Go language API is needed:

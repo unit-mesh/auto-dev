@@ -17,7 +17,9 @@ import org.rust.lang.core.psi.RsUseItem
 class RustTestContextProvider : WriteTestService() {
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = CargoCommandConfiguration::class.java
 
-    override fun isApplicable(element: PsiElement): Boolean = element.language is RsLanguage
+    override fun isApplicable(element: PsiElement): Boolean {
+        return element.language is RsLanguage
+    }
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
         val currentObject = when (element) {

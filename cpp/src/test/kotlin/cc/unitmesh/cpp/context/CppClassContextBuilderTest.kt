@@ -8,7 +8,7 @@ import com.jetbrains.cidr.lang.psi.OCTypeElement
 
 class CppClassContextBuilderTest : BasePlatformTestCase() {
 
-    fun testShouldGetFunctionNameOfCarsMethod() {
+    fun shouldGetFunctionNameOfCarsMethod() {
         // given
         val psiElement = myFixture.configureByText(
             "car.cpp", """

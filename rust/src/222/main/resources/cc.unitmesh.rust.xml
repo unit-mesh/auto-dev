@@ -4,7 +4,7 @@
         <plugin id="com.intellij.clion"/>
         <plugin id="com.intellij.cidr.base"/>
 
-        <plugin id="org.rust.lang"/>
+        <module name="org.rust.lang"/>
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">

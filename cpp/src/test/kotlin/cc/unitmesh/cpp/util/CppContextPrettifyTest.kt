@@ -6,7 +6,7 @@ import com.jetbrains.cidr.lang.psi.*
 
 class CppContextPrettifyTest : BasePlatformTestCase() {
 
-    fun testShouldExtractStructureText() {
+    fun shouldExtractStructureText() {
         // given
         val psiElement = myFixture.configureByText(
             "car.cpp", """

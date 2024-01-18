@@ -5,6 +5,8 @@
         <plugin id="com.intellij.cidr.base"/>
 
         <plugin id="com.intellij.modules.rust-capable"/>
+
+        <module name="org.rust.lang"/>
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">

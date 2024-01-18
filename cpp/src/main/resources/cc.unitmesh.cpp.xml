@@ -21,7 +21,6 @@
                 language="ObjectiveC"
                 implementationClass="cc.unitmesh.cpp.provider.CppCodeModifier"/>
 
-
         <buildSystemProvider
                 implementation="cc.unitmesh.cpp.provider.CppBuildSystemProvider"/>
     </extensions>
