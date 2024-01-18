@@ -39,7 +39,7 @@ AutoDev Overview:
 
 Features:
 
-- Languages support: Java, Kotlin, Python, JavaScript/TypeScript, Goland, Rust or others...
+- Languages support: Java, Kotlin, JavaScript/TypeScript, Rust, Python, Golang,  or others...
 - Auto development mode.
     - With DevTi Protocol (like `devti://story/github/1102`) will auto generate
       Model-Controller-Service-Repository code.
