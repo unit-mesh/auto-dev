@@ -1,9 +1,6 @@
 <idea-plugin package="cc.unitmesh.rust">
     <!--suppress PluginXmlValidity -->
     <dependencies>
-        <plugin id="com.intellij.clion"/>
-        <plugin id="com.intellij.cidr.base"/>
-
         <module name="org.rust.lang"/>
     </dependencies>
 

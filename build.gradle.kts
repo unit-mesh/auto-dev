@@ -218,6 +218,9 @@ project(":plugin") {
             "go" -> {
                 pluginList += listOf("org.jetbrains.plugins.go")
             }
+            "rust" -> {
+                pluginList += rustPlugins
+            }
         }
 
         plugins.set(pluginList)
