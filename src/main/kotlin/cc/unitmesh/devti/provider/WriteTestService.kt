@@ -40,7 +40,7 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
      * @param project The project for which to retrieve the run configuration class.
      * @return The run configuration class for the project.
      */
-    abstract fun runConfigurationClass(project: Project): Class<out RunProfile>
+    abstract fun runConfigurationClass(project: Project): Class<out RunProfile>?
     abstract fun isApplicable(element: PsiElement): Boolean
     /**
      * Finds or creates a test file for the given source file, project, and element.
