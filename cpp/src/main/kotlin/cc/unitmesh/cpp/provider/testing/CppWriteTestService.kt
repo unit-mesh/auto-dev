@@ -11,12 +11,12 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.jetbrains.cidr.cpp.execution.testing.CMakeTestRunConfiguration
+import com.jetbrains.cidr.cpp.execution.debugger.CMakeListRunConfiguration
 import com.jetbrains.cidr.lang.OCLanguage
 import com.jetbrains.cidr.lang.psi.OCFunctionDeclaration
 
 class CppWriteTestService : WriteTestService() {
-    override fun runConfigurationClass(project: Project): Class<out RunProfile> = CMakeTestRunConfiguration::class.java
+    override fun runConfigurationClass(project: Project): Class<out RunProfile> = CMakeListRunConfiguration::class.java
 
     override fun isApplicable(element: PsiElement): Boolean {
         return element.language is OCLanguage
