@@ -6,6 +6,7 @@ import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.vcs.VcsPrompting
 import cc.unitmesh.devti.statusbar.AutoDevStatus
+import cc.unitmesh.devti.vcs.VcsUtil
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
@@ -15,10 +16,8 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.VcsDataKeys
 import com.intellij.openapi.vcs.changes.Change
-import com.intellij.openapi.vcs.changes.CurrentContentRevision
 import com.intellij.openapi.vcs.ui.CommitMessage
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.vcs.commit.CommitWorkflowUi
 import com.intellij.vcs.log.TimedVcsCommit
 import com.intellij.vcs.log.VcsCommitMetadata
 import com.intellij.vcs.log.VcsLogFilterCollection
@@ -53,26 +52,9 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         e.presentation.isEnabled = changes.isNotEmpty()
     }
 
-    private fun getChanges(e: AnActionEvent): List<Change>? {
-        val commitWorkflowUi = e.getData(VcsDataKeys.COMMIT_WORKFLOW_UI) ?: return null
-
-        val changes = commitWorkflowUi.getIncludedChanges()
-        val unversionedFiles = commitWorkflowUi.getIncludedUnversionedFiles()
-
-        val unversionedFileChanges = unversionedFiles.map {
-            Change(null, CurrentContentRevision(it))
-        }
-
-        if (changes.isNotEmpty() || unversionedFileChanges.isNotEmpty()) {
-            return changes + unversionedFileChanges
-        }
-
-        return null
-    }
-
     override fun executeAction(event: AnActionEvent) {
         val project = event.project ?: return
-        val changes = getChanges(event) ?: return
+        val changes = VcsUtil.getChanges(event) ?: return
         val diffContext = project.service<VcsPrompting>().prepareContext(changes)
 
         if (diffContext.isEmpty() || diffContext == "\n") {
@@ -169,5 +151,5 @@ $diff
 """
     }
 
-
 }
+
