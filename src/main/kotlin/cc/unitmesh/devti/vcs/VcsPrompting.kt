@@ -47,8 +47,11 @@ class VcsPrompting(private val project: Project) {
             it.changes
         }
 
-        val context = project.service<DiffSimplifier>().simplify(changes, defaultIgnoreFilePatterns)
-        return context
+        return prepareContext(changes)
+    }
+
+    fun prepareContext(changes: List<Change>): String {
+        return project.service<DiffSimplifier>().simplify(changes, defaultIgnoreFilePatterns)
     }
 
     /**
