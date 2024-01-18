@@ -91,8 +91,8 @@ class CLionWorkspaceContextProvider : ChatContextProvider {
 
             listOf(ChatContextItem(CLionWorkspaceContextProvider::class, text))
         } else {
-            val initializedWorkspaces = CidrWorkspace.getInitializedWorkspaces(project)
-            if (initializedWorkspaces.isEmpty()) {
+            val cidrWorkspaces = CidrWorkspace.getInitializedWorkspaces(project)
+            if (cidrWorkspaces.isEmpty()) {
                 emptyList()
             } else {
                 val text =

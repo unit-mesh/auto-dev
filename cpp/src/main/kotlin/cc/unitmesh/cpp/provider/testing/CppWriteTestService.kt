@@ -26,9 +26,9 @@ class CppWriteTestService : WriteTestService() {
         // 1. check project root test folder, if not exist, create it
         val baseDir = project.guessProjectDir() ?: return null
 
-        val sourceFilePath = sourceFile.virtualFile
+        val sourceVirtualFile = sourceFile.virtualFile
 
-        val testFilePath = sourceFilePath.nameWithoutExtension + "_test" + "." + sourceFile.virtualFile.extension
+        val testFilePath = getTestFilePath(sourceVirtualFile)
         val testFile = WriteAction.computeAndWait<VirtualFile?, Throwable> {
             baseDir.findOrCreateChildData(this, testFilePath)
         } ?: return null
@@ -54,8 +54,9 @@ class CppWriteTestService : WriteTestService() {
         )
     }
 
+    private fun getTestFilePath(file: VirtualFile) = file.nameWithoutExtension + "_test" + "." + file.extension
+
     override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {
         return listOf()
     }
-
 }
