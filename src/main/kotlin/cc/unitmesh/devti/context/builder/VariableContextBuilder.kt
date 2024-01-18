@@ -6,8 +6,8 @@ import com.intellij.psi.PsiElement
 interface VariableContextBuilder {
     fun getVariableContext(
         psiElement: PsiElement,
-        includeMethodContext: Boolean,
-        includeClassContext: Boolean,
+        withMethodContext: Boolean,
+        withClassContext: Boolean,
         gatherUsages: Boolean
     ): VariableContext?
 }

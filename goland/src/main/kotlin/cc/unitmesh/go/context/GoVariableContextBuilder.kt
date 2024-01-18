@@ -8,8 +8,8 @@ import com.intellij.psi.PsiElement
 class GoVariableContextBuilder : VariableContextBuilder {
     override fun getVariableContext(
         psiElement: PsiElement,
-        includeMethodContext: Boolean,
-        includeClassContext: Boolean,
+        withMethodContext: Boolean,
+        withClassContext: Boolean,
         gatherUsages: Boolean
     ): VariableContext? {
         if (psiElement !is GoVarOrConstDefinition) {

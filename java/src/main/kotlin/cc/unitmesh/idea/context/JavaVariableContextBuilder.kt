@@ -7,8 +7,8 @@ import com.intellij.psi.*
 class JavaVariableContextBuilder : VariableContextBuilder {
     override fun getVariableContext(
         psiElement: PsiElement,
-        includeMethodContext: Boolean,
-        includeClassContext: Boolean,
+        withMethodContext: Boolean,
+        withClassContext: Boolean,
         gatherUsages: Boolean
     ): VariableContext? {
         if (psiElement !is PsiVariable) return null
@@ -26,8 +26,8 @@ class JavaVariableContextBuilder : VariableContextBuilder {
             containingMethod,
             containingClass,
             references,
-            includeMethodContext,
-            includeClassContext
+            withMethodContext,
+            withClassContext
         )
     }
 }

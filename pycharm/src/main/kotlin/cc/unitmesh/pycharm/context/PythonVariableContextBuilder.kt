@@ -16,8 +16,8 @@ import com.jetbrains.python.psi.PyTargetExpression
 class PythonVariableContextBuilder : VariableContextBuilder {
     override fun getVariableContext(
         psiElement: PsiElement,
-        includeMethodContext: Boolean,
-        includeClassContext: Boolean,
+        withMethodContext: Boolean,
+        withClassContext: Boolean,
         gatherUsages: Boolean
     ): VariableContext? {
         return when (psiElement) {
@@ -35,8 +35,8 @@ class PythonVariableContextBuilder : VariableContextBuilder {
                     enclosingMethod,
                     enclosingClass,
                     usages,
-                    includeMethodContext,
-                    includeClassContext
+                    withMethodContext,
+                    withClassContext
                 )
             }
 
@@ -58,8 +58,8 @@ class PythonVariableContextBuilder : VariableContextBuilder {
                     enclosingMethod,
                     enclosingClass,
                     usages,
-                    includeMethodContext,
-                    includeClassContext
+                    withMethodContext,
+                    withClassContext
                 )
             }
 

@@ -13,8 +13,8 @@ import com.intellij.psi.util.PsiTreeUtil
 class JavaScriptVariableContextBuilder : VariableContextBuilder {
     override fun getVariableContext(
         psiElement: PsiElement,
-        includeMethodContext: Boolean,
-        includeClassContext: Boolean,
+        withMethodContext: Boolean,
+        withClassContext: Boolean,
         gatherUsages: Boolean
     ): VariableContext? {
         if (psiElement !is JSFieldVariable) {
@@ -36,8 +36,8 @@ class JavaScriptVariableContextBuilder : VariableContextBuilder {
             parentOfType,
             memberContainingClass,
             psiReferences,
-            includeMethodContext,
-            includeClassContext
+            withMethodContext,
+            withClassContext
         )
     }
 

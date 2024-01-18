@@ -14,8 +14,8 @@ import org.jetbrains.kotlin.psi.psiUtil.containingClass
 class KotlinVariableContextBuilder : VariableContextBuilder {
     override fun getVariableContext(
         psiElement: PsiElement,
-        includeMethodContext: Boolean,
-        includeClassContext: Boolean,
+        withMethodContext: Boolean,
+        withClassContext: Boolean,
         gatherUsages: Boolean
     ): VariableContext? {
         when (psiElement) {
@@ -32,7 +32,7 @@ class KotlinVariableContextBuilder : VariableContextBuilder {
                     emptyList()
                 }
 
-                return VariableContext(psiElement, text, name, parentOfType, containingClass, usages, includeMethodContext, includeClassContext)
+                return VariableContext(psiElement, text, name, parentOfType, containingClass, usages, withMethodContext, withClassContext)
             }
 
             is KtParameter -> {
@@ -48,7 +48,7 @@ class KotlinVariableContextBuilder : VariableContextBuilder {
                     emptyList()
                 }
 
-                return VariableContext(psiElement, text, name, parentOfType, containingClass, usages, includeMethodContext, includeClassContext)
+                return VariableContext(psiElement, text, name, parentOfType, containingClass, usages, withMethodContext, withClassContext)
             }
 
             else -> {

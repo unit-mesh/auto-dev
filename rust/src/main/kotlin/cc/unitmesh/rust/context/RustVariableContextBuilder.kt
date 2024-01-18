@@ -11,8 +11,8 @@ import org.rust.lang.core.psi.RsLetDecl
 class RustVariableContextBuilder : VariableContextBuilder {
     override fun getVariableContext(
         psiElement: PsiElement,
-        includeMethodContext: Boolean,
-        includeClassContext: Boolean,
+        withMethodContext: Boolean,
+        withClassContext: Boolean,
         gatherUsages: Boolean
     ): VariableContext? {
         if (psiElement !is RsLetDecl) return null
@@ -28,7 +28,7 @@ class RustVariableContextBuilder : VariableContextBuilder {
             parentOfType,
             containingClass,
             emptyList(),
-            includeClassContext
+            withClassContext
         )
     }
 

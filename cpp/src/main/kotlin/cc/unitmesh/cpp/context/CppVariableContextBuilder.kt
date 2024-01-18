@@ -9,8 +9,8 @@ import com.intellij.psi.util.PsiTreeUtil
 class CppVariableContextBuilder : VariableContextBuilder {
     override fun getVariableContext(
         psiElement: PsiElement,
-        includeMethodContext: Boolean,
-        includeClassContext: Boolean,
+        withMethodContext: Boolean,
+        withClassContext: Boolean,
         gatherUsages: Boolean
     ): VariableContext? {
         if (psiElement !is OCDeclaration) return null
@@ -32,8 +32,8 @@ class CppVariableContextBuilder : VariableContextBuilder {
                 enclosingMethod,
                 enclosingClass,
                 emptyList(),
-                includeMethodContext,
-                includeClassContext
+                withMethodContext,
+                withClassContext
             )
         }
 
