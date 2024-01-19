@@ -10,10 +10,11 @@ import org.rust.lang.core.psi.RsImplItem
 import org.rust.lang.core.psi.RsStructItem
 import org.rust.lang.core.psi.ext.RsStructOrEnumItemElement
 import org.rust.lang.core.psi.ext.expandedFields
+import org.rust.lang.core.psi.ext.implementingType
 
 class RustClassContextBuilder : ClassContextBuilder {
     override fun getClassContext(psiElement: PsiElement, gatherUsages: Boolean): ClassContext? {
-        if (psiElement !is RsStructOrEnumItemElement) return null
+        if (psiElement !is RsStructOrEnumItemElement && psiElement !is RsImplItem) return null
 
         when (psiElement) {
             is RsStructItem -> {
@@ -22,6 +23,27 @@ class RustClassContextBuilder : ClassContextBuilder {
                 val impls = PsiTreeUtil.getChildrenOfTypeAsList(psiElement.containingFile, RsImplItem::class.java)
                 val functions = impls.filter { it.name == psiElement.name }
                     .flatMap { PsiTreeUtil.getChildrenOfTypeAsList(it, RsFunction::class.java) }
+
+                return ClassContext(
+                    psiElement,
+                    psiElement.text,
+                    psiElement.name,
+                    functions,
+                    fields,
+                    emptyList(),
+                    emptyList(),
+                    psiElement.name
+                )
+            }
+
+            is RsImplItem -> {
+                val structItem = psiElement.implementingType?.item ?: return null
+                val functions = PsiTreeUtil.getChildrenOfTypeAsList(psiElement, RsFunction::class.java)
+                val fields = when (structItem) {
+                    is RsStructItem -> structItem.expandedFields
+                    is RsEnumItem -> structItem.enumBody?.enumVariantList?.map { it } ?: emptyList()
+                    else -> emptyList()
+                }
 
                 return ClassContext(
                     psiElement,
