@@ -13,10 +13,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import org.rust.cargo.runconfig.command.CargoCommandConfiguration
 import org.rust.lang.RsLanguage
-import org.rust.lang.core.psi.RsFunction
-import org.rust.lang.core.psi.RsImplItem
-import org.rust.lang.core.psi.RsTypeReference
-import org.rust.lang.core.psi.RsUseItem
+import org.rust.lang.core.psi.*
 
 class RustTestService : WriteTestService() {
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = CargoCommandConfiguration::class.java
@@ -25,17 +22,34 @@ class RustTestService : WriteTestService() {
         return element.language is RsLanguage
     }
 
-    override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
+    override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, psiElement: PsiElement): TestFileContext? {
+        val testable = psiElement is RsImplItem || psiElement is RsFunction
+        val element = if (!testable) {
+            when (val parent = psiElement.parent) {
+                is RsFunction -> parent
+                is RsImplItem -> parent
+                is RsStructItem -> parent
+                is RsEnumItem -> parent
+                else -> {
+                    PsiTreeUtil.getParentOfType(psiElement, RsFunction::class.java, RsImplItem::class.java)
+                }
+            }
+        } else {
+            psiElement
+        } ?: psiElement
+
         val currentObject = when (element) {
             is RsFunction -> {
                 runReadAction {
                     RustMethodContextBuilder().getMethodContext(element, true, false)?.format()
                 }
             }
+
             is RsImplItem -> {
                 runReadAction {
                     val type = element.typeReference?.reference?.resolve() ?: return@runReadAction null
-                    val classContext = RustClassContextBuilder().getClassContext(type, false) ?: return@runReadAction null
+                    val classContext =
+                        RustClassContextBuilder().getClassContext(type, false) ?: return@runReadAction null
                     classContext.format()
                 }
             }
