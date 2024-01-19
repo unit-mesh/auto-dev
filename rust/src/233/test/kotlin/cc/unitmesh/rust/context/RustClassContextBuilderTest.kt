@@ -47,7 +47,9 @@ class RustClassContextBuilderTest: BasePlatformTestCase() {
             result.format(), """
             'package: Entry
             class Entry {
-              
+              id: String
+              embedding: Embedding
+              embedded: Document
               
             }
             """.trimIndent()

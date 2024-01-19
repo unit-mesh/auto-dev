@@ -82,11 +82,17 @@ class KotlinTestDataBuilderTest : LightPlatformTestCase() {
         assertEquals(outboundData.size, 1)
         assertEquals(
             outboundData["cc.unitmesh.untitled.demo.controller.UserDTO"],
-            "'package: cc.unitmesh.untitled.demo.controller.UserDTO\n" +
-                    "class UserDTO {\n" +
-                    "  \n" +
-                    "  \n" +
-                    "}"
+            """
+            'package: cc.unitmesh.untitled.demo.controller.UserDTO
+            class UserDTO {
+              val id: Long? = null
+              val username: String
+              val email: String
+              val name: String
+              val surname: String? = null
+              
+            }
+            """.trimIndent()
         )
     }
 
@@ -108,11 +114,17 @@ class KotlinTestDataBuilderTest : LightPlatformTestCase() {
         assertEquals(outboundData.size, 1)
         assertEquals(
             outboundData["cc.unitmesh.untitled.demo.controller.UserDTO"],
-            "'package: cc.unitmesh.untitled.demo.controller.UserDTO\n" +
-                    "class UserDTO {\n" +
-                    "  \n" +
-                    "  \n" +
-                    "}"
+            """
+                'package: cc.unitmesh.untitled.demo.controller.UserDTO
+                class UserDTO {
+                  val id: Long? = null
+                  val username: String
+                  val email: String
+                  val name: String
+                  val surname: String? = null
+                  
+                }
+                """.trimIndent()
         )
     }
 

@@ -10,14 +10,13 @@ class VariableContext(
     override val text: String,
     override val name: String?,
     val enclosingMethod: PsiElement? = null,
-    val enclosingClass: PsiElement? = null,
+    val enclosingClass: PsiElement?= null,
     val usages: List<PsiReference> = emptyList(),
     val includeMethodContext: Boolean = false,
     val includeClassContext: Boolean = false
 ) : NamedElementContext(
     root, text, name
 ) {
-
     private val methodContext: MethodContext?
     private val classContext: ClassContext?
 
@@ -34,9 +33,25 @@ class VariableContext(
         }
     }
 
+    fun shortFormat(): String {
+        return root.text
+    }
+
+    /**
+     * Returns a formatted string representation of the method.
+     *
+     * The returned string includes the following information:
+     * - The name of the method, or "_" if the name is null.
+     * - The name of the method's context, or "_" if the context is null.
+     * - The name of the class's context, or "_" if the context is null.
+     *
+     * @return A formatted string representation of the method.
+     */
     override fun format(): String {
         return """
-            'variable -> ${root.text}
+            var name: ${name ?: "_"}
+            var method name: ${methodContext?.name ?: "_"}
+            var class name: ${classContext?.name ?: "_"}
         """.trimIndent()
     }
 }

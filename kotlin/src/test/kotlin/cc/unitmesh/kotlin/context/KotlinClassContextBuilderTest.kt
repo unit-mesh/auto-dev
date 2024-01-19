@@ -6,7 +6,7 @@ import junit.framework.TestCase
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtPsiFactory
 
-class KotlinClassContextBuilderTest: LightPlatformTestCase() {
+class KotlinClassContextBuilderTest : LightPlatformTestCase() {
 
     fun testShould_return_functions_from_kt_class_or_object() {
         val code = """

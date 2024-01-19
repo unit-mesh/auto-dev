@@ -97,7 +97,7 @@ public class BlogService {
             """'package: cc.unitmesh.untitled.demo.controller.BlogController
 '@Controller
 class BlogController {
-  'variable -> BlogService blogService;
+  BlogService blogService;
   + public BlogController(BlogService blogService)
   + @PostMapping("/blog")     public BlogPost createBlog(CreateBlogDto blogDto)
   + @GetMapping("/blog")     public List<BlogPost> getBlog()
