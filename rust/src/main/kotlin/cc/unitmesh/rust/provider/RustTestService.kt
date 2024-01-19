@@ -14,6 +14,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.rust.cargo.runconfig.command.CargoCommandConfiguration
 import org.rust.lang.RsLanguage
 import org.rust.lang.core.psi.*
+import org.rust.lang.core.psi.ext.implementingType
 
 class RustTestService : WriteTestService() {
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = CargoCommandConfiguration::class.java
@@ -31,7 +32,9 @@ class RustTestService : WriteTestService() {
                 is RsStructItem -> parent
                 is RsEnumItem -> parent
                 else -> {
-                    PsiTreeUtil.getParentOfType(psiElement, RsFunction::class.java, RsImplItem::class.java)
+                    runReadAction {
+                        PsiTreeUtil.getParentOfType(psiElement, RsFunction::class.java, RsImplItem::class.java)
+                    }
                 }
             }
         } else {
@@ -47,9 +50,8 @@ class RustTestService : WriteTestService() {
 
             is RsImplItem -> {
                 runReadAction {
-                    val type = element.typeReference?.reference?.resolve() ?: return@runReadAction null
                     val classContext =
-                        RustClassContextBuilder().getClassContext(type, false) ?: return@runReadAction null
+                        RustClassContextBuilder().getClassContext(element, false) ?: return@runReadAction null
                     classContext.format()
                 }
             }
