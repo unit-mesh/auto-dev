@@ -39,11 +39,11 @@ class RustMethodContextBuilderTest : BasePlatformTestCase() {
         val result = RustMethodContextBuilder().getMethodContext(firstMethod, false, false)!!
         assertEquals("new", result.name)
         assertEquals(
-            result.format(), """
+            result.format().trimEnd(), """
             path: /src/test.rs
             language: Rust
             fun name: new
-            fun signature: fn <b>new</b>(id: String, embedding: Embedding, embedded: Document) -&gt; Self   
+            fun signature: fn <b>new</b>(id: String, embedding: Embedding, embedded: Document) -&gt; Self
             """.trimIndent()
         )
     }
