@@ -2,6 +2,7 @@ package cc.unitmesh.rust.context
 
 import cc.unitmesh.devti.context.MethodContext
 import cc.unitmesh.devti.context.builder.MethodContextBuilder
+import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.PsiElement
 import org.rust.ide.presentation.presentationInfo
 import org.rust.lang.core.psi.*
@@ -18,11 +19,7 @@ class RustMethodContextBuilder : MethodContextBuilder {
         val returnType = psiElement.retType?.text ?: ""
         val language = psiElement.language.displayName
 
-        val signature = StringBuilder()
-        psiElement.presentationInfo?.let {
-            signature.append(it.signatureText)
-        }
-
+        val signature = psiElement.presentationInfo?.signatureText
         return MethodContext(
             psiElement,
             text,

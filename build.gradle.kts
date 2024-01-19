@@ -92,6 +92,7 @@ val ideaVersion = prop("ideaVersion")
 val golandVersion = prop("golandVersion")
 val pycharmVersion = prop("pycharmVersion")
 val webstormVersion = prop("webstormVersion")
+val lang = extra.properties["lang"] ?: "java"
 
 val baseVersion = when (baseIDE) {
     "idea" -> ideaVersion
@@ -208,11 +209,11 @@ project(":plugin") {
     intellij {
         pluginName.set(basePluginArchiveName)
         val pluginList: MutableList<String> = mutableListOf("Git4Idea")
-        when (baseIDE) {
+        when (lang) {
             "idea" -> {
                 pluginList += javaPlugins
             }
-            "pycharm" -> {
+            "python" -> {
                 pluginList += pycharmPlugins
             }
             "go" -> {
@@ -463,6 +464,9 @@ project(":rust") {
     intellij {
         version.set(ideaVersion)
         plugins.set(rustPlugins)
+
+        sameSinceUntilBuild.set(true)
+        updateSinceUntilBuild.set(false)
     }
     dependencies {
         implementation(project(":"))

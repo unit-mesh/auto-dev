@@ -17,7 +17,7 @@ class RustVersionContextProvider : ChatContextProvider {
         val cargoProjectsService = project.service<CargoProjectsService>()
         val rustcInfo = cargoProjectsService.allProjects.firstOrNull()?.rustcInfo ?: return emptyList()
 
-        val text = "Rust Version: ${rustcInfo.version}"
+        val text = "Rust Version: ${rustcInfo.version?.semver}, Run in host: ${rustcInfo.version?.host}"
         return listOf(ChatContextItem(RustVersionContextProvider::class, text))
     }
 }

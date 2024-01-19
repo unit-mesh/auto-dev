@@ -5,6 +5,7 @@ import cc.unitmesh.devti.provider.WriteTestService
 import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.rust.context.RustMethodContextBuilder
 import com.intellij.execution.configurations.RunProfile
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -24,7 +25,9 @@ class RustTestService : WriteTestService() {
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
         val currentObject = when (element) {
             is RsFunction -> {
-                RustMethodContextBuilder().getMethodContext(element, true, false)?.format()
+                runReadAction {
+                    RustMethodContextBuilder().getMethodContext(element, true, false)?.format()
+                }
             }
 
             else -> null
