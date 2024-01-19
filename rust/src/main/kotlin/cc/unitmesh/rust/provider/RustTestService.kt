@@ -3,6 +3,7 @@ package cc.unitmesh.rust.provider
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.provider.WriteTestService
 import cc.unitmesh.devti.provider.context.TestFileContext
+import cc.unitmesh.rust.context.RustClassContextBuilder
 import cc.unitmesh.rust.context.RustMethodContextBuilder
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.openapi.application.runReadAction
@@ -13,6 +14,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.rust.cargo.runconfig.command.CargoCommandConfiguration
 import org.rust.lang.RsLanguage
 import org.rust.lang.core.psi.RsFunction
+import org.rust.lang.core.psi.RsTypeReference
 import org.rust.lang.core.psi.RsUseItem
 
 class RustTestService : WriteTestService() {
@@ -37,10 +39,12 @@ class RustTestService : WriteTestService() {
             it.text
         }
 
+        val relevantClasses = lookupRelevantClass(project, element)
+
         return TestFileContext(
             false,
             sourceFile.virtualFile,
-            listOf(),
+            relevantClasses,
             "",
             RsLanguage,
             currentObject,
@@ -49,7 +53,30 @@ class RustTestService : WriteTestService() {
     }
 
     override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {
+        when (element) {
+            is RsFunction -> {
+                val returnType = element.retType?.typeReference
+                val input = element.valueParameterList?.valueParameterList?.map {
+                    it.typeReference
+                } ?: emptyList()
+
+                val refs = (listOf(returnType) + input).filterNotNull()
+                val types = resolveReferenceTypes(project, refs)
+
+                return types.mapNotNull {
+                    RustClassContextBuilder().getClassContext(it, false)
+                }
+            }
+        }
+
         return listOf()
     }
 
+    private fun resolveReferenceTypes(project: Project, rsTypeReferences: List<RsTypeReference>): List<PsiElement> {
+        val mapNotNull = rsTypeReferences.mapNotNull {
+            it.reference?.resolve()
+        }
+
+        return mapNotNull
+    }
 }

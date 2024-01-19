@@ -19,12 +19,6 @@ fun parseCodeFromString(markdown: String): List<String> {
     node.accept(visitor)
 
     if (visitor.code.isEmpty()) {
-        // TODO: we need to add multiple code blocks support
-        val isJavaMethod = markdown.contains("public ") || markdown.contains("private ") || markdown.contains("protected ")
-        if (isJavaMethod) {
-            return listOf(markdown)
-        }
-
         return listOf(markdown)
     }
 

@@ -22,7 +22,6 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 
@@ -132,7 +131,6 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         }
     }
 
-    @OptIn(InternalCoroutinesApi::class)
     private suspend fun writeTestToFile(
         project: Project,
         flow: Flow<String>,
@@ -148,7 +146,8 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         val modifier = CodeModifierProvider().modifier(context.language)
             ?: throw IllegalStateException("Unsupported language: ${context.language}")
 
-        parseCodeFromString(suggestion.toString()).forEach {
+        val codeBlocks = parseCodeFromString(suggestion.toString())
+        codeBlocks.forEach {
             modifier.insertTestCode(context.outputFile, project, it)
         }
     }
