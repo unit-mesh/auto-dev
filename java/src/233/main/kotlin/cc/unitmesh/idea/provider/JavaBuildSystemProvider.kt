@@ -5,7 +5,6 @@ import cc.unitmesh.devti.template.context.DockerfileContext
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.externalSystem.service.ui.completion.TextCompletionInfo
 import com.intellij.openapi.module.LanguageLevelUtil
-import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.project.Project
@@ -16,7 +15,6 @@ import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.pom.java.LanguageLevel
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiUtil
-import com.intellij.util.lang.JavaVersion
 import org.jetbrains.plugins.gradle.service.project.GradleTasksIndices
 import org.jetbrains.plugins.gradle.util.GradleConstants
 
@@ -55,23 +53,6 @@ open class JavaBuildSystemProvider : BuildSystemProvider() {
     }
 
     companion object {
-        fun detectLanguageLevel(project: Project, sourceFile: PsiFile?): LanguageLevel? {
-            val projectSdk = ProjectRootManager.getInstance(project).projectSdk
-            if (projectSdk != null) {
-                if (projectSdk.sdkType !is JavaSdkType) return null
-                return PsiUtil.getLanguageLevel(project)
-            }
-
-            var moduleOfFile = ModuleUtilCore.findModuleForFile(sourceFile)
-            if (moduleOfFile == null) {
-                moduleOfFile = ModuleManager.getInstance(project).modules.firstOrNull() ?: return null
-            }
-
-            val sdk = ModuleRootManager.getInstance(moduleOfFile).sdk ?: return null
-            if (sdk.sdkType !is JavaSdkType) return null
-
-            return LanguageLevelUtil.getEffectiveLanguageLevel(moduleOfFile)
-        }
 
         val GRADLE_COMPLETION_COMPARATOR = Comparator<String> { o1, o2 ->
             when {
@@ -89,4 +70,22 @@ open class JavaBuildSystemProvider : BuildSystemProvider() {
             }
         }
     }
+}
+
+fun detectLanguageLevel(project: Project, sourceFile: PsiFile?): LanguageLevel? {
+    val projectSdk = ProjectRootManager.getInstance(project).projectSdk
+    if (projectSdk != null) {
+        if (projectSdk.sdkType !is JavaSdkType) return null
+        return PsiUtil.getLanguageLevel(project)
+    }
+
+    var moduleOfFile = ModuleUtilCore.findModuleForFile(sourceFile)
+    if (moduleOfFile == null) {
+        moduleOfFile = ModuleManager.getInstance(project).modules.firstOrNull() ?: return null
+    }
+
+    val sdk = ModuleRootManager.getInstance(moduleOfFile).sdk ?: return null
+    if (sdk.sdkType !is JavaSdkType) return null
+
+    return LanguageLevelUtil.getEffectiveLanguageLevel(moduleOfFile)
 }

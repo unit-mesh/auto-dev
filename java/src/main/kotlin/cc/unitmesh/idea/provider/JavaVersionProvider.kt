@@ -10,7 +10,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.JavaSdkType
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.roots.ProjectRootManager
-import com.intellij.util.lang.JavaVersion
 
 class JavaVersionProvider : ChatContextProvider {
     override suspend fun collect(
@@ -24,15 +23,16 @@ class JavaVersionProvider : ChatContextProvider {
             return emptyList()
         }
 
-        val javaVersion = JavaVersion.current()
-        val javaVersionStr = "${javaVersion.feature}"
+        detectLanguageLevel(project, psiFile)?.let { javaVersion ->
+            return listOf(
+                ChatContextItem(
+                    JavaVersionProvider::class,
+                    "You are working on a project that uses Java SDK version $javaVersion."
+                )
+            )
+        }
 
-        val chatContextItem = ChatContextItem(
-            JavaVersionProvider::class,
-            "You are working on a project that uses Java SDK version $javaVersionStr."
-        )
-
-        return listOf(chatContextItem)
+        return emptyList()
     }
 
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
