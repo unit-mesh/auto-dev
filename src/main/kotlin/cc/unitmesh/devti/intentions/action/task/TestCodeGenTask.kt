@@ -61,7 +61,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         if (testContext == null) {
             if (writeTestService == null) {
                 AutoDevStatusService.notifyApplication(AutoDevStatus.Error)
-                logger.error("Could not find WriteTestService for: ${request.file}")
+                logger.error("Could not find WriteTestService for: ${request.file}, language: $lang")
                 return
             }
 
