@@ -23,16 +23,13 @@ class JavaVersionProvider : ChatContextProvider {
             return emptyList()
         }
 
-        detectLanguageLevel(project, psiFile)?.let { javaVersion ->
-            return listOf(
-                ChatContextItem(
-                    JavaVersionProvider::class,
-                    "You are working on a project that uses Java SDK version $javaVersion."
-                )
+        val languageLevel = detectLanguageLevel(project, psiFile) ?: return emptyList()
+        return listOf(
+            ChatContextItem(
+                JavaVersionProvider::class,
+                "You are working on a project that uses Java SDK version $languageLevel."
             )
-        }
-
-        return emptyList()
+        )
     }
 
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
