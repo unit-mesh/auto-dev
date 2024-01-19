@@ -78,7 +78,8 @@ class RustTestService : WriteTestService() {
             elementName,
             RsLanguage,
             currentObject,
-            imports
+            imports,
+            element
         )
     }
 

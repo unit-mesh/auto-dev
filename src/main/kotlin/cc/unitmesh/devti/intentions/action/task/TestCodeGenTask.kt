@@ -22,6 +22,7 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiNameIdentifierOwner
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 
@@ -102,7 +103,12 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
             "$comment $it"
         }
 
-        testPromptContext.sourceCode = request.selectText
+        testPromptContext.sourceCode = if(request.element !is PsiNameIdentifierOwner) {
+            testContext.testElement?.text ?: ""
+        } else {
+            request.selectText
+        }
+
         testPromptContext.isNewFile = testContext.isNewFile
 
         templateRender.context = testPromptContext

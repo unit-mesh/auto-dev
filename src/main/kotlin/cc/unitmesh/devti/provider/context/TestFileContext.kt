@@ -3,6 +3,7 @@ package cc.unitmesh.devti.provider.context
 import cc.unitmesh.devti.context.ClassContext
 import com.intellij.lang.Language
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiElement
 
 data class TestFileContext(
     val isNewFile: Boolean,
@@ -17,4 +18,8 @@ data class TestFileContext(
      */
     val currentObject: String? = null,
     val imports: List<String> = emptyList(),
+    /** Since 1.5.4, since some languages have different test code insertion strategies,
+     * we need to pass in the test element text
+     */
+    val testElement: PsiElement? = null,
 )
