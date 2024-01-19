@@ -14,6 +14,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.rust.cargo.runconfig.command.CargoCommandConfiguration
 import org.rust.lang.RsLanguage
 import org.rust.lang.core.psi.RsFunction
+import org.rust.lang.core.psi.RsImplItem
 import org.rust.lang.core.psi.RsTypeReference
 import org.rust.lang.core.psi.RsUseItem
 
@@ -31,9 +32,16 @@ class RustTestService : WriteTestService() {
                     RustMethodContextBuilder().getMethodContext(element, true, false)?.format()
                 }
             }
+            is RsImplItem -> {
+                runReadAction {
+                    val type = element.typeReference?.reference?.resolve() ?: return@runReadAction null
+                    val classContext = RustClassContextBuilder().getClassContext(type, false) ?: return@runReadAction null
+                    classContext.format()
+                }
+            }
 
             else -> null
-        } ?: return null
+        }
 
         val imports = PsiTreeUtil.getChildrenOfTypeAsList(sourceFile, RsUseItem::class.java).map {
             it.text
