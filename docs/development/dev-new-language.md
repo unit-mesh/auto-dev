@@ -1,126 +1,101 @@
 ---
 layout: default
 title: Dev New Language
-nav_order: 20
+nav_order: 1
 parent: Development
 ---
 
-In JetBrains' IDE, some language support is not good enough, and some language support is not available at all.
+If you want to develop a new language for AutoDev, you can follow this guide.
 
-- Good enough language will have IDE support, like golang with GoLand.
-- Not good enough language will have no IDE support, like Rust with CLion (before RustRover)
+1. lookup the plugin in [JetBrains' Plugin Repository](https://plugins.jetbrains.com/)
+2. create new language plugin module in AutoDev.
+    - set dependencies in `build.gradle.kts`.
+    - set dependencies in `settings.gradle.kts`.
+    - create plugin module file under `newlang/src/main/resources/cc.unitmesh.<newlang>.xml`
+    - declare plugin module in `plugin/src/main/plugin.xml`
+3. implement the plugin module.
 
-So, we need to configure plugin for the language
+## AutoDev Extension Point
 
-## Debug Config
+### CodeDataStructure Context Provider
 
-for Debug, We already run configs under `.idea/runConfigurations`, so we can just copy and modify them.
+> CodeDataStructure will provide the data structure for code, like file, class, method, variable, etc. Which will be
+> used in Test Generation, Code Complete, Code Refactor, etc.
 
-Here are some examples [RustRust.xml] :
+At beginning, we use [Chapi](https://github.com/phodal/chapi) to parse code data structure, but it's too slow.
+And, we found that JetBrains' IDE already have a good data structure, so we use it. We follow JetBrains' code data
+structure and design.
 
 ```xml
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Run Rust" type="GradleRunConfiguration" factoryName="Gradle">
-    <ExternalSystemSettings>
-      <option name="executionName" />
-      <option name="externalProjectPath" value="$PROJECT_DIR$" />
-      <option name="externalSystemIdString" value="GRADLE" />
-      <option name="scriptParameters" value="-PbaseIDE=idea -Plang=rust" />
-      <option name="taskDescriptions">
-        <list />
-      </option>
-      <option name="taskNames">
-        <list>
-          <option value=":plugin:runIde" />
-        </list>
-      </option>
-      <option name="vmOptions" value="" />
-    </ExternalSystemSettings>
-    <GradleScriptDebugEnabled>false</GradleScriptDebugEnabled>
-    <method v="2" />
-  </configuration>
-</component>
+
+<fileContextBuilder language="Rust"
+                    implementationClass="cc.unitmesh.rust.context.RustFileContextBuilder"/>
+<classContextBuilder language="Rust"
+                     implementationClass="cc.unitmesh.rust.context.RustClassContextBuilder"/>
+<methodContextBuilder language="Rust"
+                      implementationClass="cc.unitmesh.rust.context.RustMethodContextBuilder"/>
+<variableContextBuilder language="Rust"
+                        implementationClass="cc.unitmesh.rust.context.RustVariableContextBuilder"/>
+
 ```
 
-We configure the `scriptParameters` to pass the `baseIDE` and `lang` to the gradle script.
+### Chat Context Provider
 
-```bash
-./gradlew :plugin:runIde -PbaseIDE=idea -Plang=rust
+> Chat Context Provider will provide the data structure for chat, like Language version, Compiler version, Framework
+> information, etc.
+
+Similar to CodeDataStructure Context Provider, we use JetBrains' design for Chat Context Provider. You can implement
+multiple Chat Context Providers for same languages.
+
+```
+<chatContextProvider implementation="cc.unitmesh.rust.provider.RustVersionContextProvider"/>
+<chatContextProvider implementation="cc.unitmesh.rust.provider.RustCompilerContextProvider"/>
 ```
 
-## Configure in Gradle
+### Test Context Provider
 
-We can configure the plugin in Gradle script, like build.gradle.kts :
+> Test Context will collect that context for test generation, and with CodeModifier to generate test code.
 
-```kotlin
-project(":plugin") {
-    apply {
-        plugin("org.jetbrains.changelog")
-    }
+```
+<testContextProvider language="Rust" implementation="cc.unitmesh.rust.provider.RustTestService"/>
 
-    version = prop("pluginVersion") + "-$platformVersion"
-
-    intellij {
-        pluginName.set(basePluginArchiveName)
-        val pluginList: MutableList<String> = mutableListOf("Git4Idea")
-        when (lang) {
-            "idea" -> {
-                pluginList += javaPlugins
-            }
-            "python" -> {
-                pluginList += pycharmPlugins
-            }
-            "go" -> {
-                pluginList += listOf("org.jetbrains.plugins.go")
-            }
-            "rust" -> {
-                pluginList += rustPlugins
-            }
-        }
-
-        plugins.set(pluginList)
-    }
-  
-    ...
-}
+<codeModifier language="Rust" implementationClass="cc.unitmesh.rust.provider.RustCodeModifier"/>
 ```
 
-In `rustPlugins`, we can see the plugin list for Rust:
+### Living Documentation
 
-```kotlin
-val rustPlugins = listOf(
-    prop("rustPlugin"),
-    "org.toml.lang"
-)
+> Living Documentation will provide the living documentation for user, and also can generate the comments.
+
+```
+<livingDocumentationProvider language="Rust" implementation="cc.unitmesh.rust.provider.RustLivingDocumentationProvider"/>
 ```
 
-The `prop("rustPlugin")` is defined in `gradle.properties`, which will also load different version of plugin for different IDE version.
+### API TestDataBuilder
 
-- gradle-222.properties
-- gradle-233.properties
+> API TestDataBuilder will provide the API test data for user, like API test data, API test code, etc.
 
-In `gradle-222.properties`, we can see the plugin version for Rust:
-
-```properties
-rustPlugin=org.rust.lang:0.4.185.5086-222
+```
+<testDataBuilder language="kotlin"
+             implementationClass="cc.unitmesh.kotlin.provider.KotlinTestDataBuilder"/>
 ```
 
-In `gradle-233.properties`, we can see the plugin version for Rust:
+### contextPrompter
 
-```properties
-rustPlugin=com.jetbrains.rust:233.21799.284
+> contextPrompter will provide the context prompt rules for user, like display and request prompts.
+
+```
+<contextPrompter
+          language="kotlin"
+          implementation="cc.unitmesh.kotlin.provider.KotlinContextPrompter"/>
 ```
 
+### Custom Prompt Provider
 
-## Debug Config for Rust
+> customPromptProvider will provide the custom prompt functions for user.
 
-Tricks for Rust development.
+```xml
 
-Due to JetBrains' crafty move, there are two different versions of the Rust IDE plugin.
-
-- **Under 233: Deprecated Rust**
-  - check latest available version here https://plugins.jetbrains.com/plugin/8182--deprecated-rust
-  - rustPlugin=org.rust.lang:0.4.185.5086-222
-- **Above 233: Official Rust
-  - check latest available version here https://plugins.jetbrains.com/plugin/22407-rust/versions
-  - rustPlugin=com.jetbrains.rust:233.21799.284
+<customPromptProvider
+        language="kotlin"
+        implementationClass="cc.unitmesh.kotlin.provider.KotlinCustomPromptProvider"/>
+```
