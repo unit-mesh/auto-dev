@@ -7,6 +7,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.rust.lang.core.psi.RsEnumItem
 import org.rust.lang.core.psi.RsFunction
 import org.rust.lang.core.psi.RsImplItem
+import org.rust.lang.core.psi.RsMembers
 import org.rust.lang.core.psi.RsStructItem
 import org.rust.lang.core.psi.ext.RsStructOrEnumItemElement
 import org.rust.lang.core.psi.ext.expandedFields
@@ -38,7 +39,9 @@ class RustClassContextBuilder : ClassContextBuilder {
 
             is RsImplItem -> {
                 val structItem = psiElement.implementingType?.item ?: return null
-                val functions = PsiTreeUtil.getChildrenOfTypeAsList(psiElement, RsFunction::class.java)
+                val functions = PsiTreeUtil.getChildrenOfTypeAsList(psiElement, RsMembers::class.java)
+                    .flatMap { PsiTreeUtil.getChildrenOfTypeAsList(it, RsFunction::class.java) }
+
                 val fields = when (structItem) {
                     is RsStructItem -> structItem.expandedFields
                     is RsEnumItem -> structItem.enumBody?.enumVariantList?.map { it } ?: emptyList()
@@ -48,7 +51,7 @@ class RustClassContextBuilder : ClassContextBuilder {
                 return ClassContext(
                     psiElement,
                     psiElement.text,
-                    psiElement.name,
+                    structItem.name,
                     functions,
                     fields,
                     emptyList(),

@@ -2,6 +2,7 @@ package cc.unitmesh.rust.provider
 
 import cc.unitmesh.devti.context.builder.CodeModifier
 import com.intellij.lang.Language
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -19,7 +20,9 @@ class RustCodeModifier : CodeModifier {
         // 1. check mod test exits
         val psiFile = PsiManager.getInstance(project).findFile(sourceFile) ?: return false
         val rsFile = psiFile as? RsFile ?: return false
-        val testMod = PsiTreeUtil.findChildOfType(rsFile, RsModItem::class.java)
+        val testMod = runReadAction {
+            PsiTreeUtil.findChildOfType(rsFile, RsModItem::class.java)
+        }
         if (testMod == null) {
             insertClass(sourceFile, project, code)
         } else {

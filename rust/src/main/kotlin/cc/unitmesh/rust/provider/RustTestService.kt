@@ -7,7 +7,6 @@ import cc.unitmesh.rust.context.RustClassContextBuilder
 import cc.unitmesh.rust.context.RustMethodContextBuilder
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.openapi.application.ReadAction
-import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -15,7 +14,6 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.rust.cargo.runconfig.command.CargoCommandConfiguration
 import org.rust.lang.RsLanguage
 import org.rust.lang.core.psi.*
-import org.rust.lang.core.psi.ext.implementingType
 
 class RustTestService : WriteTestService() {
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = CargoCommandConfiguration::class.java
@@ -26,9 +24,10 @@ class RustTestService : WriteTestService() {
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, psiElement: PsiElement): TestFileContext? {
         val testable = psiElement is RsImplItem || psiElement is RsFunction
+        var elementName = sourceFile.name
         val element = ReadAction.compute<PsiElement, Throwable> {
             if (!testable) {
-                when (val parent = psiElement.parent) {
+                val value = when (val parent = psiElement.parent) {
                     is RsFunction -> parent
                     is RsImplItem -> parent
                     is RsStructItem -> parent
@@ -37,10 +36,20 @@ class RustTestService : WriteTestService() {
                         PsiTreeUtil.getParentOfType(psiElement, RsFunction::class.java, RsImplItem::class.java)
                     }
                 }
+
+                elementName = when (value) {
+                    is RsFunction -> value.name
+                    is RsImplItem -> value.name
+                    is RsStructItem -> value.name
+                    is RsEnumItem -> value.name
+                    else -> null
+                } ?: ""
+
+                return@compute value
             } else {
-                psiElement
-            } ?: psiElement
-        } ?: return null
+                return@compute psiElement
+            }
+        } ?: psiElement
 
         val currentObject = ReadAction.compute<String, Throwable> {
             return@compute when (element) {
@@ -66,7 +75,7 @@ class RustTestService : WriteTestService() {
             false,
             sourceFile.virtualFile,
             relevantClasses,
-            "",
+            elementName,
             RsLanguage,
             currentObject,
             imports
