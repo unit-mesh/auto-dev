@@ -6,6 +6,7 @@ import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.rust.context.RustClassContextBuilder
 import cc.unitmesh.rust.context.RustMethodContextBuilder
 import com.intellij.execution.configurations.RunProfile
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
@@ -25,38 +26,34 @@ class RustTestService : WriteTestService() {
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, psiElement: PsiElement): TestFileContext? {
         val testable = psiElement is RsImplItem || psiElement is RsFunction
-        val element = if (!testable) {
-            when (val parent = psiElement.parent) {
-                is RsFunction -> parent
-                is RsImplItem -> parent
-                is RsStructItem -> parent
-                is RsEnumItem -> parent
-                else -> {
-                    runReadAction {
+        val element = ReadAction.compute<PsiElement, Throwable> {
+            if (!testable) {
+                when (val parent = psiElement.parent) {
+                    is RsFunction -> parent
+                    is RsImplItem -> parent
+                    is RsStructItem -> parent
+                    is RsEnumItem -> parent
+                    else -> {
                         PsiTreeUtil.getParentOfType(psiElement, RsFunction::class.java, RsImplItem::class.java)
                     }
                 }
-            }
-        } else {
-            psiElement
-        } ?: psiElement
+            } else {
+                psiElement
+            } ?: psiElement
+        } ?: return null
 
-        val currentObject = when (element) {
-            is RsFunction -> {
-                runReadAction {
+        val currentObject = ReadAction.compute<String, Throwable> {
+            return@compute when (element) {
+                is RsFunction -> {
                     RustMethodContextBuilder().getMethodContext(element, true, false)?.format()
                 }
-            }
 
-            is RsImplItem -> {
-                runReadAction {
-                    val classContext =
-                        RustClassContextBuilder().getClassContext(element, false) ?: return@runReadAction null
-                    classContext.format()
+                is RsImplItem -> {
+                    RustClassContextBuilder().getClassContext(element, false)?.format() ?: ""
                 }
-            }
 
-            else -> null
+                else -> null
+            }
         }
 
         val imports = PsiTreeUtil.getChildrenOfTypeAsList(sourceFile, RsUseItem::class.java).map {

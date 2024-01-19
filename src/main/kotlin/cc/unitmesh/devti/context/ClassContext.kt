@@ -18,7 +18,7 @@ class ClassContext(
 ) : NamedElementContext(root, text, name) {
     private fun getFieldNames(): List<String> = fields.mapNotNull {
         val variableContextProvider = VariableContextProvider(false, false, false)
-        variableContextProvider.from(it).name
+        variableContextProvider.from(it).format()
     }
 
     private fun getMethodSignatures(): List<String> = methods.mapNotNull {

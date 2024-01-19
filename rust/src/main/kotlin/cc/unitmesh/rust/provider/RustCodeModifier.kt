@@ -42,8 +42,8 @@ class RustCodeModifier : CodeModifier {
     }
 
     override fun insertClass(sourceFile: VirtualFile, project: Project, code: String): Boolean {
-        val psiFile = PsiManager.getInstance(project).findFile(sourceFile) ?: return false
         return WriteCommandAction.runWriteCommandAction<Boolean>(project) {
+            val psiFile = PsiManager.getInstance(project).findFile(sourceFile) ?: return@runWriteCommandAction false
             val document = psiFile.viewProvider.document!!
             document.insertString(document.textLength, code)
 

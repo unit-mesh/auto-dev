@@ -7,6 +7,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.rust.lang.core.psi.RsFunction
 import org.rust.lang.core.psi.RsImplItem
 import org.rust.lang.core.psi.RsLetDecl
+import org.rust.lang.core.psi.RsNamedFieldDecl
 
 class RustVariableContextBuilder : VariableContextBuilder {
     override fun getVariableContext(
@@ -15,7 +16,7 @@ class RustVariableContextBuilder : VariableContextBuilder {
         withClassContext: Boolean,
         gatherUsages: Boolean
     ): VariableContext? {
-        if (psiElement !is RsLetDecl) return null
+        if (psiElement !is RsNamedFieldDecl) return null
 
         val text = psiElement.text
         val parentOfType = PsiTreeUtil.getParentOfType(psiElement, RsFunction::class.java, true)
