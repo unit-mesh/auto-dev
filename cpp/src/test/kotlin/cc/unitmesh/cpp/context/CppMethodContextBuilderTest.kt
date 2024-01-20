@@ -1,14 +1,21 @@
 package cc.unitmesh.cpp.context;
 
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import org.junit.Ignore
-import org.junit.Test
+import com.intellij.psi.PsiFileFactory
+import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.testFramework.LightPlatformTestCase
+import com.jetbrains.cidr.lang.OCFileType
+import com.jetbrains.cidr.lang.psi.OCDeclaration
+import com.jetbrains.cidr.lang.psi.OCFunctionDeclaration
+import com.jetbrains.cidr.lang.psi.OCStructLike
+import com.jetbrains.cidr.lang.psi.OCTypeElement
 
-class CppMethodContextBuilderTest : BasePlatformTestCase() {
+
+class CppMethodContextBuilderTest : LightPlatformTestCase() {
     fun testShouldGetFunctionNameOfCarsMethod() {
+
         // given
-        val psiElement = myFixture.configureByText(
-            "Car.cpp", """
+        val psiElement = PsiFileFactory.getInstance(project).createFileFromText(
+            "Car.cpp", OCFileType.INSTANCE,  """
             #include <iostream>
             
             class Car {
@@ -35,7 +42,7 @@ class CppMethodContextBuilderTest : BasePlatformTestCase() {
 //        assertEquals("drive", result.name)
 //        assertEquals("distance", result.paramNames.joinToString(", "))
 //        assertEquals(
-//            result.format(), """path: /src/Car.h
+//            result.format(), """path: _
 //language: c++
 //fun name: drive
 //fun signature: void drive(int distance)"""

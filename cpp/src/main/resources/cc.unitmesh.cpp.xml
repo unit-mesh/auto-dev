@@ -2,8 +2,9 @@
     <!--suppress PluginXmlValidity -->
     <dependencies>
         <plugin id="com.intellij.clion"/>
-        <plugin id="com.intellij.cidr.base"/>
         <plugin id="com.intellij.cidr.lang"/>
+        <plugin id="org.jetbrains.plugins.clion.test.catch"/>
+        <plugin id="org.jetbrains.plugins.clion.test.google"/>
     </dependencies>
 
 <!--    https://plugins.jetbrains.com/docs/intellij/clion-extension-point-list.html#clionexecutionpluginxml-->

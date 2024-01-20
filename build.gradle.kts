@@ -68,6 +68,14 @@ val clionPlugins = listOf(
     prop("rustPlugin"),
     "org.toml.lang"
 )
+val cppPlugins = listOf(
+    "com.intellij.cidr.lang",
+    "com.intellij.clion",
+    "com.intellij.cidr.base",
+    "com.intellij.nativeDebug",
+    "org.jetbrains.plugins.clion.test.google",
+    "org.jetbrains.plugins.clion.test.catch"
+)
 val rustPlugins = listOf(
     prop("rustPlugin"),
     "org.toml.lang"
@@ -486,7 +494,7 @@ project(":rust") {
 project(":cpp") {
     intellij {
         version.set(clionVersion)
-        plugins.set(clionPlugins)
+        plugins.set(cppPlugins)
     }
     dependencies {
         implementation(project(":"))

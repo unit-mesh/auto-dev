@@ -8,10 +8,9 @@ import com.jetbrains.cidr.lang.psi.OCStructLike
 import com.jetbrains.cidr.lang.psi.OCTypeElement
 
 class CppContextPrettifyTest : BasePlatformTestCase() {
-
     fun testShouldExtractStructureText() {
         // given
-        val psiElement = myFixture.configureByText(
+        val psiElement = myFixture.addFileToProject(
             "car.cpp", """
             #include <iostream>
             
@@ -29,24 +28,24 @@ class CppContextPrettifyTest : BasePlatformTestCase() {
             """.trimIndent()
         )
 
-//        val decl = PsiTreeUtil.getChildrenOfTypeAsList(psiElement, OCDeclaration::class.java).first()
-//        val type = PsiTreeUtil.getChildrenOfTypeAsList(decl, OCTypeElement::class.java).first()
-//        val struct = PsiTreeUtil.getChildrenOfTypeAsList(type, OCStructLike::class.java).first()
-//
-//        // when
-//        val result = CppContextPrettify.printStructure(struct as OCStruct)
-//
-//        // then
-//        val expected = """
-//        struct Car {
-//        // class data
-//            std::string brand, model;
-//        int mileage = 0;
-//        // class function
-//        void drive(int distance);
-//        }
-//        """.trimIndent()
-//
-//        assertEquals(expected, result)
+        val decl = PsiTreeUtil.getChildrenOfTypeAsList(psiElement, OCDeclaration::class.java).first()
+        val type = PsiTreeUtil.getChildrenOfTypeAsList(decl, OCTypeElement::class.java).first()
+        val struct = PsiTreeUtil.getChildrenOfTypeAsList(type, OCStructLike::class.java).first()
+
+        // when
+        val result = CppContextPrettify.printStructure(struct as OCStruct)
+
+        // then
+        val expected = """
+        struct Car {
+        // class data
+            std::string brand, model;
+        int mileage = 0;
+        // class function
+        void drive(int distance);
+        }
+        """.trimIndent()
+
+        assertEquals(expected, result)
     }
 }
