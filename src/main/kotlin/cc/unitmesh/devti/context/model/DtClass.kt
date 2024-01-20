@@ -4,7 +4,6 @@ package cc.unitmesh.devti.context.model
  * We need to migration to [ClassContextBuilder] for multiple language support
  * [cc.unitmesh.devti.context.builder.ClassContextBuilder] is the new builder for [DtClass]
  */
-@Deprecated("Use [ClassContextBuilder] for multiple language support")
 class DtClass(
     val name: String,
     val methods: List<DtMethod>,
@@ -13,19 +12,21 @@ class DtClass(
     val path: String = ""
 ) {
     /**
-     * Output:
-     * ```
+     * Formats the given class into a documentation comment.
+     *
+     * The output will be in the following format:
+     *
+     * ```java
      * // package: cc.unitmesh.untitled.demo.service
      * // class BlogService {
-     * // blogRepository: BlogRepository
-     * //  + createBlog(blogDto: CreateBlogDto): BlogPost
-     * //  + getAllBlogPosts(): List<BlogPost>
-     * //}
+     * //     blogRepository: BlogRepository
+     * //     + createBlog(blogDto: CreateBlogDto): BlogPost
+     * //     + getAllBlogPosts(): List<BlogPost>
+     * // }
      * ```
+     *
+     * @return the formatted documentation comment as a string
      */
-    // todo: support by comment
-    // val commenter = LanguageCommenters.INSTANCE.forLanguage(language)
-    // val commentPrefix = commenter?.lineCommentPrefix
     fun commentFormat(): String {
         val output = StringBuilder()
         output.append("package: $packageName\n")
