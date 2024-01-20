@@ -1,6 +1,8 @@
 package cc.unitmesh.cpp.context;
 
+import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.jetbrains.cidr.lang.psi.*
 
 class CppClassContextBuilderTest : BasePlatformTestCase() {
     fun testShouldGetFunctionNameOfCarsMethod() {

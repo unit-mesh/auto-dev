@@ -2,8 +2,10 @@
     <!--suppress PluginXmlValidity -->
     <dependencies>
         <plugin id="com.intellij.modules.clion"/>
+        <plugin id="com.intellij.modules.cidr.lang"/>
     </dependencies>
 
+<!--    https://plugins.jetbrains.com/docs/intellij/clion-extension-point-list.html#clionexecutionpluginxml-->
     <extensions defaultExtensionNs="cc.unitmesh">
         <fileContextBuilder language="ObjectiveC"
                             implementationClass="cc.unitmesh.cpp.context.CppFileContextBuilder"/>

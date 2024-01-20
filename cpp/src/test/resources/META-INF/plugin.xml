@@ -2,6 +2,9 @@
     <id>cc.unitmesh.devti</id>
     <xi:include href="/META-INF/autodev-core.xml" xpointer="xpointer(/idea-plugin/*)"/>
 
+    <depends>com.intellij.modules.clion</depends>
+    <depends>com.intellij.modules.cidr.lang</depends>
+
     <!--suppress PluginXmlValidity -->
     <content>
         <module name="cc.unitmesh.cpp"/>

@@ -133,7 +133,13 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         val templateRender = TemplateRender("genius/practises")
         val template = templateRender.getTemplate("gen-commit-msg.vm")
 
-        val historyExample = findExampleCommitMessages(project) ?: ""
+        val historyExample = try {
+            findExampleCommitMessages(project) ?: ""
+        } catch (e: Exception) {
+            logger.warn("Cannot get example commit messages.", e)
+            ""
+        }
+
         templateRender.context = CommitMsgGenContext(
             historyExample = historyExample,
             diffContent = diff,

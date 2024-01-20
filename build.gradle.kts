@@ -86,13 +86,14 @@ val ideaPlugins =
         "JavaScript"
     )
 
-val baseIDE = prop("baseIDE")
+var baseIDE = prop("baseIDE")
 val platformVersion = prop("platformVersion").toInt()
 val ideaVersion = prop("ideaVersion")
 val golandVersion = prop("golandVersion")
 val pycharmVersion = prop("pycharmVersion")
 val webstormVersion = prop("webstormVersion")
-val lang = extra.properties["lang"] ?: "java"
+
+var lang = extra.properties["lang"] ?: "java"
 
 val baseVersion = when (baseIDE) {
     "idea" -> ideaVersion
@@ -173,6 +174,7 @@ allprojects {
         }
         test {
             resources.srcDirs("src/$platformVersion/test/resources")
+            resources.srcDirs("src/test/resources")
         }
     }
     kotlin {
@@ -182,6 +184,7 @@ allprojects {
             }
             test {
                 kotlin.srcDirs("src/$platformVersion/test/kotlin")
+                kotlin.srcDirs("src/test/kotlin")
             }
         }
     }
@@ -213,12 +216,19 @@ project(":plugin") {
             "idea" -> {
                 pluginList += javaPlugins
             }
+
             "python" -> {
                 pluginList += pycharmPlugins
             }
+
             "go" -> {
                 pluginList += listOf("org.jetbrains.plugins.go")
             }
+
+            "cpp" -> {
+                pluginList += clionPlugins
+            }
+
             "rust" -> {
                 pluginList += rustPlugins
             }
@@ -486,6 +496,7 @@ project(":cpp") {
 project(":csharp") {
     intellij {
         version.set(riderVersion)
+        type.set("CL")
         plugins.set(riderPlugins)
     }
     dependencies {
@@ -498,7 +509,6 @@ project(":goland") {
         version.set(ideaVersion)
 //        type.set("IU")
         updateSinceUntilBuild.set(false)
-
         // required if Go language API is needed:
         plugins.set(prop("goPlugin").split(',').map(String::trim).filter(String::isNotEmpty))
     }
