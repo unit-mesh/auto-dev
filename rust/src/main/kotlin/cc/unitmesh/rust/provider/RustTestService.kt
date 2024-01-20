@@ -92,7 +92,7 @@ class RustTestService : WriteTestService() {
                 } ?: emptyList()
 
                 val refs = (listOf(returnType) + input).filterNotNull()
-                val types = resolveReferenceTypes(project, refs)
+                val types = resolveReferenceTypes(refs)
 
                 return types.mapNotNull {
                     RustClassContextBuilder().getClassContext(it, false)
@@ -103,7 +103,7 @@ class RustTestService : WriteTestService() {
         return listOf()
     }
 
-    private fun resolveReferenceTypes(project: Project, rsTypeReferences: List<RsTypeReference>): List<PsiElement> {
+    private fun resolveReferenceTypes(rsTypeReferences: List<RsTypeReference>): List<PsiElement> {
         val mapNotNull = rsTypeReferences.mapNotNull {
             it.reference?.resolve()
         }
