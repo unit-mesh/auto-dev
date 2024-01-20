@@ -12,6 +12,7 @@ import cc.unitmesh.devti.util.parser.parseCodeFromString
 import cc.unitmesh.devti.provider.DevFlowProvider
 import cc.unitmesh.devti.provider.PromptStrategy
 import cc.unitmesh.devti.runconfig.AutoDevRunProfileState
+import cc.unitmesh.idea.fromJavaFile
 import cc.unitmesh.idea.spring.JavaSpringCodeCreator
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.service
@@ -76,7 +77,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
      * Step 2: base on story detail, generate dto and entity
      */
     override fun updateOrCreateDtoAndEntity(storyDetail: String) {
-        val files: List<DtClass> = processor.modelList()
+        val files: List<DtClass> = processor.getAllModelFiles()
         val promptText = promptTemplate.createDtoAndEntity(storyDetail, files)
 
         logger.info("needUpdateMethodForController prompt text: $promptText")
@@ -91,7 +92,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
      * Step 3: fetch suggest endpoint, if not found, return null
      */
     override fun fetchSuggestEndpoint(storyDetail: String): TargetEndpoint {
-        val files: List<DtClass> = processor.controllerList()
+        val files: List<DtClass> = processor.getAllControllerFiles().map(DtClass.Companion::fromJavaFile)
         logger.info("start devti flow")
         val promptText = promptTemplate.createEndpoint(storyDetail, files)
         val targetEndpoint = executePrompt(promptText)
@@ -258,7 +259,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
         storyDetail: String,
         isNewController: Boolean,
     ): String {
-        val allModels = processor.modelList().map { it }
+        val allModels = processor.getAllModelFiles().map { it }
         val relevantName = targetEndpoint.replace("Controller", "")
 
         // filter *Request, *Response
@@ -275,7 +276,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
             dtos
         }
 
-        val services = processor.serviceList().map { it }
+        val services = processor.getAllServiceFiles().map(DtClass.Companion::fromJavaFile)
 
         val promptText =
             promptTemplate.createOrUpdateControllerMethod(clazz, storyDetail, models, services, isNewController)

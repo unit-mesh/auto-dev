@@ -1,23 +1,11 @@
 package cc.unitmesh.idea.spring
 
 import cc.unitmesh.devti.context.model.DtClass
-import cc.unitmesh.idea.fromJavaFile
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiFile
 
 // TODO: remove this interface
 interface SpringBaseCrud {
-    @Deprecated("use getAllControllerFiles instead")
-    fun controllerList(): List<DtClass>
-
-    @Deprecated("use getAllServiceFiles instead")
-    fun serviceList(): List<DtClass>
-
-    fun modelList(): List<DtClass> {
-        val files = this.getAllEntityFiles() + this.getAllDtoFiles()
-        return files.map(DtClass.Companion::fromJavaFile)
-    }
-
     fun getAllDtoFiles(): List<PsiFile>
     fun getAllEntityFiles(): List<PsiFile>
     fun getAllControllerFiles(): List<PsiFile>

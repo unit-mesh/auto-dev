@@ -33,14 +33,15 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
     private val psiManager = PsiManager.getInstance(project)
     private val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
 
-    override fun controllerList(): List<DtClass> = this.getAllControllerFiles().map(DtClass.Companion::fromJavaFile)
-    override fun serviceList(): List<DtClass> = this.getAllServiceFiles().map(DtClass.Companion::fromJavaFile)
-
     override fun getAllControllerFiles(): List<PsiFile> = filterFilesByFunc(::controllerFilter)
     override fun getAllEntityFiles(): List<PsiFile> = filterFilesByFunc(::entityFilter)
     override fun getAllDtoFiles(): List<PsiFile> = filterFilesByFunc(::dtoFilter)
     override fun getAllServiceFiles(): List<PsiFile> = filterFilesByFunc(::serviceFilter)
     override fun getAllRepositoryFiles(): List<PsiFile> = filterFilesByFunc(::repositoryFilter)
+    fun getAllModelFiles(): List<DtClass> {
+        val files = this.getAllEntityFiles() + this.getAllDtoFiles()
+        return files.map(DtClass.Companion::fromJavaFile)
+    }
 
     private fun filterFilesByFunc(filter: KFunction1<PsiClass, Boolean>): List<PsiFile> = runReadAction {
         val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)

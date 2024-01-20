@@ -18,13 +18,13 @@ fun detectLanguageLevel(project: Project, sourceFile: PsiFile?): LanguageLevel? 
         return PsiUtil.getLanguageLevel(project)
     }
 
-    var moduleOfFile = ModuleUtilCore.findModuleForFile(sourceFile)
-    if (moduleOfFile == null) {
-        moduleOfFile = ModuleManager.getInstance(project).modules.firstOrNull() ?: return null
+    var moduleForFile = ModuleUtilCore.findModuleForFile(sourceFile)
+    if (moduleForFile == null) {
+        moduleForFile = ModuleManager.getInstance(project).modules.firstOrNull() ?: return null
     }
 
-    val sdk = ModuleRootManager.getInstance(moduleOfFile).sdk ?: return null
+    val sdk = ModuleRootManager.getInstance(moduleForFile).sdk ?: return null
     if (sdk.sdkType !is JavaSdkType) return null
 
-    return LanguageLevelUtil.getEffectiveLanguageLevel(moduleOfFile)
+    return LanguageLevelUtil.getEffectiveLanguageLevel(moduleForFile)
 }
