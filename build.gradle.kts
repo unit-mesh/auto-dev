@@ -82,7 +82,10 @@ val rustPlugins = listOf(
 )
 
 val riderVersion = prop("riderVersion")
-val riderPlugins: List<String> = listOf()
+val riderPlugins: List<String> = listOf(
+    "rider-plugins-appender",
+    "org.intellij.intelliLang",
+)
 val scalaPlugin = prop("scalaPlugin")
 
 val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
