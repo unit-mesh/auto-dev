@@ -33,6 +33,7 @@ abstract class ChatBaseAction : AnAction() {
         val file = event.getData(CommonDataKeys.PSI_FILE)
 
         val lineEndOffset = document?.getLineEndOffset(document.getLineNumber(caretModel?.offset ?: 0)) ?: 0
+
         // if selectedText is empty, then we use the cursor position to get the text
         if (prefixText.isEmpty()) {
             prefixText = document?.text?.substring(0, lineEndOffset) ?: ""

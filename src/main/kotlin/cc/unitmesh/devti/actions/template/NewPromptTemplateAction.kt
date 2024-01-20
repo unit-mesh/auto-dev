@@ -11,9 +11,7 @@ import com.intellij.psi.PsiDirectory
 class NewPromptTemplateAction : CreateFileFromTemplateAction(
     "AutoDev Customize", "Creates new AutoDev customize", AutoDevIcons.AI_COPILOT
 ), DumbAware {
-    override fun getDefaultTemplateProperty(): String {
-        return "DefaultAutoDevTemplate"
-    }
+    override fun getDefaultTemplateProperty(): String = "DefaultAutoDevTemplate"
 
     override fun buildDialog(project: Project, psiDir: PsiDirectory, builder: CreateFileFromTemplateDialog.Builder) {
         builder

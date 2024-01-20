@@ -12,6 +12,8 @@ import org.rust.lang.core.psi.RsStructItem
 import org.rust.lang.core.psi.ext.RsStructOrEnumItemElement
 import org.rust.lang.core.psi.ext.expandedFields
 import org.rust.lang.core.psi.ext.implementingType
+import org.rust.lang.core.types.asTy
+import org.rust.lang.core.types.implLookup
 
 class RustClassContextBuilder : ClassContextBuilder {
     override fun getClassContext(psiElement: PsiElement, gatherUsages: Boolean): ClassContext? {
@@ -61,7 +63,22 @@ class RustClassContextBuilder : ClassContextBuilder {
             }
 
             is RsEnumItem -> {
-                // TODO: Implement
+                val fields = psiElement.enumBody?.enumVariantList?.map { it } ?: emptyList()
+//                val impls = psiElement.implLookup.findImplsAndTraits(psiElement.asTy()).toList()
+//                val methods = impls.flatMap {
+//                    it.implementedTrait?.element?.children?.filterIsInstance<RsFunction>() ?: emptyList()
+//                }
+
+                return ClassContext(
+                    psiElement,
+                    psiElement.text,
+                    psiElement.name,
+                    emptyList(),
+                    fields,
+                    emptyList(),
+                    emptyList(),
+                    psiElement.name
+                )
             }
         }
 

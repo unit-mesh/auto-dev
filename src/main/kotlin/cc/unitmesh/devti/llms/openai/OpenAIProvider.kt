@@ -74,6 +74,7 @@ class OpenAIProvider(val project: Project) : LLMProvider {
             if (project.coderSetting.state.recordingInLocal) {
                 return project.service<JsonlRecording>()
             }
+
             return EmptyRecording()
         }
 

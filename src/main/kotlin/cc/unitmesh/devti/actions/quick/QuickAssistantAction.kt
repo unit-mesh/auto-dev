@@ -98,7 +98,7 @@ class QuickAssistantAction : AnAction() {
         val promptInlay: InlayPanel<QuickPromptField>? =
             InlayPanel.add(editor as EditorEx, offset, QuickPromptField())
 
-        promptInlay?.let { doExecute(it, project, editor, element, sourceFile) }
+        promptInlay?.let { doExecute(it, project, editor, element) }
     }
 
     private fun doExecute(
@@ -106,7 +106,6 @@ class QuickAssistantAction : AnAction() {
         project: Project,
         editor: EditorEx,
         element: PsiElement?,
-        sourceFile: PsiFile,
     ) {
         val component = inlay.component
 
