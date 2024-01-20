@@ -1,8 +1,9 @@
 <idea-plugin package="cc.unitmesh.cpp">
     <!--suppress PluginXmlValidity -->
     <dependencies>
-        <plugin id="com.intellij.modules.clion"/>
-        <plugin id="com.intellij.modules.cidr.lang"/>
+        <plugin id="com.intellij.clion"/>
+        <plugin id="com.intellij.cidr.base"/>
+        <plugin id="com.intellij.cidr.lang"/>
     </dependencies>
 
 <!--    https://plugins.jetbrains.com/docs/intellij/clion-extension-point-list.html#clionexecutionpluginxml-->

@@ -41,7 +41,7 @@ plugins {
     alias(libs.plugins.serialization)
 
     kotlin("jvm") version "1.8.22"
-    id("org.jetbrains.intellij") version "1.15.0"
+    id("org.jetbrains.intellij") version "1.16.1"
     id("net.saliman.properties") version "1.5.2"
 }
 
@@ -174,7 +174,7 @@ allprojects {
         }
         test {
             resources.srcDirs("src/$platformVersion/test/resources")
-            resources.srcDirs("src/test/resources")
+//            resources.srcDirs("src/test/resources")
         }
     }
     kotlin {
@@ -184,7 +184,7 @@ allprojects {
             }
             test {
                 kotlin.srcDirs("src/$platformVersion/test/kotlin")
-                kotlin.srcDirs("src/test/kotlin")
+//                kotlin.srcDirs("src/test/kotlin")
             }
         }
     }
@@ -496,7 +496,7 @@ project(":cpp") {
 project(":csharp") {
     intellij {
         version.set(riderVersion)
-        type.set("CL")
+        type.set("RD")
         plugins.set(riderPlugins)
     }
     dependencies {
