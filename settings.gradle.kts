@@ -14,4 +14,5 @@ include(
     "rust",
     "csharp",
     "cpp",
+    "scala",
 )

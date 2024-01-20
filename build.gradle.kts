@@ -72,7 +72,7 @@ val cppPlugins = listOf(
     "com.intellij.cidr.lang",
     "com.intellij.clion",
     "com.intellij.cidr.base",
-    "com.intellij.nativeDebug",
+//    "com.intellij.nativeDebug",
     "org.jetbrains.plugins.clion.test.google",
     "org.jetbrains.plugins.clion.test.catch"
 )
@@ -83,6 +83,7 @@ val rustPlugins = listOf(
 
 val riderVersion = prop("riderVersion")
 val riderPlugins: List<String> = listOf()
+val scalaPlugin = prop("scalaPlugin")
 
 val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
 val ideaPlugins =
@@ -223,6 +224,9 @@ project(":plugin") {
         when (lang) {
             "idea" -> {
                 pluginList += javaPlugins
+            }
+            "scala" -> {
+                pluginList += javaPlugins + scalaPlugin
             }
 
             "python" -> {
@@ -424,6 +428,7 @@ project(":") {
         kover(project(":kotlin"))
         kover(project(":pycharm"))
         kover(project(":rust"))
+        kover(project(":scala"))
     }
 
     task("resolveDependencies") {
@@ -471,6 +476,17 @@ project(":kotlin") {
     intellij {
         version.set(ideaVersion)
         plugins.set(ideaPlugins)
+    }
+    dependencies {
+        implementation(project(":"))
+        implementation(project(":java"))
+    }
+}
+
+project(":scala") {
+    intellij {
+        version.set(ideaVersion)
+        plugins.set(ideaPlugins + scalaPlugin)
     }
     dependencies {
         implementation(project(":"))

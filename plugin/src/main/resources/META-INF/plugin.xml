@@ -28,5 +28,6 @@
         <module name="cc.unitmesh.go"/>
         <module name="cc.unitmesh.rust"/>
         <module name="cc.unitmesh.cpp"/>
+        <module name="cc.unitmesh.scala"/>
     </content>
 </idea-plugin>
