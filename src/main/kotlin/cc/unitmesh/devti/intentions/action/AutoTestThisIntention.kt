@@ -5,6 +5,7 @@ import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
 import com.intellij.temporary.getElementToAction
 import cc.unitmesh.devti.intentions.action.task.TestCodeGenRequest
 import cc.unitmesh.devti.intentions.action.task.TestCodeGenTask
+import cc.unitmesh.devti.provider.WriteTestService
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
@@ -15,6 +16,12 @@ class AutoTestThisIntention : AbstractChatIntention() {
     override fun priority(): Int = 998
     override fun getText(): String = AutoDevBundle.message("intentions.chat.code.test.name")
     override fun getFamilyName(): String = AutoDevBundle.message("intentions.chat.code.test.family.name")
+
+    override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
+        val psiElement = file?.originalElement ?: return false
+        val service = WriteTestService.context(psiElement)
+        return service != null
+    }
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (editor == null || file == null) return

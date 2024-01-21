@@ -111,7 +111,6 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
             }
 
             if (writeTestService == null) {
-                log.warn("Could not find language support for: ${psiElement.language}, make you have the plugin installed.")
                 return null
             }
 
