@@ -51,10 +51,6 @@ abstract class BasedDocumentationIntention : AbstractChatIntention() {
 
     private fun getClosestToCaretNamedElement(editor: Editor): PsiNameIdentifierOwner? {
         val element = PsiUtilBase.getElementAtCaret(editor) ?: return null
-        return getClosestNamedElement(element)
-    }
-
-    private fun getClosestNamedElement(element: PsiElement): PsiNameIdentifierOwner? {
         val support = LivingDocumentation.forLanguage(element.language) ?: return null
         return support.findNearestDocumentationTarget(element)
     }

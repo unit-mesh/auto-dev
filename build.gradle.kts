@@ -41,7 +41,7 @@ plugins {
     alias(libs.plugins.serialization)
 
     kotlin("jvm") version "1.8.22"
-    id("org.jetbrains.intellij") version "1.16.1"
+    id("org.jetbrains.intellij") version "1.15.0"
     id("net.saliman.properties") version "1.5.2"
 }
 
@@ -538,6 +538,16 @@ project(":goland") {
         updateSinceUntilBuild.set(false)
         // required if Go language API is needed:
         plugins.set(prop("goPlugin").split(',').map(String::trim).filter(String::isNotEmpty))
+    }
+    dependencies {
+        implementation(project(":"))
+    }
+}
+
+project(":exts:database") {
+    intellij {
+        version.set(ideaVersion)
+        plugins.set(ideaPlugins + "com.intellij.database")
     }
     dependencies {
         implementation(project(":"))

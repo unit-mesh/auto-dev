@@ -1,0 +1,12 @@
+<idea-plugin package="cc.unitmesh.database">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+        <plugin id="com.intellij.database"/>
+    </dependencies>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <livingDocumentation
+                language="SQL"
+                implementationClass="cc.unitmesh.database.provider.SqlLivingDocumentationProvider"/>
+    </extensions>
+</idea-plugin>
