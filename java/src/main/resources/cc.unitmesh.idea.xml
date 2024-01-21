@@ -52,6 +52,9 @@
                 language="JAVA"
                 implementationClass="cc.unitmesh.idea.provider.JavaCustomPromptProvider" />
 
+        <layeredArchProvider
+                implementation="cc.unitmesh.idea.provider.JavaLayeredArchProvider" />
+
         <autoDevIntention>
             <className>cc.unitmesh.idea.actions.AutoCrudAction</className>
             <bundleName>messages.AutoDevBundle</bundleName>

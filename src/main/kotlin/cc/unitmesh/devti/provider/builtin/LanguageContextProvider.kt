@@ -15,11 +15,7 @@ class LanguageContextProvider : ChatContextProvider {
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         val language = AutoDevSettingsState.getInstance().language
 
-        return listOf(
-            ChatContextItem(
-                LanguageContextProvider::class,
-                "You MUST Use $language to reply me!"
-            )
-        )
+        val text = "You MUST Use $language to reply me!"
+        return listOf(ChatContextItem(LanguageContextProvider::class, text))
     }
 }
