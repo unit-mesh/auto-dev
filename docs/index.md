@@ -73,7 +73,7 @@ AutoDev fine-tune models:
 |---------------|-----------------------------------------------------------------|--------------------------------------|-------------------------------------------------------------------------------------|
 | DeepSeek 6.7B | [AutoDev Coder](https://huggingface.co/unit-mesh/autodev-coder) | [finetune.ipynb](finetunes/deepseek) | [AutoDev Coder](https://openbayes.com/console/phodal/models/rCmer1KQSgp/9/overview) |
 
-## Language Features
+### Language Support
 
 We follow [Chapi](https://github.com/phodal/chapi) for language support tier.
 
@@ -85,3 +85,7 @@ We follow [Chapi](https://github.com/phodal/chapi) for language support tier.
 | Doc Generation            | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    | | 
 | Precision Test Generation | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    | | 
 | Precision Code Generation | ✅    |        |    | ✅      |       |       |    |       |      | | 
+
+### Extensions
+
+see in [exts](exts)

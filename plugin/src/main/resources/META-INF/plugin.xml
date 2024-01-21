@@ -32,5 +32,6 @@
         <module name="cc.unitmesh.scala"/>
 
         <!-- extension modules -->
+        <module name="cc.unitmesh.database"/>
     </content>
 </idea-plugin>

@@ -71,6 +71,8 @@ download from [HuggingFace](https://huggingface.co/unit-mesh)
 
 ## Language Features
 
+### Language Support
+
 We follow [Chapi](https://github.com/phodal/chapi) for language support tier.
 
 | Features                  | Java | Python | Go | Kotlin | JS/TS | C/C++ | C# | Scala | Rust |
@@ -82,7 +84,11 @@ We follow [Chapi](https://github.com/phodal/chapi) for language support tier.
 | Precision Test Generation | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    | | 
 | Precision Code Generation | ✅    |        |    | ✅      |       |       |    |       |      | | 
 
-### Demo
+### Extensions
+
+see in [exts](exts)
+
+## Demo
 
 Video demo (YouTube) — English
 

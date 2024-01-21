@@ -18,6 +18,7 @@ class DefaultDocumentationIntention: BasedDocumentationIntention() {
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         if (editor == null || file == null) return false
 
-        return LivingDocumentation.forLanguage(file.language) != null
+        val livingDocumentation = LivingDocumentation.forLanguage(file.language)
+        return livingDocumentation != null
     }
 }
