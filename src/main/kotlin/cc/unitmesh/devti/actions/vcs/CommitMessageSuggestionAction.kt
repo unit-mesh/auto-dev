@@ -20,7 +20,6 @@ import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.ui.CommitMessage
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.vcs.log.TimedVcsCommit
-import com.intellij.vcs.log.VcsCommitMetadata
 import com.intellij.vcs.log.VcsLogFilterCollection
 import com.intellij.vcs.log.VcsLogProvider
 import com.intellij.vcs.log.impl.VcsProjectLog
@@ -64,19 +63,19 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
             return
         }
 
-        val prompt = generateCommitMessage(diffContext, project)
         val commitMessageUi = event.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL) as CommitMessage
-
         // empty commit message before generating
         commitMessageUi.editorField.text = ""
 
-        logger.info("Start generating commit message.")
-        logger.info(prompt)
-
-        event.presentation.icon = AutoDevStatus.InProgress.icon
-        val stream = LlmFactory().create(project).stream(prompt, "", false)
-
         ApplicationManager.getApplication().executeOnPooledThread() {
+            val prompt = generateCommitMessage(diffContext, project)
+
+            logger.info("Start generating commit message.")
+            logger.info(prompt)
+
+            event.presentation.icon = AutoDevStatus.InProgress.icon
+            val stream = LlmFactory().create(project).stream(prompt, "", false)
+
             runBlocking {
                 stream.cancellable().collect {
                     invokeLater {
@@ -108,6 +107,14 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         return collectExamples(logProvider, entry.key, filter)
     }
 
+    /**
+     * Collects examples from the VcsLogProvider based on the provided filter.
+     *
+     * @param logProvider The VcsLogProvider used to retrieve commit information.
+     * @param root The root VirtualFile of the project.
+     * @param filter The VcsLogFilterCollection used to filter the commits.
+     * @return A string containing the collected examples, or null if no examples are found.
+     */
     private fun collectExamples(
         logProvider: VcsLogProvider,
         root: VirtualFile,
@@ -118,13 +125,11 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         if (commits.isEmpty()) return null
 
         val builder = StringBuilder("")
-        val commitIds = commits.map { (it as TimedVcsCommit).id.asString() }
+        val commitIds = commits.map { it.id.asString() }
 
-        val metadataCallback: (VcsCommitMetadata) -> Unit = {
+        logProvider.readMetadata(root, commitIds) {
             builder.append(it.fullMessage).append("\n")
         }
-
-        logProvider.readMetadata(root, commitIds, metadataCallback)
 
         return builder.toString()
     }
