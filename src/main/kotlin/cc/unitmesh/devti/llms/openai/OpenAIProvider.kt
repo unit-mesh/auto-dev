@@ -39,13 +39,13 @@ class OpenAIProvider(val project: Project) : LLMProvider {
             }
 
             var openAiProxy = AutoDevSettingsState.getInstance().customOpenAiHost
-            if (!openAiProxy.endsWith("/")) {
-                openAiProxy += "/"
-            }
-
             return if (openAiProxy.isEmpty()) {
                 OpenAiService(openAiKey, timeout)
             } else {
+                if (!openAiProxy.endsWith("/")) {
+                    openAiProxy += "/"
+                }
+
                 val mapper = defaultObjectMapper()
                 val client = defaultClient(openAiKey, timeout)
 

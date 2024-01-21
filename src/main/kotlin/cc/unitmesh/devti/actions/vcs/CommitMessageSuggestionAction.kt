@@ -19,7 +19,6 @@ import com.intellij.openapi.vcs.VcsDataKeys
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.ui.CommitMessage
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.vcs.log.TimedVcsCommit
 import com.intellij.vcs.log.VcsLogFilterCollection
 import com.intellij.vcs.log.VcsLogProvider
 import com.intellij.vcs.log.impl.VcsProjectLog
@@ -95,16 +94,14 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         val logProvider = entry.value
         val branch = logProvider.getCurrentBranch(entry.key) ?: return null
         val user = logProvider.getCurrentUser(entry.key)
-        val fromBranch = VcsLogFilterObject.fromBranch(branch)
 
-        val filter = if (user != null) {
-            val fromUser = VcsLogFilterObject.fromUser(user, setOf())
-            VcsLogFilterObject.collection(fromUser)
+        val logFilter = if (user != null) {
+            VcsLogFilterObject.collection(VcsLogFilterObject.fromUser(user, setOf()))
         } else {
-            VcsLogFilterObject.collection(fromBranch)
+            VcsLogFilterObject.collection(VcsLogFilterObject.fromBranch(branch))
         }
 
-        return collectExamples(logProvider, entry.key, filter)
+        return collectExamples(logProvider, entry.key, logFilter)
     }
 
     /**
