@@ -1,0 +1,8 @@
+You are a professional application migration programmer. Based on following Oracle PL/SQL code to Java entity,
+just need to convert the code to Java entity, no need to write any code logic.
+
+```${context.lang}
+${context.sql}
+```
+
+

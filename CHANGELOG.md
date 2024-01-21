@@ -1,6 +1,23 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v1.5.4...v) (2024-01-19)
+# [](https://github.com/unit-mesh/auto-dev/compare/v1.5.5...v) (2024-01-21)
 
 ## [Unreleased]
+
+## [1.5.5](https://github.com/unit-mesh/auto-dev/compare/v1.5.4...v[1.5.5]) (2024-01-21)
+
+### Bug Fixes
+- **java:** add Java language check in AutoCrudAction ([6669b4b](https://github.com/unit-mesh/auto-dev/commit/6669b4ba8cfa142805760eb894e59ca6a765753b))
+- **llm:** add trailing slash to customOpenAiHost && fixed [#77](https://github.com/unit-mesh/auto-dev/issues/77) ([f68d124](https://github.com/unit-mesh/auto-dev/commit/f68d12431e5ed774ec22f6acbaaa33810e72f4a8))
+- **test:** add check for now writing test service [#78](https://github.com/unit-mesh/auto-dev/issues/78) ([a4b0d04](https://github.com/unit-mesh/auto-dev/commit/a4b0d04c285a1c702af0d55cc11953fb67beb8ad))
+
+### Features
+- **database:** add SQL living documentation support ([08c82bd](https://github.com/unit-mesh/auto-dev/commit/08c82bdd6865bfb824e8008a845335ddf013ebb2))
+- **database:** improve finding nearest SQL definition ([6e95d47](https://github.com/unit-mesh/auto-dev/commit/6e95d47186cccadc981369172ceb9ebcf09da9ea))
+- **docs:** add basic PL/SQL implementation ([478f1d9](https://github.com/unit-mesh/auto-dev/commit/478f1d9bab7f2347ac34bbc9cdfd0b627e1919e9))
+- **java:** add detectLanguageLevel function ([6f7b156](https://github.com/unit-mesh/auto-dev/commit/6f7b156bd6d28ba7fef67f5f21654d948e86501b))
+- **provider:** add language level detection ([8cd2584](https://github.com/unit-mesh/auto-dev/commit/8cd25842513a7fb7e999ae2df7b93d9aa01cb326))
+- **rust:** add support for EnumContext ([d58b435](https://github.com/unit-mesh/auto-dev/commit/d58b435ddc6bc6e6c5cc0dedca1f0f6bb6efd341))
+- **scala:** add ScalaClassContextBuilder and test case ([98ef74f](https://github.com/unit-mesh/auto-dev/commit/98ef74fc68b21399f0e6b58e90f81ffb63dd282d))
+- **sql:** add functionality to update living documentation ([c99b21d](https://github.com/unit-mesh/auto-dev/commit/c99b21d09d42532fffd601e82c0d0a41dda88f61))
 
 ## [1.5.4](https://github.com/unit-mesh/auto-dev/compare/v1.5.3...v[1.5.4]) (2024-01-19)
 
@@ -904,7 +921,8 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.5.4...HEAD
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.5.5...HEAD
+[1.5.5]: https://github.com/unit-mesh/auto-dev/compare/v1.5.4...v1.5.5
 [1.5.4]: https://github.com/unit-mesh/auto-dev/compare/v1.5.3...v1.5.4
 [1.5.3]: https://github.com/unit-mesh/auto-dev/compare/v1.5.2...v1.5.3
 [1.5.2]: https://github.com/unit-mesh/auto-dev/compare/v1.4.4...v1.5.2

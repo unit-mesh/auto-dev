@@ -5,7 +5,12 @@
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
-        <!--   -->
+        <autoDevIntention>
+            <className>cc.unitmesh.database.actions.GenerateEntityAction</className>
+            <bundleName>messages.AutoDevBundle</bundleName>
+            <categoryKey>intention.category.llm</categoryKey>
+        </autoDevIntention>
+
         <livingDocumentation
                 language="SQL"
                 implementationClass="cc.unitmesh.database.provider.SqlLivingDocumentationProvider"/>
