@@ -18,6 +18,9 @@ object AutoDevIcons {
     val ERROR: Icon = IconLoader.getIcon("/icons/autodev-error.svg", AutoDevIcons::class.java)
 
     @JvmField
+    val AI_PAIR: Icon = IconLoader.getIcon("/icons/autodev-pair.svg", AutoDevIcons::class.java)
+
+    @JvmField
     val IntProgress = AnimatedIcon.Default()
 
     @JvmField
