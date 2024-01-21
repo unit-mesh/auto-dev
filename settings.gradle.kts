@@ -16,3 +16,9 @@ include(
     "cpp",
     "scala",
 )
+
+include(
+    "exts:database",
+    "exts:vue",
+    "exts:android",
+)
