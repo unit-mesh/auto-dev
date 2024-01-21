@@ -5,6 +5,7 @@ import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.provider.DevFlowProvider
 import cc.unitmesh.devti.gui.sendToChatPanel
+import com.intellij.lang.java.JavaLanguage
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
@@ -22,8 +23,11 @@ class AutoCrudAction : AbstractChatIntention() {
 
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
+        if (editor == null || file == null) return false
+        if (file.language !is JavaLanguage) return false
+
         val isEnvironmentAvailable = super.isAvailable(project, editor, file)
-        return isEnvironmentAvailable && editor?.selectionModel?.hasSelection() == true
+        return isEnvironmentAvailable && editor.selectionModel?.hasSelection() == true
     }
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {

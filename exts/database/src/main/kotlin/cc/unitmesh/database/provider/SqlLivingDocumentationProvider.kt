@@ -8,6 +8,7 @@ import com.intellij.openapi.editor.SelectionModel
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.codeStyle.CodeStyleManager
+import com.intellij.sql.psi.SqlDefinition
 
 class SqlLivingDocumentationProvider : LivingDocumentation {
     override val forbiddenRules: List<String>
@@ -34,6 +35,13 @@ class SqlLivingDocumentationProvider : LivingDocumentation {
     }
 
     override fun findNearestDocumentationTarget(psiElement: PsiElement): PsiNameIdentifierOwner? {
+        // todo: find nearest sql definition
+        when (psiElement) {
+            is SqlDefinition -> {
+                return psiElement
+            }
+        }
+
         return null
     }
 
