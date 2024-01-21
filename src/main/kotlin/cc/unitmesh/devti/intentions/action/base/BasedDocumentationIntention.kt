@@ -9,7 +9,6 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiNameIdentifierOwner
@@ -28,16 +27,27 @@ abstract class BasedDocumentationIntention : AbstractChatIntention() {
 
         val selectionModel = editor.selectionModel
         val selectedText = selectionModel.selectedText
+
+        val documentation = LivingDocumentation.forLanguage(file.language) ?: return
+
         if (selectedText != null) {
-            findSelectedElementToDocument(editor, project, selectionModel).map {
+            val rootFile = PsiUtilBase.getPsiFileInEditor(editor, project) ?: return
+            val findFile: PsiFile = PsiManager.getInstance(project).findFile(rootFile.virtualFile) ?: return
+
+            // find all targets in selection
+            documentation.findDocTargetsInSelection(findFile, selectionModel).map {
                 writingDocument(editor, it)
             }
-
             return
         } else {
-            val closestToCaretNamedElement = getClosestToCaretNamedElement(editor) ?: return
-            writingDocument(editor, closestToCaretNamedElement)
+            val element = PsiUtilBase.getElementAtCaret(editor) ?: return
+            val nearestDocumentationTarget = documentation.findNearestDocumentationTarget(element) ?: return
+            writingDocument(editor, nearestDocumentationTarget)
+
+            return
         }
+
+
     }
 
     open fun writingDocument(editor: Editor, element: PsiNameIdentifierOwner) {
@@ -45,23 +55,4 @@ abstract class BasedDocumentationIntention : AbstractChatIntention() {
         ProgressManager.getInstance()
             .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
     }
-
-    private fun getClosestToCaretNamedElement(editor: Editor): PsiNameIdentifierOwner? {
-        val element = PsiUtilBase.getElementAtCaret(editor) ?: return null
-        val support = LivingDocumentation.forLanguage(element.language) ?: return null
-        return support.findNearestDocumentationTarget(element)
-    }
-
-    private fun findSelectedElementToDocument(
-        editor: Editor,
-        project: Project,
-        selectionModel: SelectionModel,
-    ): List<PsiNameIdentifierOwner> {
-        val rootFile = PsiUtilBase.getPsiFileInEditor(editor, project) ?: return emptyList()
-        val findFile: PsiFile = PsiManager.getInstance(project).findFile(rootFile.virtualFile) ?: return emptyList()
-        val documentation = LivingDocumentation.forLanguage(findFile.language) ?: return emptyList()
-
-        return documentation.findDocTargetsInSelection(findFile, selectionModel)
-    }
-
 }
