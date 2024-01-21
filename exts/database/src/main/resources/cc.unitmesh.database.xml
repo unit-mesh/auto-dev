@@ -5,8 +5,12 @@
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
+        <!--   -->
         <livingDocumentation
                 language="SQL"
+                implementationClass="cc.unitmesh.database.provider.SqlLivingDocumentationProvider"/>
+        <livingDocumentation
+                language="Oracle"
                 implementationClass="cc.unitmesh.database.provider.SqlLivingDocumentationProvider"/>
     </extensions>
 </idea-plugin>

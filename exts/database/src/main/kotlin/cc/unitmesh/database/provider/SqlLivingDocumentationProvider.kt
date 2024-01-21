@@ -2,6 +2,7 @@ package cc.unitmesh.database.provider
 
 import cc.unitmesh.devti.custom.document.LivingDocumentationType
 import cc.unitmesh.devti.provider.LivingDocumentation
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.SelectionModel
@@ -22,7 +23,7 @@ class SqlLivingDocumentationProvider : LivingDocumentation {
     override fun updateDoc(target: PsiElement, newDoc: String, type: LivingDocumentationType, editor: Editor) {
         val project = target.project
         val codeStyleManager = CodeStyleManager.getInstance(project)
-        val file = target.containingFile
+        val file = runReadAction { target.containingFile }
 
         val doc = newDoc + "\n"
 
