@@ -29,16 +29,13 @@ abstract class BasedDocumentationIntention : AbstractChatIntention() {
         val selectionModel = editor.selectionModel
         val selectedText = selectionModel.selectedText
         if (selectedText != null) {
-            val owners: List<PsiNameIdentifierOwner> = findSelectedElementToDocument(editor, project, selectionModel)
-            for (identifierOwner in owners) {
-                writingDocument(editor, identifierOwner)
+            findSelectedElementToDocument(editor, project, selectionModel).map {
+                writingDocument(editor, it)
             }
 
             return
-        }
-
-        val closestToCaretNamedElement: PsiNameIdentifierOwner? = getClosestToCaretNamedElement(editor)
-        if (closestToCaretNamedElement != null) {
+        } else {
+            val closestToCaretNamedElement = getClosestToCaretNamedElement(editor) ?: return
             writingDocument(editor, closestToCaretNamedElement)
         }
     }

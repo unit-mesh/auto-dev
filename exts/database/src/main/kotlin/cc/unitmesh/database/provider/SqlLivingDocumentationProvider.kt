@@ -23,6 +23,11 @@ class SqlLivingDocumentationProvider : LivingDocumentation {
     }
 
     override fun findNearestDocumentationTarget(psiElement: PsiElement): PsiNameIdentifierOwner? {
+//        return when (psiElement) {
+//            is SqlDdlStatement -> psiElement
+//            is SqlDeclareStatement -> psiElement
+//            else -> null
+//        }
         return null
     }
 
