@@ -8,6 +8,7 @@ import com.intellij.openapi.editor.SelectionModel
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.codeStyle.CodeStyleManager
+import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.sql.psi.SqlDefinition
 
 class SqlLivingDocumentationProvider : LivingDocumentation {
@@ -35,14 +36,14 @@ class SqlLivingDocumentationProvider : LivingDocumentation {
     }
 
     override fun findNearestDocumentationTarget(psiElement: PsiElement): PsiNameIdentifierOwner? {
-        // todo: find nearest sql definition
-        when (psiElement) {
-            is SqlDefinition -> {
-                return psiElement
-            }
+        if (psiElement is SqlDefinition) return psiElement
+
+        val closestId = PsiTreeUtil.getParentOfType(psiElement, PsiNameIdentifierOwner::class.java)
+        if (closestId !is SqlDefinition) {
+            return PsiTreeUtil.getParentOfType(psiElement, SqlDefinition::class.java) ?: closestId
         }
 
-        return null
+        return closestId
     }
 
     override fun findDocTargetsInSelection(
