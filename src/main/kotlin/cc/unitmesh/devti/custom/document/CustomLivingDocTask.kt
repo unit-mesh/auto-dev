@@ -7,7 +7,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.psi.PsiElement
-import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 
 class CustomLivingDocTask(
