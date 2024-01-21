@@ -2,10 +2,15 @@ package cc.unitmesh.idea.provider
 
 import cc.unitmesh.devti.pair.arch.ProjectPackageTree
 import cc.unitmesh.devti.provider.architecture.LayeredArchProvider
+import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.JavaSdkType
 import com.intellij.openapi.roots.ProjectRootManager
-import com.intellij.psi.JavaPsiFacade
+import com.intellij.psi.PsiJavaFile
+import com.intellij.psi.PsiManager
+import com.intellij.psi.search.FileTypeIndex
+import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.ProjectScope
 
 class JavaLayeredArchProvider : LayeredArchProvider {
     private val layeredArch = ProjectPackageTree()
@@ -16,16 +21,15 @@ class JavaLayeredArchProvider : LayeredArchProvider {
     }
 
     override fun getLayeredArch(project: Project): ProjectPackageTree {
-        val psiFacade = JavaPsiFacade.getInstance(project)
+        val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
+        val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
+        val psiManager = PsiManager.getInstance(project)
 
-        val projectRootManager = ProjectRootManager.getInstance(project)
-        val contentRoots = projectRootManager.contentRoots
-        for (contentRoot in contentRoots) {
-            // todo implement this
-            val psiPackage = psiFacade.findPackage(contentRoot.url)
-            if (psiPackage != null) {
-                layeredArch.addPackage(psiPackage.qualifiedName)
-            }
+        javaFiles.forEach { javaFile ->
+            val psiFile = psiManager.findFile(javaFile) ?: return@forEach
+            val psiJavaFile = psiFile as? PsiJavaFile ?: return@forEach
+
+            layeredArch.addPackage(psiJavaFile.packageName)
         }
 
         return layeredArch

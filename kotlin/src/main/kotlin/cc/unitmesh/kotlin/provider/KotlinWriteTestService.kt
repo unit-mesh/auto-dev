@@ -90,18 +90,20 @@ class KotlinWriteTestService : WriteTestService() {
 
         project.guessProjectDir()?.refresh(true, true)
 
-        val currentClass = runReadAction {
-            when (element) {
+        val currentClass: String = runReadAction {
+            val classContext = when (element) {
                 is KtClassOrObject -> ClassContextProvider(false).from(element)
                 is KtNamedFunction -> {
                     PsiTreeUtil.getParentOfType(element, KtClassOrObject::class.java)?.let {
-                        return@runReadAction ClassContextProvider(false).from(it)
-                    } ?: return@runReadAction null
+                        ClassContextProvider(false).from(it)
+                    }
                 }
 
                 else -> null
             }
-        }?.format()
+
+            return@runReadAction classContext?.format() ?: ""
+        }
 
         val imports: List<String> = runReadAction {
             (sourceFile as KtFile).importList?.imports?.map { it.text } ?: emptyList()
