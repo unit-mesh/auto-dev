@@ -11,8 +11,8 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiNameIdentifierOwner
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.*
 
 /**
  * The `LivingDocumentationTask` class represents a background task for generating living documentation.

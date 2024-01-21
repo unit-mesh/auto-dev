@@ -6,13 +6,13 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
-import com.intellij.psi.PsiNameIdentifierOwner
-import kotlinx.coroutines.flow.*
+import com.intellij.psi.PsiElement
+import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.runBlocking
 
 class CustomLivingDocTask(
     val editor: Editor,
-    val target: PsiNameIdentifierOwner,
+    val target: PsiElement,
     val config: CustomDocumentationConfig,
 ) :
     Task.Backgroundable(editor.project, config.title) {

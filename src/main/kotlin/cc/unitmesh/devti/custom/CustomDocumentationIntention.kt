@@ -8,7 +8,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
-import com.intellij.psi.PsiNameIdentifierOwner
+import com.intellij.psi.PsiElement
 
 class CustomDocumentationIntention(override val config: CustomDocumentationConfig) : BasedDocumentationIntention() {
 
@@ -17,14 +17,13 @@ class CustomDocumentationIntention(override val config: CustomDocumentationConfi
     override fun getFamilyName(): String = "AutoDev: Custom Documentation Intention"
     override fun priority(): Int = 99
 
-    override fun writingDocument(editor: Editor, element: PsiNameIdentifierOwner, documentation: LivingDocumentation) {
+    override fun writingDocument(editor: Editor, element: PsiElement, documentation: LivingDocumentation) {
         val task: Task.Backgroundable = CustomLivingDocTask(editor, element, config)
         ProgressManager.getInstance()
             .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
     }
 
     companion object {
-        fun create(config: CustomDocumentationConfig): CustomDocumentationIntention =
-            CustomDocumentationIntention(config)
+        fun create(config: CustomDocumentationConfig) = CustomDocumentationIntention(config)
     }
 }
