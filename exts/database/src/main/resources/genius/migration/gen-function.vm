@@ -1,0 +1,13 @@
+You are a professional application migration programmer.
+Based on the following Oracle PL/SQL code to Java function,
+
+— When some function is missing in Java, just skip it.
+- If you find some function is not correct, please fix it.
+- Follow the Java coding style.
+
+
+```${context.lang}
+${context.sql}
+```
+
+
