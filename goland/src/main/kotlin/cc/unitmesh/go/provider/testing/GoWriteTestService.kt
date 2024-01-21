@@ -10,6 +10,7 @@ import com.goide.GoLanguage
 import com.goide.execution.testing.GoTestRunConfiguration
 import com.goide.psi.*
 import com.intellij.execution.configurations.RunProfile
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.TestSourcesFilter
@@ -40,20 +41,22 @@ class GoWriteTestService : WriteTestService() {
             importList.map { it.text }
         }
 
-        val currentObject = when (underTestElement) {
-            is GoTypeDeclaration,
-            is GoTypeSpec -> {
-                GoStructContextBuilder().getClassContext(underTestElement, false)?.format()
+        val currentObject = ReadAction.compute<String, Throwable> {
+            return@compute when (underTestElement) {
+                is GoTypeDeclaration,
+                is GoTypeSpec -> {
+                    GoStructContextBuilder().getClassContext(underTestElement, false)?.format()
+                }
+
+                is GoFunctionOrMethodDeclaration -> GoMethodContextBuilder().getMethodContext(
+                    underTestElement,
+                    false,
+                    false
+                )
+                    ?.format()
+
+                else -> null
             }
-
-            is GoFunctionOrMethodDeclaration -> GoMethodContextBuilder().getMethodContext(
-                underTestElement,
-                false,
-                false
-            )
-                ?.format()
-
-            else -> null
         }
 
         return TestFileContext(

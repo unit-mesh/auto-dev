@@ -87,6 +87,13 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         }
     }
 
+    /**
+     * Finds example commit messages based on the project's VCS log, takes the first three commits.
+     * If the no user or user has not committed anything yet, the current branch name is used instead.
+     *
+     * @param project The project for which to find example commit messages.
+     * @return A string containing example commit messages, or null if no example messages are found.
+     */
     private fun findExampleCommitMessages(project: Project): String? {
         val logProviders = VcsProjectLog.getLogProviders(project)
         val entry = logProviders.entries.firstOrNull() ?: return null
@@ -125,7 +132,8 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         val commitIds = commits.map { it.id.asString() }
 
         logProvider.readMetadata(root, commitIds) {
-            builder.append(it.fullMessage).append("\n")
+            val shortMsg = it.fullMessage.split("\n").firstOrNull() ?: it.fullMessage
+            builder.append(shortMsg).append("\n")
         }
 
         return builder.toString()
