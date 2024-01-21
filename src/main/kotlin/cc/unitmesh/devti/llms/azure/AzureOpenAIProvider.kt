@@ -51,7 +51,14 @@ class AzureOpenAIProvider(val project: Project) : LLMProvider {
     private val logger = logger<AzureOpenAIProvider>()
 
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
-    private val url get() = autoDevSettingsState.customOpenAiHost
+    private val url: String
+        get() {
+            val customOpenAiHost = autoDevSettingsState.customOpenAiHost
+            if (!customOpenAiHost.endsWith("/")) {
+                return "$customOpenAiHost/"
+            }
+            return customOpenAiHost
+        }
     private var customPromptConfig: CustomPromptConfig? = null
     private val timeout = Duration.ofSeconds(600)
     private var client = OkHttpClient().newBuilder().readTimeout(timeout).build()

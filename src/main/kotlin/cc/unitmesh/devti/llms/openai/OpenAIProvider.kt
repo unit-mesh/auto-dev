@@ -38,7 +38,11 @@ class OpenAIProvider(val project: Project) : LLMProvider {
                 throw IllegalStateException("openAiKey is empty")
             }
 
-            val openAiProxy = AutoDevSettingsState.getInstance().customOpenAiHost
+            var openAiProxy = AutoDevSettingsState.getInstance().customOpenAiHost
+            if (!openAiProxy.endsWith("/")) {
+                openAiProxy += "/"
+            }
+
             return if (openAiProxy.isEmpty()) {
                 OpenAiService(openAiKey, timeout)
             } else {
