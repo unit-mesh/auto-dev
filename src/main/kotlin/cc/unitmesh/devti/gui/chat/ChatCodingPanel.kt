@@ -32,7 +32,6 @@ import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
-import kotlinx.coroutines.flow.*
 
 class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disposable: Disposable?) :
     SimpleToolWindowPanel(true, true),
@@ -185,7 +184,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         myList.remove(myList.componentCount - 1)
         val text = updateMessageInUi(content)
 
-        val jButton = JButton(AutoDevBundle.message("autodev.chat.replaceSelection"))
+        val jButton = JButton(AutoDevBundle.message("chat.panel.replaceSelection"))
         val listener = ActionListener {
             replaceSelectedText(text)
             myList.remove(myList.componentCount - 1)

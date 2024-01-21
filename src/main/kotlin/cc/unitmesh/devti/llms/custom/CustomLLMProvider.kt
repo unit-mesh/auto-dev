@@ -17,7 +17,6 @@ import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.FlowableEmitter
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -101,7 +100,6 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
     }
 
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     private fun streamJson(call: Call): Flow<String> = callbackFlow {
         call.enqueue(JSONBodyResponseCallback(responseFormat) {
             withContext(Dispatchers.IO) {
@@ -112,7 +110,6 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
         awaitClose()
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     private fun streamSSE(call: Call): Flow<String> {
         val sseFlowable = Flowable
             .create({ emitter: FlowableEmitter<SSE> ->

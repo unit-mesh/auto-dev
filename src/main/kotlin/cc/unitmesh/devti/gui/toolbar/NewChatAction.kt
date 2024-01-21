@@ -22,7 +22,7 @@ class NewChatAction : DumbAwareAction(), CustomComponentAction {
     }
 
     override fun createCustomComponent(presentation: Presentation, place: String): JComponent {
-        val message = AutoDevBundle.message("autodev.chat.new")
+        val message = AutoDevBundle.message("chat.panel.new")
         val button: JButton = object : JButton(message) {
             init {
                 putClientProperty("ActionToolbar.smallVariant", true)

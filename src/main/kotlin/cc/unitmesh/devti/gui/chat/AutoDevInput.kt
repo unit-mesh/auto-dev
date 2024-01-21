@@ -103,7 +103,7 @@ class AutoDevInput(
     }
 
     private fun updatePlaceholderText() {
-        setPlaceholder(AutoDevBundle.message("chat.label.initial.text"))
+        setPlaceholder(AutoDevBundle.message("chat.panel.initial.text"))
         repaint()
     }
 
