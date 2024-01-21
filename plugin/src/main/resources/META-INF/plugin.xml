@@ -21,6 +21,7 @@
 
     <!--suppress PluginXmlValidity -->
     <content>
+        <!-- language modules -->
         <module name="cc.unitmesh.pycharm"/>
         <module name="cc.unitmesh.idea"/>
         <module name="cc.unitmesh.kotlin"/>
@@ -29,5 +30,7 @@
         <module name="cc.unitmesh.rust"/>
         <module name="cc.unitmesh.cpp"/>
         <module name="cc.unitmesh.scala"/>
+
+        <!-- extension modules -->
     </content>
 </idea-plugin>

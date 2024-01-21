@@ -261,6 +261,8 @@ project(":plugin") {
         implementation(project(":goland"))
         implementation(project(":rust"))
         implementation(project(":cpp"))
+        implementation(project(":scala"))
+        implementation(project(":exts:database"))
     }
 
     // Collects all jars produced by compilation of project modules and merges them into singe one.

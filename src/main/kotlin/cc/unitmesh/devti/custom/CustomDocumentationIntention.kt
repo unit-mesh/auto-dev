@@ -3,6 +3,7 @@ package cc.unitmesh.devti.custom
 import cc.unitmesh.devti.custom.document.CustomDocumentationConfig
 import cc.unitmesh.devti.custom.document.CustomLivingDocTask
 import cc.unitmesh.devti.intentions.action.base.BasedDocumentationIntention
+import cc.unitmesh.devti.provider.LivingDocumentation
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -16,7 +17,7 @@ class CustomDocumentationIntention(override val config: CustomDocumentationConfi
     override fun getFamilyName(): String = "AutoDev: Custom Documentation Intention"
     override fun priority(): Int = 99
 
-    override fun writingDocument(editor: Editor, element: PsiNameIdentifierOwner) {
+    override fun writingDocument(editor: Editor, element: PsiNameIdentifierOwner, documentation: LivingDocumentation) {
         val task: Task.Backgroundable = CustomLivingDocTask(editor, element, config)
         ProgressManager.getInstance()
             .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))

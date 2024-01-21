@@ -6,9 +6,6 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.SelectionModel
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
-import com.intellij.sql.psi.SqlDdlStatement
-import com.intellij.sql.psi.SqlDeclareStatement
-import com.intellij.sql.psi.SqlFile
 
 class SqlLivingDocumentationProvider : LivingDocumentation {
     override val forbiddenRules: List<String>

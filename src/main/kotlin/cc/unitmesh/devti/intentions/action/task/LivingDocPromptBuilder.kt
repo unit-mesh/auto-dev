@@ -7,6 +7,7 @@ import cc.unitmesh.devti.provider.LivingDocumentation
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 
 /**
@@ -37,7 +38,7 @@ import com.intellij.psi.PsiNameIdentifierOwner
  */
 open class LivingDocPromptBuilder(
     open val editor: Editor,
-    open val target: PsiNameIdentifierOwner,
+    open val target: PsiElement,
     open val documentation: LivingDocumentation,
     val type: LivingDocumentationType,
 ) {
@@ -88,7 +89,7 @@ open class LivingDocPromptBuilder(
         return instruction.trimStart()
     }
 
-    open fun buildPrompt(project: Project?, target: PsiNameIdentifierOwner, fallbackText: String): String {
+    open fun buildPrompt(project: Project?, target: PsiElement, fallbackText: String): String {
         return ReadAction.compute<String, Throwable> {
             val instruction = StringBuilder(fallbackText)
 

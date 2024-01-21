@@ -10,8 +10,8 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
-import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -23,19 +23,18 @@ import kotlinx.coroutines.runBlocking
  */
 class LivingDocumentationTask(
     val editor: Editor,
-    val target: PsiNameIdentifierOwner,
+    val target: PsiElement,
     val type: LivingDocumentationType = LivingDocumentationType.COMMENT,
+    val documentation: LivingDocumentation,
 ) : Task.Backgroundable(editor.project, AutoDevBundle.message("intentions.request.background.process.title")) {
     override fun run(indicator: ProgressIndicator) {
-        val documentation = LivingDocumentation.forLanguage(target.language) ?: return
         val builder = LivingDocPromptBuilder(editor, target, documentation, type)
         val prompt = builder.buildPrompt(project, target, "")
         AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
 
         logger.info("Prompt: $prompt")
 
-        val stream =
-            LlmFactory().create(project).stream(prompt, "")
+        val stream = LlmFactory().create(project).stream(prompt, "")
 
         var result = ""
 

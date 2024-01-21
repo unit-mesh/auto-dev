@@ -1,10 +1,10 @@
 package cc.unitmesh.devti.intentions.action.base
 
 import cc.unitmesh.devti.custom.document.CustomDocumentationConfig
+import cc.unitmesh.devti.custom.document.LivingDocumentationType
 import cc.unitmesh.devti.intentions.action.task.LivingDocumentationTask
 import cc.unitmesh.devti.provider.LivingDocumentation
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.SelectionModel
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
@@ -36,13 +36,13 @@ abstract class BasedDocumentationIntention : AbstractChatIntention() {
 
             // find all targets in selection
             documentation.findDocTargetsInSelection(findFile, selectionModel).map {
-                writingDocument(editor, it)
+                writingDocument(editor, it, documentation)
             }
             return
         } else {
             val element = PsiUtilBase.getElementAtCaret(editor) ?: return
             val nearestDocumentationTarget = documentation.findNearestDocumentationTarget(element) ?: return
-            writingDocument(editor, nearestDocumentationTarget)
+            writingDocument(editor, nearestDocumentationTarget, documentation)
 
             return
         }
@@ -50,8 +50,8 @@ abstract class BasedDocumentationIntention : AbstractChatIntention() {
 
     }
 
-    open fun writingDocument(editor: Editor, element: PsiNameIdentifierOwner) {
-        val task: Task.Backgroundable = LivingDocumentationTask(editor, element)
+    open fun writingDocument(editor: Editor, element: PsiNameIdentifierOwner, documentation: LivingDocumentation) {
+        val task = LivingDocumentationTask(editor, element, LivingDocumentationType.COMMENT, documentation)
         ProgressManager.getInstance()
             .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
     }
