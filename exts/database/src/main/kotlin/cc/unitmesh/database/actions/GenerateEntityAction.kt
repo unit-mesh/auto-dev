@@ -1,5 +1,6 @@
 package cc.unitmesh.database.actions
 
+import cc.unitmesh.database.actions.base.SqlMigrationContext
 import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
 import cc.unitmesh.devti.provider.ContextPrompter
@@ -15,7 +16,7 @@ class GenerateEntityAction : AbstractChatIntention() {
 
     override fun priority() = 901
 
-    override fun getFamilyName(): String = "Generate Java Entity"
+    override fun getFamilyName(): String = "PL/SQL Migration"
 
     override fun getText(): String = "Generate Java Entity"
 
@@ -31,7 +32,7 @@ class GenerateEntityAction : AbstractChatIntention() {
 
         val templateRender = TemplateRender("genius/migration")
         val template = templateRender.getTemplate("gen-entity.vm")
-        templateRender.context = GenEntityContext(
+        templateRender.context = SqlMigrationContext(
             lang = file.language.displayName ?: "",
             sql = selectedText,
         )
@@ -48,7 +49,3 @@ class GenerateEntityAction : AbstractChatIntention() {
     }
 }
 
-data class GenEntityContext(
-    val lang: String = "",
-    var sql: String = "",
-)

@@ -1,0 +1,12 @@
+You are a professional application migration programmer.
+Write java unit test code to test the following Oracle PL/SQL code.
+
+— When some function is missing in Java, just skip it.
+- If you find some function is not correct, please fix it.
+- Follow the Java coding style.
+
+```${context.lang}
+${context.sql}
+```
+
+

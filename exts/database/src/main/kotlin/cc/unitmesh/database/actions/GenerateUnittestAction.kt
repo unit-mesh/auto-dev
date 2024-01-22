@@ -11,39 +11,30 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.sql.dialects.oracle.OraDialect
 
-class GenerateFunctionAction : AbstractChatIntention() {
-    override fun priority() = 901
+class GenerateUnittestAction : AbstractChatIntention() {
+    override fun priority(): Int = 899
 
     override fun getFamilyName(): String = "PL/SQL Migration"
 
-    override fun getText(): String = "Generate Java Function"
-
-    val logger = logger<GenerateFunctionAction>()
+    override fun getText(): String = "Generate Java Unit Test"
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         if (editor == null || file == null) return false
-        val isOracle = file.language is OraDialect
-        val selectedText = editor.selectionModel
-        val element = file.findElementAt(selectedText.selectionStart)
-
-        if (element != null) {
-            logger.info("element: ${element.text}")
-        }
-
-        return isOracle
+        return file.language is OraDialect
     }
+
+    val logger = logger<GenerateUnittestAction>()
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (editor == null || file == null) return
         val selectedText = editor.selectionModel.selectedText ?: return
 
         val templateRender = TemplateRender("genius/migration")
-        val template = templateRender.getTemplate("gen-function.vm")
+        val template = templateRender.getTemplate("gen-unittest.vm")
         templateRender.context = SqlMigrationContext(
             lang = file.language.displayName ?: "",
             sql = selectedText,
         )
-
         val prompter = templateRender.renderTemplate(template)
 
         logger.info("Prompt: $prompter")
@@ -55,7 +46,4 @@ class GenerateFunctionAction : AbstractChatIntention() {
             }, null, false)
         }
     }
-
 }
-
-
