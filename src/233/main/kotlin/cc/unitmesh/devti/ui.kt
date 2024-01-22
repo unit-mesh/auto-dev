@@ -1,8 +1,6 @@
 package cc.unitmesh.devti
 
-import com.intellij.ui.dsl.builder.Align
-import com.intellij.ui.dsl.builder.Cell
-import com.intellij.ui.dsl.builder.Row
+import com.intellij.ui.dsl.builder.*
 import javax.swing.JComponent
 
 fun <T : JComponent> Row.fullWidthCell(component: T): Cell<T> {
@@ -11,5 +9,14 @@ fun <T : JComponent> Row.fullWidthCell(component: T): Cell<T> {
 }
 
 fun <T : JComponent> Cell<T>.fullWidth(): Cell<T> {
-    return this.align(Align.FILL)
+    return this.align(AlignX.FILL)
+}
+
+fun <T : JComponent> Cell<T>.fullHeight(): Cell<T> {
+    return this.align(AlignY.FILL)
+}
+
+// align right
+fun <T : JComponent> Cell<T>.alignRight(): Cell<T> {
+    return this.align(AlignX.RIGHT)
 }

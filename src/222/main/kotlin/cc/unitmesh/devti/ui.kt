@@ -14,3 +14,13 @@ fun <T : JComponent> Row.fullWidthCell(component: T): Cell<T> {
 fun <T : JComponent> Cell<T>.fullWidth(): Cell<T> {
     return this.horizontalAlign(HorizontalAlign.FILL)
 }
+
+// full height and height
+fun <T : JComponent> Cell<T>.fullHeight(): Cell<T> {
+    return this.verticalAlign(VerticalAlign.FILL)
+}
+
+// align right
+fun <T : JComponent> Cell<T>.alignRight(): Cell<T> {
+    return this.horizontalAlign(HorizontalAlign.RIGHT)
+}

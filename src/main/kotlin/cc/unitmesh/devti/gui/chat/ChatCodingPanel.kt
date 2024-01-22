@@ -1,6 +1,9 @@
 package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.alignRight
+import cc.unitmesh.devti.fullHeight
+import cc.unitmesh.devti.fullWidth
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.ide.BrowserUtil
@@ -94,20 +97,21 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         panelContent = panel {
             row {
                 cell(myScrollPane)
-                    .verticalAlign(VerticalAlign.FILL)
-                    .horizontalAlign(HorizontalAlign.FILL)
+                    .fullWidth()
+                    .fullHeight()
+
             }.resizableRow()
 
             row {
-                cell(progressBar).horizontalAlign(HorizontalAlign.FILL)
+                cell(progressBar).fullWidth()
             }
 
             row {
-                cell(actionLink).horizontalAlign(HorizontalAlign.RIGHT)
+                cell(actionLink).alignRight()
             }
 
             row {
-                cell(inputSection).horizontalAlign(HorizontalAlign.FILL)
+                cell(inputSection).fullWidth()
             }
         }
 

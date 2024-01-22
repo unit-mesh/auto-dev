@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.runconfig.ui
 
+import cc.unitmesh.devti.fullWidth
 import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
@@ -16,13 +17,11 @@ class AutoDevSettingsEditor(project: Project) : SettingsEditor<AutoDevConfigurat
 
     override fun createEditor(): JComponent = panel {
         row("GitHub Project (owner/repo)") {
-            cell(githubRepo)
-                .horizontalAlign(HorizontalAlign.FILL)
+            cell(githubRepo).fullWidth()
         }
 
         row("Story ID:") {
-            cell(storyId)
-                .horizontalAlign(HorizontalAlign.FILL)
+            cell(storyId).fullWidth()
         }
     }.also {
         panel = it
