@@ -34,13 +34,7 @@ class AutoDevPairToolWindow(val project: Project, val disposable: Disposable) : 
 
         // https://plugins.jetbrains.com/docs/intellij/kotlin-ui-dsl-version-2.html
         val panel = panel {
-            row("Your Task") {
-                text("Your context-aware pair for help you!")
-                textField()
-                    .comment("Your task for asking help!")
-                    .bindText(model::input)
-            }
-
+            row { text("Your context-aware pair!") }
             row {
                 val inputSection = AutoDevInputSection(project, disposable)
                 inputSection.addListener(object : AutoDevInputListener {
@@ -49,7 +43,10 @@ class AutoDevPairToolWindow(val project: Project, val disposable: Disposable) : 
                         println("prompt: $prompt")
                     }
                 })
+
+                fullWidthCell(inputSection)
             }
+            row { text("Debug context!") }
             row {
                 val text = layeredArch?.print() ?: "No Layered Arch"
                 val block = CodeBlock(SimpleMessage(text, text, ChatRole.User))
