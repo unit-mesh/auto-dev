@@ -20,8 +20,6 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.dsl.gridLayout.HorizontalAlign
-import com.intellij.ui.dsl.gridLayout.VerticalAlign
 import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil

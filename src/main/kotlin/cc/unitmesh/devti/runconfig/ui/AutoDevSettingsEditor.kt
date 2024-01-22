@@ -1,11 +1,11 @@
 package cc.unitmesh.devti.runconfig.ui
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.fullWidth
 import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import javax.swing.JComponent
 
 class AutoDevSettingsEditor(project: Project) : SettingsEditor<AutoDevConfiguration>() {
@@ -16,11 +16,11 @@ class AutoDevSettingsEditor(project: Project) : SettingsEditor<AutoDevConfigurat
     private val storyId = DtCommandLineEditor(project, completionProvider)
 
     override fun createEditor(): JComponent = panel {
-        row("GitHub Project (owner/repo)") {
+        row(AutoDevBundle.message("devti.settings.githubRepo")) {
             cell(githubRepo).fullWidth()
         }
 
-        row("Story ID:") {
+        row(AutoDevBundle.message("devti.settings.storyId")) {
             cell(storyId).fullWidth()
         }
     }.also {

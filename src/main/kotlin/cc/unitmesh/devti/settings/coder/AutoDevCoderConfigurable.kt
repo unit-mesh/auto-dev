@@ -12,7 +12,9 @@ import javax.swing.JTextField
 
 class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBundle.message("settings.autodev.coder")) {
     private val recordingInLocalCheckBox = JCheckBox()
-    private val disableAdvanceContextCheckBox = JCheckBox()
+    private val disableAdvanceContextCheckBox = JCheckBox().apply {
+        toolTipText = AutoDevBundle.message("settings.autodev.coder.disableAdvanceContext.tips")
+    }
     private val inEditorCompletionCheckBox = JCheckBox()
     private val noChatHistoryCheckBox = JCheckBox()
 

@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.settings.configurable
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.fullWidthCell
 import cc.unitmesh.devti.settings.helper.ToolchainPathChoosingComboBox
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.service
@@ -9,8 +10,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.dsl.builder.*
-import com.intellij.ui.dsl.gridLayout.HorizontalAlign
-import javax.swing.JComponent
 import javax.swing.JTextField
 
 class CoUnitToolConfigurable(project: Project) : BoundConfigurable(AutoDevBundle.message("counit.name")), Disposable {
@@ -52,9 +51,4 @@ class CoUnitToolConfigurable(project: Project) : BoundConfigurable(AutoDevBundle
     override fun dispose() {
         Disposer.dispose(pathToToolchainComboBox)
     }
-}
-
-fun <T : JComponent> Row.fullWidthCell(component: T): Cell<T> {
-    return cell(component)
-        .horizontalAlign(HorizontalAlign.FILL)
 }
