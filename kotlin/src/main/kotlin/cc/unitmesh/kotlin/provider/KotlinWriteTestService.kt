@@ -90,7 +90,7 @@ class KotlinWriteTestService : WriteTestService() {
 
         project.guessProjectDir()?.refresh(true, true)
 
-        val currentClass: String = runReadAction {
+        val currentClass: String = ReadAction.compute<String, Throwable> {
             val classContext = when (element) {
                 is KtClassOrObject -> ClassContextProvider(false).from(element)
                 is KtNamedFunction -> {
@@ -102,7 +102,7 @@ class KotlinWriteTestService : WriteTestService() {
                 else -> null
             }
 
-            return@runReadAction classContext?.format() ?: ""
+            return@compute classContext?.format() ?: ""
         }
 
         val imports: List<String> = runReadAction {
