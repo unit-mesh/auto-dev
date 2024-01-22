@@ -20,6 +20,11 @@
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
+        <autoDevIntention>
+            <className>cc.unitmesh.database.actions.VisualSqlAction</className>
+            <bundleName>messages.AutoDevBundle</bundleName>
+            <categoryKey>intention.category.llm</categoryKey>
+        </autoDevIntention>
 
         <livingDocumentation
                 language="SQL"

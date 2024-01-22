@@ -1,6 +1,7 @@
 package cc.unitmesh.database.actions
 
 import cc.unitmesh.database.actions.base.SqlMigrationContext
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
 import cc.unitmesh.devti.provider.ContextPrompter
@@ -14,9 +15,9 @@ import com.intellij.sql.dialects.oracle.OraDialect
 class GenerateFunctionAction : AbstractChatIntention() {
     override fun priority() = 901
 
-    override fun getFamilyName(): String = "PL/SQL Migration"
+    override fun getFamilyName(): String = AutoDevBundle.message("migration.database.plsql")
 
-    override fun getText(): String = "Generate Java Function"
+    override fun getText(): String = AutoDevBundle.message("migration.database.plsql.generate.function")
 
     val logger = logger<GenerateFunctionAction>()
 
