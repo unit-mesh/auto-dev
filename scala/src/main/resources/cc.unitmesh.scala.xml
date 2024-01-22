@@ -1,16 +1,13 @@
 <idea-plugin package="cc.unitmesh.scala">
     <!--suppress PluginXmlValidity -->
     <dependencies>
-        <!--suppress PluginXmlValidity -->
-        <module name="jvm-core"/>
         <plugin id="org.intellij.scala"/>
-<!--        <plugin id="org.jetbrains.plugins.gradle"/>-->
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <classContextBuilder
                 language="Scala"
                 implementationClass="cc.unitmesh.scala.context.ScalaClassContextBuilder"
-                />
+        />
     </extensions>
 </idea-plugin>
