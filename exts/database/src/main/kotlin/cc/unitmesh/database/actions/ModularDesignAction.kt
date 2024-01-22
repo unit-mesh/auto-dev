@@ -6,14 +6,14 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
-class VisualSqlAction : AbstractChatIntention() {
-    override fun priority(): Int = 1001
+class ModularDesignAction : AbstractChatIntention() {
+    override fun priority(): Int = 899
 
     override fun startInWriteAction(): Boolean = false
 
     override fun getFamilyName(): String = AutoDevBundle.message("migration.database.plsql")
 
-    override fun getText(): String = AutoDevBundle.message("migration.database.plsql.visual")
+    override fun getText(): String = AutoDevBundle.message("migration.database.plsql.modular.design")
 
     override fun isAvailable(project: Project, editor: Editor?, psiFile: PsiFile?): Boolean {
         return false
