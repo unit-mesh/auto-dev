@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.gui.pair
 
+import cc.unitmesh.devti.fullWidth
 import cc.unitmesh.devti.fullWidthCell
 import cc.unitmesh.devti.gui.chat.AutoDevInputListener
 import cc.unitmesh.devti.gui.chat.AutoDevInputSection
@@ -19,11 +20,13 @@ import com.intellij.temporary.gui.block.CodeBlockView
 import com.intellij.temporary.gui.block.SimpleMessage
 import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.dsl.builder.rows
 
 data class PairContext(
     var input: String = "",
     var tasks: List<Tasking> = listOf(),
     var arch: ProjectPackageTree? = null,
+    var similarCode: String = "",
 )
 
 class AutoDevPairToolWindow(val project: Project, val disposable: Disposable) : SimpleToolWindowPanel(true, true),
@@ -44,7 +47,7 @@ class AutoDevPairToolWindow(val project: Project, val disposable: Disposable) : 
                     }
                 })
 
-                fullWidthCell(inputSection)
+                cell(inputSection).fullWidth()
             }
             row { text("Debug context!") }
             row {
@@ -56,6 +59,9 @@ class AutoDevPairToolWindow(val project: Project, val disposable: Disposable) : 
                 val component = codeBlockView.getComponent()
 
                 fullWidthCell(component)
+            }
+            row {
+                textArea().bindText(model::similarCode).rows(5).fullWidth()
             }
         }
 
