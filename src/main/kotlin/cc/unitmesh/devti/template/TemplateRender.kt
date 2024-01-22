@@ -1,17 +1,34 @@
 package cc.unitmesh.devti.template
 
 import cc.unitmesh.cf.core.llms.LlmMsg
+import cc.unitmesh.devti.custom.team.TeamPromptsBuilder
 import cc.unitmesh.template.TemplateRoleSplitter
+import com.intellij.openapi.project.ProjectManager
 import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.Velocity
 import java.io.StringWriter
 import java.nio.charset.Charset
 
-class TemplateRender(pathPrefix: String) {
+class TemplateRender(val pathPrefix: String) {
     private val defaultPrefix: String = pathPrefix.trimEnd('/')
     private val velocityContext = VelocityContext()
     private val splitter = TemplateRoleSplitter()
     var context: Any = ""
+
+
+    /**
+     * Retrieves the template for a given filename.
+     *
+     * @param filename the name of the file for which the template is requested
+     * @return the template string for the specified filename, or the default template if no override is found
+     */
+    fun getTemplate(filename: String): String {
+        val overrideTemplate = ProjectManager.getInstance().openProjects.firstOrNull().let {
+            TeamPromptsBuilder(it!!).overrideTemplate(pathPrefix, filename)
+        }
+
+        return overrideTemplate ?: getDefaultTemplate(filename)
+    }
 
     /**
      * Retrieves the template content from the specified file.
@@ -20,7 +37,7 @@ class TemplateRender(pathPrefix: String) {
      * @return the content of the template as a string
      * @throws TemplateNotFoundError if the specified file cannot be found
      */
-    fun getTemplate(filename: String): String {
+    private fun getDefaultTemplate(filename: String): String {
         val path = "$defaultPrefix/$filename"
         val resourceUrl = javaClass.classLoader.getResource(path) ?: throw TemplateNotFoundError(path)
         val bytes = resourceUrl.readBytes()

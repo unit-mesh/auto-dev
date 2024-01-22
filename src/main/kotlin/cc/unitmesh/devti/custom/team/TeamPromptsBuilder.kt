@@ -10,16 +10,16 @@ import com.intellij.openapi.vfs.VirtualFile
 @Service(Service.Level.PROJECT)
 class TeamPromptsBuilder(private val project: Project) {
     val settings = project.teamPromptsSettings
+    val baseDir = settings.state.teamPromptsDir
+
     fun default(): List<TeamPromptAction> {
-        val path = settings.state.teamPromptsDir
-        val promptsDir = project.guessProjectDir()?.findChild(path) ?: return emptyList()
+        val promptsDir = project.guessProjectDir()?.findChild(baseDir) ?: return emptyList()
 
         val filterPrompts = promptsDir.children.filter { it.name.endsWith(".vm") }
         return buildPrompts(filterPrompts)
     }
 
     fun quickPrompts(): List<TeamPromptAction> {
-        val baseDir = settings.state.teamPromptsDir
         val promptsDir = project.guessProjectDir()?.findChild(baseDir) ?: return emptyList()
         val quickPromptDir = promptsDir.findChild("quick") ?: return emptyList()
         val quickPromptFiles = quickPromptDir.children.filter { it.name.endsWith(".vm") }
@@ -37,6 +37,14 @@ class TeamPromptsBuilder(private val project: Project) {
 
             TeamPromptAction(promptName, actionPrompt)
         }
+    }
+
+    fun overrideTemplate(pathPrefix: String, filename: String): String? {
+        val promptsDir = project.guessProjectDir()?.findChild(baseDir) ?: return null
+        val path = "$pathPrefix/$filename"
+
+        val overrideFile = promptsDir.findChild(path) ?: return null
+        return runReadAction { overrideFile.inputStream.readBytes().toString(Charsets.UTF_8) }
     }
 }
 
