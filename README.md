@@ -23,7 +23,7 @@
 > 🧙‍AutoDev: The AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, and a helpful
 > bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Dev/Testing feature 🧪 included! 🚀
 
-[Read the docs →](https://ide.unitmesh.cc/)
+[Quick Start →](https://ide.unitmesh.cc/quick-start)
 
 AutoDev Overview:
 
