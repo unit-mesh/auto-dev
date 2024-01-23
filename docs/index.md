@@ -29,7 +29,7 @@ permalink: /
 </p>
 
 > 🧙‍AutoDev: The AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, and a helpful
-> bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Dev/Testing feature 🧪 included! 🚀
+> bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Dev/Testing/Document feature 🧪 included! 🚀
 
 AutoDev Overview:
 
@@ -39,12 +39,13 @@ AutoDev Overview:
 
 Features:
 
-- Languages support: Java, Kotlin, JavaScript/TypeScript, Rust, Python, Golang,  or others...
+- Languages support: Java, Kotlin, JavaScript/TypeScript, Rust, Python, Golang, or others...
 - Auto development mode.
     - With DevTi Protocol (like `devti://story/github/1102`) will auto generate
       Model-Controller-Service-Repository code.
     - AutoCRUD mode (Java/Kotlin Language only）. Auto generate CRUD code.
     - Auto Testing. create unit test intention, auto run unit test and try to fix test.
+    - Auto Document. Auto generate document.
 - Copilot mode
     - Pattern specific.Based on your code context like (Controller, Service `import`), AutoDev will suggest you the best
       code.
@@ -53,12 +54,14 @@ Features:
 - Chat mode
     - Chat with AI.
     - Chat with selection code.
+    - Chat with code context-aware (To be implemented).
 - Customize.
     - Custom specification of prompt.
     - Custom intention action. You can add your own intention action.
     - Custom LLM Server. You can customize your LLM Server in `Settings` -> `Tools` -> `AutoDev`
     - Custom Living documentation.
     - Team prompts. Customize your team prompts in codebase, and distribute to your team.
+    - Prompt override. You can override AutoDev's prompt in your codebase.
 - Miscellaneous
     - CI/CD support. AutoDev will auto generate CI/CD config file.
     - Dockerfile support. AutoDev will auto generate Dockerfile.
@@ -67,7 +70,6 @@ Features:
     - [UnitGen](https://github.com/unit-mesh/unit-gen) generate fine-tune data.
 
 AutoDev fine-tune models:
-
 
 | name          | model download (HuggingFace)                                    | finetune Notebook                    | model download (OpenBayes)                                                          |
 |---------------|-----------------------------------------------------------------|--------------------------------------|-------------------------------------------------------------------------------------|

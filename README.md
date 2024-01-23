@@ -21,7 +21,7 @@
 </p>
 
 > 🧙‍AutoDev: The AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, and a helpful
-> bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Dev/Testing feature 🧪 included! 🚀
+> bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Dev/Testing/Document feature 🧪 included! 🚀
 
 [Quick Start →](https://ide.unitmesh.cc/quick-start)
 
@@ -31,29 +31,32 @@ AutoDev Overview:
   <img src="docs/autodev-overview.svg" width="100%" height="100%"  alt="Overview" />
 </p>
 
+
 Features:
 
-- Languages support: Java, Kotlin, JavaScript/TypeScript, Rust, Python, Golang,  or others...
+- Languages support: Java, Kotlin, JavaScript/TypeScript, Rust, Python, Golang, or others...
 - Auto development mode.
     - With DevTi Protocol (like `devti://story/github/1102`) will auto generate
       Model-Controller-Service-Repository code.
     - AutoCRUD mode (Java/Kotlin Language only）. Auto generate CRUD code.
     - Auto Testing. create unit test intention, auto run unit test and try to fix test.
+    - Auto Document. Auto generate document.
 - Copilot mode
     - Pattern specific.Based on your code context like (Controller, Service `import`), AutoDev will suggest you the best
       code.
-    - Related code. Based on recent file changes, AutoDev will call calculate similar chunk to generate best code.
+    - Related code. Based on recent file changes, AutoDev will call calculate similar chunk to generate the best code.
     - AutoDev will help you find bug, explain code, trace exception, generate commits, and more.
 - Chat mode
     - Chat with AI.
     - Chat with selection code.
+    - Chat with code context-aware (To be implemented).
 - Customize.
     - Custom specification of prompt.
     - Custom intention action. You can add your own intention action.
     - Custom LLM Server. You can customize your LLM Server in `Settings` -> `Tools` -> `AutoDev`
     - Custom Living documentation.
     - Team prompts. Customize your team prompts in codebase, and distribute to your team.
-    - Custom Quick Action. You can add your own quick action.
+    - Prompt override. You can override AutoDev's prompt in your codebase.
 - Miscellaneous
     - CI/CD support. AutoDev will auto generate CI/CD config file.
     - Dockerfile support. AutoDev will auto generate Dockerfile.
