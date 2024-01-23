@@ -1,19 +1,21 @@
 Write a cohesive yet descriptive commit message for a given diff.
-Make sure to include both information What was changed and Why.
-Start with a short sentence in imperative form, no more than 50 characters long.
-Then leave an empty line and continue with a more detailed explanation, if necessary.
-Explanation should have less than 200 characters.
+- Make sure to include both information What was changed and Why.
+- Start with a short sentence in imperative form, no more than 50 characters long.
+- Then leave an empty line and continue with a more detailed explanation, if necessary.
+- Explanation should have less than 200 characters.
 
-examples:
-- fix(authentication): add password regex pattern
-- feat(storage): add new test cases
+Follow the Conventional Commits specification, examples:
+- fix(authentication): fix password regex pattern case
+- feat(storage): add support for S3 storage
 - test(java): fix test case for user controller
+- docs(docs): add architecture diagram to home page
 
-Diff:
 #if( $context.historyExamples.length() > 0 )
-History Examples:
+Here is History Examples:
 $context.historyExamples
 #end
+
+Diff:
 
 ```diff
 ${context.diffContent}
