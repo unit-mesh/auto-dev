@@ -7,19 +7,21 @@ import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.template.TemplateRender
+import cc.unitmesh.devti.util.LLMCoroutineScope
 import com.intellij.database.model.DasTable
 import com.intellij.database.model.ObjectKind
 import com.intellij.database.psi.DbPsiFacade
 import com.intellij.database.util.DasUtil
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 
@@ -65,12 +67,11 @@ class GenSqlScriptBySelection : AbstractChatIntention() {
 
         sendToChatPanel(project) { contentPanel, _ ->
             val llmProvider = LlmFactory().create(project)
-            val prompter = GenSqlFlow(dbContext, actions, contentPanel, llmProvider)
-            ApplicationManager.getApplication().invokeLater {
+            val prompter = GenSqlFlow(dbContext, actions, contentPanel, llmProvider, project)
 
-                ProgressManager.getInstance()
-                    .run(generateSqlWorkflow(project, prompter, editor))
-            }
+            val task = generateSqlWorkflow(project, prompter, editor)
+            ProgressManager.getInstance()
+                .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
         }
     }
 
@@ -78,8 +79,8 @@ class GenSqlScriptBySelection : AbstractChatIntention() {
         project: Project,
         flow: GenSqlFlow,
         editor: Editor,
-    ) =
-        object : Task.Backgroundable(project, "Loading retained test failure", true) {
+    ): Task.Backgroundable {
+        return object : Task.Backgroundable(project, "Gen SQL", true) {
             override fun run(indicator: ProgressIndicator) {
                 indicator.fraction = 0.2
 
@@ -104,25 +105,23 @@ class GenSqlScriptBySelection : AbstractChatIntention() {
                 indicator.fraction = 1.0
             }
         }
+    }
 }
 
 class GenSqlFlow(
     val dbContext: DbContext,
     val actions: DbContextActionProvider,
     val ui: ChatCodingPanel,
-    val llm: LLMProvider
+    val llm: LLMProvider,
+    val project: Project
 ) {
     private val logger = logger<GenSqlFlow>()
 
     fun clarify(): String {
         val stepOnePrompt = generateStepOnePrompt(dbContext, actions)
-        try {
-            ui.addMessage(stepOnePrompt, true, stepOnePrompt)
-            // for answer
-            ui.addMessage(AutoDevBundle.message("autodev.loading"))
-        } catch (e: Exception) {
-            logger.error("Error: $e")
-        }
+
+        ui.addMessage(stepOnePrompt, true, stepOnePrompt)
+        ui.addMessage(AutoDevBundle.message("autodev.loading"))
 
         return runBlocking {
             val prompt = llm.stream(stepOnePrompt, "")
@@ -132,13 +131,9 @@ class GenSqlFlow(
 
     fun generate(tableNames: List<String>): String {
         val stepTwoPrompt = generateStepTwoPrompt(dbContext, actions, tableNames)
-        try {
-            ui.addMessage(stepTwoPrompt, true, stepTwoPrompt)
-            // for answer
-            ui.addMessage(AutoDevBundle.message("autodev.loading"))
-        } catch (e: Exception) {
-            logger.error("Error: $e")
-        }
+
+        ui.addMessage(stepTwoPrompt, true, stepTwoPrompt)
+        ui.addMessage(AutoDevBundle.message("autodev.loading"))
 
         return runBlocking {
             val prompt = llm.stream(stepTwoPrompt, "")
@@ -201,7 +196,7 @@ data class DbContextActionProvider(val dasTables: List<DasTable>) {
             if (tables.contains(tableName.name)) {
                 val columns = DasUtil.getColumns(tableName).map {
                     "${it.name}: ${it.dasType.toDataType()}"
-                }
+                }.joinToString(", ")
 
                 "TableName: ${tableName.name}, Columns: $columns"
             } else {

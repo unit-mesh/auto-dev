@@ -105,14 +105,14 @@ class CodeBlockView(
             document: Document,
             disposable: Disposable
         ): EditorEx {
-            val editor: Editor = EditorFactory.getInstance()
-                .createViewer(document, project, EditorKind.PREVIEW)
+            val editor: EditorEx = EditorFactory.getInstance()
+                .createViewer(document, project, EditorKind.PREVIEW) as EditorEx
 
             disposable.whenDisposed(disposable) {
                 EditorFactory.getInstance().releaseEditor(editor)
             }
 
-            (editor as EditorEx).setFile(file)
+            editor.setFile(file)
             editor.setCaretEnabled(true)
             val highlighter = EditorHighlighterFactory.getInstance().createEditorHighlighter(project, file)
 
