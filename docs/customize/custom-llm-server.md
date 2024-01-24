@@ -75,24 +75,48 @@ Only support amount of request parameters like OpenAI does.
 Only support http request that don't need encryption keys(like websocket)
 
 
-### Custom Request (header and body)
+### Custom Request (header/body/message-keys)
 
-You can add top level field to the request body,
-And custom the origin keys for `role`, `messsage`
+**BE CAREFUL: In this project, messageKey is not compatible with openAI: messageKeys: `{ { "content": "content" } }`is REQUIRED** *maybe we will fix this in the future.*
+
+If your llm server has custom request format, you can:
+
+- Add top level field to the request body via `customFields`
+- Add custom headers to the request via `customHeaders`
+- Customize the messages key via `messageKeys`
+
+For example:
+
+```json
+{ "customFields": {"user": "12345", "model":"model-name", "stream": true},  "messageKeys": { "content": "content" }}
+```
+
+
+
 
 ```json
 {
-  "customHeaders": { "my header": "my value" },
-  "customFields": {"user": "userid", "date": "2012"},
+  "customHeaders": { "CustomHeader": "my-value" },
+  "customFields": {"user": "12345", "model": "gpt-4"},
   "messageKeys": {"role": "role", "content": "message"}
 }
 ```
 
-and the request body will be:
+Request header will be( origin key is omitted here):
+
+```http-request
+POST https://your.server.com/path
+
+CustomHeader: my-value
+...(other headers)
+```
+
+And the request body will be:
 
 ```json
 {
-	"user": "userid",
+	"user": "12345",
+    "model": "gpt-4",
     "messages": [{"role": "user", "message": "..."}]
   }
 ```
