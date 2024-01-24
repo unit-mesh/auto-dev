@@ -11,7 +11,7 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.runBlocking
 
 class GenSqlFlow(
-    val genFlowContext: GenFlowContext,
+    val genSqlContext: GenSqlContext,
     val actions: DbContextActionProvider,
     val ui: ChatCodingPanel,
     val llm: LLMProvider,
@@ -20,7 +20,7 @@ class GenSqlFlow(
     private val logger = logger<GenSqlFlow>()
 
     fun clarify(): String {
-        val stepOnePrompt = generateStepOnePrompt(genFlowContext, actions)
+        val stepOnePrompt = generateStepOnePrompt(genSqlContext, actions)
 
         LLMCoroutineScope.scope(project).runCatching {
             ui.addMessage(stepOnePrompt, true, stepOnePrompt)
@@ -36,7 +36,7 @@ class GenSqlFlow(
     }
 
     fun generate(tableNames: List<String>): String {
-        val stepTwoPrompt = generateStepTwoPrompt(genFlowContext, actions, tableNames)
+        val stepTwoPrompt = generateStepTwoPrompt(genSqlContext, actions, tableNames)
 
         LLMCoroutineScope.scope(project).runCatching {
             ui.addMessage(stepTwoPrompt, true, stepTwoPrompt)
@@ -51,7 +51,7 @@ class GenSqlFlow(
         }
     }
 
-    private fun generateStepOnePrompt(context: GenFlowContext, actions: DbContextActionProvider): String {
+    private fun generateStepOnePrompt(context: GenSqlContext, actions: DbContextActionProvider): String {
         val templateRender = TemplateRender("genius/sql")
         val template = templateRender.getTemplate("sql-gen-clarify.vm")
 
@@ -65,16 +65,16 @@ class GenSqlFlow(
     }
 
     private fun generateStepTwoPrompt(
-        genFlowContext: GenFlowContext,
+        genSqlContext: GenSqlContext,
         actions: DbContextActionProvider,
         tableInfos: List<String>
     ): String {
         val templateRender = TemplateRender("genius/sql")
         val template = templateRender.getTemplate("sql-gen-design.vm")
 
-        genFlowContext.tableInfos = actions.getTableColumns(tableInfos)
+        genSqlContext.tableInfos = actions.getTableColumns(tableInfos)
 
-        templateRender.context = genFlowContext
+        templateRender.context = genSqlContext
         templateRender.actions = actions
 
         val prompter = templateRender.renderTemplate(template)

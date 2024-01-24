@@ -1,10 +1,13 @@
 package cc.unitmesh.database.flow
 
-data class GenFlowContext(
+data class GenSqlContext(
     val requirement: String,
     val databaseVersion: String,
     val schemaName: String,
     val tableNames: List<String>,
-    // for step 2
+    /**
+     * Step 2.
+     * A list of table names to retrieve the columns from.
+     */
     var tableInfos: List<String> = emptyList(),
 )

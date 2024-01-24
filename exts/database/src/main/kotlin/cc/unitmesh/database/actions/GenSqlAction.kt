@@ -1,7 +1,7 @@
 package cc.unitmesh.database.actions
 
 import cc.unitmesh.database.DbContextActionProvider
-import cc.unitmesh.database.flow.GenFlowContext
+import cc.unitmesh.database.flow.GenSqlContext
 import cc.unitmesh.database.flow.GenSqlFlow
 import cc.unitmesh.database.flow.GenSqlTask
 import cc.unitmesh.devti.AutoDevBundle
@@ -11,7 +11,6 @@ import cc.unitmesh.devti.llms.LlmFactory
 import com.intellij.database.model.ObjectKind
 import com.intellij.database.psi.DbPsiFacade
 import com.intellij.database.util.DasUtil
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
@@ -19,7 +18,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
 
-class GenSqlScriptBySelection : AbstractChatIntention() {
+class GenSqlAction : AbstractChatIntention() {
     override fun priority(): Int = 1001
     override fun startInWriteAction(): Boolean = false
     override fun getFamilyName(): String = AutoDevBundle.message("migration.database.plsql")
@@ -29,8 +28,6 @@ class GenSqlScriptBySelection : AbstractChatIntention() {
         DbPsiFacade.getInstance(project).dataSources.firstOrNull() ?: return false
         return true
     }
-
-    private val logger = logger<GenSqlScriptBySelection>()
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (editor == null || file == null) return
@@ -48,7 +45,7 @@ class GenSqlScriptBySelection : AbstractChatIntention() {
             tables.filter { table -> table.kind == ObjectKind.TABLE && table.dasParent?.name == schemaName }
         }.toList()
 
-        val genFlowContext = GenFlowContext(
+        val genSqlContext = GenSqlContext(
             requirement = selectedText ?: "",
             databaseVersion = databaseVersion.let {
                 "name: ${it.name}, version: ${it.version}"
@@ -61,7 +58,7 @@ class GenSqlScriptBySelection : AbstractChatIntention() {
 
         sendToChatPanel(project) { contentPanel, _ ->
             val llmProvider = LlmFactory().create(project)
-            val prompter = GenSqlFlow(genFlowContext, actions, contentPanel, llmProvider, project)
+            val prompter = GenSqlFlow(genSqlContext, actions, contentPanel, llmProvider, project)
 
             val task = GenSqlTask(project, prompter, editor)
             ProgressManager.getInstance()

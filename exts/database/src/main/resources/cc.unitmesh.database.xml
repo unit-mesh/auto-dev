@@ -21,12 +21,7 @@
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
         <autoDevIntention>
-            <className>cc.unitmesh.database.actions.GenSqlScriptBySelection</className>
-            <bundleName>messages.AutoDevBundle</bundleName>
-            <categoryKey>intention.category.llm</categoryKey>
-        </autoDevIntention>
-        <autoDevIntention>
-            <className>cc.unitmesh.database.actions.ModularDesignAction</className>
+            <className>cc.unitmesh.database.actions.GenSqlAction</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
