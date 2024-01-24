@@ -3,12 +3,15 @@ package cc.unitmesh.ide.javascript.flow
 import cc.unitmesh.devti.flow.TaskFlow
 
 /**
+ * FrontendFlow is an interface that represents the flow of tasks in a frontend application.
+ * It provides methods for retrieving routes, components, design system components, remote calls, and state management.
  *
- * 1. Finding Function bootstrap, like the main function in java, ReactDom.render in React
- * 2. IO Handing
- * 3. Transform data, like State in React, Vuex in Vue
- * 4. Processing calling, like the fetch in React, the axios in Vue
- * 5. Output Transform, like the render in React, the template in Vue
+ * Based on our workflow design rules: [Workflow](http://ide.unitmesh.cc/workflow)
+ *
+ * 1. Functional bootstrap
+ * 2. Request Transform / Data validation, IO Handing.
+ * 3. Process IPC/RPC Calling
+ * 4. Output Transform / Render
  */
 interface FrontendFlow : TaskFlow<String> {
     var userTask: String
@@ -26,7 +29,8 @@ interface FrontendFlow : TaskFlow<String> {
     fun getComponents(): List<DsComponent>
 
     /**
-     * Get the design system components, like the Ant Design in React, the Element in Vue
+     * Get the design system components, like the Ant Design in React.
+     * Which will load the design system components from the remote
      * @return list of design system components
      */
     fun getDesignSystemComponents(): List<DsComponent>
@@ -38,7 +42,7 @@ interface FrontendFlow : TaskFlow<String> {
     fun sampleRemoteCall(): String
 
     /**
-     * Get the state management, like the Vuex in Vue, the Redux in React, maybe Empty
+     * Get the state management as a sample, like the Vuex in Vue, the Redux in React, maybe Empty
      * @return list of state management
      */
     fun sampleStateManagement(): String?
