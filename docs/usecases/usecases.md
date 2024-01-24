@@ -1,19 +1,11 @@
 ---
 layout: default
-title: Workflow
+title: Use Cases
 nav_order: 6
-has_children: true
-permalink: /workflow
+has_children: false
 ---
 
-> AutoDev Workflow (#[81](https://github.com/unit-mesh/auto-dev/issues/81))
-
-Dataflow design
-
-1. Function bootstrap
-2. Request Transform / Data validation, IO Handing.
-3. Process IPC/RPC Calling
-4. Output Transform / Render
+TODO: Usecases
 
 {: .no_toc }
 

@@ -23,6 +23,12 @@ interface FrontendFlow : TaskFlow<String> {
     fun getRoutes(): List<String>
 
     /**
+     * Get all pages in the project, based on the naming convention, like the PascalCase under `src/pages`
+     * @return list of pages
+     */
+    fun getPages(): List<DsComponent>
+
+    /**
      * Get all components in the project, based on the naming convention, like the PascalCase under `src/components`
      * @return list of components
      */
