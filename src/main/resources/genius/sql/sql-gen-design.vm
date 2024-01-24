@@ -18,10 +18,9 @@ select average_trip_length from subscriber_type where subscriber_type = 'subscri
 
 Here are the requirements:
 
-```
+```markdown
 ${context.requirement}
 ```
 
-Please write your SQL here:
+Please write your SQL with Markdown syntax, no explanation is needed. :
 
-```sql

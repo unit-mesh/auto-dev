@@ -12,7 +12,7 @@ import com.intellij.database.model.ObjectKind
 import com.intellij.database.psi.DbPsiFacade
 import com.intellij.database.util.DasUtil
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
@@ -69,15 +69,15 @@ class GenSqlScriptBySelection : AbstractChatIntention() {
             ApplicationManager.getApplication().invokeLater {
 
                 ProgressManager.getInstance()
-                    .run(generateSqlWorkflow(project, contentPanel, prompter))
+                    .run(generateSqlWorkflow(project, prompter, editor))
             }
         }
     }
 
     private fun generateSqlWorkflow(
         project: Project,
-        ui: ChatCodingPanel,
         flow: GenSqlFlow,
+        editor: Editor,
     ) =
         object : Task.Backgroundable(project, "Loading retained test failure", true) {
             override fun run(indicator: ProgressIndicator) {
@@ -85,18 +85,21 @@ class GenSqlScriptBySelection : AbstractChatIntention() {
 
 
                 indicator.text = AutoDevBundle.message("migration.database.sql.generate.clarify")
-                val tables = ReadAction.compute<String, Throwable> {
-                    flow.clarify()
-                }
+                val tables = flow.clarify()
 
+                logger.info("Tables: $tables")
                 // tables will be list in string format, like: `[table1, table2]`, we need to parse to Lists
                 val tableNames = tables.substringAfter("[").substringBefore("]")
                     .split(", ").map { it.trim() }
 
                 indicator.fraction = 0.6
+                indicator.text = AutoDevBundle.message("migration.database.sql.generate.generate")
                 val sqlScript = flow.generate(tableNames)
 
                 logger.info("SQL Script: $sqlScript")
+                WriteCommandAction.runWriteCommandAction(project, "Gen SQL", "cc.unitmesh.livingDoc", {
+                    editor.document.insertString(editor.caretModel.offset, sqlScript)
+                })
 
                 indicator.fraction = 1.0
             }
@@ -113,9 +116,13 @@ class GenSqlFlow(
 
     fun clarify(): String {
         val stepOnePrompt = generateStepOnePrompt(dbContext, actions)
-        ui.addMessage(stepOnePrompt, true, stepOnePrompt)
-        // for answer
-        ui.addMessage(AutoDevBundle.message("autodev.loading"))
+        try {
+            ui.addMessage(stepOnePrompt, true, stepOnePrompt)
+            // for answer
+            ui.addMessage(AutoDevBundle.message("autodev.loading"))
+        } catch (e: Exception) {
+            logger.error("Error: $e")
+        }
 
         return runBlocking {
             val prompt = llm.stream(stepOnePrompt, "")
@@ -125,16 +132,19 @@ class GenSqlFlow(
 
     fun generate(tableNames: List<String>): String {
         val stepTwoPrompt = generateStepTwoPrompt(dbContext, actions, tableNames)
-        ui.addMessage(stepTwoPrompt, true, stepTwoPrompt)
-        // for answer
-        ui.addMessage(AutoDevBundle.message("autodev.loading"))
+        try {
+            ui.addMessage(stepTwoPrompt, true, stepTwoPrompt)
+            // for answer
+            ui.addMessage(AutoDevBundle.message("autodev.loading"))
+        } catch (e: Exception) {
+            logger.error("Error: $e")
+        }
 
         return runBlocking {
             val prompt = llm.stream(stepTwoPrompt, "")
             return@runBlocking ui.updateMessage(prompt)
         }
     }
-
 
     private fun generateStepOnePrompt(context: DbContext, actions: DbContextActionProvider): String {
         val templateRender = TemplateRender("genius/sql")
@@ -155,7 +165,7 @@ class GenSqlFlow(
         tableInfos: List<String>
     ): String {
         val templateRender = TemplateRender("genius/sql")
-        val template = templateRender.getTemplate("sql-gen-generate.vm")
+        val template = templateRender.getTemplate("sql-gen-design.vm")
 
         dbContext.tableInfos = actions.getTableColumns(tableInfos)
 

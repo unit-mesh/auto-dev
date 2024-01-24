@@ -8,14 +8,14 @@ According to the user's requirements, you should choose the best Tables for the 
 For example:
 
 - Question(requirements): calculate the average trip length by subscriber type.// User tables: trips, users, subscriber_type
-- Answer: [trips, subscriber_type]
+- You should anwser: [trips, subscriber_type]
 
 ----
 
-Here are the requirements:
+Here are the User requirements:
 
-```
+```markdown
 ${context.requirement}
-```
+```markdown
 
 Please choose the best Tables for the user, just return the table names in a list, no explain.
