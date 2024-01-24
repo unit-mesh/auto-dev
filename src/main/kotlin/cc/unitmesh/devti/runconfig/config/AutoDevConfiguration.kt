@@ -28,7 +28,7 @@ class AutoDevConfiguration(project: Project, name: String, factory: Configuratio
     }
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
-        return AutoDevRunProfileState(environment, this, project, options)
+        return AutoDevRunProfileState(project, options)
     }
 
     override fun checkRunnerSettings(

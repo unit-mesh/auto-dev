@@ -21,7 +21,6 @@ class AutoCrudAction : AbstractChatIntention() {
     override fun getText(): String = AutoDevBundle.message("intentions.crud.new.name")
     override fun getFamilyName(): String = AutoDevBundle.message("intentions.crud.new.family.name")
 
-
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         if (editor == null || file == null) return false
         if (file.language !is JavaLanguage) return false

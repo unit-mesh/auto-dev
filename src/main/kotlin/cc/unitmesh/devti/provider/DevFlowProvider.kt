@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.provider
 
+import cc.unitmesh.devti.flow.TaskFlow
 import cc.unitmesh.devti.flow.kanban.Kanban
 import cc.unitmesh.devti.prompting.code.TargetEndpoint
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
@@ -9,15 +10,17 @@ import com.intellij.openapi.project.Project
 import com.intellij.serviceContainer.LazyExtensionInstance
 import com.intellij.util.xmlb.annotations.Attribute
 
-abstract class DevFlowProvider : LazyExtensionInstance<ContextPrompter>() {
+abstract class DevFlowProvider : LazyExtensionInstance<ContextPrompter>(), TaskFlow<String> {
     @Attribute("language")
     var language: String? = null
 
     @Attribute("implementationClass")
     var implementationClass: String? = null
 
-    override fun getImplementationClassName(): String? {
-        return implementationClass
+    override fun getImplementationClassName(): String? = implementationClass
+
+    override fun clarify(): String {
+        return ""
     }
 
     abstract fun initContext(kanban: Kanban?, aiRunner: LLMProvider, component: ChatCodingPanel, project: Project)

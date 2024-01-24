@@ -7,13 +7,11 @@ import cc.unitmesh.devti.flow.kanban.impl.GitLabIssue
 import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.provider.DevFlowProvider
-import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
 import cc.unitmesh.devti.runconfig.options.AutoDevConfigurationOptions
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
-import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
@@ -23,8 +21,6 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 
 class AutoDevRunProfileState(
-    val environment: ExecutionEnvironment,
-    private val configuration: AutoDevConfiguration,
     val project: Project,
     val options: AutoDevConfigurationOptions,
 ) : RunProfileState {
