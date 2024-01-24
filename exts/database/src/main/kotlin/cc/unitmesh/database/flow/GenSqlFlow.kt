@@ -2,6 +2,7 @@ package cc.unitmesh.database.flow
 
 import cc.unitmesh.database.DbContextActionProvider
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.flow.TaskFlow
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.template.TemplateRender
@@ -16,10 +17,10 @@ class GenSqlFlow(
     val ui: ChatCodingPanel,
     val llm: LLMProvider,
     val project: Project
-) {
+) : TaskFlow {
     private val logger = logger<GenSqlFlow>()
 
-    fun clarify(): String {
+    override fun clarify(): String {
         val stepOnePrompt = generateStepOnePrompt(genSqlContext, actions)
 
         LLMCoroutineScope.scope(project).runCatching {
@@ -35,7 +36,8 @@ class GenSqlFlow(
         }
     }
 
-    fun generate(tableNames: List<String>): String {
+    override fun design(context: Any): String {
+        val tableNames = context as List<String>
         val stepTwoPrompt = generateStepTwoPrompt(genSqlContext, actions, tableNames)
 
         LLMCoroutineScope.scope(project).runCatching {

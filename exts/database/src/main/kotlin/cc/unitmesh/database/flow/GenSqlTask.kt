@@ -36,7 +36,7 @@ class GenSqlTask(
 
         indicator.fraction = 0.6
         indicator.text = AutoDevBundle.message("migration.database.sql.generate.generate")
-        val sqlScript = flow.generate(tableNames)
+        val sqlScript = flow.design(tableNames)
 
         logger.info("SQL Script: $sqlScript")
         WriteCommandAction.runWriteCommandAction(project, "Gen SQL", "cc.unitmesh.livingDoc", {
