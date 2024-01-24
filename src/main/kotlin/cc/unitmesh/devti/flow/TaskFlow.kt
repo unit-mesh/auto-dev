@@ -35,7 +35,7 @@ interface TaskFlow<Tasking> {
      *
      * @return A string representing the result of the execution.
      */
-    fun execute(): String {
+    fun execute(context: Any): String {
         return ""
     }
 }
