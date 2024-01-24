@@ -1,9 +1,9 @@
 ---
 layout: default
-title: Usecases
+title: Workflow
 nav_order: 7
 has_children: true
-permalink: /usecases
+permalink: /workflow
 ---
 
 TODO: Usecases
