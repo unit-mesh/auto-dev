@@ -2,6 +2,7 @@ package cc.unitmesh.database.actions
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
+import com.intellij.database.model.DasColumn
 import com.intellij.database.model.ObjectKind
 import com.intellij.database.psi.DbElement
 import com.intellij.database.psi.DbPsiFacade
@@ -27,8 +28,6 @@ class GenSqlScriptBySelection : AbstractChatIntention() {
     override fun invoke(project: Project, editor: Editor?, psiFile: PsiFile?) {
         val dbPsiFacade = DbPsiFacade.getInstance(project)
         val dataSource = dbPsiFacade.dataSources.firstOrNull() ?: return
-        val dbms = dataSource.delegateDataSource.dbms
-        val model = dataSource.delegateDataSource.model
 
         val selectedText = editor?.selectionModel?.selectedText
 
@@ -40,31 +39,12 @@ class GenSqlScriptBySelection : AbstractChatIntention() {
             tables.filter { table -> table.kind == ObjectKind.TABLE && table.dasParent?.name == schemaName }
         }.toList()
 
-        val tables = getDbElements(schemaName, dbPsiFacade)
-        println("elements: $tables")
         val prompt = """
             |Database: $databaseVersion
             |Requirement: $selectedText
-            |Tables: ${tables.joinToString { it.name }}
             |Tables: ${dasTables.joinToString { it.name }}
         """.trimMargin()
 
         println(prompt)
-    }
-
-    private fun getDbElements(tableName: String, dbPsiFacade: DbPsiFacade): List<DbElement> {
-        return dbPsiFacade.dataSources
-            .flatMap { dataSource ->
-                val dasTable = DasUtil.getTables(dataSource).filter {
-                    it.dasParent?.name == tableName
-                }.filterNotNull().firstOrNull() ?: return@flatMap emptyList<DbElement>()
-
-                val columns = DasUtil.getColumns(dasTable)
-                columns.map { column ->
-                    dataSource.findElement(column)
-                }.filterNotNull()
-
-            }
-            .toList()
     }
 }
