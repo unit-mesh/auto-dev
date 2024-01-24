@@ -197,13 +197,15 @@ data class DbContextActionProvider(val dasTables: List<DasTable>) {
      * @return A list of column names from the specified tables.
      */
     fun getTableColumns(tables: List<String>): List<String> {
-        return dasTables.flatMap { tableName ->
+        return dasTables.mapNotNull { tableName ->
             if (tables.contains(tableName.name)) {
-                DasUtil.getColumns(tableName).map {
+                val columns = DasUtil.getColumns(tableName).map {
                     "${it.name}: ${it.dasType.toDataType()}"
                 }
+
+                "TableName: ${tableName.name}, Columns: $columns"
             } else {
-                emptyList()
+                null
             }
         }
     }
