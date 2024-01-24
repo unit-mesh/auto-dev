@@ -1,5 +1,6 @@
 package cc.unitmesh.database.actions
 
+import cc.unitmesh.database.DbContextActionProvider
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.sendToChatPanel
@@ -9,7 +10,6 @@ import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.util.LLMCoroutineScope
 import cc.unitmesh.devti.util.parser.parseCodeFromString
-import com.intellij.database.model.DasTable
 import com.intellij.database.model.ObjectKind
 import com.intellij.database.psi.DbPsiFacade
 import com.intellij.database.util.DasUtil
@@ -22,9 +22,6 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
-import com.intellij.util.awaitCancellationAndInvoke
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 
@@ -209,24 +206,3 @@ data class DbContext(
     var tableInfos: List<String> = emptyList(),
 )
 
-data class DbContextActionProvider(val dasTables: List<DasTable>) {
-    /**
-     * Retrieves the columns of the specified tables.
-     *
-     * @param tables A list of table names to retrieve the columns from.
-     * @return A list of column names from the specified tables.
-     */
-    fun getTableColumns(tables: List<String>): List<String> {
-        return dasTables.mapNotNull { tableName ->
-            if (tables.contains(tableName.name)) {
-                val columns = DasUtil.getColumns(tableName).map {
-                    "${it.name}: ${it.dasType.toDataType()}"
-                }.joinToString(", ")
-
-                "TableName: ${tableName.name}, Columns: $columns"
-            } else {
-                null
-            }
-        }
-    }
-}
