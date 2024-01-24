@@ -16,7 +16,7 @@ Steps:
 4. Refactor and modularize the legacy code
 5. Transpile the legacy code to the new code
 
-## Generate API documentation
+## Generate Living documentation
 
 use [Custom Living documentation](/custom/living-documentation) to generate API documentation.
 
@@ -66,3 +66,13 @@ goto: `Settings` -> `Tools` -> `AutoDev` -> `Customize Engine prompt`, and add y
   "documentations": []
 }
 ```
+
+## Migration PL/SQL
+
+Since 1.5.5, AutoDev supports basic PL/SQL migration.
+
+- Select the PL/SQL code
+- Select actions
+    - Generate Entity
+    - Generate Test Cases
+    - Generate Java Code
