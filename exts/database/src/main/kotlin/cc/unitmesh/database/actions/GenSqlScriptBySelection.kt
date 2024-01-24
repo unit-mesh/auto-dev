@@ -8,6 +8,7 @@ import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.util.LLMCoroutineScope
+import cc.unitmesh.devti.util.parser.parseCodeFromString
 import com.intellij.database.model.DasTable
 import com.intellij.database.model.ObjectKind
 import com.intellij.database.psi.DbPsiFacade
@@ -21,6 +22,8 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
+import com.intellij.util.awaitCancellationAndInvoke
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -99,7 +102,11 @@ class GenSqlScriptBySelection : AbstractChatIntention() {
 
                 logger.info("SQL Script: $sqlScript")
                 WriteCommandAction.runWriteCommandAction(project, "Gen SQL", "cc.unitmesh.livingDoc", {
-                    editor.document.insertString(editor.caretModel.offset, sqlScript)
+                    // new line
+                    editor.document.insertString(editor.caretModel.offset, "\n")
+                    // insert sql script
+                    val code = parseCodeFromString(sqlScript).first()
+                    editor.document.insertString(editor.caretModel.offset + "\n".length, code)
                 })
 
                 indicator.fraction = 1.0
@@ -120,8 +127,12 @@ class GenSqlFlow(
     fun clarify(): String {
         val stepOnePrompt = generateStepOnePrompt(dbContext, actions)
 
-        ui.addMessage(stepOnePrompt, true, stepOnePrompt)
-        ui.addMessage(AutoDevBundle.message("autodev.loading"))
+        LLMCoroutineScope.scope(project).runCatching {
+            ui.addMessage(stepOnePrompt, true, stepOnePrompt)
+            ui.addMessage(AutoDevBundle.message("autodev.loading"))
+        }.onFailure {
+            logger.warn("Error: $it")
+        }
 
         return runBlocking {
             val prompt = llm.stream(stepOnePrompt, "")
@@ -132,8 +143,12 @@ class GenSqlFlow(
     fun generate(tableNames: List<String>): String {
         val stepTwoPrompt = generateStepTwoPrompt(dbContext, actions, tableNames)
 
-        ui.addMessage(stepTwoPrompt, true, stepTwoPrompt)
-        ui.addMessage(AutoDevBundle.message("autodev.loading"))
+        LLMCoroutineScope.scope(project).runCatching {
+            ui.addMessage(stepTwoPrompt, true, stepTwoPrompt)
+            ui.addMessage(AutoDevBundle.message("autodev.loading"))
+        }.onFailure {
+            logger.warn("Error: $it")
+        }
 
         return runBlocking {
             val prompt = llm.stream(stepTwoPrompt, "")
