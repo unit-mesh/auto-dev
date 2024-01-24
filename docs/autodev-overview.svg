@@ -1,78 +1,101 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="947px" height="242px" viewBox="0 0 947 242" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg width="767px" height="239px" viewBox="0 0 767 239" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <!-- Generator: Sketch 62 (91390) - https://sketch.com -->
     <title>Group</title>
     <desc>Created with Sketch.</desc>
     <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="Group" transform="translate(-1.000000, 0.000000)">
-            <line x1="3.5" y1="167.5" x2="946.5" y2="167.5" id="Line" stroke="#979797" stroke-width="3" stroke-linecap="square" stroke-dasharray="12,12"></line>
-            <text id="Custom" font-family="Comfortaa-SemiBold, Comfortaa" font-size="24" font-weight="500" fill="#000000">
-                <tspan x="0.335694336" y="229">Custom</tspan>
+        <g id="Group" transform="translate(-1.000000, -2.000000)">
+            <text id="Custom" fill="#000000" font-family="Monaco" font-size="24" font-weight="normal">
+                <tspan x="0" y="228">Custom</tspan>
             </text>
-            <text id="Built-in" font-family="Comfortaa-SemiBold, Comfortaa" font-size="24" font-weight="500" fill="#000000">
-                <tspan x="3.47787354" y="127">Built-in</tspan>
+            <line x1="4.5" y1="183.5" x2="768.5" y2="183.5" id="Line" stroke="#979797" stroke-width="3" stroke-linecap="square" stroke-dasharray="12,12"></line>
+            <g id="Built-in" transform="translate(0.000000, 130.000000)" fill="#000000" font-family="Monaco" font-size="24" font-weight="normal">
+                <text>
+                    <tspan x="0" y="24">Built-in</tspan>
+                </text>
+            </g>
+            <rect id="Rectangle" fill="#013D4F" fill-rule="nonzero" x="131" y="121" width="144" height="41" rx="8"></rect>
+            <rect id="Rectangle" fill="#013D4F" fill-rule="nonzero" x="295" y="121" width="144" height="41" rx="8"></rect>
+            <rect id="Rectangle" fill="#013D4F" fill-rule="nonzero" x="460" y="121" width="144" height="41" rx="8"></rect>
+            <rect id="Rectangle" fill="#013D4F" fill-rule="nonzero" x="624" y="121" width="144" height="41" rx="8"></rect>
+            <g id="analysis" transform="translate(152.000000, 127.000000)" fill="#FFFFFF" font-family="Comfortaa-Medium, Comfortaa" font-size="24" font-weight="400">
+                <text>
+                    <tspan x="0.535087" y="21">analysis</tspan>
+                </text>
+            </g>
+            <rect id="Rectangle" fill="#013D4F" fill-rule="nonzero" x="131" y="121" width="144" height="41" rx="8"></rect>
+            <rect id="Rectangle" fill="#48A178" fill-rule="nonzero" x="103" y="200" width="126" height="41" rx="8"></rect>
+            <g id="quality" transform="translate(158.000000, 128.000000)" fill="#FFFFFF" font-family="Monaco" font-size="20" font-weight="normal">
+                <text id="DevOps">
+                    <tspan x="495.494141" y="20">DevOps</tspan>
+                </text>
+                <text id="Coding">
+                    <tspan x="177.494141" y="20">Coding</tspan>
+                </text>
+                <text id="Quality">
+                    <tspan x="330.493164" y="20">Quality</tspan>
+                </text>
+                <text id="Analysis">
+                    <tspan x="0.4921875" y="20">Analysis</tspan>
+                </text>
+            </g>
+            <g id="custom-action" transform="translate(116.000000, 202.000000)" fill="#FFFFFF" font-family="Comfortaa-Medium, Comfortaa" font-size="16" font-weight="400">
+                <text>
+                    <tspan x="21.7966157" y="14">custom </tspan>
+                    <tspan x="25.9172329" y="32">action</tspan>
+                </text>
+            </g>
+            <rect id="Rectangle" fill="#48A178" fill-rule="nonzero" x="238" y="200" width="126" height="41" rx="8"></rect>
+            <g id="team-prompts" transform="translate(248.000000, 212.000000)" fill="#FFFFFF" font-family="Comfortaa-Medium, Comfortaa" font-size="16" font-weight="400">
+                <text id="Team-AI">
+                    <tspan x="18.9550801" y="14">Team AI</tspan>
+                </text>
+            </g>
+            <rect id="Rectangle" fill="#48A178" fill-rule="nonzero" x="374" y="200" width="126" height="41" rx="8"></rect>
+            <g id="custom-spec" transform="translate(393.000000, 203.000000)" fill="#FFFFFF" font-family="Comfortaa-Medium, Comfortaa" font-size="16" font-weight="400">
+                <text>
+                    <tspan x="15.7966157" y="14">custom </tspan>
+                    <tspan x="26.9880015" y="32">spec</tspan>
+                </text>
+            </g>
+            <rect id="Rectangle" fill="#48A178" fill-rule="nonzero" x="509" y="200" width="126" height="41" rx="8"></rect>
+            <g id="custom-doc" transform="translate(532.000000, 204.000000)" fill="#FFFFFF" font-family="Comfortaa-Medium, Comfortaa" font-size="16" font-weight="400">
+                <text>
+                    <tspan x="12.2966157" y="14">custom </tspan>
+                    <tspan x="27.168" y="32">doc</tspan>
+                </text>
+            </g>
+            <rect id="Rectangle" fill="#48A178" fill-rule="nonzero" x="642" y="200" width="126" height="41" rx="8"></rect>
+            <g id="prompt-override" transform="translate(669.000000, 204.000000)" fill="#FFFFFF" font-family="Comfortaa-Medium, Comfortaa" font-size="16" font-weight="400">
+                <text>
+                    <tspan x="5.11630859" y="14">prompt </tspan>
+                    <tspan x="1.26277734" y="32">override</tspan>
+                </text>
+            </g>
+            <text id="devops" fill="#000000" font-family="Monaco" font-size="14" font-weight="normal">
+                <tspan x="632" y="52">1. RD 2 code</tspan>
+                <tspan x="632" y="71.1689453">2. CI/CD config</tspan>
+                <tspan x="632" y="90.3378906">3. Docker config</tspan>
+                <tspan x="632" y="109.506836">4. Bug fixes</tspan>
             </text>
-            <rect id="Rectangle" fill="#013D4F" x="130" y="105" width="144" height="41" rx="8"></rect>
-            <rect id="Rectangle" fill="#013D4F" x="338" y="105" width="144" height="41" rx="8"></rect>
-            <rect id="Rectangle" fill="#013D4F" x="546" y="105" width="144" height="41" rx="8"></rect>
-            <rect id="Rectangle" fill="#013D4F" x="754" y="105" width="144" height="41" rx="8"></rect>
-            <text id="analysis" font-family="Comfortaa-SemiBold, Comfortaa" font-size="24" font-weight="500" fill="#FFFFFF">
-                <tspan x="151.535087" y="132">analysis</tspan>
+            <text id="quality" fill="#000000" font-family="Monaco" font-size="14" font-weight="normal">
+                <tspan x="456" y="52">1. Code Review</tspan>
+                <tspan x="456" y="71.1689453">2. Pre-push Review</tspan>
+                <tspan x="456" y="90.3378906">3. Unit Test</tspan>
+                <tspan x="456" y="109.506836">4. Test/Mock data</tspan>
             </text>
-            <rect id="Rectangle" fill="#013D4F" x="130" y="105" width="144" height="41" rx="8"></rect>
-            <text id="analysis" font-family="Comfortaa-SemiBold, Comfortaa" font-size="24" font-weight="500" fill="#FFFFFF">
-                <tspan x="151.535087" y="132">analysis</tspan>
+            <text id="coding" fill="#000000" font-family="Monaco" font-size="14" font-weight="normal">
+                <tspan x="297" y="14">1. Code complete</tspan>
+                <tspan x="297" y="33.1689453">2. Commit Msg</tspan>
+                <tspan x="297" y="52.3378906">3. Error fix</tspan>
+                <tspan x="297" y="71.5068359">4. Refactor</tspan>
+                <tspan x="297" y="90.6757812">5. Gen doc</tspan>
+                <tspan x="297" y="109.844727">6. Text to code</tspan>
             </text>
-            <rect id="Rectangle" fill="#48A178" x="130" y="201" width="144" height="41" rx="8"></rect>
-            <text id="custom-action" font-family="Comfortaa-SemiBold, Comfortaa" font-size="16" font-weight="500" fill="#FFFFFF">
-                <tspan x="142.315697" y="227">custom action</tspan>
-            </text>
-            <rect id="Rectangle" fill="#48A178" x="298" y="201" width="144" height="41" rx="8"></rect>
-            <text id="team-prompts" font-family="Comfortaa-SemiBold, Comfortaa" font-size="16" font-weight="500" fill="#FFFFFF">
-                <tspan x="311.00554" y="227">team prompts</tspan>
-            </text>
-            <rect id="Rectangle" fill="#48A178" x="466" y="201" width="144" height="41" rx="8"></rect>
-            <text id="custom-spec" font-family="Comfortaa-SemiBold, Comfortaa" font-size="16" font-weight="500" fill="#FFFFFF">
-                <tspan x="485.241234" y="227">custom spec</tspan>
-            </text>
-            <rect id="Rectangle" fill="#48A178" x="634" y="201" width="144" height="41" rx="8"></rect>
-            <text id="custom-doc" font-family="Comfortaa-SemiBold, Comfortaa" font-size="16" font-weight="500" fill="#FFFFFF">
-                <tspan x="657.113231" y="227">custom doc</tspan>
-            </text>
-            <rect id="Rectangle" fill="#48A178" x="802" y="201" width="144" height="41" rx="8"></rect>
-            <text id="prompt-override" font-family="Comfortaa-SemiBold, Comfortaa" font-size="16" font-weight="500" fill="#FFFFFF">
-                <tspan x="805.118172" y="227">prompt override</tspan>
-            </text>
-            <text id="1.-Chat-2.-Business" font-family="Comfortaa-SemiBold, Comfortaa" font-size="16" font-weight="500" fill="#000000">
-                <tspan x="117" y="50">1. Chat </tspan>
-                <tspan x="117" y="68">2. Business Analysis</tspan>
-                <tspan x="117" y="86">3. Chat by Scene</tspan>
-            </text>
-            <text id="1.-Code-complete-2." font-family="Comfortaa-SemiBold, Comfortaa" font-size="16" font-weight="500" fill="#000000">
-                <tspan x="325" y="14">1. Code complete </tspan>
-                <tspan x="325" y="32">2. Commit Msg</tspan>
-                <tspan x="325" y="50">3. Error fix</tspan>
-                <tspan x="325" y="68">4. Refactor</tspan>
-                <tspan x="325" y="86">5. documentation</tspan>
-            </text>
-            <text id="1.-Code-Review-2.-Un" font-family="Comfortaa-SemiBold, Comfortaa" font-size="16" font-weight="500">
-                <tspan x="533" y="50" fill="#000000">1. Code Review</tspan>
-                <tspan x="533" y="68" fill="#000000">2. Unit Test</tspan>
-                <tspan x="533" y="86" font-family="Comfortaa-Bold, Comfortaa" font-weight="bold" fill="#F7B500">3. Test/Mock data</tspan>
-            </text>
-            <text id="1.-CI/CD-config-2.-D" font-family="Comfortaa-SemiBold, Comfortaa" font-size="16" font-weight="500">
-                <tspan x="740" y="50" fill="#000000">1. CI/CD config</tspan>
-                <tspan x="740" y="68" fill="#000000">2. Docker config</tspan>
-                <tspan x="740" y="86" font-family="Comfortaa-Bold, Comfortaa" font-weight="bold" fill="#F7B500">3. Bug fixes</tspan>
-            </text>
-            <text id="coding" font-family="Comfortaa-SemiBold, Comfortaa" font-size="24" font-weight="500" fill="#FFFFFF">
-                <tspan x="366.417852" y="132">coding</tspan>
-            </text>
-            <text id="quality" font-family="Comfortaa-SemiBold, Comfortaa" font-size="24" font-weight="500" fill="#FFFFFF">
-                <tspan x="574.868314" y="132">quality</tspan>
-            </text>
-            <text id="DevOps" font-family="Comfortaa-SemiBold, Comfortaa" font-size="24" font-weight="500" fill="#FFFFFF">
-                <tspan x="776.141236" y="132">DevOps</tspan>
+            <text id="analysis" fill="#000000" font-family="Monaco" font-size="14" font-weight="normal">
+                <tspan x="136" y="66">1. Chat</tspan>
+                <tspan x="136" y="85.1689453">2. Biz Analysis</tspan>
+                <tspan x="136" y="104.337891">3. Chat by Scene</tspan>
             </text>
         </g>
     </g>
