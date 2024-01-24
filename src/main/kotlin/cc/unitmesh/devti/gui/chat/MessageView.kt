@@ -54,8 +54,10 @@ class MessageView(private val message: String, val role: ChatRole, private val d
         add(centerPanel, BorderLayout.CENTER)
 
         if (role == ChatRole.User) {
-            val simpleMessage = SimpleMessage(displayText, message, role)
-            renderInPartView(simpleMessage)
+            ApplicationManager.getApplication().invokeLater {
+                val simpleMessage = SimpleMessage(displayText, message, role)
+                renderInPartView(simpleMessage)
+            }
         } else {
             component.updateMessage(message)
             component.revalidate()
@@ -94,6 +96,7 @@ class MessageView(private val message: String, val role: ChatRole, private val d
 
                 else -> TextBlockView(it)
             }
+
             blockView.initialize()
             blockView.getComponent()?.setForeground(JBUI.CurrentTheme.Label.foreground())
             blockView.getComponent()?.let { component -> centerPanel.add(component) }

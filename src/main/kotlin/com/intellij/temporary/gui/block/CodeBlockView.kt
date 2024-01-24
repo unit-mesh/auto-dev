@@ -8,6 +8,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
@@ -105,8 +106,10 @@ class CodeBlockView(
             document: Document,
             disposable: Disposable
         ): EditorEx {
-            val editor: EditorEx = EditorFactory.getInstance()
-                .createViewer(document, project, EditorKind.PREVIEW) as EditorEx
+            val editor: EditorEx = ReadAction.compute<EditorEx, Throwable> {
+                EditorFactory.getInstance()
+                    .createViewer(document, project, EditorKind.PREVIEW) as EditorEx
+            }
 
             disposable.whenDisposed(disposable) {
                 EditorFactory.getInstance().releaseEditor(editor)

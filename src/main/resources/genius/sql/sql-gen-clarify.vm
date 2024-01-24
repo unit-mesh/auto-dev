@@ -16,6 +16,6 @@ Here are the User requirements:
 
 ```markdown
 ${context.requirement}
-```markdown
+```
 
 Please choose the best Tables for the user, just return the table names in a list, no explain.

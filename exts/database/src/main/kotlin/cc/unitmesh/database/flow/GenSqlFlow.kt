@@ -6,7 +6,6 @@ import cc.unitmesh.devti.flow.TaskFlow
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.template.TemplateRender
-import cc.unitmesh.devti.util.LLMCoroutineScope
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.runBlocking
@@ -23,12 +22,8 @@ class GenSqlFlow(
     override fun clarify(): String {
         val stepOnePrompt = generateStepOnePrompt(genSqlContext, actions)
 
-        LLMCoroutineScope.scope(project).runCatching {
-            ui.addMessage(stepOnePrompt, true, stepOnePrompt)
-            ui.addMessage(AutoDevBundle.message("autodev.loading"))
-        }.onFailure {
-            logger.warn("Error: $it")
-        }
+        ui.addMessage(stepOnePrompt, true, stepOnePrompt)
+        ui.addMessage(AutoDevBundle.message("autodev.loading"))
 
         return runBlocking {
             val prompt = llm.stream(stepOnePrompt, "")
@@ -40,12 +35,8 @@ class GenSqlFlow(
         val tableNames = context as List<String>
         val stepTwoPrompt = generateStepTwoPrompt(genSqlContext, actions, tableNames)
 
-        LLMCoroutineScope.scope(project).runCatching {
-            ui.addMessage(stepTwoPrompt, true, stepTwoPrompt)
-            ui.addMessage(AutoDevBundle.message("autodev.loading"))
-        }.onFailure {
-            logger.warn("Error: $it")
-        }
+        ui.addMessage(stepTwoPrompt, true, stepTwoPrompt)
+        ui.addMessage(AutoDevBundle.message("autodev.loading"))
 
         return runBlocking {
             val prompt = llm.stream(stepTwoPrompt, "")
