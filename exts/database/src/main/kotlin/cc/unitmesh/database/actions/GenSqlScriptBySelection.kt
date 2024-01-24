@@ -1,14 +1,15 @@
 package cc.unitmesh.database.actions
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
-import com.intellij.database.model.DasColumn
+import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.template.TemplateRender
 import com.intellij.database.model.DasTable
 import com.intellij.database.model.ObjectKind
-import com.intellij.database.model.RawDataSource
-import com.intellij.database.psi.DbElement
 import com.intellij.database.psi.DbPsiFacade
 import com.intellij.database.util.DasUtil
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
@@ -23,11 +24,14 @@ class GenSqlScriptBySelection : AbstractChatIntention() {
 
     override fun getText(): String = AutoDevBundle.message("migration.database.sql.generate")
 
-    override fun isAvailable(project: Project, editor: Editor?, psiFile: PsiFile?): Boolean {
+    override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
+        DbPsiFacade.getInstance(project).dataSources.firstOrNull() ?: return false
         return true
     }
 
-    override fun invoke(project: Project, editor: Editor?, psiFile: PsiFile?) {
+    private val logger = logger<GenSqlScriptBySelection>()
+
+    override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         val dbPsiFacade = DbPsiFacade.getInstance(project)
         val dataSource = dbPsiFacade.dataSources.firstOrNull() ?: return
 
@@ -41,9 +45,7 @@ class GenSqlScriptBySelection : AbstractChatIntention() {
             tables.filter { table -> table.kind == ObjectKind.TABLE && table.dasParent?.name == schemaName }
         }.toList()
 
-        val tableColumns = DbContextProvider(dasTables).getTableColumns(dasTables.map { it.name })
-
-        DbContext(
+        val dbContext = DbContext(
             requirement = selectedText ?: "",
             databaseVersion = databaseVersion.let {
                 "name: ${it.name}, version: ${it.version}"
@@ -51,6 +53,29 @@ class GenSqlScriptBySelection : AbstractChatIntention() {
             schemaName = schemaName,
             tableNames = dasTables.map { it.name },
         )
+
+        val actions = DbContextActionProvider(dasTables)
+        val prompter = generateStepOnePrompt(dbContext, actions)
+
+        sendToChatWindow(project, getActionType()) { panel, service ->
+            service.handlePromptAndResponse(panel, object : ContextPrompter() {
+                override fun displayPrompt(): String = prompter
+                override fun requestPrompt(): String = prompter
+            }, null, false)
+        }
+    }
+
+    private fun generateStepOnePrompt(context: DbContext, actions: DbContextActionProvider): String {
+        val templateRender = TemplateRender("genius/sql")
+        val template = templateRender.getTemplate("sql-gen-clarify.vm")
+
+        templateRender.context = context
+        templateRender.actions = actions
+
+        val prompter = templateRender.renderTemplate(template)
+
+        logger.info("Prompt: $prompter")
+        return prompter
     }
 }
 
@@ -61,10 +86,9 @@ data class DbContext(
     val tableNames: List<String>,
     // for step 2
     val tableInfos: List<String> = emptyList(),
-) {
-}
+)
 
-data class DbContextProvider(val dasTables: List<DasTable>) {
+data class DbContextActionProvider(val dasTables: List<DasTable>) {
     /**
      * Retrieves the columns of the specified tables.
      *

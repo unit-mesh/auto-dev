@@ -14,7 +14,10 @@ class TemplateRender(val pathPrefix: String) {
     private val velocityContext = VelocityContext()
     private val splitter = TemplateRoleSplitter()
     var context: Any = ""
-
+    /**
+     * Action is also a context, but with custom methods.
+     */
+    var actions: Any = ""
 
     /**
      * Retrieves the template for a given filename.
