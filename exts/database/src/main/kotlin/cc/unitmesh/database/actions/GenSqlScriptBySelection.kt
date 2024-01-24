@@ -87,7 +87,6 @@ class GenSqlScriptBySelection : AbstractChatIntention() {
             override fun run(indicator: ProgressIndicator) {
                 indicator.fraction = 0.2
 
-
                 indicator.text = AutoDevBundle.message("migration.database.sql.generate.clarify")
                 val tables = flow.clarify()
 
@@ -95,6 +94,13 @@ class GenSqlScriptBySelection : AbstractChatIntention() {
                 // tables will be list in string format, like: `[table1, table2]`, we need to parse to Lists
                 val tableNames = tables.substringAfter("[").substringBefore("]")
                     .split(", ").map { it.trim() }
+
+                if (tableNames.isEmpty()) {
+                    indicator.fraction = 1.0
+                    val allTables = flow.getAllTables()
+                    logger.warn("no table related: $allTables")
+                    return
+                }
 
                 indicator.fraction = 0.6
                 indicator.text = AutoDevBundle.message("migration.database.sql.generate.generate")
@@ -186,6 +192,10 @@ class GenSqlFlow(
 
         logger.info("Prompt: $prompter")
         return prompter
+    }
+
+    fun getAllTables(): List<String> {
+        return actions.dasTables.map { it.name }
     }
 }
 
