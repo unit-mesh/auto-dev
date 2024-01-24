@@ -6,6 +6,10 @@ This directory contains extensions that are specific to a database.
 
 Or others?
 
+## 自然语言 SQL 生成
+
+根据数据库表生成 JPA 、 MyBatis 、 Spring Data JDBC 等代码。
+
 ## Usecases: PL/SQL to Java
 
 1. Generate Repository from PL/SQL code
