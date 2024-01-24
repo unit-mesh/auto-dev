@@ -43,21 +43,24 @@ class GenSqlScriptBySelection : AbstractChatIntention() {
 
         val tableColumns = DbContextProvider(dasTables).getTableColumns(dasTables.map { it.name })
 
-        val prompt = """
-            |Database: $databaseVersion
-            |Requirement: $selectedText
-            |Tables: ${dasTables.joinToString { it.name }}
-            |Columns: ${tableColumns.joinToString { it }}
-        """.trimMargin()
-
-        println(prompt)
+        DbContext(
+            requirement = selectedText ?: "",
+            databaseVersion = databaseVersion.let {
+                "name: ${it.name}, version: ${it.version}"
+            },
+            schemaName = schemaName,
+            tableNames = dasTables.map { it.name },
+        )
     }
 }
 
 data class DbContext(
+    val requirement: String,
     val databaseVersion: String,
     val schemaName: String,
     val tableNames: List<String>,
+    // for step 2
+    val tableInfos: List<String> = emptyList(),
 ) {
 }
 
