@@ -105,7 +105,9 @@ class CodeBlockView(
             document: Document,
             disposable: Disposable
         ): EditorEx {
-            val editor: Editor = EditorFactory.getInstance().createViewer(document, project, EditorKind.PREVIEW)
+            val editor: Editor = EditorFactory.getInstance()
+                .createViewer(document, project, EditorKind.PREVIEW)
+
             disposable.whenDisposed(disposable) {
                 EditorFactory.getInstance().releaseEditor(editor)
             }
