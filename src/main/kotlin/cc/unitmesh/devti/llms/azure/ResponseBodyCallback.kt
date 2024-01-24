@@ -34,7 +34,10 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 
-class AutoDevHttpException(error: String, val statusCode: Int) : RuntimeException(error) {
+class AutoDevHttpException(error: String, private val statusCode: Int) : RuntimeException(error) {
+    override fun toString(): String {
+        return "AutoDevHttpException(statusCode=$statusCode, message=$message)"
+    }
 }
 
 /**
