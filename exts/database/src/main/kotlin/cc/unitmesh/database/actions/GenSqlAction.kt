@@ -58,7 +58,7 @@ class GenSqlAction : AbstractChatIntention() {
 
         sendToChatPanel(project) { contentPanel, _ ->
             val llmProvider = LlmFactory().create(project)
-            val prompter = GenSqlFlow(genSqlContext, actions, contentPanel, llmProvider, project)
+            val prompter = GenSqlFlow(genSqlContext, actions, contentPanel, llmProvider)
 
             val task = GenSqlTask(project, prompter, editor)
             ProgressManager.getInstance()

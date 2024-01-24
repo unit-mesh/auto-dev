@@ -3,7 +3,7 @@ package cc.unitmesh.devti.flow
 /**
  * AutoDev TaskFlow is the built-in Workflow for AutoDev, see in [#81](https://github.com/unit-mesh/auto-dev/issues/81)
  */
-interface TaskFlow {
+interface TaskFlow<Tasking> {
     /**
      * This method is used to clarify the purpose of user's requirement.
      * It returns a string will specify format, will parse in design()
@@ -21,17 +21,17 @@ interface TaskFlow {
      *
      * @param context The context for designing the task flow.
      */
-    fun design(context: Any): String {
-        return ""
+    fun design(context: Any): List<Tasking> {
+        return listOf()
     }
 
     /**
      * Executes the last step of the task flow.
      *
      * Like:
-     * - Execute SQL in [GenSqlFlow]
-     * - Execute HTTP request in [GenHttpFlow]
-     * - Execute shell command in [GenShellFlow]
+     * - Execute SQL in [cc.unitmesh.database.flow.GenSqlFlow]
+     * - Execute HTTP request in HttpRequest
+     * - Execute shell command in ShellCommand
      *
      * @return A string representing the result of the execution.
      */

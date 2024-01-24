@@ -7,41 +7,39 @@ import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.template.TemplateRender
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.project.Project
 import kotlinx.coroutines.runBlocking
 
 class GenSqlFlow(
-    val genSqlContext: GenSqlContext,
-    val actions: DbContextActionProvider,
-    val ui: ChatCodingPanel,
-    val llm: LLMProvider,
-    val project: Project
-) : TaskFlow {
+    private val genSqlContext: GenSqlContext,
+    private val actions: DbContextActionProvider,
+    private val panel: ChatCodingPanel,
+    private val llm: LLMProvider
+) : TaskFlow<String> {
     private val logger = logger<GenSqlFlow>()
 
     override fun clarify(): String {
         val stepOnePrompt = generateStepOnePrompt(genSqlContext, actions)
 
-        ui.addMessage(stepOnePrompt, true, stepOnePrompt)
-        ui.addMessage(AutoDevBundle.message("autodev.loading"))
+        panel.addMessage(stepOnePrompt, true, stepOnePrompt)
+        panel.addMessage(AutoDevBundle.message("autodev.loading"))
 
         return runBlocking {
             val prompt = llm.stream(stepOnePrompt, "")
-            return@runBlocking ui.updateMessage(prompt)
+            return@runBlocking panel.updateMessage(prompt)
         }
     }
 
-    override fun design(context: Any): String {
+    override fun design(context: Any): List<String> {
         val tableNames = context as List<String>
         val stepTwoPrompt = generateStepTwoPrompt(genSqlContext, actions, tableNames)
 
-        ui.addMessage(stepTwoPrompt, true, stepTwoPrompt)
-        ui.addMessage(AutoDevBundle.message("autodev.loading"))
+        panel.addMessage(stepTwoPrompt, true, stepTwoPrompt)
+        panel.addMessage(AutoDevBundle.message("autodev.loading"))
 
         return runBlocking {
             val prompt = llm.stream(stepTwoPrompt, "")
-            return@runBlocking ui.updateMessage(prompt)
-        }
+            return@runBlocking panel.updateMessage(prompt)
+        }.let { listOf(it) }
     }
 
     private fun generateStepOnePrompt(context: GenSqlContext, actions: DbContextActionProvider): String {
