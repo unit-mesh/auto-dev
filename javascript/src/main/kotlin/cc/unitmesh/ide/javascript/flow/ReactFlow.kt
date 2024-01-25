@@ -1,9 +1,10 @@
 package cc.unitmesh.ide.javascript.flow
 
+import com.intellij.lang.ecmascript6.JSXHarmonyFileType
 import com.intellij.lang.javascript.JavaScriptFileType
 import com.intellij.lang.javascript.TypeScriptJSXFileType
 import com.intellij.lang.javascript.frameworks.react.ReactFrameworkIndexingHandler
-import com.intellij.lang.javascript.refactoring.react.ReactFunctionToClassComponentHandler
+import com.intellij.lang.javascript.psi.JSFile
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -22,8 +23,11 @@ class ReactFlow(
     override var userTask: String,
     val editor: Editor
 ) : FrontendFlow {
-    val pages: MutableList<VirtualFile> = mutableListOf()
-    val components: MutableList<VirtualFile> = mutableListOf()
+    private val pages: MutableList<JSFile> = mutableListOf()
+    private val components: MutableList<JSFile> = mutableListOf()
+
+    // confg files
+    private val configs: MutableList<JSFile> = mutableListOf()
 
     init {
         val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
@@ -31,20 +35,35 @@ class ReactFlow(
         val umirc = FileTypeIndex.getFiles(TypeScriptJSXFileType.INSTANCE, searchScope).firstOrNull {
             it.name == ".umirc.ts"
         }
+        val psiManager = com.intellij.psi.PsiManager.getInstance(project)
 
-        FileTypeIndex.getFiles(JavaScriptFileType.INSTANCE, searchScope).forEach {
-            val path = it.canonicalFile?.path
+        val virtualFiles =
+            FileTypeIndex.getFiles(JavaScriptFileType.INSTANCE, searchScope) +
+                    FileTypeIndex.getFiles(TypeScriptJSXFileType.INSTANCE, searchScope) +
+                    FileTypeIndex.getFiles(JSXHarmonyFileType.INSTANCE, searchScope)
 
-            if (path != null && path.contains("pages")) {
-                pages.add(it)
-            }
+        virtualFiles.forEach {
+            val path = it.canonicalFile?.path ?: return@forEach
 
-            if (path != null && path.contains("components")) {
-                components.add(it)
+            val jsFile = (psiManager.findFile(it) ?: return@forEach) as? JSFile ?: return@forEach
+            if (jsFile.isTestFile) return@forEach
+
+            when {
+                path.contains("pages") -> {
+                    pages.add(jsFile)
+                }
+
+                path.contains("components") -> {
+                    components.add(jsFile)
+                }
+
+                else -> {
+                    configs.add(jsFile)
+                }
             }
         }
 
-        ReactFrameworkIndexingHandler()
+        println("pages: $pages")
     }
 
     override fun getRoutes(): List<String> {
@@ -52,7 +71,12 @@ class ReactFlow(
     }
 
     override fun getPages(): List<DsComponent> {
-        TODO("Not yet implemented")
+        val result = mutableListOf<DsComponent>()
+        pages.forEach {
+
+        }
+
+        return result
     }
 
     override fun getComponents(): List<DsComponent> {
