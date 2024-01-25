@@ -22,7 +22,7 @@
     <!--suppress PluginXmlValidity -->
     <content>
         <!-- language modules -->
-        <module name="cc.unitmesh.python"/>
+        <module name="cc.unitmesh.pycharm"/>
         <module name="cc.unitmesh.idea"/>
         <module name="cc.unitmesh.kotlin"/>
         <module name="cc.unitmesh.javascript"/>

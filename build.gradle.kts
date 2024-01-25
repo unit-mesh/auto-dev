@@ -256,9 +256,9 @@ project(":plugin") {
         implementation(project(":"))
         implementation(project(":java"))
         implementation(project(":kotlin"))
-        implementation(project(":python"))
+        implementation(project(":pycharm"))
         implementation(project(":javascript"))
-        implementation(project(":go"))
+        implementation(project(":goland"))
         implementation(project(":rust"))
         implementation(project(":cpp"))
         implementation(project(":scala"))
@@ -427,11 +427,11 @@ project(":") {
         kover(project(":"))
         kover(project(":cpp"))
         kover(project(":csharp"))
-        kover(project(":go"))
+        kover(project(":goland"))
         kover(project(":java"))
         kover(project(":javascript"))
         kover(project(":kotlin"))
-        kover(project(":python"))
+        kover(project(":pycharm"))
         kover(project(":rust"))
         kover(project(":scala"))
     }
@@ -446,7 +446,7 @@ project(":") {
     }
 }
 
-project(":python") {
+project(":pycharm") {
     intellij {
         version.set(pycharmVersion)
         plugins.set(pycharmPlugins)
@@ -533,7 +533,7 @@ project(":csharp") {
     }
 }
 
-project(":go") {
+project(":goland") {
     intellij {
         version.set(ideaVersion)
 //        type.set("IU")

@@ -6,11 +6,11 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 include("plugin")
 
 include(
-    "python",
+    "pycharm",
     "java",
     "kotlin",
     "javascript",
-    "go",
+    "goland",
     "rust",
     "csharp",
     "cpp",
