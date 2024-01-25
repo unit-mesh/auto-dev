@@ -1,17 +1,17 @@
 package cc.unitmesh.ide.javascript.util;
 
 import com.intellij.lang.javascript.JavascriptLanguage
-import com.intellij.lang.javascript.dialects.TypeScriptJSXLanguageDialect
-import com.intellij.lang.javascript.dialects.TypeScriptLanguageDialect
 import com.intellij.lang.javascript.psi.JSFile
-import com.intellij.lang.javascript.psi.ecmal4.JSClass
 import com.intellij.psi.PsiFileFactory
 import com.intellij.testFramework.LightPlatformTestCase
 
-class ReactUtilTest : LightPlatformTestCase() {
+class ReactPsiUtilTest : LightPlatformTestCase() {
     fun testShouldHandleExportReactComponent() {
         val code = """
-            import type { AppProps } from 'next/app';
+            interface AppProps {
+              Component: any;
+              pageProps: any;
+            }
 
             const MyApp = ({ Component, pageProps }: AppProps) => (
               <Component {...pageProps} />
@@ -21,7 +21,7 @@ class ReactUtilTest : LightPlatformTestCase() {
             """.trimIndent()
 
         val file = PsiFileFactory.getInstance(project).createFileFromText(JavascriptLanguage.INSTANCE, code)
-        val result = ReactUtil.tsxComponentToComponent(file as JSFile)
+        val result = ReactPsiUtil.tsxComponentToComponent(file as JSFile)
 
         assertEquals(1, result.size)
     }

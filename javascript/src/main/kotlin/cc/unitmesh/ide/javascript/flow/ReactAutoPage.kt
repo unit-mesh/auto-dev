@@ -1,6 +1,6 @@
 package cc.unitmesh.ide.javascript.flow
 
-import cc.unitmesh.ide.javascript.util.ReactUtil
+import cc.unitmesh.ide.javascript.util.ReactPsiUtil
 import com.intellij.lang.ecmascript6.JSXHarmonyFileType
 import com.intellij.lang.javascript.JavaScriptFileType
 import com.intellij.lang.javascript.TypeScriptJSXFileType
@@ -13,7 +13,6 @@ import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
 // keep this import
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 enum class RouterFile(val filename: String) {
@@ -81,7 +80,7 @@ class ReactAutoPage(
     override fun getPages(): List<DsComponent> = pages.mapNotNull {
         when (it.language) {
             is TypeScriptJSXLanguageDialect -> {
-                ReactUtil.tsxComponentToComponent(it)
+                ReactPsiUtil.tsxComponentToComponent(it)
             }
 
             else -> null
