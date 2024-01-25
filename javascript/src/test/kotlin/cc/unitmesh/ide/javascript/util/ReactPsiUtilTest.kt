@@ -24,5 +24,7 @@ class ReactPsiUtilTest : LightPlatformTestCase() {
         val result = ReactPsiUtil.tsxComponentToComponent(file as JSFile)
 
         assertEquals(1, result.size)
+        assertEquals("MyApp", result.first().name)
+        assertEquals("({ Component, pageProps }: AppProps)", result.first().signature)
     }
 }

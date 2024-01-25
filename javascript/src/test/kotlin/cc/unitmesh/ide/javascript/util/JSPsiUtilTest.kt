@@ -1,7 +1,6 @@
 package cc.unitmesh.ide.javascript.util;
 
 import com.intellij.lang.javascript.JavascriptLanguage
-import com.intellij.lang.javascript.dialects.TypeScriptLanguageDialect
 import com.intellij.lang.javascript.psi.JSFunction
 import com.intellij.lang.javascript.psi.ecmal4.JSClass
 import com.intellij.psi.PsiFileFactory

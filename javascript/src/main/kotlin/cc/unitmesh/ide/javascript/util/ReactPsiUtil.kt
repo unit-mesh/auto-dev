@@ -3,6 +3,7 @@ package cc.unitmesh.ide.javascript.util
 import cc.unitmesh.ide.javascript.flow.DsComponent
 import com.intellij.lang.ecmascript6.psi.ES6ExportDeclaration
 import com.intellij.lang.ecmascript6.psi.ES6ExportDefaultAssignment
+import com.intellij.lang.javascript.presentable.JSFormatUtil
 import com.intellij.lang.javascript.psi.JSFile
 import com.intellij.lang.javascript.psi.JSFunctionExpression
 import com.intellij.lang.javascript.psi.JSReferenceExpression
@@ -53,30 +54,13 @@ object ReactPsiUtil {
                 val funcExpr = PsiTreeUtil.findChildrenOfType(psiElement, TypeScriptFunctionExpression::class.java)
                     .firstOrNull() ?: return@map null
 
-                val map = funcExpr.parameterList?.parameters?.mapNotNull { parameter ->
-                    if (parameter.typeElement != null) {
-                        parameter.typeElement
-                    } else {
-                        null
-                    }
-                } ?: emptyList()
-
-                DsComponent(name = name, path)
-            }
-
-            is JSVariable -> {
-                val funcExpr = PsiTreeUtil.findChildrenOfType(psiElement, JSFunctionExpression::class.java)
-                    .firstOrNull() ?: return@map null
-
-                val map = funcExpr.parameterList?.parameters?.mapNotNull { parameter ->
-                    val typeElement = parameter.typeElement ?: return@mapNotNull null
+                val signature = JSFormatUtil.buildFunctionSignaturePresentation(funcExpr)
+                val props: List<String> = funcExpr.parameterList?.parameters?.mapNotNull { parameter ->
+                     val typeElement = parameter.typeElement ?: return@mapNotNull null
                     when (typeElement) {
                         is TypeScriptSingleType -> {
-                            typeElement.referenceExpression?.let {
-                                val resolveReference = JSResolveResult.resolveReference(it).firstOrNull()
-                                println("resolveReference: ${resolveReference?.text}")
-                                resolveReference
-                            }
+                            val resolve = typeElement.referenceExpression?.resolve()
+                            resolve?.text
                         }
 
                         else -> {
@@ -86,7 +70,30 @@ object ReactPsiUtil {
                     }
                 } ?: emptyList()
 
-                DsComponent(name = name, path)
+                DsComponent(name = name, path, props = props, signature = signature)
+            }
+
+            is JSVariable -> {
+                val funcExpr = PsiTreeUtil.findChildrenOfType(psiElement, JSFunctionExpression::class.java)
+                    .firstOrNull() ?: return@map null
+
+                val signature = JSFormatUtil.buildFunctionSignaturePresentation(funcExpr)
+                val props: List<String> = funcExpr.parameterList?.parameters?.mapNotNull { parameter ->
+                    val typeElement = parameter.typeElement ?: return@mapNotNull null
+                    when (typeElement) {
+                        is TypeScriptSingleType -> {
+                            val resolve = typeElement.referenceExpression?.resolve()
+                            resolve?.text
+                        }
+
+                        else -> {
+                            println("unknown type: ${typeElement::class.java}")
+                            null
+                        }
+                    }
+                } ?: emptyList()
+
+                DsComponent(name = name, path, props = props, signature = signature)
             }
 
             else -> {
