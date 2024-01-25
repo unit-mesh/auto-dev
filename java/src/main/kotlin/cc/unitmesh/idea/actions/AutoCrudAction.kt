@@ -26,7 +26,7 @@ class AutoCrudAction : ChatBaseIntention() {
         if (file.language !is JavaLanguage) return false
 
         val isEnvironmentAvailable = super.isAvailable(project, editor, file)
-        return isEnvironmentAvailable && editor.selectionModel?.hasSelection() == true
+        return isEnvironmentAvailable && editor.selectionModel.hasSelection()
     }
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
