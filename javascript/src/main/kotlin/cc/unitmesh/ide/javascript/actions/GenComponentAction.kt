@@ -22,6 +22,9 @@ class GenComponentAction : ChatBaseIntention() {
         if (editor == null || file == null) return
         val selectedText = editor.selectionModel.selectedText ?: return
 
-        ReactFlow(project, selectedText, editor)
+        val reactFlow = ReactFlow(project, selectedText, editor)
+        val pages = reactFlow.getPages()
+
+        println(pages)
     }
 }

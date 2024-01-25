@@ -3,6 +3,8 @@ package cc.unitmesh.ide.javascript.flow
 import com.intellij.lang.ecmascript6.JSXHarmonyFileType
 import com.intellij.lang.javascript.JavaScriptFileType
 import com.intellij.lang.javascript.TypeScriptJSXFileType
+import com.intellij.lang.javascript.dialects.TypeScriptJSXLanguageDialect
+import com.intellij.lang.javascript.frameworks.react.ReactJSXImplementation
 import com.intellij.lang.javascript.psi.JSFile
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -26,7 +28,7 @@ class ReactFlow(
     private val pages: MutableList<JSFile> = mutableListOf()
     private val components: MutableList<JSFile> = mutableListOf()
 
-    // confg files
+    // config files
     private val configs: MutableList<JSFile> = mutableListOf()
 
     init {
@@ -41,6 +43,8 @@ class ReactFlow(
             FileTypeIndex.getFiles(JavaScriptFileType.INSTANCE, searchScope) +
                     FileTypeIndex.getFiles(TypeScriptJSXFileType.INSTANCE, searchScope) +
                     FileTypeIndex.getFiles(JSXHarmonyFileType.INSTANCE, searchScope)
+
+        val root = project.guessProjectDir()!!
 
         virtualFiles.forEach {
             val path = it.canonicalFile?.path ?: return@forEach
@@ -58,7 +62,9 @@ class ReactFlow(
                 }
 
                 else -> {
-                    configs.add(jsFile)
+                    if (root.findChild(it.name) != null) {
+                        configs.add(jsFile)
+                    }
                 }
             }
         }
@@ -73,7 +79,14 @@ class ReactFlow(
     override fun getPages(): List<DsComponent> {
         val result = mutableListOf<DsComponent>()
         pages.forEach {
+            when(it.language) {
+                is TypeScriptJSXLanguageDialect -> {
+                    val context = ReactJSXImplementation().getContext(it)
+                    if (ReactJSXImplementation().isApplicable(it)) {
 
+                    }
+                }
+            }
         }
 
         return result

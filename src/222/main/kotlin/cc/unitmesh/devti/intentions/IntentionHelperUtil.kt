@@ -27,20 +27,20 @@ object IntentionHelperUtil {
 
         val promptConfig = CustomPromptConfig.load()
         val customActionIntentions: List<IntentionAction> = promptConfig.prompts.map {
-            CustomActionIntention.create(it)
+            CustomActionBaseIntention.create(it)
         }
 
         val livingDocIntentions: List<IntentionAction> = promptConfig.documentations?.map {
-            CustomDocumentationIntention.create(it)
+            CustomDocumentationBaseIntention.create(it)
         } ?: emptyList()
 
         val teamPromptsIntentions: List<IntentionAction> = project.service<TeamPromptsBuilder>().default().map {
-            TeamPromptIntention.create(it, true)
+            TeamPromptBaseIntention.create(it, true)
         }
 
         val actionList = builtinIntentions + customActionIntentions + livingDocIntentions + teamPromptsIntentions
         return actionList
-            .map { it as AbstractChatIntention }
-            .sortedByDescending(AbstractChatIntention::priority)
+            .map { it as ChatBaseIntention }
+            .sortedByDescending(ChatBaseIntention::priority)
     }
 }
