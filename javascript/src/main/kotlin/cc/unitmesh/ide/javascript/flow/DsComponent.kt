@@ -8,6 +8,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class DsComponent(
     val name: String,
-    val props: List<String>,
-    val events: List<String>
+    val path: String,
+    val props: List<String> = emptyList(),
+    val events: List<String> = emptyList(),
 )

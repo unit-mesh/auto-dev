@@ -17,6 +17,7 @@ import com.intellij.lang.javascript.psi.util.JSStubBasedPsiTreeUtil
 import com.intellij.lang.javascript.psi.util.JSUtils
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.parents
@@ -54,6 +55,30 @@ object JSPsiUtil {
         } else {
             null
         }
+    }
+
+    fun getExportElements(file: JSFile): List<PsiNameIdentifierOwner> {
+        val exportDeclarations =
+            PsiTreeUtil.getChildrenOfTypeAsList(file, ES6ExportDeclaration::class.java)
+
+        val map = exportDeclarations.map { exportDeclaration ->
+            exportDeclaration.exportSpecifiers
+                .asSequence()
+                .mapNotNull {
+                    it.alias?.findAliasedElement()
+                }
+                .filterIsInstance<PsiNameIdentifierOwner>()
+                .toList()
+        }.flatten()
+
+        val defaultAssignments = PsiTreeUtil.getChildrenOfTypeAsList(file, ES6ExportDefaultAssignment::class.java)
+        val defaultAssignment = defaultAssignments.mapNotNull {
+            val jsReferenceExpression = it.expression as? JSReferenceExpression ?: return@mapNotNull null
+            val resolveReference = JSResolveResult.resolveReference(jsReferenceExpression)
+            resolveReference.firstOrNull() as? PsiNameIdentifierOwner
+        }
+
+        return map + defaultAssignment
     }
 
     private fun skipDeclaration(element: PsiElement): Boolean {

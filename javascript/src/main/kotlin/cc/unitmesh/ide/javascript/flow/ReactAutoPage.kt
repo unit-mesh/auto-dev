@@ -1,13 +1,18 @@
 package cc.unitmesh.ide.javascript.flow
 
+import cc.unitmesh.ide.javascript.util.JSPsiUtil
 import com.intellij.lang.ecmascript6.JSXHarmonyFileType
 import com.intellij.lang.javascript.JavaScriptFileType
 import com.intellij.lang.javascript.TypeScriptJSXFileType
 import com.intellij.lang.javascript.dialects.TypeScriptJSXLanguageDialect
 import com.intellij.lang.javascript.psi.JSFile
+import com.intellij.lang.javascript.psi.ecma6.TypeScriptFunction
+import com.intellij.lang.javascript.psi.ecma6.impl.TypeScriptClassImpl
+import com.intellij.lang.javascript.psi.ecma6.impl.TypeScriptVariableImpl
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
@@ -82,7 +87,28 @@ class ReactAutoPage(
         pages.forEach {
             when(it.language) {
                 is TypeScriptJSXLanguageDialect -> {
-                    it.language
+                    val psiElements = JSPsiUtil.getExportElements(it)
+                    // a page can have multiple exports
+
+                    psiElements.forEach { psiElement ->
+                        val name = psiElement.name ?: return@forEach
+                        val path = it.virtualFile.canonicalPath ?: return@forEach
+                        // is React Functional Component
+                        when (psiElement) {
+                            is TypeScriptFunction -> {
+                                result += DsComponent(name = name, path)
+                            }
+                            is TypeScriptClassImpl -> {
+                                result += DsComponent(name = name, path)
+                            }
+                            is TypeScriptVariableImpl -> {
+                                result += DsComponent(name = name, path)
+                            }
+                            else -> {
+                                println("unknown type: ${psiElement::class.java}")
+                            }
+                        }
+                    }
                 }
             }
         }
