@@ -11,5 +11,13 @@ data class DsComponent(
     val path: String,
     val signature: String = "",
     val props: List<String> = emptyList(),
-    val events: List<String> = emptyList(),
-)
+) {
+    fun format(): String {
+        return """
+            |component name: $name
+            |component path: $path
+            |input signature: $signature
+            |component props: $props
+        """.trimMargin()
+    }
+}

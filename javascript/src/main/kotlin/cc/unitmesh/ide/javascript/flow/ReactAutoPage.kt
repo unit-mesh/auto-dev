@@ -23,10 +23,11 @@ enum class RouterFile(val filename: String) {
 }
 
 class ReactAutoPage(
-    val project: Project,
+    private val project: Project,
     override var userTask: String,
-    val editor: Editor
+    private val editor: Editor
 ) : AutoPage {
+    private val routes: List<String> = emptyList()
     private val pages: MutableList<DsComponent> = mutableListOf()
     private val components: MutableList<DsComponent> = mutableListOf()
 
@@ -87,9 +88,7 @@ class ReactAutoPage(
         else -> null
     }
 
-    override fun getRoutes(): List<String> {
-        TODO("Not yet implemented")
-    }
+    override fun getRoutes(): List<String> = routes
 
     // load prompts/context/ds.json from project root
     override fun getDesignSystemComponents(): List<DsComponent> {
@@ -117,6 +116,13 @@ class ReactAutoPage(
 
     override fun clarify(): String {
         TODO("Not yet implemented")
+    }
+
+    fun filterComponents(components: List<String>) : List<DsComponent> {
+        val comps = this.pages + this.components
+        return components.mapNotNull { component ->
+            comps.find { it.name == component }
+        }
     }
 }
 
