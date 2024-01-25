@@ -21,11 +21,11 @@ enum class RouterFile(val filename: String) {
     VITE("vite.config.js"),
 }
 
-class ReactFlow(
+class ReactAutoPage(
     val project: Project,
     override var userTask: String,
     val editor: Editor
-) : FrontendFlow {
+) : AutoPage {
     private val pages: MutableList<JSFile> = mutableListOf()
     private val components: MutableList<JSFile> = mutableListOf()
 

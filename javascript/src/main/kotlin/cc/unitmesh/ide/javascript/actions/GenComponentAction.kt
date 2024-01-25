@@ -2,7 +2,7 @@ package cc.unitmesh.ide.javascript.actions
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
-import cc.unitmesh.ide.javascript.flow.ReactFlow
+import cc.unitmesh.ide.javascript.flow.ReactAutoPage
 import cc.unitmesh.ide.javascript.util.LanguageApplicableUtil
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -22,8 +22,8 @@ class GenComponentAction : ChatBaseIntention() {
         if (editor == null || file == null) return
         val selectedText = editor.selectionModel.selectedText ?: return
 
-        val reactFlow = ReactFlow(project, selectedText, editor)
-        val pages = reactFlow.getPages()
+        val reactAutoPage = ReactAutoPage(project, selectedText, editor)
+        val pages = reactAutoPage.getPages()
 
         println(pages)
     }

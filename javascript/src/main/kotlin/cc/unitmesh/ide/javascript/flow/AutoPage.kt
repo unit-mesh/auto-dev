@@ -13,7 +13,7 @@ import cc.unitmesh.devti.flow.TaskFlow
  * 3. Process IPC/RPC Calling
  * 4. Output Transform / Render
  */
-interface FrontendFlow : TaskFlow<String> {
+interface AutoPage : TaskFlow<String> {
     var userTask: String
 
     /**
