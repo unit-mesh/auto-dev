@@ -1,7 +1,7 @@
 package cc.unitmesh.idea.actions
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
+import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.provider.DevFlowProvider
 import cc.unitmesh.devti.gui.sendToChatPanel
@@ -15,7 +15,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiFile
 
-class AutoCrudAction : AbstractChatIntention() {
+class AutoCrudAction : ChatBaseIntention() {
     override fun priority(): Int = 900
 
     override fun getText(): String = AutoDevBundle.message("intentions.crud.new.name")

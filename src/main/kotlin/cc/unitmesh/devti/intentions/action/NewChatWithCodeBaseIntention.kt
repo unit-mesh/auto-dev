@@ -4,12 +4,12 @@ import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.temporary.getElementToAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatWindow
-import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
+import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
-class NewChatWithCodeIntention : AbstractChatIntention() {
+class NewChatWithCodeBaseIntention : ChatBaseIntention() {
     override fun priority(): Int = 999
 
     var title: String = ""

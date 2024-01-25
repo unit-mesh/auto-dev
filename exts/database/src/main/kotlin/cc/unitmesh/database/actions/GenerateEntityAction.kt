@@ -3,7 +3,7 @@ package cc.unitmesh.database.actions
 import cc.unitmesh.database.actions.base.SqlMigrationContext
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.sendToChatWindow
-import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
+import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.template.TemplateRender
 import com.intellij.openapi.diagnostic.logger
@@ -12,7 +12,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.sql.dialects.oracle.OraDialect
 
-class GenerateEntityAction : AbstractChatIntention() {
+class GenerateEntityAction : ChatBaseIntention() {
     private val logger = logger<GenerateEntityAction>()
 
     override fun priority() = 901

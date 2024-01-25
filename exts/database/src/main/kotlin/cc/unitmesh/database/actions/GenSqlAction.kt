@@ -6,7 +6,7 @@ import cc.unitmesh.database.flow.GenSqlFlow
 import cc.unitmesh.database.flow.GenSqlTask
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.sendToChatPanel
-import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
+import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import cc.unitmesh.devti.llms.LlmFactory
 import com.intellij.database.model.ObjectKind
 import com.intellij.database.psi.DbPsiFacade
@@ -18,7 +18,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
 
-class GenSqlAction : AbstractChatIntention() {
+class GenSqlAction : ChatBaseIntention() {
     override fun priority(): Int = 1001
     override fun startInWriteAction(): Boolean = false
     override fun getFamilyName(): String = AutoDevBundle.message("migration.database.plsql")

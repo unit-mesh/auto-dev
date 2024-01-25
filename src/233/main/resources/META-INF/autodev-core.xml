@@ -164,22 +164,22 @@
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <autoDevIntention>
-            <className>cc.unitmesh.devti.intentions.action.NewChatWithCodeIntention</className>
+            <className>cc.unitmesh.devti.intentions.action.NewChatWithCodeBaseIntention</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
         <autoDevIntention>
-            <className>cc.unitmesh.devti.intentions.action.CodeCompletionIntention</className>
+            <className>cc.unitmesh.devti.intentions.action.CodeCompletionBaseIntention</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
         <autoDevIntention>
-            <className>cc.unitmesh.devti.intentions.action.AutoTestThisIntention</className>
+            <className>cc.unitmesh.devti.intentions.action.AutoTestThisBaseIntention</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
         <autoDevIntention>
-            <className>cc.unitmesh.devti.intentions.action.DefaultDocumentationIntention</className>
+            <className>cc.unitmesh.devti.intentions.action.DefaultDocumentationBaseIntention</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>

@@ -2,13 +2,13 @@ package cc.unitmesh.devti.intentions.action
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.document.CustomDocumentationConfig
-import cc.unitmesh.devti.intentions.action.base.BasedDocumentationIntention
+import cc.unitmesh.devti.intentions.action.base.BasedDocumentationBaseIntention
 import cc.unitmesh.devti.provider.LivingDocumentation
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
-class DefaultDocumentationIntention: BasedDocumentationIntention() {
+class DefaultDocumentationBaseIntention: BasedDocumentationBaseIntention() {
     override val config: CustomDocumentationConfig = CustomDocumentationConfig.default()
 
     override fun getText(): String = AutoDevBundle.message("intentions.living.documentation.name")

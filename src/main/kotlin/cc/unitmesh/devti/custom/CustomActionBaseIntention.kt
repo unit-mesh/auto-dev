@@ -5,7 +5,7 @@ import cc.unitmesh.devti.custom.action.CustomIntentionPrompt
 import cc.unitmesh.devti.custom.variable.*
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatPanel
-import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
+import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -16,7 +16,7 @@ import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.Velocity
 import java.io.StringWriter
 
-class CustomActionIntention(private val intentionConfig: CustomIntentionConfig) : AbstractChatIntention() {
+class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConfig) : ChatBaseIntention() {
     override fun getText(): String = intentionConfig.title
 
     override fun getFamilyName(): String = "Custom Intention"
@@ -89,8 +89,8 @@ class CustomActionIntention(private val intentionConfig: CustomIntentionConfig) 
     }
 
     companion object {
-        fun create(intentionConfig: CustomIntentionConfig): CustomActionIntention {
-            return CustomActionIntention(intentionConfig)
+        fun create(intentionConfig: CustomIntentionConfig): CustomActionBaseIntention {
+            return CustomActionBaseIntention(intentionConfig)
         }
     }
 }

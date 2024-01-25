@@ -4,7 +4,7 @@ import cc.unitmesh.devti.custom.team.TeamPromptAction
 import cc.unitmesh.devti.custom.team.TeamPromptExecTask
 import cc.unitmesh.devti.custom.team.TeamPromptTemplateCompiler
 import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
+import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -24,7 +24,7 @@ import com.intellij.temporary.calculateFrontendElementToExplain
  * @param intentionConfig The configuration for the team prompt action.
  *
  */
-class TeamPromptIntention(val intentionConfig: TeamPromptAction, val trySelectElement: Boolean) : AbstractChatIntention() {
+class TeamPromptBaseIntention(val intentionConfig: TeamPromptAction, val trySelectElement: Boolean) : ChatBaseIntention() {
     override fun priority(): Int = intentionConfig.actionPrompt.priority
     override fun getText(): String = intentionConfig.actionName
     override fun getFamilyName(): String = intentionConfig.actionName
@@ -55,7 +55,7 @@ class TeamPromptIntention(val intentionConfig: TeamPromptAction, val trySelectEl
     }
 
     companion object {
-        fun create(intentionConfig: TeamPromptAction, trySelectElement: Boolean = true): TeamPromptIntention =
-            TeamPromptIntention(intentionConfig, trySelectElement)
+        fun create(intentionConfig: TeamPromptAction, trySelectElement: Boolean = true): TeamPromptBaseIntention =
+            TeamPromptBaseIntention(intentionConfig, trySelectElement)
     }
 }

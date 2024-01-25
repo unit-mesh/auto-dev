@@ -3,7 +3,7 @@ package cc.unitmesh.devti.intentions.action.task
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.context.modifier.CodeModifierProvider
 import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.intentions.action.AutoTestThisIntention
+import cc.unitmesh.devti.intentions.action.AutoTestThisBaseIntention
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.util.parser.parseCodeFromString
 import cc.unitmesh.devti.provider.WriteTestService
@@ -114,7 +114,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         templateRender.context = testPromptContext
         val prompter = templateRender.renderTemplate(template)
 
-        logger<AutoTestThisIntention>().info("Prompt: $prompter")
+        logger<AutoTestThisBaseIntention>().info("Prompt: $prompter")
 
         indicator.fraction = 0.8
         indicator.text = AutoDevBundle.message("intentions.request.background.process.title")

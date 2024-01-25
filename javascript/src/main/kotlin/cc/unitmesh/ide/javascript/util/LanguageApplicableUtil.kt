@@ -21,7 +21,7 @@ object LanguageApplicableUtil {
         return isWebLLMContext(psiFile)
     }
 
-    private fun isWebLLMContext(psiFile: PsiFile?): Boolean {
+    fun isWebLLMContext(psiFile: PsiFile?): Boolean {
         if (psiFile == null) return false
         if (PackageJsonUtil.isPackageJsonFile(psiFile)) return true
 

@@ -3,7 +3,7 @@ package cc.unitmesh.devti.intentions.action.task
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.util.InsertUtil
 import cc.unitmesh.devti.util.LLMCoroutineScope
-import cc.unitmesh.devti.intentions.action.CodeCompletionIntention
+import cc.unitmesh.devti.intentions.action.CodeCompletionBaseIntention
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.statusbar.AutoDevStatusService
@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.launch
 import java.awt.event.KeyEvent
 import javax.swing.KeyStroke
-import kotlinx.coroutines.flow.*
 
 abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
     Task.Backgroundable(request.project, AutoDevBundle.message("intentions.chat.code.complete.name")) {
@@ -87,6 +86,6 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
     }
 
     companion object {
-        val logger = logger<CodeCompletionIntention>()
+        val logger = logger<CodeCompletionBaseIntention>()
     }
 }

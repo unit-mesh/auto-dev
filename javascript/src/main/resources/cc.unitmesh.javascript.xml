@@ -5,6 +5,12 @@
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
+        <autoDevIntention>
+            <className>cc.unitmesh.ide.javascript.actions.GenComponentAction</className>
+            <bundleName>messages.AutoDevBundle</bundleName>
+            <categoryKey>intention.category.llm</categoryKey>
+        </autoDevIntention>
+
         <classContextBuilder language="JavaScript" implementationClass="cc.unitmesh.ide.javascript.context.JavaScriptClassContextBuilder"/>
         <classContextBuilder language="TypeScript" implementationClass="cc.unitmesh.ide.javascript.context.JavaScriptClassContextBuilder"/>
 

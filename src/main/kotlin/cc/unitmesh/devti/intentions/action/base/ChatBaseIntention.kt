@@ -18,7 +18,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.usageView.UsageViewTypeLocation
 
-abstract class AbstractChatIntention : IntentionAction {
+abstract class ChatBaseIntention : IntentionAction {
     abstract fun priority(): Int
     open fun getActionType() = ChatActionType.CODE_COMPLETE
 

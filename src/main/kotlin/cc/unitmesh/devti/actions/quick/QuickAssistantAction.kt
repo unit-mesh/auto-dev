@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.actions.quick
 
-import cc.unitmesh.devti.custom.TeamPromptIntention
+import cc.unitmesh.devti.custom.TeamPromptBaseIntention
 import cc.unitmesh.devti.custom.team.TeamPromptAction
 import cc.unitmesh.devti.custom.team.TeamPromptsBuilder
 import cc.unitmesh.devti.gui.quick.QuickPromptField
@@ -57,8 +57,8 @@ class QuickAssistantAction : AnAction() {
     ) {
         val cursorPosition = editor.visualPositionToXY(editor.caretModel.visualPosition)
 
-        val promptIntentions: List<TeamPromptIntention> = quickPrompts.map {
-            TeamPromptIntention.create(it, trySelectElement = false)
+        val promptIntentions: List<TeamPromptBaseIntention> = quickPrompts.map {
+            TeamPromptBaseIntention.create(it, trySelectElement = false)
         }
 
         var awareActions: Array<AnAction> = arrayOf()

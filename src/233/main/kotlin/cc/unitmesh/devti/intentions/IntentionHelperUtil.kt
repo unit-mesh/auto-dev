@@ -1,11 +1,11 @@
 package cc.unitmesh.devti.intentions
 
-import cc.unitmesh.devti.custom.CustomActionIntention
-import cc.unitmesh.devti.custom.CustomDocumentationIntention
-import cc.unitmesh.devti.custom.TeamPromptIntention
+import cc.unitmesh.devti.custom.CustomActionBaseIntention
+import cc.unitmesh.devti.custom.CustomDocumentationBaseIntention
+import cc.unitmesh.devti.custom.TeamPromptBaseIntention
 import cc.unitmesh.devti.custom.action.CustomPromptConfig
 import cc.unitmesh.devti.custom.team.TeamPromptsBuilder
-import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
+import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.IntentionActionBean
 import com.intellij.openapi.components.service
@@ -27,18 +27,18 @@ object IntentionHelperUtil {
 
         val promptConfig = CustomPromptConfig.load()
         val customActionIntentions: List<IntentionAction> = promptConfig.prompts.map {
-            CustomActionIntention.create(it)
+            CustomActionBaseIntention.create(it)
         }
 
         val livingDocIntentions: List<IntentionAction> = promptConfig.documentations?.map {
-            CustomDocumentationIntention.create(it)
+            CustomDocumentationBaseIntention.create(it)
         } ?: emptyList()
 
         val teamPromptsIntentions: List<IntentionAction> = project.service<TeamPromptsBuilder>().default().map {
-            TeamPromptIntention.create(it, true)
+            TeamPromptBaseIntention.create(it, true)
         }
 
         val actionList = builtinIntentions + customActionIntentions + livingDocIntentions + teamPromptsIntentions
-        return actionList.map { it as AbstractChatIntention }.sortedByDescending { it.priority() }
+        return actionList.map { it as ChatBaseIntention }.sortedByDescending { it.priority() }
     }
 }

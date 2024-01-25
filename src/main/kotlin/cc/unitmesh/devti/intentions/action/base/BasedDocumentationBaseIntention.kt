@@ -7,23 +7,21 @@ import cc.unitmesh.devti.provider.LivingDocumentation
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
-import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.util.PsiUtilBase
 
-abstract class BasedDocumentationIntention : AbstractChatIntention() {
+abstract class BasedDocumentationBaseIntention : ChatBaseIntention() {
     abstract val config: CustomDocumentationConfig
 
     override fun priority(): Int = 90
 
     override fun startInWriteAction(): Boolean = false
 
-    val logger = logger<BasedDocumentationIntention>()
+    val logger = logger<BasedDocumentationBaseIntention>()
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (editor == null || file == null) return

@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.intentions.action
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
+import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
 import cc.unitmesh.devti.intentions.action.task.RelatedCodeCompletionTask
 import cc.unitmesh.devti.intentions.action.task.SimilarCodeCompletionTask
@@ -18,7 +18,7 @@ import com.intellij.psi.util.PsiUtilBase
 import kotlin.math.min
 
 
-class CodeCompletionIntention : AbstractChatIntention() {
+class CodeCompletionBaseIntention : ChatBaseIntention() {
     override fun priority(): Int = 981
     override fun getText(): String = AutoDevBundle.message("intentions.chat.code.complete.name")
     override fun getFamilyName(): String = AutoDevBundle.message("intentions.chat.code.complete.family.name")
@@ -63,6 +63,6 @@ class CodeCompletionIntention : AbstractChatIntention() {
     }
 
     companion object {
-        val logger = logger<CodeCompletionIntention>()
+        val logger = logger<CodeCompletionBaseIntention>()
     }
 }
