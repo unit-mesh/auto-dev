@@ -4,6 +4,7 @@ import cc.unitmesh.ide.javascript.util.ReactPsiUtil
 import com.intellij.lang.ecmascript6.JSXHarmonyFileType
 import com.intellij.lang.javascript.JavaScriptFileType
 import com.intellij.lang.javascript.TypeScriptJSXFileType
+import com.intellij.lang.javascript.dialects.ECMA6LanguageDialect
 import com.intellij.lang.javascript.dialects.TypeScriptJSXLanguageDialect
 import com.intellij.lang.javascript.psi.JSFile
 import com.intellij.openapi.editor.Editor
@@ -26,8 +27,8 @@ class ReactAutoPage(
     override var userTask: String,
     val editor: Editor
 ) : AutoPage {
-    private val pages: MutableList<JSFile> = mutableListOf()
-    private val components: MutableList<JSFile> = mutableListOf()
+    private val pages: MutableList<DsComponent> = mutableListOf()
+    private val components: MutableList<DsComponent> = mutableListOf()
 
     // config files
     private val configs: MutableList<JSFile> = mutableListOf()
@@ -47,23 +48,27 @@ class ReactAutoPage(
 
         val root = project.guessProjectDir()!!
 
-        virtualFiles.forEach {
-            val path = it.canonicalFile?.path ?: return@forEach
+        virtualFiles.forEach { file ->
+            val path = file.canonicalFile?.path ?: return@forEach
 
-            val jsFile = (psiManager.findFile(it) ?: return@forEach) as? JSFile ?: return@forEach
+            val jsFile = (psiManager.findFile(file) ?: return@forEach) as? JSFile ?: return@forEach
             if (jsFile.isTestFile) return@forEach
 
             when {
                 path.contains("pages") -> {
-                    pages.add(jsFile)
+                    buildComponent(jsFile)?.let {
+                        pages += it
+                    }
                 }
 
                 path.contains("components") -> {
-                    components.add(jsFile)
+                    buildComponent(jsFile)?.let {
+                        components += it
+                    }
                 }
 
                 else -> {
-                    if (root.findChild(it.name) != null) {
+                    if (root.findChild(file.name) != null) {
                         configs.add(jsFile)
                     }
                 }
@@ -73,22 +78,22 @@ class ReactAutoPage(
         println("pages: $pages")
     }
 
-    override fun getRoutes(): List<String> {
-        TODO("Not yet implemented")
-    }
 
-    override fun getPages(): List<DsComponent> = pages.mapNotNull {
-        when (it.language) {
-            is TypeScriptJSXLanguageDialect -> {
-                ReactPsiUtil.tsxComponentToComponent(it)
-            }
+    override fun getPages(): List<DsComponent> = pages
 
-            else -> null
+    override fun getComponents(): List<DsComponent> = components
+
+    private fun buildComponent(jsFile: JSFile) = when (jsFile.language) {
+        is TypeScriptJSXLanguageDialect,
+        is ECMA6LanguageDialect
+        -> {
+            ReactPsiUtil.tsxComponentToComponent(jsFile)
         }
-    }
-        .flatten()
 
-    override fun getComponents(): List<DsComponent> {
+        else -> null
+    }
+
+    override fun getRoutes(): List<String> {
         TODO("Not yet implemented")
     }
 
