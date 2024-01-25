@@ -3,14 +3,14 @@ package cc.unitmesh.ide.javascript.flow
 import com.intellij.lang.ecmascript6.JSXHarmonyFileType
 import com.intellij.lang.javascript.JavaScriptFileType
 import com.intellij.lang.javascript.TypeScriptJSXFileType
-import com.intellij.lang.javascript.frameworks.react.ReactFrameworkIndexingHandler
 import com.intellij.lang.javascript.psi.JSFile
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
+import kotlinx.serialization.json.Json
 
 enum class RouterFile(val filename: String) {
     UMI(".umirc.ts"),
@@ -83,8 +83,19 @@ class ReactFlow(
         TODO("Not yet implemented")
     }
 
+    // load prompts/context/ds.json from project root
     override fun getDesignSystemComponents(): List<DsComponent> {
-        TODO("Not yet implemented")
+        val rootConfig = project.guessProjectDir()
+            ?.findChild("prompts")
+            ?.findChild("context")
+            ?.findChild("ds.json") ?: return emptyList()
+
+        val json = rootConfig.inputStream.reader().readText()
+        return try {
+            Json.decodeFromString(json)
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 
     override fun sampleRemoteCall(): String {
