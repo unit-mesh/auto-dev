@@ -55,16 +55,12 @@ class ReactAutoPage(
             if (jsFile.isTestFile) return@forEach
 
             when {
-                path.contains("pages") -> {
-                    buildComponent(jsFile)?.let {
-                        pages += it
-                    }
+                path.contains("pages") -> buildComponent(jsFile)?.let {
+                    pages += it
                 }
 
-                path.contains("components") -> {
-                    buildComponent(jsFile)?.let {
-                        components += it
-                    }
+                path.contains("components") -> buildComponent(jsFile)?.let {
+                    components += it
                 }
 
                 else -> {
@@ -74,8 +70,6 @@ class ReactAutoPage(
                 }
             }
         }
-
-        println("pages: $pages")
     }
 
 
