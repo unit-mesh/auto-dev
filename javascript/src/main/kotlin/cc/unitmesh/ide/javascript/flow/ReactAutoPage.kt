@@ -1,23 +1,19 @@
 package cc.unitmesh.ide.javascript.flow
 
-import cc.unitmesh.ide.javascript.util.JSPsiUtil
+import cc.unitmesh.ide.javascript.util.ReactUtil
 import com.intellij.lang.ecmascript6.JSXHarmonyFileType
 import com.intellij.lang.javascript.JavaScriptFileType
 import com.intellij.lang.javascript.TypeScriptJSXFileType
 import com.intellij.lang.javascript.dialects.TypeScriptJSXLanguageDialect
 import com.intellij.lang.javascript.psi.JSFile
-import com.intellij.lang.javascript.psi.ecma6.TypeScriptClass
-import com.intellij.lang.javascript.psi.ecma6.TypeScriptFunction
-import com.intellij.lang.javascript.psi.ecma6.TypeScriptFunctionExpression
-import com.intellij.lang.javascript.psi.ecma6.TypeScriptVariable
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
-import com.intellij.psi.util.PsiTreeUtil
 // keep this import
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 enum class RouterFile(val filename: String) {
@@ -85,7 +81,7 @@ class ReactAutoPage(
     override fun getPages(): List<DsComponent> = pages.mapNotNull {
         when (it.language) {
             is TypeScriptJSXLanguageDialect -> {
-                Companion.tsxComponentToComponent(it)
+                ReactUtil.tsxComponentToComponent(it)
             }
 
             else -> null
@@ -124,45 +120,5 @@ class ReactAutoPage(
     override fun clarify(): String {
         TODO("Not yet implemented")
     }
-
-    companion object {
-        fun tsxComponentToComponent(jsFile: JSFile): List<DsComponent> {
-            val exportElements = JSPsiUtil.getExportElements(jsFile)
-            return exportElements.map { psiElement ->
-                val name = psiElement.name ?: return@map null
-                val path = jsFile.virtualFile.canonicalPath ?: return@map null
-                // is React Functional Component
-                return@map when (psiElement) {
-                    is TypeScriptFunction -> {
-                        DsComponent(name = name, path)
-                    }
-
-                    is TypeScriptClass -> {
-                        DsComponent(name = name, path)
-                    }
-
-                    is TypeScriptVariable -> {
-                        val funcExpr = PsiTreeUtil
-                            .findChildrenOfType(psiElement, TypeScriptFunctionExpression::class.java)
-                            .firstOrNull() ?: return@map null
-
-                        val map = funcExpr.parameterList?.parameters?.mapNotNull { parameter ->
-                            if (parameter.typeElement != null) {
-                                parameter.typeElement
-                            } else {
-                                null
-                            }
-                        } ?: emptyList()
-
-                        DsComponent(name = name, path)
-                    }
-
-                    else -> {
-                        println("unknown type: ${psiElement::class.java}")
-                        null
-                    }
-                }
-            }.filterNotNull()
-        }
-    }
 }
+

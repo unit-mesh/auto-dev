@@ -57,30 +57,6 @@ object JSPsiUtil {
         }
     }
 
-    fun getExportElements(file: JSFile): List<PsiNameIdentifierOwner> {
-        val exportDeclarations =
-            PsiTreeUtil.getChildrenOfTypeAsList(file, ES6ExportDeclaration::class.java)
-
-        val map = exportDeclarations.map { exportDeclaration ->
-            exportDeclaration.exportSpecifiers
-                .asSequence()
-                .mapNotNull {
-                    it.alias?.findAliasedElement()
-                }
-                .filterIsInstance<PsiNameIdentifierOwner>()
-                .toList()
-        }.flatten()
-
-        val defaultAssignments = PsiTreeUtil.getChildrenOfTypeAsList(file, ES6ExportDefaultAssignment::class.java)
-        val defaultAssignment = defaultAssignments.mapNotNull {
-            val jsReferenceExpression = it.expression as? JSReferenceExpression ?: return@mapNotNull null
-            val resolveReference = JSResolveResult.resolveReference(jsReferenceExpression)
-            resolveReference.firstOrNull() as? PsiNameIdentifierOwner
-        }
-
-        return map + defaultAssignment
-    }
-
     private fun skipDeclaration(element: PsiElement): Boolean {
         return when (element) {
             is JSParameter, is TypeScriptGenericOrMappedTypeParameter -> true
