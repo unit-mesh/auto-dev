@@ -7,6 +7,7 @@ import com.intellij.lang.javascript.TypeScriptJSXFileType
 import com.intellij.lang.javascript.dialects.ECMA6LanguageDialect
 import com.intellij.lang.javascript.dialects.TypeScriptJSXLanguageDialect
 import com.intellij.lang.javascript.psi.JSFile
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
@@ -14,6 +15,7 @@ import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
 // keep this import
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 enum class RouterFile(val filename: String) {
@@ -78,14 +80,22 @@ class ReactAutoPage(
 
     override fun getComponents(): List<DsComponent> = components
 
-    private fun buildComponent(jsFile: JSFile) = when (jsFile.language) {
-        is TypeScriptJSXLanguageDialect,
-        is ECMA6LanguageDialect
-        -> {
-            ReactPsiUtil.tsxComponentToComponent(jsFile)
+    private fun buildComponent(jsFile: JSFile): List<DsComponent>? {
+        return when (jsFile.language) {
+            is TypeScriptJSXLanguageDialect,
+            is ECMA6LanguageDialect
+            -> {
+                val dsComponents = ReactPsiUtil.tsxComponentToComponent(jsFile)
+                if (dsComponents.isEmpty()) {
+                    logger<ReactAutoPage>().warn("no component found in ${jsFile.name}")
+                }
+                dsComponents
+            }
+            else -> {
+                logger<ReactAutoPage>().warn("unknown language: ${jsFile.language}")
+                null
+            }
         }
-
-        else -> null
     }
 
     override fun getRoutes(): List<String> = routes

@@ -34,6 +34,7 @@ class GenPageAction : ChatBaseIntention() {
         val selectedText = editor.selectionModel.selectedText ?: return
 
         val reactAutoPage = ReactAutoPage(project, selectedText, editor)
+
         sendToChatPanel(project) { contentPanel, _ ->
             val llmProvider = LlmFactory().create(project)
             val context = AutoPageContext.build(reactAutoPage)

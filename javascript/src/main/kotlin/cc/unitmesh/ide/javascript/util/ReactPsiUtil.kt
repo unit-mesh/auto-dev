@@ -10,6 +10,7 @@ import com.intellij.lang.javascript.psi.JSReferenceExpression
 import com.intellij.lang.javascript.psi.JSVariable
 import com.intellij.lang.javascript.psi.ecma6.*
 import com.intellij.lang.javascript.psi.resolve.JSResolveResult
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.util.PsiTreeUtil
 
@@ -39,8 +40,12 @@ object ReactPsiUtil {
     }
 
     fun tsxComponentToComponent(jsFile: JSFile): List<DsComponent> = getExportElements(jsFile).map { psiElement ->
-        val name = psiElement.name ?: return@map null
-        val path = jsFile.virtualFile.canonicalPath ?: return@map null
+        val name = psiElement.name
+        if (name == null) {
+            logger<ReactPsiUtil>().warn("name is null")
+            return@map null
+        }
+        val path = jsFile.virtualFile.canonicalPath ?: ""
         return@map when (psiElement) {
             is TypeScriptFunction -> {
                 DsComponent(name = name, path)
