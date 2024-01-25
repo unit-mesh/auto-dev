@@ -15,8 +15,7 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.DumbAwareAction
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.awt.event.KeyEvent
 import javax.swing.KeyStroke
@@ -66,7 +65,7 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
                     return@collect
                 }
 
-                suggestion.append(char)
+                suggestion.append(char as String)
                 invokeLater {
                     if (!isCanceled) {
                         InsertUtil.insertStreamingToDoc(project, char, editor, currentOffset)

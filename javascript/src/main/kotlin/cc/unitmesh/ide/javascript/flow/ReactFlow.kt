@@ -4,7 +4,6 @@ import com.intellij.lang.ecmascript6.JSXHarmonyFileType
 import com.intellij.lang.javascript.JavaScriptFileType
 import com.intellij.lang.javascript.TypeScriptJSXFileType
 import com.intellij.lang.javascript.dialects.TypeScriptJSXLanguageDialect
-import com.intellij.lang.javascript.frameworks.react.ReactJSXImplementation
 import com.intellij.lang.javascript.psi.JSFile
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -12,6 +11,8 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
+// keep this import
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 enum class RouterFile(val filename: String) {
@@ -81,10 +82,7 @@ class ReactFlow(
         pages.forEach {
             when(it.language) {
                 is TypeScriptJSXLanguageDialect -> {
-                    val context = ReactJSXImplementation().getContext(it)
-                    if (ReactJSXImplementation().isApplicable(it)) {
-
-                    }
+                    it.language
                 }
             }
         }
@@ -105,7 +103,8 @@ class ReactFlow(
 
         val json = rootConfig.inputStream.reader().readText()
         return try {
-            Json.decodeFromString(json)
+            val result: List<DsComponent> = Json.decodeFromString(json)
+            result
         } catch (e: Exception) {
             emptyList()
         }
