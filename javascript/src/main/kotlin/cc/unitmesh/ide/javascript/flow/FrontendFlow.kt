@@ -14,8 +14,6 @@ import cc.unitmesh.devti.flow.TaskFlow
  * 4. Output Transform / Render
  */
 interface FrontendFlow : TaskFlow<String> {
-    fun isApplicable(): Boolean
-
     var userTask: String
 
     /**

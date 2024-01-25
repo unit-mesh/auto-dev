@@ -1,26 +1,50 @@
 package cc.unitmesh.ide.javascript.flow
 
 import com.intellij.lang.javascript.JavaScriptFileType
+import com.intellij.lang.javascript.TypeScriptJSXFileType
+import com.intellij.lang.javascript.frameworks.react.ReactFrameworkIndexingHandler
+import com.intellij.lang.javascript.refactoring.react.ReactFunctionToClassComponentHandler
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
+
+enum class RouterFile(val filename: String) {
+    UMI(".umirc.ts"),
+    NEXT("next.config.js"),
+    VITE("vite.config.js"),
+}
 
 class ReactFlow(
     val project: Project,
     override var userTask: String,
     val editor: Editor
 ) : FrontendFlow {
+    val pages: MutableList<VirtualFile> = mutableListOf()
+    val components: MutableList<VirtualFile> = mutableListOf()
+
     init {
         val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
-        val jsFiles = FileTypeIndex.getFiles(JavaScriptFileType.INSTANCE, searchScope)
+        // todo: find .umirc.ts in root, find in modules
+        val umirc = FileTypeIndex.getFiles(TypeScriptJSXFileType.INSTANCE, searchScope).firstOrNull {
+            it.name == ".umirc.ts"
+        }
 
-        println(jsFiles)
-    }
+        FileTypeIndex.getFiles(JavaScriptFileType.INSTANCE, searchScope).forEach {
+            val path = it.canonicalFile?.path
 
-    override fun isApplicable(): Boolean {
-        return true
+            if (path != null && path.contains("pages")) {
+                pages.add(it)
+            }
+
+            if (path != null && path.contains("components")) {
+                components.add(it)
+            }
+        }
+
+        ReactFrameworkIndexingHandler()
     }
 
     override fun getRoutes(): List<String> {
