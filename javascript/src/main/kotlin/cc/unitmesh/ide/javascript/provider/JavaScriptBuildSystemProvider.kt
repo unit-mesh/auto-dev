@@ -12,7 +12,7 @@ import com.intellij.openapi.project.guessProjectDir
 
 class JavaScriptBuildSystemProvider : BuildSystemProvider() {
     override fun collect(project: Project): DockerfileContext? {
-        val snapshot = JsDependenciesSnapshot.create(project, null)
+        val snapshot = JsDependenciesSnapshot.create(project, null?.sourceFile)
         if (snapshot.packageJsonFiles.isEmpty()) {
             return null
         }

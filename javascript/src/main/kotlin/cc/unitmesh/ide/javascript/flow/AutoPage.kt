@@ -17,6 +17,10 @@ import cc.unitmesh.ide.javascript.flow.model.DsComponent
 interface AutoPage : TaskFlow<String> {
     var userTask: String
 
+    fun getFrameworks(): List<String> {
+        return listOf("React", "Vue", "Angular")
+    }
+
     /**
      * Retrieves all routes in the project, including the routes in the submodules.
      *

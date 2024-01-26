@@ -22,15 +22,16 @@ class JavaScriptContextProvider : ChatContextProvider {
 
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         val results = mutableListOf<ChatContextItem>()
-        val snapshot = JsDependenciesSnapshot.create(project, creationContext)
-
+        val snapshot = JsDependenciesSnapshot.create(project, creationContext?.sourceFile)
         val typeScriptLanguageContext = getTypeScriptLanguageContext(snapshot)
-        if (typeScriptLanguageContext != null) results.add(typeScriptLanguageContext)
-
         val mostPopularPackagesContext = getMostPopularPackagesContext(snapshot)
-        if (mostPopularPackagesContext != null) results.add(mostPopularPackagesContext)
 
         val techStack = prepareStack(snapshot)
+
+        if (typeScriptLanguageContext != null) results.add(typeScriptLanguageContext)
+
+        if (mostPopularPackagesContext != null) results.add(mostPopularPackagesContext)
+
         log.info("Tech stack: $techStack")
         if (techStack.coreFrameworks().isNotEmpty()) {
             val element = ChatContextItem(
@@ -70,15 +71,7 @@ class JavaScriptContextProvider : ChatContextProvider {
      *         or null if no popular packages are found
      */
     private fun getMostPopularPackagesContext(snapshot: JsDependenciesSnapshot): ChatContextItem? {
-        val dependencies = snapshot.packages
-            .asSequence()
-            .filter { entry -> MOST_POPULAR_PACKAGES.contains(entry.key) && !entry.key.startsWith("@type") }
-            .map { entry ->
-                val dependency = entry.key
-                val version = entry.value.parseVersion()
-                if (version != null) "$dependency: $version" else dependency
-            }
-            .toList()
+        val dependencies = snapshot.mostPopularFrameworks()
 
         if (dependencies.isEmpty()) return null
 
@@ -132,4 +125,5 @@ class JavaScriptContextProvider : ChatContextProvider {
         return TestStack(frameworks, testFrameworks, dependencies, devDependencies)
     }
 }
+
 

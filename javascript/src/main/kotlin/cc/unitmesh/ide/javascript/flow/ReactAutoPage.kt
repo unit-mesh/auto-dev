@@ -77,7 +77,6 @@ class ReactAutoPage(
         }
     }
 
-
     override fun getPages(): List<DsComponent> = pages
 
     override fun getComponents(): List<DsComponent> = components

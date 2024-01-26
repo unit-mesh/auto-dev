@@ -1,12 +1,13 @@
 package cc.unitmesh.ide.javascript
 
-import cc.unitmesh.devti.provider.context.ChatCreationContext
+import cc.unitmesh.ide.javascript.provider.MOST_POPULAR_PACKAGES
 import com.intellij.javascript.nodejs.PackageJsonData
 import com.intellij.javascript.nodejs.packageJson.PackageJsonFileManager
 import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiFile
 
 /**
  * Represents a snapshot of JavaScript dependencies in a Kotlin language project.
@@ -21,19 +22,29 @@ import com.intellij.openapi.vfs.VirtualFile
  */
 class JsDependenciesSnapshot(
     val packageJsonFiles: Set<VirtualFile>,
-    val resolvedPackageJson: Boolean,
-    val tsConfigs: Set<VirtualFile>,
+    private val resolvedPackageJson: Boolean,
+    private val tsConfigs: Set<VirtualFile>,
     val packages: Map<String, PackageJsonData.PackageJsonDependencyEntry>
 ) {
+    fun mostPopularFrameworks(): List<String> {
+        val dependencies = this.packages
+            .asSequence()
+            .filter { entry -> MOST_POPULAR_PACKAGES.contains(entry.key) && !entry.key.startsWith("@type") }
+            .map { entry ->
+                val dependency = entry.key
+                val version = entry.value.parseVersion()
+                if (version != null) "$dependency: $version" else dependency
+            }
+            .toList()
+        return dependencies
+    }
+
     companion object {
-        fun create(
-            project: Project,
-            creationContext: ChatCreationContext?
-        ): JsDependenciesSnapshot {
+        fun create(project: Project, psiFile: PsiFile?): JsDependenciesSnapshot {
             var packageJsonFiles = emptySet<VirtualFile>()
             var resolvedPackageJson = false
 
-            val virtualFile = creationContext?.sourceFile?.virtualFile
+            val virtualFile = psiFile?.virtualFile
             if (virtualFile != null) {
                 val packageJson = PackageJsonUtil.findUpPackageJson(virtualFile)
                 if (packageJson != null) {
