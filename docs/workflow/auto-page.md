@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Frontend Flow
+title: AutoPage
 nav_order: 3
 parent: Workflow
 ---
@@ -34,6 +34,8 @@ data class AutoPageContext(
     var components: List<String>,
     val componentNames: List<String>,
     val routes: List<String>,
+    val frameworks: List<String> = listOf("React"),
+    val language: String = "JavaScript",
 )
 ```
 
@@ -43,8 +45,9 @@ Clarify:
 
     You are a professional Frontend developer.
     According to the user's requirements, you should choose the best components for the user in List.
-    
-    - Framework: React
+
+    - Framework: ${context.frameworks}
+    - Language: ${context.language}
     - User component: ${context.componentNames}, ${context.pageNames}
     
     For example:
@@ -67,6 +70,8 @@ Design:
     You are a professional Frontend developer.
     According to the user's requirements, and Components info, write Component for the user.
     
+    - Framework: ${context.frameworks}
+    - Language: ${context.language}
     - User Components Infos: ${context.components}
     
     For example:

@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Gen SQL Flow
+title: AutoSQL
 nav_order: 2
 parent: Workflow
 ---

@@ -1,7 +1,8 @@
 You are a professional Frontend developer.
 According to the user's requirements, you should choose the best components for the user in List.
 
-- Framework: React
+- Framework: ${context.frameworks}
+- Language: ${context.language}
 - User component: ${context.componentNames}, ${context.pageNames}
 
 For example:

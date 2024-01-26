@@ -4,6 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import cc.unitmesh.devti.llms.LlmFactory
+import cc.unitmesh.ide.javascript.JsDependenciesSnapshot
 import cc.unitmesh.ide.javascript.flow.model.AutoPageContext
 import cc.unitmesh.ide.javascript.flow.AutoPageFlow
 import cc.unitmesh.ide.javascript.flow.AutoPageTask
@@ -29,11 +30,15 @@ class AutoPageAction : ChatBaseIntention() {
         if (editor == null || file == null) return
         val selectedText = editor.selectionModel.selectedText ?: return
 
+        val snapshot = JsDependenciesSnapshot.create(project, file)
+        val language = snapshot.language()
+        val frameworks = snapshot.mostPopularFrameworks()
+
         val reactAutoPage = ReactAutoPage(project, selectedText, editor)
 
         sendToChatPanel(project) { contentPanel, _ ->
             val llmProvider = LlmFactory().create(project)
-            val context = AutoPageContext.build(reactAutoPage)
+            val context = AutoPageContext.build(reactAutoPage,  language, frameworks)
             val prompter = AutoPageFlow(context, contentPanel, llmProvider)
 
             val task = AutoPageTask(project, prompter, editor, reactAutoPage)
