@@ -16,11 +16,11 @@ class AutoDevSettingsEditor(project: Project) : SettingsEditor<AutoDevConfigurat
     private val storyId = DtCommandLineEditor(project, completionProvider)
 
     override fun createEditor(): JComponent = panel {
-        row(AutoDevBundle.message("devti.settings.githubRepo")) {
+        row(AutoDevBundle.message("autocrud.settings.githubRepo")) {
             cell(githubRepo).fullWidth()
         }
 
-        row(AutoDevBundle.message("devti.settings.storyId")) {
+        row(AutoDevBundle.message("autocrud.settings.storyId")) {
             cell(storyId).fullWidth()
         }
     }.also {

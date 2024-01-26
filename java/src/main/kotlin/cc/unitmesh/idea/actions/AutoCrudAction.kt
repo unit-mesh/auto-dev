@@ -52,22 +52,22 @@ class AutoCrudAction : ChatBaseIntention() {
             override fun run(indicator: ProgressIndicator) {
                 indicator.fraction = 0.2
 
-                indicator.text = AutoDevBundle.message("devti.generatingDtoAndEntity")
+                indicator.text = AutoDevBundle.message("autocrud.generatingDtoAndEntity")
                 flowProvider.updateOrCreateDtoAndEntity(selectedText)
 
                 indicator.fraction = 0.4
 
-                indicator.text = AutoDevBundle.message("devti.progress.fetchingSuggestEndpoint")
+                indicator.text = AutoDevBundle.message("autocrud.progress.fetchingSuggestEndpoint")
                 val target = flowProvider.fetchSuggestEndpoint(selectedText)
 
                 indicator.fraction = 0.6
 
-                indicator.text = AutoDevBundle.message("devti.progress.updatingEndpointMethod")
+                indicator.text = AutoDevBundle.message("autocrud.progress.updatingEndpointMethod")
                 flowProvider.updateOrCreateEndpointCode(target, selectedText)
 
                 indicator.fraction = 0.8
 
-                indicator.text = AutoDevBundle.message("devti.progress.creatingServiceAndRepository")
+                indicator.text = AutoDevBundle.message("autocrud.progress.creatingServiceAndRepository")
                 flowProvider.updateOrCreateServiceAndRepository()
 
                 indicator.fraction = 1.0

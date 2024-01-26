@@ -76,7 +76,7 @@ class AutoDevRunProfileState(
                 indicator.isIndeterminate = false
                 indicator.fraction = 0.0
 
-                indicator.text = AutoDevBundle.message("devti.progress.creatingStory")
+                indicator.text = AutoDevBundle.message("autocrud.progress.creatingStory")
 
                 // todo: check create story
                 val storyId = options.storyId()
@@ -84,22 +84,22 @@ class AutoDevRunProfileState(
 
                 indicator.fraction = 0.2
 
-                indicator.text = AutoDevBundle.message("devti.generatingDtoAndEntity")
+                indicator.text = AutoDevBundle.message("autocrud.generatingDtoAndEntity")
                 flowProvider.updateOrCreateDtoAndEntity(storyDetail)
 
                 indicator.fraction = 0.4
 
-                indicator.text = AutoDevBundle.message("devti.progress.fetchingSuggestEndpoint")
+                indicator.text = AutoDevBundle.message("autocrud.progress.fetchingSuggestEndpoint")
                 val target = flowProvider.fetchSuggestEndpoint(storyDetail)
 
                 indicator.fraction = 0.6
 
-                indicator.text = AutoDevBundle.message("devti.progress.updatingEndpointMethod")
+                indicator.text = AutoDevBundle.message("autocrud.progress.updatingEndpointMethod")
                 flowProvider.updateOrCreateEndpointCode(target, storyDetail)
 
                 indicator.fraction = 0.8
 
-                indicator.text = AutoDevBundle.message("devti.progress.creatingServiceAndRepository")
+                indicator.text = AutoDevBundle.message("autocrud.progress.creatingServiceAndRepository")
                 flowProvider.updateOrCreateServiceAndRepository()
 
                 indicator.fraction = 1.0
