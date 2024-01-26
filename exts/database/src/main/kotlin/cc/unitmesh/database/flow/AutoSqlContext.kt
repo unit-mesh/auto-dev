@@ -1,6 +1,6 @@
 package cc.unitmesh.database.flow
 
-data class GenSqlContext(
+data class AutoSqlContext(
     val requirement: String,
     val databaseVersion: String,
     val schemaName: String,

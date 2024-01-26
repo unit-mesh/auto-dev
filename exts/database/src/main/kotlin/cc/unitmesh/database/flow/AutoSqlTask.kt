@@ -9,17 +9,17 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 
-class GenSqlTask(
+class AutoSqlTask(
     private val project: Project,
-    private val flow: GenSqlFlow,
+    private val flow: AutoSqlFlow,
     private val editor: Editor
 ) : Task.Backgroundable(project, "Gen SQL", true) {
-    private val logger = logger<GenSqlTask>()
+    private val logger = logger<AutoSqlTask>()
 
     override fun run(indicator: ProgressIndicator) {
         indicator.fraction = 0.2
 
-        indicator.text = AutoDevBundle.message("migration.database.sql.generate.clarify")
+        indicator.text = AutoDevBundle.message("autosql.generate.clarify")
         val tables = flow.clarify()
 
         logger.info("Tables: $tables")
@@ -35,7 +35,7 @@ class GenSqlTask(
         }
 
         indicator.fraction = 0.6
-        indicator.text = AutoDevBundle.message("migration.database.sql.generate.generate")
+        indicator.text = AutoDevBundle.message("autosql.generate.generate")
         val sqlScript = flow.design(tableNames)[0]
 
         logger.info("SQL Script: $sqlScript")

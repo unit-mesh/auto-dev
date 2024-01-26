@@ -1,9 +1,9 @@
 package cc.unitmesh.database.actions
 
 import cc.unitmesh.database.DbContextActionProvider
-import cc.unitmesh.database.flow.GenSqlContext
-import cc.unitmesh.database.flow.GenSqlFlow
-import cc.unitmesh.database.flow.GenSqlTask
+import cc.unitmesh.database.flow.AutoSqlContext
+import cc.unitmesh.database.flow.AutoSqlFlow
+import cc.unitmesh.database.flow.AutoSqlTask
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
@@ -18,11 +18,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
 
-class GenSqlAction : ChatBaseIntention() {
+class AutoSqlAction : ChatBaseIntention() {
     override fun priority(): Int = 1001
     override fun startInWriteAction(): Boolean = false
-    override fun getFamilyName(): String = AutoDevBundle.message("migration.database.plsql")
-    override fun getText(): String = AutoDevBundle.message("migration.database.sql.generate")
+    override fun getFamilyName(): String = AutoDevBundle.message("autosql.name")
+    override fun getText(): String = AutoDevBundle.message("autosql.generate")
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         DbPsiFacade.getInstance(project).dataSources.firstOrNull() ?: return false
@@ -45,7 +45,7 @@ class GenSqlAction : ChatBaseIntention() {
             tables.filter { table -> table.kind == ObjectKind.TABLE && table.dasParent?.name == schemaName }
         }.toList()
 
-        val genSqlContext = GenSqlContext(
+        val genSqlContext = AutoSqlContext(
             requirement = selectedText ?: "",
             databaseVersion = databaseVersion.let {
                 "name: ${it.name}, version: ${it.version}"
@@ -58,9 +58,9 @@ class GenSqlAction : ChatBaseIntention() {
 
         sendToChatPanel(project) { contentPanel, _ ->
             val llmProvider = LlmFactory().create(project)
-            val prompter = GenSqlFlow(genSqlContext, actions, contentPanel, llmProvider)
+            val prompter = AutoSqlFlow(genSqlContext, actions, contentPanel, llmProvider)
 
-            val task = GenSqlTask(project, prompter, editor)
+            val task = AutoSqlTask(project, prompter, editor)
             ProgressManager.getInstance()
                 .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
         }

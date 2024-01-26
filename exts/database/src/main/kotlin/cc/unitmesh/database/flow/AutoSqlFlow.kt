@@ -9,13 +9,13 @@ import cc.unitmesh.devti.template.TemplateRender
 import com.intellij.openapi.diagnostic.logger
 import kotlinx.coroutines.runBlocking
 
-class GenSqlFlow(
-    private val genSqlContext: GenSqlContext,
+class AutoSqlFlow(
+    private val genSqlContext: AutoSqlContext,
     private val actions: DbContextActionProvider,
     private val panel: ChatCodingPanel,
     private val llm: LLMProvider
 ) : TaskFlow<String> {
-    private val logger = logger<GenSqlFlow>()
+    private val logger = logger<AutoSqlFlow>()
 
     override fun clarify(): String {
         val stepOnePrompt = generateStepOnePrompt(genSqlContext, actions)
@@ -42,7 +42,7 @@ class GenSqlFlow(
         }.let { listOf(it) }
     }
 
-    private fun generateStepOnePrompt(context: GenSqlContext, actions: DbContextActionProvider): String {
+    private fun generateStepOnePrompt(context: AutoSqlContext, actions: DbContextActionProvider): String {
         val templateRender = TemplateRender("genius/sql")
         val template = templateRender.getTemplate("sql-gen-clarify.vm")
 
@@ -56,7 +56,7 @@ class GenSqlFlow(
     }
 
     private fun generateStepTwoPrompt(
-        genSqlContext: GenSqlContext,
+        genSqlContext: AutoSqlContext,
         actions: DbContextActionProvider,
         tableInfos: List<String>
     ): String {

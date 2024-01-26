@@ -21,7 +21,7 @@
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
         <autoDevIntention>
-            <className>cc.unitmesh.database.actions.GenSqlAction</className>
+            <className>cc.unitmesh.database.actions.AutoSqlAction</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
