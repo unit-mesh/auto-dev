@@ -2,7 +2,7 @@
 layout: default
 title: DevOps
 parent: Basic Features
-nav_order: 9
+nav_order: 10
 permalink: /features/devops
 ---
 
