@@ -5,6 +5,8 @@ nav_order: 2
 parent: Workflow
 ---
 
+Demo Video: [https://www.bilibili.com/video/BV1Ye411h7Qu/](https://www.bilibili.com/video/BV1Ye411h7Qu/)
+
 implementation: [cc.unitmesh.database.flow.AutoSqlFlow](
 
 1. based on user input, AI select the target tables.
@@ -16,8 +18,8 @@ implementation: [cc.unitmesh.database.flow.AutoSqlFlow](
 
 Steps:
 
-- step 1: `prompts/genius/sql/sql-gen-clarify.vm
-- step 2: `prompts/genius/sql/sql-gen-design.vm
+- step 1: `prompts/genius/sql/sql-gen-clarify.vm`
+- step 2: `prompts/genius/sql/sql-gen-design.vm`
 
 Context:
 
