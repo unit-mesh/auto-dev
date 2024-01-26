@@ -2,7 +2,7 @@
 layout: default
 title: AutoDev 1.0 发布，全流程 AI 辅助编程
 nav_order: 2
-parent: What's New
+parent: 更新日志
 ---
 
 四月，在那篇《**AutoDev：AI 突破研发效能，探索平台工程新机遇》**，我们初步拟定了 AI 对于研发的影响。我们有了几个基本的假设：

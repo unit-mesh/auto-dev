@@ -2,7 +2,7 @@
 layout: default
 title: AutoDev 0.7.0 - 生成规范化代码，深入开发者日常
 nav_order: 1
-parent: What's New
+parent: 更新日志
 ---
 
 # 开源 AI 编程助手 AutoDev 0.7 发布—— 生成规范化代码，深入开发者日常
