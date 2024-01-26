@@ -39,6 +39,20 @@ class JsDependenciesSnapshot(
         return dependencies
     }
 
+    fun language(): String {
+        var language = "JavaScript"
+        var languageVersion = "ES5"
+
+        val packageJson = this.packages["typescript"]
+        val tsVersion = packageJson?.parseVersion()
+        if (tsVersion != null) {
+            language = "TypeScript"
+            languageVersion = tsVersion.rawVersion
+        }
+
+        return "$language: $languageVersion"
+    }
+
     companion object {
         fun create(project: Project, psiFile: PsiFile?): JsDependenciesSnapshot {
             var packageJsonFiles = emptySet<VirtualFile>()
