@@ -21,8 +21,8 @@ Common flow for frontend development:
 
 Steps:
 
-- step 1: `prompts/genius/page/page-gen-clarify.vm
-- step 2: `prompts/genius/page/page-gen-design.vm
+- step 1: `prompts/genius/page/page-gen-clarify.vm`
+- step 2: `prompts/genius/page/page-gen-design.vm`
 
 Context:
 
