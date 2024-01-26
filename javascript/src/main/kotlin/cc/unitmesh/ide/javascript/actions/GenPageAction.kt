@@ -8,6 +8,7 @@ import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.template.TemplateRender
+import cc.unitmesh.ide.javascript.flow.DsComponent
 import cc.unitmesh.ide.javascript.flow.ReactAutoPage
 import cc.unitmesh.ide.javascript.util.LanguageApplicableUtil
 import com.intellij.openapi.editor.Editor
@@ -123,8 +124,8 @@ class GenComponentFlow(val context: AutoPageContext, val panel: ChatCodingPanel,
 
 
     override fun design(context: Any): List<String> {
-        val pageNames = context as List<String>
-        val stepTwoPrompt = generateStepTwoPrompt(pageNames)
+        val componentList = context as List<DsComponent>
+        val stepTwoPrompt = generateStepTwoPrompt(componentList)
 
         panel.addMessage(stepTwoPrompt, true, stepTwoPrompt)
         panel.addMessage(AutoDevBundle.message("autodev.loading"))
@@ -135,11 +136,11 @@ class GenComponentFlow(val context: AutoPageContext, val panel: ChatCodingPanel,
         }.let { listOf(it) }
     }
 
-    private fun generateStepTwoPrompt(pageNames: List<String>): String {
+    private fun generateStepTwoPrompt(selectedComponents: List<DsComponent>): String {
         val templateRender = TemplateRender("genius/page")
         val template = templateRender.getTemplate("page-gen-design.vm")
 
-        context.pages = pageNames.map { it.format() }
+        context.pages = selectedComponents.map { it.format() }
         templateRender.context = context
 
         val prompter = templateRender.renderTemplate(template)

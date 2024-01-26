@@ -23,7 +23,7 @@ object ReactPsiUtil {
             exportDeclaration.exportSpecifiers
                 .asSequence()
                 .mapNotNull {
-                    it.alias?.findAliasedElement()
+                    it.resolve()?.originalElement ?: it.alias?.findAliasedElement()
                 }
                 .filterIsInstance<PsiNameIdentifierOwner>()
                 .toList()
