@@ -1,4 +1,4 @@
-package cc.unitmesh.ide.javascript.flow
+package cc.unitmesh.ide.javascript.flow.model
 
 import kotlinx.serialization.Serializable
 

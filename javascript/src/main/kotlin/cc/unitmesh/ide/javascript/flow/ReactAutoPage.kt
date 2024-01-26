@@ -1,5 +1,6 @@
 package cc.unitmesh.ide.javascript.flow
 
+import cc.unitmesh.ide.javascript.flow.model.DsComponent
 import cc.unitmesh.ide.javascript.util.ReactPsiUtil
 import com.intellij.lang.ecmascript6.JSXHarmonyFileType
 import com.intellij.lang.javascript.JavaScriptFileType

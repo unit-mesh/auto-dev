@@ -1,6 +1,6 @@
 package cc.unitmesh.ide.javascript.util
 
-import cc.unitmesh.ide.javascript.flow.DsComponent
+import cc.unitmesh.ide.javascript.flow.model.DsComponent
 import com.intellij.lang.ecmascript6.psi.ES6ExportDeclaration
 import com.intellij.lang.ecmascript6.psi.ES6ExportDefaultAssignment
 import com.intellij.lang.javascript.presentable.JSFormatUtil
