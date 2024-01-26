@@ -18,7 +18,7 @@ data class AutoPageContext(
                 pageNames = reactAutoPage.getPages().map { it.name },
                 components = reactAutoPage.getComponents().map { it.format() },
                 componentNames = reactAutoPage.getComponents().map { it.name },
-                routes = reactAutoPage.getRoutes(),
+                routes = reactAutoPage.getRoutes().map { "${it.key}： ${it.value}" },
             )
         }
     }

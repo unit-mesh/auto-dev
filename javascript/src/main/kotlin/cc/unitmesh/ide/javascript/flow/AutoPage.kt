@@ -18,10 +18,11 @@ interface AutoPage : TaskFlow<String> {
     var userTask: String
 
     /**
-     * Get all routes in the project, including the routes in the submodules
-     * @return list of routes
+     * Retrieves all routes in the project, including the routes in the submodules.
+     *
+     * @return A map of routes, where the key represents the route name and the value represents the route URL.
      */
-    fun getRoutes(): List<String>
+    fun getRoutes(): Map<String, String>
 
     /**
      * Get all pages in the project, based on the naming convention, like the PascalCase under `src/pages`

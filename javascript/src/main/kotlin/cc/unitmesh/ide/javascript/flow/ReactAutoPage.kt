@@ -30,7 +30,8 @@ class ReactAutoPage(
     override var userTask: String,
     private val editor: Editor
 ) : AutoPage {
-    private val routes: List<String> = emptyList()
+    // todo: add post routes design
+    private val routes: MutableMap<RouterFile, JSFile> = mutableMapOf()
     private val pages: MutableList<DsComponent> = mutableListOf()
     private val components: MutableList<DsComponent> = mutableListOf()
 
@@ -39,10 +40,6 @@ class ReactAutoPage(
 
     init {
         val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
-        // todo: find .umirc.ts in root, find in modules
-        val umirc = FileTypeIndex.getFiles(TypeScriptJSXFileType.INSTANCE, searchScope).firstOrNull {
-            it.name == ".umirc.ts"
-        }
         val psiManager = com.intellij.psi.PsiManager.getInstance(project)
 
         val virtualFiles =
@@ -69,6 +66,10 @@ class ReactAutoPage(
 
                 else -> {
                     if (root.findChild(file.name) != null) {
+                        RouterFile.values().filter { it.filename == file.name }.map {
+                            routes += it to jsFile
+                        }
+
                         configs.add(jsFile)
                     }
                 }
@@ -92,6 +93,7 @@ class ReactAutoPage(
                 }
                 dsComponents
             }
+
             else -> {
                 logger<ReactAutoPage>().warn("unknown language: ${jsFile.language}")
                 null
@@ -99,7 +101,21 @@ class ReactAutoPage(
         }
     }
 
-    override fun getRoutes(): List<String> = routes
+    override fun getRoutes(): Map<String, String> {
+        return this.routes.map {
+            when (it.key) {
+                RouterFile.UMI -> emptyMap()
+                RouterFile.NEXT -> {
+                    pages.associate { page ->
+                        val route = page.name.replace(Regex("([A-Z])"), "-$1").lowercase()
+                        route to route
+                    }
+                }
+
+                RouterFile.VITE -> emptyMap()
+            }
+        }.reduce { acc, map -> acc + map }
+    }
 
     // load prompts/context/ds.json from project root
     override fun getDesignSystemComponents(): List<DsComponent> {
@@ -129,7 +145,7 @@ class ReactAutoPage(
         TODO("Not yet implemented")
     }
 
-    fun filterComponents(components: List<String>) : List<DsComponent> {
+    fun filterComponents(components: List<String>): List<DsComponent> {
         val comps = this.pages + this.components
         return components.mapNotNull { component ->
             comps.find { it.name == component }
