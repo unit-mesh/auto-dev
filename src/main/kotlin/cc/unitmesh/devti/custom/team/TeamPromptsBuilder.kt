@@ -43,7 +43,8 @@ class TeamPromptsBuilder(private val project: Project) {
         val promptsDir = project.guessProjectDir()?.findChild(baseDir) ?: return null
         val path = "$pathPrefix/$filename"
 
-        val overrideFile = promptsDir.findChild(path) ?: return null
+        val overrideFile = promptsDir.findFileByRelativePath(path)
+            ?: return null
         return runReadAction { overrideFile.inputStream.readBytes().toString(Charsets.UTF_8) }
     }
 }
