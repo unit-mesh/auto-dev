@@ -6,7 +6,7 @@
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <autoDevIntention>
-            <className>cc.unitmesh.ide.javascript.actions.GenPageAction</className>
+            <className>cc.unitmesh.ide.javascript.actions.AutoPageAction</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>

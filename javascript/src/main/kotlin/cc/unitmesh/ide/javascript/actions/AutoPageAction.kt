@@ -20,11 +20,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import kotlinx.coroutines.runBlocking
 
-class GenPageAction : ChatBaseIntention() {
+class AutoPageAction : ChatBaseIntention() {
     override fun priority(): Int = 1010
     override fun startInWriteAction(): Boolean = false
-    override fun getFamilyName(): String = AutoDevBundle.message("frontend.generate")
-    override fun getText(): String = AutoDevBundle.message("frontend.component.generate")
+    override fun getFamilyName(): String = AutoDevBundle.message("autopage.generate")
+    override fun getText(): String = AutoDevBundle.message("autopage.generate.name")
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         return LanguageApplicableUtil.isWebLLMContext(file)
@@ -58,7 +58,7 @@ class GenComponentTask(
     override fun run(indicator: ProgressIndicator) {
         indicator.fraction = 0.2
 
-        indicator.text = AutoDevBundle.message("frontend.page.generate.clarify")
+        indicator.text = AutoDevBundle.message("autopage.generate.clarify")
         val components = flow.clarify()
         // tables will be list in string format, like: `[table1, table2]`, we need to parse to Lists
         val componentNames = components.substringAfter("[").substringBefore("]")
@@ -68,7 +68,7 @@ class GenComponentTask(
         flow.context.components = filterComponents.map { it.format() }
 
         indicator.fraction = 0.6
-        indicator.text = AutoDevBundle.message("frontend.page.generating")
+        indicator.text = AutoDevBundle.message("autopage.generate.design")
         flow.design(filterComponents)
 
         indicator.fraction = 0.8
