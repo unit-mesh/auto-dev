@@ -31,12 +31,12 @@ AutoDev Overview:
   <img src="docs/autodev-overview.svg" width="100%" height="100%"  alt="Overview" />
 </p>
 
-
 Features:
 
 - Languages support: Java, Kotlin, JavaScript/TypeScript, Rust, Python, Golang, or others...
 - Auto development mode.
-    - AutoCRUD mode (Java/Kotlin Language only）. Auto generate CRUD code.With DevTi Protocol (like `devti://story/github/1102`) will auto generate
+    - AutoCRUD mode (Java/Kotlin Language only）. Auto generate CRUD code.With DevTi Protocol (
+      like `devti://story/github/1102`) will auto generate
       Model-Controller-Service-Repository code.
     - AutoSQL. Context-aware SQL generation.
     - AutoPage. Context-aware Page generation.
@@ -58,12 +58,12 @@ Features:
     - Custom Living documentation.
     - Team prompts. Customize your team prompts in codebase, and distribute to your team.
     - Prompt override. You can override AutoDev's prompt in your codebase.
-- Miscellaneous
+- Infrastructure / DevOps
     - CI/CD support. AutoDev will auto generate CI/CD config file.
     - Dockerfile support. AutoDev will auto generate Dockerfile.
 - Built-in LLM Fine-tune
     - [UnitEval](https://github.com/unit-mesh/unit-eval) evaluate llm result
-    - [UnitGen](https://github.com/unit-mesh/unit-gen) generate fine-tune data.
+    - [UnitGen](https://github.com/unit-mesh/unit-gen) generate code-llm fine-tune data.
 
 AutoDev fine-tune models:
 
