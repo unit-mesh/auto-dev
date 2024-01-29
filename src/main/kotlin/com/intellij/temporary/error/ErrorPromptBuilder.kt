@@ -4,12 +4,18 @@ package com.intellij.temporary.error
 import com.intellij.temporary.AutoPsiUtils
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.prompting.BasePromptText
+import cc.unitmesh.devti.template.TemplateRender
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import java.lang.String.format
 import kotlin.math.min
+
+data class ErrorContext(
+    val errorText: String,
+    val sourceCode: String,
+)
 
 class ErrorPromptBuilder(private val maxLength: Int, private val tokenizer: Tokenizer) {
     private val promptTemplate =
@@ -41,10 +47,15 @@ class ErrorPromptBuilder(private val maxLength: Int, private val tokenizer: Toke
 
         val errorTextTrimmed = trimTextByTokenizer(errorText, maxLengthForPiece)
 
-        val formattedPrompt = format(promptTemplate, "```\n$errorTextTrimmed\n```\n", sourceCode)
+        val templateRender = TemplateRender("genius/error")
+        templateRender.context = ErrorContext(errorTextTrimmed, sourceCode)
+        val template = templateRender.getTemplate("generate-dockerfile.vm")
+        val prompt = templateRender.renderTemplate(template)
+
+//        val formattedPrompt = format(promptTemplate, "```\n$errorTextTrimmed\n```\n", sourceCode)
         val formattedDisplayText = format(displayText, "```\n$errorTextTrimmed\n```\n", sourceCode)
 
-        return BasePromptText(formattedDisplayText, formattedPrompt)
+        return BasePromptText(formattedDisplayText, prompt)
     }
 
     private fun trimByGreedyScopeSelection(errorPlace: ErrorPlace, maxTokenCount: Int): ErrorScope? {
