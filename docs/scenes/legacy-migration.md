@@ -1,27 +1,26 @@
 ---
 layout: default
-title: AI 辅助遗留系统改造
+title: Legacy Migration
 nav_order: 1
 parent: Scenes
 ---
+## AI-Assisted Legacy System Migration
 
-## AI 辅助遗留系统改造
+Building upon the experience accumulated in our "[System Refactoring and Migration Guide](https://migration.ink/)," we have developed a series of AI capabilities within AutoDev to aid developers in accelerating the transformation of legacy systems.
 
-基于我们在《[系统重构与迁移指南](https://migration.ink/)》沉淀的经验，我们在 AutoDev 中构建了一系列的 AI 能力，帮助开发者更快地进行遗留系统改造。
+- Assisting in API data generation for migration testing.
+- Facilitating knowledge management through document generation.
+- Creating living documentation business systems based on annotated documentation.
+- Legacy code refactoring with an object-oriented approach.
+- Generating PL/SQL code and migrating Java code.
 
-- 辅助迁移测试的 API 数据生成。
-- 辅助知识管理的文档生成。
-- 基于注释文档的活文档业务体系。
-- 面向对象的遗留代码重构。
-- PL/SQL 代码生成与迁移 Java 代码。
+## Generating API Test Data from Existing Code
 
-## 从已有代码生成 API 测试数据
+Default support for the Spring framework.
 
-默认支持 Spring 框架
+Simply right-click on the Java Controller code, select "Generate Test Data (APIs)," and API test data will be generated.
 
-右键 Java 的 Controller代码，选择 `Generate Test Data (APIs)`，即可生成 API 测试数据。
-
-### 通过自定义 Prompt
+### Custom Prompt Integration
 
 goto: `Settings` -> `Tools` -> `AutoDev` -> `Customize Engine prompt`, and add your own prompt. For example:
 
@@ -42,13 +41,13 @@ goto: `Settings` -> `Tools` -> `AutoDev` -> `Customize Engine prompt`, and add y
 }
 ```
 
-## 注释与文档生成
+## Comments and Documentation Generation
 
-选中对应的代码，右键选择 `Generate Documentation`，即可生成文档。
+Select the corresponding code, right-click, and choose `Generate Documentation` to generate documentation.
 
-## 使用 [Custom Living documentation](/custom/living-documentation) 生成活文档。
+## Use [Custom Living Documentation](/custom/living-documentation) for generating dynamic documentation.
 
-配置: `Settings` -> `Tools` -> `AutoDev` -> `Customize Engine prompt`, 添加自定义的活文档格式。示例:
+Configuration: `Settings` -> `Tools` -> `AutoDev` -> `Customize Engine prompt`, add custom formats for living documentation. Example:
 
 ```json
 {
@@ -59,7 +58,7 @@ goto: `Settings` -> `Tools` -> `AutoDev` -> `Customize Engine prompt`, and add y
   "documentations": [
     {
       "title": "Living Documentation",
-      "prompt": "编写 Living Documentation。按如下的格式返回：",
+      "prompt": "Write Living Documentation. Return in the following format: ",
       "start": "",
       "end": "",
       "type": "annotated",
@@ -72,12 +71,12 @@ goto: `Settings` -> `Tools` -> `AutoDev` -> `Customize Engine prompt`, and add y
 }
 ```
 
-## PL/SQL 迁移
+## PL/SQL Migration
 
-AutoDev 自 1.5.5 版本开始支持基本的 PL/SQL 迁移。
+AutoDev has been supporting basic PL/SQL migration since version 1.5.5.
 
-1. 选择 PL/SQL 代码
-2. 右键选择
-    - 生成 Entity
-    - 生成测试用例
-    - 生成 Java Code
+1. Select PL/SQL code.
+2. Right-click and choose:
+   - Generate Entity
+   - Generate Test Cases
+   - Generate Java Code
