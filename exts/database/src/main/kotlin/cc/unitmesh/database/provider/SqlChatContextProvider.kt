@@ -1,5 +1,6 @@
 package cc.unitmesh.database.provider
 
+import cc.unitmesh.database.util.SqlContextBuilder
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext

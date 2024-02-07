@@ -1,4 +1,4 @@
-package cc.unitmesh.database.provider
+package cc.unitmesh.database.util
 
 import com.intellij.database.console.JdbcConsoleProvider
 import com.intellij.database.model.ObjectKind
@@ -31,7 +31,8 @@ object SqlContextBuilder {
     private fun describeTable(table: BasicTable): String =
         """
         |create table ${table.name} {
-        |  ${table.columns.joinToString(",\n  ") { "${it.name} ${it.dasType.specification}" }}
+        |  ${table.columns.joinToString(",\n  ") { "${it.name} ${columnType(it)}" }}
         |}
         """.trimMargin()
 }
+
