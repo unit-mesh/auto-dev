@@ -1,4 +1,4 @@
-package cc.unitmesh.android.provider
+package provider
 
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
@@ -13,8 +13,7 @@ class AndroidChatContextProvider : ChatContextProvider {
 
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         val text = "This project is a Mobile Android project."
-        // count for version
-
+        // count for versions
         return listOf(ChatContextItem(AndroidChatContextProvider::class, text))
     }
 }
