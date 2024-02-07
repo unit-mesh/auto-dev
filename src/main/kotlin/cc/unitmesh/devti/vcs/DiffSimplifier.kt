@@ -268,15 +268,16 @@ class DiffSimplifier(val project: Project) {
         }
 
         private fun isBinaryOrTooLarge(revision: ContentRevision?): Boolean {
-            val virtualFile = (revision as? CurrentContentRevision)?.virtualFile
-            return revision != null && (isBinaryRevision(revision) || (virtualFile != null && FileUtilRt.isTooLarge(
-                virtualFile.length
-            )))
+            val virtualFile = (revision as? CurrentContentRevision)?.virtualFile ?: return false
+            return isBinaryRevision(revision) || FileUtilRt.isTooLarge(virtualFile.length)
         }
 
         private fun isBinaryRevision(cr: ContentRevision?): Boolean {
             if (cr == null) return false
-            return if (cr is BinaryContentRevision) true else cr.file.fileType.isBinary
+            return when (cr) {
+                is BinaryContentRevision -> true
+                else -> cr.file.fileType.isBinary
+            }
         }
     }
 }
