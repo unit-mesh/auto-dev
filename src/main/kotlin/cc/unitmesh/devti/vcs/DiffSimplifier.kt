@@ -152,7 +152,6 @@ class DiffSimplifier(val project: Project) {
 
                 // handle for java and kotlin import change
                 if (line.startsWith(" import")) {
-//                    val nextLine = lines[index + 1]
                     val nextLine = lines.getOrNull(index + 1)
                     if (nextLine?.startsWith(" import") == true) {
                         var oldImportLine = ""
@@ -169,23 +168,25 @@ class DiffSimplifier(val project: Project) {
                             }
 
                             val tryLine = lines[tryToFindIndex]
-                            if (tryLine.startsWith("Index:")) {
-                                break
-                            }
+                            when {
 
-                            if (tryLine.startsWith(" import")) {
-                                importLines.add(tryLine)
-                            }
+                                tryLine.startsWith("Index:") -> {
+                                    break
+                                }
 
+                                tryLine.startsWith(" import") -> {
+                                    importLines.add(tryLine)
+                                }
 
-                            if (tryLine.startsWith("-import ")) {
-                                oldImportLine = tryLine.substring("-import ".length)
-                                importLines.add(tryLine)
-                            }
+                                tryLine.startsWith("-import ") -> {
+                                    oldImportLine = tryLine.substring("-import ".length)
+                                    importLines.add(tryLine)
+                                }
 
-                            if (tryLine.startsWith("+import ")) {
-                                newImportLine = tryLine.substring("+import ".length)
-                                importLines.add(tryLine)
+                                tryLine.startsWith("+import ") -> {
+                                    newImportLine = tryLine.substring("+import ".length)
+                                    importLines.add(tryLine)
+                                }
                             }
 
                             tryToFindIndex++
