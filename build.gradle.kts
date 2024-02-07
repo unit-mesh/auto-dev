@@ -434,6 +434,9 @@ project(":") {
         kover(project(":pycharm"))
         kover(project(":rust"))
         kover(project(":scala"))
+
+        kover(project(":exts:database"))
+        kover(project(":exts:android"))
     }
 
     task("resolveDependencies") {
@@ -550,6 +553,17 @@ project(":exts:database") {
     intellij {
         version.set(ideaVersion)
         plugins.set(ideaPlugins + "com.intellij.database")
+    }
+    dependencies {
+        implementation(project(":"))
+    }
+}
+
+project(":exts:android") {
+    intellij {
+        version.set(ideaVersion)
+        //  + "org.jetbrains.android"
+        plugins.set(ideaPlugins + prop("androidPlugin"))
     }
     dependencies {
         implementation(project(":"))
