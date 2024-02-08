@@ -563,7 +563,7 @@ project(":exts:android") {
     intellij {
         version.set(ideaVersion)
         //  + "org.jetbrains.android"
-        plugins.set(ideaPlugins + prop("androidPlugin"))
+        plugins.set((ideaPlugins + prop("androidPlugin").ifBlank { "" }).filter(String::isNotEmpty))
     }
     dependencies {
         implementation(project(":"))
