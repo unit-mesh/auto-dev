@@ -5,6 +5,6 @@
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
-        <chatContextProvider implementation="provider.AndroidChatContextProvider"/>
+        <chatContextProvider implementation="cc.unitmesh.android.provider.AndroidChatContextProvider"/>
     </extensions>
 </idea-plugin>

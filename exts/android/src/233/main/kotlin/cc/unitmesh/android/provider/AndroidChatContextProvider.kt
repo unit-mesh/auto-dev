@@ -1,4 +1,4 @@
-package provider
+package cc.unitmesh.android.provider
 
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
