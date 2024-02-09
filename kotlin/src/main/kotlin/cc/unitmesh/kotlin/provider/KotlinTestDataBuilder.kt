@@ -50,15 +50,17 @@ class KotlinTestDataBuilder : TestDataBuilder {
         ktParameters.map { parameter ->
             result += handleFromType(parameter)
         }
+
         return result
     }
 
     private fun handleFromType(parameter: KtParameter): Map<String, String> {
-        when (val type = parameter.typeReference?.typeElement) {
+        val map = when (val type = parameter.typeReference?.typeElement) {
             is KtClass -> processingClassType(type)
+            else -> emptyMap()
         }
 
-        return emptyMap()
+        return map
     }
 
 
