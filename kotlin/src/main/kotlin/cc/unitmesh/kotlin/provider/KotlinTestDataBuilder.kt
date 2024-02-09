@@ -19,18 +19,12 @@ class KotlinTestDataBuilder : TestDataBuilder {
         if (clazz !is KtClass) return ""
 
         clazz.annotationEntries.forEach {
-            if (it.shortName?.asString() == "RequestMapping") {
-                return when (val value = it.valueArguments.firstOrNull()?.getArgumentExpression()) {
-                    is KtStringTemplateExpression -> {
-                        value.literalContents() ?: value.text
-                    }
-
-                    is KtSimpleNameExpression -> {
-                        value.getReferencedName()
-                    }
-
-                    else -> {
-                        ""
+            when {
+                it.shortName?.asString() == "RequestMapping" -> {
+                    return when (val value = it.valueArguments.firstOrNull()?.getArgumentExpression()) {
+                        is KtStringTemplateExpression -> value.literalContents() ?: value.text
+                        is KtSimpleNameExpression -> value.getReferencedName()
+                        else -> ""
                     }
                 }
             }
