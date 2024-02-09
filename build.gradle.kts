@@ -436,7 +436,7 @@ project(":") {
         kover(project(":scala"))
 
         kover(project(":exts:database"))
-        kover(project(":exts:android"))
+        kover(project(":exts:ext-android"))
     }
 
     task("resolveDependencies") {
@@ -559,7 +559,7 @@ project(":exts:database") {
     }
 }
 
-project(":exts:android") {
+project(":exts:ext-android") {
     intellij {
         version.set(ideaVersion)
         //  + "org.jetbrains.android"

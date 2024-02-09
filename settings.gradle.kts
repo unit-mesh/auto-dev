@@ -20,7 +20,7 @@ include(
 include(
     "exts:database",
     "exts:vue",
-    "exts:android",
+    "exts:ext-android",
 //    todo split vcs
 //    "exts:vcs",
 )
