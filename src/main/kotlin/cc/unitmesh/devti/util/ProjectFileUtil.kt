@@ -2,6 +2,7 @@
 package cc.unitmesh.devti.util
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 
@@ -20,5 +21,5 @@ fun isInProject(virtualFile: VirtualFile, project: Project): Boolean {
 }
 
 fun Project.isInProject(virtualFile: VirtualFile): Boolean {
-    return isInProject(virtualFile, this)
+    return isInProject(virtualFile, this) || ProjectFileIndex.getInstance(this).isInLibrary(virtualFile)
 }

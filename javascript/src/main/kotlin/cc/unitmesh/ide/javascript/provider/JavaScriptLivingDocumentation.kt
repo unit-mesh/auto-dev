@@ -179,22 +179,22 @@ class JavaScriptLivingDocumentation : LivingDocumentation {
             return false
         }
 
-        if (element is JSVariable && !JSUtils.isMember(element)) {
-            val initializerOrStub = element.initializerOrStub
-            if (initializerOrStub is JSFunctionExpression) {
-                return true
-            }
-
-            if (initializerOrStub is JSCallExpression && initializerOrStub.isRequireCall) {
-                return false
-            }
-
-            val parentOfType = PsiTreeUtil.getParentOfType(element, JSSourceElement::class.java, true)
-            val scope = parentOfType?.parent
-
-            return scope is PsiFile || scope is JSEmbeddedContent || scope is TypeScriptModule
+        if (element !is JSVariable || JSUtils.isMember(element)) {
+            return true
         }
 
-        return true
+        val initializerOrStub = element.initializerOrStub
+        if (initializerOrStub is JSFunctionExpression) {
+            return true
+        }
+
+        if (initializerOrStub is JSCallExpression && initializerOrStub.isRequireCall) {
+            return false
+        }
+
+        val parentOfType = PsiTreeUtil.getParentOfType(element, JSSourceElement::class.java, true)
+        val scope = parentOfType?.parent
+
+        return scope is PsiFile || scope is JSEmbeddedContent || scope is TypeScriptModule
     }
 }

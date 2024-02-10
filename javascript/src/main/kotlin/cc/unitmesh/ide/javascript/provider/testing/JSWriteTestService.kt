@@ -165,15 +165,7 @@ class JSWriteTestService : WriteTestService() {
         return result
     }
 
-    private fun isInProject(
-        project: Project,
-        virtualFile: VirtualFile
-    ): Boolean {
-        return project.isInProject(virtualFile) || ProjectFileIndex.getInstance(project).isInLibrary(virtualFile)
-    }
-
     object Util {
-
         /**
          * In JavaScript/TypeScript a testable element is a function, a class or a variable.
          *
@@ -225,7 +217,7 @@ class JSWriteTestService : WriteTestService() {
                 return null
             }
 
-            val containingFile: PsiFile = runReadAction { element.containingFile }?: return null
+            val containingFile: PsiFile = runReadAction { element.containingFile } ?: return null
             val extension = containingFile.virtualFile?.extension ?: return null
             val elementName = JSPsiUtil.elementName(element) ?: return null
             val testFile: Path = generateUniqueTestFile(elementName, containingFile, testDirectory, extension).toPath()
