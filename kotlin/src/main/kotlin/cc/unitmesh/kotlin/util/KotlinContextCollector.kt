@@ -1,4 +1,4 @@
-package cc.unitmesh.kotlin.provider
+package cc.unitmesh.kotlin.util
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
@@ -176,7 +176,7 @@ object KotlinContextCollector {
     }
 
     private fun makePlaceholder(project: Project): PsiElement {
-        return KtPsiFactory(project, false).createComment(this.placeholderMessage)
+        return KtPsiFactory(project, false).createComment(placeholderMessage)
     }
 }
 

@@ -1,5 +1,6 @@
 package cc.unitmesh.kotlin.provider;
 
+import cc.unitmesh.kotlin.util.KotlinContextCollector
 import com.intellij.testFramework.LightPlatformTestCase
 import junit.framework.TestCase
 import org.jetbrains.kotlin.psi.KtPsiFactory

@@ -4,7 +4,8 @@ import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.devti.provider.WriteTestService
-import cc.unitmesh.kotlin.context.KotlinClassContextBuilder
+import cc.unitmesh.kotlin.util.KotlinPsiUtil
+import cc.unitmesh.kotlin.util.getReturnTypeReferences
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
@@ -125,7 +126,7 @@ class KotlinWriteTestService : WriteTestService() {
             val resolvedClasses = resolveByMethod(element)
 
             if (element is KtClassOrObject) {
-                KotlinClassContextBuilder.Util.getFunctions(element).forEach {
+                KotlinPsiUtil.getFunctions(element).forEach {
                     resolvedClasses.putAll(resolveByMethod(it))
                 }
 
