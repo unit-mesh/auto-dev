@@ -22,7 +22,7 @@ class KotlinClassContextBuilder : ClassContextBuilder {
 
         val text = psiElement.text
         val name = psiElement.name
-        val functions = getFunctions(psiElement)
+        val functions = Util.getFunctions(psiElement)
         val allFields = getPrimaryConstructorFields(psiElement)
         val usages =
             if (gatherUsages) JavaContextCollection.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
@@ -45,7 +45,7 @@ class KotlinClassContextBuilder : ClassContextBuilder {
         )
     }
 
-    companion object {
+    object Util {
         fun getFunctions(kotlinClass: KtClassOrObject): List<KtFunction> {
             return kotlinClass.getDeclarations().filterIsInstance<KtFunction>()
         }

@@ -42,7 +42,6 @@ class KotlinMethodContextBuilder : MethodContextBuilder {
     }
 
     object Util {
-
         fun getSignatureString(signatureString: KtNamedFunction): String {
             val bodyBlockExpression = signatureString.bodyBlockExpression
             val startOffsetInParent = if (bodyBlockExpression != null) {

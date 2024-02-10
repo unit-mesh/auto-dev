@@ -24,10 +24,7 @@ class KotlinCodeModifier : CodeModifier {
         return language is KotlinLanguage
     }
 
-    fun lookupFile(
-        project: Project,
-        sourceFile: VirtualFile
-    ): KtFile? {
+    fun lookupFile(project: Project, sourceFile: VirtualFile): KtFile? {
         val psiFile = PsiManager.getInstance(project).findFile(sourceFile) ?: return null
         return psiFile as KtFile
     }

@@ -125,7 +125,7 @@ class KotlinWriteTestService : WriteTestService() {
             val resolvedClasses = resolveByMethod(element)
 
             if (element is KtClassOrObject) {
-                KotlinClassContextBuilder.getFunctions(element).forEach {
+                KotlinClassContextBuilder.Util.getFunctions(element).forEach {
                     resolvedClasses.putAll(resolveByMethod(it))
                 }
 
