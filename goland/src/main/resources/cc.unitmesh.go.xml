@@ -15,5 +15,7 @@
         <testContextProvider language="go" implementation="cc.unitmesh.go.provider.testing.GoWriteTestService"/>
 
         <chatContextProvider implementation="cc.unitmesh.go.provider.GoVersionChatContextProvider"/>
+
+        <livingDocumentation language="go" implementationClass="cc.unitmesh.go.provider.GoLivingDocumentationProvider"/>
     </extensions>
 </idea-plugin>
