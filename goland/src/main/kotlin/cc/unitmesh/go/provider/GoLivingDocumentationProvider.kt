@@ -6,7 +6,6 @@ import com.goide.psi.GoFieldDeclaration
 import com.goide.psi.GoMethodSpec
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.SelectionModel
-import com.goide.psi.impl.GoElementFactory
 import com.goide.psi.impl.GoPsiUtil
 import com.intellij.psi.*
 
