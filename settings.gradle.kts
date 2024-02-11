@@ -21,6 +21,4 @@ include(
     "exts:database",
     "exts:vue",
     "exts:ext-android",
-//    todo split vcs
-//    "exts:vcs",
 )

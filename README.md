@@ -33,15 +33,14 @@ AutoDev Overview:
 
 Features:
 
-- Languages support: Java, Kotlin, JavaScript/TypeScript, Rust, Python, Golang, or others...
+- Languages support: Java, Kotlin, JavaScript/TypeScript, Rust, Python, Golang, C/C++/OC, or others...
 - Auto development mode.
-    - AutoCRUD mode (Java/Kotlin Language only）. Auto generate CRUD code.With DevTi Protocol (
-      like `devti://story/github/1102`) will auto generate
-      Model-Controller-Service-Repository code.
+    - AutoCRUD(Spring framework）. With DevTi Protocol (like `devti://story/github/1102`) will auto
+      generate Model-Controller-Service-Repository code.
     - AutoSQL. Context-aware SQL generation.
     - AutoPage. Context-aware Page generation.
     - AutoTesting. create unit test intention, auto run unit test and try to fix test.
-    - Auto Document. Auto generate document.
+    - AutoDocument. Auto generate document.
 - Copilot mode
     - Pattern specific.Based on your code context like (Controller, Service `import`), AutoDev will suggest you the best
       code.
