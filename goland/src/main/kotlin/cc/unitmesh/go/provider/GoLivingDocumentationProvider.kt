@@ -18,7 +18,8 @@ class GoLivingDocumentationProvider : LivingDocumentation {
     override fun updateDoc(target: PsiElement, newDoc: String, type: LivingDocumentationType, editor: Editor) {
         val project = target.project
 
-        val newComments = GoElementFactory.createComments(project, newDoc)
+        // TODO: Implement this method for #222
+        // val newComments = GoElementFactory.createComments(project, newDoc)
         //
     }
 
