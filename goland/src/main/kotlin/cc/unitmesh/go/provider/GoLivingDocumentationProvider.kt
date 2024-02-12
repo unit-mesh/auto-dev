@@ -7,7 +7,9 @@ import com.goide.psi.GoMethodSpec
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.SelectionModel
 import com.goide.psi.impl.GoPsiUtil
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.psi.*
+import com.intellij.psi.codeStyle.CodeStyleManager
 
 class GoLivingDocumentationProvider : LivingDocumentation {
     override val forbiddenRules: List<String> get() = listOf("do not return example code")
@@ -16,10 +18,27 @@ class GoLivingDocumentationProvider : LivingDocumentation {
 
     override fun updateDoc(target: PsiElement, newDoc: String, type: LivingDocumentationType, editor: Editor) {
         val project = target.project
+        val codeStyleManager = CodeStyleManager.getInstance(project)
+        WriteCommandAction.runWriteCommandAction(project, "Living Document", "cc.unitmesh.livingDoc", {
+            val startOffset = target.textRange.startOffset
+            val newEndOffset = startOffset + newDoc.length
 
-        // TODO: Implement this method for #222
-        // val newComments = GoElementFactory.createComments(project, newDoc)
-        //
+            when (type) {
+                LivingDocumentationType.COMMENT -> {
+
+                }
+
+                LivingDocumentationType.ANNOTATED -> {
+                    editor.document.insertString(startOffset, newDoc)
+                    codeStyleManager.reformatText(target.containingFile, startOffset, newEndOffset)
+                }
+
+                LivingDocumentationType.CUSTOM -> {
+                    editor.document.insertString(startOffset, newDoc)
+                    codeStyleManager.reformatText(target.containingFile, startOffset, newEndOffset)
+                }
+            }
+        })
     }
 
     override fun findNearestDocumentationTarget(psiElement: PsiElement): PsiNameIdentifierOwner? {
