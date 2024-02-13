@@ -38,18 +38,17 @@ class AutoDevRunProfileState(
     }
 
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
-        val gitHubIssue: Kanban
-        when (gitType.lowercase()) {
+        val kanban: Kanban = when (gitType.lowercase()) {
             "gitlab" -> {
-                gitHubIssue = GitLabIssue(options.githubRepo(), gitlabToken, gitlabUrl)
+                GitLabIssue(options.githubRepo(), gitlabToken, gitlabUrl)
             }
 
             "github" -> {
-                gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)
+                GitHubIssue(options.githubRepo(), githubToken)
             }
 
             else -> {
-                gitHubIssue = GitHubIssue(options.githubRepo(), githubToken)
+                GitHubIssue(options.githubRepo(), githubToken)
             }
         }
 
@@ -63,7 +62,7 @@ class AutoDevRunProfileState(
         val openAIRunner = LlmFactory().create(project)
 
         sendToChatPanel(project) { contentPanel, _ ->
-            flowProvider.initContext(gitHubIssue, openAIRunner, contentPanel, project)
+            flowProvider.initContext(kanban, openAIRunner, contentPanel, project)
             ProgressManager.getInstance().run(executeCrud(flowProvider))
         }
 

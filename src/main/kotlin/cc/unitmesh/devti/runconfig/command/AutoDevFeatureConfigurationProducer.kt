@@ -19,9 +19,7 @@ open class AutoDevFeatureConfigurationProducer : BaseConfigurationProducer() {
         return AutoDevConfigurationType.getInstance().factory
     }
 
-    private fun createConfigFor(
-        elements: List<PsiElement>
-    ): AutoDevStory? {
+    private fun createConfigFor(elements: List<PsiElement>): AutoDevStory? {
         if (elements.isEmpty()) return null
         val comments = elements.filterIsInstance<PsiComment>()
         if (comments.isEmpty()) return null
@@ -31,7 +29,10 @@ open class AutoDevFeatureConfigurationProducer : BaseConfigurationProducer() {
         return AutoDevStory.fromStoryConfig(storyConfig)
     }
 
-    override fun isConfigurationFromContext(configuration: AutoDevConfiguration, context: ConfigurationContext): Boolean {
+    override fun isConfigurationFromContext(
+        configuration: AutoDevConfiguration,
+        context: ConfigurationContext
+    ): Boolean {
         val config = findConfig(context.location?.psiElement?.let { listOf(it) } ?: return false) ?: return false
         configuration.name = config.configurationName + "(Create)"
         configuration.setStoryConfig(config)
