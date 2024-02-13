@@ -43,7 +43,7 @@ class QuickAssistantAction : AnAction() {
         val quickPrompts = project.service<TeamPromptsBuilder>().quickPrompts()
 
         if (quickPrompts.isEmpty()) {
-            useInlayMode(editor, offset, project, element, sourceFile!!)
+            useInlayMode(editor, offset, project, element)
         } else {
             useQuickMode(editor, quickPrompts, project, sourceFile)
         }
@@ -88,17 +88,10 @@ class QuickAssistantAction : AnAction() {
         popupMenu.component.show(editor.contentComponent, cursorPosition.x, cursorPosition.y)
     }
 
-    private fun useInlayMode(
-        editor: Editor,
-        offset: Int,
-        project: Project,
-        element: PsiElement?,
-        sourceFile: PsiFile
-    ) {
-        val promptInlay: InlayPanel<QuickPromptField>? =
-            InlayPanel.add(editor as EditorEx, offset, QuickPromptField())
-
-        promptInlay?.let { doExecute(it, project, editor, element) }
+    private fun useInlayMode(editor: Editor, offset: Int, project: Project, element: PsiElement?) {
+        InlayPanel.add(editor as EditorEx, offset, QuickPromptField())?.let {
+            doExecute(it, project, editor, element)
+        }
     }
 
     private fun doExecute(
