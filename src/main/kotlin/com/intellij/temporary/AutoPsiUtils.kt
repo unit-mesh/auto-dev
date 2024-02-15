@@ -53,6 +53,12 @@ object AutoPsiUtils {
         return document.getLineNumber(index)
     }
 
+    /**
+     * Adds line numbers to each line of the input string.
+     *
+     * @param string The input string to which line numbers will be added.
+     * @return The modified string with line numbers added to each line.
+     */
     fun addLineNumbers(string: String): String {
         return string.lines().mapIndexed { index, line -> "${index + 1} $line" }.joinToString("\n")
     }

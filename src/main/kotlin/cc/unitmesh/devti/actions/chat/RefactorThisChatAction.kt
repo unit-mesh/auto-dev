@@ -8,10 +8,7 @@ import com.intellij.openapi.command.WriteCommandAction
 
 class RefactorThisChatAction : ChatBaseAction() {
 
-    override fun getActionType(): ChatActionType {
-        return ChatActionType.REFACTOR
-
-    }
+    override fun getActionType(): ChatActionType = ChatActionType.REFACTOR
 
     override fun getReplaceableAction(event: AnActionEvent): (response: String) -> Unit {
         val editor = event.getRequiredData(CommonDataKeys.EDITOR)
