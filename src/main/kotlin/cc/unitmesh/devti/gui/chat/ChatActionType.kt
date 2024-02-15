@@ -48,7 +48,7 @@ enum class ChatActionType {
 
             FIX_ISSUE -> {
                 devCoderSettings?.fixIssueCode.let {
-                    val defaultPrompt = "Help me fix this issue"
+                    val defaultPrompt = "Help me fix problem: "
                     compilePrompt(it, defaultPrompt, lang)
                 }
             }
