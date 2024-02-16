@@ -563,12 +563,9 @@ project(":exts:database") {
 project(":exts:ext-android") {
     intellij {
         version.set(ideaVersion)
-        plugins.set((
-//                listOf("android") +
-                        ideaPlugins +
-                        prop("androidPlugin").ifBlank { "" }).filter(String::isNotEmpty)
-        )
+        plugins.set((ideaPlugins + prop("androidPlugin").ifBlank { "" }).filter(String::isNotEmpty))
     }
+
     dependencies {
         implementation(project(":"))
     }
