@@ -16,4 +16,8 @@ class AndroidChatContextProvider : ChatContextProvider {
         // count for versions
         return listOf(ChatContextItem(AndroidChatContextProvider::class, text))
     }
+
+    private fun getProjectAndroidTargetSdkVersion(project: Project): Int {
+        return 0
+    }
 }
