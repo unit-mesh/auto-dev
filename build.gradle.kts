@@ -563,6 +563,7 @@ project(":exts:database") {
 project(":exts:ext-android") {
     intellij {
         version.set(ideaVersion)
+        type.set("AI")
         plugins.set((ideaPlugins + prop("androidPlugin").ifBlank { "" }).filter(String::isNotEmpty))
     }
 

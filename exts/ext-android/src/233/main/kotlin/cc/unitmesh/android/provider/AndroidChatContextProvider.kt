@@ -3,6 +3,9 @@ package cc.unitmesh.android.provider
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
+import com.android.sdklib.AndroidVersion
+import com.android.tools.idea.model.AndroidModel
+import com.android.tools.idea.projectsystem.getAndroidFacets
 import com.intellij.openapi.project.Project
 import org.jetbrains.android.util.AndroidUtils
 
@@ -12,12 +15,36 @@ class AndroidChatContextProvider : ChatContextProvider {
     }
 
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
-        val text = "This project is a Mobile Android project."
-        // count for versions
+        var text = "This project is a Mobile Android project."
+        val sdkVersion = getProjectAndroidTargetSdkVersion(project)
+        if (sdkVersion != null) {
+            text += " Android SDK target version is $sdkVersion."
+        }
+
         return listOf(ChatContextItem(AndroidChatContextProvider::class, text))
     }
 
-    private fun getProjectAndroidTargetSdkVersion(project: Project): Int {
-        return 0
+    private fun getProjectAndroidTargetSdkVersion(project: Project): Int? {
+
+        val maxTargetSdkVersion = project.getAndroidFacets()
+            .mapNotNull {
+                AndroidModel.get(it)?.targetSdkVersion?.apiLevel
+            }.maxOrNull()
+
+        return maxTargetSdkVersion ?: run {
+            val apiBaseExtensions = AndroidVersion.ApiBaseExtension.values()
+            if (apiBaseExtensions.isEmpty()) return null
+
+            var maxApiLevel = apiBaseExtensions[0].api
+
+            for (i in 1 until apiBaseExtensions.size) {
+                val currentApiLevel = apiBaseExtensions[i].api
+                if (maxApiLevel < currentApiLevel) {
+                    maxApiLevel = currentApiLevel
+                }
+            }
+
+            maxApiLevel
+        }
     }
 }
