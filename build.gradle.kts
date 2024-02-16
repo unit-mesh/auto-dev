@@ -228,6 +228,7 @@ project(":plugin") {
             "idea" -> {
                 pluginList += javaPlugins
             }
+
             "scala" -> {
                 pluginList += javaPlugins + scalaPlugin
             }
@@ -562,8 +563,11 @@ project(":exts:database") {
 project(":exts:ext-android") {
     intellij {
         version.set(ideaVersion)
-        //  + "org.jetbrains.android"
-        plugins.set((ideaPlugins + prop("androidPlugin").ifBlank { "" }).filter(String::isNotEmpty))
+        plugins.set((
+//                listOf("android") +
+                        ideaPlugins +
+                        prop("androidPlugin").ifBlank { "" }).filter(String::isNotEmpty)
+        )
     }
     dependencies {
         implementation(project(":"))
