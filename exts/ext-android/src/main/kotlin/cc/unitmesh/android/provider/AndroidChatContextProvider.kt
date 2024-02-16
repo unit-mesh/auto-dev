@@ -1,5 +1,6 @@
 package cc.unitmesh.android.provider
 
+import cc.unitmesh.android.util.AdSdkFinder
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
@@ -31,20 +32,6 @@ class AndroidChatContextProvider : ChatContextProvider {
                 AndroidModel.get(it)?.targetSdkVersion?.apiLevel
             }.maxOrNull()
 
-        return maxTargetSdkVersion ?: run {
-            val apiBaseExtensions = AndroidVersion.ApiBaseExtension.values()
-            if (apiBaseExtensions.isEmpty()) return null
-
-            var maxApiLevel = apiBaseExtensions[0].api
-
-            for (i in 1 until apiBaseExtensions.size) {
-                val currentApiLevel = apiBaseExtensions[i].api
-                if (maxApiLevel < currentApiLevel) {
-                    maxApiLevel = currentApiLevel
-                }
-            }
-
-            maxApiLevel
-        }
+        return maxTargetSdkVersion ?: let { AdSdkFinder.getSdkVersion() }
     }
 }
