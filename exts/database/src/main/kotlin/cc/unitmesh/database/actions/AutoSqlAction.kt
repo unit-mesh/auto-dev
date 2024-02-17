@@ -3,7 +3,7 @@ package cc.unitmesh.database.actions
 import cc.unitmesh.database.DbContextActionProvider
 import cc.unitmesh.database.flow.AutoSqlContext
 import cc.unitmesh.database.flow.AutoSqlFlow
-import cc.unitmesh.database.flow.AutoSqlTask
+import cc.unitmesh.database.flow.AutoSqlBackgroundTask
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
@@ -60,7 +60,7 @@ class AutoSqlAction : ChatBaseIntention() {
             val llmProvider = LlmFactory().create(project)
             val prompter = AutoSqlFlow(genSqlContext, actions, contentPanel, llmProvider)
 
-            val task = AutoSqlTask(project, prompter, editor)
+            val task = AutoSqlBackgroundTask(project, prompter, editor)
             ProgressManager.getInstance()
                 .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
         }

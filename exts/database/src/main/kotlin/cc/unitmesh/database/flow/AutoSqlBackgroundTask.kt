@@ -9,12 +9,12 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 
-class AutoSqlTask(
+class AutoSqlBackgroundTask(
     private val project: Project,
     private val flow: AutoSqlFlow,
     private val editor: Editor
 ) : Task.Backgroundable(project, "Gen SQL", true) {
-    private val logger = logger<AutoSqlTask>()
+    private val logger = logger<AutoSqlBackgroundTask>()
 
     override fun run(indicator: ProgressIndicator) {
         indicator.fraction = 0.2
