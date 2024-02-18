@@ -72,5 +72,4 @@ class GoLivingDocumentationProvider : LivingDocumentation {
     ): List<PsiNameIdentifierOwner> {
         return listOf()
     }
-
 }

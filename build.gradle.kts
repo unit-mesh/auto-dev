@@ -264,6 +264,7 @@ project(":plugin") {
         implementation(project(":cpp"))
         implementation(project(":scala"))
         implementation(project(":exts:database"))
+        implementation(project(":exts:ext-android"))
     }
 
     // Collects all jars produced by compilation of project modules and merges them into singe one.
