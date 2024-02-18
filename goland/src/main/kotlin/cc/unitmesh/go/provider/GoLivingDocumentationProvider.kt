@@ -51,7 +51,6 @@ class GoLivingDocumentationProvider : LivingDocumentation {
     override fun findNearestDocumentationTarget(psiElement: PsiElement): PsiNameIdentifierOwner? {
         val element = PsiTreeUtil.getParentOfType(
             psiElement,
-            true,
             GoFunctionOrMethodDeclaration::class.java,
             GoMethodSpec::class.java,
             GoTypeDeclaration::class.java,
