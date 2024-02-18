@@ -74,7 +74,7 @@ open class LivingDocPromptBuilder(
         if (context.paramNames.isNotEmpty()) {
             instruction = """
                 $instruction
-                ${documentation.parameterTagInstruction}
+                ${documentation.parameterTagInstruction ?: ""}
                 """.trimIndent()
         }
 
@@ -82,7 +82,7 @@ open class LivingDocPromptBuilder(
         if (!returnType.isNullOrEmpty()) {
             instruction = """
                 $instruction
-                ${documentation.returnTagInstruction}
+                ${documentation.returnTagInstruction ?: ""}
                 """.trimIndent()
         }
 

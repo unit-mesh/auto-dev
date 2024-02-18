@@ -12,6 +12,9 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.IncorrectOperationException
 
 class JavaLivingDocumentation : LivingDocumentation {
+    override val parameterTagInstruction: String get() = "use @param tag"
+    override val returnTagInstruction: String get() = "use @return tag"
+
     override val forbiddenRules: List<String> = listOf(
         "do not return example code",
         "do not use @author and @version tags"

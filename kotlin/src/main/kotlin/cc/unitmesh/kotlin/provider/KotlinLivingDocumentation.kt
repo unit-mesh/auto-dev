@@ -53,6 +53,9 @@ import org.jetbrains.kotlin.psi.KtNamedFunction
  * @see LivingDocumentationType
  */
 class KotlinLivingDocumentation : LivingDocumentation {
+    override val parameterTagInstruction: String get() = "use @param tag"
+    override val returnTagInstruction: String get() = "use @return tag"
+
     companion object {
         private val logger = logger<KotlinLivingDocumentation>()
     }
