@@ -2,17 +2,21 @@ package cc.unitmesh.go.provider
 
 import cc.unitmesh.devti.custom.document.LivingDocumentationType
 import cc.unitmesh.devti.provider.LivingDocumentation
-import com.goide.psi.GoFieldDeclaration
-import com.goide.psi.GoMethodSpec
+import com.goide.psi.*
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.SelectionModel
 import com.goide.psi.impl.GoPsiUtil
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.psi.*
 import com.intellij.psi.codeStyle.CodeStyleManager
+import com.intellij.psi.util.PsiTreeUtil
 
 class GoLivingDocumentationProvider : LivingDocumentation {
-    override val forbiddenRules: List<String> get() = listOf("do not return example code")
+    override val forbiddenRules: List<String>
+        get() = listOf(
+            "DO NOT DUPLICATE THE DECLARATION CODE!",
+            "Do not mention the containing package",
+        )
 
     override fun startEndString(type: LivingDocumentationType): Pair<String, String> = "/*" to "*/"
 
@@ -42,7 +46,21 @@ class GoLivingDocumentationProvider : LivingDocumentation {
     }
 
     override fun findNearestDocumentationTarget(psiElement: PsiElement): PsiNameIdentifierOwner? {
-        TODO("Not yet implemented")
+        val element = PsiTreeUtil.getParentOfType(
+            psiElement,
+            true,
+            GoFunctionOrMethodDeclaration::class.java,
+            GoMethodSpec::class.java,
+            GoTypeDeclaration::class.java,
+            GoVarOrConstSpec::class.java,
+            GoVarOrConstDeclaration::class.java,
+        )
+
+        if (element != null && GoPsiUtil.isTopLevelDeclaration(element)) {
+            return element as PsiNameIdentifierOwner
+        }
+
+        return null
     }
 
     fun getMayBeDocumented(element: PsiElement): Boolean {
@@ -50,10 +68,9 @@ class GoLivingDocumentationProvider : LivingDocumentation {
     }
 
     override fun findDocTargetsInSelection(
-        root: PsiElement,
-        selectionModel: SelectionModel
+        root: PsiElement, selectionModel: SelectionModel
     ): List<PsiNameIdentifierOwner> {
-        TODO("Not yet implemented")
+        return listOf()
     }
 
 }
