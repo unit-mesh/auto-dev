@@ -70,8 +70,9 @@ open class LivingDocPromptBuilder(
     private fun methodInstruction(context: MethodContext): String? {
         if (context.name == null) return null
 
-        var instruction = "Write documentation for given ${context.root.language.displayName} language method " + context.name + "."
-        if (context.paramNames.isNotEmpty()) {
+        var instruction =
+            "Write documentation for given ${context.root.language.displayName} language method " + context.name + "."
+        if (context.paramNames.isNotEmpty() && documentation.parameterTagInstruction != null) {
             instruction = """
                 $instruction
                 ${documentation.parameterTagInstruction ?: ""}
@@ -79,7 +80,7 @@ open class LivingDocPromptBuilder(
         }
 
         val returnType = context.returnType
-        if (!returnType.isNullOrEmpty()) {
+        if (!returnType.isNullOrEmpty() && documentation.returnTagInstruction != null) {
             instruction = """
                 $instruction
                 ${documentation.returnTagInstruction ?: ""}

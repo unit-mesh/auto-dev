@@ -6,6 +6,7 @@ import com.goide.psi.*
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.SelectionModel
 import com.goide.psi.impl.GoPsiUtil
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.psi.*
 import com.intellij.psi.codeStyle.CodeStyleManager
@@ -21,24 +22,26 @@ class GoLivingDocumentationProvider : LivingDocumentation {
     override fun startEndString(type: LivingDocumentationType): Pair<String, String> = "/*" to "*/"
 
     override fun updateDoc(target: PsiElement, newDoc: String, type: LivingDocumentationType, editor: Editor) {
-        val project = target.project
+        val project = runReadAction { target.project }
         val codeStyleManager = CodeStyleManager.getInstance(project)
         WriteCommandAction.runWriteCommandAction(project, "Living Document", "cc.unitmesh.livingDoc", {
+            val doc = newDoc + "\n"
             val startOffset = target.textRange.startOffset
-            val newEndOffset = startOffset + newDoc.length
+            val newEndOffset = startOffset + doc.length
 
             when (type) {
                 LivingDocumentationType.COMMENT -> {
-
+                    editor.document.insertString(startOffset, doc)
+                    codeStyleManager.reformatText(target.containingFile, startOffset, newEndOffset)
                 }
 
                 LivingDocumentationType.ANNOTATED -> {
-                    editor.document.insertString(startOffset, newDoc)
+                    editor.document.insertString(startOffset, doc)
                     codeStyleManager.reformatText(target.containingFile, startOffset, newEndOffset)
                 }
 
                 LivingDocumentationType.CUSTOM -> {
-                    editor.document.insertString(startOffset, newDoc)
+                    editor.document.insertString(startOffset, doc)
                     codeStyleManager.reformatText(target.containingFile, startOffset, newEndOffset)
                 }
             }
