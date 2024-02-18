@@ -4,7 +4,6 @@ import cc.unitmesh.android.util.AdSdkFinder
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
-import com.android.sdklib.AndroidVersion
 import com.android.tools.idea.model.AndroidModel
 import com.android.tools.idea.projectsystem.getAndroidFacets
 import com.intellij.openapi.project.Project
@@ -19,7 +18,7 @@ class AndroidChatContextProvider : ChatContextProvider {
         var text = "This project is a Mobile Android project."
         val sdkVersion = getProjectAndroidTargetSdkVersion(project)
         if (sdkVersion != null) {
-            text += " Android SDK target version is $sdkVersion."
+            text += "Android SDK target version is $sdkVersion."
         }
 
         return listOf(ChatContextItem(AndroidChatContextProvider::class, text))
