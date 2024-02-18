@@ -30,9 +30,10 @@ open class JavaScriptTestCodeModifier : CodeModifier {
 
     override fun insertMethod(sourceFile: VirtualFile, project: Project, code: String): Boolean {
         // todo: spike for insert different method type, like named function, arrow function, etc.
-        val psiElement = (sourceFile as JSFile).lastChild
+        val jsFile = PsiManager.getInstance(project).findFile(sourceFile) as JSFile
+        val psiElement = jsFile.lastChild
 
-        val element = PsiFileFactory.getInstance(project).createFileFromText(sourceFile.language, "")
+        val element = PsiFileFactory.getInstance(project).createFileFromText(jsFile.language, "")
         val codeElement = JSPsiElementFactory.createJSStatement(code, element)
 
         runReadAction {
