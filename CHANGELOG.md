@@ -1,8 +1,10 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v1.6.0...v) (2024-01-26)
+# [](https://github.com/unit-mesh/auto-dev/compare/v1.6.1...v) (2024-02-18)
+Bug Fixes
+* **android:** remove space before Android SDK target version ([5f32088](https://github.com/unit-mesh/auto-dev/commit/5f320884626a3fd3b6384a39f9501c29913ae6a8))
 
 ## [Unreleased]
 
-## [1.6.0](https://github.com/unit-mesh/auto-dev/compare/v1.5.5...v[1.6.0]) (2024-01-26)
+## [1.6.1](https://github.com/unit-mesh/auto-dev/compare/v1.6.0...v[1.6.1]) (2024-02-18)
 
 ### Bug Fixes
 - **actions:** remove unnecessary null check ([51dc43e](https://github.com/unit-mesh/auto-dev/commit/51dc43e27563b31dc7eba607783bff45b8842d32))
@@ -973,8 +975,8 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.6.0...HEAD
-[1.6.0]: https://github.com/unit-mesh/auto-dev/compare/v1.5.5...v1.6.0
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.6.1...HEAD
+[1.6.1]: https://github.com/unit-mesh/auto-dev/compare/v1.5.5...v1.6.1
 [1.5.5]: https://github.com/unit-mesh/auto-dev/compare/v1.5.4...v1.5.5
 [1.5.4]: https://github.com/unit-mesh/auto-dev/compare/v1.5.3...v1.5.4
 [1.5.3]: https://github.com/unit-mesh/auto-dev/compare/v1.5.2...v1.5.3
