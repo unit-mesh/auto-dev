@@ -9,6 +9,15 @@ parent: Design Patterns
 
 ## 提交信息示例
 
+步骤：
+
+1. 获取当前项目的版本控制系统（VCS）日志提供者。
+2. 获取当前分支和用户。
+3. 根据用户或分支过滤日志。
+4. 收集示例提交信息。
+
+代码示例：
+
 ```kotlin
 private fun findExampleCommitMessages(project: Project): String? {
     val logProviders = VcsProjectLog.getLogProviders(project)
