@@ -389,12 +389,12 @@ project(":") {
         plugins.set(ideaPlugins)
     }
 
-    sourceSets {
-        main {
-            resources.srcDirs("src/main/resources")
-            resources.srcDirs("src/$platformVersion/main/resources")
-        }
-    }
+//    sourceSets {
+//        main {
+//            resources.srcDirs("src/main/resources")
+//            resources.srcDirs("src/$platformVersion/main/resources")
+//        }
+//    }
 
     dependencies {
         implementation(libs.bundles.openai)
