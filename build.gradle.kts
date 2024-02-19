@@ -39,9 +39,9 @@ plugins {
     alias(libs.plugins.qodana) // Gradle Qodana Plugin
     alias(libs.plugins.kover) // Gradle Kover Plugin
     alias(libs.plugins.serialization)
+    alias(libs.plugins.gradleIntelliJPlugin)
 
     kotlin("jvm") version "1.8.22"
-    id("org.jetbrains.intellij") version "1.15.0"
     id("net.saliman.properties") version "1.5.2"
 }
 
@@ -391,8 +391,8 @@ project(":") {
 
     sourceSets {
         main {
-            resources.srcDirs("src/main/resources-stable")
-            resources.srcDirs("src/$platformVersion/main/resources-stable")
+            resources.srcDirs("src/main/resources")
+            resources.srcDirs("src/$platformVersion/main/resources")
         }
     }
 
