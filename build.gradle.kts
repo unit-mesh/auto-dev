@@ -186,7 +186,6 @@ allprojects {
         }
         test {
             resources.srcDirs("src/$platformVersion/test/resources")
-//            resources.srcDirs("src/test/resources")
         }
     }
     kotlin {
@@ -196,7 +195,6 @@ allprojects {
             }
             test {
                 kotlin.srcDirs("src/$platformVersion/test/kotlin")
-//                kotlin.srcDirs("src/test/kotlin")
             }
         }
     }
