@@ -10,6 +10,7 @@ include(
     "java",
     "kotlin",
     "javascript",
+    // since JetBrains also call `go.jar`, so we rename it to `goland` for avoiding conflict
     "goland",
     "rust",
     "csharp",
@@ -20,5 +21,6 @@ include(
 include(
     "exts:database",
     "exts:vue",
+    // since JetBrains also call `android.jar`, so we rename it to `ext-android`
     "exts:ext-android",
 )
