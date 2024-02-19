@@ -9,12 +9,6 @@ parent: Design Patterns
 
 ## 提交信息示例
 
-```
-
-```
-
-## 文档示例
-
 ```kotlin
 private fun findExampleCommitMessages(project: Project): String? {
     val logProviders = VcsProjectLog.getLogProviders(project)
@@ -33,3 +27,11 @@ private fun findExampleCommitMessages(project: Project): String? {
     return collectExamples(logProvider, entry.key, logFilter)
 }
 ```
+
+## 文档示例
+
+DOC TODO
+
+## 代码示例
+
+DOC TODO
