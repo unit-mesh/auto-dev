@@ -29,7 +29,7 @@ class CLionWorkspaceContextProvider : ChatContextProvider {
         val isUnderWslItem = createIsUnderWslItem(project)
         val preferredLanguageItem = createPreferredLanguageItem(project, creationContext)
 
-        val testFrameworkItem = createTestFrameworkItem(project, creationContext)
+        val testFrameworkItem = createTestFrameworkItem(project)
 
         return (listOf(
             projectNameItem,
@@ -59,7 +59,7 @@ class CLionWorkspaceContextProvider : ChatContextProvider {
         }
     }
 
-    private fun createTestFrameworkItem(project: Project, creationContext: ChatCreationContext): ChatContextItem? {
+    private fun createTestFrameworkItem(project: Project): ChatContextItem? {
         val cmakeLists = File(project.basePath, "CMakeLists.txt")
         if (!cmakeLists.exists()) {
             logger<CLionWorkspaceContextProvider>().warn("CMakeLists.txt does not exist in the project.")
