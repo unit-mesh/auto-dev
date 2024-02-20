@@ -35,16 +35,7 @@ interface ChatContextProvider {
                 }
             }
             elements.addAll(chatCreationContext.extraItems)
-
             return elements.distinctBy { it.text }
-        }
-
-        suspend fun collectChatContext(
-            project: Project,
-            chatCreationContext: ChatCreationContext
-        ): String {
-            val itemList = collectChatContextList(project, chatCreationContext)
-            return itemList.joinToString(separator = "\n") { it.text }
         }
     }
 }
