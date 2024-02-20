@@ -14,13 +14,6 @@ interface ChatContextProvider {
     @RequiresBackgroundThread
     suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem>
 
-    fun filterItems(
-        list: List<ChatContextItem?>,
-        creationContext: ChatCreationContext
-    ): List<ChatContextItem?> {
-        return list
-    }
-
     companion object {
         val EP_NAME = ExtensionPointName<ChatContextProvider>("cc.unitmesh.chatContextProvider")
 
@@ -33,22 +26,14 @@ interface ChatContextProvider {
             val chatContextProviders = EP_NAME.extensionList
             for (provider in chatContextProviders) {
                 try {
-                    val applicable = withContext(Dispatchers.Default) {
-                        provider.isApplicable(project, chatCreationContext)
-                    }
-
+                    val applicable = provider.isApplicable(project, chatCreationContext)
                     if (applicable) {
-                        val filteredItems = withContext(Dispatchers.Default) {
-                            provider.filterItems(provider.collect(project, chatCreationContext), chatCreationContext)
-                        }.filterNotNull()
-
-                        elements.addAll(filteredItems)
+                        elements.addAll(provider.collect(project, chatCreationContext))
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
-
             elements.addAll(chatCreationContext.extraItems)
 
             return elements.distinctBy { it.text }
