@@ -25,7 +25,6 @@ class AndroidChatContextProvider : ChatContextProvider {
     }
 
     private fun getProjectAndroidTargetSdkVersion(project: Project): Int? {
-
         val maxTargetSdkVersion = project.getAndroidFacets()
             .mapNotNull {
                 AndroidModel.get(it)?.targetSdkVersion?.apiLevel
