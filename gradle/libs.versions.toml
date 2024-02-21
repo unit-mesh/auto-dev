@@ -2,10 +2,10 @@
 annotations = "24.0.1"
 
 # plugins
-dokka = "1.8.10"
-kotlin = "1.8.10"
+dokka = "1.9.10"
+kotlin = "1.9.10"
 changelog = "2.1.2"
-gradleIntelliJPlugin = "1.17.1"
+gradleIntelliJPlugin = "1.17.2"
 qodana = "0.1.13"
 kover = "0.7.5"
 
