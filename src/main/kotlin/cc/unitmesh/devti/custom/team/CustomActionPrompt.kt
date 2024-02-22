@@ -125,5 +125,6 @@ enum class InteractionType {
     AppendCursor,
     AppendCursorStream,
     OutputFile,
+    Replace
     ;
 }

@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.util
 
 import cc.unitmesh.devti.AutoDevBundle
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
@@ -8,6 +9,7 @@ import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.PsiElement
 import com.intellij.psi.codeStyle.CodeStyleManager
 
 object InsertUtil {
@@ -41,5 +43,16 @@ object InsertUtil {
 
         editor.caretModel.moveToOffset(currentOffset + char.length)
         editor.scrollingModel.scrollToCaret(ScrollType.MAKE_VISIBLE)
+    }
+
+    fun replaceText(project: Project, editor: Editor, element: PsiElement?, output: String) {
+        val primaryCaret = editor.caretModel.primaryCaret;
+        val start = runReadAction { primaryCaret.selectionStart }
+        val end = runReadAction { primaryCaret.selectionEnd }
+        val document = runReadAction { editor.document }
+
+        WriteCommandAction.runWriteCommandAction(project) {
+            document.replaceString(start, end, output)
+        }
     }
 }

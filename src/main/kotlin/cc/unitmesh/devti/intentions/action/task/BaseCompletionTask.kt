@@ -53,7 +53,7 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
         var currentOffset = request.offset
 
         indicator.isIndeterminate = true
-        indicator.fraction = 0.8
+        indicator.fraction = 0.5
         indicator.text = AutoDevBundle.message("intentions.request.background.process.title")
 
         LLMCoroutineScope.scope(request.project).launch {
@@ -67,13 +67,18 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
 
                 suggestion.append(char as String)
                 invokeLater {
-                    if (!isCanceled) {
+                    if (!isCanceled && !request.isReplacement) {
                         InsertUtil.insertStreamingToDoc(project, char, editor, currentOffset)
                         currentOffset += char.length
                     }
                 }
             }
 
+            if (request.isReplacement) {
+                InsertUtil.replaceText(project, editor, request.element, suggestion.toString())
+            }
+
+            indicator.fraction = 0.8
             AutoDevStatusService.notifyApplication(AutoDevStatus.Done)
             logger.info("Suggestion: $suggestion")
         }
