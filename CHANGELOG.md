@@ -1,8 +1,25 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v1.6.1...v) (2024-02-18)
-Bug Fixes
-* **android:** remove space before Android SDK target version ([5f32088](https://github.com/unit-mesh/auto-dev/commit/5f320884626a3fd3b6384a39f9501c29913ae6a8))
+# [](https://github.com/unit-mesh/auto-dev/compare/v1.6.3...v) (2024-02-22)
 
 ## [Unreleased]
+
+## [1.6.3](https://github.com/unit-mesh/auto-dev/compare/v1.6.1...v[1.6.3]) (2024-02-22)
+
+### Bug Fixes
+- **android:** remove space before Android SDK target version ([5f32088](https://github.com/unit-mesh/auto-dev/commit/5f320884626a3fd3b6384a39f9501c29913ae6a8))
+- **go:** improve documentation generation process ([90f446f](https://github.com/unit-mesh/auto-dev/commit/90f446ff5fe7d3796808e5d89d60977c34284437))
+- **goland:** fix 222 version lost interface issue ([e6def78](https://github.com/unit-mesh/auto-dev/commit/e6def7842c08f02dba2e6b0469987cd0cf845251))
+
+### Features
+- **build:** add Gradle IntelliJ Plugin and update version ([45c714a](https://github.com/unit-mesh/auto-dev/commit/45c714acb47e4aa5f180b1e514946744442f4119))
+- **chat:** refactor chat action names ([fb307d9](https://github.com/unit-mesh/auto-dev/commit/fb307d912e30debeadee2776151d098c7fc65da5))
+- **completion:** add support for text replacement in code completion ([f552e0d](https://github.com/unit-mesh/auto-dev/commit/f552e0d7e14a31e4e83134f60c35dedad8d72ff7))
+- **docs:** add compatible strategy documentation ([23581b6](https://github.com/unit-mesh/auto-dev/commit/23581b657b2cc32a3dbd303f6f99431027b6fdfe))
+- **docs:** add demo project link to customization guide ([cea4574](https://github.com/unit-mesh/auto-dev/commit/cea4574874efe5ab17f00d734279e7d35cde6257))
+- **docs:** add unit-driven design pattern documentation ([3b09c90](https://github.com/unit-mesh/auto-dev/commit/3b09c90601576d0cf2bff2426c24c1798b1bd14f))
+- **interaction:** add support for ReplaceSelection prompt type ([e1da93e](https://github.com/unit-mesh/auto-dev/commit/e1da93eb2a91cd5c858def1d72d9ac50ab451aa2))
+- **living-docs:** add parameter and return tag instructions ([603a4c2](https://github.com/unit-mesh/auto-dev/commit/603a4c2dd687338f947ffecf19d231f2f9ac0474))
+- **provider:** add Android extension support ([2860c85](https://github.com/unit-mesh/auto-dev/commit/2860c85f1451d88d4cbfe56189b0c8693b5f33f9))
+- **tests:** add @Ignore annotation to end-point prompt test ([c99ed29](https://github.com/unit-mesh/auto-dev/commit/c99ed29f8080095b248ea7bb65b867cc96c84fc6))
 
 ## [1.6.1](https://github.com/unit-mesh/auto-dev/compare/v1.6.0...v[1.6.1]) (2024-02-18)
 
@@ -975,7 +992,8 @@ Bug Fixes
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.6.1...HEAD
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.6.3...HEAD
+[1.6.3]: https://github.com/unit-mesh/auto-dev/compare/v1.6.1...v1.6.3
 [1.6.1]: https://github.com/unit-mesh/auto-dev/compare/v1.5.5...v1.6.1
 [1.5.5]: https://github.com/unit-mesh/auto-dev/compare/v1.5.4...v1.5.5
 [1.5.4]: https://github.com/unit-mesh/auto-dev/compare/v1.5.3...v1.5.4

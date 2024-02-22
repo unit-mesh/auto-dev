@@ -89,6 +89,3 @@ We follow [Chapi](https://github.com/phodal/chapi) for language support tier.
 | Precision Test Generation | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    | | 
 | Precision Code Generation | ✅    |        |    | ✅      |       |       |    |       |      | | 
 
-### Extensions
-
-see in [exts](exts)
