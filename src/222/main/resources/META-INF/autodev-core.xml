@@ -184,13 +184,13 @@
 
         <!-- For right click -->
         <group id="org.intellij.sdk.action.GroupedActions" popup="true" text="AutoDev Chat" description="AutoDev chat">
-            <action id="cc.unitmesh.devti.actions.chat.ChatBotExplainAction"
-                    class="cc.unitmesh.devti.actions.chat.ChatBotExplainAction" text="Explain This"
+            <action id="cc.unitmesh.devti.actions.chat.ExplainThisChatAction"
+                    class="cc.unitmesh.devti.actions.chat.ExplainThisChatAction" text="Explain This"
                     description="Ask AI about this code">
             </action>
 
-            <action id="cc.unitmesh.devti.actions.chat.ChatBotRefactorAction"
-                    class="cc.unitmesh.devti.actions.chat.ChatBotRefactorAction" text="Refactor This"
+            <action id="cc.unitmesh.devti.actions.chat.RefactorThisChatAction"
+                    class="cc.unitmesh.devti.actions.chat.RefactorThisChatAction" text="Refactor This"
                     description="Ask AI refactor this code">
             </action>
 
