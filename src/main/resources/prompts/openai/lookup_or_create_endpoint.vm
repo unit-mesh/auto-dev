@@ -1,7 +1,7 @@
 你是一个资深的后端 CRUD 工程师，请根据下面的用户故事 和 Controller 列表。要求：
 
-- 返回最合适的 Controller 名字
-- 如果不存在合适的 Controller 名字，请设计一个新的 Controller 名字
+- 请在下面的 Controller 列表中，寻找并返回最合适的 Controller 名字
+- 如果无法在给定列表中找到合适的 Controller 名字，请你自行设计一个合适的 Controller 名字。
 
 Controller 列表：
 
