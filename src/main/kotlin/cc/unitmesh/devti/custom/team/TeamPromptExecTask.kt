@@ -7,9 +7,7 @@ import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.intentions.action.task.BaseCompletionTask
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
-import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runReadAction
-import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
@@ -75,7 +73,7 @@ class TeamPromptExecTask(
                     .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
             }
 
-            InteractionType.Replace -> {
+            InteractionType.ReplaceSelection -> {
                 val msgString = systemPrompt + "\n" + userPrompt
                 val request = runReadAction {
                     CodeCompletionRequest.create(editor, offset, element, null, msgString, isReplacement = true)

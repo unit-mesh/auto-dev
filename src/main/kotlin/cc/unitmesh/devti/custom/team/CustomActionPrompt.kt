@@ -120,11 +120,3 @@ data class CustomActionPrompt(
     }
 }
 
-enum class InteractionType {
-    ChatPanel,
-    AppendCursor,
-    AppendCursorStream,
-    OutputFile,
-    Replace
-    ;
-}

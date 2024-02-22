@@ -48,6 +48,7 @@ interaction type:
 - ChatPanel, the prompt will be inserted in the chat panel
 - OutputFile, the prompt will be inserted in the output file, `output-{timestamp}.{extension}`, the extension will be
   parsed from the result's language.
+- ReplaceSelection, the prompt will replace the current selection (since version@1.6.3)
 
 ## English Examples
 
