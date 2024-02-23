@@ -8,6 +8,7 @@ import com.intellij.psi.PsiFile
 class AndroidPageToArkUiAction : ChatBaseIntention() {
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         return System.getProperty("idea.platform.prefix", "idea") == "DevEcoStudio"
+                || System.getProperty("idea.platform.prefix", "idea") == "AndroidStudio"
     }
 
     override fun priority(): Int = 900
