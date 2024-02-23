@@ -26,7 +26,7 @@ class AndroidPageToArkUiAction : ChatBaseIntention() {
 
         sendToChatPanel(project) { contentPanel, _ ->
             val llmProvider = LlmFactory().create(project)
-//            val context = AutoPageContext.build(reactAutoPage,  language, frameworks)
+//            val context = AutoPageContext.build(reactAutoPage, language, frameworks)
 //            val prompter = AutoPageFlow(context, contentPanel, llmProvider)
 //
 //            ProgressManager.getInstance()
@@ -36,22 +36,23 @@ class AndroidPageToArkUiAction : ChatBaseIntention() {
 }
 
 class AutoArkUi(project: Project, selectedText: @NlsSafe String, editor: Editor) {
-
+    // parse select text
 }
 
-data class Component(val name: String, val type: String, val example: String) {
-    fun list() {
-        val button = Component("Button", "Button", "Button('Ok', { type: ButtonType.Normal, stateEffect: true }) \n" +
+enum class ComponentType(description: String, example: String) {
+    Button(
+        "Button", "Button('Ok', { type: ButtonType.Normal, stateEffect: true }) \n" +
                 "  .borderRadius(8) \n" +
                 "  .backgroundColor(0x317aff) \n" +
                 "  .width(90)\n" +
-                "  .height(40)")
-
-        val radio = Component("Radio", "Radio", "  Radio({ value: 'Radio1', group: 'radioGroup' })\n" +
+                "  .height(40)"
+    ),
+    Radio(
+        "Radio", "  Radio({ value: 'Radio1', group: 'radioGroup' })\n" +
                 "    .onChange((isChecked: boolean) => {\n" +
                 "      if(isChecked) {\n" +
                 "        //需要执行的操作\n" +
                 "      }\n" +
-                "    })")
-    }
+                "    })"
+    )
 }
