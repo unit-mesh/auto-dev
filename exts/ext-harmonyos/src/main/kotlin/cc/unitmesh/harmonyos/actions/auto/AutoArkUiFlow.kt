@@ -33,7 +33,7 @@ class AutoArkUiFlow(val panel: ChatCodingPanel, val llm: LLMProvider, val contex
 
 
     override fun design(context: Any): List<String> {
-        val componentList = context as List<ArkUiComponentType>
+        val componentList = context as List<String>
         val stepTwoPrompt = generateStepTwoPrompt(componentList)
 
         panel.addMessage(stepTwoPrompt, true, stepTwoPrompt)
@@ -45,11 +45,14 @@ class AutoArkUiFlow(val panel: ChatCodingPanel, val llm: LLMProvider, val contex
         }.let { listOf(it) }
     }
 
-    private fun generateStepTwoPrompt(selectedComponents: List<ArkUiComponentType>): String {
+    private fun generateStepTwoPrompt(selectedComponents: List<String>): String {
         val templateRender = TemplateRender("genius/harmonyos")
         val template = templateRender.getTemplate("arkui-design.vm")
 
-//        context.pages = selectedComponents.map { it.format() }
+        context.elements = selectedComponents.mapNotNull {
+            ArkUiLayoutType.tryFormat(it) ?: ArkUiComponentType.tryFormat(it)
+        }
+
         templateRender.context = context
 
         val prompter = templateRender.renderTemplate(template)

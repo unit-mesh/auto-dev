@@ -22,6 +22,7 @@ class AutoArkUiTask(
 
         indicator.fraction = 0.6
         indicator.text = AutoDevBundle.message("autopage.generate.design")
+        flow.design(componentNames)
 
         indicator.fraction = 0.8
 

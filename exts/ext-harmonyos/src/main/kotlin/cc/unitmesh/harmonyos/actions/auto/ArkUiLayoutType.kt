@@ -1,6 +1,6 @@
 package cc.unitmesh.harmonyos.actions.auto
 
-enum class LayoutType(val description: String, val example: String) {
+enum class ArkUiLayoutType(val description: String, val example: String) {
     FlexLayout(
         "弹性布局（Flex）提供更加有效的方式对容器中的子元素进行排列、对齐和分配剩余空间。",
         "Column({ space: 5 }) {\n" +
@@ -100,5 +100,21 @@ enum class LayoutType(val description: String, val example: String) {
                 "    .borderRadius(15)\n" +
                 "  }.width('100%').height('100%').backgroundColor('#CFD0CF')\n" +
                 "}"
-    )
+    );
+
+    companion object {
+        fun overview(): String {
+            return ArkUiLayoutType.values().joinToString("\n") {
+                 it.name + ":" + it.description
+            }
+        }
+
+        fun tryFormat(name: String): String? {
+            return try {
+                valueOf(name).example
+            } catch (e: IllegalArgumentException) {
+                null
+            }
+        }
+    }
 }

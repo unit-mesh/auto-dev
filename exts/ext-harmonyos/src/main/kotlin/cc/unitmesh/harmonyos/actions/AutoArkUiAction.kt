@@ -3,9 +3,7 @@ package cc.unitmesh.harmonyos.actions
 import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import cc.unitmesh.devti.llms.LlmFactory
-import cc.unitmesh.harmonyos.actions.auto.AutoArkUiContext
-import cc.unitmesh.harmonyos.actions.auto.AutoArkUiFlow
-import cc.unitmesh.harmonyos.actions.auto.AutoArkUiTask
+import cc.unitmesh.harmonyos.actions.auto.*
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
@@ -26,7 +24,11 @@ class AutoArkUiAction : ChatBaseIntention() {
         if (editor == null || file == null) return
         val selectedText = editor.selectionModel.selectedText ?: return
 
-        val context = AutoArkUiContext(selectedText)
+        val context = AutoArkUiContext(
+            selectedText,
+            layoutOverride = ArkUiLayoutType.overview(),
+            componentOverride = ArkUiComponentType.overview(),
+        )
 
         sendToChatPanel(project) { contentPanel, _ ->
             val llmProvider = LlmFactory().create(project)
