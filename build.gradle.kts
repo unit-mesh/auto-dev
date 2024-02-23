@@ -263,6 +263,7 @@ project(":plugin") {
         implementation(project(":scala"))
         implementation(project(":exts:database"))
         implementation(project(":exts:ext-android"))
+        implementation(project(":exts:ext-harmonyos"))
     }
 
     // Collects all jars produced by compilation of project modules and merges them into singe one.
@@ -560,6 +561,18 @@ project(":exts:database") {
 }
 
 project(":exts:ext-android") {
+    intellij {
+        version.set(ideaVersion)
+        type.set("AI")
+        plugins.set((ideaPlugins + prop("androidPlugin").ifBlank { "" }).filter(String::isNotEmpty))
+    }
+
+    dependencies {
+        implementation(project(":"))
+    }
+}
+
+project(":exts:ext-harmonyos") {
     intellij {
         version.set(ideaVersion)
         type.set("AI")

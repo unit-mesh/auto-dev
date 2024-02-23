@@ -1,0 +1,13 @@
+<idea-plugin package="cc.unitmesh.harmonyos">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+    </dependencies>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <autoDevIntention>
+            <className>cc.unitmesh.harmonyos.actions.AndroidPageToArkUiAction</className>
+            <bundleName>messages.AutoDevBundle</bundleName>
+            <categoryKey>intention.category.llm</categoryKey>
+        </autoDevIntention>
+    </extensions>>
+</idea-plugin>
