@@ -12,8 +12,8 @@ import com.intellij.psi.PsiFile
 
 class AutoArkUiAction : ChatBaseIntention() {
     override fun priority(): Int = 900
-    override fun getText(): String = "Android Page to Ark UI"
-    override fun getFamilyName(): String = "Android Page to Ark UI"
+    override fun getText(): String = "Auto Ark UI"
+    override fun getFamilyName(): String = "Auto Ark UI"
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         return System.getProperty("idea.platform.prefix", "idea") == "DevEcoStudio"
