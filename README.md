@@ -41,6 +41,7 @@ Features:
     - AutoPage. Context-aware Page generation.
     - AutoTesting. create unit test intention, auto run unit test and try to fix test.
     - AutoDocument. Auto generate document.
+    - AutoArkUI. Auto generate HarmonyOS ArkUI code.
 - Copilot mode
     - Pattern specific.Based on your code context like (Controller, Service `import`), AutoDev will suggest you the best
       code.

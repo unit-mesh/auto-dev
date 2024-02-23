@@ -1,6 +1,26 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v1.6.3...v) (2024-02-22)
+# [](https://github.com/unit-mesh/auto-dev/compare/v1.6.4...v) (2024-02-23)
 
 ## [Unreleased]
+
+## [1.6.4](https://github.com/unit-mesh/auto-dev/compare/v1.6.3...v[1.6.4]) (2024-02-23)
+
+### Features
+- **actions:** add new component types ([232dcac](https://github.com/unit-mesh/auto-dev/commit/232dcacbeedbfb66f193604eaea39cf055244bec))
+- **ext-harmonyos:** add android plugin dependency and component class ([62042f1](https://github.com/unit-mesh/auto-dev/commit/62042f13ed51437ac0af420bfb2877ed4580f4a5))
+- **extension:** add HarmonyOS extension and API reference ([09494cf](https://github.com/unit-mesh/auto-dev/commit/09494cf7980c6ae466eba7cc36e08f5acf351cd3))
+- **harmonyos:** add AutoArkUiFlow class and ArkUiContext data class ([e33509a](https://github.com/unit-mesh/auto-dev/commit/e33509a104b776164feb2636911f02c53da3ee9e))
+- **harmonyos:** add margin to Button in ArkUiComponentType ([e6f4734](https://github.com/unit-mesh/auto-dev/commit/e6f4734a4889138656dedd3eb37e38fd9a974197))
+- **harmonyos:** add support for Android Studio platform ([f611959](https://github.com/unit-mesh/auto-dev/commit/f6119596f0e441803ae507d654e5ed12084427ee))
+- **harmonyos:** add support for ArkUi migration ([bf6579e](https://github.com/unit-mesh/auto-dev/commit/bf6579e65b9e9e8f6fd2ae4270cf35221b1af0d2))
+- **harmonyos:** add support for parsing select text ([d5c89cc](https://github.com/unit-mesh/auto-dev/commit/d5c89cca901bd327d2bcb189c88d9414844fb36d))
+- **harmonyos:** add support for sending UI to chat panel ([e175992](https://github.com/unit-mesh/auto-dev/commit/e175992779ce93974c223568c9daa0b30f340639))
+- **harmonyos:** add supported layout types ([09f6c06](https://github.com/unit-mesh/auto-dev/commit/09f6c06a98ec80e1d50fc65857b3051b9b0f8731))
+- **harmonyos:** update ArkUiFlow design method and add ArkUiLayoutType and ArkUiComponentType ([4ad516d](https://github.com/unit-mesh/auto-dev/commit/4ad516d1fe7e05bd87886e6cab4be8387b01fabb))
+- **harmonyos:** update AutoArkUiFlow and related classes ([a6ef010](https://github.com/unit-mesh/auto-dev/commit/a6ef010c95460a10e05882890a0bccb27e8cfd59))
+- **javascript:** add TypeScript living documentation ([8a0ad02](https://github.com/unit-mesh/auto-dev/commit/8a0ad022d25fc73eb8ad87344be23d26378b919b))
+- **living-doc:** add HarmonyOS living documentation support ([d4612d6](https://github.com/unit-mesh/auto-dev/commit/d4612d67445cfbbd17d3419e2d4e5c2615f5463b))
+- **plugin:** add support for HarmonyOS ([56f7a99](https://github.com/unit-mesh/auto-dev/commit/56f7a9943ace6ac3ee0cd7145aee87b7d61ec99c))
+- **provider:** add logging to HarmonyOsLivingDocumentation ([ebc575f](https://github.com/unit-mesh/auto-dev/commit/ebc575f76b0f8c8c189ea0848979ce1371cd14d4))
 
 ## [1.6.3](https://github.com/unit-mesh/auto-dev/compare/v1.6.1...v[1.6.3]) (2024-02-22)
 
@@ -992,7 +1012,8 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.6.3...HEAD
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.6.4...HEAD
+[1.6.4]: https://github.com/unit-mesh/auto-dev/compare/v1.6.3...v1.6.4
 [1.6.3]: https://github.com/unit-mesh/auto-dev/compare/v1.6.1...v1.6.3
 [1.6.1]: https://github.com/unit-mesh/auto-dev/compare/v1.5.5...v1.6.1
 [1.5.5]: https://github.com/unit-mesh/auto-dev/compare/v1.5.4...v1.5.5
