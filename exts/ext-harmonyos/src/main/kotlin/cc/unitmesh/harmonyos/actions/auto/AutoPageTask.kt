@@ -1,4 +1,4 @@
-package cc.unitmesh.harmonyos.actions
+package cc.unitmesh.harmonyos.actions.auto
 
 import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.openapi.editor.Editor

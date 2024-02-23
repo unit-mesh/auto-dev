@@ -1,4 +1,4 @@
-package cc.unitmesh.harmonyos.actions
+package cc.unitmesh.harmonyos.actions.auto
 
 data class ArkUiContext(
     val selectedText: String,

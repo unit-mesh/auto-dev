@@ -1,4 +1,4 @@
-package cc.unitmesh.harmonyos.actions
+package cc.unitmesh.harmonyos.actions.auto
 
 enum class LayoutType(val description: String, val example: String) {
     Flex(

@@ -1,4 +1,4 @@
-package cc.unitmesh.harmonyos.actions
+package cc.unitmesh.harmonyos.actions.auto
 
 enum class ComponentType(description: String, example: String) {
     Button(
