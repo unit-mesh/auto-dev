@@ -4,6 +4,7 @@ enum class ArkUiComponentType(val description: String, val example: String) {
     Button(
         "可快速创建不同样式的按钮。", "Button('Ok', { type: ButtonType.Normal, stateEffect: true }) \n" +
                 "  .borderRadius(8) \n" +
+                "  .margin({ left: 12 }) \n" +
                 "  .backgroundColor(0x317aff) \n" +
                 "  .width(90)\n" +
                 "  .height(40)"
