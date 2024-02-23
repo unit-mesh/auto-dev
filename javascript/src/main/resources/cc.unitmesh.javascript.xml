@@ -40,6 +40,8 @@
 
         <livingDocumentation language="JavaScript"
                              implementationClass="cc.unitmesh.ide.javascript.provider.JavaScriptLivingDocumentation"/>
+        <livingDocumentation language="TypeScript"
+                             implementationClass="cc.unitmesh.ide.javascript.provider.JavaScriptLivingDocumentation"/>
 
         <buildSystemProvider implementation="cc.unitmesh.ide.javascript.provider.JavaScriptBuildSystemProvider" />
     </extensions>
