@@ -40,7 +40,7 @@ class AutoArkUiFlow(val panel: ChatCodingPanel, val llm: LLMProvider, val contex
         panel.addMessage(AutoDevBundle.message("autodev.loading"))
 
         return runBlocking {
-            val prompt = llm.stream(stepTwoPrompt, "")
+            val prompt = llm.stream(stepTwoPrompt, "", false)
             return@runBlocking panel.updateMessage(prompt)
         }.let { listOf(it) }
     }

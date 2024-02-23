@@ -1,9 +1,4 @@
 <idea-plugin package="cc.unitmesh.harmonyos">
-    <!--suppress PluginXmlValidity -->
-    <dependencies>
-        <plugin id="org.jetbrains.android"/>
-    </dependencies>
-
     <extensions defaultExtensionNs="cc.unitmesh">
         <autoDevIntention>
             <className>cc.unitmesh.harmonyos.actions.AutoArkUiAction</className>
