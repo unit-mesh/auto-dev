@@ -1,6 +1,7 @@
 <idea-plugin package="cc.unitmesh.harmonyos">
     <!--suppress PluginXmlValidity -->
     <dependencies>
+        <plugin id="org.jetbrains.android"/>
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
@@ -9,5 +10,5 @@
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
-    </extensions>>
+    </extensions>
 </idea-plugin>
