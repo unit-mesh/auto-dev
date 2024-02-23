@@ -39,20 +39,3 @@ class AutoArkUi(project: Project, selectedText: @NlsSafe String, editor: Editor)
     // parse select text
 }
 
-enum class ComponentType(description: String, example: String) {
-    Button(
-        "Button", "Button('Ok', { type: ButtonType.Normal, stateEffect: true }) \n" +
-                "  .borderRadius(8) \n" +
-                "  .backgroundColor(0x317aff) \n" +
-                "  .width(90)\n" +
-                "  .height(40)"
-    ),
-    Radio(
-        "Radio", "  Radio({ value: 'Radio1', group: 'radioGroup' })\n" +
-                "    .onChange((isChecked: boolean) => {\n" +
-                "      if(isChecked) {\n" +
-                "        //需要执行的操作\n" +
-                "      }\n" +
-                "    })"
-    )
-}
