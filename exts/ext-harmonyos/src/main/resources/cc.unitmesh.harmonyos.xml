@@ -5,5 +5,7 @@
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
+
+        <chatContextProvider implementation="cc.unitmesh.harmonyos.provider.HarmonyOSChatContextProvider"/>
     </extensions>
 </idea-plugin>
