@@ -1,18 +1,20 @@
 package cc.unitmesh.devti.provider
 
 import cc.unitmesh.devti.custom.document.LivingDocumentationType
+import com.intellij.codeInsight.daemon.impl.CollectHighlightsUtil
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.SelectionModel
 import com.intellij.psi.NavigatablePsiElement
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
+import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.parentOfTypes
 
 class HarmonyOsLivingDocumentation : LivingDocumentation {
     override val forbiddenRules: List<String> = listOf(
-        "ArkTS is an extension of TypeScript, you can use TypeScript's rules",
         "do not return example code",
         "do not use @author and @version tags"
     )
@@ -29,37 +31,50 @@ class HarmonyOsLivingDocumentation : LivingDocumentation {
         val project = target.project
         val codeStyleManager = CodeStyleManager.getInstance(project)
         WriteCommandAction.runWriteCommandAction(project, "Living Document", "cc.unitmesh.livingDoc", {
+            val text = newDoc + "\n"
             val startOffset = target.textRange.startOffset
-            val newEndOffset = startOffset + newDoc.length
+            val newEndOffset = startOffset + text.length
 
-            editor.document.insertString(startOffset, newDoc)
+            editor.document.insertString(startOffset, text)
             codeStyleManager.reformatText(target.containingFile, startOffset, newEndOffset)
         });
     }
 
+    val logger = logger<HarmonyOsLivingDocumentation>()
+
     override fun findNearestDocumentationTarget(psiElement: PsiElement): PsiNameIdentifierOwner? {
         if (psiElement is PsiNameIdentifierOwner) {
+            logger.warn("psiElement is PsiNameIdentifierOwner, text: ${psiElement.text}")
             return psiElement
         }
 
-        var candidate: PsiElement? =
-            psiElement.parentOfTypes(PsiNameIdentifierOwner::class, NavigatablePsiElement::class)
+        val candidate: PsiElement? =
+            psiElement.parentOfTypes(PsiNamedElement::class, NavigatablePsiElement::class)
 
-        while (candidate != null) {
-            if (candidate is PsiNameIdentifierOwner) {
-                return candidate
-            }
-
-            candidate = candidate.parentOfTypes(PsiNameIdentifierOwner::class, NavigatablePsiElement::class)
+        if (candidate != null) {
+            logger.warn("candidate is PsiNameIdentifierOwner: text: ${candidate.text}")
+            return candidate as? PsiNameIdentifierOwner
         }
 
         return null
     }
 
     override fun findDocTargetsInSelection(
-        psiElement: PsiElement,
+        root: PsiElement,
         selectionModel: SelectionModel
     ): List<PsiNameIdentifierOwner> {
+        val findCommonParent = CollectHighlightsUtil.findCommonParent(
+            root,
+            selectionModel.selectionStart,
+            selectionModel.selectionEnd
+        ) ?: return emptyList()
+
+        val target = findNearestDocumentationTarget(findCommonParent) ?: return emptyList()
+
+        if (containsElement(selectionModel, target)) {
+            return listOf(target)
+        }
+
         return listOf()
     }
 }
