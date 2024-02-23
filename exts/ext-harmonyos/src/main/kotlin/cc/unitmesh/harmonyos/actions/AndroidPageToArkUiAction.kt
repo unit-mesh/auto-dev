@@ -4,8 +4,9 @@ import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import cc.unitmesh.devti.llms.LlmFactory
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiFile
 
 class AndroidPageToArkUiAction : ChatBaseIntention() {
@@ -22,20 +23,17 @@ class AndroidPageToArkUiAction : ChatBaseIntention() {
         if (editor == null || file == null) return
         val selectedText = editor.selectionModel.selectedText ?: return
 
-        val autoUi = AutoArkUi(project, selectedText, editor)
+        val context = ArkUiContext(selectedText)
 
         sendToChatPanel(project) { contentPanel, _ ->
             val llmProvider = LlmFactory().create(project)
-//            val context = AutoPageContext.build(reactAutoPage, language, frameworks)
-//            val prompter = AutoPageFlow(context, contentPanel, llmProvider)
-//
-//            ProgressManager.getInstance()
-//                .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+            val prompter = AutoArkUiFlow(contentPanel, llmProvider, context)
+            val task = AutoPageTask(project, prompter, editor)
+
+            ProgressManager.getInstance()
+                .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
         }
     }
 }
 
-class AutoArkUi(project: Project, selectedText: @NlsSafe String, editor: Editor) {
-    // parse select text
-}
 
