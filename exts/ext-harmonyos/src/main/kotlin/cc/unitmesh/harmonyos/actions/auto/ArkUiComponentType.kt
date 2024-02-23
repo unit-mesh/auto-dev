@@ -1,6 +1,6 @@
 package cc.unitmesh.harmonyos.actions.auto
 
-enum class ComponentType(description: String, example: String) {
+enum class ArkUiComponentType(description: String, example: String) {
     Button(
         "可快速创建不同样式的按钮。", "Button('Ok', { type: ButtonType.Normal, stateEffect: true }) \n" +
                 "  .borderRadius(8) \n" +

@@ -1,7 +1,7 @@
 package cc.unitmesh.harmonyos.actions.auto
 
 enum class LayoutType(val description: String, val example: String) {
-    Flex(
+    FlexLayout(
         "弹性布局（Flex）提供更加有效的方式对容器中的子元素进行排列、对齐和分配剩余空间。",
         "Column({ space: 5 }) {\n" +
                 "  Flex({ direction: FlexDirection.Row, wrap: FlexWrap.NoWrap, justifyContent: FlexAlign.SpaceBetween, alignItems: ItemAlign.Center }) {\n" +

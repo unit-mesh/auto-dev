@@ -7,7 +7,7 @@ import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.template.TemplateRender
 import kotlinx.coroutines.runBlocking
 
-class AutoArkUiFlow(val panel: ChatCodingPanel, val llm: LLMProvider, val context: ArkUiContext) :
+class AutoArkUiFlow(val panel: ChatCodingPanel, val llm: LLMProvider, val context: AutoArkUiContext) :
     TaskFlow<String> {
     override fun clarify(): String {
         val stepOnePrompt = generateStepOnePrompt(context)
@@ -21,7 +21,7 @@ class AutoArkUiFlow(val panel: ChatCodingPanel, val llm: LLMProvider, val contex
         }
     }
 
-    private fun generateStepOnePrompt(context: ArkUiContext): String {
+    private fun generateStepOnePrompt(context: AutoArkUiContext): String {
         val templateRender = TemplateRender("genius/harmonyos")
         val template = templateRender.getTemplate("arkui-clarify.vm")
 
@@ -33,7 +33,7 @@ class AutoArkUiFlow(val panel: ChatCodingPanel, val llm: LLMProvider, val contex
 
 
     override fun design(context: Any): List<String> {
-        val componentList = context as List<ComponentType>
+        val componentList = context as List<ArkUiComponentType>
         val stepTwoPrompt = generateStepTwoPrompt(componentList)
 
         panel.addMessage(stepTwoPrompt, true, stepTwoPrompt)
@@ -45,7 +45,7 @@ class AutoArkUiFlow(val panel: ChatCodingPanel, val llm: LLMProvider, val contex
         }.let { listOf(it) }
     }
 
-    private fun generateStepTwoPrompt(selectedComponents: List<ComponentType>): String {
+    private fun generateStepTwoPrompt(selectedComponents: List<ArkUiComponentType>): String {
         val templateRender = TemplateRender("genius/harmonyos")
         val template = templateRender.getTemplate("arkui-design.vm")
 

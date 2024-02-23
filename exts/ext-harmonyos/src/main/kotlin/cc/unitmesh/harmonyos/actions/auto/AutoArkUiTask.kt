@@ -6,7 +6,7 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 
-class AutoPageTask(
+class AutoArkUiTask(
     private val project: Project,
     private val flow: AutoArkUiFlow,
     private val editor: Editor,
