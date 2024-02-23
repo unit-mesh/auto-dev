@@ -165,8 +165,7 @@ class JavaScriptLivingDocumentation : LivingDocumentation {
         )
 
         val list = decls.filter {
-            containsElement(selectionModel, it as PsiElement)
-                    && isMeaningfulToDocumentInSelection(it as PsiElement)
+            containsElement(selectionModel, it as PsiElement) && isMeaningfulToDocumentInSelection(it as PsiElement)
         }.toList()
 
         return list.ifEmpty {

@@ -3,6 +3,7 @@ package cc.unitmesh.devti.provider
 import cc.unitmesh.devti.custom.document.LivingDocumentationType
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageExtension
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.SelectionModel
 import com.intellij.psi.PsiElement
@@ -51,8 +52,18 @@ interface LivingDocumentation {
         private val languageExtension: LanguageExtension<LivingDocumentation> =
             LanguageExtension("cc.unitmesh.livingDocumentation")
 
+        val logger = logger<LivingDocumentation>()
         fun forLanguage(language: Language): LivingDocumentation? {
-            return languageExtension.forLanguage(language)
+            val documentation = languageExtension.forLanguage(language)
+            if (documentation != null) {
+                return documentation
+            }
+
+            if (language.displayName == "TypeScript" || language.displayName == "ArkTS") {
+                return HarmonyOsLivingDocumentation()
+            }
+
+            return null
         }
     }
 }
