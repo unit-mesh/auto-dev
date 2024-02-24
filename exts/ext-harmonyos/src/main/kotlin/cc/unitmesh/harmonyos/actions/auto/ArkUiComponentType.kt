@@ -26,6 +26,33 @@ enum class ArkUiComponentType(val description: String, val example: String) {
                 "    console.info(\"checkbox group content\" + JSON.stringify(itemName))\n" +
                 "  })"
     ),
+    CustomDialog(
+        "自定义弹窗（CustomDialog）可用于广告、中奖、警告、软件更新等与用户交互响应操作。",
+        "1. 使用@CustomDialog装饰器装饰自定义弹窗。" +
+                "@CustomDialog\n" +
+                "struct CustomDialogExample {\n" +
+                "  controller: CustomDialogController\n" +
+                "  build() {\n" +
+                "    Column() {\n" +
+                "      Text('我是内容')\n" +
+                "      .fontSize(20)\n" +
+                "      .margin({ top: 10, bottom: 10 })\n" +
+                "    }\n" +
+                "  }\n" +
+                "}" +
+                "2. 创建构造器，与装饰器呼应相连。" +
+                "dialogController: CustomDialogController = new CustomDialogController({\n" +
+                "    builder: CustomDialogExample({}),\n" +
+                "})" +
+                "3. 点击与onClick事件绑定的组件使弹窗弹出" +
+                "" +
+                "Flex({justifyContent:FlexAlign.Center}){\n" +
+                "  Button('click me')\n" +
+                "    .onClick(() => {\n" +
+                "      this.dialogController.open()\n" +
+                "    })\n" +
+                "}.width('100%')"
+    ),
     Image(
         "Image为图片组件，常用于在应用中显示图片。Image支持加载string、PixelMap和Resource类型的数据源，支持png、jpg、bmp、svg和gif类型的图片格式。",
         "Image(this.src)\n" +
@@ -64,13 +91,30 @@ enum class ArkUiComponentType(val description: String, val example: String) {
                 "    })\n" +
                 "  }"
     ),
+    Popup(
+        "Popup属性可绑定在组件上显示气泡弹窗提示，设置弹窗内容、交互逻辑和显示状态。",
+        "Button('PopupOptions')\n" +
+                "  .onClick(() => {\n" +
+                "    this.handlePopup = !this.handlePopup\n" +
+                "  })\n" +
+                "  .bindPopup(this.handlePopup, {\n" +
+                "    message: 'This is a popup with PopupOptions',\n" +
+                "  })"
+    ),
+    Progress(
+        "Progress 是进度条显示组件，显示内容通常为某次目标操作的当前进度。",
+        "Progress({value:0, total:100, type:ProgressType.Capsule}).width(200).height(50)\n" +
+                "    .style({strokeWidth:50}).value(this.progressValue)"
+    ),
     Text(
         "显示一段文本的组件。。", "Text('TextAlign set to Center.')\n" +
                 "    .textAlign(TextAlign.Center)\n" +
                 "    .fontSize(12)\n" +
+                "    .fontColor('#ff0000')\n" +
                 "    .border({ width: 1 })\n" +
                 "    .padding(10)\n" +
-                "    .width('100%')"
+                "    .width('100%')\n" +
+                "    .decoration({type: TextDecorationType.Underline, color: Color.Black})"
     ),
     TextArea(
         "多行文本输入框。",
@@ -124,6 +168,14 @@ enum class ArkUiComponentType(val description: String, val example: String) {
                 "    console.info('Component status:' + isOn)\n" +
                 "  })"
     ),
+    Video(
+        "Video组件用于播放视频文件并控制其播放状态，常用于为短视频应用和应用内部视频的列表页面。",
+        "Video({\n" +
+                "  src: this.innerResource,\n" +
+                "  previewUri: this.previewUris,\n" +
+                "  controller: this.controller\n" +
+                "})"
+    ),
     Web(
         "提供具有网页显示能力的Web组件，@ohos.web.webview提供web控制能力。",
         "Web({ src: \$rawfile(\"xxx.html\"), controller: this.controller })\n" +
@@ -151,7 +203,14 @@ enum class ArkUiComponentType(val description: String, val example: String) {
                 "      })\n" +
                 "      return true\n" +
                 "    })"
-    );
+    ),
+    XComponent(
+        "XComponent 组件作为一种绘制组件，通常用于满足开发者较为复杂的自定义绘制需求。",
+        "XComponent({ id: 'xcomponentId1', type: 'surface', libraryname: 'nativerender' })\n" +
+                "  .onLoad((context) => {})\n" +
+                "  .onDestroy(() => {})"
+    )
+    ;
 
     companion object {
         fun overview(): String {
