@@ -1,8 +1,10 @@
 package cc.unitmesh.devti.provider.builtin
 
-import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.provider.context.ChatCreationContext
+import cc.unitmesh.devti.provider.context.ChatOrigin
 import com.intellij.psi.PsiFile
+import kotlinx.coroutines.runBlocking
 
 class DefaultContextPrompter : ContextPrompter() {
     private var similarChunkCache: MutableMap<PsiFile, String?> = mutableMapOf()
@@ -15,14 +17,20 @@ class DefaultContextPrompter : ContextPrompter() {
     }
 
     private fun getPrompt(): String {
+        var additionContext: String
+        runBlocking {
+            val creationContext = ChatCreationContext(ChatOrigin.ChatAction, action!!, file, emptyList(), null)
+            additionContext = collectionContext(creationContext)
+        }
+
         if (file == null) {
-            return "$action\n```${lang}\n$selectedText\n```"
+            return "$action\n$additionContext\n```${lang}\n$selectedText\n```"
         }
 
-        if (file !in similarChunkCache) {
-            similarChunkCache[file!!] = SimilarChunksWithPaths.createQuery(file!!)
-        }
+//        if (file !in similarChunkCache) {
+//            similarChunkCache[file!!] = SimilarChunksWithPaths.createQuery(file!!)
+//        }
 
-        return "$action\n```${lang}\n${similarChunkCache[file!!]}\n$selectedText\n```"
+        return "$action\n```${lang}\n$selectedText\n```"
     }
 }

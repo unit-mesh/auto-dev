@@ -1,13 +1,21 @@
 # HarmonyOS Extension
 
 openharmony/lib/ohos-info-center-plugin-3.1.0.501, API Reference，可惜使用的是远程 API 。
-openharmony/lib/javascript-3.1.0.501.jar, 自研 JavaScript 模块
+openharmony/lib/javascript-3.1.0.501.jar, 自研 JavaScript PSI 模块
+openharmony/lib/ohos-cpp-lsp-client-3.1.0.501.jar, 自研 C++ PSI 模块
 
-
+JS 类：`class class com.huawei.ace.language.psi.impl.JavaScriptIdentifierNameImpl`
+CPP 类：`class class com.huawei.ideacpp.psi.impl.CPPIdentifierImpl`
 
 ## 设计思念
 
 三个新要素：新的语言、遗留系统迁移、新的 UI 框架。
+
+而且结合源码中 HiStudio 等信息的存在，我猜这会是一个自研的 IDE，所以暂时不会在 AutoDev 添加一些额外新的功能。
+
+而在标准的 JetBrains 是以 ObjectiveC 作为抽象，所以又存在一系列的差异，又会是一个新的头疼问题，诸如于：
+
+CCELanguage, CLanguage, CPPLanguage，所以理由上拿到  CannonicalName  会是一个更好的选择。
 
 ## ArkTS 支持
 

@@ -34,6 +34,7 @@ interface ChatContextProvider {
                     e.printStackTrace()
                 }
             }
+
             elements.addAll(chatCreationContext.extraItems)
             return elements.distinctBy { it.text }
         }
