@@ -7,7 +7,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 
 class HarmonyOSChatContextProvider : ChatContextProvider {
-    val logger = logger<HarmonyOSChatContextProvider>()
+    private val logger = logger<HarmonyOSChatContextProvider>()
 
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
         return System.getProperty("idea.platform.prefix", "idea") == "DevEcoStudio"
@@ -16,17 +16,14 @@ class HarmonyOSChatContextProvider : ChatContextProvider {
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         var context = "This project is a HarmonyOS project."
 
-        val languageName = creationContext.sourceFile?.language?.displayName
+        val language = creationContext.sourceFile?.language?.displayName
 
-        logger.info("context: $context")
+        logger.info("language: $language")
 
-        if (languageName == "TypeScript" || languageName == "JavaScript" || languageName == "ArkTS") {
+        if (language == "TypeScript" || language == "JavaScript" || language == "ArkTS") {
             context += "Which use TypeScript (ArkTS) as the main language, and use Flutter like TypeScript UI framework."
-        } else {
-            val className = creationContext.sourceFile?.language?.displayName
-            if (className == "CPP" || className == "C/C" || className == "CCE") {
-                context += "Which use C++ as the main language, and NAPI for building native Addons."
-            }
+        } else if (language == "C" || language == "C/C++" || language == "CCE") {
+            context += "Which use C++ as the main language, and NAPI for building native Addons."
         }
 
         return listOf(ChatContextItem(HarmonyOSChatContextProvider::class, context))
