@@ -19,7 +19,7 @@ import com.intellij.psi.PsiFile
 
 
 class AutoSqlAction : ChatBaseIntention() {
-    override fun priority(): Int = 1001
+    override fun priority(): Int = 900
     override fun startInWriteAction(): Boolean = false
     override fun getFamilyName(): String = AutoDevBundle.message("autosql.name")
     override fun getText(): String = AutoDevBundle.message("autosql.generate")
