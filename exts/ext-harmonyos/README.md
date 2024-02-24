@@ -1,7 +1,9 @@
 # HarmonyOS Extension
 
-openharmony/lib/ohos-info-center-plugin-3.1.0.501, API Reference
+openharmony/lib/ohos-info-center-plugin-3.1.0.501, API Reference，可惜使用的是远程 API 。
 openharmony/lib/javascript-3.1.0.501.jar, 自研 JavaScript 模块
+
+
 
 ## 设计思念
 

@@ -11,6 +11,14 @@ class HarmonyOSChatContextProvider : ChatContextProvider {
     }
 
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
-        return listOf(ChatContextItem(HarmonyOSChatContextProvider::class, "This project is a HarmonyOS project."))
+        var context = "This project is a HarmonyOS project."
+
+        val languageName = creationContext.element?.language?.displayName
+
+        if (languageName == "TypeScript" || languageName == "JavaScript" || languageName == "ArkTS") {
+            context += "Which use TypeScript as the main language, and use Flutter like UI framework."
+        }
+
+        return listOf(ChatContextItem(HarmonyOSChatContextProvider::class, context))
     }
 }
