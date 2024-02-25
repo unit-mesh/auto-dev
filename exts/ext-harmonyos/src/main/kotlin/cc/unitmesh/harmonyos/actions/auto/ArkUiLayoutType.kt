@@ -55,11 +55,11 @@ enum class ArkUiLayoutType(val description: String, val example: String) {
                 "      }.width('100%').height('50')\n" +
                 "    }.backgroundColor(item)\n" +
                 "  })\n" +
-                "}           "
+                "}.width('80%').margin({ left: 10, top: 5, bottom: 5 }).height(200)"
     ),
     List(
         "列表是一种复杂的容器，当列表项达到一定数量，内容超过屏幕大小时，可以自动提供滚动功能。",
-        "    List() {\n" +
+        "List() {\n" +
                 "  ListItem() {\n" +
                 "    Text('北京').fontSize(24)\n" +
                 "  }\n" +
@@ -70,8 +70,7 @@ enum class ArkUiLayoutType(val description: String, val example: String) {
                 "    Text('上海').fontSize(24)\n" +
                 "  }\n" +
                 "}\n" +
-                ".backgroundColor('#FFF1F3F5')\n" +
-                ".alignListItem(ListItemAlign.Center)"
+                ".width('100%').height('100%').backgroundColor('#FFF1F3F5').alignListItem(ListItemAlign.Center)"
     ),
     StackLayout(
         "层叠布局（StackLayout）用于在屏幕上预留一块区域来显示组件中的元素，提供元素可以重叠的布局。",
@@ -88,18 +87,8 @@ enum class ArkUiLayoutType(val description: String, val example: String) {
                 "          .backgroundColor(0xFFFFFF)\n" +
                 "      }, item => item)\n" +
                 "    }.width('100%').height('100%')\n" +
-                "    Flex({ justifyContent: FlexAlign.SpaceAround, alignItems: ItemAlign.Center }) {\n" +
-                "      Text('联系人').fontSize(16)\n" +
-                "      Text('设置').fontSize(16)\n" +
-                "      Text('短信').fontSize(16)\n" +
-                "    }\n" +
-                "    .width('50%')\n" +
-                "    .height(50)\n" +
-                "    .backgroundColor('#16302e2e')\n" +
-                "    .margin({ bottom: 15 })\n" +
-                "    .borderRadius(15)\n" +
                 "  }.width('100%').height('100%').backgroundColor('#CFD0CF')\n" +
-                "}"
+                "}.width('100%').height(150).margin({ top: 5 })"
     );
 
     companion object {
