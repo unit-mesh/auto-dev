@@ -16,7 +16,7 @@ class AutoArkUiTask(
 
         indicator.text = AutoDevBundle.message("autopage.generate.clarify")
         val components = flow.clarify()
-        // tables will be list in string format, like: `[table1, table2]`, we need to parse to Lists
+
         val componentNames = components.substringAfter("[").substringBefore("]")
             .split(", ").map { it.trim() }
 

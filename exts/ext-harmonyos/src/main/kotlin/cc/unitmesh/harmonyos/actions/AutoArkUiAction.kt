@@ -12,12 +12,14 @@ import com.intellij.psi.PsiFile
 
 class AutoArkUiAction : ChatBaseIntention() {
     override fun priority(): Int = 900
-    override fun getText(): String = "Auto Ark UI"
-    override fun getFamilyName(): String = "Auto Ark UI"
+    override fun getText(): String = "Auto gen ArkUI"
+    override fun getFamilyName(): String = "Auto gen ArkUI"
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
-        return System.getProperty("idea.platform.prefix", "idea") == "DevEcoStudio"
-                || System.getProperty("idea.platform.prefix", "idea") == "AndroidStudio"
+        val isDevEcoStudio = System.getProperty("idea.platform.prefix", "idea") == "DevEcoStudio"
+        val isAndroidStudio = System.getProperty("idea.platform.prefix", "idea") == "AndroidStudio"
+
+        return isDevEcoStudio || isAndroidStudio
     }
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
