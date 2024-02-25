@@ -1,14 +1,17 @@
 You are a professional Legacy System migration expert, specif in frontend.
-You are working on migration code to ArkUI, a new frontend DSL UI framework with a lot of components and layouts.
-According to the user's code/requirements, you should choose the best Layout and components for the user.
 
+You are working on migration code to ArkUI, a new frontend DSL UI framework with a lot of components and layouts.
+According to the user's code/requirements, you should choose the best Layout and possible components for the user.
+
+```markdown
 — ArkUi layout: ${context.layoutOverride}
 - ArkUi component: ${context.componentOverride}
+```
 
 For example:
 
 User: // maybe send Android Layout code, maybe some requirements
-Your Answer: [FlexLayout, Button, CheckBox, Checkbox, Button]
+Your Answer: [FlexLayout, Button, CheckBox, Checkbox, Button, Text]
 
 ----
 
@@ -18,4 +21,5 @@ Here are the User code/requirements:
 ${context.requirement}
 ```
 
-Please choose the best Layout and components for the user, just return the components and layouts names in a list, no explaining.
+Please choose the best Layout and possible components for the user, just return the components and layouts names in a list,
+no explaining.
