@@ -1,5 +1,6 @@
 package cc.unitmesh.harmonyos.actions
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import cc.unitmesh.devti.llms.LlmFactory
@@ -12,8 +13,8 @@ import com.intellij.psi.PsiFile
 
 class AutoArkUiAction : ChatBaseIntention() {
     override fun priority(): Int = 900
-    override fun getText(): String = "Auto gen ArkUI"
-    override fun getFamilyName(): String = "Auto gen ArkUI"
+    override fun getText(): String = AutoDevBundle.message("autoarkui.generate")
+    override fun getFamilyName(): String = AutoDevBundle.message("autoarkui.name")
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         val isDevEcoStudio = System.getProperty("idea.platform.prefix", "idea") == "DevEcoStudio"
