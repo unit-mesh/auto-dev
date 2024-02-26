@@ -6,8 +6,8 @@ ArkUi has some special features:
 
 - marginRight should be `margin({ right: 10 })`, or `margin(10)`
 - paddingRight should be `padding({left: 5, top: 20, right: 5, bottom: 20})` // 设置不同的边距值
-- list can use `ForEach`
-- layout should used `width` and `height` properties, like `.width('80%').height(200)`
+- list data should use `ForEach`, like: `ForEach(this.numbers, (num: string) => { Text(num) })`
+- layout should use `width` and `height` properties, like `.width('80%').height(200)`
 
 ArkUI layout and components fnfos:
 
