@@ -10,8 +10,8 @@ According to the user's code/requirements, you should choose the best Layout and
 
 For example:
 
-User: // maybe send Android Layout code, maybe some requirements
-Your Answer: [FlexLayout, Button, CheckBox, Checkbox, Button, Text]
+User: // maybe Android Layout code, maybe some requirements or some other code.
+Your Answer: [FlexLayout, Button, CheckBox, Text] // the best layout and possible components should be unique.
 
 ----
 
