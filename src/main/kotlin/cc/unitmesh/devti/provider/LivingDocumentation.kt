@@ -52,7 +52,6 @@ interface LivingDocumentation {
         private val languageExtension: LanguageExtension<LivingDocumentation> =
             LanguageExtension("cc.unitmesh.livingDocumentation")
 
-        val logger = logger<LivingDocumentation>()
         fun forLanguage(language: Language): LivingDocumentation? {
             val documentation = languageExtension.forLanguage(language)
             if (documentation != null) {

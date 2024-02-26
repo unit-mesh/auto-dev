@@ -40,8 +40,6 @@ class HarmonyOsLivingDocumentation : LivingDocumentation {
         });
     }
 
-    val logger = logger<HarmonyOsLivingDocumentation>()
-
     override fun findNearestDocumentationTarget(psiElement: PsiElement): PsiNameIdentifierOwner? {
         if (psiElement is PsiNameIdentifierOwner) {
             return psiElement
