@@ -87,7 +87,7 @@ enum class ArkUiLayoutType(val description: String, val example: String) {
     StackLayout(
         "层叠布局（StackLayout）用于在屏幕上预留一块区域来显示组件中的元素，提供元素可以重叠的布局。",
         "Stack({ alignContent: Alignment.Bottom }) {\n" +
-                "    Flex({ wrap: FlexWrap.Wrap }) {\n" +
+                "    Flex({ justifyContent: FlexAlign.SpaceBetween, wrap: FlexWrap.Wrap, alignContent: FlexAlign.Start }) {\n" +
                 "      ForEach(this.arr, (item) => {\n" +
                 "        Text(item)\n" +
                 "          .width(100)\n" +
