@@ -18,8 +18,6 @@ class HarmonyOSChatContextProvider : ChatContextProvider {
 
         val language = creationContext.sourceFile?.language?.displayName
 
-        logger.info("language: $language")
-
         if (language == "TypeScript" || language == "JavaScript" || language == "ArkTS") {
             context += "Which use TypeScript (ArkTS) as the main language, and use Flutter like TypeScript UI framework."
         } else if (language == "C" || language == "C/C++" || language == "CCE") {

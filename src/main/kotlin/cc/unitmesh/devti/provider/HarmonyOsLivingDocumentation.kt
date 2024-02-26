@@ -44,7 +44,6 @@ class HarmonyOsLivingDocumentation : LivingDocumentation {
 
     override fun findNearestDocumentationTarget(psiElement: PsiElement): PsiNameIdentifierOwner? {
         if (psiElement is PsiNameIdentifierOwner) {
-            logger.warn("psiElement is PsiNameIdentifierOwner, text: ${psiElement.text}")
             return psiElement
         }
 
@@ -52,7 +51,6 @@ class HarmonyOsLivingDocumentation : LivingDocumentation {
             psiElement.parentOfTypes(PsiNamedElement::class, NavigatablePsiElement::class)
 
         if (candidate != null) {
-            logger.warn("candidate is PsiNameIdentifierOwner: text: ${candidate.text}")
             return candidate as? PsiNameIdentifierOwner
         }
 
