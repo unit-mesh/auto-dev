@@ -61,15 +61,28 @@ enum class ArkUiLayoutType(val description: String, val example: String) {
     ),
     List(
         "列表是一种复杂的容器，当列表项达到一定数量，内容超过屏幕大小时，可以自动提供滚动功能。",
-        "List() {\n" +
-                "  ListItem() {\n" +
-                "    Text('北京').fontSize(24)\n" +
-                "  }\n" +
-                "  ListItem() {\n" +
-                "    Text('上海').fontSize(24)\n" +
-                "  }\n" +
+        "List({ space: 20, initialIndex: 0 }) {\n" +
+                "  ForEach(this.arr, (item) => {\n" +
+                "      ListItem() {\n" +
+                "        Text(`\${item}`)\n" +
+                "          .fontSize(50)\n" +
+                "          .fontWeight(FontWeight.Bold)\n" +
+                "          .fontColor(['red', 'green', 'blue'][item % 3])\n" +
+                "          .padding({ left: '10', right: '10' })\n" +
+                "          .backgroundColor('white')\n" +
+                "      }\n" +
+                "      .backgroundColor('gray')\n" +
+                "    }, (item) => item)\n" +
                 "}\n" +
-                ".width('100%').height('100%').backgroundColor('#FFF1F3F5').alignListItem(ListItemAlign.Center)"
+                ".listDirection(Axis.Vertical) // 排列方向 默认就是纵向排列\n" +
+                ".divider({ strokeWidth: 2, color: 0xFFFFFF, startMargin: 20, endMargin: 20 }) // 每行之间的分界线，默认没有分界线\n" +
+                ".edgeEffect(EdgeEffect.Spring) // 滑动到边缘无效果\n" +
+                ".onScrollIndex((firstIndex: number, lastIndex: number) => {\n" +
+                "  console.info('first' + firstIndex)\n" +
+                "  console.info('last' + lastIndex)\n" +
+                "})\n" +
+                ".width('100%')\n" +
+                ".height('100%')"
     ),
     StackLayout(
         "层叠布局（StackLayout）用于在屏幕上预留一块区域来显示组件中的元素，提供元素可以重叠的布局。",
