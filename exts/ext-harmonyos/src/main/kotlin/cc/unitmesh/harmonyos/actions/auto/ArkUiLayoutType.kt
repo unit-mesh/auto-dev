@@ -15,13 +15,20 @@ enum class ArkUiLayoutType(val description: String, val example: String) {
                 "}.width('100%').margin({ top: 5 })"
     ),
     LinearLayout(
-        "Row/Column即线性布局（LinearLayout）是开发中最常用的布局，通过线性容器Row和Column构建。",
-        "Column({ space: 20 }) {\n" +
-                "  Text('space: 20').fontSize(15).fontColor(Color.Gray).width('90%')\n" +
-                "  Row().width('90%').height(50).backgroundColor(0xF5DEB3)\n" +
-                "  Row().width('90%').height(50).backgroundColor(0xD2B48C)\n" +
-                "  Row().width('90%').height(50).backgroundColor(0xF5DEB3)\n" +
-                "}.width('100%')"
+        "Row/Column 即线性布局（LinearLayout）是开发中最常用的布局，通过线性容器 Row 和 Column 构建。",
+        "Row({}) {\n" +
+                "  Column() {\n" +
+                "    // ...\n" +
+                "  }.width('20%').height(30).backgroundColor(0xF5DEB3)\n" +
+                "\n" +
+                "  Column() {\n" +
+                "    // ...\n" +
+                "  }.width('20%').height(30).backgroundColor(0xD2B48C)\n" +
+                "\n" +
+                "  Column() {\n" +
+                "    // ...\n" +
+                "  }.width('20%').height(30).backgroundColor(0xF5DEB3)\n" +
+                "}.width('100%').height(200).alignItems(VerticalAlign.Center).backgroundColor('rgb(242,242,242)')"
     ),
     RelativeContainer(
         "RelativeContainer为采用相对布局的容器，支持容器内部的子元素设置相对位置关系。",
@@ -35,12 +42,7 @@ enum class ArkUiLayoutType(val description: String, val example: String) {
                 "    .id(\"row1\")\n" +
                 "\n" +
                 "  Row()\n" +
-                "    ...\n" +
-                "    .alignRules({\n" +
-                "      top: { anchor: '__container__', align: VerticalAlign.Top },\n" +
-                "      right: { anchor: '__container__', align: HorizontalAlign.End }\n" +
-                "    })\n" +
-                "    .id(\"row2\")\n" +
+                "    // ...\n" +
                 "}\n" +
                 "..."
     ),
@@ -62,9 +64,6 @@ enum class ArkUiLayoutType(val description: String, val example: String) {
         "List() {\n" +
                 "  ListItem() {\n" +
                 "    Text('北京').fontSize(24)\n" +
-                "  }\n" +
-                "  ListItem() {\n" +
-                "    Text('杭州').fontSize(24)\n" +
                 "  }\n" +
                 "  ListItem() {\n" +
                 "    Text('上海').fontSize(24)\n" +
@@ -94,7 +93,7 @@ enum class ArkUiLayoutType(val description: String, val example: String) {
     companion object {
         fun overview(): String {
             return ArkUiLayoutType.values().joinToString("\n") {
-                 it.name + ":" + it.description
+                it.name + ":" + it.description
             }
         }
 
