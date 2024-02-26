@@ -29,6 +29,7 @@ class AutoArkUiAction : ChatBaseIntention() {
 
         val context = AutoArkUiContext(
             selectedText,
+            language = file.language.displayName,
             layoutOverride = ArkUiLayoutType.overview(),
             componentOverride = ArkUiComponentType.overview(),
         )
