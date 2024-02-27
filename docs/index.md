@@ -71,13 +71,15 @@ Features:
     - [UnitEval](https://github.com/unit-mesh/unit-eval) evaluate llm result
     - [UnitGen](https://github.com/unit-mesh/unit-gen) generate code-llm fine-tune data.
 
+## Fine-tuning model
+
 AutoDev fine-tune models:
 
 | name          | model download (HuggingFace)                                    | finetune Notebook                    | model download (OpenBayes)                                                          |
 |---------------|-----------------------------------------------------------------|--------------------------------------|-------------------------------------------------------------------------------------|
 | DeepSeek 6.7B | [AutoDev Coder](https://huggingface.co/unit-mesh/autodev-coder) | [finetune.ipynb](finetunes/deepseek) | [AutoDev Coder](https://openbayes.com/console/phodal/models/rCmer1KQSgp/9/overview) |
 
-### Language Support
+### Language Support (Fine-tuning)
 
 We follow [Chapi](https://github.com/phodal/chapi) for language support tier.
 

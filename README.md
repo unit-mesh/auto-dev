@@ -79,14 +79,14 @@ download from [HuggingFace](https://huggingface.co/unit-mesh)
 
 We follow [Chapi](https://github.com/phodal/chapi) for language support tier.
 
-| Features                  | Java | Python | Go | Kotlin | JS/TS | C/C++ | C# | Scala | Rust |
-|---------------------------|------|--------|----|--------|-------|-------|----|-------|------|
-| Chat Language Context     | ✅    | ✅      |    | ✅      | ✅     | ✅     |    |       | ✅    | | 
-| Structure AST             | ✅    |        |    | ✅      | ✅     | ✅     | ✅  |       |      | | 
-| AutoCRUD                  | ✅    |        |    | ✅      |       |       |    |       |      | | 
-| Doc Generation            | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    | | 
-| Precision Test Generation | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    | | 
-| Precision Code Generation | ✅    |        |    | ✅      |       |       |    |       |      | | 
+| Features                  | Java | Python | Go | Kotlin | JS/TS | C/C++ | C# | Scala | Rust | ArkTS |
+|---------------------------|------|--------|----|--------|-------|-------|----|-------|------|-------|
+| Chat Language Context     | ✅    | ✅      |    | ✅      | ✅     | ✅     |    |       | ✅    | ✅     | 
+| Structure AST             | ✅    |        |    | ✅      | ✅     | ✅     | ✅  |       |      |       | 
+| AutoCRUD                  | ✅    |        |    | ✅      |       |       |    |       |      |       | 
+| Doc Generation            | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    | ✅     | 
+| Precision Test Generation | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    |       | 
+| Precision Code Generation | ✅    |        |    | ✅      |       |       |    |       |      |       | 
 
 ### Extensions
 
