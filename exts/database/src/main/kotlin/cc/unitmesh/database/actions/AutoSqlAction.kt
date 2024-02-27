@@ -26,7 +26,8 @@ class AutoSqlAction : ChatBaseIntention() {
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         DbPsiFacade.getInstance(project).dataSources.firstOrNull() ?: return false
-        return true
+        val hasSelectionText = editor?.selectionModel?.selectedText
+        return hasSelectionText != null
     }
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
