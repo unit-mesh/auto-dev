@@ -293,7 +293,7 @@
                     class="cc.unitmesh.devti.gui.snippet.AutoDevCopyToClipboardAction"/>
             <action id="AutoDev.ToolWindow.Snippet.InsertFile"
                     icon="cc.unitmesh.devti.AutoDevIcons.InsertCode"
-                    class="cc.unitmesh.devti.gui.snippet.AutoDevInsertFileAction"/>
+                    class="cc.unitmesh.devti.gui.snippet.AutoDevInsertCodeAction"/>
         </group>
 
         <group id="AutoDev.ToolWindow.Chat.TitleActions">
