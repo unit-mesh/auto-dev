@@ -37,4 +37,7 @@ object AutoDevIcons {
 
     @JvmField
     val Disliked: Icon = IconLoader.getIcon("/icons/disliked.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val InsertCode: Icon = IconLoader.getIcon("/icons/insert-code.svg", AutoDevIcons::class.java)
 }

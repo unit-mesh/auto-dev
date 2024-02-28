@@ -291,6 +291,9 @@
             <action id="AutoDev.ToolWindow.Snippet.CopyToClipboard"
                     icon="AllIcons.Actions.Copy"
                     class="cc.unitmesh.devti.gui.snippet.AutoDevCopyToClipboardAction"/>
+            <action id="AutoDev.ToolWindow.Snippet.InsertFile"
+                    icon="cc.unitmesh.devti.AutoDevIcons.InsertCode"
+                    class="cc.unitmesh.devti.gui.snippet.AutoDevInsertFileAction"/>
         </group>
 
         <group id="AutoDev.ToolWindow.Chat.TitleActions">
