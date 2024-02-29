@@ -21,6 +21,7 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
     var customEngineServer = ""
     var customEngineToken = ""
     var customPrompts = ""
+    var customModel = ""
 
     // 星火有三个版本 https://console.xfyun.cn/services/bm3
     var xingHuoApiVersion = XingHuoApiVersion.V3
