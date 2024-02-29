@@ -9,14 +9,15 @@ enum class AIEngines {
 
 val GIT_TYPE = arrayOf("Github" , "Gitlab")
 val DEFAULT_GIT_TYPE = GIT_TYPE[0]
-enum class XingHuoApiVersion(val value: Int) {
-    V1(1), V2(2), V3(3);
+enum class XingHuoApiVersion(val value: Double) {
+    V1(1.1), V2(2.1), V3(3.1), V3_5(3.5);
 
     companion object {
         fun of(str: String): XingHuoApiVersion  = when (str) {
             "V1" -> V1
             "V2" -> V2
             "V3" -> V3
+            "V3_5" -> V3_5
             else -> V3
         }
     }
