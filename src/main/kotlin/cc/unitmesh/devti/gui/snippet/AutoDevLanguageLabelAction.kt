@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.gui.snippet
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.Presentation
@@ -14,6 +15,8 @@ import com.intellij.util.ui.UIUtil
 import javax.swing.JComponent
 
 class AutoDevLanguageLabelAction : DumbAwareAction(), CustomComponentAction {
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+
     override fun createCustomComponent(presentation: Presentation, place: String): JComponent {
         val languageId = snippetLanguageName(presentation)
         val jBLabel: JComponent = JBLabel(languageId)
