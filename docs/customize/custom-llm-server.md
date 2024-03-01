@@ -128,6 +128,8 @@ And the request body will be:
 
 Official Moonshot AI doc: https://platform.moonshot.cn/docs/api-reference
 
+Official API example:
+
 ```
 from openai import OpenAI
 
@@ -147,6 +149,8 @@ completion = client.chat.completions.create(
 
 print(completion.choices[0].message)
 ```
+
+#### AutoDev config
 
 Engine Server:
 
