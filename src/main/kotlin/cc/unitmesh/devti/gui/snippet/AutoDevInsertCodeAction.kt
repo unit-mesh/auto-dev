@@ -6,6 +6,9 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.codeStyle.CodeStyleManager
+
 
 class AutoDevInsertCodeAction : DumbAwareAction() {
     override fun actionPerformed(e: AnActionEvent) {
@@ -14,10 +17,14 @@ class AutoDevInsertCodeAction : DumbAwareAction() {
         val selectionModel = if (editor.selectionModel.hasSelection()) editor.selectionModel else null
         val textToPaste = selectionModel?.selectedText ?: editor.document.text.trimEnd()
 
-        val selectedTextEditor = FileEditorManager.getInstance(project).selectedTextEditor
+        val textEditor = FileEditorManager.getInstance(project).selectedTextEditor ?: return
         WriteCommandAction.writeCommandAction(project).compute<Any, RuntimeException> {
-            val offset = selectionModel?.selectionStart ?: selectedTextEditor?.document?.textLength ?: return@compute null
-            selectedTextEditor?.document?.insertString(offset, textToPaste)
+            val offset: Int = textEditor.caretModel.offset
+            textEditor.document.insertString(offset, textToPaste)
+
+            val psiFile = PsiDocumentManager.getInstance(project).getPsiFile(textEditor.document) ?: return@compute
+            PsiDocumentManager.getInstance(project).commitDocument(textEditor.document)
+            CodeStyleManager.getInstance(project).reformatText(psiFile, offset, offset + textToPaste.length)
         }
     }
 
