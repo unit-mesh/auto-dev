@@ -93,7 +93,6 @@ For example:
 
 
 
-
 ```json
 {
   "customHeaders": { "CustomHeader": "my-value" },
@@ -119,4 +118,24 @@ And the request body will be:
     "model": "gpt-4",
     "messages": [{"role": "user", "message": "..."}]
   }
+```
+
+### Moonshot AI example
+
+Engine Server:
+
+```
+https://api.moonshot.cn/v1/chat/completions 
+```
+
+Request body format
+
+```json
+{ "customFields": {"model": "moonshot-v1-8k"},   "messageKeys": {"role": "role", "content": "content"} }
+```
+
+Response format:
+
+```
+$.choices[0].delta.content 
 ```
