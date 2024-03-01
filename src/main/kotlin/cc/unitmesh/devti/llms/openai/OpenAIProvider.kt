@@ -8,6 +8,7 @@ import cc.unitmesh.devti.coder.recording.Recording
 import cc.unitmesh.devti.coder.recording.RecordingInstruction
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.coder.coderSetting
+import cc.unitmesh.devti.settings.SELECT_CUSTOM_MODEL
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
@@ -63,7 +64,13 @@ class OpenAIProvider(val project: Project) : LLMProvider {
 
     private val timeout = Duration.ofSeconds(600)
     private val openAiVersion: String
-        get() = AutoDevSettingsState.getInstance().openAiModel
+        get() {
+            val customModel = AutoDevSettingsState.getInstance().customModel
+            if(AutoDevSettingsState.getInstance().openAiModel == SELECT_CUSTOM_MODEL) {
+                AutoDevSettingsState.getInstance().openAiModel = customModel
+            }
+            return  AutoDevSettingsState.getInstance().openAiModel
+        }
     private val openAiKey: String
         get() = AutoDevSettingsState.getInstance().openAiKey
 
