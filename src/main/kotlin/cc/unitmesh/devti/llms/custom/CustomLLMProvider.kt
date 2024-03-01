@@ -56,17 +56,13 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
     private val messages: MutableList<Message> = mutableListOf()
     private val logger = logger<CustomLLMProvider>()
 
-    override fun clearMessage() {
-        messages.clear()
-    }
+    override fun clearMessage() = messages.clear()
 
     override fun appendLocalMessage(msg: String, role: ChatRole) {
         messages += Message(role.roleName(), msg)
     }
 
-    override fun prompt(promptText: String): String {
-        return this.prompt(promptText, "")
-    }
+    override fun prompt(promptText: String): String = this.prompt(promptText, "")
 
     override fun stream(promptText: String, systemPrompt: String, keepHistory: Boolean): Flow<String> {
         if (!keepHistory) {
@@ -93,10 +89,10 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
         client = client.newBuilder().readTimeout(timeout).build()
         val call = client.newCall(builder.url(url).post(body).build())
 
-        if (autoDevSettingsState.customEngineResponseType == ResponseType.SSE.name) {
-            return streamSSE(call)
+        return if (autoDevSettingsState.customEngineResponseType == ResponseType.SSE.name) {
+            streamSSE(call)
         } else {
-            return streamJson(call)
+            streamJson(call)
         }
     }
 
@@ -204,8 +200,7 @@ fun Request.Builder.appendCustomHeaders(customRequestHeader: String): Request.Bu
             }
         }
     }.onFailure {
-        // should I warn user?
-        println("Failed to parse custom request header ${it.message}")
+        logger<CustomLLMProvider>().warn("Failed to parse custom request header", it)
     }
 }
 
@@ -217,13 +212,11 @@ fun JsonObject.updateCustomBody(customRequest: String): JsonObject {
             this@updateCustomBody.forEach { u, v -> put(u, v) }
 
             val customRequestJson = Json.parseToJsonElement(customRequest).jsonObject
-
             customRequestJson["customFields"]?.let { customFields ->
                 customFields.jsonObject.forEach { (key, value) ->
                     put(key, value.jsonPrimitive)
                 }
             }
-
 
             // TODO clean code with magic literals
             var roleKey = "role"
@@ -234,8 +227,6 @@ fun JsonObject.updateCustomBody(customRequest: String): JsonObject {
             }
 
             val messages: JsonArray = this@updateCustomBody["messages"]?.jsonArray ?: buildJsonArray { }
-
-
             this.put("messages", buildJsonArray {
                 messages.forEach { message ->
                     val role: String = message.jsonObject["role"]?.jsonPrimitive?.content ?: "user"
