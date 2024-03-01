@@ -53,12 +53,9 @@ class AzureOpenAIProvider(val project: Project) : LLMProvider {
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private val url: String
         get() {
-            val customOpenAiHost = autoDevSettingsState.customOpenAiHost
-            if (!customOpenAiHost.endsWith("/")) {
-                return "$customOpenAiHost/"
-            }
-            return customOpenAiHost
+            return tryFixHostUrl(autoDevSettingsState.customOpenAiHost)
         }
+
     private var customPromptConfig: CustomPromptConfig? = null
     private val timeout = Duration.ofSeconds(600)
     private var client = OkHttpClient().newBuilder().readTimeout(timeout).build()
@@ -191,6 +188,25 @@ class AzureOpenAIProvider(val project: Project) : LLMProvider {
             recording.write(RecordingInstruction(promptText, output))
 
             close()
+        }
+    }
+
+    companion object {
+        fun isUrlWithPath(input: String): Boolean {
+            val urlPattern = Regex("^https?://[a-zA-Z0-9-]+(\\\\.[a-zA-Z]{2,})+(/[a-zA-Z0-9-._~:/?#[\\\\]@!\$&'()*+,;=%]*)?\\\$")
+            return urlPattern.matches(input)
+        }
+
+        fun tryFixHostUrl(customOpenAiHost: String): String {
+            if (isUrlWithPath(customOpenAiHost)) {
+                return customOpenAiHost
+            }
+
+            if (!customOpenAiHost.endsWith("/")) {
+                return "$customOpenAiHost/"
+            }
+
+            return customOpenAiHost
         }
     }
 }
