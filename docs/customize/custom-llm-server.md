@@ -71,15 +71,14 @@ $.choices[0].message.delta.content
 
 ## Custom request format
 
-Only support amount of request parameters like OpenAI does.
-Only support http request that don't need encryption keys(like websocket)
-
+Only support number of request parameters like OpenAI does.
+Only support http request that doesn't need encryption keys(like websocket)
 
 ### Custom Request (header/body/message-keys)
 
 **BE CAREFUL: In this project, messageKey is not compatible with openAI: messageKeys: `{ { "content": "content" } }`is REQUIRED** *maybe we will fix this in the future.*
 
-If your llm server has custom request format, you can:
+If your llm server has a custom request format, you can:
 
 - Add top level field to the request body via `customFields`
 - Add custom headers to the request via `customHeaders`
@@ -91,7 +90,7 @@ For example:
 { "customFields": {"user": "12345", "model":"model-name", "stream": true},  "messageKeys": { "content": "content" }}
 ```
 
-
+Or with custom headers:
 
 ```json
 {
@@ -125,7 +124,7 @@ And the request body will be:
 }
 ```
 
-### Moonshot AI example
+### Moonshot AI examples
 
 Official Moonshot AI doc: https://platform.moonshot.cn/docs/api-reference
 
