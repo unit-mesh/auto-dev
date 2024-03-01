@@ -24,7 +24,7 @@ import javax.crypto.spec.SecretKeySpec
 @Service(Service.Level.PROJECT)
 class XingHuoProvider(val project: Project) : LLMProvider {
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
-    private val secrectKey: String
+    private val secretKey: String
         get() = autoDevSettingsState.xingHuoApiSecrect
 
     private val apiVersion: XingHuoApiVersion
@@ -49,7 +49,7 @@ class XingHuoProvider(val project: Project) : LLMProvider {
     private val hmacsha256: Mac
         get() {
             val hmac = Mac.getInstance(hmacsha256Algorithms)
-            val keySpec = SecretKeySpec(secrectKey.toByteArray(), hmacsha256Algorithms)
+            val keySpec = SecretKeySpec(secretKey.toByteArray(), hmacsha256Algorithms)
             hmac.init(keySpec)
             return hmac
         }

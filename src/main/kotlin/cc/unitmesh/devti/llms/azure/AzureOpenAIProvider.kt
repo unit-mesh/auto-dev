@@ -57,7 +57,7 @@ class AzureOpenAIProvider(val project: Project) : LLMProvider {
         }
 
     private var customPromptConfig: CustomPromptConfig? = null
-    private val timeout = Duration.ofSeconds(600)
+    private val timeout = Duration.ofSeconds(defaultTimeout)
     private var client = OkHttpClient().newBuilder().readTimeout(timeout).build()
     private val openAiVersion: String
     private val maxTokenLength: Int
