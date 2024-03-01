@@ -40,6 +40,7 @@ data class CustomRequest(val messages: List<Message>)
 
 @Service(Service.Level.PROJECT)
 class CustomLLMProvider(val project: Project) : LLMProvider {
+    private var hasSuccessRequest: Boolean = true
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private val url
         get() = autoDevSettingsState.customEngineServer
@@ -126,8 +127,12 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
                         }
                         .blockingForEach { sse ->
                             if (responseFormat.isNotEmpty()) {
+                                // {"id":"cmpl-a22a0d78fcf845be98660628fe5d995b","object":"chat.completion.chunk","created":822330,"model":"moonshot-v1-8k","choices":[{"index":0,"delta":{},"finish_reason":"stop","usage":{"prompt_tokens":434,"completion_tokens":68,"total_tokens":502}}]}
+                                // in some case, the response maybe not equal to our response format, so we need to ignore it
                                 val chunk: String = JsonPath.parse(sse!!.data)?.read(responseFormat)
                                     ?: throw Exception("Failed to parse chunk: ${sse.data}")
+
+                                hasSuccessRequest = true
                                 trySend(chunk)
                             } else {
                                 val result: ChatCompletionResult =
@@ -145,7 +150,12 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
                 awaitClose()
             }
         } catch (e: Exception) {
-            logger.error("Failed to stream", e)
+            if (hasSuccessRequest) {
+                logger.info("Failed to stream", e)
+            } else {
+                logger.error("Failed to stream", e)
+            }
+
             return callbackFlow {
                 close()
             }
