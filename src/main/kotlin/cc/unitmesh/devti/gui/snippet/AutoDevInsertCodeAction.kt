@@ -15,16 +15,26 @@ class AutoDevInsertCodeAction : DumbAwareAction() {
         val project = e.project ?: return
         val editor = e.getData(PlatformDataKeys.EDITOR) ?: return
         val selectionModel = if (editor.selectionModel.hasSelection()) editor.selectionModel else null
-        val textToPaste = selectionModel?.selectedText ?: editor.document.text.trimEnd()
+        val newText = selectionModel?.selectedText ?: editor.document.text.trimEnd()
 
         val textEditor = FileEditorManager.getInstance(project).selectedTextEditor ?: return
-        WriteCommandAction.writeCommandAction(project).compute<Any, RuntimeException> {
-            val offset: Int = textEditor.caretModel.offset
-            textEditor.document.insertString(offset, textToPaste)
+        val currentSelection = textEditor.selectionModel
 
-            val psiFile = PsiDocumentManager.getInstance(project).getPsiFile(textEditor.document) ?: return@compute
-            PsiDocumentManager.getInstance(project).commitDocument(textEditor.document)
-            CodeStyleManager.getInstance(project).reformatText(psiFile, offset, offset + textToPaste.length)
+        WriteCommandAction.writeCommandAction(project).compute<Any, RuntimeException> {
+            val offset: Int
+            val document = textEditor.document
+
+            if (currentSelection.hasSelection()) {
+                offset = currentSelection.selectionStart
+                document.replaceString(currentSelection.selectionStart, currentSelection.selectionEnd, newText)
+            } else {
+                offset = textEditor.caretModel.offset
+                document.insertString(offset, newText)
+            }
+
+            val psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document) ?: return@compute
+            PsiDocumentManager.getInstance(project).commitDocument(document)
+            CodeStyleManager.getInstance(project).reformatText(psiFile, offset, offset + newText.length)
         }
     }
 
