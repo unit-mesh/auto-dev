@@ -43,6 +43,8 @@ permalink: /quick-start
 5. config `Custom Response Format` by [JsonPath](https://github.com/json-path/JsonPath) (for example: `$.choices[0].content`), if not set, will use OpenAI's format as default.
 6. Apply and OK.
 
+for more, see in [Customize LLM Server](/custom/llm-server)
+
 the request format logic:
 
 ```kotlin
