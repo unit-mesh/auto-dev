@@ -50,6 +50,14 @@
                     icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                     factoryClass="cc.unitmesh.devti.gui.AutoDevToolWindowFactory"/>
 
+        <!--        <toolWindow id="AutoDev Pair"-->
+        <!--                    doNotActivateOnStart="true"-->
+        <!--                    anchor="left"-->
+        <!--                    secondary="true"-->
+        <!--                    canCloseContents="false"-->
+        <!--                    icon="cc.unitmesh.devti.AutoDevIcons.AI_PAIR"-->
+        <!--                    factoryClass="cc.unitmesh.devti.gui.AutoDevPairToolWindowFactory"/>-->
+
         <notificationGroup id="AI notification group" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
                            key="name"/>
 
@@ -126,6 +134,10 @@
         <extensionPoint qualifiedName="cc.unitmesh.devFlowProvider"
                         interface="cc.unitmesh.devti.provider.DevFlowProvider"
                         dynamic="true"/>
+
+        <extensionPoint qualifiedName="cc.unitmesh.layeredArchProvider"
+                        interface="cc.unitmesh.devti.provider.architecture.LayeredArchProvider"
+                        dynamic="true"  />
 
         <!-- TODO: find better way to share context -->
         <extensionPoint qualifiedName="cc.unitmesh.contextPrompter"
@@ -252,8 +264,6 @@
             <add-to-group group-id="Vcs.Log.ChangesBrowser.Popup" relative-to-action="Vcs.RepositoryChangesBrowserMenu"
                           anchor="after"/>
             <add-to-group group-id="Vcs.Log.ContextMenu" relative-to-action="Vcs.ShowDiffWithLocal" anchor="after"/>
-
-            <!-- Todo: spike when in Group -->
         </action>
 
         <action id="autodev.Vcs.PrepushReview"
@@ -280,6 +290,9 @@
             <action id="AutoDev.ToolWindow.Snippet.CopyToClipboard"
                     icon="AllIcons.Actions.Copy"
                     class="cc.unitmesh.devti.gui.snippet.AutoDevCopyToClipboardAction"/>
+            <action id="AutoDev.ToolWindow.Snippet.InsertCode"
+                    icon="cc.unitmesh.devti.AutoDevIcons.InsertCode"
+                    class="cc.unitmesh.devti.gui.snippet.AutoDevInsertCodeAction"/>
         </group>
 
         <group id="AutoDev.ToolWindow.Chat.TitleActions">
@@ -291,6 +304,11 @@
                     class="cc.unitmesh.devti.gui.chat.message.AutoDevRateMessageAction$Like"/>
         </group>
 
+        <action id="AutoDev.NewPromptTemplate" class="cc.unitmesh.devti.actions.template.NewPromptTemplateAction"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
+            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFromTemplate"/>
+        </action>
+
         <group id="DevOpsGenius.NewActions" popup="true" icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
             <separator/>
             <action id="GeniusDockerfile" class="cc.unitmesh.genius.actions.GenerateDockerfileAction"/>
@@ -299,8 +317,7 @@
             <add-to-group group-id="NewGroup" anchor="last"/>
         </group>
 
-
-        <action id="cc.unitmesh.devti.OpenSettings"
+        <action id="cc.unitmesh.devti.EditSettings"
                 class="cc.unitmesh.devti.actions.EditSettingsAction"
                 text="Edit Settings"
                 description="Edit AutoDev Settings"
@@ -309,7 +326,7 @@
 
         <group id="autodev.statusBarPopup">
             <reference id="cc.unitmesh.devti.QuickAssistant"/>
-            <reference id="cc.unitmesh.devti.OpenSettings"/>
+            <reference id="cc.unitmesh.devti.EditSettings"/>
         </group>
     </actions>
 </idea-plugin>
