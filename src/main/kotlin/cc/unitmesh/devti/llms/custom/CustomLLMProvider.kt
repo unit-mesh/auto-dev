@@ -127,7 +127,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider {
                             if (responseFormat.isNotEmpty()) {
                                 // {"id":"cmpl-a22a0d78fcf845be98660628fe5d995b","object":"chat.completion.chunk","created":822330,"model":"moonshot-v1-8k","choices":[{"index":0,"delta":{},"finish_reason":"stop","usage":{"prompt_tokens":434,"completion_tokens":68,"total_tokens":502}}]}
                                 // in some case, the response maybe not equal to our response format, so we need to ignore it
-                                logger.info("SSE: ${sse.data}")
+//                                logger.info("SSE: ${sse.data}")
                                 val chunk: String = try {
                                     JsonPath.parse(sse!!.data)?.read(responseFormat) ?: ""
                                 } catch (e: Exception) {
