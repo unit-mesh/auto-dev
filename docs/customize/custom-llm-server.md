@@ -136,6 +136,19 @@ Response format:
 $.choices[0].delta.content 
 ```
 
+### DeepSeek AI examples
+
+- Custom Response Type：SSE
+- Custom Engine Server：https://api.deepseek.com/v1/chat/completions
+- Request body format:
+```json
+{ "customFields": {"model": "deepseek-chat", "stream": true},   "messageKeys": {"role": "role", "content": "content"} }
+```
+- Response format: 
+```
+$.choices[0].delta.content 
+```
+
 ## Custom Server API example (ChatGLM2)
 
 See in: [ChatGLM2 SSE Server](../example/custom_llm_server/chatglm_sse.py)
