@@ -1,6 +1,27 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v1.6.4...v) (2024-02-25)
+# [](https://github.com/unit-mesh/auto-dev/compare/v1.6.5...v) (2024-03-03)
 
 ## [Unreleased]
+
+## [1.6.5](https://github.com/unit-mesh/auto-dev/compare/v1.6.4...v[1.6.5]) (2024-03-03)
+
+### Bug Fixes
+- **241:** update action threads for UI actions ([a97f102](https://github.com/unit-mesh/auto-dev/commit/a97f10220275a89ddedb4a65eb7ff688c758ad44))
+- **docs:** correct custom request format documentation ([c8ad270](https://github.com/unit-mesh/auto-dev/commit/c8ad270c3ec77a335befa72d825617dc97774366))
+- **intentions:** update description for AutoDevIntention and AutoSqlAction ([1a28168](https://github.com/unit-mesh/auto-dev/commit/1a2816879152aeb3c215f5687145699bfc2d4c2d))
+- **prepush:** update background thread for action update since of @Deprecated API changed ([4b2e390](https://github.com/unit-mesh/auto-dev/commit/4b2e39024b73c870fb162947f266a8917985ac56))
+- **provider:** remove unused logger in LivingDocumentation and HarmonyOsLivingDocumentation ([025cb95](https://github.com/unit-mesh/auto-dev/commit/025cb953db258b32043fe8e402ff344f2cd3997e))
+- **SSE response handling:** Skip logging of SSE responses ([8e6affb](https://github.com/unit-mesh/auto-dev/commit/8e6affb963ba25a3da6849cda74f8358016ca57b))
+
+### Features
+- **custom-llm:** Add response format validation and success request tracking ([ffb07be](https://github.com/unit-mesh/auto-dev/commit/ffb07bef5d4a48426478e4a3e3ee7752462b75bc))
+- **docs:** enhance Moonshot AI custom integration in docs ([fde46b8](https://github.com/unit-mesh/auto-dev/commit/fde46b856374d790f93df568a04bdeec782b5ac7))
+- **docs:** update AI configurations and usage guide ([c42eb6d](https://github.com/unit-mesh/auto-dev/commit/c42eb6d9ee028ef8f2b61d4158952f70386ae655))
+- **gui:** add auto dev insert to code action ([f56d7de](https://github.com/unit-mesh/auto-dev/commit/f56d7deb50c95119c21ef10557f93bea7d086e07))
+- **harmonyos:** improve LinearLayout and RelativeContainer layouts ([9f9b228](https://github.com/unit-mesh/auto-dev/commit/9f9b2287a89480974d19737c4477d84e41e5803b))
+- **harmonyos:** modify List component to include new features ([4e40af6](https://github.com/unit-mesh/auto-dev/commit/4e40af648b24576c5ac7514971ef67cd32223104))
+- **icon:** add support for auto dev insert file action ([66c2e96](https://github.com/unit-mesh/auto-dev/commit/66c2e964b7b9a948c0f73cc281c1854237419ae1))
+- Improve code insertion in AutoDevInsertCodeAction ([a1a63bb](https://github.com/unit-mesh/auto-dev/commit/a1a63bbd7a4f901e663bfd2233570abfa203826d))
+- init check for openai hosts ([efeb143](https://github.com/unit-mesh/auto-dev/commit/efeb1432208de1c1802f2a73c5a0365e521b0724))
 
 ## [1.6.4](https://github.com/unit-mesh/auto-dev/compare/v1.6.3...v[1.6.4]) (2024-02-25)
 
@@ -1023,7 +1044,8 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.6.4...HEAD
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.6.5...HEAD
+[1.6.5]: https://github.com/unit-mesh/auto-dev/compare/v1.6.4...v1.6.5
 [1.6.4]: https://github.com/unit-mesh/auto-dev/compare/v1.6.3...v1.6.4
 [1.6.3]: https://github.com/unit-mesh/auto-dev/compare/v1.6.1...v1.6.3
 [1.6.1]: https://github.com/unit-mesh/auto-dev/compare/v1.5.5...v1.6.1
