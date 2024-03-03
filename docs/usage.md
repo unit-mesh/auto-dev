@@ -43,11 +43,16 @@ permalink: /quick-start
 
 ### Custom Config / OpenAI compatible
 
+Tested: 零一万物（[#94](https://github.com/unit-mesh/auto-dev/issues/94)）, 月之暗面（Moonshot
+AI）、深度求索（Deepseek [#96](https://github.com/unit-mesh/auto-dev/issues/96)）
+
 1. open AutoDev Config in `Settings` -> `Tools` -> `AutoDev`.
 2. select `AI Engine` -> `Custom`
 3. fill `Custom Engine Server`
 4. fill `Custom Engine Token` if needed.
-5. config `Custom Response Format` by [JsonPath](https://github.com/json-path/JsonPath) (for example: `$.choices[0].content`), if not set, will use OpenAI's format as default.
-6. Apply and OK.
+5. config `Custom Response Format` by [JsonPath](https://github.com/json-path/JsonPath) (for
+   example: `$.choices[0].content`), if not set, will use OpenAI's format as default.
+6. config `Custom Request Format` by Json if needed.
+7. Apply and OK.
 
 for more, see in [Customize LLM Server](/custom/llm-server)
