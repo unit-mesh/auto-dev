@@ -22,6 +22,8 @@ class CodeCompleteChatAction : AnAction() {
         return ActionUpdateThread.BGT
     }
 
+    private val logger = logger<ChatCodingService>()
+
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val document = e.getData(CommonDataKeys.EDITOR)?.document
@@ -52,7 +54,7 @@ class CodeCompleteChatAction : AnAction() {
                 val chatCodingService = ChatCodingService(actionType, project)
                 val toolWindowManager =
                     ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolWindowFactory.Util.id) ?: run {
-                        logger<ChatCodingService>().warn("Tool window not found")
+                        logger.warn("Tool window not found")
                         return@runReadAction
                     }
 
@@ -65,10 +67,8 @@ class CodeCompleteChatAction : AnAction() {
                 contentManager.addContent(content)
 
                 toolWindowManager.activate {
-                    val chatContext = ChatContext(
-                        null, prefixText, suffixText
-                    )
-                    chatCodingService.handlePromptAndResponse(contentPanel, prompter, chatContext, false)
+                    val chatContext = ChatContext(null, prefixText, suffixText)
+                    chatCodingService.handlePromptAndResponse(contentPanel, prompter, chatContext, true)
                 }
             } catch (ignore: IndexNotReadyException) {
                 return@runReadAction

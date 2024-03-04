@@ -14,7 +14,6 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.launch
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 const val CO_UNIT = "/counit"
@@ -56,8 +55,7 @@ class CoUnitPreProcessor(val project: Project) {
             llmProvider.appendLocalMessage(result, ChatRole.Assistant)
 
             val explain = try {
-                val fixedResult = fix(result)
-                json.decodeFromString<ExplainQuery>(fixedResult)
+                json.decodeFromString<ExplainQuery>(extractJsonResponse(result))
             } catch (e: Exception) {
                 LOG.error("parse result error: $e")
                 return@launch
@@ -111,8 +109,15 @@ class CoUnitPreProcessor(val project: Project) {
         return sb.toString()
     }
 
-    private fun fix(result: String): String {
-        // remove start and end ```json
+    /**
+     * This method is used to extract JSON response from a given string.
+     * It removes the leading and trailing ````json` tags from the string,
+     * which are used to denote JSON code blocks in markdown files.
+     *
+     * @param result The string containing the JSON response surrounded by ````json` tags.
+     * @return The extracted JSON response string without the ````json` tags.
+     */
+    private fun extractJsonResponse(result: String): String {
         return result
             .removePrefix("```json")
             .removeSuffix("```")
