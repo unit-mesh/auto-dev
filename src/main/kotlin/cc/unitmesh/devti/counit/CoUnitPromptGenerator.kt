@@ -13,19 +13,14 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 @Service(Service.Level.PROJECT)
 class CoUnitPromptGenerator(val project: Project) {
-    private var retrofit = Retrofit.Builder()
-        .baseUrl(project.customRagSettings.serverAddress)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-
     fun findIntention(input: String): String? {
-        val service: CoUnitApi = retrofit.create(CoUnitApi::class.java)
+        val service: CoUnitApi = coUnitApi()
         val body = service.explainQuery(input).execute().body()
         return body?.prompt
     }
 
     fun semanticQuery(query: ExplainQuery): QueryResult {
-        val service: CoUnitApi = retrofit.create(CoUnitApi::class.java)
+        val service: CoUnitApi = coUnitApi()
         val englishQuery: QueryResponse? = service.query(query.query, PayloadType.OpenApi).execute().body()
         val hydeDoc: QueryResponse? = service.query(query.hypotheticalDocument, PayloadType.OpenApi).execute().body()
         val naturalLangQuery: QueryResponse? = service.query(query.natureLangQuery, PayloadType.OpenApi).execute().body()
@@ -35,5 +30,15 @@ class CoUnitPromptGenerator(val project: Project) {
             naturalLangQuery?.data ?: emptyList(),
             hydeDoc?.data ?: emptyList()
         )
+    }
+
+    private fun coUnitApi(): CoUnitApi {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(project.customRagSettings.serverAddress)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        val service: CoUnitApi = retrofit.create(CoUnitApi::class.java)
+        return service
     }
 }
