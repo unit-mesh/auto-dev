@@ -23,7 +23,6 @@ import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.impl.InternalDecorator
 import com.intellij.temporary.gui.block.AutoDevCoolBorder
-import com.intellij.ui.CollectionComboBoxModel
 import com.intellij.ui.JBColor
 import com.intellij.ui.MutableCollectionComboBoxModel
 import com.intellij.ui.SimpleListCellRenderer
@@ -55,7 +54,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     private val documentListener: DocumentListener
     private val buttonPresentation: Presentation
     private val button: ActionButton
-    private val customRag: ComboBox<CustomRagApp>
+    private var customRag: ComboBox<CustomRagApp> = ComboBox(MutableCollectionComboBoxModel(listOf()))
     private val logger = logger<AutoDevInputSection>()
 
     val editorListeners: EventDispatcher<AutoDevInputListener> =
@@ -116,14 +115,18 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             JBColor(3684930, 3750720)
         )
         layoutPanel.setOpaque(false)
-        customRag = ComboBox(MutableCollectionComboBoxModel(loadRagApps()))
-        customRag.setRenderer(SimpleListCellRenderer.create { label: JBLabel, value: CustomRagApp?, _: Int ->
-            if (value != null) {
-                label.text = value.name
-            }
-        })
 
-        layoutPanel.addToLeft(customRag)
+        if (project.customRagSettings.enableCustomRag) {
+            customRag = ComboBox(MutableCollectionComboBoxModel(loadRagApps()))
+            customRag.setRenderer(SimpleListCellRenderer.create { label: JBLabel, value: CustomRagApp?, _: Int ->
+                if (value != null) {
+                    label.text = value.name
+                }
+            })
+
+            layoutPanel.addToLeft(customRag)
+        }
+
         layoutPanel.addToCenter(horizontalGlue)
         layoutPanel.addToRight(button)
         addToBottom(layoutPanel)

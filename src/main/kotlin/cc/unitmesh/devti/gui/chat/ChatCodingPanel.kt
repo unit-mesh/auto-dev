@@ -206,7 +206,6 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
 
         var text = ""
         content.onCompletion {
-//            println("onCompletion ${it?.message}")
             logger.info("onCompletion ${it?.message}")
         }.catch {
             it.printStackTrace()
