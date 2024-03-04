@@ -95,21 +95,9 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         })
 
         panelContent = panel {
-            row {
-                cell(myScrollPane)
-                    .fullWidth()
-                    .fullHeight()
-
-            }.resizableRow()
-
-            row {
-                cell(progressBar).fullWidth()
-            }
-
-            row {
-                cell(actionLink).alignRight()
-            }
-
+            row { cell(myScrollPane).fullWidth().fullHeight() }.resizableRow()
+            row { cell(progressBar).fullWidth() }
+            row { cell(actionLink).alignRight() }
             row {
                 border = JBUI.Borders.empty(8)
                 cell(inputSection).fullWidth()
