@@ -21,6 +21,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.util.preferredHeight
 import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
@@ -67,7 +68,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         myScrollPane.verticalScrollBar.autoscrolls = true
         myScrollPane.background = UIUtil.getListBackground()
 
-        progressBar = JProgressBar()
+        progressBar = JProgressBar().apply { preferredHeight = JBUI.scale(2) }
 
         val actionLink = ActionLink(AutoDevBundle.message("label.submit.issue")) {
             BrowserUtil.browse("https://github.com/unit-mesh/auto-dev/issues")
