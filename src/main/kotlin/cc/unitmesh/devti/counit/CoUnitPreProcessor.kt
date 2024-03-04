@@ -12,8 +12,6 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.launch
-// keep this import
-import kotlinx.serialization.json.Json
 
 const val CO_UNIT = "/counit"
 
@@ -22,10 +20,10 @@ class CoUnitPreProcessor(val project: Project) {
     private val llmFactory = LlmFactory()
 
     private val coUnitPromptGenerator = CoUnitPromptGenerator(project)
-    private val json = Json { ignoreUnknownKeys = true }
     private val llmProvider = llmFactory.create(project)
 
-    fun isCoUnit(input: String): Boolean {
+    fun isCustomRag(input: String): Boolean {
+        // handle current category
         return project.customRagSettings.enableCustomRag && input.startsWith(CO_UNIT)
     }
 

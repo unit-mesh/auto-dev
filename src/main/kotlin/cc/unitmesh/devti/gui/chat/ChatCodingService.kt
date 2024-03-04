@@ -33,11 +33,9 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         val requestPrompt = prompter.requestPrompt()
         val displayPrompt = prompter.displayPrompt()
 
-        counitProcessor.isCoUnit(requestPrompt).let {
-            if (it) {
-                counitProcessor.handleChat(prompter, ui, context)
-                return
-            }
+        if (counitProcessor.isCustomRag(requestPrompt) && ui.usedCustomRag()) {
+            counitProcessor.handleChat(prompter, ui, context)
+            return
         }
 
         ui.addMessage(requestPrompt, true, displayPrompt)

@@ -47,6 +47,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     private val documentListener: DocumentListener
     private val buttonPresentation: Presentation
     private val button: ActionButton
+    private val customRag: ComboBox<String>
+
     val editorListeners: EventDispatcher<AutoDevInputListener> =
         EventDispatcher.create(AutoDevInputListener::class.java)
     private var tokenizer: Tokenizer? = null
@@ -107,11 +109,11 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             JBColor(3684930, 3750720)
         )
         layoutPanel.setOpaque(false)
-        val customRags = ComboBox(arrayOf("Normal")).also {
+        customRag = ComboBox(arrayOf("Normal")).also {
 //             todo: load from json config
         }
 
-        layoutPanel.addToLeft(customRags)
+        layoutPanel.addToLeft(customRag)
         layoutPanel.addToCenter(horizontalGlue)
         layoutPanel.addToRight(button)
         addToBottom(layoutPanel)
@@ -185,6 +187,10 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
         val errorMessage = AutoDevBundle.message("chat.too.long.user.message", exceed)
         return ValidationInfo(errorMessage, this as JComponent).asWarning()
+    }
+
+    fun usedCustomRag(): Boolean {
+        return customRag.selectedItem != "Normal"
     }
 
     private val maxHeight: Int

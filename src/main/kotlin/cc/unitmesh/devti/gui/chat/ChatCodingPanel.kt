@@ -244,4 +244,8 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         myList.removeAll()
         updateUI()
     }
+
+    fun usedCustomRag(): Boolean {
+        return inputSection.usedCustomRag()
+    }
 }
