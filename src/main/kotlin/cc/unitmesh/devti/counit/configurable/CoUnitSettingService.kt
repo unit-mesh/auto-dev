@@ -26,7 +26,7 @@ class CoUnitProjectSettingsService(
 
     class CoUnitProjectSettings : AdProjectSettingsBase<CoUnitProjectSettings>() {
         var enableCustomRag by property(false)
-        var serverAddress by property("http://localhost:8765") { it.isEmpty() }
+        var serverAddress by property("http://localhost:8765/api/") { it.isEmpty() }
         var ragsJsonConfig by property("") { it.isEmpty() }
 
         override fun copy(): CoUnitProjectSettings {

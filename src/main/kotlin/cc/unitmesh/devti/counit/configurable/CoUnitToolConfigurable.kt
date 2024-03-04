@@ -22,13 +22,10 @@ class CoUnitToolConfigurable(val project: Project) : BoundConfigurable(AutoDevBu
 
     override fun createPanel(): DialogPanel = panel {
         row {
-            checkBox(AutoDevBundle.message("counit.enable.label"))
-                .comment(AutoDevBundle.message("counit.enable.label.comment"))
-                .bindSelected(state::enableCustomRag)
+            checkBox(AutoDevBundle.message("counit.enable.label")).bindSelected(state::enableCustomRag)
         }
 
         row(AutoDevBundle.message("counit.server.address.label")) {
-            // TODO: spike better way for support 213 and 221
             fullWidthCell(serverAddress)
                 .bind(
                     componentGet = { it.text },
@@ -37,12 +34,17 @@ class CoUnitToolConfigurable(val project: Project) : BoundConfigurable(AutoDevBu
                 )
         }
 
-        row(AutoDevBundle.message("counit.location.label")) {
-            fullWidthCell(pathToToolchainComboBox)
-        }
+// TODO: JSON RPC
+//        row(AutoDevBundle.message("counit.location.label")) {
+//            fullWidthCell(pathToToolchainComboBox)
+//        }
 
         row {
-            val languageField = JsonLanguageField(project, state::ragsJsonConfig.toString(), AutoDevBundle.message("counit.rags.json.placeholder"))
+            val languageField = JsonLanguageField(
+                project,
+                state::ragsJsonConfig.toString(),
+                AutoDevBundle.message("counit.rags.json.placeholder")
+            )
             fullWidthCell(languageField)
                 .bind(
                     componentGet = { it.text },
@@ -55,6 +57,7 @@ class CoUnitToolConfigurable(val project: Project) : BoundConfigurable(AutoDevBu
             settings.modify {
                 it.enableCustomRag = state.enableCustomRag
                 it.serverAddress = state.serverAddress
+                it.ragsJsonConfig = state.ragsJsonConfig
             }
         }
     }
