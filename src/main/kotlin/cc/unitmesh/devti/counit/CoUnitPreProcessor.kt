@@ -1,8 +1,6 @@
 package cc.unitmesh.devti.counit
 
 import cc.unitmesh.devti.util.LLMCoroutineScope
-import cc.unitmesh.devti.counit.dto.ExplainQuery
-import cc.unitmesh.devti.counit.dto.QueryResult
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.gui.chat.ChatRole
@@ -15,7 +13,6 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.launch
 // keep this import
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 const val CO_UNIT = "/counit"
@@ -56,20 +53,11 @@ class CoUnitPreProcessor(val project: Project) {
 
             llmProvider.appendLocalMessage(result, ChatRole.Assistant)
 
-            val explain = try {
-                json.decodeFromString<ExplainQuery>(extractJsonResponse(result))
-            } catch (e: Exception) {
-                LOG.error("parse result error: $e")
-                return@launch
-            }
-
             val searchTip = "search API by query and hypothetical document"
             llmProvider.appendLocalMessage(searchTip, ChatRole.User)
             ui.addMessage(searchTip, true, searchTip)
 
-            val queryResult = coUnitPromptGenerator.semanticQuery(explain)
-
-            val related = buildDocAsContext(queryResult)
+            val related = coUnitPromptGenerator.semanticQuery("") ?: ""
             if (related.isEmpty()) {
                 val noResultTip = "no related API found"
                 llmProvider.appendLocalMessage(noResultTip, ChatRole.Assistant)
@@ -83,32 +71,6 @@ class CoUnitPreProcessor(val project: Project) {
                 ui.addMessage(related, true, related)
             }
         }
-    }
-
-    private fun buildDocAsContext(queryResult: QueryResult): String {
-        val sb = StringBuilder()
-        val normalDoc = queryResult.englishQuery
-        if (normalDoc.isNotEmpty()) {
-            sb.append("here is related API to origin query's result: \n```markdown\n")
-            sb.append(normalDoc[0].displayText)
-            sb.append("\n```\n")
-        }
-
-        val nature = queryResult.naturalLangQuery
-        if (nature.isNotEmpty()) {
-            sb.append("here is natural language query's result: \n```markdown\n")
-            sb.append(nature[0].displayText)
-            sb.append("\n```\n")
-        }
-
-        val hyde = queryResult.hypotheticalDocument
-        if (hyde.isNotEmpty()) {
-            sb.append("here is hypothetical document's result: \n```markdown\n")
-            sb.append(hyde[0].displayText)
-            sb.append("\n```\n")
-        }
-
-        return sb.toString()
     }
 
     /**
