@@ -22,6 +22,7 @@ import com.intellij.openapi.wm.impl.InternalDecorator
 import com.intellij.temporary.gui.block.AutoDevCoolBorder
 import com.intellij.ui.JBColor
 import com.intellij.ui.content.ContentManager
+import com.intellij.ui.popup.list.ComboBoxPopup
 import com.intellij.util.EventDispatcher
 import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
@@ -105,8 +106,11 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             JBColor(15461616, 14672357),
             JBColor(3684930, 3750720)
         )
-        layoutPanel.setOpaque(true)
-        val customRags = ComboBox(arrayOf("Normal", "Dev Portal", "Doc"))
+        layoutPanel.setOpaque(false)
+        val customRags = ComboBox(arrayOf("Normal")).also {
+//             todo: load from json config
+        }
+
         layoutPanel.addToLeft(customRags)
         layoutPanel.addToCenter(horizontalGlue)
         layoutPanel.addToRight(button)
