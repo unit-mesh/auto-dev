@@ -3,7 +3,7 @@ package cc.unitmesh.devti.counit.configurable
 import com.intellij.openapi.components.*
 import com.intellij.openapi.project.Project
 
-val Project.coUnitSettings: CoUnitProjectSettingsService
+val Project.customRagSettings: CoUnitProjectSettingsService
     get() = service<CoUnitProjectSettingsService>()
 
 @Service(Service.Level.PROJECT)
@@ -11,8 +11,9 @@ val Project.coUnitSettings: CoUnitProjectSettingsService
 class CoUnitProjectSettingsService(
     val project: Project,
 ) : SimplePersistentStateComponent<CoUnitProjectSettingsService.CoUnitProjectSettings>(CoUnitProjectSettings()) {
-    val enableCoUnit: Boolean get() = state.enableCoUnit
+    val enableCustomRag: Boolean get() = state.enableCustomRag
     val serverAddress: String get() = state.serverAddress
+    val ragsJsonConfig: String get() = state.ragsJsonConfig
 
     fun modify(action: (CoUnitProjectSettings) -> Unit) {
         // todo
@@ -24,8 +25,9 @@ class CoUnitProjectSettingsService(
     }
 
     class CoUnitProjectSettings : AdProjectSettingsBase<CoUnitProjectSettings>() {
-        var enableCoUnit by property(false)
+        var enableCustomRag by property(false)
         var serverAddress by property("http://localhost:8765") { it.isEmpty() }
+        var ragsJsonConfig by property("") { it.isEmpty() }
 
         override fun copy(): CoUnitProjectSettings {
             val state = CoUnitProjectSettings()

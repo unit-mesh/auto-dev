@@ -116,7 +116,6 @@ class LLMParam(
 
     private var onChange: (LLMParam.(String) -> Unit)? = null
 
-
     var value: String = value
         set(newValue) {
             val changed = field != newValue

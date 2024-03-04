@@ -8,12 +8,13 @@ import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.provider.ContextPrompter
-import cc.unitmesh.devti.counit.configurable.coUnitSettings
+import cc.unitmesh.devti.counit.configurable.customRagSettings
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.launch
+// keep this import
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
@@ -28,7 +29,7 @@ class CoUnitPreProcessor(val project: Project) {
     private val llmProvider = llmFactory.create(project)
 
     fun isCoUnit(input: String): Boolean {
-        return project.coUnitSettings.enableCoUnit && input.startsWith(CO_UNIT)
+        return project.customRagSettings.enableCustomRag && input.startsWith(CO_UNIT)
     }
 
     fun handleChat(prompter: ContextPrompter, ui: ChatCodingPanel, context: ChatContext?) {

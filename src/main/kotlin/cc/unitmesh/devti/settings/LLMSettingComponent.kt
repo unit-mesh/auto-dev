@@ -13,7 +13,6 @@ import java.awt.FontMetrics
 import javax.swing.JPanel
 
 class LLMSettingComponent(private val settings: AutoDevSettingsState) {
-
     // 以下 LLMParam 变量不要改名，因为这些变量名会被用作配置文件的 key
     private val languageParam by LLMParam.creating { ComboBox(settings.language, HUMAN_LANGUAGES.toList()) }
     private val aiEngineParam by LLMParam.creating(onChange = { onSelectedEngineChanged() }) {

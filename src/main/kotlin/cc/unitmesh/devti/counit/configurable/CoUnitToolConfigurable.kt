@@ -2,6 +2,7 @@ package cc.unitmesh.devti.counit.configurable
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.fullWidthCell
+import cc.unitmesh.devti.gui.component.JsonLanguageField
 import cc.unitmesh.devti.settings.helper.ToolchainPathChoosingComboBox
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.service
@@ -12,7 +13,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.ui.dsl.builder.*
 import javax.swing.JTextField
 
-class CoUnitToolConfigurable(project: Project) : BoundConfigurable(AutoDevBundle.message("counit.name")), Disposable {
+class CoUnitToolConfigurable(val project: Project) : BoundConfigurable(AutoDevBundle.message("counit.name")), Disposable {
     private val pathToToolchainComboBox = ToolchainPathChoosingComboBox()
     private val serverAddress = JTextField()
 
@@ -23,7 +24,7 @@ class CoUnitToolConfigurable(project: Project) : BoundConfigurable(AutoDevBundle
         row {
             checkBox(AutoDevBundle.message("counit.enable.label"))
                 .comment(AutoDevBundle.message("counit.enable.label.comment"))
-                .bindSelected(state::enableCoUnit)
+                .bindSelected(state::enableCustomRag)
         }
 
         row(AutoDevBundle.message("counit.server.address.label")) {
@@ -40,9 +41,19 @@ class CoUnitToolConfigurable(project: Project) : BoundConfigurable(AutoDevBundle
             fullWidthCell(pathToToolchainComboBox)
         }
 
+        row {
+            val languageField = JsonLanguageField(project, state::ragsJsonConfig.toString(), AutoDevBundle.message("counit.rags.json.placeholder"))
+            fullWidthCell(languageField)
+                .bind(
+                    componentGet = { it.text },
+                    componentSet = { component, value -> component.text = value },
+                    prop = state::ragsJsonConfig.toMutableProperty()
+                )
+        }
+
         onApply {
             settings.modify {
-                it.enableCoUnit = state.enableCoUnit
+                it.enableCustomRag = state.enableCustomRag
                 it.serverAddress = state.serverAddress
             }
         }
