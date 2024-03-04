@@ -15,7 +15,7 @@ import javax.swing.JButton
 import javax.swing.JComponent
 
 class NewChatAction : DumbAwareAction(), CustomComponentAction {
-    val logger = logger<NewChatAction>()
+    private val logger = logger<NewChatAction>()
 
     override fun actionPerformed(e: AnActionEvent) {
 

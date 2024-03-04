@@ -19,7 +19,7 @@ class GenerateFunctionAction : ChatBaseIntention() {
 
     override fun getText(): String = AutoDevBundle.message("migration.database.plsql.generate.function")
 
-    val logger = logger<GenerateFunctionAction>()
+    private val logger = logger<GenerateFunctionAction>()
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         if (editor == null || file == null) return false

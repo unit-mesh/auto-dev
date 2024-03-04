@@ -8,6 +8,7 @@ import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.NullableComponent
 import com.intellij.openapi.ui.SimpleToolWindowPanel
@@ -196,6 +197,8 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         updateUI()
     }
 
+    private val logger = logger<ChatCodingPanel>()
+
     private suspend fun updateMessageInUi(content: Flow<String>): String {
         val messageView = MessageView("", ChatRole.Assistant, "")
         myList.add(messageView)
@@ -203,7 +206,8 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
 
         var text = ""
         content.onCompletion {
-            println("onCompletion ${it?.message}")
+//            println("onCompletion ${it?.message}")
+            logger.info("onCompletion ${it?.message}")
         }.catch {
             it.printStackTrace()
         }.collect {

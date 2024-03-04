@@ -8,7 +8,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 
-val logger = Logger.getInstance(LLMCoroutineScope::class.java)
+private val logger = Logger.getInstance(LLMCoroutineScope::class.java)
 
 val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
     logger.error(throwable)

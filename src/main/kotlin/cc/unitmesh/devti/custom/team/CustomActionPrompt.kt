@@ -19,7 +19,7 @@ data class CustomActionPrompt(
     var msgs: List<LlmMsg.ChatMessage> = listOf(),
 ) {
     companion object {
-        val logger = logger<CustomActionPrompt>()
+        private val logger = logger<CustomActionPrompt>()
 
         /**
          * Parses the given content and returns a TeamActionPrompt object.

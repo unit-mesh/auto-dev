@@ -13,10 +13,6 @@ import com.intellij.vcs.log.VcsLogDataKeys
 
 
 class ReleaseNoteSuggestionAction : AnAction() {
-    companion object {
-        val logger = logger<ReleaseNoteSuggestionAction>()
-    }
-
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project
         val vcsLog = e.getData(VcsLogDataKeys.VCS_LOG)

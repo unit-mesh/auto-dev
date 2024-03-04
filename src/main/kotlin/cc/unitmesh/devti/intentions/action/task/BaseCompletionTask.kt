@@ -90,6 +90,6 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
     }
 
     companion object {
-        val logger = logger<CodeCompletionBaseIntention>()
+        private val logger = logger<CodeCompletionBaseIntention>()
     }
 }

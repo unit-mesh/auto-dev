@@ -12,7 +12,7 @@ import com.intellij.temporary.error.ErrorMessageProcessor
 
 class FixThisAction : ChatBaseAction() {
     override fun getActionType(): ChatActionType = ChatActionType.FIX_ISSUE
-    val logger = logger<FixThisAction>()
+    private val logger = logger<FixThisAction>()
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return

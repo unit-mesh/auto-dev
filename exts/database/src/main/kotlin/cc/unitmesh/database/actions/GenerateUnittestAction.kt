@@ -24,7 +24,7 @@ class GenerateUnittestAction : ChatBaseIntention() {
         return file.language is OraDialect
     }
 
-    val logger = logger<GenerateUnittestAction>()
+    private val logger = logger<GenerateUnittestAction>()
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (editor == null || file == null) return

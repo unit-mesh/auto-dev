@@ -21,7 +21,7 @@ abstract class BasedDocumentationBaseIntention : ChatBaseIntention() {
 
     override fun startInWriteAction(): Boolean = false
 
-    val logger = logger<BasedDocumentationBaseIntention>()
+    private val logger = logger<BasedDocumentationBaseIntention>()
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (editor == null || file == null) return

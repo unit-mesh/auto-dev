@@ -51,7 +51,7 @@ class LivingDocumentationTask(
     }
 
     companion object {
-        val logger = logger<LivingDocumentationTask>()
+        private val logger = logger<LivingDocumentationTask>()
     }
 }
 

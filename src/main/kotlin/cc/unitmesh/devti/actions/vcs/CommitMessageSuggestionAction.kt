@@ -32,7 +32,7 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         return ActionUpdateThread.BGT
     }
 
-    val logger = logger<CommitMessageSuggestionAction>()
+    private val logger = logger<CommitMessageSuggestionAction>()
 
     override fun getActionType(): ChatActionType = ChatActionType.GEN_COMMIT_MESSAGE
 
