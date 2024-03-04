@@ -28,9 +28,7 @@ abstract class PromptStrategy : LazyExtensionInstance<PromptStrategy>() {
 
     private val tokenizer: Tokenizer = TokenizerImpl.INSTANCE
 
-    override fun getImplementationClassName(): String? {
-        return implementationClass
-    }
+    override fun getImplementationClassName(): String? = implementationClass
 
     open fun tokenLength(): Int = AutoDevSettingsState.maxTokenLength
     fun count(code: String): Int = tokenizer.count(code)

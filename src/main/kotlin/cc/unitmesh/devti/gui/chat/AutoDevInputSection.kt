@@ -57,8 +57,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     private var customRag: ComboBox<CustomRagApp> = ComboBox(MutableCollectionComboBoxModel(listOf()))
     private val logger = logger<AutoDevInputSection>()
 
-    val editorListeners: EventDispatcher<AutoDevInputListener> =
-        EventDispatcher.create(AutoDevInputListener::class.java)
+    val editorListeners = EventDispatcher.create(AutoDevInputListener::class.java)
     private var tokenizer: Tokenizer? = null
     var text: String
         get() {
