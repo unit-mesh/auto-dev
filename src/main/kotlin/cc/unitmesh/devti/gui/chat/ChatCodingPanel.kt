@@ -109,6 +109,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
             }
 
             row {
+                border = JBUI.Borders.empty(8)
                 cell(inputSection).fullWidth()
             }
         }
