@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.settings.configurable
+package cc.unitmesh.devti.counit.configurable
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.fullWidthCell

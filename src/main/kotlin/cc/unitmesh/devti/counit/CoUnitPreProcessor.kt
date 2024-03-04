@@ -8,12 +8,13 @@ import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.provider.ContextPrompter
-import cc.unitmesh.devti.settings.configurable.coUnitSettings
+import cc.unitmesh.devti.counit.configurable.coUnitSettings
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.launch
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 const val CO_UNIT = "/counit"

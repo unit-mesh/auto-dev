@@ -12,7 +12,7 @@
                                  id="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                                  displayName="AutoDev"/>
 
-        <projectConfigurable provider="cc.unitmesh.devti.settings.configurable.CoUnitToolConfigurableProvider"
+        <projectConfigurable provider="cc.unitmesh.devti.counit.configurable.CoUnitToolConfigurableProvider"
                              parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                              id="cc.unitmesh.counit"
                              bundle="messages.AutoDevBundle" key="counit.name"/>
