@@ -22,11 +22,6 @@ class CoUnitPreProcessor(val project: Project) {
     private val coUnitPromptGenerator = CoUnitPromptGenerator(project)
     private val llmProvider = llmFactory.create(project)
 
-    fun isCustomRag(input: String): Boolean {
-        // handle current category
-        return project.customRagSettings.enableCustomRag && input.startsWith(CO_UNIT)
-    }
-
     fun handleChat(prompter: ContextPrompter, ui: ChatCodingPanel, context: ChatContext?) {
         val originRequest = prompter.requestPrompt()
         ui.addMessage(originRequest, true, originRequest)

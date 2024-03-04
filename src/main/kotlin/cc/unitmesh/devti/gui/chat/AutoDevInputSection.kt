@@ -22,7 +22,6 @@ import com.intellij.openapi.wm.impl.InternalDecorator
 import com.intellij.temporary.gui.block.AutoDevCoolBorder
 import com.intellij.ui.JBColor
 import com.intellij.ui.content.ContentManager
-import com.intellij.ui.popup.list.ComboBoxPopup
 import com.intellij.util.EventDispatcher
 import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
@@ -188,7 +187,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         return ValidationInfo(errorMessage, this as JComponent).asWarning()
     }
 
-    fun usedCustomRag(): Boolean {
+    fun selectedCustomRag(): Boolean {
         return customRag.selectedItem != "Normal"
     }
 
