@@ -119,3 +119,17 @@ $.choices[0].delta.content
 ```
 $.choices[0].delta.content 
 ```
+
+### 零一万物 examples
+
+- Custom Response Type：SSE
+- Custom Engine Server：https://api.lingyiwangwu.com/v1/chat/completions
+- Request body format:
+```json
+{ "customFields": {"model": "yi-34b-chat", "stream": true},   "messageKeys": {"role": "role", "content": "content"} }
+```
+- Response format: 
+```
+$.choices[0].delta.content 
+```
+

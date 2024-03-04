@@ -44,7 +44,7 @@ permalink: /quick-start
 ### Custom Config / OpenAI compatible
 
 Tested: 零一万物（[#94](https://github.com/unit-mesh/auto-dev/issues/94)）, 月之暗面（Moonshot
-AI）、深度求索（Deepseek [#96](https://github.com/unit-mesh/auto-dev/issues/96)）
+AI）、深度求索（Deepseek [#96](https://github.com/unit-mesh/auto-dev/issues/96)），ChatGLM(#90)
 
 1. open AutoDev Config in `Settings` -> `Tools` -> `AutoDev`.
 2. select `AI Engine` -> `Custom`
