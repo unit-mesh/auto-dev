@@ -57,8 +57,7 @@ class CoUnitPreProcessor(val project: Project) {
 
             val explain = try {
                 val fixedResult = fix(result)
-                val explain: ExplainQuery = json.decodeFromString(fixedResult)
-                explain
+                json.decodeFromString<ExplainQuery>(fixedResult)
             } catch (e: Exception) {
                 LOG.error("parse result error: $e")
                 return@launch
