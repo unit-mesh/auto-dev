@@ -6,7 +6,6 @@ import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.provider.ContextPrompter
-import cc.unitmesh.devti.counit.configurable.customRagSettings
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
@@ -30,7 +29,7 @@ class CoUnitPreProcessor(val project: Project) {
 
         val response = coUnitPromptGenerator.findIntention(request)
         if (response == null) {
-            LOG.error("can not find intention for request: $request")
+            logger.error("can not find intention for request: $request")
             return
         }
 
@@ -81,7 +80,7 @@ class CoUnitPreProcessor(val project: Project) {
     }
 
     companion object {
-        private val LOG = logger<CoUnitPreProcessor>()
+        private val logger = logger<CoUnitPreProcessor>()
     }
 }
 

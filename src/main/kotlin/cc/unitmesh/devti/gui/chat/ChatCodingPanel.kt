@@ -68,10 +68,10 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         myScrollPane.verticalScrollBar.autoscrolls = true
         myScrollPane.background = UIUtil.getListBackground()
 
-        progressBar = JProgressBar().apply { preferredHeight = JBUI.scale(2) }
+        progressBar = JProgressBar(2)
 
         val actionLink = ActionLink(AutoDevBundle.message("label.submit.issue")) {
-            BrowserUtil.browse("https://github.com/unit-mesh/auto-dev/issues")
+            BrowserUtil.browse(AutoDevBundle.message("chat.panel.submit.issue.url"))
         }
         actionLink.setExternalLinkIcon()
 
