@@ -1,5 +1,7 @@
 package cc.unitmesh.devti.counit.model
 
+import kotlinx.serialization.Serializable
+
 /**
  * `Tooling` class represents a tooling configuration.
  *
@@ -12,5 +14,14 @@ data class Tooling(
     val name: String,
     val description: String,
     val schema: String,
-    val examples: List<String>
+    val examples: List<QAExample>,
+)
+
+/**
+ * `QAExample` is a data class that represents a question-answer pair.
+ */
+@Serializable
+data class QAExample(
+    val question: String,
+    val answer: String,
 )
