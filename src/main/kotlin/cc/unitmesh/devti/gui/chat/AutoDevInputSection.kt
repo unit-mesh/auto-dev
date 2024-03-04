@@ -2,6 +2,8 @@ package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
+import cc.unitmesh.devti.counit.configurable.customRagSettings
+import cc.unitmesh.devti.counit.model.CustomRagApp
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.llms.tokenizer.TokenizerImpl
 import cc.unitmesh.devti.settings.AutoDevSettingsState
@@ -9,6 +11,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.impl.ActionButton
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.editor.ex.EditorEx
@@ -20,13 +23,19 @@ import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.impl.InternalDecorator
 import com.intellij.temporary.gui.block.AutoDevCoolBorder
+import com.intellij.ui.CollectionComboBoxModel
 import com.intellij.ui.JBColor
+import com.intellij.ui.MutableCollectionComboBoxModel
+import com.intellij.ui.SimpleListCellRenderer
+import com.intellij.ui.components.JBLabel
 import com.intellij.ui.content.ContentManager
 import com.intellij.util.EventDispatcher
 import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.components.BorderLayoutPanel
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.decodeFromString
 import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
@@ -46,7 +55,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     private val documentListener: DocumentListener
     private val buttonPresentation: Presentation
     private val button: ActionButton
-    private val customRag: ComboBox<String>
+    private val customRag: ComboBox<CustomRagApp>
+    private val logger = logger<AutoDevInputSection>()
 
     val editorListeners: EventDispatcher<AutoDevInputListener> =
         EventDispatcher.create(AutoDevInputListener::class.java)
@@ -93,7 +103,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         input.border = JBEmptyBorder(4)
 
         addToCenter(input)
-
         val layoutPanel = BorderLayoutPanel()
         val horizontalGlue = Box.createHorizontalGlue()
         horizontalGlue.addMouseListener(object : MouseAdapter() {
@@ -107,9 +116,12 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             JBColor(3684930, 3750720)
         )
         layoutPanel.setOpaque(false)
-        customRag = ComboBox(arrayOf("Normal")).also {
-//             todo: load from json config
-        }
+        customRag = ComboBox(MutableCollectionComboBoxModel(loadRagApps()))
+        customRag.setRenderer(SimpleListCellRenderer.create { label: JBLabel, value: CustomRagApp?, _: Int ->
+            if (value != null) {
+                label.text = value.name
+            }
+        })
 
         layoutPanel.addToLeft(customRag)
         layoutPanel.addToCenter(horizontalGlue)
@@ -129,6 +141,19 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         })
 
         tokenizer = TokenizerImpl.INSTANCE
+    }
+
+    private fun loadRagApps(): List<CustomRagApp> {
+        val ragsJsonConfig = project.customRagSettings.ragsJsonConfig
+        val rags = try {
+            Json.decodeFromString<List<CustomRagApp>>(ragsJsonConfig)
+        } catch (e: Exception) {
+            logger.warn("Failed to parse custom rag apps", e)
+            listOf()
+        }
+
+        val firstRag = CustomRagApp("Normal", "Normal")
+        return listOf(firstRag) + rags
     }
 
     fun initEditor() {

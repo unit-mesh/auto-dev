@@ -1,5 +1,8 @@
 package cc.unitmesh.devti.counit.model
 
+import cc.unitmesh.devti.custom.team.InteractionType
+import kotlinx.serialization.Serializable
+
 /**
  * Enumeration of possible response actions.
  *
@@ -24,6 +27,7 @@ enum class ResponseAction {
     Flow
 }
 
+@Serializable
 data class CustomFlowTransition(
     /**
      * will be JsonPath
@@ -35,6 +39,7 @@ data class CustomFlowTransition(
     val target: String,
 )
 
+@Serializable
 data class CustomRagApp(
     val name: String,
     val description: String = "",
@@ -42,4 +47,5 @@ data class CustomRagApp(
     val icon: String = "",
     val responseAction: ResponseAction = ResponseAction.Direct,
     val customFlowTransition: List<CustomFlowTransition> = emptyList(),
+    val interactive: InteractionType = InteractionType.ChatPanel,
 )
