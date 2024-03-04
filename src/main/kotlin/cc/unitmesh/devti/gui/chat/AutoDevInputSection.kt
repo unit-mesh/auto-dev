@@ -14,11 +14,13 @@ import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.ComponentValidator
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.impl.InternalDecorator
 import com.intellij.temporary.gui.block.AutoDevCoolBorder
+import com.intellij.ui.JBColor
 import com.intellij.ui.content.ContentManager
 import com.intellij.util.EventDispatcher
 import com.intellij.util.ui.JBEmptyBorder
@@ -74,7 +76,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             Dimension(20, 20)
         )
 
-
         input = AutoDevInput(project, listOf(), disposable, this)
 
         documentListener = object : DocumentListener {
@@ -88,11 +89,11 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         input.addDocumentListener(documentListener)
         input.recreateDocument()
 
-        input.border = JBEmptyBorder(8)
+        input.border = JBEmptyBorder(4)
 
         addToCenter(input)
 
-        val borderLayoutPanel = BorderLayoutPanel()
+        val layoutPanel = BorderLayoutPanel()
         val horizontalGlue = Box.createHorizontalGlue()
         horizontalGlue.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
@@ -100,9 +101,16 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                 ideFocusManager.requestFocus(input, true)
             }
         })
-        borderLayoutPanel.addToCenter(horizontalGlue)
-        borderLayoutPanel.addToRight(button)
-        addToBottom(borderLayoutPanel)
+        layoutPanel.background = JBColor(
+            JBColor(15461616, 14672357),
+            JBColor(3684930, 3750720)
+        )
+        layoutPanel.setOpaque(true)
+        val customRags = ComboBox(arrayOf("Normal", "Dev Portal", "Doc"))
+        layoutPanel.addToLeft(customRags)
+        layoutPanel.addToCenter(horizontalGlue)
+        layoutPanel.addToRight(button)
+        addToBottom(layoutPanel)
 
         ComponentValidator(disposable!!).withValidator(Supplier<ValidationInfo?> {
             val validationInfo: ValidationInfo? = this.getInputValidationInfo()

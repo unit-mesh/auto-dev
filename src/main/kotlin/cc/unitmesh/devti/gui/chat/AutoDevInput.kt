@@ -54,7 +54,7 @@ class AutoDevInput(
         setFontInheritedFromLAF(true)
         addSettingsProvider {
             it.putUserData(IncrementalFindAction.SEARCH_DISABLED, true)
-            it.colorsScheme.lineSpacing = 1.0f
+            it.colorsScheme.lineSpacing = 1.2f
             it.settings.isUseSoftWraps = true
             it.isEmbeddedIntoDialogWrapper = true
             it.contentComponent.setOpaque(false)
