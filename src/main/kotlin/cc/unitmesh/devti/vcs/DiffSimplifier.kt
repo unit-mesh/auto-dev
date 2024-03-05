@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.vcs
 
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diff.impl.patch.IdeaTextPatchBuilder
 import com.intellij.openapi.diff.impl.patch.UnifiedDiffWriter
 import com.intellij.openapi.project.Project
@@ -16,6 +17,8 @@ import kotlin.math.min
 
 @Service(Service.Level.PROJECT)
 class DiffSimplifier(val project: Project) {
+    private val logger = logger<DiffSimplifier>()
+
     /**
      * Simplifies the given list of changes and returns the resulting diff as a string.
      *
@@ -25,6 +28,8 @@ class DiffSimplifier(val project: Project) {
      * @throws RuntimeException if the project base path is null or if there is an error calculating the diff.
      */
     fun simplify(changes: List<Change>, ignoreFilePatterns: List<PathMatcher>): String {
+        var originChanges: String = ""
+
         try {
             val writer = StringWriter()
             val basePath = project.basePath ?: throw RuntimeException("Project base path is null.")
@@ -66,8 +71,13 @@ class DiffSimplifier(val project: Project) {
                 emptyList()
             )
 
-            return postProcess(writer.toString())
+            originChanges = writer.toString()
+            return postProcess(originChanges)
         } catch (e: VcsException) {
+            if (originChanges.isNotEmpty()) {
+                logger.info("Error calculating diff: $originChanges", e)
+            }
+
             throw RuntimeException("Error calculating diff: ${e.message}", e)
         }
     }
