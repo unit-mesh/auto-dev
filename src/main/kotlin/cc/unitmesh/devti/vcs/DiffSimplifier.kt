@@ -247,7 +247,15 @@ class DiffSimplifier(val project: Project) {
 
                         val startLine = substringBefore
                             .substring("--- a/".length).trim()
-                        val withoutEnd = nextLine.substring("+++ b/".length, nextLine.indexOf("(date")).trim()
+                        var endIndex = nextLine.indexOf("(date")
+                        if (endIndex == -1) {
+                            endIndex = nextLine.indexOf("(revision")
+                        }
+                        if (endIndex == -1) {
+                            endIndex = nextLine.length
+                        }
+
+                        val withoutEnd = nextLine.substring("+++ b/".length, endIndex).trim()
 
                         if (startLine == withoutEnd) {
                             index += 2
