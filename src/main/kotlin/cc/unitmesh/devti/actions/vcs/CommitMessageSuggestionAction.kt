@@ -73,16 +73,20 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
             logger.info(prompt)
 
             event.presentation.icon = AutoDevStatus.InProgress.icon
-            val stream = LlmFactory().create(project).stream(prompt, "", false)
+            try {
+                val stream = LlmFactory().create(project).stream(prompt, "", false)
 
-            runBlocking {
-                stream.cancellable().collect {
-                    invokeLater {
-                        commitMessageUi.editorField.text += it
+                runBlocking {
+                    stream.cancellable().collect {
+                        invokeLater {
+                            commitMessageUi.editorField.text += it
+                        }
                     }
-                }
 
-                event.presentation.icon = AutoDevStatus.Ready.icon
+                    event.presentation.icon = AutoDevStatus.Ready.icon
+                }
+            } catch (e: Exception) {
+                event.presentation.icon = AutoDevStatus.Error.icon
             }
         }
     }

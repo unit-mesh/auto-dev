@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.intentions.action.task
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.util.InsertUtil
 import cc.unitmesh.devti.util.LLMCoroutineScope
 import cc.unitmesh.devti.intentions.action.CodeCompletionBaseIntention
@@ -82,6 +83,12 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
             AutoDevStatusService.notifyApplication(AutoDevStatus.Done)
             logger.info("Suggestion: $suggestion")
         }
+    }
+
+    override fun onThrowable(error: Throwable) {
+        super.onThrowable(error)
+        AutoDevNotifications.error(project, "Failed to completion: ${error.message}")
+        AutoDevStatusService.notifyApplication(AutoDevStatus.Error)
     }
 
     override fun onCancel() {
