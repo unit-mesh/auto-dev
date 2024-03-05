@@ -167,5 +167,4 @@ open class JavaContextPrompter : ContextPrompter() {
             }
         }
     }
-
 }

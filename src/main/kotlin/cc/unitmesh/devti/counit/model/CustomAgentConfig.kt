@@ -44,6 +44,30 @@ data class CustomFlowTransition(
     val target: String,
 )
 
+/**
+ * Basic configuration for a custom agent.
+ * For Example:
+ * ```json
+ * {
+ *   "name": "CustomAgent",
+ *   "description": "This is a custom agent configuration example.",
+ *   "url": "https://custom-agent.example.com",
+ *   "icon": "https://custom-agent.example.com/icon.png",
+ *   "responseAction": "Direct",
+ *   "transition": [
+ *     {
+ *       "source": "$.from",
+ *       "target": "$.to"
+ *     }
+ *   ],
+ *   "interactive": "ChatPanel",
+ *   "auth": {
+ *     "type": "Bearer",
+ *     "token": "<PASSWORD>"
+ *   }
+ * }
+ * ```
+ */
 @Serializable
 data class CustomAgentConfig(
     val name: String,
@@ -51,7 +75,7 @@ data class CustomAgentConfig(
     val url: String = "",
     val icon: String = "",
     val responseAction: ResponseAction = ResponseAction.Direct,
-    val customFlowTransition: List<CustomFlowTransition> = emptyList(),
+    val transition: List<CustomFlowTransition> = emptyList(),
     val interactive: InteractionType = InteractionType.ChatPanel,
     val auth: CustomAgentAuth? = null
 )
