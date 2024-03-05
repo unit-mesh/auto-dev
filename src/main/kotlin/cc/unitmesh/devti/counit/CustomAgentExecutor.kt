@@ -6,6 +6,7 @@ import cc.unitmesh.devti.counit.model.CustomAgentConfig
 import cc.unitmesh.devti.llms.custom.CustomRequest
 import cc.unitmesh.devti.llms.custom.Message
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -17,6 +18,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 @Service(Service.Level.PROJECT)
 class CustomAgentExecutor(val project: Project) {
     private var client = OkHttpClient()
+    private val logger = logger<CustomAgentExecutor>()
 
     fun execute(input: String, agent: CustomAgentConfig): String? {
         val customRequest = CustomRequest(listOf(Message("user", input)))
@@ -32,7 +34,9 @@ class CustomAgentExecutor(val project: Project) {
                 builder.addHeader("Content-Type", "application/json")
             }
 
-            null -> TODO()
+            null -> {
+                logger.info("No auth type found for agent ${agent.name}")
+            }
         }
 
         client = client.newBuilder().build()
