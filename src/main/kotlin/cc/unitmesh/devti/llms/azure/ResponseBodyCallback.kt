@@ -64,7 +64,12 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
                 sse = when {
                     line!!.startsWith("data:") -> {
                         val data = line!!.substring(5).trim { it <= ' ' }
-                        SSE(data)
+                        //  data: ping - 2024-03-05 02:07:20.310586
+                        if (data.startsWith("ping") || data.startsWith(" ping")) {
+                            null
+                        } else {
+                            SSE(data)
+                        }
                     }
 
                     line == "" && sse != null -> {
