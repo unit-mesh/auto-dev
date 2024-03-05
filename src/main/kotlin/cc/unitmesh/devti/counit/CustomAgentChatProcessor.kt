@@ -56,6 +56,8 @@ class CustomAgentChatProcessor(val project: Project) {
                     llmProvider.appendLocalMessage(result, ChatRole.Assistant)
                 }
             }
+
+            ResponseAction.WebView -> TODO()
         }
     }
 

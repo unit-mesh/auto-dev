@@ -7,6 +7,7 @@ import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import cc.unitmesh.devti.provider.ContextPrompter
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
@@ -18,6 +19,8 @@ import java.io.StringWriter
 
 class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConfig) : ChatBaseIntention() {
     override fun getText(): String = intentionConfig.title
+
+    private val logger = logger<CustomActionBaseIntention>()
 
     override fun getFamilyName(): String = "Custom Intention"
     override fun priority(): Int {
@@ -82,8 +85,18 @@ class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConf
             velocityContext.put(variableType, value)
         }
 
-        Velocity.evaluate(velocityContext, stringBuilderWriter, "", intentionConfig.template)
-        val output = stringBuilderWriter.toString()
+        val oldContextClassLoader = Thread.currentThread().getContextClassLoader()
+        Thread.currentThread().setContextClassLoader(CustomActionBaseIntention::class.java.getClassLoader())
+
+        val sw = StringWriter()
+        try {
+            Velocity.evaluate(velocityContext, sw, "#" + this.javaClass.name, intentionConfig.template)
+        } catch (e: Exception) {
+            logger.error("Failed to compile template: $intentionConfig", e)
+        }
+
+        Thread.currentThread().setContextClassLoader(oldContextClassLoader)
+        val output = sw.toString()
 
         return CustomIntentionPrompt(output, output, listOf())
     }
