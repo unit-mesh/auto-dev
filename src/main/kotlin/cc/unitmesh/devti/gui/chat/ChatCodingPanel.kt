@@ -2,6 +2,7 @@ package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.alignRight
+import cc.unitmesh.devti.counit.model.CustomAgentConfig
 import cc.unitmesh.devti.fullHeight
 import cc.unitmesh.devti.fullWidth
 import cc.unitmesh.devti.provider.ContextPrompter
@@ -240,7 +241,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         return inputSection.hasSelectedAgent()
     }
 
-    fun getSelectedCustomAgent(): Any {
+    fun getSelectedCustomAgent(): CustomAgentConfig {
         return inputSection.getSelectedAgent()
     }
 }

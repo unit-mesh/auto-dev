@@ -5,7 +5,7 @@ import com.intellij.openapi.project.Project
 
 @Service(Service.Level.PROJECT)
 class CustomAgentHandler(val project: Project) {
-    fun findIntention(input: String): String? {
+    fun executeQuery(input: String, selectedAgent: Any): String? {
         return null
     }
 
