@@ -19,8 +19,6 @@ class CustomAgentExecutor(val project: Project) {
     private var client = OkHttpClient()
 
     fun execute(input: String, agent: CustomAgentConfig): String? {
-        val serverAddress = project.customAgentSetting.serverAddress ?: return null
-
         val customRequest = CustomRequest(listOf(Message("user", input)))
         val request = Json.encodeToString<CustomRequest>(customRequest)
 
@@ -38,7 +36,7 @@ class CustomAgentExecutor(val project: Project) {
         }
 
         client = client.newBuilder().build()
-        val call = client.newCall(builder.url(serverAddress).post(body).build())
+        val call = client.newCall(builder.url(agent.url).post(body).build())
 
         call.execute().use { response ->
             if (!response.isSuccessful) {

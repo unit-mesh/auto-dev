@@ -25,15 +25,6 @@ class CoUnitToolConfigurable(val project: Project) : BoundConfigurable(AutoDevBu
             checkBox(AutoDevBundle.message("counit.agent.enable.label")).bindSelected(state::enableCustomRag)
         }
 
-        row(AutoDevBundle.message("counit.agent.server.address.label")) {
-            fullWidthCell(serverAddress)
-                .bind(
-                    componentGet = { it.text },
-                    componentSet = { component, value -> component.text = value },
-                    prop = state::serverAddress.toMutableProperty()
-                )
-        }
-
         row {
             val languageField = JsonLanguageField(
                 project,
@@ -51,7 +42,6 @@ class CoUnitToolConfigurable(val project: Project) : BoundConfigurable(AutoDevBu
         onApply {
             settings.modify {
                 it.enableCustomRag = state.enableCustomRag
-                it.serverAddress = state.serverAddress
                 it.agentJsonConfig = state.agentJsonConfig
             }
         }

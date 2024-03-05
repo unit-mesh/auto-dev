@@ -12,7 +12,6 @@ class CoUnitProjectSettingsService(
     val project: Project,
 ) : SimplePersistentStateComponent<CoUnitProjectSettingsService.CoUnitProjectSettings>(CoUnitProjectSettings()) {
     val enableCustomRag: Boolean get() = state.enableCustomRag
-    val serverAddress: String get() = state.serverAddress
     val ragsJsonConfig: String get() = state.agentJsonConfig
 
     fun modify(action: (CoUnitProjectSettings) -> Unit) {
@@ -25,7 +24,6 @@ class CoUnitProjectSettingsService(
 
     class CoUnitProjectSettings : AdProjectSettingsBase<CoUnitProjectSettings>() {
         var enableCustomRag by property(false)
-        var serverAddress by property("http://localhost:8765/api/agent/") { it.isEmpty() }
         var agentJsonConfig by property("") { it.isEmpty() }
 
         override fun copy(): CoUnitProjectSettings {
