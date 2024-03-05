@@ -22,7 +22,9 @@ class Messages(BaseModel):
 
 @app.post("/api/agent/api-market")
 def mock_market(messages: Messages):
-    return """GET /wp/v2/posts
+    return """
+```markdown
+GET /wp/v2/posts
 GET /wp/v2/posts/{id}
 POST /wp/v2/posts
 PUT /wp/v2/posts/{id}
@@ -32,12 +34,15 @@ GET /wp/v2/pages
 GET /wp/v2/pages/{id}
 POST /wp/v2/pages
 PUT /wp/v2/pages/{id}
-DELETE /wp/v2/pages/{id}"""
+DELETE /wp/v2/pages/{id}
+```
+"""
 
 
 @app.post("/api/agent/frontend-gen")
 def mock_frontend(messages: Messages):
-    return """Button:可快速创建不同样式的按钮。
+    return """```markdown
+Button:可快速创建不同样式的按钮。
 Checkbox:提供多选框组件，通常用于某选项的打开或关闭。
 CheckboxGroup:多选框群组，用于控制多选框全选或者不全选状态。
 CustomDialog:自定义弹窗（CustomDialog）可用于广告、中奖、警告、软件更新等与用户交互响应操作。
@@ -50,6 +55,7 @@ TextArea:多行文本输入框。
 TextInput:单行文本输入框组件。
 Radio:提供相应的用户交互选择项。
 Toggle:Toggle为开关组件，常用于在应用中进行开关操作。
+```
 """
 
 

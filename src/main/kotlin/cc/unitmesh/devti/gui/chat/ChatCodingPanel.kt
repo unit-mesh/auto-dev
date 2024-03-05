@@ -244,4 +244,8 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
     fun getSelectedCustomAgent(): CustomAgentConfig {
         return inputSection.getSelectedAgent()
     }
+
+    fun hiddenProgressBar() {
+        progressBar.isVisible = false
+    }
 }

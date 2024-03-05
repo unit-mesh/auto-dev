@@ -78,7 +78,16 @@ data class CustomAgentConfig(
     val transition: List<CustomFlowTransition> = emptyList(),
     val interactive: InteractionType = InteractionType.ChatPanel,
     val auth: CustomAgentAuth? = null
-)
+) {
+    var state: CustomAgentState = CustomAgentState.START
+}
+
+@Serializable
+enum class CustomAgentState {
+    START,
+    HANDLING,
+    FINISHED
+}
 
 @Serializable
 data class CustomAgentAuth(
