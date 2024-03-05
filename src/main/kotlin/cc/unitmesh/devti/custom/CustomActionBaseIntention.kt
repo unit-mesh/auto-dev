@@ -66,7 +66,6 @@ class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConf
     }
 
     private fun buildCustomPrompt(psiElement: PsiElement, selectedText: @NlsSafe String): CustomIntentionPrompt {
-        val stringBuilderWriter = StringWriter()
         val velocityContext = VelocityContext()
 
         val variableResolvers = arrayOf(
