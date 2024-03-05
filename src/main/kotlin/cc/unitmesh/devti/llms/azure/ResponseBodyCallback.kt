@@ -64,8 +64,12 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
                 sse = when {
                     line!!.startsWith("data:") -> {
                         val data = line!!.substring(5).trim { it <= ' ' }
-                        //  data: ping - 2024-03-05 02:07:20.310586
-                        if (data.startsWith("ping") || data.startsWith(" ping")) {
+                        //  https://github.com/sysid/sse-starlette/issues/16
+                        //  ```
+                        //  event: ping
+                        //  data: 2020-12-22 15:33:27.463789
+                        //  ```
+                        if (data.startsWith(":ping") || data.startsWith(": ping")) {
                             null
                         } else {
                             SSE(data)
@@ -84,7 +88,14 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
                     }
                     // starts with event:
                     line!!.startsWith("event:") -> {
-                        // do nothing
+                        // https://github.com/sysid/sse-starlette/issues/16
+                        val eventName = line!!.substring(6).trim { it <= ' ' }
+                        if (eventName == "ping") {
+                            // skip ping event and data
+                            emitter.onNext(sse)
+                            emitter.onNext(sse)
+                        }
+
                         null
                     }
 

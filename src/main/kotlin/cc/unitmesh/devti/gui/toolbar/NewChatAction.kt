@@ -38,7 +38,16 @@ class NewChatAction : DumbAwareAction(), CustomComponentAction {
                         AutoDevToolWindowFactory.Util.id
                     )
 
-                    AutoDevToolWindowFactory().createToolWindowContent(project, toolWindowManager!!)
+                    val contentManager = toolWindowManager?.contentManager
+                    val codingPanel =
+                        contentManager?.component?.components?.filterIsInstance<ChatCodingPanel>()?.firstOrNull()
+
+                    if (codingPanel == null) {
+                        AutoDevToolWindowFactory().createToolWindowContent(project, toolWindowManager!!)
+                        return@addActionListener
+                    }
+
+                    codingPanel.clearChat()
                 }
             }
         }
