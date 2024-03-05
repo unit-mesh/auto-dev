@@ -73,7 +73,7 @@ class DiffSimplifier(val project: Project) {
 
             originChanges = writer.toString()
             return postProcess(originChanges)
-        } catch (e: VcsException) {
+        } catch (e: Exception) {
             if (originChanges.isNotEmpty()) {
                 logger.info("Error calculating diff: $originChanges", e)
             }
