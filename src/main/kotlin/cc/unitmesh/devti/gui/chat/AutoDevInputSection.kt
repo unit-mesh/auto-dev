@@ -152,6 +152,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     private fun loadRagApps(): List<CustomAgentConfig> {
         val ragsJsonConfig = project.customRagSettings.ragsJsonConfig
+        if (ragsJsonConfig.isEmpty()) return listOf(defaultRag)
+
         val rags = try {
             Json.decodeFromString<List<CustomAgentConfig>>(ragsJsonConfig)
         } catch (e: Exception) {
