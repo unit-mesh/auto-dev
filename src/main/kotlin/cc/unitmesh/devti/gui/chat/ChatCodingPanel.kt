@@ -67,7 +67,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         myScrollPane.verticalScrollBar.autoscrolls = true
         myScrollPane.background = UIUtil.getListBackground()
 
-        progressBar = JProgressBar(2)
+        progressBar = JProgressBar()
 
         val actionLink = ActionLink(AutoDevBundle.message("label.submit.issue")) {
             BrowserUtil.browse(AutoDevBundle.message("chat.panel.submit.issue.url"))
