@@ -47,7 +47,6 @@ class CustomAgentChatProcessor(val project: Project) {
                 ui.addMessage(response, true, response)
 
                 // loading
-                ui.addMessage("start to identify intention", false, "start to identify intention")
                 LLMCoroutineScope.scope(project).launch {
                     llmProvider.appendLocalMessage(response, ChatRole.User)
 
@@ -55,24 +54,6 @@ class CustomAgentChatProcessor(val project: Project) {
                     val result = ui.updateMessage(intentionFlow)
 
                     llmProvider.appendLocalMessage(result, ChatRole.Assistant)
-
-                    val searchTip = "search API by query and hypothetical document"
-                    llmProvider.appendLocalMessage(searchTip, ChatRole.User)
-                    ui.addMessage(searchTip, true, searchTip)
-
-                    val related = customAgentHandler.semanticQuery("") ?: ""
-                    if (related.isEmpty()) {
-                        val noResultTip = "no related API found"
-                        llmProvider.appendLocalMessage(noResultTip, ChatRole.Assistant)
-                        ui.addMessage(noResultTip, false, noResultTip)
-                        return@launch
-                    }
-
-                    llmProvider.appendLocalMessage(related, ChatRole.User)
-
-                    ApplicationManager.getApplication().invokeLater {
-                        ui.addMessage(related, true, related)
-                    }
                 }
             }
         }
