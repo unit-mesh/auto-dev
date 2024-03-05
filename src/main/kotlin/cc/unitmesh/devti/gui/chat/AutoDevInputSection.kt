@@ -3,7 +3,7 @@ package cc.unitmesh.devti.gui.chat
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.counit.configurable.customRagSettings
-import cc.unitmesh.devti.counit.model.CustomRagApp
+import cc.unitmesh.devti.counit.model.CustomAgentConfig
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.llms.tokenizer.TokenizerImpl
 import cc.unitmesh.devti.settings.AutoDevSettingsState
@@ -55,8 +55,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     private val buttonPresentation: Presentation
     private val button: ActionButton
 
-    private val defaultRag: CustomRagApp = CustomRagApp("Normal", "Normal")
-    private var customRag: ComboBox<CustomRagApp> = ComboBox(MutableCollectionComboBoxModel(listOf()))
+    private val defaultRag: CustomAgentConfig = CustomAgentConfig("Normal", "Normal")
+    private var customRag: ComboBox<CustomAgentConfig> = ComboBox(MutableCollectionComboBoxModel(listOf()))
 
     private val logger = logger<AutoDevInputSection>()
 
@@ -120,7 +120,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
         if (project.customRagSettings.enableCustomRag) {
             customRag = ComboBox(MutableCollectionComboBoxModel(loadRagApps()))
-            customRag.setRenderer(SimpleListCellRenderer.create { label: JBLabel, value: CustomRagApp?, _: Int ->
+            customRag.setRenderer(SimpleListCellRenderer.create { label: JBLabel, value: CustomAgentConfig?, _: Int ->
                 if (value != null) {
                     label.text = value.name
                 }
@@ -150,10 +150,10 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     }
 
 
-    private fun loadRagApps(): List<CustomRagApp> {
+    private fun loadRagApps(): List<CustomAgentConfig> {
         val ragsJsonConfig = project.customRagSettings.ragsJsonConfig
         val rags = try {
-            Json.decodeFromString<List<CustomRagApp>>(ragsJsonConfig)
+            Json.decodeFromString<List<CustomAgentConfig>>(ragsJsonConfig)
         } catch (e: Exception) {
             logger.warn("Failed to parse custom rag apps", e)
             listOf()

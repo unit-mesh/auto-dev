@@ -4,7 +4,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 
 @Service(Service.Level.PROJECT)
-class CoUnitPromptGenerator(val project: Project) {
+class CustomAgentPromptGenerator(val project: Project) {
     fun findIntention(input: String): String? {
         return null
     }

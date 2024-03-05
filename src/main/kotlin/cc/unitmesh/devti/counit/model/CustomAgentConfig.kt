@@ -40,7 +40,7 @@ data class CustomFlowTransition(
 )
 
 @Serializable
-data class CustomRagApp(
+data class CustomAgentConfig(
     val name: String,
     val description: String = "",
     val url: String = "",

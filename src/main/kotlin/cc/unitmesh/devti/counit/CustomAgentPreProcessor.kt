@@ -15,10 +15,10 @@ import kotlinx.coroutines.launch
 const val CO_UNIT = "/counit"
 
 @Service(Service.Level.PROJECT)
-class CoUnitPreProcessor(val project: Project) {
+class CustomAgentPreProcessor(val project: Project) {
     private val llmFactory = LlmFactory()
 
-    private val coUnitPromptGenerator = CoUnitPromptGenerator(project)
+    private val customAgentPromptGenerator = CustomAgentPromptGenerator(project)
     private val llmProvider = llmFactory.create(project)
 
     fun handleChat(prompter: ContextPrompter, ui: ChatCodingPanel, context: ChatContext?) {
@@ -27,7 +27,7 @@ class CoUnitPreProcessor(val project: Project) {
 
         val request = originRequest.removePrefix(CO_UNIT).trim()
 
-        val response = coUnitPromptGenerator.findIntention(request)
+        val response = customAgentPromptGenerator.findIntention(request)
         if (response == null) {
             logger.error("can not find intention for request: $request")
             return
@@ -49,7 +49,7 @@ class CoUnitPreProcessor(val project: Project) {
             llmProvider.appendLocalMessage(searchTip, ChatRole.User)
             ui.addMessage(searchTip, true, searchTip)
 
-            val related = coUnitPromptGenerator.semanticQuery("") ?: ""
+            val related = customAgentPromptGenerator.semanticQuery("") ?: ""
             if (related.isEmpty()) {
                 val noResultTip = "no related API found"
                 llmProvider.appendLocalMessage(noResultTip, ChatRole.Assistant)
@@ -80,7 +80,7 @@ class CoUnitPreProcessor(val project: Project) {
     }
 
     companion object {
-        private val logger = logger<CoUnitPreProcessor>()
+        private val logger = logger<CustomAgentPreProcessor>()
     }
 }
 

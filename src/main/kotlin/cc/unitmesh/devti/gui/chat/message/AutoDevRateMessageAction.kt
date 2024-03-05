@@ -59,6 +59,5 @@ abstract class AutoDevRateMessageAction : DumbAwareToggleAction() {
         override fun getReactionIcon(): Icon = AutoDevIcons.Dislike
 
         override fun getReactionIconSelected(): Icon = AutoDevIcons.Disliked
-
     }
 }
