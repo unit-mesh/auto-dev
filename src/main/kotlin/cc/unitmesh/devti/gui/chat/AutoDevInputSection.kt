@@ -54,7 +54,10 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     private val documentListener: DocumentListener
     private val buttonPresentation: Presentation
     private val button: ActionButton
+
+    private val defaultRag: CustomRagApp = CustomRagApp("Normal", "Normal")
     private var customRag: ComboBox<CustomRagApp> = ComboBox(MutableCollectionComboBoxModel(listOf()))
+
     private val logger = logger<AutoDevInputSection>()
 
     val editorListeners = EventDispatcher.create(AutoDevInputListener::class.java)
@@ -122,6 +125,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                     label.text = value.name
                 }
             })
+            customRag.selectedItem = defaultRag
 
             layoutPanel.addToLeft(customRag)
         }
@@ -145,6 +149,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         tokenizer = TokenizerImpl.INSTANCE
     }
 
+
     private fun loadRagApps(): List<CustomRagApp> {
         val ragsJsonConfig = project.customRagSettings.ragsJsonConfig
         val rags = try {
@@ -154,8 +159,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             listOf()
         }
 
-        val firstRag = CustomRagApp("Normal", "Normal")
-        return listOf(firstRag) + rags
+        return listOf(defaultRag) + rags
     }
 
     fun initEditor() {
@@ -213,7 +217,9 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     }
 
     fun selectedCustomRag(): Boolean {
-        return customRag.selectedItem != "Normal"
+        if (!project.customRagSettings.enableCustomRag) return false
+        if (customRag.selectedItem == null) return false
+        return customRag.selectedItem != defaultRag
     }
 
     private val maxHeight: Int

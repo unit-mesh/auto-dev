@@ -140,7 +140,7 @@ class AutoDevInput(
             LightVirtualFile("AutoDevInput-" + UUID.randomUUID(), findLanguage("Markdown"), "")
 
         val inputDocument =
-            lightVirtualFile.findDocument() ?: throw IllegalStateException("Can't create inmemory document")
+            lightVirtualFile.findDocument() ?: throw IllegalStateException("Can't create in-memory document")
 
         initializeDocumentListeners(inputDocument)
         setDocument(inputDocument)
