@@ -53,11 +53,16 @@ data class CustomAgentConfig(
     val responseAction: ResponseAction = ResponseAction.Direct,
     val customFlowTransition: List<CustomFlowTransition> = emptyList(),
     val interactive: InteractionType = InteractionType.ChatPanel,
-    val auth: CustomAgentAuth = CustomAgentAuth()
+    val auth: CustomAgentAuth? = null
 )
 
 @Serializable
 data class CustomAgentAuth(
-    val type: String = "",
+    val type: AuthType = AuthType.Bearer,
     val token: String = "",
 )
+
+@Serializable
+enum class AuthType {
+    Bearer,
+}
