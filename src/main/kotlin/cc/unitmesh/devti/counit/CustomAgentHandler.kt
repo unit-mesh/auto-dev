@@ -8,8 +8,4 @@ class CustomAgentHandler(val project: Project) {
     fun executeQuery(input: String, selectedAgent: Any): String? {
         return null
     }
-
-    fun semanticQuery(query: String): String? {
-        return null
-    }
 }

@@ -8,7 +8,6 @@ import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.util.LLMCoroutineScope
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -59,20 +58,6 @@ class CustomAgentChatProcessor(val project: Project) {
 
             ResponseAction.WebView -> TODO()
         }
-    }
-
-    /**
-     * This method is used to extract JSON response from a given string.
-     * It removes the leading and trailing ````json` tags from the string,
-     * which are used to denote JSON code blocks in markdown files.
-     *
-     * @param result The string containing the JSON response surrounded by ````json` tags.
-     * @return The extracted JSON response string without the ````json` tags.
-     */
-    private fun extractJsonResponse(result: String): String {
-        return result
-            .removePrefix("```json")
-            .removeSuffix("```")
     }
 
     companion object {
