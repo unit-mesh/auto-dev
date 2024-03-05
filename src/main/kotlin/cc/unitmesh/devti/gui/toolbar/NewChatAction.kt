@@ -17,9 +17,7 @@ import javax.swing.JComponent
 class NewChatAction : DumbAwareAction(), CustomComponentAction {
     private val logger = logger<NewChatAction>()
 
-    override fun actionPerformed(e: AnActionEvent) {
-
-    }
+    override fun actionPerformed(e: AnActionEvent) = Unit
 
     override fun createCustomComponent(presentation: Presentation, place: String): JComponent {
         val message = AutoDevBundle.message("chat.panel.new")
