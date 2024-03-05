@@ -7,7 +7,13 @@ nav_order: 19
 
 Since AutoDev@1.7.0 version, we support custom AI agent, you can integrate your own AI agent into AutoDev.
 
-Custom AI Agent 
+## Custom AI Agent
+
+1. open AutoDev Config in `Settings` -> `Tools` -> `AutoDev`, select `Custom Agent`.
+2. click `Enable Custom Agent`
+3. fill JSON format config in `Custom Agent Config` textarea.
+4. Apply and OK.
+5. Click `x` and Close AutoDev panel and click `NewChat` in the AutoDev tool window.
 
 Examples:
 
