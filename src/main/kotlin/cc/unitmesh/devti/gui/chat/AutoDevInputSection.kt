@@ -33,6 +33,7 @@ import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.components.BorderLayoutPanel
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.awt.Color
 import java.awt.Component
