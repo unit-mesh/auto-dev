@@ -1,19 +1,19 @@
 package cc.unitmesh.devti.counit
 
 import cc.unitmesh.devti.counit.configurable.customAgentSetting
+import cc.unitmesh.devti.counit.model.CustomAgentConfig
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
-import java.time.Duration
 
 @Service(Service.Level.PROJECT)
-class CustomAgentHandler(val project: Project) {
+class CustomAgentExecutor(val project: Project) {
     private var client = OkHttpClient()
 
-    fun execute(input: String, selectedAgent: Any): String? {
+    fun execute(input: String, selectedAgent: CustomAgentConfig): String? {
         val serverAddress = project.customAgentSetting.serverAddress ?: return null
         val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), input)
         val builder = Request.Builder()
@@ -25,6 +25,7 @@ class CustomAgentHandler(val project: Project) {
             if (!response.isSuccessful) {
                 return null
             }
+
             return response.body?.string()
         }
     }

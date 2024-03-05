@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 class CustomAgentChatProcessor(val project: Project) {
     private val llmFactory = LlmFactory()
 
-    private val customAgentHandler = CustomAgentHandler(project)
+    private val customAgentExecutor = CustomAgentExecutor(project)
     private val llmProvider = llmFactory.create(project)
 
     fun handleChat(prompter: ContextPrompter, ui: ChatCodingPanel, context: ChatContext?) {
@@ -27,7 +27,7 @@ class CustomAgentChatProcessor(val project: Project) {
         val request = originPrompt.trim()
         val selectedAgent: CustomAgentConfig = ui.getSelectedCustomAgent()
 
-        val response = customAgentHandler.execute(request, selectedAgent)
+        val response = customAgentExecutor.execute(request, selectedAgent)
         if (response == null) {
             logger.error("error for custom agent: $selectedAgent with request: $request")
             return
