@@ -200,10 +200,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         editorListeners.addListener(listener)
     }
 
-    fun setSendingMode(sendingMode: Boolean) {
-//        input.setSendingMode(sendingMode)
-    }
-
     private fun getInputValidationInfo(): ValidationInfo? {
         val text = input.getDocument().text
         val textLength = (this.tokenizer)?.count(text) ?: text.length
