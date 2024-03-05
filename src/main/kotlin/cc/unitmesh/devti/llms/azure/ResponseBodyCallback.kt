@@ -92,13 +92,28 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
                         null
                     }
 
-                    // : ping
+                    // skip `: ping` comments for: https://github.com/sysid/sse-starlette/issues/16
                     line!!.startsWith(": ping") -> {
                         null
                     }
 
                     else -> {
-                        throw SSEFormatException("Invalid sse format! '$line'")
+                        when {
+                            // sometimes the server maybe returns empty line
+                            line == "" -> {
+                                null
+                            }
+
+                            // : is comment
+                            // https://html.spec.whatwg.org/multipage/server-sent-events.html#parsing-an-event-stream
+                            line!!.startsWith(":") -> {
+                                null
+                            }
+
+                            else -> {
+                                throw SSEFormatException("Invalid sse format! '$line'")
+                            }
+                        }
                     }
                 }
             }
