@@ -46,6 +46,8 @@ class AutoDevHttpException(error: String, private val statusCode: Int) : Runtime
  * SSE.
  */
 class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private val emitDone: Boolean) : Callback {
+    val logger = logger<ResponseBodyCallback>()
+
     override fun onResponse(call: Call, response: Response) {
         var reader: BufferedReader? = null
         try {
@@ -64,16 +66,7 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
                 sse = when {
                     line!!.startsWith("data:") -> {
                         val data = line!!.substring(5).trim { it <= ' ' }
-                        //  https://github.com/sysid/sse-starlette/issues/16
-                        //  ```
-                        //  event: ping
-                        //  data: 2020-12-22 15:33:27.463789
-                        //  ```
-                        if (data.startsWith(":ping") || data.startsWith(": ping")) {
-                            null
-                        } else {
-                            SSE(data)
-                        }
+                        SSE(data)
                     }
 
                     line == "" && sse != null -> {
@@ -96,6 +89,11 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
                             emitter.onNext(sse)
                         }
 
+                        null
+                    }
+
+                    // : ping
+                    line!!.startsWith(": ping") -> {
                         null
                     }
 
