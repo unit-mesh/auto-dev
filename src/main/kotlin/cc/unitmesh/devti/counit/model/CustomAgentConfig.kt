@@ -24,7 +24,12 @@ enum class ResponseAction {
     /**
      * will be handled by the client
      */
-    Flow
+    Flow,
+
+    /**
+     * Display result in WebView
+     */
+    WebView
 }
 
 @Serializable
