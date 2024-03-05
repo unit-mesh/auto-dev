@@ -27,9 +27,9 @@ class CustomAgentChatProcessor(val project: Project) {
         val request = originPrompt.trim()
         val selectedAgent: CustomAgentConfig = ui.getSelectedCustomAgent()
 
-        val response = customAgentHandler.executeQuery(request, selectedAgent)
+        val response = customAgentHandler.execute(request, selectedAgent)
         if (response == null) {
-            logger.error("can not find intention for request: $request")
+            logger.error("error for custom agent: $selectedAgent with request: $request")
             return
         }
 

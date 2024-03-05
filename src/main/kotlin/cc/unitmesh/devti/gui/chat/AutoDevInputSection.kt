@@ -2,7 +2,7 @@ package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
-import cc.unitmesh.devti.counit.configurable.customRagSettings
+import cc.unitmesh.devti.counit.configurable.customAgentSetting
 import cc.unitmesh.devti.counit.model.CustomAgentConfig
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.llms.tokenizer.TokenizerImpl
@@ -33,7 +33,6 @@ import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.components.BorderLayoutPanel
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.awt.Color
 import java.awt.Component
@@ -55,7 +54,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     private val buttonPresentation: Presentation
     private val button: ActionButton
 
-    private val defaultRag: CustomAgentConfig = CustomAgentConfig("Normal", "Normal")
+    private val defaultRag: CustomAgentConfig = CustomAgentConfig("<Select Custom Agent>", "Normal")
     private var customRag: ComboBox<CustomAgentConfig> = ComboBox(MutableCollectionComboBoxModel(listOf()))
 
     private val logger = logger<AutoDevInputSection>()
@@ -118,7 +117,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         )
         layoutPanel.setOpaque(false)
 
-        if (project.customRagSettings.enableCustomRag) {
+        if (project.customAgentSetting.enableCustomRag) {
             customRag = ComboBox(MutableCollectionComboBoxModel(loadRagApps()))
             customRag.setRenderer(SimpleListCellRenderer.create { label: JBLabel, value: CustomAgentConfig?, _: Int ->
                 if (value != null) {
@@ -151,7 +150,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
 
     private fun loadRagApps(): List<CustomAgentConfig> {
-        val ragsJsonConfig = project.customRagSettings.ragsJsonConfig
+        val ragsJsonConfig = project.customAgentSetting.ragsJsonConfig
         if (ragsJsonConfig.isEmpty()) return listOf(defaultRag)
 
         val rags = try {
@@ -212,7 +211,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     }
 
     fun hasSelectedAgent(): Boolean {
-        if (!project.customRagSettings.enableCustomRag) return false
+        if (!project.customAgentSetting.enableCustomRag) return false
         if (customRag.selectedItem == null) return false
         return customRag.selectedItem != defaultRag
     }

@@ -3,7 +3,7 @@ package cc.unitmesh.devti.counit.configurable
 import com.intellij.openapi.components.*
 import com.intellij.openapi.project.Project
 
-val Project.customRagSettings: CoUnitProjectSettingsService
+val Project.customAgentSetting: CoUnitProjectSettingsService
     get() = service<CoUnitProjectSettingsService>()
 
 @Service(Service.Level.PROJECT)

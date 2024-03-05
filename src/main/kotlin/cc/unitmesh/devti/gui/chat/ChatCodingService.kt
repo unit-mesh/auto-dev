@@ -4,7 +4,7 @@ import cc.unitmesh.cf.core.llms.LlmMsg
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.util.LLMCoroutineScope
 import cc.unitmesh.devti.counit.CustomAgentChatProcessor
-import cc.unitmesh.devti.counit.configurable.customRagSettings
+import cc.unitmesh.devti.counit.configurable.customAgentSetting
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.util.parser.PostCodeProcessor
 import cc.unitmesh.devti.provider.ContextPrompter
@@ -34,7 +34,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         val requestPrompt = prompter.requestPrompt()
         val displayPrompt = prompter.displayPrompt()
 
-        if (project.customRagSettings.enableCustomRag && ui.hasSelectedCustomAgent()) {
+        if (project.customAgentSetting.enableCustomRag && ui.hasSelectedCustomAgent()) {
             counitProcessor.handleChat(prompter, ui, context)
             return
         }
