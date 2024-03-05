@@ -236,7 +236,11 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         updateUI()
     }
 
-    fun selectedCustomRag(): Boolean {
-        return inputSection.selectedCustomRag()
+    fun hasSelectedCustomAgent(): Boolean {
+        return inputSection.hasSelectedAgent()
+    }
+
+    fun getSelectedCustomAgent(): Any {
+        return inputSection.getSelectedAgent()
     }
 }

@@ -15,7 +15,7 @@
         <projectConfigurable provider="cc.unitmesh.devti.counit.configurable.CoUnitToolConfigurableProvider"
                              parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                              id="cc.unitmesh.counit"
-                             bundle="messages.AutoDevBundle" key="counit.name"/>
+                             bundle="messages.AutoDevBundle" key="counit.agent.name"/>
 
         <projectConfigurable provider="cc.unitmesh.devti.settings.custom.TeamPromptsConfigurableProvider"
                              parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"

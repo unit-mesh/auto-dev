@@ -3,7 +3,7 @@ package cc.unitmesh.devti.gui.chat
 import cc.unitmesh.cf.core.llms.LlmMsg
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.util.LLMCoroutineScope
-import cc.unitmesh.devti.counit.CustomAgentPreProcessor
+import cc.unitmesh.devti.counit.CustomAgentChatProcessor
 import cc.unitmesh.devti.counit.configurable.customRagSettings
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.util.parser.PostCodeProcessor
@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 
 class ChatCodingService(var actionType: ChatActionType, val project: Project) {
     private val llmFactory = LlmFactory()
-    private val counitProcessor = project.service<CustomAgentPreProcessor>()
+    private val counitProcessor = project.service<CustomAgentChatProcessor>()
 
     val action = actionType.instruction(project = project)
 
@@ -34,7 +34,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         val requestPrompt = prompter.requestPrompt()
         val displayPrompt = prompter.displayPrompt()
 
-        if (project.customRagSettings.enableCustomRag && ui.selectedCustomRag()) {
+        if (project.customRagSettings.enableCustomRag && ui.hasSelectedCustomAgent()) {
             counitProcessor.handleChat(prompter, ui, context)
             return
         }

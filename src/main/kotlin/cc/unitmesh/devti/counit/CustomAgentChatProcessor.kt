@@ -12,22 +12,21 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.launch
 
-const val CO_UNIT = "/counit"
-
 @Service(Service.Level.PROJECT)
-class CustomAgentPreProcessor(val project: Project) {
+class CustomAgentChatProcessor(val project: Project) {
     private val llmFactory = LlmFactory()
 
-    private val customAgentPromptGenerator = CustomAgentPromptGenerator(project)
+    private val customAgentHandler = CustomAgentHandler(project)
     private val llmProvider = llmFactory.create(project)
 
     fun handleChat(prompter: ContextPrompter, ui: ChatCodingPanel, context: ChatContext?) {
-        val originRequest = prompter.requestPrompt()
-        ui.addMessage(originRequest, true, originRequest)
+        val originPrompt = prompter.requestPrompt()
+        ui.addMessage(originPrompt, true, originPrompt)
 
-        val request = originRequest.removePrefix(CO_UNIT).trim()
+        val request = originPrompt.trim()
+        val selectedAgent = ui.getSelectedCustomAgent()
 
-        val response = customAgentPromptGenerator.findIntention(request)
+        val response = customAgentHandler.findIntention(request)
         if (response == null) {
             logger.error("can not find intention for request: $request")
             return
@@ -49,7 +48,7 @@ class CustomAgentPreProcessor(val project: Project) {
             llmProvider.appendLocalMessage(searchTip, ChatRole.User)
             ui.addMessage(searchTip, true, searchTip)
 
-            val related = customAgentPromptGenerator.semanticQuery("") ?: ""
+            val related = customAgentHandler.semanticQuery("") ?: ""
             if (related.isEmpty()) {
                 val noResultTip = "no related API found"
                 llmProvider.appendLocalMessage(noResultTip, ChatRole.Assistant)
@@ -80,7 +79,7 @@ class CustomAgentPreProcessor(val project: Project) {
     }
 
     companion object {
-        private val logger = logger<CustomAgentPreProcessor>()
+        private val logger = logger<CustomAgentChatProcessor>()
     }
 }
 

@@ -34,7 +34,6 @@ import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.components.BorderLayoutPanel
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.decodeFromString
 import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
@@ -216,10 +215,14 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         return ValidationInfo(errorMessage, this as JComponent).asWarning()
     }
 
-    fun selectedCustomRag(): Boolean {
+    fun hasSelectedAgent(): Boolean {
         if (!project.customRagSettings.enableCustomRag) return false
         if (customRag.selectedItem == null) return false
         return customRag.selectedItem != defaultRag
+    }
+
+    fun getSelectedAgent(): CustomAgentConfig {
+        return customRag.selectedItem as CustomAgentConfig
     }
 
     private val maxHeight: Int

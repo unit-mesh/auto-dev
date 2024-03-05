@@ -13,7 +13,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.ui.dsl.builder.*
 import javax.swing.JTextField
 
-class CoUnitToolConfigurable(val project: Project) : BoundConfigurable(AutoDevBundle.message("counit.name")), Disposable {
+class CoUnitToolConfigurable(val project: Project) : BoundConfigurable(AutoDevBundle.message("counit.agent.name")), Disposable {
     private val pathToToolchainComboBox = ToolchainPathChoosingComboBox()
     private val serverAddress = JTextField()
 
@@ -22,10 +22,10 @@ class CoUnitToolConfigurable(val project: Project) : BoundConfigurable(AutoDevBu
 
     override fun createPanel(): DialogPanel = panel {
         row {
-            checkBox(AutoDevBundle.message("counit.enable.label")).bindSelected(state::enableCustomRag)
+            checkBox(AutoDevBundle.message("counit.agent.enable.label")).bindSelected(state::enableCustomRag)
         }
 
-        row(AutoDevBundle.message("counit.server.address.label")) {
+        row(AutoDevBundle.message("counit.agent.server.address.label")) {
             fullWidthCell(serverAddress)
                 .bind(
                     componentGet = { it.text },
@@ -34,22 +34,17 @@ class CoUnitToolConfigurable(val project: Project) : BoundConfigurable(AutoDevBu
                 )
         }
 
-// TODO: JSON RPC
-//        row(AutoDevBundle.message("counit.location.label")) {
-//            fullWidthCell(pathToToolchainComboBox)
-//        }
-
         row {
             val languageField = JsonLanguageField(
                 project,
-                state::ragsJsonConfig.toString(),
-                AutoDevBundle.message("counit.rags.json.placeholder")
+                state::agentJsonConfig.toString(),
+                AutoDevBundle.message("counit.agent.json.placeholder")
             )
             fullWidthCell(languageField)
                 .bind(
                     componentGet = { it.text },
                     componentSet = { component, value -> component.text = value },
-                    prop = state::ragsJsonConfig.toMutableProperty()
+                    prop = state::agentJsonConfig.toMutableProperty()
                 )
         }
 
@@ -57,7 +52,7 @@ class CoUnitToolConfigurable(val project: Project) : BoundConfigurable(AutoDevBu
             settings.modify {
                 it.enableCustomRag = state.enableCustomRag
                 it.serverAddress = state.serverAddress
-                it.ragsJsonConfig = state.ragsJsonConfig
+                it.agentJsonConfig = state.agentJsonConfig
             }
         }
     }
