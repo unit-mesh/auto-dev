@@ -47,7 +47,7 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
             chatContext += it.text + "\n"
         }
 
-        logger<ContextPrompter>().info("context: $chatContext")
+        logger.info("context: $chatContext")
 
         chatContextCache[creationContext] = chatContext
         return chatContext
