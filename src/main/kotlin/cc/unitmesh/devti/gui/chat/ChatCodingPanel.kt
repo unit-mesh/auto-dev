@@ -227,8 +227,10 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         this.focusInput()
     }
 
-    // TODO: add session and stop manage
-    fun clearChat() {
+    /**
+     * Resets the chat session by clearing the current session and updating the UI.
+     */
+    fun resetChatSession() {
         chatCodingService.clearSession()
         progressBar.isVisible = false
         myList.removeAll()

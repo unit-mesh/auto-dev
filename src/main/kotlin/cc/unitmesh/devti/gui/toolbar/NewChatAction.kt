@@ -47,7 +47,7 @@ class NewChatAction : DumbAwareAction(), CustomComponentAction {
                         return@addActionListener
                     }
 
-                    codingPanel.clearChat()
+                    codingPanel.resetChatSession()
                 }
             }
         }
