@@ -135,8 +135,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
 
     private fun updateLayout() {
         val layout = myList.layout
-        val componentCount = myList.componentCount
-        for (i in 0 until componentCount) {
+        for (i in 0 until myList.componentCount) {
             layout.removeLayoutComponent(myList.getComponent(i))
             layout.addLayoutComponent(null, myList.getComponent(i))
         }
