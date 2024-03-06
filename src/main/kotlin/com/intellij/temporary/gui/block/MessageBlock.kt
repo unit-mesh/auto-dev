@@ -62,13 +62,12 @@ class TextBlock(val msg: CompletableMessage) : AbstractMessageBlock(msg) {
     override val type: MessageBlockType = MessageBlockType.PlainText
 }
 
-class CodeBlock(private val msg: CompletableMessage) : AbstractMessageBlock(msg) {
+class CodeBlock(private val msg: CompletableMessage, language: Language = Language.ANY) : AbstractMessageBlock(msg) {
     override var type: MessageBlockType = MessageBlockType.CodeEditor
 
     var code: Code
 
     init {
-        val language = Language.ANY
         this.code = Code(language, msg.text, false)
     }
 

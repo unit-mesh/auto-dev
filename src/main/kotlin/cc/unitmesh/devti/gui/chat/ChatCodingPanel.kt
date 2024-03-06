@@ -10,6 +10,7 @@ import cc.unitmesh.devti.fullWidth
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.ide.BrowserUtil
+import com.intellij.lang.html.HTMLLanguage
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -275,7 +276,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         val msg = SimpleMessage(content, content, ChatRole.System)
         val webBlock = WebBlock(msg)
         val blockView = WebBlockView(webBlock, project, {})
-        val codeView = CodeBlockView(CodeBlock(msg), project, {})
+        val codeView = CodeBlockView(CodeBlock(msg, language = HTMLLanguage.INSTANCE), project, {})
 
         myList.add(SimpleView(blockView, codeView))
 

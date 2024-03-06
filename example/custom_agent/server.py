@@ -6,7 +6,7 @@ from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel
 from starlette import status
 from starlette.requests import Request
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, HTMLResponse
 
 app = FastAPI()
 
@@ -56,8 +56,17 @@ Toggle:Toggle为开关组件，常用于在应用中进行开关操作。
 ```"""
 
 
-@app.post("/api/agent/ux")
+@app.get("/api/agent/ux", response_class=HTMLResponse)
+def mock_frontend():
+    return mock_html()
+
+
+@app.post("/api/agent/ux", response_class=HTMLResponse)
 def mock_frontend(messages: Messages):
+    return mock_html()
+
+
+def mock_html():
     return """
 <html>
 <head>
