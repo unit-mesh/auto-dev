@@ -5,6 +5,9 @@ parent: Customize Features
 nav_order: 19
 ---
 
+AutoDev@1.7.0
+{: .label .label-yellow }
+
 Since AutoDev@1.7.0 version, we support custom AI agent, you can integrate your own AI agent into AutoDev.
 
 ## Custom AI Agent
