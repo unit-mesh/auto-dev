@@ -22,8 +22,7 @@ class Messages(BaseModel):
 
 @app.post("/api/agent/api-market")
 def mock_market(messages: Messages):
-    return """
-```markdown
+    return """```markdown
 GET /wp/v2/posts
 GET /wp/v2/posts/{id}
 POST /wp/v2/posts
@@ -35,8 +34,7 @@ GET /wp/v2/pages/{id}
 POST /wp/v2/pages
 PUT /wp/v2/pages/{id}
 DELETE /wp/v2/pages/{id}
-```
-"""
+```"""
 
 
 @app.post("/api/agent/frontend-gen")
@@ -55,8 +53,7 @@ TextArea:多行文本输入框。
 TextInput:单行文本输入框组件。
 Radio:提供相应的用户交互选择项。
 Toggle:Toggle为开关组件，常用于在应用中进行开关操作。
-```
-"""
+```"""
 
 
 @app.exception_handler(RequestValidationError)

@@ -47,7 +47,7 @@ class CustomAgentExecutor(val project: Project) {
                 return null
             }
 
-            return response.body?.string()
+            return response.body?.string()?.removeSurrounding("\"")?.removePrefix("\n")
         }
     }
 }

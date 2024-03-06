@@ -46,7 +46,9 @@ class CustomAgentChatProcessor(val project: Project) {
                 ui.hiddenProgressBar()
             }
 
-            ResponseAction.WebView -> TODO()
+            ResponseAction.WebView -> {
+                //
+            }
         }
     }
 
