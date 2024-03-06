@@ -20,26 +20,77 @@ Examples:
 ```json
 [
   {
-    "name": "内部 API 问答",
-    "url": "https://rag.unitmesh.cc/api/agent/market",
-    "responseAction": "Direct",
-    "interactive": "ChatPanel"
+    "name": "内部 API 集成",
+    "url": "http://127.0.0.1:8765/api/agent/api-market",
+    "responseAction": "Direct"
   },
   {
-    "name": "API 组件检索",
-    "url": "https://rag.unitmesh.cc/api/agent/frontend",
-    "responseAction": "TextChunk",
-    "interactive": "ChatPanel"
+    "name": "组件库查询",
+    "url": "http://127.0.0.1:8765/api/agent/component-list",
+    "responseAction": "TextChunk"
   },
   {
-    "name": "前面页面生成",
-    "url": "https://rag.unitmesh.cc/api/agent/frontend-gen",
+    "name": "页面生成",
+    "url": "http://127.0.0.1:8765/api/agent/ux",
     "auth": {
       "type": "Bearer",
       "token": "eyJhbGci"
     },
-    "responseAction": "WebView",
-    "interactive": "ChatPanel"
+    "responseAction": "WebView"
   }
 ]
 ```
+
+## Json format
+
+ResponseAction:
+
+```kotlin
+enum class ResponseAction {
+    /**
+     * Direct display result
+     */
+    Direct,
+
+    /**
+     * Stream response
+     */
+    Stream,
+
+    /**
+     * Text splitting result
+     */
+    TextChunk,
+
+    /**
+     * will be handled by the client
+     */
+    Flow,
+
+    /**
+     * Display result in WebView
+     */
+    WebView
+}
+```
+
+## Server
+
+## Request Body
+
+same to Chat API
+
+```json
+{
+  "messages": [
+    {
+      "role": "user",
+      "message": "str"
+    }
+  ]
+}
+```
+
+### Server API example
+
+see in [example/custom_agent](https://github.com/unit-mesh/auto-dev/tree/master/example/custom_agent)
