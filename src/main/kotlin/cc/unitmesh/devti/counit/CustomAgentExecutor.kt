@@ -3,24 +3,40 @@ package cc.unitmesh.devti.counit
 import cc.unitmesh.devti.counit.configurable.customAgentSetting
 import cc.unitmesh.devti.counit.model.AuthType
 import cc.unitmesh.devti.counit.model.CustomAgentConfig
+import cc.unitmesh.devti.counit.model.ResponseAction
 import cc.unitmesh.devti.llms.custom.CustomRequest
+import cc.unitmesh.devti.llms.custom.JSONBodyResponseCallback
 import cc.unitmesh.devti.llms.custom.Message
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.nfeld.jsonpathkt.JsonPath
+import com.nfeld.jsonpathkt.extension.read
+import com.theokanning.openai.completion.chat.ChatCompletionResult
+import com.theokanning.openai.service.SSE
+import io.reactivex.BackpressureStrategy
+import io.reactivex.Flowable
+import io.reactivex.FlowableEmitter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.IOException
 
 @Service(Service.Level.PROJECT)
 class CustomAgentExecutor(val project: Project) {
     private var client = OkHttpClient()
     private val logger = logger<CustomAgentExecutor>()
 
-    fun execute(input: String, agent: CustomAgentConfig): String? {
+    fun execute(input: String, agent: CustomAgentConfig): Flow<String>? {
         val customRequest = CustomRequest(listOf(Message("user", input)))
         val request = Json.encodeToString<CustomRequest>(customRequest)
 
@@ -42,12 +58,70 @@ class CustomAgentExecutor(val project: Project) {
         client = client.newBuilder().build()
         val call = client.newCall(builder.url(agent.url).post(body).build())
 
-        call.execute().use { response ->
-            if (!response.isSuccessful) {
-                return null
+        return when (agent.responseAction) {
+            ResponseAction.Stream -> {
+                streamSSE(call)
             }
 
-            return response.body?.string()?.removeSurrounding("\"")?.removePrefix("\n")
+            else -> {
+                streamJson(call)
+            }
         }
     }
+
+    private fun streamJson(call: Call): Flow<String> = callbackFlow {
+        call.enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                runBlocking {
+                    send("error. ${e.message}")
+                }
+                close()
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                runBlocking() {
+                    withContext(Dispatchers.IO) {
+                        val res: String = response.body?.string()
+                            ?.removeSurrounding("\"")
+                            ?.removePrefix("\n") ?: ""
+
+                        send(res)
+                    }
+                    close()
+                }
+            }
+        })
+        awaitClose()
+    }
+
+    private fun streamSSE(call: Call): Flow<String> {
+        val sseFlowable = Flowable
+            .create({ emitter: FlowableEmitter<SSE> ->
+                call.enqueue(cc.unitmesh.devti.llms.azure.ResponseBodyCallback(emitter, true))
+            }, BackpressureStrategy.BUFFER)
+
+        try {
+            return callbackFlow {
+                withContext(Dispatchers.IO) {
+                    sseFlowable
+                        .doOnError {
+                            it.printStackTrace()
+                            close()
+                        }
+                        .blockingForEach { sse ->
+                            val chunk: String = sse!!.data
+                            trySend(chunk)
+                        }
+
+                    close()
+                }
+                awaitClose()
+            }
+        } catch (e: Exception) {
+            return callbackFlow {
+                close()
+            }
+        }
+    }
+
 }

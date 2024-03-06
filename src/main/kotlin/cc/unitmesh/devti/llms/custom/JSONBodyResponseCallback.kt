@@ -17,12 +17,10 @@ class JSONBodyResponseCallback(private val responseFormat: String,private val ca
 
     override fun onResponse(call: Call, response: Response) {
         val responseBody: String? = response.body?.string()
-        println("got response $responseBody")
         val responseContent: String = JsonPath.parse(responseBody)?.read(responseFormat) ?: ""
 
         runBlocking() {
             callback(responseContent)
         }
-
     }
 }

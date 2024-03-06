@@ -12,6 +12,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 @Service(Service.Level.PROJECT)
 class CustomAgentChatProcessor(val project: Project) {
@@ -35,10 +36,11 @@ class CustomAgentChatProcessor(val project: Project) {
         selectedAgent.state = CustomAgentState.FINISHED
         when (selectedAgent.responseAction) {
             ResponseAction.Direct -> {
-                ui.addMessage(response, false, response).also {
-                    it.updateContent(response)
-                    it.reRenderAssistantOutput()
+                val message = ui.addMessage("loading", false, "")
+                runBlocking {
+                    ui.updateMessage(response)
                 }
+                message.reRenderAssistantOutput()
                 ui.hiddenProgressBar()
                 ui.updateUI()
             }
@@ -51,21 +53,22 @@ class CustomAgentChatProcessor(val project: Project) {
             }
 
             ResponseAction.TextChunk -> {
-                ui.setInput(response)
+                val sb = StringBuilder()
+                runBlocking {
+                    response.collect {
+                        sb.append(it)
+                    }
+                }
+                ui.setInput(sb.toString())
                 ui.hiddenProgressBar()
             }
 
             ResponseAction.Flow -> {
-                ui.addMessage(response, false, response).also {
-                    it.updateContent(response)
-                    it.reRenderAssistantOutput()
-                }
-                ui.hiddenProgressBar()
-                ui.updateUI()
+                TODO()
             }
 
             ResponseAction.WebView -> {
-                //
+                TODO()
             }
         }
     }
