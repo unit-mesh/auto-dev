@@ -3,7 +3,7 @@ layout: default
 title: Customize Agent
 nav_order: 4
 has_children: true
-permalink: /customize
 ---
 
-{: .no_toc }
+AutoDev@1.7.0
+{: .label .label-yellow }

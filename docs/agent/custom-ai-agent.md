@@ -1,7 +1,7 @@
 ---
 layout: default
 title: AI Agent Quickstart
-parent: Customize Agent
+parent: AI Agent
 nav_order: 1
 ---
 
@@ -43,57 +43,3 @@ Examples:
   }
 ]
 ```
-
-## Json format
-
-ResponseAction:
-
-```kotlin
-enum class ResponseAction {
-    /**
-     * Direct display result
-     */
-    Direct,
-
-    /**
-     * Stream response
-     */
-    Stream,
-
-    /**
-     * Text splitting result
-     */
-    TextChunk,
-
-    /**
-     * will be handled by the client
-     */
-    Flow,
-
-    /**
-     * Display result in WebView
-     */
-    WebView
-}
-```
-
-## Server
-
-## Request Body
-
-same to Chat API
-
-```json
-{
-  "messages": [
-    {
-      "role": "user",
-      "message": "str"
-    }
-  ]
-}
-```
-
-### Server API example
-
-see in [example/custom_agent](https://github.com/unit-mesh/auto-dev/tree/master/example/custom_agent)
