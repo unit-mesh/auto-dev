@@ -37,7 +37,7 @@ DELETE /wp/v2/pages/{id}
 ```"""
 
 
-@app.post("/api/agent/frontend-gen")
+@app.post("/api/agent/component-list")
 def mock_frontend(messages: Messages):
     return """```markdown
 Button:可快速创建不同样式的按钮。
@@ -53,6 +53,25 @@ TextArea:多行文本输入框。
 TextInput:单行文本输入框组件。
 Radio:提供相应的用户交互选择项。
 Toggle:Toggle为开关组件，常用于在应用中进行开关操作。
+```"""
+
+
+@app.post("/api/agent/ux")
+def mock_frontend(messages: Messages):
+    return """```html
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Hello,World</h1>
+    <p>你好，世界</p>
+</body>
+</html>
 ```"""
 
 
