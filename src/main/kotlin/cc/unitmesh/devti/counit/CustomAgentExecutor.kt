@@ -1,19 +1,13 @@
 package cc.unitmesh.devti.counit
 
-import cc.unitmesh.devti.counit.configurable.customAgentSetting
 import cc.unitmesh.devti.counit.model.AuthType
 import cc.unitmesh.devti.counit.model.CustomAgentConfig
-import cc.unitmesh.devti.counit.model.ResponseAction
+import cc.unitmesh.devti.counit.model.CustomAgentResponseAction
 import cc.unitmesh.devti.llms.custom.CustomRequest
-import cc.unitmesh.devti.llms.custom.JSONBodyResponseCallback
 import cc.unitmesh.devti.llms.custom.Message
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.nfeld.jsonpathkt.JsonPath
-import com.nfeld.jsonpathkt.extension.read
-import com.theokanning.openai.completion.chat.ChatCompletionResult
 import com.theokanning.openai.service.SSE
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
@@ -59,7 +53,7 @@ class CustomAgentExecutor(val project: Project) {
         val call = client.newCall(builder.url(agent.url).post(body).build())
 
         return when (agent.responseAction) {
-            ResponseAction.Stream -> {
+            CustomAgentResponseAction.Stream -> {
                 streamSSE(call)
             }
 

@@ -11,12 +11,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.dsl.builder.*
-import javax.swing.JTextField
 
 class CoUnitToolConfigurable(val project: Project) : BoundConfigurable(AutoDevBundle.message("counit.agent.name")), Disposable {
-    private val pathToToolchainComboBox = ToolchainPathChoosingComboBox()
-    private val serverAddress = JTextField()
-
     val settings = project.service<CoUnitProjectSettingsService>()
     val state = settings.state.copy()
 
@@ -48,6 +44,6 @@ class CoUnitToolConfigurable(val project: Project) : BoundConfigurable(AutoDevBu
     }
 
     override fun dispose() {
-        Disposer.dispose(pathToToolchainComboBox)
+
     }
 }

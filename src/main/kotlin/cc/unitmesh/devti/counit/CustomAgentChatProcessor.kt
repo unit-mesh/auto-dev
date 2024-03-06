@@ -3,7 +3,7 @@ package cc.unitmesh.devti.counit
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.counit.model.CustomAgentConfig
 import cc.unitmesh.devti.counit.model.CustomAgentState
-import cc.unitmesh.devti.counit.model.ResponseAction
+import cc.unitmesh.devti.counit.model.CustomAgentResponseAction
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.gui.chat.ChatRole
@@ -14,7 +14,6 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 
 @Service(Service.Level.PROJECT)
@@ -38,7 +37,7 @@ class CustomAgentChatProcessor(val project: Project) {
 
         selectedAgent.state = CustomAgentState.FINISHED
         when (selectedAgent.responseAction) {
-            ResponseAction.Direct -> {
+            CustomAgentResponseAction.Direct -> {
                 val message = ui.addMessage("loading", false, "")
                 val sb = StringBuilder()
                 runBlocking {
@@ -52,14 +51,14 @@ class CustomAgentChatProcessor(val project: Project) {
                 ui.updateUI()
             }
 
-            ResponseAction.Stream -> {
+            CustomAgentResponseAction.Stream -> {
                 ui.addMessage(AutoDevBundle.message("autodev.loading"))
                 LLMCoroutineScope.scope(project).launch {
                     ui.updateMessage(response)
                 }
             }
 
-            ResponseAction.TextChunk -> {
+            CustomAgentResponseAction.TextChunk -> {
                 val sb = StringBuilder()
                 runBlocking {
                     response.collect {
@@ -74,11 +73,11 @@ class CustomAgentChatProcessor(val project: Project) {
                 ui.hiddenProgressBar()
             }
 
-            ResponseAction.Flow -> {
+            CustomAgentResponseAction.Flow -> {
                 TODO()
             }
 
-            ResponseAction.WebView -> {
+            CustomAgentResponseAction.WebView -> {
                 val sb = StringBuilder()
                 runBlocking {
                     response.collect {

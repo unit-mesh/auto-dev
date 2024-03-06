@@ -7,7 +7,7 @@ package cc.unitmesh.devti.counit.model
  * @property TextChunk Text splitting result
  * @property Flow Will be handled by the client
  */
-enum class ResponseAction {
+enum class CustomAgentResponseAction {
     /**
      * Direct display result
      */

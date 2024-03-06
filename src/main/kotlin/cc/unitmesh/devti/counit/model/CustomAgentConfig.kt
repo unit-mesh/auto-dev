@@ -45,7 +45,7 @@ data class CustomAgentConfig(
     val description: String = "",
     val url: String = "",
     val icon: String = "",
-    val responseAction: ResponseAction = ResponseAction.Direct,
+    val responseAction: CustomAgentResponseAction = CustomAgentResponseAction.Direct,
     val transition: List<CustomFlowTransition> = emptyList(),
     val interactive: InteractionType = InteractionType.ChatPanel,
     val auth: CustomAgentAuth? = null
