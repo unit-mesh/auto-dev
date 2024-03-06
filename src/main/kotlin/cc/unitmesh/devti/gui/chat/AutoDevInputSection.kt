@@ -21,6 +21,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.ComponentValidator
 import com.intellij.openapi.ui.ValidationInfo
+import com.intellij.openapi.ui.popup.JBPopup
+import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.impl.InternalDecorator
 import com.intellij.temporary.gui.block.AutoDevCoolBorder
@@ -44,6 +46,7 @@ import java.awt.event.MouseEvent
 import java.util.function.Supplier
 import javax.swing.Box
 import javax.swing.JComponent
+import javax.swing.JTextField
 import kotlin.math.max
 import kotlin.math.min
 
@@ -60,6 +63,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     private var customRag: ComboBox<CustomAgentConfig> = ComboBox(MutableCollectionComboBoxModel(listOf()))
 
     private val logger = logger<AutoDevInputSection>()
+
+    private var popup: JBPopup? = null
 
     val editorListeners = EventDispatcher.create(AutoDevInputListener::class.java)
     private var tokenizer: Tokenizer? = null
@@ -97,8 +102,20 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                 if (i != input.height) {
                     revalidate()
                 }
+
+                // check new input == $
+                if (event.newFragment.contentEquals("$") || event.newFragment.contentEquals("¥")) {
+                    popup?.show(this@AutoDevInputSection)
+                }
             }
         }
+
+        popup = JBPopupFactory.getInstance().createComponentPopupBuilder(JTextField(""), null)
+            .setRequestFocus(false)
+            .setMinSize(
+                Dimension(200, 200)
+            ).createPopup()
+
         input.addDocumentListener(documentListener)
         input.recreateDocument()
 

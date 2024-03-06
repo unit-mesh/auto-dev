@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
-import com.intellij.temporary.gui.block.findDocument
 import cc.unitmesh.devti.util.parser.Code.Companion.findLanguage
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.*
@@ -19,12 +18,14 @@ import com.intellij.openapi.fileTypes.FileTypes
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.temporary.gui.block.findDocument
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.EditorTextField
 import com.intellij.util.EventDispatcher
 import com.intellij.util.messages.MessageBusConnection
 import com.intellij.util.ui.JBUI
 import java.awt.Color
+import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import java.util.*
 import javax.swing.KeyStroke
@@ -80,7 +81,6 @@ class AutoDevInput(
                 KeyboardShortcut(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.META_DOWN_MASK), null)
             ), this
         )
-
 
         val connect: MessageBusConnection = project.messageBus.connect(disposable ?: this)
         val topic = AnActionListener.TOPIC
