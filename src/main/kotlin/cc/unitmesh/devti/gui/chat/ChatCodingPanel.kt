@@ -255,6 +255,11 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         progressBar.isVisible = false
     }
 
+    /**
+     * Remove the last message from the list and update the UI.
+     *
+     * @return void
+     */
     fun removeLastMessage() {
         if (myList.componentCount > 0) {
             myList.remove(myList.componentCount - 1)
