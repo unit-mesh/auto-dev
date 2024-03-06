@@ -9,19 +9,21 @@ import org.cef.browser.CefFrame
 import org.cef.handler.CefLoadHandler
 import org.cef.network.CefRequest
 
+/**
+ * for custom webview can refs: https://github.com/mucharafal/jcef_example
+ */
 class WebViewWindow(project: Project) {
-//    fun registerAppSchemeHandler() {
-//        CefApp.getInstance().registerSchemeHandlerFactory(
-//            "http",
-//            "myapp",
-//            CustomSchemeHandlerFactory()
-//        )
-//    }
-
     private val browser: JBCefBrowser = JBCefBrowser().also {
 //        it.loadURL("http://myapp/index.html")
     }
 
+    fun loadUrl(url: String) {
+        browser.loadURL(url)
+    }
+
+    fun loadHtml(html: String) {
+        browser.loadHTML(html)
+    }
 
     fun bindJs() {
         val query = JBCefJSQuery.create(browser as JBCefBrowserBase)
