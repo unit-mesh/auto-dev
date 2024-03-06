@@ -147,7 +147,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             }
         })
 
-        tokenizer = TokenizerImpl.INSTANCE
+        tokenizer = TokenizerImpl.INSTANCESupplier.get()
     }
 
 

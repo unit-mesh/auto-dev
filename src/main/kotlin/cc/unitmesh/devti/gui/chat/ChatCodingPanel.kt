@@ -14,11 +14,13 @@ import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.NullableComponent
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.IdeFocusManager
+import com.intellij.temporary.gui.block.MessageBlockView
 import com.intellij.temporary.gui.block.whenDisposed
 import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.ActionLink
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.dsl.builder.panel
@@ -29,6 +31,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
+import java.awt.BorderLayout
 import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -261,5 +264,29 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         }
 
         updateUI()
+    }
+
+    fun appendWebView(blockView: MessageBlockView) {
+        myList.add(SimpleView(blockView))
+        updateUI()
+    }
+}
+
+class SimpleView(val view: MessageBlockView) : JBPanel<MessageView>() {
+    init {
+        isDoubleBuffered = true
+        isOpaque = true
+        background = JBColor(0x6F59FF, 0x2d2f30)
+
+        layout = BorderLayout(JBUI.scale(8), 0)
+        val centerPanel = JPanel(VerticalLayout(JBUI.scale(8)))
+
+        centerPanel.isOpaque = false
+        centerPanel.border = JBUI.Borders.emptyRight(8)
+
+        add(centerPanel, BorderLayout.WEST)
+
+        view.initialize()
+        centerPanel.add(view.getComponent())
     }
 }

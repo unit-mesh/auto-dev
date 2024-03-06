@@ -15,11 +15,17 @@ class WebBlockView(
     private val project: Project,
     private val disposable: Disposable,
 ) : MessageBlockView {
+    private val webViewWindow = WebViewWindow()
+
+    override fun initialize() {
+        this.webViewWindow.loadHtml(block.msg.text)
+    }
+
     override fun getBlock(): MessageBlock {
         return block
     }
 
     override fun getComponent(): Component {
-        return WebViewWindow().component
+        return webViewWindow.component
     }
 }

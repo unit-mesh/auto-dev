@@ -13,9 +13,7 @@ import java.awt.Component
  * for custom webview can refs: https://github.com/mucharafal/jcef_example
  */
 class WebViewWindow {
-    private val browser: JBCefBrowser = JBCefBrowser().also {
-//        it.loadURL("http://myapp/index.html")
-    }
+    private val browser: JBCefBrowser = JBCefBrowser().also {}
 
     val component: Component = browser.component
 
