@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.counit.view
 
-import com.intellij.openapi.project.Project
 import com.intellij.ui.jcef.JBCefBrowser
 import com.intellij.ui.jcef.JBCefBrowserBase
 import com.intellij.ui.jcef.JBCefJSQuery
@@ -8,14 +7,17 @@ import org.cef.browser.CefBrowser
 import org.cef.browser.CefFrame
 import org.cef.handler.CefLoadHandler
 import org.cef.network.CefRequest
+import java.awt.Component
 
 /**
  * for custom webview can refs: https://github.com/mucharafal/jcef_example
  */
-class WebViewWindow(project: Project) {
+class WebViewWindow {
     private val browser: JBCefBrowser = JBCefBrowser().also {
 //        it.loadURL("http://myapp/index.html")
     }
+
+    val component: Component = browser.component
 
     fun loadUrl(url: String) {
         browser.loadURL(url)
