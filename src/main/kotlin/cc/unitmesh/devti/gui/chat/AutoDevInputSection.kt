@@ -36,6 +36,7 @@ import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.components.BorderLayoutPanel
+import com.intellij.vcsUtil.showAbove
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.awt.Color
@@ -105,16 +106,17 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
                 // check new input == $
                 if (event.newFragment.contentEquals("$") || event.newFragment.contentEquals("¥")) {
-                    popup?.show(this@AutoDevInputSection)
+                    if (popup?.isDisposed == true) {
+                        popup = createPopup()
+                        popup?.showAbove(input)
+                    } else {
+                        popup?.showAbove(input)
+                    }
                 }
             }
         }
 
-        popup = JBPopupFactory.getInstance().createComponentPopupBuilder(JTextField(""), null)
-            .setRequestFocus(false)
-            .setMinSize(
-                Dimension(200, 200)
-            ).createPopup()
+        popup = createPopup()
 
         input.addDocumentListener(documentListener)
         input.recreateDocument()
@@ -166,6 +168,12 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
         tokenizer = TokenizerImpl.INSTANCE
     }
+
+    private fun createPopup() = JBPopupFactory.getInstance().createComponentPopupBuilder(AutoDevVariableListComponent(), null)
+        .setRequestFocus(false)
+        .setMinSize(
+            Dimension(200, 200)
+        ).createPopup()
 
 
     private fun loadRagApps(): List<CustomAgentConfig> {
