@@ -71,7 +71,7 @@ object ErrorMessageProcessor {
             extractErrorPlaces(project, description.consoleLineFrom, description.consoleLineTo, description.editor)
 
         val errorPromptBuilder =
-            ErrorPromptBuilder(AutoDevSettingsState.maxTokenLength, TokenizerImpl.INSTANCESupplier.get())
+            ErrorPromptBuilder(AutoDevSettingsState.maxTokenLength, TokenizerImpl.INSTANCE)
         return errorPromptBuilder.buildPrompt(extractedText, extractedErrorPlaces)
     }
 

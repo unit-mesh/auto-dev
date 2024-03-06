@@ -1,13 +1,11 @@
 package cc.unitmesh.devti.llms.tokenizer
 
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.CachedSingletonsRegistry
 import com.intellij.openapi.components.Service
 import com.knuddels.jtokkit.Encodings
 import com.knuddels.jtokkit.api.Encoding
 import com.knuddels.jtokkit.api.EncodingRegistry
 import com.knuddels.jtokkit.api.EncodingType
-import java.util.function.Supplier
 
 @Service(Service.Level.APP)
 class TokenizerImpl(private val maxTokenLength: Int = 8192) : Tokenizer {
@@ -22,7 +20,7 @@ class TokenizerImpl(private val maxTokenLength: Int = 8192) : Tokenizer {
     }
 
     companion object {
-        val INSTANCESupplier: Supplier<TokenizerImpl> =
-            CachedSingletonsRegistry.lazy { ApplicationManager.getApplication().getService(TokenizerImpl::class.java) }
+        val INSTANCE =
+            ApplicationManager.getApplication().getService(TokenizerImpl::class.java)
     }
 }

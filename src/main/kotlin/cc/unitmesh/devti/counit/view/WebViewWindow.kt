@@ -13,8 +13,16 @@ import java.awt.Component
  * for custom webview can refs: https://github.com/mucharafal/jcef_example
  */
 class WebViewWindow {
-    private val browser: JBCefBrowser = JBCefBrowser().also {
+    // offical doc: https://plugins.jetbrains.com/docs/intellij/jcef.html#executing-javascript
+    private val browser: JBCefBrowser
 
+    init {
+        browser = try {
+            JBCefBrowser.createBuilder()
+                .build()
+        } catch (e: Exception) {
+            JBCefBrowser()
+        }
     }
 
     val component: Component = browser.component

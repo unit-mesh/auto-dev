@@ -26,7 +26,7 @@ abstract class PromptStrategy : LazyExtensionInstance<PromptStrategy>() {
     @Attribute("implementationClass")
     var implementationClass: String? = null
 
-    private val tokenizer: Tokenizer = TokenizerImpl.INSTANCESupplier.get()
+    private val tokenizer: Tokenizer = TokenizerImpl.INSTANCE.get()
 
     override fun getImplementationClassName(): String? = implementationClass
 
