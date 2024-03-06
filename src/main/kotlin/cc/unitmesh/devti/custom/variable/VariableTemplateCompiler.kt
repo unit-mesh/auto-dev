@@ -1,6 +1,6 @@
-package cc.unitmesh.devti.custom.team
+package cc.unitmesh.devti.custom.variable
 
-import cc.unitmesh.devti.custom.variable.CustomVariable
+import cc.unitmesh.devti.custom.team.DefaultTeamContextProvider
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
@@ -16,14 +16,14 @@ import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.Velocity
 import java.io.StringWriter
 
-class TeamPromptTemplateCompiler(
+class VariableTemplateCompiler(
     val language: Language,
     val file: PsiFile,
     val element: PsiElement?,
     val editor: Editor,
     val selectedText: String = "",
 ) {
-    private val log = logger<TeamPromptTemplateCompiler>()
+    private val log = logger<VariableTemplateCompiler>()
     private val velocityContext = VelocityContext()
 
     init {
@@ -50,7 +50,7 @@ class TeamPromptTemplateCompiler(
         configForFramework()
 
         val oldContextClassLoader = Thread.currentThread().getContextClassLoader()
-        Thread.currentThread().setContextClassLoader(TeamPromptTemplateCompiler::class.java.getClassLoader())
+        Thread.currentThread().setContextClassLoader(VariableTemplateCompiler::class.java.getClassLoader())
 
         val sw = StringWriter()
         try {
