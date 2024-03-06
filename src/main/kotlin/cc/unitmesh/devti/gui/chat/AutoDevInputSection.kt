@@ -4,6 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.counit.configurable.customAgentSetting
 import cc.unitmesh.devti.counit.model.CustomAgentConfig
+import cc.unitmesh.devti.counit.model.CustomAgentState
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.llms.tokenizer.TokenizerImpl
 import cc.unitmesh.devti.settings.AutoDevSettingsState
@@ -222,6 +223,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     }
 
     fun resetAgent() {
+        (customRag.selectedItem as CustomAgentConfig).state = CustomAgentState.START
         customRag.selectedItem = defaultRag
     }
 

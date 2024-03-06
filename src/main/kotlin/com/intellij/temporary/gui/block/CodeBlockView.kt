@@ -38,7 +38,7 @@ import javax.swing.JComponent
 class CodeBlockView(
     private val block: CodeBlock,
     private val project: Project,
-    private val disposable: Disposable
+    private val disposable: Disposable,
 ) :
     MessageBlockView {
     private var editorInfo: CodePartEditorInfo? = null
@@ -103,7 +103,7 @@ class CodeBlockView(
             project: Project,
             file: LightVirtualFile,
             document: Document,
-            disposable: Disposable
+            disposable: Disposable,
         ): EditorEx {
             val editor: EditorEx = ReadAction.compute<EditorEx, Throwable> {
                 EditorFactory.getInstance()
@@ -156,7 +156,7 @@ class CodeBlockView(
             graphProperty: GraphProperty<String>,
             disposable: Disposable,
             language: Language,
-            message: CompletableMessage
+            message: CompletableMessage,
         ): CodePartEditorInfo {
             val forceFoldEditorByDefault = message.getRole() === ChatRole.User
             val createCodeViewerFile = createCodeViewerFile(language, graphProperty.get())

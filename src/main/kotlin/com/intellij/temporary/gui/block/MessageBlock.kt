@@ -69,7 +69,7 @@ class CodeBlock(private val msg: CompletableMessage) : AbstractMessageBlock(msg)
 
     init {
         val language = Language.ANY
-        this.code = Code(language, "", false)
+        this.code = Code(language, msg.text, false)
     }
 
     override fun onContentChanged(content: String) {
