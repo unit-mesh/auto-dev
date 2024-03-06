@@ -1,7 +1,7 @@
 ---
 layout: default
-title: Customize Agent
-nav_order: 4
+title: AI Agent
+nav_order: 5
 has_children: true
 ---
 
