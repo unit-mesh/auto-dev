@@ -1,38 +1,47 @@
 package cc.unitmesh.devti.gui.chat
 
+import cc.unitmesh.devti.custom.variable.CustomVariable
 import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBList
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.event.MouseEvent
-import java.awt.event.MouseListener
 import javax.swing.*
 import javax.swing.border.Border
 import javax.swing.event.MouseInputAdapter
 
 class AutoDevVariableList(
-    val list: List<AutoDevVariableListComponent>,
-    val callback: ((AutoDevVariableListComponent) -> Unit?)?,
-) : JBList<AutoDevVariableListComponent>() {
+    val list: List<AutoDevVariableListItemComponent>,
+    val callback: ((AutoDevVariableListItemComponent) -> Unit),
+) : JBList<AutoDevVariableListItemComponent>(list) {
     init {
         border = BorderFactory.createEmptyBorder(0, 4, 0, 4)
         setCellRenderer(VariableListCellRenderer())
         addMouseListener(object : MouseInputAdapter() {
             override fun mouseClicked(event: MouseEvent?) {
                 val item = selectedValue ?: return
-                callback?.invoke(item)
+                callback.invoke(item)
             }
         })
     }
+
+    companion object {
+        fun from(all: List<CustomVariable>, function: (AutoDevVariableListItemComponent) -> Unit): AutoDevVariableList {
+            val list = all.map {
+                AutoDevVariableListItemComponent(it)
+            }
+            return AutoDevVariableList(list, function)
+        }
+    }
 }
 
-class VariableListCellRenderer : ListCellRenderer<AutoDevVariableListComponent> {
+class VariableListCellRenderer : ListCellRenderer<AutoDevVariableListItemComponent> {
     private var emptyBorder: Border = BorderFactory.createEmptyBorder(1, 1, 1, 1)
 
     override fun getListCellRendererComponent(
-        jList: JList<out AutoDevVariableListComponent>,
-        value: AutoDevVariableListComponent?,
+        jList: JList<out AutoDevVariableListItemComponent>,
+        value: AutoDevVariableListItemComponent?,
         index: Int,
         isSelected: Boolean,
         cellHasFocus: Boolean,
@@ -62,13 +71,12 @@ class VariableListCellRenderer : ListCellRenderer<AutoDevVariableListComponent> 
         value.border = border
         return value
     }
-
 }
 
-class AutoDevVariableListComponent : JPanel() {
+class AutoDevVariableListItemComponent(val customVariable: CustomVariable) : JPanel() {
     init {
-        add(JLabel("$" + "selection"), BorderLayout.WEST)
-        val label = JLabel("Used to get the currently selected text")
+        add(JLabel("$${customVariable.variable}"), BorderLayout.WEST)
+        val label = JLabel(customVariable.description)
         label.border = BorderFactory.createEmptyBorder(0, 8, 0, 0)
         label.foreground = JBColor.namedColor("Component.infoForeground", JBColor(Gray.x99, Gray.x78))
         add(label, BorderLayout.EAST)

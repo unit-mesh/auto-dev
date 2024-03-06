@@ -5,6 +5,7 @@ import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.counit.configurable.customAgentSetting
 import cc.unitmesh.devti.counit.model.CustomAgentConfig
 import cc.unitmesh.devti.counit.model.CustomAgentState
+import cc.unitmesh.devti.custom.variable.CustomVariable
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.llms.tokenizer.TokenizerImpl
 import cc.unitmesh.devti.settings.AutoDevSettingsState
@@ -108,6 +109,10 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
                 // check new input == $
                 if (event.newFragment.contentEquals("$") || event.newFragment.contentEquals("¥")) {
+                    if (popup == null) {
+                        popup = createPopup()
+                    }
+
                     if (popup?.isVisible == true) {
                         popup?.cancel()
                     }
@@ -121,8 +126,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                 }
             }
         }
-
-        popup = createPopup()
 
         input.addDocumentListener(documentListener)
         input.recreateDocument()
@@ -175,14 +178,22 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         tokenizer = TokenizerImpl.INSTANCE
     }
 
-    private fun createPopup() = JBPopupFactory.getInstance()
-        .createComponentPopupBuilder(AutoDevVariableList(listOf(
-            AutoDevVariableListComponent(),
-        ) ,null), null )
-        .setRequestFocus(false)
-        .setMinSize(
-            Dimension(this@AutoDevInputSection.width, 0)
-        ).createPopup()
+    private fun createPopup(): JBPopup {
+        val devVariableList = AutoDevVariableList.from(CustomVariable.all()) { item ->
+            input.text += item.customVariable.variable
+            this.popup?.cancel()
+        }
+
+        devVariableList.selectedIndex = 0
+
+        val popups = JBPopupFactory.getInstance()
+            .createComponentPopupBuilder(devVariableList, null)
+            .setRequestFocus(false)
+            .setMinSize(Dimension(this@AutoDevInputSection.width, 0))
+            .createPopup()
+
+        return popups
+    }
 
 
     private fun loadRagApps(): List<CustomAgentConfig> {
