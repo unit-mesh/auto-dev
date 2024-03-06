@@ -14,7 +14,7 @@ import java.awt.Component
  * for custom webview can refs: https://github.com/mucharafal/jcef_example
  */
 class WebViewWindow {
-    // offical doc: https://plugins.jetbrains.com/docs/intellij/jcef.html#executing-javascript
+    // official doc: https://plugins.jetbrains.com/docs/intellij/jcef.html#executing-javascript
     private val browser: JBCefBrowser
 
     init {

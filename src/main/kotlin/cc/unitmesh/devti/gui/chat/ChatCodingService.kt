@@ -6,6 +6,8 @@ import cc.unitmesh.devti.util.LLMCoroutineScope
 import cc.unitmesh.devti.counit.CustomAgentChatProcessor
 import cc.unitmesh.devti.counit.configurable.customAgentSetting
 import cc.unitmesh.devti.counit.model.CustomAgentState
+import cc.unitmesh.devti.custom.compile.CustomVariable
+import cc.unitmesh.devti.custom.compile.VariableTemplateCompiler
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.util.parser.PostCodeProcessor
 import cc.unitmesh.devti.provider.ContextPrompter
@@ -29,15 +31,29 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         context: ChatContext? = null,
         newChatContext: Boolean,
     ) {
-        val requestPrompt = prompter.requestPrompt()
-        val displayPrompt = prompter.displayPrompt()
+        var requestPrompt = prompter.requestPrompt()
+        var displayPrompt = prompter.displayPrompt()
 
         if (project.customAgentSetting.enableCustomRag && ui.hasSelectedCustomAgent()) {
-            if (ui.getSelectedCustomAgent().state === CustomAgentState.START) {
-                counitProcessor.handleChat(prompter, ui, context, llmProvider)
-                return
+            val selectedCustomAgent = ui.getSelectedCustomAgent()
+            when {
+                selectedCustomAgent.state === CustomAgentState.START -> {
+                    counitProcessor.handleChat(prompter, ui, context, llmProvider)
+                    return
+                }
+
+                selectedCustomAgent.state === CustomAgentState.FINISHED -> {
+                    if (CustomVariable.hasVariable(requestPrompt)) {
+                        val compiler = prompter.toTemplateCompiler()
+                        compiler?.also {
+                            requestPrompt = CustomVariable.compile(requestPrompt, it)
+                            displayPrompt = CustomVariable.compile(displayPrompt, it)
+                        }
+                    }
+                }
             }
         }
+
 
         ui.addMessage(requestPrompt, true, displayPrompt)
         ui.addMessage(AutoDevBundle.message("autodev.loading"))

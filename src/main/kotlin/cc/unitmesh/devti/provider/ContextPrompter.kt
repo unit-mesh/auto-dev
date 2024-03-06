@@ -1,13 +1,19 @@
 package cc.unitmesh.devti.provider
 
+import cc.unitmesh.devti.custom.compile.VariableTemplateCompiler
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.builtin.DefaultContextPrompter
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.settings.coder.coderSetting
+import com.intellij.lang.html.HTMLLanguage
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.extensions.ExtensionPointName
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.serviceContainer.LazyExtensionInstance
@@ -79,6 +85,26 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
     open fun appendAdditionContext(context: String) {}
     open fun displayPrompt(): String = ""
     open fun requestPrompt(): String = ""
+
+    fun toTemplateCompiler(): VariableTemplateCompiler? {
+        val project = project ?: ProjectManager.getInstance().openProjects.firstOrNull() ?: return null
+        val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return null
+
+        val file: PsiFile = file ?: PsiDocumentManager.getInstance(project).getPsiFile(editor.document) ?: return null
+
+        val selectedText = selectedText.ifEmpty {
+            editor.selectionModel.selectedText ?: ""
+        }
+
+        return VariableTemplateCompiler(
+            language = file.language,
+            file = file,
+            element = element,
+            editor = editor,
+            selectedText = selectedText
+        )
+
+    }
 
     companion object {
         private val EP_NAME: ExtensionPointName<ContextPrompter> =
