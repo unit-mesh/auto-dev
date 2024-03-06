@@ -14,6 +14,11 @@ enum class ResponseAction {
     Direct,
 
     /**
+     * Stream response
+     */
+    Stream,
+
+    /**
      * Text splitting result
      */
     TextChunk,
