@@ -73,7 +73,7 @@ class VariableListCellRenderer : ListCellRenderer<AutoDevVariableListItemCompone
     }
 }
 
-class AutoDevVariableListItemComponent(val customVariable: CustomVariable) : JPanel() {
+class AutoDevVariableListItemComponent(val customVariable: CustomVariable) : JPanel(BorderLayout()) {
     init {
         add(JLabel("$${customVariable.variable}"), BorderLayout.WEST)
         val label = JLabel(customVariable.description)

@@ -46,6 +46,8 @@ import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.Point
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.util.function.Supplier
@@ -179,22 +181,62 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     }
 
     private fun createPopup(): JBPopup {
-        val devVariableList = AutoDevVariableList.from(CustomVariable.all()) { item ->
+        val list: AutoDevVariableList = AutoDevVariableList.from(CustomVariable.all()) { item ->
             input.text += item.customVariable.variable
             this.popup?.cancel()
         }
 
-        devVariableList.selectedIndex = 0
+        list.selectedIndex = 0
+
+        list.addKeyListener(object : KeyAdapter() {
+            override fun keyPressed(e: KeyEvent?) {
+                if (!hasPopup()) return
+
+                when (e?.keyCode) {
+                    KeyEvent.VK_ENTER -> {
+                        e.consume()
+                        val selectedItem = list.getSelectedValue()
+                        if (selectedItem != null) {
+                            text += "${selectedItem.customVariable.variable} "
+                        }
+                        this@AutoDevInputSection.popup?.cancel()
+                    }
+
+                    KeyEvent.VK_DOWN -> {
+                        val selectedIndex = list.selectedIndex
+                        val itemsCount = list.getItemsCount()
+                        if (selectedIndex < itemsCount - 1) {
+                            list.setSelectedIndex(selectedIndex + 1)
+                        } else {
+                            list.setSelectedIndex(0)
+                        }
+                    }
+
+                    KeyEvent.VK_UP -> {
+                        val selectedIndex = list.selectedIndex
+                        if (selectedIndex > 0) {
+                            list.setSelectedIndex(selectedIndex - 1)
+                        } else {
+                            list.setSelectedIndex(list.getItemsCount() - 1)
+                        }
+                    }
+                }
+            }
+        })
 
         val popups = JBPopupFactory.getInstance()
-            .createComponentPopupBuilder(devVariableList, null)
-            .setRequestFocus(false)
+            .createComponentPopupBuilder(list, null)
+            .setFocusable(true)
+            .setRequestFocus(true)
             .setMinSize(Dimension(this@AutoDevInputSection.width, 0))
             .createPopup()
 
         return popups
     }
 
+    fun hasPopup(): Boolean {
+        return popup?.isVisible == true && popup?.isDisposed == false
+    }
 
     private fun loadRagApps(): List<CustomAgentConfig> {
         val ragsJsonConfig = project.customAgentSetting.ragsJsonConfig
