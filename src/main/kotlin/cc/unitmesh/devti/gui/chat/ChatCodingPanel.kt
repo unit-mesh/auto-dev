@@ -233,6 +233,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         chatCodingService.clearSession()
         progressBar.isVisible = false
         myList.removeAll()
+        this.hiddenProgressBar()
         updateUI()
     }
 
