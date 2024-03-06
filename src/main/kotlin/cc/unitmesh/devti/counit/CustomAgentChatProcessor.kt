@@ -6,12 +6,13 @@ import cc.unitmesh.devti.counit.model.CustomAgentState
 import cc.unitmesh.devti.counit.model.ResponseAction
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatContext
+import cc.unitmesh.devti.gui.chat.ChatRole
+import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.util.LLMCoroutineScope
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -19,7 +20,7 @@ import kotlinx.coroutines.runBlocking
 class CustomAgentChatProcessor(val project: Project) {
     private val customAgentExecutor = CustomAgentExecutor(project)
 
-    fun handleChat(prompter: ContextPrompter, ui: ChatCodingPanel, context: ChatContext?) {
+    fun handleChat(prompter: ContextPrompter, ui: ChatCodingPanel, context: ChatContext?, llmProvider: LLMProvider) {
         val originPrompt = prompter.requestPrompt()
         ui.addMessage(originPrompt, true, originPrompt)
 
@@ -38,9 +39,13 @@ class CustomAgentChatProcessor(val project: Project) {
         when (selectedAgent.responseAction) {
             ResponseAction.Direct -> {
                 val message = ui.addMessage("loading", false, "")
+                val sb = StringBuilder()
                 runBlocking {
-                    ui.updateMessage(response)
+                    val result = ui.updateMessage(response)
+                    sb.append(result)
                 }
+
+                llmProvider.appendLocalMessage(sb.toString(), ChatRole.Assistant)
                 message.reRenderAssistantOutput()
                 ui.hiddenProgressBar()
                 ui.updateUI()
@@ -49,7 +54,7 @@ class CustomAgentChatProcessor(val project: Project) {
             ResponseAction.Stream -> {
                 ui.addMessage(AutoDevBundle.message("autodev.loading"))
                 LLMCoroutineScope.scope(project).launch {
-//                    ui.updateMessage(response)
+                    ui.updateMessage(response)
                 }
             }
 
@@ -60,8 +65,11 @@ class CustomAgentChatProcessor(val project: Project) {
                         sb.append(it)
                     }
                 }
+
+                val content = sb.toString()
+                llmProvider.appendLocalMessage(content, ChatRole.Assistant)
                 ui.removeLastMessage()
-                ui.setInput(sb.toString())
+                ui.setInput(content)
                 ui.hiddenProgressBar()
             }
 
@@ -78,6 +86,7 @@ class CustomAgentChatProcessor(val project: Project) {
                 }
                 // TODO: add decode support
                 val content = sb.toString()
+                llmProvider.appendLocalMessage(content, ChatRole.Assistant)
 
                 ui.appendWebView(content, project)
                 ui.hiddenProgressBar()

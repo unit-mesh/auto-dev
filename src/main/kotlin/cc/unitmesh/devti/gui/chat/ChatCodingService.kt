@@ -16,15 +16,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 class ChatCodingService(var actionType: ChatActionType, val project: Project) {
-    private val llmFactory = LlmFactory()
+    private val llmProvider = LlmFactory().create(project)
     private val counitProcessor = project.service<CustomAgentChatProcessor>()
 
     val action = actionType.instruction(project = project)
 
-    fun getLabel(): String {
-        val capitalizedAction = actionType
-        return "$capitalizedAction Code"
-    }
+    fun getLabel(): String = "$actionType Code"
 
     fun handlePromptAndResponse(
         ui: ChatCodingPanel,
@@ -37,7 +34,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
 
         if (project.customAgentSetting.enableCustomRag && ui.hasSelectedCustomAgent()) {
             if (ui.getSelectedCustomAgent().state === CustomAgentState.START) {
-                counitProcessor.handleChat(prompter, ui, context)
+                counitProcessor.handleChat(prompter, ui, context, llmProvider)
                 return
             }
         }
@@ -74,7 +71,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         ui.addMessage(AutoDevBundle.message("autodev.loading"))
 
         ApplicationManager.getApplication().executeOnPooledThread {
-            val response = llmFactory.create(project).stream(requestPrompt, systemPrompt)
+            val response = llmProvider.stream(requestPrompt, systemPrompt)
 
             LLMCoroutineScope.scope(project).launch {
                 ui.updateMessage(response)
@@ -83,7 +80,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
     }
 
     private fun makeChatBotRequest(requestPrompt: String, newChatContext: Boolean): Flow<String> {
-        return llmFactory.create(project).stream(requestPrompt, "", keepHistory = !newChatContext)
+        return llmProvider.stream(requestPrompt, "", keepHistory = !newChatContext)
     }
 
     private fun getCodeSection(content: String, prefixText: String, suffixText: String): String {
@@ -96,6 +93,6 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
     }
 
     fun clearSession() {
-        llmFactory.create(project).clearMessage()
+        llmProvider.clearMessage()
     }
 }
