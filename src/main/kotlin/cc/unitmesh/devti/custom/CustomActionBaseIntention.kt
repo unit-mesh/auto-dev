@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.custom
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.action.CustomIntentionConfig
 import cc.unitmesh.devti.custom.action.CustomIntentionPrompt
 import cc.unitmesh.devti.custom.variable.*
@@ -22,7 +23,7 @@ class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConf
 
     private val logger = logger<CustomActionBaseIntention>()
 
-    override fun getFamilyName(): String = "Custom Intention"
+    override fun getFamilyName(): String = AutoDevBundle.message("autodev.custom.intentions.family")
     override fun priority(): Int {
         return intentionConfig.priority
     }
