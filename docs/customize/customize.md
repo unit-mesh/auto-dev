@@ -1,9 +1,8 @@
 ---
 layout: default
-title: Customize Features
-nav_order: 4
+title: Agent
+nav_order: 5
 has_children: true
-permalink: /customize
 ---
 
 {: .no_toc }
