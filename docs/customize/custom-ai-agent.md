@@ -20,18 +20,20 @@ Examples:
 ```json
 [
   {
-    "name": "内部 API 集成",
+    "name": "内部 API 问答",
     "url": "https://rag.unitmesh.cc/api/agent/market",
-    "auth": {
-        "type": "Bearer",
-        "token": "eyJhbGci"
-    },
     "responseAction": "Direct",
     "interactive": "ChatPanel"
   },
   {
-    "name": "前面页面生成",
+    "name": "API 组件检索",
     "url": "https://rag.unitmesh.cc/api/agent/frontend",
+    "responseAction": "TextChunk",
+    "interactive": "ChatPanel"
+  },
+  {
+    "name": "前面页面生成",
+    "url": "https://rag.unitmesh.cc/api/agent/frontend-gen",
     "auth": {
       "type": "Bearer",
       "token": "eyJhbGci"
