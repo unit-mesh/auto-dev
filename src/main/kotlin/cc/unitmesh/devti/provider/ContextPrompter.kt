@@ -107,6 +107,8 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
         private val EP_NAME: ExtensionPointName<ContextPrompter> =
             ExtensionPointName.create("cc.unitmesh.contextPrompter")
 
+        private val logger = logger<ContextPrompter>()
+
         fun prompter(lang: String): ContextPrompter {
             val langLowercase = lang.lowercase()
             val extensionList = EP_NAME.extensionList
@@ -121,7 +123,7 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
                 if (partLang.isNotEmpty()) {
                     partLang[0]
                 } else {
-                    logger<ContextPrompter>().warn("No context prompter found for language $lang, will use default")
+                    logger.warn("No context prompter found for language $lang, will use default")
                     DefaultContextPrompter()
                 }
             }
