@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.gui.chat
 
-import cc.unitmesh.devti.custom.variable.CustomVariable
+import cc.unitmesh.devti.custom.compile.CustomVariable
 import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBList

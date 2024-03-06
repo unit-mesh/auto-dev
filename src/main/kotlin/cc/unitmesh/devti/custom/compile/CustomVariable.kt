@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.custom.variable
+package cc.unitmesh.devti.custom.compile
 
 enum class CustomVariable(val variable: String, val description: String) {
     SELECTION("selection", "The selected text"),
@@ -18,6 +18,10 @@ enum class CustomVariable(val variable: String, val description: String) {
 
         fun hasVariable(content: String): Boolean {
             return all().any { content.contains("\${${it.variable}}") }
+        }
+
+        fun compile(content: String, compiler: VariableTemplateCompiler): String {
+            return compiler.compile(content)
         }
     }
 }

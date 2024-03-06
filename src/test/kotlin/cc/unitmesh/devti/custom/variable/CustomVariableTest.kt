@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.custom.variable
 
+import cc.unitmesh.devti.custom.compile.CustomVariable
 import io.kotest.matchers.shouldBe
 import org.junit.Test
 
