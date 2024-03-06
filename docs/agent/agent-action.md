@@ -25,11 +25,6 @@ enum class ResponseAction {
     TextChunk,
 
     /**
-     * will be handled by the client
-     */
-    Flow,
-
-    /**
      * Display result in WebView
      */
     WebView
@@ -44,7 +39,7 @@ enum class ResponseAction {
 
 ### TextChunk
 
-> Display the result in the the AutoDev input box for continuous processing.
+> Display the result in the AutoDev input box for continuous processing.
 
 <img src="https://unitmesh.cc/auto-dev/custom-agent-text-chunk.png" alt="Custom AI Agent Dropdown" width="400px"/>
 

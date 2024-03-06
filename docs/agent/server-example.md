@@ -7,6 +7,10 @@ nav_order: 3
 
 ## Server
 
+- ResponseAction.Direct should return "SSE<String>"
+- ResponseAction.TextChunk should return "JSON"
+- ResponseAction.WebView should return "HTML" code
+
 ## Request Body
 
 same to Chat API
