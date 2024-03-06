@@ -58,7 +58,7 @@ Toggle:Toggle为开关组件，常用于在应用中进行开关操作。
 
 @app.post("/api/agent/ux")
 def mock_frontend(messages: Messages):
-    return """```html
+    return """
 <html>
 <head>
     <meta charset="UTF-8">
@@ -72,7 +72,7 @@ def mock_frontend(messages: Messages):
     <p>你好，世界</p>
 </body>
 </html>
-```"""
+"""
 
 
 @app.exception_handler(RequestValidationError)

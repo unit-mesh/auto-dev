@@ -3,6 +3,8 @@ package cc.unitmesh.devti.gui.chat
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.alignRight
 import cc.unitmesh.devti.counit.model.CustomAgentConfig
+import cc.unitmesh.devti.counit.view.WebBlock
+import cc.unitmesh.devti.counit.view.WebBlockView
 import cc.unitmesh.devti.fullHeight
 import cc.unitmesh.devti.fullWidth
 import cc.unitmesh.devti.provider.ContextPrompter
@@ -10,11 +12,14 @@ import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.NullableComponent
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.IdeFocusManager
-import com.intellij.temporary.gui.block.MessageBlockView
+import com.intellij.temporary.gui.block.CodeBlock
+import com.intellij.temporary.gui.block.CodeBlockView
+import com.intellij.temporary.gui.block.SimpleMessage
 import com.intellij.temporary.gui.block.whenDisposed
 import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
@@ -266,27 +271,37 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         updateUI()
     }
 
-    fun appendWebView(blockView: MessageBlockView) {
-        myList.add(SimpleView(blockView))
+    fun appendWebView(content: String, project: Project) {
+        val msg = SimpleMessage(content, content, ChatRole.System)
+        val webBlock = WebBlock(msg)
+        val blockView = WebBlockView(webBlock, project, {})
+        val codeView = CodeBlockView(CodeBlock(msg), project, {})
+
+        myList.add(SimpleView(blockView, codeView))
+
         updateUI()
     }
 }
 
-class SimpleView(val view: MessageBlockView) : JBPanel<MessageView>() {
+class SimpleView(val webview: WebBlockView, val codeView: CodeBlockView) : JBPanel<MessageView>() {
     init {
         isDoubleBuffered = true
         isOpaque = true
-        background = JBColor(0x6F59FF, 0x2d2f30)
+        background = JBColor(0xE0EEF7, 0x2d2f30)
 
         layout = BorderLayout(JBUI.scale(8), 0)
         val centerPanel = JPanel(VerticalLayout(JBUI.scale(8)))
 
         centerPanel.isOpaque = false
         centerPanel.border = JBUI.Borders.emptyRight(8)
+        centerPanel.background = JBColor(0xE0EEF7, 0x2d2f30)
 
         add(centerPanel, BorderLayout.WEST)
 
-        view.initialize()
-        centerPanel.add(view.getComponent())
+        webview.initialize()
+        centerPanel.add(webview.getComponent())
+
+        codeView.initialize()
+        centerPanel.add(codeView.getComponent())
     }
 }

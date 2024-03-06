@@ -4,17 +4,13 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.counit.model.CustomAgentConfig
 import cc.unitmesh.devti.counit.model.CustomAgentState
 import cc.unitmesh.devti.counit.model.ResponseAction
-import cc.unitmesh.devti.counit.view.WebBlock
-import cc.unitmesh.devti.counit.view.WebBlockView
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatContext
-import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.util.LLMCoroutineScope
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.temporary.gui.block.SimpleMessage
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -79,11 +75,10 @@ class CustomAgentChatProcessor(val project: Project) {
                         sb.append(it)
                     }
                 }
+                // TODO: add decode support
                 val content = sb.toString()
 
-                val webBlock = WebBlock(SimpleMessage(content, content, ChatRole.User))
-                val blockView = WebBlockView(webBlock, project, {})
-                ui.appendWebView(blockView)
+                ui.appendWebView(content, project)
                 ui.hiddenProgressBar()
             }
         }
