@@ -221,6 +221,10 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         return customRag.selectedItem as CustomAgentConfig
     }
 
+    fun resetAgent() {
+        customRag.selectedItem = defaultRag
+    }
+
     private val maxHeight: Int
         get() {
             val decorator: InternalDecorator = UIUtil.getParentOfType(

@@ -233,7 +233,12 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         progressBar.isVisible = false
         myList.removeAll()
         this.hiddenProgressBar()
+        this.resetAgent()
         updateUI()
+    }
+
+    fun resetAgent() {
+        inputSection.resetAgent()
     }
 
     fun hasSelectedCustomAgent(): Boolean {
