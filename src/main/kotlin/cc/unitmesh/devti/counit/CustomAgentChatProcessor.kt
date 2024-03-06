@@ -59,6 +59,7 @@ class CustomAgentChatProcessor(val project: Project) {
                         sb.append(it)
                     }
                 }
+                ui.removeLastMessage()
                 ui.setInput(sb.toString())
                 ui.hiddenProgressBar()
             }

@@ -254,4 +254,12 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
     fun hiddenProgressBar() {
         progressBar.isVisible = false
     }
+
+    fun removeLastMessage() {
+        if (myList.componentCount > 0) {
+            myList.remove(myList.componentCount - 1)
+        }
+
+        updateUI()
+    }
 }
