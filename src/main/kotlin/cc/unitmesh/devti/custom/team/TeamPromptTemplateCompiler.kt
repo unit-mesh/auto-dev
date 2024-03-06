@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.custom.team
 
+import cc.unitmesh.devti.custom.variable.CustomVariable
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
@@ -22,12 +23,13 @@ class TeamPromptTemplateCompiler(
     val editor: Editor,
     val selectedText: String = "",
 ) {
+    private val log = logger<TeamPromptTemplateCompiler>()
     private val velocityContext = VelocityContext()
 
     init {
-        this.set("selection", selectedText)
-        this.set("beforeCursor", file.text.substring(0, editor.caretModel.offset))
-        this.set("afterCursor", file.text.substring(editor.caretModel.offset))
+        this.set(CustomVariable.SELECTION.variable, selectedText)
+        this.set(CustomVariable.BEFORE_CURSOR.variable, file.text.substring(0, editor.caretModel.offset))
+        this.set(CustomVariable.AFTER_CURSOR.variable, file.text.substring(editor.caretModel.offset))
     }
 
     fun set(key: String, value: String) {
@@ -35,10 +37,10 @@ class TeamPromptTemplateCompiler(
     }
 
     fun compile(template: String): String {
-        velocityContext.put("fileName", file.name)
-        velocityContext.put("filePath", file.virtualFile?.path ?: "")
+        velocityContext.put(CustomVariable.FILE_NAME.variable, file.name)
+        velocityContext.put(CustomVariable.FILE_PATH.variable, file.virtualFile?.path ?: "")
         velocityContext.put(
-            "methodName", when (element) {
+            CustomVariable.METHOD_NAME.variable, when (element) {
                 is PsiNameIdentifierOwner -> element.nameIdentifier?.text ?: ""
                 else -> ""
             }
@@ -74,16 +76,16 @@ class TeamPromptTemplateCompiler(
             )
 
             val collectChatContextList = ChatContextProvider.collectChatContextList(file.project, context)
-            velocityContext.put("frameworkContext", collectChatContextList.joinToString("\n") {
+            velocityContext.put(CustomVariable.FRAMEWORK_CONTEXT.variable, collectChatContextList.joinToString("\n") {
                 it.text
             })
         }
     }
 
     private fun configForLanguage() {
-        velocityContext.put("language", language.displayName)
+        velocityContext.put(CustomVariable.LANGUAGE.variable, language.displayName)
         velocityContext.put(
-            "commentSymbol", when (language.displayName.lowercase()) {
+            CustomVariable.COMMENT_SYMBOL.variable, when (language.displayName.lowercase()) {
                 "java", "kotlin" -> "//"
                 "python" -> "#"
                 "javascript" -> "//"
@@ -92,9 +94,5 @@ class TeamPromptTemplateCompiler(
                 else -> "-"
             }
         )
-    }
-
-    companion object {
-        val log = logger<TeamPromptTemplateCompiler>()
     }
 }

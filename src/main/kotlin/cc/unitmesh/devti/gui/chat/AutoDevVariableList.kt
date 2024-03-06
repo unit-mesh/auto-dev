@@ -3,6 +3,7 @@ package cc.unitmesh.devti.gui.chat
 import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBList
+import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
@@ -15,14 +16,14 @@ class AutoDevVariableList(
     val callback: ((AutoDevVariableListComponent) -> Unit?)?,
 ) : JBList<AutoDevVariableListComponent>() {
     init {
-        border = BorderFactory.createEmptyBorder(0, 5, 0, 5)
+        border = BorderFactory.createEmptyBorder(0, 4, 0, 4)
         setCellRenderer(VariableListCellRenderer())
         addMouseListener(object : MouseInputAdapter() {
             override fun mouseClicked(event: MouseEvent?) {
                 val item = selectedValue ?: return
                 callback?.invoke(item)
             }
-        } as MouseListener)
+        })
     }
 }
 
@@ -66,9 +67,10 @@ class VariableListCellRenderer : ListCellRenderer<AutoDevVariableListComponent> 
 
 class AutoDevVariableListComponent : JPanel() {
     init {
-        val label = JLabel("doing something")
+        add(JLabel("$" + "selection"), BorderLayout.WEST)
+        val label = JLabel("Used to get the currently selected text")
         label.border = BorderFactory.createEmptyBorder(0, 8, 0, 0)
         label.foreground = JBColor.namedColor("Component.infoForeground", JBColor(Gray.x99, Gray.x78))
-        add(label, "East")
+        add(label, BorderLayout.EAST)
     }
 }
