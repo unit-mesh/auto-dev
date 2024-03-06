@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.counit.view
 
+import com.intellij.ui.JBColor
 import com.intellij.ui.jcef.JBCefBrowser
 import com.intellij.ui.jcef.JBCefBrowserBase
 import com.intellij.ui.jcef.JBCefJSQuery
@@ -23,6 +24,8 @@ class WebViewWindow {
         } catch (e: Exception) {
             JBCefBrowser()
         }
+
+        browser.component.background = JBColor.WHITE
     }
 
     val component: Component = browser.component
