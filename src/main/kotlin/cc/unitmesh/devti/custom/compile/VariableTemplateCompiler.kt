@@ -27,7 +27,7 @@ class VariableTemplateCompiler(
     private val velocityContext = VelocityContext()
 
     init {
-        this.set(CustomVariable.SELECTION.variable, selectedText)
+        this.set(CustomVariable.SELECTION.variable, editor.selectionModel.selectedText ?: selectedText)
         this.set(CustomVariable.BEFORE_CURSOR.variable, file.text.substring(0, editor.caretModel.offset))
         this.set(CustomVariable.AFTER_CURSOR.variable, file.text.substring(editor.caretModel.offset))
     }

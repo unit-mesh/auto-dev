@@ -6,13 +6,11 @@ import cc.unitmesh.devti.provider.builtin.DefaultContextPrompter
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.settings.coder.coderSetting
-import com.intellij.lang.html.HTMLLanguage
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -103,7 +101,6 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
             editor = editor,
             selectedText = selectedText
         )
-
     }
 
     companion object {

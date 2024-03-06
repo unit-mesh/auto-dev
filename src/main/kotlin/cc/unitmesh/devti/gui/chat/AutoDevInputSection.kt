@@ -109,8 +109,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                     revalidate()
                 }
 
-                // check new input == $
-                if (event.newFragment.contentEquals("$") || event.newFragment.contentEquals("¥")) {
+                if (event.newFragment.contentEquals("$")) {
                     if (popup == null) {
                         popup = createPopup()
                     }
@@ -199,8 +198,9 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                         if (selectedItem != null) {
                             text += "${selectedItem.customVariable.variable} "
                         }
+
+                        this@AutoDevInputSection.input.requestFocus()
                         this@AutoDevInputSection.popup?.cancel()
-                        this@AutoDevInputSection.requestFocus()
                     }
 
                     KeyEvent.VK_DOWN -> {
@@ -220,11 +220,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                         } else {
                             list.setSelectedIndex(list.getItemsCount() - 1)
                         }
-                    }
-
-                    // Esc
-                    KeyEvent.VK_ESCAPE -> {
-                        this@AutoDevInputSection.requestFocus()
                     }
                 }
             }
