@@ -191,6 +191,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             override fun keyPressed(e: KeyEvent?) {
                 if (!hasPopup()) return
 
+                val itemsCount = list.getItemsCount()
+
                 when (e?.keyCode) {
                     KeyEvent.VK_ENTER -> {
                         e.consume()
@@ -205,7 +207,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
                     KeyEvent.VK_DOWN -> {
                         val selectedIndex = list.selectedIndex
-                        val itemsCount = list.getItemsCount()
                         if (selectedIndex < itemsCount - 1) {
                             list.setSelectedIndex(selectedIndex + 1)
                         } else {
@@ -218,7 +219,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                         if (selectedIndex > 0) {
                             list.setSelectedIndex(selectedIndex - 1)
                         } else {
-                            list.setSelectedIndex(list.getItemsCount() - 1)
+                            list.setSelectedIndex(itemsCount - 1)
                         }
                     }
                 }
