@@ -138,8 +138,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         val horizontalGlue = Box.createHorizontalGlue()
         horizontalGlue.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
-                val ideFocusManager = IdeFocusManager.getInstance(project)
-                ideFocusManager.requestFocus(input, true)
+                IdeFocusManager.getInstance(project).requestFocus(input, true)
+                input.caretModel.moveToOffset(input.text.length - 1)
             }
         })
         layoutPanel.background = JBColor(
@@ -201,8 +201,9 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                             text += "${selectedItem.customVariable.variable} "
                         }
 
-                        this@AutoDevInputSection.input.requestFocus()
                         this@AutoDevInputSection.popup?.cancel()
+                        input.requestFocus()
+                        input.caretModel.moveToOffset(input.text.length - 1)
                     }
 
                     KeyEvent.VK_DOWN -> {
@@ -230,6 +231,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             .createComponentPopupBuilder(list, null)
             .setFocusable(true)
             .setRequestFocus(true)
+            .setCancelOnClickOutside(true)
+            .setCancelOnWindowDeactivation(true)
             .setMinSize(Dimension(this@AutoDevInputSection.width, 0))
             .createPopup()
 
