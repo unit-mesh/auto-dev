@@ -8,7 +8,6 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
@@ -124,7 +123,7 @@ class CodeBlockView(
             val markupModel: MarkupModelEx = editor.markupModel
             (markupModel as EditorMarkupModel).isErrorStripeVisible = false
 
-            val settings = editor.getSettings().also {
+            val settings = editor.settings.also {
                 it.isDndEnabled = false
                 it.isLineNumbersShown = false
                 it.additionalLinesCount = 0
@@ -160,14 +159,12 @@ class CodeBlockView(
             message: CompletableMessage
         ): CodePartEditorInfo {
             val forceFoldEditorByDefault = message.getRole() === ChatRole.User
-            val content = graphProperty.get()
-
-            val createCodeViewerFile: VirtualFile = createCodeViewerFile(language, content)
+            val createCodeViewerFile = createCodeViewerFile(language, graphProperty.get())
             val document: Document =
                 createCodeViewerFile.findDocument() ?: throw IllegalStateException("Document not found")
 
             val editor: EditorEx =
-                createCodeViewerEditor(project, createCodeViewerFile as LightVirtualFile, document, disposable)
+                createCodeViewerEditor(project, createCodeViewerFile, document, disposable)
 
             val toolbarActionGroup = ActionUtil.getActionGroup("AutoDev.ToolWindow.Snippet.Toolbar")!!
             toolbarActionGroup.let {

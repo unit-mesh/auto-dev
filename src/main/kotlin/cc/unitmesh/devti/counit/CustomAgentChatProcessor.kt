@@ -32,8 +32,12 @@ class CustomAgentChatProcessor(val project: Project) {
         selectedAgent.state = CustomAgentState.FINISHED
         when (selectedAgent.responseAction) {
             ResponseAction.Direct -> {
-                ui.addMessage(response, false, response)
+                ui.addMessage(response, false, response).also {
+                    it.updateContent(response)
+                    it.reRenderAssistantOutput()
+                }
                 ui.hiddenProgressBar()
+                ui.updateUI()
             }
 
             ResponseAction.TextChunk -> {
@@ -42,8 +46,12 @@ class CustomAgentChatProcessor(val project: Project) {
             }
 
             ResponseAction.Flow -> {
-                ui.addMessage(response, false, response)
+                ui.addMessage(response, false, response).also {
+                    it.updateContent(response)
+                    it.reRenderAssistantOutput()
+                }
                 ui.hiddenProgressBar()
+                ui.updateUI()
             }
 
             ResponseAction.WebView -> {

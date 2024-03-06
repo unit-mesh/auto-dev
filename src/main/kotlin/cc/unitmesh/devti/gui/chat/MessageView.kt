@@ -103,14 +103,11 @@ class MessageView(private val message: String, val role: ChatRole, private val d
         }
     }
 
-    fun updateContent(content: String) {
-        MessageWorker(content).execute()
-    }
-
-
     private var answer: String = ""
-    fun updateSourceContent(source: String) {
-        answer = source
+
+    fun updateContent(content: String) {
+        this.answer = content
+        MessageWorker(content).execute()
     }
 
     fun scrollToBottom() {
@@ -122,7 +119,6 @@ class MessageView(private val message: String, val role: ChatRole, private val d
 
     fun reRenderAssistantOutput() {
         ApplicationManager.getApplication().invokeLater {
-
             centerPanel.remove(component)
             centerPanel.updateUI()
 

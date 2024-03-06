@@ -118,6 +118,9 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         }
     }
 
+    /**
+     * Add a message to the chat panel and update ui
+     */
     fun addMessage(message: String, isMe: Boolean = false, displayPrompt: String = ""): MessageView {
         val role = if (isMe) ChatRole.User else ChatRole.Assistant
         val displayText = displayPrompt.ifEmpty { message }
@@ -129,7 +132,6 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         scrollToBottom()
         progressBar.isIndeterminate = true
         updateUI()
-
         return messageView
     }
 
@@ -200,10 +202,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         }.collect {
             text += it
 
-            // 以下两个 API 设计不合理，如果必须要同时调用，那就只提供一个就好了
-            messageView.updateSourceContent(text)
             messageView.updateContent(text)
-
             messageView.scrollToBottom()
         }
 
