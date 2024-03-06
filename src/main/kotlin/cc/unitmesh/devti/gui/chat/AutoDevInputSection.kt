@@ -23,12 +23,15 @@ import com.intellij.openapi.ui.ComponentValidator
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.ui.popup.JBPopup
 import com.intellij.openapi.ui.popup.JBPopupFactory
+import com.intellij.openapi.ui.popup.JBPopupListener
+import com.intellij.openapi.ui.popup.LightweightWindowEvent
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.impl.InternalDecorator
 import com.intellij.temporary.gui.block.AutoDevCoolBorder
 import com.intellij.ui.JBColor
 import com.intellij.ui.MutableCollectionComboBoxModel
 import com.intellij.ui.SimpleListCellRenderer
+import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.content.ContentManager
 import com.intellij.util.EventDispatcher
@@ -36,18 +39,17 @@ import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.components.BorderLayoutPanel
-import com.intellij.vcsUtil.showAbove
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
+import java.awt.Point
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.util.function.Supplier
 import javax.swing.Box
 import javax.swing.JComponent
-import javax.swing.JTextField
 import kotlin.math.max
 import kotlin.math.min
 
@@ -106,11 +108,15 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
                 // check new input == $
                 if (event.newFragment.contentEquals("$") || event.newFragment.contentEquals("¥")) {
+                    if (popup?.isVisible == true) {
+                        popup?.cancel()
+                    }
+
                     if (popup?.isDisposed == true) {
                         popup = createPopup()
-                        popup?.showAbove(input)
+                        showPopupAbove(popup!!, this@AutoDevInputSection)
                     } else {
-                        popup?.showAbove(input)
+                        showPopupAbove(popup!!, this@AutoDevInputSection)
                     }
                 }
             }
@@ -169,10 +175,13 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         tokenizer = TokenizerImpl.INSTANCE
     }
 
-    private fun createPopup() = JBPopupFactory.getInstance().createComponentPopupBuilder(AutoDevVariableListComponent(), null)
+    private fun createPopup() = JBPopupFactory.getInstance()
+        .createComponentPopupBuilder(AutoDevVariableList(listOf(
+            AutoDevVariableListComponent(),
+        ) ,null), null )
         .setRequestFocus(false)
         .setMinSize(
-            Dimension(200, 200)
+            Dimension(this@AutoDevInputSection.width, 0)
         ).createPopup()
 
 
@@ -266,4 +275,19 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         }
 
     val focusableComponent: JComponent get() = input
+}
+
+fun showPopupAbove(popup: JBPopup, component: Component) {
+    val northWest = RelativePoint(component, Point())
+
+    popup.addListener(object : JBPopupListener {
+        override fun beforeShown(event: LightweightWindowEvent) {
+            val location = Point(popup.locationOnScreen).apply { y = northWest.screenPoint.y - popup.size.height }
+
+            popup.setLocation(location)
+            popup.removeListener(this)
+        }
+    })
+
+    popup.show(northWest)
 }
