@@ -190,10 +190,10 @@
                 </g>
             </g>
             <g id="agent" transform="translate(605.500000, 31.000000)">
-                <g id="custom-rag" transform="translate(0.000000, 171.000000)">
-                    <rect id="Rectangle" fill="#CCCCCC" x="0" y="0" width="99" height="30" rx="8"></rect>
-                    <text id="Custom-RAG" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
-                        <tspan x="14.6591797" y="19">Custom RAG</tspan>
+                <g id="custom-agent" transform="translate(0.000000, 171.000000)">
+                    <rect id="Rectangle" fill="#000000" x="0" y="0" width="99" height="30" rx="8"></rect>
+                    <text id="Custom-Agent" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                        <tspan x="10" y="19">Custom Agent</tspan>
                     </text>
                 </g>
                 <g id="crud">
@@ -209,7 +209,7 @@
                     </text>
                 </g>
                 <g id="counit" transform="translate(0.000000, 137.000000)">
-                    <rect id="Rectangle" fill="#000000" x="0" y="0" width="99" height="30" rx="8"></rect>
+                    <rect id="Rectangle" fill="#CCCC00" x="0" y="0" width="99" height="30" rx="8"></rect>
                     <text id="CoUnit" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
                         <tspan x="31.6601562" y="19">CoUnit</tspan>
                     </text>
