@@ -21,6 +21,17 @@ import okhttp3.Call
 import okhttp3.Request
 import org.jetbrains.annotations.VisibleForTesting
 
+/**
+ * The `CustomSSEProcessor` class is responsible for processing server-sent events (SSE) in a custom manner.
+ * It provides functions to stream JSON and SSE data from a given `Call` instance, and exposes properties for request and response formats.
+ *
+ * @property hasSuccessRequest A boolean flag indicating whether the request was successful.
+ * @property requestFormat A string representing the format of the request.
+ * @property responseFormat A string representing the format of the response.
+ * @property logger An instance of the logger for logging purposes.
+ *
+ * @constructor Creates an instance of `CustomSSEProcessor`.
+ */
 open class CustomSSEProcessor {
     open var hasSuccessRequest: Boolean = true
     open val requestFormat: String = ""
