@@ -21,7 +21,7 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor() {
     private val logger = logger<CustomAgentExecutor>()
 
     override var requestFormat: String = "{ \"messageKeys\": {\"role\": \"role\", \"content\": \"content\"} }"
-    override var responseFormat: String = "\$.choices[0].delta.content"
+    override var responseFormat: String = ""
 
     fun execute(input: String, agent: CustomAgentConfig): Flow<String>? {
         this.requestFormat = agent.connector?.requestFormat ?: this.requestFormat
