@@ -94,8 +94,6 @@ And the request body will be:
 
 ### Moonshot AI examples
 
-Official Moonshot AI doc: https://platform.moonshot.cn/docs/api-reference
-
 - Custom Response Type：SSE
 - Custom Engine Server：https://api.moonshot.cn/v1/chat/completions 
 - Request body format
