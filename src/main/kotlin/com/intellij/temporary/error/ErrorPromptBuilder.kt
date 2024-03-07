@@ -49,10 +49,9 @@ class ErrorPromptBuilder(private val maxLength: Int, private val tokenizer: Toke
 
         val templateRender = TemplateRender("genius/error")
         templateRender.context = ErrorContext(errorTextTrimmed, sourceCode)
-        val template = templateRender.getTemplate("generate-dockerfile.vm")
+        val template = templateRender.getTemplate("fix-error.vm")
         val prompt = templateRender.renderTemplate(template)
 
-//        val formattedPrompt = format(promptTemplate, "```\n$errorTextTrimmed\n```\n", sourceCode)
         val formattedDisplayText = format(displayText, "```\n$errorTextTrimmed\n```\n", sourceCode)
 
         return BasePromptText(formattedDisplayText, prompt)
