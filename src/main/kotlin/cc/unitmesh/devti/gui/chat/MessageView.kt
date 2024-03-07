@@ -67,22 +67,23 @@ class MessageView(private val message: String, val role: ChatRole, private val d
     }
 
     private fun createTitlePanel(): JPanel {
-        val borderLayoutPanel = BorderLayoutPanel()
-        borderLayoutPanel.setOpaque(false)
-        borderLayoutPanel.addToCenter(this.myNameLabel)
+        val panel = BorderLayoutPanel()
+        panel.setOpaque(false)
+        panel.addToCenter(this.myNameLabel)
+
         val group = ActionUtil.getActionGroup("AutoDev.ToolWindow.Message.Toolbar.Assistant")
 
         if (group != null) {
-            val actionToolbar = ActionToolbarImpl(javaClass.getName(), group, true)
-            actionToolbar.setLayoutPolicy(0)
-            actionToolbar.component.setOpaque(false)
-            actionToolbar.component.setBorder(JBUI.Borders.empty())
-            actionToolbar.setTargetComponent(this)
-            borderLayoutPanel.addToRight(actionToolbar.component)
+            val toolbar = ActionToolbarImpl(javaClass.getName(), group, true)
+            toolbar.setLayoutPolicy(0)
+            toolbar.component.setOpaque(false)
+            toolbar.component.setBorder(JBUI.Borders.empty())
+            toolbar.setTargetComponent(this)
+            panel.addToRight(toolbar.component)
         }
 
-        borderLayoutPanel.setOpaque(false)
-        return borderLayoutPanel
+        panel.setOpaque(false)
+        return panel
     }
 
     private fun renderInPartView(message: SimpleMessage) {

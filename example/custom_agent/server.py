@@ -6,7 +6,7 @@ from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel
 from starlette import status
 from starlette.requests import Request
-from starlette.responses import JSONResponse, HTMLResponse
+from starlette.responses import JSONResponse, HTMLResponse, PlainTextResponse
 
 app = FastAPI()
 
@@ -20,9 +20,12 @@ class Messages(BaseModel):
     messages: List[Message]
 
 
-@app.post("/api/agent/api-market")
+@app.post("/api/agent/api-market", response_class=PlainTextResponse)
 def mock_market(messages: Messages):
-    return """```markdown
+    return """
+Here are the APIs you can use:
+
+```markdown
 GET /wp/v2/posts
 GET /wp/v2/posts/{id}
 POST /wp/v2/posts
@@ -37,7 +40,7 @@ DELETE /wp/v2/pages/{id}
 ```"""
 
 
-@app.post("/api/agent/component-list")
+@app.post("/api/agent/component-list", response_class=PlainTextResponse)
 def mock_frontend(messages: Messages):
     return """```markdown
 Button:可快速创建不同样式的按钮。
