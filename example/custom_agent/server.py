@@ -13,7 +13,7 @@ app = FastAPI()
 
 class Message(BaseModel):
     role: str
-    message: str
+    content: str
 
 
 class Messages(BaseModel):

@@ -22,7 +22,7 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor() {
     private var client = OkHttpClient()
     private val logger = logger<CustomAgentExecutor>()
 
-    override var requestFormat: String = "{ \"messageKeys\": {\"role\": \"role\", \"content\": \"content\"} }"
+    override var requestFormat: String = ""
     override var responseFormat: String = ""
 
     fun execute(input: String, agent: CustomAgentConfig): Flow<String>? {
