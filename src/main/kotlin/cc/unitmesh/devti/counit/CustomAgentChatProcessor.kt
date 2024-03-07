@@ -20,6 +20,7 @@ import kotlinx.coroutines.runBlocking
 @Service(Service.Level.PROJECT)
 class CustomAgentChatProcessor(val project: Project) {
     private val customAgentExecutor = CustomAgentExecutor(project)
+    private val logger = logger<CustomAgentChatProcessor>()
 
     fun handleChat(prompter: ContextPrompter, ui: ChatCodingPanel, context: ChatContext?, llmProvider: LLMProvider) {
         val originPrompt = prompter.requestPrompt()
@@ -98,10 +99,6 @@ class CustomAgentChatProcessor(val project: Project) {
                 ui.hiddenProgressBar()
             }
         }
-    }
-
-    companion object {
-        private val logger = logger<CustomAgentChatProcessor>()
     }
 }
 

@@ -43,15 +43,28 @@ data class CustomFlowTransition(
 data class CustomAgentConfig(
     val name: String,
     val description: String = "",
-    val url: String = "",
+    val url: String,
     val icon: String = "",
+    val connector: ConnectorConfig? = null,
     val responseAction: CustomAgentResponseAction = CustomAgentResponseAction.Direct,
     val transition: List<CustomFlowTransition> = emptyList(),
     val interactive: InteractionType = InteractionType.ChatPanel,
-    val auth: CustomAgentAuth? = null
+    val auth: CustomAgentAuth? = null,
 ) {
     var state: CustomAgentState = CustomAgentState.START
 }
+
+@Serializable
+data class ConnectorConfig(
+    /**
+     * will be Json Config
+     */
+    val request: String = "",
+    /**
+     * will be JsonPath
+     */
+    val response: String = "",
+)
 
 @Serializable
 enum class CustomAgentState {
