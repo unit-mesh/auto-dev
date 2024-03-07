@@ -48,7 +48,8 @@ class CustomAgentChatProcessor(val project: Project) {
                     sb.append(result)
                 }
 
-                llmProvider.appendLocalMessage(sb.toString(), ChatRole.Assistant)
+                val content = sb.toString().removeSurrounding("\"")
+                llmProvider.appendLocalMessage(content, ChatRole.Assistant)
                 message.reRenderAssistantOutput()
                 ui.hiddenProgressBar()
                 ui.updateUI()

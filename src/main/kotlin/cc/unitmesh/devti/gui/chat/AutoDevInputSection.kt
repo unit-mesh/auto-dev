@@ -315,8 +315,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     }
 
     fun resetAgent() {
-        (customRag.selectedItem as? CustomAgentConfig)?.state.let {
-            CustomAgentState.START
+        (customRag.selectedItem as? CustomAgentConfig)?.let {
+            it.state = CustomAgentState.START
         }
 
         customRag.selectedItem = defaultRag
