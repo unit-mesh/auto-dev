@@ -114,7 +114,7 @@ open class CustomSSEProcessor {
 }
 
 @Serializable
-data class Message(val role: String, val message: String)
+data class Message(val role: String, val content: String)
 
 @Serializable
 data class CustomRequest(val messages: List<Message>)
