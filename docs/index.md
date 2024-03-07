@@ -63,6 +63,7 @@ Features:
     - Custom LLM Server. You can customize your LLM Server in `Settings` -> `Tools` -> `AutoDev`
     - Custom Living documentation.
     - Team prompts. Customize your team prompts in codebase, and distribute to your team.
+    - Custom AI Agent. You can integrate your own AI Agent into AutoDev.
     - Prompt override. You can override AutoDev's prompt in your codebase.
 - Infrastructure / DevOps
     - CI/CD support. AutoDev will auto generate CI/CD config file.
