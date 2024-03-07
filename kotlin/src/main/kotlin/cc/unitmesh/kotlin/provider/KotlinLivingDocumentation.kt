@@ -118,7 +118,7 @@ class KotlinLivingDocumentation : LivingDocumentation {
                     try {
                         doInsertComment(target, project, newDoc)
                     } catch (e: Exception) {
-                        val fromSuggestion = buildDocFromSuggestion(newDoc, "/**", "*/")
+                        val fromSuggestion = LivingDocumentation.buildDocFromSuggestion(newDoc, "/**", "*/")
                         if (fromSuggestion.isNotEmpty()) {
                             try {
                                 doInsertComment(target, project, fromSuggestion)

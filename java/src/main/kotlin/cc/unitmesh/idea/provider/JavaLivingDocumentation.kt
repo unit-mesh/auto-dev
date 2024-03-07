@@ -10,6 +10,7 @@ import com.intellij.psi.*
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.IncorrectOperationException
+import org.jetbrains.annotations.NonNls
 
 class JavaLivingDocumentation : LivingDocumentation {
     override val parameterTagInstruction: String get() = "use @param tag"
@@ -38,8 +39,9 @@ class JavaLivingDocumentation : LivingDocumentation {
 
             when (type) {
                 LivingDocumentationType.COMMENT -> {
+                    val doc = Companion.preHandleDoc(newDoc)
                     val psiElementFactory = JavaPsiFacade.getElementFactory(project)
-                    val newDocComment = psiElementFactory.createDocCommentFromText(newDoc)
+                    val newDocComment = psiElementFactory.createDocCommentFromText(doc)
 
                     if (target is PsiDocCommentOwner) {
                         val oldDocComment = target.docComment
@@ -119,6 +121,19 @@ class JavaLivingDocumentation : LivingDocumentation {
         }
 
         return methodsAndFieldsInRange
+    }
+
+    companion object {
+        fun preHandleDoc(newDoc: String): @NonNls String {
+            // 1. remove ```java and ``` from the newDoc if it exists
+            val newDocWithoutCodeBlock = newDoc.removePrefix("```java")
+                .removePrefix("```")
+                .removeSuffix("```")
+
+            // 2. lookup for the first line of the newDoc
+            val fromSuggestion = LivingDocumentation.buildDocFromSuggestion(newDocWithoutCodeBlock, "/**", "*/")
+            return fromSuggestion
+        }
     }
 
 }
