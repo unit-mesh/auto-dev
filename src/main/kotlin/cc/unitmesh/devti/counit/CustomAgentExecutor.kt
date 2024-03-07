@@ -6,12 +6,11 @@ import cc.unitmesh.devti.counit.model.CustomAgentResponseAction
 import cc.unitmesh.devti.llms.custom.CustomRequest
 import cc.unitmesh.devti.llms.custom.CustomSSEProcessor
 import cc.unitmesh.devti.llms.custom.Message
+import cc.unitmesh.devti.llms.custom.updateCustomFormat
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.flow.Flow
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -29,7 +28,7 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor() {
         this.requestFormat = agent.connector?.requestFormat ?: this.requestFormat
 
         val customRequest = CustomRequest(listOf(Message("user", input)))
-        val request = Json.encodeToString<CustomRequest>(customRequest)
+        val request = customRequest.updateCustomFormat(requestFormat)
 
         val body = request.toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
         val builder = Request.Builder()
