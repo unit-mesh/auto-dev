@@ -20,12 +20,12 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor() {
     private var client = OkHttpClient()
     private val logger = logger<CustomAgentExecutor>()
 
-    override var requestFormat: String = "{ \"messageKeys\": {\"role\": \"role\", \"content\": \"content\"} }\n"
+    override var requestFormat: String = "{ \"messageKeys\": {\"role\": \"role\", \"content\": \"content\"} }"
     override var responseFormat: String = "\$.choices[0].delta.content"
 
     fun execute(input: String, agent: CustomAgentConfig): Flow<String>? {
-        this.responseFormat = agent.connector?.responseFormat ?: this.responseFormat
         this.requestFormat = agent.connector?.requestFormat ?: this.requestFormat
+        this.responseFormat = agent.connector?.responseFormat ?: this.responseFormat
 
         val customRequest = CustomRequest(listOf(Message("user", input)))
         val request = customRequest.updateCustomFormat(requestFormat)
