@@ -20,7 +20,9 @@ Since AutoDev@1.7.0 version, we support custom AI agent, you can integrate your 
 4. Apply and OK.
 5. Click `x` and Close AutoDev panel and click `NewChat` in the AutoDev tool window.
 
-Examples:
+### Custom Agent Examples
+
+Demo:
 
 ```json
 [
