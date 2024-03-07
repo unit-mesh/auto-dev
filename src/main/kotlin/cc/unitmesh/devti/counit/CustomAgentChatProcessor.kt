@@ -54,9 +54,14 @@ class CustomAgentChatProcessor(val project: Project) {
 
             CustomAgentResponseAction.Stream -> {
                 ui.addMessage(AutoDevBundle.message("autodev.loading"))
+                var msg = ""
                 LLMCoroutineScope.scope(project).launch {
-                    ui.updateMessage(response)
+                    msg = ui.updateMessage(response)
                 }
+
+                llmProvider.appendLocalMessage(msg, ChatRole.Assistant)
+                ui.hiddenProgressBar()
+                ui.updateUI()
             }
 
             CustomAgentResponseAction.TextChunk -> {
@@ -75,7 +80,7 @@ class CustomAgentChatProcessor(val project: Project) {
             }
 
             CustomAgentResponseAction.Flow -> {
-                TODO()
+                logger.error("will not support flow response for now")
             }
 
             CustomAgentResponseAction.WebView -> {
@@ -85,7 +90,7 @@ class CustomAgentChatProcessor(val project: Project) {
                         sb.append(it)
                     }
                 }
-                // TODO: add decode support
+
                 val content = sb.toString()
                 llmProvider.appendLocalMessage(content, ChatRole.Assistant)
 
