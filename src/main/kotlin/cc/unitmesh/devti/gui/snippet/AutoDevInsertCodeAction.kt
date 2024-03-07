@@ -3,7 +3,9 @@ package cc.unitmesh.devti.gui.snippet
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.psi.PsiDocumentManager
@@ -11,6 +13,8 @@ import com.intellij.psi.codeStyle.CodeStyleManager
 
 
 class AutoDevInsertCodeAction : DumbAwareAction() {
+    private val logger = logger<AutoDevInsertCodeAction>()
+
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val editor = e.getData(PlatformDataKeys.EDITOR) ?: return
@@ -53,5 +57,5 @@ class AutoDevInsertCodeAction : DumbAwareAction() {
         }
     }
 
-    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
 }
