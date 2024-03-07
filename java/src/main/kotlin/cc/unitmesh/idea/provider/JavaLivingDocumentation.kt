@@ -39,7 +39,7 @@ class JavaLivingDocumentation : LivingDocumentation {
 
             when (type) {
                 LivingDocumentationType.COMMENT -> {
-                    val doc = Companion.preHandleDoc(newDoc)
+                    val doc = preHandleDoc(newDoc)
                     val psiElementFactory = JavaPsiFacade.getElementFactory(project)
                     val newDocComment = psiElementFactory.createDocCommentFromText(doc)
 
@@ -50,8 +50,6 @@ class JavaLivingDocumentation : LivingDocumentation {
                         } else {
                             target.addBefore(newDocComment, target.firstChild)
                         }
-                    } else {
-                        throw IncorrectOperationException("Unable to update documentation")
                     }
                 }
 

@@ -29,4 +29,20 @@ class JavaLivingDocumentationTest {
     @return the converted short array. If the input byte array is null, returns null.
     */""")
     }
+
+    @Test
+    fun should_handle_normal_java_code() {
+        val code = """/**
+    Converts a byte array to a short array.
+    @param bytes the input byte array.
+    @return the converted short array. If the input byte array is null, returns null.
+    */"""
+
+        val result = JavaLivingDocumentation.preHandleDoc(code)
+        LightPlatformTestCase.assertEquals(result, """/**
+    Converts a byte array to a short array.
+    @param bytes the input byte array.
+    @return the converted short array. If the input byte array is null, returns null.
+    */""")
+    }
 }
