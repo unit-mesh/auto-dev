@@ -53,8 +53,7 @@ class OpenAIProvider(val project: Project) : LLMProvider {
     private val service: OpenAiService
         get() {
             if (openAiKey.isEmpty()) {
-                logger.error("openAiKey is empty")
-                throw IllegalStateException("openAiKey is empty")
+                throw IllegalStateException("You LLM server Key is empty")
             }
 
             var openAiProxy = AutoDevSettingsState.getInstance().customOpenAiHost
