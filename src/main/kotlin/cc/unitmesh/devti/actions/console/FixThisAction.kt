@@ -23,6 +23,10 @@ class FixThisAction : ChatBaseAction() {
         }
 
         val prompt = ErrorMessageProcessor.extracted(project, description)
+        if (prompt == null) {
+            logger.error("Prompt is null, description: $description")
+            return
+        }
 
         sendToChatWindow(project, getActionType()) { panel, service ->
             service.handlePromptAndResponse(panel, object : ContextPrompter() {
