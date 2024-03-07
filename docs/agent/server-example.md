@@ -20,7 +20,7 @@ same to Chat API
   "messages": [
     {
       "role": "user",
-      "message": "str"
+      "content": "Hi, I want to book a flight from Hangzhou to Shanghai."
     }
   ]
 }
