@@ -11,6 +11,8 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.flow.Flow
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -28,7 +30,11 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor() {
         this.responseFormat = agent.connector?.responseFormat ?: this.responseFormat
 
         val customRequest = CustomRequest(listOf(Message("user", input)))
-        val request = customRequest.updateCustomFormat(requestFormat)
+        val request = if (requestFormat.isNotEmpty()) {
+            customRequest.updateCustomFormat(requestFormat)
+        } else {
+            Json.encodeToString<CustomRequest>(customRequest)
+        }
 
         val body = request.toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
         val builder = Request.Builder()
