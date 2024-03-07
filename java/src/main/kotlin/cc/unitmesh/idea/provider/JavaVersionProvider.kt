@@ -44,7 +44,11 @@ class JavaVersionProvider : ChatContextProvider {
             return projectSdk.sdkType is JavaSdkType
         }
 
-        val module: Module = ModuleUtilCore.findModuleForFile(sourceFile) ?: return false
+        val module: Module = try {
+            ModuleUtilCore.findModuleForFile(sourceFile)
+        } catch (e: Throwable) {
+            return false
+        } ?: return false
 
         val sdk = ModuleRootManager.getInstance(module).sdk
 
