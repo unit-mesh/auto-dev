@@ -390,13 +390,6 @@ project(":") {
         plugins.set(ideaPlugins)
     }
 
-//    sourceSets {
-//        main {
-//            resources.srcDirs("src/main/resources")
-//            resources.srcDirs("src/$platformVersion/main/resources")
-//        }
-//    }
-
     dependencies {
         implementation(libs.bundles.openai)
         implementation(libs.bundles.markdown)
@@ -404,7 +397,7 @@ project(":") {
 
         implementation(libs.json.pathkt)
 
-        implementation("org.jetbrains:markdown:0.5.1")
+        implementation("org.jetbrains:markdown:0.6.1")
         implementation(libs.kotlinx.serialization.json)
 
         implementation("cc.unitmesh:cocoa-core:0.4.5")
@@ -414,11 +407,14 @@ project(":") {
         implementation(libs.github.api)
         implementation("org.gitlab4j:gitlab4j-api:5.3.0")
 
+        // template engine
         implementation("org.apache.velocity:velocity-engine-core:2.3")
 
+        // http request/response
         implementation(libs.jackson.module.kotlin)
 
-        implementation("com.knuddels:jtokkit:0.6.1")
+        // token count
+        implementation("com.knuddels:jtokkit:1.0.0")
 
         // junit
         testImplementation("io.kotest:kotest-assertions-core:5.7.2")

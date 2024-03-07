@@ -149,17 +149,17 @@ fun JsonObject.updateCustomBody(customRequest: String): JsonObject {
 
             // TODO clean code with magic literals
             var roleKey = "role"
-            var contentKey = "message"
+            var contentKey = "content"
             customRequestJson.jsonObject["messageKeys"]?.let {
                 roleKey = it.jsonObject["role"]?.jsonPrimitive?.content ?: "role"
-                contentKey = it.jsonObject["content"]?.jsonPrimitive?.content ?: "message"
+                contentKey = it.jsonObject["content"]?.jsonPrimitive?.content ?: "content"
             }
 
             val messages: JsonArray = this@updateCustomBody["messages"]?.jsonArray ?: buildJsonArray { }
             this.put("messages", buildJsonArray {
                 messages.forEach { message ->
                     val role: String = message.jsonObject["role"]?.jsonPrimitive?.content ?: "user"
-                    val content: String = message.jsonObject["message"]?.jsonPrimitive?.content ?: ""
+                    val content: String = message.jsonObject["content"]?.jsonPrimitive?.content ?: ""
                     add(buildJsonObject {
                         put(roleKey, role)
                         put(contentKey, content)
