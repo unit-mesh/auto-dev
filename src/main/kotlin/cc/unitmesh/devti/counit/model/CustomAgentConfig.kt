@@ -43,7 +43,7 @@ data class CustomFlowTransition(
 data class CustomAgentConfig(
     val name: String,
     val description: String = "",
-    val url: String,
+    val url: String = "",
     val icon: String = "",
     val connector: ConnectorConfig? = null,
     val responseAction: CustomAgentResponseAction = CustomAgentResponseAction.Direct,
@@ -59,11 +59,11 @@ data class ConnectorConfig(
     /**
      * will be Json Config
      */
-    val request: String = "",
+    val requestFormat: String = "",
     /**
      * will be JsonPath
      */
-    val response: String = "",
+    val responseFormat: String = "",
 )
 
 @Serializable
