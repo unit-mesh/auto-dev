@@ -1,6 +1,96 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v1.6.5...v) (2024-03-03)
+# [](https://github.com/unit-mesh/auto-dev/compare/v1.7.0...v) (2024-03-07)
 
 ## [Unreleased]
+
+## [1.7.0](https://github.com/unit-mesh/auto-dev/compare/v1.6.5...v[1.7.0]) (2024-03-07)
+
+### Bug Fixes
+- **chat-coding-panel:** improve handling of request intentions [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([9fa1808](https://github.com/unit-mesh/auto-dev/commit/9fa1808256e33d8355494fafa738294a912397b3))
+- **chat-coding-service:** handle custom RAG requests [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([46b499e](https://github.com/unit-mesh/auto-dev/commit/46b499eb5dcbfa49dc4fd3261098da66ce8240f1))
+- **chat:** handle custom agent state and add support for custom variable compilation [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([93a5e52](https://github.com/unit-mesh/auto-dev/commit/93a5e527df18b03e754ceb3b9b246c3671c2db52))
+- **chat:** handle empty ragsJsonConfig in AutoDevInputSection [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([df410b1](https://github.com/unit-mesh/auto-dev/commit/df410b1acacbf45db9e7f76d70e68eca48b6bb7b))
+- **chat:** hide progress bar after update [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([56a88fc](https://github.com/unit-mesh/auto-dev/commit/56a88fcf3b413b3610097dd635ef9d15fb384dbd))
+- **completion:** improve chatbot response handling with JSON parsing enhancements ([561e36a](https://github.com/unit-mesh/auto-dev/commit/561e36ab4dbae1b9dba1a1890cb2da0ad673ef26))
+- **CoUnitPromptGenerator:** ensure retrofit service creation is consistent [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([2e0de74](https://github.com/unit-mesh/auto-dev/commit/2e0de7406464f0bcb37bf3dd26bbd967a151a23b))
+- **custom-agent:** ensure null safety in agent state resetting [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([b6587f2](https://github.com/unit-mesh/auto-dev/commit/b6587f2324b355a91d986fd138f11c837c735060))
+- **custom-agent:** fix CustomAgentExecutor requestFormat issue [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([32e7643](https://github.com/unit-mesh/auto-dev/commit/32e764300948d3f227a2891e1a70e864cf382a68))
+- **CustomAgentChatProcessor:** handle response actions more robustly and add logging [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([d49b2c0](https://github.com/unit-mesh/auto-dev/commit/d49b2c0e4608b65dabda59c70fd943d6af84c854))
+- **diff-simplifier:** improve handling of real-world diffs [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([4393411](https://github.com/unit-mesh/auto-dev/commit/43934115d772e7a43e738be7c32ef1e5524a57a9))
+- **diff:** handle VcsException and log diff before error [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([e94b191](https://github.com/unit-mesh/auto-dev/commit/e94b1915ab8514fbb986065f8cea5be81e6a5149))
+- **diff:** handle VcsException and log diff before error [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([6c0eb94](https://github.com/unit-mesh/auto-dev/commit/6c0eb94e964476b45c5c811ff2078d1e75e77979))
+- **error:** rename error template file for clarity ([e661651](https://github.com/unit-mesh/auto-dev/commit/e661651f19316a91f9579c581d466b7814bce715))
+- **error:** rename error template file for clarity ([777baf4](https://github.com/unit-mesh/auto-dev/commit/777baf4f8e6ca5855f3a497df5a9af6401c3dd95))
+- fix import ([4a0a7a4](https://github.com/unit-mesh/auto-dev/commit/4a0a7a4451a66f471d1bb462a39ef843f9109979))
+- fix import issue agaian... ([eaae8b9](https://github.com/unit-mesh/auto-dev/commit/eaae8b91158a0737ce81f86ad0c135f4f978f3a0))
+- fix java gen doc return error format issue [#99](https://github.com/unit-mesh/auto-dev/issues/99) ([1bf9fd6](https://github.com/unit-mesh/auto-dev/commit/1bf9fd6418634f174bde262b8bdc42f5e855bc4a))
+- fix typos ([c19f879](https://github.com/unit-mesh/auto-dev/commit/c19f87966c0fd4e3b9896466a41ee1094b8ce2f6))
+- fix typos ([c839c89](https://github.com/unit-mesh/auto-dev/commit/c839c8981c507b3f13bed84b58e9df74fe75c2bf))
+- **gui:** ensure correct selection in AutoDevInputSection [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([1f74f9f](https://github.com/unit-mesh/auto-dev/commit/1f74f9fff2348ff04b770a81da81f4b664b2cd84))
+- **gui:** Improve chat input handling [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([f157522](https://github.com/unit-mesh/auto-dev/commit/f15752228244f23290d8fc6e2c90ad36a6f5239e))
+- **gui:** improve code block rendering and parsing [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([19a0e97](https://github.com/unit-mesh/auto-dev/commit/19a0e97a1aba87af61bbae27f8ff478440a242b6))
+- **gui:** improve focus handling in AutoDevInputSection [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([841d833](https://github.com/unit-mesh/auto-dev/commit/841d833f8c3bd5e2b2b30af242fadd36070cf5db))
+- **gui:** only trigger popup on '$' input [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([4535dc8](https://github.com/unit-mesh/auto-dev/commit/4535dc81807bc14ca29ea8d745b8bd48fcf0cf9d))
+- **gui:** prevent progress bar from resetting after user input [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([4dbf66d](https://github.com/unit-mesh/auto-dev/commit/4dbf66dc1e3897da8db48d7cf41d28e338fe7af8))
+- **gui:** refactor event dispatcher initialization [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([b0bb226](https://github.com/unit-mesh/auto-dev/commit/b0bb226327dddb436e600f4a2221d47ac778bd5d))
+- **gui:** remove Dev Portal and Doc options from customRags combobox, set layoutPanel to non-opaque to improve visibility [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([0f0d5b9](https://github.com/unit-mesh/auto-dev/commit/0f0d5b95e47a6df83e70e2ed21f507b9e544e49c))
+- **gui:** simplify chat coding panel layout [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([0b513e4](https://github.com/unit-mesh/auto-dev/commit/0b513e4cf73ad56e8c7b7c5bfbda171bbe9d3b09))
+- **jcef:** use official JCEF builder and handle exceptions [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([d116151](https://github.com/unit-mesh/auto-dev/commit/d1161516584801f0b143a30c3ad214ef5d16ceb5))
+- **LivingDocPromptBuilder:** handle exceptions when getting context for PsiElement ([d3367fb](https://github.com/unit-mesh/auto-dev/commit/d3367fb4a40bb8f81a6427296833848ef0cc947e))
+- **provider:** handle findModuleForFile exceptions ([a0df305](https://github.com/unit-mesh/auto-dev/commit/a0df305e4113e524053ccf76f0f4be178bd7b622))
+- **response-handling:** handle empty SSE lines and "ping" events [#97](https://github.com/unit-mesh/auto-dev/issues/97) ([c654495](https://github.com/unit-mesh/auto-dev/commit/c654495d3398145d5fdc59d373e3b8ce7c58df56))
+- **snippet:** fix UpdateThread issu && add logging to AutoDevInsertCodeAction [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([a4e751c](https://github.com/unit-mesh/auto-dev/commit/a4e751c79c53583786942507f8619988475e0322))
+- **sse-starlette:** handle SSE events with data prefixed with ":ping" and fixed[#97](https://github.com/unit-mesh/auto-dev/issues/97) ([e448c28](https://github.com/unit-mesh/auto-dev/commit/e448c283c2bad2c8310cb25786fcf73af98c0136))
+- **sse:** handle empty lines and comments in SSE event stream [#97](https://github.com/unit-mesh/auto-dev/issues/97) ([d307861](https://github.com/unit-mesh/auto-dev/commit/d307861c149774a69b0df29264a09e9e7c6c8f51))
+- **tasks:** add onFinished() methods to notify application status ([632be81](https://github.com/unit-mesh/auto-dev/commit/632be815fd6e5467851e4afb22a9f3a60452b225))
+
+### Features
+- **agent:** reset default response format string [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([dfd79ed](https://github.com/unit-mesh/auto-dev/commit/dfd79ed134b2100ad1276005d265488836057863))
+- **chat:** add removeLastMessage function to clear chat history [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([247a8ad](https://github.com/unit-mesh/auto-dev/commit/247a8ad2323df3f26017a9c7376787cd2ed45ae2))
+- **chat:** update custom agent chat and input section [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([451f644](https://github.com/unit-mesh/auto-dev/commit/451f644ff61416e825641a2999f3edb317c97b50))
+- **counit:** rename and refactor to support custom agent functionality [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([0375d22](https://github.com/unit-mesh/auto-dev/commit/0375d229de476119e8e5a7242e1ac503f1c72c59))
+- **custom_agent:** add state management for custom agent flow [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([1a59765](https://github.com/unit-mesh/auto-dev/commit/1a597658c29271d1ed89db0166c2b952dd59c6a2))
+- **custom-actions:** improve logging and error handling in CustomActionBaseIntention and CustomAgentChatProcessor. [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([b900633](https://github.com/unit-mesh/auto-dev/commit/b900633b60672e55d0c4315243e66365c3fb496f))
+- **custom-action:** use i18n for family name ([f9695b7](https://github.com/unit-mesh/auto-dev/commit/f9695b7a4836c26776bf691aec5e9f3874ca5830))
+- **custom-agent:** add basic support for custom agent execution [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([62e30a1](https://github.com/unit-mesh/auto-dev/commit/62e30a1bf457ee5b5ec89831502cc6854b8f2007))
+- **custom-agent:** add custom agent support [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([e089d02](https://github.com/unit-mesh/auto-dev/commit/e089d02f90640cb67861daa0b07aa39b2cbd6f6e))
+- **custom-agent:** add support for authentication types in custom agent execution [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([59f54c9](https://github.com/unit-mesh/auto-dev/commit/59f54c9e0402f6874ace09dff460a3d59c8712e5))
+- **custom-agent:** add support for custom request format and improve serialization #%1 ([4bd6840](https://github.com/unit-mesh/auto-dev/commit/4bd68404aaf79a4b2dca0e79689a90c783b3a169))
+- **custom-agent:** add support for custom web views in chat responses [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([6cd1e2c](https://github.com/unit-mesh/auto-dev/commit/6cd1e2c65f46e5bb20546eccd2e03f1d1aad85eb))
+- **custom-agent:** add support for custom webview in chat interface [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([dcae35c](https://github.com/unit-mesh/auto-dev/commit/dcae35ca798e8ac85d750d57f6730b40f9a88250))
+- **custom-agent:** add support for OpenAI ChatGPT integration [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([ddaa4e2](https://github.com/unit-mesh/auto-dev/commit/ddaa4e271e97c96875d318eba30bdc8a7a5f65b7))
+- **custom-agent:** add WebBlockView class and import Component for WebViewWindow class [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([b4fd22b](https://github.com/unit-mesh/auto-dev/commit/b4fd22bd35124e463985ca5221ea7f9751905cba))
+- **custom-agent:** refactor and add stream response action [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([ef80c30](https://github.com/unit-mesh/auto-dev/commit/ef80c30c65a5bbbc957ebb7ec563b4e1fb740f10))
+- **custom-agent:** refactor and add support for custom agent response actions [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([0bfac9e](https://github.com/unit-mesh/auto-dev/commit/0bfac9e633e3052d7b335ff34023602d3690d627))
+- **custom-agent:** refactor to use LlmProvider for chat processing [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([88b4633](https://github.com/unit-mesh/auto-dev/commit/88b4633d3293c50c42834e9f56e112dd96249faa))
+- **custom-agent:** use agent-specific url for requests [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([65e9e5e](https://github.com/unit-mesh/auto-dev/commit/65e9e5e2d05eac41c7668fc9cf63995dfc73097d))
+- **custom-arg:** add support for custom RAG settings and refactor related components and configurations [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([bca1bba](https://github.com/unit-mesh/auto-dev/commit/bca1bba0fb836e517472b82f1f3f2e9276f56e1f))
+- **custom-variable:** improve variable list component and add custom variable support [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([bf2440d](https://github.com/unit-mesh/auto-dev/commit/bf2440dc4922044645241e4546aa6fd487eaf149))
+- **custom:** add support for custom agent configuration and UI improvements [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([05ecb7a](https://github.com/unit-mesh/auto-dev/commit/05ecb7a97c3a2a1540e7f870f0a6bcb7e2ddee9d))
+- **CustomAgentExecutor:** add support for custom format in CustomAgentExecutor [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([583ee94](https://github.com/unit-mesh/auto-dev/commit/583ee94d8ed701d5abbbee90834f435442ada1c2))
+- **custom:** update CustomSSEProcessor's Message class content property ([db2e3b5](https://github.com/unit-mesh/auto-dev/commit/db2e3b53df751dadc1c467c8d1e6090a2fce1b25))
+- **custom:** update key names in CustomSSEProcessor and add token count support [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([4e8f6d3](https://github.com/unit-mesh/auto-dev/commit/4e8f6d31aefcae2784af0538c0b49f5dd00a3edd))
+- **docs:** add custom request/response documentation [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([35c7b87](https://github.com/unit-mesh/auto-dev/commit/35c7b8782d467295a472d1322d6871e6c3052ea5))
+- **gui:** add AutoDevVariableListComponent and improve popup behavior in AutoDevInputSection [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([8b54522](https://github.com/unit-mesh/auto-dev/commit/8b54522cfb60db24aadee0527814c081cdc79663))
+- **gui:** Add default rag selection and refactor custom rag loading logic [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([cf7bb77](https://github.com/unit-mesh/auto-dev/commit/cf7bb77dfc6da653548b7137a88deeb9f275b771))
+- **gui:** add key listener to AutoDevInputSection for better user experience [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([ae6665e](https://github.com/unit-mesh/auto-dev/commit/ae6665e22d15fa45382ac5288cb1def8f3e49401))
+- **gui:** add resetAgent() method to clear custom agent selection in chat coding panel and input section. [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([768e4c0](https://github.com/unit-mesh/auto-dev/commit/768e4c0aab4dabf2ec22720161f4f517444df12f))
+- **gui:** add resetAgent() method to clear custom agent selection in chat coding panel and input section. [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([16240e0](https://github.com/unit-mesh/auto-dev/commit/16240e008fab623c2ccc16acef404af997e35ee2))
+- **gui:** add support for auto-completion popup in chat input [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([741dda8](https://github.com/unit-mesh/auto-dev/commit/741dda8e7d2b6163e77eb3e3a9ada1bdf56b7156))
+- **gui:** add support for custom rag apps selection [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([27d1269](https://github.com/unit-mesh/auto-dev/commit/27d12698c5dd1d0bacd9d596477c37aed43ebc71))
+- **gui:** add support for custom variables in chat input [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([ccf3967](https://github.com/unit-mesh/auto-dev/commit/ccf39677a00778580b1c0c05d999c67c6e23f0c6))
+- **gui:** refactor AutoDevVariableListComponent to use JBList and add support for variable selection popup [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([e5993a4](https://github.com/unit-mesh/auto-dev/commit/e5993a40bc41a57019610446c1807d055f5e9cd8))
+- **model:** add `ConnectorConfig` to `CustomAgentConfig` and refactor `CustomAgentChatProcessor` to use `logger` [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([1754614](https://github.com/unit-mesh/auto-dev/commit/1754614c5c409f7d80af89bee5378af37daa5db9))
+- **model:** introduce CustomRagApp and ResponseAction enum, refactor CodePayload to use text instead of payload_type, update AutoDevInputSection to use send icon, add examples to Tooling class as QAExample objects. [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([6a7c26a](https://github.com/unit-mesh/auto-dev/commit/6a7c26a939516949d1be9406d77ac9a9eeb07913))
+- **server:** add support for HTMLResponse in mock_frontend [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([1cfa154](https://github.com/unit-mesh/auto-dev/commit/1cfa154ffd04a1734404be1004d59a6cc9562bdc))
+- **view:** add WebViewWindow class to handle browser events and implement JavaScript communication. [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([00d9169](https://github.com/unit-mesh/auto-dev/commit/00d9169f9de1be098aacb5b7d1a3b716a53a8092))
+- **view:** improve web view window background color to JBColor.WHITE [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([467ebbf](https://github.com/unit-mesh/auto-dev/commit/467ebbf7d82c5ffd6cf7516bb7288444a4c13a11))
+- **webview:** add support for custom scheme handler and load methods [#51](https://github.com/unit-mesh/auto-dev/issues/51) ([d49734a](https://github.com/unit-mesh/auto-dev/commit/d49734aaa5954394be706e386cafb8dc68a48d7f))
+
+### Reverts
+- Revert "refactor(custom-agent): improve response action handling and add removeLastMessage function #51" ([214eb79](https://github.com/unit-mesh/auto-dev/commit/214eb7995c64d3c7c3a44812a10972aff2939599)), closes [#51](https://github.com/unit-mesh/auto-dev/issues/51)
+
+### BREAKING CHANGES
+- rename `message` -> `content`
 
 ## [1.6.5](https://github.com/unit-mesh/auto-dev/compare/v1.6.4...v[1.6.5]) (2024-03-03)
 
@@ -1044,7 +1134,8 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.6.5...HEAD
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/unit-mesh/auto-dev/compare/v1.6.5...v1.7.0
 [1.6.5]: https://github.com/unit-mesh/auto-dev/compare/v1.6.4...v1.6.5
 [1.6.4]: https://github.com/unit-mesh/auto-dev/compare/v1.6.3...v1.6.4
 [1.6.3]: https://github.com/unit-mesh/auto-dev/compare/v1.6.1...v1.6.3
