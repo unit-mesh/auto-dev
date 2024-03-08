@@ -7,7 +7,6 @@ import cc.unitmesh.devti.counit.CustomAgentChatProcessor
 import cc.unitmesh.devti.counit.configurable.customAgentSetting
 import cc.unitmesh.devti.counit.model.CustomAgentState
 import cc.unitmesh.devti.custom.compile.CustomVariable
-import cc.unitmesh.devti.custom.compile.VariableTemplateCompiler
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.util.parser.PostCodeProcessor
 import cc.unitmesh.devti.provider.ContextPrompter

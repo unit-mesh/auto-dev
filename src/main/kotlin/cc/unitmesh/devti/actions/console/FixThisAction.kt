@@ -32,7 +32,7 @@ class FixThisAction : ChatBaseAction() {
             service.handlePromptAndResponse(panel, object : ContextPrompter() {
                 override fun displayPrompt(): String = prompt?.displayText ?: ""
                 override fun requestPrompt(): String = prompt?.requestText ?: ""
-            }, null, false)
+            }, null, true)
         }
     }
 }

@@ -20,6 +20,7 @@ fun sendToChatWindow(
             logger<ChatCodingService>().warn("Tool window not found")
             return
         }
+
     val contentManager = toolWindowManager.contentManager
     val contentPanel = ChatCodingPanel(chatCodingService, toolWindowManager.disposable)
     val content = contentManager.factory.createContent(contentPanel, chatCodingService.getLabel(), false)
