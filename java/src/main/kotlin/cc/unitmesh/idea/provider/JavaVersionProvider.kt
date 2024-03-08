@@ -46,7 +46,7 @@ class JavaVersionProvider : ChatContextProvider {
 
         val module: Module = try {
             ModuleUtilCore.findModuleForFile(sourceFile)
-        } catch (e: Throwable) {
+        } catch (e: Exception) {
             return false
         } ?: return false
 

@@ -45,6 +45,11 @@ class NewChatAction : DumbAwareAction(), CustomComponentAction {
                         return@addActionListener
                     }
 
+                    // change content displayName AutoDevBundle.message("autodev.chat")
+                    contentManager.contents.forEach {
+                        it.displayName = AutoDevBundle.message("autodev.chat")
+                    }
+
                     codingPanel.resetChatSession()
                 }
             }
