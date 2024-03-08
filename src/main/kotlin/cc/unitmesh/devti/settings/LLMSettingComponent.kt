@@ -13,7 +13,6 @@ import java.awt.FontMetrics
 import javax.swing.JPanel
 
 class LLMSettingComponent(private val settings: AutoDevSettingsState) {
-
     // 以下 LLMParam 变量不要改名，因为这些变量名会被用作配置文件的 key
     private val languageParam by LLMParam.creating { ComboBox(settings.language, HUMAN_LANGUAGES.toList()) }
     private val aiEngineParam by LLMParam.creating(onChange = { onSelectedEngineChanged() }) {
@@ -23,6 +22,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     private val maxTokenLengthParam by LLMParam.creating { Editable(settings.maxTokenLength) }
     private val openAIModelsParam by LLMParam.creating { ComboBox(settings.openAiModel, OPENAI_MODEL.toList()) }
     private val openAIKeyParam by LLMParam.creating { Password(settings.openAiKey) }
+    private val customModelParam: LLMParam by LLMParam.creating { Editable(settings.customModel) }
     private val customOpenAIHostParam: LLMParam by LLMParam.creating { Editable(settings.customOpenAiHost) }
 
     private val gitTypeParam: LLMParam by LLMParam.creating { ComboBox(settings.gitType, GIT_TYPE.toList()) }
@@ -78,6 +78,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             AIEngines.OpenAI to listOf(
                     openAIModelsParam,
                     openAIKeyParam,
+                    customModelParam,
                     customOpenAIHostParam,
             ),
             AIEngines.Custom to listOf(
@@ -89,10 +90,10 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             ),
             AIEngines.XingHuo to listOf(
                     xingHuoApiVersionParam,
-            xingHuoAppIDParam,
-            xingHuoApiKeyParam,
-            xingHuoApiSecretParam,
-        ),
+                    xingHuoAppIDParam,
+                    xingHuoApiKeyParam,
+                    xingHuoApiSecretParam,
+            ),
     )
 
 
@@ -186,6 +187,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             gitLabTokenParam.value = gitlabToken
             gitLabUrlParam.value = gitlabUrl
             openAIKeyParam.value = openAiKey
+            customModelParam.value = customModel
             customOpenAIHostParam.value = customOpenAiHost
             customEngineServerParam.value = customEngineServer
             customEngineResponseTypeParam.value = customEngineResponseType
@@ -212,6 +214,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             gitlabUrl = gitLabUrlParam.value
             gitlabToken = gitLabTokenParam.value
             openAiKey = openAIKeyParam.value
+            customModel = customModelParam.value
             customOpenAiHost = customOpenAIHostParam.value
             xingHuoApiSecrect = xingHuoApiSecretParam.value
             xingHuoApiVersion = XingHuoApiVersion.of(xingHuoApiVersionParam.value)
@@ -237,6 +240,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
                 settings.gitlabUrl != gitLabUrlParam.value ||
                 settings.gitlabToken != gitLabTokenParam.value ||
                 settings.openAiKey != openAIKeyParam.value ||
+                settings.customModel != customModelParam.value ||
                 settings.xingHuoApiSecrect != xingHuoApiSecretParam.value ||
                 settings.xingHuoApiVersion != XingHuoApiVersion.of(xingHuoApiVersionParam.value) ||
                 settings.xingHuoAppId != xingHuoAppIDParam.value ||

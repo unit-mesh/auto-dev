@@ -2,7 +2,7 @@ package cc.unitmesh.devti.custom
 
 import cc.unitmesh.devti.custom.team.TeamPromptAction
 import cc.unitmesh.devti.custom.team.TeamPromptExecTask
-import cc.unitmesh.devti.custom.team.TeamPromptTemplateCompiler
+import cc.unitmesh.devti.custom.compile.VariableTemplateCompiler
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import com.intellij.openapi.editor.Editor
@@ -42,7 +42,7 @@ class TeamPromptBaseIntention(val intentionConfig: TeamPromptAction, val trySele
             elementPair?.second
         }
 
-        val compiler = TeamPromptTemplateCompiler(language, file, element, editor, elementPair?.first ?: "")
+        val compiler = VariableTemplateCompiler(language, file, element, editor, elementPair?.first ?: "")
 
         val chatMessages = intentionConfig.actionPrompt.msgs
         val msgs = chatMessages.map {

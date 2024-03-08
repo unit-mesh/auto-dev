@@ -39,9 +39,9 @@ plugins {
     alias(libs.plugins.qodana) // Gradle Qodana Plugin
     alias(libs.plugins.kover) // Gradle Kover Plugin
     alias(libs.plugins.serialization)
+    alias(libs.plugins.gradleIntelliJPlugin)
 
     kotlin("jvm") version "1.8.22"
-    id("org.jetbrains.intellij") version "1.15.0"
     id("net.saliman.properties") version "1.5.2"
 }
 
@@ -186,7 +186,6 @@ allprojects {
         }
         test {
             resources.srcDirs("src/$platformVersion/test/resources")
-//            resources.srcDirs("src/test/resources")
         }
     }
     kotlin {
@@ -196,7 +195,6 @@ allprojects {
             }
             test {
                 kotlin.srcDirs("src/$platformVersion/test/kotlin")
-//                kotlin.srcDirs("src/test/kotlin")
             }
         }
     }
@@ -228,6 +226,7 @@ project(":plugin") {
             "idea" -> {
                 pluginList += javaPlugins
             }
+
             "scala" -> {
                 pluginList += javaPlugins + scalaPlugin
             }
@@ -263,6 +262,8 @@ project(":plugin") {
         implementation(project(":cpp"))
         implementation(project(":scala"))
         implementation(project(":exts:database"))
+        implementation(project(":exts:ext-android"))
+        implementation(project(":exts:ext-harmonyos"))
     }
 
     // Collects all jars produced by compilation of project modules and merges them into singe one.
@@ -389,13 +390,6 @@ project(":") {
         plugins.set(ideaPlugins)
     }
 
-    sourceSets {
-        main {
-            resources.srcDirs("src/main/resources-stable")
-            resources.srcDirs("src/$platformVersion/main/resources-stable")
-        }
-    }
-
     dependencies {
         implementation(libs.bundles.openai)
         implementation(libs.bundles.markdown)
@@ -403,7 +397,7 @@ project(":") {
 
         implementation(libs.json.pathkt)
 
-        implementation("org.jetbrains:markdown:0.5.1")
+        implementation("org.jetbrains:markdown:0.6.1")
         implementation(libs.kotlinx.serialization.json)
 
         implementation("cc.unitmesh:cocoa-core:0.4.5")
@@ -413,11 +407,14 @@ project(":") {
         implementation(libs.github.api)
         implementation("org.gitlab4j:gitlab4j-api:5.3.0")
 
+        // template engine
         implementation("org.apache.velocity:velocity-engine-core:2.3")
 
+        // http request/response
         implementation(libs.jackson.module.kotlin)
 
-        implementation("com.knuddels:jtokkit:0.6.1")
+        // token count
+        implementation("com.knuddels:jtokkit:1.0.0")
 
         // junit
         testImplementation("io.kotest:kotest-assertions-core:5.7.2")
@@ -434,6 +431,9 @@ project(":") {
         kover(project(":pycharm"))
         kover(project(":rust"))
         kover(project(":scala"))
+
+        kover(project(":exts:database"))
+        kover(project(":exts:ext-android"))
     }
 
     task("resolveDependencies") {
@@ -551,6 +551,30 @@ project(":exts:database") {
         version.set(ideaVersion)
         plugins.set(ideaPlugins + "com.intellij.database")
     }
+    dependencies {
+        implementation(project(":"))
+    }
+}
+
+project(":exts:ext-android") {
+    intellij {
+        version.set(ideaVersion)
+        type.set("AI")
+        plugins.set((ideaPlugins + prop("androidPlugin").ifBlank { "" }).filter(String::isNotEmpty))
+    }
+
+    dependencies {
+        implementation(project(":"))
+    }
+}
+
+project(":exts:ext-harmonyos") {
+    intellij {
+        version.set(ideaVersion)
+        type.set("AI")
+        plugins.set((ideaPlugins + prop("androidPlugin").ifBlank { "" }).filter(String::isNotEmpty))
+    }
+
     dependencies {
         implementation(project(":"))
     }

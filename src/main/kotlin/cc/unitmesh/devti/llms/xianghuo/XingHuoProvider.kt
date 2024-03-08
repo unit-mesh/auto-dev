@@ -24,7 +24,7 @@ import javax.crypto.spec.SecretKeySpec
 @Service(Service.Level.PROJECT)
 class XingHuoProvider(val project: Project) : LLMProvider {
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
-    private val secrectKey: String
+    private val secretKey: String
         get() = autoDevSettingsState.xingHuoApiSecrect
 
     private val apiVersion: XingHuoApiVersion
@@ -33,6 +33,7 @@ class XingHuoProvider(val project: Project) : LLMProvider {
         get() = when (this) {
             XingHuoApiVersion.V1 -> ""
             XingHuoApiVersion.V2 -> "v2"
+            XingHuoApiVersion.V3_5 -> "v3.5"
             else -> "v3"
         }
 
@@ -48,7 +49,7 @@ class XingHuoProvider(val project: Project) : LLMProvider {
     private val hmacsha256: Mac
         get() {
             val hmac = Mac.getInstance(hmacsha256Algorithms)
-            val keySpec = SecretKeySpec(secrectKey.toByteArray(), hmacsha256Algorithms)
+            val keySpec = SecretKeySpec(secretKey.toByteArray(), hmacsha256Algorithms)
             hmac.init(keySpec)
             return hmac
         }
@@ -128,7 +129,7 @@ class XingHuoProvider(val project: Project) : LLMProvider {
             val header = """
             |host: spark-api.xf-yun.com
             |date: $date
-            |GET /v${apiVersion.value}.1/chat HTTP/1.1
+            |GET /v${apiVersion.value}/chat HTTP/1.1
         """.trimMargin()
             val signature = hmacsha256.doFinal(header.toByteArray()).encodeBase64()
             val authorization =
@@ -139,7 +140,7 @@ class XingHuoProvider(val project: Project) : LLMProvider {
                 "date" to date,
                 "host" to "spark-api.xf-yun.com"
             )
-            val urlBuilder = "https://spark-api.xf-yun.com/v${apiVersion.value}.1/chat".toHttpUrl().newBuilder()
+            val urlBuilder = "https://spark-api.xf-yun.com/v${apiVersion.value}/chat".toHttpUrl().newBuilder()
             params.forEach {
                 urlBuilder.addQueryParameter(it.key, it.value)
             }

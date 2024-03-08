@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.intentions.action.task
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.context.modifier.CodeModifierProvider
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.intentions.action.AutoTestThisBaseIntention
@@ -135,6 +136,12 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
             AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)
             indicator.fraction = 1.0
         }
+    }
+
+    override fun onThrowable(error: Throwable) {
+        super.onThrowable(error)
+        AutoDevStatusService.notifyApplication(AutoDevStatus.Error)
+        AutoDevNotifications.error(project, "Failed to generate test: ${error.message}")
     }
 
     private suspend fun writeTestToFile(

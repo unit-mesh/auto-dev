@@ -14,4 +14,10 @@ object AutoDevNotifications {
         val notification = createNotificationGroup()?.createNotification(msg, NotificationType.INFORMATION)
         notification?.notify(project)
     }
+
+    // error
+    fun error(project: Project, msg: String) {
+        val notification = createNotificationGroup()?.createNotification(msg, NotificationType.ERROR)
+        notification?.notify(project)
+    }
 }

@@ -2,8 +2,9 @@ package cc.unitmesh.scala.context
 
 import com.intellij.psi.PsiFileFactory
 import com.intellij.testFramework.LightPlatformTestCase
+import org.jetbrains.plugins.scala.ScalaFileType
 
-class ScalaClassContextBuilderTest: LightPlatformTestCase() {
+class ScalaClassContextBuilderTest : LightPlatformTestCase() {
     fun testShouldGetClassName() {
         val fileFactory: PsiFileFactory = PsiFileFactory.getInstance(project)
 
@@ -18,12 +19,10 @@ class ScalaClassContextBuilderTest: LightPlatformTestCase() {
             end Point
             """.trimIndent()
 
-        val psiFile = fileFactory.createFileFromText("Point.scala", classCode)
+        val psiFile = fileFactory.createFileFromText("Point.scala", ScalaFileType.INSTANCE, classCode)
         val psiElement = psiFile.children[0]
         val classContext = ScalaClassContextBuilder().getClassContext(psiElement, false)!!
 
         assertEquals(classContext.name, "Point")
-//        TestCase.assertEquals(classContext.methods.size, 2)
-//        TestCase.assertEquals(classContext.format(), """""")
     }
 }

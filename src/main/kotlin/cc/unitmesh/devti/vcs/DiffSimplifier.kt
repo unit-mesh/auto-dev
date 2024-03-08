@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.vcs
 
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diff.impl.patch.IdeaTextPatchBuilder
 import com.intellij.openapi.diff.impl.patch.UnifiedDiffWriter
 import com.intellij.openapi.project.Project
@@ -16,6 +17,8 @@ import kotlin.math.min
 
 @Service(Service.Level.PROJECT)
 class DiffSimplifier(val project: Project) {
+    private val logger = logger<DiffSimplifier>()
+
     /**
      * Simplifies the given list of changes and returns the resulting diff as a string.
      *
@@ -25,6 +28,8 @@ class DiffSimplifier(val project: Project) {
      * @throws RuntimeException if the project base path is null or if there is an error calculating the diff.
      */
     fun simplify(changes: List<Change>, ignoreFilePatterns: List<PathMatcher>): String {
+        var originChanges: String = ""
+
         try {
             val writer = StringWriter()
             val basePath = project.basePath ?: throw RuntimeException("Project base path is null.")
@@ -66,8 +71,13 @@ class DiffSimplifier(val project: Project) {
                 emptyList()
             )
 
-            return postProcess(writer.toString())
-        } catch (e: VcsException) {
+            originChanges = writer.toString()
+            return postProcess(originChanges)
+        } catch (e: Exception) {
+            if (originChanges.isNotEmpty()) {
+                logger.info("Error calculating diff: $originChanges", e)
+            }
+
             throw RuntimeException("Error calculating diff: ${e.message}", e)
         }
     }
@@ -152,7 +162,6 @@ class DiffSimplifier(val project: Project) {
 
                 // handle for java and kotlin import change
                 if (line.startsWith(" import")) {
-//                    val nextLine = lines[index + 1]
                     val nextLine = lines.getOrNull(index + 1)
                     if (nextLine?.startsWith(" import") == true) {
                         var oldImportLine = ""
@@ -169,23 +178,25 @@ class DiffSimplifier(val project: Project) {
                             }
 
                             val tryLine = lines[tryToFindIndex]
-                            if (tryLine.startsWith("Index:")) {
-                                break
-                            }
+                            when {
 
-                            if (tryLine.startsWith(" import")) {
-                                importLines.add(tryLine)
-                            }
+                                tryLine.startsWith("Index:") -> {
+                                    break
+                                }
 
+                                tryLine.startsWith(" import") -> {
+                                    importLines.add(tryLine)
+                                }
 
-                            if (tryLine.startsWith("-import ")) {
-                                oldImportLine = tryLine.substring("-import ".length)
-                                importLines.add(tryLine)
-                            }
+                                tryLine.startsWith("-import ") -> {
+                                    oldImportLine = tryLine.substring("-import ".length)
+                                    importLines.add(tryLine)
+                                }
 
-                            if (tryLine.startsWith("+import ")) {
-                                newImportLine = tryLine.substring("+import ".length)
-                                importLines.add(tryLine)
+                                tryLine.startsWith("+import ") -> {
+                                    newImportLine = tryLine.substring("+import ".length)
+                                    importLines.add(tryLine)
+                                }
                             }
 
                             tryToFindIndex++
@@ -236,7 +247,15 @@ class DiffSimplifier(val project: Project) {
 
                         val startLine = substringBefore
                             .substring("--- a/".length).trim()
-                        val withoutEnd = nextLine.substring("+++ b/".length, nextLine.indexOf("(date")).trim()
+                        var endIndex = nextLine.indexOf("(date")
+                        if (endIndex == -1) {
+                            endIndex = nextLine.indexOf("(revision")
+                        }
+                        if (endIndex == -1) {
+                            endIndex = nextLine.length
+                        }
+
+                        val withoutEnd = nextLine.substring("+++ b/".length, endIndex).trim()
 
                         if (startLine == withoutEnd) {
                             index += 2
@@ -267,15 +286,16 @@ class DiffSimplifier(val project: Project) {
         }
 
         private fun isBinaryOrTooLarge(revision: ContentRevision?): Boolean {
-            val virtualFile = (revision as? CurrentContentRevision)?.virtualFile
-            return revision != null && (isBinaryRevision(revision) || (virtualFile != null && FileUtilRt.isTooLarge(
-                virtualFile.length
-            )))
+            val virtualFile = (revision as? CurrentContentRevision)?.virtualFile ?: return false
+            return isBinaryRevision(revision) || FileUtilRt.isTooLarge(virtualFile.length)
         }
 
         private fun isBinaryRevision(cr: ContentRevision?): Boolean {
             if (cr == null) return false
-            return if (cr is BinaryContentRevision) true else cr.file.fileType.isBinary
+            return when (cr) {
+                is BinaryContentRevision -> true
+                else -> cr.file.fileType.isBinary
+            }
         }
     }
 }

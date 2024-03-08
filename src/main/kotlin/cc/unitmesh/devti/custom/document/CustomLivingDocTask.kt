@@ -16,10 +16,7 @@ class CustomLivingDocTask(
     val config: CustomDocumentationConfig,
 ) :
     Task.Backgroundable(editor.project, config.title) {
-
-    companion object {
-        val logger = logger<CustomLivingDocTask>()
-    }
+    private val logger = logger<CustomLivingDocTask>()
 
     override fun run(indicator: ProgressIndicator) {
         val documentation = LivingDocumentation.forLanguage(target.language) ?: return

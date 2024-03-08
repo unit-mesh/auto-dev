@@ -15,11 +15,9 @@ import javax.swing.JButton
 import javax.swing.JComponent
 
 class NewChatAction : DumbAwareAction(), CustomComponentAction {
-    val logger = logger<NewChatAction>()
+    private val logger = logger<NewChatAction>()
 
-    override fun actionPerformed(e: AnActionEvent) {
-
-    }
+    override fun actionPerformed(e: AnActionEvent) = Unit
 
     override fun createCustomComponent(presentation: Presentation, place: String): JComponent {
         val message = AutoDevBundle.message("chat.panel.new")
@@ -27,6 +25,7 @@ class NewChatAction : DumbAwareAction(), CustomComponentAction {
             init {
                 putClientProperty("ActionToolbar.smallVariant", true)
                 putClientProperty("customButtonInsets", JBInsets(1, 1, 1, 1).asUIResource())
+
                 setOpaque(false)
                 addActionListener {
                     val dataContext: DataContext = ActionToolbar.getDataContextFor(this)
@@ -36,9 +35,7 @@ class NewChatAction : DumbAwareAction(), CustomComponentAction {
                         return@addActionListener
                     }
 
-                    val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(
-                        AutoDevToolWindowFactory.Util.id
-                    )
+                    val toolWindowManager = AutoDevToolWindowFactory.getToolWindow(project)
                     val contentManager = toolWindowManager?.contentManager
                     val codingPanel =
                         contentManager?.component?.components?.filterIsInstance<ChatCodingPanel>()?.firstOrNull()
@@ -48,7 +45,7 @@ class NewChatAction : DumbAwareAction(), CustomComponentAction {
                         return@addActionListener
                     }
 
-                    codingPanel?.clearChat()
+                    codingPanel.resetChatSession()
                 }
             }
         }

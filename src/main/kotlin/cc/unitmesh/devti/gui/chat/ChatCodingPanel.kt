@@ -2,20 +2,28 @@ package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.alignRight
+import cc.unitmesh.devti.counit.model.CustomAgentConfig
+import cc.unitmesh.devti.counit.view.WebBlock
+import cc.unitmesh.devti.counit.view.WebBlockView
 import cc.unitmesh.devti.fullHeight
 import cc.unitmesh.devti.fullWidth
+import cc.unitmesh.devti.gui.chat.welcome.WelcomePanel
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.settings.AutoDevSettingsState
-import com.intellij.ide.BrowserUtil
+import com.intellij.lang.html.HTMLLanguage
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.NullableComponent
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.IdeFocusManager
+import com.intellij.temporary.gui.block.CodeBlock
+import com.intellij.temporary.gui.block.CodeBlockView
+import com.intellij.temporary.gui.block.SimpleMessage
 import com.intellij.temporary.gui.block.whenDisposed
 import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
-import com.intellij.ui.components.ActionLink
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
@@ -52,6 +60,9 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
             }
         }
 
+        val panel = WelcomePanel()
+        myList.add(panel)
+
         myTitle.foreground = JBColor.namedColor("Label.infoForeground", JBColor(Gray.x80, Gray.x8C))
         myTitle.font = JBFont.label()
 
@@ -68,10 +79,11 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
 
         progressBar = JProgressBar()
 
-        val actionLink = ActionLink(AutoDevBundle.message("label.submit.issue")) {
-            BrowserUtil.browse("https://github.com/unit-mesh/auto-dev/issues")
+        val actionLink = panel {
+            row {
+                text(AutoDevBundle.message("label.submit.issue"))
+            }
         }
-        actionLink.setExternalLinkIcon()
 
         inputSection = AutoDevInputSection(chatCodingService.project, disposable)
         inputSection.addListener(object : AutoDevInputListener {
@@ -93,22 +105,11 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         })
 
         panelContent = panel {
+            row { cell(myScrollPane).fullWidth().fullHeight() }.resizableRow()
+            row { cell(progressBar).fullWidth() }
+            row { cell(actionLink).alignRight() }
             row {
-                cell(myScrollPane)
-                    .fullWidth()
-                    .fullHeight()
-
-            }.resizableRow()
-
-            row {
-                cell(progressBar).fullWidth()
-            }
-
-            row {
-                cell(actionLink).alignRight()
-            }
-
-            row {
+                border = JBUI.Borders.empty(8)
                 cell(inputSection).fullWidth()
             }
         }
@@ -127,6 +128,9 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         }
     }
 
+    /**
+     * Add a message to the chat panel and update ui
+     */
     fun addMessage(message: String, isMe: Boolean = false, displayPrompt: String = ""): MessageView {
         val role = if (isMe) ChatRole.User else ChatRole.Assistant
         val displayText = displayPrompt.ifEmpty { message }
@@ -138,14 +142,12 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         scrollToBottom()
         progressBar.isIndeterminate = true
         updateUI()
-
         return messageView
     }
 
     private fun updateLayout() {
         val layout = myList.layout
-        val componentCount = myList.componentCount
-        for (i in 0 until componentCount) {
+        for (i in 0 until myList.componentCount) {
             layout.removeLayoutComponent(myList.getComponent(i))
             layout.addLayoutComponent(null, myList.getComponent(i))
         }
@@ -195,6 +197,8 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         updateUI()
     }
 
+    private val logger = logger<ChatCodingPanel>()
+
     private suspend fun updateMessageInUi(content: Flow<String>): String {
         val messageView = MessageView("", ChatRole.Assistant, "")
         myList.add(messageView)
@@ -202,16 +206,13 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
 
         var text = ""
         content.onCompletion {
-            println("onCompletion ${it?.message}")
+            logger.info("onCompletion ${it?.message}")
         }.catch {
             it.printStackTrace()
         }.collect {
             text += it
 
-            // 以下两个 API 设计不合理，如果必须要同时调用，那就只提供一个就好了
-            messageView.updateSourceContent(text)
             messageView.updateContent(text)
-
             messageView.scrollToBottom()
         }
 
@@ -236,11 +237,55 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         this.focusInput()
     }
 
-    // TODO: add session and stop manage
-    fun clearChat() {
+    /**
+     * Resets the chat session by clearing the current session and updating the UI.
+     */
+    fun resetChatSession() {
         chatCodingService.clearSession()
         progressBar.isVisible = false
         myList.removeAll()
+        this.hiddenProgressBar()
+        this.resetAgent()
         updateUI()
     }
+
+    fun resetAgent() {
+        inputSection.resetAgent()
+    }
+
+    fun hasSelectedCustomAgent(): Boolean {
+        return inputSection.hasSelectedAgent()
+    }
+
+    fun getSelectedCustomAgent(): CustomAgentConfig {
+        return inputSection.getSelectedAgent()
+    }
+
+    fun hiddenProgressBar() {
+        progressBar.isVisible = false
+    }
+
+    fun removeLastMessage() {
+        if (myList.componentCount > 0) {
+            myList.remove(myList.componentCount - 1)
+        }
+
+        updateUI()
+    }
+
+    fun appendWebView(content: String, project: Project) {
+        val msg = SimpleMessage(content, content, ChatRole.System)
+        val webBlock = WebBlock(msg)
+        val blockView = WebBlockView(webBlock, project, {})
+        val codeView = CodeBlockView(CodeBlock(msg, language = HTMLLanguage.INSTANCE), project, {})
+
+        myList.add(FrontendCodeView(blockView, codeView))
+
+        updateUI()
+    }
+
+    fun moveCursorToStart() {
+        inputSection.moveCursorToStart()
+    }
 }
+

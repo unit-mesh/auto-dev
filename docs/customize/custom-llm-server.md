@@ -1,46 +1,12 @@
 ---
 layout: default
-title: Custom LLm Server
+title: Custom LLM Server
 parent: Customize Features
 nav_order: 14
 permalink: /custom/llm-server
 ---
 
-# Custom Server API example (ChatGLM2)
-
-See in: [ChatGLM2 SSE Server](../example/custom_llm_server/chatglm_sse.py)
-
-Your LLM API example:
-
-```http-request
-POST http://127.0.0.1:8000/chat
-Content-Type: application/json
-
-{
-  "messages": [
-     { "role": "user", "message": "I'm Nihillum." },
-     { "role": "assistant", "message": "OK" },
-     { "role": "user", "message": "What did I just say?" }
-  ]
-}
-```
-
-Format Example
-
-```python
-class Message(BaseModel):
-    role: str
-    message: str
-
-
-class ChatInput(BaseModel):
-    messages: List[Message]
-
-
-@app.post("/api/chat", response_class=Response)
-async def chat(msg: ChatInput):
-    return StreamingResponse(fetch_chat_completion(msg.messages), media_type="text/event-stream")
-```
+# Custom LLM Server
 
 ## Custom response format
 
@@ -71,15 +37,14 @@ $.choices[0].message.delta.content
 
 ## Custom request format
 
-Only support amount of request parameters like OpenAI does.
-Only support http request that don't need encryption keys(like websocket)
-
+Only support number of request parameters like OpenAI does.
+Only support http request that doesn't need encryption keys(like websocket)
 
 ### Custom Request (header/body/message-keys)
 
 **BE CAREFUL: In this project, messageKey is not compatible with openAI: messageKeys: `{ { "content": "content" } }`is REQUIRED** *maybe we will fix this in the future.*
 
-If your llm server has custom request format, you can:
+If your llm server has a custom request format, you can:
 
 - Add top level field to the request body via `customFields`
 - Add custom headers to the request via `customHeaders`
@@ -91,8 +56,7 @@ For example:
 { "customFields": {"user": "12345", "model":"model-name", "stream": true},  "messageKeys": { "content": "content" }}
 ```
 
-
-
+Or with custom headers:
 
 ```json
 {
@@ -115,8 +79,55 @@ And the request body will be:
 
 ```json
 {
-	"user": "12345",
-    "model": "gpt-4",
-    "messages": [{"role": "user", "message": "..."}]
-  }
+  "user": "12345",
+  "model": "gpt-4",
+  "messages": [
+    {
+      "role": "user",
+      "message": "..."
+    }
+  ]
+}
 ```
+
+## Custom LLM Server Example
+
+### Moonshot AI examples
+
+- Custom Response Type：SSE
+- Custom Engine Server：https://api.moonshot.cn/v1/chat/completions 
+- Request body format
+```json
+{ "customFields": {"model": "moonshot-v1-8k"},   "messageKeys": {"role": "role", "content": "content"} }
+```
+- Response format:
+```
+$.choices[0].delta.content 
+```
+
+### DeepSeek AI examples
+
+- Custom Response Type：SSE
+- Custom Engine Server：https://api.deepseek.com/v1/chat/completions
+- Request body format:
+```json
+{ "customFields": {"model": "deepseek-chat", "stream": true},   "messageKeys": {"role": "role", "content": "content"} }
+```
+- Response format: 
+```
+$.choices[0].delta.content 
+```
+
+### 零一万物 examples
+
+- Custom Response Type：SSE
+- Custom Engine Server：https://api.lingyiwangwu.com/v1/chat/completions
+- Request body format:
+```json
+{ "customFields": {"model": "yi-34b-chat", "stream": true},   "messageKeys": {"role": "role", "content": "content"} }
+```
+- Response format: 
+```
+$.choices[0].delta.content 
+```
+

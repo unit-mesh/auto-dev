@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
 interface LLMProvider {
+    val defaultTimeout: Long get() = 600
+
     fun prompt(promptText: String): String
 
     @OptIn(ExperimentalCoroutinesApi::class)

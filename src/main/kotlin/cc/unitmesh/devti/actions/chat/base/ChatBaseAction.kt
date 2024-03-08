@@ -47,7 +47,6 @@ abstract class ChatBaseAction : AnAction() {
         val editor = event.getData(CommonDataKeys.EDITOR) ?: return
 
         val element = getElementToAction(project, editor) ?: return
-//        selectElement(element, editor)
 
         prompter.initContext(getActionType(), prefixText, file, project, caretModel?.offset ?: 0, element)
 
@@ -62,7 +61,7 @@ abstract class ChatBaseAction : AnAction() {
         }
     }
 
-    private fun selectElement(elementToExplain: PsiElement, editor: Editor) {
+    fun selectElement(elementToExplain: PsiElement, editor: Editor) {
         val startOffset = elementToExplain.textRange.startOffset
         val endOffset = elementToExplain.textRange.endOffset
 

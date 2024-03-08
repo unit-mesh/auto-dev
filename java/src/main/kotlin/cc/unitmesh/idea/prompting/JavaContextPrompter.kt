@@ -21,6 +21,7 @@ import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
 import kotlinx.coroutines.runBlocking
 
 open class JavaContextPrompter : ContextPrompter() {
+    private val logger = logger<JavaContextPrompter>()
     private var additionContext: String = ""
     protected open val testDataBuilder: TestDataBuilder = JavaTestDataBuilder()
 
@@ -165,9 +166,5 @@ open class JavaContextPrompter : ContextPrompter() {
                 additionContext = lookupFile.text.toString()
             }
         }
-    }
-
-    companion object {
-        val logger = logger<JavaContextPrompter>()
     }
 }

@@ -3,6 +3,7 @@ package cc.unitmesh.devti.provider
 import cc.unitmesh.devti.custom.document.LivingDocumentationType
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageExtension
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.SelectionModel
 import com.intellij.psi.PsiElement
@@ -17,8 +18,8 @@ import com.intellij.psi.PsiNameIdentifierOwner
 interface LivingDocumentation {
     val forbiddenRules: List<String>
 
-    val parameterTagInstruction: String get() = "use @param tag"
-    val returnTagInstruction: String get() = "use @return tag"
+    val parameterTagInstruction: String? get() = null
+    val returnTagInstruction: String? get() = null
 
     fun startEndString(type: LivingDocumentationType): Pair<String, String>
 
@@ -31,28 +32,37 @@ interface LivingDocumentation {
         return selectionModel.selectionStart <= element.textRange.startOffset && element.textRange.endOffset <= selectionModel.selectionEnd
     }
 
-    fun buildDocFromSuggestion(suggestion: String, commentStart: String, commentEnd: String): String {
-        val startIndex = suggestion.indexOf(commentStart)
-        if (startIndex < 0) {
-            return ""
-        }
-
-        val docComment = suggestion.substring(startIndex)
-        val endIndex = docComment.indexOf(commentEnd, commentStart.length)
-        if (endIndex < 0) {
-            return docComment + commentEnd
-        }
-
-        val substring = docComment.substring(0, endIndex + commentEnd.length)
-        return substring
-    }
-
     companion object {
         private val languageExtension: LanguageExtension<LivingDocumentation> =
             LanguageExtension("cc.unitmesh.livingDocumentation")
 
         fun forLanguage(language: Language): LivingDocumentation? {
-            return languageExtension.forLanguage(language)
+            val documentation = languageExtension.forLanguage(language)
+            if (documentation != null) {
+                return documentation
+            }
+
+            if (language.displayName == "TypeScript" || language.displayName == "ArkTS") {
+                return HarmonyOsLivingDocumentation()
+            }
+
+            return null
+        }
+
+        fun buildDocFromSuggestion(suggestion: String, commentStart: String, commentEnd: String): String {
+            val startIndex = suggestion.indexOf(commentStart)
+            if (startIndex < 0) {
+                return ""
+            }
+
+            val docComment = suggestion.substring(startIndex)
+            val endIndex = docComment.indexOf(commentEnd, commentStart.length)
+            if (endIndex < 0) {
+                return docComment + commentEnd
+            }
+
+            val substring = docComment.substring(0, endIndex + commentEnd.length)
+            return substring
         }
     }
 }

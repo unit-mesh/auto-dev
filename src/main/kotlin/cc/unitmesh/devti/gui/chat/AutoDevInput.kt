@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
-import com.intellij.temporary.gui.block.findDocument
 import cc.unitmesh.devti.util.parser.Code.Companion.findLanguage
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.*
@@ -18,7 +17,7 @@ import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider
 import com.intellij.openapi.fileTypes.FileTypes
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.temporary.gui.block.findDocument
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.EditorTextField
 import com.intellij.util.EventDispatcher
@@ -54,18 +53,18 @@ class AutoDevInput(
         setFontInheritedFromLAF(true)
         addSettingsProvider {
             it.putUserData(IncrementalFindAction.SEARCH_DISABLED, true)
-            it.colorsScheme.lineSpacing = 1.0f
+            it.colorsScheme.lineSpacing = 1.2f
             it.settings.isUseSoftWraps = true
-//            it.settings.isPaintSoftWraps = false
             it.isEmbeddedIntoDialogWrapper = true
             it.contentComponent.setOpaque(false)
         }
 
         DumbAwareAction.create {
             object : AnAction() {
-                override fun actionPerformed(e1: AnActionEvent) {
-                    val editor = this@AutoDevInput.editor ?: return
+                override fun actionPerformed(actionEvent: AnActionEvent) {
+                    val editor = editor ?: return
 
+                    // Insert a new line
                     CommandProcessor.getInstance().executeCommand(project, {
                         val eol = "\n"
                         val caretOffset = editor.caretModel.offset
@@ -82,12 +81,11 @@ class AutoDevInput(
             ), this
         )
 
-
         val connect: MessageBusConnection = project.messageBus.connect(disposable ?: this)
         val topic = AnActionListener.TOPIC
         connect.subscribe(topic, object : AnActionListener {
             override fun afterActionPerformed(action: AnAction, event: AnActionEvent, result: AnActionResult) {
-                if (event.dataContext.getData(CommonDataKeys.EDITOR) === this@AutoDevInput.editor && action is EnterAction) {
+                if (event.dataContext.getData(CommonDataKeys.EDITOR) === editor && action is EnterAction) {
                     editorListeners.multicaster.onSubmit(inputSection, AutoDevInputTrigger.Key)
                 }
             }
@@ -128,23 +126,25 @@ class AutoDevInput(
             return super.getData(dataId)
         }
 
-        val it = editor ?: return super.getData(dataId)
-        return TextEditorProvider.getInstance().getTextEditor(it)
+        val currentEditor = editor ?: return super.getData(dataId)
+        return TextEditorProvider.getInstance().getTextEditor(currentEditor)
     }
 
     override fun dispose() {
-        listeners.forEach { editor?.document?.removeDocumentListener(it) }
+        listeners.forEach {
+            editor?.document?.removeDocumentListener(it)
+        }
     }
 
     fun recreateDocument() {
-        val lightVirtualFile: VirtualFile =
+        val file =
             LightVirtualFile("AutoDevInput-" + UUID.randomUUID(), findLanguage("Markdown"), "")
 
-        val inputDocument =
-            lightVirtualFile.findDocument() ?: throw IllegalStateException("Can't create inmemory document")
+        val document =
+            file.findDocument() ?: throw IllegalStateException("Can't create in-memory document")
 
-        initializeDocumentListeners(inputDocument)
-        setDocument(inputDocument)
+        initializeDocumentListeners(document)
+        setDocument(document)
         inputSection.initEditor()
     }
 

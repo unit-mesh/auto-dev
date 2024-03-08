@@ -18,7 +18,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testIntegration.TestFinderHelper
-import com.intellij.util.PlatformUtils
 
 class GoWriteTestService : WriteTestService() {
     override fun isApplicable(element: PsiElement): Boolean = element.containingFile?.language == GoLanguage.INSTANCE

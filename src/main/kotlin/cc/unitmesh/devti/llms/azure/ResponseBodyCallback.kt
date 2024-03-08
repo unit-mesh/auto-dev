@@ -46,6 +46,8 @@ class AutoDevHttpException(error: String, private val statusCode: Int) : Runtime
  * SSE.
  */
 class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private val emitDone: Boolean) : Callback {
+    val logger = logger<ResponseBodyCallback>()
+
     override fun onResponse(call: Call, response: Response) {
         var reader: BufferedReader? = null
         try {
@@ -79,12 +81,39 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
                     }
                     // starts with event:
                     line!!.startsWith("event:") -> {
-                        // do nothing
+                        // https://github.com/sysid/sse-starlette/issues/16
+                        val eventName = line!!.substring(6).trim { it <= ' ' }
+                        if (eventName == "ping") {
+                            // skip ping event and data
+                            emitter.onNext(sse)
+                            emitter.onNext(sse)
+                        }
+
+                        null
+                    }
+
+                    // skip `: ping` comments for: https://github.com/sysid/sse-starlette/issues/16
+                    line!!.startsWith(": ping") -> {
                         null
                     }
 
                     else -> {
-                        throw SSEFormatException("Invalid sse format! '$line'")
+                        when {
+                            // sometimes the server maybe returns empty line
+                            line == "" -> {
+                                null
+                            }
+
+                            // : is comment
+                            // https://html.spec.whatwg.org/multipage/server-sent-events.html#parsing-an-event-stream
+                            line!!.startsWith(":") -> {
+                                null
+                            }
+
+                            else -> {
+                                throw SSEFormatException("Invalid sse format! '$line'")
+                            }
+                        }
                     }
                 }
             }

@@ -31,6 +31,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
+import java.net.URL
 import java.time.Duration
 
 
@@ -53,14 +54,11 @@ class AzureOpenAIProvider(val project: Project) : LLMProvider {
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private val url: String
         get() {
-            val customOpenAiHost = autoDevSettingsState.customOpenAiHost
-            if (!customOpenAiHost.endsWith("/")) {
-                return "$customOpenAiHost/"
-            }
-            return customOpenAiHost
+            return tryFixHostUrl(autoDevSettingsState.customOpenAiHost)
         }
+
     private var customPromptConfig: CustomPromptConfig? = null
-    private val timeout = Duration.ofSeconds(600)
+    private val timeout = Duration.ofSeconds(defaultTimeout)
     private var client = OkHttpClient().newBuilder().readTimeout(timeout).build()
     private val openAiVersion: String
     private val maxTokenLength: Int
@@ -191,6 +189,26 @@ class AzureOpenAIProvider(val project: Project) : LLMProvider {
             recording.write(RecordingInstruction(promptText, output))
 
             close()
+        }
+    }
+
+    companion object {
+
+        /**
+         * 如果用户输入的 host 未带 "/" 结尾，自动补全
+         * 如果用户输入的 host 带有 query 或者 fragment，则不做干涉
+         */
+        fun tryFixHostUrl(customOpenAiHost: String): String {
+            val url = URL(customOpenAiHost)
+            if (url.query != null || url.toURI().fragment != null) {
+                return customOpenAiHost
+            }
+
+            if (!customOpenAiHost.endsWith("/")) {
+                return "$customOpenAiHost/"
+            }
+
+            return customOpenAiHost
         }
     }
 }

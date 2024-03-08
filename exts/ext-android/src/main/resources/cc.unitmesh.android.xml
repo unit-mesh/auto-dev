@@ -1,0 +1,10 @@
+<idea-plugin package="cc.unitmesh.android">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+        <plugin id="org.jetbrains.android"/>
+    </dependencies>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <chatContextProvider implementation="cc.unitmesh.android.provider.AndroidChatContextProvider"/>
+    </extensions>
+</idea-plugin>

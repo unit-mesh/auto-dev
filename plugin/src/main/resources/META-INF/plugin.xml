@@ -33,5 +33,7 @@
 
         <!-- extension modules -->
         <module name="cc.unitmesh.database"/>
+        <module name="cc.unitmesh.android"/>
+        <module name="cc.unitmesh.harmonyos"/>
     </content>
 </idea-plugin>

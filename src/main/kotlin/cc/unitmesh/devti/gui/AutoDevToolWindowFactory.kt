@@ -10,6 +10,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
+import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.content.ContentFactory
 
 class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
@@ -18,9 +19,8 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
     }
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        val disposable = toolWindow.disposable
         val chatCodingService = ChatCodingService(ChatActionType.CHAT, project)
-        val contentPanel = ChatCodingPanel(chatCodingService, disposable)
+        val contentPanel = ChatCodingPanel(chatCodingService, toolWindow.disposable)
         val content =
             ContentFactory.getInstance()
                 .createContent(contentPanel, AutoDevBundle.message("autodev.chat"), false)
@@ -32,5 +32,11 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
 
     override fun init(toolWindow: ToolWindow) {
         toolWindow.setTitleActions(listOfNotNull(ActionUtil.getActionGroup("AutoDev.ToolWindow.Chat.TitleActions")))
+    }
+
+    companion object {
+        fun getToolWindow(project: Project): ToolWindow? {
+            return ToolWindowManager.getInstance(project).getToolWindow(Util.id)
+        }
     }
 }

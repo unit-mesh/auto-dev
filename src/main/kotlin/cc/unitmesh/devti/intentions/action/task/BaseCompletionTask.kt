@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.intentions.action.task
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.util.InsertUtil
 import cc.unitmesh.devti.util.LLMCoroutineScope
 import cc.unitmesh.devti.intentions.action.CodeCompletionBaseIntention
@@ -53,7 +54,7 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
         var currentOffset = request.offset
 
         indicator.isIndeterminate = true
-        indicator.fraction = 0.8
+        indicator.fraction = 0.5
         indicator.text = AutoDevBundle.message("intentions.request.background.process.title")
 
         LLMCoroutineScope.scope(request.project).launch {
@@ -67,16 +68,27 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
 
                 suggestion.append(char as String)
                 invokeLater {
-                    if (!isCanceled) {
+                    if (!isCanceled && !request.isReplacement) {
                         InsertUtil.insertStreamingToDoc(project, char, editor, currentOffset)
                         currentOffset += char.length
                     }
                 }
             }
 
+            if (request.isReplacement) {
+                InsertUtil.replaceText(project, editor, request.element, suggestion.toString())
+            }
+
+            indicator.fraction = 0.8
             AutoDevStatusService.notifyApplication(AutoDevStatus.Done)
             logger.info("Suggestion: $suggestion")
         }
+    }
+
+    override fun onThrowable(error: Throwable) {
+        super.onThrowable(error)
+        AutoDevNotifications.error(project, "Failed to completion: ${error.message}")
+        AutoDevStatusService.notifyApplication(AutoDevStatus.Error)
     }
 
     override fun onCancel() {
@@ -85,6 +97,6 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
     }
 
     companion object {
-        val logger = logger<CodeCompletionBaseIntention>()
+        private val logger = logger<CodeCompletionBaseIntention>()
     }
 }

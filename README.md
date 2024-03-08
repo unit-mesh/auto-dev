@@ -33,15 +33,15 @@ AutoDev Overview:
 
 Features:
 
-- Languages support: Java, Kotlin, JavaScript/TypeScript, Rust, Python, Golang, or others...
+- Languages support: Java, Kotlin, JavaScript/TypeScript, Rust, Python, Golang, C/C++/OC, or others...
 - Auto development mode.
-    - AutoCRUD mode (Java/Kotlin Language only）. Auto generate CRUD code.With DevTi Protocol (
-      like `devti://story/github/1102`) will auto generate
-      Model-Controller-Service-Repository code.
+    - AutoCRUD(Spring framework）. With DevTi Protocol (like `devti://story/github/1102`) will auto
+      generate Model-Controller-Service-Repository code.
     - AutoSQL. Context-aware SQL generation.
     - AutoPage. Context-aware Page generation.
     - AutoTesting. create unit test intention, auto run unit test and try to fix test.
-    - Auto Document. Auto generate document.
+    - AutoDocument. Auto generate document.
+    - AutoArkUI. Auto generate HarmonyOS ArkUI code.
 - Copilot mode
     - Pattern specific.Based on your code context like (Controller, Service `import`), AutoDev will suggest you the best
       code.
@@ -57,6 +57,7 @@ Features:
     - Custom LLM Server. You can customize your LLM Server in `Settings` -> `Tools` -> `AutoDev`
     - Custom Living documentation.
     - Team prompts. Customize your team prompts in codebase, and distribute to your team.
+    - Custom AI Agent. You can integrate your own AI Agent into AutoDev.
     - Prompt override. You can override AutoDev's prompt in your codebase.
 - Infrastructure / DevOps
     - CI/CD support. AutoDev will auto generate CI/CD config file.
@@ -79,14 +80,14 @@ download from [HuggingFace](https://huggingface.co/unit-mesh)
 
 We follow [Chapi](https://github.com/phodal/chapi) for language support tier.
 
-| Features                  | Java | Python | Go | Kotlin | JS/TS | C/C++ | C# | Scala | Rust |
-|---------------------------|------|--------|----|--------|-------|-------|----|-------|------|
-| Chat Language Context     | ✅    | ✅      |    | ✅      | ✅     | ✅     |    |       | ✅    | | 
-| Structure AST             | ✅    |        |    | ✅      | ✅     | ✅     | ✅  |       |      | | 
-| AutoCRUD                  | ✅    |        |    | ✅      |       |       |    |       |      | | 
-| Doc Generation            | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    | | 
-| Precision Test Generation | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    | | 
-| Precision Code Generation | ✅    |        |    | ✅      |       |       |    |       |      | | 
+| Features                  | Java | Python | Go | Kotlin | JS/TS | C/C++ | C# | Scala | Rust | ArkTS |
+|---------------------------|------|--------|----|--------|-------|-------|----|-------|------|-------|
+| Chat Language Context     | ✅    | ✅      |    | ✅      | ✅     | ✅     |    |       | ✅    | ✅     | 
+| Structure AST             | ✅    |        |    | ✅      | ✅     | ✅     | ✅  |       |      |       | 
+| AutoCRUD                  | ✅    |        |    | ✅      |       |       |    |       |      |       | 
+| Doc Generation            | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    | ✅     | 
+| Precision Test Generation | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    |       | 
+| Precision Code Generation | ✅    |        |    | ✅      |       |       |    |       |      |       | 
 
 ### Extensions
 

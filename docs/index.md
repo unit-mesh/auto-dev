@@ -39,14 +39,15 @@ AutoDev Overview:
 
 Features:
 
-- Languages support: Java, Kotlin, JavaScript/TypeScript, Rust, Python, Golang, or others...
+- Languages support: Java, Kotlin, JavaScript/TypeScript, Rust, Python, Golang, C/C++/OC, or others...
 - Auto development mode.
-    - AutoCRUD mode (Java/Kotlin Language only）. With DevTi Protocol (like `devti://story/github/1102`) will auto
+    - AutoCRUD(Spring framework）. With DevTi Protocol (like `devti://story/github/1102`) will auto
       generate Model-Controller-Service-Repository code.
     - AutoSQL. Context-aware SQL generation.
     - AutoPage. Context-aware Page generation.
     - AutoTesting. create unit test intention, auto run unit test and try to fix test.
-    - Auto Document. Auto generate document.
+    - AutoDocument. Auto generate document.
+    - AutoArkUI. Auto generate HarmonyOS ArkUI code.
 - Copilot mode
     - Pattern specific.Based on your code context like (Controller, Service `import`), AutoDev will suggest you the best
       code.
@@ -62,6 +63,7 @@ Features:
     - Custom LLM Server. You can customize your LLM Server in `Settings` -> `Tools` -> `AutoDev`
     - Custom Living documentation.
     - Team prompts. Customize your team prompts in codebase, and distribute to your team.
+    - Custom AI Agent. You can integrate your own AI Agent into AutoDev.
     - Prompt override. You can override AutoDev's prompt in your codebase.
 - Infrastructure / DevOps
     - CI/CD support. AutoDev will auto generate CI/CD config file.
@@ -70,13 +72,15 @@ Features:
     - [UnitEval](https://github.com/unit-mesh/unit-eval) evaluate llm result
     - [UnitGen](https://github.com/unit-mesh/unit-gen) generate code-llm fine-tune data.
 
+## Fine-tuning model
+
 AutoDev fine-tune models:
 
 | name          | model download (HuggingFace)                                    | finetune Notebook                    | model download (OpenBayes)                                                          |
 |---------------|-----------------------------------------------------------------|--------------------------------------|-------------------------------------------------------------------------------------|
 | DeepSeek 6.7B | [AutoDev Coder](https://huggingface.co/unit-mesh/autodev-coder) | [finetune.ipynb](finetunes/deepseek) | [AutoDev Coder](https://openbayes.com/console/phodal/models/rCmer1KQSgp/9/overview) |
 
-### Language Support
+### Language Support (Fine-tuning)
 
 We follow [Chapi](https://github.com/phodal/chapi) for language support tier.
 
@@ -89,6 +93,3 @@ We follow [Chapi](https://github.com/phodal/chapi) for language support tier.
 | Precision Test Generation | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    | | 
 | Precision Code Generation | ✅    |        |    | ✅      |       |       |    |       |      | | 
 
-### Extensions
-
-see in [exts](exts)

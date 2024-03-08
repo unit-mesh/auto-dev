@@ -18,6 +18,9 @@ For example, create a file named `prompts/genius/sql/sql-gen-clarify.vm`, will o
 ## Supported Action
 
 ```bash
+├── harmonyos
+│   ├── arkui-clarify.vm
+│   └── arkui-design.vm
 ├── cicd
 │   └── generate-github-action.vm
 ├── code

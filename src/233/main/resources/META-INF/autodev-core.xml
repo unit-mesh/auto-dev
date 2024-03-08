@@ -12,10 +12,10 @@
                                  id="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                                  displayName="AutoDev"/>
 
-        <projectConfigurable provider="cc.unitmesh.devti.settings.configurable.CoUnitToolConfigurableProvider"
+        <projectConfigurable provider="cc.unitmesh.devti.counit.configurable.CoUnitToolConfigurableProvider"
                              parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                              id="cc.unitmesh.counit"
-                             bundle="messages.AutoDevBundle" key="counit.name"/>
+                             bundle="messages.AutoDevBundle" key="counit.agent.name"/>
 
         <projectConfigurable provider="cc.unitmesh.devti.settings.custom.TeamPromptsConfigurableProvider"
                              parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
@@ -45,8 +45,7 @@
         <toolWindow id="AutoDev"
                     doNotActivateOnStart="true"
                     anchor="right"
-                    secondary="true"
-                    canCloseContents="true"
+                    secondary="false"
                     icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                     factoryClass="cc.unitmesh.devti.gui.AutoDevToolWindowFactory"/>
 
@@ -197,13 +196,13 @@
 
         <!-- For right click -->
         <group id="org.intellij.sdk.action.GroupedActions" popup="true" text="AutoDev Chat" description="AutoDev chat">
-            <action id="cc.unitmesh.devti.actions.chat.ChatBotExplainAction"
-                    class="cc.unitmesh.devti.actions.chat.ChatBotExplainAction" text="Explain This"
+            <action id="cc.unitmesh.devti.actions.chat.ExplainThisChatAction"
+                    class="cc.unitmesh.devti.actions.chat.ExplainThisChatAction" text="Explain This"
                     description="Ask AI about this code">
             </action>
 
-            <action id="cc.unitmesh.devti.actions.chat.ChatBotRefactorAction"
-                    class="cc.unitmesh.devti.actions.chat.ChatBotRefactorAction" text="Refactor This"
+            <action id="cc.unitmesh.devti.actions.chat.RefactorThisChatAction"
+                    class="cc.unitmesh.devti.actions.chat.RefactorThisChatAction" text="Refactor This"
                     description="Ask AI refactor this code">
             </action>
 
@@ -291,6 +290,9 @@
             <action id="AutoDev.ToolWindow.Snippet.CopyToClipboard"
                     icon="AllIcons.Actions.Copy"
                     class="cc.unitmesh.devti.gui.snippet.AutoDevCopyToClipboardAction"/>
+            <action id="AutoDev.ToolWindow.Snippet.InsertCode"
+                    icon="cc.unitmesh.devti.AutoDevIcons.InsertCode"
+                    class="cc.unitmesh.devti.gui.snippet.AutoDevInsertCodeAction"/>
         </group>
 
         <group id="AutoDev.ToolWindow.Chat.TitleActions">

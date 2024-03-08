@@ -11,7 +11,7 @@ import com.intellij.psi.search.searches.MethodReferencesSearch
 import com.intellij.psi.search.searches.ReferencesSearch
 
 object JavaContextCollection {
-    val logger = logger<JavaContextCollection>()
+    private val logger = logger<JavaContextCollection>()
     fun findUsages(nameIdentifierOwner: PsiNameIdentifierOwner): List<PsiReference> {
         val project = nameIdentifierOwner.project
         val searchScope = GlobalSearchScope.allScope(project) as SearchScope

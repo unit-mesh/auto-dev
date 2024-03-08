@@ -13,7 +13,8 @@ data class DbContextActionProvider(val dasTables: List<DasTable>) {
     fun getTableColumns(tables: List<String>): List<String> {
         return dasTables.mapNotNull { tableName ->
             if (tables.contains(tableName.name)) {
-                val columns = DasUtil.getColumns(tableName).map {
+                val dasColumns = DasUtil.getColumns(tableName)
+                val columns = dasColumns.map {
                     "${it.name}: ${it.dasType.toDataType()}"
                 }.joinToString(", ")
 

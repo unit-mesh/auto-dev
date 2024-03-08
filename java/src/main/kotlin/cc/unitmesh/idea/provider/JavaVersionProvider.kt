@@ -5,6 +5,7 @@ import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.idea.detectLanguageLevel
 import com.intellij.lang.java.JavaLanguage
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.project.Project
@@ -43,7 +44,11 @@ class JavaVersionProvider : ChatContextProvider {
             return projectSdk.sdkType is JavaSdkType
         }
 
-        val module: Module = ModuleUtilCore.findModuleForFile(sourceFile) ?: return false
+        val module: Module = try {
+            ModuleUtilCore.findModuleForFile(sourceFile)
+        } catch (e: Throwable) {
+            return false
+        } ?: return false
 
         val sdk = ModuleRootManager.getInstance(module).sdk
 

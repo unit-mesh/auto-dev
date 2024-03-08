@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.provider
 
+import cc.unitmesh.devti.custom.compile.VariableTemplateCompiler
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.builtin.DefaultContextPrompter
 import cc.unitmesh.devti.provider.context.ChatContextProvider
@@ -7,7 +8,10 @@ import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.settings.coder.coderSetting
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.extensions.ExtensionPointName
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ProjectManager
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.serviceContainer.LazyExtensionInstance
@@ -43,7 +47,7 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
             chatContext += it.text + "\n"
         }
 
-        logger<ContextPrompter>().info("context: $chatContext")
+        logger.info("context: $chatContext")
 
         chatContextCache[creationContext] = chatContext
         return chatContext
@@ -80,9 +84,30 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
     open fun displayPrompt(): String = ""
     open fun requestPrompt(): String = ""
 
+    fun toTemplateCompiler(): VariableTemplateCompiler? {
+        val project = project ?: ProjectManager.getInstance().openProjects.firstOrNull() ?: return null
+        val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return null
+
+        val file: PsiFile = file ?: PsiDocumentManager.getInstance(project).getPsiFile(editor.document) ?: return null
+
+        val selectedText = selectedText.ifEmpty {
+            editor.selectionModel.selectedText ?: ""
+        }
+
+        return VariableTemplateCompiler(
+            language = file.language,
+            file = file,
+            element = element,
+            editor = editor,
+            selectedText = selectedText
+        )
+    }
+
     companion object {
         private val EP_NAME: ExtensionPointName<ContextPrompter> =
             ExtensionPointName.create("cc.unitmesh.contextPrompter")
+
+        private val logger = logger<ContextPrompter>()
 
         fun prompter(lang: String): ContextPrompter {
             val langLowercase = lang.lowercase()
@@ -98,7 +123,7 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
                 if (partLang.isNotEmpty()) {
                     partLang[0]
                 } else {
-                    logger<ContextPrompter>().warn("No context prompter found for language $lang, will use default")
+                    logger.warn("No context prompter found for language $lang, will use default")
                     DefaultContextPrompter()
                 }
             }

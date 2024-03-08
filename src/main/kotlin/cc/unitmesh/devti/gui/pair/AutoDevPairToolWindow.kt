@@ -10,6 +10,7 @@ import cc.unitmesh.devti.pair.arch.ProjectPackageTree
 import cc.unitmesh.devti.pair.tasking.Tasking
 import cc.unitmesh.devti.provider.architecture.LayeredArchProvider
 import cc.unitmesh.devti.util.parser.Code
+import com.intellij.lang.html.HTMLLanguage
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileTypes.PlainTextLanguage
 import com.intellij.openapi.project.Project

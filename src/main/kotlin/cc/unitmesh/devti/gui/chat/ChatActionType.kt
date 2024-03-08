@@ -16,7 +16,7 @@ enum class ChatActionType {
     CREATE_GENIUS,
     CUSTOM_COMPLETE,
     CUSTOM_ACTION,
-    COUNIT,
+    CUSTOM_AGENT,
     CODE_REVIEW
     ;
 
@@ -48,7 +48,7 @@ enum class ChatActionType {
 
             FIX_ISSUE -> {
                 devCoderSettings?.fixIssueCode.let {
-                    val defaultPrompt = "Help me fix this issue"
+                    val defaultPrompt = "Help me fix problem: "
                     compilePrompt(it, defaultPrompt, lang)
                 }
             }
@@ -58,7 +58,7 @@ enum class ChatActionType {
             CHAT -> ""
             CUSTOM_COMPLETE -> ""
             CUSTOM_ACTION -> ""
-            COUNIT -> ""
+            CUSTOM_AGENT -> ""
             CODE_REVIEW -> ""
             CREATE_GENIUS -> ""
             GENERATE_TEST_DATA -> "Generate JSON data based on given $lang code and request/response info." +

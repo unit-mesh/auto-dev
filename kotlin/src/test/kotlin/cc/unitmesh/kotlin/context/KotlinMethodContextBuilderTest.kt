@@ -1,12 +1,11 @@
 package cc.unitmesh.kotlin.context;
 
+import cc.unitmesh.kotlin.util.KotlinPsiUtil
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testFramework.LightPlatformTestCase
 import junit.framework.TestCase
-import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtPsiFactory
-import org.junit.Test
 
 
 class KotlinMethodContextBuilderTest : LightPlatformTestCase() {
@@ -24,7 +23,7 @@ class KotlinMethodContextBuilderTest : LightPlatformTestCase() {
         val createFile = KtPsiFactory(project).createFile("UserController.kt", code)
         val clz = PsiTreeUtil.findChildOfType(createFile, KtNamedFunction::class.java)!!
 
-        val signatureString = KotlinMethodContextBuilder.Util.getSignatureString(clz)
+        val signatureString = KotlinPsiUtil.signatureString(clz)
         TestCase.assertEquals(signatureString, "/**  * It's a hello, world.  */ fun main()")
     }
 
@@ -44,7 +43,7 @@ class KotlinMethodContextBuilderTest : LightPlatformTestCase() {
         val createFile = KtPsiFactory(project).createFile("UserController.kt", code)
         val clz = PsiTreeUtil.findChildOfType(createFile, KtNamedFunction::class.java)!!
 
-        val signatureString = KotlinMethodContextBuilder.Util.getSignatureString(clz)
+        val signatureString = KotlinPsiUtil.signatureString(clz)
         TestCase.assertEquals(signatureString, "/**      * It's a hello, world.      */     fun main()")
     }
 
@@ -61,7 +60,7 @@ class KotlinMethodContextBuilderTest : LightPlatformTestCase() {
         val createFile = KtPsiFactory(project).createFile("UserController.kt", code)
         val clz = PsiTreeUtil.findChildOfType(createFile, KtNamedFunction::class.java)!!
 
-        val signatureString = KotlinMethodContextBuilder.Util.getSignatureString(clz)
+        val signatureString = KotlinPsiUtil.signatureString(clz)
         TestCase.assertEquals(signatureString, "fun main()")
     }
 }

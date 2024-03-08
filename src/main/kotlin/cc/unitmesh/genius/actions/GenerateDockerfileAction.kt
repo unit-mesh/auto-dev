@@ -1,6 +1,5 @@
 package cc.unitmesh.genius.actions
 
-import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.tasks.FileGenerateTask
 import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.template.TemplateRender
@@ -10,12 +9,9 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
-import com.intellij.openapi.project.guessProjectDir
 
 
-const val DOCKERFILE = "Dockerfile"
-
-class GenerateDockerfileAction : AnAction(AutoDevBundle.message("action.new.genius.dockerfile")) {
+class GenerateDockerfileAction : AnAction("Generate Dockerfile") {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
 
@@ -26,10 +22,9 @@ class GenerateDockerfileAction : AnAction(AutoDevBundle.message("action.new.geni
 
         val msgs = templateRender.buildMsgs(template)
 
-        val task: Task.Backgroundable = FileGenerateTask(project, msgs, DOCKERFILE)
+        val task: Task.Backgroundable = FileGenerateTask(project, msgs, "Dockerfile")
         ProgressManager.getInstance()
             .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
     }
 }
-
 

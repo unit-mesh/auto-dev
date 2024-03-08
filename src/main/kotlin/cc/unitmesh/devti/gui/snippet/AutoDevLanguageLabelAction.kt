@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.gui.snippet
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.Presentation
@@ -7,15 +8,16 @@ import com.intellij.openapi.actionSystem.ex.CustomComponentAction
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.util.Key
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.UIUtil
 import javax.swing.JComponent
 
 class AutoDevLanguageLabelAction : DumbAwareAction(), CustomComponentAction {
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+
     override fun createCustomComponent(presentation: Presentation, place: String): JComponent {
-        val languageId = snippetLanguageName(presentation)
+        val languageId = presentation.getClientProperty(LANGUAGE_PRESENTATION_KEY) ?: ""
         val jBLabel: JComponent = JBLabel(languageId)
         jBLabel.setOpaque(false)
         jBLabel.setForeground(UIUtil.getLabelInfoForeground())
@@ -25,7 +27,7 @@ class AutoDevLanguageLabelAction : DumbAwareAction(), CustomComponentAction {
     override fun updateCustomComponent(component: JComponent, presentation: Presentation) {
         if (component !is JBLabel) return
 
-        val languageId = snippetLanguageName(presentation)
+        val languageId = presentation.getClientProperty(LANGUAGE_PRESENTATION_KEY) ?: ""
         if (languageId.isNotBlank()) {
             component.text = languageId
         }
@@ -36,14 +38,9 @@ class AutoDevLanguageLabelAction : DumbAwareAction(), CustomComponentAction {
     }
 
     override fun update(e: AnActionEvent) {
-        val data = e.dataContext.getData(CommonDataKeys.EDITOR) ?: return
-        val file: VirtualFile = FileDocumentManager.getInstance().getFile(data.document) ?: return
-        val lightVirtualFile = file as LightVirtualFile
+        val editor = e.dataContext.getData(CommonDataKeys.EDITOR) ?: return
+        val lightVirtualFile = FileDocumentManager.getInstance().getFile(editor.document) as? LightVirtualFile ?: return
         e.presentation.putClientProperty(LANGUAGE_PRESENTATION_KEY, lightVirtualFile.language.displayName)
-    }
-
-    private fun snippetLanguageName(presentation: Presentation): String {
-        return presentation.getClientProperty(LANGUAGE_PRESENTATION_KEY) ?: ""
     }
 
     companion object {

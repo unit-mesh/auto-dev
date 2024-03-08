@@ -19,18 +19,12 @@ class KotlinTestDataBuilder : TestDataBuilder {
         if (clazz !is KtClass) return ""
 
         clazz.annotationEntries.forEach {
-            if (it.shortName?.asString() == "RequestMapping") {
-                return when (val value = it.valueArguments.firstOrNull()?.getArgumentExpression()) {
-                    is KtStringTemplateExpression -> {
-                        value.literalContents() ?: value.text
-                    }
-
-                    is KtSimpleNameExpression -> {
-                        value.getReferencedName()
-                    }
-
-                    else -> {
-                        ""
+            when {
+                it.shortName?.asString() == "RequestMapping" -> {
+                    return when (val value = it.valueArguments.firstOrNull()?.getArgumentExpression()) {
+                        is KtStringTemplateExpression -> value.literalContents() ?: value.text
+                        is KtSimpleNameExpression -> value.getReferencedName()
+                        else -> ""
                     }
                 }
             }
@@ -50,15 +44,17 @@ class KotlinTestDataBuilder : TestDataBuilder {
         ktParameters.map { parameter ->
             result += handleFromType(parameter)
         }
+
         return result
     }
 
     private fun handleFromType(parameter: KtParameter): Map<String, String> {
-        when (val type = parameter.typeReference?.typeElement) {
+        val map = when (val type = parameter.typeReference?.typeElement) {
             is KtClass -> processingClassType(type)
+            else -> emptyMap()
         }
 
-        return emptyMap()
+        return map
     }
 
 

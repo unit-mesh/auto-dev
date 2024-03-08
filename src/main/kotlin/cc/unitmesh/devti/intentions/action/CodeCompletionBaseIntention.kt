@@ -63,6 +63,6 @@ class CodeCompletionBaseIntention : ChatBaseIntention() {
     }
 
     companion object {
-        val logger = logger<CodeCompletionBaseIntention>()
+        private val logger = logger<CodeCompletionBaseIntention>()
     }
 }

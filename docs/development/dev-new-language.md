@@ -27,7 +27,6 @@ And, we found that JetBrains' IDE already have a good data structure, so we use 
 structure and design.
 
 ```xml
-
 <fileContextBuilder language="Rust"
                     implementationClass="cc.unitmesh.rust.context.RustFileContextBuilder"/>
 <classContextBuilder language="Rust"
@@ -47,7 +46,7 @@ structure and design.
 Similar to CodeDataStructure Context Provider, we use JetBrains' design for Chat Context Provider. You can implement
 multiple Chat Context Providers for same languages.
 
-```
+```xml
 <chatContextProvider implementation="cc.unitmesh.rust.provider.RustVersionContextProvider"/>
 <chatContextProvider implementation="cc.unitmesh.rust.provider.RustCompilerContextProvider"/>
 ```
@@ -56,7 +55,7 @@ multiple Chat Context Providers for same languages.
 
 > Test Context will collect that context for test generation, and with CodeModifier to generate test code.
 
-```
+```xml
 <testContextProvider language="Rust" implementation="cc.unitmesh.rust.provider.RustTestService"/>
 
 <codeModifier language="Rust" implementationClass="cc.unitmesh.rust.provider.RustCodeModifier"/>
@@ -66,7 +65,7 @@ multiple Chat Context Providers for same languages.
 
 > Living Documentation will provide the living documentation for user, and also can generate the comments.
 
-```
+```xml
 <livingDocumentationProvider language="Rust" implementation="cc.unitmesh.rust.provider.RustLivingDocumentationProvider"/>
 ```
 
@@ -74,7 +73,7 @@ multiple Chat Context Providers for same languages.
 
 > API TestDataBuilder will provide the API test data for user, like API test data, API test code, etc.
 
-```
+```xml
 <testDataBuilder language="kotlin"
              implementationClass="cc.unitmesh.kotlin.provider.KotlinTestDataBuilder"/>
 ```
@@ -83,7 +82,7 @@ multiple Chat Context Providers for same languages.
 
 > contextPrompter will provide the context prompt rules for user, like display and request prompts.
 
-```
+```xml
 <contextPrompter
           language="kotlin"
           implementation="cc.unitmesh.kotlin.provider.KotlinContextPrompter"/>
@@ -94,7 +93,6 @@ multiple Chat Context Providers for same languages.
 > customPromptProvider will provide the custom prompt functions for user.
 
 ```xml
-
 <customPromptProvider
         language="kotlin"
         implementationClass="cc.unitmesh.kotlin.provider.KotlinCustomPromptProvider"/>

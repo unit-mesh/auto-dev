@@ -5,7 +5,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
 
 class SimilarChunkVariableResolver(val element: PsiElement) : VariableResolver {
-    override val type: CustomVariableType get() = CustomVariableType.SIMILAR_CHUNK
+    override val type: CustomResolvedVariableType get() = CustomResolvedVariableType.SIMILAR_CHUNK
 
     override fun resolve(): String {
         return try {

@@ -5,6 +5,7 @@ import cc.unitmesh.devti.context.base.LLMCodeContext
 import cc.unitmesh.devti.custom.document.LivingDocumentationType
 import cc.unitmesh.devti.provider.LivingDocumentation
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
@@ -42,6 +43,8 @@ open class LivingDocPromptBuilder(
     open val documentation: LivingDocumentation,
     val type: LivingDocumentationType,
 ) {
+    private val logger = logger<LivingDocPromptBuilder>()
+
     protected val contextProviders = listOf(
         VariableContextProvider(false, false, false),
         ClassContextProvider(false),
@@ -70,32 +73,47 @@ open class LivingDocPromptBuilder(
     private fun methodInstruction(context: MethodContext): String? {
         if (context.name == null) return null
 
-        var instruction = "Write documentation for given ${context.root.language.displayName} language method " + context.name + "."
-        if (context.paramNames.isNotEmpty()) {
+        var instruction =
+            "Write documentation for given ${context.root.language.displayName} language method " + context.name + "."
+        if (context.paramNames.isNotEmpty() && documentation.parameterTagInstruction != null) {
             instruction = """
                 $instruction
-                ${documentation.parameterTagInstruction}
+                ${documentation.parameterTagInstruction ?: ""}
                 """.trimIndent()
         }
 
         val returnType = context.returnType
-        if (!returnType.isNullOrEmpty()) {
+        if (!returnType.isNullOrEmpty() && documentation.returnTagInstruction != null) {
             instruction = """
                 $instruction
-                ${documentation.returnTagInstruction}
+                ${documentation.returnTagInstruction ?: ""}
                 """.trimIndent()
         }
 
         return instruction.trimStart()
     }
 
+    /**
+     * Builds a prompt for generating documentation for a given [PsiElement].
+     *
+     * @param project The current project.
+     * @param target The PsiElement for which documentation is to be generated.
+     * @param fallbackText The fallback text to use if no specific context can be provided.
+     * @return A string containing the prompt for generating documentation.
+     */
     open fun buildPrompt(project: Project?, target: PsiElement, fallbackText: String): String {
         return ReadAction.compute<String, Throwable> {
             val instruction = StringBuilder(fallbackText)
 
             var inOutString = ""
             val basicInstruction = this.contextProviders.firstNotNullOfOrNull { contextProvider ->
-                val llmQueryContext = contextProvider.from(target)
+                val llmQueryContext = try {
+                    contextProvider.from(target)
+                } catch (e: Exception) {
+                    logger.info("Error while getting context for $target", e)
+                    null
+                }
+
                 when (llmQueryContext) {
                     is MethodContext -> {
                         inOutString = llmQueryContext.inputOutputString()

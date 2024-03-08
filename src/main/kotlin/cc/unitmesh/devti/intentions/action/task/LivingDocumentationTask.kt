@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.intentions.action.task
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.provider.LivingDocumentation
 import cc.unitmesh.devti.custom.document.LivingDocumentationType
@@ -50,8 +51,14 @@ class LivingDocumentationTask(
         AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)
     }
 
+    override fun onThrowable(error: Throwable) {
+        super.onThrowable(error)
+        AutoDevNotifications.error(project, "Failed to generate living documentation: ${error.message}")
+        AutoDevStatusService.notifyApplication(AutoDevStatus.Error)
+    }
+
     companion object {
-        val logger = logger<LivingDocumentationTask>()
+        private val logger = logger<LivingDocumentationTask>()
     }
 }
 

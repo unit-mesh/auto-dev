@@ -123,4 +123,33 @@ change import from com.thoughtworks.archguard.code.module.domain.dubbo.ServiceCo
             """modify file server/src/test/kotlin/com/thoughtworks/archguard/code/clazz/domain/CodeTreeTest.kt"""
         )
     }
+
+    @Test
+    fun testHandleForRealWorld() {
+        val code = """Index: src/main/java/cc/unitmesh/untitled/demo/controller/BlogCategoryController.java
+===================================================================
+diff --git a/src/main/java/cc/unitmesh/untitled/demo/controller/BlogCategoryController.java b/src/main/java/cc/unitmesh/untitled/demo/controller/BlogCategoryController.java
+--- a/src/main/java/cc/unitmesh/untitled/demo/controller/BlogCategoryController.java	(revision 9b4b04de55fe5be5372eae67987b27f7d329e1f3)
++++ b/src/main/java/cc/unitmesh/untitled/demo/controller/BlogCategoryController.java	(revision 768efa678ecb9c044aea7c5c4873ed218357773b)
+@@ -6,7 +6,5 @@
+ public class BlogCategoryController {
+     // devti://story/github/1
+ 
+-    //    银行账户管理
+-
+     // Close a bank account
+ }"""
+
+        val postProcess = DiffSimplifier.postProcess(code)
+        assertEquals(
+            postProcess,
+            """modify file src/main/java/cc/unitmesh/untitled/demo/controller/BlogCategoryController.java
+ public class BlogCategoryController {
+     // devti://story/github/1
+-    //    银行账户管理
+-
+     // Close a bank account
+ }"""
+        )
+    }
 }

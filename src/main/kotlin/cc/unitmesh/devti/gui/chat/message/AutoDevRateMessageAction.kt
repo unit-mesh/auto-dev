@@ -3,6 +3,7 @@ package cc.unitmesh.devti.gui.chat.message
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.temporary.gui.block.CompletableMessage
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAwareToggleAction
@@ -16,6 +17,8 @@ enum class ChatMessageRating {
 }
 
 abstract class AutoDevRateMessageAction : DumbAwareToggleAction() {
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
+
     abstract fun getReaction(): ChatMessageRating
     abstract fun getReactionIcon(): Icon
     abstract fun getReactionIconSelected(): Icon
@@ -56,6 +59,5 @@ abstract class AutoDevRateMessageAction : DumbAwareToggleAction() {
         override fun getReactionIcon(): Icon = AutoDevIcons.Dislike
 
         override fun getReactionIconSelected(): Icon = AutoDevIcons.Disliked
-
     }
 }

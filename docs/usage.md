@@ -12,7 +12,7 @@ permalink: /quick-start
 
 ## Config
 
-### Official OpenAI config
+### OpenAI Official config
 
 1. open AutoDev Config in `Settings` -> `Tools` -> `AutoDev`.
 2. select `AI Engine` -> `OpenAI`, select `Open AI Model` -> `gpt-3.5-turbo`
@@ -27,86 +27,32 @@ permalink: /quick-start
 4. fill `OpenAI API Key` with your Host OpenAI API Key.
 5. Apply and OK.
 
-### Azure Config
+### OpenAI Azure Config
 
 1. open AutoDev Config in `Settings` -> `Tools` -> `AutoDev`.
 2. select `AI Engine` -> `Azure`, select `Open AI Model` -> `gpt-3.5-turbo`
 3. fill `Custom OpenAI Host` with your OpenAI API Endpoint. (with Key in URL)
 4. Apply and OK.
 
-### Custom Config
+### Xunfei Xinghuo
+
+1. open AutoDev Config in `Settings` -> `Tools` -> `AutoDev`.
+2. select `AI Engine` -> `Xinghuo`
+3. fill `AppId`, `AppKey`, `AppSecret` with your Xunfei Xinghuo API Key.
+4. Apply and OK.
+
+### Custom Config / OpenAI compatible
+
+Tested: 零一万物（[#94](https://github.com/unit-mesh/auto-dev/issues/94)）, 月之暗面（Moonshot
+AI）、深度求索（Deepseek [#96](https://github.com/unit-mesh/auto-dev/issues/96)），ChatGLM(#90)
 
 1. open AutoDev Config in `Settings` -> `Tools` -> `AutoDev`.
 2. select `AI Engine` -> `Custom`
 3. fill `Custom Engine Server`
 4. fill `Custom Engine Token` if needed.
-5. config `Custom Response Format` by [JsonPath](https://github.com/json-path/JsonPath) (for example: `$.choices[0].content`), if not set, will use OpenAI's format as default.
-6. Apply and OK.
+5. config `Custom Response Format` by [JsonPath](https://github.com/json-path/JsonPath) (for
+   example: `$.choices[0].content`), if not set, will use OpenAI's format as default.
+6. config `Custom Request Format` by Json if needed.
+7. Apply and OK.
 
-the request format logic:
-
-```kotlin
-/**
- * request format:
- * {
- *  "messages": [
- *    { "role": "user", "message": "I'm Nihillum." },
- *    { "role": "assistant", "message": "OK" },
- *    { "role": "user", "message": "What did I just say?" }
- *  ]
- *}
- */
-@Serializable
-data class Message(val role: String, val message: String)
-val messages += Message("user", promptText)
-val requestContent = Json.encodeToString<List<Message>>(messages)
-```
-
-The response format logic:
-
-```kotlin
-if (engineFormat.isNotEmpty()) {
-    val chunk: String = JsonPath.parse(sse!!.data)?.read(engineFormat)
-        ?: throw Exception("Failed to parse chunk")
-    trySend(chunk)
-} else {
-    val result: ChatCompletionResult =
-        ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
-
-    val completion = result.choices[0].message
-    if (completion != null && completion.content != null) {
-        trySend(completion.content)
-    }
-}
-```
-
-## Features
-
-### CodeCompletion mode
-
-You can:
-
-- Right-click on the code editor, select `AutoDev` -> `CodeCompletion` -> `CodeComplete`
-- or use `Alt + Enter` to open `Intention Actions` menu, select `AutoDev` -> `CodeCompletion`
-
-![Code completion](https://unitmesh.cc/auto-dev/completion-mode.png)
-
-### Custom Action
-
-![Code completion](https://unitmesh.cc/auto-dev/custom-action.png)
-
-For more, see [Custom Action](docs/custom-action.md)
-
-### AutoCRUD mode （Only support Java/Kotlin project)
-
-1. add `// devti://story/github/1` comments in your code.
-2. configure GitHub repository for Run Configuration.
-3. click `AutoDev` button in the comments' left.
-
-Run Screenshots:
-
-![AutoDev](https://unitmesh.cc/auto-dev/init-instruction.png)
-
-Output Screenshots:
-
-![AutoDev](https://unitmesh.cc/auto-dev/blog-controller.png)
+for more, see in [Customize LLM Server](/custom/llm-server)

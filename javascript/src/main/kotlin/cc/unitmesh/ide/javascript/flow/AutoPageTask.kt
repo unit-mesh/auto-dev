@@ -29,6 +29,5 @@ class AutoPageTask(
         flow.design(filterComponents)
 
         indicator.fraction = 0.8
-
     }
 }

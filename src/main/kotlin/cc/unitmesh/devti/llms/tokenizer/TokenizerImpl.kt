@@ -6,6 +6,7 @@ import com.knuddels.jtokkit.Encodings
 import com.knuddels.jtokkit.api.Encoding
 import com.knuddels.jtokkit.api.EncodingRegistry
 import com.knuddels.jtokkit.api.EncodingType
+import com.knuddels.jtokkit.api.IntArrayList
 
 @Service(Service.Level.APP)
 class TokenizerImpl(private val maxTokenLength: Int = 8192) : Tokenizer {
@@ -15,11 +16,13 @@ class TokenizerImpl(private val maxTokenLength: Int = 8192) : Tokenizer {
     override fun getMaxLength(): Int = maxTokenLength
 
     override fun count(string: String): Int = encoding.countTokens(string)
-    override fun tokenize(chunk: String): List<Int> {
+
+    override fun tokenize(chunk: String): IntArrayList? {
         return encoding.encode(chunk, maxTokenLength).tokens
     }
 
     companion object {
-        val INSTANCE = ApplicationManager.getApplication().getService(TokenizerImpl::class.java)
+        val INSTANCE =
+            ApplicationManager.getApplication().getService(TokenizerImpl::class.java)
     }
 }

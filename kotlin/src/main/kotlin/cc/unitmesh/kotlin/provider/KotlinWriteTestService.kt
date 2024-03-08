@@ -4,7 +4,8 @@ import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.devti.provider.WriteTestService
-import cc.unitmesh.kotlin.context.KotlinClassContextBuilder
+import cc.unitmesh.kotlin.util.KotlinPsiUtil
+import cc.unitmesh.kotlin.util.getReturnTypeReferences
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
@@ -20,7 +21,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.idea.KotlinLanguage
-import org.jetbrains.kotlin.idea.quickfix.createFromUsage.callableBuilder.getReturnTypeReference
 import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.getValueParameters
@@ -46,22 +46,23 @@ class KotlinWriteTestService : WriteTestService() {
         val className = sourceFile.name.replace(".kt", "") + "Test"
 
         val packageName = ReadAction.compute<String, Throwable> {
-            (sourceFile as KtFile).packageName
+            (sourceFile as KtFile).packageFqName.asString()
         }
+
         val parentDirPath = ReadAction.compute<String, Throwable> {
             parentDir?.path
         }
 
         val relatedModels = lookupRelevantClass(project, element).distinctBy { it.name }
 
-        if (!parentDirPath?.contains("/src/main/kotlin/")!!) {
+        if (!parentDirPath?.contains("/main/kotlin/")!!) {
             log.error("Source file is not in the src/main/java directory: $parentDirPath")
             return null
         }
 
         var isNewFile = false
 
-        val testDirPath = parentDir.path.replace("/src/main/kotlin/", "/src/test/kotlin/")
+        val testDirPath = parentDir.path.replace("/main/kotlin/", "/test/kotlin/")
         var testDir = LocalFileSystem.getInstance().findFileByPath(testDirPath)
 
         if (testDir == null || !testDir.isDirectory) {
@@ -125,7 +126,7 @@ class KotlinWriteTestService : WriteTestService() {
             val resolvedClasses = resolveByMethod(element)
 
             if (element is KtClassOrObject) {
-                KotlinClassContextBuilder.getFunctions(element).forEach {
+                KotlinPsiUtil.getFunctions(element).forEach {
                     resolvedClasses.putAll(resolveByMethod(it))
                 }
 
@@ -174,13 +175,9 @@ class KotlinWriteTestService : WriteTestService() {
                 }
 
                 // with Generic returnType, like: ResponseEntity<List<Item>>
-                val returnTypeReferences = element.getReturnTypeReferences()
-                returnTypeReferences.forEach {
-                    val outputType = resolveType(it)
-                    outputType.forEach { element ->
-                        if (element is KtClass) {
-                            resolvedClasses[element.name!!] = element
-                        }
+                element.getReturnTypeReferences().forEach { returnType ->
+                    resolveType(returnType).filterIsInstance<KtClass>().forEach {
+                        resolvedClasses[it.name!!] = it
                     }
                 }
             }
@@ -192,16 +189,16 @@ class KotlinWriteTestService : WriteTestService() {
     private fun resolveType(typeReference: KtTypeReference?): List<PsiElement> {
         if (typeReference == null) return emptyList()
         val result = mutableListOf<PsiElement>()
-        if (typeReference.typeElement is KtUserType) {
-            val typeElement = typeReference.typeElement as KtUserType
-            typeElement.typeArguments.forEach {
-                val type = resolveType(it.typeReference)
-                result += type
-            }
+        when (val ktTypeElement = typeReference.typeElement) {
+            is KtUserType -> {
+                ktTypeElement.typeArguments.forEach {
+                    result += resolveType(it.typeReference)
+                }
 
-            val typeElementReference = typeElement.referenceExpression?.mainReference?.resolve()
-            if (typeElementReference is KtClass) {
-                result += typeElementReference
+                val typeElementReference = ktTypeElement.referenceExpression?.mainReference?.resolve()
+                if (typeElementReference is KtClass) {
+                    result += typeElementReference
+                }
             }
         }
 

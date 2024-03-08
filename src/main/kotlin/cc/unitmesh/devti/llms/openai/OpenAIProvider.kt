@@ -8,6 +8,7 @@ import cc.unitmesh.devti.coder.recording.Recording
 import cc.unitmesh.devti.coder.recording.RecordingInstruction
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.coder.coderSetting
+import cc.unitmesh.devti.settings.SELECT_CUSTOM_MODEL
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
@@ -31,11 +32,28 @@ import java.time.Duration
 
 @Service(Service.Level.PROJECT)
 class OpenAIProvider(val project: Project) : LLMProvider {
+    private val timeout = Duration.ofSeconds(defaultTimeout)
+    private val openAiVersion: String
+        get() {
+            val customModel = AutoDevSettingsState.getInstance().customModel
+            if(AutoDevSettingsState.getInstance().openAiModel == SELECT_CUSTOM_MODEL) {
+                AutoDevSettingsState.getInstance().openAiModel = customModel
+            }
+            return  AutoDevSettingsState.getInstance().openAiModel
+        }
+    private val openAiKey: String
+        get() = AutoDevSettingsState.getInstance().openAiKey
+
+    private val maxTokenLength: Int
+        get() = AutoDevSettingsState.getInstance().fetchMaxTokenLength()
+
+    private val messages: MutableList<ChatMessage> = ArrayList()
+    private var historyMessageLength: Int = 0
+
     private val service: OpenAiService
         get() {
             if (openAiKey.isEmpty()) {
-                logger.error("openAiKey is empty")
-                throw IllegalStateException("openAiKey is empty")
+                throw IllegalStateException("You LLM server Key is empty")
             }
 
             var openAiProxy = AutoDevSettingsState.getInstance().customOpenAiHost
@@ -60,18 +78,6 @@ class OpenAIProvider(val project: Project) : LLMProvider {
                 OpenAiService(api)
             }
         }
-
-    private val timeout = Duration.ofSeconds(600)
-    private val openAiVersion: String
-        get() = AutoDevSettingsState.getInstance().openAiModel
-    private val openAiKey: String
-        get() = AutoDevSettingsState.getInstance().openAiKey
-
-    private val maxTokenLength: Int
-        get() = AutoDevSettingsState.getInstance().fetchMaxTokenLength()
-
-    private val messages: MutableList<ChatMessage> = ArrayList()
-    private var historyMessageLength: Int = 0
 
     private val recording: Recording
         get() {

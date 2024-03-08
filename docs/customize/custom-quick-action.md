@@ -13,6 +13,8 @@ input your prompt.
 
 ## Customize
 
+Demo project: [https://github.com/unit-mesh/untitled](https://github.com/unit-mesh/untitled)
+
 For more, see in example: [https://github.com/unit-mesh/untitled/tree/master/prompts/quick](https://github.com/unit-mesh/untitled/tree/master/prompts/quick)
 
 You can custom task by your own, by put prompts files under `prompts/quick`:

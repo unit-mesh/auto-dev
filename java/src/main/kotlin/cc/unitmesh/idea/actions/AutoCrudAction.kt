@@ -16,6 +16,8 @@ import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiFile
 
 class AutoCrudAction : ChatBaseIntention() {
+    private val logger = logger<AutoCrudAction>()
+
     override fun priority(): Int = 900
 
     override fun getText(): String = AutoDevBundle.message("intentions.crud.new.name")
@@ -75,7 +77,4 @@ class AutoCrudAction : ChatBaseIntention() {
         }
 
 
-    companion object {
-        val logger = logger<AutoCrudAction>()
-    }
 }

@@ -72,7 +72,21 @@ class TeamPromptExecTask(
                 ProgressManager.getInstance()
                     .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
             }
+
+            InteractionType.ReplaceSelection -> {
+                val msgString = systemPrompt + "\n" + userPrompt
+                val request = runReadAction {
+                    CodeCompletionRequest.create(editor, offset, element, null, msgString, isReplacement = true)
+                } ?: return
+
+                val task = object : BaseCompletionTask(request) {
+                    override fun keepHistory(): Boolean = false
+                    override fun promptText(): String = msgString
+                }
+
+                ProgressManager.getInstance()
+                    .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+            }
         }
     }
-
 }

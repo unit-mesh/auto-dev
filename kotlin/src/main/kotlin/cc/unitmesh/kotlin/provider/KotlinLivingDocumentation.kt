@@ -53,6 +53,9 @@ import org.jetbrains.kotlin.psi.KtNamedFunction
  * @see LivingDocumentationType
  */
 class KotlinLivingDocumentation : LivingDocumentation {
+    override val parameterTagInstruction: String get() = "use @param tag"
+    override val returnTagInstruction: String get() = "use @return tag"
+
     companion object {
         private val logger = logger<KotlinLivingDocumentation>()
     }
@@ -115,7 +118,7 @@ class KotlinLivingDocumentation : LivingDocumentation {
                     try {
                         doInsertComment(target, project, newDoc)
                     } catch (e: Exception) {
-                        val fromSuggestion = buildDocFromSuggestion(newDoc, "/**", "*/")
+                        val fromSuggestion = LivingDocumentation.buildDocFromSuggestion(newDoc, "/**", "*/")
                         if (fromSuggestion.isNotEmpty()) {
                             try {
                                 doInsertComment(target, project, fromSuggestion)

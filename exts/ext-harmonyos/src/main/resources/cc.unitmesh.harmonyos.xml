@@ -1,0 +1,11 @@
+<idea-plugin package="cc.unitmesh.harmonyos">
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <autoDevIntention>
+            <className>cc.unitmesh.harmonyos.actions.AutoArkUiAction</className>
+            <bundleName>messages.AutoDevBundle</bundleName>
+            <categoryKey>intention.category.llm</categoryKey>
+        </autoDevIntention>
+
+        <chatContextProvider implementation="cc.unitmesh.harmonyos.provider.HarmonyOSChatContextProvider"/>
+    </extensions>
+</idea-plugin>
