@@ -323,6 +323,10 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         customRag.selectedItem = defaultRag
     }
 
+    fun moveCursorToStart() {
+        input.caretModel.moveToOffset(0)
+    }
+
     private val maxHeight: Int
         get() {
             val decorator: InternalDecorator = UIUtil.getParentOfType(

@@ -280,5 +280,9 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
 
         updateUI()
     }
+
+    fun moveCursorToStart() {
+        inputSection.moveCursorToStart()
+    }
 }
 
