@@ -329,11 +329,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     private val maxHeight: Int
         get() {
-            val decorator: InternalDecorator = UIUtil.getParentOfType(
-                InternalDecorator::class.java, this as Component
-            )!!
-
-            val contentManager: ContentManager = decorator.contentManager ?: return JBUI.scale(200)
+            val decorator = UIUtil.getParentOfType(InternalDecorator::class.java, this)
+            val contentManager = decorator?.contentManager ?: return JBUI.scale(200)
             return contentManager.component.height / 2
         }
 
