@@ -36,7 +36,7 @@ class ReleaseNoteSuggestionAction : AnAction() {
             chatCodingService.handlePromptAndResponse(contentPanel, object : ContextPrompter() {
                 override fun displayPrompt(): String = prompt
                 override fun requestPrompt(): String = prompt
-            }, null, false)
+            }, null, true)
         }
     }
 }

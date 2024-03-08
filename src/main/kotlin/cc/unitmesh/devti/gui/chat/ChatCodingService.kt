@@ -28,7 +28,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         ui: ChatCodingPanel,
         prompter: ContextPrompter,
         context: ChatContext? = null,
-        newChatContext: Boolean,
+        newChatContext: Boolean
     ) {
         var requestPrompt = prompter.requestPrompt()
         var displayPrompt = prompter.displayPrompt()

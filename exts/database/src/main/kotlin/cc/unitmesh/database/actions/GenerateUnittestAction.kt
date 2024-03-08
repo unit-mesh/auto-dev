@@ -44,7 +44,7 @@ class GenerateUnittestAction : ChatBaseIntention() {
             service.handlePromptAndResponse(panel, object : ContextPrompter() {
                 override fun displayPrompt(): String = prompter
                 override fun requestPrompt(): String = prompter
-            }, null, false)
+            }, null, true)
         }
     }
 }
