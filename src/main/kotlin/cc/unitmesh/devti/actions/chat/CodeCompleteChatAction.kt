@@ -52,8 +52,7 @@ class CodeCompleteChatAction : AnAction() {
 
                 val actionType = ChatActionType.CODE_COMPLETE
                 val chatCodingService = ChatCodingService(actionType, project)
-                val toolWindowManager =
-                    ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolWindowFactory.Util.id) ?: run {
+                val toolWindowManager = AutoDevToolWindowFactory.getToolWindow(project) ?: run {
                         logger.warn("Tool window not found")
                         return@runReadAction
                     }

@@ -6,11 +6,10 @@ import com.intellij.ui.Gray
 import com.intellij.ui.dsl.builder.RightGap
 import com.intellij.ui.dsl.builder.panel
 import java.awt.BorderLayout
-import javax.swing.JLabel
 import javax.swing.JPanel
 
 class WelcomePanel: JPanel(BorderLayout()) {
-    val welcomeItems: List<WelcomeItem> = listOf(
+    private val welcomeItems: List<WelcomeItem> = listOf(
         WelcomeItem(AutoDevBundle.message("settings.welcome.feature.context")),
         WelcomeItem(AutoDevBundle.message("settings.welcome.feature.lifecycle")),
         WelcomeItem(AutoDevBundle.message("settings.welcome.feature.custom.action")),
@@ -18,14 +17,11 @@ class WelcomePanel: JPanel(BorderLayout()) {
     )
 
     init {
-        background = Gray.x00
-
-
         val panel = panel {
             row {
                 text(AutoDevBundle.message("settings.welcome.message"))
             }
-            welcomeItems.forEachIndexed { index, it ->
+            welcomeItems.forEach {
                 row {
                     // icon
                     icon(AutoDevIcons.AI_COPILOT).gap(RightGap.SMALL)
