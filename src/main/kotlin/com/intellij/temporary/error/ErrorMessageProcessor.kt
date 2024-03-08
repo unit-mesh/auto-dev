@@ -27,12 +27,10 @@ object ErrorMessageProcessor {
         val editor = event.getData(CommonDataKeys.EDITOR) ?: return null
         val selectionModel = editor.selectionModel
         val text = selectionModel.selectedText ?: return null
-        val selectionStartPosition = selectionModel.selectionStartPosition ?: return null
+        val position = selectionModel.selectionStartPosition ?: return null
 
-        val lineFrom = selectionStartPosition.line
-        val selectionEndPosition = selectionModel.selectionEndPosition ?: return null
-        val lineTo = selectionEndPosition.line
-        return ErrorDescription(text, lineFrom, lineTo, editor)
+        val endPosition = selectionModel.selectionEndPosition ?: return null
+        return ErrorDescription(text, position.line, endPosition.line, editor)
     }
 
     private fun extractTextFromRunPanel(
@@ -40,18 +38,15 @@ object ErrorMessageProcessor {
         lineTo: Int?,
         consoleEditor: Editor?,
     ): String? {
-        var editor = consoleEditor
-        if (editor == null) editor = getConsoleEditor(project)
-        if (editor == null) return null
-
+        val editor = consoleEditor ?: getConsoleEditor(project) ?: return null
         val document = editor.document
 
-        return document.getText(
-            TextRange(
-                document.getLineStartOffset(lineFrom),
-                document.getLineEndOffset(lineTo ?: (document.lineCount - 1))
-            )
+        val textRange = TextRange(
+            document.getLineStartOffset(lineFrom),
+            document.getLineEndOffset(lineTo ?: (document.lineCount - 1))
         )
+
+        return document.getText(textRange)
     }
 
     private fun getConsoleEditor(project: Project): Editor? {
