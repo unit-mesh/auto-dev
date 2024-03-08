@@ -8,7 +8,7 @@ import com.intellij.ui.LanguageTextField
 import java.awt.Dimension
 import java.awt.FontMetrics
 
-class JsonLanguageField(val myProject: Project, val value: String, private val placeholder: String) :
+class JsonLanguageField(private val myProject: Project, val value: String, private val placeholder: String) :
     LanguageTextField(JsonLanguage.INSTANCE, myProject, value) {
     override fun createEditor(): EditorEx {
         return super.createEditor().apply {

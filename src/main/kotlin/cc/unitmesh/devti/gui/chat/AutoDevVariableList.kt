@@ -46,13 +46,8 @@ class VariableListCellRenderer : ListCellRenderer<AutoDevVariableListItemCompone
         isSelected: Boolean,
         cellHasFocus: Boolean,
     ): Component {
-        if (isSelected) {
-            value!!.background = jList.selectionBackground
-            value.foreground = jList.selectionForeground
-        } else {
-            value!!.background = jList.getBackground()
-            value.foreground = jList.getForeground()
-        }
+        value!!.background = if (isSelected) jList.selectionBackground else jList.background
+        value.foreground = if (isSelected) jList.selectionForeground else jList.foreground
         value.isEnabled = jList.isEnabled
         value.font = jList.font
 
