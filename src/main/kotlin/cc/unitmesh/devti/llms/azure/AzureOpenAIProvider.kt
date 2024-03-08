@@ -31,6 +31,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
+import java.net.URL
 import java.time.Duration
 
 
@@ -192,13 +193,14 @@ class AzureOpenAIProvider(val project: Project) : LLMProvider {
     }
 
     companion object {
-        fun isUrlWithPath(input: String): Boolean {
-            val urlPattern = Regex("^https?://[a-zA-Z0-9-]+(\\\\.[a-zA-Z]{2,})+(/[a-zA-Z0-9-._~:/?#[\\\\]@!\$&'()*+,;=%]*)?\\\$")
-            return urlPattern.matches(input)
-        }
 
+        /**
+         * 如果用户输入的 host 未带 "/" 结尾，自动补全
+         * 如果用户输入的 host 带有 query 或者 fragment，则不做干涉
+         */
         fun tryFixHostUrl(customOpenAiHost: String): String {
-            if (isUrlWithPath(customOpenAiHost)) {
+            val url = URL(customOpenAiHost)
+            if (url.query != null || url.toURI().fragment != null) {
                 return customOpenAiHost
             }
 
