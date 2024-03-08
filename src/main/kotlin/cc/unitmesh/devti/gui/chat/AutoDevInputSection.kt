@@ -6,6 +6,7 @@ import cc.unitmesh.devti.counit.configurable.customAgentSetting
 import cc.unitmesh.devti.counit.model.CustomAgentConfig
 import cc.unitmesh.devti.counit.model.CustomAgentState
 import cc.unitmesh.devti.custom.compile.CustomVariable
+import cc.unitmesh.devti.gui.chat.variable.AutoDevVariableList
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.llms.tokenizer.TokenizerImpl
 import cc.unitmesh.devti.settings.AutoDevSettingsState
@@ -40,7 +41,6 @@ import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.components.BorderLayoutPanel
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.awt.Color
 import java.awt.Component
