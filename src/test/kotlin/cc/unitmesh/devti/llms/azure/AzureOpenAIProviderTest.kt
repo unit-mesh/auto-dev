@@ -9,5 +9,11 @@ class AzureOpenAIProviderTest {
         assertEquals(AzureOpenAIProvider.tryFixHostUrl("https://api.openai.com"), "https://api.openai.com/")
         assertEquals(AzureOpenAIProvider.tryFixHostUrl("https://api.openai.com/"), "https://api.openai.com/")
         assertEquals(AzureOpenAIProvider.tryFixHostUrl("https://api.openai.com/v1"), "https://api.openai.com/v1/")
+
+        assertEquals(AzureOpenAIProvider.tryFixHostUrl("https://api.openai.com/v1"), "https://api.openai.com/v1/")
+
+        assertEquals(AzureOpenAIProvider.tryFixHostUrl("https://api.openai.com/v1?d=3"), "https://api.openai.com/v1?d=3")
+
+        assertEquals(AzureOpenAIProvider.tryFixHostUrl("https://api.openai.com/v1#2"), "https://api.openai.com/v1#2")
     }
 }
