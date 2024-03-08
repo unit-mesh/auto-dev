@@ -19,9 +19,8 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
     }
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        val disposable = toolWindow.disposable
         val chatCodingService = ChatCodingService(ChatActionType.CHAT, project)
-        val contentPanel = ChatCodingPanel(chatCodingService, disposable)
+        val contentPanel = ChatCodingPanel(chatCodingService, toolWindow.disposable)
         val content =
             ContentFactory.getInstance()
                 .createContent(contentPanel, AutoDevBundle.message("autodev.chat"), false)

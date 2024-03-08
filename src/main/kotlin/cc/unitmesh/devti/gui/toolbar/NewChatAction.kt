@@ -25,6 +25,7 @@ class NewChatAction : DumbAwareAction(), CustomComponentAction {
             init {
                 putClientProperty("ActionToolbar.smallVariant", true)
                 putClientProperty("customButtonInsets", JBInsets(1, 1, 1, 1).asUIResource())
+
                 setOpaque(false)
                 addActionListener {
                     val dataContext: DataContext = ActionToolbar.getDataContextFor(this)
