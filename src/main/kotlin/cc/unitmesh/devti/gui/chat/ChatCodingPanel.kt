@@ -81,7 +81,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         val actionLink = panel {
             row {
                 text(AutoDevBundle.message("label.submit.issue"))
-            }.customize(UnscaledGapsY(0, 18));
+            }
         }
 
         inputSection = AutoDevInputSection(chatCodingService.project, disposable)
