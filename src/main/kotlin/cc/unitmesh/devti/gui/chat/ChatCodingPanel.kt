@@ -29,6 +29,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.dsl.gridLayout.UnscaledGapsY
 import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
@@ -77,10 +78,11 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
 
         progressBar = JProgressBar()
 
-        val actionLink = ActionLink(AutoDevBundle.message("label.submit.issue")) {
-            BrowserUtil.browse(AutoDevBundle.message("chat.panel.submit.issue.url"))
+        val actionLink = panel {
+            row {
+                text(AutoDevBundle.message("label.submit.issue"))
+            }.customize(UnscaledGapsY(0, 18));
         }
-        actionLink.setExternalLinkIcon()
 
         inputSection = AutoDevInputSection(chatCodingService.project, disposable)
         inputSection.addListener(object : AutoDevInputListener {
