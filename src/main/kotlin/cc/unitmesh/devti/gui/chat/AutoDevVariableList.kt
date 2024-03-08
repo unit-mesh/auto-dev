@@ -50,20 +50,16 @@ class VariableListCellRenderer : ListCellRenderer<AutoDevVariableListItemCompone
         value.foreground = if (isSelected) jList.selectionForeground else jList.foreground
         value.isEnabled = jList.isEnabled
         value.font = jList.font
-
-        var border: Border? = null
-        if (cellHasFocus) {
+        value.border = if (cellHasFocus) {
             if (isSelected) {
-                border = UIManager.getBorder("List.focusSelectedCellHighlightBorder")
-            }
-            if (border == null) {
-                border = UIManager.getBorder("List.focusCellHighlightBorder")
+                UIManager.getBorder("List.focusSelectedCellHighlightBorder")
+            } else {
+                UIManager.getBorder("List.focusCellHighlightBorder")
             }
         } else {
-            border = this.emptyBorder
+            emptyBorder
         }
 
-        value.border = border
         return value
     }
 }
