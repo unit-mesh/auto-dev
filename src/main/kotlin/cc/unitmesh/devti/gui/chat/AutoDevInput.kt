@@ -25,7 +25,6 @@ import com.intellij.util.EventDispatcher
 import com.intellij.util.messages.MessageBusConnection
 import com.intellij.util.ui.JBUI
 import java.awt.Color
-import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import java.util.*
 import javax.swing.KeyStroke
