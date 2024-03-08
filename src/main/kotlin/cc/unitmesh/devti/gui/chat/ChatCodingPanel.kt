@@ -7,9 +7,9 @@ import cc.unitmesh.devti.counit.view.WebBlock
 import cc.unitmesh.devti.counit.view.WebBlockView
 import cc.unitmesh.devti.fullHeight
 import cc.unitmesh.devti.fullWidth
+import cc.unitmesh.devti.gui.chat.welcome.WelcomePanel
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.settings.AutoDevSettingsState
-import com.intellij.ide.BrowserUtil
 import com.intellij.lang.html.HTMLLanguage
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.diagnostic.logger
@@ -24,12 +24,10 @@ import com.intellij.temporary.gui.block.SimpleMessage
 import com.intellij.temporary.gui.block.whenDisposed
 import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
-import com.intellij.ui.components.ActionLink
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.dsl.gridLayout.UnscaledGapsY
 import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
@@ -61,6 +59,9 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
                 focusInput()
             }
         }
+
+        val panel = WelcomePanel()
+        myList.add(panel)
 
         myTitle.foreground = JBColor.namedColor("Label.infoForeground", JBColor(Gray.x80, Gray.x8C))
         myTitle.font = JBFont.label()
