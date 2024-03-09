@@ -37,7 +37,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
             val selectedCustomAgent = ui.getSelectedCustomAgent()
             when {
                 selectedCustomAgent.state === CustomAgentState.START -> {
-                    counitProcessor.handleChat(prompter, ui, context, llmProvider)
+                    counitProcessor.handleChat(prompter, ui, llmProvider)
                     return
                 }
 

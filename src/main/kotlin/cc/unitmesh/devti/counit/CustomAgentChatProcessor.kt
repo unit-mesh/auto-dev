@@ -5,7 +5,6 @@ import cc.unitmesh.devti.counit.model.CustomAgentConfig
 import cc.unitmesh.devti.counit.model.CustomAgentState
 import cc.unitmesh.devti.counit.model.CustomAgentResponseAction
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
-import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.provider.ContextPrompter
@@ -15,7 +14,6 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
 
 @Service(Service.Level.PROJECT)
@@ -23,7 +21,7 @@ class CustomAgentChatProcessor(val project: Project) {
     private val customAgentExecutor = project.service<CustomAgentExecutor>()
     private val logger = logger<CustomAgentChatProcessor>()
 
-    fun handleChat(prompter: ContextPrompter, ui: ChatCodingPanel, context: ChatContext?, llmProvider: LLMProvider) {
+    fun handleChat(prompter: ContextPrompter, ui: ChatCodingPanel, llmProvider: LLMProvider) {
         val originPrompt = prompter.requestPrompt()
         ui.addMessage(originPrompt, true, originPrompt)
 

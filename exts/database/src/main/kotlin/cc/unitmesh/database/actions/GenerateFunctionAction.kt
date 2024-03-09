@@ -41,7 +41,7 @@ class GenerateFunctionAction : ChatBaseIntention() {
         val templateRender = TemplateRender("genius/migration")
         val template = templateRender.getTemplate("gen-function.vm")
         templateRender.context = SqlMigrationContext(
-            lang = file.language.displayName ?: "",
+            lang = file.language.displayName,
             sql = selectedText,
         )
 

@@ -48,6 +48,7 @@ open class CustomSSEProcessor {
         awaitClose()
     }
 
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     fun streamSSE(call: Call): Flow<String> {
         val sseFlowable = Flowable
             .create({ emitter: FlowableEmitter<SSE> ->

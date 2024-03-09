@@ -33,7 +33,7 @@ class GenerateUnittestAction : ChatBaseIntention() {
         val templateRender = TemplateRender("genius/migration")
         val template = templateRender.getTemplate("gen-unittest.vm")
         templateRender.context = SqlMigrationContext(
-            lang = file.language.displayName ?: "",
+            lang = file.language.displayName,
             sql = selectedText,
         )
         val prompter = templateRender.renderTemplate(template)
