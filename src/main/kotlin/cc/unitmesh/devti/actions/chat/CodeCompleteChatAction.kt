@@ -26,24 +26,25 @@ class CodeCompleteChatAction : AnAction() {
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
+        val file = e.getData(CommonDataKeys.PSI_FILE) ?: return
+        val editor = e.getData(CommonDataKeys.EDITOR) ?: return
+
         val document = e.getData(CommonDataKeys.EDITOR)?.document
         val caretModel = e.getData(CommonDataKeys.EDITOR)?.caretModel
 
         var prefixText = caretModel?.currentCaret?.selectedText ?: ""
 
-        val file = e.getData(CommonDataKeys.PSI_FILE)
 
         val lineEndOffset = document?.getLineEndOffset(document.getLineNumber(caretModel?.offset ?: 0)) ?: 0
         if (prefixText.isEmpty()) {
             prefixText = document?.text?.substring(0, lineEndOffset) ?: ""
         }
-        val suffixText = document?.text?.substring(lineEndOffset) ?: ""
 
-        val editor = e.getData(CommonDataKeys.EDITOR) ?: return
+        val suffixText = document?.text?.substring(lineEndOffset) ?: ""
 
         ApplicationManager.getApplication().runReadAction {
             try {
-                val prompter = ContextPrompter.prompter(file?.language?.displayName ?: "")
+                val prompter = ContextPrompter.prompter(file.language.displayName)
 
                 val element = getElementToAction(project, editor)
                 prompter.initContext(

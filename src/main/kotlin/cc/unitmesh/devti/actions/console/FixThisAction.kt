@@ -30,8 +30,8 @@ class FixThisAction : ChatBaseAction() {
 
         sendToChatWindow(project, getActionType()) { panel, service ->
             service.handlePromptAndResponse(panel, object : ContextPrompter() {
-                override fun displayPrompt(): String = prompt?.displayText ?: ""
-                override fun requestPrompt(): String = prompt?.requestText ?: ""
+                override fun displayPrompt(): String = prompt.displayText ?: ""
+                override fun requestPrompt(): String = prompt.requestText ?: ""
             }, null, true)
         }
     }
