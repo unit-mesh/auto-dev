@@ -18,18 +18,18 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 
 @Service(Service.Level.PROJECT)
-class CustomAgentExecutor(val project: Project) : CustomSSEProcessor() {
+class CustomAgentExecutor(val project: Project) : CustomSSEProcessor(project) {
     private var client = OkHttpClient()
     private val logger = logger<CustomAgentExecutor>()
 
     override var requestFormat: String = ""
     override var responseFormat: String = ""
 
-    fun execute(input: String, agent: CustomAgentConfig): Flow<String>? {
+    fun execute(promptText: String, agent: CustomAgentConfig): Flow<String>? {
         this.requestFormat = agent.connector?.requestFormat ?: this.requestFormat
         this.responseFormat = agent.connector?.responseFormat ?: this.responseFormat
 
-        val customRequest = CustomRequest(listOf(Message("user", input)))
+        val customRequest = CustomRequest(listOf(Message("user", promptText)))
         val request = if (requestFormat.isNotEmpty()) {
             customRequest.updateCustomFormat(requestFormat)
         } else {
@@ -55,11 +55,11 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor() {
 
         return when (agent.responseAction) {
             CustomAgentResponseAction.Stream -> {
-                streamSSE(call)
+                streamSSE(call, promptText)
             }
 
             else -> {
-                streamJson(call)
+                streamJson(call, promptText)
             }
         }
     }

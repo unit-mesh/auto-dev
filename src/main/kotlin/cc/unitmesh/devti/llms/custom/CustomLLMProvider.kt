@@ -18,7 +18,7 @@ import okhttp3.RequestBody
 import java.time.Duration
 
 @Service(Service.Level.PROJECT)
-class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor() {
+class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(project) {
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private val url get() = autoDevSettingsState.customEngineServer
     private val key get() = autoDevSettingsState.customEngineToken
@@ -64,9 +64,9 @@ class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(
         val call = client.newCall(builder.url(url).post(body).build())
 
         return if (autoDevSettingsState.customEngineResponseType == ResponseType.SSE.name) {
-            streamSSE(call)
+            streamSSE(call, promptText)
         } else {
-            streamJson(call)
+            streamJson(call, promptText)
         }
     }
 

@@ -1,7 +1,14 @@
 package cc.unitmesh.devti.llms.custom
 
+import cc.unitmesh.devti.coder.recording.EmptyRecording
+import cc.unitmesh.devti.coder.recording.JsonlRecording
+import cc.unitmesh.devti.coder.recording.Recording
+import cc.unitmesh.devti.coder.recording.RecordingInstruction
+import cc.unitmesh.devti.settings.coder.coderSetting
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import com.nfeld.jsonpathkt.JsonPath
 import com.nfeld.jsonpathkt.extension.read
 import com.theokanning.openai.completion.chat.ChatCompletionResult
@@ -32,30 +39,42 @@ import org.jetbrains.annotations.VisibleForTesting
  *
  * @constructor Creates an instance of `CustomSSEProcessor`.
  */
-open class CustomSSEProcessor {
+open class CustomSSEProcessor(private val project: Project) {
     open var hasSuccessRequest: Boolean = true
     open val requestFormat: String = ""
     open val responseFormat: String = ""
     private val logger = logger<CustomSSEProcessor>()
+    private val recording: Recording
+        get() {
+            if (project.coderSetting.state.recordingInLocal == true) {
+                return project.service<JsonlRecording>()
+            }
 
-    fun streamJson(call: Call): Flow<String> = callbackFlow {
+            return EmptyRecording()
+        }
+
+
+    fun streamJson(call: Call, promptText: String): Flow<String> = callbackFlow {
         call.enqueue(JSONBodyResponseCallback(responseFormat) {
             withContext(Dispatchers.IO) {
                 send(it)
             }
+
+            recording.write(RecordingInstruction(promptText, it))
             close()
         })
         awaitClose()
     }
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
-    fun streamSSE(call: Call): Flow<String> {
+    fun streamSSE(call: Call, promptText: String): Flow<String> {
         val sseFlowable = Flowable
             .create({ emitter: FlowableEmitter<SSE> ->
                 call.enqueue(cc.unitmesh.devti.llms.azure.ResponseBodyCallback(emitter, true))
             }, BackpressureStrategy.BUFFER)
 
         try {
+            var output = ""
             return callbackFlow {
                 withContext(Dispatchers.IO) {
                     sseFlowable
@@ -84,6 +103,8 @@ open class CustomSSEProcessor {
                                 }
 
                                 hasSuccessRequest = true
+
+                                output += chunk
                                 trySend(chunk)
                             } else {
                                 val result: ChatCompletionResult =
@@ -91,11 +112,13 @@ open class CustomSSEProcessor {
 
                                 val completion = result.choices[0].message
                                 if (completion != null && completion.content != null) {
+                                    output += completion.content
                                     trySend(completion.content)
                                 }
                             }
                         }
 
+                    recording.write(RecordingInstruction(promptText, output))
                     close()
                 }
                 awaitClose()
