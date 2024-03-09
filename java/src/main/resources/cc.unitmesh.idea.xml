@@ -25,7 +25,7 @@
                              implementationClass="cc.unitmesh.idea.provider.JavaLivingDocumentation"/>
 
         <testDataBuilder language="JAVA"
-                             implementationClass="cc.unitmesh.idea.provider.JavaTestDataBuilder"/>
+                         implementationClass="cc.unitmesh.idea.provider.JavaTestDataBuilder"/>
 
         <chatContextProvider implementation="cc.unitmesh.idea.provider.JavaVersionProvider"/>
         <chatContextProvider implementation="cc.unitmesh.idea.provider.SpringContextProvider"/>
@@ -46,20 +46,30 @@
                 implementation="cc.unitmesh.idea.service.JavaWriteTestService"/>
 
         <buildSystemProvider
-                implementation="cc.unitmesh.idea.provider.JavaBuildSystemProvider" />
+                implementation="cc.unitmesh.idea.provider.JavaBuildSystemProvider"/>
 
         <customPromptProvider
                 language="JAVA"
-                implementationClass="cc.unitmesh.idea.provider.JavaCustomPromptProvider" />
+                implementationClass="cc.unitmesh.idea.provider.JavaCustomPromptProvider"/>
 
         <layeredArchProvider
-                implementation="cc.unitmesh.idea.provider.JavaLayeredArchProvider" />
+                implementation="cc.unitmesh.idea.provider.JavaLayeredArchProvider"/>
 
         <autoDevIntention>
             <className>cc.unitmesh.idea.actions.AutoCrudAction</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
+
+        <actions>
+            <group id="org.intellij.sdk.action.GroupedActions" popup="true" text="AutoDev Chat"
+                   description="AutoDev chat">
+                <action id="cc.unitmesh.idea.actions.GenTestDataAction"
+                        class="cc.unitmesh.idea.actions.GenTestDataAction" text="Generate Test Data (APIs)"
+                        description="Ask AI write this code">
+                </action>
+            </group>
+        </actions>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
