@@ -1,9 +1,17 @@
 ---
 layout: default
-title: Test Prompts
+title: AutoTest Design
 nav_order: 2
 parent: Development
 ---
+
+# AutoTest Design
+
+## Basic Rule
+
+- if test code exists and LLM return with import syntax, AutoDev will replace all code.
+- if test code exists and LLM return with no import syntax, AutoDev will insert test code after the last import statement.
+- if test code does not exist, AutoDev will insert test code.
 
 ## Test Prompts
 
