@@ -28,21 +28,44 @@ open class JavaCodeModifier : CodeModifier {
 
     fun lookupFile(
         project: Project,
-        sourceFile: VirtualFile
+        sourceFile: VirtualFile,
     ) = PsiManager.getInstance(project).findFile(sourceFile) as PsiJavaFile
 
     override fun insertTestCode(sourceFile: VirtualFile, project: Project, code: String): Boolean {
-        if (!code.contains("@Test")) {
-            log.warn("methodCode does not contain @Test annotation: $code")
-            insertMethod(sourceFile, project, code)
+        // remove surrounding ``` markdown code block
+        val trimCode = code.trim().removeSurrounding("```").removePrefix("java")
+
+        if (!trimCode.contains("@Test")) {
+            log.warn("methodCode does not contain @Test annotation: $trimCode")
+            insertMethod(sourceFile, project, trimCode)
             return false
         }
 
-        if (code.startsWith("import") && code.contains("class ")) {
-            return insertClass(sourceFile, project, code)
+        val isFullCode = trimCode.startsWith("import") && trimCode.contains("class ")
+        // check is sourceFile has class
+        val classes = runReadAction {
+            val psiJavaFile = lookupFile(project, sourceFile)
+            psiJavaFile.classes
         }
 
-        insertMethod(sourceFile, project, code)
+        if (classes.isNotEmpty()) {
+            // replace the last class with the new test class
+            val lastClass = classes.last()
+            val classEndOffset = lastClass.textRange.endOffset
+
+            WriteCommandAction.runWriteCommandAction(project) {
+                val document = PsiDocumentManager.getInstance(project).getDocument(lastClass.containingFile)
+                document?.replaceString(classEndOffset, document.textLength, trimCode)
+            }
+
+            return true
+        }
+
+        if (isFullCode) {
+            return insertClass(sourceFile, project, trimCode)
+        }
+
+        insertMethod(sourceFile, project, trimCode)
         return true
     }
 
