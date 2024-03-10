@@ -34,8 +34,7 @@ class AutoCrudAction : ChatBaseIntention() {
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (editor == null || file == null) return
 
-        // TODO: support other language
-        val flowProvider = DevFlowProvider.flowProvider("java")
+        val flowProvider = DevFlowProvider.flowProvider(JavaLanguage.INSTANCE.displayName)
         if (flowProvider == null) {
             logger.error("current Language don't implementation DevFlow")
             return
