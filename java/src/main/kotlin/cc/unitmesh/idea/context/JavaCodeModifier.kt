@@ -11,11 +11,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiElementFactory
-import com.intellij.psi.PsiJavaFile
-import com.intellij.psi.PsiManager
-import com.intellij.psi.PsiMethod
+import com.intellij.psi.*
 
 open class JavaCodeModifier : CodeModifier {
     companion object {
@@ -43,19 +39,28 @@ open class JavaCodeModifier : CodeModifier {
 
         val isFullCode = trimCode.startsWith("import") && trimCode.contains("class ")
         // check is sourceFile has class
-        val classes = runReadAction {
-            val psiJavaFile = lookupFile(project, sourceFile)
-            psiJavaFile.classes
-        }
+        val classes = runReadAction { lookupFile(project, sourceFile).classes }
 
         if (classes.isNotEmpty()) {
-            // replace the last class with the new test class
             val lastClass = classes.last()
             val classEndOffset = lastClass.textRange.endOffset
 
+            val newCode = try {
+                runReadAction {
+                    val createFileFromText =
+                        PsiFileFactory.getInstance(project)
+                            .createFileFromText("Test.java", JavaLanguage.INSTANCE, trimCode)
+
+                    createFileFromText?.text ?: trimCode
+                }
+            } catch (e: Throwable) {
+                log.warn("Failed to create file from text: $trimCode", e)
+                trimCode
+            }
+
             WriteCommandAction.runWriteCommandAction(project) {
                 val document = PsiDocumentManager.getInstance(project).getDocument(lastClass.containingFile)
-                document?.replaceString(classEndOffset, document.textLength, trimCode)
+                document?.replaceString(0, classEndOffset, newCode)
             }
 
             return true
