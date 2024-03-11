@@ -7,5 +7,10 @@
         <lang.parserDefinition language="DevIn" implementationClass="cc.unitmesh.language.DevInParserDefinition"/>
         <lang.syntaxHighlighterFactory language="DevIn"
                                        implementationClass="cc.unitmesh.language.DevInSyntaxHighlighterFactory"/>
+
+        <lang.ast.factory language="DevIn"
+                          implementationClass="cc.unitmesh.language.DevInAstFactory"/>
+
+        <typedHandler implementation="cc.unitmesh.language.DevInTypedHandler"/>
     </extensions>
 </idea-plugin>
