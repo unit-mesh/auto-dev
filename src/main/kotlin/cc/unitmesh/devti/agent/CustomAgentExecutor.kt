@@ -1,8 +1,8 @@
-package cc.unitmesh.devti.counit
+package cc.unitmesh.devti.agent
 
-import cc.unitmesh.devti.counit.model.AuthType
-import cc.unitmesh.devti.counit.model.CustomAgentConfig
-import cc.unitmesh.devti.counit.model.CustomAgentResponseAction
+import cc.unitmesh.devti.agent.model.AuthType
+import cc.unitmesh.devti.agent.model.CustomAgentConfig
+import cc.unitmesh.devti.agent.model.CustomAgentResponseAction
 import cc.unitmesh.devti.llms.custom.CustomRequest
 import cc.unitmesh.devti.llms.custom.CustomSSEProcessor
 import cc.unitmesh.devti.llms.custom.Message
@@ -25,7 +25,7 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor(project) {
     override var requestFormat: String = ""
     override var responseFormat: String = ""
 
-    fun execute(promptText: String, agent: CustomAgentConfig): Flow<String>? {
+    fun execute(promptText: String, agent: CustomAgentConfig): Flow<String> {
         this.requestFormat = agent.connector?.requestFormat ?: this.requestFormat
         this.responseFormat = agent.connector?.responseFormat ?: this.responseFormat
 

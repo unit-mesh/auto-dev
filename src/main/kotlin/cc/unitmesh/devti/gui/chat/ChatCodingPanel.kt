@@ -2,9 +2,9 @@ package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.alignRight
-import cc.unitmesh.devti.counit.model.CustomAgentConfig
-import cc.unitmesh.devti.counit.view.WebBlock
-import cc.unitmesh.devti.counit.view.WebBlockView
+import cc.unitmesh.devti.agent.model.CustomAgentConfig
+import cc.unitmesh.devti.agent.view.WebBlock
+import cc.unitmesh.devti.agent.view.WebBlockView
 import cc.unitmesh.devti.fullHeight
 import cc.unitmesh.devti.fullWidth
 import cc.unitmesh.devti.gui.chat.welcome.WelcomePanel
@@ -221,7 +221,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
             // waiting for the last message to be rendered, like sleep 5 ms?
             // 此处的 20s 出自 openAI 免费账户访问 3/min
             withContext(Dispatchers.IO) {
-                val delaySec = delaySeconds.toLong() ?: 20L
+                val delaySec = delaySeconds.toLong()
                 val remainingTime = maxOf(delaySec * 1000 - elapsedTime, 0)
                 delay(remainingTime)
             }
@@ -276,7 +276,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
     fun appendWebView(content: String, project: Project) {
         val msg = SimpleMessage(content, content, ChatRole.System)
         val webBlock = WebBlock(msg)
-        val blockView = WebBlockView(webBlock, project, {})
+        val blockView = WebBlockView(webBlock, project)
         val codeView = CodeBlockView(CodeBlock(msg, language = HTMLLanguage.INSTANCE), project, {})
 
         myList.add(FrontendCodeView(blockView, codeView))

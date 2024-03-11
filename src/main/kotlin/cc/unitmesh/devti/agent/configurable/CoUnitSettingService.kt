@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.counit.configurable
+package cc.unitmesh.devti.agent.configurable
 
 import com.intellij.openapi.components.*
 import com.intellij.openapi.project.Project

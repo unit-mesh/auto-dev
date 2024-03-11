@@ -6,18 +6,15 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 
 object AutoDevNotifications {
-    private fun createNotificationGroup(): NotificationGroup? {
+    private fun group(): NotificationGroup? {
         return NotificationGroupManager.getInstance().getNotificationGroup("AutoDev.notification.group")
     }
 
     fun notify(project: Project, msg: String) {
-        val notification = createNotificationGroup()?.createNotification(msg, NotificationType.INFORMATION)
-        notification?.notify(project)
+        group()?.createNotification(msg, NotificationType.INFORMATION)?.notify(project)
     }
 
-    // error
     fun error(project: Project, msg: String) {
-        val notification = createNotificationGroup()?.createNotification(msg, NotificationType.ERROR)
-        notification?.notify(project)
+        group()?.createNotification(msg, NotificationType.ERROR)?.notify(project)
     }
 }

@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.gui.chat
 
-import cc.unitmesh.devti.counit.view.WebBlockView
+import cc.unitmesh.devti.agent.view.WebBlockView
 import com.intellij.temporary.gui.block.CodeBlockView
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
@@ -9,7 +9,7 @@ import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
 import javax.swing.JPanel
 
-class FrontendCodeView(val webview: WebBlockView, val codeView: CodeBlockView) : JBPanel<MessageView>() {
+class FrontendCodeView(webview: WebBlockView, codeView: CodeBlockView) : JBPanel<MessageView>() {
     init {
         isDoubleBuffered = true
         isOpaque = true

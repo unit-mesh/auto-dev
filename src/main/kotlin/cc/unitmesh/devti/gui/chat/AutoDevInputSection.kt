@@ -2,9 +2,9 @@ package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
-import cc.unitmesh.devti.counit.configurable.customAgentSetting
-import cc.unitmesh.devti.counit.model.CustomAgentConfig
-import cc.unitmesh.devti.counit.model.CustomAgentState
+import cc.unitmesh.devti.agent.configurable.customAgentSetting
+import cc.unitmesh.devti.agent.model.CustomAgentConfig
+import cc.unitmesh.devti.agent.model.CustomAgentState
 import cc.unitmesh.devti.custom.compile.CustomVariable
 import cc.unitmesh.devti.gui.chat.variable.AutoDevVariableList
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
@@ -35,13 +35,11 @@ import com.intellij.ui.MutableCollectionComboBoxModel
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.components.JBLabel
-import com.intellij.ui.content.ContentManager
 import com.intellij.util.EventDispatcher
 import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.components.BorderLayoutPanel
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.awt.Color
 import java.awt.Component

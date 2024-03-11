@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.counit.model
+package cc.unitmesh.devti.agent.model
 
 import kotlinx.serialization.Serializable
 

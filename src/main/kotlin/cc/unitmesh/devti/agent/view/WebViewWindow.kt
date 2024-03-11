@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.counit.view
+package cc.unitmesh.devti.agent.view
 
 import com.intellij.ui.JBColor
 import com.intellij.ui.jcef.JBCefBrowser
@@ -23,10 +23,6 @@ class WebViewWindow {
     }
 
     val component: Component = browser.component
-
-    fun loadUrl(url: String) {
-        browser.loadURL(url)
-    }
 
     fun loadHtml(html: String) {
         browser.loadHTML(html)

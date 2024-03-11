@@ -1,6 +1,5 @@
-package cc.unitmesh.devti.counit.view
+package cc.unitmesh.devti.agent.view
 
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.temporary.gui.block.*
 import java.awt.Component
@@ -13,7 +12,6 @@ class WebBlock(val msg: CompletableMessage) : AbstractMessageBlock(msg) {
 class WebBlockView(
     private val block: WebBlock,
     private val project: Project,
-    private val disposable: Disposable,
 ) : MessageBlockView {
     private val webViewWindow = WebViewWindow()
 

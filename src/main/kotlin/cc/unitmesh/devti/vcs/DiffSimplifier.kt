@@ -6,7 +6,6 @@ import com.intellij.openapi.diff.impl.patch.IdeaTextPatchBuilder
 import com.intellij.openapi.diff.impl.patch.UnifiedDiffWriter
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtilRt
-import com.intellij.openapi.vcs.VcsException
 import com.intellij.openapi.vcs.changes.*
 import com.intellij.project.stateStore
 import org.jetbrains.annotations.NotNull
@@ -28,7 +27,7 @@ class DiffSimplifier(val project: Project) {
      * @throws RuntimeException if the project base path is null or if there is an error calculating the diff.
      */
     fun simplify(changes: List<Change>, ignoreFilePatterns: List<PathMatcher>): String {
-        var originChanges: String = ""
+        var originChanges = ""
 
         try {
             val writer = StringWriter()
@@ -292,6 +291,7 @@ class DiffSimplifier(val project: Project) {
 
         private fun isBinaryRevision(cr: ContentRevision?): Boolean {
             if (cr == null) return false
+
             return when (cr) {
                 is BinaryContentRevision -> true
                 else -> cr.file.fileType.isBinary

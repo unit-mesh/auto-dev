@@ -3,9 +3,9 @@ package cc.unitmesh.devti.gui.chat
 import cc.unitmesh.cf.core.llms.LlmMsg
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.util.LLMCoroutineScope
-import cc.unitmesh.devti.counit.CustomAgentChatProcessor
-import cc.unitmesh.devti.counit.configurable.customAgentSetting
-import cc.unitmesh.devti.counit.model.CustomAgentState
+import cc.unitmesh.devti.agent.CustomAgentChatProcessor
+import cc.unitmesh.devti.agent.configurable.customAgentSetting
+import cc.unitmesh.devti.agent.model.CustomAgentState
 import cc.unitmesh.devti.custom.compile.CustomVariable
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.util.parser.PostCodeProcessor
