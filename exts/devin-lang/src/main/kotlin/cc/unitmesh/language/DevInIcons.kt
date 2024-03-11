@@ -5,5 +5,5 @@ import javax.swing.Icon
 
 object DevInIcons {
     @JvmField
-    val DEFAULT: Icon = IconLoader.getIcon("/icons/ai-copilot.svg", DevInIcons::class.java)
+    val DEFAULT: Icon = IconLoader.getIcon("/icons/devin.svg", DevInIcons::class.java)
 }
