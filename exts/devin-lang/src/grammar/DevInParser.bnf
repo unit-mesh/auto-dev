@@ -17,4 +17,10 @@
 
 DevInFile ::= item_*
 
-private item_ ::= (CRLF)
+private item_ ::= (VARIABLE|CRLF|STRING)
+
+// $use-variable
+
+// @use-agent
+
+// /use-command

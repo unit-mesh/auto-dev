@@ -18,15 +18,17 @@ import com.intellij.psi.TokenType;
 
 CRLF=\R
 WHITE_SPACE=[\ \n\t\f]
-FIRST_VALUE_CHARACTER=[^ \n\f\\] | "\\"{CRLF} | "\\".
-VALUE_CHARACTER=[^\n\f\\] | "\\"{CRLF} | "\\".
-END_OF_LINE_COMMENT=("#"|"!")[^\r\n]*
-SEPARATOR=[:=]
-KEY_CHARACTER=[^:=\ \n\t\f\\] | "\\ "
+// $ variable
+STRING=\"([^\\\"\r\n]|\\[^\r\n])*\"?
+VARIABLE="$" {STRING}
 
 %state WAITING_VALUE
 
 %%
+<YYINITIAL> {
+    {STRING}           { return DevInTypes.STRING; }
+    {VARIABLE}         { return DevInTypes.VARIABLE; }
+}
 
 ({CRLF}|{WHITE_SPACE})+                                     { yybegin(YYINITIAL); return TokenType.WHITE_SPACE; }
 
