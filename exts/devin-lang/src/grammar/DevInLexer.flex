@@ -26,7 +26,7 @@ import com.intellij.psi.TokenType;
 %s ID_SUFFIX
 
 IDENTIFIER=[a-zA-Z0-9]([_\-a-zA-Z0-9]*)
-REF_BLOCK=("@" {IDENTIFIER} )
+REF_BLOCK=([$/@] {IDENTIFIER} )
 TEXT_SEGMENT=[^$/@]+
 NEWLINE=\n|\r\n
 

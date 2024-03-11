@@ -1,14 +1,11 @@
 package cc.unitmesh.language
 
-import cc.unitmesh.language.lexer.DevInTokenType
-import cc.unitmesh.language.psi.DevInElementType
 import cc.unitmesh.language.psi.DevInTypes
 import com.intellij.lexer.Lexer
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.fileTypes.SyntaxHighlighter
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase
-import com.intellij.openapi.fileTypes.SyntaxHighlighterBase.fillMap
 import com.intellij.psi.tree.IElementType
 
 class DevInSyntaxHighlighter : SyntaxHighlighter {
@@ -22,7 +19,7 @@ class DevInSyntaxHighlighter : SyntaxHighlighter {
         private val ATTRIBUTES: MutableMap<IElementType, TextAttributesKey> = HashMap()
 
         init {
-            ATTRIBUTES[DevInTypes.REF_BLOCK] = DefaultLanguageHighlighterColors.IDENTIFIER
+            ATTRIBUTES[DevInTypes.REF_BLOCK] = DefaultLanguageHighlighterColors.KEYWORD
         }
     }
 

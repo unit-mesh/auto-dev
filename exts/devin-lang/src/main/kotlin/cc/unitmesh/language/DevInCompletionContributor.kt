@@ -8,6 +8,10 @@ import cc.unitmesh.language.completion.VariableProvider
 
 class DevInCompletionContributor : CompletionContributor() {
     init {
-        extend(CompletionType.BASIC, psiElement(DevInTypes.REF_BLOCK), VariableProvider())
+        extend(
+            CompletionType.BASIC,
+            psiElement(DevInTypes.REF_BLOCK),
+            VariableProvider()
+        )
     }
 }
