@@ -17,14 +17,20 @@ class DevInTypedHandler : TypedHandlerDelegate() {
 
         return when (charTyped) {
             '@' -> {
+                PsiDocumentManager.getInstance(project).commitDocument(editor.document)
+                AutoPopupController.getInstance(project).autoPopupMemberLookup(editor, null)
                 Result.STOP
             }
 
             '/' -> {
+                PsiDocumentManager.getInstance(project).commitDocument(editor.document)
+                AutoPopupController.getInstance(project).autoPopupMemberLookup(editor, null)
                 Result.STOP
             }
 
             '$' -> {
+                PsiDocumentManager.getInstance(project).commitDocument(editor.document)
+                AutoPopupController.getInstance(project).autoPopupMemberLookup(editor, null)
                 Result.STOP
             }
 

@@ -18,17 +18,14 @@
     AGENT_START    = "AGENT_START"
     COMMAND_START  = "COMMAND_START"
     VARIABLE_START = "VARIABLE_START"
+    IDENTIFIER     = "IDENTIFIER"
   ]
 }
 
 DevInFile ::= (used | TEXT_SEGMENT | CODE_FENCE | NEWLINE)*
 
 used ::= (
-    AGENT_START agentId?
-    | COMMAND_START commandId?
-    | VARIABLE_START variableId?
+    AGENT_START AGENT_ID?
+    | COMMAND_START COMMAND_ID?
+    | VARIABLE_START VARIABLE_ID?
 )
-
-agentId ::= IDENTIFIER
-commandId ::= IDENTIFIER
-variableId ::= IDENTIFIER

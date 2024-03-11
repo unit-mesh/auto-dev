@@ -24,8 +24,10 @@ import com.intellij.psi.TokenType;
 
 %s CONTEXT_BLOCK
 %s AGENT_BLOCK
+%s VARIABLE_BLOCK
 
 IDENTIFIER=[a-zA-Z0-9]([_\-a-zA-Z0-9]*)
+VARIABLE_ID=[a-zA-Z0-9]([_\-a-zA-Z0-9]*)
 REF_BLOCK=([$/@] {IDENTIFIER} )
 TEXT_SEGMENT=[^$/@]+
 NEWLINE=\n|\r\n
@@ -44,7 +46,7 @@ NEWLINE=\n|\r\n
 <YYINITIAL> {
   "@"                  { yybegin(AGENT_BLOCK); return AGENT_START; }
   "/"                  { yybegin(AGENT_BLOCK); return COMMAND_START; }
-  "$"                  { yybegin(AGENT_BLOCK); return VARIABLE_START; }
+  "$"                  { yybegin(VARIABLE_BLOCK); return VARIABLE_START; }
 
   {TEXT_SEGMENT}       { return TEXT_SEGMENT; }
   {NEWLINE}            { return NEWLINE; }
@@ -53,5 +55,10 @@ NEWLINE=\n|\r\n
 
 <AGENT_BLOCK> {
   {IDENTIFIER}         { yybegin(YYINITIAL); return IDENTIFIER; }
+  [^]                  { return TokenType.BAD_CHARACTER; }
+}
+
+<VARIABLE_BLOCK> {
+  {VARIABLE_ID}        { yybegin(YYINITIAL); return VARIABLE_ID; }
   [^]                  { return TokenType.BAD_CHARACTER; }
 }

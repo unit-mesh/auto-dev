@@ -14,7 +14,6 @@ class VariableProvider: CompletionProvider<CompletionParameters>() {
     ) {
         CustomVariable.all().forEach {
             val withTypeText = LookupElementBuilder.create(it.variable).withTypeText(it.description, true)
-
             result.addElement(withTypeText)
         }
     }

@@ -14,7 +14,7 @@ class DevInCompletionContributor : CompletionContributor() {
     init {
         extend(
             CompletionType.BASIC,
-            psiElement(DevInTypes.VARIABLE_START),
+            psiElement(DevInTypes.VARIABLE_ID),
             VariableProvider()
         )
     }
