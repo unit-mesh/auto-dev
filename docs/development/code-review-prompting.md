@@ -1,11 +1,13 @@
 ---
 layout: default
-title: Code Review Prompts
+title: Code Review
 nav_order: 4
 parent: Development
 ---
 
-## Sample
+## Code Review
+
+### Sample
 
 link: https://github.com/domvwt/chatgpt-code-review/blob/main/chatgpt_code_review/query.py
 
@@ -68,3 +70,12 @@ You are a seasoned software developer, and I'm seeking your expertise to review 
 +}
 As your Tech lead, I am only concerned with key code review issues. Please provide me with a critical summary.
 Submit your key insights under 5 sentences in here:
+
+
+## Commit Message Generate 
+
+### Strategy
+
+- filter key patch message.
+- combine with commit message and code diff.
+- find history commit message as examples.

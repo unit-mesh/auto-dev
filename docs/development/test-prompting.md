@@ -9,15 +9,15 @@ parent: Development
 
 ## Basic Rule
 
-- if test code exists and LLM return with import syntax, AutoDev will replace all code.
-- if test code exists and LLM return with no import syntax, AutoDev will insert test code after the last import statement.
+- if test code exists and LLM returns with import syntax, AutoDev will replace all code.
+- if test code exists and LLM returns with no import syntax, AutoDev will insert test code after the last import statement.
 - if test code does not exist, AutoDev will insert test code.
 
 ## Test Prompts
 
-Write unit test for following Kotlin code.
+Write unit test for the following Kotlin code.
 
-You are working on a project that uses Spring MVC,Spring WebFlux to build RESTful APIs.
+You are working on a project that uses Spring MVC, Spring WebFlux to build RESTful APIs.
 - You MUST use should_xx_xx style for test method name, You MUST use given-when-then style.
 - Test file should be complete and compilable, without need for further actions.
 - Ensure that each test focuses on a single use case to maintain clarity and readability.
