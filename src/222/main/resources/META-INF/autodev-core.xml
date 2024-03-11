@@ -28,7 +28,6 @@
                              bundle="messages.AutoDevBundle" key="settings.autodev.coder"/>
 
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.AutoDevSettingsState"/>
-        <applicationService serviceImplementation="cc.unitmesh.devti.statusbar.AutoDevStatusService"/>
 
         <statusBarWidgetFactory id="AIAssistant" implementation="cc.unitmesh.devti.statusbar.AutoDevStatusBarWidgetFactory"/>
 

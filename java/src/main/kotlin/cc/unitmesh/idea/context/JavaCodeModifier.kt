@@ -37,7 +37,8 @@ open class JavaCodeModifier : CodeModifier {
             return false
         }
 
-        val isFullCode = trimCode.startsWith("import") && trimCode.contains("class ")
+        val isClassStarted = trimCode.startsWith("import") || trimCode.startsWith("package")
+        val isFullCode = isClassStarted && trimCode.contains("class ")
         // check is sourceFile has class
         val classes = runReadAction { lookupFile(project, sourceFile).classes }
 

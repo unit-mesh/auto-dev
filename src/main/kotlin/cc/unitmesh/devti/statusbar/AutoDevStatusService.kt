@@ -2,10 +2,12 @@ package cc.unitmesh.devti.statusbar
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.Pair
 import io.opentelemetry.api.internal.GuardedBy
 
+@Service
 class AutoDevStatusService : AutoDevStatusListener, Disposable {
     private val lock = Any()
 
