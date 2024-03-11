@@ -9,7 +9,6 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.util.Iconable
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import javax.swing.Icon
 
@@ -21,8 +20,8 @@ class AutoDevIntentionHelper : IntentionAction, Iconable {
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         if (file == null) return false
 
-        val topLevelFile = InjectedLanguageManager.getInstance(project).getTopLevelFile((file as PsiElement?)!!)
-        return topLevelFile?.virtualFile != null
+        val instance = InjectedLanguageManager.getInstance(project)
+        return instance.getTopLevelFile(file)?.virtualFile != null
     }
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
