@@ -13,6 +13,11 @@
   elementTypeHolderClass="cc.unitmesh.language.psi.DevInTypes"
   elementTypeClass="cc.unitmesh.language.psi.DevInElementType"
   tokenTypeClass="cc.unitmesh.language.lexer.DevInTokenType"
+
+  tokens=[
+  ]
 }
 
-DevInFile ::= (REF_BLOCK | TEXT_SEGMENT | NEWLINE)*
+DevInFile ::= (REF_BLOCK | TEXT_SEGMENT | CODE_FENCE | NEWLINE)*
+
+//used ::= (AGENT | COMMAND | VARIABLE) IDENTIFIER

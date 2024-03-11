@@ -27,7 +27,7 @@ import com.intellij.psi.TokenType;
 
 IDENTIFIER=[a-zA-Z0-9]([_\-a-zA-Z0-9]*)
 REF_BLOCK=("@" {IDENTIFIER} )
-TEXT_SEGMENT=.*
+TEXT_SEGMENT=[^$/@]+
 NEWLINE=\n|\r\n
 
 %{

@@ -1,2 +1,4 @@
 FILE
-  PsiElement(DevInTokenType.TEXT_SEGMENT)('你好 @hello-world sm')
+  PsiElement(DevInTokenType.TEXT_SEGMENT)('你好 ')
+  PsiElement(DevInTokenType.REF_BLOCK)('@hello-world')
+  PsiElement(DevInTokenType.TEXT_SEGMENT)(' sm')
