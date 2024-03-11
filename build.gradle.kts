@@ -266,6 +266,7 @@ project(":plugin") {
         implementation(project(":exts:database"))
         implementation(project(":exts:ext-android"))
         implementation(project(":exts:ext-harmonyos"))
+        implementation(project(":exts:devin-lang"))
     }
 
     // Collects all jars produced by compilation of project modules and merges them into singe one.
@@ -582,7 +583,7 @@ project(":exts:ext-harmonyos") {
     }
 }
 
-project(":exts:autoin-lang") {
+project(":exts:devin-lang") {
     apply {
         plugin("org.jetbrains.grammarkit")
     }
