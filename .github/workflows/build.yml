@@ -84,7 +84,7 @@ jobs:
 
       # Run tests
       - name: Run Tests
-        run: ./gradlew check -Dorg.gradle.daemon.performance.enable-monitoring=false
+        run: ./gradlew check -Dorg.gradle.daemon.performance.enable-monitoring=false -Dorg.gradle.jvmargs=-Xmx1g
 
       # Collect Tests Result of failed tests
       - name: Collect Tests Result

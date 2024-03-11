@@ -1,11 +1,12 @@
 package cc.unitmesh.language
 
+import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.fileTypes.LanguageFileType
 import com.intellij.openapi.vfs.VirtualFile
 import javax.swing.Icon
 
-object DevInFileType : LanguageFileType(DevInLanguage) {
-    override fun getName(): String = "DevIn File"
+class DevInFileType : LanguageFileType(DevInLanguage) {
+    override fun getName(): String = "DevInFile"
 
     override fun getIcon(): Icon = DevInIcons.DEFAULT
 
@@ -14,4 +15,9 @@ object DevInFileType : LanguageFileType(DevInLanguage) {
     override fun getCharset(file: VirtualFile, content: ByteArray): String = "UTF-8"
 
     override fun getDescription(): String = "DevIn file"
+
+    companion object {
+        val INSTANCE: FileType = DevInFileType()
+    }
+
 }

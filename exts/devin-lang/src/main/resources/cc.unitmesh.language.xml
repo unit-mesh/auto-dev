@@ -11,7 +11,7 @@
         <lang.ast.factory language="DevIn"
                           implementationClass="cc.unitmesh.language.DevInAstFactory"/>
 
-<!--        <typedHandler implementation="cc.unitmesh.language.DevInTypedHandler"/>-->
+        <typedHandler implementation="cc.unitmesh.language.DevInTypedHandler"/>
 
         <completion.contributor language="DevIn"
                                 implementationClass="cc.unitmesh.language.DevInCompletionContributor"/>

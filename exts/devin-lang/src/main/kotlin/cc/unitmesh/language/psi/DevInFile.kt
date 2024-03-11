@@ -7,6 +7,6 @@ import com.intellij.openapi.fileTypes.FileType
 import com.intellij.psi.FileViewProvider
 
 class DevInFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, DevInLanguage) {
-    override fun getFileType(): FileType = DevInFileType
+    override fun getFileType(): FileType = DevInFileType.INSTANCE
 
 }

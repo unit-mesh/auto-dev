@@ -1,9 +1,11 @@
 package cc.unitmesh.language
 
 import cc.unitmesh.language.psi.DevInFile
+import com.intellij.codeInsight.AutoPopupController
 import com.intellij.codeInsight.editorActions.TypedHandlerDelegate
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 
 class DevInTypedHandler : TypedHandlerDelegate() {
