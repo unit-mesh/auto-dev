@@ -15,5 +15,8 @@
 
         <completion.contributor language="DevIn"
                                 implementationClass="cc.unitmesh.language.DevInCompletionContributor"/>
+
+        <lang.foldingBuilder language="DevIn"
+                             implementationClass="cc.unitmesh.language.folding.DevInReferenceFoldingBuilder"/>
     </extensions>
 </idea-plugin>
