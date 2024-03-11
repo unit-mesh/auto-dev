@@ -1,5 +1,7 @@
 package cc.unitmesh.language
 
+import cc.unitmesh.language.parser.DevInParser
+import cc.unitmesh.language.psi.DevInFile
 import com.intellij.lang.ASTNode
 import com.intellij.lang.ParserDefinition
 import com.intellij.lang.PsiParser
@@ -16,7 +18,7 @@ import org.jetbrains.annotations.NotNull
 internal class DevInParserDefinition : ParserDefinition {
     @NotNull
     override fun createLexer(project: Project?): Lexer {
-        TODO()
+        return DevInLexerAdapter()
     }
 
     @NotNull
@@ -27,7 +29,7 @@ internal class DevInParserDefinition : ParserDefinition {
 
     @NotNull
     override fun createParser(project: Project?): PsiParser {
-        TODO()
+        return DevInParser()
     }
 
     @NotNull
@@ -37,7 +39,7 @@ internal class DevInParserDefinition : ParserDefinition {
 
     @NotNull
     override fun createFile(@NotNull viewProvider: FileViewProvider): PsiFile {
-        TODO()
+        return DevInFile(viewProvider)
     }
 
     @NotNull

@@ -12,15 +12,24 @@
 
   elementTypeHolderClass="cc.unitmesh.language.psi.DevInTypes"
   elementTypeClass="cc.unitmesh.language.psi.DevInElementType"
-  tokenTypeClass="cc.unitmesh.language.psi.DevInTokenType"
+  tokenTypeClass="cc.unitmesh.language.lexer.DevInTokenType"
+
+  tokens=[
+    DOLLAR          = '$'
+    AT              = '@'
+    SLASH           = '/'
+  ]
 }
 
 DevInFile ::= item_*
 
-private item_ ::= (VARIABLE|CRLF|STRING)
+item_ ::= (useVariable|useAgent|useCommand|STRING)
 
+useVariable ::= '$' IDENTIFIER
 // $use-variable
 
 // @use-agent
+useAgent ::= '@' IDENTIFIER
 
 // /use-command
+useCommand ::= '/' IDENTIFIER

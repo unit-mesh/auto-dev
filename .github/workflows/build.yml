@@ -84,7 +84,7 @@ jobs:
 
       # Run tests
       - name: Run Tests
-        run: ./gradlew check
+        run: ./gradlew check -Dorg.gradle.daemon.performance.enable-monitoring=false
 
       # Collect Tests Result of failed tests
       - name: Collect Tests Result
