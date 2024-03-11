@@ -1,0 +1,20 @@
+// should similar to markdown syntax
+// Copyright 2000-2022 JetBrains s.r.o. and other contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
+{
+  parserClass="cc.unitmesh.language.parser.DevInParser"
+
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+  psiClassPrefix="DevIn"
+  psiImplClassSuffix="Impl"
+  psiPackage="cc.unitmesh.language.psi"
+  psiImplPackage="cc.unitmesh.language.psi.impl"
+
+  elementTypeHolderClass="cc.unitmesh.language.psi.DevInTypes"
+  elementTypeClass="cc.unitmesh.language.psi.DevInElementType"
+  tokenTypeClass="cc.unitmesh.language.psi.DevInTokenType"
+}
+
+DevInFile ::= item_*
+
+private item_ ::= (CRLF)

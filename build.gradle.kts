@@ -41,6 +41,8 @@ plugins {
     alias(libs.plugins.serialization)
     alias(libs.plugins.gradleIntelliJPlugin)
 
+    id("org.jetbrains.grammarkit") version "2022.3.2.2"
+
     kotlin("jvm") version "1.8.22"
     id("net.saliman.properties") version "1.5.2"
 }
@@ -579,6 +581,45 @@ project(":exts:ext-harmonyos") {
         implementation(project(":"))
     }
 }
+
+project(":exts:autoin-lang") {
+    apply {
+        plugin("org.jetbrains.grammarkit")
+    }
+
+    intellij {
+        version.set(ideaVersion)
+        plugins.set(ideaPlugins)
+    }
+    dependencies {
+        implementation(project(":"))
+        implementation(project(":java"))
+    }
+
+    tasks {
+        generateLexer {
+            sourceFile.set(file("src/grammar/DevInLexer.flex"))
+//            targetDir.set("src/gen/com/feakin/intellij/lexer")
+            targetOutputDir.set(file("src/gen/cc/unitmesh/language/lexer"))
+//            targetClass.set("_FeakinLexer")
+            purgeOldFiles.set(true)
+        }
+
+        generateParser {
+            sourceFile.set(file("src/grammar/DevInParser.bnf"))
+//            targetRoot.set("src/gen")
+            targetRootOutputDir.set(file("src/gen"))
+            pathToParser.set("cc/unitmesh/language/parser/DevInParser.java")
+            pathToPsiRoot.set("cc/unitmesh/language/psi")
+            purgeOldFiles.set(true)
+        }
+
+        withType<KotlinCompile> {
+            dependsOn(generateLexer, generateParser)
+        }
+    }
+}
+
 
 fun File.isPluginJar(): Boolean {
     if (!isFile) return false

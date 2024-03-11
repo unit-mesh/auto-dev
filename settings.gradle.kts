@@ -23,4 +23,7 @@ include(
     // since JetBrains also call `android.jar`, so we rename it to `ext-android`
     "exts:ext-android",
     "exts:ext-harmonyos",
+
+    // the Input Language support for AutoDev
+    "exts:autoin-lang"
 )
