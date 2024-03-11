@@ -7,6 +7,7 @@ import cc.unitmesh.devti.coder.recording.EmptyRecording
 import cc.unitmesh.devti.coder.recording.JsonlRecording
 import cc.unitmesh.devti.coder.recording.Recording
 import cc.unitmesh.devti.coder.recording.RecordingInstruction
+import cc.unitmesh.devti.llms.custom.ResponseBodyCallback
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.coder.coderSetting
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -24,7 +25,6 @@ import io.reactivex.FlowableEmitter
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -34,18 +34,6 @@ import okhttp3.RequestBody
 import java.net.URL
 import java.time.Duration
 
-
-@Serializable
-data class SimpleOpenAIFormat(val role: String, val content: String) {
-    companion object {
-        fun fromChatMessage(message: ChatMessage): SimpleOpenAIFormat {
-            return SimpleOpenAIFormat(message.role, message.content)
-        }
-    }
-}
-
-@Serializable
-data class SimpleOpenAIBody(val messages: List<SimpleOpenAIFormat>, val temperature: Double, val stream: Boolean)
 
 @Service(Service.Level.PROJECT)
 class AzureOpenAIProvider(val project: Project) : LLMProvider {
@@ -168,7 +156,7 @@ class AzureOpenAIProvider(val project: Project) : LLMProvider {
 
         val sseFlowable = Flowable
             .create({ emitter: FlowableEmitter<SSE> ->
-                call.enqueue(cc.unitmesh.devti.llms.azure.ResponseBodyCallback(emitter, emitDone))
+                call.enqueue(ResponseBodyCallback(emitter, emitDone))
             }, BackpressureStrategy.BUFFER)
 
         var output = ""

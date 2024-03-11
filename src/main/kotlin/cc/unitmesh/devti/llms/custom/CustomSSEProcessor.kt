@@ -70,7 +70,7 @@ open class CustomSSEProcessor(private val project: Project) {
     fun streamSSE(call: Call, promptText: String): Flow<String> {
         val sseFlowable = Flowable
             .create({ emitter: FlowableEmitter<SSE> ->
-                call.enqueue(cc.unitmesh.devti.llms.azure.ResponseBodyCallback(emitter, true))
+                call.enqueue(ResponseBodyCallback(emitter, true))
             }, BackpressureStrategy.BUFFER)
 
         try {
