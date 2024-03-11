@@ -22,27 +22,34 @@ import com.intellij.psi.TokenType;
 %eof{  return;
 %eof}
 
-EOL=\R
-WHITE_SPACE=\s+
+%s CONTEXT_BLOCK
+%s ID_SUFFIX
 
-IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
-TEXT_SEGMENT=[^[@\\$]_a-zA-Z0-9]+
-WS=[ \t\n\x0B\f\r]
+IDENTIFIER=[a-zA-Z0-9]([_\-a-zA-Z0-9]*)
+REF_BLOCK=("@" {IDENTIFIER} )
+TEXT_SEGMENT=.*
 NEWLINE=\n|\r\n
+
+%{
+    private IElementType contextBlock() {
+        yybegin(YYINITIAL);
+
+        String text = yytext().toString();
+        System.out.println("contextBlock: " + text);
+
+        return TEXT_SEGMENT;
+    }
+%}
 
 %%
 <YYINITIAL> {
-  {WHITE_SPACE}        { return TokenType.WHITE_SPACE; }
-
-  "$"                  { return DOLLAR; }
-  "@"                  { return AT; }
-  "/"                  { return SLASH; }
-
-  {IDENTIFIER}         { return IDENTIFIER; }
+  {REF_BLOCK}          { return REF_BLOCK; }
   {TEXT_SEGMENT}       { return TEXT_SEGMENT; }
-  {WS}                 { return WS; }
   {NEWLINE}            { return NEWLINE; }
-
+  [^]                  { return TokenType.BAD_CHARACTER; }
 }
 
-[^]                                                         { return TokenType.BAD_CHARACTER; }
+<CONTEXT_BLOCK> {
+  [$/@]                { yybegin(YYINITIAL); return contextBlock(); }
+  [^]                  { return TokenType.BAD_CHARACTER; }
+}

@@ -10,4 +10,8 @@ class DevInParsingTest : ParsingTestCase("parser", "devin", DevInParserDefinitio
     fun testBasicTest() {
         doTest(true)
     }
+
+    fun testJavaHelloWorld() {
+        doTest(true)
+    }
 }

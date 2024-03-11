@@ -13,30 +13,6 @@
   elementTypeHolderClass="cc.unitmesh.language.psi.DevInTypes"
   elementTypeClass="cc.unitmesh.language.psi.DevInElementType"
   tokenTypeClass="cc.unitmesh.language.lexer.DevInTokenType"
-
-  tokens=[
-    DOLLAR          = '$'
-    AT              = '@'
-    SLASH           = '/'
-    // char should be any character except start with $, @, /
-    IDENTIFIER      = 'regexp:[_a-zA-Z][_a-zA-Z0-9]*'
-    TEXT_SEGMENT    = 'regexp:[^[@\\$]_a-zA-Z0-9]+'
-
-    WS              = 'regexp:\s'
-
-    NEWLINE         = 'regexp:\n|\r\n'
-  ]
 }
 
-DevInFile ::= item*
-
-private item ::= (useVariable|useAgent|useCommand|TEXT_SEGMENT|NEWLINE)
-
-// $use-variable
-useVariable ::= DOLLAR IDENTIFIER WS*
-
-// @use-agent
-useAgent ::= AT IDENTIFIER WS*
-
-// /use-command
-useCommand ::= SLASH IDENTIFIER WS*
+DevInFile ::= (REF_BLOCK | TEXT_SEGMENT | NEWLINE)*

@@ -1,12 +1,2 @@
 FILE
-  DevInUseAgentImpl(USE_AGENT)
-    PsiElement(DevInTokenType.@)('@')
-    PsiElement(DevInTokenType.IDENTIFIER)('gen')
-  PsiWhiteSpace(' ')
-  PsiErrorElement:DevInTokenType.$, DevInTokenType./, DevInTokenType.@, DevInTokenType.NEWLINE, DevInTokenType.TEXT_SEGMENT or DevInTokenType.WS expected, got 'what'
-    PsiElement(DevInTokenType.IDENTIFIER)('what')
-  PsiElement(DevInTokenType.TEXT_SEGMENT)(''')
-  PsiElement(DevInTokenType.IDENTIFIER)('s')
-  PsiWhiteSpace(' ')
-  PsiElement(DevInTokenType.IDENTIFIER)('this')
-  PsiElement(DevInTokenType.TEXT_SEGMENT)('?')
+  PsiElement(DevInTokenType.TEXT_SEGMENT)('你好 @hello-world sm')
