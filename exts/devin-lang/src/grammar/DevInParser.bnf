@@ -18,18 +18,25 @@
     DOLLAR          = '$'
     AT              = '@'
     SLASH           = '/'
+    // char should be any character except start with $, @, /
+    IDENTIFIER      = 'regexp:[_a-zA-Z][_a-zA-Z0-9]*'
+    TEXT_SEGMENT    = 'regexp:[^[@\\$]_a-zA-Z0-9]+'
+
+    WS              = 'regexp:\s'
+
+    NEWLINE         = 'regexp:\n|\r\n'
   ]
 }
 
-DevInFile ::= item_*
+DevInFile ::= item*
 
-item_ ::= (useVariable|useAgent|useCommand|STRING)
+private item ::= (useVariable|useAgent|useCommand|TEXT_SEGMENT|NEWLINE)
 
-useVariable ::= '$' IDENTIFIER
 // $use-variable
+useVariable ::= DOLLAR IDENTIFIER WS*
 
 // @use-agent
-useAgent ::= '@' IDENTIFIER
+useAgent ::= AT IDENTIFIER WS*
 
 // /use-command
-useCommand ::= '/' IDENTIFIER
+useCommand ::= SLASH IDENTIFIER WS*

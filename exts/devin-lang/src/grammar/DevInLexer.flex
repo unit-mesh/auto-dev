@@ -1,9 +1,8 @@
-// Copyright 2000-2022 JetBrains s.r.o. and other contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package cc.unitmesh.language;
 
 import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
-import cc.unitmesh.language.psi.DevInTypes;
+import static cc.unitmesh.language.psi.DevInTypes.*;
 import com.intellij.psi.TokenType;
 
 %%
@@ -23,20 +22,27 @@ import com.intellij.psi.TokenType;
 %eof{  return;
 %eof}
 
-CRLF=\R
-WHITE_SPACE=[\ \n\t\f]
-// $ variable
-STRING=\"([^\\\"\r\n]|\\[^\r\n])*\"?
-IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
+EOL=\R
+WHITE_SPACE=\s+
 
-%state WAITING_VALUE
+IDENTIFIER=[_a-zA-Z][_a-zA-Z0-9]*
+TEXT_SEGMENT=[^[@\\$]_a-zA-Z0-9]+
+WS=[ \t\n\x0B\f\r]
+NEWLINE=\n|\r\n
 
 %%
 <YYINITIAL> {
-    {STRING}           { return DevInTypes.STRING; }
-    {IDENTIFIER}       { return DevInTypes.IDENTIFIER; }
-}
+  {WHITE_SPACE}        { return TokenType.WHITE_SPACE; }
 
-({CRLF}|{WHITE_SPACE})+                                     { yybegin(YYINITIAL); return TokenType.WHITE_SPACE; }
+  "$"                  { return DOLLAR; }
+  "@"                  { return AT; }
+  "/"                  { return SLASH; }
+
+  {IDENTIFIER}         { return IDENTIFIER; }
+  {TEXT_SEGMENT}       { return TEXT_SEGMENT; }
+  {WS}                 { return WS; }
+  {NEWLINE}            { return NEWLINE; }
+
+}
 
 [^]                                                         { return TokenType.BAD_CHARACTER; }

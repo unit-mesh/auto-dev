@@ -2,6 +2,7 @@ package cc.unitmesh.language
 
 import cc.unitmesh.language.parser.DevInParser
 import cc.unitmesh.language.psi.DevInFile
+import cc.unitmesh.language.psi.DevInTypes
 import com.intellij.lang.ASTNode
 import com.intellij.lang.ParserDefinition
 import com.intellij.lang.PsiParser
@@ -44,7 +45,7 @@ internal class DevInParserDefinition : ParserDefinition {
 
     @NotNull
     override fun createElement(node: ASTNode?): PsiElement {
-        TODO()
+        return DevInTypes.Factory.createElement(node)
     }
 
     companion object {
