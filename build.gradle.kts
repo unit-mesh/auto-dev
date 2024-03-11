@@ -588,15 +588,6 @@ project(":exts:devin-lang") {
         plugin("org.jetbrains.grammarkit")
     }
 
-    intellij {
-        version.set(ideaVersion)
-        plugins.set(ideaPlugins)
-    }
-    dependencies {
-        implementation(project(":"))
-        implementation(project(":java"))
-    }
-
     tasks {
         generateLexer {
             sourceFile.set(file("src/grammar/DevInLexer.flex"))
