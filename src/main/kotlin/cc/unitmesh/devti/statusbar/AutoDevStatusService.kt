@@ -44,6 +44,7 @@ class AutoDevStatusService : AutoDevStatusListener, Disposable {
                 .filterNot { it.isDisposed }
                 .forEach { AutoDevStatusBarWidget.update(it) }
         }
+
         val application = ApplicationManager.getApplication()
         if (application.isDispatchThread) {
             action.run()

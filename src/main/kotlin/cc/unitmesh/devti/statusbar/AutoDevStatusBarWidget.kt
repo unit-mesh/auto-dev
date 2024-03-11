@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.statusbar
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.AutoDevIcons
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DataContext
@@ -21,15 +20,11 @@ class AutoDevStatusBarWidget(project: Project) : EditorBasedStatusBarPopup(proje
     }
 
     override fun createPopup(context: DataContext): ListPopup? {
-        val statusGroup = DefaultActionGroup()
-
-        val configuredGroup = ActionManager.getInstance().getAction("autodev.statusBarPopup") as? ActionGroup
-            ?: return null
-        statusGroup.addAll(configuredGroup)
+        val configuredGroup = ActionManager.getInstance().getAction(ID()) as? ActionGroup ?: return null
 
         return JBPopupFactory.getInstance().createActionGroupPopup(
             AutoDevBundle.message("autodev.statusbar.popup.title"),
-            statusGroup,
+            DefaultActionGroup(configuredGroup),
             context,
             JBPopupFactory.ActionSelectionAid.SPEEDSEARCH,
             true
