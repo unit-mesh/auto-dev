@@ -15,9 +15,20 @@
   tokenTypeClass="cc.unitmesh.language.lexer.DevInTokenType"
 
   tokens=[
+    AGENT_START    = "AGENT_START"
+    COMMAND_START  = "COMMAND_START"
+    VARIABLE_START = "VARIABLE_START"
   ]
 }
 
-DevInFile ::= (REF_BLOCK | TEXT_SEGMENT | CODE_FENCE | NEWLINE)*
+DevInFile ::= (used | TEXT_SEGMENT | CODE_FENCE | NEWLINE)*
 
-//used ::= (AGENT | COMMAND | VARIABLE) IDENTIFIER
+used ::= (
+    AGENT_START agentId?
+    | COMMAND_START commandId?
+    | VARIABLE_START variableId?
+)
+
+agentId ::= IDENTIFIER
+commandId ::= IDENTIFIER
+variableId ::= IDENTIFIER

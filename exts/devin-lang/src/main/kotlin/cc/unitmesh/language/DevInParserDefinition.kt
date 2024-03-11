@@ -45,7 +45,7 @@ internal class DevInParserDefinition : ParserDefinition {
 
     @NotNull
     override fun createElement(node: ASTNode?): PsiElement {
-        TODO()
+        return DevInTypes.Factory.createElement(node)
     }
 
     companion object {

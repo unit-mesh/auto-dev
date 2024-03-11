@@ -23,7 +23,7 @@ import com.intellij.psi.TokenType;
 %eof}
 
 %s CONTEXT_BLOCK
-%s ID_SUFFIX
+%s AGENT_BLOCK
 
 IDENTIFIER=[a-zA-Z0-9]([_\-a-zA-Z0-9]*)
 REF_BLOCK=([$/@] {IDENTIFIER} )
@@ -35,7 +35,6 @@ NEWLINE=\n|\r\n
         yybegin(YYINITIAL);
 
         String text = yytext().toString();
-        System.out.println("contextBlock: " + text);
 
         return TEXT_SEGMENT;
     }
@@ -43,13 +42,16 @@ NEWLINE=\n|\r\n
 
 %%
 <YYINITIAL> {
-  {REF_BLOCK}          { return REF_BLOCK; }
+  "@"                  { yybegin(AGENT_BLOCK); return AGENT_START; }
+  "/"                  { yybegin(AGENT_BLOCK); return COMMAND_START; }
+  "$"                  { yybegin(AGENT_BLOCK); return VARIABLE_START; }
+
   {TEXT_SEGMENT}       { return TEXT_SEGMENT; }
   {NEWLINE}            { return NEWLINE; }
   [^]                  { return TokenType.BAD_CHARACTER; }
 }
 
-<CONTEXT_BLOCK> {
-  [$/@]                { yybegin(YYINITIAL); return contextBlock(); }
+<AGENT_BLOCK> {
+  {IDENTIFIER}         { yybegin(YYINITIAL); return IDENTIFIER; }
   [^]                  { return TokenType.BAD_CHARACTER; }
 }

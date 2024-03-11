@@ -1,4 +1,7 @@
-FILE
+DevInFile
   PsiElement(DevInTokenType.TEXT_SEGMENT)('你好 ')
-  PsiElement(DevInTokenType.REF_BLOCK)('@hello-world')
+  DevInUsedImpl(USED)
+    PsiElement(DevInTokenType.AGENT_START)('@')
+    DevInAgentIdImpl(AGENT_ID)
+      PsiElement(DevInTokenType.IDENTIFIER)('hello-world')
   PsiElement(DevInTokenType.TEXT_SEGMENT)(' sm')

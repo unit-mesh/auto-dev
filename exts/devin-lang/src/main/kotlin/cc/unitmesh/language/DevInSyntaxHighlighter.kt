@@ -19,7 +19,8 @@ class DevInSyntaxHighlighter : SyntaxHighlighter {
         private val ATTRIBUTES: MutableMap<IElementType, TextAttributesKey> = HashMap()
 
         init {
-            ATTRIBUTES[DevInTypes.REF_BLOCK] = DefaultLanguageHighlighterColors.KEYWORD
+            ATTRIBUTES[DevInTypes.VARIABLE_START] = DefaultLanguageHighlighterColors.KEYWORD
+            ATTRIBUTES[DevInTypes.VARIABLE_ID] = DefaultLanguageHighlighterColors.NUMBER
         }
     }
 
