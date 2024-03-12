@@ -8,9 +8,7 @@ import com.intellij.psi.LiteralTextEscaper
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiLanguageInjectionHost
 import com.intellij.psi.impl.source.tree.injected.InjectionBackgroundSuppressor
-import com.intellij.psi.impl.source.tree.injected.StringLiteralEscaper
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.psi.util.childrenOfType
 import com.intellij.psi.util.elementType
 
 class CodeBlockElement(node: ASTNode) : ASTWrapperPsiElement(node), PsiLanguageInjectionHost,
@@ -34,14 +32,9 @@ class CodeBlockElement(node: ASTNode) : ASTWrapperPsiElement(node), PsiLanguageI
     fun getContents(): List<PsiElement> {
         val codeContents = children.filter { it.elementType == DevInTypes.CODE_CONTENTS }.firstOrNull() ?: return emptyList()
 
-        var psiElements = PsiTreeUtil.collectElements(codeContents) {
+        val psiElements = PsiTreeUtil.collectElements(codeContents) {
             it.elementType == DevInTypes.CODE_CONTENT
         }.toMutableList()
-
-        // check first elment if it is a newline skip
-//        if (psiElements.isNotEmpty() && psiElements.first().elementType == DevInTypes.NEWLINE) {
-//            psiElements.removeAt(0)
-//        }
 
         return psiElements.toList()
     }
