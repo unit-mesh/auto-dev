@@ -1,5 +1,7 @@
-package cc.unitmesh.language
+package cc.unitmesh.language.parser
 
+import cc.unitmesh.language.DevInLanguage
+import cc.unitmesh.language.lexer.DevInLexerAdapter
 import cc.unitmesh.language.parser.DevInParser
 import cc.unitmesh.language.psi.DevInFile
 import cc.unitmesh.language.psi.DevInTypes

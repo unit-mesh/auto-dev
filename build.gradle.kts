@@ -600,7 +600,7 @@ project(":exts:devin-lang") {
     tasks {
         generateLexer {
             sourceFile.set(file("src/grammar/DevInLexer.flex"))
-            targetOutputDir.set(file("src/gen/cc/unitmesh/language"))
+            targetOutputDir.set(file("src/gen/cc/unitmesh/language/lexer"))
             purgeOldFiles.set(true)
         }
 

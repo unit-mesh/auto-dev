@@ -1,4 +1,4 @@
-package cc.unitmesh.language
+package cc.unitmesh.language.lexer
 
 import com.intellij.lexer.FlexAdapter
 

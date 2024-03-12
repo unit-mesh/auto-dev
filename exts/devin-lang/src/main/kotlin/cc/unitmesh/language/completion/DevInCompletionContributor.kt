@@ -1,6 +1,5 @@
-package cc.unitmesh.language
+package cc.unitmesh.language.completion
 
-import cc.unitmesh.language.completion.VariableProvider
 import cc.unitmesh.language.psi.DevInFile
 import cc.unitmesh.language.psi.DevInTypes
 import com.intellij.codeInsight.completion.CompletionContributor

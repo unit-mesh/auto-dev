@@ -1,4 +1,4 @@
-package cc.unitmesh.language
+package cc.unitmesh.language.highlight
 
 import com.intellij.openapi.fileTypes.SyntaxHighlighter
 import com.intellij.openapi.fileTypes.SyntaxHighlighterFactory

@@ -8,9 +8,9 @@
         <fileType name="DevInFile" implementationClass="cc.unitmesh.language.DevInFileType" fieldName="INSTANCE"
                   language="DevIn" extensions="devin"/>
 
-        <lang.parserDefinition language="DevIn" implementationClass="cc.unitmesh.language.DevInParserDefinition"/>
+        <lang.parserDefinition language="DevIn" implementationClass="cc.unitmesh.language.parser.DevInParserDefinition"/>
         <lang.syntaxHighlighterFactory language="DevIn"
-                                       implementationClass="cc.unitmesh.language.DevInSyntaxHighlighterFactory"/>
+                                       implementationClass="cc.unitmesh.language.highlight.DevInSyntaxHighlighterFactory"/>
 
         <lang.ast.factory language="DevIn"
                           implementationClass="cc.unitmesh.language.DevInAstFactory"/>
@@ -18,7 +18,7 @@
         <typedHandler implementation="cc.unitmesh.language.DevInTypedHandler"/>
 
         <completion.contributor language="DevIn"
-                                implementationClass="cc.unitmesh.language.DevInCompletionContributor"/>
+                                implementationClass="cc.unitmesh.language.completion.DevInCompletionContributor"/>
 
         <lang.foldingBuilder language="DevIn"
                              implementationClass="cc.unitmesh.language.folding.DevInReferenceFoldingBuilder"/>
