@@ -17,8 +17,15 @@ import com.intellij.psi.util.*
 class CodeBlockElement(node: ASTNode) : ASTWrapperPsiElement(node), PsiLanguageInjectionHost,
     InjectionBackgroundSuppressor {
     override fun isValidHost(): Boolean {
-        // use MarkdownCodeFenceUtils.isAbleToAcceptInjections
-        return true
+        return isAbleToAcceptInjections(this)
+    }
+
+    private fun isAbleToAcceptInjections(host: CodeBlockElement): Boolean {
+        val hasStartBlock = host.firstChild?.elementType != DevInTypes.CODE_BLOCK_START
+        val hasEndBlock = host.lastChild?.elementType != DevInTypes.CODE_BLOCK_END
+        val hasContents = host.children.count { it.hasType(DevInTypes.CODE_CONTENTS) } < 2
+
+        return !(hasStartBlock && hasEndBlock && hasContents)
     }
 
     override fun updateText(text: String): PsiLanguageInjectionHost {
@@ -31,10 +38,6 @@ class CodeBlockElement(node: ASTNode) : ASTWrapperPsiElement(node), PsiLanguageI
 
     fun getLanguageId(): PsiElement? {
         return findChildByType(DevInTypes.LANGUAGE_ID)
-    }
-
-    fun getContents(): PsiElement? {
-        return findChildByType(DevInTypes.CODE_CONTENTS)
     }
 
     companion object {
