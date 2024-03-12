@@ -2,6 +2,7 @@ package cc.unitmesh.language
 
 import cc.unitmesh.language.parser.CodeBlockElement
 import cc.unitmesh.language.psi.DevInTypes
+import com.intellij.lang.Language
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.InjectedLanguagePlaces
 import com.intellij.psi.LanguageInjector
@@ -28,6 +29,12 @@ class DevInLanguageInjector : LanguageInjector {
         if (elements.size < 2) {
             return
         }
+
+        injectAsOnePlace(host, language, registrar)
+    }
+
+    private fun injectAsOnePlace(host: CodeBlockElement, language: Language, registrar: InjectedLanguagePlaces) {
+        val elements = CodeBlockElement.obtainFenceContent(host, withWhitespaces = true) ?: return
 
         val first = elements.first()
         val last = elements.last()
