@@ -90,6 +90,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
             override fun onSubmit(component: AutoDevInputSection, trigger: AutoDevInputTrigger) {
                 val prompt = component.text
                 component.text = ""
+
                 if (prompt.isEmpty()) {
                     return
                 }

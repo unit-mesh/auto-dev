@@ -137,13 +137,12 @@ class AutoDevInput(
     }
 
     fun recreateDocument() {
-//        val language = findLanguage("DevIn")
-        val language = findLanguage("Markdown")
-        val file =
-            LightVirtualFile("AutoDevInput-" + UUID.randomUUID(), language, "")
+        val language = findLanguage("DevIn")
+//        val language = findLanguage("Markdown")
+        val id = UUID.randomUUID()
+        val file = LightVirtualFile("AutoDevInput-$id", language, "")
 
-        val document =
-            file.findDocument() ?: throw IllegalStateException("Can't create in-memory document")
+        val document = file.findDocument() ?: throw IllegalStateException("Can't create in-memory document")
 
         initializeDocumentListeners(document)
         setDocument(document)

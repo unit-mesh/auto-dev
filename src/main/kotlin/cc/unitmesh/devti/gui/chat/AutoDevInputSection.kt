@@ -109,22 +109,22 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                     revalidate()
                 }
 
-                if (event.newFragment.contentEquals("$")) {
-                    if (popup == null) {
-                        popup = createPopup()
-                    }
-
-                    if (popup?.isVisible == true) {
-                        popup?.cancel()
-                    }
-
-                    if (popup?.isDisposed == true) {
-                        popup = createPopup()
-                        showPopupAbove(popup!!, this@AutoDevInputSection)
-                    } else {
-                        showPopupAbove(popup!!, this@AutoDevInputSection)
-                    }
-                }
+//                if (event.newFragment.contentEquals("$")) {
+//                    if (popup == null) {
+//                        popup = createPopup()
+//                    }
+//
+//                    if (popup?.isVisible == true) {
+//                        popup?.cancel()
+//                    }
+//
+//                    if (popup?.isDisposed == true) {
+//                        popup = createPopup()
+//                        showPopupAbove(popup!!, this@AutoDevInputSection)
+//                    } else {
+//                        showPopupAbove(popup!!, this@AutoDevInputSection)
+//                    }
+//                }
             }
         }
 
@@ -260,7 +260,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         UIUtil.setOpaqueRecursively(this, false)
         this.revalidate()
     }
-
 
     override fun getPreferredSize(): Dimension {
         val result = super.getPreferredSize()
