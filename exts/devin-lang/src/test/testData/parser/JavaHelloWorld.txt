@@ -2,7 +2,7 @@ DevInFile
   PsiElement(DevInTokenType.TEXT_SEGMENT)('解释如下的代码：')
   PsiElement(DevInTokenType.NEWLINE)('\n')
   PsiElement(DevInTokenType.NEWLINE)('\n')
-  DevInCodeImpl(CODE)
+  CodeBlockElement(CODE)
     PsiElement(DevInTokenType.CODE_BLOCK_START)('```')
     PsiElement(DevInTokenType.LANGUAGE_ID)('java')
     DevInCodeContentsImpl(CODE_CONTENTS)
