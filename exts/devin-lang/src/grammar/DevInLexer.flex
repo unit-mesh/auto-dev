@@ -25,6 +25,7 @@ import com.intellij.psi.TokenType;
 %s AGENT_BLOCK
 %s VARIABLE_BLOCK
 %s COMMAND_BLOCK
+%s CODE_BLOCK
 
 IDENTIFIER=[a-zA-Z0-9][_\-a-zA-Z0-9]*
 VARIABLE_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
@@ -32,26 +33,43 @@ AGENT_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
 COMMAND_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
 REF_BLOCK=([$/@] {IDENTIFIER} )
 TEXT_SEGMENT=[^$/@\n]+
-NEWLINE=\n|\r\n
+//CODE_CONTENT="```" {IDENTIFIER} ([^$/@\n]+ | \n)* "```"
+CODE_CONTENT=([^$/@\n]+ )
+NEWLINE= \n | \r | \r\n
 
 %{
-    private IElementType contextBlock() {
+    private boolean isCodeStart = false;
+%}
+
+%{
+    private IElementType codeContent() {
         yybegin(YYINITIAL);
 
-        String text = yytext().toString();
+        // handle for end which is \n```
+        String text = yytext().toString().trim();
+        if (text.equals("\n```") || text.equals("```")) {
+            isCodeStart = false;
+            return CODE_BLOCK_END;
+        }
 
-        return TEXT_SEGMENT;
+        // new line
+        if (text.equals("\n")) {
+            return NEWLINE;
+        }
+
+        return CODE_CONTENT;
     }
 %}
 
 %%
 <YYINITIAL> {
-  "@"                  { yybegin(AGENT_BLOCK); return AGENT_START; }
-  "/"                  { yybegin(COMMAND_BLOCK); return COMMAND_START; }
+  "@"                  { yybegin(AGENT_BLOCK);    return AGENT_START; }
+  "/"                  { yybegin(COMMAND_BLOCK);  return COMMAND_START; }
   "$"                  { yybegin(VARIABLE_BLOCK); return VARIABLE_START; }
+  "```" {IDENTIFIER}   { yybegin(CODE_BLOCK); isCodeStart = true; return CODE_BLOCK_START; }
 
-  {TEXT_SEGMENT}       { return TEXT_SEGMENT; }
-  {NEWLINE}            { return NEWLINE; }
+  {TEXT_SEGMENT}       { if(isCodeStart) { return codeContent(); } else { return TEXT_SEGMENT; } }
+  {NEWLINE}            { return NEWLINE;  }
   [^]                  { return TokenType.BAD_CHARACTER; }
 }
 
@@ -68,4 +86,10 @@ NEWLINE=\n|\r\n
 <VARIABLE_BLOCK> {
   {VARIABLE_ID}        { yybegin(YYINITIAL); return VARIABLE_ID; }
   [^]                  { return TokenType.BAD_CHARACTER; }
+}
+
+<CODE_BLOCK> {
+  {CODE_CONTENT}       { return codeContent(); }
+  <<EOF>>              { isCodeStart = false; return codeContent(); }
+  [^]                  { }
 }

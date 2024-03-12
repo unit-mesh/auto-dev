@@ -15,10 +15,14 @@
   tokenTypeClass="cc.unitmesh.language.lexer.DevInTokenType"
 
   tokens=[
-    AGENT_START    = "AGENT_START"
-    COMMAND_START  = "COMMAND_START"
-    VARIABLE_START = "VARIABLE_START"
-    IDENTIFIER     = "IDENTIFIER"
+    AGENT_START        = "AGENT_START"
+    COMMAND_START      = "COMMAND_START"
+    VARIABLE_START     = "VARIABLE_START"
+    CODE_BLOCK_START   = "CODE_BLOCK_START"
+    CODE_BLOCK_END     = "CODE_BLOCK_END"
+    CODE_BLOCK         = "CODE_BLOCK"
+    CODE_CONTENT       = "CODE_CONTENT"
+    IDENTIFIER         = "IDENTIFIER"
   ]
 }
 
@@ -31,5 +35,5 @@ used ::= (
 )
 
 code ::= (
-   "```" IDENTIFIER TEXT_SEGMENT "```"
+   CODE_BLOCK_START (NEWLINE | CODE_CONTENT)* CODE_BLOCK_END
 )
