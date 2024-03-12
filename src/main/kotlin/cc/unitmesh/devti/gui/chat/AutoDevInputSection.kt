@@ -142,10 +142,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                 input.caretModel.moveToOffset(input.text.length - 1)
             }
         })
-        layoutPanel.background = JBColor(
-            JBColor(15461616, 14672357),
-            JBColor(3684930, 3750720)
-        )
         layoutPanel.setOpaque(false)
 
         if (project.customAgentSetting.enableCustomRag) {
