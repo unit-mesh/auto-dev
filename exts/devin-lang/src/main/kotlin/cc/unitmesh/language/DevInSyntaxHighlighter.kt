@@ -21,6 +21,10 @@ class DevInSyntaxHighlighter : SyntaxHighlighter {
         init {
             ATTRIBUTES[DevInTypes.VARIABLE_START] = DefaultLanguageHighlighterColors.KEYWORD
             ATTRIBUTES[DevInTypes.VARIABLE_ID] = DefaultLanguageHighlighterColors.NUMBER
+
+            ATTRIBUTES[DevInTypes.CODE_BLOCK_START] = DefaultLanguageHighlighterColors.KEYWORD
+            ATTRIBUTES[DevInTypes.CODE_BLOCK_END] = DefaultLanguageHighlighterColors.KEYWORD
+            ATTRIBUTES[DevInTypes.LANGUAGE_ID] = DefaultLanguageHighlighterColors.INSTANCE_FIELD
         }
     }
 
