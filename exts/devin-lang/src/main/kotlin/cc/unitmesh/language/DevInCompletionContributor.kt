@@ -12,11 +12,7 @@ class DevInCompletionContributor : CompletionContributor() {
     private val INPUT_DUMMY_IDENTIFIER = "AutoDevDummy"
 
     init {
-        extend(
-            CompletionType.BASIC,
-            psiElement(DevInTypes.VARIABLE_ID),
-            VariableProvider()
-        )
+        extend(CompletionType.BASIC, psiElement(DevInTypes.VARIABLE_ID), VariableProvider())
     }
 
     override fun beforeCompletion(context: CompletionInitializationContext) {
