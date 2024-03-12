@@ -25,8 +25,8 @@ class DevInLanguageInjector : LanguageInjector {
         val text = languageIdentifier?.text ?: return
         val language = CodeFenceLanguageGuesser.guessLanguageForInjection(text) ?: return
 
-        val elements = host.getContents()
-        if (elements.size < 2) {
+        val contentList = CodeBlockElement.obtainFenceContent(host) ?: return
+        if (contentList.isEmpty()) {
             return
         }
 
@@ -34,7 +34,7 @@ class DevInLanguageInjector : LanguageInjector {
     }
 
     private fun injectAsOnePlace(host: CodeBlockElement, language: Language, registrar: InjectedLanguagePlaces) {
-        val elements = CodeBlockElement.obtainFenceContent(host, withWhitespaces = true) ?: return
+        val elements = CodeBlockElement.obtainFenceContent(host) ?: return
 
         val first = elements.first()
         val last = elements.last()

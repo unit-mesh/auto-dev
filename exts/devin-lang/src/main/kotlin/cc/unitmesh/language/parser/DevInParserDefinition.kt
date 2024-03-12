@@ -4,6 +4,7 @@ import cc.unitmesh.language.DevInLanguage
 import cc.unitmesh.language.lexer.DevInLexerAdapter
 import cc.unitmesh.language.psi.DevInFile
 import cc.unitmesh.language.psi.DevInTypes
+import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
 import com.intellij.lang.ParserDefinition
 import com.intellij.lang.PsiParser
@@ -19,9 +20,7 @@ import org.jetbrains.annotations.NotNull
 
 internal class DevInParserDefinition : ParserDefinition {
     @NotNull
-    override fun createLexer(project: Project?): Lexer {
-        return DevInLexerAdapter()
-    }
+    override fun createLexer(project: Project?): Lexer = DevInLexerAdapter()
 
     @NotNull
     override fun getCommentTokens(): TokenSet = TokenSet.EMPTY
@@ -30,25 +29,23 @@ internal class DevInParserDefinition : ParserDefinition {
     override fun getStringLiteralElements(): TokenSet = TokenSet.EMPTY
 
     @NotNull
-    override fun createParser(project: Project?): PsiParser {
-        return DevInParser()
-    }
+    override fun createParser(project: Project?): PsiParser = DevInParser()
 
     @NotNull
-    override fun getFileNodeType(): IFileElementType {
-        return FILE
-    }
+    override fun getFileNodeType(): IFileElementType = FILE
 
     @NotNull
-    override fun createFile(@NotNull viewProvider: FileViewProvider): PsiFile {
-        return DevInFile(viewProvider)
-    }
+    override fun createFile(@NotNull viewProvider: FileViewProvider): PsiFile = DevInFile(viewProvider)
 
     @NotNull
     override fun createElement(node: ASTNode?): PsiElement {
         val elementType = node!!.elementType
         if (elementType == DevInTypes.CODE) {
             return CodeBlockElement(node)
+        }
+
+        if (elementType == DevInTypes.CODE_CONTENTS) {
+            return ASTWrapperPsiElement(node)
         }
 
         return DevInTypes.Factory.createElement(node)
