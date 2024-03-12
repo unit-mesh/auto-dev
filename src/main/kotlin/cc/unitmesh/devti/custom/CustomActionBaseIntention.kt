@@ -19,14 +19,12 @@ import org.apache.velocity.app.Velocity
 import java.io.StringWriter
 
 class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConfig) : ChatBaseIntention() {
-    override fun getText(): String = intentionConfig.title
-
     private val logger = logger<CustomActionBaseIntention>()
 
-    override fun getFamilyName(): String = AutoDevBundle.message("autodev.custom.intentions.family")
-    override fun priority(): Int {
-        return intentionConfig.priority
-    }
+    override fun getText(): String = intentionConfig.title
+    override fun getFamilyName() = AutoDevBundle.message("autodev.custom.intentions.family")
+    override fun priority() = intentionConfig.priority
+    override fun getActionType(): ChatActionType = ChatActionType.CUSTOM_ACTION
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         if (editor == null || file == null) return false
@@ -39,8 +37,6 @@ class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConf
             false
         }
     }
-
-    override fun getActionType(): ChatActionType = ChatActionType.CUSTOM_ACTION
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (editor == null || file == null) return
