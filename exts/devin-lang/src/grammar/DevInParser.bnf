@@ -35,6 +35,6 @@ used ::= (
     | VARIABLE_START VARIABLE_ID?
 )
 
-code ::=  CODE_BLOCK_START LANGUAGE_ID? code_contents CODE_BLOCK_END
+code ::=  CODE_BLOCK_START LANGUAGE_ID? NEWLINE code_contents CODE_BLOCK_END
 
 code_contents ::= (NEWLINE | CODE_CONTENT)*
