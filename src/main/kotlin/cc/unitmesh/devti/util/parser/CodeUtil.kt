@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.util.parser
 
 import com.intellij.lang.Language
+import com.intellij.openapi.fileTypes.PlainTextLanguage
 
 class Code(val language: Language, val text: String, val isComplete: Boolean) {
     companion object {
@@ -70,7 +71,7 @@ class Code(val language: Language, val text: String, val isComplete: Boolean) {
                 .filter { it.displayName.isNotEmpty() }
 
             return registeredLanguages.find { it.displayName.equals(fixedLanguage, ignoreCase = true) }
-                ?: Language.ANY
+                ?: PlainTextLanguage.INSTANCE
         }
     }
 }

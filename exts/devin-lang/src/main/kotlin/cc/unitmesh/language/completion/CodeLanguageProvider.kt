@@ -3,8 +3,11 @@ package cc.unitmesh.language.completion
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.lang.Language
 import com.intellij.lang.LanguageUtil
+import com.intellij.ui.DeferredIconImpl
 import com.intellij.util.ProcessingContext
+import javax.swing.Icon
 
 class CodeLanguageProvider : CompletionProvider<CompletionParameters>() {
     override fun addCompletions(
@@ -15,10 +18,16 @@ class CodeLanguageProvider : CompletionProvider<CompletionParameters>() {
         for (language in LanguageUtil.getInjectableLanguages()) {
             val id = language.id
             val handler = LookupElementBuilder.create(id)
+                .withIcon(createLanguageIcon(language))
                 .withTypeText(language.displayName, true)
                 .withInsertHandler(MyInsertHandler())
+
             result.addElement(handler)
         }
+    }
+
+    fun createLanguageIcon(language: Language): Icon {
+        return DeferredIconImpl(null, language, true) { curLanguage: Language -> curLanguage.associatedFileType?.icon }
     }
 
     private class MyInsertHandler : InsertHandler<LookupElement> {

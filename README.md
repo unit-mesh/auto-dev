@@ -123,6 +123,7 @@ Welcome to add your company here.
 - Multiple target inspired
   by: [https://github.com/intellij-rust/intellij-rust](https://github.com/intellij-rust/intellij-rust)
 - SimilarFile inspired by: JetBrains and GitHub Copilot
+- DevIn Language refs on JetBrains Markdown plugin, which is licensed under the Apache 2.0 license.
 
 **Known License issues**: JetBrain plugin development is no walk in the park! Oops, we cheekily borrowed some code from
 the JetBrains Community version and the super cool JetBrains AI Assistant plugin in our codebase.
