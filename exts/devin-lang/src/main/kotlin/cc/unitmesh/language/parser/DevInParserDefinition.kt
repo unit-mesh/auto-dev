@@ -2,7 +2,6 @@ package cc.unitmesh.language.parser
 
 import cc.unitmesh.language.DevInLanguage
 import cc.unitmesh.language.lexer.DevInLexerAdapter
-import cc.unitmesh.language.parser.DevInParser
 import cc.unitmesh.language.psi.DevInFile
 import cc.unitmesh.language.psi.DevInTypes
 import com.intellij.lang.ASTNode
@@ -47,6 +46,10 @@ internal class DevInParserDefinition : ParserDefinition {
 
     @NotNull
     override fun createElement(node: ASTNode?): PsiElement {
+//        val elementType = node!!.elementType
+//        if (elementType == DevInTypes.CODE_BLOCK) {
+//            return CodeBlockElement(node)
+//        }
         return DevInTypes.Factory.createElement(node)
     }
 
