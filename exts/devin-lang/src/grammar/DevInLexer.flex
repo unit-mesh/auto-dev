@@ -99,7 +99,6 @@ NEWLINE= \n | \r | \r\n
   {CODE_CONTENT}       { if(isCodeStart) { return codeContent(); } else { yybegin(YYINITIAL); yypushback(yylength()); } }
   {NEWLINE}            { return NEWLINE; }
   <<EOF>>              { isCodeStart = false; yybegin(YYINITIAL); yypushback(yylength()); }
-  [^]                  { isCodeStart = false; yybegin(YYINITIAL); yypushback(yylength()); }
 }
 
 <LANG_ID> {
