@@ -31,13 +31,14 @@ class KotlinTestContextProvider : JavaTestContextProvider() {
 
         val language = creationContext.sourceFile?.language?.displayName ?: "Kotlin"
 
+        val testPrompt = project.service<TemplatedTestPrompt>()
         val finalPrompt = when {
             isController(fileName) && isSpringRelated -> {
                 var testControllerPrompt = prompt + "\n" + """
                             |- Use appropriate Spring test annotations such as `@MockBean`, `@Autowired`, `@WebMvcTest`, `@DataJpaTest`, `@AutoConfigureTestDatabase`, `@AutoConfigureMockMvc`, `@SpringBootTest` etc.
                             |""".trimMargin()
 
-                val lookup = project.service<TemplatedTestPrompt>().lookup("ControllerTest.kt")
+                val lookup = testPrompt.lookup("ControllerTest.kt")
                 if (lookup != null) {
                     testControllerPrompt += "\nHere is the Test code template as example\n```$language\n$lookup\n```\n"
                 }
@@ -52,7 +53,7 @@ class KotlinTestContextProvider : JavaTestContextProvider() {
                             |""".trimMargin()
 
 
-                val lookup = project.service<TemplatedTestPrompt>().lookup("ServiceTest.kt")
+                val lookup = testPrompt.lookup("ServiceTest.kt")
                 if (lookup != null) {
                     testServicePrompt += "\nHere is the Test code template as example\n```$language\n$lookup\n```\n"
                 }
@@ -61,7 +62,7 @@ class KotlinTestContextProvider : JavaTestContextProvider() {
             }
 
             else -> {
-                val lookup = project.service<TemplatedTestPrompt>().lookup("Test.kt")
+                val lookup = testPrompt.lookup("Test.kt")
                 if (lookup != null) {
                     prompt += "\n" +
                             "Here is the Test code template as example\n```$language\n$lookup\n```\n"

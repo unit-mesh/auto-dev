@@ -37,6 +37,20 @@ private fun findExampleCommitMessages(project: Project): String? {
 }
 ```
 
+## 测试代码示例
+
+参考语言实现：`JavaTestContextProvider`、`KotlinTestContextProvider`。
+
+步骤：
+
+1. 获取当前项目的被测试代码。
+2. 根据被测试代码寻找模板：`Controller`、`Service`、默认测试等。
+    - Kotlin：`ControllerTest.kt`, `ServiceTest.kt`, `Test.kt`
+    - Java: `ControllerTest.java`, `ServiceTest.java`, `Test.java`
+3. 根据模板生成测试代码。
+
+
+
 ## 文档示例
 
 DOC TODO

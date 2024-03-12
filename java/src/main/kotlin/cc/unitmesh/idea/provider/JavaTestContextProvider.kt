@@ -39,13 +39,14 @@ open class JavaTestContextProvider : ChatContextProvider {
 
         val language = creationContext.sourceFile?.language?.displayName ?: "Java"
 
+        val testPrompt = project.service<TemplatedTestPrompt>()
         val finalPrompt = when {
             isController(fileName) && isSpringRelated -> {
                 var testControllerPrompt = prompt + """
                             |- Use appropriate Spring test annotations such as `@MockBean`, `@Autowired`, `@WebMvcTest`, `@DataJpaTest`, `@AutoConfigureTestDatabase`, `@AutoConfigureMockMvc`, `@SpringBootTest` etc.
                             |""".trimMargin()
 
-                val lookup = project.service<TemplatedTestPrompt>().lookup("ControllerTest.java")
+                val lookup = testPrompt.lookup("ControllerTest.java")
                 if (lookup != null) {
                     testControllerPrompt += "\nHere is the Test code template as example\n```$language\n$lookup\n```\n"
                 }
@@ -59,7 +60,7 @@ open class JavaTestContextProvider : ChatContextProvider {
                             |- Assume that the database is empty before each test and create valid entities with consideration for data constraints (jakarta.validation.constraints).
                             |""".trimMargin()
 
-                val lookup = project.service<TemplatedTestPrompt>().lookup("ServiceTest.java")
+                val lookup = testPrompt.lookup("ServiceTest.java")
                 if (lookup != null) {
                     testServicePrompt += "\nHere is the Test code template as example\n```$language\n$lookup\n```\n"
                 }
@@ -68,7 +69,7 @@ open class JavaTestContextProvider : ChatContextProvider {
             }
 
             else -> {
-                val lookup = project.service<TemplatedTestPrompt>().lookup("Test.java")
+                val lookup = testPrompt.lookup("Test.java")
                 if (lookup != null) {
                     prompt += "\nHere is the Test code template as example\n```$language\n$lookup\n```\n"
                 }
@@ -89,7 +90,7 @@ open class JavaTestContextProvider : ChatContextProvider {
         fileName?.let { MvcUtil.isController(it, langFileSuffix()) } ?: false
 
 
-    val projectJunitCache = mutableMapOf<Project, String>()
+    private val projectJunitCache = mutableMapOf<Project, String>()
 
     /**
      * Returns a string representing the JUnit rule for the given project.
