@@ -90,14 +90,6 @@ class CodeBlockView(
     }
 
     companion object {
-        private fun createCodeViewerFile(language: Language, content: String): LightVirtualFile {
-            val file = LightVirtualFile(AUTODEV_SNIPPET_NAME, language, content)
-            if (file.fileType == UnknownFileType.INSTANCE) {
-                file.fileType = PlainTextFileType.INSTANCE
-            }
-
-            return file
-        }
 
         private fun createCodeViewerEditor(
             project: Project,
@@ -159,12 +151,16 @@ class CodeBlockView(
             message: CompletableMessage,
         ): CodePartEditorInfo {
             val forceFoldEditorByDefault = message.getRole() === ChatRole.User
-            val createCodeViewerFile = createCodeViewerFile(language, graphProperty.get())
+            val file = LightVirtualFile(AUTODEV_SNIPPET_NAME, language, graphProperty.get())
+            if (file.fileType == UnknownFileType.INSTANCE) {
+                file.fileType = PlainTextFileType.INSTANCE
+            }
+
             val document: Document =
-                createCodeViewerFile.findDocument() ?: throw IllegalStateException("Document not found")
+                file.findDocument() ?: throw IllegalStateException("Document not found")
 
             val editor: EditorEx =
-                createCodeViewerEditor(project, createCodeViewerFile, document, disposable)
+                createCodeViewerEditor(project, file, document, disposable)
 
             val toolbarActionGroup = ActionUtil.getActionGroup("AutoDev.ToolWindow.Snippet.Toolbar")!!
             toolbarActionGroup.let {
@@ -195,7 +191,7 @@ class CodeBlockView(
             editorFragment.setCollapsed(forceFoldEditorByDefault)
             editorFragment.updateExpandCollapseLabel()
 
-            return CodePartEditorInfo(graphProperty, editorFragment.getContent(), editor, createCodeViewerFile)
+            return CodePartEditorInfo(graphProperty, editorFragment.getContent(), editor, file)
         }
     }
 }
