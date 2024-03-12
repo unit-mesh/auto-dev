@@ -28,12 +28,7 @@ class ChatWithThisAction : ChatBaseAction() {
         val language = event.getData(CommonDataKeys.PSI_FILE)?.language?.displayName ?: ""
 
         sendToChatWindow(project, getActionType()) { contentPanel, _ ->
-            contentPanel.setInput(
-                trimMargin = """
-                ```$language
-                $prefixText
-                ```"""
-            )
+            contentPanel.setInput("\n```$language\n$prefixText\n```")
         }
     }
 }
