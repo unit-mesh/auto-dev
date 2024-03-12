@@ -1,5 +1,6 @@
 package cc.unitmesh.language.completion
 
+import cc.unitmesh.devti.custom.compile.CustomVariable
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet

@@ -1,5 +1,6 @@
 package cc.unitmesh.language
 
+import cc.unitmesh.devti.util.parser.Code.Companion.findLanguage
 import cc.unitmesh.language.parser.CodeBlockElement
 import cc.unitmesh.language.psi.DevInTypes
 import com.intellij.lang.Language
@@ -8,7 +9,6 @@ import com.intellij.psi.InjectedLanguagePlaces
 import com.intellij.psi.LanguageInjector
 import com.intellij.psi.PsiLanguageInjectionHost
 import com.intellij.psi.util.elementType
-import org.intellij.plugins.markdown.injection.aliases.CodeFenceLanguageGuesser
 
 class DevInLanguageInjector : LanguageInjector {
     override fun getLanguagesToInject(host: PsiLanguageInjectionHost, registrar: InjectedLanguagePlaces) {
@@ -23,7 +23,7 @@ class DevInLanguageInjector : LanguageInjector {
 
         val languageIdentifier = host.getLanguageId()
         val text = languageIdentifier?.text ?: return
-        val language = CodeFenceLanguageGuesser.guessLanguageForInjection(text) ?: return
+        val language = findLanguage(text) ?: return
 
         val contentList = CodeBlockElement.obtainFenceContent(host) ?: return
         if (contentList.isEmpty()) {
