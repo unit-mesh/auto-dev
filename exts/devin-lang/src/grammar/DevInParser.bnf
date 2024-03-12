@@ -22,10 +22,14 @@
   ]
 }
 
-DevInFile ::= (used | TEXT_SEGMENT | CODE_FENCE | NEWLINE)*
+DevInFile ::= (used | code | TEXT_SEGMENT | NEWLINE)*
 
 used ::= (
     AGENT_START AGENT_ID?
     | COMMAND_START COMMAND_ID?
     | VARIABLE_START VARIABLE_ID?
+)
+
+code ::= (
+   "```" IDENTIFIER TEXT_SEGMENT "```"
 )

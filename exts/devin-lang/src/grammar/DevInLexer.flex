@@ -31,7 +31,7 @@ VARIABLE_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
 AGENT_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
 COMMAND_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
 REF_BLOCK=([$/@] {IDENTIFIER} )
-TEXT_SEGMENT=[^$/@]+
+TEXT_SEGMENT=[^$/@\n]+
 NEWLINE=\n|\r\n
 
 %{
