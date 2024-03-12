@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Compatible Strategy
-nav_order: 6
+nav_order: 3
 parent: Development
 ---
 
