@@ -49,7 +49,7 @@ NEWLINE= \n | \r | \r\n
 
         // handle for end which is \n```
         String text = yytext().toString().trim();
-        if (text.equals("\n```") || text.equals("```")) {
+        if ((text.equals("\n```") || text.equals("```")) && isCodeStart == true ) {
             isCodeStart = false;
             return CODE_BLOCK_END;
         }
@@ -57,6 +57,10 @@ NEWLINE= \n | \r | \r\n
         // new line
         if (text.equals("\n")) {
             return NEWLINE;
+        }
+
+        if (isCodeStart == false) {
+            return TEXT_SEGMENT;
         }
 
         return CODE_CONTENT;
@@ -68,7 +72,7 @@ NEWLINE= \n | \r | \r\n
   "@"                  { yybegin(AGENT_BLOCK);    return AGENT_START; }
   "/"                  { yybegin(COMMAND_BLOCK);  return COMMAND_START; }
   "$"                  { yybegin(VARIABLE_BLOCK); return VARIABLE_START; }
-  "```" {IDENTIFIER}   { yybegin(LANG_ID); isCodeStart = true; yypushback(yylength()); }
+  "```" {IDENTIFIER}?  { yybegin(LANG_ID); if (isCodeStart == true) { isCodeStart = false; return CODE_BLOCK_END; } else { isCodeStart = true; }; yypushback(yylength()); }
 
   {TEXT_SEGMENT}       { if(isCodeStart) { return codeContent(); } else { return TEXT_SEGMENT; } }
   {NEWLINE}            { return NEWLINE;  }
@@ -91,10 +95,10 @@ NEWLINE= \n | \r | \r\n
 }
 
 <CODE_BLOCK> {
-  {CODE_CONTENT}       { return codeContent(); }
+  {CODE_CONTENT}       { if(isCodeStart) { return codeContent(); } else { yybegin(YYINITIAL); yypushback(yylength()); } }
   {NEWLINE}            { return NEWLINE; }
-  <<EOF>>              { isCodeStart = false; return codeContent(); }
-  [^]                  { }
+  <<EOF>>              { isCodeStart = false; yybegin(YYINITIAL); yypushback(yylength()); }
+  [^]                  { isCodeStart = false; yybegin(YYINITIAL); yypushback(yylength()); }
 }
 
 <LANG_ID> {
