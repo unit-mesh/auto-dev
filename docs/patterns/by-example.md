@@ -37,7 +37,7 @@ private fun findExampleCommitMessages(project: Project): String? {
 }
 ```
 
-## 测试代码示例
+## 代码示例：测试代码示例
 
 参考语言实现：`JavaTestContextProvider`、`KotlinTestContextProvider`。
 
@@ -49,12 +49,6 @@ private fun findExampleCommitMessages(project: Project): String? {
     - Java: `ControllerTest.java`, `ServiceTest.java`, `Test.java`
 3. 根据模板生成测试代码。
 
-
-
 ## 文档示例
-
-DOC TODO
-
-## 代码示例
 
 DOC TODO
