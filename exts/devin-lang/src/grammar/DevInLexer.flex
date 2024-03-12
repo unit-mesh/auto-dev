@@ -26,14 +26,16 @@ import com.intellij.psi.TokenType;
 %s VARIABLE_BLOCK
 %s COMMAND_BLOCK
 %s CODE_BLOCK
+%s LANG_ID
 
 IDENTIFIER=[a-zA-Z0-9][_\-a-zA-Z0-9]*
+
 VARIABLE_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
 AGENT_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
 COMMAND_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
-REF_BLOCK=([$/@] {IDENTIFIER} )
+LANGUAGE_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
+
 TEXT_SEGMENT=[^$/@\n]+
-//CODE_CONTENT="```" {IDENTIFIER} ([^$/@\n]+ | \n)* "```"
 CODE_CONTENT=([^$/@\n]+ )
 NEWLINE= \n | \r | \r\n
 
@@ -66,7 +68,7 @@ NEWLINE= \n | \r | \r\n
   "@"                  { yybegin(AGENT_BLOCK);    return AGENT_START; }
   "/"                  { yybegin(COMMAND_BLOCK);  return COMMAND_START; }
   "$"                  { yybegin(VARIABLE_BLOCK); return VARIABLE_START; }
-  "```" {IDENTIFIER}   { yybegin(CODE_BLOCK); isCodeStart = true; return CODE_BLOCK_START; }
+  "```" {IDENTIFIER}   { yybegin(LANG_ID); isCodeStart = true; yypushback(yylength()); }
 
   {TEXT_SEGMENT}       { if(isCodeStart) { return codeContent(); } else { return TEXT_SEGMENT; } }
   {NEWLINE}            { return NEWLINE;  }
@@ -90,6 +92,13 @@ NEWLINE= \n | \r | \r\n
 
 <CODE_BLOCK> {
   {CODE_CONTENT}       { return codeContent(); }
+  {NEWLINE}            { return NEWLINE; }
   <<EOF>>              { isCodeStart = false; return codeContent(); }
   [^]                  { }
+}
+
+<LANG_ID> {
+   "```"             { return CODE_BLOCK_START; }
+   {IDENTIFIER}      { yybegin(YYINITIAL); return LANGUAGE_ID;  }
+   [^]               { yypushback(1); yybegin(CODE_BLOCK); }
 }

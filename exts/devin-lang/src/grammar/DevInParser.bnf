@@ -23,6 +23,7 @@
     CODE_BLOCK         = "CODE_BLOCK"
     CODE_CONTENT       = "CODE_CONTENT"
     IDENTIFIER         = "IDENTIFIER"
+    LANGUAGE_ID        = "LANGUAGE_ID"
   ]
 }
 
@@ -35,5 +36,7 @@ used ::= (
 )
 
 code ::= (
-   CODE_BLOCK_START (NEWLINE | CODE_CONTENT)* CODE_BLOCK_END
+   CODE_BLOCK_START LANGUAGE_ID code_contents CODE_BLOCK_END
 )
+
+code_contents ::= (NEWLINE | CODE_CONTENT)*
