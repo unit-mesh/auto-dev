@@ -36,7 +36,7 @@ COMMAND_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
 LANGUAGE_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
 
 TEXT_SEGMENT=[^$/@\n]+
-CODE_CONTENT=([^$/@\n]+ )
+CODE_CONTENT=[^\n]+
 NEWLINE= \n | \r | \r\n
 
 %{
@@ -69,9 +69,10 @@ NEWLINE= \n | \r | \r\n
 
 %%
 <YYINITIAL> {
-  "@"                  { yybegin(AGENT_BLOCK);    return AGENT_START; }
-  "/"                  { yybegin(COMMAND_BLOCK);  return COMMAND_START; }
-  "$"                  { yybegin(VARIABLE_BLOCK); return VARIABLE_START; }
+  "@"                  { if(!isCodeStart) { yybegin(AGENT_BLOCK); return AGENT_START; } else { yypushback(1); yybegin(CODE_BLOCK); }}
+  "/"                  { if(!isCodeStart) { yybegin(COMMAND_BLOCK); return COMMAND_START; } else { yypushback(1); yybegin(CODE_BLOCK); }}
+  "$"                  { if(!isCodeStart) { yybegin(VARIABLE_BLOCK); return VARIABLE_START; } else { yypushback(1); yybegin(CODE_BLOCK); }}
+
   "```" {IDENTIFIER}?  { yybegin(LANG_ID); if (isCodeStart == true) { isCodeStart = false; return CODE_BLOCK_END; } else { isCodeStart = true; }; yypushback(yylength()); }
 
   {TEXT_SEGMENT}       { if(isCodeStart) { return codeContent(); } else { return TEXT_SEGMENT; } }

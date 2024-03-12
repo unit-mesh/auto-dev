@@ -19,4 +19,8 @@ class DevInParsingTest : ParsingTestCase("parser", "devin", DevInParserDefinitio
     fun testEmptyCodeFence() {
         doTest(true)
     }
+
+    fun testJavaAnnotation() {
+        doTest(true)
+    }
 }
