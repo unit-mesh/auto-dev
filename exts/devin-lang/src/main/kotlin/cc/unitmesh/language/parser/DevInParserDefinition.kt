@@ -46,10 +46,11 @@ internal class DevInParserDefinition : ParserDefinition {
 
     @NotNull
     override fun createElement(node: ASTNode?): PsiElement {
-//        val elementType = node!!.elementType
-//        if (elementType == DevInTypes.CODE_BLOCK) {
-//            return CodeBlockElement(node)
-//        }
+        val elementType = node!!.elementType
+        if (elementType == DevInTypes.CODE) {
+            return CodeBlockElement(node)
+        }
+
         return DevInTypes.Factory.createElement(node)
     }
 

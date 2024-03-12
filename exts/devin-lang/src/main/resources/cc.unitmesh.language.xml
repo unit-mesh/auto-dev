@@ -22,5 +22,7 @@
 
         <lang.foldingBuilder language="DevIn"
                              implementationClass="cc.unitmesh.language.folding.DevInReferenceFoldingBuilder"/>
+
+        <languageInjector implementation="cc.unitmesh.language.DevInLanguageInjector"/>
     </extensions>
 </idea-plugin>
