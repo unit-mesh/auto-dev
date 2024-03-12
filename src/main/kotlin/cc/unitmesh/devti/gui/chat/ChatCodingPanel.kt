@@ -91,7 +91,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
                 val prompt = component.text
                 component.text = ""
 
-                if (prompt.isEmpty()) {
+                if (prompt.isEmpty() || prompt == "\n") {
                     return
                 }
 
