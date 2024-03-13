@@ -66,6 +66,15 @@ data class ConnectorConfig(
     val responseFormat: String = "",
 )
 
+/**
+ * CustomAgentState is an enumeration that defines the possible states of a custom agent.
+ *
+ * - [CustomAgentState.START] indicates that the agent has just been initialized and is ready to receive commands.
+ * - [CustomAgentState.HANDLING] means that the agent is currently processing a command.
+ * - [CustomAgentState.FINISHED] signifies that the agent has completed its execution and is no longer operational.
+ *
+ * This enum is used to track the state of the agent and make decisions accordingly in the agent's lifecycle.
+ */
 @Serializable
 enum class CustomAgentState {
     START,

@@ -1,11 +1,14 @@
 package cc.unitmesh.devti.agent.model
 
 /**
- * Enumeration of possible response actions.
+ * CustomAgentResponseAction is an enumeration of possible response actions that can be taken by the
+ * CustomAgent when processing user input.
  *
- * @property Direct Direct display result
- * @property TextChunk Text splitting result
- * @property Flow Will be handled by the client
+ * @property Direct Direct display result - The CustomAgent will directly display the result to the user.
+ * @property TextChunk Text splitting result - The CustomAgent will split the result into text chunks for easier consumption.
+ * @property Flow Will be handled by the client - The response will be handled by the client application.
+ * @property Stream Stream response - The CustomAgent will stream the response to the user.
+ * @property WebView Display result in WebView - The CustomAgent will display the result in a WebView.
  */
 enum class CustomAgentResponseAction {
     /**
