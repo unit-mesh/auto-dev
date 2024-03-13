@@ -61,8 +61,8 @@ enum class ChatActionType {
             CUSTOM_AGENT -> ""
             CODE_REVIEW -> ""
             CREATE_GENIUS -> ""
-            GENERATE_TEST_DATA -> "Generate JSON data based on given $lang code and request/response info." +
-                    "So that we can use it to test for APIs. \n response format: \n" +
+            GENERATE_TEST_DATA -> "Generate JSON data (with markdown code block) based on given $lang code " +
+                    "and request/response info. So that we can use it to test for APIs. \n response format: \n" +
                     "  action: // request method," +
                     "  url: // the request url\n" +
                     "  body: // the request body \n" +
