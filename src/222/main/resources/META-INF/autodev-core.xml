@@ -216,8 +216,8 @@
                     description="Ask AI write this code">
             </action>
 
-            <action id="cc.unitmesh.idea.actions.GenTestDataAction"
-                    class="cc.unitmesh.idea.actions.GenTestDataAction" text="Generate Test Data (APIs)"
+            <action id="cc.unitmesh.devti.actions.chat.GenTestDataAction"
+                    class="cc.unitmesh.devti.actions.chat.GenTestDataAction" text="Generate Test Data (APIs)"
                     description="Ask AI generate test data">
 
                 <add-to-group group-id="GenerateGroup" anchor="last"/>
