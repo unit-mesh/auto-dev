@@ -29,7 +29,8 @@
 
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.AutoDevSettingsState"/>
 
-        <statusBarWidgetFactory id="AIAssistant" implementation="cc.unitmesh.devti.statusbar.AutoDevStatusBarWidgetFactory"/>
+        <statusBarWidgetFactory id="AIAssistant"
+                                implementation="cc.unitmesh.devti.statusbar.AutoDevStatusBarWidgetFactory"/>
 
         <runConfigurationProducer
                 implementation="cc.unitmesh.devti.runconfig.command.AutoDevFeatureConfigurationProducer"/>
@@ -49,13 +50,13 @@
                     icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                     factoryClass="cc.unitmesh.devti.gui.AutoDevToolWindowFactory"/>
 
-<!--        <toolWindow id="AutoDev Pair"-->
-<!--                    doNotActivateOnStart="true"-->
-<!--                    anchor="left"-->
-<!--                    secondary="true"-->
-<!--                    canCloseContents="false"-->
-<!--                    icon="cc.unitmesh.devti.AutoDevIcons.AI_PAIR"-->
-<!--                    factoryClass="cc.unitmesh.devti.gui.AutoDevPairToolWindowFactory"/>-->
+        <!--        <toolWindow id="AutoDev Pair"-->
+        <!--                    doNotActivateOnStart="true"-->
+        <!--                    anchor="left"-->
+        <!--                    secondary="true"-->
+        <!--                    canCloseContents="false"-->
+        <!--                    icon="cc.unitmesh.devti.AutoDevIcons.AI_PAIR"-->
+        <!--                    factoryClass="cc.unitmesh.devti.gui.AutoDevPairToolWindowFactory"/>-->
 
         <notificationGroup id="AI notification group" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
                            key="name"/>
@@ -72,6 +73,16 @@
         <daemon.intentionActionFilter
                 implementation="cc.unitmesh.devti.gui.snippet.error.CodeBlockIntentionActionFilter"/>
 
+<!--        <completion.contributor-->
+<!--                language="JSON"-->
+<!--                id="CustomAgentJsonCompletionContributor"-->
+<!--                implementationClass="cc.unitmesh.devti.custom.completion.CustomAgentJsonCompletionContributor"-->
+<!--                order="first, before JsonCompletionContributor"/>-->
+    </extensions>
+
+    <extensions defaultExtensionNs="JavaScript.JsonSchema">
+        <ProviderFactory implementation="cc.unitmesh.devti.custom.schema.AutoDevJsonSchemaProviderFactory"/>
+        <ProviderFactory implementation="cc.unitmesh.devti.custom.schema.AutoDevPromptJsonSchemaProviderFactory"/>
     </extensions>
 
     <extensionPoints>
@@ -136,7 +147,7 @@
 
         <extensionPoint qualifiedName="cc.unitmesh.layeredArchProvider"
                         interface="cc.unitmesh.devti.provider.architecture.LayeredArchProvider"
-                        dynamic="true"  />
+                        dynamic="true"/>
 
         <!-- TODO: find better way to share context -->
         <extensionPoint qualifiedName="cc.unitmesh.contextPrompter"
@@ -184,11 +195,6 @@
         </autoDevIntention>
 
         <chatContextProvider implementation="cc.unitmesh.devti.provider.builtin.LanguageContextProvider"/>
-    </extensions>
-
-    <extensions defaultExtensionNs="JavaScript.JsonSchema">
-        <ProviderFactory implementation="cc.unitmesh.devti.custom.schema.AutoDevJsonSchemaProviderFactory"/>
-        <ProviderFactory implementation="cc.unitmesh.devti.custom.schema.AutoDevPromptJsonSchemaProviderFactory"/>
     </extensions>
 
     <actions>
