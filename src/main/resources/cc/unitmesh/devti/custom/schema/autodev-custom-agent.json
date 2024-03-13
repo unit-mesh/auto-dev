@@ -16,20 +16,46 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["Bearer"]
+            "enum": [
+              "Bearer"
+            ]
           },
           "token": {
             "type": "string"
           }
         },
-        "required": ["type", "token"]
+        "required": [
+          "type",
+          "token"
+        ]
+      },
+      "connector": {
+        "type": "object",
+        "properties": {
+          "requestFormat": {
+            "type": "string",
+            "description": "JSONPath expression to specify the format of the request"
+          },
+          "responseFormat": {
+            "type": "string",
+            "description": "JSONPath expression to specify the format of the request"
+          }
+        }
       },
       "responseAction": {
         "type": "string",
-        "enum": ["Direct", "TextChunk", "WebView"]
+        "enum": [
+          "Direct",
+          "TextChunk",
+          "WebView"
+        ]
       }
     },
-    "required": ["name", "url", "responseAction"],
+    "required": [
+      "name",
+      "url",
+      "responseAction"
+    ],
     "additionalProperties": true
   }
 }
