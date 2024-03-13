@@ -103,6 +103,6 @@ NEWLINE= \n | \r | \r\n
 
 <LANG_ID> {
    "```"             { return CODE_BLOCK_START; }
-   {IDENTIFIER}      { yybegin(YYINITIAL); return LANGUAGE_ID;  }
+   {LANGUAGE_ID}     { return LANGUAGE_ID;  }
    [^]               { yypushback(1); yybegin(CODE_BLOCK); }
 }

@@ -20,6 +20,8 @@ Building upon the experience accumulated in our "[System Refactoring and Migrati
 
 Support language: Java.
 
+![AutoDev Living Documentation](https://unitmesh.cc/auto-dev/gen-test-data.png)
+
 Simply right-click on the Java Controller code, select "Generate Test Data (APIs)," and API test data will be generated.
 
 ### 2. Custom Prompt Integration
