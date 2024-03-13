@@ -194,7 +194,8 @@
         </group>
 
         <!-- For right click -->
-        <group id="org.intellij.sdk.action.GroupedActions" popup="true" text="AutoDev Chat" description="AutoDev chat">
+        <!-- TODO: refactor to dynamic group: https://plugins.jetbrains.com/docs/intellij/grouping-action.html#adding-child-actions-to-the-dynamic-group -->
+        <group id="AutoDevChatGroup" popup="true" text="AutoDev Chat" description="AutoDev chat">
             <action id="cc.unitmesh.devti.actions.chat.ExplainThisChatAction"
                     class="cc.unitmesh.devti.actions.chat.ExplainThisChatAction" text="Explain This"
                     description="Ask AI about this code">
@@ -213,6 +214,13 @@
             <action id="cc.unitmesh.devti.actions.chat.GenerateTestAction"
                     class="cc.unitmesh.devti.actions.chat.GenerateTestAction" text="Write Test for This"
                     description="Ask AI write this code">
+            </action>
+
+            <action id="cc.unitmesh.idea.actions.GenTestDataAction"
+                    class="cc.unitmesh.idea.actions.GenTestDataAction" text="Generate Test Data (APIs)"
+                    description="Ask AI generate test data">
+
+                <add-to-group group-id="GenerateGroup" anchor="last"/>
             </action>
 
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>

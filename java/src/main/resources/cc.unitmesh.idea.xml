@@ -60,16 +60,6 @@
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
-
-        <actions>
-            <group id="org.intellij.sdk.action.GroupedActions" popup="true" text="AutoDev Chat"
-                   description="AutoDev chat">
-                <action id="cc.unitmesh.idea.actions.GenTestDataAction"
-                        class="cc.unitmesh.idea.actions.GenTestDataAction" text="Generate Test Data (APIs)"
-                        description="Ask AI write this code">
-                </action>
-            </group>
-        </actions>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
