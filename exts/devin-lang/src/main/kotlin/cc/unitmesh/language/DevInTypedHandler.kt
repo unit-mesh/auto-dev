@@ -19,19 +19,17 @@ class DevInTypedHandler : TypedHandlerDelegate() {
 
         return when (charTyped) {
             '`' -> {
-                PsiDocumentManager.getInstance(project).commitDocument(editor.document)
-                for (caret in editor.caretModel.allCarets) {
-                    val offset = caret.offset
-                    if (offset == 0) {
-                        return Result.CONTINUE
-                    }
-
-                    val element = file.findElementAt(offset - 1)
-                    if (element?.elementType == DevInTypes.CODE_CONTENT || element?.elementType == DevInTypes.CODE_BLOCK_END) {
-                        return Result.CONTINUE
-                    }
+                val offset = editor.caretModel.primaryCaret.offset
+                if (offset == 0) {
+                    return Result.CONTINUE
                 }
 
+                val element = file.findElementAt(offset - 1)
+                if (element?.elementType == DevInTypes.CODE_CONTENT || element?.elementType == DevInTypes.CODE_BLOCK_END) {
+                    return Result.CONTINUE
+                }
+
+                PsiDocumentManager.getInstance(project).commitDocument(editor.document)
                 AutoPopupController.getInstance(project).autoPopupMemberLookup(editor, null)
                 return Result.STOP
             }

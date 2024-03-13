@@ -1,5 +1,6 @@
 package cc.unitmesh.language.completion
 
+import cc.unitmesh.devti.CodeFenceLanguageAliases
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
@@ -16,8 +17,8 @@ class CodeLanguageProvider : CompletionProvider<CompletionParameters>() {
         result: CompletionResultSet,
     ) {
         for (language in LanguageUtil.getInjectableLanguages()) {
-            val id = language.id
-            val handler = LookupElementBuilder.create(id)
+            val alias = CodeFenceLanguageAliases.findMainAlias(language.id)
+            val handler = LookupElementBuilder.create(alias)
                 .withIcon(createLanguageIcon(language))
                 .withTypeText(language.displayName, true)
                 .withInsertHandler(MyInsertHandler())
@@ -26,7 +27,7 @@ class CodeLanguageProvider : CompletionProvider<CompletionParameters>() {
         }
     }
 
-    fun createLanguageIcon(language: Language): Icon {
+    private fun createLanguageIcon(language: Language): Icon {
         return DeferredIconImpl(null, language, true) { curLanguage: Language -> curLanguage.associatedFileType?.icon }
     }
 
