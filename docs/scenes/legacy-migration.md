@@ -80,3 +80,7 @@ AutoDev has been supporting basic PL/SQL migration since version 1.5.5.
    - Generate Entity
    - Generate Test Cases
    - Generate Java Code
+
+Screenshot:
+
+![SQL Migration](https://unitmesh.cc/auto-dev/autodev-sql-migration.png)
