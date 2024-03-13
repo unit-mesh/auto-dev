@@ -35,7 +35,7 @@ IDENTIFIER=[a-zA-Z0-9][_\-a-zA-Z0-9]*
 VARIABLE_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
 AGENT_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
 COMMAND_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
-LANGUAGE_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
+LANGUAGE_ID=[a-zA-Z0-9][_\-a-zA-Z0-9 .]*
 
 TEXT_SEGMENT=[^$/@\n]+
 CODE_CONTENT=[^\n]+

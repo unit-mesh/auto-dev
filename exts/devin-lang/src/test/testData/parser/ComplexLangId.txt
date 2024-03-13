@@ -1,0 +1,8 @@
+DevInFile
+  CodeBlockElement(CODE)
+    PsiElement(DevInTokenType.CODE_BLOCK_START)('```')
+    PsiElement(DevInTokenType.LANGUAGE_ID)('typescript jsx')
+    PsiElement(DevInTokenType.NEWLINE)('\n')
+    ASTWrapperPsiElement(CODE_CONTENTS)
+      <empty list>
+    PsiElement(DevInTokenType.CODE_BLOCK_END)('```')
