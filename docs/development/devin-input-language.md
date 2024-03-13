@@ -1,9 +1,12 @@
 ---
 layout: default
 title: DevIn Input Language
-nav_order: 1
+nav_order: 4
 parent: Development
 ---
+
+AutoDev@1.7.1
+{: .label .label-yellow }
 
 # DevIn Input Language 
 
