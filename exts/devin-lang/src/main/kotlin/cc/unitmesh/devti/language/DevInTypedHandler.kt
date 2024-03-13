@@ -2,12 +2,14 @@
 package cc.unitmesh.devti.language
 
 import cc.unitmesh.devti.language.psi.DevInFile
+import cc.unitmesh.devti.language.psi.DevInTypes
 import com.intellij.codeInsight.AutoPopupController
 import com.intellij.codeInsight.editorActions.TypedHandlerDelegate
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
+import com.intellij.psi.util.elementType
 
 class DevInTypedHandler : TypedHandlerDelegate() {
     override fun checkAutoPopup(charTyped: Char, project: Project, editor: Editor, file: PsiFile): Result {
@@ -17,15 +19,15 @@ class DevInTypedHandler : TypedHandlerDelegate() {
 
         return when (charTyped) {
             '`' -> {
-//                val offset = editor.caretModel.primaryCaret.offset
-//                if (offset == 0) {
-//                    return Result.CONTINUE
-//                }
-//
-//                val element = file.findElementAt(offset - 1)
-//                if (element?.elementType == DevInTypes.CODE_CONTENT || element?.elementType == DevInTypes.CODE_BLOCK_END) {
-//                    return Result.CONTINUE
-//                }
+                val offset = editor.caretModel.primaryCaret.offset
+                if (offset == 0) {
+                    return Result.CONTINUE
+                }
+
+                val element = file.findElementAt(offset - 1)
+                if (element?.elementType == DevInTypes.CODE_CONTENT || element?.elementType == DevInTypes.CODE_BLOCK_END) {
+                    return Result.CONTINUE
+                }
 
                 PsiDocumentManager.getInstance(project).commitDocument(editor.document)
                 AutoPopupController.getInstance(project).autoPopupMemberLookup(editor, null)

@@ -6,14 +6,12 @@ import com.intellij.codeInsight.completion.CompletionContributor
 import com.intellij.codeInsight.completion.CompletionInitializationContext
 import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.patterns.PlatformPatterns.psiElement
-import com.intellij.patterns.PsiElementPattern
-import com.intellij.psi.PsiElement
 
 class DevInCompletionContributor : CompletionContributor() {
     private val INPUT_DUMMY_IDENTIFIER = "DevInDummy"
 
     init {
-        extend(CompletionType.BASIC, declarationPattern(), CodeLanguageProvider())
+        extend(CompletionType.BASIC, psiElement(DevInTypes.LANGUAGE_ID), CodeLanguageProvider())
         extend(CompletionType.BASIC, psiElement(DevInTypes.VARIABLE_ID), CustomVariableProvider())
     }
 
@@ -22,8 +20,4 @@ class DevInCompletionContributor : CompletionContributor() {
             context.dummyIdentifier = INPUT_DUMMY_IDENTIFIER
         }
     }
-
-    fun declarationPattern(): PsiElementPattern.Capture<PsiElement> =
-        psiElement()
-            .and(psiElement(DevInTypes.LANGUAGE_ID))
 }
