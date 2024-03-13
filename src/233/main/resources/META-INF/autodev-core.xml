@@ -186,6 +186,10 @@
         <chatContextProvider implementation="cc.unitmesh.devti.provider.builtin.LanguageContextProvider"/>
     </extensions>
 
+    <extensions defaultExtensionNs="JavaScript.JsonSchema">
+        <ProviderFactory implementation="cc.unitmesh.devti.gui.component.AutoDevJsonJsonSchemaProviderFactory"/>
+    </extensions>
+
     <actions>
         <group id="AutoDevIntentionsActionGroup" class="cc.unitmesh.devti.intentions.IntentionsActionGroup"
                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT" searchable="false">
