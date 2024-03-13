@@ -1,10 +1,16 @@
 package cc.unitmesh.devti.settings
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.custom.schema.CUSTOM_AGENT_FILE_NAME
+import cc.unitmesh.devti.custom.schema.CUSTOM_PROMPTS_FILE_NAME
 import com.intellij.json.JsonLanguage
+import com.intellij.lang.Language
+import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.colors.EditorColorsUtil
 import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
+import com.intellij.psi.PsiFile
 import com.intellij.ui.LanguageTextField
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.FormBuilder
@@ -47,7 +53,17 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
 
     val project = ProjectManager.getInstance().openProjects.firstOrNull()
     private val customEnginePrompt by lazy {
-        object : LanguageTextField(JsonLanguage.INSTANCE, project, settings.customPrompts) {
+        object : LanguageTextField(JsonLanguage.INSTANCE, project, settings.customPrompts,
+            object : SimpleDocumentCreator() {
+                override fun createDocument(value: String?, language: Language?, project: Project?): Document {
+                    return createDocument(value, language, project, this)
+                }
+
+                override fun customizePsiFile(file: PsiFile?) {
+                    file?.name = CUSTOM_PROMPTS_FILE_NAME
+                }
+            }
+        ) {
             override fun createEditor(): EditorEx {
 
                 return super.createEditor().apply {
@@ -56,16 +72,15 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
                     setVerticalScrollbarVisible(true)
                     setPlaceholder(AutoDevBundle.message("autodev.custom.prompt.placeholder"))
 
-
                     val scheme = EditorColorsUtil.getColorSchemeForBackground(this.colorsScheme.defaultBackground)
                     this.colorsScheme = this.createBoundColorSchemeDelegate(scheme)
+
+                    val metrics: FontMetrics = getFontMetrics(font)
+                    val columnWidth = metrics.charWidth('m')
+                    setOneLineMode(false)
+                    preferredSize = Dimension(25 * columnWidth, 25 * metrics.height)
                 }
             }
-        }.apply {
-            val metrics: FontMetrics = getFontMetrics(font)
-            val columnWidth = metrics.charWidth('m')
-            setOneLineMode(false)
-            preferredSize = Dimension(25 * columnWidth, 25 * metrics.height)
         }
     }
 

@@ -30,6 +30,6 @@
       }
     },
     "required": ["name", "url", "responseAction"],
-    "additionalProperties": false
+    "additionalProperties": true
   }
 }
