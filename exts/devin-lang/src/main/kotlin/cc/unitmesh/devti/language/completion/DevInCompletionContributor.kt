@@ -5,12 +5,9 @@ import cc.unitmesh.devti.language.psi.DevInTypes
 import com.intellij.codeInsight.completion.CompletionContributor
 import com.intellij.codeInsight.completion.CompletionInitializationContext
 import com.intellij.codeInsight.completion.CompletionType
-import com.intellij.patterns.*
 import com.intellij.patterns.PlatformPatterns.psiElement
+import com.intellij.patterns.PsiElementPattern
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiWhiteSpace
-import com.intellij.psi.tree.TokenSet
-import com.intellij.util.ProcessingContext
 
 class DevInCompletionContributor : CompletionContributor() {
     private val INPUT_DUMMY_IDENTIFIER = "DevInDummy"
