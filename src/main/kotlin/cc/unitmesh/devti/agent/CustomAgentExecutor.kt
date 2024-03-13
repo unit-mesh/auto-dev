@@ -25,7 +25,7 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor(project) {
     override var requestFormat: String = ""
     override var responseFormat: String = ""
 
-    fun execute(promptText: String, agent: CustomAgentConfig): Flow<String> {
+    fun execute(promptText: String, agent: CustomAgentConfig): Flow<String>? {
         this.requestFormat = agent.connector?.requestFormat ?: this.requestFormat
         this.responseFormat = agent.connector?.responseFormat ?: this.responseFormat
 

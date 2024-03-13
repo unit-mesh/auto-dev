@@ -9,10 +9,7 @@ class WebBlock(val msg: CompletableMessage) : AbstractMessageBlock(msg) {
     override val type: MessageBlockType = MessageBlockType.PlainText
 }
 
-class WebBlockView(
-    private val block: WebBlock,
-    private val project: Project,
-) : MessageBlockView {
+class WebBlockView(private val block: WebBlock, private val project: Project) : MessageBlockView {
     private val webViewWindow = WebViewWindow()
 
     override fun initialize() {
