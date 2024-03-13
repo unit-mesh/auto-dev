@@ -1,7 +1,7 @@
-package cc.unitmesh.language.highlight
+package cc.unitmesh.devti.language.highlight
 
-import cc.unitmesh.language.lexer.DevInLexerAdapter
-import cc.unitmesh.language.psi.DevInTypes
+import cc.unitmesh.devti.language.lexer.DevInLexerAdapter
+import cc.unitmesh.devti.language.psi.DevInTypes
 import com.intellij.lexer.Lexer
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.editor.colors.TextAttributesKey

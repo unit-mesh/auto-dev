@@ -1,6 +1,6 @@
 package cc.unitmesh.language
 
-import cc.unitmesh.language.parser.DevInParserDefinition
+import cc.unitmesh.devti.language.parser.DevInParserDefinition
 import com.intellij.testFramework.ParsingTestCase
 
 class DevInParsingTest : ParsingTestCase("parser", "devin", DevInParserDefinition()) {

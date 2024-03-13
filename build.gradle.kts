@@ -600,15 +600,15 @@ project(":exts:devin-lang") {
     tasks {
         generateLexer {
             sourceFile.set(file("src/grammar/DevInLexer.flex"))
-            targetOutputDir.set(file("src/gen/cc/unitmesh/language/lexer"))
+            targetOutputDir.set(file("src/gen/cc/unitmesh/devti/language/lexer"))
             purgeOldFiles.set(true)
         }
 
         generateParser {
             sourceFile.set(file("src/grammar/DevInParser.bnf"))
             targetRootOutputDir.set(file("src/gen"))
-            pathToParser.set("cc/unitmesh/language/parser/DevInParser.java")
-            pathToPsiRoot.set("cc/unitmesh/language/psi")
+            pathToParser.set("cc/unitmesh/devti/language/parser/DevInParser.java")
+            pathToPsiRoot.set("cc/unitmesh/devti/language/psi")
             purgeOldFiles.set(true)
         }
 

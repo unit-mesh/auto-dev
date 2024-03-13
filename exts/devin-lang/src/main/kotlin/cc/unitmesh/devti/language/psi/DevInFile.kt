@@ -1,7 +1,7 @@
-package cc.unitmesh.language.psi
+package cc.unitmesh.devti.language.psi
 
-import cc.unitmesh.language.DevInFileType
-import cc.unitmesh.language.DevInLanguage
+import cc.unitmesh.devti.language.DevInFileType
+import cc.unitmesh.devti.language.DevInLanguage
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.psi.FileViewProvider

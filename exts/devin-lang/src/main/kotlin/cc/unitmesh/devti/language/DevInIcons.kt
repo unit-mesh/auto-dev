@@ -1,4 +1,4 @@
-package cc.unitmesh.language
+package cc.unitmesh.devti.language
 
 import com.intellij.openapi.util.IconLoader
 import javax.swing.Icon

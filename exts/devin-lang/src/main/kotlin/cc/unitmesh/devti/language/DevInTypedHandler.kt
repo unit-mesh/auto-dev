@@ -1,8 +1,8 @@
 // Copyright 2000-2021 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
-package cc.unitmesh.language
+package cc.unitmesh.devti.language
 
-import cc.unitmesh.language.psi.DevInFile
-import cc.unitmesh.language.psi.DevInTypes
+import cc.unitmesh.devti.language.psi.DevInFile
+import cc.unitmesh.devti.language.psi.DevInTypes
 import com.intellij.codeInsight.AutoPopupController
 import com.intellij.codeInsight.editorActions.TypedHandlerDelegate
 import com.intellij.openapi.editor.Editor

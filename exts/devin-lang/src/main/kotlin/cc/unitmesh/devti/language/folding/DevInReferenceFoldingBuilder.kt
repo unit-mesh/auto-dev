@@ -1,6 +1,6 @@
-package cc.unitmesh.language.folding
+package cc.unitmesh.devti.language.folding
 
-import cc.unitmesh.language.psi.DevInTypes
+import cc.unitmesh.devti.language.psi.DevInTypes
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor

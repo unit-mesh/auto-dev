@@ -1,7 +1,7 @@
 // Copyright 2000-2021 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
-package cc.unitmesh.language.parser
+package cc.unitmesh.devti.language.parser
 
-import cc.unitmesh.language.psi.DevInTypes
+import cc.unitmesh.devti.language.psi.DevInTypes
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.util.TextRange

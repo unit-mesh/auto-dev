@@ -1,9 +1,9 @@
-package cc.unitmesh.language.parser
+package cc.unitmesh.devti.language.parser
 
-import cc.unitmesh.language.DevInLanguage
-import cc.unitmesh.language.lexer.DevInLexerAdapter
-import cc.unitmesh.language.psi.DevInFile
-import cc.unitmesh.language.psi.DevInTypes
+import cc.unitmesh.devti.language.DevInLanguage
+import cc.unitmesh.devti.language.lexer.DevInLexerAdapter
+import cc.unitmesh.devti.language.psi.DevInFile
+import cc.unitmesh.devti.language.psi.DevInTypes
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
 import com.intellij.lang.ParserDefinition

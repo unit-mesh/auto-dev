@@ -1,6 +1,6 @@
-package cc.unitmesh.language.lexer
+package cc.unitmesh.devti.language.lexer
 
-import cc.unitmesh.language.DevInLanguage
+import cc.unitmesh.devti.language.DevInLanguage
 import com.intellij.psi.tree.IElementType
 import org.jetbrains.annotations.NonNls
 

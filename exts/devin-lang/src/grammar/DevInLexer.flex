@@ -1,8 +1,8 @@
-package cc.unitmesh.language.lexer;
+package cc.unitmesh.devti.language.lexer;
 
 import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
-import static cc.unitmesh.language.psi.DevInTypes.*;
+import static cc.unitmesh.devti.language.psi.DevInTypes.*;
 import com.intellij.psi.TokenType;
 
 %%

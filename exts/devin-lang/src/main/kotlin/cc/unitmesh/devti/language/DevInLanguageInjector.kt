@@ -1,9 +1,9 @@
 // Copyright 2000-2021 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
-package cc.unitmesh.language
+package cc.unitmesh.devti.language
 
 import cc.unitmesh.devti.util.parser.Code.Companion.findLanguage
-import cc.unitmesh.language.parser.CodeBlockElement
-import cc.unitmesh.language.psi.DevInTypes
+import cc.unitmesh.devti.language.parser.CodeBlockElement
+import cc.unitmesh.devti.language.psi.DevInTypes
 import com.intellij.lang.Language
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.InjectedLanguagePlaces
@@ -24,7 +24,7 @@ class DevInLanguageInjector : LanguageInjector {
 
         val languageIdentifier = host.getLanguageId()
         val text = languageIdentifier?.text ?: return
-        val language = findLanguage(text) ?: return
+        val language = findLanguage(text)
 
         val contentList = CodeBlockElement.obtainFenceContent(host) ?: return
         if (contentList.isEmpty()) {

@@ -1,4 +1,4 @@
-package cc.unitmesh.language
+package cc.unitmesh.devti.language
 
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.fileTypes.LanguageFileType
