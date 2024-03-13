@@ -22,9 +22,11 @@ import com.intellij.psi.TokenType;
 %eof{  return;
 %eof}
 
+%s YYUSED
 %s AGENT_BLOCK
 %s VARIABLE_BLOCK
 %s COMMAND_BLOCK
+
 %s CODE_BLOCK
 %s LANG_ID
 
@@ -65,19 +67,49 @@ NEWLINE= \n | \r | \r\n
 
         return CODE_CONTENT;
     }
+
+    private IElementType content() {
+        String text = yytext().toString().trim();
+        if (isCodeStart == true && text.equals("```")) {
+            return codeContent();
+        }
+
+        if (isCodeStart == false && text.startsWith("```")) {
+            isCodeStart = true;
+            yypushback(yylength() - 3);
+            yybegin(LANG_ID);
+
+            return CODE_BLOCK_START;
+        }
+
+        if (isCodeStart) {
+            return CODE_CONTENT;
+        } else {
+            yypushback(yylength());
+            yybegin(YYUSED);
+
+            return TEXT_SEGMENT;
+        }
+    }
 %}
 
 %%
 <YYINITIAL> {
-  "@"                  { if(!isCodeStart) { yybegin(AGENT_BLOCK); return AGENT_START; } else { yypushback(1); yybegin(CODE_BLOCK); }}
-  "/"                  { if(!isCodeStart) { yybegin(COMMAND_BLOCK); return COMMAND_START; } else { yypushback(1); yybegin(CODE_BLOCK); }}
-  "$"                  { if(!isCodeStart) { yybegin(VARIABLE_BLOCK); return VARIABLE_START; } else { yypushback(1); yybegin(CODE_BLOCK); }}
-
-  "```" {IDENTIFIER}?  { yybegin(LANG_ID); if (isCodeStart == true) { isCodeStart = false; return CODE_BLOCK_END; } else { isCodeStart = true; }; yypushback(yylength()); }
-
-  {TEXT_SEGMENT}       { if(isCodeStart) { return codeContent(); } else { return TEXT_SEGMENT; } }
+  {CODE_CONTENT}       { return content(); }
   {NEWLINE}            { return NEWLINE;  }
   [^]                  { return TokenType.BAD_CHARACTER; }
+}
+
+<YYUSED> {
+  "@"                     { yybegin(AGENT_BLOCK); return AGENT_START; }
+  "/"                     { yybegin(COMMAND_BLOCK); return COMMAND_START; }
+  "$"                     { yybegin(VARIABLE_BLOCK); return VARIABLE_START; }
+
+  "```" {IDENTIFIER}?     { yybegin(LANG_ID); if (isCodeStart == true) { isCodeStart = false; return CODE_BLOCK_END; } else { isCodeStart = true; }; yypushback(yylength()); }
+
+  {NEWLINE}               { return NEWLINE; }
+  {TEXT_SEGMENT}          { return TEXT_SEGMENT; }
+  [^]                     {  }
 }
 
 <AGENT_BLOCK> {

@@ -24,6 +24,9 @@
     CODE_CONTENT       = "CODE_CONTENT"
     IDENTIFIER         = "IDENTIFIER"
     LANGUAGE_ID        = "LANGUAGE_ID"
+    VARIABLE_ID        = "VARIABLE_ID"
+    COMMAND_ID         = "COMMAND_ID"
+    AGENT_ID           = "AGENT_ID"
   ]
 }
 

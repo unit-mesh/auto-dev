@@ -20,6 +20,8 @@ Building upon the experience accumulated in our "[System Refactoring and Migrati
 
 Support language: Java.
 
+Screenshot EXAMPLE：
+
 ![AutoDev Living Documentation](https://unitmesh.cc/auto-dev/gen-test-data.png)
 
 Simply right-click on the Java Controller code, select "Generate Test Data (APIs)," and API test data will be generated.
@@ -50,6 +52,8 @@ goto: `Settings` -> `Tools` -> `AutoDev` -> `Customize Engine prompt`, and add y
 Select the corresponding code, right-click, and choose `Generate Documentation` to generate documentation.
 
 ## Use [Custom Living Documentation](/custom/living-documentation) for generating dynamic documentation.
+
+Screenshot EXAMPLE：
 
 ![AutoDev Living Documentation](https://unitmesh.cc/auto-dev/autodev-living-doc.png)
 
@@ -87,6 +91,6 @@ AutoDev has been supporting basic PL/SQL migration since version 1.5.5.
    - Generate Test Cases
    - Generate Java Code
 
-Screenshot:
+Screenshot EXAMPLE：
 
 ![SQL Migration](https://unitmesh.cc/auto-dev/autodev-sql-migration.png)
