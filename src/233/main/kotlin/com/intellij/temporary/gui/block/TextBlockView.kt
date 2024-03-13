@@ -32,8 +32,8 @@ class TextBlockView(private val block: MessageBlock) : MessageBlockView {
             editorPane.invalidate()
         }
 
-        getBlock().addTextListener(messagePartTextListener)
-        messagePartTextListener.onTextChanged(getBlock().getTextContent())
+        block.addTextListener(messagePartTextListener)
+        messagePartTextListener.onTextChanged(block.getTextContent())
     }
 
     override fun getBlock(): MessageBlock = block
@@ -56,7 +56,7 @@ class TextBlockView(private val block: MessageBlock) : MessageBlockView {
     }
 
     private fun parseText(txt: String): String {
-        if (getBlock().getMessage().getRole() === ChatRole.Assistant) {
+        if (block.getMessage().getRole() === ChatRole.Assistant) {
             return convertMarkdownToHtml(txt)
         }
 
