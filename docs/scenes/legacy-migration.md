@@ -16,11 +16,13 @@ Building upon the experience accumulated in our "[System Refactoring and Migrati
 
 ## Generating API Test Data from Existing Code
 
-Default support for the Spring framework.
+### 1. Generate API Test Data
+
+Support language: Java.
 
 Simply right-click on the Java Controller code, select "Generate Test Data (APIs)," and API test data will be generated.
 
-### Custom Prompt Integration
+### 2. Custom Prompt Integration
 
 goto: `Settings` -> `Tools` -> `AutoDev` -> `Customize Engine prompt`, and add your own prompt. For example:
 
@@ -46,6 +48,8 @@ goto: `Settings` -> `Tools` -> `AutoDev` -> `Customize Engine prompt`, and add y
 Select the corresponding code, right-click, and choose `Generate Documentation` to generate documentation.
 
 ## Use [Custom Living Documentation](/custom/living-documentation) for generating dynamic documentation.
+
+![AutoDev Living Documentation](https://unitmesh.cc/auto-dev/autodev-living-doc.png)
 
 Configuration: `Settings` -> `Tools` -> `AutoDev` -> `Customize Engine prompt`, add custom formats for living documentation. Example:
 
