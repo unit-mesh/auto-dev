@@ -187,7 +187,7 @@
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
-        <ProviderFactory implementation="cc.unitmesh.devti.gui.component.AutoDevJsonJsonSchemaProviderFactory"/>
+        <ProviderFactory implementation="cc.unitmesh.devti.custom.schema.AutoDevJsonJsonSchemaProviderFactory"/>
     </extensions>
 
     <actions>
