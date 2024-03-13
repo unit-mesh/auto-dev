@@ -25,7 +25,7 @@ class CustomAgentSchemaFileProvider(val project: Project): JsonSchemaFileProvide
     override fun getName(): String = "AutoDevCustomAgentFile"
 
     override fun getSchemaFile(): VirtualFile? {
-        return JsonSchemaProviderFactory.getResourceFile(this::class.java, schemaFileName)
+        return JsonSchemaProviderFactory.getResourceFile(this::class.java, customAgentSchemaFile)
     }
 
     override fun getSchemaType(): SchemaType {
@@ -33,6 +33,6 @@ class CustomAgentSchemaFileProvider(val project: Project): JsonSchemaFileProvide
     }
 
     companion object {
-        private const val schemaFileName = "autodev-custom-agent.json"
+        private const val customAgentSchemaFile = "autodev-custom-agent.json"
     }
 }
