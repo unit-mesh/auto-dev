@@ -7,4 +7,7 @@ object MvcUtil {
 
     fun isService(fileName: String, lang: String) =
         fileName.endsWith("Service.$${lang.lowercase()}") || fileName.endsWith("ServiceImpl.$${lang.lowercase()}")
+
+    fun isRepository(fileName: String, lang: String) =
+        fileName.endsWith("Repository.$${lang.lowercase()}") || fileName.endsWith("Repo.$${lang.lowercase()}")
 }
