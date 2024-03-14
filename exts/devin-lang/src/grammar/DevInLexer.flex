@@ -24,6 +24,7 @@ import com.intellij.psi.TokenType;
 
 %s YYUSED
 %s AGENT_BLOCK
+%s AGENT_VALUE_BLOCK
 %s VARIABLE_BLOCK
 %s COMMAND_BLOCK
 
@@ -46,7 +47,6 @@ COLON=:
 
 %{
     private boolean isCodeStart = false;
-    private boolean hasMatchAgentId = false;
 %}
 
 %{
@@ -99,9 +99,9 @@ COLON=:
 
 %%
 <YYINITIAL> {
-  {CODE_CONTENT}       { return content(); }
-  {NEWLINE}            { return NEWLINE;  }
-  [^]                  { return TokenType.BAD_CHARACTER; }
+  {CODE_CONTENT}          { return content(); }
+  {NEWLINE}               { return NEWLINE;  }
+  [^]                     { return TokenType.BAD_CHARACTER; }
 }
 
 <YYUSED> {
@@ -117,11 +117,16 @@ COLON=:
 }
 
 <AGENT_BLOCK> {
-  {AGENT_ID}              { if (hasMatchAgentId == false) { hasMatchAgentId = true; return AGENT_ID; } else { hasMatchAgentId = false; return PROPERTY_VALUE; } }
-  {COLON}                 { return COLON; }
+  {AGENT_ID}              { return AGENT_ID; }
+  {COLON}                 { yybegin(AGENT_VALUE_BLOCK); return COLON; }
+  " "                     { yypushback(1); yybegin(YYINITIAL); }
+  [^]                     { yypushback(1); yybegin(YYINITIAL); }
+}
+
+<AGENT_VALUE_BLOCK> {
   {PROPERTY_VALUE}        { return PROPERTY_VALUE; }
-  " "                     { hasMatchAgentId = false; yypushback(1); yybegin(YYINITIAL); }
-  [^]                     { hasMatchAgentId = false; yypushback(1); yybegin(YYINITIAL); }
+  " "                     { yypushback(1); yybegin(YYINITIAL); }
+  [^]                     { yypushback(1); yybegin(YYINITIAL); }
 }
 
 <COMMAND_BLOCK> {
