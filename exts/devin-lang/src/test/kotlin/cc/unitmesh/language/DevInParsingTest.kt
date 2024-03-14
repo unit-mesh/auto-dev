@@ -31,4 +31,8 @@ class DevInParsingTest : ParsingTestCase("parser", "devin", DevInParserDefinitio
     fun testComplexLangId() {
         doTest(true)
     }
+
+    fun testAutoCommand() {
+        doTest(true)
+    }
 }
