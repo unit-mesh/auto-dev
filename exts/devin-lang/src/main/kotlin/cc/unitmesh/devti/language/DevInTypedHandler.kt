@@ -52,6 +52,12 @@ class DevInTypedHandler : TypedHandlerDelegate() {
                 Result.STOP
             }
 
+            ':' -> {
+                PsiDocumentManager.getInstance(project).commitDocument(editor.document)
+                AutoPopupController.getInstance(project).autoPopupMemberLookup(editor, null)
+                Result.STOP
+            }
+
             else -> {
                 Result.CONTINUE
             }

@@ -32,8 +32,8 @@ class BuiltinAgentProvider : CompletionProvider<CompletionParameters>() {
                 .withIcon(DevInIcons.DEFAULT)
                 .withTypeText(it.description, true)
                 .withInsertHandler { context, _ ->
-                    context.document.insertString(context.tailOffset, ":")
-                    context.editor.caretModel.moveCaretRelatively(0, 1, false, false, false)
+//                    context.document.insertString(context.tailOffset, ":")
+//                    context.editor.caretModel.moveCaretRelatively(0, 1, false, false, false)
                 }
 
             result.addElement(withTypeText)
