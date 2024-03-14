@@ -17,7 +17,7 @@ class DevInCustomVariableFoldingBuilder : FoldingBuilderEx() {
         val descriptors = mutableListOf<FoldingDescriptor>()
         root.accept(object : PsiElementVisitor() {
             override fun visitElement(element: PsiElement) {
-                if (element.elementType == DevInTypes.VARIABLE_ID || element.elementType == DevInTypes.PROPERTY_VALUE) {
+                if (element.elementType == DevInTypes.VARIABLE_ID) {
                     descriptors.add(FoldingDescriptor(element.node, element.textRange))
                 }
                 element.acceptChildren(this)

@@ -11,27 +11,27 @@ import com.intellij.psi.util.elementType
 
 class DevInFileReferenceFoldingBuilder : FoldingBuilderEx() {
     override fun isCollapsedByDefault(node: ASTNode): Boolean = true
-    override fun getPlaceholderText(node: ASTNode): String {
-        val parent = node.treeParent ?: return node.text
-        val prop = parent.findChildByType(DevInTypes.PROPERTY_VALUE) ?: return node.text
-
-        return prop.text.split("/").last()
-    }
+    override fun getPlaceholderText(node: ASTNode): String =
+        if (node.elementType == DevInTypes.PROPERTY_VALUE) {
+            node.text.split("/").last()
+        } else {
+            node.text
+        }
 
     override fun buildFoldRegions(root: PsiElement, document: Document, quick: Boolean): Array<FoldingDescriptor> {
-        val descriptors = ArrayList<FoldingDescriptor>()
+        val descriptors = arrayListOf<FoldingDescriptor>()
         root.accept(object : PsiElementVisitor() {
             override fun visitElement(element: PsiElement) {
-                if (element.elementType == DevInTypes.AGENT_ID && element.text == "file" && isFileReference(element)) {
-                    descriptors.add(FoldingDescriptor(element.node, element.textRange, null, emptySet(), true))
+                if (element.elementType == DevInTypes.PROPERTY_VALUE) {
+                    val agentId = element.parent?.findElementAt(1)?.text
+                    if (agentId == "file" && element.text.contains("/")) {
+                        descriptors.add(
+                            FoldingDescriptor(element.node, element.textRange, null, emptySet(), true)
+                        )
+                    }
                 }
 
                 element.acceptChildren(this)
-            }
-
-            private fun isFileReference(element: PsiElement): Boolean {
-                val text = element.text
-                return text.split("/").isNotEmpty()
             }
         })
 
