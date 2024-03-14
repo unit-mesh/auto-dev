@@ -25,9 +25,7 @@ class DevInFileReferenceFoldingBuilder : FoldingBuilderEx() {
                 if (element.elementType == DevInTypes.PROPERTY_VALUE) {
                     val agentId = element.parent?.findElementAt(1)?.text
                     if (agentId == "file" && element.text.contains("/")) {
-                        descriptors.add(
-                            FoldingDescriptor(element.node, element.textRange, null, emptySet(), true)
-                        )
+                        descriptors.add(FoldingDescriptor(element.node, element.textRange))
                     }
                 }
 
