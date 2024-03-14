@@ -25,6 +25,7 @@ class DevInSyntaxHighlighter : SyntaxHighlighter {
 
             ATTRIBUTES[DevInTypes.AGENT_START] = DefaultLanguageHighlighterColors.KEYWORD
             ATTRIBUTES[DevInTypes.AGENT_ID] = DefaultLanguageHighlighterColors.NUMBER
+            ATTRIBUTES[DevInTypes.PROPERTY_VALUE] = DefaultLanguageHighlighterColors.CONSTANT
 
             ATTRIBUTES[DevInTypes.COMMAND_START] = DefaultLanguageHighlighterColors.KEYWORD
             ATTRIBUTES[DevInTypes.COMMAND_ID] = DefaultLanguageHighlighterColors.NUMBER
