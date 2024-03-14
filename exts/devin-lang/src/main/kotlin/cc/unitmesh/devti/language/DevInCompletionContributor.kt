@@ -20,12 +20,12 @@ class DevInCompletionContributor : CompletionContributor() {
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.AGENT_ID), BuiltinAgentProvider())
         extend(
             CompletionType.BASIC,
-            valuePattern(FileReferenceLanguageProvider.FILE_REF_TYPE),
+            valuePattern(BuiltinAgent.FILE.agentName),
             FileReferenceLanguageProvider()
         )
         extend(
             CompletionType.BASIC,
-            valuePattern(RevisionReferenceLanguageProvider.REV_REF_TYPE),
+            valuePattern(BuiltinAgent.REV.agentName),
             RevisionReferenceLanguageProvider()
         )
     }

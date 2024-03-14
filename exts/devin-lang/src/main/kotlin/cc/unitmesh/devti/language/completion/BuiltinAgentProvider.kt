@@ -7,7 +7,7 @@ import com.intellij.util.ProcessingContext
 
 enum class BuiltinAgent(val agentName: String, val description: String) {
     FILE("file", "Read the content of a file"),
-    REV("rev", "Read git change by revision"),
+    REV("rev", "Read git change by file"),
     SYMBOL("symbol", "Read content by Java/Kotlin canonicalName"),
     WRITE("write", "Write content to a file, format: /write:/path/to/file:L1-C2"),
     ;
