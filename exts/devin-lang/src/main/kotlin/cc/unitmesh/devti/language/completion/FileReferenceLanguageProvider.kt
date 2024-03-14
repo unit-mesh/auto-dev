@@ -5,13 +5,12 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.ide.presentation.VirtualFilePresentation
 import com.intellij.openapi.fileEditor.impl.EditorHistoryManager
 import com.intellij.openapi.project.guessProjectDir
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.ProcessingContext
 import java.io.File
 
 class FileReferenceLanguageProvider : CompletionProvider<CompletionParameters>() {
     companion object {
-        const val REF_TYPE = "file"
+        const val FILE_REF_TYPE = "file"
     }
 
     override fun addCompletions(
@@ -21,13 +20,11 @@ class FileReferenceLanguageProvider : CompletionProvider<CompletionParameters>()
     ) {
         val project = parameters.position.project
         val basePath = project.guessProjectDir()?.path ?: return
-
-        val editorHistoryManager = EditorHistoryManager.getInstance(project)
-        val fileList: List<VirtualFile> = editorHistoryManager.fileList
+        val recentlyFiles = EditorHistoryManager.getInstance(project).fileList
 
         // TODO: file should be in project
 
-        fileList.forEach {
+        recentlyFiles.forEach {
             val removePrefix = it.path.removePrefix(basePath)
             val relativePath: String = removePrefix.removePrefix(File.separator)
 
