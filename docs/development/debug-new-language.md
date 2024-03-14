@@ -121,6 +121,6 @@ Due to JetBrains' crafty move, there are two different versions of the Rust IDE 
 - **Under 233: Deprecated Rust**
   - check latest available version here https://plugins.jetbrains.com/plugin/8182--deprecated-rust
   - rustPlugin=org.rust.lang:0.4.185.5086-222
-- **Above 233: Official Rust
+- **Above 233: Official Rust**
   - check latest available version here https://plugins.jetbrains.com/plugin/22407-rust/versions
   - rustPlugin=com.jetbrains.rust:233.21799.284
