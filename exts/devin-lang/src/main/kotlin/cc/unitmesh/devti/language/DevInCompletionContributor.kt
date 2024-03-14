@@ -23,11 +23,11 @@ class DevInCompletionContributor : CompletionContributor() {
             valuePattern(BuiltinAgent.FILE.agentName),
             FileReferenceLanguageProvider()
         )
-//        extend(
-//            CompletionType.BASIC,
-//            valuePattern(BuiltinAgent.REV.agentName),
-//            RevisionReferenceLanguageProvider()
-//        )
+        extend(
+            CompletionType.BASIC,
+            valuePattern(BuiltinAgent.REV.agentName),
+            RevisionReferenceLanguageProvider()
+        )
     }
 
     override fun beforeCompletion(context: CompletionInitializationContext) {

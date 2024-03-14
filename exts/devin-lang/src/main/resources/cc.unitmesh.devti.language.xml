@@ -18,6 +18,7 @@
         <typedHandler implementation="cc.unitmesh.devti.language.DevInTypedHandler"/>
 
         <completion.contributor language="DevIn"
+                                order="last"
                                 implementationClass="cc.unitmesh.devti.language.DevInCompletionContributor"/>
 
         <lang.foldingBuilder language="DevIn"

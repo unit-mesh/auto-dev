@@ -5,6 +5,9 @@ import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.util.ProcessingContext
 import git4idea.GitCommit
@@ -23,16 +26,20 @@ class RevisionReferenceLanguageProvider : CompletionProvider<CompletionParameter
         val branchName = repository.currentBranchName
 
         try {
-            val commits: List<GitCommit> = GitHistoryUtils.history(project, repository.root, branchName)
-            commits.forEach {
-                val element = LookupElementBuilder.create(it.fullMessage)
-                    .withIcon(AllIcons.Vcs.Branch)
-                    .withTypeText(it.id.toShortString(), true)
+            object : Task.Backgroundable(project, "loading git message", false) {
+                override fun run(indicator: ProgressIndicator) {
+                    val commits: List<GitCommit> = GitHistoryUtils.history(project, repository.root, branchName)
+                    commits.forEach {
+                        val element = LookupElementBuilder.create(it.id.toShortString())
+                            .withIcon(AllIcons.Vcs.Branch)
+                            .withTypeText(it.fullMessage, true)
 
-                result.addElement(element)
-            }
+                        result.addElement(element)
+                    }
+                }
+            }.queue()
         } catch (e: Exception) {
-//                e.printStackTrace()
+            e.printStackTrace()
         }
     }
 }
