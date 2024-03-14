@@ -11,7 +11,7 @@ class DevInCompletionContributor : CompletionContributor() {
     private val INPUT_DUMMY_IDENTIFIER = "DevInDummy"
 
     init {
-        extend(CompletionType.BASIC, psiElement(DevInTypes.LANGUAGE_ID), CodeLanguageProvider())
+        extend(CompletionType.BASIC, psiElement(DevInTypes.LANGUAGE_ID), CodeFenceLanguageProvider())
         extend(CompletionType.BASIC, psiElement(DevInTypes.VARIABLE_ID), CustomVariableProvider())
     }
 
