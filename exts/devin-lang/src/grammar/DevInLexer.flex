@@ -38,14 +38,15 @@ COMMAND_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
 LANGUAGE_ID=[a-zA-Z0-9][_\-a-zA-Z0-9 .]*
 
 TEXT_SEGMENT=[^$/@\n]+
+PROPERTY_VALUE=[^:\ \t\r\n]*
 CODE_CONTENT=[^\n]+
 NEWLINE= \n | \r | \r\n
 
 COLON=:
-PROPERTY_VALUE=[^ :]+
 
 %{
     private boolean isCodeStart = false;
+    private boolean hasMatchAgentId = false;
 %}
 
 %{
@@ -112,14 +113,15 @@ PROPERTY_VALUE=[^ :]+
 
   {NEWLINE}               { return NEWLINE; }
   {TEXT_SEGMENT}          { return TEXT_SEGMENT; }
-  [^]                     {  }
+  [^]                     { return TokenType.BAD_CHARACTER; }
 }
 
 <AGENT_BLOCK> {
-  {AGENT_ID}              { return AGENT_ID; }
+  {AGENT_ID}              { if (hasMatchAgentId == false) { hasMatchAgentId = true; return AGENT_ID; } else { hasMatchAgentId = false; return PROPERTY_VALUE; } }
   {COLON}                 { return COLON; }
   {PROPERTY_VALUE}        { return PROPERTY_VALUE; }
-  [^]                     { yypushback(1); yybegin(YYINITIAL); }
+  " "                     { hasMatchAgentId = false; yypushback(1); yybegin(YYINITIAL); }
+  [^]                     { hasMatchAgentId = false; yypushback(1); yybegin(YYINITIAL); }
 }
 
 <COMMAND_BLOCK> {
