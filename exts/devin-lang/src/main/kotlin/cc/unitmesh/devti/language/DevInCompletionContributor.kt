@@ -1,5 +1,6 @@
-package cc.unitmesh.devti.language.completion
+package cc.unitmesh.devti.language
 
+import cc.unitmesh.devti.language.completion.*
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.psi.DevInTypes
 import cc.unitmesh.devti.language.psi.DevInUsed
@@ -21,6 +22,11 @@ class DevInCompletionContributor : CompletionContributor() {
             CompletionType.BASIC,
             valuePattern(FileReferenceLanguageProvider.FILE_REF_TYPE),
             FileReferenceLanguageProvider()
+        )
+        extend(
+            CompletionType.BASIC,
+            valuePattern(RevisionReferenceLanguageProvider.REV_REF_TYPE),
+            RevisionReferenceLanguageProvider()
         )
     }
 

@@ -18,7 +18,7 @@
         <typedHandler implementation="cc.unitmesh.devti.language.DevInTypedHandler"/>
 
         <completion.contributor language="DevIn"
-                                implementationClass="cc.unitmesh.devti.language.completion.DevInCompletionContributor"/>
+                                implementationClass="cc.unitmesh.devti.language.DevInCompletionContributor"/>
 
         <lang.foldingBuilder language="DevIn"
                              implementationClass="cc.unitmesh.devti.language.folding.DevInCustomVariableFoldingBuilder"/>
