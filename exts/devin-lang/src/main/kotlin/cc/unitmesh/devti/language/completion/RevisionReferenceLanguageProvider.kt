@@ -5,19 +5,21 @@ import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.application.ReadAction
-import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.openapi.project.Project
 import com.intellij.util.ProcessingContext
 import git4idea.GitCommit
 import git4idea.history.GitHistoryUtils
 import git4idea.repo.GitRepositoryManager
+import kotlinx.coroutines.future.await
+import java.util.concurrent.CompletableFuture
 
 
 class RevisionReferenceLanguageProvider : CompletionProvider<CompletionParameters>() {
-
-
     override fun addCompletions(
         parameters: CompletionParameters,
         context: ProcessingContext,
@@ -27,17 +29,27 @@ class RevisionReferenceLanguageProvider : CompletionProvider<CompletionParameter
         val repository = GitRepositoryManager.getInstance(project).repositories.firstOrNull() ?: return
         val branchName = repository.currentBranchName
 
-        val commits: List<GitCommit> = ReadAction.compute<List<GitCommit>, Throwable> {
-            return@compute GitHistoryUtils.history(project, repository.root, branchName)
+        val future = CompletableFuture<List<GitCommit>>()
+        val task = object : Task.Backgroundable(project, "loading git message", false) {
+            override fun run(indicator: ProgressIndicator) {
+                val commits: List<GitCommit> = GitHistoryUtils.history(project, repository.root, branchName)
+                future.complete(commits)
+            }
         }
 
-        commits.forEach {
-            val element = LookupElementBuilder.create(it.id.toShortString())
-                .withIcon(AllIcons.Vcs.Branch)
-                .withPresentableText(it.fullMessage)
-                .withTypeText(it.id.toShortString(), true)
+        ProgressManager.getInstance()
+            .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
 
-            result.addElement(element)
+        runBlockingCancellable {
+            val commits = future.await()
+            commits.forEach {
+                val element = LookupElementBuilder.create(it.id.toShortString())
+                    .withIcon(AllIcons.Vcs.Branch)
+                    .withPresentableText(it.fullMessage)
+                    .withTypeText(it.id.toShortString(), true)
+
+                result.addElement(element)
+            }
         }
     }
 }
