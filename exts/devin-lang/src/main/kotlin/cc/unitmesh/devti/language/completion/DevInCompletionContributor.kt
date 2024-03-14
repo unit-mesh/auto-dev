@@ -13,6 +13,7 @@ class DevInCompletionContributor : CompletionContributor() {
     init {
         extend(CompletionType.BASIC, psiElement(DevInTypes.LANGUAGE_ID), CodeFenceLanguageProvider())
         extend(CompletionType.BASIC, psiElement(DevInTypes.VARIABLE_ID), CustomVariableProvider())
+        extend(CompletionType.BASIC, psiElement(DevInTypes.AGENT_ID), BuiltinAgentProvider())
     }
 
     override fun beforeCompletion(context: CompletionInitializationContext) {
