@@ -22,6 +22,8 @@
 
         <lang.foldingBuilder language="DevIn"
                              implementationClass="cc.unitmesh.devti.language.folding.DevInCustomVariableFoldingBuilder"/>
+        <lang.foldingBuilder language="DevIn"
+                             implementationClass="cc.unitmesh.devti.language.folding.DevInFileReferenceFoldingBuilder"/>
 
         <languageInjector implementation="cc.unitmesh.devti.language.DevInLanguageInjector"/>
     </extensions>
