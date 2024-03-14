@@ -17,7 +17,7 @@ class DevInCompletionContributor : CompletionContributor() {
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.LANGUAGE_ID), CodeFenceLanguageProvider())
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.VARIABLE_ID), CustomVariableProvider())
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.AGENT_ID), BuiltinAgentProvider())
-        extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.COLON), CodeFenceLanguageProvider())
+        extend(CompletionType.BASIC, filePattern(), CodeFenceLanguageProvider())
     }
 
     override fun beforeCompletion(context: CompletionInitializationContext) {
