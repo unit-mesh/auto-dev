@@ -33,13 +33,15 @@ import com.intellij.psi.TokenType;
 IDENTIFIER=[a-zA-Z0-9][_\-a-zA-Z0-9]*
 
 VARIABLE_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
-AGENT_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
+AGENT_ID=([a-zA-Z0-9][_\-a-zA-Z0-9]*)(":" [._\-a-zA-Z0-9]*)?
 COMMAND_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
 LANGUAGE_ID=[a-zA-Z0-9][_\-a-zA-Z0-9 .]*
 
 TEXT_SEGMENT=[^$/@\n]+
 CODE_CONTENT=[^\n]+
 NEWLINE= \n | \r | \r\n
+
+COLON=:
 
 %{
     private boolean isCodeStart = false;
@@ -113,8 +115,8 @@ NEWLINE= \n | \r | \r\n
 }
 
 <AGENT_BLOCK> {
-  {IDENTIFIER}         { yybegin(YYINITIAL); return AGENT_ID; }
-  [^]                  { return TokenType.BAD_CHARACTER; }
+  {AGENT_ID}              { yybegin(YYINITIAL); return AGENT_ID; }
+  [^]                     { return TokenType.BAD_CHARACTER; }
 }
 
 <COMMAND_BLOCK> {
