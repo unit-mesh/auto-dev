@@ -7,7 +7,6 @@ import cc.unitmesh.devti.context.model.DtParameter
 import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiMethod
 import com.intellij.psi.impl.source.PsiJavaFileImpl
 
 private val classCache = mutableMapOf<String, DtClass>()

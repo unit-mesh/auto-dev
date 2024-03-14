@@ -30,6 +30,7 @@
         <module name="cc.unitmesh.rust"/>
         <module name="cc.unitmesh.cpp"/>
         <module name="cc.unitmesh.scala"/>
+<!--        <module name="cc.unitmesh.csharp"/>-->
 
         <!-- extension modules -->
         <module name="cc.unitmesh.database"/>

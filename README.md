@@ -43,16 +43,16 @@ Features:
     - AutoDocument. Auto generate document.
     - AutoArkUI. Auto generate HarmonyOS ArkUI code.
 - Copilot mode
+    - AutoDev will help you find bug, explain code, trace exception, generate commits, and more.
     - Pattern specific.Based on your code context like (Controller, Service `import`), AutoDev will suggest you the best
       code.
     - Related code. Based on recent file changes, AutoDev will call calculate similar chunk to generate the best code.
-    - AutoDev will help you find bug, explain code, trace exception, generate commits, and more.
 - Chat mode
     - Chat with AI.
     - Chat with selection code.
     - Chat with code context-aware (To be implemented).
 - Customize.
-    - Custom specification of prompt.
+    - Custom specification of prompt. For example, Controller, Service, Repository, Model, etc.
     - Custom intention action. You can add your own intention action.
     - Custom LLM Server. You can customize your LLM Server in `Settings` -> `Tools` -> `AutoDev`
     - Custom Living documentation.
@@ -82,12 +82,12 @@ We follow [Chapi](https://github.com/phodal/chapi) for language support tier.
 
 | Features                  | Java | Python | Go | Kotlin | JS/TS | C/C++ | C# | Scala | Rust | ArkTS |
 |---------------------------|------|--------|----|--------|-------|-------|----|-------|------|-------|
-| Chat Language Context     | ✅    | ✅      |    | ✅      | ✅     | ✅     |    |       | ✅    | ✅     | 
-| Structure AST             | ✅    |        |    | ✅      | ✅     | ✅     | ✅  |       |      |       | 
-| AutoCRUD                  | ✅    |        |    | ✅      |       |       |    |       |      |       | 
+| Chat Language Context     | ✅    | ✅      | ✅  | ✅      | ✅     | ✅     |    |       | ✅    | ✅     | 
+| Structure AST             | ✅    |        | ✅  | ✅      | ✅     | ✅     |    |       |      |       | 
 | Doc Generation            | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    | ✅     | 
 | Precision Test Generation | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    |       | 
 | Precision Code Generation | ✅    |        |    | ✅      |       |       |    |       |      |       | 
+| AutoCRUD                  | ✅    |        |    | ✅      |       |       |    |       |      |       | 
 
 ### Extensions
 
