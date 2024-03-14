@@ -23,6 +23,12 @@ class DevInSyntaxHighlighter : SyntaxHighlighter {
             ATTRIBUTES[DevInTypes.VARIABLE_START] = DefaultLanguageHighlighterColors.KEYWORD
             ATTRIBUTES[DevInTypes.VARIABLE_ID] = DefaultLanguageHighlighterColors.NUMBER
 
+            ATTRIBUTES[DevInTypes.AGENT_START] = DefaultLanguageHighlighterColors.KEYWORD
+            ATTRIBUTES[DevInTypes.AGENT_ID] = DefaultLanguageHighlighterColors.NUMBER
+
+            ATTRIBUTES[DevInTypes.COMMAND_START] = DefaultLanguageHighlighterColors.KEYWORD
+            ATTRIBUTES[DevInTypes.COMMAND_ID] = DefaultLanguageHighlighterColors.NUMBER
+
             ATTRIBUTES[DevInTypes.CODE_BLOCK_START] = DefaultLanguageHighlighterColors.KEYWORD
             ATTRIBUTES[DevInTypes.CODE_BLOCK_END] = DefaultLanguageHighlighterColors.KEYWORD
             ATTRIBUTES[DevInTypes.LANGUAGE_ID] = DefaultLanguageHighlighterColors.CONSTANT
