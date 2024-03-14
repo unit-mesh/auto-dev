@@ -1,10 +1,13 @@
 package cc.unitmesh.devti.language.completion
 
-import com.intellij.codeInsight.completion.CompletionParameters
-import com.intellij.codeInsight.completion.CompletionProvider
-import com.intellij.codeInsight.completion.CompletionResultSet
+import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.ide.presentation.VirtualFilePresentation
+import com.intellij.openapi.fileEditor.impl.EditorHistoryManager
+import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.ProcessingContext
+import java.io.File
 
 class FileReferenceLanguageProvider : CompletionProvider<CompletionParameters>() {
     companion object {
@@ -16,13 +19,25 @@ class FileReferenceLanguageProvider : CompletionProvider<CompletionParameters>()
         context: ProcessingContext,
         result: CompletionResultSet,
     ) {
-        // sample file: "file1", "file2"
-        listOf("file1", "file2").forEach {
-            result.addElement(
-                LookupElementBuilder.create(it)
-                    .withTypeText("file", true)
-            )
+        val project = parameters.position.project
+        val basePath = project.guessProjectDir()?.path ?: return
+
+        val editorHistoryManager = EditorHistoryManager.getInstance(project)
+        val fileList: List<VirtualFile> = editorHistoryManager.fileList
+
+        fileList.forEach {
+            val removePrefix = it.path.removePrefix(basePath)
+            val relativePath: String = removePrefix.removePrefix(File.separator)
+
+            val element = LookupElementBuilder.create(relativePath)
+                .withIcon(VirtualFilePresentation.getIcon(it))
+                .withInsertHandler { context, _ ->
+                    context.editor.caretModel.moveCaretRelatively(
+                        1, 0, false, false, false
+                    )
+                }
+
+            result.addElement(element)
         }
     }
-
 }
