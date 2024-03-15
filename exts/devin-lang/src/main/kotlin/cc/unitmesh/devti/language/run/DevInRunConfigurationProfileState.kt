@@ -24,6 +24,8 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiManager
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+// DONT REMOVE THIS IMPORT
+import kotlinx.coroutines.flow.collect
 import java.io.OutputStream
 
 open class DevInRunConfigurationProfileState(
