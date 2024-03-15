@@ -1,5 +1,7 @@
 package cc.unitmesh.devti.language.run
 
+import cc.unitmesh.devti.language.compiler.DevInCompiler
+import cc.unitmesh.devti.language.psi.DevInFile
 import com.intellij.build.process.BuildProcessHandler
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionException
@@ -14,6 +16,9 @@ import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.psi.PsiManager
 import java.io.OutputStream
 
 open class DevInRunConfigurationProfileState(
@@ -25,10 +30,24 @@ open class DevInRunConfigurationProfileState(
         ProcessTerminatedListener.attach(processHandler)
 
         val console: ConsoleView = ConsoleViewWrapperBase(ConsoleViewImpl(myProject, true))
-
         console.attachToProcess(processHandler)
 
-        console.print("Hello, World!", ConsoleViewContentType.NORMAL_OUTPUT)
+        val file: DevInFile? = VirtualFileManager.getInstance()
+            .findFileByUrl("file://${configuration.getScriptPath()}")
+            ?.let {
+                PsiManager.getInstance(myProject).findFile(it)
+            } as? DevInFile
+
+        if (file == null) {
+            console.print("File not found: ${configuration.getScriptPath()}", ConsoleViewContentType.ERROR_OUTPUT)
+            processHandler.destroyProcess()
+            return DefaultExecutionResult(console, processHandler)
+        }
+
+        val compiler = DevInCompiler(myProject, file)
+        val output = compiler.compile()
+
+        console.print(output, ConsoleViewContentType.NORMAL_OUTPUT)
 
         // done!
         processHandler.detachProcess()
