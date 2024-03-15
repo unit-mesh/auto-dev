@@ -31,7 +31,7 @@ class AutoDevRunConfigurationProducer : LazyRunConfigurationProducer<AutoDevConf
         val psiLocation = context.psiLocation ?: return false
         val psiFile = psiLocation.containingFile as? DevInFile ?: return false
         val virtualFile = psiFile.virtualFile ?: return false
-        val scriptPath = configuration.getScriptPath() ?: return false
+        val scriptPath = configuration.getScriptPath()
 
         return virtualFile.path == scriptPath
     }
