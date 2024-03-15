@@ -9,10 +9,6 @@ import com.intellij.util.ProcessingContext
 import java.io.File
 
 class FileReferenceLanguageProvider : CompletionProvider<CompletionParameters>() {
-    companion object {
-        const val FILE_REF_TYPE = "file"
-    }
-
     override fun addCompletions(
         parameters: CompletionParameters,
         context: ProcessingContext,
