@@ -2,10 +2,10 @@ package cc.unitmesh.devti.language.actions
 
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.run.AutoDevConfiguration
-import cc.unitmesh.devti.language.run.AutoDevConfigurationFactory
 import cc.unitmesh.devti.language.run.AutoDevConfigurationType
 import cc.unitmesh.devti.language.run.AutoDevRunConfigurationProducer
 import com.intellij.execution.ExecutionManager
+import com.intellij.execution.RunManager
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.RunConfigurationProducer
 import com.intellij.execution.executors.DefaultRunExecutor
@@ -30,8 +30,6 @@ class DevInRunFileAction : DumbAwareAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val file =
             e.getData(CommonDataKeys.PSI_FILE) ?: return
-        val virtualFile = file.virtualFile ?: return
-
 
         val project = file.project
         val context = ConfigurationContext.getFromContext(e.dataContext, e.place)
@@ -40,12 +38,14 @@ class DevInRunFileAction : DumbAwareAction() {
             AutoDevRunConfigurationProducer::class.java
         )
 
-        val configurationSettings = configProducer.findExistingConfiguration(context)
+        var configurationSettings = configProducer.findExistingConfiguration(context)
         val runConfiguration = if (configurationSettings == null) {
-            val configurationFactory = AutoDevConfigurationFactory(AutoDevConfigurationType.getInstance())
-            val runConfiguration = configurationFactory.createTemplateConfiguration(project) as AutoDevConfiguration
-            runConfiguration.name = "Run DevIn file: ${virtualFile.name}"
-            runConfiguration
+            configurationSettings = RunManager.getInstance(project).createConfiguration(
+                file.name,
+                AutoDevConfigurationType::class.java
+            )
+
+            configurationSettings.configuration as AutoDevConfiguration
         } else {
             configurationSettings.configuration as AutoDevConfiguration
         }

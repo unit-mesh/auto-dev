@@ -30,16 +30,18 @@
         <languageInjector implementation="cc.unitmesh.devti.language.DevInLanguageInjector"/>
 
 
+        <configurationType implementation="cc.unitmesh.devti.language.run.AutoDevConfigurationType"/>
+        <programRunner implementation="cc.unitmesh.devti.language.run.DevInProgramRunner"/>
+        <runConfigurationBeforeRunProviderDelegate implementation="cc.unitmesh.devti.language.run.DevInBeforeRunProviderDelegate"/>
+        <runConfigurationProducer implementation="cc.unitmesh.devti.language.run.AutoDevRunConfigurationProducer"/>
         <runLineMarkerContributor language="DevIn"
                                   implementationClass="cc.unitmesh.devti.language.run.DevInRunLineMarkersProvider"/>
-        <runConfigurationProducer implementation="cc.unitmesh.devti.language.run.AutoDevRunConfigurationProducer"/>
-        <configurationType implementation="cc.unitmesh.devti.language.run.AutoDevConfigurationType"/>
+
     </extensions>
 
     <actions>
         <action id="runDevInFileAction"
                 class="cc.unitmesh.devti.language.actions.DevInRunFileAction"
-                use-shortcut-of="RunClass"
-        />
+                use-shortcut-of="RunClass"/>
     </actions>
 </idea-plugin>

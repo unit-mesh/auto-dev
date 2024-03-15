@@ -1,27 +1,33 @@
 package cc.unitmesh.devti.language.run
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.AutoDevIcons
-import com.intellij.execution.configurations.*
+import cc.unitmesh.devti.language.DevInIcons
+import cc.unitmesh.devti.language.DevInLanguage
+import com.intellij.execution.configurations.ConfigurationFactory
+import com.intellij.execution.configurations.ConfigurationTypeUtil.findConfigurationType
+import com.intellij.execution.configurations.ModuleBasedConfigurationOptions
+import com.intellij.execution.configurations.RunConfiguration
+import com.intellij.execution.configurations.SimpleConfigurationType
 import com.intellij.openapi.components.BaseState
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.NotNullLazyValue
 
-class AutoDevConfigurationType : ConfigurationTypeBase(
-    AutoDevConfigurationFactory.ID,
-    AutoDevBundle.message("autodev.devti"),
-    "AutoDev DevIn Language executor",
-    AutoDevIcons.AI_COPILOT
+class AutoDevConfigurationType : SimpleConfigurationType(
+"AutoDevConfigurationType",
+    DevInLanguage.INSTANCE.id,
+    AutoDevBundle.message("line.marker.run.0", DevInLanguage.INSTANCE.id),
+    NotNullLazyValue.lazy { DevInIcons.DEFAULT }
 ) {
-    val factory: ConfigurationFactory get() = configurationFactories.single()
-
-    init {
-        addFactory(AutoDevConfigurationFactory(this))
+    override fun createTemplateConfiguration(project: Project): RunConfiguration {
+        return AutoDevConfiguration(project, "AutoDev", AutoDevConfigurationFactory(this))
     }
 
     companion object {
-        fun getInstance(): AutoDevConfigurationType =
-            ConfigurationTypeUtil.findConfigurationType(AutoDevConfigurationType::class.java)
+        fun getInstance(): AutoDevConfigurationType {
+            return findConfigurationType(AutoDevConfigurationType::class.java)
+        }
     }
+
 }
 
 class AutoDevConfigurationFactory(type: AutoDevConfigurationType) : ConfigurationFactory(type) {
