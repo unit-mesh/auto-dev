@@ -41,8 +41,8 @@ class VcsPrompting(private val project: Project) {
         FileSystems.getDefault().getPathMatcher("glob:$it")
     }
 
-    fun prepareContext(changes: List<Change>): String {
-        return project.service<DiffSimplifier>().simplify(changes, defaultIgnoreFilePatterns)
+    fun prepareContext(changes: List<Change>, ignoreFilePatterns: List<PathMatcher> = defaultIgnoreFilePatterns): String {
+        return project.service<DiffSimplifier>().simplify(changes, ignoreFilePatterns)
     }
 
     /**

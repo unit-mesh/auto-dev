@@ -19,7 +19,6 @@ class FileReferenceLanguageProvider : CompletionProvider<CompletionParameters>()
         val recentlyFiles = EditorHistoryManager.getInstance(project).fileList
 
         // TODO: file should be in project
-
         recentlyFiles.forEach {
             val removePrefix = it.path.removePrefix(basePath)
             val relativePath: String = removePrefix.removePrefix(File.separator)

@@ -7,7 +7,7 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiManager
 
-class FileAutoCommand(val myProject: Project, val prop: String) : AutoCommand {
+class FileAutoCommand(private val myProject: Project, private val prop: String) : AutoCommand {
     private val logger = logger<FileAutoCommand>()
     private val output = StringBuilder()
 

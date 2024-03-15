@@ -89,8 +89,8 @@ class DevInCompiler(val myProject: Project, val file: DevInFile, val editor: Edi
             }
 
             BuiltinCommand.REV -> {
-                logger.info("handling rev")
-                output.append(command.agentName)
+                val result = RevAutoCommand(myProject, prop).execute() ?: fallbackText
+                output.append(result)
             }
 
             BuiltinCommand.SYMBOL -> {
