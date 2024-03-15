@@ -7,17 +7,13 @@ import cc.unitmesh.devti.runconfig.config.writeString
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.*
 import com.intellij.execution.runners.ExecutionEnvironment
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.util.io.FileUtil
-import com.intellij.ui.dsl.builder.panel
 import org.jdom.Element
 import org.jetbrains.annotations.NonNls
 import javax.swing.Icon
-import javax.swing.JComponent
 
 class AutoDevConfiguration(project: Project, factory: ConfigurationFactory, name: String) :
     LocatableConfigurationBase<ConfigurationFactory>(project, factory, name) {
@@ -55,26 +51,5 @@ class AutoDevConfiguration(project: Project, factory: ConfigurationFactory, name
 
     fun getScriptPath(): @NlsSafe String {
         return myScriptPath
-    }
-}
-
-class AutoDevSettingsEditor(val project: Project) : SettingsEditor<AutoDevConfiguration>() {
-    private val myScriptSelector: TextFieldWithBrowseButton? = null
-
-    override fun createEditor(): JComponent = panel {
-        myScriptSelector?.addBrowseFolderListener(
-            AutoDevBundle.message("devin.label.choose.file"),
-            "",
-            project,
-            FileChooserDescriptorFactory.createSingleFileDescriptor()
-        )
-    }
-
-    override fun resetEditorFrom(configuration: AutoDevConfiguration) {
-        myScriptSelector!!.setText(configuration.getScriptPath())
-    }
-
-    override fun applyEditorTo(configuration: AutoDevConfiguration) {
-        configuration.setScriptPath(myScriptSelector!!.text)
     }
 }
