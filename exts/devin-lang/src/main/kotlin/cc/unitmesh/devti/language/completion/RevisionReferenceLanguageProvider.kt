@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.completion
 
+import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
@@ -29,8 +30,12 @@ class RevisionReferenceLanguageProvider : CompletionProvider<CompletionParameter
         val repository = GitRepositoryManager.getInstance(project).repositories.firstOrNull() ?: return
         val branchName = repository.currentBranchName
 
+        /**
+         * Refs to [com.intellij.execution.process.OSProcessHandler.checkEdtAndReadAction], we should handle in this
+         * way, another example can see in [git4idea.GitPushUtil.findOrPushRemoteBranch]
+         */
         val future = CompletableFuture<List<GitCommit>>()
-        val task = object : Task.Backgroundable(project, "loading git message", false) {
+        val task = object : Task.Backgroundable(project, AutoDevBundle.message("devin.ref.loading"), false) {
             override fun run(indicator: ProgressIndicator) {
                 val commits: List<GitCommit> = GitHistoryUtils.history(project, repository.root, branchName)
                 future.complete(commits)
