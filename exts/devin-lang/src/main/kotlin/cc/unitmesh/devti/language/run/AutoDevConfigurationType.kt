@@ -15,10 +15,8 @@ class AutoDevConfigurationType : SimpleConfigurationType(
     AutoDevBundle.message("line.marker.run.0", DevInLanguage.INSTANCE.id),
     NotNullLazyValue.lazy { DevInIcons.DEFAULT }
 ) {
-    override fun createTemplateConfiguration(project: Project): RunConfiguration {
-        val devConfiguration = AutoDevConfiguration(project, this, "AutoDevConfiguration")
-        return devConfiguration
-    }
+    override fun createTemplateConfiguration(project: Project): RunConfiguration =
+        AutoDevConfiguration(project, this, "AutoDevConfiguration")
 
     companion object {
         fun getInstance(): AutoDevConfigurationType {

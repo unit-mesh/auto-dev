@@ -23,4 +23,8 @@ class LlmFactory {
             AIEngines.XingHuo -> project.getService(XingHuoProvider::class.java)
         }
     }
+
+    companion object {
+        val instance: LlmFactory = LlmFactory()
+    }
 }
