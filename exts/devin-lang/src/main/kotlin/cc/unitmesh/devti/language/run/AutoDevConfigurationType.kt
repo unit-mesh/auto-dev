@@ -1,8 +1,7 @@
-package cc.unitmesh.devti.runconfig
+package cc.unitmesh.devti.language.run
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
-import cc.unitmesh.devti.runconfig.options.AutoCRUDConfigurationOptions
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.*
 import com.intellij.execution.runners.ExecutionEnvironment

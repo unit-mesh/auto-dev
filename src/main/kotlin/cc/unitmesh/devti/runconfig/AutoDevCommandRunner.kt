@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NonNls
 
 class AutoDevCommandRunner : GenericProgramRunner<RunnerSettings>() {
     companion object {
-        private val log: Logger = logger<AutoDevRunProfileState>()
+        private val log: Logger = logger<AutoDevCommandRunner>()
         const val RUNNER_ID: String = "AutoDevCommandRunner"
     }
 

@@ -27,5 +27,8 @@
                              implementationClass="cc.unitmesh.devti.language.folding.DevInFileReferenceFoldingBuilder"/>
 
         <languageInjector implementation="cc.unitmesh.devti.language.DevInLanguageInjector"/>
+
+        <configurationType implementation="cc.unitmesh.devti.language.run.AutoDevConfigurationType"/>
+        <programRunner implementation="cc.unitmesh.devti.language.run.DevInCommandRunner"/>
     </extensions>
 </idea-plugin>
