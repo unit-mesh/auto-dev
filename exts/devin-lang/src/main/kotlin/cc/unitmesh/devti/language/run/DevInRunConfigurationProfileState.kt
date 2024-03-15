@@ -6,14 +6,15 @@ import com.intellij.execution.ExecutionException
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
+import com.intellij.execution.console.ConsoleViewWrapperBase
+import com.intellij.execution.impl.ConsoleViewImpl
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.ui.ConsoleView
-import com.intellij.openapi.externalSystem.model.task.ExternalSystemTask
+import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.StreamUtil
-import com.intellij.terminal.TerminalExecutionConsole
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.InputStream
@@ -29,8 +30,13 @@ class DevInRunConfigurationProfileState(
         val processHandler: ProcessHandler = createProcessHandler(configuration.name)
         ProcessTerminatedListener.attach(processHandler)
 
-        val console: ConsoleView = TerminalExecutionConsole(myProject, processHandler)
+        val console: ConsoleView = ConsoleViewWrapperBase(ConsoleViewImpl(myProject, true))
+
         console.attachToProcess(processHandler)
+        processHandler.startNotify()
+
+        console.print("Hello, World!", ConsoleViewContentType.NORMAL_OUTPUT)
+        processHandler.destroyProcess()
 
         return DefaultExecutionResult(console, processHandler)
     }
@@ -57,6 +63,9 @@ class DevInRunConfigurationProfileState(
                 } finally {
                     closeInput()
                 }
+
+                // execute default process destroy
+                super.destroyProcess()
             }
 
             override fun detachProcessImpl() {
@@ -65,15 +74,12 @@ class DevInRunConfigurationProfileState(
                 } finally {
                     closeInput()
                 }
+
+                super.detachProcess()
             }
 
-            override fun getProcessInput(): OutputStream? {
-                return myProcessInputWriter
-            }
-
-            override fun getExecutionName(): String {
-                return myExecutionName
-            }
+            override fun getProcessInput(): OutputStream? = myProcessInputWriter
+            override fun getExecutionName(): String = myExecutionName
 
             protected fun closeInput() {
                 val processInputWriter = myProcessInputWriter

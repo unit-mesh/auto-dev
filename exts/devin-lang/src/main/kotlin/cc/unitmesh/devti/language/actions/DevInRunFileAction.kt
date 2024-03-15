@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.language.actions
 
-import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.run.AutoDevConfiguration
 import cc.unitmesh.devti.language.run.AutoDevConfigurationType
@@ -56,8 +55,6 @@ class DevInRunFileAction : DumbAwareAction() {
         if (builder != null) {
             ExecutionManager.getInstance(project).restartRunProfile(builder.build())
         }
-
-        AutoDevNotifications.notify(project, "Will Running DevIn file: ${file.name}")
     }
 
     companion object {
