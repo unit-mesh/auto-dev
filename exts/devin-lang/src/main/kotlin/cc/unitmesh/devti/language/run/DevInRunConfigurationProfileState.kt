@@ -22,7 +22,7 @@ import java.io.OutputStream
 import java.nio.channels.Channels
 import java.nio.channels.Pipe
 
-class DevInRunConfigurationProfileState(
+open class DevInRunConfigurationProfileState(
     private val myProject: Project,
     private val configuration: AutoDevConfiguration,
 ) : RunProfileState {
@@ -87,8 +87,8 @@ class DevInRunConfigurationProfileState(
                 myProcessInputWriter = null
                 myProcessInputReader = null
 
-                StreamUtil.closeStream(processInputWriter)
-                StreamUtil.closeStream(processInputReader)
+                processInputWriter?.close()
+                processInputReader?.close()
             }
         }
     }
