@@ -1,4 +1,4 @@
-package cc.unitmesh.language
+package cc.unitmesh.devti.language
 
 import cc.unitmesh.devti.language.parser.DevInParserDefinition
 import com.intellij.testFramework.ParsingTestCase
