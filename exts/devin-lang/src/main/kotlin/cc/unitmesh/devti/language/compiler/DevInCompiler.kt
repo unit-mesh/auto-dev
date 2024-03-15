@@ -7,17 +7,8 @@ import cc.unitmesh.devti.language.psi.DevInUsed
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.guessProjectDir
-import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.NlsSafe
-import com.intellij.openapi.util.TextRange
-import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.psi.PsiManager
-import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.util.elementType
-import kotlin.io.path.readText
 
 class DevInCompiler(val myProject: Project, val file: DevInFile, val editor: Editor? = null) {
     private val logger = logger<DevInCompiler>()
@@ -68,7 +59,7 @@ class DevInCompiler(val myProject: Project, val file: DevInFile, val editor: Edi
                     return
                 }
 
-                processingCommand(command, propElement!!.text)
+                processingCommand(command, propElement!!.text, fallbackText = used.text)
             }
 
             DevInTypes.AGENT_START -> {
@@ -90,34 +81,11 @@ class DevInCompiler(val myProject: Project, val file: DevInFile, val editor: Edi
         }
     }
 
-    private fun processingCommand(command: BuiltinCommand, prop: @NlsSafe String) {
+    private fun processingCommand(command: BuiltinCommand, prop: String, fallbackText: String) {
         when (command) {
             BuiltinCommand.FILE -> {
-                val range: TextRange? = if (prop.contains("#")) {
-                    val rangeStr = prop.substringAfter("#")
-                    val start = rangeStr.substringBefore("-").toInt()
-                    val end = rangeStr.substringAfter("-").toInt()
-                    TextRange(start, end)
-                } else {
-                    null
-                }
-
-                val filepath = prop.trim()
-                val projectPath = myProject.guessProjectDir()?.toNioPath()
-                val realpath = projectPath?.resolve(filepath)
-                val content = realpath?.readText()
-
-                content?.let {
-                    val virtualFile: VirtualFile? = VirtualFileManager.getInstance().findFileByNioPath(realpath)
-                    val lang = virtualFile?.let {
-                        PsiManager.getInstance(myProject).findFile(it)?.language?.displayName
-                    } ?: ""
-
-                    output.append("\n```$lang\n")
-                    output.append(content)
-                    output.append("\n```\n")
-                }
-
+                val result = FileAutoCommand(myProject, prop).execute() ?: fallbackText
+                output.append(result)
             }
 
             BuiltinCommand.REV -> {
@@ -136,4 +104,5 @@ class DevInCompiler(val myProject: Project, val file: DevInFile, val editor: Edi
             }
         }
     }
+
 }
