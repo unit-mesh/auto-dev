@@ -35,4 +35,8 @@ class DevInParsingTest : ParsingTestCase("parser", "devin", DevInParserDefinitio
     fun testAutoCommand() {
         doTest(true)
     }
+
+    fun testCommandAndSymbol() {
+        doTest(true)
+    }
 }

@@ -1,6 +1,6 @@
 DevInFile
   DevInUsedImpl(USED)
-    PsiElement(DevInTokenType.AGENT_START)('@')
-    PsiElement(DevInTokenType.AGENT_ID)('write')
+    PsiElement(DevInTokenType.COMMAND_START)('/')
+    PsiElement(DevInTokenType.COMMAND_ID)('write')
     PsiElement(DevInTokenType.COLON)(':')
-    PsiElement(DevInTokenType.PROPERTY_VALUE)('Sample.file#L1-L12')
+    PsiElement(DevInTokenType.COMMAND_PROP)('Sample.file#L1-L12')

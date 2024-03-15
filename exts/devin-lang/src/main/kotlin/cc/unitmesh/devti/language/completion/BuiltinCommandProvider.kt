@@ -5,27 +5,27 @@ import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.util.ProcessingContext
 
-enum class BuiltinAgent(val agentName: String, val description: String) {
+enum class BuiltinCommand(val agentName: String, val description: String) {
     FILE("file", "Read the content of a file"),
     REV("rev", "Read git change by file"),
     SYMBOL("symbol", "Read content by Java/Kotlin canonicalName"),
-//    WRITE("write", "Write content to a file, format: /write:/path/to/file:L1-C2"),
+    WRITE("write", "Write content to a file, format: /write:/path/to/file:L1-C2"),
     ;
 
     companion object {
-        fun all(): List<BuiltinAgent> {
+        fun all(): List<BuiltinCommand> {
             return values().toList()
         }
     }
 }
 
-class BuiltinAgentProvider : CompletionProvider<CompletionParameters>() {
+class BuiltinCommandProvider : CompletionProvider<CompletionParameters>() {
     override fun addCompletions(
         parameters: CompletionParameters,
         context: ProcessingContext,
         result: CompletionResultSet,
     ) {
-        BuiltinAgent.all().forEach {
+        BuiltinCommand.all().forEach {
             result.addElement(
                 LookupElementBuilder.create(it.agentName)
                     .withIcon(DevInIcons.DEFAULT)

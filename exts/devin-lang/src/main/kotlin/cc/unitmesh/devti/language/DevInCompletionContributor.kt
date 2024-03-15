@@ -17,15 +17,15 @@ class DevInCompletionContributor : CompletionContributor() {
     init {
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.LANGUAGE_ID), CodeFenceLanguageProvider())
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.VARIABLE_ID), CustomVariableProvider())
-        extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.AGENT_ID), BuiltinAgentProvider())
+        extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.COMMAND_ID), BuiltinCommandProvider())
         extend(
             CompletionType.BASIC,
-            valuePattern(BuiltinAgent.FILE.agentName),
+            valuePattern(BuiltinCommand.FILE.agentName),
             FileReferenceLanguageProvider()
         )
         extend(
             CompletionType.BASIC,
-            valuePattern(BuiltinAgent.REV.agentName),
+            valuePattern(BuiltinCommand.REV.agentName),
             RevisionReferenceLanguageProvider()
         )
     }
@@ -46,7 +46,7 @@ class DevInCompletionContributor : CompletionContributor() {
 
     private fun valuePattern(text: String): PsiElementPattern.Capture<PsiElement> =
         baseUsedPattern()
-            .withElementType(DevInTypes.PROPERTY_VALUE)
+            .withElementType(DevInTypes.COMMAND_PROP)
             .afterLeafSkipping(
                 PlatformPatterns.psiElement(DevInTypes.COLON),
                 PlatformPatterns.psiElement().withText(text)

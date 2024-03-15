@@ -24,9 +24,12 @@ import com.intellij.psi.TokenType;
 
 %s YYUSED
 %s AGENT_BLOCK
-%s AGENT_VALUE_BLOCK
 %s VARIABLE_BLOCK
+
 %s COMMAND_BLOCK
+%s COMMAND_VALUE_BLOCK
+
+%s SYSTEM_BLOCK
 
 %s CODE_BLOCK
 %s LANG_ID
@@ -37,9 +40,10 @@ VARIABLE_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
 AGENT_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
 COMMAND_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
 LANGUAGE_ID=[a-zA-Z0-9][_\-a-zA-Z0-9 .]*
+SYSTEM_ID=[a-zA-Z0-9][_\-a-zA-Z0-9 .]*
 
 TEXT_SEGMENT=[^$/@\n]+
-PROPERTY_VALUE=[^:\ \t\r\n]*
+COMMAND_PROP=[^:\ \t\r\n]*
 CODE_CONTENT=[^\n]+
 NEWLINE= \n | \r | \r\n
 
@@ -105,9 +109,10 @@ COLON=:
 }
 
 <YYUSED> {
-  "@"                     { yybegin(AGENT_BLOCK); return AGENT_START; }
-  "/"                     { yybegin(COMMAND_BLOCK); return COMMAND_START; }
+  "@"                     { yybegin(AGENT_BLOCK);    return AGENT_START; }
+  "/"                     { yybegin(COMMAND_BLOCK);  return COMMAND_START; }
   "$"                     { yybegin(VARIABLE_BLOCK); return VARIABLE_START; }
+  "#"                     { yybegin(SYSTEM_BLOCK);   return SYSTEM_START; }
 
   "```" {IDENTIFIER}?     { yybegin(LANG_ID); if (isCodeStart == true) { isCodeStart = false; return CODE_BLOCK_END; } else { isCodeStart = true; }; yypushback(yylength()); }
 
@@ -116,26 +121,31 @@ COLON=:
   [^]                     { return TokenType.BAD_CHARACTER; }
 }
 
-<AGENT_BLOCK> {
-  {AGENT_ID}              { return AGENT_ID; }
-  {COLON}                 { yybegin(AGENT_VALUE_BLOCK); return COLON; }
-  " "                     { yypushback(1); yybegin(YYINITIAL); }
-  [^]                     { yypushback(1); yybegin(YYINITIAL); }
-}
-
-<AGENT_VALUE_BLOCK> {
-  {PROPERTY_VALUE}        { return PROPERTY_VALUE; }
-  " "                     { yypushback(1); yybegin(YYINITIAL); }
-  [^]                     { yypushback(1); yybegin(YYINITIAL); }
-}
-
 <COMMAND_BLOCK> {
-  {COMMAND_ID}         { yybegin(YYINITIAL); return COMMAND_ID; }
+  {COMMAND_ID}            { return COMMAND_ID; }
+  {COLON}                 { yybegin(COMMAND_VALUE_BLOCK); return COLON; }
+  " "                     { yypushback(1); yybegin(YYINITIAL); }
+  [^]                     { yypushback(1); yybegin(YYINITIAL); }
+}
+
+<COMMAND_VALUE_BLOCK> {
+  {COMMAND_PROP}          { return COMMAND_PROP;  }
+  " "                     { yypushback(1); yybegin(YYINITIAL); }
+  [^]                     { yypushback(1); yybegin(YYINITIAL); }
+}
+
+<AGENT_BLOCK> {
+  {AGENT_ID}           { yybegin(YYINITIAL); return AGENT_ID; }
   [^]                  { return TokenType.BAD_CHARACTER; }
 }
 
 <VARIABLE_BLOCK> {
   {VARIABLE_ID}        { yybegin(YYINITIAL); return VARIABLE_ID; }
+  [^]                  { return TokenType.BAD_CHARACTER; }
+}
+
+<SYSTEM_BLOCK> {
+  {SYSTEM_ID}        { yybegin(YYINITIAL); return SYSTEM_ID; }
   [^]                  { return TokenType.BAD_CHARACTER; }
 }
 

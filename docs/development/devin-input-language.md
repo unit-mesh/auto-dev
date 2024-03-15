@@ -19,9 +19,10 @@ Based on: [JetBrains' Markdown Util](https://github.com/JetBrains/intellij-commu
 
 ## Design
 
-- Command, natural language command with IDE/editor, like read file, write file, etc.
-- Agent, natural language custom function / system function name, the handler or command, 
-- Variable, natural language variable name, like file name, file content, etc.
+- `/` Builtin Command, natural language command with IDE/editor, like read file, write file, etc.
+- `@` Agent, natural language custom function / system function name, the handler or command, 
+- `$` Variable, natural language variable name, like file name, file content, etc.
+- '#' 3rd party API, like `#kanban`, `#maven`, `#gradle`, etc. 
 
 ## Language spec
 
@@ -29,8 +30,8 @@ Based on: [JetBrains' Markdown Util](https://github.com/JetBrains/intellij-commu
 DevInFile ::= (used | code | TEXT_SEGMENT | NEWLINE)*
 
 used ::= (
-    AGENT_START AGENT_ID (COLON PROPERTY_VALUE?)?
-    | COMMAND_START COMMAND_ID
+    AGENT_START AGENT_ID
+    | COMMAND_START COMMAND_ID (COLON COMMAND_PROP?)?
     | VARIABLE_START VARIABLE_ID
 )
 

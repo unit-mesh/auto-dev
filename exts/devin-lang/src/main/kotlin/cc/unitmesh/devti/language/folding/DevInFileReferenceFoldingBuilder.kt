@@ -12,7 +12,7 @@ import com.intellij.psi.util.elementType
 class DevInFileReferenceFoldingBuilder : FoldingBuilderEx() {
     override fun isCollapsedByDefault(node: ASTNode): Boolean = true
     override fun getPlaceholderText(node: ASTNode): String =
-        if (node.elementType == DevInTypes.PROPERTY_VALUE) {
+        if (node.elementType == DevInTypes.COMMAND_PROP) {
             node.text.split("/").last()
         } else {
             node.text
@@ -22,7 +22,7 @@ class DevInFileReferenceFoldingBuilder : FoldingBuilderEx() {
         val descriptors = arrayListOf<FoldingDescriptor>()
         root.accept(object : PsiElementVisitor() {
             override fun visitElement(element: PsiElement) {
-                if (element.elementType == DevInTypes.PROPERTY_VALUE) {
+                if (element.elementType == DevInTypes.COMMAND_PROP) {
                     val agentId = element.parent?.findElementAt(1)?.text
                     if (agentId == "file" && element.text.contains("/")) {
                         descriptors.add(FoldingDescriptor(element.node, element.textRange))
