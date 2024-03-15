@@ -17,7 +17,7 @@ class AutoDevConfiguration(project: Project, name: String, factory: AutoDevConfi
     override fun getIcon(): Icon = AutoDevIcons.AI_COPILOT
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState? {
-        return null
+        return DevInRunConfigurationProfileState(project, this)
     }
 
     override fun clone(): RunConfiguration {

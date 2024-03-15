@@ -8,11 +8,12 @@ import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiElement
 import com.intellij.util.containers.ContainerUtil
 
-class DevInRunLineMarkersProvider : RunLineMarkerContributor() {
+class DevInRunLineMarkersProvider : RunLineMarkerContributor(), DumbAware {
     override fun getInfo(element: PsiElement): Info? {
         if (element.language !is DevInLanguage || element.textRange.startOffset != 0) return null
 
