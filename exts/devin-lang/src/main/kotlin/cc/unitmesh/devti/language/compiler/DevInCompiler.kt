@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.compiler
 
+import cc.unitmesh.devti.language.completion.BuiltinCommand
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.psi.DevInTypes
 import cc.unitmesh.devti.language.psi.DevInUsed
@@ -36,6 +37,46 @@ class DevInCompiler(val project: Project, val file: DevInFile, val editor: Edito
     }
 
     private fun processUsed(used: DevInUsed) {
+        val firstChild = used.firstChild
+        val id = used.children.getOrNull(1)
 
+        when (firstChild.elementType) {
+            DevInTypes.COMMAND_START -> {
+                /**
+                 *
+                 */
+
+                val command = BuiltinCommand.fromString(id?.text ?: "")
+                if (command == null) {
+                    output.append(used.text)
+                    logger.warn("Unknown command: ${id?.text}")
+                    return
+                }
+
+                when (command) {
+                    BuiltinCommand.FILE -> TODO()
+                    BuiltinCommand.REV -> TODO()
+                    BuiltinCommand.SYMBOL -> TODO()
+                    BuiltinCommand.WRITE -> TODO()
+                }
+            }
+
+            DevInTypes.AGENT_START -> {
+                /**
+                 * add for post action
+                 */
+            }
+
+            DevInTypes.VARIABLE_START -> {
+                /**
+                 * Todo, call [cc.unitmesh.devti.custom.compile.VariableTemplateCompiler]
+                 */
+            }
+
+            else -> {
+                output.append(used.text)
+                logger.warn("Unknown used type: ${firstChild.elementType}")
+            }
+        }
     }
 }

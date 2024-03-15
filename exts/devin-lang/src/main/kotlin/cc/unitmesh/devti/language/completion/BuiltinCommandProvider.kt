@@ -16,6 +16,10 @@ enum class BuiltinCommand(val agentName: String, val description: String) {
         fun all(): List<BuiltinCommand> {
             return values().toList()
         }
+
+        fun fromString(agentName: String): BuiltinCommand? {
+            return values().find { it.agentName == agentName }
+        }
     }
 }
 
