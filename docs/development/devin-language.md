@@ -1,17 +1,17 @@
 ---
 layout: default
-title: DevIn Agent Language
+title: DevIn Language
 nav_order: 4
 parent: Development
 ---
 
-AutoDev@1.7.1
+AutoDev@1.7.2
 {: .label .label-yellow }
 
-# DevIn Input Language 
+# DevIn Language 
 
-In issue [#101](https://github.com/unit-mesh/auto-dev/issues/101),
-in order to make `@`, `/`, `#`, `$` and `!` completion better, we introduce a new input language: DevIn.
+In issue [#101](https://github.com/unit-mesh/auto-dev/issues/101), to better interactive with LLM, and also 
+handle `@`, `/`, `#`, `$` and `!` completion better, we introduce a new language: DevIn.
 
 Code: [DevIn Language](https://github.com/unit-mesh/auto-dev/tree/master/exts/devin-lang)
 
@@ -46,12 +46,9 @@ code_contents ::= (NEWLINE | CODE_CONTENT)*
 ### AutoCRUD
 
 ```devin
-@create /file:src/main/java/com/example/Controller.java
+Explain code /file:src/main/java/com/example/Controller.java
 ```
 
-```devin
-/file:regex("*.Controller")
-```typescript jsx
 
 ```
 /edit /file:src/main/java/com/example/Controller.java#L1-L12

@@ -437,6 +437,7 @@ project(":") {
 
         kover(project(":exts:database"))
         kover(project(":exts:ext-android"))
+        kover(project(":exts:devin-lang"))
     }
 
     task("resolveDependencies") {
