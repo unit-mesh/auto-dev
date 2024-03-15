@@ -16,7 +16,7 @@ import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import org.jdom.Element
 
-class AutoDevConfiguration(project: Project, name: String, factory: ConfigurationFactory) :
+class AutoCRUDConfiguration(project: Project, name: String, factory: ConfigurationFactory) :
     RunConfigurationBase<AutoDevConfigurationOptions>(project, factory, name) {
 
     public override fun getOptions(): AutoDevConfigurationOptions {

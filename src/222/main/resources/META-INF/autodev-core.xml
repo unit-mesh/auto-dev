@@ -36,6 +36,7 @@
         <runConfigurationProducer
                 implementation="cc.unitmesh.devti.runconfig.command.CompositeAutoBaseRunConfigurationProducer"/>
 
+        <configurationType implementation="cc.unitmesh.devti.runconfig.AutoCRUDConfigurationType"/>
         <configurationType implementation="cc.unitmesh.devti.runconfig.AutoDevConfigurationType"/>
 
         <!-- Run Configurations -->

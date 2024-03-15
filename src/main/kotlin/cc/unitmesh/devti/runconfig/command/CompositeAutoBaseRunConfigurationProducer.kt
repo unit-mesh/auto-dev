@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.runconfig.command
 
-import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
+import cc.unitmesh.devti.runconfig.config.AutoCRUDConfiguration
 import com.intellij.execution.PsiLocation
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
@@ -33,12 +33,12 @@ class CompositeAutoBaseRunConfigurationProducer : BaseConfigurationProducer() {
             .firstOrNull()
 
     override fun isConfigurationFromContext(
-        configuration: AutoDevConfiguration,
+        configuration: AutoCRUDConfiguration,
         context: ConfigurationContext
     ): Boolean = producers.any { it.isConfigurationFromContext(configuration, context) }
 
     override fun setupConfigurationFromContext(
-        configuration: AutoDevConfiguration,
+        configuration: AutoCRUDConfiguration,
         context: ConfigurationContext,
         sourceElement: Ref<PsiElement>
     ): Boolean = producers.any { it.setupConfigurationFromContext(configuration, context, sourceElement) }
@@ -65,7 +65,7 @@ class CompositeAutoBaseRunConfigurationProducer : BaseConfigurationProducer() {
 private fun RunConfiguration.isSame(other: RunConfiguration?): Boolean {
     return when {
         this === other -> true
-        this is AutoDevConfiguration && other is AutoDevConfiguration -> {
+        this is AutoCRUDConfiguration && other is AutoCRUDConfiguration -> {
             this.options == other.options
         }
 
