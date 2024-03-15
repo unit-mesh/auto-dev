@@ -34,21 +34,17 @@ class DevInRunFileAction : DumbAwareAction() {
         val project = file.project
         val context = ConfigurationContext.getFromContext(e.dataContext, e.place)
 
-        val configProducer = RunConfigurationProducer.getInstance(
-            AutoDevRunConfigurationProducer::class.java
-        )
+        val configProducer = RunConfigurationProducer.getInstance(AutoDevRunConfigurationProducer::class.java)
 
-        var configurationSettings = configProducer.findExistingConfiguration(context)
+        val configurationSettings = configProducer.findExistingConfiguration(context)
         val runConfiguration = if (configurationSettings == null) {
-            configurationSettings = RunManager.getInstance(project).createConfiguration(
+            RunManager.getInstance(project).createConfiguration(
                 file.name,
                 AutoDevConfigurationType::class.java
             )
-
-            configurationSettings.configuration as AutoDevConfiguration
         } else {
-            configurationSettings.configuration as AutoDevConfiguration
-        }
+            configurationSettings
+        }.configuration as AutoDevConfiguration
 
         val builder =
             ExecutionEnvironmentBuilder.createOrNull(DefaultRunExecutor.getRunExecutorInstance(), runConfiguration)

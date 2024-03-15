@@ -19,6 +19,7 @@ class AutoDevRunConfigurationProducer : LazyRunConfigurationProducer<AutoDevConf
         val psiFile = sourceElement.get().containingFile as? DevInFile ?: return false
         val virtualFile = psiFile.virtualFile ?: return false
 
+        configuration.name = virtualFile.presentableName
         return true
     }
 
