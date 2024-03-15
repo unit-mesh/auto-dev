@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.runconfig.config
 
 import cc.unitmesh.devti.runconfig.AutoDevRunProfileState
-import cc.unitmesh.devti.runconfig.options.AutoDevConfigurationOptions
+import cc.unitmesh.devti.runconfig.options.AutoCRUDConfigurationOptions
 import cc.unitmesh.devti.runconfig.ui.AutoDevSettingsEditor
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.ConfigurationFactory
@@ -17,10 +17,10 @@ import com.intellij.openapi.project.Project
 import org.jdom.Element
 
 class AutoCRUDConfiguration(project: Project, name: String, factory: ConfigurationFactory) :
-    RunConfigurationBase<AutoDevConfigurationOptions>(project, factory, name) {
+    RunConfigurationBase<AutoCRUDConfigurationOptions>(project, factory, name) {
 
-    public override fun getOptions(): AutoDevConfigurationOptions {
-        return super.getOptions() as AutoDevConfigurationOptions
+    public override fun getOptions(): AutoCRUDConfigurationOptions {
+        return super.getOptions() as AutoCRUDConfigurationOptions
     }
 
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {

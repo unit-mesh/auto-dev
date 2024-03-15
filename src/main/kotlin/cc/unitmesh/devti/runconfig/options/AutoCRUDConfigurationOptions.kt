@@ -3,7 +3,7 @@ package cc.unitmesh.devti.runconfig.options
 import com.intellij.execution.configurations.ModuleBasedConfigurationOptions
 import com.intellij.openapi.components.StoredProperty
 
-class AutoDevConfigurationOptions : ModuleBasedConfigurationOptions() {
+class AutoCRUDConfigurationOptions : ModuleBasedConfigurationOptions() {
     private val githubRepo: StoredProperty<String?> = string("unit-mesh/untitled").provideDelegate(this, "githubRepo")
     private val storyId: StoredProperty<String?> = string("1").provideDelegate(this, "storyId")
 

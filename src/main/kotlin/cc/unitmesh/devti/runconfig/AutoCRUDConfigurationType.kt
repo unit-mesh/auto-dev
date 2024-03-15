@@ -3,7 +3,7 @@ package cc.unitmesh.devti.runconfig
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.runconfig.config.AutoCRUDConfiguration
-import cc.unitmesh.devti.runconfig.options.AutoDevConfigurationOptions
+import cc.unitmesh.devti.runconfig.options.AutoCRUDConfigurationOptions
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationTypeBase
 import com.intellij.execution.configurations.ConfigurationTypeUtil
@@ -36,7 +36,7 @@ class AutoCRUDConfigurationFactory(type: AutoCRUDConfigurationType) : Configurat
     override fun createTemplateConfiguration(project: Project): RunConfiguration =
         AutoCRUDConfiguration(project, "AutoDev", this)
 
-    override fun getOptionsClass(): Class<out BaseState?> = AutoDevConfigurationOptions::class.java
+    override fun getOptionsClass(): Class<out BaseState?> = AutoCRUDConfigurationOptions::class.java
 
     companion object {
         const val ID: String = "AutoCRUDRunConfiguration"
