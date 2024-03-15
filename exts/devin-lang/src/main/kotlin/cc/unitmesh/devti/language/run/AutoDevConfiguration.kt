@@ -41,15 +41,13 @@ class AutoDevConfiguration(project: Project, factory: ConfigurationFactory, name
         myScriptPath = element.readString(SCRIPT_PATH_TAG) ?: ""
     }
 
-    override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
-        return AutoDevSettingsEditor(project)
-    }
+    override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> = AutoDevSettingsEditor(project)
 
     fun setScriptPath(scriptPath: String) {
         myScriptPath = scriptPath.trim { it <= ' ' }
     }
 
-    fun getScriptPath(): @NlsSafe String {
+    fun getScriptPath(): String {
         return myScriptPath
     }
 }

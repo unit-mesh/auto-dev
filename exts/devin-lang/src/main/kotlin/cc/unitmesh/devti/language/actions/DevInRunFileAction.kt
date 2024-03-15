@@ -13,7 +13,6 @@ import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.DumbAwareAction
 import org.jetbrains.annotations.NonNls
 
@@ -37,15 +36,12 @@ class DevInRunFileAction : DumbAwareAction() {
 
         val configProducer = RunConfigurationProducer.getInstance(AutoDevRunConfigurationProducer::class.java)
 
-        val configurationSettings = configProducer.findExistingConfiguration(context)
-        val runConfiguration = if (configurationSettings == null) {
-            RunManager.getInstance(project).createConfiguration(
-                file.name,
-                AutoDevConfigurationType::class.java
-            )
-        } else {
-            configurationSettings
-        }.configuration as AutoDevConfiguration
+        val runManager = RunManager.getInstance(project)
+
+        val runConfiguration = (
+                configProducer.findExistingConfiguration(context)
+                    ?: runManager.createConfiguration(file.name, AutoDevConfigurationType::class.java)
+                ).configuration as AutoDevConfiguration
 
         runConfiguration.setScriptPath(file.virtualFile.path)
 
