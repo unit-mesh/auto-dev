@@ -23,7 +23,6 @@ class DevInRunFileAction : DumbAwareAction() {
     override fun update(e: AnActionEvent) {
         val file = e.getData(CommonDataKeys.PSI_FILE) ?: return
         e.presentation.isEnabledAndVisible = file is DevInFile
-        logger<DevInRunFileAction>().warn("update: ${e.presentation.text}")
 
         if (e.presentation.text.isNullOrBlank()) {
             e.presentation.text = "Run DevIn file: ${file.name}"

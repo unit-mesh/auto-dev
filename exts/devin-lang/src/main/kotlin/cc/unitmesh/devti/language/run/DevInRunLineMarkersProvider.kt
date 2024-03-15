@@ -17,8 +17,6 @@ class DevInRunLineMarkersProvider : RunLineMarkerContributor(), DumbAware {
         if (element.language !is DevInLanguage) return null
         val psiFile = element as? DevInFile ?: return null
 
-        logger<DevInRunLineMarkersProvider>().warn("offset: ${element.textRange}")
-
         val actions = arrayOf<AnAction>(ActionManager.getInstance().getAction(DevInRunFileAction.ID))
 
         return Info(
