@@ -1,6 +1,6 @@
 ---
 layout: default
-title: DevIn Input Language
+title: DevIn Agent Language
 nav_order: 4
 parent: Development
 ---
@@ -22,7 +22,7 @@ Based on: [JetBrains' Markdown Util](https://github.com/JetBrains/intellij-commu
 - `/` Builtin Command, natural language command with IDE/editor, like read file, write file, etc.
 - `@` Agent, natural language custom function / system function name, the handler or command, 
 - `$` Variable, natural language variable name, like file name, file content, etc.
-- '#' 3rd party API, like `#kanban`, `#maven`, `#gradle`, etc. 
+- `#` Third-party system API for traditional, like `#kanban`, `#issue`, `#github`, etc. 
 
 ## Language spec
 
@@ -33,6 +33,7 @@ used ::= (
     AGENT_START AGENT_ID
     | COMMAND_START COMMAND_ID (COLON COMMAND_PROP?)?
     | VARIABLE_START VARIABLE_ID
+    | SYSTEM_START SYSTEM_ID
 )
 
 code ::=  CODE_BLOCK_START LANGUAGE_ID? NEWLINE? code_contents? CODE_BLOCK_END?
@@ -40,3 +41,25 @@ code ::=  CODE_BLOCK_START LANGUAGE_ID? NEWLINE? code_contents? CODE_BLOCK_END?
 code_contents ::= (NEWLINE | CODE_CONTENT)*
 ```
 
+## Case Design
+
+### AutoCRUD
+
+```devin
+@create /file:src/main/java/com/example/Controller.java
+```
+
+```devin
+/file:regex("*.Controller")
+```typescript jsx
+
+```
+/edit /file:src/main/java/com/example/Controller.java#L1-L12
+\`\`\`java
+public class Controller {
+    public void method() {
+        System.out.println("Hello, World!");
+    }
+}
+\`\`\`
+```
