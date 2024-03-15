@@ -28,8 +28,7 @@ class DevInRunFileAction : DumbAwareAction() {
     }
 
     override fun actionPerformed(e: AnActionEvent) {
-        val file =
-            e.getData(CommonDataKeys.PSI_FILE) ?: return
+        val file = e.getData(CommonDataKeys.PSI_FILE) ?: return
 
         val project = file.project
         val context = ConfigurationContext.getFromContext(e.dataContext, e.place)
@@ -45,6 +44,8 @@ class DevInRunFileAction : DumbAwareAction() {
         } else {
             configurationSettings
         }.configuration as AutoDevConfiguration
+
+        runConfiguration.setScriptPath(file.virtualFile.path)
 
         val builder =
             ExecutionEnvironmentBuilder.createOrNull(DefaultRunExecutor.getRunExecutorInstance(), runConfiguration)

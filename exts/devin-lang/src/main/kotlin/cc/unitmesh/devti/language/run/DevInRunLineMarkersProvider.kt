@@ -9,9 +9,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.project.DumbAware
-import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiElement
-import com.intellij.util.containers.ContainerUtil
 
 class DevInRunLineMarkersProvider : RunLineMarkerContributor(), DumbAware {
     override fun getInfo(element: PsiElement): Info? {
@@ -24,13 +22,8 @@ class DevInRunLineMarkersProvider : RunLineMarkerContributor(), DumbAware {
 
         return Info(
             AllIcons.RunConfigurations.TestState.Run,
-            actions
-        ) { psiElement: PsiElement ->
-            StringUtil.join(
-                ContainerUtil.mapNotNull<AnAction, String>(actions) {
-                    AutoDevBundle.message("line.marker.run.0", psiElement.containingFile.name)
-                }, "\n"
-            )
-        }
+            { AutoDevBundle.message("line.marker.run.0", psiFile.containingFile.name) },
+            *actions
+        )
     }
 }
