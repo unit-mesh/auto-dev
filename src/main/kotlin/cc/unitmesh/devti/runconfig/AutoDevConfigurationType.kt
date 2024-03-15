@@ -29,7 +29,7 @@ class AutoDevConfigurationType : ConfigurationTypeBase(
     }
 }
 
-class AutoDevConfigurationFactory(autoDevConfigurationType: AutoDevConfigurationType) : ConfigurationFactory() {
+class AutoDevConfigurationFactory(type: AutoDevConfigurationType) : ConfigurationFactory(type) {
     override fun getId(): String = ID
 
     override fun createTemplateConfiguration(project: Project): RunConfiguration =
@@ -42,17 +42,11 @@ class AutoDevConfigurationFactory(autoDevConfigurationType: AutoDevConfiguration
     }
 }
 
-class AutoDevConfiguration(project: Project, s: String, autoDevConfigurationFactory: AutoDevConfigurationFactory) :
-    RunConfiguration {
+class AutoDevConfiguration(project: Project, name: String, factory: AutoDevConfigurationFactory) :
+    RunConfigurationBase<AutoDevConfigurationOptions>(project, factory, name) {
+    override fun getIcon(): Icon = AutoDevIcons.AI_COPILOT
+
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState? {
-        TODO("Not yet implemented")
-    }
-
-    override fun getName(): String {
-        TODO("Not yet implemented")
-    }
-
-    override fun getIcon(): Icon? {
         TODO("Not yet implemented")
     }
 
@@ -60,22 +54,9 @@ class AutoDevConfiguration(project: Project, s: String, autoDevConfigurationFact
         TODO("Not yet implemented")
     }
 
-    override fun getFactory(): ConfigurationFactory? {
-        TODO("Not yet implemented")
-    }
-
-    override fun setName(name: String?) {
-        TODO("Not yet implemented")
-    }
-
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
         TODO("Not yet implemented")
     }
-
-    override fun getProject(): Project {
-        TODO("Not yet implemented")
-    }
-
 }
 
 class AutoDevConfigurationOptions : ModuleBasedConfigurationOptions() {
