@@ -1,10 +1,13 @@
 package cc.unitmesh.devti.language.completion
 
-import com.intellij.codeInsight.completion.*
+import com.intellij.codeInsight.completion.CompletionParameters
+import com.intellij.codeInsight.completion.CompletionProvider
+import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.ide.presentation.VirtualFilePresentation
 import com.intellij.openapi.fileEditor.impl.EditorHistoryManager
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.util.ProcessingContext
 import java.io.File
 
@@ -32,6 +35,23 @@ class FileReferenceLanguageProvider : CompletionProvider<CompletionParameters>()
                 }
 
             result.addElement(element)
+        }
+
+        val projectFileIndex = ProjectFileIndex.getInstance(project)
+        projectFileIndex.iterateContent {
+            val removePrefix = it.path.removePrefix(basePath)
+            val relativePath: String = removePrefix.removePrefix(File.separator)
+
+            val element = LookupElementBuilder.create(relativePath)
+                .withIcon(VirtualFilePresentation.getIcon(it))
+                .withInsertHandler { context, _ ->
+                    context.editor.caretModel.moveCaretRelatively(
+                        1, 0, false, false, false
+                    )
+                }
+
+            result.addElement(element)
+            true
         }
     }
 }
