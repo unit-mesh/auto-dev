@@ -2,6 +2,7 @@ package cc.unitmesh.devti.language.run
 
 import cc.unitmesh.devti.AutoDevIcons
 import com.intellij.execution.Executor
+import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.configurations.RunProfileState
@@ -12,8 +13,8 @@ import com.intellij.ui.dsl.builder.panel
 import javax.swing.Icon
 import javax.swing.JComponent
 
-class AutoDevConfiguration(project: Project, name: String, factory: AutoDevConfigurationFactory) :
-    RunConfigurationBase<AutoDevConfigurationOptions>(project, factory, name) {
+class AutoDevConfiguration(project: Project, factory: ConfigurationFactory, name: String) :
+    RunConfigurationBase<ConfigurationFactory>(project, factory, name) {
     override fun getIcon(): Icon = AutoDevIcons.AI_COPILOT
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState? {

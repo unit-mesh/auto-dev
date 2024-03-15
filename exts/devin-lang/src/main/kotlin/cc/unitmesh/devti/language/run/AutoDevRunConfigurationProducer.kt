@@ -7,8 +7,8 @@ import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 
 class AutoDevRunConfigurationProducer : LazyRunConfigurationProducer<AutoDevConfiguration>() {
-    override fun getConfigurationFactory(): AutoDevConfigurationFactory {
-        return AutoDevConfigurationFactory(AutoDevConfigurationType.getInstance())
+    override fun getConfigurationFactory(): AutoDevConfigurationType {
+        return AutoDevConfigurationType.getInstance()
     }
 
     override fun setupConfigurationFromContext(

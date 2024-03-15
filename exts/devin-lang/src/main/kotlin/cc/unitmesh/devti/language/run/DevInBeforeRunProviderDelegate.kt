@@ -12,6 +12,7 @@ class DevInBeforeRunProviderDelegate : RunConfigurationBeforeRunProviderDelegate
     override fun beforeRun(environment: ExecutionEnvironment) {
         val settings = environment.runnerAndConfigurationSettings ?: return
         val configuration = settings.configuration
+
         if (configuration is AutoDevConfiguration) {
             val userDataKey = getRunBeforeUserDataKey(configuration)
             configuration.project.putUserData(userDataKey, true)
