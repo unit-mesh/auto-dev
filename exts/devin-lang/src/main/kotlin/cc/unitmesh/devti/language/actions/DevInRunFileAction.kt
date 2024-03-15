@@ -13,6 +13,7 @@ import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.DumbAwareAction
 import org.jetbrains.annotations.NonNls
 
@@ -22,6 +23,8 @@ class DevInRunFileAction : DumbAwareAction() {
     override fun update(e: AnActionEvent) {
         val file = e.getData(CommonDataKeys.PSI_FILE) ?: return
         e.presentation.isEnabledAndVisible = file is DevInFile
+        logger<DevInRunFileAction>().warn("update: ${e.presentation.text}")
+
         if (e.presentation.text.isNullOrBlank()) {
             e.presentation.text = "Run DevIn file: ${file.name}"
         }

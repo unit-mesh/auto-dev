@@ -8,15 +8,16 @@ import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
 
 class DevInRunLineMarkersProvider : RunLineMarkerContributor(), DumbAware {
     override fun getInfo(element: PsiElement): Info? {
-        if (element.language !is DevInLanguage || element.textRange.startOffset != 0) return null
+        if (element.language !is DevInLanguage) return null
+        val psiFile = element as? DevInFile ?: return null
 
-        val psiFile = element.containingFile
-        if (psiFile !is DevInFile) return null
+        logger<DevInRunLineMarkersProvider>().warn("offset: ${element.textRange}")
 
         val actions = arrayOf<AnAction>(ActionManager.getInstance().getAction(DevInRunFileAction.ID))
 
