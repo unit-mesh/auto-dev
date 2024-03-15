@@ -8,9 +8,14 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.util.TextRange
+import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.psi.PsiManager
+import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.util.elementType
 import kotlin.io.path.readText
 
@@ -99,9 +104,18 @@ class DevInCompiler(val myProject: Project, val file: DevInFile, val editor: Edi
 
                 val filepath = prop.trim()
                 val projectPath = myProject.guessProjectDir()?.toNioPath()
-                val content = projectPath?.resolve(filepath)?.readText()
+                val realpath = projectPath?.resolve(filepath)
+                val content = realpath?.readText()
+
                 content?.let {
+                    val virtualFile: VirtualFile? = VirtualFileManager.getInstance().findFileByNioPath(realpath)
+                    val lang = virtualFile?.let {
+                        PsiManager.getInstance(myProject).findFile(it)?.language?.displayName
+                    } ?: ""
+
+                    output.append("\n```$lang\n")
                     output.append(content)
+                    output.append("\n```\n")
                 }
 
             }
@@ -110,10 +124,12 @@ class DevInCompiler(val myProject: Project, val file: DevInFile, val editor: Edi
                 logger.info("handling rev")
                 output.append(command.agentName)
             }
+
             BuiltinCommand.SYMBOL -> {
                 logger.info("handling symbol")
                 output.append(command.agentName)
             }
+
             BuiltinCommand.WRITE -> {
                 logger.info("handling write")
                 output.append(command.agentName)

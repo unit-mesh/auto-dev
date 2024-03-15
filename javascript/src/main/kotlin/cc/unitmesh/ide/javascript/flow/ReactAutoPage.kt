@@ -12,6 +12,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
@@ -40,7 +41,7 @@ class ReactAutoPage(
 
     init {
         val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
-        val psiManager = com.intellij.psi.PsiManager.getInstance(project)
+        val psiManager = PsiManager.getInstance(project)
 
         val virtualFiles =
             FileTypeIndex.getFiles(JavaScriptFileType.INSTANCE, searchScope) +
