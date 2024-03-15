@@ -32,9 +32,8 @@
 
         <runLineMarkerContributor language="DevIn"
                                   implementationClass="cc.unitmesh.devti.language.run.DevInRunLineMarkersProvider"/>
-
-        <!--        <configurationType implementation="cc.unitmesh.devti.language.run.AutoDevConfigurationType"/>-->
-        <!--        <programRunner implementation="cc.unitmesh.devti.language.run.DevInCommandRunner"/>-->
+        <runConfigurationProducer implementation="cc.unitmesh.devti.language.run.AutoDevRunConfigurationProducer"/>
+        <configurationType implementation="cc.unitmesh.devti.language.run.AutoDevConfigurationType"/>
     </extensions>
 
     <actions>

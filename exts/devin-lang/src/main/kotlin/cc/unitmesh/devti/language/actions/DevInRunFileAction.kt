@@ -1,7 +1,15 @@
 package cc.unitmesh.devti.language.actions
 
-import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.language.psi.DevInFile
+import cc.unitmesh.devti.language.run.AutoDevConfiguration
+import cc.unitmesh.devti.language.run.AutoDevConfigurationFactory
+import cc.unitmesh.devti.language.run.AutoDevConfigurationType
+import cc.unitmesh.devti.language.run.AutoDevRunConfigurationProducer
+import com.intellij.execution.ExecutionManager
 import com.intellij.execution.actions.ConfigurationContext
+import com.intellij.execution.actions.RunConfigurationProducer
+import com.intellij.execution.executors.DefaultRunExecutor
+import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -13,6 +21,7 @@ class DevInRunFileAction : DumbAwareAction() {
 
     override fun update(e: AnActionEvent) {
         val file = e.getData(CommonDataKeys.PSI_FILE) ?: return
+        e.presentation.isEnabledAndVisible = file is DevInFile
         if (e.presentation.text.isNullOrBlank()) {
             e.presentation.text = "Run DevIn file: ${file.name}"
         }
@@ -27,7 +36,26 @@ class DevInRunFileAction : DumbAwareAction() {
         val project = file.project
         val context = ConfigurationContext.getFromContext(e.dataContext, e.place)
 
-        AutoDevNotifications.notify(project, "Run file action")
+        val configProducer = RunConfigurationProducer.getInstance(
+            AutoDevRunConfigurationProducer::class.java
+        )
+
+        val configurationSettings = configProducer.findExistingConfiguration(context)
+        val runConfiguration = if (configurationSettings == null) {
+            val configurationFactory = AutoDevConfigurationFactory(AutoDevConfigurationType.getInstance())
+            val runConfiguration = configurationFactory.createTemplateConfiguration(project) as AutoDevConfiguration
+            runConfiguration.name = "Run DevIn file: ${virtualFile.name}"
+            runConfiguration
+        } else {
+            configurationSettings.configuration as AutoDevConfiguration
+        }
+
+        val builder =
+            ExecutionEnvironmentBuilder.createOrNull(DefaultRunExecutor.getRunExecutorInstance(), runConfiguration)
+        if (builder != null) {
+            ExecutionManager.getInstance(project).restartRunProfile(builder.build())
+        }
+
     }
 
     companion object {
