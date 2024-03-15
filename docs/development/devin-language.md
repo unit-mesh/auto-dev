@@ -43,14 +43,15 @@ code_contents ::= (NEWLINE | CODE_CONTENT)*
 
 ## Case Design
 
-### AutoCRUD
+### Introduce file
 
 ```devin
 Explain code /file:src/main/java/com/example/Controller.java
 ```
 
+### Edit file
 
-```
+```devin
 /edit /file:src/main/java/com/example/Controller.java#L1-L12
 \`\`\`java
 public class Controller {
