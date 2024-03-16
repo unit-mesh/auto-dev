@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.compiler
+package cc.unitmesh.devti.language.compiler.exec
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.vcs.VcsPrompting
@@ -17,6 +17,13 @@ import kotlinx.coroutines.runBlocking
 import java.util.concurrent.CompletableFuture
 
 
+/**
+ * RevAutoCommand is used to execute a command that retrieves the committed change list for a given revision using Git.
+ *
+ * @param myProject the Project instance associated with the command
+ * @param revision the Git revision for which the committed change list is to be retrieved
+ *
+ */
 class RevAutoCommand(private val myProject: Project, private val revision: String) : AutoCommand {
     override fun execute(): String? {
         val repository = GitRepositoryManager.getInstance(myProject).repositories.firstOrNull() ?: return null

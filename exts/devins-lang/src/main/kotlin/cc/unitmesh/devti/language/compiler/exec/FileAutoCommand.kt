@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.compiler
+package cc.unitmesh.devti.language.compiler.exec
 
 import cc.unitmesh.devti.language.compiler.data.LineInfo
 import cc.unitmesh.devti.language.compiler.utils.lookupFile
@@ -23,12 +23,12 @@ class FileAutoCommand(private val myProject: Project, private val prop: String) 
             return null
         }
 
-        contentsToByteArray.let {
+        contentsToByteArray.let { bytes ->
             val lang = virtualFile.let {
                 PsiManager.getInstance(myProject).findFile(it)?.language?.displayName
             } ?: ""
 
-            val content = it.toString(Charsets.UTF_8)
+            val content = bytes.toString(Charsets.UTF_8)
             val fileContent = if (range != null) {
                 val subContent = try {
                     content.substring(range.startLine, range.endLine)

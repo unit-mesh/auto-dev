@@ -1,8 +1,4 @@
-package cc.unitmesh.devti.language.compiler
-
-interface AutoCommand {
-    fun execute(): String?
-}
+package cc.unitmesh.devti.language.compiler.exec
 
 class PrintAutoCommand(private val value: String) : AutoCommand {
     override fun execute(): String {

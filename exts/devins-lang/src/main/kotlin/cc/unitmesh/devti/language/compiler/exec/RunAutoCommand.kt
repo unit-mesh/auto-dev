@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.compiler
+package cc.unitmesh.devti.language.compiler.exec
 
 import cc.unitmesh.devti.language.compiler.utils.lookupFile
 import cc.unitmesh.devti.provider.AutoTestService
@@ -6,6 +6,13 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 
+/**
+ * The `RunAutoCommand` class is responsible for executing an auto command on a given project.
+ *
+ * @property myProject The project to execute the auto command on.
+ * @property prop The name of the file to find and run tests for.
+ *
+ */
 class RunAutoCommand(val myProject: Project, val prop: String) : AutoCommand {
     override fun execute(): String? {
         val virtualFile = myProject.lookupFile(prop.trim()) ?: return "<DevliError>: File not found: $prop"

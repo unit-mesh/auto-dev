@@ -1,10 +1,9 @@
-package cc.unitmesh.devti.language.compiler
+package cc.unitmesh.devti.language.compiler.exec
 
 import cc.unitmesh.devti.language.compiler.data.LineInfo
 import cc.unitmesh.devti.language.compiler.utils.lookupFile
 import cc.unitmesh.devti.util.parser.Code
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
@@ -16,7 +15,6 @@ class WriteAutoCommand(val myProject: Project, val prop: String, val content: St
 
         val range: LineInfo? = LineInfo.fromString(prop)
 
-        // prop name can be src/file.name#L1-L2
         val filename = prop.split("#")[0]
 
         try {
