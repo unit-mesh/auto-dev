@@ -8,13 +8,29 @@ permalink: /devins
 
 {: .no_toc }
 
-# DevIns Language
+# DevIns Lang: Enhancing AI Agent Capabilities
 
-DevIns lang is the AutoDev AI Agent language, which means Development Intelligence.
-DevIns can make the AI Agent more intelligent and more powerful. It is a language that can be used to describe
-the AI Agent's behavior and capabilities.
+DevIns Lang, short for Development Intelligence Language, is the driving force behind our AutoDev AI Agent's advanced
+capabilities. It serves as a comprehensive tool for defining and enhancing the behavior and functionalities of the AI
+Agent.
 
-An AI Agent task can split into multiple instructions, and each instruction can be description by a DevIn file, 
-which is a markdown file with DevIn language.
+## What is DevIns?
 
+DevIns Lang empowers developers to craft intricate instructions for the AI Agent, enabling it to perform tasks with
+greater intelligence and efficiency. By breaking down tasks into manageable instructions, developers can leverage the
+full potential of the AI Agent in various scenarios.
+
+### Key Features:
+
+- **Enhanced Intelligence**: DevIns Lang equips the AI Agent with a higher level of intelligence, enabling it to
+  understand and execute complex instructions effectively.
+- **Task Segmentation**: Complex AI tasks are divided into smaller, more manageable instructions, each defined using
+  DevIns language within markdown files.
+
+### Why DevIns?
+
+Originally named DevInputLanguage in Issue [#101](https://github.com/unit-mesh/auto-dev/issues/101) for better
+interaction with LLM, we later renamed it to DevIns. This change was prompted by the discovery of Devin AI, a renowned
+AI company, to avoid confusion. The name DevIns, derived from DevInstruction, succinctly captures the essence of the
+language in guiding the AI Agent's actions.
 
