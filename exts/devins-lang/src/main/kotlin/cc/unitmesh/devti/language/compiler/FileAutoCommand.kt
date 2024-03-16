@@ -4,6 +4,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.TextRange
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiManager
 
@@ -21,15 +22,11 @@ class FileAutoCommand(private val myProject: Project, private val prop: String) 
             null
         }
 
-        val projectPath = myProject.guessProjectDir()?.toNioPath()
-        val realpath = projectPath?.resolve(prop.trim())
-
-        val virtualFile =
-            VirtualFileManager.getInstance().findFileByUrl("file://${realpath?.toAbsolutePath()}")
+        val virtualFile = myProject.lookupFile(prop.trim())
 
         val contentsToByteArray = virtualFile?.contentsToByteArray()
         if (contentsToByteArray == null) {
-            logger.warn("File not found: $realpath")
+            logger.warn("File not found: $virtualFile")
             return null
         }
 
