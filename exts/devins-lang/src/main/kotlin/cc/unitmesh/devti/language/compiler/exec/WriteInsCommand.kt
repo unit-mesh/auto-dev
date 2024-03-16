@@ -14,7 +14,6 @@ class WriteInsCommand(val myProject: Project, val prop: String, val content: Str
         val content = Code.parse(content).text
 
         val range: LineInfo? = LineInfo.fromString(prop)
-
         val filename = prop.split("#")[0]
 
         try {

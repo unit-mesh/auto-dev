@@ -15,6 +15,7 @@ import com.intellij.psi.util.elementType
 data class CompileResult(
     var output: String = "",
     var isLocalCommand: Boolean = false,
+    var hasError: Boolean = false
 )
 
 class DevInsCompiler(private val myProject: Project, val file: DevInFile, val editor: Editor? = null) {
@@ -62,15 +63,16 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
                 if (command == null) {
                     output.append(used.text)
                     logger.warn("Unknown command: ${id?.text}")
+                    result.hasError = true
                     return
                 }
-
 
                 val propElement = id.nextSibling?.nextSibling
                 val isProp = (propElement.elementType == DevInTypes.COMMAND_PROP)
                 if (!isProp) {
                     output.append(used.text)
                     logger.warn("No command prop found: ${used.text}")
+                    result.hasError = true
                     return
                 }
 
@@ -122,7 +124,12 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
 
             BuiltinCommand.PATCH -> {
                 result.isLocalCommand = true
-                PrintInsCommand("/" + commandNode.agentName + ":" + prop)
+                val devInCode: CodeBlockElement? = lookupNextCode(used)
+                if (devInCode == null) {
+                    PrintInsCommand("/" + commandNode.agentName + ":" + prop)
+                } else {
+                    PatchInsCommand(myProject, prop, devInCode.text)
+                }
             }
 
             BuiltinCommand.RUN -> {
@@ -163,3 +170,5 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
         return devInCode
     }
 }
+
+
