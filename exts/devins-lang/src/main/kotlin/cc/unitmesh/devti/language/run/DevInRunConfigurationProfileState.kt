@@ -25,6 +25,7 @@ import com.intellij.psi.PsiManager
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 // DONT REMOVE THIS IMPORT
+import kotlinx.coroutines.flow.collect
 import java.io.OutputStream
 
 open class DevInRunConfigurationProfileState(
@@ -53,15 +54,20 @@ open class DevInRunConfigurationProfileState(
         }
 
         val compiler = DevInsCompiler(myProject, file)
-        val output = compiler.compile()
+        val compileResult = compiler.compile()
 
-        console.print(output, ConsoleViewContentType.USER_INPUT)
+        console.print(compileResult.output, ConsoleViewContentType.USER_INPUT)
         console.print("--------------------\n", ConsoleViewContentType.NORMAL_OUTPUT)
 
         ApplicationManager.getApplication().invokeLater {
+            if (compileResult.isLocalCommand) {
+                console.print("Local command detected, running in local mode", ConsoleViewContentType.SYSTEM_OUTPUT)
+                return@invokeLater
+            }
+
             LLMCoroutineScope.scope(myProject).launch {
                 runBlocking {
-                    llm.stream(output, "").collect {
+                    llm.stream(compileResult.output, "").collect {
                         console.print(it, ConsoleViewContentType.NORMAL_OUTPUT)
                     }
                 }

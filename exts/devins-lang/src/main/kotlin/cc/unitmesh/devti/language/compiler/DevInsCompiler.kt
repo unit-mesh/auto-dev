@@ -9,11 +9,17 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.util.elementType
 
+data class CompileResult(
+    var output: String = "",
+    var isLocalCommand: Boolean = false,
+)
+
 class DevInsCompiler(val myProject: Project, val file: DevInFile, val editor: Editor? = null) {
     private val logger = logger<DevInsCompiler>()
+    private val result = CompileResult()
     private val output: StringBuilder = StringBuilder()
 
-    fun compile(): String {
+    fun compile(): CompileResult {
         file.children.forEach {
             when (it.elementType) {
                 DevInTypes.TEXT_SEGMENT -> output.append(it.text)
@@ -33,7 +39,8 @@ class DevInsCompiler(val myProject: Project, val file: DevInFile, val editor: Ed
             }
         }
 
-        return output.toString()
+        result.output = output.toString()
+        return result
     }
 
     private fun processUsed(used: DevInUsed) {
@@ -80,8 +87,8 @@ class DevInsCompiler(val myProject: Project, val file: DevInFile, val editor: Ed
         }
     }
 
-    private fun processingCommand(command: BuiltinCommand, prop: String, fallbackText: String) {
-        val command: AutoCommand = when (command) {
+    private fun processingCommand(commandNode: BuiltinCommand, prop: String, fallbackText: String) {
+        val command: AutoCommand = when (commandNode) {
             BuiltinCommand.FILE -> {
                 FileAutoCommand(myProject, prop)
             }
@@ -91,18 +98,21 @@ class DevInsCompiler(val myProject: Project, val file: DevInFile, val editor: Ed
             }
 
             BuiltinCommand.SYMBOL -> {
-                PrintAutoCommand("/" + command.agentName + ":" + prop)
+                PrintAutoCommand("/" + commandNode.agentName + ":" + prop)
             }
 
             BuiltinCommand.WRITE -> {
-                PrintAutoCommand("/" + command.agentName + ":" + prop)
+                result.isLocalCommand = true
+                PrintAutoCommand("/" + commandNode.agentName + ":" + prop)
             }
 
             BuiltinCommand.PATCH -> {
-                PrintAutoCommand("/" + command.agentName + ":" + prop)
+                result.isLocalCommand = true
+                PrintAutoCommand("/" + commandNode.agentName + ":" + prop)
             }
 
             BuiltinCommand.RUN -> {
+                result.isLocalCommand = true
                 RunAutoCommand(myProject, prop)
             }
         }
