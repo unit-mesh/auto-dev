@@ -12,7 +12,7 @@ import com.intellij.openapi.util.NotNullLazyValue
 class AutoDevConfigurationType : SimpleConfigurationType(
     "AutoDevConfigurationType",
     DevInLanguage.INSTANCE.id,
-    AutoDevBundle.message("line.marker.run.0", DevInLanguage.INSTANCE.id),
+    AutoDevBundle.message("devin.line.marker.run.0", DevInLanguage.INSTANCE.id),
     NotNullLazyValue.lazy { DevInIcons.DEFAULT }
 ) {
     override fun createTemplateConfiguration(project: Project): RunConfiguration =

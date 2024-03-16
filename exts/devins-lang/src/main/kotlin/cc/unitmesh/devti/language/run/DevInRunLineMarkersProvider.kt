@@ -20,7 +20,7 @@ class DevInRunLineMarkersProvider : RunLineMarkerContributor(), DumbAware {
 
         return Info(
             AllIcons.RunConfigurations.TestState.Run,
-            { AutoDevBundle.message("line.marker.run.0", psiFile.containingFile.name) },
+            { AutoDevBundle.message("devin.line.marker.run.0", psiFile.containingFile.name) },
             *actions
         )
     }
