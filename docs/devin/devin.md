@@ -1,6 +1,6 @@
 ---
 layout: default
-title: DevIn Language
+title: DevIn - AI Agent Language
 nav_order: 9
 has_children: true
 ---
