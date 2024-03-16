@@ -1,6 +1,6 @@
 ---
 layout: default
-title: DevIn Quick Start
+title: DevIns Quick Start
 nav_order: 1
 parent: AI Agent Language
 ---

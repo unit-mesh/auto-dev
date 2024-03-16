@@ -1,6 +1,6 @@
 ---
 layout: default
-title: DevIn Spec
+title: DevIns Language Spec
 nav_order: 2
 parent: AI Agent Language
 ---
@@ -13,7 +13,7 @@ AutoDev@1.7.2
 In issue [#101](https://github.com/unit-mesh/auto-dev/issues/101), to better interactive with LLM, and also 
 handle `@`, `/`, `#`, `$` and `!` completion better, we introduce a new language: DevIn.
 
-Code: [DevIn Language](https://github.com/unit-mesh/auto-dev/tree/master/exts/devin-lang)
+Code: [DevIns Language](https://github.com/unit-mesh/auto-dev/tree/master/exts/devin-lang)
 
 Based on: [JetBrains' Markdown Util](https://github.com/JetBrains/intellij-community/tree/master/platform/markdown-utils)
 
@@ -27,7 +27,7 @@ Based on: [JetBrains' Markdown Util](https://github.com/JetBrains/intellij-commu
 ## Language spec
 
 ```bnf
-DevInFile ::= (used | code | TEXT_SEGMENT | NEWLINE)*
+DevInsFile ::= (used | code | TEXT_SEGMENT | NEWLINE)*
 
 used ::= (
     AGENT_START AGENT_ID
