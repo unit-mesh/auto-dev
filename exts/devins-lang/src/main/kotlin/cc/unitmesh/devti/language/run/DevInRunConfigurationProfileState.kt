@@ -57,11 +57,12 @@ open class DevInRunConfigurationProfileState(
         val compileResult = compiler.compile()
 
         console.print(compileResult.output, ConsoleViewContentType.USER_INPUT)
-        console.print("--------------------\n", ConsoleViewContentType.NORMAL_OUTPUT)
+        console.print("\n--------------------\n", ConsoleViewContentType.NORMAL_OUTPUT)
 
         ApplicationManager.getApplication().invokeLater {
             if (compileResult.isLocalCommand) {
                 console.print("Local command detected, running in local mode", ConsoleViewContentType.SYSTEM_OUTPUT)
+                processHandler.detachProcess()
                 return@invokeLater
             }
 
