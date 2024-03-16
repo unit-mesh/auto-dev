@@ -1,8 +1,8 @@
 ---
 layout: default
-title: Spec
+title: DevIn Spec
 nav_order: 2
-parent: DevIn - AI Agent Language
+parent: AI Agent Language
 ---
 
 AutoDev@1.7.2
