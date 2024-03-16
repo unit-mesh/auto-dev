@@ -27,7 +27,7 @@ import kotlinx.coroutines.runBlocking
 // DONT REMOVE THIS IMPORT
 import java.io.OutputStream
 
-open class DevInRunConfigurationProfileState(
+open class DevInsRunConfigurationProfileState(
     private val myProject: Project,
     private val configuration: DevInsConfiguration,
 ) : RunProfileState {
@@ -40,12 +40,7 @@ open class DevInRunConfigurationProfileState(
         val console: ConsoleView = ConsoleViewWrapperBase(ConsoleViewImpl(myProject, true))
         console.attachToProcess(processHandler)
 
-        val file: DevInFile? = VirtualFileManager.getInstance()
-            .findFileByUrl("file://${configuration.getScriptPath()}")
-            ?.let {
-                PsiManager.getInstance(myProject).findFile(it)
-            } as? DevInFile
-
+        val file: DevInFile? = lookupDevInsFile(myProject, configuration.getScriptPath())
         if (file == null) {
             console.print("File not found: ${configuration.getScriptPath()}", ConsoleViewContentType.ERROR_OUTPUT)
             processHandler.destroyProcess()
@@ -73,16 +68,18 @@ open class DevInRunConfigurationProfileState(
                 }
 
                 console.print("Done!", ConsoleViewContentType.SYSTEM_OUTPUT)
-                // done!
                 processHandler.detachProcess()
             }
         }
 
-
-        val result = DefaultExecutionResult(console, processHandler)
-
-        return result
+        return DefaultExecutionResult(console, processHandler)
     }
+
+    private fun lookupDevInsFile(project: Project, script: String) = VirtualFileManager.getInstance()
+        .findFileByUrl("file://$script")
+        ?.let {
+            PsiManager.getInstance(project).findFile(it)
+        } as? DevInFile
 
     @Throws(ExecutionException::class)
     private fun createProcessHandler(myExecutionName: String): ProcessHandler {

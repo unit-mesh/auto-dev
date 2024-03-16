@@ -20,7 +20,7 @@ class DevInsConfiguration(project: Project, factory: ConfigurationFactory, name:
     private val SCRIPT_PATH_TAG: String = "SCRIPT_PATH"
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
-        return DevInRunConfigurationProfileState(project, this)
+        return DevInsRunConfigurationProfileState(project, this)
     }
 
     override fun checkConfiguration() {
