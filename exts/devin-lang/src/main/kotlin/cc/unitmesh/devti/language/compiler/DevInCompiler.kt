@@ -75,8 +75,8 @@ class DevInCompiler(val myProject: Project, val file: DevInFile, val editor: Edi
             }
 
             else -> {
+                logger.warn("Unknown [cc.unitmesh.devti.language.psi.DevInUsed] type: ${firstChild.elementType}")
                 output.append(used.text)
-                logger.warn("Unknown used type: ${firstChild.elementType}")
             }
         }
     }
@@ -94,13 +94,11 @@ class DevInCompiler(val myProject: Project, val file: DevInFile, val editor: Edi
             }
 
             BuiltinCommand.SYMBOL -> {
-                logger.info("handling symbol")
-                output.append(command.agentName)
+                output.append("/" + command.agentName)
             }
 
             BuiltinCommand.WRITE -> {
-                logger.info("handling write")
-                output.append(command.agentName)
+                output.append("/" + command.agentName)
             }
         }
     }

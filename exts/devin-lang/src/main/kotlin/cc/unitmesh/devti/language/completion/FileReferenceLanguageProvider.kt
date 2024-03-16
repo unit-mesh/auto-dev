@@ -54,13 +54,9 @@ class FileReferenceLanguageProvider : CompletionProvider<CompletionParameters>()
     }
 
     private fun canBeAdded(file: VirtualFile): Boolean {
-        if (!file.isValid || file.isDirectory) {
-            return false
-        }
+        if (!file.isValid || file.isDirectory) return false
 
-        if (file.fileType.isBinary || FileUtilRt.isTooLarge(file.length)) {
-            return false
-        }
+        if (file.fileType.isBinary || FileUtilRt.isTooLarge(file.length)) return false
 
         return true
     }
