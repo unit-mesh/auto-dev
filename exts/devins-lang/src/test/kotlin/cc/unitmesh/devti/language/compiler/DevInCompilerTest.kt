@@ -9,8 +9,7 @@ class DevInCompilerTest : LightJavaCodeInsightFixtureTestCase() {
         val file = myFixture.configureByText("test.devin", code)
 
         val compile = DevInsCompiler(project, file as DevInFile, myFixture.editor).compile()
-        assertEquals("Normal String /", compile)
+        assertEquals("Normal String /", compile.output)
     }
 }
-
 
