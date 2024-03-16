@@ -1,11 +1,8 @@
 package cc.unitmesh.devti.language.compiler
 
+import cc.unitmesh.devti.language.compiler.data.LineInfo
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.guessProjectDir
-import com.intellij.openapi.util.TextRange
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiManager
 
 class FileAutoCommand(private val myProject: Project, private val prop: String) : AutoCommand {
@@ -13,14 +10,7 @@ class FileAutoCommand(private val myProject: Project, private val prop: String) 
     private val output = StringBuilder()
 
     override fun execute(): String? {
-        val range: TextRange? = if (prop.contains("#")) {
-            val rangeStr = prop.substringAfter("#")
-            val start = rangeStr.substringBefore("-").toInt()
-            val end = rangeStr.substringAfter("-").toInt()
-            TextRange(start, end)
-        } else {
-            null
-        }
+        val range: LineInfo? = LineInfo.fromString(prop)
 
         val virtualFile = myProject.lookupFile(prop.trim())
 
@@ -38,7 +28,7 @@ class FileAutoCommand(private val myProject: Project, private val prop: String) 
             val content = it.toString(Charsets.UTF_8)
             val fileContent = if (range != null) {
                 val subContent = try {
-                    content.substring(range.startOffset, range.endOffset)
+                    content.substring(range.startLine, range.endLine)
                 } catch (e: StringIndexOutOfBoundsException) {
                     content
                 }
@@ -56,3 +46,4 @@ class FileAutoCommand(private val myProject: Project, private val prop: String) 
         return output.toString()
     }
 }
+
