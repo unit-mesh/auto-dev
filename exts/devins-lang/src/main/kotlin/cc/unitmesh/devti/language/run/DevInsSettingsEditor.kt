@@ -9,7 +9,7 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.dsl.builder.panel
 import javax.swing.JComponent
 
-class AutoDevSettingsEditor(val project: Project) : SettingsEditor<AutoDevConfiguration>() {
+class DevInsSettingsEditor(val project: Project) : SettingsEditor<DevInsConfiguration>() {
     private val myScriptSelector: TextFieldWithBrowseButton = TextFieldWithBrowseButton()
 
     init {
@@ -27,11 +27,11 @@ class AutoDevSettingsEditor(val project: Project) : SettingsEditor<AutoDevConfig
         }
     }
 
-    override fun resetEditorFrom(configuration: AutoDevConfiguration) {
+    override fun resetEditorFrom(configuration: DevInsConfiguration) {
         myScriptSelector.text = configuration.getScriptPath()
     }
 
-    override fun applyEditorTo(configuration: AutoDevConfiguration) {
+    override fun applyEditorTo(configuration: DevInsConfiguration) {
         configuration.setScriptPath(myScriptSelector.text)
     }
 }

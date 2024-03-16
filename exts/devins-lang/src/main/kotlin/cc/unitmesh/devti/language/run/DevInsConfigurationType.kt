@@ -9,18 +9,18 @@ import com.intellij.execution.configurations.SimpleConfigurationType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NotNullLazyValue
 
-class AutoDevConfigurationType : SimpleConfigurationType(
-    "AutoDevConfigurationType",
+class DevInsConfigurationType : SimpleConfigurationType(
+    "DevInsConfigurationType",
     DevInLanguage.INSTANCE.id,
     AutoDevBundle.message("devin.line.marker.run.0", DevInLanguage.INSTANCE.id),
     NotNullLazyValue.lazy { DevInIcons.DEFAULT }
 ) {
     override fun createTemplateConfiguration(project: Project): RunConfiguration =
-        AutoDevConfiguration(project, this, "AutoDevConfiguration")
+        DevInsConfiguration(project, this, "DevInsConfiguration")
 
     companion object {
-        fun getInstance(): AutoDevConfigurationType {
-            return findConfigurationType(AutoDevConfigurationType::class.java)
+        fun getInstance(): DevInsConfigurationType {
+            return findConfigurationType(DevInsConfigurationType::class.java)
         }
     }
 }

@@ -1,9 +1,9 @@
 package cc.unitmesh.devti.language.actions
 
 import cc.unitmesh.devti.language.psi.DevInFile
-import cc.unitmesh.devti.language.run.AutoDevConfiguration
-import cc.unitmesh.devti.language.run.AutoDevConfigurationType
-import cc.unitmesh.devti.language.run.AutoDevRunConfigurationProducer
+import cc.unitmesh.devti.language.run.DevInsConfiguration
+import cc.unitmesh.devti.language.run.DevInsConfigurationType
+import cc.unitmesh.devti.language.run.DevInsRunConfigurationProducer
 import com.intellij.execution.ExecutionManager
 import com.intellij.execution.RunManager
 import com.intellij.execution.actions.ConfigurationContext
@@ -16,7 +16,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.DumbAwareAction
 import org.jetbrains.annotations.NonNls
 
-class DevInRunFileAction : DumbAwareAction() {
+class DevInsRunFileAction : DumbAwareAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun update(e: AnActionEvent) {
@@ -30,30 +30,26 @@ class DevInRunFileAction : DumbAwareAction() {
 
     override fun actionPerformed(e: AnActionEvent) {
         val file = e.getData(CommonDataKeys.PSI_FILE) ?: return
-
         val project = file.project
+
         val context = ConfigurationContext.getFromContext(e.dataContext, e.place)
+        val configProducer = RunConfigurationProducer.getInstance(DevInsRunConfigurationProducer::class.java)
 
-        val configProducer = RunConfigurationProducer.getInstance(AutoDevRunConfigurationProducer::class.java)
-
-        val runManager = RunManager.getInstance(project)
-
-        val runConfiguration = (
-                configProducer.findExistingConfiguration(context)
-                    ?: runManager.createConfiguration(file.name, AutoDevConfigurationType::class.java)
-                ).configuration as AutoDevConfiguration
+        val runConfiguration = (configProducer.findExistingConfiguration(context)
+            ?: RunManager.getInstance(project)
+                .createConfiguration(file.name, DevInsConfigurationType::class.java)
+                ).configuration as DevInsConfiguration
 
         runConfiguration.setScriptPath(file.virtualFile.path)
 
-        val builder =
-            ExecutionEnvironmentBuilder.createOrNull(DefaultRunExecutor.getRunExecutorInstance(), runConfiguration)
-        if (builder != null) {
-            ExecutionManager.getInstance(project).restartRunProfile(builder.build())
-        }
+        val executorInstance = DefaultRunExecutor.getRunExecutorInstance()
+        val builder = ExecutionEnvironmentBuilder.createOrNull(executorInstance, runConfiguration) ?: return
+
+        ExecutionManager.getInstance(project).restartRunProfile(builder.build())
     }
 
     companion object {
-        val ID: @NonNls String = "runDevInFileAction"
+        val ID: @NonNls String = "runDevInsFileAction"
     }
 
 }

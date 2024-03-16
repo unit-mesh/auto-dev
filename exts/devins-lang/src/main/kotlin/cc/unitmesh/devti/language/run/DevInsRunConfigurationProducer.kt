@@ -6,13 +6,11 @@ import com.intellij.execution.actions.LazyRunConfigurationProducer
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 
-class AutoDevRunConfigurationProducer : LazyRunConfigurationProducer<AutoDevConfiguration>() {
-    override fun getConfigurationFactory(): AutoDevConfigurationType {
-        return AutoDevConfigurationType.getInstance()
-    }
+class DevInsRunConfigurationProducer : LazyRunConfigurationProducer<DevInsConfiguration>() {
+    override fun getConfigurationFactory() = DevInsConfigurationType.getInstance()
 
     override fun setupConfigurationFromContext(
-        configuration: AutoDevConfiguration,
+        configuration: DevInsConfiguration,
         context: ConfigurationContext,
         sourceElement: Ref<PsiElement>,
     ): Boolean {
@@ -26,7 +24,7 @@ class AutoDevRunConfigurationProducer : LazyRunConfigurationProducer<AutoDevConf
     }
 
     override fun isConfigurationFromContext(
-        configuration: AutoDevConfiguration,
+        configuration: DevInsConfiguration,
         context: ConfigurationContext,
     ): Boolean {
         val psiLocation = context.psiLocation ?: return false

@@ -25,12 +25,11 @@ import com.intellij.psi.PsiManager
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 // DONT REMOVE THIS IMPORT
-import kotlinx.coroutines.flow.collect
 import java.io.OutputStream
 
 open class DevInRunConfigurationProfileState(
     private val myProject: Project,
-    private val configuration: AutoDevConfiguration,
+    private val configuration: DevInsConfiguration,
 ) : RunProfileState {
     private val llm: LLMProvider = LlmFactory.instance.create(myProject)
 

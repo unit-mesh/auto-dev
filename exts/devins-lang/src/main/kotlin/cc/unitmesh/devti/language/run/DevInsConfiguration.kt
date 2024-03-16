@@ -9,17 +9,15 @@ import com.intellij.execution.configurations.*
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.util.io.FileUtil
 import org.jdom.Element
-import org.jetbrains.annotations.NonNls
 import javax.swing.Icon
 
-class AutoDevConfiguration(project: Project, factory: ConfigurationFactory, name: String) :
+class DevInsConfiguration(project: Project, factory: ConfigurationFactory, name: String) :
     LocatableConfigurationBase<ConfigurationFactory>(project, factory, name) {
     override fun getIcon(): Icon = AutoDevIcons.AI_COPILOT
     private var myScriptPath = ""
-    private val SCRIPT_PATH_TAG: @NonNls String = "SCRIPT_PATH"
+    private val SCRIPT_PATH_TAG: String = "SCRIPT_PATH"
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
         return DevInRunConfigurationProfileState(project, this)
@@ -41,13 +39,11 @@ class AutoDevConfiguration(project: Project, factory: ConfigurationFactory, name
         myScriptPath = element.readString(SCRIPT_PATH_TAG) ?: ""
     }
 
-    override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> = AutoDevSettingsEditor(project)
+    override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> = DevInsSettingsEditor(project)
+
+    fun getScriptPath(): String = myScriptPath
 
     fun setScriptPath(scriptPath: String) {
         myScriptPath = scriptPath.trim { it <= ' ' }
-    }
-
-    fun getScriptPath(): String {
-        return myScriptPath
     }
 }

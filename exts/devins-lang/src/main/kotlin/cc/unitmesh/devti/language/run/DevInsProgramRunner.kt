@@ -9,19 +9,17 @@ import com.intellij.execution.runners.showRunContent
 import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.openapi.fileEditor.FileDocumentManager
 
-open class DevInProgramRunner : GenericProgramRunner<RunnerSettings>() {
+open class DevInsProgramRunner : GenericProgramRunner<RunnerSettings>() {
     companion object {
-        const val RUNNER_ID: String = "DevInCommandRunner"
+        const val RUNNER_ID: String = "DevInsProgramRunner"
     }
 
     override fun getRunnerId(): String = RUNNER_ID
 
-    override fun canRun(executorId: String, profile: RunProfile): Boolean {
-        return profile is AutoDevConfiguration
-    }
+    override fun canRun(executorId: String, profile: RunProfile) = profile is DevInsConfiguration
 
     override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor? {
-        if (environment.runProfile !is AutoDevConfiguration) return null
+        if (environment.runProfile !is DevInsConfiguration) return null
 
         FileDocumentManager.getInstance().saveAllDocuments()
         return showRunContent(state.execute(environment.executor, this), environment)

@@ -5,7 +5,7 @@ import com.intellij.execution.impl.RunConfigurationBeforeRunProviderDelegate
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.util.Key
 
-class DevInBeforeRunProviderDelegate : RunConfigurationBeforeRunProviderDelegate {
+class DevInsBeforeRunProviderDelegate : RunConfigurationBeforeRunProviderDelegate {
     val DEVIN_BEFORE_KEY_PREFIX: String = "DevIn.BeforeRunTask"
     val KEY_MAP: MutableMap<String, Key<Boolean>> = HashMap()
 
@@ -13,7 +13,7 @@ class DevInBeforeRunProviderDelegate : RunConfigurationBeforeRunProviderDelegate
         val settings = environment.runnerAndConfigurationSettings ?: return
         val configuration = settings.configuration
 
-        if (configuration is AutoDevConfiguration) {
+        if (configuration is DevInsConfiguration) {
             val userDataKey = getRunBeforeUserDataKey(configuration)
             configuration.project.putUserData(userDataKey, true)
         }
