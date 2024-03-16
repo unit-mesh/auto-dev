@@ -5,7 +5,7 @@ import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import com.intellij.temporary.getElementToAction
 import cc.unitmesh.devti.intentions.action.task.TestCodeGenRequest
 import cc.unitmesh.devti.intentions.action.task.TestCodeGenTask
-import cc.unitmesh.devti.provider.WriteTestService
+import cc.unitmesh.devti.provider.AutoTestService
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
@@ -19,7 +19,7 @@ class AutoTestThisBaseIntention : ChatBaseIntention() {
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         val psiElement = file?.originalElement ?: return false
-        val service = WriteTestService.context(psiElement)
+        val service = AutoTestService.context(psiElement)
         return service != null
     }
 

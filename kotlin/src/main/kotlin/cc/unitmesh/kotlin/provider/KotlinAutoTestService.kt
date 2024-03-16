@@ -3,7 +3,7 @@ package cc.unitmesh.kotlin.provider
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.provider.context.TestFileContext
-import cc.unitmesh.devti.provider.WriteTestService
+import cc.unitmesh.devti.provider.AutoTestService
 import cc.unitmesh.kotlin.util.KotlinPsiUtil
 import cc.unitmesh.kotlin.util.getReturnTypeReferences
 import com.intellij.execution.configurations.RunProfile
@@ -27,9 +27,9 @@ import org.jetbrains.kotlin.psi.psiUtil.getValueParameters
 import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration
 import java.io.File
 
-class KotlinWriteTestService : WriteTestService() {
+class KotlinAutoTestService : AutoTestService() {
     companion object {
-        val log = logger<KotlinWriteTestService>()
+        val log = logger<KotlinAutoTestService>()
     }
 
     override fun runConfigurationClass(project: Project): Class<out RunProfile> {

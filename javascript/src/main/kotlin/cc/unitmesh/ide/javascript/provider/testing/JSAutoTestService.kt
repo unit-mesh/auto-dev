@@ -1,9 +1,8 @@
 package cc.unitmesh.ide.javascript.provider.testing
 
 import cc.unitmesh.devti.context.ClassContext
-import cc.unitmesh.devti.provider.WriteTestService
+import cc.unitmesh.devti.provider.AutoTestService
 import cc.unitmesh.devti.provider.context.TestFileContext
-import cc.unitmesh.devti.util.isInProject
 import cc.unitmesh.ide.javascript.context.JavaScriptClassContextBuilder
 import cc.unitmesh.ide.javascript.context.JavaScriptMethodContextBuilder
 import cc.unitmesh.ide.javascript.util.JSPsiUtil
@@ -23,18 +22,16 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.Path
 
-class JSWriteTestService : WriteTestService() {
-    val log = logger<JSWriteTestService>()
+class JSAutoTestService : AutoTestService() {
+    val log = logger<JSAutoTestService>()
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = NpmRunConfiguration::class.java
 
     override fun isApplicable(element: PsiElement): Boolean {

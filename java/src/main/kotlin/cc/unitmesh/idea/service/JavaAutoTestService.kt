@@ -2,7 +2,7 @@ package cc.unitmesh.idea.service
 
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
-import cc.unitmesh.devti.provider.WriteTestService
+import cc.unitmesh.devti.provider.AutoTestService
 import cc.unitmesh.devti.provider.context.TestFileContext
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.lang.java.JavaLanguage
@@ -21,7 +21,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration
 import java.io.File
 
-class JavaWriteTestService : WriteTestService() {
+class JavaAutoTestService : AutoTestService() {
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = GradleRunConfiguration::class.java
     override fun isApplicable(element: PsiElement): Boolean = element.language is JavaLanguage
 
@@ -145,6 +145,6 @@ class JavaWriteTestService : WriteTestService() {
     }
 
     companion object {
-        val log = logger<JavaWriteTestService>()
+        val log = logger<JavaAutoTestService>()
     }
 }

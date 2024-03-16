@@ -1,7 +1,7 @@
 package cc.unitmesh.go.provider.testing
 
 import cc.unitmesh.devti.context.ClassContext
-import cc.unitmesh.devti.provider.WriteTestService
+import cc.unitmesh.devti.provider.AutoTestService
 import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.go.context.GoMethodContextBuilder
 import cc.unitmesh.go.context.GoStructContextBuilder
@@ -19,7 +19,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testIntegration.TestFinderHelper
 
-class GoWriteTestService : WriteTestService() {
+class GoAutoTestService : AutoTestService() {
     override fun isApplicable(element: PsiElement): Boolean = element.containingFile?.language == GoLanguage.INSTANCE
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = GoTestRunConfiguration::class.java
 

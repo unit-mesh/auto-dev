@@ -30,7 +30,7 @@ interface RunService {
         }
 
         if (testConfig == null) {
-            WriteTestService.log.warn("Failed to find test configuration for: ${virtualFile.nameWithoutExtension}")
+            AutoTestService.log.warn("Failed to find test configuration for: ${virtualFile.nameWithoutExtension}")
             return
         }
 
@@ -38,11 +38,11 @@ interface RunService {
             runManager.findConfigurationByTypeAndName(testConfig.type, testConfig.name)
 
         if (configurationSettings == null) {
-            WriteTestService.log.warn("Failed to find test configuration for: ${virtualFile.nameWithoutExtension}")
+            AutoTestService.log.warn("Failed to find test configuration for: ${virtualFile.nameWithoutExtension}")
             return
         }
 
-        WriteTestService.log.info("configurationSettings: $configurationSettings")
+        AutoTestService.log.info("configurationSettings: $configurationSettings")
         runManager.selectedConfiguration = configurationSettings
 
         val executor: Executor = RunAnythingPopupUI.getExecutor()

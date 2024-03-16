@@ -2,16 +2,9 @@ package cc.unitmesh.devti.provider
 
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.provider.context.TestFileContext
-import com.intellij.execution.Executor
-import com.intellij.execution.ExecutorRegistryImpl
-import com.intellij.execution.RunManager
-import com.intellij.execution.configurations.RunProfile
-import com.intellij.ide.actions.runAnything.RunAnythingPopupUI
-import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.serviceContainer.LazyExtensionInstance
@@ -26,7 +19,7 @@ import com.intellij.util.xmlb.annotations.Attribute
  *
  * @constructor Creates a new instance of the `WriteTestService` class.
  */
-abstract class WriteTestService : LazyExtensionInstance<WriteTestService>(), RunService {
+abstract class AutoTestService : LazyExtensionInstance<AutoTestService>(), RunService {
     @Attribute("language")
     var language: String? = null
 
@@ -61,11 +54,11 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>(), Run
     abstract fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext>
 
     companion object {
-        val log = logger<WriteTestService>()
-        private val EP_NAME: ExtensionPointName<WriteTestService> =
+        val log = logger<AutoTestService>()
+        private val EP_NAME: ExtensionPointName<AutoTestService> =
             ExtensionPointName.create("cc.unitmesh.testContextProvider")
 
-        fun context(psiElement: PsiElement): WriteTestService? {
+        fun context(psiElement: PsiElement): AutoTestService? {
             val extensionList = EP_NAME.extensionList
             val writeTestService = extensionList.firstOrNull {
                 it.isApplicable(psiElement)

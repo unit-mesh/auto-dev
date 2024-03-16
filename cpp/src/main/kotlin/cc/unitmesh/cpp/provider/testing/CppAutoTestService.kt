@@ -2,7 +2,7 @@ package cc.unitmesh.cpp.provider.testing
 
 import cc.unitmesh.cpp.util.CppContextPrettify
 import cc.unitmesh.devti.context.ClassContext
-import cc.unitmesh.devti.provider.WriteTestService
+import cc.unitmesh.devti.provider.AutoTestService
 import cc.unitmesh.devti.provider.context.TestFileContext
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.openapi.application.WriteAction
@@ -14,7 +14,7 @@ import com.intellij.psi.PsiFile
 import com.jetbrains.cidr.lang.OCLanguage
 import com.jetbrains.cidr.lang.psi.OCFunctionDeclaration
 
-class CppWriteTestService : WriteTestService() {
+class CppAutoTestService : AutoTestService() {
     // TODO in Cpp233 and Cpp222 the RunProfile is different, maybe we can use the same RunProfile in future
     override fun runConfigurationClass(project: Project): Class<out RunProfile>? = null
 

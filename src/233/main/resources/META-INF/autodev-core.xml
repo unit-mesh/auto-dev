@@ -72,12 +72,6 @@
                 implementation="cc.unitmesh.devti.gui.snippet.error.CodeBlockHighlightingSettingsProvider"/>
         <daemon.intentionActionFilter
                 implementation="cc.unitmesh.devti.gui.snippet.error.CodeBlockIntentionActionFilter"/>
-
-<!--        <completion.contributor-->
-<!--                language="JSON"-->
-<!--                id="CustomAgentJsonCompletionContributor"-->
-<!--                implementationClass="cc.unitmesh.devti.custom.completion.CustomAgentJsonCompletionContributor"-->
-<!--                order="first, before JsonCompletionContributor"/>-->
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
@@ -159,7 +153,7 @@
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.testContextProvider"
-                        interface="cc.unitmesh.devti.provider.WriteTestService"
+                        interface="cc.unitmesh.devti.provider.AutoTestService"
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.chatContextProvider"

@@ -43,7 +43,7 @@
 
         <testContextProvider
                 language="JAVA"
-                implementation="cc.unitmesh.idea.service.JavaWriteTestService"/>
+                implementation="cc.unitmesh.idea.service.JavaAutoTestService"/>
 
         <buildSystemProvider
                 implementation="cc.unitmesh.idea.provider.JavaBuildSystemProvider"/>

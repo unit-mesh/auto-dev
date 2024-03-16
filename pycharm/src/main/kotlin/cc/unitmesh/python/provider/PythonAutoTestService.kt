@@ -1,7 +1,7 @@
 package cc.unitmesh.python.provider
 
 import cc.unitmesh.devti.context.ClassContext
-import cc.unitmesh.devti.provider.WriteTestService
+import cc.unitmesh.devti.provider.AutoTestService
 import cc.unitmesh.devti.provider.context.TestFileContext
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.lang.injection.InjectedLanguageManager
@@ -16,7 +16,7 @@ import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFunction
 import com.jetbrains.python.run.PythonRunConfiguration
 
-class PythonWriteTestService : WriteTestService() {
+class PythonAutoTestService : AutoTestService() {
     override fun isApplicable(element: PsiElement): Boolean = element.language is PythonLanguage
 
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = PythonRunConfiguration::class.java

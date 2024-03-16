@@ -24,7 +24,7 @@ class JSWriteTestServiceTest : LightPlatformTestCase() {
         val file = PsiFileFactory.getInstance(project).createFileFromText(JavascriptLanguage.INSTANCE, code)
 
         // when
-        val result = JSWriteTestService.Util.getTestFilePath(file)
+        val result = JSAutoTestService.Util.getTestFilePath(file)
 
         // then
         assertEquals("null", result.toString())
@@ -47,7 +47,7 @@ class JSWriteTestServiceTest : LightPlatformTestCase() {
         )
 
         // when
-        val result = JSWriteTestService.Util.getTestFilePath(file)
+        val result = JSAutoTestService.Util.getTestFilePath(file)
 
         // then
         assertEquals("null", result.toString())
@@ -85,7 +85,7 @@ class JSWriteTestServiceTest : LightPlatformTestCase() {
         val clazz = PsiTreeUtil.findChildrenOfAnyType(psiFile, JSClass::class.java).toList()[2]
         val function = PsiTreeUtil.findChildOfType(clazz, JSFunction::class.java)!!
 
-        val relevantClass = JSWriteTestService().lookupRelevantClass(project, function)
+        val relevantClass = JSAutoTestService().lookupRelevantClass(project, function)
 
         TestCase.assertEquals(relevantClass.size, 2)
         println(relevantClass.map { it.format() })
@@ -117,7 +117,7 @@ class JSWriteTestServiceTest : LightPlatformTestCase() {
 
         val function = PsiTreeUtil.findChildrenOfAnyType(psiFile, JSFunction::class.java).toList()[2]
 
-        val relevantClass = JSWriteTestService().lookupRelevantClass(project, function)
+        val relevantClass = JSAutoTestService().lookupRelevantClass(project, function)
 
         TestCase.assertEquals(relevantClass.size, 1)
 

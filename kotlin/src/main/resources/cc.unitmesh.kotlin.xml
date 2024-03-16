@@ -37,7 +37,7 @@
                 implementation="cc.unitmesh.kotlin.provider.KotlinContextPrompter"/>
         <testContextProvider
                 language="kotlin"
-                implementation="cc.unitmesh.kotlin.provider.KotlinWriteTestService"/>
+                implementation="cc.unitmesh.kotlin.provider.KotlinAutoTestService"/>
 
         <customPromptProvider
                 language="kotlin"

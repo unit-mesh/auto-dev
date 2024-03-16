@@ -32,7 +32,7 @@
 
         <testContextProvider
                 language="Python"
-                implementation="cc.unitmesh.python.provider.PythonWriteTestService"/>
+                implementation="cc.unitmesh.python.provider.PythonAutoTestService"/>
 
     </extensions>
 </idea-plugin>

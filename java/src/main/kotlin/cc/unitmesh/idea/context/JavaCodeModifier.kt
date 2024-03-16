@@ -1,7 +1,7 @@
 package cc.unitmesh.idea.context
 
 import cc.unitmesh.devti.context.builder.CodeModifier
-import cc.unitmesh.idea.service.JavaWriteTestService
+import cc.unitmesh.idea.service.JavaAutoTestService
 import com.intellij.lang.Language
 import com.intellij.lang.java.JavaLanguage
 import com.intellij.openapi.application.ReadAction
@@ -15,7 +15,7 @@ import com.intellij.psi.*
 
 open class JavaCodeModifier : CodeModifier {
     companion object {
-        val log = logger<JavaWriteTestService>()
+        val log = logger<JavaAutoTestService>()
     }
 
     override fun isApplicable(language: Language): Boolean {

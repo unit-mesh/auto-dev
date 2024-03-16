@@ -12,7 +12,7 @@
         <methodContextBuilder language="go" implementationClass="cc.unitmesh.go.context.GoMethodContextBuilder"/>
         <variableContextBuilder language="go" implementationClass="cc.unitmesh.go.context.GoVariableContextBuilder"/>
 
-        <testContextProvider language="go" implementation="cc.unitmesh.go.provider.testing.GoWriteTestService"/>
+        <testContextProvider language="go" implementation="cc.unitmesh.go.provider.testing.GoAutoTestService"/>
 
         <chatContextProvider implementation="cc.unitmesh.go.provider.GoVersionChatContextProvider"/>
 
