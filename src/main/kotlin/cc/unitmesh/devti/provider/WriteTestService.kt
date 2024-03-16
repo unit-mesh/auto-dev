@@ -26,7 +26,7 @@ import com.intellij.util.xmlb.annotations.Attribute
  *
  * @constructor Creates a new instance of the `WriteTestService` class.
  */
-abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
+abstract class WriteTestService : LazyExtensionInstance<WriteTestService>(), RunService {
     @Attribute("language")
     var language: String? = null
 
@@ -34,13 +34,7 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
     var implementationClass: String? = null
 
     override fun getImplementationClassName(): String? = implementationClass
-    /**
-     * Retrieves the run configuration class for the given project.
-     *
-     * @param project The project for which to retrieve the run configuration class.
-     * @return The run configuration class for the project.
-     */
-    abstract fun runConfigurationClass(project: Project): Class<out RunProfile>?
+
     abstract fun isApplicable(element: PsiElement): Boolean
     /**
      * Finds or creates a test file for the given source file, project, and element.
@@ -65,39 +59,6 @@ abstract class WriteTestService : LazyExtensionInstance<WriteTestService>() {
      * @return a list of ClassContext objects representing the relevant classes found in the project
      */
     abstract fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext>
-
-    fun runTest(project: Project, virtualFile: VirtualFile) {
-        val runManager = RunManager.getInstance(project)
-        val testConfig = runManager.allConfigurationsList.firstOrNull {
-            val runConfigureClass = runConfigurationClass(project)
-            it.name == virtualFile.nameWithoutExtension && (it.javaClass == runConfigureClass)
-        }
-
-        if (testConfig == null) {
-            log.warn("Failed to find test configuration for: ${virtualFile.nameWithoutExtension}")
-            return
-        }
-
-        val configurationSettings =
-            runManager.findConfigurationByTypeAndName(testConfig.type, testConfig.name)
-
-        if (configurationSettings == null) {
-            log.warn("Failed to find test configuration for: ${virtualFile.nameWithoutExtension}")
-            return
-        }
-
-        log.info("configurationSettings: $configurationSettings")
-        runManager.selectedConfiguration = configurationSettings
-
-        val executor: Executor = RunAnythingPopupUI.getExecutor()
-        ExecutorRegistryImpl.RunnerHelper.run(
-            project,
-            testConfig,
-            configurationSettings,
-            DataContext.EMPTY_CONTEXT,
-            executor
-        )
-    }
 
     companion object {
         val log = logger<WriteTestService>()

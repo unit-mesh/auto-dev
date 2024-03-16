@@ -69,11 +69,9 @@ class GoWriteTestService : WriteTestService() {
         )
     }
 
-    fun toTestFileName(underTestFileName: String): String {
-        return underTestFileName + "_test.go"
-    }
+    private fun toTestFileName(underTestFileName: String): String = underTestFileName + "_test.go"
 
-    fun getElementForTests(elementAtCaret: PsiElement): PsiElement? {
+    private fun getElementForTests(elementAtCaret: PsiElement): PsiElement? {
         val parent = PsiTreeUtil.getParentOfType(elementAtCaret, GoFunctionOrMethodDeclaration::class.java, false)
         if (parent == null) {
             val goFile: GoFile = elementAtCaret as? GoFile ?: return null
