@@ -139,8 +139,11 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
         }
 
         val execResult = command.execute()
-        val result = if (execResult?.contains("<DevliError>") == false) {
-            if (commandNode == BuiltinCommand.WRITE) {
+
+        val isSucceed = execResult?.contains("<DevliError>") == false
+        val result = if (isSucceed) {
+            val hasReadCodeBlock = commandNode == BuiltinCommand.WRITE || commandNode == BuiltinCommand.PATCH
+            if (hasReadCodeBlock) {
                 skipNextCode = true
             }
 
