@@ -131,7 +131,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         runBlocking {
             writeTestToFile(request.project, flow, testContext)
             navigateTestFile(testContext.outputFile, request.project)
-            autoTestService?.runTest(request.project, testContext.outputFile)
+            autoTestService?.runFile(request.project, testContext.outputFile)
 
             AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)
             indicator.fraction = 1.0

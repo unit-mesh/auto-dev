@@ -7,6 +7,7 @@ import cc.unitmesh.devti.language.psi.DevInUsed
 import com.intellij.codeInsight.completion.CompletionContributor
 import com.intellij.codeInsight.completion.CompletionInitializationContext
 import com.intellij.codeInsight.completion.CompletionType
+import com.intellij.patterns.ElementPattern
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.patterns.PsiElementPattern
 import com.intellij.psi.PsiElement
@@ -20,7 +21,7 @@ class DevInCompletionContributor : CompletionContributor() {
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.COMMAND_ID), BuiltinCommandProvider())
         extend(
             CompletionType.BASIC,
-            valuePattern(BuiltinCommand.FILE.agentName),
+            (valuePatterns(listOf(BuiltinCommand.FILE, BuiltinCommand.RUN))),
             FileReferenceLanguageProvider()
         )
         extend(
@@ -51,4 +52,10 @@ class DevInCompletionContributor : CompletionContributor() {
                 PlatformPatterns.psiElement(DevInTypes.COLON),
                 PlatformPatterns.psiElement().withText(text)
             )
+
+
+    private fun valuePatterns(listOf: List<BuiltinCommand>): ElementPattern<out PsiElement> {
+        val patterns = listOf.map { valuePattern(it.agentName) }
+        return PlatformPatterns.or(*patterns.toTypedArray())
+    }
 }

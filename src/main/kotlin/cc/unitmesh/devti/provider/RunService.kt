@@ -22,7 +22,7 @@ interface RunService {
      */
     fun runConfigurationClass(project: Project): Class<out RunProfile>?
 
-    fun runTest(project: Project, virtualFile: VirtualFile) {
+    fun runFile(project: Project, virtualFile: VirtualFile) {
         val runManager = RunManager.getInstance(project)
         val testConfig = runManager.allConfigurationsList.firstOrNull {
             val runConfigureClass = runConfigurationClass(project)

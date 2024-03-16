@@ -91,7 +91,6 @@ class DevInsCompiler(val myProject: Project, val file: DevInFile, val editor: Ed
             }
 
             BuiltinCommand.SYMBOL -> {
-//                output.append("/" + command.agentName)
                 PrintAutoCommand("/" + command.agentName + ":" + prop)
             }
 
