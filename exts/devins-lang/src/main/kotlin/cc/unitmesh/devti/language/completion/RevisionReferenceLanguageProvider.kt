@@ -6,6 +6,7 @@ import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -21,6 +22,8 @@ import java.util.concurrent.CompletableFuture
 
 
 class RevisionReferenceLanguageProvider : CompletionProvider<CompletionParameters>() {
+    private val logger = logger<RevisionReferenceLanguageProvider>()
+
     override fun addCompletions(
         parameters: CompletionParameters,
         context: ProcessingContext,
@@ -37,7 +40,14 @@ class RevisionReferenceLanguageProvider : CompletionProvider<CompletionParameter
         val future = CompletableFuture<List<GitCommit>>()
         val task = object : Task.Backgroundable(project, AutoDevBundle.message("devin.ref.loading"), false) {
             override fun run(indicator: ProgressIndicator) {
-                val commits: List<GitCommit> = GitHistoryUtils.history(project, repository.root, branchName)
+                val commits: List<GitCommit> = try {
+                    // in some case, maybe not repo or branch, so we should handle it
+                    GitHistoryUtils.history(project, repository.root, branchName)
+                } catch (e: Exception) {
+                    logger.error("Failed to load commits", e)
+                    emptyList()
+                }
+
                 future.complete(commits)
             }
         }
