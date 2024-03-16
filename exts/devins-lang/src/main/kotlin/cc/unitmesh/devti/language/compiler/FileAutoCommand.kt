@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.language.compiler
 
 import cc.unitmesh.devti.language.compiler.data.LineInfo
+import cc.unitmesh.devti.language.compiler.utils.lookupFile
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager

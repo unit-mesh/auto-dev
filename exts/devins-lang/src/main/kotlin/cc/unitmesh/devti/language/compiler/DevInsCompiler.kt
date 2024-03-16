@@ -7,11 +7,10 @@ import cc.unitmesh.devti.language.psi.DevInUsed
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.util.elementType
 
-class DevInCompiler(val myProject: Project, val file: DevInFile, val editor: Editor? = null) {
-    private val logger = logger<DevInCompiler>()
+class DevInsCompiler(val myProject: Project, val file: DevInFile, val editor: Editor? = null) {
+    private val logger = logger<DevInsCompiler>()
     private val output: StringBuilder = StringBuilder()
 
     fun compile(): String {
@@ -82,33 +81,35 @@ class DevInCompiler(val myProject: Project, val file: DevInFile, val editor: Edi
     }
 
     private fun processingCommand(command: BuiltinCommand, prop: String, fallbackText: String) {
-        when (command) {
+        val command: AutoCommand = when (command) {
             BuiltinCommand.FILE -> {
-                val result = FileAutoCommand(myProject, prop).execute() ?: fallbackText
-                output.append(result)
+                FileAutoCommand(myProject, prop)
             }
 
             BuiltinCommand.REV -> {
-                val result = RevAutoCommand(myProject, prop).execute() ?: fallbackText
-                output.append(result)
+                RevAutoCommand(myProject, prop)
             }
 
             BuiltinCommand.SYMBOL -> {
-                output.append("/" + command.agentName)
+//                output.append("/" + command.agentName)
+                PrintAutoCommand("/" + command.agentName + ":" + prop)
             }
 
             BuiltinCommand.WRITE -> {
-                output.append("/" + command.agentName)
+                PrintAutoCommand("/" + command.agentName + ":" + prop)
             }
 
             BuiltinCommand.PATCH -> {
-                output.append("/" + command.agentName)
+                PrintAutoCommand("/" + command.agentName + ":" + prop)
             }
 
             BuiltinCommand.RUN -> {
-                output.append("/" + command.agentName)
+                RunAutoCommand(myProject, prop)
             }
         }
+
+        val result = command.execute() ?: fallbackText
+        output.append(result)
     }
 
 }

@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.run
 
-import cc.unitmesh.devti.language.compiler.DevInCompiler
+import cc.unitmesh.devti.language.compiler.DevInsCompiler
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.llms.LlmFactory
@@ -25,7 +25,6 @@ import com.intellij.psi.PsiManager
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 // DONT REMOVE THIS IMPORT
-import kotlinx.coroutines.flow.collect
 import java.io.OutputStream
 
 open class DevInRunConfigurationProfileState(
@@ -53,7 +52,7 @@ open class DevInRunConfigurationProfileState(
             return DefaultExecutionResult(console, processHandler)
         }
 
-        val compiler = DevInCompiler(myProject, file)
+        val compiler = DevInsCompiler(myProject, file)
         val output = compiler.compile()
 
         console.print(output, ConsoleViewContentType.USER_INPUT)
