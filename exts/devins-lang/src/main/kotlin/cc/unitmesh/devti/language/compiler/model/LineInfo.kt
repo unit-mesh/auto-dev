@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.compiler.data
+package cc.unitmesh.devti.language.compiler.model
 
 data class LineInfo(val startLine: Int, val endLine: Int) {
     companion object {

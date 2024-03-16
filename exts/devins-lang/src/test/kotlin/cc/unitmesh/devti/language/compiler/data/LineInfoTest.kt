@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.compiler.data
 
+import cc.unitmesh.devti.language.compiler.model.LineInfo
 import junit.framework.TestCase.assertEquals
 import org.junit.Test
 

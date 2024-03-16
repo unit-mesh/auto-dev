@@ -1,11 +1,18 @@
 package cc.unitmesh.devti.language.compiler.exec
 
-import cc.unitmesh.devti.language.compiler.data.LineInfo
+import cc.unitmesh.devti.language.compiler.model.LineInfo
 import cc.unitmesh.devti.language.compiler.utils.lookupFile
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager
 
+/**
+ * FileAutoCommand is responsible for reading a file and returning its contents.
+ *
+ * @param myProject the Project in which the file operations are performed
+ * @param prop the property string containing the file name and optional line range
+ *
+ */
 class FileAutoCommand(private val myProject: Project, private val prop: String) : AutoCommand {
     private val logger = logger<FileAutoCommand>()
     private val output = StringBuilder()
