@@ -24,14 +24,9 @@ class DevInsCompiler(val myProject: Project, val file: DevInFile, val editor: Ed
             when (it.elementType) {
                 DevInTypes.TEXT_SEGMENT -> output.append(it.text)
                 DevInTypes.NEWLINE -> output.append("\n")
-                DevInTypes.CODE -> {
-                    output.append(it.text)
-                }
-
-                DevInTypes.USED -> {
-                    processUsed(it as DevInUsed)
-                }
-
+                // todo: add lazy to process code
+                DevInTypes.CODE -> output.append(it.text)
+                DevInTypes.USED -> processUsed(it as DevInUsed)
                 else -> {
                     output.append(it.text)
                     logger.warn("Unknown element type: ${it.elementType}")
