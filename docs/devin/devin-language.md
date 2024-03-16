@@ -1,8 +1,8 @@
 ---
 layout: default
-title: DevIn Language
-nav_order: 4
-parent: Development
+title: Spec
+nav_order: 2
+parent: DevIn Language
 ---
 
 AutoDev@1.7.2
