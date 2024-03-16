@@ -27,7 +27,7 @@ Based on: [JetBrains' Markdown Util](https://github.com/JetBrains/intellij-commu
 ## Language spec
 
 ```bnf
-DevInsFile ::= (used | code | TEXT_SEGMENT | NEWLINE)*
+DevInFile ::= (used | code | TEXT_SEGMENT | NEWLINE)*
 
 used ::= (
     AGENT_START AGENT_ID
@@ -45,19 +45,28 @@ code_contents ::= (NEWLINE | CODE_CONTENT)*
 
 ### Introduce file
 
+For example:
+
 ```devin
 Explain code /file:src/main/java/com/example/Controller.java
 ```
 
+will call LLM to explain the code in the file `src/main/java/com/example/Controller.java`.
+
 ### Edit file
 
-```devin
-/edit /file:src/main/java/com/example/Controller.java#L1-L12
-\`\`\`java
-public class Controller {
-    public void method() {
-        System.out.println("Hello, World!");
+If AI Agent returns a code snippet, AutoDev can edit the file with the code snippet.
+
+For example:
+
+    /edit /file:src/main/java/com/example/Controller.java#L1-L12
+    ```java
+    public class Controller {
+        public void method() {
+            System.out.println("Hello, World!");
+        }
     }
-}
-\`\`\`
-```
+    ```
+
+will edit the file `src/main/java/com/example/Controller.java` with the code snippet. 
+The `#L1-L12` is the line range to edit. The code snippet is in Java language.
