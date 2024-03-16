@@ -13,7 +13,7 @@ import com.intellij.psi.PsiManager
  * @property prop The name of the file to find and run tests for.
  *
  */
-class RunAutoCommand(val myProject: Project, val prop: String) : AutoCommand {
+class RunInsCommand(val myProject: Project, val prop: String) : InsCommand {
     override fun execute(): String? {
         val virtualFile = myProject.lookupFile(prop.trim()) ?: return "<DevliError>: File not found: $prop"
         try {

@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.compiler.exec
 
-interface AutoCommand {
+interface InsCommand {
     fun execute(): String?
 }
 

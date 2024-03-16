@@ -97,37 +97,37 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
     }
 
     private fun processingCommand(commandNode: BuiltinCommand, prop: String, used: DevInUsed, fallbackText: String) {
-        val command: AutoCommand = when (commandNode) {
+        val command: InsCommand = when (commandNode) {
             BuiltinCommand.FILE -> {
-                FileAutoCommand(myProject, prop)
+                FileInsCommand(myProject, prop)
             }
 
             BuiltinCommand.REV -> {
-                RevAutoCommand(myProject, prop)
+                RevInsCommand(myProject, prop)
             }
 
             BuiltinCommand.SYMBOL -> {
-                PrintAutoCommand("/" + commandNode.agentName + ":" + prop)
+                PrintInsCommand("/" + commandNode.agentName + ":" + prop)
             }
 
             BuiltinCommand.WRITE -> {
                 result.isLocalCommand = true
                 val devInCode: CodeBlockElement? = lookupNextCode(used)
                 if (devInCode == null) {
-                    PrintAutoCommand("/" + commandNode.agentName + ":" + prop)
+                    PrintInsCommand("/" + commandNode.agentName + ":" + prop)
                 } else {
-                    WriteAutoCommand(myProject, prop, devInCode.text)
+                    WriteInsCommand(myProject, prop, devInCode.text)
                 }
             }
 
             BuiltinCommand.PATCH -> {
                 result.isLocalCommand = true
-                PrintAutoCommand("/" + commandNode.agentName + ":" + prop)
+                PrintInsCommand("/" + commandNode.agentName + ":" + prop)
             }
 
             BuiltinCommand.RUN -> {
                 result.isLocalCommand = true
-                RunAutoCommand(myProject, prop)
+                RunInsCommand(myProject, prop)
             }
         }
 

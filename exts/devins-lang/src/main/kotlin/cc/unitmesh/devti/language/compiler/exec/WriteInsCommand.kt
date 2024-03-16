@@ -9,7 +9,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiManager
 
-class WriteAutoCommand(val myProject: Project, val prop: String, val content: String) : AutoCommand {
+class WriteInsCommand(val myProject: Project, val prop: String, val content: String) : InsCommand {
     override fun execute(): String? {
         val content = Code.parse(content).text
 

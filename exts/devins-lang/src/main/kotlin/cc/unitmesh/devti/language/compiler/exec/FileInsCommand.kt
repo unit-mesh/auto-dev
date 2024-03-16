@@ -13,8 +13,8 @@ import com.intellij.psi.PsiManager
  * @param prop the property string containing the file name and optional line range
  *
  */
-class FileAutoCommand(private val myProject: Project, private val prop: String) : AutoCommand {
-    private val logger = logger<FileAutoCommand>()
+class FileInsCommand(private val myProject: Project, private val prop: String) : InsCommand {
+    private val logger = logger<FileInsCommand>()
     private val output = StringBuilder()
 
     override fun execute(): String? {

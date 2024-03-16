@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.compiler.exec
 
-class PrintAutoCommand(private val value: String) : AutoCommand {
+class PrintInsCommand(private val value: String) : InsCommand {
     override fun execute(): String {
         return value
     }

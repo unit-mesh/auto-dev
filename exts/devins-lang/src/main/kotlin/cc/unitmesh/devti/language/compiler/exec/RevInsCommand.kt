@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture
  * @param revision the Git revision for which the committed change list is to be retrieved
  *
  */
-class RevAutoCommand(private val myProject: Project, private val revision: String) : AutoCommand {
+class RevInsCommand(private val myProject: Project, private val revision: String) : InsCommand {
     override fun execute(): String? {
         val repository = GitRepositoryManager.getInstance(myProject).repositories.firstOrNull() ?: return null
         val future = CompletableFuture<List<Change>>()
