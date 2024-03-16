@@ -13,7 +13,9 @@ class FileAutoCommand(private val myProject: Project, private val prop: String) 
     override fun execute(): String? {
         val range: LineInfo? = LineInfo.fromString(prop)
 
-        val virtualFile = myProject.lookupFile(prop.trim())
+        // prop name can be src/file.name#L1-L2
+        val filename = prop.split("#")[0]
+        val virtualFile = myProject.lookupFile(filename)
 
         val contentsToByteArray = virtualFile?.contentsToByteArray()
         if (contentsToByteArray == null) {

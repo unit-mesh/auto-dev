@@ -1,12 +1,15 @@
 package cc.unitmesh.devti.language.compiler
 
 import cc.unitmesh.devti.language.completion.BuiltinCommand
+import cc.unitmesh.devti.language.parser.CodeBlockElement
+import cc.unitmesh.devti.language.psi.DevInCode
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.psi.DevInTypes
 import cc.unitmesh.devti.language.psi.DevInUsed
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
 
 data class CompileResult(
@@ -15,17 +18,28 @@ data class CompileResult(
 )
 
 class DevInsCompiler(val myProject: Project, val file: DevInFile, val editor: Editor? = null) {
+    private var skipNextCode: Boolean = false
     private val logger = logger<DevInsCompiler>()
     private val result = CompileResult()
     private val output: StringBuilder = StringBuilder()
 
+    /**
+     * Todo: build AST tree, then compile
+     */
     fun compile(): CompileResult {
         file.children.forEach {
             when (it.elementType) {
                 DevInTypes.TEXT_SEGMENT -> output.append(it.text)
                 DevInTypes.NEWLINE -> output.append("\n")
-                // todo: add lazy to process code
-                DevInTypes.CODE -> output.append(it.text)
+                DevInTypes.CODE -> {
+                    if (skipNextCode) {
+                        skipNextCode = false
+                        return@forEach
+                    }
+
+                    output.append(it.text)
+                }
+
                 DevInTypes.USED -> processUsed(it as DevInUsed)
                 else -> {
                     output.append(it.text)
@@ -60,7 +74,7 @@ class DevInsCompiler(val myProject: Project, val file: DevInFile, val editor: Ed
                     return
                 }
 
-                processingCommand(command, propElement!!.text, fallbackText = used.text)
+                processingCommand(command, propElement!!.text, used, fallbackText = used.text)
             }
 
             DevInTypes.AGENT_START -> {
@@ -82,7 +96,7 @@ class DevInsCompiler(val myProject: Project, val file: DevInFile, val editor: Ed
         }
     }
 
-    private fun processingCommand(commandNode: BuiltinCommand, prop: String, fallbackText: String) {
+    private fun processingCommand(commandNode: BuiltinCommand, prop: String, used: DevInUsed, fallbackText: String) {
         val command: AutoCommand = when (commandNode) {
             BuiltinCommand.FILE -> {
                 FileAutoCommand(myProject, prop)
@@ -98,7 +112,28 @@ class DevInsCompiler(val myProject: Project, val file: DevInFile, val editor: Ed
 
             BuiltinCommand.WRITE -> {
                 result.isLocalCommand = true
-                PrintAutoCommand("/" + commandNode.agentName + ":" + prop)
+//                val devInCode = used.nextSibling.nextSibling as? DevInCode
+                // lookup in code
+                val devInCode: CodeBlockElement?
+                var next: PsiElement? = used
+                while (true) {
+                    next = next?.nextSibling
+                    if (next == null) {
+                        devInCode = null
+                        break
+                    }
+
+                    if (next.elementType == DevInTypes.CODE) {
+                        devInCode = next as CodeBlockElement
+                        break
+                    }
+                }
+
+                if (devInCode == null) {
+                    PrintAutoCommand("/" + commandNode.agentName + ":" + prop)
+                } else {
+                    WriteAutoCommand(myProject, prop, devInCode.text)
+                }
             }
 
             BuiltinCommand.PATCH -> {
@@ -112,8 +147,17 @@ class DevInsCompiler(val myProject: Project, val file: DevInFile, val editor: Ed
             }
         }
 
-        val result = command.execute() ?: fallbackText
+        val execResult = command.execute()
+        val result = if (execResult?.contains("<DevliError>") == false) {
+            if (commandNode == BuiltinCommand.WRITE) {
+                skipNextCode = true
+            }
+
+            execResult
+        } else {
+            execResult ?: fallbackText
+        }
+
         output.append(result)
     }
-
 }
