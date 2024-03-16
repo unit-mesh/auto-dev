@@ -3,6 +3,7 @@ layout: default
 title: DevIn - AI Agent Language
 nav_order: 6
 has_children: true
+permalink: /devin
 ---
 
 {: .no_toc }
