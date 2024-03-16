@@ -17,7 +17,7 @@ data class CompileResult(
     var isLocalCommand: Boolean = false,
 )
 
-class DevInsCompiler(val myProject: Project, val file: DevInFile, val editor: Editor? = null) {
+class DevInsCompiler(private val myProject: Project, val file: DevInFile, val editor: Editor? = null) {
     private var skipNextCode: Boolean = false
     private val logger = logger<DevInsCompiler>()
     private val result = CompileResult()
@@ -112,23 +112,7 @@ class DevInsCompiler(val myProject: Project, val file: DevInFile, val editor: Ed
 
             BuiltinCommand.WRITE -> {
                 result.isLocalCommand = true
-//                val devInCode = used.nextSibling.nextSibling as? DevInCode
-                // lookup in code
-                val devInCode: CodeBlockElement?
-                var next: PsiElement? = used
-                while (true) {
-                    next = next?.nextSibling
-                    if (next == null) {
-                        devInCode = null
-                        break
-                    }
-
-                    if (next.elementType == DevInTypes.CODE) {
-                        devInCode = next as CodeBlockElement
-                        break
-                    }
-                }
-
+                val devInCode: CodeBlockElement? = lookupNextCode(used)
                 if (devInCode == null) {
                     PrintAutoCommand("/" + commandNode.agentName + ":" + prop)
                 } else {
@@ -159,5 +143,23 @@ class DevInsCompiler(val myProject: Project, val file: DevInFile, val editor: Ed
         }
 
         output.append(result)
+    }
+
+    private fun lookupNextCode(used: DevInUsed): CodeBlockElement? {
+        val devInCode: CodeBlockElement?
+        var next: PsiElement? = used
+        while (true) {
+            next = next?.nextSibling
+            if (next == null) {
+                devInCode = null
+                break
+            }
+
+            if (next.elementType == DevInTypes.CODE) {
+                devInCode = next as CodeBlockElement
+                break
+            }
+        }
+        return devInCode
     }
 }
