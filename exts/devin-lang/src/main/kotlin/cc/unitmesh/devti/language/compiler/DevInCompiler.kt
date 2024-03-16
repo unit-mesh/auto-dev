@@ -100,6 +100,14 @@ class DevInCompiler(val myProject: Project, val file: DevInFile, val editor: Edi
             BuiltinCommand.WRITE -> {
                 output.append("/" + command.agentName)
             }
+
+            BuiltinCommand.PATCH -> {
+                output.append("/" + command.agentName)
+            }
+
+            BuiltinCommand.RUN -> {
+                output.append("/" + command.agentName)
+            }
         }
     }
 
