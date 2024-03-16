@@ -40,7 +40,7 @@
     </extensions>
 
     <actions>
-        <action id="runDevInFileAction"
+        <action id="runDevInsFileAction"
                 class="cc.unitmesh.devti.language.actions.DevInsRunFileAction"
                 use-shortcut-of="RunClass"/>
     </actions>
