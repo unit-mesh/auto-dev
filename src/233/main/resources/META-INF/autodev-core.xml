@@ -165,9 +165,8 @@
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.customDevInsCompletionProvider"
-                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
-            <with attribute="implementationClass" implements="cc.unitmesh.devti.provider.devins.DevInsCompletionProvider"/>
-        </extensionPoint>
+                        interface="cc.unitmesh.devti.provider.devins.DevInsCompletionProvider"
+                        dynamic="true"/>
     </extensionPoints>
 
     <applicationListeners>

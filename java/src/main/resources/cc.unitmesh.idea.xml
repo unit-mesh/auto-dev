@@ -60,6 +60,9 @@
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
+
+        <customDevInsCompletionProvider
+                implementation="cc.unitmesh.idea.provider.JavaCustomDevInsCompletionProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

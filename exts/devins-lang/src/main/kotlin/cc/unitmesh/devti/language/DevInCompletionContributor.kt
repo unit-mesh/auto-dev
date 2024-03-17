@@ -29,6 +29,11 @@ class DevInCompletionContributor : CompletionContributor() {
             valuePattern(BuiltinCommand.REV.agentName),
             RevisionReferenceLanguageProvider()
         )
+        extend(
+            CompletionType.BASIC,
+            valuePattern(BuiltinCommand.SYMBOL.agentName),
+            SymbolReferenceLanguageProvider()
+        )
     }
 
     override fun beforeCompletion(context: CompletionInitializationContext) {
