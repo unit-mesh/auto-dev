@@ -21,7 +21,7 @@ class DevInCompletionContributor : CompletionContributor() {
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.COMMAND_ID), BuiltinCommandProvider())
         extend(
             CompletionType.BASIC,
-            (valuePatterns(listOf(BuiltinCommand.FILE, BuiltinCommand.RUN))),
+            (valuePatterns(listOf(BuiltinCommand.FILE, BuiltinCommand.RUN, BuiltinCommand.WRITE))),
             FileReferenceLanguageProvider()
         )
         extend(
