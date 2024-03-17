@@ -21,11 +21,11 @@
 </p>
 
 > 🧙‍AutoDev: The AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, and a helpful
-> bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Dev/Testing/Document feature 🧪 included! 🚀
+> bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Dev/Testing/Document/Agent feature 🧪 included! 🚀
 
 [Quick Start →](https://ide.unitmesh.cc/quick-start)
 
-[DevIns — AI Agent language for AutoDevelopment →](https://ide.unitmesh.cc/devins) which you can use follow format to operate IDE:
+[DevIns — AI Agent language for AutoDevelopment →](https://ide.unitmesh.cc/devins) which you can use follow syntax as bridges for Human-AI-IDE:
 
     /write:src/main/java/com/example/Controller.java#L1-L12
     ```java
@@ -107,6 +107,10 @@ We follow [Chapi](https://github.com/phodal/chapi) for language support tier.
 see in [exts](exts)
 
 ## Demo
+
+DevIns Language demo (Bilibili) - 中文
+
+[![Watch the video](https://img.youtube.com/vi/gVBTBdFV5hA/sddefault.jpg)](https://www.bilibili.com/video/BV12H4y1W7sE/)
 
 Video demo (YouTube) — English
 
