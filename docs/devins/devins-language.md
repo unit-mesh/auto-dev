@@ -48,6 +48,7 @@ code_contents ::= (NEWLINE | CODE_CONTENT)*
 - `/rev`: read git change by git revision
 - `/run`: run code
 - `/patch`: apply patches to file
+- `/commit`: commit changes to git
 
 ### File Command
 
