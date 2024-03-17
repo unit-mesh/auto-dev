@@ -11,6 +11,8 @@ AutoDev@1.7.2
 
 # DevIns Lang: Enhancing AI Agent Capabilities
 
+Video demo: [https://www.bilibili.com/video/BV12H4y1W7sE/](https://www.bilibili.com/video/BV12H4y1W7sE/)
+
 DevIns Lang, short for Development Intelligence Language, is the driving force behind our AutoDev AI Agent's advanced
 capabilities. It serves as a comprehensive tool for defining and enhancing the behavior and functionalities of the AI
 Agent.
