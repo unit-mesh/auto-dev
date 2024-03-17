@@ -87,6 +87,23 @@ def mock_html():
 """
 
 
+@app.post("/api/agent/devins-sample", response_class=PlainTextResponse)
+def mock_devins(messages: Messages):
+    return """
+Here are the patches for your
+
+```devin
+/write:src/main/java/com/example/Controller.java#L1-L12
+\\`\\`\\`java
+public class Controller {
+    public void method() {
+        System.out.println("Hello, World!");
+    }
+}
+\\`\\`\\`
+```"""
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     exc_str = f'{exc}'.replace('\n', ' ').replace('   ', ' ')
