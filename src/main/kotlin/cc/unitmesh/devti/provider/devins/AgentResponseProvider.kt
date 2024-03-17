@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.provider.custom
+package cc.unitmesh.devti.provider.devins
 
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import com.intellij.openapi.extensions.ExtensionPointName

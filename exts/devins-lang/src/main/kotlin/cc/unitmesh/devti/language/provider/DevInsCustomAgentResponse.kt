@@ -4,8 +4,8 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.language.DevInLanguage
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
 import cc.unitmesh.devti.language.psi.DevInFile
-import cc.unitmesh.devti.provider.custom.AgentResponseProvider
-import cc.unitmesh.devti.provider.custom.CustomAgentContext
+import cc.unitmesh.devti.provider.devins.AgentResponseProvider
+import cc.unitmesh.devti.provider.devins.CustomAgentContext
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFileFactory
 import java.util.*
