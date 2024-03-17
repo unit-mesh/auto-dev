@@ -67,7 +67,7 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
                     return
                 }
 
-                if (command.requireProps) {
+                if (!command.requireProps) {
                     processingCommand(command, "", used, fallbackText = used.text)
                     return
                 }
