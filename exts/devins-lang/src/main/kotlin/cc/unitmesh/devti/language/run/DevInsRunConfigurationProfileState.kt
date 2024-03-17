@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.run
 
+// DONT REMOVE THIS IMPORT
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.llms.LLMProvider
@@ -18,15 +19,19 @@ import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiManager
+import com.intellij.ui.components.panels.NonOpaquePanel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-// DONT REMOVE THIS IMPORT
-import kotlinx.coroutines.flow.collect
+import java.awt.BorderLayout
 import java.io.OutputStream
+import javax.swing.JComponent
+import javax.swing.JPanel
 
 open class DevInsRunConfigurationProfileState(
     private val myProject: Project,
@@ -38,7 +43,23 @@ open class DevInsRunConfigurationProfileState(
         val processHandler: ProcessHandler = createProcessHandler(configuration.name)
         ProcessTerminatedListener.attach(processHandler)
 
-        val console: ConsoleView = ConsoleViewWrapperBase(ConsoleViewImpl(myProject, true))
+        val executionConsole = ConsoleViewImpl(myProject, true)
+        val console = object : ConsoleViewWrapperBase(executionConsole) {
+            private var myPanel: NonOpaquePanel = NonOpaquePanel(BorderLayout())
+
+            init {
+                val baseComponent = delegate.component
+                myPanel.add(baseComponent, BorderLayout.CENTER)
+
+                val actionGroup = DefaultActionGroup(*executionConsole.createConsoleActions())
+                val toolbar = ActionManager.getInstance().createActionToolbar("BuildConsole", actionGroup, false)
+                toolbar.targetComponent = baseComponent
+                myPanel.add(toolbar.component, BorderLayout.EAST)
+            }
+
+            override fun getComponent(): JComponent = myPanel
+        }
+
         console.attachToProcess(processHandler)
 
         val file: DevInFile? = lookupDevInsFile(myProject, configuration.getScriptPath())
@@ -96,10 +117,6 @@ open class DevInsRunConfigurationProfileState(
 
             override fun getProcessInput(): OutputStream? = null
             override fun getExecutionName(): String = myExecutionName
-
-            protected fun closeInput() {
-
-            }
         }
     }
 }
