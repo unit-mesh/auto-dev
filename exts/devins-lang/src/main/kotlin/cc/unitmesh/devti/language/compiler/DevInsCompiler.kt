@@ -132,6 +132,16 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
                 }
             }
 
+            BuiltinCommand.COMMIT -> {
+                result.isLocalCommand = true
+                val devInCode: CodeBlockElement? = lookupNextCode(used)
+                if (devInCode == null) {
+                    PrintInsCommand("/" + commandNode.agentName + ":" + prop)
+                } else {
+                    CommitInsCommand(myProject, prop, devInCode.text)
+                }
+            }
+
             BuiltinCommand.RUN -> {
                 result.isLocalCommand = true
                 RunInsCommand(myProject, prop)
@@ -142,7 +152,10 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
 
         val isSucceed = execResult?.contains("<DevliError>") == false
         val result = if (isSucceed) {
-            val hasReadCodeBlock = commandNode == BuiltinCommand.WRITE || commandNode == BuiltinCommand.PATCH
+            val hasReadCodeBlock = commandNode == BuiltinCommand.WRITE
+                    || commandNode == BuiltinCommand.PATCH
+                    || commandNode == BuiltinCommand.COMMIT
+
             if (hasReadCodeBlock) {
                 skipNextCode = true
             }
@@ -175,3 +188,9 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
 }
 
 
+class CommitInsCommand(val myProject: Project, prop: String, val commitMsg: String?): InsCommand {
+    override fun execute(): String? {
+        TODO("Not yet implemented")
+    }
+
+}
