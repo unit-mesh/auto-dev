@@ -25,7 +25,16 @@
 
 [Quick Start →](https://ide.unitmesh.cc/quick-start)
 
-[DevIns — AI Agent language for AutoDevelopment →](https://ide.unitmesh.cc/devins)
+[DevIns — AI Agent language for AutoDevelopment →](https://ide.unitmesh.cc/devins) which you can use follow format to operate IDE:
+
+    /write:src/main/java/com/example/Controller.java#L1-L12
+    ```java
+    public class Controller {
+        public void method() {
+            System.out.println("Hello, World!");
+        }
+    }
+    ```
 
 AutoDev Overview:
 
@@ -64,6 +73,8 @@ Features:
 - Infrastructure / DevOps
     - CI/CD support. AutoDev will auto generate CI/CD config file.
     - Dockerfile support. AutoDev will auto generate Dockerfile.
+- DevIns language
+    - Executable AI Agent language.
 - Built-in LLM Fine-tune
     - [UnitEval](https://github.com/unit-mesh/unit-eval) evaluate llm result
     - [UnitGen](https://github.com/unit-mesh/unit-gen) generate code-llm fine-tune data.
