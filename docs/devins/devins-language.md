@@ -52,9 +52,7 @@ code_contents ::= (NEWLINE | CODE_CONTENT)*
 
 ### File Command
 
-```devin
-Explain code /file:src/main/java/com/example/Controller.java
-```
+    Explain code /file:src/main/java/com/example/Controller.java
 
 ### Write Command
 
@@ -70,15 +68,11 @@ Explain code /file:src/main/java/com/example/Controller.java
 
 ### Rev Command
 
-```devin
-Explain code /rev:HEAD~1
-```
+    Explain code /rev:HEAD~1
 
 ### Run Command
 
-```devin
-/run:src/main/java/com/example/Controller.java
-```
+    /run:src/main/java/com/example/Controller.java
 
 ## Case Design
 
@@ -86,9 +80,7 @@ Explain code /rev:HEAD~1
 
 For example:
 
-```devin
-Explain code /file:src/main/java/com/example/Controller.java
-```
+    Explain code /file:src/main/java/com/example/Controller.java
 
 will call LLM to explain the code in the file `src/main/java/com/example/Controller.java`.
 

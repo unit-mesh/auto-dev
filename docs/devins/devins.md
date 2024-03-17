@@ -6,7 +6,8 @@ has_children: true
 permalink: /devins
 ---
 
-{: .no_toc }
+AutoDev@1.7.2
+{: .label .label-yellow }
 
 # DevIns Lang: Enhancing AI Agent Capabilities
 
