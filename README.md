@@ -25,7 +25,7 @@
 
 [Quick Start →](https://ide.unitmesh.cc/quick-start)
 
-[AI Agent Language: DevIns →](https://ide.unitmesh.cc/devins)
+[DevIns - a language for Auto Development →](https://ide.unitmesh.cc/devins)
 
 AutoDev Overview:
 
