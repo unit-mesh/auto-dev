@@ -11,10 +11,11 @@ enum class BuiltinCommand(
     val agentName: String,
     val description: String,
     val icon: Icon,
-    val hasCompletion: Boolean = false
+    val hasCompletion: Boolean = false,
+    val requireProps: Boolean = false,
 ) {
-    FILE("file", "Read the content of a file", AllIcons.Actions.AddFile, true),
-    REV("rev", "Read git change by file", AllIcons.Vcs.History, true),
+    FILE("file", "Read the content of a file", AllIcons.Actions.AddFile, true, true),
+    REV("rev", "Read git change by file", AllIcons.Vcs.History, true, true),
     SYMBOL("symbol", "Read content by Java/Kotlin canonicalName", AllIcons.Actions.GroupBy, false),
     WRITE("write", "Write content to a file, /write:/path/to/file:L1-L2", AllIcons.Actions.Edit, false),
     PATCH("patch", "Apply patch to a file, /patch:/path/to/file", AllIcons.Vcs.Patch_file, false),
