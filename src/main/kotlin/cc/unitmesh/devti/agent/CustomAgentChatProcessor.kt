@@ -8,7 +8,10 @@ import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.provider.custom.AgentResponseProvider
+import cc.unitmesh.devti.provider.custom.CustomAgentContext
 import cc.unitmesh.devti.util.LLMCoroutineScope
+import cc.unitmesh.devti.util.parser.Code
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
@@ -38,6 +41,8 @@ class CustomAgentChatProcessor(val project: Project) {
         }
 
         selectedAgent.state = CustomAgentState.FINISHED
+
+        var devInCode: String? = ""
         when (selectedAgent.responseAction) {
             CustomAgentResponseAction.Direct -> {
                 val message = ui.addMessage("loading", false, "")
@@ -50,6 +55,12 @@ class CustomAgentChatProcessor(val project: Project) {
                 val content = sb.toString().removeSurrounding("\"")
                 llmProvider.appendLocalMessage(content, ChatRole.Assistant)
                 message.reRenderAssistantOutput()
+
+                val code = Code.parse(content)
+                 if (code.language.displayName == "DevIn") {
+                     devInCode = code.text
+                 }
+
                 ui.hiddenProgressBar()
                 ui.updateUI()
             }
@@ -64,6 +75,11 @@ class CustomAgentChatProcessor(val project: Project) {
                 llmProvider.appendLocalMessage(msg, ChatRole.Assistant)
                 ui.hiddenProgressBar()
                 ui.updateUI()
+
+                val code = Code.parse(msg)
+                if (code.language.displayName == "DevIn") {
+                    devInCode = code.text
+                }
             }
 
             CustomAgentResponseAction.TextChunk -> {
@@ -99,6 +115,12 @@ class CustomAgentChatProcessor(val project: Project) {
 
                 ui.appendWebView(content, project)
                 ui.hiddenProgressBar()
+            }
+        }
+
+        if (!devInCode.isNullOrEmpty()) {
+            AgentResponseProvider.instance("DevIn").forEach {
+                it.execute(project, CustomAgentContext(selectedAgent, devInCode))
             }
         }
     }

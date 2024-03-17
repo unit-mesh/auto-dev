@@ -10,7 +10,7 @@ data class CustomAgentContext(
     val response: String
 )
 
-internal interface AgentResponseProvider {
+interface AgentResponseProvider {
     val name: String
 
     @RequiresBackgroundThread

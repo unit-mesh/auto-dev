@@ -44,4 +44,8 @@
                 class="cc.unitmesh.devti.language.actions.DevInsRunFileAction"
                 use-shortcut-of="RunClass"/>
     </actions>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <customAgentResponse implementation="cc.unitmesh.devti.language.provider.DevInsCustomAgentResponse" />
+    </extensions>
 </idea-plugin>
