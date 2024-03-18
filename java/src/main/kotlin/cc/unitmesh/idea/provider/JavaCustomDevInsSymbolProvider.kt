@@ -5,6 +5,7 @@ import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.ide.highlighter.JavaFileType
+import com.intellij.lang.java.JavaLanguage
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiPackageStatement
@@ -18,6 +19,8 @@ import com.intellij.util.SmartList
 
 
 class JavaCustomDevInsSymbolProvider : DevInsSymbolProvider {
+    override val language: String = JavaLanguage.INSTANCE.displayName
+
     override fun lookupSymbol(
         project: Project,
         parameters: CompletionParameters,

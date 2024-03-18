@@ -14,6 +14,7 @@ import com.intellij.openapi.project.Project
  * For execution, see in [DevInsSymbolProvider.resolveSymbol]
  */
 interface DevInsSymbolProvider {
+    val language: String
     /**
      * Lookup canonical name for different language
      */

@@ -30,13 +30,17 @@ ScreenShot
 - `/run`: run code
 - `/patch`: apply patches to file
 - `/commit`: commit changes to git
+- `/symbol`: get child by symbol, like get Class by package name
 
 ### File Command
+
+Read file content:
 
     Explain code /file:src/main/java/com/example/Controller.java
 
 ### Write Command
 
+write file content:
 
     /write:src/main/java/com/example/Controller.java#L1-L12
     ```java
@@ -49,36 +53,29 @@ ScreenShot
 
 ### Rev Command
 
+Read git change by git revision:
+
     Explain code /rev:HEAD~1
 
 ### Run Command
 
+Run file:
+
     /run:src/main/java/com/example/Controller.java
 
-## Case Design
+PS: current only support for TestFile, since UnitTest is the best way to run code.
 
-### Introduce file
+### Symbol Command
 
-For example:
+Get child elements by symbol, like get Class by package name.
 
-    Explain code /file:src/main/java/com/example/Controller.java
+    /symbol:cc.unitmesh.untitled.demo
 
-will call LLM to explain the code in the file `src/main/java/com/example/Controller.java`.
-
-### Edit file
-
-If AI Agent returns a code snippet, AutoDev can edit the file with the code snippet.
-
-For example:
-
-    /write:src/main/java/com/example/Controller.java#L1-L12
+The output will be:
+    
     ```java
-    public class Controller {
-        public void method() {
-            System.out.println("Hello, World!");
-        }
-    }
+    cc.unitmesh.untitled.demo.MathHelper
+    cc.unitmesh.untitled.demo.DemoApplication
+    cc.unitmesh.untitled.demo.MathHelperTest
+    cc.unitmesh.untitled.demo.DemoApplicationTests
     ```
-
-will edit the file `src/main/java/com/example/Controller.java` with the code snippet.
-The `#L1-L12` is the line range to edit. The code snippet is in Java language.
