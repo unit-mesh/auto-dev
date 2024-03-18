@@ -165,7 +165,7 @@
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.customDevInsCompletionProvider"
-                        interface="cc.unitmesh.devti.provider.devins.DevInsCompletionProvider"
+                        interface="cc.unitmesh.devti.provider.devins.DevInsSymbolProvider"
                         dynamic="true"/>
     </extensionPoints>
 

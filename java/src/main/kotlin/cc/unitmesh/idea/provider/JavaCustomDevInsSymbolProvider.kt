@@ -1,6 +1,6 @@
 package cc.unitmesh.idea.provider
 
-import cc.unitmesh.devti.provider.devins.DevInsCompletionProvider
+import cc.unitmesh.devti.provider.devins.DevInsSymbolProvider
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
@@ -13,8 +13,7 @@ import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.SmartList
 
-class JavaCustomDevInsCompletionProvider : DevInsCompletionProvider {
-
+class JavaCustomDevInsSymbolProvider : DevInsSymbolProvider {
     override fun lookupSymbol(
         project: Project,
         parameters: CompletionParameters,

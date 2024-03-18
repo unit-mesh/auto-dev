@@ -62,7 +62,7 @@
         </autoDevIntention>
 
         <customDevInsCompletionProvider
-                implementation="cc.unitmesh.idea.provider.JavaCustomDevInsCompletionProvider"/>
+                implementation="cc.unitmesh.idea.provider.JavaCustomDevInsSymbolProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

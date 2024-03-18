@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.completion
 
-import cc.unitmesh.devti.provider.devins.DevInsCompletionProvider
+import cc.unitmesh.devti.provider.devins.DevInsSymbolProvider
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
@@ -12,7 +12,7 @@ class SymbolReferenceLanguageProvider : CompletionProvider<CompletionParameters>
         context: ProcessingContext,
         result: CompletionResultSet
     ) {
-        DevInsCompletionProvider.all().forEach { completionProvider ->
+        DevInsSymbolProvider.all().forEach { completionProvider ->
             val elements = completionProvider.lookupSymbol(parameters.editor.project!!, parameters, result)
             elements.forEach {
                 result.addElement(it)
