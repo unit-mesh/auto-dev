@@ -27,12 +27,12 @@ class DevInCompletionContributor : CompletionContributor() {
         )
         extend(
             CompletionType.BASIC,
-            valuePattern(BuiltinCommand.REV.agentName),
+            valuePattern(BuiltinCommand.REV.commandName),
             RevisionReferenceLanguageProvider()
         )
         extend(
             CompletionType.BASIC,
-            valuePattern(BuiltinCommand.SYMBOL.agentName),
+            valuePattern(BuiltinCommand.SYMBOL.commandName),
             SymbolReferenceLanguageProvider()
         )
     }
@@ -61,7 +61,7 @@ class DevInCompletionContributor : CompletionContributor() {
 
 
     private fun valuePatterns(listOf: List<BuiltinCommand>): ElementPattern<out PsiElement> {
-        val patterns = listOf.map { valuePattern(it.agentName) }
+        val patterns = listOf.map { valuePattern(it.commandName) }
         return PlatformPatterns.or(*patterns.toTypedArray())
     }
 }

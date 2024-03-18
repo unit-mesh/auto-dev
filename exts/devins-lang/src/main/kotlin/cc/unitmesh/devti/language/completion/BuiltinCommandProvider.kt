@@ -8,7 +8,7 @@ import com.intellij.util.ProcessingContext
 import javax.swing.Icon
 
 enum class BuiltinCommand(
-    val agentName: String,
+    val commandName: String,
     val description: String,
     val icon: Icon,
     val hasCompletion: Boolean = false,
@@ -36,7 +36,7 @@ enum class BuiltinCommand(
         }
 
         fun fromString(agentName: String): BuiltinCommand? {
-            return values().find { it.agentName == agentName }
+            return values().find { it.commandName == agentName }
         }
     }
 }
@@ -49,7 +49,7 @@ class BuiltinCommandProvider : CompletionProvider<CompletionParameters>() {
     ) {
         BuiltinCommand.all().forEach {
             result.addElement(
-                LookupElementBuilder.create(it.agentName)
+                LookupElementBuilder.create(it.commandName)
                     .withIcon(it.icon)
                     .withTypeText(it.description, true)
                     .withInsertHandler { context, _ ->

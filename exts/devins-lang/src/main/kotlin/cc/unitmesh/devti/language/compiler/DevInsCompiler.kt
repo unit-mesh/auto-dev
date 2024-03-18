@@ -114,14 +114,14 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
             }
 
             BuiltinCommand.SYMBOL -> {
-                PrintInsCommand("/" + commandNode.agentName + ":" + prop)
+                PrintInsCommand("/" + commandNode.commandName + ":" + prop)
             }
 
             BuiltinCommand.WRITE -> {
                 result.isLocalCommand = true
                 val devInCode: CodeBlockElement? = lookupNextCode(used)
                 if (devInCode == null) {
-                    PrintInsCommand("/" + commandNode.agentName + ":" + prop)
+                    PrintInsCommand("/" + commandNode.commandName + ":" + prop)
                 } else {
                     WriteInsCommand(myProject, prop, devInCode.text)
                 }
@@ -131,7 +131,7 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
                 result.isLocalCommand = true
                 val devInCode: CodeBlockElement? = lookupNextCode(used)
                 if (devInCode == null) {
-                    PrintInsCommand("/" + commandNode.agentName + ":" + prop)
+                    PrintInsCommand("/" + commandNode.commandName + ":" + prop)
                 } else {
                     PatchInsCommand(myProject, prop, devInCode.text)
                 }
@@ -141,7 +141,7 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
                 result.isLocalCommand = true
                 val devInCode: CodeBlockElement? = lookupNextCode(used)
                 if (devInCode == null) {
-                    PrintInsCommand("/" + commandNode.agentName + ":" + prop)
+                    PrintInsCommand("/" + commandNode.commandName + ":" + prop)
                 } else {
                     CommitInsCommand(myProject, devInCode.text)
                 }
