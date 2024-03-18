@@ -7,13 +7,14 @@ import cc.unitmesh.devti.language.psi.DevInUsed
 import com.intellij.codeInsight.completion.CompletionContributor
 import com.intellij.codeInsight.completion.CompletionInitializationContext
 import com.intellij.codeInsight.completion.CompletionType
+import com.intellij.codeInsight.completion.CompletionUtilCore
 import com.intellij.patterns.ElementPattern
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.patterns.PsiElementPattern
 import com.intellij.psi.PsiElement
 
 class DevInCompletionContributor : CompletionContributor() {
-    private val INPUT_DUMMY_IDENTIFIER = "DevInDummy"
+    private val INPUT_DUMMY_IDENTIFIER = CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED
 
     init {
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.LANGUAGE_ID), CodeFenceLanguageProvider())
@@ -37,7 +38,7 @@ class DevInCompletionContributor : CompletionContributor() {
     }
 
     override fun beforeCompletion(context: CompletionInitializationContext) {
-        if ((context.file is DevInFile) && context.dummyIdentifier === INPUT_DUMMY_IDENTIFIER) {
+        if (context.file is DevInFile) {
             context.dummyIdentifier = INPUT_DUMMY_IDENTIFIER
         }
     }
