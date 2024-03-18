@@ -88,19 +88,13 @@ open class DevInsRunConfigurationProfileState(
                     }
                 }
 
-                console.print("Done!", ConsoleViewContentType.SYSTEM_OUTPUT)
+                console.print("\nDone!", ConsoleViewContentType.SYSTEM_OUTPUT)
                 processHandler.detachProcess()
             }
         }
 
         return DefaultExecutionResult(console, processHandler)
     }
-
-    private fun lookupDevInsFile(project: Project, script: String) = VirtualFileManager.getInstance()
-        .findFileByUrl("file://$script")
-        ?.let {
-            PsiManager.getInstance(project).findFile(it)
-        } as? DevInFile
 
     @Throws(ExecutionException::class)
     private fun createProcessHandler(myExecutionName: String): ProcessHandler {
@@ -119,3 +113,9 @@ open class DevInsRunConfigurationProfileState(
         }
     }
 }
+
+fun lookupDevInsFile(project: Project, path: String) = VirtualFileManager.getInstance()
+    .findFileByUrl("file://$path")
+    ?.let {
+        PsiManager.getInstance(project).findFile(it)
+    } as? DevInFile
