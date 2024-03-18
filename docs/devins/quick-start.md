@@ -25,12 +25,12 @@ ScreenShot
 ## Basic Commands
 
 - `/file`: read file content
-- `/write`: write file content
+- `/write`: write file content, format: `file#L1-L12`, example: `src/main/java/com/example/Controller.java#L1-L12`
 - `/rev`: read git change by git revision
 - `/run`: run code
 - `/patch`: apply patches to file
 - `/commit`: commit changes to git
-- `/symbol`: get child by symbol, like get Class by package name
+- `/symbol`: get child by symbol, like get Class by package name, format: `java.lang.String#length`, example: `<package>.<class>#<method>`
 
 ### File Command
 

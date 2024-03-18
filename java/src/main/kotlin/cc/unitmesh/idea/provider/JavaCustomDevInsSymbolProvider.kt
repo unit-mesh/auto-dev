@@ -64,6 +64,7 @@ class JavaCustomDevInsSymbolProvider : DevInsSymbolProvider {
             return psiClasses.map { it.qualifiedName!! }
         }
 
+        // for lookup for method
         return emptyList()
     }
 }
