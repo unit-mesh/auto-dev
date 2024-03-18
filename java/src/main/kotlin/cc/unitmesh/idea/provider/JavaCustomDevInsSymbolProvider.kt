@@ -25,7 +25,7 @@ class JavaCustomDevInsSymbolProvider : DevInsSymbolProvider {
         project: Project,
         parameters: CompletionParameters,
         result: CompletionResultSet,
-    ): Iterable<LookupElement> {
+    ): List<LookupElement> {
         val lookupElements: MutableList<LookupElement> = SmartList()
         val searchScope = ProjectScope.getProjectScope(project)
         val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
@@ -51,7 +51,7 @@ class JavaCustomDevInsSymbolProvider : DevInsSymbolProvider {
         return lookupElements
     }
 
-    override fun resolveSymbol(project: Project, symbol: String): Iterable<String> {
+    override fun resolveSymbol(project: Project, symbol: String): List<String> {
         val scope = GlobalSearchScope.allScope(project)
 
         if (symbol.isEmpty()) return emptyList()

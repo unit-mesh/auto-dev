@@ -22,7 +22,7 @@ interface DevInsSymbolProvider {
         project: Project,
         parameters: CompletionParameters,
         result: CompletionResultSet
-    ): Iterable<LookupElement>
+    ): List<LookupElement>
 
     /**
      * Resolves the symbol for different programming languages.
@@ -33,7 +33,7 @@ interface DevInsSymbolProvider {
      *
      * Format: `java.lang.String#length`, means: `<package>.<class>#<method>`
      */
-    fun resolveSymbol(project: Project, symbol: String): Iterable<String>
+    fun resolveSymbol(project: Project, symbol: String): List<String>
 
     companion object {
         private val EP_NAME: ExtensionPointName<DevInsSymbolProvider> =

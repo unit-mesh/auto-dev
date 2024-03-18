@@ -196,9 +196,11 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
 
 class SymbolInsCommand(val myProject: Project, val prop: String) :
     InsCommand {
-    override fun execute(): String? {
-        val result = DevInsSymbolProvider.all().map {
-            it.resolveSymbol(myProject, prop).joinToString("\n")
+    override fun execute(): String {
+        val result = DevInsSymbolProvider.all().mapNotNull {
+            val found = it.resolveSymbol(myProject, prop)
+            if (found.isEmpty()) return@mapNotNull null
+            "```${it.language}\n${found.joinToString("\n")}\n```\n"
         }
 
         if (result.isEmpty()) {
