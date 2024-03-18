@@ -54,17 +54,26 @@ class JavaCustomDevInsSymbolProvider : DevInsSymbolProvider {
     override fun resolveSymbol(project: Project, symbol: String): Iterable<String> {
         val scope = GlobalSearchScope.allScope(project)
 
+        // for package name only, like `cc.unitmesh`
         JavaFileManagerImpl(project).findPackage(symbol)?.let { pkg ->
             return pkg.classes.map { it.qualifiedName!! }
         }
 
-        // for class name only
+        // for class name only, like `cc.unitmesh.idea.provider.JavaCustomDevInsSymbolProvider`
         val psiClasses = PsiShortNamesCache.getInstance(project).getClassesByName(symbol, scope)
         if (psiClasses.isNotEmpty()) {
             return psiClasses.map { it.qualifiedName!! }
         }
 
+        // for single class, with function name, like `cc.unitmesh.idea.provider.JavaCustomDevInsSymbolProvider`
+        val clazz = JavaFileManagerImpl(project).findClass(symbol, scope)
+        if (clazz != null) {
+            return clazz.methods.map { "${clazz.qualifiedName}#${it.name}" }
+        }
+
         // for lookup for method
+
+
         return emptyList()
     }
 }
