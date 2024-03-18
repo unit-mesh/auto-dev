@@ -6,6 +6,7 @@ import cc.unitmesh.devti.language.parser.CodeBlockElement
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.psi.DevInTypes
 import cc.unitmesh.devti.language.psi.DevInUsed
+import cc.unitmesh.devti.provider.devins.DevInsSymbolProvider
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -114,7 +115,8 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
             }
 
             BuiltinCommand.SYMBOL -> {
-                PrintInsCommand("/" + commandNode.commandName + ":" + prop)
+                result.isLocalCommand = true
+                SymbolInsCommand(myProject, prop)
             }
 
             BuiltinCommand.WRITE -> {
@@ -189,6 +191,21 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
             }
         }
         return devInCode
+    }
+}
+
+class SymbolInsCommand(val myProject: Project, val prop: String) :
+    InsCommand {
+    override fun execute(): String? {
+        val result = DevInsSymbolProvider.all().map {
+            it.resolveSymbol(myProject, prop).joinToString("\n")
+        }
+
+        if (result.isEmpty()) {
+            return "<DevliError> No symbol found: $prop"
+        }
+
+        return result.joinToString("\n")
     }
 }
 

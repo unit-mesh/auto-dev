@@ -11,13 +11,9 @@ import com.intellij.openapi.project.Project
  * - Completion will be triggered by like `/symbol:`, and the symbol provider will provide the completion for the symbol.
  * - Execution will be triggered by like `/symbol:java.lang.String`, all load children level elements, like `java.lang.String#length()`
  *
- * For execution:
- * - If parent is Root, the children will be packages
- * - If parent is Package, the children will be classes
- * - If parent is Class, the children will be methods and fields
+ * For execution, see in [DevInsSymbolProvider.resolveSymbol]
  */
 interface DevInsSymbolProvider {
-
     /**
      * Lookup canonical name for different language
      */
@@ -26,6 +22,15 @@ interface DevInsSymbolProvider {
         parameters: CompletionParameters,
         result: CompletionResultSet
     ): Iterable<LookupElement>
+
+    /**
+     * Resolves the symbol for different programming languages.
+     * For example, in Java:
+     * - If the parent is Root, the children will be packages
+     * - If the parent is Package, the children will be classes
+     * - If the parent is Class, the children will be methods and fields
+     */
+    fun resolveSymbol(project: Project, symbol: String): Iterable<String>
 
     companion object {
         private val EP_NAME: ExtensionPointName<DevInsSymbolProvider> =

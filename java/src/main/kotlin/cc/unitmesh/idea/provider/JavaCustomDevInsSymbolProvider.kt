@@ -9,9 +9,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiPackageStatement
 import com.intellij.psi.search.FileTypeIndex
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
+import com.intellij.psi.search.PsiShortNamesCache
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.SmartList
+
 
 class JavaCustomDevInsSymbolProvider : DevInsSymbolProvider {
     override fun lookupSymbol(
@@ -42,5 +45,17 @@ class JavaCustomDevInsSymbolProvider : DevInsSymbolProvider {
         }
 
         return lookupElements
+    }
+
+    override fun resolveSymbol(project: Project, symbol: String): Iterable<String> {
+        val scope = GlobalSearchScope.allScope(project)
+
+        // for class name only
+        val psiClasses = PsiShortNamesCache.getInstance(project).getClassesByName(symbol, scope)
+        if (psiClasses.isNotEmpty()) {
+            return psiClasses.map { it.qualifiedName!! }
+        }
+
+        return emptyList()
     }
 }
