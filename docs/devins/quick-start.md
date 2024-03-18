@@ -79,3 +79,20 @@ The output will be:
     cc.unitmesh.untitled.demo.MathHelperTest
     cc.unitmesh.untitled.demo.DemoApplicationTests
     ```
+
+Get method will return code:
+
+    /symbol:cc.unitmesh.untitled.demo.MathHelper.calculateInsurance
+
+The output will be:
+
+    ```java
+    public static double calculateInsurance(double income) {
+        if (income <= 10000) {
+            return income * 0.365;
+        } else {
+            return income * 0.365 + 1000;
+        }
+    }
+    ```
+

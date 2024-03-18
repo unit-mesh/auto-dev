@@ -54,15 +54,19 @@ class JavaCustomDevInsSymbolProvider : DevInsSymbolProvider {
     override fun resolveSymbol(project: Project, symbol: String): Iterable<String> {
         val scope = GlobalSearchScope.allScope(project)
 
+        if (symbol.isEmpty()) return emptyList()
+
+        // className only, like `String` not Dot
+        if (symbol.contains(".").not()) {
+            val psiClasses = PsiShortNamesCache.getInstance(project).getClassesByName(symbol, scope)
+            if (psiClasses.isNotEmpty()) {
+                return psiClasses.map { it.qualifiedName!! }
+            }
+        }
+
         // for package name only, like `cc.unitmesh`
         JavaFileManagerImpl(project).findPackage(symbol)?.let { pkg ->
             return pkg.classes.map { it.qualifiedName!! }
-        }
-
-        // for class name only, like `cc.unitmesh.idea.provider.JavaCustomDevInsSymbolProvider`
-        val psiClasses = PsiShortNamesCache.getInstance(project).getClassesByName(symbol, scope)
-        if (psiClasses.isNotEmpty()) {
-            return psiClasses.map { it.qualifiedName!! }
         }
 
         // for single class, with function name, like `cc.unitmesh.idea.provider.JavaCustomDevInsSymbolProvider`
@@ -72,7 +76,37 @@ class JavaCustomDevInsSymbolProvider : DevInsSymbolProvider {
         }
 
         // for lookup for method
+        val method = symbol.split("#")
+        if (method.size == 2) {
+            val clazzName = method[0]
+            val methodName = method[1]
+            return lookupWithMethodName(project, clazzName, scope, methodName)
+        }
 
+        // may by not our format, like <package>.<class>.<method> split last
+        val lastDotIndex = symbol.lastIndexOf(".")
+        if (lastDotIndex != -1) {
+            val clazzName = symbol.substring(0, lastDotIndex)
+            val methodName = symbol.substring(lastDotIndex + 1)
+            return lookupWithMethodName(project, clazzName, scope, methodName)
+        }
+
+        return emptyList()
+    }
+
+    private fun lookupWithMethodName(
+        project: Project,
+        clazzName: String,
+        scope: GlobalSearchScope,
+        methodName: String
+    ): List<String> {
+        val psiClass = JavaFileManagerImpl(project).findClass(clazzName, scope)
+        if (psiClass != null) {
+            val psiMethod = psiClass.findMethodsByName(methodName, true).firstOrNull()
+            if (psiMethod != null) {
+                return listOf(psiMethod.text)
+            }
+        }
 
         return emptyList()
     }
