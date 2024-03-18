@@ -70,26 +70,6 @@ interface RunService {
         val executor: Executor = DefaultRunExecutor()
         val dataContext = DataContext.EMPTY_CONTEXT
 
-//        ExecutorRegistryImpl.RunnerHelper.runSubProcess(
-//            project,
-//            testConfig,
-//            settings,
-//            dataContext,
-//            executor
-//        ) { ee: ExecutionEnvironment ->
-//            // TODO: Add customizations for process data
-//            val selectedContent = RunContentManager.getInstance(project).selectedContent
-//            val executionConsole = selectedContent?.executionConsole
-//                    as? ConsoleViewImpl ?: return@runSubProcess
-//
-//            val document = executionConsole.editor.document
-//            val text = document.text
-//        }
-//
-//        RunManager.getInstance(project)
-//
-//        return ""
-
         var builder = ExecutionEnvironmentBuilder.createOrNull(executor, settings) ?: return null
         builder = builder.activeTarget()
         val environment = builder.dataContext(dataContext).build()
