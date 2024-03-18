@@ -31,7 +31,7 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
 
     private val codeTemplate = JavaTemplateHelper(project)
     private val psiManager = PsiManager.getInstance(project)
-    private val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
+    private val searchScope: GlobalSearchScope = ProjectScope.getProjectScope(project)
 
     override fun getAllControllerFiles(): List<PsiFile> = filterFilesByFunc(::controllerFilter)
     override fun getAllEntityFiles(): List<PsiFile> = filterFilesByFunc(::entityFilter)
