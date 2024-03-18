@@ -4,6 +4,8 @@ import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.provider.AutoTestService
 import cc.unitmesh.devti.provider.context.TestFileContext
+import com.intellij.execution.RunManager
+import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.lang.java.JavaLanguage
 import com.intellij.openapi.application.ReadAction
@@ -18,12 +20,39 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.plugins.gradle.service.execution.GradleExternalTaskConfigurationType
 import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration
 import java.io.File
 
 class JavaAutoTestService : AutoTestService() {
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = GradleRunConfiguration::class.java
     override fun isApplicable(element: PsiElement): Boolean = element.language is JavaLanguage
+
+    override fun createConfiguration(project: Project, path: String): RunConfiguration? {
+        val file = LocalFileSystem.getInstance().refreshAndFindFileByPath(path)
+        return file?.let { createConfiguration(project, it) }
+    }
+
+    override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
+        val name = virtualFile.name
+
+        val psiFile: PsiJavaFile = PsiManager.getInstance(project).findFile(virtualFile) as? PsiJavaFile ?: return null
+        val canonicalName = psiFile.packageName + "." + psiFile.name.replace(".java", "")
+
+        val runManager = RunManager.getInstance(project)
+
+        // todo: add maven ??
+        val configuration = runManager.createConfiguration(name, GradleExternalTaskConfigurationType::class.java)
+        val runConfiguration = configuration.configuration as GradleRunConfiguration
+        runConfiguration.settings.externalProjectPath = project.guessProjectDir()?.path
+        // todo: add module for test
+        runConfiguration.rawCommandLine = "test --tests \"${canonicalName}\""
+
+        runManager.addConfiguration(configuration)
+        runManager.selectedConfiguration = configuration
+
+        return runConfiguration
+    }
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
         val sourceFilePath = sourceFile.virtualFile

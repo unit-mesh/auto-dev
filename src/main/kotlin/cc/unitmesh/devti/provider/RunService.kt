@@ -3,6 +3,7 @@ package cc.unitmesh.devti.provider
 import com.intellij.execution.Executor
 import com.intellij.execution.ExecutorRegistryImpl
 import com.intellij.execution.RunManager
+import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.ide.actions.runAnything.RunAnythingPopupUI
 import com.intellij.openapi.actionSystem.DataContext
@@ -22,11 +23,19 @@ interface RunService {
      */
     fun runConfigurationClass(project: Project): Class<out RunProfile>?
 
+    fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? = null
+
+    fun createConfiguration(project: Project, path: String): RunConfiguration? = null
+
     fun runFile(project: Project, virtualFile: VirtualFile) {
         val runManager = RunManager.getInstance(project)
-        val testConfig = runManager.allConfigurationsList.firstOrNull {
+        var testConfig = runManager.allConfigurationsList.firstOrNull {
             val runConfigureClass = runConfigurationClass(project)
             it.name == virtualFile.nameWithoutExtension && (it.javaClass == runConfigureClass)
+        }
+
+        if (testConfig == null) {
+            testConfig = createConfiguration(project, virtualFile)
         }
 
         if (testConfig == null) {
