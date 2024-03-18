@@ -32,9 +32,7 @@ class DevInCompletionContributor : CompletionContributor() {
         )
     }
 
-    private inline fun <reified I : PsiElement> psiElement(): PsiElementPattern.Capture<I> {
-        return PlatformPatterns.psiElement(I::class.java)
-    }
+    private inline fun <reified I : PsiElement> psiElement() = PlatformPatterns.psiElement(I::class.java)
 
     private fun baseUsedPattern(): PsiElementPattern.Capture<PsiElement> =
         PlatformPatterns.psiElement()
@@ -47,7 +45,6 @@ class DevInCompletionContributor : CompletionContributor() {
                 PlatformPatterns.psiElement(DevInTypes.COLON),
                 PlatformPatterns.psiElement().withText(text)
             )
-
 
     private fun valuePatterns(listOf: List<BuiltinCommand>): ElementPattern<out PsiElement> {
         val patterns = listOf.map { valuePattern(it.commandName) }
