@@ -8,6 +8,7 @@ import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiPackageStatement
+import com.intellij.psi.impl.file.impl.JavaFileManagerImpl
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
@@ -49,6 +50,10 @@ class JavaCustomDevInsSymbolProvider : DevInsSymbolProvider {
 
     override fun resolveSymbol(project: Project, symbol: String): Iterable<String> {
         val scope = GlobalSearchScope.allScope(project)
+
+        JavaFileManagerImpl(project).findPackage(symbol)?.let { pkg ->
+            return pkg.classes.map { it.qualifiedName!! }
+        }
 
         // for class name only
         val psiClasses = PsiShortNamesCache.getInstance(project).getClassesByName(symbol, scope)
