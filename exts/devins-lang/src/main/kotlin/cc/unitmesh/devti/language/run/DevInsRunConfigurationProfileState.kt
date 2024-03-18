@@ -44,6 +44,7 @@ open class DevInsRunConfigurationProfileState(
 
         val executionConsole = ConsoleViewImpl(myProject, true)
         val console = object : ConsoleViewWrapperBase(executionConsole) {
+            override fun getComponent(): JComponent = myPanel
             private var myPanel: NonOpaquePanel = NonOpaquePanel(BorderLayout())
 
             init {
@@ -55,8 +56,6 @@ open class DevInsRunConfigurationProfileState(
                 toolbar.targetComponent = baseComponent
                 myPanel.add(toolbar.component, BorderLayout.EAST)
             }
-
-            override fun getComponent(): JComponent = myPanel
         }
 
         console.attachToProcess(processHandler)
@@ -97,20 +96,12 @@ open class DevInsRunConfigurationProfileState(
     }
 
     @Throws(ExecutionException::class)
-    private fun createProcessHandler(myExecutionName: String): ProcessHandler {
-        return object : BuildProcessHandler() {
-            override fun detachIsDefault(): Boolean = false
-
-            override fun destroyProcessImpl() {
-            }
-
-            override fun detachProcessImpl() {
-                notifyProcessTerminated(0);
-            }
-
-            override fun getProcessInput(): OutputStream? = null
-            override fun getExecutionName(): String = myExecutionName
-        }
+    private fun createProcessHandler(myExecutionName: String): ProcessHandler = object : BuildProcessHandler() {
+        override fun detachIsDefault(): Boolean = false
+        override fun destroyProcessImpl() = Unit
+        override fun detachProcessImpl() = notifyProcessTerminated(0)
+        override fun getProcessInput(): OutputStream? = null
+        override fun getExecutionName(): String = myExecutionName
     }
 }
 

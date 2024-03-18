@@ -6,8 +6,8 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.util.Key
 
 class DevInsBeforeRunProviderDelegate : RunConfigurationBeforeRunProviderDelegate {
-    val DEVIN_BEFORE_KEY_PREFIX: String = "DevIn.BeforeRunTask"
-    val KEY_MAP: MutableMap<String, Key<Boolean>> = HashMap()
+    private val DEVIN_BEFORE_KEY_PREFIX: String = "DevIn.BeforeRunTask"
+    private val KEY_MAP: MutableMap<String, Key<Boolean>> = HashMap()
 
     override fun beforeRun(environment: ExecutionEnvironment) {
         val settings = environment.runnerAndConfigurationSettings ?: return
@@ -19,7 +19,7 @@ class DevInsBeforeRunProviderDelegate : RunConfigurationBeforeRunProviderDelegat
         }
     }
 
-    fun getRunBeforeUserDataKey(runConfiguration: RunConfiguration): Key<Boolean> {
+    private fun getRunBeforeUserDataKey(runConfiguration: RunConfiguration): Key<Boolean> {
         return KEY_MAP.computeIfAbsent(
             runConfiguration.name
         ) { key: String ->
