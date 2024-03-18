@@ -35,9 +35,9 @@ class JavaCustomDevInsSymbolProvider : DevInsSymbolProvider {
         }
 
         packageStatements.forEach {
-            val packageName = it.packageName
-            if (packageName != null && packageName.startsWith(text)) {
-                lookupElements.add(LookupElementBuilder.create(packageName))
+            if (it.packageName.startsWith(text)) {
+                val element = LookupElementBuilder.create(it.packageName).withIcon(JavaFileType.INSTANCE.icon)
+                lookupElements.add(element)
             }
         }
 
