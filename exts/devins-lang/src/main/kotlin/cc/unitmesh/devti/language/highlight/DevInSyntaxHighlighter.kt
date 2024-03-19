@@ -21,18 +21,22 @@ class DevInSyntaxHighlighter : SyntaxHighlighter {
 
         init {
             ATTRIBUTES[DevInTypes.VARIABLE_START] = DefaultLanguageHighlighterColors.KEYWORD
-            ATTRIBUTES[DevInTypes.VARIABLE_ID] = DefaultLanguageHighlighterColors.NUMBER
+            ATTRIBUTES[DevInTypes.VARIABLE_ID] = DefaultLanguageHighlighterColors.CONSTANT
 
             ATTRIBUTES[DevInTypes.AGENT_START] = DefaultLanguageHighlighterColors.KEYWORD
-            ATTRIBUTES[DevInTypes.AGENT_ID] = DefaultLanguageHighlighterColors.NUMBER
-            ATTRIBUTES[DevInTypes.COMMAND_PROP] = DefaultLanguageHighlighterColors.CONSTANT
+            ATTRIBUTES[DevInTypes.AGENT_ID] = DefaultLanguageHighlighterColors.CONSTANT
 
             ATTRIBUTES[DevInTypes.COMMAND_START] = DefaultLanguageHighlighterColors.KEYWORD
-            ATTRIBUTES[DevInTypes.COMMAND_ID] = DefaultLanguageHighlighterColors.NUMBER
+            ATTRIBUTES[DevInTypes.COMMAND_ID] = DefaultLanguageHighlighterColors.KEYWORD
+            ATTRIBUTES[DevInTypes.COMMAND_PROP] = DefaultLanguageHighlighterColors.STRING
 
             ATTRIBUTES[DevInTypes.CODE_BLOCK_START] = DefaultLanguageHighlighterColors.KEYWORD
             ATTRIBUTES[DevInTypes.CODE_BLOCK_END] = DefaultLanguageHighlighterColors.KEYWORD
             ATTRIBUTES[DevInTypes.LANGUAGE_ID] = DefaultLanguageHighlighterColors.CONSTANT
+
+            ATTRIBUTES[DevInTypes.SYSTEM_START] = DefaultLanguageHighlighterColors.KEYWORD
+            ATTRIBUTES[DevInTypes.SYSTEM_ID] = DefaultLanguageHighlighterColors.CONSTANT
+            ATTRIBUTES[DevInTypes.NUMBER] = DefaultLanguageHighlighterColors.NUMBER
         }
     }
 
