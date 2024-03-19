@@ -38,7 +38,7 @@ class JavaAutoTestService : AutoTestService() {
         val name = virtualFile.name
 
         val psiFile: PsiJavaFile = PsiManager.getInstance(project).findFile(virtualFile) as? PsiJavaFile ?: return null
-        val canonicalName = psiFile.packageName + "." + psiFile.name.replace(".java", "")
+        val canonicalName = psiFile.packageName + "." + virtualFile.nameWithoutExtension
 
         val runManager = RunManager.getInstance(project)
 
