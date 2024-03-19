@@ -37,6 +37,9 @@
         <runLineMarkerContributor language="DevIn"
                                   implementationClass="cc.unitmesh.devti.language.run.DevInsRunLineMarkersProvider"/>
 
+        <lang.documentationProvider language="DevIn"
+                                    id="devinsDocumentationProvider"
+                                    implementationClass="cc.unitmesh.devti.language.documentation.DevInsDocumentationProvider"/>
     </extensions>
 
     <actions>
@@ -46,6 +49,6 @@
     </actions>
 
     <extensions defaultExtensionNs="cc.unitmesh">
-        <customAgentResponse implementation="cc.unitmesh.devti.language.provider.DevInsCustomAgentResponse" />
+        <customAgentResponse implementation="cc.unitmesh.devti.language.provider.DevInsCustomAgentResponse"/>
     </extensions>
 </idea-plugin>
