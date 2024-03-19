@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.language.documentation
 
 import cc.unitmesh.devti.agent.configurable.loadAgentConfigs
+import cc.unitmesh.devti.custom.compile.CustomVariable
 import cc.unitmesh.devti.language.completion.BuiltinCommand
 import cc.unitmesh.devti.language.psi.DevInTypes
 import com.intellij.lang.documentation.AbstractDocumentationProvider
@@ -25,6 +26,9 @@ class DevInsDocumentationProvider : AbstractDocumentationProvider() {
             DevInTypes.COMMAND_ID -> {
                 BuiltinCommand.all().find { it.commandName == element.text }?.description
             }
+            DevInTypes.VARIABLE_ID -> {
+                CustomVariable.all().find { it.variable == element.text }?.description
+            }
 
             else -> {
                 element.text
@@ -37,7 +41,5 @@ class DevInsDocumentationProvider : AbstractDocumentationProvider() {
         file: PsiFile,
         contextElement: PsiElement?,
         targetOffset: Int
-    ): PsiElement? {
-        return contextElement ?: file.findElementAt(targetOffset)
-    }
+    ): PsiElement? = contextElement ?: file.findElementAt(targetOffset)
 }
