@@ -6,16 +6,14 @@ import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.filters.TextConsoleBuilderFactory
-import com.intellij.execution.impl.ConsoleViewImpl
-import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessTerminatedListener
-import com.intellij.execution.ui.RunContentManager
-import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
-import com.intellij.openapi.util.NlsSafe
+import com.intellij.openapi.util.UserDataHolder
+import com.intellij.openapi.util.UserDataHolderBase
+import com.intellij.openapi.util.io.StreamUtil
 import com.intellij.openapi.vfs.VirtualFile
 import java.io.*
 import java.nio.channels.Channels
@@ -36,7 +34,7 @@ interface RunService {
 
     fun createConfiguration(project: Project, path: String): RunConfiguration? = null
 
-    fun runFile(project: Project, virtualFile: VirtualFile): @NlsSafe String? {
+    fun runFile(project: Project, virtualFile: VirtualFile): DefaultExecutionResult? {
         val runManager = RunManager.getInstance(project)
         var testConfig = runManager.allConfigurationsList.firstOrNull {
             val runConfigureClass = runConfigurationClass(project)
@@ -70,36 +68,31 @@ interface RunService {
         runManager.selectedConfiguration = settings
 
         val executor: Executor = DefaultRunExecutor()
-
         val executionManager = ExecutionManager.getInstance(project)
+        val dataHolderBase = UserDataHolderBase()
+        val processHandler = RunServiceHandler(settings.name, dataHolderBase)
+
         executionManager
             .restartRunProfile(
                 project,
                 executor,
                 DefaultExecutionTarget.INSTANCE,
                 settings,
-                createProcessHandler(settings.name)
-            ) { environment ->
-                val processHandler = createProcessHandler(settings.name)
-                val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(environment.project).console
-                ProcessTerminatedListener.attach(processHandler)
-                consoleView.attachToProcess(processHandler)
-            }
+                processHandler
+            )
 
-        invokeLater {
-            val selectedContent = RunContentManager.getInstance(project).selectedContent
-            val executionConsole = selectedContent?.executionConsole as? ConsoleViewImpl ?: return@invokeLater
+        val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
+        ProcessTerminatedListener.attach(processHandler)
+        consoleView.attachToProcess(processHandler)
 
-            val document = executionConsole.editor.document
-            val text = document.text
-        }
-
-        return ""
+        val defaultExecutionResult = DefaultExecutionResult(consoleView, processHandler)
+        defaultExecutionResult.processHandler.processInput
+        return defaultExecutionResult
     }
 }
 
-@Throws(ExecutionException::class)
-private fun createProcessHandler(myExecutionName: String): ProcessHandler = object : BuildProcessHandler() {
+class RunServiceHandler(val myExecutionName: String, private val myDataHolder: UserDataHolderBase) :
+    BuildProcessHandler() {
     private var myProcessInputWriter: OutputStream? = null
     private var myProcessInputReader: InputStream? = null
 
@@ -111,6 +104,8 @@ private fun createProcessHandler(myExecutionName: String): ProcessHandler = obje
         } catch (e: IOException) {
             logger<RunService>().warn("Unable to setup process input", e)
         }
+
+        myDataHolder.putUserData(RUN_INPUT_KEY, myProcessInputReader)
     }
 
     override fun notifyTextAvailable(text: String, outputType: Key<*>) {
@@ -118,12 +113,35 @@ private fun createProcessHandler(myExecutionName: String): ProcessHandler = obje
     }
 
     override fun detachIsDefault(): Boolean = false
-    override fun destroyProcessImpl() = Unit
-    override fun detachProcessImpl() = notifyProcessTerminated(0)
+    override fun destroyProcessImpl() {
+        notifyProcessDetached()
+        closeInput()
+    }
+
+    override fun detachProcessImpl() {
+        closeInput()
+        notifyProcessTerminated(0)
+    }
 
     override fun getProcessInput(): OutputStream {
         return myProcessInputWriter!!
     }
 
+    protected fun closeInput() {
+        val processInputWriter = myProcessInputWriter!!
+        val processInputReader = myProcessInputReader!!
+        myProcessInputWriter = null
+        myProcessInputReader = null
+
+        myDataHolder.putUserData(RUN_INPUT_KEY, null)
+
+        StreamUtil.closeStream(processInputWriter)
+        StreamUtil.closeStream(processInputReader)
+    }
+
     override fun getExecutionName(): String = myExecutionName
+
+    companion object {
+        val RUN_INPUT_KEY: Key<InputStream> = Key.create("RUN_INPUT_KEY")
+    }
 }
