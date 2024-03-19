@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.language
 
 import cc.unitmesh.devti.language.completion.*
+import cc.unitmesh.devti.language.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.psi.DevInTypes
 import cc.unitmesh.devti.language.psi.DevInUsed
 import com.intellij.codeInsight.completion.CompletionContributor

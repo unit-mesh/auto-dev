@@ -2,7 +2,7 @@ package cc.unitmesh.devti.language.documentation
 
 import cc.unitmesh.devti.agent.configurable.loadAgentConfigs
 import cc.unitmesh.devti.custom.compile.CustomVariable
-import cc.unitmesh.devti.language.completion.BuiltinCommand
+import cc.unitmesh.devti.language.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.psi.DevInTypes
 import com.intellij.lang.documentation.AbstractDocumentationProvider
 import com.intellij.openapi.editor.Editor

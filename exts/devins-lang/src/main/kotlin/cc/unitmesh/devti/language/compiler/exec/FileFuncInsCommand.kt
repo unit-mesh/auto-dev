@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.language.compiler.exec
 
 import cc.unitmesh.devti.language.compiler.model.FileFunc
-import cc.unitmesh.devti.language.completion.canBeAdded
+import cc.unitmesh.devti.language.utils.canBeAdded
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile

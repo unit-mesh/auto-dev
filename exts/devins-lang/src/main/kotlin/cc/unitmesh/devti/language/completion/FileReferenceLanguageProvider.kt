@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.completion
 
+import cc.unitmesh.devti.language.utils.canBeAdded
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
@@ -8,7 +9,6 @@ import com.intellij.ide.presentation.VirtualFilePresentation
 import com.intellij.openapi.fileEditor.impl.EditorHistoryManager
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.roots.ProjectFileIndex
-import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.ProcessingContext
 import org.jetbrains.annotations.NonNls
@@ -52,12 +52,5 @@ class FileReferenceLanguageProvider : CompletionProvider<CompletionParameters>()
                 )
             }
     }
-}
-
-fun canBeAdded(file: VirtualFile): Boolean {
-    if (!file.isValid || file.isDirectory) return false
-    if (file.fileType.isBinary || FileUtilRt.isTooLarge(file.length)) return false
-
-    return true
 }
 

@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.language.compiler
 
 import cc.unitmesh.devti.language.compiler.exec.*
-import cc.unitmesh.devti.language.completion.BuiltinCommand
+import cc.unitmesh.devti.language.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.parser.CodeBlockElement
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.psi.DevInTypes
@@ -12,12 +12,6 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
-
-data class CompileResult(
-    var output: String = "",
-    var isLocalCommand: Boolean = false,
-    var hasError: Boolean = false
-)
 
 class DevInsCompiler(private val myProject: Project, val file: DevInFile, val editor: Editor? = null) {
     private var skipNextCode: Boolean = false
