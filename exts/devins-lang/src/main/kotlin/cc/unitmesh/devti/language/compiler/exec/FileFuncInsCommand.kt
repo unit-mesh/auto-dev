@@ -1,6 +1,9 @@
 package cc.unitmesh.devti.language.compiler.exec
 
+import cc.unitmesh.devti.language.completion.canBeAdded
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectFileIndex
+import com.intellij.openapi.vfs.VirtualFile
 
 class FileFuncInsCommand(val myProject: Project, val prop: String) : InsCommand {
     override fun execute(): String? {
@@ -10,10 +13,20 @@ class FileFuncInsCommand(val myProject: Project, val prop: String) : InsCommand 
         when (functionName) {
             "regex" -> {
                 try {
-                    val regex: Regex = Regex(args[0])
-                    val allFiles = myProject.baseDir?.findFileByRelativePath("")?.children?.map { it.name } ?: emptyList()
-                    val matchedFiles = allFiles.filter { regex.matches(it) }
-                    return matchedFiles.joinToString(", ")
+                    val regex = Regex(args[0])
+                    val projectFileIndex = ProjectFileIndex.getInstance(myProject)
+                    val files: MutableList<VirtualFile> = mutableListOf()
+                    projectFileIndex.iterateContent {
+                        if (canBeAdded(it)) {
+                            if (regex.matches(it.path)) {
+                                files.add(it)
+                            }
+                        }
+
+                        true
+                    }
+
+                    return files.joinToString(", ")
                 } catch (e: Exception) {
                     return "<DevliError>: ${e.message}"
                 }
