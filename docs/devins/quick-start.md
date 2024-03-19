@@ -24,13 +24,14 @@ ScreenShot
 
 ## Basic Commands
 
-- `/file`: read file content
+- `/file`: read file content, format: `/file:<file-path>`, example: `/file:src/main/java/com/example/Controller.java`.
 - `/write`: write file content, format: `file#L1-L12`, example: `src/main/java/com/example/Controller.java#L1-L12`
-- `/rev`: read git change by git revision
-- `/run`: run code
-- `/patch`: apply patches to file
+- `/rev`: read git change by git revision.
+- `/run`: run code, especially for test file, which is the best way to run code.
+- `/patch`: apply patches to file.
 - `/commit`: commit changes to git
-- `/symbol`: get child by symbol, like get Class by package name, format: `java.lang.String#length`, example: `<package>.<class>#<method>`
+- `/symbol`: get child by symbol, like get Class by package name, format: `java.lang.String#length`,
+  example: `<package>.<class>#<method>`
 
 ### File Command
 
@@ -72,7 +73,7 @@ Get child elements by symbol, like get Class by package name.
     /symbol:cc.unitmesh.untitled.demo
 
 The output will be:
-    
+
     ```java
     cc.unitmesh.untitled.demo.MathHelper
     cc.unitmesh.untitled.demo.DemoApplication
