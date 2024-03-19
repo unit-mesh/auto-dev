@@ -1,5 +1,6 @@
 package com.intellij.temporary.inlay.presentation
 
+import com.intellij.codeInsight.codeVision.CodeVisionEntry
 import com.intellij.temporary.inlay.presentation.PresentationUtil.fontMetrics
 import com.intellij.temporary.inlay.presentation.PresentationUtil.getFont
 import com.intellij.temporary.inlay.presentation.PresentationUtil.getThemeInfoProvider
@@ -17,6 +18,7 @@ import javax.swing.text.StyleConstants
 import kotlin.math.ceil
 
 class LLMTextInlayPainter : ICodeVisionEntryBasePainter<String> {
+
     override fun paint(
         editor: Editor,
         textAttributes: TextAttributes,
@@ -24,7 +26,8 @@ class LLMTextInlayPainter : ICodeVisionEntryBasePainter<String> {
         value: String,
         point: Point,
         state: RangeCodeVisionModel.InlayState,
-        hovered: Boolean
+        hovered: Boolean,
+//        hoveredEntry: CodeVisionEntry?
     ) {
         renderCodeBlock(
             editor,
@@ -42,23 +45,23 @@ class LLMTextInlayPainter : ICodeVisionEntryBasePainter<String> {
         return Dimension(fontMetrics.stringWidth(value), fontMetrics.height)
     }
 
-    override fun toIcon(
-        editor: Editor,
-        textAttributes: TextAttributes,
-        value: String,
-        state: RangeCodeVisionModel.InlayState,
-        hovered: Boolean
-    ) = object : Icon {
-        var size = size(editor, state, value)
-
-        override fun getIconHeight(): Int = size.height
-
-        override fun paintIcon(c: Component, g: Graphics, x: Int, y: Int) {
-            paint(editor, textAttributes, g, value, Point(x, y + (editor as EditorImpl).ascent), state, hovered)
-        }
-
-        override fun getIconWidth(): Int = size.width
-    }
+//    fun toIcon(
+//        editor: Editor,
+//        textAttributes: TextAttributes,
+//        value: String,
+//        state: RangeCodeVisionModel.InlayState,
+//        hovered: Boolean
+//    ) = object : Icon {
+//        var size = size(editor, state, value)
+//
+//        override fun getIconHeight(): Int = size.height
+//
+//        override fun paintIcon(c: Component, g: Graphics, x: Int, y: Int) {
+//            paint(editor, textAttributes, g, value, Point(x, y + (editor as EditorImpl).ascent), state, hovered)
+//        }
+//
+//        override fun getIconWidth(): Int = size.width
+//    }
 
     companion object {
         fun calculateWidth(editor: Editor, text: String, textLines: List<String>): Int {
