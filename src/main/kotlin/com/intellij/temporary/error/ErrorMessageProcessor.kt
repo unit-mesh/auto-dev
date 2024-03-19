@@ -36,7 +36,7 @@ object ErrorMessageProcessor {
     private fun extractTextFromRunPanel(
         project: Project, lineFrom: Int,
         lineTo: Int?,
-        consoleEditor: Editor?,
+        consoleEditor: Editor?
     ): String? {
         val editor = consoleEditor ?: getConsoleEditor(project) ?: return null
         val document = editor.document
@@ -58,12 +58,16 @@ object ErrorMessageProcessor {
     fun extracted(
         project: Project, description: ErrorDescription,
     ): BasePromptText? {
+//    ): RuntimeErrorExplanationPrompt? {
+        val consoleLineFrom = description.consoleLineFrom
+        val consoleLineTo = description.consoleLineTo
+        val consoleEditor = description.editor
+
         val extractedText =
-            extractTextFromRunPanel(project, description.consoleLineFrom, description.consoleLineTo, description.editor)
-                ?: return null
+            extractTextFromRunPanel(project, consoleLineFrom, consoleLineTo, consoleEditor) ?: return null
 
         val extractedErrorPlaces: List<ErrorPlace> =
-            extractErrorPlaces(project, description.consoleLineFrom, description.consoleLineTo, description.editor)
+            extractErrorPlaces(project, consoleLineFrom, consoleLineTo, consoleEditor)
 
         val errorPromptBuilder =
             ErrorPromptBuilder(AutoDevSettingsState.maxTokenLength, TokenizerImpl.INSTANCE)
@@ -79,7 +83,7 @@ object ErrorMessageProcessor {
     }
 
     private fun extractErrorPlaceFromHighlighter(
-        consoleText: String, highlighter: RangeHighlighter, project: Project,
+        consoleText: String, highlighter: RangeHighlighter, project: Project
     ): ErrorPlace? {
         val fileHyperlinkInfo: FileHyperlinkInfo = getFileHyperlinkInfo(highlighter) ?: return null
         val descriptor = fileHyperlinkInfo.descriptor ?: return null
@@ -97,7 +101,7 @@ object ErrorMessageProcessor {
     }
 
     private fun extractErrorPlaces(
-        project: Project, consoleLineFrom: Int, consoleLineTo: Int?, consoleEditor: Editor?,
+        project: Project, consoleLineFrom: Int, consoleLineTo: Int?, consoleEditor: Editor?
     ): List<ErrorPlace> {
         val editor = consoleEditor ?: getConsoleEditor(project) ?: return emptyList()
 
