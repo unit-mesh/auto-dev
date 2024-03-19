@@ -15,6 +15,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -41,12 +42,24 @@ class JavaAutoTestService : AutoTestService() {
 
         val runManager = RunManager.getInstance(project)
 
+        var moduleName = ""
+        val moduleForFile = ProjectFileIndex.getInstance(project).getModuleForFile(virtualFile)
+        // a moduleForFile.name will be like <project>.<module>.<testModule>, so we need to remove the last part and first part
+        if (moduleForFile != null) {
+            val moduleNameSplit = moduleForFile.name.split(".").drop(1).dropLast(1).joinToString(":")
+            if (moduleNameSplit.isNotEmpty()) {
+                moduleName = "$moduleNameSplit:"
+            }
+        }
+
         // todo: add maven ??
         val configuration = runManager.createConfiguration(name, GradleExternalTaskConfigurationType::class.java)
         val runConfiguration = configuration.configuration as GradleRunConfiguration
+        runConfiguration.isRunAsTest = true
+        runConfiguration.isDebugServerProcess = false
         runConfiguration.settings.externalProjectPath = project.guessProjectDir()?.path
         // todo: add module for test
-        runConfiguration.rawCommandLine = "test --tests \"${canonicalName}\""
+        runConfiguration.rawCommandLine = moduleName + "test --tests \"${canonicalName}\""
 
         runManager.addConfiguration(configuration)
         runManager.selectedConfiguration = configuration
