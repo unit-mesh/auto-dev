@@ -24,7 +24,6 @@ class DevInsCustomAgentResponse : AgentResponseProvider {
         val result = devInsCompiler.compile()
 
         AutoDevNotifications.notify(project, result.output)
-
         return result.output
     }
 }

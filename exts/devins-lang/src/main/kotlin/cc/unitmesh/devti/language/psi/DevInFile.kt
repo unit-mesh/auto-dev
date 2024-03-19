@@ -21,7 +21,6 @@ class DevInFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, DevI
 }
 
 class DevInFileStub(file: DevInFile?, private val flags: Int) : PsiFileStubImpl<DevInFile>(file) {
-
     override fun getType() = Type
 
     object Type : IStubFileElementType<DevInFileStub>(DevInLanguage) {

@@ -20,9 +20,7 @@ class DevInTypedHandler : TypedHandlerDelegate() {
         return when (charTyped) {
             '`' -> {
                 val offset = editor.caretModel.primaryCaret.offset
-                if (offset == 0) {
-                    return Result.CONTINUE
-                }
+                if (offset == 0) return Result.CONTINUE
 
                 val element = file.findElementAt(offset - 1)
                 if (element?.elementType == DevInTypes.CODE_CONTENT || element?.elementType == DevInTypes.CODE_BLOCK_END) {
@@ -34,25 +32,7 @@ class DevInTypedHandler : TypedHandlerDelegate() {
                 return Result.STOP
             }
 
-            '@' -> {
-                PsiDocumentManager.getInstance(project).commitDocument(editor.document)
-                AutoPopupController.getInstance(project).autoPopupMemberLookup(editor, null)
-                Result.STOP
-            }
-
-            '/' -> {
-                PsiDocumentManager.getInstance(project).commitDocument(editor.document)
-                AutoPopupController.getInstance(project).autoPopupMemberLookup(editor, null)
-                Result.STOP
-            }
-
-            '$' -> {
-                PsiDocumentManager.getInstance(project).commitDocument(editor.document)
-                AutoPopupController.getInstance(project).autoPopupMemberLookup(editor, null)
-                Result.STOP
-            }
-
-            ':' -> {
+            '@', '/', '$', ':' -> {
                 PsiDocumentManager.getInstance(project).commitDocument(editor.document)
                 AutoPopupController.getInstance(project).autoPopupMemberLookup(editor, null)
                 Result.STOP
