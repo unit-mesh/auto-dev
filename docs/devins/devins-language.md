@@ -22,7 +22,7 @@ Based on: [JetBrains' Markdown Util](https://github.com/JetBrains/intellij-commu
 - `/` Builtin Command, natural language command with IDE/editor, like read file, write file, etc.
 - `@` Agent, natural language custom function / system function name, the handler or command, 
 - `$` Variable, natural language variable name, like file name, file content, etc.
-- `#` Third-party system API for traditional, like `#kanban`, `#issue`, `#github`, etc. 
+- `#` Third-party system API for traditional, like `#kanban:afd`, `#issue:233`, `#github:111`, etc. 
 
 ## Language spec
 

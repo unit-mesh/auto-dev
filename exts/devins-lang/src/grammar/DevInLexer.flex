@@ -39,15 +39,17 @@ IDENTIFIER=[a-zA-Z0-9][_\-a-zA-Z0-9]*
 VARIABLE_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
 AGENT_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
 COMMAND_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
-LANGUAGE_ID=[a-zA-Z0-9][_\-a-zA-Z0-9 .]*
-SYSTEM_ID=[a-zA-Z0-9][_\-a-zA-Z0-9 .]*
+LANGUAGE_ID=[a-zA-Z][_\-a-zA-Z0-9 .]*
+SYSTEM_ID=[a-zA-Z][_\-a-zA-Z0-9]*
+NUMBER=[0-9]+
 
-TEXT_SEGMENT=[^$/@\n]+
+TEXT_SEGMENT=[^$/@#\n]+
 COMMAND_PROP=[^:\ \t\r\n]*
 CODE_CONTENT=[^\n]+
 NEWLINE= \n | \r | \r\n
 
 COLON=:
+SHARP=#
 
 %{
     private boolean isCodeStart = false;
@@ -145,8 +147,10 @@ COLON=:
 }
 
 <SYSTEM_BLOCK> {
-  {SYSTEM_ID}        { yybegin(YYINITIAL); return SYSTEM_ID; }
-  [^]                  { return TokenType.BAD_CHARACTER; }
+  {SYSTEM_ID}          { return SYSTEM_ID; }
+  {COLON}              { return COLON; }
+  {NUMBER}             { return NUMBER; }
+  [^]                  { yybegin(YYINITIAL); yypushback(yylength()); }
 }
 
 <CODE_BLOCK> {
