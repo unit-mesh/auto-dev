@@ -55,7 +55,7 @@ class JavaAutoTestService : AutoTestService() {
         // todo: add maven ??
         val configuration = runManager.createConfiguration(name, GradleExternalTaskConfigurationType::class.java)
         val runConfiguration = configuration.configuration as GradleRunConfiguration
-        runConfiguration.isRunAsTest = true
+
         runConfiguration.isDebugServerProcess = false
         runConfiguration.settings.externalProjectPath = project.guessProjectDir()?.path
         // todo: add module for test
