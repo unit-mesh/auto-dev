@@ -42,7 +42,7 @@ enum class BuiltinCommand(
     }
 }
 
-class BuiltinCommandProvider : CompletionProvider<CompletionParameters>() {
+class BuiltinCommandCompletion : CompletionProvider<CompletionParameters>() {
     override fun addCompletions(
         parameters: CompletionParameters,
         context: ProcessingContext,

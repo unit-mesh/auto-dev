@@ -10,7 +10,7 @@ import com.intellij.ui.DeferredIconImpl
 import com.intellij.util.ProcessingContext
 import javax.swing.Icon
 
-class CodeFenceLanguageProvider : CompletionProvider<CompletionParameters>() {
+class CodeFenceLanguageCompletion : CompletionProvider<CompletionParameters>() {
     override fun addCompletions(
         parameters: CompletionParameters,
         context: ProcessingContext,
