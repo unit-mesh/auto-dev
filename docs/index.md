@@ -31,9 +31,13 @@ permalink: /
 > 🧙‍AutoDev: The AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, and a helpful
 > bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Dev/Testing/Document/Agent feature 🧪 included! 🚀
 
+## AutoDev Architecture
 
+Here is the AutoDev architecture:
 
-AutoDev Overview:
+![](autodev-arch.svg)
+
+## AutoDev Feature Overview
 
 <p align="center">
   <img src="autodev-overview.svg" width="100%" height="100%"  alt="Overview" />

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="882px" height="574px" viewBox="0 0 882 574" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 62 (91390) - https://sketch.com -->
+    <title>Group 3</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group-3" transform="translate(0.000000, -4.000000)">
+            <text id="AI-Agent-lang-(DevIn" font-family="Helvetica" font-size="18" font-weight="normal">
+                <tspan x="524.452637" y="552" fill="#000000">AI Agent lang</tspan>
+                <tspan x="542.492188" y="574" font-family="Helvetica-Bold, Helvetica" font-weight="bold" fill="#000000">(Dev</tspan>
+                <tspan x="581.506836" y="574" font-family="Helvetica-Bold, Helvetica" font-weight="bold" fill="#DA4167">Ins</tspan>
+                <tspan x="607.513672" y="574" font-family="Helvetica-Bold, Helvetica" font-weight="bold" fill="#000000">)</tspan>
+            </text>
+            <text id="Custom-AI-Agents" font-family="Helvetica" font-size="18" font-weight="normal" fill="#000000">
+                <tspan x="259.452637" y="563">Custom AI Agents</tspan>
+            </text>
+            <text id="Project-Context" font-family="Helvetica" font-size="18" font-weight="normal" fill="#000000">
+                <tspan x="512.472168" y="18">Project Context</tspan>
+            </text>
+            <g id="custom-agents" transform="translate(246.000000, 318.000000)">
+                <rect id="Rectangle" stroke="#979797" fill="#011C32" x="0.5" y="0.5" width="169" height="206" rx="16"></rect>
+                <g id="kanban" transform="translate(18.000000, 19.000000)">
+                    <rect id="Rectangle" stroke="#979797" fill="#000000" x="0.5" y="0.5" width="134" height="36" rx="8"></rect>
+                    <text id="Kanban" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                        <tspan x="47.3134766" y="23">Kanban</tspan>
+                    </text>
+                </g>
+                <g id="cicd" transform="translate(18.000000, 65.000000)">
+                    <rect id="Rectangle" stroke="#979797" fill="#000000" x="0.5" y="0.5" width="134" height="36" rx="8"></rect>
+                    <text id="CI/CD" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                        <tspan x="51.6669922" y="23">CI/CD</tspan>
+                    </text>
+                </g>
+                <g id="ops" transform="translate(18.000000, 111.000000)">
+                    <rect id="Rectangle" stroke="#979797" fill="#000000" x="0.5" y="0.5" width="134" height="36" rx="8"></rect>
+                    <text id="Ops" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                        <tspan x="56.9960938" y="23">Ops</tspan>
+                    </text>
+                </g>
+                <g id="know" transform="translate(18.000000, 157.000000)">
+                    <rect id="Rectangle" stroke="#979797" fill="#000000" x="0.5" y="0.5" width="134" height="36" rx="8"></rect>
+                    <text id="Knowledges" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                        <tspan x="35.3105469" y="23">Knowledges</tspan>
+                    </text>
+                </g>
+            </g>
+            <g id="portal" transform="translate(246.000000, 50.000000)">
+                <g id="custom-agents">
+                    <rect id="Rectangle" stroke="#979797" fill="#84A48C" x="0.5" y="0.5" width="169" height="206" rx="16"></rect>
+                    <g id="cicd" transform="translate(18.000000, 34.000000)">
+                        <rect id="Rectangle" stroke="#979797" fill="#000000" x="0.5" y="0.5" width="134" height="36" rx="8"></rect>
+                        <text id="BuiltIn-Actions" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                            <tspan x="30.3095703" y="23">BuiltIn Actions</tspan>
+                        </text>
+                    </g>
+                    <g id="ops" transform="translate(18.000000, 85.000000)">
+                        <rect id="Rectangle" stroke="#979797" fill="#000000" x="0.5" y="0.5" width="134" height="36" rx="8"></rect>
+                        <text id="Custom-Actions" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                            <tspan x="26.3134766" y="23">Custom Actions</tspan>
+                        </text>
+                    </g>
+                    <g id="know" transform="translate(18.000000, 136.000000)">
+                        <rect id="Rectangle" stroke="#979797" fill="#000000" x="0.5" y="0.5" width="134" height="36" rx="8"></rect>
+                        <text id="AutoDev-Pair" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                            <tspan x="32.6503906" y="23">AutoDev Pair</tspan>
+                        </text>
+                    </g>
+                </g>
+            </g>
+            <g id="Group-2" transform="translate(493.000000, 317.000000)">
+                <rect id="Rectangle" stroke="#979797" fill-opacity="0.8" fill="#48A178" x="0.5" y="0.5" width="169" height="206" rx="16"></rect>
+                <g id="editing" transform="translate(18.000000, 13.000000)">
+                    <rect id="Rectangle" stroke="#979797" fill="#013D4F" x="0.5" y="0.5" width="134" height="36" rx="8"></rect>
+                    <text id="File-Editing" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                        <tspan x="38.3193359" y="23">File Editing</tspan>
+                    </text>
+                </g>
+                <g id="editing" transform="translate(18.000000, 60.000000)">
+                    <rect id="Rectangle" stroke="#979797" fill="#013D4F" x="0.5" y="0.5" width="134" height="36" rx="8"></rect>
+                    <text id="Run-Test" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                        <tspan x="44.4277344" y="23">Run Test</tspan>
+                    </text>
+                </g>
+                <g id="editing" transform="translate(18.000000, 107.000000)">
+                    <rect id="Rectangle" stroke="#979797" fill="#013D4F" x="0.5" y="0.5" width="134" height="36" rx="8"></rect>
+                    <text id="Git" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                        <tspan x="60.3330078" y="23">Git</tspan>
+                    </text>
+                </g>
+                <g id="editing" transform="translate(18.000000, 154.000000)">
+                    <rect id="Rectangle" stroke="#979797" fill="#013D4F" x="0.5" y="0.5" width="134" height="36" rx="8"></rect>
+                    <text id="Architecture" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                        <tspan x="35.9873047" y="23">Architecture</tspan>
+                    </text>
+                </g>
+            </g>
+            <g id="Group" transform="translate(736.000000, 254.000000)">
+                <rect id="Rectangle" stroke="#979797" fill="#48A178" x="0.5" y="0.5" width="145" height="62" rx="16"></rect>
+                <text id="IDE" font-family="Helvetica" font-size="24" font-weight="normal" fill="#FFFFFF">
+                    <tspan x="53.4960938" y="40">IDE</tspan>
+                </text>
+            </g>
+            <g id="Group" transform="translate(0.000000, 122.000000)">
+                <rect id="Rectangle" stroke="#979797" fill="#011C32" x="0.5" y="0.5" width="145" height="62" rx="16"></rect>
+                <text id="user" font-family="Helvetica" font-size="24" font-weight="normal" fill="#FFFFFF">
+                    <tspan x="50.15625" y="40">user</tspan>
+                </text>
+            </g>
+            <g id="context" transform="translate(488.000000, 50.000000)">
+                <rect id="Rectangle" stroke="#979797" fill="#48A178" x="0.5" y="0.5" width="173" height="206" rx="16"></rect>
+                <g id="..." transform="translate(20.000000, 13.000000)">
+                    <rect id="Rectangle" stroke="#979797" fill="#000000" x="0.5" y="0.5" width="134" height="36" rx="8"></rect>
+                    <text id="AST-Tree" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                        <tspan x="42.7578125" y="23">AST Tree</tspan>
+                    </text>
+                </g>
+                <g id="sdks" transform="translate(20.000000, 61.000000)">
+                    <rect id="Rectangle" stroke="#979797" fill="#000000" x="0.5" y="0.5" width="134" height="36" rx="8"></rect>
+                    <text id="Libraries-/-Deps" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                        <tspan x="25.9824219" y="23">Libraries / Deps</tspan>
+                    </text>
+                </g>
+                <g id="libs" transform="translate(20.000000, 109.000000)">
+                    <rect id="Rectangle" stroke="#979797" fill="#000000" x="0.5" y="0.5" width="134" height="36" rx="8"></rect>
+                    <text id="SDK-Version" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                        <tspan x="33.9804688" y="23">SDK Version</tspan>
+                    </text>
+                </g>
+                <g id="ast" transform="translate(20.000000, 157.000000)">
+                    <rect id="Rectangle" stroke="#979797" fill="#000000" x="0.5" y="0.5" width="134" height="36" rx="8"></rect>
+                    <text id="…" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                        <tspan x="62" y="23">…</tspan>
+                    </text>
+                </g>
+            </g>
+            <path id="Line" d="M802.253755,330.355867 L801.515643,331.973174 L795.799256,344.498566 L795.384068,345.408301 L793.564597,344.577924 L793.979786,343.668189 L798.111,334.615 L791.575851,339.383299 L687.602853,415.232453 L681.068,419.999 L690.94914,418.829889 L691.942202,418.712295 L692.177391,420.698418 L691.184329,420.816013 L677.511688,422.435076 L675.746245,422.644133 L676.484357,421.026826 L682.200744,408.501434 L682.615932,407.591699 L684.435403,408.422076 L684.020214,409.331811 L679.888,418.384 L686.424149,413.616701 L790.397147,337.767547 L796.931,333 L787.05086,334.170111 L786.057798,334.287705 L785.822609,332.301582 L786.815671,332.183987 L800.488312,330.564924 L802.253755,330.355867 Z" fill="#979797" fill-rule="nonzero"></path>
+            <path id="Line" d="M675.790141,145.297322 L677.549494,145.552611 L691.174968,147.529717 L692.164604,147.673316 L691.877405,149.652588 L690.887769,149.508988 L681.038,148.079 L687.445702,153.015434 L791.774974,233.400284 L798.18,238.335 L794.287884,229.17793 L793.896699,228.257618 L795.737323,227.475247 L796.128508,228.395559 L801.514418,241.066568 L802.209859,242.702678 L800.450506,242.447389 L786.825032,240.470283 L785.835396,240.326684 L786.122595,238.347412 L787.112231,238.491012 L796.961,239.92 L790.554298,234.984566 L686.225026,154.599716 L679.819,149.664 L683.712116,158.82207 L684.103301,159.742382 L682.262677,160.524753 L681.871492,159.604441 L676.485582,146.933432 L675.790141,145.297322 Z" fill="#979797" fill-rule="nonzero"></path>
+            <path id="Line" d="M331,254.210271 L331.871576,255.759739 L338.621576,267.759739 L339.111837,268.631314 L337.368686,269.611837 L336.878424,268.740261 L332,260.067 L332,313.932 L336.878424,305.259739 L337.368686,304.388163 L339.111837,305.368686 L338.621576,306.240261 L331.871576,318.240261 L331,319.789729 L330.128424,318.240261 L323.378424,306.240261 L322.888163,305.368686 L324.631314,304.388163 L325.121576,305.259739 L330,313.932 L330,260.067 L325.121576,268.740261 L324.631314,269.611837 L322.888163,268.631314 L323.378424,267.759739 L330.128424,255.759739 L331,254.210271 Z" fill="#979797" fill-rule="nonzero"></path>
+            <path id="Line" d="M469.368686,418.888163 L470.240261,419.378424 L482.240261,426.128424 L483.789729,427 L482.240261,427.871576 L470.240261,434.621576 L469.368686,435.111837 L468.388163,433.368686 L469.259739,432.878424 L477.932,428 L436.067,428 L444.740261,432.878424 L445.611837,433.368686 L444.631314,435.111837 L443.759739,434.621576 L431.759739,427.871576 L430.210271,427 L431.759739,426.128424 L443.759739,419.378424 L444.631314,418.888163 L445.611837,420.631314 L444.740261,421.121576 L436.067,426 L477.932,426 L469.259739,421.121576 L468.388163,420.631314 L469.368686,418.888163 Z" fill="#979797" fill-rule="nonzero"></path>
+            <path id="Line" d="M469.368686,145.888163 L470.240261,146.378424 L482.240261,153.128424 L483.789729,154 L482.240261,154.871576 L470.240261,161.621576 L469.368686,162.111837 L468.388163,160.368686 L469.259739,159.878424 L477.932,155 L436.067,155 L444.740261,159.878424 L445.611837,160.368686 L444.631314,162.111837 L443.759739,161.621576 L431.759739,154.871576 L430.210271,154 L431.759739,153.128424 L443.759739,146.378424 L444.631314,145.888163 L445.611837,147.631314 L444.740261,148.121576 L436.067,153 L477.932,153 L469.259739,148.121576 L468.388163,147.631314 L469.368686,145.888163 Z" fill="#979797" fill-rule="nonzero"></path>
+            <path id="Line" d="M207.368686,145.888163 L208.240261,146.378424 L220.240261,153.128424 L221.789729,154 L220.240261,154.871576 L208.240261,161.621576 L207.368686,162.111837 L206.388163,160.368686 L207.259739,159.878424 L215.932,155 L170,155 L170,153 L215.932,153 L207.259739,148.121576 L206.388163,147.631314 L207.368686,145.888163 Z" fill="#979797" fill-rule="nonzero"></path>
+            <text id="Tasks" font-family="Helvetica" font-size="16" font-weight="normal" fill="#000000" fill-opacity="0.85">
+                <tspan x="304.050781" y="22">Tasks</tspan>
+            </text>
+        </g>
+    </g>
+</svg>

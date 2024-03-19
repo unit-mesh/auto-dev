@@ -36,7 +36,13 @@
     }
     ```
 
-AutoDev Overview:
+## AutoDev Architecture
+
+Here is the AutoDev architecture:
+
+![](docs/autodev-arch.svg)
+
+## AutoDev Feature Overview
 
 <p align="center">
   <img src="docs/autodev-overview.svg" width="100%" height="100%"  alt="Overview" />
