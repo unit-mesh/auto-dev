@@ -7,11 +7,11 @@ import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.filters.TextConsoleBuilderFactory
 import com.intellij.execution.process.ProcessTerminatedListener
+import com.intellij.execution.ui.ConsoleView
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
-import com.intellij.openapi.util.UserDataHolder
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.util.io.StreamUtil
 import com.intellij.openapi.vfs.VirtualFile
@@ -36,7 +36,7 @@ interface RunService {
 
     fun runFile(project: Project, virtualFile: VirtualFile): DefaultExecutionResult? {
         val runManager = RunManager.getInstance(project)
-        var testConfig = runManager.allConfigurationsList.firstOrNull {
+        var runConfig = runManager.allConfigurationsList.firstOrNull {
             val runConfigureClass = runConfigurationClass(project)
             it.name == virtualFile.nameWithoutExtension && (it.javaClass == runConfigureClass)
         }
@@ -44,17 +44,17 @@ interface RunService {
         var isTemporary = false
 
         // try to create config if not founds
-        if (testConfig == null) {
+        if (runConfig == null) {
             isTemporary = true
-            testConfig = createConfiguration(project, virtualFile)
+            runConfig = createConfiguration(project, virtualFile)
         }
 
-        if (testConfig == null) {
+        if (runConfig == null) {
             logger.warn("Failed to find test configuration for: ${virtualFile.nameWithoutExtension}")
             return null
         }
 
-        val settings = runManager.findConfigurationByTypeAndName(testConfig.type, testConfig.name)
+        val settings = runManager.findConfigurationByTypeAndName(runConfig.type, runConfig.name)
         if (settings == null) {
             logger.warn("Failed to find test configuration for: ${virtualFile.nameWithoutExtension}")
             return null
@@ -81,12 +81,12 @@ interface RunService {
                 processHandler
             )
 
-        val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
+        val consoleView: ConsoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
         ProcessTerminatedListener.attach(processHandler)
         consoleView.attachToProcess(processHandler)
 
         val defaultExecutionResult = DefaultExecutionResult(consoleView, processHandler)
-        defaultExecutionResult.processHandler.processInput
+
         return defaultExecutionResult
     }
 }
@@ -110,6 +110,7 @@ class RunServiceHandler(val myExecutionName: String, private val myDataHolder: U
 
     override fun notifyTextAvailable(text: String, outputType: Key<*>) {
         super.notifyTextAvailable(text, outputType)
+        logger<RunService>().warn("notifyTextAvailable: $text")
     }
 
     override fun detachIsDefault(): Boolean = false
