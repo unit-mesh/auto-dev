@@ -2,4 +2,4 @@
 
 /refactor /symbol:cc.unitmesh.devti#RevProvider.completions
 
-/edit /file:presentation/VirtualFilePresentation.java #line:L1-L12
+/write:presentation/VirtualFilePresentation.java#L1-L12
