@@ -13,23 +13,16 @@ import com.intellij.psi.util.elementType
 
 class DevInLanguageInjector : LanguageInjector {
     override fun getLanguagesToInject(host: PsiLanguageInjectionHost, registrar: InjectedLanguagePlaces) {
-        if (host !is CodeBlockElement || !host.isValidHost()) {
-            return
-        }
+        if (host !is CodeBlockElement || !host.isValidHost()) return
 
-        val hasContentsElement = host.children.any { it.elementType == DevInTypes.CODE_CONTENTS }
-        if (!hasContentsElement) {
-            return
-        }
+        val hasCodeContents = host.children.any { it.elementType == DevInTypes.CODE_CONTENTS }
+        if (!hasCodeContents) return
 
-        val languageIdentifier = host.getLanguageId()
-        val text = languageIdentifier?.text ?: return
+        val text = host.getLanguageId()?.text ?: return
         val language = findLanguage(text)
 
         val contentList = CodeBlockElement.obtainFenceContent(host) ?: return
-        if (contentList.isEmpty()) {
-            return
-        }
+        if (contentList.isEmpty()) return
 
         injectAsOnePlace(host, language, registrar)
     }
