@@ -1,23 +1,17 @@
 package cc.unitmesh.devti.provider
 
-import com.intellij.build.process.BuildProcessHandler
-import com.intellij.execution.*
+import com.intellij.execution.ExecutionManager
+import com.intellij.execution.Executor
+import com.intellij.execution.RunManager
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.executors.DefaultRunExecutor
-import com.intellij.execution.filters.TextConsoleBuilderFactory
-import com.intellij.execution.process.ProcessTerminatedListener
-import com.intellij.execution.ui.ConsoleView
+import com.intellij.execution.runners.ExecutionEnvironmentBuilder
+import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Key
-import com.intellij.openapi.util.UserDataHolderBase
-import com.intellij.openapi.util.io.StreamUtil
 import com.intellij.openapi.vfs.VirtualFile
-import java.io.*
-import java.nio.channels.Channels
-import java.nio.channels.Pipe
 
 interface RunService {
     private val logger: Logger get() = logger<RunService>()
@@ -34,9 +28,9 @@ interface RunService {
 
     fun createConfiguration(project: Project, path: String): RunConfiguration? = null
 
-    fun runFile(project: Project, virtualFile: VirtualFile): DefaultExecutionResult? {
+    fun runFile(project: Project, virtualFile: VirtualFile): String? {
         val runManager = RunManager.getInstance(project)
-        var runConfig = runManager.allConfigurationsList.firstOrNull {
+        var testConfig = runManager.allConfigurationsList.firstOrNull {
             val runConfigureClass = runConfigurationClass(project)
             it.name == virtualFile.nameWithoutExtension && (it.javaClass == runConfigureClass)
         }
@@ -44,17 +38,17 @@ interface RunService {
         var isTemporary = false
 
         // try to create config if not founds
-        if (runConfig == null) {
+        if (testConfig == null) {
             isTemporary = true
-            runConfig = createConfiguration(project, virtualFile)
+            testConfig = createConfiguration(project, virtualFile)
         }
 
-        if (runConfig == null) {
+        if (testConfig == null) {
             logger.warn("Failed to find test configuration for: ${virtualFile.nameWithoutExtension}")
             return null
         }
 
-        val settings = runManager.findConfigurationByTypeAndName(runConfig.type, runConfig.name)
+        val settings = runManager.findConfigurationByTypeAndName(testConfig.type, testConfig.name)
         if (settings == null) {
             logger.warn("Failed to find test configuration for: ${virtualFile.nameWithoutExtension}")
             return null
@@ -64,85 +58,14 @@ interface RunService {
             settings.isTemporary = true
         }
 
-        logger.info("configurationSettings: $settings")
         runManager.selectedConfiguration = settings
 
-        val executor: Executor = DefaultRunExecutor()
-        val executionManager = ExecutionManager.getInstance(project)
-        val dataHolderBase = UserDataHolderBase()
-        val processHandler = RunServiceHandler(settings.name, dataHolderBase)
+        val executor: Executor = DefaultRunExecutor.getRunExecutorInstance()
+        val builder = ExecutionEnvironmentBuilder.createOrNull(executor, settings) ?: return null
 
-        executionManager
-            .restartRunProfile(
-                project,
-                executor,
-                DefaultExecutionTarget.INSTANCE,
-                settings,
-                processHandler
-            )
+        val environment = builder.activeTarget().dataContext(DataContext.EMPTY_CONTEXT).build()
+        ExecutionManager.getInstance(project).restartRunProfile(environment)
 
-        val consoleView: ConsoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
-        ProcessTerminatedListener.attach(processHandler)
-        consoleView.attachToProcess(processHandler)
-
-        val defaultExecutionResult = DefaultExecutionResult(consoleView, processHandler)
-
-        return defaultExecutionResult
-    }
-}
-
-class RunServiceHandler(val myExecutionName: String, private val myDataHolder: UserDataHolderBase) :
-    BuildProcessHandler() {
-    private var myProcessInputWriter: OutputStream? = null
-    private var myProcessInputReader: InputStream? = null
-
-    init {
-        try {
-            val pipe = Pipe.open()
-            myProcessInputReader = BufferedInputStream(Channels.newInputStream(pipe.source()))
-            myProcessInputWriter = BufferedOutputStream(Channels.newOutputStream(pipe.sink()))
-        } catch (e: IOException) {
-            logger<RunService>().warn("Unable to setup process input", e)
-        }
-
-        myDataHolder.putUserData(RUN_INPUT_KEY, myProcessInputReader)
-    }
-
-    override fun notifyTextAvailable(text: String, outputType: Key<*>) {
-        super.notifyTextAvailable(text, outputType)
-        logger<RunService>().warn("notifyTextAvailable: $text")
-    }
-
-    override fun detachIsDefault(): Boolean = false
-    override fun destroyProcessImpl() {
-        notifyProcessDetached()
-        closeInput()
-    }
-
-    override fun detachProcessImpl() {
-        closeInput()
-        notifyProcessTerminated(0)
-    }
-
-    override fun getProcessInput(): OutputStream {
-        return myProcessInputWriter!!
-    }
-
-    protected fun closeInput() {
-        val processInputWriter = myProcessInputWriter!!
-        val processInputReader = myProcessInputReader!!
-        myProcessInputWriter = null
-        myProcessInputReader = null
-
-        myDataHolder.putUserData(RUN_INPUT_KEY, null)
-
-        StreamUtil.closeStream(processInputWriter)
-        StreamUtil.closeStream(processInputReader)
-    }
-
-    override fun getExecutionName(): String = myExecutionName
-
-    companion object {
-        val RUN_INPUT_KEY: Key<InputStream> = Key.create("RUN_INPUT_KEY")
+        return null
     }
 }
