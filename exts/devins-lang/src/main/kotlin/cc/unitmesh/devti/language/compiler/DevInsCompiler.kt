@@ -153,6 +153,11 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
                 result.isLocalCommand = true
                 RunInsCommand(myProject, prop)
             }
+
+            BuiltinCommand.FILE_FUNC -> {
+                result.isLocalCommand = true
+                FileFuncInsCommand(myProject, prop)
+            }
         }
 
         val execResult = command.execute()

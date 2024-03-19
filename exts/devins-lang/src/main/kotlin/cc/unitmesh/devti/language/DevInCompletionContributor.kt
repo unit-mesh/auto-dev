@@ -30,6 +30,11 @@ class DevInCompletionContributor : CompletionContributor() {
             valuePattern(BuiltinCommand.SYMBOL.commandName),
             SymbolReferenceLanguageProvider()
         )
+        extend(
+            CompletionType.BASIC,
+            valuePattern(BuiltinCommand.FILE_FUNC.commandName),
+            FileFunctionProvider()
+        )
     }
 
     private inline fun <reified I : PsiElement> psiElement() = PlatformPatterns.psiElement(I::class.java)
