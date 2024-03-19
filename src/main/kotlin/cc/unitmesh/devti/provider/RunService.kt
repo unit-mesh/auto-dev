@@ -5,13 +5,11 @@ import com.intellij.execution.*
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.executors.DefaultRunExecutor
+import com.intellij.execution.filters.TextConsoleBuilderFactory
 import com.intellij.execution.impl.ConsoleViewImpl
 import com.intellij.execution.process.ProcessHandler
-import com.intellij.execution.process.ProcessListener
-import com.intellij.execution.runners.ExecutionEnvironmentBuilder
-import com.intellij.execution.ui.RunContentDescriptor
+import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.ui.RunContentManager
-import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
@@ -19,11 +17,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.vfs.VirtualFile
-import java.io.BufferedOutputStream
-import java.io.OutputStream
-import javax.swing.JPanel
-
-val RW_MAIN_CONFIGURATION_ID: Key<String> = Key<String>("RunWidgetMainRunConfigurationId")
+import java.io.*
+import java.nio.channels.Channels
+import java.nio.channels.Pipe
 
 interface RunService {
     private val logger: Logger get() = logger<RunService>()
@@ -74,20 +70,6 @@ interface RunService {
         runManager.selectedConfiguration = settings
 
         val executor: Executor = DefaultRunExecutor()
-        val dataContext = DataContext.EMPTY_CONTEXT
-        val contentToReuse = RunContentDescriptor(
-            ConsoleViewImpl(project, false),
-            createProcessHandler(settings.name),
-            JPanel(),
-            settings.name
-        )
-
-        var builder = ExecutionEnvironmentBuilder.createOrNull(executor, settings) ?: return null
-        builder = builder.activeTarget()
-        builder = builder.contentToReuse(contentToReuse)
-
-        val environment = builder.dataContext(dataContext).build()
-        environment.contentToReuse = contentToReuse
 
         val executionManager = ExecutionManager.getInstance(project)
         executionManager
@@ -97,8 +79,11 @@ interface RunService {
                 DefaultExecutionTarget.INSTANCE,
                 settings,
                 createProcessHandler(settings.name)
-            ) { executionEnvironment ->
-                executionEnvironment.runProfile
+            ) { environment ->
+                val processHandler = createProcessHandler(settings.name)
+                val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(environment.project).console
+                ProcessTerminatedListener.attach(processHandler)
+                consoleView.attachToProcess(processHandler)
             }
 
         invokeLater {
@@ -115,23 +100,29 @@ interface RunService {
 
 @Throws(ExecutionException::class)
 private fun createProcessHandler(myExecutionName: String): ProcessHandler = object : BuildProcessHandler() {
-    override fun notifyTextAvailable(text: String, outputType: Key<*>) {
-        logger<RunService>().warn("notifyTextAvailable: $text")
+    private var myProcessInputWriter: OutputStream? = null
+    private var myProcessInputReader: InputStream? = null
+
+    init {
+        try {
+            val pipe = Pipe.open()
+            myProcessInputReader = BufferedInputStream(Channels.newInputStream(pipe.source()))
+            myProcessInputWriter = BufferedOutputStream(Channels.newOutputStream(pipe.sink()))
+        } catch (e: IOException) {
+            logger<RunService>().warn("Unable to setup process input", e)
+        }
     }
 
-    override fun addProcessListener(listener: ProcessListener) {
-        super.addProcessListener(listener)
+    override fun notifyTextAvailable(text: String, outputType: Key<*>) {
+        super.notifyTextAvailable(text, outputType)
     }
 
     override fun detachIsDefault(): Boolean = false
     override fun destroyProcessImpl() = Unit
     override fun detachProcessImpl() = notifyProcessTerminated(0)
-    override fun getProcessInput(): OutputStream? {
-        return BufferedOutputStream(object : OutputStream() {
-            override fun write(b: Int) {
-                logger<RunService>().warn("write: $b")
-            }
-        })
+
+    override fun getProcessInput(): OutputStream {
+        return myProcessInputWriter!!
     }
 
     override fun getExecutionName(): String = myExecutionName
