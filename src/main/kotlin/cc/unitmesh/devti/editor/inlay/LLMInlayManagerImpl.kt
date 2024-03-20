@@ -3,6 +3,8 @@ package cc.unitmesh.devti.editor.inlay
 import com.intellij.temporary.inlay.presentation.LLMInlayRenderer
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionTask
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
+import cc.unitmesh.devti.util.parser.Code
+import cc.unitmesh.devti.util.parser.PostCodeProcessor
 import com.intellij.injected.editor.EditorWindow
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
@@ -22,7 +24,6 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.util.PsiUtilBase
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import com.intellij.util.concurrency.annotations.RequiresEdt
-import java.util.function.Consumer
 
 
 class LLMInlayManagerImpl : LLMInlayManager {
@@ -114,13 +115,23 @@ class LLMInlayManagerImpl : LLMInlayManager {
 
     override fun editorModified(editor: Editor, changeOffset: Int) {
         disposeInlays(editor, InlayDisposeContext.Typing)
-        requestCompletions(editor, changeOffset) { completion ->
-            if (completion.isEmpty()) return@requestCompletions
+        requestCompletions(editor, changeOffset);
+    }
 
-            currentCompletion = completion
+    @RequiresBackgroundThread
+    private fun requestCompletions(editor: Editor, changeOffset: Int) {
+        val element = PsiUtilBase.getElementAtCaret(editor) ?: return
+        val request = CodeCompletionRequest.create(editor, changeOffset, element, null, null) ?: return
+
+        KEY_LAST_REQUEST[editor] = request
+        CodeCompletionTask(request).execute { completion ->
+            if (completion.isEmpty()) return@execute
+
+            val completeCode = Code.parse(completion).text
+            currentCompletion = PostCodeProcessor(request.prefixText, request.suffixText, completeCode).execute()
 
             WriteCommandAction.runWriteCommandAction(editor.project) {
-                val renderer = LLMInlayRenderer(editor, completion.lines())
+                val renderer = LLMInlayRenderer(editor, currentCompletion.lines())
                 renderer.apply {
                     val inlay: Inlay<EditorCustomElementRenderer>? = editor.inlayModel
                         .addBlockElement(changeOffset, true, false, 0, this)
@@ -130,15 +141,6 @@ class LLMInlayManagerImpl : LLMInlayManager {
                 }
             }
         }
-    }
-
-    @RequiresBackgroundThread
-    private fun requestCompletions(editor: Editor, changeOffset: Int, onFirstCompletion: Consumer<String>?) {
-        val element = PsiUtilBase.getElementAtCaret(editor) ?: return
-        val request = CodeCompletionRequest.create(editor, changeOffset, element, null, null) ?: return
-
-        KEY_LAST_REQUEST[editor] = request
-        CodeCompletionTask(request).execute(onFirstCompletion)
     }
 
     override fun editorModified(editor: Editor) {
