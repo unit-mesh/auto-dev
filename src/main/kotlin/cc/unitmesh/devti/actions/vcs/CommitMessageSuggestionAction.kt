@@ -27,7 +27,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.flow.*
 
 class CommitMessageSuggestionAction : ChatBaseAction() {
-
     override fun getActionUpdateThread(): ActionUpdateThread {
         return ActionUpdateThread.BGT
     }

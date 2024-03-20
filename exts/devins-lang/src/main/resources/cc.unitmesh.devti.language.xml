@@ -1,0 +1,61 @@
+<idea-plugin package="cc.unitmesh.devti.language">
+    <dependencies>
+        <plugin id="org.intellij.plugins.markdown"/>
+    </dependencies>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!--        refs: https://github.com/JetBrains/intellij-sdk-code-samples/blob/main/simple_language_plugin/src/main/resources/META-INF/plugin.xml-->
+        <fileType name="DevInFile" implementationClass="cc.unitmesh.devti.language.DevInFileType" fieldName="INSTANCE"
+                  language="DevIn" extensions="devin"/>
+
+        <lang.parserDefinition language="DevIn"
+                               implementationClass="cc.unitmesh.devti.language.parser.DevInParserDefinition"/>
+        <lang.syntaxHighlighterFactory language="DevIn"
+                                       implementationClass="cc.unitmesh.devti.language.highlight.DevInSyntaxHighlighterFactory"/>
+
+        <lang.ast.factory language="DevIn"
+                          implementationClass="cc.unitmesh.devti.language.DevInAstFactory"/>
+
+        <typedHandler implementation="cc.unitmesh.devti.language.DevInTypedHandler"/>
+
+        <completion.contributor language="DevIn"
+                                order="last"
+                                implementationClass="cc.unitmesh.devti.language.DevInCompletionContributor"/>
+
+        <lang.foldingBuilder language="DevIn"
+                             implementationClass="cc.unitmesh.devti.language.folding.DevInCustomVariableFoldingBuilder"/>
+        <lang.foldingBuilder language="DevIn"
+                             implementationClass="cc.unitmesh.devti.language.folding.DevInFileReferenceFoldingBuilder"/>
+
+        <languageInjector implementation="cc.unitmesh.devti.language.DevInLanguageInjector"/>
+
+
+        <configurationType implementation="cc.unitmesh.devti.language.run.DevInsConfigurationType"/>
+        <programRunner implementation="cc.unitmesh.devti.language.run.DevInsProgramRunner"/>
+        <runConfigurationBeforeRunProviderDelegate implementation="cc.unitmesh.devti.language.run.DevInsBeforeRunProviderDelegate"/>
+        <runConfigurationProducer implementation="cc.unitmesh.devti.language.run.DevInsRunConfigurationProducer"/>
+        <runLineMarkerContributor language="DevIn"
+                                  implementationClass="cc.unitmesh.devti.language.run.DevInsRunLineMarkersProvider"/>
+
+        <lang.documentationProvider language="DevIn"
+                                    id="devinsDocumentationProvider"
+                                    implementationClass="cc.unitmesh.devti.language.documentation.DevInsDocumentationProvider"/>
+        <documentationProvider implementation="cc.unitmesh.devti.language.documentation.DevInsDocumentationProvider"/>
+
+        <localInspection language="DevIn" groupPath="DevIn" groupName="Lints"
+                         displayName="Duplicate agent declaration"
+                         enabledByDefault="true"
+                         level="ERROR"
+                         implementationClass="cc.unitmesh.devti.language.lints.DevInsDuplicateAgentInspection"/>
+    </extensions>
+
+    <actions>
+        <action id="runDevInsFileAction"
+                class="cc.unitmesh.devti.language.actions.DevInsRunFileAction"
+                use-shortcut-of="RunClass"/>
+    </actions>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <customAgentResponse implementation="cc.unitmesh.devti.language.provider.DevInsCustomAgentResponse"/>
+    </extensions>
+</idea-plugin>

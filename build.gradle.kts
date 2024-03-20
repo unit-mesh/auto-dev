@@ -266,7 +266,7 @@ project(":plugin") {
         implementation(project(":exts:database"))
         implementation(project(":exts:ext-android"))
         implementation(project(":exts:ext-harmonyos"))
-        implementation(project(":exts:devin-lang"))
+        implementation(project(":exts:devins-lang"))
     }
 
     // Collects all jars produced by compilation of project modules and merges them into singe one.
@@ -437,6 +437,7 @@ project(":") {
 
         kover(project(":exts:database"))
         kover(project(":exts:ext-android"))
+        kover(project(":exts:devins-lang"))
     }
 
     task("resolveDependencies") {
@@ -583,7 +584,7 @@ project(":exts:ext-harmonyos") {
     }
 }
 
-project(":exts:devin-lang") {
+project(":exts:devins-lang") {
     apply {
         plugin("org.jetbrains.grammarkit")
     }

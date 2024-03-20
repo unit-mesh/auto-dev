@@ -43,7 +43,7 @@
 
         <testContextProvider
                 language="JAVA"
-                implementation="cc.unitmesh.idea.service.JavaWriteTestService"/>
+                implementation="cc.unitmesh.idea.service.JavaAutoTestService"/>
 
         <buildSystemProvider
                 implementation="cc.unitmesh.idea.provider.JavaBuildSystemProvider"/>
@@ -60,6 +60,9 @@
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
+
+        <customDevInsCompletionProvider
+                implementation="cc.unitmesh.idea.provider.JavaCustomDevInsSymbolProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

@@ -3,12 +3,9 @@ package cc.unitmesh.harmonyos.provider
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 
 class HarmonyOSChatContextProvider : ChatContextProvider {
-    private val logger = logger<HarmonyOSChatContextProvider>()
-
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
         return System.getProperty("idea.platform.prefix", "idea") == "DevEcoStudio"
     }

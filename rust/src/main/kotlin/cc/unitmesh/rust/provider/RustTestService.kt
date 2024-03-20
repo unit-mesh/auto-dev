@@ -1,7 +1,7 @@
 package cc.unitmesh.rust.provider
 
 import cc.unitmesh.devti.context.ClassContext
-import cc.unitmesh.devti.provider.WriteTestService
+import cc.unitmesh.devti.provider.AutoTestService
 import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.rust.context.RustClassContextBuilder
 import cc.unitmesh.rust.context.RustMethodContextBuilder
@@ -15,7 +15,7 @@ import org.rust.cargo.runconfig.command.CargoCommandConfiguration
 import org.rust.lang.RsLanguage
 import org.rust.lang.core.psi.*
 
-class RustTestService : WriteTestService() {
+class RustTestService : AutoTestService() {
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = CargoCommandConfiguration::class.java
 
     override fun isApplicable(element: PsiElement): Boolean {

@@ -1,0 +1,7 @@
+你好 @hello-world sm
+解释一下代码
+$selection 表示选择的内容
+@agent-name 调用特定的 agent
+/file:Sample.file 从文件中读取内容
+/rev:632372da 从版本库中读取内容
+#system_id:51 传递参数到 story_id

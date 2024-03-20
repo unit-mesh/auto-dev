@@ -21,7 +21,7 @@ class JavaLayeredArchProvider : LayeredArchProvider {
     }
 
     override fun getLayeredArch(project: Project): ProjectPackageTree {
-        val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
+        val searchScope: GlobalSearchScope = ProjectScope.getProjectScope(project)
         val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
         val psiManager = PsiManager.getInstance(project)
 

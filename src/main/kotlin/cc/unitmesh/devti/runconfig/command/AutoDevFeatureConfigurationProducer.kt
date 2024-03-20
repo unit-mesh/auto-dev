@@ -1,8 +1,8 @@
 package cc.unitmesh.devti.runconfig.command
 
 import cc.unitmesh.devti.runconfig.DevtiAnnotator
-import cc.unitmesh.devti.runconfig.AutoDevConfigurationType
-import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
+import cc.unitmesh.devti.runconfig.AutoCRUDConfigurationType
+import cc.unitmesh.devti.runconfig.config.AutoCRUDConfiguration
 import cc.unitmesh.devti.runconfig.config.AutoDevStory
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.configurations.ConfigurationFactory
@@ -16,7 +16,7 @@ open class AutoDevFeatureConfigurationProducer : BaseConfigurationProducer() {
     }
 
     override fun getConfigurationFactory(): ConfigurationFactory {
-        return AutoDevConfigurationType.getInstance().factory
+        return AutoCRUDConfigurationType.getInstance().factory
     }
 
     private fun createConfigFor(elements: List<PsiElement>): AutoDevStory? {
@@ -30,7 +30,7 @@ open class AutoDevFeatureConfigurationProducer : BaseConfigurationProducer() {
     }
 
     override fun isConfigurationFromContext(
-        configuration: AutoDevConfiguration,
+        configuration: AutoCRUDConfiguration,
         context: ConfigurationContext
     ): Boolean {
         val config = findConfig(context.location?.psiElement?.let { listOf(it) } ?: return false) ?: return false
@@ -40,7 +40,7 @@ open class AutoDevFeatureConfigurationProducer : BaseConfigurationProducer() {
     }
 
     override fun setupConfigurationFromContext(
-        configuration: AutoDevConfiguration,
+        configuration: AutoCRUDConfiguration,
         context: ConfigurationContext,
         sourceElement: Ref<PsiElement>
     ): Boolean {

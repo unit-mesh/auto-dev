@@ -7,7 +7,7 @@ import cc.unitmesh.devti.flow.kanban.impl.GitLabIssue
 import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.provider.DevFlowProvider
-import cc.unitmesh.devti.runconfig.options.AutoDevConfigurationOptions
+import cc.unitmesh.devti.runconfig.options.AutoCRUDConfigurationOptions
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
@@ -22,7 +22,7 @@ import com.intellij.openapi.project.Project
 
 class AutoDevRunProfileState(
     val project: Project,
-    val options: AutoDevConfigurationOptions,
+    val options: AutoCRUDConfigurationOptions,
 ) : RunProfileState {
     private val githubToken: String
     private val gitlabToken: String

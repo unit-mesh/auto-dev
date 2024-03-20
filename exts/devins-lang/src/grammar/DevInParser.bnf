@@ -1,0 +1,49 @@
+// should similar to markdown syntax
+// Copyright 2000-2022 JetBrains s.r.o. and other contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
+{
+  parserClass="cc.unitmesh.devti.language.parser.DevInParser"
+
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+  psiClassPrefix="DevIn"
+  psiImplClassSuffix="Impl"
+  psiPackage="cc.unitmesh.devti.language.psi"
+  psiImplPackage="cc.unitmesh.devti.language.psi.impl"
+
+  elementTypeHolderClass="cc.unitmesh.devti.language.psi.DevInTypes"
+  elementTypeClass="cc.unitmesh.devti.language.psi.DevInElementType"
+  tokenTypeClass="cc.unitmesh.devti.language.lexer.DevInTokenType"
+
+  tokens=[
+    AGENT_START        = "AGENT_START"
+    COMMAND_START      = "COMMAND_START"
+    VARIABLE_START     = "VARIABLE_START"
+    SYSTEM_START       = "SYSTEM_START"
+    CODE_BLOCK_START   = "CODE_BLOCK_START"
+    CODE_BLOCK_END     = "CODE_BLOCK_END"
+    CODE_BLOCK         = "CODE_BLOCK"
+    CODE_CONTENT       = "CODE_CONTENT"
+    IDENTIFIER         = "IDENTIFIER"
+    LANGUAGE_ID        = "LANGUAGE_ID"
+    VARIABLE_ID        = "VARIABLE_ID"
+    COMMAND_ID         = "COMMAND_ID"
+    AGENT_ID           = "AGENT_ID"
+    SYSTEM_ID          = "SYSTEM_ID"
+    COLON              = "COLON"
+    COMMAND_PROP       = "COMMAND_PROP"
+    SHARP              = "SHARP"
+  ]
+}
+
+DevInsFile ::= (used | code | TEXT_SEGMENT | NEWLINE)*
+
+used ::= (
+    AGENT_START AGENT_ID
+    | COMMAND_START COMMAND_ID (COLON COMMAND_PROP?)?
+    | VARIABLE_START VARIABLE_ID
+    | SYSTEM_START SYSTEM_ID COLON NUMBER
+)
+
+code ::=  CODE_BLOCK_START LANGUAGE_ID? NEWLINE? code_contents? CODE_BLOCK_END?
+
+code_contents ::= (NEWLINE | CODE_CONTENT)*

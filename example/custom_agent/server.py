@@ -87,6 +87,49 @@ def mock_html():
 """
 
 
+@app.post("/api/agent/devins-sample", response_class=PlainTextResponse)
+def mock_devins(messages: Messages):
+    return """
+Here are the patches for your
+
+```devin
+/patch
+
+\\`\\`\\`patch
+Index: src/main/java/cc/unitmesh/untitled/demo/controller/BlogCategoryController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/cc/unitmesh/untitled/demo/controller/BlogCategoryController.java b/src/main/java/cc/unitmesh/untitled/demo/controller/BlogCategoryController.java
+--- a/src/main/java/cc/unitmesh/untitled/demo/controller/BlogCategoryController.java	(revision b5985862c79fe42043697bc5d5f38b470020be3d)
++++ b/src/main/java/cc/unitmesh/untitled/demo/controller/BlogCategoryController.java	(date 1709616724534)
+@@ -4,7 +4,19 @@
+ 
+ @RestController
+ public class BlogCategoryController {
+-    // devti://story/github/1
++    public void addCategory(String categoryName) {
++        // ... add category logic here
++    }
++
++    public void deleteCategory(long categoryId) {
++        // ... delete category logic here
++    }
+ 
+-    // Close a bank account
++    public void updateCategory(long categoryId, String newCategoryName) {
++        // ... update category logic here
++    }
++
++    public void listCategories() {
++        // ... list all categories logic here
++    }
+ }
+\\`\\`\\`
+```"""
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     exc_str = f'{exc}'.replace('\n', ' ').replace('   ', ' ')

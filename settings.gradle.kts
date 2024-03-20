@@ -25,5 +25,5 @@ include(
     "exts:ext-harmonyos",
 
     // the Input Language support for AutoDev
-    "exts:devin-lang"
+    "exts:devins-lang"
 )

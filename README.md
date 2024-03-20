@@ -21,11 +21,28 @@
 </p>
 
 > 🧙‍AutoDev: The AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, and a helpful
-> bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Dev/Testing/Document feature 🧪 included! 🚀
+> bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Dev/Testing/Document/Agent feature 🧪 included! 🚀
 
 [Quick Start →](https://ide.unitmesh.cc/quick-start)
 
-AutoDev Overview:
+[DevIns — AI Agent language for AutoDevelopment →](https://ide.unitmesh.cc/devins) which you can use follow syntax as bridges for Human-AI-IDE:
+
+    /write:src/main/java/com/example/Controller.java#L1-L12
+    ```java
+    public class Controller {
+        public void method() {
+            System.out.println("Hello, World!");
+        }
+    }
+    ```
+
+## AutoDev Architecture
+
+Here is the AutoDev architecture:
+
+![](docs/autodev-arch.svg)
+
+## AutoDev Feature Overview
 
 <p align="center">
   <img src="docs/autodev-overview.svg" width="100%" height="100%"  alt="Overview" />
@@ -62,6 +79,8 @@ Features:
 - Infrastructure / DevOps
     - CI/CD support. AutoDev will auto generate CI/CD config file.
     - Dockerfile support. AutoDev will auto generate Dockerfile.
+- DevIns language
+    - Executable AI Agent language.
 - Built-in LLM Fine-tune
     - [UnitEval](https://github.com/unit-mesh/unit-eval) evaluate llm result
     - [UnitGen](https://github.com/unit-mesh/unit-gen) generate code-llm fine-tune data.
@@ -94,6 +113,10 @@ We follow [Chapi](https://github.com/phodal/chapi) for language support tier.
 see in [exts](exts)
 
 ## Demo
+
+DevIns Language demo (Bilibili) - 中文
+
+[![Watch the video](https://img.youtube.com/vi/gVBTBdFV5hA/sddefault.jpg)](https://www.bilibili.com/video/BV12H4y1W7sE/)
 
 Video demo (YouTube) — English
 

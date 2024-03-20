@@ -1,0 +1,6 @@
+DevInFile
+  DevInUsedImpl(USED)
+    PsiElement(DevInTokenType.SYSTEM_START)('#')
+    PsiElement(DevInTokenType.SYSTEM_ID)('kanban')
+    PsiElement(DevInTokenType.COLON)(':')
+    PsiElement(DevInTokenType.NUMBER)('1')

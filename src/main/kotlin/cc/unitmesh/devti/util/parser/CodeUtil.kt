@@ -8,7 +8,8 @@ class Code(val language: Language, val text: String, val isComplete: Boolean) {
         fun parse(content: String): Code {
             val regex = Regex("```([\\w#+]*)")
             // convert content \\n to \n
-            val lines = content.replace("\\n", "\n").lines()
+            val lines = content
+                .replace("\\n", "\n").lines()
 
             var codeStarted = false
             var codeClosed = false
@@ -48,12 +49,16 @@ class Code(val language: Language, val text: String, val isComplete: Boolean) {
                 endIndex--
             }
 
-            val trimmedCode = codeBuilder.substring(startIndex, endIndex + 1).toString()
+            var trimmedCode = codeBuilder.substring(startIndex, endIndex + 1).toString()
             val language = findLanguage(languageId ?: "")
 
             // if content is not empty, but code is empty, then it's a markdown
             if (trimmedCode.isEmpty()) {
                 return Code(findLanguage("markdown"), content.replace("\\n", "\n"), codeClosed)
+            }
+
+            if (languageId == "devin") {
+                trimmedCode = trimmedCode.replace("\\`\\`\\`", "```")
             }
 
             return Code(language, trimmedCode, codeClosed)

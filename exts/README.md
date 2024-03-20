@@ -5,6 +5,7 @@ In this folder, you can find some advanced extensions for AutoDev.
 - Database. Build an SQL, Oracle or MySQL database with GenAI ability.
 - Android. This extension allows you to build Android with GenAI ability.
 - HarmonyOS. This extension allows you to build HarmonyOS with GenAI ability.
+- DevIns. This extension allows you to build DevIns language with GenAI ability.
 
 ## How to add new extensions
 

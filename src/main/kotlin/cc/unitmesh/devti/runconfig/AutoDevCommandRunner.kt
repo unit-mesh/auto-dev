@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.runconfig
 
-import cc.unitmesh.devti.runconfig.config.AutoDevConfiguration
+import cc.unitmesh.devti.runconfig.config.AutoCRUDConfiguration
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.configurations.RunProfileState
@@ -17,18 +17,18 @@ import org.jetbrains.annotations.NonNls
 
 class AutoDevCommandRunner : GenericProgramRunner<RunnerSettings>() {
     companion object {
-        private val log: Logger = logger<AutoDevRunProfileState>()
+        private val log: Logger = logger<AutoDevCommandRunner>()
         const val RUNNER_ID: String = "AutoDevCommandRunner"
     }
 
     override fun getRunnerId(): @NonNls String = RUNNER_ID
 
     override fun canRun(executorId: String, profile: RunProfile): Boolean {
-        return !(executorId != DefaultRunExecutor.EXECUTOR_ID || profile !is AutoDevConfiguration)
+        return !(executorId != DefaultRunExecutor.EXECUTOR_ID || profile !is AutoCRUDConfiguration)
     }
 
     override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor? {
-        if (environment.runProfile !is AutoDevConfiguration) return null
+        if (environment.runProfile !is AutoCRUDConfiguration) return null
         FileDocumentManager.getInstance().saveAllDocuments()
         return showRunContent(state.execute(environment.executor, this), environment)
     }

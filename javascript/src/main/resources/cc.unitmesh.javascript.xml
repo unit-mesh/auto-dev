@@ -35,8 +35,8 @@
         <promptStrategy language="JavaScript" implementation="cc.unitmesh.ide.javascript.provider.JavaScriptPromptStrategyAdvisor"/>
         <promptStrategy language="TypeScript" implementation="cc.unitmesh.ide.javascript.provider.JavaScriptPromptStrategyAdvisor"/>
 
-        <testContextProvider language="JavaScript" implementation="cc.unitmesh.ide.javascript.provider.testing.JSWriteTestService"/>
-        <testContextProvider language="TypeScript" implementation="cc.unitmesh.ide.javascript.provider.testing.JSWriteTestService"/>
+        <testContextProvider language="JavaScript" implementation="cc.unitmesh.ide.javascript.provider.testing.JSAutoTestService"/>
+        <testContextProvider language="TypeScript" implementation="cc.unitmesh.ide.javascript.provider.testing.JSAutoTestService"/>
 
         <livingDocumentation language="JavaScript"
                              implementationClass="cc.unitmesh.ide.javascript.provider.JavaScriptLivingDocumentation"/>

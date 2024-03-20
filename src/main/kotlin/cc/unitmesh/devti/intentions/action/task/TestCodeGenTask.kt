@@ -7,7 +7,7 @@ import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.intentions.action.AutoTestThisBaseIntention
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.util.parser.parseCodeFromString
-import cc.unitmesh.devti.provider.WriteTestService
+import cc.unitmesh.devti.provider.AutoTestService
 import cc.unitmesh.devti.provider.context.*
 import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.statusbar.AutoDevStatusService
@@ -43,7 +43,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
 
     private val actionType = ChatActionType.GENERATE_TEST
     private val lang = request.file.language.displayName
-    private val writeTestService = WriteTestService.context(request.element)
+    private val autoTestService = AutoTestService.context(request.element)
 
     val commenter = LanguageCommenters.INSTANCE.forLanguage(request.file.language) ?: null
     val comment = commenter?.lineCommentPrefix ?: "//"
@@ -57,11 +57,11 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.prepare-context")
 
         AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
-        val testContext = writeTestService?.findOrCreateTestFile(request.file, request.project, request.element)
+        val testContext = autoTestService?.findOrCreateTestFile(request.file, request.project, request.element)
         DumbService.getInstance(request.project).waitForSmartMode()
 
         if (testContext == null) {
-            if (writeTestService == null) {
+            if (autoTestService == null) {
                 AutoDevStatusService.notifyApplication(AutoDevStatus.Error)
                 logger.error("Could not find WriteTestService for: ${request.file}, language: $lang")
                 return
@@ -131,7 +131,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         runBlocking {
             writeTestToFile(request.project, flow, testContext)
             navigateTestFile(testContext.outputFile, request.project)
-            writeTestService?.runTest(request.project, testContext.outputFile)
+            autoTestService?.runFile(request.project, testContext.outputFile)
 
             AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)
             indicator.fraction = 1.0
