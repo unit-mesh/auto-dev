@@ -5,19 +5,14 @@ import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.*
 import com.intellij.execution.process.KillableProcessHandler
-import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessTerminatedListener
-import com.intellij.execution.runners.ExecutionEnvironment
-import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.ui.ConsoleView
-import com.intellij.execution.ui.RunContentDescriptor
-import com.intellij.execution.ui.RunContentManager
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.sh.run.ShConfigurationType
 import com.intellij.sh.run.ShRunner
 import com.intellij.terminal.TerminalExecutionConsole
+import com.intellij.util.io.BaseDataReader
 import com.intellij.util.io.BaseOutputReader
 
 class ShellInsCommand(val myProject: Project, val prop: String) : InsCommand {
@@ -65,11 +60,16 @@ class ShellInsCommand(val myProject: Project, val prop: String) : InsCommand {
     }
 
     @Throws(ExecutionException::class)
-    private fun createProcessHandler(commandLine: GeneralCommandLine): ProcessHandler {
-        return object : KillableProcessHandler(commandLine) {
-            override fun readerOptions(): BaseOutputReader.Options {
-                return BaseOutputReader.Options.forTerminalPtyProcess()
+    private fun createProcessHandler(commandLine: GeneralCommandLine) =
+        object : KillableProcessHandler(commandLine) {
+            override fun readerOptions() = object : BaseOutputReader.Options() {
+                override fun policy(): BaseDataReader.SleepingPolicy {
+                    return BaseDataReader.SleepingPolicy.BLOCKING
+                }
+
+                override fun splitToLines(): Boolean {
+                    return false
+                }
             }
         }
-    }
 }
