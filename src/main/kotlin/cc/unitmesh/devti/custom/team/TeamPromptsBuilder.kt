@@ -14,8 +14,8 @@ class TeamPromptsBuilder(private val project: Project) {
 
     fun default(): List<TeamPromptAction> {
         val promptsDir = project.guessProjectDir()?.findChild(baseDir) ?: return emptyList()
-
         val filterPrompts = promptsDir.children.filter { it.name.endsWith(".vm") }
+
         return buildPrompts(filterPrompts)
     }
 
@@ -25,6 +25,14 @@ class TeamPromptsBuilder(private val project: Project) {
         val quickPromptFiles = quickPromptDir.children.filter { it.name.endsWith(".vm") }
 
         return buildPrompts(quickPromptFiles)
+    }
+
+    fun flows(): List<VirtualFile> {
+        val promptsDir = project.guessProjectDir()?.findChild(baseDir) ?: return emptyList()
+        val customPromptDir = promptsDir.findChild("flows") ?: return emptyList()
+        val customPromptFiles = customPromptDir.children.filter { it.name.endsWith(".devin") }
+
+        return customPromptFiles
     }
 
     private fun buildPrompts(prompts: List<VirtualFile>): List<TeamPromptAction> {
