@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.editor.inlay
+package com.intellij.temporary.inlay.codecomplete
 
 import com.intellij.openapi.command.CommandEvent
 import com.intellij.openapi.command.CommandListener
@@ -16,7 +16,6 @@ import java.util.concurrent.atomic.AtomicReference
 
 private class UndoTransparentActionState(val editor: Editor, val modificationStamp: Long)
 private class CommandEditorState(val modificationStamp: Long, val visualPosition: VisualPosition)
-
 class LLMCommandListener(private val project: Project) : CommandListener {
     private val activeCommands = AtomicInteger()
     private val startedWithEditor = AtomicBoolean(false)

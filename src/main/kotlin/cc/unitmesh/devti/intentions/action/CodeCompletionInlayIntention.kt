@@ -1,11 +1,11 @@
 package cc.unitmesh.devti.intentions.action
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.editor.inlay.LLMInlayManager
 import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
+import com.intellij.temporary.inlay.codecomplete.LLMInlayManager
 
 class CodeCompletionInlayIntention : ChatBaseIntention() {
     override fun priority(): Int = 980

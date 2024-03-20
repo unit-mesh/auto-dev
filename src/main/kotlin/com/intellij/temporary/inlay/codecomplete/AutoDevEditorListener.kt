@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.editor.inlay
+package com.intellij.temporary.inlay.codecomplete
 
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.editor.Editor

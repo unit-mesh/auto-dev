@@ -30,8 +30,8 @@
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.AutoDevSettingsState"/>
 
         <applicationService
-                serviceInterface="cc.unitmesh.devti.editor.inlay.LLMInlayManager"
-                serviceImplementation="cc.unitmesh.devti.editor.inlay.LLMInlayManagerImpl"/>
+                serviceInterface=" com.intellij.temporary.inlay.codecomplete.LLMInlayManager"
+                serviceImplementation=" com.intellij.temporary.inlay.codecomplete.LLMInlayManagerImpl"/>
 
         <typedHandler order="first, before completionAutoPopup"
                       implementation="cc.unitmesh.devti.editor.inlay.TypeOverHandler"/>

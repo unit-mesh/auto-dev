@@ -1,11 +1,11 @@
-package cc.unitmesh.devti.editor.inlay
+package com.intellij.temporary.inlay.codecomplete
 
-import com.intellij.temporary.inlay.presentation.LLMInlayRenderer
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
+import com.intellij.temporary.inlay.codecomplete.presentation.LLMInlayRenderer
 import com.intellij.util.concurrency.annotations.RequiresEdt
 
 interface LLMInlayManager : Disposable {

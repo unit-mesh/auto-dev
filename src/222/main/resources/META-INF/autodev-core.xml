@@ -27,8 +27,8 @@
                              id="cc.unitmesh.autodevCoder"
                              bundle="messages.AutoDevBundle" key="settings.autodev.coder"/>
         <applicationService
-                serviceInterface="cc.unitmesh.devti.editor.inlay.LLMInlayManager"
-                serviceImplementation="cc.unitmesh.devti.editor.inlay.LLMInlayManagerImpl"/>
+                serviceInterface="com.intellij.temporary.inlay.codecomplete.LLMInlayManager"
+                serviceImplementation=" com.intellij.temporary.inlay.codecomplete.LLMInlayManagerImpl"/>
 
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.AutoDevSettingsState"/>
 
@@ -222,6 +222,15 @@
             <keyboard-shortcut first-keystroke="TAB" keymap="$default"/>
             <override-text place="MainMenu" text="Apply Completions to Editor"/>
             <override-text place="EditorPopup" text="Accept"/>
+        </action>
+        <action id="cc.unitmesh.devti.inlayCompleteCode"
+                class="cc.unitmesh.devti.actions.InlayCompleteCodeAction"
+                text="Inlay Complete Code"
+                description="Inlay complete code!"
+        >
+            <keyboard-shortcut keymap="$default" first-keystroke="control PERIOD"/>
+
+            <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
         </action>
 
         <group id="AutoDevIntentionsActionGroup" class="cc.unitmesh.devti.intentions.IntentionsActionGroup"

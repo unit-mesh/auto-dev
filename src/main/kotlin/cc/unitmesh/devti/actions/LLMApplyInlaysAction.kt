@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.actions
 
-import cc.unitmesh.devti.editor.inlay.LLMInlayManager
-import com.intellij.temporary.inlay.presentation.EditorUtilCopy
+import com.intellij.temporary.inlay.codecomplete.presentation.EditorUtilCopy
 import com.intellij.application.options.CodeStyle
 import com.intellij.codeInsight.lookup.LookupManager
 import com.intellij.codeInsight.template.TemplateManager
@@ -15,6 +14,7 @@ import com.intellij.openapi.editor.actionSystem.EditorAction
 import com.intellij.openapi.editor.actionSystem.EditorActionHandler
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.util.TextRange
+import com.intellij.temporary.inlay.codecomplete.LLMInlayManager
 import java.awt.event.KeyEvent
 
 class LLMApplyInlaysAction : EditorAction(ApplyInlaysHandler()), DumbAware {

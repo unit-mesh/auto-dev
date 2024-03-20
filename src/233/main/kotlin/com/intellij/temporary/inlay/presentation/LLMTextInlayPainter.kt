@@ -6,9 +6,9 @@ import com.intellij.codeInsight.codeVision.ui.renderers.painters.ICodeVisionEntr
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.impl.EditorImpl
 import com.intellij.openapi.editor.markup.TextAttributes
-import com.intellij.temporary.inlay.presentation.PresentationUtil.fontMetrics
-import com.intellij.temporary.inlay.presentation.PresentationUtil.getFont
-import com.intellij.temporary.inlay.presentation.PresentationUtil.getThemeInfoProvider
+import com.intellij.temporary.inlay.codecomplete.presentation.PresentationUtil.fontMetrics
+import com.intellij.temporary.inlay.codecomplete.presentation.PresentationUtil.getFont
+import com.intellij.temporary.inlay.codecomplete.presentation.PresentationUtil.getThemeInfoProvider
 import com.intellij.ui.paint.EffectPainter2D
 import com.intellij.util.ui.GraphicsUtil
 import java.awt.*
@@ -43,24 +43,6 @@ class LLMTextInlayPainter : ICodeVisionEntryBasePainter<String> {
         val fontMetrics = editor.component.getFontMetrics(themeInfoProvider.font(editor, 0))
         return Dimension(fontMetrics.stringWidth(value), fontMetrics.height)
     }
-
-//    fun toIcon(
-//        editor: Editor,
-//        textAttributes: TextAttributes,
-//        value: String,
-//        state: RangeCodeVisionModel.InlayState,
-//        hovered: Boolean
-//    ) = object : Icon {
-//        var size = size(editor, state, value)
-//
-//        override fun getIconHeight(): Int = size.height
-//
-//        override fun paintIcon(c: Component, g: Graphics, x: Int, y: Int) {
-//            paint(editor, textAttributes, g, value, Point(x, y + (editor as EditorImpl).ascent), state, hovered)
-//        }
-//
-//        override fun getIconWidth(): Int = size.width
-//    }
 
     companion object {
         fun calculateWidth(editor: Editor, text: String, textLines: List<String>): Int {

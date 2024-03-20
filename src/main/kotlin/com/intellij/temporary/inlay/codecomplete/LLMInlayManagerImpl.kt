@@ -1,8 +1,7 @@
-package cc.unitmesh.devti.editor.inlay
+package com.intellij.temporary.inlay.codecomplete
 
-import com.intellij.temporary.inlay.presentation.LLMInlayRenderer
-import cc.unitmesh.devti.intentions.action.task.CodeCompletionTask
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
+import cc.unitmesh.devti.intentions.action.task.CodeCompletionTask
 import cc.unitmesh.devti.util.parser.Code
 import cc.unitmesh.devti.util.parser.PostCodeProcessor
 import com.intellij.injected.editor.EditorWindow
@@ -22,9 +21,9 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.KeyWithDefaultValue
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.util.PsiUtilBase
+import com.intellij.temporary.inlay.codecomplete.presentation.LLMInlayRenderer
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import com.intellij.util.concurrency.annotations.RequiresEdt
-
 
 class LLMInlayManagerImpl : LLMInlayManager {
     companion object {
