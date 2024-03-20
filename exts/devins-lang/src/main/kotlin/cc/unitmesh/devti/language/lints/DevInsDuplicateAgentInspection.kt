@@ -10,7 +10,7 @@ import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.util.elementType
 
 class DevInsDuplicateAgentInspection : LocalInspectionTool() {
-    override fun getDisplayName() = "Duplicate agent calling"
+    override fun getGroupDisplayName() = DevInBundle.message("inspection.group.name")
 
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
         return DevInsDuplicateAgentVisitor(holder)
