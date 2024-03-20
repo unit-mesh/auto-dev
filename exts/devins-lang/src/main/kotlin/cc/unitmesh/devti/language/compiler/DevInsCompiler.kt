@@ -157,9 +157,11 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
 
         val isSucceed = execResult?.contains("<DevInsError>") == false
         val result = if (isSucceed) {
-            val hasReadCodeBlock = commandNode == BuiltinCommand.WRITE
-                    || commandNode == BuiltinCommand.PATCH
-                    || commandNode == BuiltinCommand.COMMIT
+            val hasReadCodeBlock = commandNode in listOf(
+                BuiltinCommand.WRITE,
+                BuiltinCommand.PATCH,
+                BuiltinCommand.COMMIT
+            )
 
             if (hasReadCodeBlock) {
                 skipNextCode = true
