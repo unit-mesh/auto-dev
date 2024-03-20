@@ -10,7 +10,7 @@ class JavaAutoTestServiceTest {
         val prop = "By.tagName(\"a\")"
         val expectedResult = Pair("tagName", listOf("\"a\""))
 
-        val result = parseRegex(prop)
+        val result = FileFuncInsCommand.parseRegex(prop)
 
         assertEquals(expectedResult, result)
     }
@@ -19,6 +19,6 @@ class JavaAutoTestServiceTest {
     fun shouldThrowExceptionForInvalidPattern() {
         val prop = "click"
 
-        parseRegex(prop)
+        FileFuncInsCommand.parseRegex(prop)
     }
 }

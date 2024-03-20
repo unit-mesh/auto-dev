@@ -39,26 +39,28 @@ class FileFuncInsCommand(val myProject: Project, val prop: String) : InsCommand 
         }
         return files
     }
-}
 
-/**
- * Parses a given property string to extract the function name and its arguments.
- *
- * The property string is in the format <functionName>(<arg1>, <arg2>, ...).
- *
- * @param prop The property string to parse.
- * @return The function name and the list of arguments as a Pair object.
- * @throws IllegalArgumentException if the property string has invalid regex pattern.
- */
-fun parseRegex(prop: String): Pair<String, List<String>>? {
-    val regexPattern = Regex("""(\w+)\(([^)]+)\)""")
-    val matchResult = regexPattern.find(prop)
+    companion object {
+        /**
+         * Parses a given property string to extract the function name and its arguments.
+         *
+         * The property string is in the format <functionName>(<arg1>, <arg2>, ...).
+         *
+         * @param prop The property string to parse.
+         * @return The function name and the list of arguments as a Pair object.
+         * @throws IllegalArgumentException if the property string has invalid regex pattern.
+         */
+        fun parseRegex(prop: String): Pair<String, List<String>>? {
+            val regexPattern = Regex("""(\w+)\(([^)]+)\)""")
+            val matchResult = regexPattern.find(prop)
 
-    if (matchResult != null && matchResult.groupValues.size == 3) {
-        val functionName = matchResult.groupValues[1]
-        val args = matchResult.groupValues[2].split(',').map { it.trim() }
-        return Pair(functionName, args)
-    } else {
-        return null
+            if (matchResult != null && matchResult.groupValues.size == 3) {
+                val functionName = matchResult.groupValues[1]
+                val args = matchResult.groupValues[2].split(',').map { it.trim() }
+                return Pair(functionName, args)
+            } else {
+                return null
+            }
+        }
     }
 }
