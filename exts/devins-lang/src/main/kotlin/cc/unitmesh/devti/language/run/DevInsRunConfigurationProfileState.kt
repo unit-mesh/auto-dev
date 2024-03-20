@@ -75,7 +75,7 @@ open class DevInsRunConfigurationProfileState(
         // contains <DevInsError> means error
         output.split("\n").forEach {
             if (it.contains("<DevInsError>")) {
-                console.print(it, ConsoleViewContentType.ERROR_OUTPUT)
+                console.print(it, ConsoleViewContentType.LOG_ERROR_OUTPUT)
             } else {
                 console.print(it, ConsoleViewContentType.USER_INPUT)
             }
