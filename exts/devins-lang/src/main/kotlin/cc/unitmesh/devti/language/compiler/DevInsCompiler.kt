@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.language.compiler
 
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
+import cc.unitmesh.devti.custom.compile.VariableTemplateCompiler
 import cc.unitmesh.devti.language.compiler.exec.*
 import cc.unitmesh.devti.language.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.parser.CodeBlockElement
@@ -13,7 +14,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
 
-class DevInsCompiler(private val myProject: Project, val file: DevInFile, val editor: Editor? = null) {
+class DevInsCompiler(
+    private val myProject: Project,
+    private val file: DevInFile,
+    private val editor: Editor? = null,
+    private val element: PsiElement? = null
+) {
     private var skipNextCode: Boolean = false
     private val logger = logger<DevInsCompiler>()
     private val result = CompileResult()
@@ -91,9 +97,16 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
             }
 
             DevInTypes.VARIABLE_START -> {
-                /**
-                 * Todo, call [cc.unitmesh.devti.custom.compile.VariableTemplateCompiler]
-                 */
+                if (editor == null || element == null) {
+                    output.append("<DevInsError> No context editor found for variable: ${used.text}")
+                    result.hasError = true
+                    return
+                }
+
+                val file = element.containingFile
+                VariableTemplateCompiler(file.language, file, element, editor).compile(used.text).let {
+                    output.append(it)
+                }
             }
 
             else -> {
