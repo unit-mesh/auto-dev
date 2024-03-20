@@ -22,7 +22,10 @@ class DevInsDuplicateAgentInspection : LocalInspectionTool() {
             o.firstChild.let { next ->
                 if (next.nextSibling.elementType == DevInTypes.AGENT_ID) {
                     if (agentIds.contains(next.text)) {
-                        holder.registerProblem(next, "Duplicate agent calling")
+                        holder.registerProblem(
+                            o,
+                            "Duplicate agent calls detected. It is recommended to make only one call per agent. Please remove any duplicate agent calls."
+                        )
                     } else {
                         agentIds.add(next.text)
                     }
