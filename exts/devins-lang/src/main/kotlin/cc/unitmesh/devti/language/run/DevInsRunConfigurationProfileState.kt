@@ -14,7 +14,10 @@ import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.console.ConsoleViewWrapperBase
+import com.intellij.execution.filters.Filter
 import com.intellij.execution.impl.ConsoleViewImpl
+import com.intellij.execution.process.ProcessAdapter
+import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.runners.ProgramRunner
@@ -23,6 +26,7 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiManager
 import com.intellij.ui.components.panels.NonOpaquePanel
@@ -42,6 +46,12 @@ open class DevInsRunConfigurationProfileState(
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult {
         val processHandler: ProcessHandler = createProcessHandler(configuration.name)
         ProcessTerminatedListener.attach(processHandler)
+        processHandler.addProcessListener(object : ProcessAdapter() {
+            override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
+                // Done
+                println(event.text)
+            }
+        })
 
         val executionConsole = ConsoleViewImpl(myProject, true)
         val console = object : ConsoleViewWrapperBase(executionConsole) {
@@ -58,6 +68,13 @@ open class DevInsRunConfigurationProfileState(
                 myPanel.add(toolbar.component, BorderLayout.EAST)
             }
         }
+        // start message log in here
+        console.addMessageFilter(object : com.intellij.execution.filters.Filter {
+            override fun applyFilter(line: String, entireLength: Int): Filter.Result? {
+//                println("Filtering: $line")
+                return null
+            }
+        })
 
         console.attachToProcess(processHandler)
 
