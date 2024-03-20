@@ -3,13 +3,17 @@ package cc.unitmesh.devti.language.compiler.exec
 import cc.unitmesh.devti.language.utils.lookupFile
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionException
-import com.intellij.execution.configurations.GeneralCommandLine
-import com.intellij.execution.configurations.PtyCommandLine
+import com.intellij.execution.configurations.*
 import com.intellij.execution.process.KillableProcessHandler
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessTerminatedListener
+import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.ui.ConsoleView
+import com.intellij.execution.ui.RunContentDescriptor
+import com.intellij.execution.ui.RunContentManager
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.sh.run.ShConfigurationType
 import com.intellij.sh.run.ShRunner
@@ -28,7 +32,6 @@ class ShellInsCommand(val myProject: Project, val prop: String) : InsCommand {
             shRunner.run(myProject, virtualFile.path, workingDirectory, "RunDevInsShell", true)
         }
 
-        // TODO: after run done
 //        runInTerminal(virtualFile.path, workingDirectory, myProject)
 
         return ""
@@ -50,13 +53,14 @@ class ShellInsCommand(val myProject: Project, val prop: String) : InsCommand {
         command: String
     ): GeneralCommandLine {
         val commandLine = PtyCommandLine()
-        commandLine.withConsoleMode(false)
-        commandLine.withInitialColumns(120)
-        commandLine.withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
+            .withConsoleMode(false)
+            .withInitialColumns(120)
+            .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
+            .withExePath(ShConfigurationType.getDefaultShell(project))
+            .withParameters("-c")
+            .withParameters(command)
+
         commandLine.setWorkDirectory(workingDirectory)
-        commandLine.withExePath(ShConfigurationType.getDefaultShell(project))
-        commandLine.withParameters("-c")
-        commandLine.withParameters(command)
         return commandLine
     }
 
