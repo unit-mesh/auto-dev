@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.run
 
-import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.language.DevInBundle
 import cc.unitmesh.devti.language.DevInIcons
 import cc.unitmesh.devti.language.DevInLanguage
 import com.intellij.execution.configurations.ConfigurationTypeUtil.findConfigurationType
@@ -12,7 +12,7 @@ import com.intellij.openapi.util.NotNullLazyValue
 class DevInsConfigurationType : SimpleConfigurationType(
     "DevInsConfigurationType",
     DevInLanguage.INSTANCE.id,
-    AutoDevBundle.message("devin.line.marker.run.0", DevInLanguage.INSTANCE.id),
+    DevInBundle.message("devin.line.marker.run.0", DevInLanguage.INSTANCE.id),
     NotNullLazyValue.lazy { DevInIcons.DEFAULT }
 ) {
     override fun createTemplateConfiguration(project: Project): RunConfiguration =

@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.run
 
-import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.language.DevInBundle
 import cc.unitmesh.devti.language.DevInLanguage
 import cc.unitmesh.devti.language.actions.DevInsRunFileAction
 import cc.unitmesh.devti.language.psi.DevInFile
@@ -20,7 +20,7 @@ class DevInsRunLineMarkersProvider : RunLineMarkerContributor(), DumbAware {
 
         return Info(
             AllIcons.RunConfigurations.TestState.Run,
-            { AutoDevBundle.message("devin.line.marker.run.0", psiFile.containingFile.name) },
+            { DevInBundle.message("devin.line.marker.run.0", psiFile.containingFile.name) },
             *actions
         )
     }

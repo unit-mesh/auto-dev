@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.language.run
 
-import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.fullWidth
+import cc.unitmesh.devti.language.DevInBundle
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
@@ -14,7 +14,7 @@ class DevInsSettingsEditor(val project: Project) : SettingsEditor<DevInsConfigur
 
     init {
         myScriptSelector.addBrowseFolderListener(
-            AutoDevBundle.message("devin.label.choose.file"),
+            DevInBundle.message("devin.label.choose.file"),
             "",
             project,
             FileChooserDescriptorFactory.createSingleFileDescriptor()

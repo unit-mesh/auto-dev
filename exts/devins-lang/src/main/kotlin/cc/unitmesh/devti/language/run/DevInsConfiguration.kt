@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.language.run
 
-import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
+import cc.unitmesh.devti.language.DevInBundle
 import cc.unitmesh.devti.runconfig.config.readString
 import cc.unitmesh.devti.runconfig.config.writeString
 import com.intellij.execution.Executor
@@ -25,7 +25,7 @@ class DevInsConfiguration(project: Project, factory: ConfigurationFactory, name:
 
     override fun checkConfiguration() {
         if (!FileUtil.exists(myScriptPath)) {
-            throw RuntimeConfigurationError(AutoDevBundle.message("devin.run.error.script.not.found"))
+            throw RuntimeConfigurationError(DevInBundle.message("devin.run.error.script.not.found"))
         }
     }
 

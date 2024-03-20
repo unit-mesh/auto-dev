@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.compiler.exec
 
-import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.language.DevInBundle
 import cc.unitmesh.devti.vcs.VcsPrompting
 import com.intellij.openapi.components.service
 import com.intellij.openapi.progress.ProgressIndicator
@@ -29,7 +29,7 @@ class RevInsCommand(private val myProject: Project, private val revision: String
         val repository = GitRepositoryManager.getInstance(myProject).repositories.firstOrNull() ?: return null
         val future = CompletableFuture<List<Change>>()
 
-        val task = object : Task.Backgroundable(myProject, AutoDevBundle.message("devin.ref.loading"), false) {
+        val task = object : Task.Backgroundable(myProject, DevInBundle.message("devin.ref.loading"), false) {
             override fun run(indicator: ProgressIndicator) {
                 val committedChangeList = GitCommittedChangeListProvider.getCommittedChangeList(
                     myProject!!, repository.root, GitRevisionNumber(revision)
