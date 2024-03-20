@@ -17,18 +17,17 @@ class DevInsDuplicateAgentInspection : LocalInspectionTool() {
     }
 
     private class DevInsDuplicateAgentVisitor(val holder: ProblemsHolder) : DevInVisitor() {
-        private var agentIds: MutableSet<String> = mutableSetOf()
+        private var agentIds: MutableSet<DevInUsed> = mutableSetOf()
 
         override fun visitUsed(o: DevInUsed) {
-            o.firstChild.let { next ->
-                if (next.nextSibling.elementType == DevInTypes.AGENT_ID) {
-                    if (agentIds.contains(next.text)) {
-                        holder.registerProblem(
-                            o,
-                            DevInBundle.message("inspection.duplicate.agent")
-                        )
-                    } else {
-                        agentIds.add(next.text)
+            if (o.firstChild.nextSibling.elementType == DevInTypes.AGENT_ID) {
+                agentIds.add(o)
+
+                if (agentIds.contains(o)) {
+                    agentIds.forEachIndexed { index, it ->
+                        if (index > 0) {
+                            holder.registerProblem(it, DevInBundle.message("inspection.duplicate.agent"))
+                        }
                     }
                 }
             }
