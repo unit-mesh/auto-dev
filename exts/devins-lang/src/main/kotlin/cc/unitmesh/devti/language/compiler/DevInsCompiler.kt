@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.compiler
 
+import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.language.compiler.exec.*
 import cc.unitmesh.devti.language.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.parser.CodeBlockElement
@@ -79,9 +80,14 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
             }
 
             DevInTypes.AGENT_START -> {
-                /**
-                 * add for post action
-                 */
+                val agentId = id?.text
+                val configs = CustomAgentConfig.loadFromProject(myProject).filter {
+                    it.name == agentId
+                }
+
+                if (configs.isNotEmpty()) {
+                    result.workingAgent = configs.first()
+                }
             }
 
             DevInTypes.VARIABLE_START -> {

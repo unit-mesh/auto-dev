@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.language.completion
 
-import cc.unitmesh.devti.agent.configurable.loadAgentConfigs
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
@@ -14,7 +13,7 @@ class CustomAgentCompletion : CompletionProvider<CompletionParameters>() {
         context: ProcessingContext,
         result: CompletionResultSet,
     ) {
-        val configs: List<CustomAgentConfig> = loadAgentConfigs(parameters.originalFile.project)
+        val configs: List<CustomAgentConfig> = CustomAgentConfig.loadFromProject(parameters.originalFile.project)
 
         configs.forEach {
             result.addElement(

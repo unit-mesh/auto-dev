@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.documentation
 
-import cc.unitmesh.devti.agent.configurable.loadAgentConfigs
+import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.custom.compile.CustomVariable
 import cc.unitmesh.devti.language.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.psi.DevInTypes
@@ -15,7 +15,7 @@ class DevInsDocumentationProvider : AbstractDocumentationProvider() {
         val project = element?.project ?: return null
         return when (element.elementType) {
             DevInTypes.AGENT_ID -> {
-                val agentConfigs = loadAgentConfigs(project).filter {
+                val agentConfigs = CustomAgentConfig.loadFromProject(project).filter {
                     it.name == element.text
                 }
 
