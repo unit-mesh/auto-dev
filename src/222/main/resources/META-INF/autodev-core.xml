@@ -26,6 +26,9 @@
                              parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                              id="cc.unitmesh.autodevCoder"
                              bundle="messages.AutoDevBundle" key="settings.autodev.coder"/>
+        <applicationService
+                serviceInterface="com.intellij.temporary.inlay.codecomplete.LLMInlayManager"
+                serviceImplementation="com.intellij.temporary.inlay.codecomplete.LLMInlayManagerImpl"/>
 
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.AutoDevSettingsState"/>
 
@@ -60,6 +63,9 @@
 
         <notificationGroup id="AutoDev.notify" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
                            key="name"/>
+        <!--        <editorFactoryListener implementation="cc.unitmesh.devti.editor.inlay.AutoDevEditorListener"/>-->
+        <!--        <typedHandler order="first, before completionAutoPopup"-->
+        <!--                      implementation="cc.unitmesh.devti.editor.inlay.TypeOverHandler"/>-->
 
         <intentionAction>
             <className>cc.unitmesh.devti.intentions.AutoDevIntentionHelper</className>
@@ -174,6 +180,10 @@
         <listener topic="com.intellij.ide.plugins.DynamicPluginListener"
                   class="cc.unitmesh.devti.AutoDevUnloadListener"/>
     </applicationListeners>
+    <!--    <projectListeners>-->
+    <!--        <listener topic="com.intellij.openapi.command.CommandListener"-->
+    <!--                  class="cc.unitmesh.devti.editor.inlay.LLMCommandListener"/>-->
+    <!--    </projectListeners>-->
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <autoDevIntention>
@@ -183,6 +193,11 @@
         </autoDevIntention>
         <autoDevIntention>
             <className>cc.unitmesh.devti.intentions.action.CodeCompletionBaseIntention</className>
+            <bundleName>messages.AutoDevBundle</bundleName>
+            <categoryKey>intention.category.llm</categoryKey>
+        </autoDevIntention>
+        <autoDevIntention>
+            <className>cc.unitmesh.devti.intentions.action.CodeCompletionInlayIntention</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
@@ -201,6 +216,22 @@
     </extensions>
 
     <actions>
+        <action id="llm.applyInlays"
+                class="cc.unitmesh.devti.actions.LLMApplyInlaysAction">
+            <keyboard-shortcut first-keystroke="TAB" keymap="$default"/>
+            <override-text place="MainMenu" text="Apply Completions to Editor"/>
+            <override-text place="EditorPopup" text="Accept"/>
+        </action>
+        <action id="cc.unitmesh.devti.inlayCompleteCode"
+                class="cc.unitmesh.devti.actions.InlayCompleteCodeAction"
+                text="Inlay Complete Code"
+                description="Inlay complete code!"
+        >
+            <keyboard-shortcut keymap="$default" first-keystroke="control PERIOD"/>
+
+            <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
+        </action>
+
         <group id="AutoDevIntentionsActionGroup" class="cc.unitmesh.devti.intentions.IntentionsActionGroup"
                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT" searchable="false">
 

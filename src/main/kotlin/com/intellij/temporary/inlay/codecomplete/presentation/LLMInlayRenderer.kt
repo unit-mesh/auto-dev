@@ -1,15 +1,16 @@
-package com.intellij.temporary.inlay.presentation
+package com.intellij.temporary.inlay.codecomplete.presentation
 
-import com.intellij.temporary.inlay.presentation.PresentationUtil.getTextAttributes
-import com.intellij.temporary.inlay.presentation.PresentationUtil.replaceLeadingTabs
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorCustomElementRenderer
 import com.intellij.openapi.editor.Inlay
 import com.intellij.openapi.editor.markup.TextAttributes
+import com.intellij.temporary.inlay.presentation.LLMTextInlayPainter
+import org.apache.commons.lang.StringUtils
+import org.jetbrains.annotations.NonNls
 import java.awt.Graphics
 import java.awt.Rectangle
 
-class LLMInlayRenderer(editor: Editor, lines: List<String>) : EditorCustomElementRenderer {
+class LLMInlayRenderer(editor: Editor, lines: List<String?>) : EditorCustomElementRenderer {
     private val lines: List<String>
     private val content: String
     fun setCachedWidth(cachedWidth: Int) {
@@ -34,9 +35,9 @@ class LLMInlayRenderer(editor: Editor, lines: List<String>) : EditorCustomElemen
     private var cachedHeight = -1
 
     init {
-        this.lines = replaceLeadingTabs(lines, 4)
-        content = lines.joinToString("\n")
-        textAttributes = getTextAttributes(editor)
+        this.lines = PresentationUtil.replaceLeadingTabs(lines, 4)
+        content = StringUtils.join(lines, "\n")
+        textAttributes = PresentationUtil.getTextAttributes(editor)
     }
 
     fun getInlay(): Inlay<EditorCustomElementRenderer>? {
@@ -51,7 +52,9 @@ class LLMInlayRenderer(editor: Editor, lines: List<String>) : EditorCustomElemen
         return lines
     }
 
-    override fun getContextMenuGroupId(inlay: Inlay<*>): String = "copilot.inlayContextMenu"
+    override fun getContextMenuGroupId(inlay: Inlay<*>): @NonNls String {
+        return "copilot.inlayContextMenu"
+    }
 
     override fun calcHeightInPixels(inlay: Inlay<*>): Int {
         return if (cachedHeight < 0) {
@@ -64,9 +67,8 @@ class LLMInlayRenderer(editor: Editor, lines: List<String>) : EditorCustomElemen
     override fun calcWidthInPixels(inlay: Inlay<*>): Int {
         if (cachedWidth < 0) {
             val width = LLMTextInlayPainter.calculateWidth(inlay.editor, content, lines)
-            return 1.coerceAtLeast(width).also { cachedWidth = it }
+            return Math.max(1, width).also { cachedWidth = it }
         }
-
         return cachedWidth
     }
 
