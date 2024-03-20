@@ -1,6 +1,7 @@
-package cc.unitmesh.devti.language
+package cc.unitmesh.devti.language.completion
 
-import cc.unitmesh.devti.language.completion.*
+import cc.unitmesh.devti.language.FileFunctionProvider
+import cc.unitmesh.devti.language.completion.provider.*
 import cc.unitmesh.devti.language.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.psi.DevInTypes
 import cc.unitmesh.devti.language.psi.DevInUsed
@@ -16,7 +17,6 @@ class DevInCompletionContributor : CompletionContributor() {
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.LANGUAGE_ID), CodeFenceLanguageCompletion())
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.VARIABLE_ID), CustomVariableCompletion())
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.COMMAND_ID), BuiltinCommandCompletion())
-        extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.COMMAND_ID), CustomCommandCompletion())
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.AGENT_ID), CustomAgentCompletion())
 
         // command completion

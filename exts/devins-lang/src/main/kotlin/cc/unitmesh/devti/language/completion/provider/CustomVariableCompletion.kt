@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.completion
+package cc.unitmesh.devti.language.completion.provider
 
 import cc.unitmesh.devti.custom.compile.CustomVariable
 import com.intellij.codeInsight.completion.CompletionParameters

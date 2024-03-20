@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.completion
+package cc.unitmesh.devti.language.completion.provider
 
 import cc.unitmesh.devti.markdown.CodeFenceLanguageAliases
 import com.intellij.codeInsight.completion.*
