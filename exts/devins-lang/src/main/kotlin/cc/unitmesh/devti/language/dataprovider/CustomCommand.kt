@@ -25,5 +25,9 @@ data class CustomCommand(
             val content = file.inputStream.readBytes().toString(Charsets.UTF_8)
             return CustomCommand(file.nameWithoutExtension, content)
         }
+
+        fun fromString(project: Project, agentName: String): CustomCommand? {
+            return all(project).find { it.commandName == agentName }
+        }
     }
 }

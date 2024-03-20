@@ -4,6 +4,7 @@ import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.custom.compile.VariableTemplateCompiler
 import cc.unitmesh.devti.language.compiler.exec.*
 import cc.unitmesh.devti.language.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.language.dataprovider.CustomCommand
 import cc.unitmesh.devti.language.parser.CodeBlockElement
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.psi.DevInTypes
@@ -62,6 +63,18 @@ class DevInsCompiler(
             DevInTypes.COMMAND_START -> {
                 val command = BuiltinCommand.fromString(id?.text ?: "")
                 if (command == null) {
+                    CustomCommand.fromString(myProject, id?.text ?: "")?.let { cmd ->
+                        DevInFile.fromString(myProject, cmd.content).let { file ->
+                            DevInsCompiler(myProject, file).compile().let {
+                                output.append(it.output)
+                                result.hasError = it.hasError
+                            }
+                        }
+
+                        return
+                    }
+
+
                     output.append(used.text)
                     logger.warn("Unknown command: ${id?.text}")
                     result.hasError = true
