@@ -28,7 +28,7 @@
                              bundle="messages.AutoDevBundle" key="settings.autodev.coder"/>
         <applicationService
                 serviceInterface="com.intellij.temporary.inlay.codecomplete.LLMInlayManager"
-                serviceImplementation=" com.intellij.temporary.inlay.codecomplete.LLMInlayManagerImpl"/>
+                serviceImplementation="com.intellij.temporary.inlay.codecomplete.LLMInlayManagerImpl"/>
 
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.AutoDevSettingsState"/>
 
@@ -197,13 +197,12 @@
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
         <autoDevIntention>
-<!--            <className>cc.unitmesh.devti.intentions.action.AutoTestThisBaseIntention</className>-->
             <className>cc.unitmesh.devti.intentions.action.CodeCompletionInlayIntention</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
         <autoDevIntention>
-            <className>cc.unitmesh.devti.intentions.action.AutoTestThisIntention</className>
+            <className>cc.unitmesh.devti.intentions.action.AutoTestThisBaseIntention</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
