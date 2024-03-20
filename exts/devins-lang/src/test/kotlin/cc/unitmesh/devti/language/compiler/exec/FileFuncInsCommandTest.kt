@@ -3,7 +3,7 @@ package cc.unitmesh.devti.language.compiler.exec;
 import org.junit.Assert.*
 import org.junit.Test
 
-class JavaAutoTestServiceTest {
+class FileFuncInsCommandTest {
 
     @Test
     fun shouldParseRegexCorrectly() {
@@ -15,10 +15,11 @@ class JavaAutoTestServiceTest {
         assertEquals(expectedResult, result)
     }
 
-    @Test(expected = IllegalArgumentException::class)
-    fun shouldThrowExceptionForInvalidPattern() {
+    @Test
+    fun shouldReturnNullWhenError() {
         val prop = "click"
 
-        FileFuncInsCommand.parseRegex(prop)
+        val result = FileFuncInsCommand.parseRegex(prop)
+        assertNull(result)
     }
 }
