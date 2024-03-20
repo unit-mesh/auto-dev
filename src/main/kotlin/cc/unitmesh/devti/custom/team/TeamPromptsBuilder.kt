@@ -9,8 +9,8 @@ import com.intellij.openapi.vfs.VirtualFile
 
 @Service(Service.Level.PROJECT)
 class TeamPromptsBuilder(private val project: Project) {
-    val settings = project.teamPromptsSettings
-    val baseDir = settings.state.teamPromptsDir
+    private val settings = project.teamPromptsSettings
+    private val baseDir = settings.state.teamPromptsDir
 
     fun default(): List<TeamPromptAction> {
         val promptsDir = project.guessProjectDir()?.findChild(baseDir) ?: return emptyList()
@@ -19,6 +19,11 @@ class TeamPromptsBuilder(private val project: Project) {
         return buildPrompts(filterPrompts)
     }
 
+    /**
+     * Quick prompts are the prompts that are used for quick actions, which will load from the quick folder.
+     * Format: "<baseDir>/quick/<quick-action-name>.vm",
+     * For example: `prompts/quick/quick-action-name.vm`
+     */
     fun quickPrompts(): List<TeamPromptAction> {
         val promptsDir = project.guessProjectDir()?.findChild(baseDir) ?: return emptyList()
         val quickPromptDir = promptsDir.findChild("quick") ?: return emptyList()
@@ -27,12 +32,17 @@ class TeamPromptsBuilder(private val project: Project) {
         return buildPrompts(quickPromptFiles)
     }
 
+    /**
+     * Flows are the prompts that are used for flow actions, which will load from the flows folder.
+     * Format: "<baseDir>/flows/<flow-action-name>.devin",
+     * For example: `prompts/flows/flow-action-name.devin`
+     */
     fun flows(): List<VirtualFile> {
         val promptsDir = project.guessProjectDir()?.findChild(baseDir) ?: return emptyList()
-        val customPromptDir = promptsDir.findChild("flows") ?: return emptyList()
-        val customPromptFiles = customPromptDir.children.filter { it.name.endsWith(".devin") }
+        val promptDir = promptsDir.findChild("flows") ?: return emptyList()
+        val devinFiles = promptDir.children.filter { it.name.endsWith(".devin") }
 
-        return customPromptFiles
+        return devinFiles
     }
 
     private fun buildPrompts(prompts: List<VirtualFile>): List<TeamPromptAction> {
