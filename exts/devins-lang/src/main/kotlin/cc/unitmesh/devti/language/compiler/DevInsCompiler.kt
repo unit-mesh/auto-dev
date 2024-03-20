@@ -183,6 +183,11 @@ class DevInsCompiler(
                 result.isLocalCommand = true
                 FileFuncInsCommand(myProject, prop)
             }
+
+            BuiltinCommand.SHELL -> {
+                result.isLocalCommand = true
+                ShellInsCommand(myProject, prop)
+            }
         }
 
         val execResult = command.execute()

@@ -1,6 +1,7 @@
 <idea-plugin package="cc.unitmesh.devti.language">
     <dependencies>
         <plugin id="org.intellij.plugins.markdown"/>
+        <plugin id="com.jetbrains.sh"/>
     </dependencies>
 
     <extensions defaultExtensionNs="com.intellij">
