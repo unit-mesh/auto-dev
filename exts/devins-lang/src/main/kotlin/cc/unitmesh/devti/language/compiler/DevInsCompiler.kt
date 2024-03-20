@@ -156,7 +156,7 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
 
         val execResult = command.execute()
 
-        val isSucceed = execResult?.contains("<DevliError>") == false
+        val isSucceed = execResult?.contains("<DevInsError>") == false
         val result = if (isSucceed) {
             val hasReadCodeBlock = commandNode == BuiltinCommand.WRITE
                     || commandNode == BuiltinCommand.PATCH
@@ -203,7 +203,7 @@ class SymbolInsCommand(val myProject: Project, val prop: String) :
         }
 
         if (result.isEmpty()) {
-            return "<DevliError> No symbol found: $prop"
+            return "<DevInsError> No symbol found: $prop"
         }
 
         return result.joinToString("\n")

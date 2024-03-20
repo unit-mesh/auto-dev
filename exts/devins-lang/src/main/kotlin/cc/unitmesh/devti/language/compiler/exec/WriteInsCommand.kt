@@ -17,11 +17,11 @@ class WriteInsCommand(val myProject: Project, val prop: String, val content: Str
         val filename = prop.split("#")[0]
 
         try {
-            val virtualFile = myProject.lookupFile(filename) ?: return "<DevliError>: File not found: $prop"
+            val virtualFile = myProject.lookupFile(filename) ?: return "<DevInsError>: File not found: $prop"
             val psiFile = PsiManager.getInstance(myProject).findFile(virtualFile)
-                ?: return "<DevliError>: File not found: $prop"
+                ?: return "<DevInsError>: File not found: $prop"
             val document = PsiDocumentManager.getInstance(myProject).getDocument(psiFile)
-                ?: return "<DevliError>: File not found: $prop"
+                ?: return "<DevInsError>: File not found: $prop"
 
             ApplicationManager.getApplication().invokeLater {
                 WriteCommandAction.runWriteCommandAction(myProject) {
@@ -37,7 +37,7 @@ class WriteInsCommand(val myProject: Project, val prop: String, val content: Str
 
             return "Writing to file: $prop"
         } catch (e: Exception) {
-            return "<DevliError>: ${e.message}"
+            return "<DevInsError>: ${e.message}"
         }
     }
 }

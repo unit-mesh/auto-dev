@@ -15,17 +15,17 @@ import com.intellij.psi.PsiManager
  */
 class RunInsCommand(val myProject: Project, val prop: String) : InsCommand {
     override fun execute(): String? {
-        val virtualFile = myProject.lookupFile(prop.trim()) ?: return "<DevliError>: File not found: $prop"
+        val virtualFile = myProject.lookupFile(prop.trim()) ?: return "<DevInsError>: File not found: $prop"
         try {
             val psiFile: PsiFile =
-                PsiManager.getInstance(myProject).findFile(virtualFile) ?: return "<DevliError>: File not found: $prop"
+                PsiManager.getInstance(myProject).findFile(virtualFile) ?: return "<DevInsError>: File not found: $prop"
             val testService =
-                AutoTestService.context(psiFile) ?: return "<DevliError>: No test service found for file: $prop"
+                AutoTestService.context(psiFile) ?: return "<DevInsError>: No test service found for file: $prop"
             testService.runFile(myProject, virtualFile)
 
             return "Running tests for file: $prop"
         } catch (e: Exception) {
-            return "<DevliError>: ${e.message}"
+            return "<DevInsError>: ${e.message}"
         }
     }
 }

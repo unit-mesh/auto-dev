@@ -70,7 +70,18 @@ open class DevInsRunConfigurationProfileState(
         val compiler = DevInsCompiler(myProject, file)
         val compileResult = compiler.compile()
 
-        console.print(compileResult.output, ConsoleViewContentType.USER_INPUT)
+        val output = compileResult.output
+
+        // contains <DevInsError> means error
+        output.split("\n").forEach {
+            if (it.contains("<DevInsError>")) {
+                console.print(it, ConsoleViewContentType.ERROR_OUTPUT)
+            } else {
+                console.print(it, ConsoleViewContentType.USER_INPUT)
+            }
+            console.print("\n", ConsoleViewContentType.NORMAL_OUTPUT)
+        }
+
         console.print("\n--------------------\n", ConsoleViewContentType.NORMAL_OUTPUT)
 
         ApplicationManager.getApplication().invokeLater {
@@ -82,7 +93,7 @@ open class DevInsRunConfigurationProfileState(
 
             LLMCoroutineScope.scope(myProject).launch {
                 runBlocking {
-                    llm.stream(compileResult.output, "").collect {
+                    llm.stream(output, "").collect {
                         console.print(it, ConsoleViewContentType.NORMAL_OUTPUT)
                     }
                 }

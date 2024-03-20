@@ -9,14 +9,14 @@ import com.intellij.openapi.vfs.VirtualFile
 class FileFuncInsCommand(val myProject: Project, val prop: String) : InsCommand {
     override fun execute(): String? {
         val (functionName, args) = parseRegex(prop)
-        val fileFunction = FileFunc.fromString(functionName) ?: return "<DevliError>: Unknown function: $functionName"
+        val fileFunction = FileFunc.fromString(functionName) ?: return "<DevInsError>: Unknown function: $functionName"
         when (fileFunction) {
             FileFunc.Regex -> {
                 try {
                     val regex = Regex(args[0])
                     return regexFunction(regex, myProject).joinToString(", ")
                 } catch (e: Exception) {
-                    return "<DevliError>: ${e.message}"
+                    return "<DevInsError>: ${e.message}"
                 }
             }
         }
