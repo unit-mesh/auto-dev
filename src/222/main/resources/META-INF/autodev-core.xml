@@ -65,7 +65,7 @@
                            key="name"/>
         <!--        <editorFactoryListener implementation="cc.unitmesh.devti.editor.inlay.AutoDevEditorListener"/>-->
         <!--        <typedHandler order="first, before completionAutoPopup"-->
-        <!--                      implementation="cc.unitmesh.devti.editor.inlay.TypeOverHandler"/>-->
+        <!--                      implementation="cc.unitmesh.devti.inlay.TypeOverHandler"/>-->
 
         <intentionAction>
             <className>cc.unitmesh.devti.intentions.AutoDevIntentionHelper</className>

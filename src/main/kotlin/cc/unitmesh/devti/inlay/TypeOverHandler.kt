@@ -1,4 +1,5 @@
-package com.intellij.temporary.inlay.codecomplete
+// Copyright 2000-2023 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package cc.unitmesh.devti.inlay
 
 import com.intellij.codeInsight.editorActions.TypedHandlerDelegate
 import com.intellij.openapi.command.CommandProcessor

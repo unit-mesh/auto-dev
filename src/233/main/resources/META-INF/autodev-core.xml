@@ -34,7 +34,7 @@
                 serviceImplementation=" com.intellij.temporary.inlay.codecomplete.LLMInlayManagerImpl"/>
 
         <typedHandler order="first, before completionAutoPopup"
-                      implementation="cc.unitmesh.devti.editor.inlay.TypeOverHandler"/>
+                      implementation="cc.unitmesh.devti.inlay.TypeOverHandler"/>
 
 
         <statusBarWidgetFactory id="AIAssistant"
