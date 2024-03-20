@@ -1,19 +1,18 @@
 package com.intellij.temporary.inlay.presentation
 
 import com.intellij.codeInsight.codeVision.CodeVisionEntry
-import com.intellij.temporary.inlay.presentation.PresentationUtil.fontMetrics
-import com.intellij.temporary.inlay.presentation.PresentationUtil.getFont
-import com.intellij.temporary.inlay.presentation.PresentationUtil.getThemeInfoProvider
 import com.intellij.codeInsight.codeVision.ui.model.RangeCodeVisionModel
 import com.intellij.codeInsight.codeVision.ui.renderers.painters.ICodeVisionEntryBasePainter
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.impl.EditorImpl
 import com.intellij.openapi.editor.markup.TextAttributes
+import com.intellij.temporary.inlay.presentation.PresentationUtil.fontMetrics
+import com.intellij.temporary.inlay.presentation.PresentationUtil.getFont
+import com.intellij.temporary.inlay.presentation.PresentationUtil.getThemeInfoProvider
 import com.intellij.ui.paint.EffectPainter2D
 import com.intellij.util.ui.GraphicsUtil
 import java.awt.*
 import java.awt.geom.Rectangle2D
-import javax.swing.Icon
 import javax.swing.text.StyleConstants
 import kotlin.math.ceil
 
@@ -27,7 +26,7 @@ class LLMTextInlayPainter : ICodeVisionEntryBasePainter<String> {
         point: Point,
         state: RangeCodeVisionModel.InlayState,
         hovered: Boolean,
-//        hoveredEntry: CodeVisionEntry?
+        hoveredEntry: CodeVisionEntry?
     ) {
         renderCodeBlock(
             editor,

@@ -29,6 +29,14 @@
 
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.AutoDevSettingsState"/>
 
+        <applicationService
+                serviceInterface="cc.unitmesh.devti.editor.inlay.LLMInlayManager"
+                serviceImplementation="cc.unitmesh.devti.editor.inlay.LLMInlayManagerImpl"/>
+
+        <typedHandler order="first, before completionAutoPopup"
+                      implementation="cc.unitmesh.devti.editor.inlay.TypeOverHandler"/>
+
+
         <statusBarWidgetFactory id="AIAssistant"
                                 implementation="cc.unitmesh.devti.statusbar.AutoDevStatusBarWidgetFactory"/>
 
@@ -174,6 +182,11 @@
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <autoDevIntention>
+            <className>cc.unitmesh.devti.intentions.action.CodeCompletionInlayIntention</className>
+            <bundleName>messages.AutoDevBundle</bundleName>
+            <categoryKey>intention.category.llm</categoryKey>
+        </autoDevIntention>
+        <autoDevIntention>
             <className>cc.unitmesh.devti.intentions.action.NewChatWithCodeBaseIntention</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
@@ -198,6 +211,23 @@
     </extensions>
 
     <actions>
+        <action id="llm.applyInlays"
+                class="cc.unitmesh.devti.actions.LLMApplyInlaysAction">
+            <keyboard-shortcut first-keystroke="TAB" keymap="$default"/>
+            <override-text place="MainMenu" text="Apply Completions to Editor"/>
+            <override-text place="EditorPopup" text="Accept"/>
+        </action>
+
+        <action id="cc.unitmesh.devti.inlayCompleteCode"
+                class="cc.unitmesh.devti.actions.InlayCompleteCodeAction"
+                text="Inlay Complete Code"
+                description="Inlay complete code!"
+        >
+            <keyboard-shortcut keymap="$default" first-keystroke="control PERIOD"/>
+
+            <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
+        </action>
+
         <group id="AutoDevIntentionsActionGroup" class="cc.unitmesh.devti.intentions.IntentionsActionGroup"
                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT" searchable="false">
 

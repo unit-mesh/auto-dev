@@ -2,12 +2,12 @@ package cc.unitmesh.devti.intentions.action
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.editor.inlay.LLMInlayManager
-import cc.unitmesh.devti.intentions.action.base.AbstractChatIntention
+import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
-class CodeCompletionInlayIntention : AbstractChatIntention() {
+class CodeCompletionInlayIntention : ChatBaseIntention() {
     override fun priority(): Int = 980
     override fun getText(): String = AutoDevBundle.message("intentions.chat.inlay.complete.name")
     override fun getFamilyName(): String = AutoDevBundle.message("intentions.chat.inlay.complete.family.name")

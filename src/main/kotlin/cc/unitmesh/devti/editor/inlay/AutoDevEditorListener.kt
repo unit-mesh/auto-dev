@@ -6,6 +6,7 @@ import com.intellij.openapi.editor.event.*
 import com.intellij.openapi.editor.ex.util.EditorUtil
 import com.intellij.openapi.util.Disposer
 
+@Deprecated("This listener is for automatic code completion triggering. Due to incomplete user interaction logic and massive development workload, it will be replaced by shortcut key triggering which implement by InlayCodeAction")
 class AutoDevEditorListener : EditorFactoryListener {
     override fun editorCreated(event: EditorFactoryEvent) {
         val editor = event.editor
