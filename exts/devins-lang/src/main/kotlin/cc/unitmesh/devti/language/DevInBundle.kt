@@ -6,13 +6,15 @@ import org.jetbrains.annotations.PropertyKey
 
 
 @NonNls
-private const val BUNDLE: String = "messages.DevInBundle"
+private const val DevInBUNDLE: String = "messages.DevInBundle"
 
-object DevInBundle : DynamicBundle(BUNDLE) {
-  @JvmStatic
-  fun message(@PropertyKey(resourceBundle = BUNDLE) key: String, vararg params: Any): String = getMessage(key, *params)
+object DevInBundle : DynamicBundle(DevInBUNDLE) {
+    @Suppress("SpreadOperator")
+    @JvmStatic
+    fun message(@PropertyKey(resourceBundle = DevInBUNDLE) key: String, vararg params: Any) = getMessage(key, *params)
 
-  @JvmStatic
-  fun messagePointer(@PropertyKey(resourceBundle = BUNDLE) key: String,
-                  vararg params: Any): java.util.function.Supplier<String> = getLazyMessage(key, *params)
+    @Suppress("SpreadOperator", "unused")
+    @JvmStatic
+    fun messagePointer(@PropertyKey(resourceBundle = DevInBUNDLE) key: String, vararg params: Any) =
+        getLazyMessage(key, *params)
 }
