@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.lints
 
+import cc.unitmesh.devti.language.DevInBundle
 import cc.unitmesh.devti.language.psi.DevInTypes
 import cc.unitmesh.devti.language.psi.DevInUsed
 import cc.unitmesh.devti.language.psi.DevInVisitor
@@ -24,7 +25,7 @@ class DevInsDuplicateAgentInspection : LocalInspectionTool() {
                     if (agentIds.contains(next.text)) {
                         holder.registerProblem(
                             o,
-                            "Duplicate agent calls detected. It is recommended to make only one call per agent. Please remove any duplicate agent calls."
+                            DevInBundle.message("inspection.duplicate.agent")
                         )
                     } else {
                         agentIds.add(next.text)
