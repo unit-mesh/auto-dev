@@ -19,8 +19,6 @@ import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.ui.ConsoleViewContentType
-import com.intellij.execution.ui.RunContentDescriptor
-import com.intellij.execution.ui.RunContentManager
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
@@ -31,7 +29,6 @@ import com.intellij.ui.components.panels.NonOpaquePanel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.concurrency.resolvedPromise
 import java.awt.BorderLayout
 import java.io.OutputStream
 import javax.swing.JComponent
@@ -158,14 +155,6 @@ open class DevInsRunConfigurationProfileState(
                 console.print("\nDone!", ConsoleViewContentType.SYSTEM_OUTPUT)
                 processHandler.detachProcess()
             }
-
-//            val manager = RunContentManager.getInstance(myProject)
-//            val descriptor = manager.findContentDescriptor(executor, processHandler)
-//            resolvedPromise(descriptor).then {
-//                if (descriptor != null) {
-//                    println(descriptor)
-//                }
-//            }
         }
     }
 
