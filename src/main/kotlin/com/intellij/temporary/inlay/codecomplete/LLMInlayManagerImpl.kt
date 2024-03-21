@@ -14,6 +14,7 @@ import com.intellij.openapi.editor.EditorCustomElementRenderer
 import com.intellij.openapi.editor.Inlay
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.impl.ImaginaryEditor
+import com.intellij.openapi.extensions.ExtensionPoint
 import com.intellij.openapi.fileEditor.FileDocumentSynchronizationVetoer
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
@@ -38,7 +39,7 @@ class LLMInlayManagerImpl : LLMInlayManager {
 
     @RequiresEdt
     override fun isAvailable(editor: Editor): Boolean {
-        var isAvailable= KEY_EDITOR_SUPPORTED[editor]
+        var isAvailable = KEY_EDITOR_SUPPORTED[editor]
         if (isAvailable == null) {
             isAvailable = editor !is EditorWindow && editor !is ImaginaryEditor && (
                     editor !is EditorEx || !editor.isEmbeddedIntoDialogWrapper) &&
@@ -79,11 +80,12 @@ class LLMInlayManagerImpl : LLMInlayManager {
         return true
     }
 
+    @Suppress("UnstableApiUsage")
     private fun wrapWithTemporarySaveVetoHandler(runnable: Runnable) {
         val disposable = Disposer.newDisposable()
         try {
-            val extensionArea = ApplicationManager.getApplication().extensionArea
-            val ep = extensionArea.getExtensionPoint(FileDocumentSynchronizationVetoer.EP_NAME)
+            val ep = ApplicationManager.getApplication().getExtensionArea()
+                .getExtensionPoint(FileDocumentSynchronizationVetoer.EP_NAME)
             ep.registerExtension(LLMEditorSaveVetoer(), disposable)
             runnable.run()
         } finally {
