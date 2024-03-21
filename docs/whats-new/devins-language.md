@@ -2,7 +2,7 @@
 layout: default
 title: Agent Language - DevIns
 nav_order: 9
-parent: 更新日志
+parent: What's New
 ---
 
 在上一个版本中，我们构建了 AutoDev 的自定义 Agent 功能，即用户可以通过自定义能力来构建自己的智能体，以实现对于软件开发任务的智能辅助。

@@ -2,7 +2,7 @@
 layout: default
 title: AutoDev 1.7.0：AutoDev AI Agent
 nav_order: 8
-parent: 更新日志
+parent: What's New
 ---
 
 在开源 AI IDE 插件 AutoDev 的  [#51](https://github.com/unit-mesh/auto-dev/issues/51) issue 中，我们设计了 AutoDev 的 AI
