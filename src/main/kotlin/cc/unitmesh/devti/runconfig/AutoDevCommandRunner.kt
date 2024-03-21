@@ -17,7 +17,6 @@ import org.jetbrains.annotations.NonNls
 
 class AutoDevCommandRunner : GenericProgramRunner<RunnerSettings>() {
     companion object {
-        private val log: Logger = logger<AutoDevCommandRunner>()
         const val RUNNER_ID: String = "AutoDevCommandRunner"
     }
 
@@ -35,8 +34,6 @@ class AutoDevCommandRunner : GenericProgramRunner<RunnerSettings>() {
 
     @Suppress("UnstableApiUsage")
     private fun showRunContent(result: ExecutionResult?, environment: ExecutionEnvironment): RunContentDescriptor? {
-        log.debug("showRunContent")
-
         return result?.let {
             ExecutionUiService.getInstance().showRunContent(it, environment)
         }

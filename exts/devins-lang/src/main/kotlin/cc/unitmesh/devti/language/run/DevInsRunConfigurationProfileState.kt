@@ -71,7 +71,7 @@ open class DevInsRunConfigurationProfileState(
         // start message log in here
         console.addMessageFilter(object : com.intellij.execution.filters.Filter {
             override fun applyFilter(line: String, entireLength: Int): Filter.Result? {
-//                println("Filtering: $line")
+                println("Filtering: $line")
                 return null
             }
         })
@@ -89,13 +89,12 @@ open class DevInsRunConfigurationProfileState(
         val compileResult = compiler.compile()
 
         val output = compileResult.output
-
         val agent = compileResult.workingAgent
 
         if (agent != null) {
             agentRun(output, console, processHandler, agent)
         } else {
-            defaultRun(output, console, processHandler, compileResult.isLocalCommand, executor, runner)
+            defaultRun(output, console, processHandler, compileResult.isLocalCommand)
         }
 
         return DefaultExecutionResult(console, processHandler)
@@ -139,9 +138,7 @@ open class DevInsRunConfigurationProfileState(
         output: String,
         console: ConsoleViewWrapperBase,
         processHandler: ProcessHandler,
-        isLocalMode: Boolean,
-        executor: Executor?,
-        runner: ProgramRunner<*>
+        isLocalMode: Boolean
     ) {
         // contains <DevInsError> means error
         output.split("\n").forEach {
