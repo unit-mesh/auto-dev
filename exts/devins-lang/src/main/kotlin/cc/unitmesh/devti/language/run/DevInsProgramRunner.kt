@@ -7,7 +7,9 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.GenericProgramRunner
 import com.intellij.execution.runners.showRunContent
 import com.intellij.execution.ui.RunContentDescriptor
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import java.util.concurrent.atomic.AtomicReference
 
 open class DevInsProgramRunner : GenericProgramRunner<RunnerSettings>() {
     companion object {
@@ -21,7 +23,14 @@ open class DevInsProgramRunner : GenericProgramRunner<RunnerSettings>() {
     override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor? {
         if (environment.runProfile !is DevInsConfiguration) return null
 
+        val result = AtomicReference<RunContentDescriptor>()
         FileDocumentManager.getInstance().saveAllDocuments()
-        return showRunContent(state.execute(environment.executor, this), environment)
+
+        ApplicationManager.getApplication().invokeAndWait {
+            val showRunContent = showRunContent(state.execute(environment.executor, this), environment)
+            result.set(showRunContent)
+        }
+
+        return result.get()
     }
 }
