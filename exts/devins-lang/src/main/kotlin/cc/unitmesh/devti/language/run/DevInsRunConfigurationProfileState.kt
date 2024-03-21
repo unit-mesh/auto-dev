@@ -27,14 +27,17 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiManager
 import com.intellij.ui.components.panels.NonOpaquePanel
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.awt.BorderLayout
 import java.io.OutputStream
+import java.util.concurrent.CompletableFuture
 import javax.swing.JComponent
 
 open class DevInsRunConfigurationProfileState(
@@ -46,10 +49,14 @@ open class DevInsRunConfigurationProfileState(
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult {
         val processHandler: ProcessHandler = createProcessHandler(configuration.name)
         ProcessTerminatedListener.attach(processHandler)
+
+        val future = CompletableFuture<String>()
+        val sb = StringBuilder()
+
         processHandler.addProcessListener(object : ProcessAdapter() {
             override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
-                // Done
-                println(event.text)
+                // evet done
+                // Dispatch Event here
             }
         })
 
@@ -68,13 +75,12 @@ open class DevInsRunConfigurationProfileState(
                 myPanel.add(toolbar.component, BorderLayout.EAST)
             }
         }
+
         // start message log in here
-        console.addMessageFilter(object : com.intellij.execution.filters.Filter {
-            override fun applyFilter(line: String, entireLength: Int): Filter.Result? {
-                println("Filtering: $line")
-                return null
-            }
-        })
+        console.addMessageFilter { line, _ ->
+            sb.append(line)
+            null
+        }
 
         console.attachToProcess(processHandler)
 
