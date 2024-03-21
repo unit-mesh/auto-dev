@@ -5,15 +5,33 @@ nav_order: 2
 parent: Design Patterns
 ---
 
-"单元驱动 AI 生成" 是一种方法或理念，它强调通过针对具体的单元或模块进行人工智能（AI）生成，以满足特定的需求或目标。在这个上下文中，
-单元可以是各种软件开发中的模块，如函数块、类块、测试方法、SQL 片段、代码片段，甚至可以是用户需求等等。
+> "Unit-driven AI generation" is a method or concept that emphasizes the use of artificial intelligence (AI) generation
+> targeted at specific units or modules to meet particular needs or goals. In this context, units can refer to various
+> modules in software development, such as function blocks, class blocks, test methods, SQL snippets, code snippets, or
+> even user requirements, among others.
 
-这种方法的核心思想是将整个系统或应用划分为小的、独立的单元，然后使用AI技术为每个单元生成相应的代码、脚本、查询或其他必要的实现。
-这种方法有助于提高开发效率，减少重复工作，同时确保每个单元都能够独立运作，并且在整个系统中具有一致性。
+The core idea of this approach is to divide the entire system or application into small, independent units and then use
+AI technology to generate corresponding code, scripts, queries, or other necessary implementations for each unit. This
+approach helps improve development efficiency, reduce repetitive work, and ensure that each unit can operate
+independently and consistently throughout the system.
 
-具体而言，单元驱动 AI 生成可以涉及到使用自然语言处理（NLP）技术解析用户需求，然后生成对应的代码片段；或者针对特定的编程语言、数据库查询语言等，
-通过学习和推理生成相应的单元实现。这种方法的优势在于能够更灵活地适应不同的需求和环境，同时提高开发的速度和质量。
+Specifically, unit-driven AI generation may involve using natural language processing (NLP) techniques to parse user
+requirements and then generate corresponding code snippets. Alternatively, it could involve learning and inference to
+generate corresponding unit implementations for specific programming languages, database query languages, etc. The
+advantage of this approach is its flexibility in adapting to different requirements and environments while increasing
+the speed and quality of development.
 
-## Unit Driven 示例
+## Unit Driven Example
 
-AutoSQL,AutoPage,AutoTest
+### AutoSQL
+
+see in [AutoSQL](https://github.com/unit-mesh/auto-dev/tree/master/exts/database/src/main/kotlin/cc/unitmesh/database/flow)
+
+### AutoPage
+
+see in [AutoPage](https://github.com/unit-mesh/auto-dev/tree/master/javascript/src/main/kotlin/cc/unitmesh/ide/javascript/flow)
+
+### AutoArkUI
+
+see in [AutoArkUI](https://github.com/unit-mesh/auto-dev/tree/master/exts/ext-harmonyos/src/main/kotlin/cc/unitmesh/harmonyos/actions/auto)
+
