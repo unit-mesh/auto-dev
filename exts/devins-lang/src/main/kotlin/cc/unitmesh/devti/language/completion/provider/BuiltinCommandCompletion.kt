@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.completion.provider
 
-import cc.unitmesh.devti.language.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.language.completion.dataprovider.BuiltinCommand
 import com.intellij.codeInsight.AutoPopupController
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElementBuilder

@@ -1,10 +1,7 @@
-package cc.unitmesh.devti.language.dataprovider
+package cc.unitmesh.devti.language.completion.dataprovider
 
-import cc.unitmesh.devti.language.compiler.model.FileFunc
 import com.intellij.icons.AllIcons
 import javax.swing.Icon
-
-val filesFuncNames = FileFunc.values().map { it.funcName }
 
 enum class BuiltinCommand(
     val commandName: String,
@@ -30,7 +27,7 @@ enum class BuiltinCommand(
     COMMIT("commit", "Commit the content of a file", AllIcons.Vcs.CommitNode, false),
     FILE_FUNC(
         "file-func",
-        "Read the name of a file, support for: " + filesFuncNames.joinToString(","),
+        "Read the name of a file, support for: " + FileFunc.values().joinToString(",") { it.funcName },
         AllIcons.Actions.GroupByFile,
         true,
         true
@@ -38,6 +35,7 @@ enum class BuiltinCommand(
     ;
 
     companion object {
+
         fun all(): List<BuiltinCommand> {
             return values().toList()
         }

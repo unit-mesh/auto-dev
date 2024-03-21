@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.compiler.exec
 
-import cc.unitmesh.devti.language.compiler.model.FileFunc
+import cc.unitmesh.devti.language.completion.dataprovider.FileFunc
 import cc.unitmesh.devti.language.utils.canBeAdded
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex

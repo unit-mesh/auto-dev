@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.dataprovider
+package cc.unitmesh.devti.language.completion.dataprovider
 
 import cc.unitmesh.devti.custom.team.TeamPromptsBuilder
 import cc.unitmesh.devti.language.DevInIcons

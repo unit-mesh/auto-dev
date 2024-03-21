@@ -22,15 +22,19 @@ class FileReferenceLanguageProvider : CompletionProvider<CompletionParameters>()
     ) {
         val project = parameters.position.project
         val basePath = project.guessProjectDir()?.path ?: return
-        val recentlyFiles = EditorHistoryManager.getInstance(project).fileList
 
-        recentlyFiles.forEach {
+        /**
+         * Recent open files
+         */
+        EditorHistoryManager.getInstance(project).fileList.forEach {
             if (!canBeAdded(it)) return@forEach
             result.addElement(buildElement(it, basePath))
         }
 
-        val projectFileIndex = ProjectFileIndex.getInstance(project)
-        projectFileIndex.iterateContent {
+        /**
+         * Project Files
+         */
+        ProjectFileIndex.getInstance(project).iterateContent {
             if (!canBeAdded(it)) return@iterateContent true
             result.addElement(buildElement(it, basePath))
             true
