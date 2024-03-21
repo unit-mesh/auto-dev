@@ -14,7 +14,6 @@ import com.intellij.openapi.editor.EditorCustomElementRenderer
 import com.intellij.openapi.editor.Inlay
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.impl.ImaginaryEditor
-import com.intellij.openapi.extensions.ExtensionPoint
 import com.intellij.openapi.fileEditor.FileDocumentSynchronizationVetoer
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
@@ -30,7 +29,6 @@ class LLMInlayManagerImpl : LLMInlayManager {
     companion object {
         private val logger = logger<LLMInlayManagerImpl>()
         private val KEY_LAST_REQUEST = Key.create<CodeCompletionRequest>("llm.editorRequest")
-        val KEY_DOCUMENT_SAVE_VETO = Key.create<Boolean>("llm.docSaveVeto")
         private val KEY_PROCESSING = KeyWithDefaultValue.create("llm.processing", false)
         private val KEY_EDITOR_SUPPORTED = Key.create<Boolean>("llm.editorSupported")
     }
@@ -66,32 +64,16 @@ class LLMInlayManagerImpl : LLMInlayManager {
             if (project.isDisposed) return@runWriteCommandAction
             val document = editor.document
             try {
-                KEY_DOCUMENT_SAVE_VETO[document] = true
-                wrapWithTemporarySaveVetoHandler {
-                    document.insertString(request.offset, currentCompletion)
-                    editor.caretModel.moveToOffset(request.offset + currentCompletion.length)
-                    return@wrapWithTemporarySaveVetoHandler
-                }
+                document.insertString(request.offset, currentCompletion)
+                editor.caretModel.moveToOffset(request.offset + currentCompletion.length)
             } finally {
-                KEY_DOCUMENT_SAVE_VETO[document] = null
+                //
             }
         })
 
         return true
     }
 
-    @Suppress("UnstableApiUsage")
-    private fun wrapWithTemporarySaveVetoHandler(runnable: Runnable) {
-        val disposable = Disposer.newDisposable()
-        try {
-            val ep = ApplicationManager.getApplication().getExtensionArea()
-                .getExtensionPoint(FileDocumentSynchronizationVetoer.EP_NAME)
-            ep.registerExtension(LLMEditorSaveVetoer(), disposable)
-            runnable.run()
-        } finally {
-            Disposer.dispose(disposable)
-        }
-    }
 
     @RequiresEdt
     override fun collectInlays(editor: Editor, startOffset: Int, endOffset: Int): List<LLMInlayRenderer> {
