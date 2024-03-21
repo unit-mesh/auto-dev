@@ -25,7 +25,8 @@
 
 [Quick Start →](https://ide.unitmesh.cc/quick-start)
 
-[DevIns — AI Agent language for AutoDevelopment →](https://ide.unitmesh.cc/devins) which you can use follow syntax as bridges for Human-AI-IDE:
+[DevIns — AI Agent language for AutoDevelopment →](https://ide.unitmesh.cc/devins) which you can use follow syntax as
+bridges for Human-AI-IDE:
 
     /write:src/main/java/com/example/Controller.java#L1-L12
     ```java
@@ -55,14 +56,14 @@ Features:
     - AutoCRUD(Spring framework）. With DevTi Protocol (like `devti://story/github/1102`) will auto
       generate Model-Controller-Service-Repository code.
     - AutoSQL. Context-aware SQL generation.
-    - AutoPage. Context-aware Page generation.
+    - AutoPage (React). Context-aware Web Page generation.
+    - AutoArkUI (Mobile UI framework). Auto generate HarmonyOS ArkUI code.
     - AutoTesting. create unit test intention, auto run unit test and try to fix test.
     - AutoDocument. Auto generate document.
-    - AutoArkUI. Auto generate HarmonyOS ArkUI code.
 - Copilot mode
     - AutoDev will help you find bug, explain code, trace exception, generate commits, and more.
-    - Pattern specific.Based on your code context like (Controller, Service `import`), AutoDev will suggest you the best
-      code.
+    - Pattern specific. Based on your code context like (Controller, Service `import`), AutoDev will suggest the best
+      code to you.
     - Related code. Based on recent file changes, AutoDev will call calculate similar chunk to generate the best code.
 - Chat mode
     - Chat with AI.
@@ -97,7 +98,7 @@ download from [HuggingFace](https://huggingface.co/unit-mesh)
 
 ### Language Support
 
-We follow [Chapi](https://github.com/phodal/chapi) for language support tier.
+We follow [Chapi](https://github.com/phodal/chapi) AST analysis engine for language support tier.
 
 | Features                  | Java | Python | Go | Kotlin | JS/TS | C/C++ | C# | Scala | Rust | ArkTS |
 |---------------------------|------|--------|----|--------|-------|-------|----|-------|------|-------|
@@ -146,7 +147,9 @@ Welcome to add your company here.
 - Multiple target inspired
   by: [https://github.com/intellij-rust/intellij-rust](https://github.com/intellij-rust/intellij-rust)
 - SimilarFile inspired by: JetBrains and GitHub Copilot
-- DevIn Language refs on [JetBrains' Markdown Util](https://github.com/JetBrains/intellij-community/tree/master/platform/markdown-utils), which is licensed under the Apache 2.0 license.
+- DevIn Language refs
+  on [JetBrains' Markdown Util](https://github.com/JetBrains/intellij-community/tree/master/platform/markdown-utils),
+  which is licensed under the Apache 2.0 license.
 
 **Known License issues**: JetBrain plugin development is no walk in the park! Oops, we cheekily borrowed some code from
 the JetBrains Community version and the super cool JetBrains AI Assistant plugin in our codebase.
