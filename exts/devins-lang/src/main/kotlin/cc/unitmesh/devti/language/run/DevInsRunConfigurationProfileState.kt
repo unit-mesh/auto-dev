@@ -4,6 +4,7 @@ import cc.unitmesh.devti.agent.CustomAgentExecutor
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
 import cc.unitmesh.devti.language.psi.DevInFile
+import cc.unitmesh.devti.language.status.DevInsRunListener
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.util.LLMCoroutineScope
@@ -14,7 +15,6 @@ import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.console.ConsoleViewWrapperBase
-import com.intellij.execution.filters.Filter
 import com.intellij.execution.impl.ConsoleViewImpl
 import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
@@ -26,18 +26,14 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Key
-import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiManager
 import com.intellij.ui.components.panels.NonOpaquePanel
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.awt.BorderLayout
 import java.io.OutputStream
-import java.util.concurrent.CompletableFuture
 import javax.swing.JComponent
 
 open class DevInsRunConfigurationProfileState(
@@ -50,13 +46,12 @@ open class DevInsRunConfigurationProfileState(
         val processHandler: ProcessHandler = createProcessHandler(configuration.name)
         ProcessTerminatedListener.attach(processHandler)
 
-        val future = CompletableFuture<String>()
         val sb = StringBuilder()
 
         processHandler.addProcessListener(object : ProcessAdapter() {
-            override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
-                // evet done
-                // Dispatch Event here
+            override fun onTextAvailable(event: ProcessEvent, outputType: com.intellij.openapi.util.Key<*>) {
+                ApplicationManager.getApplication().messageBus
+                    .syncPublisher(DevInsRunListener.TOPIC).runFinish(sb.toString(), event)
             }
         })
 
