@@ -22,7 +22,10 @@ class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBund
     private val refactorCodeField = JTextField()
     private val fixIssueCodeField = JTextField()
     private val generateTestField = JTextField()
-
+    private val useCustomAIEngineWhenInlayCodeComplete = JCheckBox()
+        .apply {
+            toolTipText = "You can use custom LLM to inlay complete code."
+        }
     val settings = project.service<AutoDevCoderSettingService>()
     val state = settings.state.copy()
 
@@ -95,6 +98,15 @@ class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBund
                 )
         }
 
+        row(AutoDevBundle.message("settings.autodev.coder.useCustomerAgentWhenInlayCodeComplete")) {
+            fullWidthCell(useCustomAIEngineWhenInlayCodeComplete)
+                .bind(
+                    componentGet = { it.isSelected },
+                    componentSet = { component, value -> component.isSelected = value },
+                    prop = state::useCustomAIEngineWhenInlayCodeComplete.toMutableProperty()
+                )
+        }
+
         onApply {
             settings.modify {
                 it.recordingInLocal = state.recordingInLocal
@@ -104,6 +116,7 @@ class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBund
                 it.refactorCode = state.refactorCode
                 it.fixIssueCode = state.fixIssueCode
                 it.generateTest = state.generateTest
+                it.useCustomAIEngineWhenInlayCodeComplete = state.useCustomAIEngineWhenInlayCodeComplete
                 it.noChatHistory = state.noChatHistory
             }
         }

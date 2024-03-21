@@ -30,6 +30,7 @@ class AutoDevCoderSettingService(
         var fixIssueCode: String by property("Help me fix this issue") { it.isEmpty() }
         var generateTest: String by property("Generate test for \$lang code") { it.isEmpty() }
 
+        var useCustomAIEngineWhenInlayCodeComplete by property(false)
         override fun copy(): AutoDevCoderSettings {
             val state = AutoDevCoderSettings()
             state.copyFrom(this)
