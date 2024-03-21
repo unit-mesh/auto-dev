@@ -114,7 +114,7 @@ class DevInsCompiler(
                 val variableId = id?.text
                 val variable = ToolHubVariable.lookup(myProject, variableId)
                 if (variable.isNotEmpty()) {
-                    output.append(variable.first())
+                    output.append(variable.map { it }.joinToString("\n"))
                     return
                 }
 

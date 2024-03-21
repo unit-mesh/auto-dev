@@ -16,11 +16,12 @@ class AgentToolOverviewCompletion : CompletionProvider<CompletionParameters>() {
         result: CompletionResultSet
     ) {
         ToolHubVariable.all().forEach { toolHub ->
-            val elements = LookupElementBuilder.create(toolHub.summaryName)
+            val elements = LookupElementBuilder.create(toolHub.hubName)
                 .withIcon(DevInIcons.DEFAULT)
-                .withTypeText(toolHub.type, true)
-                .withPresentableText(toolHub.summaryName)
-                .withTailText(toolHub.description, true)
+                .withTypeText("(${toolHub.description})", true)
+                .withPresentableText(toolHub.hubName)
+                .withTailText(toolHub.type, true)
+
             result.addElement(PrioritizedLookupElement.withPriority(elements, 0.0))
         }
     }

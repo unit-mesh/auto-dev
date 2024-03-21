@@ -12,7 +12,7 @@ import com.intellij.openapi.util.NlsSafe
  * $agent
  * ```
  */
-enum class ToolHubVariable(val summaryName: String, val type: String, val description: String) {
+enum class ToolHubVariable(val hubName: String, val type: String, val description: String) {
     AGENTS("agents", CustomAgentConfig::class.simpleName.toString(), "DevIns all agent for AI Agent to call"),
     COMMANDS("commands", BuiltinCommand::class.simpleName.toString(), "DevIns all commands for AI Agent to call"),
 
@@ -23,14 +23,17 @@ enum class ToolHubVariable(val summaryName: String, val type: String, val descri
             return values().toList()
         }
 
-
         /**
          * @param variableId should be one of the [ToolHubVariable] name
          */
         fun lookup(myProject: Project, variableId: @NlsSafe String?): List<String> {
             return when (variableId) {
-                AGENTS.name -> CustomAgentConfig.loadFromProject(myProject).map { it.name }
-                COMMANDS.name -> BuiltinCommand.all().map { it.commandName }
+                AGENTS.hubName -> CustomAgentConfig.loadFromProject(myProject).map {
+                    "- " + it.name + ". " + it.description
+                }
+                COMMANDS.hubName -> BuiltinCommand.all().map {
+                    "- " + it.commandName + ". " + it.description
+                }
                 else -> emptyList()
             }
         }
