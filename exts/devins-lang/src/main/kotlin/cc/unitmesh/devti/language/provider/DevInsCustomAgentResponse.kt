@@ -3,12 +3,12 @@ package cc.unitmesh.devti.language.provider
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
 import cc.unitmesh.devti.language.psi.DevInFile
-import cc.unitmesh.devti.provider.devins.AgentResponseProvider
+import cc.unitmesh.devti.provider.devins.AgentResponsePostProcessor
 import cc.unitmesh.devti.provider.devins.CustomAgentContext
 import com.intellij.openapi.project.Project
 
 
-class DevInsCustomAgentResponse : AgentResponseProvider {
+class DevInsCustomAgentResponse : AgentResponsePostProcessor {
     override val name: String = "DevIn"
 
     override fun execute(project: Project, context: CustomAgentContext): String {

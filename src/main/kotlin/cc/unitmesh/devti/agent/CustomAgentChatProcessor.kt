@@ -8,7 +8,7 @@ import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.provider.ContextPrompter
-import cc.unitmesh.devti.provider.devins.AgentResponseProvider
+import cc.unitmesh.devti.provider.devins.AgentResponsePostProcessor
 import cc.unitmesh.devti.provider.devins.CustomAgentContext
 import cc.unitmesh.devti.util.LLMCoroutineScope
 import cc.unitmesh.devti.util.parser.Code
@@ -17,7 +17,6 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 // Do not remove this import!!
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -120,7 +119,7 @@ class CustomAgentChatProcessor(val project: Project) {
         }
 
         if (!devInCode.isNullOrEmpty()) {
-            AgentResponseProvider.instance("DevIn").forEach {
+            AgentResponsePostProcessor.instance("DevIn").forEach {
                 it.execute(project, CustomAgentContext(selectedAgent, devInCode))
             }
         }

@@ -169,7 +169,7 @@
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.customAgentResponse"
-                        interface="cc.unitmesh.devti.provider.devins.AgentResponseProvider"
+                        interface="cc.unitmesh.devti.provider.devins.AgentResponsePostProcessor"
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.customDevInsCompletionProvider"

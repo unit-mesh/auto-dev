@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.run
 
+import cc.unitmesh.devti.language.run.flow.DevInsFlowProcessor
 import cc.unitmesh.devti.language.status.DevInsRunListener
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.configurations.RunProfileState
@@ -11,13 +12,12 @@ import com.intellij.execution.runners.showRunContent
 import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import java.util.concurrent.atomic.AtomicReference
 
 class DevInsProgramRunner : GenericProgramRunner<RunnerSettings>(), Disposable {
-    companion object {
-        const val RUNNER_ID: String = "DevInsProgramRunner"
-    }
+    private val RUNNER_ID: String = "DevInsProgramRunner"
 
     private val connection = ApplicationManager.getApplication().messageBus.connect(this)
 
@@ -28,14 +28,12 @@ class DevInsProgramRunner : GenericProgramRunner<RunnerSettings>(), Disposable {
     override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor? {
         if (environment.runProfile !is DevInsConfiguration) return null
 
-        val result = AtomicReference<RunContentDescriptor>()
         FileDocumentManager.getInstance().saveAllDocuments()
 
+        val result = AtomicReference<RunContentDescriptor>()
         connection.subscribe(DevInsRunListener.TOPIC, object : DevInsRunListener {
             override fun runFinish(string: String, event: ProcessEvent) {
-//                println("runFinish: $string")
-//                println("event: $event")
-                // todo: handle for runFinish
+                environment.project.service<DevInsFlowProcessor>().process(string, event)
             }
         })
 
