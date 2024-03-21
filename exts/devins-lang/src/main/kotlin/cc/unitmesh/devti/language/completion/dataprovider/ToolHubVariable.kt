@@ -1,6 +1,8 @@
 package cc.unitmesh.devti.language.completion.dataprovider
 
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.NlsSafe
 
 /**
  * The tool hub provides a list of tools - agents and commands for the AI Agent to decide which one to call
@@ -11,8 +13,8 @@ import cc.unitmesh.devti.agent.model.CustomAgentConfig
  * ```
  */
 enum class ToolHubVariable(val summaryName: String, val type: String, val description: String) {
-    AGENT("agent", CustomAgentConfig::class.simpleName.toString(), "DevIns all agent for AI Agent to call"),
-    COMMAND("command", BuiltinCommand::class.simpleName.toString(), "DevIns all commands for AI Agent to call"),
+    AGENTS("agents", CustomAgentConfig::class.simpleName.toString(), "DevIns all agent for AI Agent to call"),
+    COMMANDS("commands", BuiltinCommand::class.simpleName.toString(), "DevIns all commands for AI Agent to call"),
 
     ;
 
@@ -21,6 +23,16 @@ enum class ToolHubVariable(val summaryName: String, val type: String, val descri
             return values().toList()
         }
 
-        // fun examples from resources
+
+        /**
+         * @param variableId should be one of the [ToolHubVariable] name
+         */
+        fun lookup(myProject: Project, variableId: @NlsSafe String?): List<String> {
+            return when (variableId) {
+                AGENTS.name -> CustomAgentConfig.loadFromProject(myProject).map { it.name }
+                COMMANDS.name -> BuiltinCommand.all().map { it.commandName }
+                else -> emptyList()
+            }
+        }
     }
 }

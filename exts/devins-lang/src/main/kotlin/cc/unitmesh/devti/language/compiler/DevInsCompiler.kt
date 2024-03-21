@@ -5,6 +5,7 @@ import cc.unitmesh.devti.custom.compile.VariableTemplateCompiler
 import cc.unitmesh.devti.language.compiler.exec.*
 import cc.unitmesh.devti.language.completion.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.completion.dataprovider.CustomCommand
+import cc.unitmesh.devti.language.completion.dataprovider.ToolHubVariable
 import cc.unitmesh.devti.language.parser.CodeBlockElement
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.psi.DevInTypes
@@ -110,6 +111,13 @@ class DevInsCompiler(
             }
 
             DevInTypes.VARIABLE_START -> {
+                val variableId = id?.text
+                val variable = ToolHubVariable.lookup(myProject, variableId)
+                if (variable.isNotEmpty()) {
+                    output.append(variable.first())
+                    return
+                }
+
                 if (editor == null || element == null) {
                     output.append("<DevInsError> No context editor found for variable: ${used.text}")
                     result.hasError = true
