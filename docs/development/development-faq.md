@@ -7,8 +7,6 @@ parent: Development
 
 ## EDT and ReadAction issue 
 
-### For example
-
 > Synchronous execution under ReadAction: /usr/local/bin/git -c credential.helper= -c core
 
 A solution will be like:

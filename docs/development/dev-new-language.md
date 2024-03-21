@@ -27,15 +27,16 @@ And, we found that JetBrains' IDE already have a good data structure, so we use 
 structure and design.
 
 ```xml
-<fileContextBuilder language="Rust"
-                    implementationClass="cc.unitmesh.rust.context.RustFileContextBuilder"/>
-<classContextBuilder language="Rust"
-                     implementationClass="cc.unitmesh.rust.context.RustClassContextBuilder"/>
-<methodContextBuilder language="Rust"
-                      implementationClass="cc.unitmesh.rust.context.RustMethodContextBuilder"/>
-<variableContextBuilder language="Rust"
-                        implementationClass="cc.unitmesh.rust.context.RustVariableContextBuilder"/>
-
+<extensions defaultExtensionNs="cc.unitmesh">
+   <fileContextBuilder language="Rust"
+                       implementationClass="cc.unitmesh.rust.context.RustFileContextBuilder"/>
+   <classContextBuilder language="Rust"
+                        implementationClass="cc.unitmesh.rust.context.RustClassContextBuilder"/>
+   <methodContextBuilder language="Rust"
+                         implementationClass="cc.unitmesh.rust.context.RustMethodContextBuilder"/>
+   <variableContextBuilder language="Rust"
+                           implementationClass="cc.unitmesh.rust.context.RustVariableContextBuilder"/>
+</extensions>
 ```
 
 ### Chat Context Provider
@@ -80,7 +81,7 @@ multiple Chat Context Providers for same languages.
 
 ### contextPrompter
 
-> contextPrompter will provide the context prompt rules for user, like display and request prompts.
+> Context Prompter will provide the context prompt rules for user, like display and request prompts.
 
 ```xml
 <contextPrompter

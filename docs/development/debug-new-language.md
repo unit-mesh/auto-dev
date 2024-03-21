@@ -81,7 +81,7 @@ project(":plugin") {
         plugins.set(pluginList)
     }
   
-    ...
+    // ...
 }
 ```
 
