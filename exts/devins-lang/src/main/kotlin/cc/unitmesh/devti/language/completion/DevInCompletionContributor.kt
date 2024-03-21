@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.completion
 
-import cc.unitmesh.devti.language.FileFunctionProvider
+import cc.unitmesh.devti.language.completion.provider.FileFunctionProvider
 import cc.unitmesh.devti.language.completion.provider.*
 import cc.unitmesh.devti.language.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.psi.DevInTypes

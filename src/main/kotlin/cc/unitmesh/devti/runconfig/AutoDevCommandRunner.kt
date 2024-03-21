@@ -11,14 +11,13 @@ import com.intellij.execution.runners.GenericProgramRunner
 import com.intellij.execution.ui.ExecutionUiService
 import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.openapi.fileEditor.FileDocumentManager
-import org.jetbrains.annotations.NonNls
 
 class AutoDevCommandRunner : GenericProgramRunner<RunnerSettings>() {
     companion object {
         const val RUNNER_ID: String = "AutoDevCommandRunner"
     }
 
-    override fun getRunnerId(): @NonNls String = RUNNER_ID
+    override fun getRunnerId() = RUNNER_ID
 
     override fun canRun(executorId: String, profile: RunProfile): Boolean {
         return !(executorId != DefaultRunExecutor.EXECUTOR_ID || profile !is AutoCRUDConfiguration)

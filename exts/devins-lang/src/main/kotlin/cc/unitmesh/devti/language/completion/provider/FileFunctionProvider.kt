@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language
+package cc.unitmesh.devti.language.completion.provider
 
 import cc.unitmesh.devti.language.compiler.model.FileFunc
 import com.intellij.codeInsight.completion.CompletionParameters
