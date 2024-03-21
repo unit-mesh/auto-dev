@@ -10,14 +10,14 @@ import cc.unitmesh.devti.agent.model.CustomAgentConfig
  * $agent
  * ```
  */
-enum class ToolHub(val summaryName: String, val type: String, val description: String) {
-    AGENT("Agent", CustomAgentConfig::class.simpleName.toString(), "DevIns all agent for AI Agent to call"),
-    COMMAND("Command", BuiltinCommand::class.simpleName.toString(), "DevIns all commands for AI Agent to call"),
+enum class ToolHubVariable(val summaryName: String, val type: String, val description: String) {
+    AGENT("agent", CustomAgentConfig::class.simpleName.toString(), "DevIns all agent for AI Agent to call"),
+    COMMAND("command", BuiltinCommand::class.simpleName.toString(), "DevIns all commands for AI Agent to call"),
 
     ;
 
     companion object {
-        fun all(): List<ToolHub> {
+        fun all(): List<ToolHubVariable> {
             return values().toList()
         }
 

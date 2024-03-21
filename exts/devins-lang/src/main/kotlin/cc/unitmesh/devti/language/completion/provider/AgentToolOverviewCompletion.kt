@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.language.completion.provider
 
 import cc.unitmesh.devti.language.DevInIcons
-import cc.unitmesh.devti.language.completion.dataprovider.ToolHub
+import cc.unitmesh.devti.language.completion.dataprovider.ToolHubVariable
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
@@ -15,7 +15,7 @@ class AgentToolOverviewCompletion : CompletionProvider<CompletionParameters>() {
         context: ProcessingContext,
         result: CompletionResultSet
     ) {
-        ToolHub.all().forEach { toolHub ->
+        ToolHubVariable.all().forEach { toolHub ->
             val elements = LookupElementBuilder.create(toolHub.summaryName)
                 .withIcon(DevInIcons.DEFAULT)
                 .withTypeText(toolHub.type, true)
