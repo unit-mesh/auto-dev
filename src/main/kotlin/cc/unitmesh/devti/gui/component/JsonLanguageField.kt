@@ -12,7 +12,7 @@ import com.intellij.ui.LanguageTextField
 import java.awt.Dimension
 import java.awt.FontMetrics
 
-class JsonLanguageField(private val myProject: Project, val value: String, private val placeholder: String) :
+class JsonLanguageField(private val myProject: Project, val value: String, private val placeholder: String, private val fileName: String) :
     LanguageTextField(JsonLanguage.INSTANCE, myProject, value,
         object : SimpleDocumentCreator() {
             override fun createDocument(value: String?, language: Language?, project: Project?): Document {
