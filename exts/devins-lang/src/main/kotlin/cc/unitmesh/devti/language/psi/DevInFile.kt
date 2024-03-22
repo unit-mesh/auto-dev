@@ -5,10 +5,8 @@ import cc.unitmesh.devti.language.DevInLanguage
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.project.Project
-import com.intellij.psi.FileViewProvider
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiFileFactory
-import com.intellij.psi.StubBuilder
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.psi.*
 import com.intellij.psi.stubs.*
 import com.intellij.psi.tree.IStubFileElementType
 import java.util.*
@@ -30,6 +28,12 @@ class DevInFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, DevI
 
             return devInFile
         }
+
+        fun lookup(project: Project, path: String) = VirtualFileManager.getInstance()
+            .findFileByUrl("file://$path")
+            ?.let {
+                PsiManager.getInstance(project).findFile(it)
+            } as? DevInFile
     }
 }
 

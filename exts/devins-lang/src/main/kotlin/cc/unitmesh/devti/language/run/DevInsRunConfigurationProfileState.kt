@@ -79,7 +79,7 @@ open class DevInsRunConfigurationProfileState(
 
         console.attachToProcess(processHandler)
 
-        val file: DevInFile? = lookupDevInsFile(myProject, configuration.getScriptPath())
+        val file: DevInFile? = DevInFile.lookup(myProject, configuration.getScriptPath())
         if (file == null) {
             console.print("File not found: ${configuration.getScriptPath()}", ConsoleViewContentType.ERROR_OUTPUT)
             processHandler.destroyProcess()
@@ -182,9 +182,3 @@ open class DevInsRunConfigurationProfileState(
         override fun getExecutionName(): String = myExecutionName
     }
 }
-
-fun lookupDevInsFile(project: Project, path: String) = VirtualFileManager.getInstance()
-    .findFileByUrl("file://$path")
-    ?.let {
-        PsiManager.getInstance(project).findFile(it)
-    } as? DevInFile
