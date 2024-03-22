@@ -8,7 +8,6 @@ permalink: /development
 
 {: .no_toc }
 
-
 # Development
 
 1. `git clone https://github.com/unit-mesh/auto-dev/`

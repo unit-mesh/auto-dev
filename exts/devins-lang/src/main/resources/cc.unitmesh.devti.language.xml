@@ -1,6 +1,7 @@
 <idea-plugin package="cc.unitmesh.devti.language">
     <dependencies>
         <plugin id="org.intellij.plugins.markdown"/>
+        <plugin id="com.jetbrains.sh"/>
     </dependencies>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -19,8 +20,12 @@
         <typedHandler implementation="cc.unitmesh.devti.language.DevInTypedHandler"/>
 
         <completion.contributor language="DevIn"
-                                order="last"
-                                implementationClass="cc.unitmesh.devti.language.DevInCompletionContributor"/>
+                                id="devInCompletionContributor"
+                                order="first"
+                                implementationClass="cc.unitmesh.devti.language.completion.DevInCompletionContributor"/>
+        <completion.contributor language="DevIn"
+                                order="after devInCompletionContributor"
+                                implementationClass="cc.unitmesh.devti.language.completion.UserCustomCompletionContributor"/>
 
         <lang.foldingBuilder language="DevIn"
                              implementationClass="cc.unitmesh.devti.language.folding.DevInCustomVariableFoldingBuilder"/>
@@ -36,6 +41,8 @@
         <runConfigurationProducer implementation="cc.unitmesh.devti.language.run.DevInsRunConfigurationProducer"/>
         <runLineMarkerContributor language="DevIn"
                                   implementationClass="cc.unitmesh.devti.language.run.DevInsRunLineMarkersProvider"/>
+
+        <lang.commenter language="DevIn" implementationClass="cc.unitmesh.devti.language.commenter.DevInsCommenter"/>
 
         <lang.documentationProvider language="DevIn"
                                     id="devinsDocumentationProvider"

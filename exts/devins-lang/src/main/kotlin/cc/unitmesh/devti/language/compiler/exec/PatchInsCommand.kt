@@ -21,20 +21,21 @@ class PatchInsCommand(val myProject: Project, val prop: String, val codeContent:
         myReader.parseAllPatches()
 
         val filePatches: MutableList<FilePatch> = myReader.allPatches
-        val matchedPatches =
-            MatchPatchPaths(myProject).execute(filePatches, true)
-
-        val patchGroups = MultiMap<VirtualFile, AbstractFilePatchInProgress<*>>()
-        for (patchInProgress in matchedPatches) {
-            patchGroups.putValue(patchInProgress.base, patchInProgress)
-        }
 
         ApplicationManager.getApplication().invokeLater {
+            val matchedPatches =
+                MatchPatchPaths(myProject).execute(filePatches, true)
+
+            val patchGroups = MultiMap<VirtualFile, AbstractFilePatchInProgress<*>>()
+            for (patchInProgress in matchedPatches) {
+                patchGroups.putValue(patchInProgress.base, patchInProgress)
+            }
+
             val additionalInfo = myReader.getAdditionalInfo(ApplyPatchDefaultExecutor.pathsFromGroups(patchGroups))
             shelfExecutor.apply(filePatches, patchGroups, null, prop, additionalInfo)
         }
 
-        return "Patch applied"
+        return "Patch in Progress..."
     }
 
 }

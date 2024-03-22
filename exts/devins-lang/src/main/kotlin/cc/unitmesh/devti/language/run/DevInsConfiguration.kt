@@ -2,6 +2,7 @@ package cc.unitmesh.devti.language.run
 
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.language.DevInBundle
+import cc.unitmesh.devti.language.DevInIcons
 import cc.unitmesh.devti.runconfig.config.readString
 import cc.unitmesh.devti.runconfig.config.writeString
 import com.intellij.execution.Executor
@@ -15,7 +16,8 @@ import javax.swing.Icon
 
 class DevInsConfiguration(project: Project, factory: ConfigurationFactory, name: String) :
     LocatableConfigurationBase<ConfigurationFactory>(project, factory, name) {
-    override fun getIcon(): Icon = AutoDevIcons.AI_COPILOT
+    override fun getIcon(): Icon = DevInIcons.DEFAULT
+
     private var myScriptPath = ""
     private val SCRIPT_PATH_TAG: String = "SCRIPT_PATH"
 

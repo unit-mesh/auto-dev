@@ -13,12 +13,10 @@ class DevInsSettingsEditor(val project: Project) : SettingsEditor<DevInsConfigur
     private val myScriptSelector: TextFieldWithBrowseButton = TextFieldWithBrowseButton()
 
     init {
-        myScriptSelector.addBrowseFolderListener(
-            DevInBundle.message("devin.label.choose.file"),
-            "",
-            project,
-            FileChooserDescriptorFactory.createSingleFileDescriptor()
-        )
+        val descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor()
+        val message = DevInBundle.message("devin.label.choose.file")
+
+        myScriptSelector.addBrowseFolderListener(message, "", project, descriptor)
     }
 
     override fun createEditor(): JComponent = panel {

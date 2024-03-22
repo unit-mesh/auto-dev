@@ -591,7 +591,7 @@ project(":exts:devins-lang") {
 
     intellij {
         version.set(ideaVersion)
-        plugins.set((ideaPlugins + "org.intellij.plugins.markdown"))
+        plugins.set((ideaPlugins + "org.intellij.plugins.markdown" + "com.jetbrains.sh"))
     }
 
     dependencies {

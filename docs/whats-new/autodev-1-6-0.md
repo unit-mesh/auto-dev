@@ -2,7 +2,7 @@
 layout: default
 title: AutoDev 1.6.0 精准页面生成与 SQL 生成
 nav_order: 6
-parent: 更新日志
+parent: What's New
 ---
 
 ## AutoPage：精准页面生成

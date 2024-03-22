@@ -4,11 +4,14 @@ import cc.unitmesh.devti.language.DevInFileType
 import cc.unitmesh.devti.language.DevInLanguage
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
+import com.intellij.openapi.project.Project
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.StubBuilder
 import com.intellij.psi.stubs.*
 import com.intellij.psi.tree.IStubFileElementType
+import java.util.*
 
 class DevInFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, DevInLanguage.INSTANCE) {
     override fun getFileType(): FileType = DevInFileType.INSTANCE
@@ -18,6 +21,16 @@ class DevInFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, DevI
     override fun toString(): String = "DevInFile"
 
     override fun getStub(): DevInFileStub? = super.getStub() as DevInFileStub?
+
+    companion object {
+        fun fromString(project: Project, text: String): DevInFile {
+            val filename = "DevIns-${UUID.randomUUID()}.devin"
+            val devInFile = PsiFileFactory.getInstance(project)
+                .createFileFromText(filename, DevInLanguage, text) as DevInFile
+
+            return devInFile
+        }
+    }
 }
 
 class DevInFileStub(file: DevInFile?, private val flags: Int) : PsiFileStubImpl<DevInFile>(file) {

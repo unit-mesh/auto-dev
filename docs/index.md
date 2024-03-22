@@ -50,15 +50,15 @@ Features:
     - AutoCRUD(Spring framework）. With DevTi Protocol (like `devti://story/github/1102`) will auto
       generate Model-Controller-Service-Repository code.
     - AutoSQL. Context-aware SQL generation.
-    - AutoPage. Context-aware Page generation.
+    - AutoPage (React). Context-aware Web Page generation.
+    - AutoArkUI (Mobile UI framework). Auto generate HarmonyOS ArkUI code.
     - AutoTesting. create unit test intention, auto run unit test and try to fix test.
     - AutoDocument. Auto generate document.
-    - AutoArkUI. Auto generate HarmonyOS ArkUI code.
 - Copilot mode
-    - Pattern specific.Based on your code context like (Controller, Service `import`), AutoDev will suggest you the best
-      code.
-    - Related code. Based on recent file changes, AutoDev will call calculate similar chunk to generate the best code.
     - AutoDev will help you find bug, explain code, trace exception, generate commits, and more.
+    - Pattern specific. Based on your code context like (Controller, Service `import`), AutoDev will suggest the best
+      code to you.
+    - Related code. Based on recent file changes, AutoDev will call calculate similar chunk to generate the best code.
 - Chat mode
     - Chat with AI.
     - Chat with selection code.
@@ -86,9 +86,9 @@ AutoDev fine-tune models:
 |---------------|-----------------------------------------------------------------|--------------------------------------|-------------------------------------------------------------------------------------|
 | DeepSeek 6.7B | [AutoDev Coder](https://huggingface.co/unit-mesh/autodev-coder) | [finetune.ipynb](finetunes/deepseek) | [AutoDev Coder](https://openbayes.com/console/phodal/models/rCmer1KQSgp/9/overview) |
 
-### Language Support (Fine-tuning)
+### Language Support (for Fine-tuning)
 
-We follow [Chapi](https://github.com/phodal/chapi) for language support tier.
+We follow [Chapi](https://github.com/phodal/chapi) AST analysis engine for language support tier.
 
 | Features                  | Java | Python | Go | Kotlin | JS/TS | C/C++ | C# | Scala | Rust | ArkTS |
 |---------------------------|------|--------|----|--------|-------|-------|----|-------|------|-------|

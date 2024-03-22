@@ -32,6 +32,8 @@ import com.intellij.psi.TokenType;
 %s SYSTEM_BLOCK
 
 %s CODE_BLOCK
+%s COMMENT_BLOCK
+
 %s LANG_ID
 
 IDENTIFIER=[a-zA-Z0-9][_\-a-zA-Z0-9]*
@@ -46,6 +48,7 @@ NUMBER=[0-9]+
 TEXT_SEGMENT=[^$/@#\n]+
 COMMAND_PROP=[^:\ \t\r\n]*
 CODE_CONTENT=[^\n]+
+COMMENTS=\[ ([^\]]+)? \] [^\t\r\n]*
 NEWLINE= \n | \r | \r\n
 
 COLON=:
@@ -95,9 +98,23 @@ SHARP=#
         if (isCodeStart) {
             return CODE_CONTENT;
         } else {
+            if (text.startsWith("[")) {
+                yybegin(COMMENT_BLOCK);
+                return comment();
+            }
+
             yypushback(yylength());
             yybegin(YYUSED);
 
+            return TEXT_SEGMENT;
+        }
+    }
+
+    private IElementType comment() {
+        String text = yytext().toString().trim();
+        if (text.contains("[") && text.contains("]")) {
+            return COMMENTS;
+        } else {
             return TEXT_SEGMENT;
         }
     }
@@ -107,7 +124,13 @@ SHARP=#
 <YYINITIAL> {
   {CODE_CONTENT}          { return content(); }
   {NEWLINE}               { return NEWLINE;  }
-  [^]                     { return TokenType.BAD_CHARACTER; }
+  "["                     { yypushback(yylength()); yybegin(COMMENT_BLOCK);  }
+  [^]                     { yypushback(yylength()); return TEXT_SEGMENT; }
+}
+
+<COMMENT_BLOCK> {
+  {COMMENTS}              { return comment(); }
+  [^]                     { yypushback(yylength()); yybegin(YYINITIAL); return TEXT_SEGMENT; }
 }
 
 <YYUSED> {

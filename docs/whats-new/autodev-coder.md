@@ -2,7 +2,7 @@
 layout: default
 title: AutoDev Coder
 nav_order: 4
-parent: 更新日志
+parent: What's New
 ---
 
 太长不读性：

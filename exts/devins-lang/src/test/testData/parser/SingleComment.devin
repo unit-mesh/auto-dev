@@ -1,0 +1,8 @@
+[flow]:flowable.devin
+[flow](result)
+
+[] is a symbol of comment, follow markdown syntax, and the content in [] is the comment content.
+ The comment content is not displayed in the final result. So we can use it to add some notes to the flow.
+
+[ Normal start
+]

@@ -26,6 +26,7 @@ interface LLMInlayManager : Disposable {
     fun editorModified(editor: Editor, changeOffset: Int)
 
     fun editorModified(editor: Editor)
+
     fun countCompletionInlays(editor: Editor, tabRange: TextRange) : Int
 
     companion object {

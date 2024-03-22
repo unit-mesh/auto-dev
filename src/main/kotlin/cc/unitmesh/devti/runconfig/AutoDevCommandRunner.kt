@@ -10,18 +10,14 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.GenericProgramRunner
 import com.intellij.execution.ui.ExecutionUiService
 import com.intellij.execution.ui.RunContentDescriptor
-import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
-import org.jetbrains.annotations.NonNls
 
 class AutoDevCommandRunner : GenericProgramRunner<RunnerSettings>() {
     companion object {
-        private val log: Logger = logger<AutoDevCommandRunner>()
         const val RUNNER_ID: String = "AutoDevCommandRunner"
     }
 
-    override fun getRunnerId(): @NonNls String = RUNNER_ID
+    override fun getRunnerId() = RUNNER_ID
 
     override fun canRun(executorId: String, profile: RunProfile): Boolean {
         return !(executorId != DefaultRunExecutor.EXECUTOR_ID || profile !is AutoCRUDConfiguration)
@@ -35,8 +31,6 @@ class AutoDevCommandRunner : GenericProgramRunner<RunnerSettings>() {
 
     @Suppress("UnstableApiUsage")
     private fun showRunContent(result: ExecutionResult?, environment: ExecutionEnvironment): RunContentDescriptor? {
-        log.debug("showRunContent")
-
         return result?.let {
             ExecutionUiService.getInstance().showRunContent(it, environment)
         }

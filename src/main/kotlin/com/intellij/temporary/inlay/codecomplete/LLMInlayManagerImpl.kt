@@ -28,10 +28,8 @@ import com.intellij.util.concurrency.annotations.RequiresEdt
 class LLMInlayManagerImpl : LLMInlayManager {
     companion object {
         private val logger = logger<LLMInlayManagerImpl>()
-        private val KEY_LAST_REQUEST = Key.create<CodeCompletionRequest>("copilot.editorRequest")
-        val KEY_DOCUMENT_SAVE_VETO = Key.create<Boolean>("llm.docSaveVeto")
-        private val KEY_PROCESSING =
-            KeyWithDefaultValue.create("llm.processing", java.lang.Boolean.valueOf(false)) as Key<Boolean>
+        private val KEY_LAST_REQUEST = Key.create<CodeCompletionRequest>("llm.editorRequest")
+        private val KEY_PROCESSING = KeyWithDefaultValue.create("llm.processing", false)
         private val KEY_EDITOR_SUPPORTED = Key.create<Boolean>("llm.editorSupported")
     }
 
@@ -39,7 +37,7 @@ class LLMInlayManagerImpl : LLMInlayManager {
 
     @RequiresEdt
     override fun isAvailable(editor: Editor): Boolean {
-        var isAvailable: Boolean? = KEY_EDITOR_SUPPORTED[editor]
+        var isAvailable = KEY_EDITOR_SUPPORTED[editor]
         if (isAvailable == null) {
             isAvailable = editor !is EditorWindow && editor !is ImaginaryEditor && (
                     editor !is EditorEx || !editor.isEmbeddedIntoDialogWrapper) &&
@@ -62,35 +60,20 @@ class LLMInlayManagerImpl : LLMInlayManager {
             return false
         }
 
-        WriteCommandAction.runWriteCommandAction(project, "Apply Copilot Suggestion", "AutoDev", {
+        WriteCommandAction.runWriteCommandAction(project, "Apply Code Suggestion", "AutoDev", {
             if (project.isDisposed) return@runWriteCommandAction
             val document = editor.document
             try {
-                KEY_DOCUMENT_SAVE_VETO[document] = true
-                wrapWithTemporarySaveVetoHandler {
-                    document.insertString(request.offset, currentCompletion)
-                    editor.caretModel.moveToOffset(request.offset + currentCompletion.length)
-                    return@wrapWithTemporarySaveVetoHandler
-                }
+                document.insertString(request.offset, currentCompletion)
+                editor.caretModel.moveToOffset(request.offset + currentCompletion.length)
             } finally {
-                KEY_DOCUMENT_SAVE_VETO[document] = null
+                //
             }
         })
 
         return true
     }
 
-    private fun wrapWithTemporarySaveVetoHandler(runnable: Runnable) {
-        val disposable = Disposer.newDisposable()
-        try {
-            val extensionPoint =
-                ApplicationManager.getApplication().extensionArea.getExtensionPoint(FileDocumentSynchronizationVetoer.EP_NAME)
-            extensionPoint.registerExtension(LLMEditorSaveVetoer(), disposable)
-            runnable.run()
-        } finally {
-            Disposer.dispose(disposable)
-        }
-    }
 
     @RequiresEdt
     override fun collectInlays(editor: Editor, startOffset: Int, endOffset: Int): List<LLMInlayRenderer> {

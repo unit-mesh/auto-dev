@@ -30,11 +30,11 @@
         <applicationService serviceImplementation="cc.unitmesh.devti.settings.AutoDevSettingsState"/>
 
         <applicationService
-                serviceInterface=" com.intellij.temporary.inlay.codecomplete.LLMInlayManager"
-                serviceImplementation=" com.intellij.temporary.inlay.codecomplete.LLMInlayManagerImpl"/>
+                serviceInterface="com.intellij.temporary.inlay.codecomplete.LLMInlayManager"
+                serviceImplementation="com.intellij.temporary.inlay.codecomplete.LLMInlayManagerImpl"/>
 
         <typedHandler order="first, before completionAutoPopup"
-                      implementation="cc.unitmesh.devti.editor.inlay.TypeOverHandler"/>
+                      implementation="cc.unitmesh.devti.inlay.TypeOverHandler"/>
 
 
         <statusBarWidgetFactory id="AIAssistant"
@@ -169,7 +169,7 @@
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.customAgentResponse"
-                        interface="cc.unitmesh.devti.provider.devins.AgentResponseProvider"
+                        interface="cc.unitmesh.devti.provider.devins.AgentResponsePostProcessor"
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.customDevInsCompletionProvider"

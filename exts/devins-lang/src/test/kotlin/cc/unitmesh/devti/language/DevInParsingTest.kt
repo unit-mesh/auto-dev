@@ -43,4 +43,8 @@ class DevInParsingTest : ParsingTestCase("parser", "devin", DevInParserDefinitio
     fun testSystemCalling() {
         doTest(true)
     }
+
+    fun testSingleComment() {
+        doTest(true)
+    }
 }

@@ -1,7 +1,12 @@
 package cc.unitmesh.devti.agent.model
 
+import cc.unitmesh.devti.agent.configurable.customAgentSetting
 import cc.unitmesh.devti.custom.team.InteractionType
+import com.intellij.openapi.project.Project
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+// DON'T CHANGE THIS IMPORT
+import kotlinx.serialization.decodeFromString
 
 @Serializable
 data class CustomFlowTransition(
@@ -52,6 +57,18 @@ data class CustomAgentConfig(
     val auth: CustomAgentAuth? = null,
 ) {
     var state: CustomAgentState = CustomAgentState.START
+
+    companion object {
+        fun loadFromProject(project: Project): List<CustomAgentConfig> {
+            val configs: List<CustomAgentConfig> = try {
+                val ragsJsonConfig = project.customAgentSetting.ragsJsonConfig
+                Json.decodeFromString(ragsJsonConfig)
+            } catch (e: Exception) {
+                emptyList()
+            }
+            return configs
+        }
+    }
 }
 
 @Serializable

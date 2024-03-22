@@ -1,19 +1,27 @@
 package cc.unitmesh.devti.language.compiler
 
+import cc.unitmesh.devti.agent.model.CustomAgentConfig
+import cc.unitmesh.devti.custom.compile.VariableTemplateCompiler
 import cc.unitmesh.devti.language.compiler.exec.*
-import cc.unitmesh.devti.language.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.language.completion.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.language.completion.dataprovider.CustomCommand
+import cc.unitmesh.devti.language.completion.dataprovider.ToolHubVariable
 import cc.unitmesh.devti.language.parser.CodeBlockElement
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.psi.DevInTypes
 import cc.unitmesh.devti.language.psi.DevInUsed
-import cc.unitmesh.devti.provider.devins.DevInsSymbolProvider
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
 
-class DevInsCompiler(private val myProject: Project, val file: DevInFile, val editor: Editor? = null) {
+class DevInsCompiler(
+    private val myProject: Project,
+    private val file: DevInFile,
+    private val editor: Editor? = null,
+    private val element: PsiElement? = null
+) {
     private var skipNextCode: Boolean = false
     private val logger = logger<DevInsCompiler>()
     private val result = CompileResult()
@@ -56,6 +64,18 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
             DevInTypes.COMMAND_START -> {
                 val command = BuiltinCommand.fromString(id?.text ?: "")
                 if (command == null) {
+                    CustomCommand.fromString(myProject, id?.text ?: "")?.let { cmd ->
+                        DevInFile.fromString(myProject, cmd.content).let { file ->
+                            DevInsCompiler(myProject, file).compile().let {
+                                output.append(it.output)
+                                result.hasError = it.hasError
+                            }
+                        }
+
+                        return
+                    }
+
+
                     output.append(used.text)
                     logger.warn("Unknown command: ${id?.text}")
                     result.hasError = true
@@ -80,15 +100,34 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
             }
 
             DevInTypes.AGENT_START -> {
-                /**
-                 * add for post action
-                 */
+                val agentId = id?.text
+                val configs = CustomAgentConfig.loadFromProject(myProject).filter {
+                    it.name == agentId
+                }
+
+                if (configs.isNotEmpty()) {
+                    result.workingAgent = configs.first()
+                }
             }
 
             DevInTypes.VARIABLE_START -> {
-                /**
-                 * Todo, call [cc.unitmesh.devti.custom.compile.VariableTemplateCompiler]
-                 */
+                val variableId = id?.text
+                val variable = ToolHubVariable.lookup(myProject, variableId)
+                if (variable.isNotEmpty()) {
+                    output.append(variable.map { it }.joinToString("\n"))
+                    return
+                }
+
+                if (editor == null || element == null) {
+                    output.append("<DevInsError> No context editor found for variable: ${used.text}")
+                    result.hasError = true
+                    return
+                }
+
+                val file = element.containingFile
+                VariableTemplateCompiler(file.language, file, element, editor).compile(used.text).let {
+                    output.append(it)
+                }
             }
 
             else -> {
@@ -152,15 +191,22 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
                 result.isLocalCommand = true
                 FileFuncInsCommand(myProject, prop)
             }
+
+            BuiltinCommand.SHELL -> {
+                result.isLocalCommand = true
+                ShellInsCommand(myProject, prop)
+            }
         }
 
         val execResult = command.execute()
 
         val isSucceed = execResult?.contains("<DevInsError>") == false
         val result = if (isSucceed) {
-            val hasReadCodeBlock = commandNode == BuiltinCommand.WRITE
-                    || commandNode == BuiltinCommand.PATCH
-                    || commandNode == BuiltinCommand.COMMIT
+            val hasReadCodeBlock = commandNode in listOf(
+                BuiltinCommand.WRITE,
+                BuiltinCommand.PATCH,
+                BuiltinCommand.COMMIT
+            )
 
             if (hasReadCodeBlock) {
                 skipNextCode = true
@@ -190,23 +236,6 @@ class DevInsCompiler(private val myProject: Project, val file: DevInFile, val ed
             }
         }
         return devInCode
-    }
-}
-
-class SymbolInsCommand(val myProject: Project, val prop: String) :
-    InsCommand {
-    override fun execute(): String {
-        val result = DevInsSymbolProvider.all().mapNotNull {
-            val found = it.resolveSymbol(myProject, prop)
-            if (found.isEmpty()) return@mapNotNull null
-            "```${it.language}\n${found.joinToString("\n")}\n```\n"
-        }
-
-        if (result.isEmpty()) {
-            return "<DevInsError> No symbol found: $prop"
-        }
-
-        return result.joinToString("\n")
     }
 }
 

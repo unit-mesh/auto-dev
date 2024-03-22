@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.dataprovider
+package cc.unitmesh.devti.language.completion.dataprovider
 
 import com.intellij.icons.AllIcons
 import javax.swing.Icon
@@ -23,11 +23,19 @@ enum class BuiltinCommand(
     WRITE("write", "Write content to a file, /write:path/to/file:L1-L2", AllIcons.Actions.Edit, true, true),
     PATCH("patch", "Apply patch to a file, /patch:path/to/file", AllIcons.Vcs.Patch_file, false),
     RUN("run", "Run the content of a file", AllIcons.Actions.Execute, true, true),
-    FILE_FUNC("file-func", "Read the name of a file", AllIcons.Actions.GroupByFile, true, true),
-    COMMIT("commit", "Commit the content of a file", AllIcons.Vcs.CommitNode, false)
+    SHELL("shell", "Run shell command", AllIcons.Actions.Execute, true, true),
+    COMMIT("commit", "Commit the content of a file", AllIcons.Vcs.CommitNode, false),
+    FILE_FUNC(
+        "file-func",
+        "Read the name of a file, support for: " + FileFunc.values().joinToString(",") { it.funcName },
+        AllIcons.Actions.GroupByFile,
+        true,
+        true
+    ),
     ;
 
     companion object {
+
         fun all(): List<BuiltinCommand> {
             return values().toList()
         }

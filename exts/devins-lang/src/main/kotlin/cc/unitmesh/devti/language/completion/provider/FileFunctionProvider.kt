@@ -1,6 +1,6 @@
-package cc.unitmesh.devti.language
+package cc.unitmesh.devti.language.completion.provider
 
-import cc.unitmesh.devti.language.compiler.model.FileFunc
+import cc.unitmesh.devti.language.completion.dataprovider.FileFunc
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet

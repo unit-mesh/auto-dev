@@ -10,17 +10,21 @@ data class CustomAgentContext(
     val response: String
 )
 
-interface AgentResponseProvider {
+/**
+ * Handle the response of the custom agent, and return the result to the user.
+ * Specify for [cc.unitmesh.devti.language.DevInLanguage]
+ */
+interface AgentResponsePostProcessor {
     val name: String
 
     @RequiresBackgroundThread
     fun execute(project: Project, context: CustomAgentContext): String
 
     companion object {
-        val EP_NAME = ExtensionPointName<AgentResponseProvider>("cc.unitmesh.customAgentResponse")
+        val EP_NAME = ExtensionPointName<AgentResponsePostProcessor>("cc.unitmesh.customAgentResponse")
 
-        fun instance(name: String): List<AgentResponseProvider> {
-            return EP_NAME.extensionList.filter { it.name == name }
+        fun instance(languageName: String): List<AgentResponsePostProcessor> {
+            return EP_NAME.extensionList.filter { it.name == languageName }
         }
     }
 }

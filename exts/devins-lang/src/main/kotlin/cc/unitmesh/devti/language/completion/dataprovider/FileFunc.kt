@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.compiler.model
+package cc.unitmesh.devti.language.completion.dataprovider
 
 import com.intellij.icons.AllIcons
 import javax.swing.Icon

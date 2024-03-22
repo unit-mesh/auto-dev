@@ -2,7 +2,7 @@
 layout: default
 title: AutoDev 1.6.4：HarmonyOS 应用开发体验提升
 nav_order: 7
-parent: 更新日志
+parent: What's New
 ---
 
 生成式 AI 在软件研发和知识管理上，有着非常大的潜力，也因此这项技术被越来越多的企业所采用。而在一些新兴的技术上，诸如于鸿蒙操作系统，它带来了一些新
