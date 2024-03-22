@@ -20,6 +20,8 @@ class DevInSyntaxHighlighter : SyntaxHighlighter {
         private val ATTRIBUTES: MutableMap<IElementType, TextAttributesKey> = HashMap()
 
         init {
+            ATTRIBUTES[DevInTypes.COMMENTS] = DefaultLanguageHighlighterColors.LINE_COMMENT
+
             ATTRIBUTES[DevInTypes.VARIABLE_START] = DefaultLanguageHighlighterColors.KEYWORD
             ATTRIBUTES[DevInTypes.VARIABLE_ID] = DefaultLanguageHighlighterColors.CONSTANT
 
