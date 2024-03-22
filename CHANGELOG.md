@@ -1,6 +1,86 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v1.7.2...v) (2024-03-17)
+# [](https://github.com/unit-mesh/auto-dev/compare/v1.7.3...v) (2024-03-22)
 
 ## [Unreleased]
+
+## [1.7.3](https://github.com/unit-mesh/auto-dev/compare/v1.7.2...v[1.7.3]) (2024-03-22)
+
+### Bug Fixes
+- **actions:** fix variable name in CommitMessageSuggestionAction ([edc3e8c](https://github.com/unit-mesh/auto-dev/commit/edc3e8cbeed3506db87e6d3a6de7d8e0b4d100a5))
+- **codecomplete:** fix LLMInlayManager imports for 241 version [#109](https://github.com/unit-mesh/auto-dev/issues/109) ([9cdca52](https://github.com/unit-mesh/auto-dev/commit/9cdca524b6c9d2519e4848243c92179ba438dd68))
+- **compiler:** fix patch execution race condition [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([ab76784](https://github.com/unit-mesh/auto-dev/commit/ab76784233ace593b9043d15c478f0078c916888))
+- **devins-java:** improve symbol resolution logic [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([fd6c134](https://github.com/unit-mesh/auto-dev/commit/fd6c134296c9f1d7051bdfeae6fa9fd274c85faa))
+- **devins-lang:** add newline to "Done!" message [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([552d5b0](https://github.com/unit-mesh/auto-dev/commit/552d5b0e91c2f8453f51bb0f35b0fda98d04c754))
+- **devins-lang:** correct highlighting for variable, agent, and command identifiers [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([f83d305](https://github.com/unit-mesh/auto-dev/commit/f83d305fc5a62c75c3a06387f0f459bee7295824))
+- **devins-lang:** fix asynchronous execution issue [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([2fc3b52](https://github.com/unit-mesh/auto-dev/commit/2fc3b5281ded43046b81edba44c98a2e36cde749))
+- **devins-lang:** improve error handling and add validation for file-func command ([edbb0c5](https://github.com/unit-mesh/auto-dev/commit/edbb0c570f74f580dd168095140010dbf6a97428)), closes [#101](https://github.com/unit-mesh/auto-dev/issues/101)
+- **devins-lang:** improve error message for duplicate agent calls [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([9e726bc](https://github.com/unit-mesh/auto-dev/commit/9e726bca6389a233e8784001355d63b6845e5706))
+- **devins-lang:** improve file selection message [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([35f950a](https://github.com/unit-mesh/auto-dev/commit/35f950abd95f3028fad0909a6f2c8dccd67dff8d))
+- **devins-lang:** improve process handler creation for IDE 222 version ([b21925a](https://github.com/unit-mesh/auto-dev/commit/b21925a4f17aa7578bab68f27c939ed4125c255f))
+- **devins-lang:** improve readability of SyntaxHighlighterFactory [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([6a20095](https://github.com/unit-mesh/auto-dev/commit/6a20095574de5f67d90bdc65b2008247ccee85f6))
+- **devins-lang:** Improve token type string representation and handle whitespace in agent ID regex [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([8e46a8a](https://github.com/unit-mesh/auto-dev/commit/8e46a8a55af8268b6cdc2103479143eca1862e2a))
+- **devins-lang:** refactor language injection check [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([0e52bca](https://github.com/unit-mesh/auto-dev/commit/0e52bca6507f1407a86c48e6b7160307394de317))
+- **devins-lang:** replace "DevliError" with "DevInsError" for consistency and clarity. ([8fdbba8](https://github.com/unit-mesh/auto-dev/commit/8fdbba8899643751f4d40b7d79a2d5accbc24949))
+- **devins-lang:** restrict agent_id to non-whitespace characters [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([388d484](https://github.com/unit-mesh/auto-dev/commit/388d484bede47d5dfcb6a32687c6d06971d8a46e))
+- **devins-language:** update ToolHubVariable property names [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([3b12625](https://github.com/unit-mesh/auto-dev/commit/3b12625a3d1e306e8051d5f5ebf9e11553de2b4a))
+- **devins-language:** use List instead of Iterable for lookup result [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([26b2581](https://github.com/unit-mesh/auto-dev/commit/26b2581bd45b1b96f81da4cea42e6dc89e56d5b1))
+- **devins-linting:** improve detection of duplicate agent IDs in DevInsDuplicateAgentInspection [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([df2bb82](https://github.com/unit-mesh/auto-dev/commit/df2bb82e4af08afd1fe0db9a431cfbf1e923cf2f))
+- **editor:** fix TypeOverHandler package name [#109](https://github.com/unit-mesh/auto-dev/issues/109) ([a6a04ce](https://github.com/unit-mesh/auto-dev/commit/a6a04ced029552005eda0495021c9e89ee6011d5))
+- fix flow issue ([2458221](https://github.com/unit-mesh/auto-dev/commit/2458221647c6975a9e759f01bd4571de11502ac3))
+- fix merge error and typo ([a9e8b06](https://github.com/unit-mesh/auto-dev/commit/a9e8b06033199607bc8fb39e3cf4e7abf62e7b0f))
+- **inlay:** fix compatibility issue with IDEA 241 version for [#109](https://github.com/unit-mesh/auto-dev/issues/109) ([2ff3c17](https://github.com/unit-mesh/auto-dev/commit/2ff3c17832c593f22c6f5a06be39045fb940404d))
+- **inlay:** update key names and message in LLMInlayManagerImpl.kt ([a5d5e4d](https://github.com/unit-mesh/auto-dev/commit/a5d5e4d039afa5e806813f7215dc73f4602295f5)), closes [#109](https://github.com/unit-mesh/auto-dev/issues/109)
+- **java:** improve symbol resolution logic [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([ef24e71](https://github.com/unit-mesh/auto-dev/commit/ef24e71350c088515359f944219c2fa98fdaa5b5))
+- **java:** simplify package name lookup [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([cd8ea46](https://github.com/unit-mesh/auto-dev/commit/cd8ea46f17aad68737bb0d43d209728e6e1c4335))
+- pick up presentationUtil [#109](https://github.com/unit-mesh/auto-dev/issues/109) ([216a231](https://github.com/unit-mesh/auto-dev/commit/216a2317af431acb3560a531fe46c32514e5e817))
+- **provider:** fix console view initialization [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([f402274](https://github.com/unit-mesh/auto-dev/commit/f402274a194201901b9aea3447f1e4e89b1233d7))
+- refactor DevInBundle to use non-NLS strings and correct bundle name [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([fdbf0d0](https://github.com/unit-mesh/auto-dev/commit/fdbf0d0a487c847ed0df0854d0d67250fd08b867))
+- **runconfig:** remove unnecessary log statements [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([0b976e0](https://github.com/unit-mesh/auto-dev/commit/0b976e0b8638bdaff13a16896bab4c8b9de8508c))
+- **service:** fix canonicalName generation in JavaAutoTestService [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([9c4da21](https://github.com/unit-mesh/auto-dev/commit/9c4da217aea947247ff56ca061ae65e3f31d4bf9))
+- **test:** rename class and modify test case to assert null return for invalid regex pattern. ([b0d0ddf](https://github.com/unit-mesh/auto-dev/commit/b0d0ddf735669e557d6c879aa36ae57efc74a3c3))
+
+### Features
+- 222 support inlay code complete [#109](https://github.com/unit-mesh/auto-dev/issues/109) ([26f933a](https://github.com/unit-mesh/auto-dev/commit/26f933a7dbec68f3201dc55f02f5440f40ffe39b))
+- change inlay complete code trigger: use shortcut key instead of automatic ([581e56d](https://github.com/unit-mesh/auto-dev/commit/581e56de9e8121f60a0f5f1ac116c6c71faf2321))
+- clean markdown chars and remove unused brace“ ([470ec20](https://github.com/unit-mesh/auto-dev/commit/470ec20f8e00a1eeea1122b9033e6b7afcf95ceb))
+- **completion:** rename ToolHub to ToolHubVariable and update completion provider ([11cc6df](https://github.com/unit-mesh/auto-dev/commit/11cc6dfae43e6f8594777ae47c76c024b12a7b92))
+- **completion:** replace DevInsCompletionProvider with DevInsSymbolProvider [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([1dc1fa2](https://github.com/unit-mesh/auto-dev/commit/1dc1fa2313ec94cdb046f79d53a04ec96684f34a))
+- **devins-compiler:** add support for custom commands [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([fab54c0](https://github.com/unit-mesh/auto-dev/commit/fab54c0f858522bc20c395a7a2fdcc3b20d0221e))
+- **devins-compiler:** Use VariableTemplateCompiler for variable compilation [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([7b79a33](https://github.com/unit-mesh/auto-dev/commit/7b79a33e5e61d96288dc55cb0546c6e3151bd443))
+- **devins-documentation:** add support for custom variables in documentation provider [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([4911ce2](https://github.com/unit-mesh/auto-dev/commit/4911ce20aeb2bb557ee8291bd21fd42f263619d5))
+- **devins-java:** add package name completion [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([d00d5a0](https://github.com/unit-mesh/auto-dev/commit/d00d5a0c1bae501b0b6dc80bd5b2dbc26b4916d3))
+- **devins-java:** add resolveSymbol method to DevInsSymbolProvider [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([d20961f](https://github.com/unit-mesh/auto-dev/commit/d20961f579cc4b45a6bd8a7af5a04ad61f3b8e7c))
+- **devins-java:** add support for resolving symbols in Java packages [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([da3628a](https://github.com/unit-mesh/auto-dev/commit/da3628a2bd8b7f6e285e9abaa95151f1464d11e1))
+- **devins-java:** add support for retrieving module name [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([0cc6b54](https://github.com/unit-mesh/auto-dev/commit/0cc6b544fa3e0f79a2d4c91ac007cf82b0719faa))
+- **devins-lang:** add documentation provider and refactor custom agent completion ([4c8a49b](https://github.com/unit-mesh/auto-dev/commit/4c8a49b2de4a2d384378c480ca94c32deb5ecd88)), closes [#101](https://github.com/unit-mesh/auto-dev/issues/101)
+- **devins-lang:** add duplicate agent declaration inspection [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([d2df012](https://github.com/unit-mesh/auto-dev/commit/d2df0124af9c6c46525316f5508b0c08573fac8e))
+- **devins-lang:** add message filtering to console [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([db9b866](https://github.com/unit-mesh/auto-dev/commit/db9b866eba52e2f9bac66094ea4f6b752f9da02e))
+- **devins-lang:** add SHELL command and related functionality [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([d354989](https://github.com/unit-mesh/auto-dev/commit/d3549893a66b41b41d6084e1323f901b648663e6))
+- **devins-lang:** add support for execution environment customization [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([3580aa3](https://github.com/unit-mesh/auto-dev/commit/3580aa31ddb839e1e2066fd23dadc6f1edada486))
+- **devins-lang:** add support for file function autocomplete [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([1d1552a](https://github.com/unit-mesh/auto-dev/commit/1d1552aa3ae61f74d292a95163192ea4ca4c354d))
+- **devins-lang:** add support for highlighting single-line comments [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([64e5811](https://github.com/unit-mesh/auto-dev/commit/64e58117205c82eaebf37bca60dc9177be056db9))
+- **devins-lang:** add support for load custom commands in language completion [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([7a5bb37](https://github.com/unit-mesh/auto-dev/commit/7a5bb371029cf7636474f714466c80c7cf9bd6d0))
+- **devins-lang:** add support for single-line comments [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([b0740cd](https://github.com/unit-mesh/auto-dev/commit/b0740cd992534f9d8ba338c934cf9f3ea974a638))
+- **devins-lang:** add support for single-line comments [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([e24f874](https://github.com/unit-mesh/auto-dev/commit/e24f87418d315251aa0db4f4a99041a55f0ff0ff))
+- **devins-lang:** add support for system calling with identifiers and colon-separated parameters [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([37b88cf](https://github.com/unit-mesh/auto-dev/commit/37b88cfc878542dd56a88b481c7764ef0b4b70db))
+- **devins-lang:** add task creation design [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([53c09f6](https://github.com/unit-mesh/auto-dev/commit/53c09f6eb48df7c1cb82a8dc8ce95a57061c608e))
+- **devins-lang:** extract toolhub for variables [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([bb1c989](https://github.com/unit-mesh/auto-dev/commit/bb1c989d9c3451e006c50b4fb6786570b24aa62c))
+- **devins-lang:** improve dynamic run configuration creation [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([f4c33bc](https://github.com/unit-mesh/auto-dev/commit/f4c33bcccc05217c4d336992669b8b46bcb2644f))
+- **devins-lang:** refactor completion providers to use new naming convention and improve code readability. [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([98e92c9](https://github.com/unit-mesh/auto-dev/commit/98e92c9a8f7cf814914f8a2bcf8be516803dfd81))
+- **devins-lang:** refactor extract SymbolInsCommand class and remove old implementation [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([9219ac8](https://github.com/unit-mesh/auto-dev/commit/9219ac8300effce21cc0186a42592eeb6fc59988))
+- **devins-language:** add DevInsRunListener for handling run events [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([e4b4aef](https://github.com/unit-mesh/auto-dev/commit/e4b4aef8ac0d033014eb3be8b1a1a0bd5e256d66))
+- **devins-language:** add method to create DevInFile [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([59d5b23](https://github.com/unit-mesh/auto-dev/commit/59d5b236d9a00045b454ccdb285768e7a1f1c8ce))
+- **devins-language:** add support for custom agent execution [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([35cfb7b](https://github.com/unit-mesh/auto-dev/commit/35cfb7b011e2682e46943ede5a57f48d91787447))
+- **devins-language:** add support for detecting and reporting duplicate agent calls in DevInLanguage [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([c03995c](https://github.com/unit-mesh/auto-dev/commit/c03995c8c23df943e48ab87083f9513570e82d53))
+- **devins-lang:** update language bundle and related classes to use DevInBundle [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([e3b7960](https://github.com/unit-mesh/auto-dev/commit/e3b79600f0fd4dfd1458e09e878e70f00647ccbe))
+- **flow:** add support for custom flows [#109](https://github.com/unit-mesh/auto-dev/issues/109) ([4bd0b56](https://github.com/unit-mesh/auto-dev/commit/4bd0b56a0de609c08af9130a0106773442d61036))
+- **language:** add support for file function with dynamic file names [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([9dc36e5](https://github.com/unit-mesh/auto-dev/commit/9dc36e5a3950902ed7bca5d702236b551fa19029))
+- **language:** add support for tool hub variables [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([2796660](https://github.com/unit-mesh/auto-dev/commit/2796660dcd8dae37db3e9cdf974f3fa5df6ef21f))
+- **language:** improve code completion in DevIns language ([1cf4ae3](https://github.com/unit-mesh/auto-dev/commit/1cf4ae3ce2f5c594e6640d0ff3ffc079d878f15f))
+- **provider:** add DevInsCompletionProvider and modify references [#101](https://github.com/unit-mesh/auto-dev/issues/101) ([6136ed5](https://github.com/unit-mesh/auto-dev/commit/6136ed5480b6fe30125c002015cfdf8372e06376))
+
+### Reverts
+- Revert "[liujia]update some idea file to setup project in local" ([e8959a7](https://github.com/unit-mesh/auto-dev/commit/e8959a788740ff6560501d21c077cdade19c4311))
+- Revert "refactor: clean inlay model" ([93aa5a8](https://github.com/unit-mesh/auto-dev/commit/93aa5a8ff4dce4ccdb9e1e64a3318871df500f4a))
 
 ## [1.7.2](https://github.com/unit-mesh/auto-dev/compare/v1.7.1...v[1.7.2]) (2024-03-17)
 
@@ -1205,7 +1285,8 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.7.2...HEAD
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.7.3...HEAD
+[1.7.3]: https://github.com/unit-mesh/auto-dev/compare/v1.7.2...v1.7.3
 [1.7.2]: https://github.com/unit-mesh/auto-dev/compare/v1.7.1...v1.7.2
 [1.7.1]: https://github.com/unit-mesh/auto-dev/compare/v1.6.5...v1.7.1
 [1.6.5]: https://github.com/unit-mesh/auto-dev/compare/v1.6.4...v1.6.5
