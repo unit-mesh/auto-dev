@@ -35,7 +35,7 @@
   ]
 }
 
-DevInsFile ::= (used | code | TEXT_SEGMENT | NEWLINE)*
+DevInsFile ::= (used | code | TEXT_SEGMENT | NEWLINE | COMMENTS)*
 
 used ::= (
     AGENT_START AGENT_ID
