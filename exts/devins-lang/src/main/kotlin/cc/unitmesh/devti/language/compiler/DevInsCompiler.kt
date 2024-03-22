@@ -16,6 +16,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
 
+val CACHED_COMPILE_RESULT = mutableMapOf<String, DevInsCompiledResult>()
+
 class DevInsCompiler(
     private val myProject: Project,
     private val file: DevInFile,
@@ -24,13 +26,13 @@ class DevInsCompiler(
 ) {
     private var skipNextCode: Boolean = false
     private val logger = logger<DevInsCompiler>()
-    private val result = CompileResult()
+    private val result = DevInsCompiledResult()
     private val output: StringBuilder = StringBuilder()
 
     /**
      * Todo: build AST tree, then compile
      */
-    fun compile(): CompileResult {
+    fun compile(): DevInsCompiledResult {
         file.children.forEach {
             when (it.elementType) {
                 DevInTypes.TEXT_SEGMENT -> output.append(it.text)
@@ -55,6 +57,8 @@ class DevInsCompiler(
         }
 
         result.output = output.toString()
+
+        CACHED_COMPILE_RESULT[file.name] = result
         return result
     }
 

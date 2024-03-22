@@ -2,7 +2,7 @@ package cc.unitmesh.devti.language.compiler
 
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
 
-data class CompileResult(
+data class DevInsCompiledResult(
     var output: String = "",
     var isLocalCommand: Boolean = false,
     var hasError: Boolean = false,

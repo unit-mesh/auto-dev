@@ -85,6 +85,7 @@ open class DevInsRunConfigurationProfileState(
             return DefaultExecutionResult(console, processHandler)
         }
 
+        // save the run result
         val compiler = DevInsCompiler(myProject, file)
         val compileResult = compiler.compile()
 

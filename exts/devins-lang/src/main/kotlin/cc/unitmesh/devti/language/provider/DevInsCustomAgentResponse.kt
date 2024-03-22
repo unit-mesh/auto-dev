@@ -16,7 +16,6 @@ class DevInsCustomAgentResponse : AgentResponsePostProcessor {
         val devInsCompiler = DevInsCompiler(project, devInFile)
 
         val result = devInsCompiler.compile()
-
         AutoDevNotifications.notify(project, result.output)
         return result.output
     }

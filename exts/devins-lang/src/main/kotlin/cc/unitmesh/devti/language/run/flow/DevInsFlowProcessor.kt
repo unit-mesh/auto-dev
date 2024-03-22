@@ -16,7 +16,7 @@ class DevInsFlowProcessor(val project: Project) {
      */
     fun lookupFlagComment(devInFile: DevInFile): List<PsiElement> {
         val comments = mutableListOf<PsiElement>()
-        devInFile.accept(object: DevInVisitor() {
+        devInFile.accept(object : DevInVisitor() {
             override fun visitComment(comment: PsiComment) {
                 comments.add(comment)
             }
@@ -35,6 +35,7 @@ class DevInsFlowProcessor(val project: Project) {
         }
         if (event.exitCode != 0) {
             // stop
+            // call compiler to fix issue
         }
     }
 
