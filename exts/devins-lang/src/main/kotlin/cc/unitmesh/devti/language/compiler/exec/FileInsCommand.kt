@@ -38,7 +38,8 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
             val content = bytes.toString(Charsets.UTF_8)
             val fileContent = if (range != null) {
                 val subContent = try {
-                    content.substring(range.startLine, range.endLine)
+                    content.split("\n").slice(range.startLine - 1 until range.endLine)
+                        .joinToString("\n")
                 } catch (e: StringIndexOutOfBoundsException) {
                     content
                 }

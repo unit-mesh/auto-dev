@@ -3,6 +3,7 @@ package cc.unitmesh.devti.language.run.flow
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.psi.DevInVisitor
 import com.intellij.execution.process.ProcessEvent
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiComment
@@ -28,7 +29,7 @@ class DevInsFlowProcessor(val project: Project) {
      * continue get last compile result
      */
     fun process(output: String, event: ProcessEvent, scriptPath: String) {
-        val devInFile: DevInFile? = DevInFile.lookup(project, scriptPath)
+        val devInFile: DevInFile? = runReadAction { DevInFile.lookup(project, scriptPath) }
         if (event.exitCode == 0) {
             // continue
         }
