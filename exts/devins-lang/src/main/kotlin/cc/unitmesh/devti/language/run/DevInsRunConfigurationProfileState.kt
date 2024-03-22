@@ -4,6 +4,7 @@ import cc.unitmesh.devti.agent.CustomAgentExecutor
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
 import cc.unitmesh.devti.language.psi.DevInFile
+import cc.unitmesh.devti.language.run.flow.DevInsConversationService
 import cc.unitmesh.devti.language.status.DevInsRunListener
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.llms.LlmFactory
@@ -25,6 +26,7 @@ import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.panels.NonOpaquePanel
 import kotlinx.coroutines.flow.*
@@ -89,6 +91,8 @@ open class DevInsRunConfigurationProfileState(
         val compiler = DevInsCompiler(myProject, file)
         val compileResult = compiler.compile()
 
+        myProject.service<DevInsConversationService>().createConversation(configuration.getScriptPath(), compileResult)
+
         val output = compileResult.output
         val agent = compileResult.workingAgent
 
@@ -122,13 +126,17 @@ open class DevInsRunConfigurationProfileState(
             val stringFlow: Flow<String>? = CustomAgentExecutor(project = myProject).execute(output, agent)
             if (stringFlow != null) {
                 LLMCoroutineScope.scope(myProject).launch {
+                    val llmResult = StringBuilder()
                     runBlocking {
                         stringFlow.collect {
+                            llmResult.append(it)
                             console.print(it, ConsoleViewContentType.NORMAL_OUTPUT)
                         }
                     }
 
                     console.print("\nDone!", ConsoleViewContentType.SYSTEM_OUTPUT)
+                    myProject.service<DevInsConversationService>()
+                        .updateLlmResponse(configuration.getScriptPath(), llmResult.toString())
                     processHandler.detachProcess()
                 }
             }
@@ -161,13 +169,17 @@ open class DevInsRunConfigurationProfileState(
             }
 
             LLMCoroutineScope.scope(myProject).launch {
+                val llmResult = StringBuilder()
                 runBlocking {
                     llm.stream(output, "").collect {
+                        llmResult.append(it)
                         console.print(it, ConsoleViewContentType.NORMAL_OUTPUT)
                     }
                 }
 
                 console.print("\nDone!", ConsoleViewContentType.SYSTEM_OUTPUT)
+                myProject.service<DevInsConversationService>()
+                    .updateLlmResponse(configuration.getScriptPath(), llmResult.toString())
                 processHandler.detachProcess()
             }
         }

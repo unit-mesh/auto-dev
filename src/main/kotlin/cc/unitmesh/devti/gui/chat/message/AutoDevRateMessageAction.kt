@@ -18,7 +18,6 @@ enum class ChatMessageRating {
 
 abstract class AutoDevRateMessageAction : DumbAwareToggleAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
-
     abstract fun getReaction(): ChatMessageRating
     abstract fun getReactionIcon(): Icon
     abstract fun getReactionIconSelected(): Icon

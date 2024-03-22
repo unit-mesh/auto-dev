@@ -11,8 +11,8 @@ class DevInsConversationService(val project: Project) {
      */
     private val cachedConversations: MutableMap<String, DevInsConversation> = mutableMapOf()
 
-    fun createConversation(input: String, scriptPath: String): DevInsConversation {
-        val conversation = DevInsConversation(input, scriptPath, DevInsCompiledResult(), "", "")
+    fun createConversation(scriptPath: String, result: DevInsCompiledResult): DevInsConversation {
+        val conversation = DevInsConversation(scriptPath, result, "", "")
         cachedConversations[scriptPath] = conversation
         return conversation
     }
@@ -21,15 +21,9 @@ class DevInsConversationService(val project: Project) {
         return cachedConversations[scriptPath]
     }
 
-    fun updateCompiledResult(scriptPath: String, result: DevInsCompiledResult) {
+    fun updateLlmResponse(scriptPath: String, llmResponse: String) {
         cachedConversations[scriptPath]?.let {
-            cachedConversations[scriptPath] = it.copy(result = result)
-        }
-    }
-
-    fun updateApiResponse(scriptPath: String, apiResponse: String) {
-        cachedConversations[scriptPath]?.let {
-            cachedConversations[scriptPath] = it.copy(apiResponse = apiResponse)
+            cachedConversations[scriptPath] = it.copy(llmResponse = llmResponse)
         }
     }
 
@@ -38,13 +32,31 @@ class DevInsConversationService(val project: Project) {
             cachedConversations[path] = it.copy(ideOutput = ideOutput)
         }
     }
+
+    fun tryReRun(scriptPath: String) {
+        if (cachedConversations.isEmpty()) {
+            return
+        }
+
+        val conversation = cachedConversations[scriptPath] ?: return
+        if (conversation.hadReRun) {
+            return
+        }
+
+        conversation.hadReRun = true
+
+        // call llm again to re-run
+    }
 }
 
 
 data class DevInsConversation(
-    val input: String,
     val scriptPath: String,
     val result: DevInsCompiledResult,
-    val apiResponse: String,
-    val ideOutput: String
-)
+    val llmResponse: String,
+    val ideOutput: String,
+    val messages: MutableList<cc.unitmesh.devti.llms.custom.Message> = mutableListOf(),
+    var hadReRun: Boolean = false
+) {
+    // update messages when has Error or Warning
+}

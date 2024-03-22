@@ -5,6 +5,7 @@ import cc.unitmesh.devti.language.psi.DevInVisitor
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
@@ -30,12 +31,12 @@ class DevInsFlowProcessor(val project: Project) {
      */
     fun process(output: String, event: ProcessEvent, scriptPath: String) {
         val devInFile: DevInFile? = runReadAction { DevInFile.lookup(project, scriptPath) }
+        project.service<DevInsConversationService>().updateIdeOutput(scriptPath, output)
         if (event.exitCode == 0) {
             // continue
         }
         if (event.exitCode != 0) {
-            // stop
-            // call compiler to fix issue
+            project.service<DevInsConversationService>().tryReRun(scriptPath)
         }
     }
 
