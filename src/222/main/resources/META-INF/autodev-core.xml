@@ -226,11 +226,15 @@
         <action id="cc.unitmesh.devti.inlayCompleteCode"
                 class="cc.unitmesh.devti.actions.InlayCompleteCodeAction"
                 text="Inlay Complete Code"
-                description="Inlay complete code!"
-        >
+                description="Inlay complete code!" >
             <keyboard-shortcut keymap="$default" first-keystroke="control PERIOD"/>
-
             <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
+        </action>
+        <action id="cc.unitmesh.devti.disposeInlayCompleteCode"
+                class="cc.unitmesh.devti.actions.InlayCompleteCodeDisposedAction"
+                text="Disposed Inlay Complete Code"
+                description="Disposed Inlay complete code!" >
+            <keyboard-shortcut keymap="$default" first-keystroke="ESCAPE"/>
         </action>
 
         <group id="AutoDevIntentionsActionGroup" class="cc.unitmesh.devti.intentions.IntentionsActionGroup"
