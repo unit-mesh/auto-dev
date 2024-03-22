@@ -27,7 +27,7 @@ class DevInsProgramRunner : GenericProgramRunner<RunnerSettings>(), Disposable {
 
     override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor? {
         if (environment.runProfile !is DevInsConfiguration) return null
-        val devInState = environment.runProfile as DevInsRunConfigurationProfileState
+        val devInState = state as DevInsRunConfigurationProfileState
 
         FileDocumentManager.getInstance().saveAllDocuments()
 
