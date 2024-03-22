@@ -112,7 +112,6 @@ SHARP=#
 
     private IElementType comment() {
         String text = yytext().toString().trim();
-        System.out.println("comment: " + text);
         if (text.contains("[") && text.contains("]")) {
             return COMMENTS;
         } else {

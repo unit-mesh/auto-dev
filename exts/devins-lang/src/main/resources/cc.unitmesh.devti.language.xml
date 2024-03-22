@@ -42,6 +42,8 @@
         <runLineMarkerContributor language="DevIn"
                                   implementationClass="cc.unitmesh.devti.language.run.DevInsRunLineMarkersProvider"/>
 
+        <lang.commenter language="DevIn" implementationClass="cc.unitmesh.devti.language.commenter.DevInsCommenter"/>
+
         <lang.documentationProvider language="DevIn"
                                     id="devinsDocumentationProvider"
                                     implementationClass="cc.unitmesh.devti.language.documentation.DevInsDocumentationProvider"/>
