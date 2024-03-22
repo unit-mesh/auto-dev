@@ -2,10 +2,11 @@ package cc.unitmesh.devti.llms.custom
 
 import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.llms.LLMProvider
-import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.ResponseType
+import cc.unitmesh.devti.settings.coder.AutoDevCoderSettingService
 import cc.unitmesh.devti.settings.coder.coderSetting
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.flow.Flow
@@ -17,20 +18,22 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import java.time.Duration
 
+//TODO: refactor, this provider copy from CustomLLMProvider
 @Service(Service.Level.PROJECT)
-class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(project) {
-    private val autoDevSettingsState = getSetting()
-    private fun getSetting() = AutoDevSettingsState.getInstance()
-    private val url get() = autoDevSettingsState.customEngineServer
-    private val key get() = autoDevSettingsState.customEngineToken
+class InlayCustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(project) {
 
-    override val requestFormat: String get() = autoDevSettingsState.customEngineRequestFormat
-    override val responseFormat get() = autoDevSettingsState.customEngineResponseFormat
+
+    private val autoDevSettingsState = project.service<AutoDevCoderSettingService>().state
+    private val url get() = autoDevSettingsState.customEngineServerParam
+    private val key get() = autoDevSettingsState.customEngineTokenParam
+
+    override val requestFormat: String get() = autoDevSettingsState.customEngineRequestBodyFormatParam
+    override val responseFormat get() = autoDevSettingsState.customEngineResponseFormatParam
 
     private var client = OkHttpClient()
     private val timeout = Duration.ofSeconds(defaultTimeout)
     private val messages: MutableList<Message> = mutableListOf()
-    private val logger = logger<CustomLLMProvider>()
+    private val logger = logger<InlayCustomLLMProvider>()
 
     override fun clearMessage() = messages.clear()
 
@@ -64,7 +67,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(
         client = client.newBuilder().readTimeout(timeout).build()
         val call = client.newCall(builder.url(url).post(body).build())
 
-        return if (autoDevSettingsState.customEngineResponseType == ResponseType.SSE.name) {
+        return if (autoDevSettingsState.customEngineResponseTypeParam == ResponseType.SSE.name) {
             streamSSE(call, promptText)
         } else {
             streamJson(call, promptText)

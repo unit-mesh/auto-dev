@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.agent.configurable
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.custom.schema.CUSTOM_AGENT_FILE_NAME
 import cc.unitmesh.devti.fullWidthCell
 import cc.unitmesh.devti.gui.component.JsonLanguageField
 import com.intellij.openapi.Disposable
@@ -23,7 +24,8 @@ class CoUnitToolConfigurable(val project: Project) : BoundConfigurable(AutoDevBu
             val languageField = JsonLanguageField(
                 project,
                 state::agentJsonConfig.toString(),
-                AutoDevBundle.message("counit.agent.json.placeholder")
+                AutoDevBundle.message("counit.agent.json.placeholder"),
+                CUSTOM_AGENT_FILE_NAME
             )
             fullWidthCell(languageField)
                 .bind(
