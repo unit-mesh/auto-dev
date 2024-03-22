@@ -34,6 +34,6 @@ class InlayCodeCompletePromptsSchemaFileProvider(project: Project) : JsonSchemaF
     }
 
     companion object {
-        private const val inlayPromptsSchemaFile = "auto-dev-inlay-code-complete-prompt-file.json"
+        private const val inlayPromptsSchemaFile = "autodev-inlay-code-complete-prompt-file.json"
     }
 }

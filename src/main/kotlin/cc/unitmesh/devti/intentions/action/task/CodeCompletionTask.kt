@@ -89,7 +89,8 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
 
         logger.warn("Prompt: $prompt")
         LLMCoroutineScope.scope(project).launch {
-            val flow: Flow<String> = llmFactory.create(project).stream(prompt, "")
+            //TODO: check to refactor, this maybe hardcode
+            val flow: Flow<String> = llmFactory.createForInlayCodeComplete(project).stream(prompt, "")
             val suggestion = StringBuilder()
             flow.collect {
                 suggestion.append(it)

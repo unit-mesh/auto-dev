@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "spec": {
+      "type": "object",
+      "properties": {
+        "controller": {
+          "type": "string"
+        },
+        "service": {
+          "type": "string"
+        },
+        "entity": {
+          "type": "string"
+        },
+        "repository": {
+          "type": "string"
+        },
+        "ddl": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": true
+    },
+    "prompts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "autoInvoke": {
+            "type": "boolean"
+          },
+          "matchRegex": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "integer"
+          },
+          "template": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "template"
+        ]
+      }
+    },
+    "documentations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string"
+          },
+          "end": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "example": {
+            "type": "object",
+            "properties": {
+              "question": {
+                "type": "string"
+              },
+              "answer": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "question",
+              "answer"
+            ]
+          }
+        },
+        "required": [
+          "title",
+          "prompt",
+          "example"
+        ]
+      }
+    }
+  },
+  "required": [],
+  "additionalProperties": true
+}

@@ -1,11 +1,9 @@
 package cc.unitmesh.devti.settings.coder
 
-import cc.unitmesh.devti.settings.LLMParam
 import cc.unitmesh.devti.settings.MAX_TOKEN_LENGTH
 import cc.unitmesh.devti.settings.ResponseType
 import com.intellij.openapi.components.*
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.ComboBox
 
 val Project.coderSetting: AutoDevCoderSettingService
     get() = service<AutoDevCoderSettingService>()
