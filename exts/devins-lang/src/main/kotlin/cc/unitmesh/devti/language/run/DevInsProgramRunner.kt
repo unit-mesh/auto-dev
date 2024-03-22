@@ -27,18 +27,19 @@ class DevInsProgramRunner : GenericProgramRunner<RunnerSettings>(), Disposable {
 
     override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor? {
         if (environment.runProfile !is DevInsConfiguration) return null
+        val devInState = environment.runProfile as DevInsRunConfigurationProfileState
 
         FileDocumentManager.getInstance().saveAllDocuments()
 
         val result = AtomicReference<RunContentDescriptor>()
         connection.subscribe(DevInsRunListener.TOPIC, object : DevInsRunListener {
-            override fun runFinish(string: String, event: ProcessEvent) {
-                environment.project.service<DevInsFlowProcessor>().process(string, event)
+            override fun runFinish(string: String, event: ProcessEvent, scriptPath: String) {
+                environment.project.service<DevInsFlowProcessor>().process(string, event, scriptPath)
             }
         })
 
         ApplicationManager.getApplication().invokeAndWait {
-            val showRunContent = showRunContent(state.execute(environment.executor, this), environment)
+            val showRunContent = showRunContent(devInState.execute(environment.executor, this), environment)
             result.set(showRunContent)
         }
 

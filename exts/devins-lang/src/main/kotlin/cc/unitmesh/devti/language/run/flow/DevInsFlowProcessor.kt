@@ -1,16 +1,34 @@
 package cc.unitmesh.devti.language.run.flow
 
 import cc.unitmesh.devti.language.psi.DevInFile
+import cc.unitmesh.devti.language.psi.DevInVisitor
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiComment
+import com.intellij.psi.PsiElement
 
 @Service(Service.Level.PROJECT)
 class DevInsFlowProcessor(val project: Project) {
     /**
+     * The flag comment is the comment that starts with `[devins]`
+     */
+    fun lookupFlagComment(devInFile: DevInFile): List<PsiElement> {
+        val comments = mutableListOf<PsiElement>()
+        devInFile.accept(object: DevInVisitor() {
+            override fun visitComment(comment: PsiComment) {
+                comments.add(comment)
+            }
+        })
+
+        return comments
+    }
+
+    /**
      * continue get last compile result
      */
-    fun process(output: String, event: ProcessEvent) {
+    fun process(output: String, event: ProcessEvent, scriptPath: String) {
+        val devInFile: DevInFile? = DevInFile.lookup(project, scriptPath)
         if (event.exitCode == 0) {
             // continue
         }

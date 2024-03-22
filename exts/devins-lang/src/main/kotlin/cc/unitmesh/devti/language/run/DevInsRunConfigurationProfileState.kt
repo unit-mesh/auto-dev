@@ -26,8 +26,6 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.psi.PsiManager
 import com.intellij.ui.components.panels.NonOpaquePanel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -51,7 +49,8 @@ open class DevInsRunConfigurationProfileState(
         processHandler.addProcessListener(object : ProcessAdapter() {
             override fun onTextAvailable(event: ProcessEvent, outputType: com.intellij.openapi.util.Key<*>) {
                 ApplicationManager.getApplication().messageBus
-                    .syncPublisher(DevInsRunListener.TOPIC).runFinish(sb.toString(), event)
+                    .syncPublisher(DevInsRunListener.TOPIC)
+                    .runFinish(sb.toString(), event, configuration.getScriptPath())
             }
         })
 

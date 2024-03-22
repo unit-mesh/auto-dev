@@ -6,7 +6,7 @@ import java.util.*
 
 @FunctionalInterface
 interface DevInsRunListener : EventListener {
-    fun runFinish(string: String, event: ProcessEvent)
+    fun runFinish(string: String, event: ProcessEvent, scriptPath: String)
 
     companion object {
         @Topic.AppLevel
