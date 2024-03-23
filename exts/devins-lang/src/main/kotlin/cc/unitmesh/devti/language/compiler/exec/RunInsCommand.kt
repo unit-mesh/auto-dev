@@ -10,20 +10,20 @@ import com.intellij.psi.PsiManager
  * The `RunAutoCommand` class is responsible for executing an auto command on a given project.
  *
  * @property myProject The project to execute the auto command on.
- * @property prop The name of the file to find and run tests for.
+ * @property argument The name of the file to find and run tests for.
  *
  */
-class RunInsCommand(val myProject: Project, val prop: String) : InsCommand {
+class RunInsCommand(val myProject: Project, private val argument: String) : InsCommand {
     override suspend fun execute(): String? {
-        val virtualFile = myProject.lookupFile(prop.trim()) ?: return "<DevInsError>: File not found: $prop"
+        val virtualFile = myProject.lookupFile(argument.trim()) ?: return "<DevInsError>: File not found: $argument"
         try {
             val psiFile: PsiFile =
-                PsiManager.getInstance(myProject).findFile(virtualFile) ?: return "<DevInsError>: File not found: $prop"
+                PsiManager.getInstance(myProject).findFile(virtualFile) ?: return "<DevInsError>: File not found: $argument"
             val testService =
-                AutoTestService.context(psiFile) ?: return "<DevInsError>: No test service found for file: $prop"
+                AutoTestService.context(psiFile) ?: return "<DevInsError>: No test service found for file: $argument"
             testService.runFile(myProject, virtualFile)
 
-            return "Running tests for file: $prop"
+            return "Running tests for file: $argument"
         } catch (e: Exception) {
             return "<DevInsError>: ${e.message}"
         }
