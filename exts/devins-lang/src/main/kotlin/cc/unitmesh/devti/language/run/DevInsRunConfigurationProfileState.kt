@@ -11,7 +11,6 @@ import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.util.LLMCoroutineScope
 import com.intellij.build.process.BuildProcessHandler
 import com.intellij.execution.DefaultExecutionResult
-import com.intellij.execution.ExecutionException
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
@@ -28,6 +27,7 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Key
 import com.intellij.ui.components.panels.NonOpaquePanel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -43,13 +43,13 @@ open class DevInsRunConfigurationProfileState(
     private val llm: LLMProvider = LlmFactory.instance.create(myProject)
 
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult {
-        val processHandler: ProcessHandler = createProcessHandler(configuration.name)
+        val processHandler: DevInsProcessBuilder = DevInsProcessBuilder(configuration.name)
         ProcessTerminatedListener.attach(processHandler)
 
         val sb = StringBuilder()
 
         processHandler.addProcessListener(object : ProcessAdapter() {
-            override fun onTextAvailable(event: ProcessEvent, outputType: com.intellij.openapi.util.Key<*>) {
+            override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
                 ApplicationManager.getApplication().messageBus
                     .syncPublisher(DevInsRunListener.TOPIC)
                     .runFinish(sb.toString(), event, configuration.getScriptPath())
@@ -96,6 +96,22 @@ open class DevInsRunConfigurationProfileState(
         val output = compileResult.output
         val agent = compileResult.workingAgent
 
+        output.split("\n").forEach {
+            if (it.contains("<DevInsError>")) {
+                console.print(it, ConsoleViewContentType.LOG_ERROR_OUTPUT)
+            } else {
+                console.print(it, ConsoleViewContentType.USER_INPUT)
+            }
+            console.print("\n", ConsoleViewContentType.NORMAL_OUTPUT)
+        }
+
+        console.print("\n--------------------\n", ConsoleViewContentType.NORMAL_OUTPUT)
+        // throw error if contains any <DevInsError>
+        if (output.contains("<DevInsError>")) {
+            processHandler.exitWithError()
+            return DefaultExecutionResult(console, processHandler)
+        }
+
         if (agent != null) {
             agentRun(output, console, processHandler, agent)
         } else {
@@ -111,17 +127,6 @@ open class DevInsRunConfigurationProfileState(
         processHandler: ProcessHandler,
         agent: CustomAgentConfig
     ) {
-        output.split("\n").forEach {
-            if (it.contains("<DevInsError>")) {
-                console.print(it, ConsoleViewContentType.LOG_ERROR_OUTPUT)
-            } else {
-                console.print(it, ConsoleViewContentType.USER_INPUT)
-            }
-            console.print("\n", ConsoleViewContentType.NORMAL_OUTPUT)
-        }
-
-        console.print("\n--------------------\n", ConsoleViewContentType.NORMAL_OUTPUT)
-
         ApplicationManager.getApplication().invokeLater {
             val stringFlow: Flow<String>? = CustomAgentExecutor(project = myProject).execute(output, agent)
             if (stringFlow != null) {
@@ -149,18 +154,6 @@ open class DevInsRunConfigurationProfileState(
         processHandler: ProcessHandler,
         isLocalMode: Boolean
     ) {
-        // contains <DevInsError> means error
-        output.split("\n").forEach {
-            if (it.contains("<DevInsError>")) {
-                console.print(it, ConsoleViewContentType.LOG_ERROR_OUTPUT)
-            } else {
-                console.print(it, ConsoleViewContentType.USER_INPUT)
-            }
-            console.print("\n", ConsoleViewContentType.NORMAL_OUTPUT)
-        }
-
-        console.print("\n--------------------\n", ConsoleViewContentType.NORMAL_OUTPUT)
-
         ApplicationManager.getApplication().invokeLater {
             if (isLocalMode) {
                 console.print("Local command detected, running in local mode", ConsoleViewContentType.SYSTEM_OUTPUT)
@@ -184,13 +177,14 @@ open class DevInsRunConfigurationProfileState(
             }
         }
     }
+}
 
-    @Throws(ExecutionException::class)
-    private fun createProcessHandler(myExecutionName: String): ProcessHandler = object : BuildProcessHandler() {
-        override fun detachIsDefault(): Boolean = false
-        override fun destroyProcessImpl() = Unit
-        override fun detachProcessImpl() = notifyProcessTerminated(0)
-        override fun getProcessInput(): OutputStream? = null
-        override fun getExecutionName(): String = myExecutionName
-    }
+class DevInsProcessBuilder(private val myExecutionName: String) : BuildProcessHandler() {
+    override fun detachIsDefault(): Boolean = false
+    override fun destroyProcessImpl() = Unit
+    override fun detachProcessImpl() = notifyProcessTerminated(0)
+    fun exitWithError() = notifyProcessTerminated(-1)
+
+    override fun getProcessInput(): OutputStream? = null
+    override fun getExecutionName(): String = myExecutionName
 }
