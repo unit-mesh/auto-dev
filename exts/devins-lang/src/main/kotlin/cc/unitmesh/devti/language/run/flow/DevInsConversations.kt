@@ -1,11 +1,18 @@
 package cc.unitmesh.devti.language.run.flow
 
+import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.language.compiler.DevInsCompiledResult
+import cc.unitmesh.devti.llms.LLMProvider
+import cc.unitmesh.devti.llms.LlmFactory
+import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 
 @Service(Service.Level.PROJECT)
 class DevInsConversationService(val project: Project) {
+    private val llm: LLMProvider = LlmFactory.instance.create(project)
+
     /**
      * The cached conversations
      */
@@ -63,13 +70,47 @@ class DevInsConversationService(val project: Project) {
 
         conversation.hadReRun = true
         // call llm again to re-run
+
+        val prompt = StringBuilder()
+
+        // todo: refactor to DevIn template file
+        if (conversation.compiledResult.isLocalCommand) {
+            prompt.append("You are a top software developer in the world, which can help me to fix the issue.\n")
+            prompt.append("When I use DevIn language and compile the script, I got an error, can you help me to fix it?\n")
+            prompt.append("Origin DevIn script:\n")
+            prompt.append("```devin\n")
+            prompt.append(conversation.compiledResult.input)
+            prompt.append("```\n")
+
+            prompt.append("The Compile Result:\n")
+            prompt.append("####\n")
+            prompt.append(conversation.compiledResult.output)
+            prompt.append("####\n")
+        }
+
+        prompt.append("""
+            Here is the run result, can you help me to fix it?
+            Run result:
+            ####
+            ${conversation.ideOutput}
+            ####
+            """.trimIndent()
+        )
+
+        val finalPrompt = prompt.toString()
+        sendToChatWindow(project, ChatActionType.CHAT) { panel, service ->
+            service.handlePromptAndResponse(panel, object : ContextPrompter() {
+                override fun displayPrompt(): String = finalPrompt
+                override fun requestPrompt(): String = finalPrompt
+            }, null, true)
+        }
     }
 }
 
 
 data class DevInsConversation(
     val scriptPath: String,
-    val result: DevInsCompiledResult,
+    val compiledResult: DevInsCompiledResult,
     val llmResponse: String,
     val ideOutput: String,
     val messages: MutableList<cc.unitmesh.devti.llms.custom.Message> = mutableListOf(),

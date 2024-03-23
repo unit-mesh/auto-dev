@@ -34,6 +34,7 @@ class DevInsCompiler(
      * Todo: build AST tree, then compile
      */
     fun compile(): DevInsCompiledResult {
+        result.input = file.text
         file.children.forEach {
             when (it.elementType) {
                 DevInTypes.TEXT_SEGMENT -> output.append(it.text)

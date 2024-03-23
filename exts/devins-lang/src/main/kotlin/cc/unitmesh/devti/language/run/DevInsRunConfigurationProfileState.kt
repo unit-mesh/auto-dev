@@ -29,7 +29,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.ui.components.panels.NonOpaquePanel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.awt.BorderLayout
@@ -49,12 +49,18 @@ open class DevInsRunConfigurationProfileState(
         val sb = StringBuilder()
 
         processHandler.addProcessListener(object : ProcessAdapter() {
+            var result = ""
             override fun processTerminated(event: ProcessEvent) {
                 super.processTerminated(event)
 
                 ApplicationManager.getApplication().messageBus
                     .syncPublisher(DevInsRunListener.TOPIC)
-                    .runFinish(sb.toString(), event, configuration.getScriptPath())
+                    .runFinish(result, event, configuration.getScriptPath())
+            }
+
+            override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
+                super.onTextAvailable(event, outputType)
+                result = sb.toString()
             }
         })
 
@@ -108,6 +114,7 @@ open class DevInsRunConfigurationProfileState(
         }
 
         console.print("\n--------------------\n", ConsoleViewContentType.NORMAL_OUTPUT)
+
         // throw error if contains any <DevInsError>
         if (output.contains("<DevInsError>")) {
             processHandler.exitWithError()
@@ -166,7 +173,7 @@ open class DevInsRunConfigurationProfileState(
             LLMCoroutineScope.scope(myProject).launch {
                 val llmResult = StringBuilder()
                 runBlocking {
-                    llm.stream(output, "").collect {
+                    llm.stream(output, "", false).collect {
                         llmResult.append(it)
                         console.print(it, ConsoleViewContentType.NORMAL_OUTPUT)
                     }
