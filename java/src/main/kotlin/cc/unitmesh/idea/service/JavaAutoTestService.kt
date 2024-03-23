@@ -29,11 +29,6 @@ class JavaAutoTestService : AutoTestService() {
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = GradleRunConfiguration::class.java
     override fun isApplicable(element: PsiElement): Boolean = element.language is JavaLanguage
 
-    override fun createConfiguration(project: Project, path: String): RunConfiguration? {
-        val file = LocalFileSystem.getInstance().refreshAndFindFileByPath(path)
-        return file?.let { createConfiguration(project, it) }
-    }
-
     override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
         val name = virtualFile.name
 

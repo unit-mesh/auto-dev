@@ -12,7 +12,6 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import org.jetbrains.concurrency.resolvedPromise
 
 interface RunService {
     private val logger: Logger get() = logger<RunService>()
@@ -26,8 +25,6 @@ interface RunService {
     fun runConfigurationClass(project: Project): Class<out RunProfile>?
 
     fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? = null
-
-    fun createConfiguration(project: Project, path: String): RunConfiguration? = null
 
     fun runFile(project: Project, virtualFile: VirtualFile): String? {
         val runManager = RunManager.getInstance(project)
