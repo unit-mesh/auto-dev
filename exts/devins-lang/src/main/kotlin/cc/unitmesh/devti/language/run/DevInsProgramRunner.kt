@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.run
 
-import cc.unitmesh.devti.language.run.flow.DevInsFlowProcessor
+import cc.unitmesh.devti.language.run.flow.DevInsProcessProcessor
 import cc.unitmesh.devti.language.status.DevInsRunListener
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.configurations.RunProfileState
@@ -34,7 +34,7 @@ class DevInsProgramRunner : GenericProgramRunner<RunnerSettings>(), Disposable {
         val result = AtomicReference<RunContentDescriptor>()
         connection.subscribe(DevInsRunListener.TOPIC, object : DevInsRunListener {
             override fun runFinish(string: String, event: ProcessEvent, scriptPath: String) {
-                environment.project.service<DevInsFlowProcessor>().process(string, event, scriptPath)
+                environment.project.service<DevInsProcessProcessor>().process(string, event, scriptPath)
             }
         })
 

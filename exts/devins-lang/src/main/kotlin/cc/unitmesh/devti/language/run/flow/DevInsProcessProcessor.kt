@@ -16,7 +16,7 @@ import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.psi.psiUtil.startOffset
 
 @Service(Service.Level.PROJECT)
-class DevInsFlowProcessor(val project: Project) {
+class DevInsProcessProcessor(val project: Project) {
     /**
      * This function takes a DevInFile as input and returns a list of PsiElements that are comments.
      * It iterates through the DevInFile and adds any comments it finds to the list.

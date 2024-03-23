@@ -3,28 +3,24 @@ package cc.unitmesh.devti.language.run.flow
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.language.compiler.DevInsCompiledResult
-import cc.unitmesh.devti.llms.LLMProvider
-import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 
 @Service(Service.Level.PROJECT)
 class DevInsConversationService(val project: Project) {
-    private val llm: LLMProvider = LlmFactory.instance.create(project)
-
     /**
      * The cached conversations
      */
-    private val cachedConversations: MutableMap<String, DevInsConversation> = mutableMapOf()
+    private val cachedConversations: MutableMap<String, DevInsProcessContext> = mutableMapOf()
 
-    fun createConversation(scriptPath: String, result: DevInsCompiledResult): DevInsConversation {
-        val conversation = DevInsConversation(scriptPath, result, "", "")
+    fun createConversation(scriptPath: String, result: DevInsCompiledResult): DevInsProcessContext {
+        val conversation = DevInsProcessContext(scriptPath, result, "", "")
         cachedConversations[scriptPath] = conversation
         return conversation
     }
 
-    fun getConversation(scriptPath: String): DevInsConversation? {
+    fun getConversation(scriptPath: String): DevInsProcessContext? {
         return cachedConversations[scriptPath]
     }
 
@@ -111,16 +107,4 @@ class DevInsConversationService(val project: Project) {
             }, null, true)
         }
     }
-}
-
-
-data class DevInsConversation(
-    val scriptPath: String,
-    val compiledResult: DevInsCompiledResult,
-    val llmResponse: String,
-    val ideOutput: String,
-    val messages: MutableList<cc.unitmesh.devti.llms.custom.Message> = mutableListOf(),
-    var hadReRun: Boolean = false
-) {
-    // update messages when has Error or Warning
 }
