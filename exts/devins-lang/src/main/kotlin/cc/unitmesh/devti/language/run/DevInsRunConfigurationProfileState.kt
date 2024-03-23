@@ -49,7 +49,9 @@ open class DevInsRunConfigurationProfileState(
         val sb = StringBuilder()
 
         processHandler.addProcessListener(object : ProcessAdapter() {
-            override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
+            override fun processTerminated(event: ProcessEvent) {
+                super.processTerminated(event)
+
                 ApplicationManager.getApplication().messageBus
                     .syncPublisher(DevInsRunListener.TOPIC)
                     .runFinish(sb.toString(), event, configuration.getScriptPath())
