@@ -3,6 +3,7 @@ package cc.unitmesh.devti.provider
 import com.intellij.execution.ExecutionManager
 import com.intellij.execution.Executor
 import com.intellij.execution.RunManager
+import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.executors.DefaultRunExecutor
@@ -26,7 +27,17 @@ interface RunService {
 
     fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? = null
 
-    fun runFile(project: Project, virtualFile: VirtualFile): String? {
+    /**
+     * Creates a new run configuration settings for the given project and virtual file.
+     *
+     * If a configuration with the same name already exists, it will be returned.
+     * Otherwise, a new configuration is created and added to the run manager.
+     *
+     * @param project The project for which the configuration should be created.
+     * @param virtualFile The virtual file for which the configuration should be created.
+     * @return The created or found run configuration settings, or `null` if no suitable configuration could be
+     */
+    fun createRunSettings(project: Project, virtualFile: VirtualFile): RunnerAndConfigurationSettings? {
         val runManager = RunManager.getInstance(project)
         var testConfig = runManager.allConfigurationsList.firstOrNull {
             val runConfigureClass = runConfigurationClass(project)
@@ -58,6 +69,19 @@ interface RunService {
 
         runManager.selectedConfiguration = settings
 
+        return settings
+    }
+
+    /**
+     * This function is responsible for running a file within a specified project and virtual file.
+     * It creates a run configuration using the provided parameters and then attempts to execute it using the `ExecutionManager`. The function returns `null` if an error occurs during the configuration creation or execution process.
+     *
+     * @param project The project within which the file is to be run.
+     * @param virtualFile The virtual file that represents the file to be run.
+     * @return The result of the run operation, or `null` if an error occurred.
+     */
+    fun runFile(project: Project, virtualFile: VirtualFile): String? {
+        val settings = createRunSettings(project, virtualFile) ?: return null
         val executor: Executor = DefaultRunExecutor.getRunExecutorInstance()
         val builder = ExecutionEnvironmentBuilder.createOrNull(executor, settings) ?: return null
 
