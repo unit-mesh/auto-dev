@@ -33,10 +33,13 @@ class DevInsFlowProcessor(val project: Project) {
         val devInFile: DevInFile? = runReadAction { DevInFile.lookup(project, scriptPath) }
         project.service<DevInsConversationService>().updateIdeOutput(scriptPath, output)
         if (event.exitCode == 0) {
-            // continue
+            val lookUpFlagComment = lookupFlagComment(devInFile!!)
+            if (lookUpFlagComment.isNotEmpty()) {
+                // TODO
+            }
         }
         if (event.exitCode != 0) {
-            project.service<DevInsConversationService>().tryReRun(scriptPath)
+            project.service<DevInsConversationService>().tryFixWithLlm(scriptPath)
         }
     }
 

@@ -21,19 +21,37 @@ class DevInsConversationService(val project: Project) {
         return cachedConversations[scriptPath]
     }
 
+    /**
+     * Updates the LLM response for a given script path in the cached conversations.
+     * If the script path exists in the cached conversations, the LLM response is updated with the provided value.
+     *
+     * @param scriptPath The script path for which the LLM response needs to be updated.
+     * @param llmResponse The new LLM response to be updated for the given script path.
+     */
     fun updateLlmResponse(scriptPath: String, llmResponse: String) {
         cachedConversations[scriptPath]?.let {
             cachedConversations[scriptPath] = it.copy(llmResponse = llmResponse)
         }
     }
 
+    /**
+     * Updates the IDE output for a conversation at the specified path.
+     *
+     * @param path The path of the conversation to update.
+     * @param ideOutput The new IDE output to set for the conversation.
+     */
     fun updateIdeOutput(path: String, ideOutput: String) {
         cachedConversations[path]?.let {
             cachedConversations[path] = it.copy(ideOutput = ideOutput)
         }
     }
 
-    fun tryReRun(scriptPath: String) {
+    /**
+     * Function to try re-running a conversation script.
+     *
+     * @param scriptPath The path of the script to re-run
+     */
+    fun tryFixWithLlm(scriptPath: String) {
         if (cachedConversations.isEmpty()) {
             return
         }
@@ -44,7 +62,6 @@ class DevInsConversationService(val project: Project) {
         }
 
         conversation.hadReRun = true
-
         // call llm again to re-run
     }
 }
