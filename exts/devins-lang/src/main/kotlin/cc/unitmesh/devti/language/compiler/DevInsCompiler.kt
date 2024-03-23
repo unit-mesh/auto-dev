@@ -15,6 +15,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
+import kotlinx.coroutines.runBlocking
 
 val CACHED_COMPILE_RESULT = mutableMapOf<String, DevInsCompiledResult>()
 
@@ -204,7 +205,7 @@ class DevInsCompiler(
             }
         }
 
-        val execResult = command.execute()
+        val execResult = runBlocking { command.execute() }
 
         val isSucceed = execResult?.contains("<DevInsError>") == false
         val result = if (isSucceed) {

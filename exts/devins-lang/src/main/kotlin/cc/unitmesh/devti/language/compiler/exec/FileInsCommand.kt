@@ -17,7 +17,7 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
     private val logger = logger<FileInsCommand>()
     private val output = StringBuilder()
 
-    override fun execute(): String? {
+    override suspend fun execute(): String? {
         val range: LineInfo? = LineInfo.fromString(prop)
 
         // prop name can be src/file.name#L1-L2

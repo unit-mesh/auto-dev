@@ -7,7 +7,7 @@ import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
 
 class FileFuncInsCommand(val myProject: Project, val prop: String) : InsCommand {
-    override fun execute(): String? {
+    override suspend fun execute(): String? {
         val (functionName, args) = parseRegex(prop)
             ?: return """<DevInsError>: file-func is not in the format @file-func:<functionName>(<arg1>, <arg2>, ...)
             |Example: @file-func:regex(".*\.kt")

@@ -9,7 +9,7 @@ import com.intellij.sh.run.ShRunner
  * https://plugins.jetbrains.com/docs/intellij/execution.html#configuration-classes
  */
 class ShellInsCommand(val myProject: Project, val prop: String) : InsCommand {
-    override fun execute(): String? {
+    override suspend fun execute(): String? {
         val virtualFile = myProject.lookupFile(prop.trim()) ?: return "<DevInsError>: File not found: $prop"
 
         val workingDirectory = virtualFile.parent.path

@@ -14,7 +14,7 @@ import com.intellij.psi.PsiManager
  *
  */
 class RunInsCommand(val myProject: Project, val prop: String) : InsCommand {
-    override fun execute(): String? {
+    override suspend fun execute(): String? {
         val virtualFile = myProject.lookupFile(prop.trim()) ?: return "<DevInsError>: File not found: $prop"
         try {
             val psiFile: PsiFile =

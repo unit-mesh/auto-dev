@@ -10,7 +10,7 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiManager
 
 class WriteInsCommand(val myProject: Project, val prop: String, val content: String) : InsCommand {
-    override fun execute(): String? {
+    override suspend fun execute(): String? {
         val content = Code.parse(content).text
 
         val range: LineInfo? = LineInfo.fromString(prop)

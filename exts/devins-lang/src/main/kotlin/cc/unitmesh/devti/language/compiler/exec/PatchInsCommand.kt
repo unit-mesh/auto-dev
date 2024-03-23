@@ -12,7 +12,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.containers.MultiMap
 
 class PatchInsCommand(val myProject: Project, val prop: String, val codeContent: String) : InsCommand {
-    override fun execute(): String? {
+    override suspend fun execute(): String? {
         FileDocumentManager.getInstance().saveAllDocuments()
 
         val shelfExecutor = ApplyPatchDefaultExecutor(myProject)

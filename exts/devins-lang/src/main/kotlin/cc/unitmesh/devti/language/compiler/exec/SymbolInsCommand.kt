@@ -5,7 +5,7 @@ import com.intellij.openapi.project.Project
 
 class SymbolInsCommand(val myProject: Project, val prop: String) :
     InsCommand {
-    override fun execute(): String {
+    override suspend fun execute(): String {
         val result = DevInsSymbolProvider.all().mapNotNull {
             val found = it.resolveSymbol(myProject, prop)
             if (found.isEmpty()) return@mapNotNull null

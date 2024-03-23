@@ -7,7 +7,7 @@ import com.intellij.openapi.vcs.changes.ChangeListManager
 import com.intellij.openapi.vcs.changes.LocalChangeList
 
 class CommitInsCommand(val myProject: Project, val code: String) : InsCommand {
-    override fun execute(): String {
+    override suspend fun execute(): String {
         val commitMsg = Code.parse(code).text
 
         val changeListManager = ChangeListManager.getInstance(myProject)

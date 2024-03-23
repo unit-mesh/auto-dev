@@ -25,7 +25,7 @@ import java.util.concurrent.CompletableFuture
  *
  */
 class RevInsCommand(private val myProject: Project, private val revision: String) : InsCommand {
-    override fun execute(): String? {
+    override suspend fun execute(): String? {
         val repository = GitRepositoryManager.getInstance(myProject).repositories.firstOrNull() ?: return null
         val future = CompletableFuture<List<Change>>()
 
