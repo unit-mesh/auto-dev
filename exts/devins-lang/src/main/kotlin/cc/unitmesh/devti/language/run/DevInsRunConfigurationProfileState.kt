@@ -29,7 +29,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.ui.components.panels.NonOpaquePanel
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.awt.BorderLayout
@@ -43,7 +43,7 @@ open class DevInsRunConfigurationProfileState(
     private val llm: LLMProvider = LlmFactory.instance.create(myProject)
 
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult {
-        val processHandler: DevInsProcessBuilder = DevInsProcessBuilder(configuration.name)
+        val processHandler = DevInsProcessBuilder(configuration.name)
         ProcessTerminatedListener.attach(processHandler)
 
         val sb = StringBuilder()
