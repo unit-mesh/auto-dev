@@ -28,7 +28,8 @@
 [DevIns — AI Agent language for AutoDevelopment →](https://ide.unitmesh.cc/devins) which you can use follow syntax as
 bridges for Human-AI-IDE:
 
-    /write:src/main/java/com/example/Controller.java#L1-L12
+    /write:src/main/java/cc/unitmesh/Controller.java#L1-L12
+
     ```java
     public class Controller {
         public void method() {
@@ -36,6 +37,8 @@ bridges for Human-AI-IDE:
         }
     }
     ```
+
+With built-in syntax highlighting and auto-completion, you can use DevIns as next-generation AI Agent language.
 
 ## AutoDev Architecture
 

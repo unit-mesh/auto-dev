@@ -32,6 +32,7 @@ ScreenShot
 - `/commit`: commit changes to git
 - `/symbol`: get child by symbol, like get Class by package name, format: `java.lang.String#length`,
   example: `<package>.<class>#<method>`
+- `/shell`: run shell command, like `ls`, `pwd`, etc.
 
 ### File Command
 
