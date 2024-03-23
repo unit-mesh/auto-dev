@@ -8,18 +8,18 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiManager
 
-class WriteInsCommand(val myProject: Project, val prop: String, val content: String) : InsCommand {
+class WriteInsCommand(val myProject: Project, val argument: String, val content: String) : InsCommand {
     override suspend fun execute(): String? {
         val content = Code.parse(content).text
 
-        val range: LineInfo? = LineInfo.fromString(prop)
-        val filename = prop.split("#")[0]
+        val range: LineInfo? = LineInfo.fromString(argument)
+        val filename = argument.split("#")[0]
 
-        val virtualFile = myProject.lookupFile(filename) ?: return "<DevInsError>: File not found: $prop"
+        val virtualFile = myProject.lookupFile(filename) ?: return "<DevInsError>: File not found: $argument"
         val psiFile = PsiManager.getInstance(myProject).findFile(virtualFile)
-            ?: return "<DevInsError>: File not found: $prop"
+            ?: return "<DevInsError>: File not found: $argument"
         val document = PsiDocumentManager.getInstance(myProject).getDocument(psiFile)
-            ?: return "<DevInsError>: File not found: $prop"
+            ?: return "<DevInsError>: File not found: $argument"
 
         val resultMsg = WriteAction.computeAndWait<String, Throwable> {
             val startLine = range?.startLine ?: 0
@@ -34,7 +34,7 @@ class WriteInsCommand(val myProject: Project, val prop: String, val content: Str
                 return@computeAndWait "<DevInsError>: ${e.message}"
             }
 
-            return@computeAndWait "Writing to file: $prop"
+            return@computeAndWait "Writing to file: $argument"
         }
 
         return resultMsg

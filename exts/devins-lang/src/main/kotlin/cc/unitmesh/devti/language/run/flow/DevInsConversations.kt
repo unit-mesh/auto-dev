@@ -75,20 +75,26 @@ class DevInsConversationService(val project: Project) {
 
         // todo: refactor to DevIn template file
         if (conversation.compiledResult.isLocalCommand) {
-            prompt.append("You are a top software developer in the world, which can help me to fix the issue.\n")
-            prompt.append("When I use DevIn language and compile the script, I got an error, can you help me to fix it?\n")
-            prompt.append("Origin DevIn script:\n")
-            prompt.append("```devin\n")
-            prompt.append(conversation.compiledResult.input)
-            prompt.append("```\n")
-
-            prompt.append("The Compile Result:\n")
-            prompt.append("####\n")
-            prompt.append(conversation.compiledResult.output)
-            prompt.append("####\n")
+            prompt.append(
+                """
+                You are a top software developer in the world, which can help me to fix the issue.
+                When I use shell-like language and compile the script, I got an error, can you help me to fix it?
+                
+                Origin script:
+                ```devin
+                ${conversation.compiledResult.input}
+                ```
+                
+                Script with result:
+                ####
+                ${conversation.compiledResult.output}
+                ####
+                """.trimIndent()
+            )
         }
 
-        prompt.append("""
+        prompt.append(
+            """
             Here is the run result, can you help me to fix it?
             Run result:
             ####
