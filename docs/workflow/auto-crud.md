@@ -5,6 +5,11 @@ nav_order: 1
 parent: Workflow
 ---
 
+Required plugin:
+
+Java
+{: .label .label-yellow }
+
 Demo Video: [https://www.bilibili.com/video/BV1Ye411h7Qu/](https://www.bilibili.com/video/BV1Ye411h7Qu/)
 
 Follow: [AutoDev for CRUD (Java) ](/features/auto-dev)

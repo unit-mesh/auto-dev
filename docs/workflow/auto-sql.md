@@ -5,6 +5,11 @@ nav_order: 2
 parent: Workflow
 ---
 
+required:
+
+Database Tools and SQL
+{: .label .label-yellow }
+
 Demo Video: [https://www.bilibili.com/video/BV1Ye411h7Qu/](https://www.bilibili.com/video/BV1Ye411h7Qu/)
 
 implementation: [cc.unitmesh.database.flow.AutoSqlFlow](
