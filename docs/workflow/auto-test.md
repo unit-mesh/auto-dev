@@ -1,17 +1,26 @@
 ---
 layout: default
-title: AutoTest Design
-nav_order: 11
+title: AutoTest
+nav_order: 5
 parent: Development
 ---
 
 # AutoTest Design
 
-## Basic Rule
+## Design Principle 
+
+Create rule:
 
 - if test code exists and LLM returns with import syntax, AutoDev will replace all code.
 - if test code exists and LLM returns with no import syntax, AutoDev will insert test code after the last import statement.
 - if test code does not exist, AutoDev will insert test code.
+
+Run rule:
+
+- if run configuration exists, AutoDev will create a new run configuration.
+- if run configuration does not exist, AutoDev will create a new run configuration.
+
+For more, see in [AutoTestService](https://github.com/unit-mesh/auto-dev/blob/master/src/main/kotlin/cc/unitmesh/devti/provider/AutoTestService.kt) 
 
 ## Test Prompts
 
