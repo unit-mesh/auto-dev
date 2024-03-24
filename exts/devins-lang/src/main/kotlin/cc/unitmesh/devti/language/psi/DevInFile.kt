@@ -21,6 +21,9 @@ class DevInFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, DevI
     override fun getStub(): DevInFileStub? = super.getStub() as DevInFileStub?
 
     companion object {
+        /**
+         * Create a temp DevInFile from a string.
+         */
         fun fromString(project: Project, text: String): DevInFile {
             val filename = "DevIns-${UUID.randomUUID()}.devin"
             val devInFile = PsiFileFactory.getInstance(project)

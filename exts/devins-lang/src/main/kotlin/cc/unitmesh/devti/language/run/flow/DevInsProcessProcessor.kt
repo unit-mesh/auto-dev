@@ -2,10 +2,12 @@ package cc.unitmesh.devti.language.run.flow
 
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatWindow
+import cc.unitmesh.devti.language.DevInLanguage
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.psi.DevInVisitor
 import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.util.parser.Code
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service
@@ -52,6 +54,14 @@ class DevInsProcessProcessor(val project: Project) {
         val devInFile: DevInFile? = runReadAction { DevInFile.lookup(project, scriptPath) }
         project.service<DevInsConversationService>().updateIdeOutput(scriptPath, output)
 
+        val llmResponse = project.service<DevInsConversationService>().getLlmResponse(scriptPath)
+        val code = Code.parse(llmResponse)
+        if (code.language == DevInLanguage.INSTANCE) {
+            val devInCode = code.text
+            val file = DevInFile.fromString(project, devInCode)
+            runTask(file)
+        }
+
         when {
             event.exitCode == 0 -> {
                 val comment = lookupFlagComment(devInFile!!).firstOrNull() ?: return
@@ -70,7 +80,7 @@ class DevInsProcessProcessor(val project: Project) {
         }
     }
 
-    private fun runTask(newScript: DevInFile) {
+    fun runTask(newScript: DevInFile) {
         val compiledResult = DevInsCompiler(project, newScript).compile()
         val prompt = compiledResult.output
 

@@ -107,4 +107,8 @@ class DevInsConversationService(val project: Project) {
             }, null, true)
         }
     }
+
+    fun getLlmResponse(scriptPath: String): String {
+        return cachedConversations[scriptPath]?.llmResponse ?: ""
+    }
 }
