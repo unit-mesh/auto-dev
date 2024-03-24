@@ -103,12 +103,4 @@ class DevInsProcessProcessor(val project: Project) {
     fun createAgentTasks(): List<DevInFile> {
         TODO()
     }
-
-    /**
-     * Generate DevIns Task file by LLM
-     */
-    fun createTempTaskFile(): DevInFile {
-        // TODO
-        return DevInFile.fromString(project, "")
-    }
 }

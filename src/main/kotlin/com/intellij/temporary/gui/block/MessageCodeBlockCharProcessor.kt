@@ -10,10 +10,8 @@ class Parameters(val char: Char, val charIndex: Int, val fullMessage: String)
 class ContextChange(@JvmField val contextType: MessageBlockType, @JvmField val borderType: BorderType)
 
 class MessageCodeBlockCharProcessor {
-    companion object {
-        const val triggerChar: Char = '`'
-        const val borderBlock: String = "```"
-    }
+    private val triggerChar: Char = '`'
+    private val borderBlock: String = "```"
 
     fun suggestTypeChange(
         parameters: Parameters,
@@ -52,10 +50,12 @@ class MessageCodeBlockCharProcessor {
                 val subSequence = fullMessage.subSequence(charIndex - 3, charIndex + 1)
                 subSequence == "\n$borderBlock"
             }
+
             parameters.char == '\n' && (charIndex - 3) - 1 >= 0 -> {
                 val subSequence = fullMessage.subSequence(charIndex - 4, charIndex)
                 subSequence == "\n$borderBlock"
             }
+
             else -> false
         }
     }
