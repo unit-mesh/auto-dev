@@ -19,6 +19,8 @@ import org.jetbrains.kotlin.psi.psiUtil.startOffset
 
 @Service(Service.Level.PROJECT)
 class DevInsProcessProcessor(val project: Project) {
+    private val conversationService = project.service<DevInsConversationService>()
+
     /**
      * This function takes a DevInFile as input and returns a list of PsiElements that are comments.
      * It iterates through the DevInFile and adds any comments it finds to the list.
@@ -39,48 +41,50 @@ class DevInsProcessProcessor(val project: Project) {
 
     /**
      * Process the output of a script based on the exit code and flag comment.
+     * If LLM returns a DevIn code, execute it.
      * If the exit code is not 0, attempts to fix the script with LLM.
      * If the exit code is 0 and there is a flag comment, process it.
      *
      * Flag comment format:
      * - [flow]:flowable.devin, means next step is flowable.devin
-     * - [flow](result), means a handle with result
      *
      * @param output The output of the script
      * @param event The process event containing the exit code
      * @param scriptPath The path of the script file
      */
     fun process(output: String, event: ProcessEvent, scriptPath: String) {
-        val devInFile: DevInFile? = runReadAction { DevInFile.lookup(project, scriptPath) }
-        project.service<DevInsConversationService>().updateIdeOutput(scriptPath, output)
+        conversationService.updateIdeOutput(scriptPath, output)
 
-        val llmResponse = project.service<DevInsConversationService>().getLlmResponse(scriptPath)
-        val code = Code.parse(llmResponse)
-        if (code.language == DevInLanguage.INSTANCE) {
-            val devInCode = code.text
-            val file = DevInFile.fromString(project, devInCode)
-            runTask(file)
+        val code = Code.parse(conversationService.getLlmResponse(scriptPath))
+        val isDevInCode = code.language == DevInLanguage.INSTANCE
+        if (isDevInCode) {
+            executeTask(DevInFile.fromString(project, code.text))
         }
 
         when {
             event.exitCode == 0 -> {
+                val devInFile: DevInFile? = runReadAction { DevInFile.lookup(project, scriptPath) }
                 val comment = lookupFlagComment(devInFile!!).firstOrNull() ?: return
                 if (comment.startOffset == 0) {
                     val text = comment.text
-                    if (text.startsWith("[flow]")) {
-                        val nextScript = text.substring(6)
+                    if (text.startsWith("[flow]:")) {
+                        val nextScript = text.substring(7)
                         val newScript = DevInFile.lookup(project, nextScript) ?: return
-                        this.runTask(newScript)
+                        this.executeTask(newScript)
                     }
                 }
             }
             event.exitCode != 0 -> {
-                project.service<DevInsConversationService>().tryFixWithLlm(scriptPath)
+                conversationService.tryFixWithLlm(scriptPath)
             }
         }
     }
 
-    fun runTask(newScript: DevInFile) {
+    /**
+     * This function is responsible for running a task with a new script.
+     * @param newScript The new script to be run.
+     */
+    fun executeTask(newScript: DevInFile) {
         val compiledResult = DevInsCompiler(project, newScript).compile()
         val prompt = compiledResult.output
 
@@ -96,7 +100,7 @@ class DevInsProcessProcessor(val project: Project) {
      * 1. We need to call LLM to get the task list
      * 2. According to the input and output to decide the next step
      */
-    fun createTasks(): List<DevInFile> {
+    fun createAgentTasks(): List<DevInFile> {
         TODO()
     }
 

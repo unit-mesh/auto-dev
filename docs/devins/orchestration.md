@@ -33,6 +33,6 @@ In the following cases, AutoDev will auto execute:
 3. Use DevIns comment to flag, will run next script, like:
 
     ```devin
-    [flow]script/flow.devin
+    [flow]:script/flow.devin
     ```
    
