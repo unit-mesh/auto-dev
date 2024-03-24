@@ -6,7 +6,6 @@ parent: Workflow
 ---
 
 required:
-
 Database Tools and SQL
 {: .label .label-yellow }
 

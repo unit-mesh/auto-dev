@@ -6,7 +6,6 @@ parent: Workflow
 ---
 
 Required plugin:
-
 JavaScript
 {: .label .label-yellow }
 
