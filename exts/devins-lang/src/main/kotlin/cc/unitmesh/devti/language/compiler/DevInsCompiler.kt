@@ -114,7 +114,7 @@ class DevInsCompiler(
                 }
 
                 if (configs.isNotEmpty()) {
-                    result.workingAgent = configs.first()
+                    result.executeAgent = configs.first()
                 }
             }
 

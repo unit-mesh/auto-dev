@@ -102,7 +102,7 @@ open class DevInsRunConfigurationProfileState(
         myProject.service<DevInsConversationService>().createConversation(configuration.getScriptPath(), compileResult)
 
         val output = compileResult.output
-        val agent = compileResult.workingAgent
+        val agent = compileResult.executeAgent
 
         output.split("\n").forEach {
             if (it.contains("<DevInsError>")) {
