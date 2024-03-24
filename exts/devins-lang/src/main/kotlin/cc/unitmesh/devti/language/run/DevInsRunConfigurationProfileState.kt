@@ -9,7 +9,6 @@ import cc.unitmesh.devti.language.status.DevInsRunListener
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.util.LLMCoroutineScope
-import com.intellij.build.process.BuildProcessHandler
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
@@ -33,7 +32,6 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.awt.BorderLayout
-import java.io.OutputStream
 import javax.swing.JComponent
 
 open class DevInsRunConfigurationProfileState(
@@ -43,7 +41,7 @@ open class DevInsRunConfigurationProfileState(
     private val llm: LLMProvider = LlmFactory.instance.create(myProject)
 
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult {
-        val processHandler = DevInsProcessBuilder(configuration.name)
+        val processHandler = DevInsProcessHandler(configuration.name)
         ProcessTerminatedListener.attach(processHandler)
 
         val sb = StringBuilder()
@@ -188,12 +186,3 @@ open class DevInsRunConfigurationProfileState(
     }
 }
 
-class DevInsProcessBuilder(private val myExecutionName: String) : BuildProcessHandler() {
-    override fun detachIsDefault(): Boolean = false
-    override fun destroyProcessImpl() = Unit
-    override fun detachProcessImpl() = notifyProcessTerminated(0)
-    fun exitWithError() = notifyProcessTerminated(-1)
-
-    override fun getProcessInput(): OutputStream? = null
-    override fun getExecutionName(): String = myExecutionName
-}
