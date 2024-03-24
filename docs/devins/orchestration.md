@@ -14,25 +14,30 @@ in: [DevInsProcessProcessor.kt](https://github.com/unit-mesh/auto-dev/blob/maste
 
 In the following cases, AutoDev will auto execute:
 
-1. AI Agent return `DevIns` code-block, like:
+### Method: AI Agent return `devin` code-block
+
+example:
 
     ```devin
     Explain code /file:src/main/java/com/example/Controller.java
-    ``` 
+    ```
+### Method: Auto Handle DevIns error
 
-2. Run DevIns command failed, will call llm to try to fix it. For example, if run program failed
+Run DevIns command failed, will call llm to try to fix it. For example, if run program failed
 
     ```bash
-   <DevInsError>: File not found: src/test/
+    <DevInsError>: File not found: src/test/
     
     --------------------
     
     Process finished with exit code -1
     ```
 
-3. Use DevIns comment to flag, will run next script, like:
+### Method: DevIns Comment Flag
+
+Use DevIns comment to flag, will run next script, like:
 
     ```devin
     [flow]:script/flow.devin
     ```
-   
+       
