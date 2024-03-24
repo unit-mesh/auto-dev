@@ -16,11 +16,14 @@ In the following cases, AutoDev will auto execute:
 
 ### Method: AI Agent return `devin` code-block
 
-example:
+Example:
 
     ```devin
     Explain code /file:src/main/java/com/example/Controller.java
     ```
+
+consider use `$command` to get $command example, and let LLM handle it.
+
 ### Method: Auto Handle DevIns error
 
 Run DevIns command failed, will call llm to try to fix it. For example, if run program failed
@@ -33,11 +36,17 @@ Run DevIns command failed, will call llm to try to fix it. For example, if run p
     Process finished with exit code -1
     ```
 
+In this case, the AutoDev will handle rest in ChatPanel.
+
 ### Method: DevIns Comment Flag
 
-Use DevIns comment to flag, will run next script, like:
+Experimental Feature
+{: .label .label-yellow }
+
+Use DevIns comment to flag, will run the next script, like:
 
     ```devin
     [flow]:script/flow.devin
     ```
-       
+
+still in experimental, and may change in the future. 
