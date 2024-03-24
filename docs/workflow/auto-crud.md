@@ -6,6 +6,7 @@ parent: Workflow
 ---
 
 Required plugin:
+
 Java
 {: .label .label-yellow }
 
