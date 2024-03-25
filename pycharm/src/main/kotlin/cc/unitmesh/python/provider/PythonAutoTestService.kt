@@ -26,8 +26,8 @@ import com.jetbrains.python.run.PythonRunConfigurationProducer
 
 class PythonAutoTestService : AutoTestService() {
     override fun isApplicable(element: PsiElement): Boolean = element.language is PythonLanguage
-
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = PythonRunConfiguration::class.java
+    override fun psiFileClass(project: Project): Class<out PsiElement> = PyFile::class.java
 
     override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
         val psiFile: PyFile = PsiManager.getInstance(project).findFile(virtualFile) as? PyFile ?: return null

@@ -27,6 +27,8 @@ import com.intellij.testIntegration.TestFinderHelper
 class GoAutoTestService : AutoTestService() {
     override fun isApplicable(element: PsiElement): Boolean = element.containingFile?.language == GoLanguage.INSTANCE
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = GoTestRunConfiguration::class.java
+    override fun psiFileClass(project: Project): Class<out PsiElement> = GoFile::class.java
+
     override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> = listOf()
 
     override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {

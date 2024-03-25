@@ -36,6 +36,7 @@ import kotlin.io.path.Path
 class JSAutoTestService : AutoTestService() {
     val log = logger<JSAutoTestService>()
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = NpmRunConfiguration::class.java
+    override fun psiFileClass(project: Project): Class<out PsiElement> = JSFile::class.java
 
     override fun isApplicable(element: PsiElement): Boolean {
         val sourceFile: PsiFile = element.containingFile ?: return false

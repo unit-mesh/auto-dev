@@ -4,6 +4,7 @@ import com.intellij.execution.ExecutionManager
 import com.intellij.execution.Executor
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
+import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.executors.DefaultRunExecutor
@@ -13,6 +14,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiElement
 
 interface RunService {
     private val logger: Logger get() = logger<RunService>()
@@ -24,6 +26,8 @@ interface RunService {
      * @return The run configuration class for the project.
      */
     fun runConfigurationClass(project: Project): Class<out RunProfile>?
+
+    fun psiFileClass(project: Project): Class<out PsiElement>
 
     fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? = null
 
@@ -80,8 +84,12 @@ interface RunService {
      * @param virtualFile The virtual file that represents the file to be run.
      * @return The result of the run operation, or `null` if an error occurred.
      */
-    fun runFile(project: Project, virtualFile: VirtualFile): String? {
-        val settings = createRunSettings(project, virtualFile) ?: return null
+    fun runFile(project: Project, virtualFile: VirtualFile, testElement: PsiElement?): String? {
+        var settings: RunnerAndConfigurationSettings? = createRunSettings(project, virtualFile)
+        if (settings == null) {
+            settings = createDefaultTestConfigurations(project, testElement ?: return null) ?: return null
+        }
+
         val executor: Executor = DefaultRunExecutor.getRunExecutorInstance()
         val builder = ExecutionEnvironmentBuilder.createOrNull(executor, settings) ?: return null
 
@@ -89,5 +97,9 @@ interface RunService {
         ExecutionManager.getInstance(project).restartRunProfile(environment)
 
         return null
+    }
+
+    fun createDefaultTestConfigurations(project: Project, element: PsiElement): RunnerAndConfigurationSettings? {
+        return ConfigurationContext(element).configurationsFromContext?.firstOrNull()?.configurationSettings
     }
 }

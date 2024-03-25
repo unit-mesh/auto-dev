@@ -11,7 +11,6 @@ import com.intellij.execution.configurations.RunProfile
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -27,10 +26,8 @@ import org.rust.lang.core.psi.*
 
 class RustTestService : AutoTestService() {
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = CargoCommandConfiguration::class.java
-
-    override fun isApplicable(element: PsiElement): Boolean {
-        return element.language is RsLanguage
-    }
+    override fun isApplicable(element: PsiElement): Boolean = element.language is RsLanguage
+    override fun psiFileClass(project: Project): Class<out PsiElement> = RsFile::class.java
 
     override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
         val pkg = findCargoPackage(project, virtualFile) ?: return null
