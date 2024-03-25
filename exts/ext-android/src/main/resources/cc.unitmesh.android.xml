@@ -6,5 +6,9 @@
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <chatContextProvider implementation="cc.unitmesh.android.provider.AndroidChatContextProvider"/>
+
+<!--        <testContextProvider-->
+<!--                language="kotlin"-->
+<!--                implementation="cc.unitmesh.android.provider.AndroidTestService"/>-->
     </extensions>
 </idea-plugin>
