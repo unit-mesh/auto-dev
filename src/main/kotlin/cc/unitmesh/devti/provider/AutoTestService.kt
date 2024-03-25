@@ -44,6 +44,7 @@ abstract class AutoTestService : LazyExtensionInstance<AutoTestService>(), RunSe
      * If a test file cannot be found or created, null is returned.
      */
     abstract fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext?
+
     /**
      * Looks up the relevant classes in the project for the given element.
      *

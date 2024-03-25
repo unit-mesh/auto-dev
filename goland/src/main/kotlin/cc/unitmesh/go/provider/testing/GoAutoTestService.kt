@@ -8,23 +8,34 @@ import cc.unitmesh.go.context.GoStructContextBuilder
 import cc.unitmesh.go.util.GoPsiUtil
 import com.goide.GoLanguage
 import com.goide.execution.testing.GoTestRunConfiguration
+import com.goide.execution.testing.frameworks.gotest.GotestFramework
 import com.goide.psi.*
+import com.intellij.execution.actions.ConfigurationContext
+import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.TestSourcesFilter
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testIntegration.TestFinderHelper
 
 class GoAutoTestService : AutoTestService() {
     override fun isApplicable(element: PsiElement): Boolean = element.containingFile?.language == GoLanguage.INSTANCE
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = GoTestRunConfiguration::class.java
+    override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> = listOf()
 
-    override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {
-        return listOf()
+    override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
+        val goFile = runReadAction { PsiManager.getInstance(project).findFile(virtualFile) as? GoFile } ?: return null
+
+        return ConfigurationContext(goFile).configurationsFromContext?.firstOrNull {
+            val configuration = it.configuration as? GoTestRunConfiguration
+            configuration?.testFramework is GotestFramework
+        }?.configurationSettings?.configuration
     }
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
