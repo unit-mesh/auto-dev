@@ -4,8 +4,10 @@ import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.devti.provider.AutoTestService
+import cc.unitmesh.idea.service.JavaAutoTestService.Companion.createConfigForGradle
 import cc.unitmesh.kotlin.util.KotlinPsiUtil
 import cc.unitmesh.kotlin.util.getReturnTypeReferences
+import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
@@ -32,12 +34,11 @@ class KotlinAutoTestService : AutoTestService() {
         val log = logger<KotlinAutoTestService>()
     }
 
-    override fun runConfigurationClass(project: Project): Class<out RunProfile> {
-        return GradleRunConfiguration::class.java
-    }
+    override fun runConfigurationClass(project: Project): Class<out RunProfile> = GradleRunConfiguration::class.java
+    override fun isApplicable(element: PsiElement): Boolean = element.language is KotlinLanguage
 
-    override fun isApplicable(element: PsiElement): Boolean {
-        return element.language is KotlinLanguage
+    override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
+        return createConfigForGradle(virtualFile, project)
     }
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {

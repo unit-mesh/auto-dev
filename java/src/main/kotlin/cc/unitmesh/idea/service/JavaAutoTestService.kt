@@ -30,36 +30,7 @@ class JavaAutoTestService : AutoTestService() {
     override fun isApplicable(element: PsiElement): Boolean = element.language is JavaLanguage
 
     override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
-        val name = virtualFile.name
-
-        val psiFile: PsiJavaFile = PsiManager.getInstance(project).findFile(virtualFile) as? PsiJavaFile ?: return null
-        val canonicalName = psiFile.packageName + "." + virtualFile.nameWithoutExtension
-
-        val runManager = RunManager.getInstance(project)
-
-        var moduleName = ""
-        val moduleForFile = ProjectFileIndex.getInstance(project).getModuleForFile(virtualFile)
-        // a moduleForFile.name will be like <project>.<module>.<testModule>, so we need to remove the last part and first part
-        if (moduleForFile != null) {
-            val moduleNameSplit = moduleForFile.name.split(".").drop(1).dropLast(1).joinToString(":")
-            if (moduleNameSplit.isNotEmpty()) {
-                moduleName = "$moduleNameSplit:"
-            }
-        }
-
-        // todo: add maven ??
-        val configuration = runManager.createConfiguration(name, GradleExternalTaskConfigurationType::class.java)
-        val runConfiguration = configuration.configuration as GradleRunConfiguration
-
-        runConfiguration.isDebugServerProcess = false
-        runConfiguration.settings.externalProjectPath = project.guessProjectDir()?.path
-        // todo: add module for test
-        runConfiguration.rawCommandLine = moduleName + "test --tests \"${canonicalName}\""
-
-        runManager.addConfiguration(configuration)
-        runManager.selectedConfiguration = configuration
-
-        return runConfiguration
+        return createConfigForGradle(virtualFile, project)
     }
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
@@ -183,5 +154,40 @@ class JavaAutoTestService : AutoTestService() {
 
     companion object {
         val log = logger<JavaAutoTestService>()
+        fun createConfigForGradle(
+            virtualFile: VirtualFile,
+            project: Project
+        ): GradleRunConfiguration? {
+            val name = virtualFile.name
+
+            val psiFile: PsiJavaFile = PsiManager.getInstance(project).findFile(virtualFile) as? PsiJavaFile ?: return null
+            val canonicalName = psiFile.packageName + "." + virtualFile.nameWithoutExtension
+
+            val runManager = RunManager.getInstance(project)
+
+            var moduleName = ""
+            val moduleForFile = ProjectFileIndex.getInstance(project).getModuleForFile(virtualFile)
+            // a moduleForFile.name will be like <project>.<module>.<testModule>, so we need to remove the last part and first part
+            if (moduleForFile != null) {
+                val moduleNameSplit = moduleForFile.name.split(".").drop(1).dropLast(1).joinToString(":")
+                if (moduleNameSplit.isNotEmpty()) {
+                    moduleName = "$moduleNameSplit:"
+                }
+            }
+
+            // todo: add maven ??
+            val configuration = runManager.createConfiguration(name, GradleExternalTaskConfigurationType::class.java)
+            val runConfiguration = configuration.configuration as GradleRunConfiguration
+
+            runConfiguration.isDebugServerProcess = false
+            runConfiguration.settings.externalProjectPath = project.guessProjectDir()?.path
+            // todo: add module for test
+            runConfiguration.rawCommandLine = moduleName + "test --tests \"${canonicalName}\""
+
+            runManager.addConfiguration(configuration)
+            runManager.selectedConfiguration = configuration
+
+            return runConfiguration
+        }
     }
 }

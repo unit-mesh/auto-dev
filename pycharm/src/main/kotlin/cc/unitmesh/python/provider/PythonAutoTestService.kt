@@ -45,7 +45,7 @@ class PythonAutoTestService : AutoTestService() {
     }
 
     override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {
-        TODO("Not yet implemented")
+        return listOf()
     }
 
 }
