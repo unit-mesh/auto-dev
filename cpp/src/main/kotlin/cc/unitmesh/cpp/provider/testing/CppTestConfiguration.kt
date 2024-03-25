@@ -9,18 +9,14 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.jetbrains.cidr.cpp.cmake.model.CMakeTarget
 import com.jetbrains.cidr.cpp.cmake.workspace.CMakeWorkspace
 import com.jetbrains.cidr.cpp.execution.testing.CMakeTestRunConfiguration
-import com.jetbrains.cidr.cpp.execution.testing.tcatch.CMakeCatchTestRunConfigurationType
 import com.jetbrains.cidr.execution.ExecutableData
 import com.jetbrains.cidr.execution.BuildTargetData
 import com.jetbrains.cidr.execution.BuildTargetAndConfigurationData
 
 object CppTestConfiguration {
-    fun createConfiguration(project: Project, file: VirtualFile): List<RunnerAndConfigurationSettings> {
-        val catchFactory = CMakeCatchTestRunConfigurationType.getInstance().factory
-        val factory = catchFactory ?: return emptyList()
+    fun createConfiguration(project: Project, file: VirtualFile, configurationFactory: ConfigurationFactory): List<RunnerAndConfigurationSettings> {
         val targets = getAllCmakeTargetsForTestFiles(project, file)
-
-        return targets.map { createConfiguration(project, it, factory) }
+        return targets.map { createConfiguration(project, it, configurationFactory) }
     }
 
     private fun getAllCmakeTargetsForTestFiles(project: Project, file: VirtualFile): List<CMakeTarget> {
@@ -34,7 +30,6 @@ object CppTestConfiguration {
 
         return listOfNotNull(targets)
     }
-
 
     fun createConfiguration(
         project: Project,

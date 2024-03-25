@@ -12,6 +12,7 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.jetbrains.cidr.cpp.execution.testing.tcatch.CMakeCatchTestRunConfigurationType
 import com.jetbrains.cidr.lang.OCLanguage
 import com.jetbrains.cidr.lang.psi.OCFunctionDeclaration
 import java.io.File
@@ -32,7 +33,8 @@ class CppAutoTestService : AutoTestService() {
             return null
         }
 
-        val settings = CppTestConfiguration.createConfiguration(project, virtualFile).firstOrNull()
+        val factory = CMakeCatchTestRunConfigurationType.getInstance().factory
+        val settings = CppTestConfiguration.createConfiguration(project, virtualFile, factory).firstOrNull()
         return settings?.configuration
     }
 
