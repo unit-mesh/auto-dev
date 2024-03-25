@@ -5,13 +5,23 @@ import cc.unitmesh.devti.provider.AutoTestService
 import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.rust.context.RustClassContextBuilder
 import cc.unitmesh.rust.context.RustMethodContextBuilder
+import com.intellij.execution.RunManager
+import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
+import org.rust.cargo.project.model.cargoProjects
+import org.rust.cargo.project.workspace.CargoWorkspace
 import org.rust.cargo.runconfig.command.CargoCommandConfiguration
+import org.rust.cargo.runconfig.command.CargoCommandConfigurationType
+import org.rust.cargo.runconfig.mergeWithDefault
+import org.rust.cargo.toolchain.CargoCommandLine
 import org.rust.lang.RsLanguage
 import org.rust.lang.core.psi.*
 
@@ -20,6 +30,24 @@ class RustTestService : AutoTestService() {
 
     override fun isApplicable(element: PsiElement): Boolean {
         return element.language is RsLanguage
+    }
+
+    override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
+        val pkg = findCargoPackage(project, virtualFile) ?: return null
+
+        val cmd = CargoCommandLine.forPackage(pkg, "test", listOf("--color", "never")).copy(emulateTerminal = false)
+
+        val configurationSetting = RunManager.getInstance(project)
+            .createConfiguration("tests", CargoCommandConfigurationType.getInstance().factory)
+        val configuration = configurationSetting.configuration as CargoCommandConfiguration
+        cmd.mergeWithDefault(configuration)
+        configuration.setFromCmd(cmd)
+
+        return configurationSetting.configuration
+    }
+
+    private fun findCargoPackage(project: Project, taskDir: VirtualFile): CargoWorkspace.Package? {
+        return runReadAction { project.cargoProjects.findPackageForFile(taskDir) }
     }
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, psiElement: PsiElement): TestFileContext? {
