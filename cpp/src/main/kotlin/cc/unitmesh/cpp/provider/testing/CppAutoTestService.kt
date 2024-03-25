@@ -4,6 +4,7 @@ import cc.unitmesh.cpp.util.CppContextPrettify
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.provider.AutoTestService
 import cc.unitmesh.devti.provider.context.TestFileContext
+import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.project.Project
@@ -13,13 +14,26 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.jetbrains.cidr.lang.OCLanguage
 import com.jetbrains.cidr.lang.psi.OCFunctionDeclaration
+import java.io.File
 
 class CppAutoTestService : AutoTestService() {
     // TODO in Cpp233 and Cpp222 the RunProfile is different, maybe we can use the same RunProfile in future
     override fun runConfigurationClass(project: Project): Class<out RunProfile>? = null
+    override fun isApplicable(element: PsiElement): Boolean = element.language is OCLanguage
 
-    override fun isApplicable(element: PsiElement): Boolean {
-        return element.language is OCLanguage
+    override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
+        val cmakeLists = File(project.basePath, "CMakeLists.txt")
+        if (!cmakeLists.exists()) {
+            return null
+        }
+
+        val cmakelist = cmakeLists.readText()
+        if (!cmakelist.contains("catch")) {
+            return null
+        }
+
+        val settings = CppTestConfiguration.createConfiguration(project, virtualFile).firstOrNull()
+        return settings?.configuration
     }
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
