@@ -12,7 +12,6 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.jetbrains.cidr.cpp.execution.testing.tcatch.CMakeCatchTestRunConfigurationType
 import com.jetbrains.cidr.lang.OCLanguage
 import com.jetbrains.cidr.lang.psi.OCFunctionDeclaration
 import java.io.File
@@ -21,22 +20,6 @@ class CppAutoTestService : AutoTestService() {
     // TODO in Cpp233 and Cpp222 the RunProfile is different, maybe we can use the same RunProfile in future
     override fun runConfigurationClass(project: Project): Class<out RunProfile>? = null
     override fun isApplicable(element: PsiElement): Boolean = element.language is OCLanguage
-
-    override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
-        val cmakeLists = File(project.basePath, "CMakeLists.txt")
-        if (!cmakeLists.exists()) {
-            return null
-        }
-
-        val cmakelist = cmakeLists.readText()
-        if (!cmakelist.contains("catch")) {
-            return null
-        }
-
-        val factory = CMakeCatchTestRunConfigurationType.getInstance().factory
-        val settings = CppTestConfiguration.createConfiguration(project, virtualFile, factory).firstOrNull()
-        return settings?.configuration
-    }
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
         // 1. check project root test folder, if not exist, create it
