@@ -8,7 +8,13 @@ class RunnerResult(
     @Nls(capitalization = Nls.Capitalization.Sentence) val message: String = "",
     val details: String? = null,
     val diff: CheckResultDiff? = null,
+    /**
+     * for example, when lost Node.js package.json
+     */
     val severity: RunnerResultSeverity = RunnerResultSeverity.Info,
+    /**
+     * Like sync Gradle or others
+     */
     val hyperlinkAction: (() -> Unit)? = null,
 ) {
     val fullMessage: String get() = if (details == null) message else "$message\n\n$details"

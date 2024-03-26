@@ -52,7 +52,7 @@ class RunServiceTask(
      * @param indicator A progress indicator that is used to track the progress of the execution.
      * @return The check result of the executed run configuration, or `null` if no run configuration could be created.
      */
-    fun doRun(indicator: ProgressIndicator): RunnerResult? {
+    fun doRun(indicator: ProgressIndicator?): RunnerResult? {
         var settings: RunnerAndConfigurationSettings? = runService.createRunSettings(project, virtualFile)
         if (settings == null) {
             settings = createDefaultTestConfigurations(project, testElement ?: return null) ?: return null
@@ -146,7 +146,7 @@ class RunServiceTask(
         settings: RunnerAndConfigurationSettings,
         runContext: RunContext,
         testEventsListener: SMTRunnerEventsAdapter,
-        indicator: ProgressIndicator
+        indicator: ProgressIndicator?
     ) {
         val connection = project.messageBus.connect()
         try {
@@ -161,7 +161,7 @@ class RunServiceTask(
         configurations: RunnerAndConfigurationSettings,
         runContext: RunContext,
         testEventsListener: SMTRunnerEventsListener?,
-        indicator: ProgressIndicator
+        indicator: ProgressIndicator?
     ) {
         testEventsListener?.let {
             connection.subscribe(SMTRunnerEventsListener.TEST_STATUS, it)
@@ -181,12 +181,12 @@ class RunServiceTask(
             }
         }
 
-        while (!indicator.isCanceled) {
+        while (indicator?.isCanceled != true) {
             val result = runContext.latch.await(100, TimeUnit.MILLISECONDS)
             if (result) break
         }
 
-        if (indicator.isCanceled) {
+        if (indicator?.isCanceled == true) {
             Disposer.dispose(runContext)
         }
     }
