@@ -8,9 +8,9 @@ import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.impl.ExecutionManagerImpl
 import com.intellij.execution.process.*
-import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.execution.runners.ProgramRunner
+import com.intellij.execution.testframework.Filter
 import com.intellij.execution.testframework.sm.runner.SMTRunnerEventsAdapter
 import com.intellij.execution.testframework.sm.runner.SMTRunnerEventsListener
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
@@ -20,13 +20,11 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.util.messages.MessageBusConnection
-import java.io.BufferedWriter
-import java.io.IOException
-import java.io.OutputStreamWriter
-import java.nio.charset.StandardCharsets
+import com.intellij.util.text.nullize
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -58,9 +56,8 @@ class RunServiceTask(
         val stderr = StringBuilder()
         val processListener = object : OutputListener() {
             override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
-                val text = event.text
-                if (text != null && ProcessOutputType.isStderr(outputType)) {
-                    stderr.append(text)
+                if (ProcessOutputType.isStderr(outputType)) {
+                    stderr.append(event.text)
                 }
             }
         }
@@ -77,6 +74,9 @@ class RunServiceTask(
         @Suppress("UnstableApiUsage")
         invokeAndWaitIfNeeded {  }
 
+        val testResults = testRoots.map { it.toCheckResult() }
+        if (testResults.isEmpty()) return ""
+
         val output = processListener.output
         val errorOutput = output.stderr
 
@@ -87,6 +87,54 @@ class RunServiceTask(
         val outputString = output.stdout
         return outputString
     }
+
+
+    protected fun SMTestProxy.SMRootTestProxy.toCheckResult(): String {
+        if (finishedSuccessfully()) return ""
+
+        val failedChildren = collectChildren(object : Filter<SMTestProxy>() {
+            override fun shouldAccept(test: SMTestProxy): Boolean = test.isLeaf && !test.finishedSuccessfully()
+        })
+
+        val firstFailedTest = failedChildren.firstOrNull() ?: error("Testing failed although no failed tests found")
+        val diff = firstFailedTest.diffViewerProvider?.let { CheckResultDiff(it.left, it.right, it.diffTitle) }
+        val message = if (diff != null) getComparisonErrorMessage(firstFailedTest) else getErrorMessage(firstFailedTest)
+        val details = firstFailedTest.stacktrace
+        return details?.let { "$message\n$details" } ?: message
+    }
+
+    data class CheckResultDiff(val expected: String, val actual: String, val title: String = "")
+
+    private fun SMTestProxy.finishedSuccessfully(): Boolean {
+        return !hasErrors() && (isPassed || isIgnored)
+    }
+
+    /**
+     * Some testing frameworks add attributes to be shown in console (ex. Jest - ANSI color codes)
+     * which are not supported in Task Description, so they need to be removed
+     */
+    private fun removeAttributes(text: String): String {
+        val buffer = StringBuilder()
+        AnsiEscapeDecoder().escapeText(text, ProcessOutputTypes.STDOUT) { chunk, _ ->
+            buffer.append(chunk)
+        }
+        return buffer.toString()
+    }
+
+    /**
+     * Returns message for test error that will be shown to a user in Check Result panel
+     */
+    @Suppress("UnstableApiUsage")
+    @NlsSafe
+    protected open fun getErrorMessage(node: SMTestProxy): String = node.errorMessage ?: "Execution failed"
+
+    /**
+     * Returns message for comparison error that will be shown to a user in Check Result panel
+     */
+    protected open fun getComparisonErrorMessage(node: SMTestProxy): String = getErrorMessage(node)
+
+    fun fillWithIncorrect(message: String): String =
+        message.nullize(nullizeSpaces = true) ?: "Incorrect"
 
     fun executeRunConfigures(
         project: Project,
@@ -174,7 +222,9 @@ class RunServiceTask(
                     runContext.latch.countDown()
                 }
             })
-            runContext.processListener?.let { processHandler.addProcessListener(it) }
+            runContext.processListener?.let {
+                processHandler.addProcessListener(it)
+            }
         }
     }
 
