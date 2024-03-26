@@ -52,7 +52,7 @@ class RunServiceTask(
      * @param indicator A progress indicator that is used to track the progress of the execution.
      * @return The check result of the executed run configuration, or `null` if no run configuration could be created.
      */
-    fun doRun(indicator: ProgressIndicator): CheckResult? {
+    fun doRun(indicator: ProgressIndicator): RunnerResult? {
         var settings: RunnerAndConfigurationSettings? = runService.createRunSettings(project, virtualFile)
         if (settings == null) {
             settings = createDefaultTestConfigurations(project, testElement ?: return null) ?: return null
@@ -82,15 +82,15 @@ class RunServiceTask(
         invokeAndWaitIfNeeded { }
 
         val testResults = testRoots.map { it.toCheckResult() }
-        if (testResults.isEmpty()) return CheckResult.noTestsRun
+        if (testResults.isEmpty()) return RunnerResult.noTestsRun
 
-        val firstFailure = testResults.firstOrNull { it.status != CheckStatus.Solved }
+        val firstFailure = testResults.firstOrNull { it.status != RunnerStatus.Solved }
         val result = firstFailure ?: testResults.first()
         return result
     }
 
-    protected fun SMTestProxy.SMRootTestProxy.toCheckResult(): CheckResult {
-        if (finishedSuccessfully()) return CheckResult(CheckStatus.Solved, "CONGRATULATIONS")
+    protected fun SMTestProxy.SMRootTestProxy.toCheckResult(): RunnerResult {
+        if (finishedSuccessfully()) return RunnerResult(RunnerStatus.Solved, "CONGRATULATIONS")
 
         val failedChildren = collectChildren(object : Filter<SMTestProxy>() {
             override fun shouldAccept(test: SMTestProxy): Boolean = test.isLeaf && !test.finishedSuccessfully()
@@ -102,8 +102,8 @@ class RunServiceTask(
         }
         val message = if (diff != null) getComparisonErrorMessage(firstFailedTest) else getErrorMessage(firstFailedTest)
         val details = firstFailedTest.stacktrace
-        return CheckResult(
-            CheckStatus.Failed,
+        return RunnerResult(
+            RunnerStatus.Failed,
             removeAttributes(fillWithIncorrect(message)),
             diff = diff,
             details = details
