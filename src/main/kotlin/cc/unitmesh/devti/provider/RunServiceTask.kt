@@ -1,3 +1,4 @@
+// Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package cc.unitmesh.devti.provider
 
 import cc.unitmesh.devti.AutoDevBundle
@@ -32,12 +33,15 @@ class RunServiceTask(
     private val project: Project,
     private val virtualFile: VirtualFile,
     private val testElement: PsiElement?,
-    private val runService: RunService
+    private val runService: RunService,
+    private val runner: ProgramRunner<*>? = null
 ) : com.intellij.openapi.progress.Task.Backgroundable(
     project,
     AutoDevBundle.message("progress.run.task"),
     true
 ) {
+    private fun runnerId() = runner?.runnerId ?: DefaultRunExecutor.EXECUTOR_ID
+
     override fun run(indicator: ProgressIndicator) {
         doRun(indicator)
     }
@@ -84,7 +88,6 @@ class RunServiceTask(
         return outputString
     }
 
-
     fun executeRunConfigures(
         project: Project,
         settings: RunnerAndConfigurationSettings,
@@ -114,7 +117,7 @@ class RunServiceTask(
         runInEdt {
             connection.subscribe(
                 ExecutionManager.EXECUTION_TOPIC,
-                CheckExecutionListener(DefaultRunExecutor.EXECUTOR_ID, context)
+                CheckExecutionListener(runnerId(), context)
             )
 
             configurations.startRunConfigurationExecution(context)
@@ -123,13 +126,9 @@ class RunServiceTask(
         // if run in Task, Disposer.dispose(context)
     }
 
-
-    /**
-     * Returns `true` if configuration execution is started successfully, `false` otherwise
-     */
     @Throws(ExecutionException::class)
     private fun RunnerAndConfigurationSettings.startRunConfigurationExecution(context: Context): Boolean {
-        val runner = ProgramRunner.getRunner(DefaultRunExecutor.EXECUTOR_ID, configuration)
+        val runner = ProgramRunner.getRunner(runnerId(), configuration)
         val env =
             ExecutionEnvironmentBuilder.create(DefaultRunExecutor.getRunExecutorInstance(), this)
                 .activeTarget()
