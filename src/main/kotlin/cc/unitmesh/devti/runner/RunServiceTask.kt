@@ -1,7 +1,8 @@
 // Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
-package cc.unitmesh.devti.provider
+package cc.unitmesh.devti.runner
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.provider.RunService
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.ExecutionManager
 import com.intellij.execution.OutputListener
@@ -111,58 +112,58 @@ class RunServiceTask(
         testEventsListener?.let {
             connection.subscribe(SMTRunnerEventsListener.TEST_STATUS, it)
         }
-        val context = Context(processListener, null, CountDownLatch(1))
-        Disposer.register(connection, context)
+        val runContext = RunContext(processListener, null, CountDownLatch(1))
+        Disposer.register(connection, runContext)
 
         runInEdt {
             connection.subscribe(
                 ExecutionManager.EXECUTION_TOPIC,
-                CheckExecutionListener(runnerId(), context)
+                CheckExecutionListener(runnerId(), runContext)
             )
 
-            configurations.startRunConfigurationExecution(context)
+            configurations.startRunConfigurationExecution(runContext)
         }
 
         // if run in Task, Disposer.dispose(context)
     }
 
     @Throws(ExecutionException::class)
-    private fun RunnerAndConfigurationSettings.startRunConfigurationExecution(context: Context): Boolean {
+    private fun RunnerAndConfigurationSettings.startRunConfigurationExecution(runContext: RunContext): Boolean {
         val runner = ProgramRunner.getRunner(runnerId(), configuration)
         val env =
             ExecutionEnvironmentBuilder.create(DefaultRunExecutor.getRunExecutorInstance(), this)
                 .activeTarget()
-                .build(callback(context))
+                .build(callback(runContext))
 
         if (runner == null || env.state == null) {
-            context.latch.countDown()
+            runContext.latch.countDown()
             return false
         }
 
-        context.environments.add(env)
+        runContext.environments.add(env)
         runner.execute(env)
         return true
     }
 
-    fun callback(context: Context) = ProgramRunner.Callback { descriptor ->
+    fun callback(runContext: RunContext) = ProgramRunner.Callback { descriptor ->
         // Descriptor can be null in some cases.
         // For example, IntelliJ Rust's test runner provides null here if compilation fails
         if (descriptor == null) {
-            context.latch.countDown()
+            runContext.latch.countDown()
             return@Callback
         }
 
-        Disposer.register(context) {
+        Disposer.register(runContext) {
             ExecutionManagerImpl.stopProcess(descriptor)
         }
         val processHandler = descriptor.processHandler
         if (processHandler != null) {
             processHandler.addProcessListener(object : ProcessAdapter() {
                 override fun processTerminated(event: ProcessEvent) {
-                    context.latch.countDown()
+                    runContext.latch.countDown()
                 }
             })
-            context.processListener?.let { processHandler.addProcessListener(it) }
+            runContext.processListener?.let { processHandler.addProcessListener(it) }
         }
     }
 
