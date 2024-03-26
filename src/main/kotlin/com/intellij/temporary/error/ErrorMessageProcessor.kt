@@ -41,9 +41,19 @@ object ErrorMessageProcessor {
         val editor = consoleEditor ?: getConsoleEditor(project) ?: return null
         val document = editor.document
 
+        var end = if (lineTo == null) {
+            document.lineCount - 1
+        } else {
+            if (lineTo >= document.lineCount - 1) document.lineCount - 1 else lineTo
+        }
+
+        if(lineFrom >= document.lineCount) {
+            end = document.lineCount - 1
+        }
+
         val textRange = TextRange(
             document.getLineStartOffset(lineFrom),
-            document.getLineEndOffset(lineTo ?: (document.lineCount - 1))
+            document.getLineEndOffset(end)
         )
 
         return document.getText(textRange)
