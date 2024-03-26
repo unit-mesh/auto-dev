@@ -20,6 +20,6 @@ with feature: load custom spec
 
 <img src="https://unitmesh.cc/auto-dev/stream-code-completion.png" alt="Chat code completion" width="400px"/>
 
-## Inlay code completion (Deprecated)
+## Inlay code completion 
 
-since I don't have enough speed machines.
+1. anywhere in the editor and press `⌥` + `Enter`

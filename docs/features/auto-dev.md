@@ -12,7 +12,7 @@ permalink: /features/auto-dev
 
 1. Select requirement with right-click, select `AutoDev AI AutoAtion` -> `AutoCRUD with this`
 
-<img src="https://unitmesh.cc/auto-dev/auto-coding-right-click.png" alt="AutoDev" width="400px"/>
+<img src="https://unitmesh.cc/auto-dev/auto-coding-right-click.png" alt="AutoDev" width="800px"/>
 
 ## Method 2: AutoDev with Gitlab
 
