@@ -162,12 +162,12 @@ class JavaAutoTestService : AutoTestService() {
             val name = virtualFile.name
 
             val psiFile: PsiJavaFile = PsiManager.getInstance(project).findFile(virtualFile) as? PsiJavaFile ?: return null
-            val canonicalName = psiFile.packageName + "." + virtualFile.nameWithoutExtension
+            val canonicalName = runReadAction { psiFile.packageName + "." + virtualFile.nameWithoutExtension }
 
             val runManager = RunManager.getInstance(project)
 
             var moduleName = ""
-            val moduleForFile = ProjectFileIndex.getInstance(project).getModuleForFile(virtualFile)
+            val moduleForFile = runReadAction { ProjectFileIndex.getInstance(project).getModuleForFile(virtualFile) }
             // a moduleForFile.name will be like <project>.<module>.<testModule>, so we need to remove the last part and first part
             if (moduleForFile != null) {
                 val moduleNameSplit = moduleForFile.name.split(".").drop(1).dropLast(1).joinToString(":")
