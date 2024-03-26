@@ -16,7 +16,7 @@ class PrepushReviewAction : CodeReviewAction() {
         }
 
         val prompting = e.project?.service<VcsPrompting>()
-        val changes: List<Change> = prompting?.hasChanges() ?: listOf()
+        val changes: List<Change> = prompting?.getChanges() ?: listOf()
 
         e.presentation.isEnabled = changes.isNotEmpty()
     }
