@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.compiler.exec
 
+import cc.unitmesh.devti.language.compiler.service.ShellRunService
 import cc.unitmesh.devti.language.utils.lookupFile
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
@@ -25,6 +26,8 @@ class ShellInsCommand(val myProject: Project, private val argument: String) : In
         if (shRunner != null && shRunner.isAvailable(myProject)) {
             shRunner.run(myProject, virtualFile.path, workingDirectory, "RunDevInsShell", true)
         }
+
+//        ShellRunService().runFile(myProject, virtualFile, null)
 
         return "Running shell command: $argument"
     }

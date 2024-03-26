@@ -83,7 +83,6 @@ interface RunService {
     fun runFile(project: Project, virtualFile: VirtualFile, testElement: PsiElement?): String? {
         val runTask = RunServiceTask(project, virtualFile, testElement, this)
         ProgressManager.getInstance().run(runTask)
-
         return null
     }
 }
