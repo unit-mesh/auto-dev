@@ -188,40 +188,40 @@ interface RunService {
     private fun RunnerAndConfigurationSettings.startRunConfigurationExecution(context: Context): Boolean {
         val runner = ProgramRunner.getRunner(DefaultRunExecutor.EXECUTOR_ID, configuration)
         val env =
-            ExecutionEnvironmentBuilder.create(DefaultRunExecutor.getRunExecutorInstance(), this).activeTarget().build()
+            ExecutionEnvironmentBuilder.create(DefaultRunExecutor.getRunExecutorInstance(), this)
+                .activeTarget()
+                .build(callback(context))
 
         if (runner == null || env.state == null) {
             context.latch.countDown()
             return false
         }
 
-
-        @Suppress("UnstableApiUsage")
-        env.callback = ProgramRunner.Callback { descriptor ->
-            // Descriptor can be null in some cases.
-            // For example, IntelliJ Rust's test runner provides null here if compilation fails
-            if (descriptor == null) {
-                context.latch.countDown()
-                return@Callback
-            }
-
-            Disposer.register(context, Disposable {
-                ExecutionManagerImpl.stopProcess(descriptor)
-            })
-            val processHandler = descriptor.processHandler
-            if (processHandler != null) {
-                processHandler.addProcessListener(object : ProcessAdapter() {
-                    override fun processTerminated(event: ProcessEvent) {
-                        context.latch.countDown()
-                    }
-                })
-                context.processListener?.let { processHandler.addProcessListener(it) }
-            }
-        }
-
         context.environments.add(env)
         runner.execute(env)
         return true
+    }
+
+    fun callback(context: Context) = ProgramRunner.Callback { descriptor ->
+        // Descriptor can be null in some cases.
+        // For example, IntelliJ Rust's test runner provides null here if compilation fails
+        if (descriptor == null) {
+            context.latch.countDown()
+            return@Callback
+        }
+
+        Disposer.register(context, Disposable {
+            ExecutionManagerImpl.stopProcess(descriptor)
+        })
+        val processHandler = descriptor.processHandler
+        if (processHandler != null) {
+            processHandler.addProcessListener(object : ProcessAdapter() {
+                override fun processTerminated(event: ProcessEvent) {
+                    context.latch.countDown()
+                }
+            })
+            context.processListener?.let { processHandler.addProcessListener(it) }
+        }
     }
 
 
