@@ -3,23 +3,17 @@ package cc.unitmesh.devti.runner
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.provider.RunService
-import com.intellij.execution.ExecutionException
-import com.intellij.execution.ExecutionManager
-import com.intellij.execution.OutputListener
-import com.intellij.execution.RunnerAndConfigurationSettings
+import com.intellij.execution.*
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.impl.ExecutionManagerImpl
-import com.intellij.execution.process.ProcessAdapter
-import com.intellij.execution.process.ProcessEvent
-import com.intellij.execution.process.ProcessListener
-import com.intellij.execution.process.ProcessOutputType
+import com.intellij.execution.process.*
+import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.testframework.sm.runner.SMTRunnerEventsAdapter
 import com.intellij.execution.testframework.sm.runner.SMTRunnerEventsListener
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
-import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.Project
@@ -28,6 +22,10 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.util.messages.MessageBusConnection
+import java.io.BufferedWriter
+import java.io.IOException
+import java.io.OutputStreamWriter
+import java.nio.charset.StandardCharsets
 import java.util.concurrent.CountDownLatch
 
 class RunServiceTask(
@@ -71,12 +69,8 @@ class RunServiceTask(
                 testRoots += testsRoot
             }
         }
-
-        executeRunConfigures(project, settings, processListener, testEventsListener)
-
-        @Suppress("UnstableApiUsage")
-        invokeAndWaitIfNeeded {}
-//        val testResults = testRoots.map { it.toCheckResult() }
+        val runContext = RunContext(processListener, null, CountDownLatch(1))
+        executeRunConfigures(project, settings, runContext, testEventsListener, indicator)
 
         val output = processListener.output
         val errorOutput = output.stderr
@@ -92,12 +86,13 @@ class RunServiceTask(
     fun executeRunConfigures(
         project: Project,
         settings: RunnerAndConfigurationSettings,
-        processListener: OutputListener,
-        testEventsListener: SMTRunnerEventsAdapter
-    ) {
+        runContext: RunContext,
+        testEventsListener: SMTRunnerEventsAdapter,
+        indicator: ProgressIndicator
+    ): Boolean {
         val connection = project.messageBus.connect()
         try {
-            return executeRunConfigurations(connection, settings, processListener, testEventsListener)
+            return executeRunConfigurations(connection, settings, runContext, testEventsListener, indicator)
         } finally {
 //            connection.disconnect()
         }
@@ -106,13 +101,13 @@ class RunServiceTask(
     private fun executeRunConfigurations(
         connection: MessageBusConnection,
         configurations: RunnerAndConfigurationSettings,
-        processListener: ProcessListener?,
-        testEventsListener: SMTRunnerEventsListener?
-    ) {
+        runContext: RunContext,
+        testEventsListener: SMTRunnerEventsListener?,
+        indicator: ProgressIndicator
+    ): Boolean {
         testEventsListener?.let {
             connection.subscribe(SMTRunnerEventsListener.TEST_STATUS, it)
         }
-        val runContext = RunContext(processListener, null, CountDownLatch(1))
         Disposer.register(connection, runContext)
 
         runInEdt {
@@ -124,7 +119,12 @@ class RunServiceTask(
             configurations.startRunConfigurationExecution(runContext)
         }
 
-        // if run in Task, Disposer.dispose(context)
+        if (indicator.isCanceled) {
+            Disposer.dispose(runContext)
+            return false
+        }
+
+        return true
     }
 
     @Throws(ExecutionException::class)
