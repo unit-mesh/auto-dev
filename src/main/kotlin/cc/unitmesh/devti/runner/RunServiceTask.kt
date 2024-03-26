@@ -45,7 +45,14 @@ class RunServiceTask(
         doRun(indicator)
     }
 
-    private fun doRun(indicator: ProgressIndicator): String? {
+    /**
+     * This function is responsible for executing a run configuration and returning the corresponding check result.
+     * It is used within the test framework to run tests and report the results back to the user.
+     *
+     * @param indicator A progress indicator that is used to track the progress of the execution.
+     * @return The check result of the executed run configuration, or `null` if no run configuration could be created.
+     */
+    fun doRun(indicator: ProgressIndicator): CheckResult? {
         var settings: RunnerAndConfigurationSettings? = runService.createRunSettings(project, virtualFile)
         if (settings == null) {
             settings = createDefaultTestConfigurations(project, testElement ?: return null) ?: return null
@@ -72,38 +79,36 @@ class RunServiceTask(
         executeRunConfigures(project, settings, runContext, testEventsListener, indicator)
 
         @Suppress("UnstableApiUsage")
-        invokeAndWaitIfNeeded {  }
+        invokeAndWaitIfNeeded { }
 
         val testResults = testRoots.map { it.toCheckResult() }
-        if (testResults.isEmpty()) return ""
+        if (testResults.isEmpty()) return CheckResult.noTestsRun
 
-        val output = processListener.output
-        val errorOutput = output.stderr
-
-        if (output.exitCode != 0) {
-            return errorOutput
-        }
-
-        val outputString = output.stdout
-        return outputString
+        val firstFailure = testResults.firstOrNull { it.status != CheckStatus.Solved }
+        val result = firstFailure ?: testResults.first()
+        return result
     }
 
-
-    protected fun SMTestProxy.SMRootTestProxy.toCheckResult(): String {
-        if (finishedSuccessfully()) return ""
+    protected fun SMTestProxy.SMRootTestProxy.toCheckResult(): CheckResult {
+        if (finishedSuccessfully()) return CheckResult(CheckStatus.Solved, "CONGRATULATIONS")
 
         val failedChildren = collectChildren(object : Filter<SMTestProxy>() {
             override fun shouldAccept(test: SMTestProxy): Boolean = test.isLeaf && !test.finishedSuccessfully()
         })
 
         val firstFailedTest = failedChildren.firstOrNull() ?: error("Testing failed although no failed tests found")
-        val diff = firstFailedTest.diffViewerProvider?.let { CheckResultDiff(it.left, it.right, it.diffTitle) }
+        val diff = firstFailedTest.diffViewerProvider?.let {
+            CheckResultDiff(it.left, it.right, it.diffTitle)
+        }
         val message = if (diff != null) getComparisonErrorMessage(firstFailedTest) else getErrorMessage(firstFailedTest)
         val details = firstFailedTest.stacktrace
-        return details?.let { "$message\n$details" } ?: message
+        return CheckResult(
+            CheckStatus.Failed,
+            removeAttributes(fillWithIncorrect(message)),
+            diff = diff,
+            details = details
+        )
     }
-
-    data class CheckResultDiff(val expected: String, val actual: String, val title: String = "")
 
     private fun SMTestProxy.finishedSuccessfully(): Boolean {
         return !hasErrors() && (isPassed || isIgnored)
@@ -126,14 +131,14 @@ class RunServiceTask(
      */
     @Suppress("UnstableApiUsage")
     @NlsSafe
-    protected open fun getErrorMessage(node: SMTestProxy): String = node.errorMessage ?: "Execution failed"
+    private fun getErrorMessage(node: SMTestProxy): String = node.errorMessage ?: "Execution failed"
 
     /**
      * Returns message for comparison error that will be shown to a user in Check Result panel
      */
-    protected open fun getComparisonErrorMessage(node: SMTestProxy): String = getErrorMessage(node)
+    private fun getComparisonErrorMessage(node: SMTestProxy): String = getErrorMessage(node)
 
-    fun fillWithIncorrect(message: String): String =
+    private fun fillWithIncorrect(message: String): String =
         message.nullize(nullizeSpaces = true) ?: "Incorrect"
 
     fun executeRunConfigures(
