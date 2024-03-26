@@ -17,7 +17,6 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilBase
-import com.jetbrains.python.PythonLanguage
 import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFile
 import com.jetbrains.python.psi.PyFunction
@@ -25,7 +24,7 @@ import com.jetbrains.python.run.PythonRunConfiguration
 import com.jetbrains.python.run.PythonRunConfigurationProducer
 
 class PythonAutoTestService : AutoTestService() {
-    override fun isApplicable(element: PsiElement): Boolean = element.language is PythonLanguage
+    override fun isApplicable(element: PsiElement): Boolean = element.language.displayName == "Python"
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = PythonRunConfiguration::class.java
     override fun psiFileClass(project: Project): Class<out PsiElement> = PyFile::class.java
 
