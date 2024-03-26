@@ -7,7 +7,6 @@ import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.impl.ExecutionManagerImpl
 import com.intellij.execution.process.*
-import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.testframework.sm.runner.SMTRunnerEventsAdapter
@@ -16,20 +15,14 @@ import com.intellij.execution.testframework.sm.runner.SMTestProxy
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.application.runInEdt
-import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.util.messages.MessageBusConnection
-import java.io.BufferedWriter
-import java.io.IOException
-import java.io.OutputStreamWriter
-import java.nio.charset.StandardCharsets
 import java.util.concurrent.CountDownLatch
 
 interface RunService {
@@ -177,7 +170,7 @@ interface RunService {
             configurations.startRunConfigurationExecution(context)
         }
 
-        //        if run in Task, Disposer.dispose(context)
+        // if run in Task, Disposer.dispose(context)
     }
 
 
@@ -210,9 +203,9 @@ interface RunService {
             return@Callback
         }
 
-        Disposer.register(context, Disposable {
+        Disposer.register(context) {
             ExecutionManagerImpl.stopProcess(descriptor)
-        })
+        }
         val processHandler = descriptor.processHandler
         if (processHandler != null) {
             processHandler.addProcessListener(object : ProcessAdapter() {
@@ -230,64 +223,3 @@ interface RunService {
     }
 }
 
-private class CheckExecutionListener(
-    private val executorId: String,
-    private val context: Context,
-) : ExecutionListener {
-    override fun processStartScheduled(executorId: String, env: ExecutionEnvironment) {
-        checkAndExecute(executorId, env) {
-            context.executionListener?.processStartScheduled(executorId, env)
-        }
-    }
-
-    override fun processNotStarted(executorId: String, env: ExecutionEnvironment) {
-        checkAndExecute(executorId, env) {
-            context.latch.countDown()
-            context.executionListener?.processNotStarted(executorId, env)
-        }
-    }
-
-    override fun processStarting(executorId: String, env: ExecutionEnvironment) {
-        checkAndExecute(executorId, env) {
-            context.executionListener?.processStarting(executorId, env)
-        }
-    }
-
-    override fun processStarted(executorId: String, env: ExecutionEnvironment, handler: ProcessHandler) {
-        checkAndExecute(executorId, env) {
-            context.executionListener?.processStarted(executorId, env, handler)
-        }
-    }
-
-    override fun processTerminating(executorId: String, env: ExecutionEnvironment, handler: ProcessHandler) {
-        checkAndExecute(executorId, env) {
-            context.executionListener?.processTerminating(executorId, env, handler)
-        }
-    }
-
-    override fun processTerminated(
-        executorId: String,
-        env: ExecutionEnvironment,
-        handler: ProcessHandler,
-        exitCode: Int
-    ) {
-        checkAndExecute(executorId, env) {
-            context.executionListener?.processTerminated(executorId, env, handler, exitCode)
-        }
-    }
-
-    private fun checkAndExecute(executorId: String, env: ExecutionEnvironment, action: () -> Unit) {
-        if (this.executorId == executorId && env in context.environments) {
-            action()
-        }
-    }
-}
-
-class Context(
-    val processListener: ProcessListener?,
-    val executionListener: ExecutionListener?,
-    val latch: CountDownLatch
-) : Disposable {
-    val environments: MutableList<ExecutionEnvironment> = mutableListOf()
-    override fun dispose() {}
-}
