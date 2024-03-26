@@ -14,6 +14,7 @@ import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.testframework.sm.runner.SMTRunnerEventsAdapter
 import com.intellij.execution.testframework.sm.runner.SMTRunnerEventsListener
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
+import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.Project
@@ -27,6 +28,7 @@ import java.io.IOException
 import java.io.OutputStreamWriter
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 class RunServiceTask(
     private val project: Project,
@@ -72,6 +74,9 @@ class RunServiceTask(
         val runContext = RunContext(processListener, null, CountDownLatch(1))
         executeRunConfigures(project, settings, runContext, testEventsListener, indicator)
 
+        @Suppress("UnstableApiUsage")
+        invokeAndWaitIfNeeded {  }
+
         val output = processListener.output
         val errorOutput = output.stderr
 
@@ -89,12 +94,12 @@ class RunServiceTask(
         runContext: RunContext,
         testEventsListener: SMTRunnerEventsAdapter,
         indicator: ProgressIndicator
-    ): Boolean {
+    ) {
         val connection = project.messageBus.connect()
         try {
             return executeRunConfigurations(connection, settings, runContext, testEventsListener, indicator)
         } finally {
-//            connection.disconnect()
+            connection.disconnect()
         }
     }
 
@@ -104,7 +109,7 @@ class RunServiceTask(
         runContext: RunContext,
         testEventsListener: SMTRunnerEventsListener?,
         indicator: ProgressIndicator
-    ): Boolean {
+    ) {
         testEventsListener?.let {
             connection.subscribe(SMTRunnerEventsListener.TEST_STATUS, it)
         }
@@ -116,15 +121,21 @@ class RunServiceTask(
                 CheckExecutionListener(runnerId(), runContext)
             )
 
-            configurations.startRunConfigurationExecution(runContext)
+            try {
+                configurations.startRunConfigurationExecution(runContext)
+            } catch (e: ExecutionException) {
+                runContext.latch.countDown()
+            }
+        }
+
+        while (!indicator.isCanceled) {
+            val result = runContext.latch.await(100, TimeUnit.MILLISECONDS)
+            if (result) break
         }
 
         if (indicator.isCanceled) {
             Disposer.dispose(runContext)
-            return false
         }
-
-        return true
     }
 
     @Throws(ExecutionException::class)
