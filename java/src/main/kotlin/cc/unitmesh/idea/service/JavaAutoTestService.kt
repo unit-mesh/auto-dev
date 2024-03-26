@@ -161,8 +161,10 @@ class JavaAutoTestService : AutoTestService() {
         ): GradleRunConfiguration? {
             val name = virtualFile.name
 
-            val psiFile: PsiJavaFile = PsiManager.getInstance(project).findFile(virtualFile) as? PsiJavaFile ?: return null
-            val canonicalName = runReadAction { psiFile.packageName + "." + virtualFile.nameWithoutExtension }
+            val canonicalName = runReadAction {
+                val psiFile: PsiJavaFile = PsiManager.getInstance(project).findFile(virtualFile) as? PsiJavaFile ?: return@runReadAction null
+                psiFile.packageName + "." + virtualFile.nameWithoutExtension
+            } ?: return null
 
             val runManager = RunManager.getInstance(project)
 
