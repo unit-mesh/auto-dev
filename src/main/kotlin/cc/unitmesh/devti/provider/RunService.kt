@@ -23,8 +23,16 @@ interface RunService {
      */
     fun runConfigurationClass(project: Project): Class<out RunProfile>?
 
-    fun psiFileClass(project: Project): Class<out PsiElement>
-
+    /**
+     * Creates a new run configuration for the given project and virtual file.
+     *
+     * 1. Looks up the PSI file from the virtual file using `PsiManager.getInstance(project).findFile(virtualFile)`.
+     * 2. Creates a RunConfigurationSettings instance with the name "name" and the specified RunConfigurationType using `RunManager.getInstance(project).createConfiguration("name", RunConfigurationType)`.
+     *
+     * @param project The project for which to create the run configuration.
+     * @param virtualFile The virtual file to associate with the run configuration.
+     * @return The newly created RunConfiguration, or `null` if creation failed.
+     */
     fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? = null
 
     /**
