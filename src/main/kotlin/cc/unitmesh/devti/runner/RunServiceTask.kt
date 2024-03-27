@@ -4,7 +4,6 @@ package cc.unitmesh.devti.runner
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.provider.RunService
 import com.intellij.execution.*
-import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.impl.ExecutionManagerImpl
 import com.intellij.execution.process.*
@@ -54,18 +53,10 @@ class RunServiceTask(
      * @return The check result of the executed run configuration, or `null` if no run configuration could be created.
      */
     fun doRun(indicator: ProgressIndicator?): RunnerResult? {
-        var settings: RunnerAndConfigurationSettings? = runService.createRunSettings(project, virtualFile)
+        val settings: RunnerAndConfigurationSettings? = runService.createRunSettings(project, virtualFile, testElement)
         if (settings == null) {
-            if (testElement == null) {
-                logger<RunServiceTask>().error("No run configuration found for file: ${virtualFile.path}")
-                return null
-            }
-            settings = runService.createDefaultTestConfigurations(project, testElement)
-
-            if (settings == null) {
-                logger<RunServiceTask>().error("No run configuration found for element: $testElement")
-                return null
-            }
+            logger<RunServiceTask>().error("No run configuration found for file: ${virtualFile.path}")
+            return null
         }
 
         settings.isActivateToolWindowBeforeRun = false

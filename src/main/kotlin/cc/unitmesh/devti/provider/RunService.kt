@@ -49,7 +49,14 @@ interface RunService {
      * @param virtualFile The virtual file for which the configuration should be created.
      * @return The created or found run configuration settings, or `null` if no suitable configuration could be
      */
-    fun createRunSettings(project: Project, virtualFile: VirtualFile): RunnerAndConfigurationSettings? {
+    fun createRunSettings(project: Project, virtualFile: VirtualFile, testElement: PsiElement?): RunnerAndConfigurationSettings? {
+        if (testElement != null) {
+            val settings = createDefaultTestConfigurations(project, testElement)
+            if (settings != null) {
+                return settings
+            }
+        }
+
         val runManager = RunManager.getInstance(project)
         var testConfig = runManager.allConfigurationsList.firstOrNull {
             val runConfigureClass = runConfigurationClass(project)
