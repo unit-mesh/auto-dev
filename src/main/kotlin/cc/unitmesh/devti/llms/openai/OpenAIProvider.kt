@@ -35,11 +35,11 @@ class OpenAIProvider(val project: Project) : LLMProvider {
     private val timeout = Duration.ofSeconds(defaultTimeout)
     private val openAiVersion: String
         get() {
-            val customModel = AutoDevSettingsState.getInstance().customModel
-            if(AutoDevSettingsState.getInstance().openAiModel == SELECT_CUSTOM_MODEL) {
-                AutoDevSettingsState.getInstance().openAiModel = customModel
+            val model = AutoDevSettingsState.getInstance().openAiModel
+            if(model == SELECT_CUSTOM_MODEL) {
+                return AutoDevSettingsState.getInstance().customModel
             }
-            return  AutoDevSettingsState.getInstance().openAiModel
+            return model
         }
     private val openAiKey: String
         get() = AutoDevSettingsState.getInstance().openAiKey
