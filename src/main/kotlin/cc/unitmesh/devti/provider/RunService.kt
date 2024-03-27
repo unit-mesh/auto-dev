@@ -36,9 +36,6 @@ interface RunService {
      */
     fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? = null
 
-    fun createDefaultTestConfigurations(project: Project, element: PsiElement): RunnerAndConfigurationSettings? {
-        return ConfigurationContext(element).configurationsFromContext?.firstOrNull()?.configurationSettings
-    }
     /**
      * Creates a new run configuration settings for the given project and virtual file.
      *
@@ -89,6 +86,10 @@ interface RunService {
         runManager.selectedConfiguration = settings
 
         return settings
+    }
+
+    private fun createDefaultTestConfigurations(project: Project, element: PsiElement): RunnerAndConfigurationSettings? {
+        return ConfigurationContext(element).configurationsFromContext?.firstOrNull()?.configurationSettings
     }
 
     /**
