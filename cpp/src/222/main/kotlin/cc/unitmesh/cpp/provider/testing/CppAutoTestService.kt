@@ -21,7 +21,6 @@ class CppAutoTestService : AutoTestService() {
     // TODO in Cpp233 and Cpp222 the RunProfile is different, maybe we can use the same RunProfile in future
     override fun runConfigurationClass(project: Project): Class<out RunProfile>? = null
     override fun isApplicable(element: PsiElement): Boolean = element.language is OCLanguage
-    override fun psiFileClass(project: Project): Class<out PsiElement> = OCFile::class.java
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
         // 1. check project root test folder, if not exist, create it

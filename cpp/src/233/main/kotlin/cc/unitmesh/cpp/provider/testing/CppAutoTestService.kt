@@ -14,14 +14,11 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.jetbrains.cidr.cpp.execution.testing.tcatch.CMakeCatchTestRunConfigurationType
 import com.jetbrains.cidr.lang.OCLanguage
-import com.jetbrains.cidr.lang.psi.OCFile
 import com.jetbrains.cidr.lang.psi.OCFunctionDeclaration
 import java.io.File
 
 class CppAutoTestService : AutoTestService() {
     override fun runConfigurationClass(project: Project): Class<out RunProfile>? = null
-    override fun psiFileClass(project: Project): Class<out PsiElement> = OCFile::class.java
-
     override fun isApplicable(element: PsiElement): Boolean = element.language is OCLanguage
 
     override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {

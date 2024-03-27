@@ -21,7 +21,6 @@ import org.jetbrains.plugins.scala.testingSupport.test.testdata.AllInPackageTest
 class ScalaTestService : AutoTestService() {
     override fun isApplicable(element: PsiElement): Boolean = element is ScalaPsiElement
     override fun runConfigurationClass(project: Project): Class<out RunProfile>? = ScalaTestRunConfiguration::class.java
-    override fun psiFileClass(project: Project): Class<out PsiElement> = ScalaFile::class.java
 
     override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
         val scalaFile = PsiManager.getInstance(project).findFile(virtualFile) as? ScalaFile ?: return null
