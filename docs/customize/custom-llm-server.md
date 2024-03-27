@@ -98,11 +98,12 @@ And the request body will be:
 - Custom Engine Server：https://api.moonshot.cn/v1/chat/completions 
 - Request body format
 ```json
-{ "customFields": {"model": "moonshot-v1-8k"},   "messageKeys": {"role": "role", "content": "content"} }
+{ "customFields": {"model": "moonshot-v1-8k", "stream": true },   "messageKeys": {"role": "role", "content": 
+"content"} }
 ```
 - Response format:
 ```
-$.choices[0].delta.content 
+$.choices[0].delta.content
 ```
 
 ### DeepSeek AI examples

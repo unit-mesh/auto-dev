@@ -80,25 +80,31 @@ open class CustomSSEProcessor(private val project: Project) {
                     sseFlowable
                         .doOnError {
                             it.printStackTrace()
+                            trySend(it.message ?: "Error occurs")
                             close()
                         }
                         .blockingForEach { sse ->
                             if (responseFormat.isNotEmpty()) {
                                 // {"id":"cmpl-a22a0d78fcf845be98660628fe5d995b","object":"chat.completion.chunk","created":822330,"model":"moonshot-v1-8k","choices":[{"index":0,"delta":{},"finish_reason":"stop","usage":{"prompt_tokens":434,"completion_tokens":68,"total_tokens":502}}]}
                                 // in some case, the response maybe not equal to our response format, so we need to ignore it
-//                                logger.info("SSE: ${sse.data}")
-                                val chunk: String = try {
-                                    JsonPath.parse(sse!!.data)?.read(responseFormat) ?: ""
-                                } catch (e: Exception) {
-                                    if (hasSuccessRequest) {
-                                        logger.info("Failed to parse response", e)
-                                    } else {
-                                        logger.error("Failed to parse response", e)
-                                    }
-                                    return@blockingForEach
-                                }
+                                val chunk: String? = JsonPath.parse(sse!!.data)?.read(responseFormat)
 
-                                if (chunk.isEmpty()) {
+                                // new JsonPath lib caught the exception, so we need to handle when it is null
+                                if (chunk == null) {
+                                    // if first chunk parse failed, notice user to check response format
+                                    if(hasSuccessRequest) {
+                                        val errorMsg = """
+                                        **Failed** to parse response.origin response is: 
+                                        <code>${sse.data}</code>
+                                         please check your response format: 
+                                        **$responseFormat**\n""".trimIndent()
+
+                                        // TODO add refresh feature
+                                        trySend(errorMsg)
+                                        close()
+                                    } else {
+                                        logger.info("Failed to parse response.origin response is: ${sse.data}")
+                                    }
                                     return@blockingForEach
                                 }
 
