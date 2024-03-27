@@ -3,6 +3,7 @@ package cc.unitmesh.devti.provider
 import cc.unitmesh.devti.runner.RunServiceTask
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
+import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.openapi.diagnostic.Logger
@@ -35,6 +36,9 @@ interface RunService {
      */
     fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? = null
 
+    fun createDefaultTestConfigurations(project: Project, element: PsiElement): RunnerAndConfigurationSettings? {
+        return ConfigurationContext(element).configurationsFromContext?.firstOrNull()?.configurationSettings
+    }
     /**
      * Creates a new run configuration settings for the given project and virtual file.
      *
@@ -88,8 +92,8 @@ interface RunService {
      * @param virtualFile The virtual file that represents the file to be run.
      * @return The result of the run operation, or `null` if an error occurred.
      */
-    fun runFile(project: Project, virtualFile: VirtualFile, testElement: PsiElement?): String? {
-        val runTask = RunServiceTask(project, virtualFile, testElement, this)
+    fun runFile(project: Project, virtualFile: VirtualFile, psiElement: PsiElement?): String? {
+        val runTask = RunServiceTask(project, virtualFile, psiElement, this)
         ProgressManager.getInstance().run(runTask)
         return null
     }

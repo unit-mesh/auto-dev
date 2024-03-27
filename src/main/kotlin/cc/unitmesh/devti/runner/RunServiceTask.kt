@@ -16,6 +16,7 @@ import com.intellij.execution.testframework.sm.runner.SMTRunnerEventsListener
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.application.runInEdt
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
@@ -55,7 +56,16 @@ class RunServiceTask(
     fun doRun(indicator: ProgressIndicator?): RunnerResult? {
         var settings: RunnerAndConfigurationSettings? = runService.createRunSettings(project, virtualFile)
         if (settings == null) {
-            settings = createDefaultTestConfigurations(project, testElement ?: return null) ?: return null
+            if (testElement == null) {
+                logger<RunServiceTask>().error("No run configuration found for file: ${virtualFile.path}")
+                return null
+            }
+            settings = runService.createDefaultTestConfigurations(project, testElement)
+
+            if (settings == null) {
+                logger<RunServiceTask>().error("No run configuration found for element: $testElement")
+                return null
+            }
         }
 
         settings.isActivateToolWindowBeforeRun = false
@@ -231,10 +241,5 @@ class RunServiceTask(
                 processHandler.addProcessListener(it)
             }
         }
-    }
-
-
-    fun createDefaultTestConfigurations(project: Project, element: PsiElement): RunnerAndConfigurationSettings? {
-        return ConfigurationContext(element).configurationsFromContext?.firstOrNull()?.configurationSettings
     }
 }
