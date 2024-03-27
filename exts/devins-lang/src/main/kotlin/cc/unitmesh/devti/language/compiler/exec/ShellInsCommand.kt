@@ -31,8 +31,9 @@ class ShellInsCommand(val myProject: Project, private val argument: String) : In
 
         val workingDirectory = virtualFile.parent.path
         val shRunner = ApplicationManager.getApplication().getService(ShRunner::class.java)
+            ?: return "<DevInsError>: Shell runner not found"
 
-        if (shRunner != null && shRunner.isAvailable(myProject)) {
+        if (shRunner.isAvailable(myProject)) {
             shRunner.run(myProject, virtualFile.path, workingDirectory, "RunDevInsShell", true)
         }
 
