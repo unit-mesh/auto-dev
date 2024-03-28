@@ -24,8 +24,11 @@ class DevInsDocumentationProvider : AbstractDocumentationProvider() {
             }
 
             DevInTypes.COMMAND_ID -> {
-                BuiltinCommand.all().find { it.commandName == element.text }?.description
+                val command = BuiltinCommand.all().find { it.commandName == element.text } ?: return null
+                val example = BuiltinCommand.example(command)
+                "${command.description}\n\nExample:\n```devin\n$example\n```\n"
             }
+
             DevInTypes.VARIABLE_ID -> {
                 CustomVariable.all().find { it.variable == element.text }?.description
             }
