@@ -14,11 +14,11 @@ class FileFunctionProvider : CompletionProvider<CompletionParameters>() {
         result: CompletionResultSet
     ) {
         FileFunc.all().forEach {
-            result.addElement(
-                LookupElementBuilder.create(it.funcName)
-                    .withIcon(it.icon)
-                    .withTypeText(it.description, true)
-            )
+            val element = LookupElementBuilder.create(it.funcName)
+                .withIcon(it.icon)
+                .withTypeText(it.description, true)
+
+            result.addElement(element)
         }
     }
 }
