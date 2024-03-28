@@ -56,6 +56,12 @@
                          implementationClass="cc.unitmesh.devti.language.lints.DevInsDuplicateAgentInspection"/>
     </extensions>
 
+    <extensionPoints>
+        <extensionPoint qualifiedName="devins.agentTool"
+                        interface="cc.unitmesh.devti.language.agenttool.AgentTool"
+                        dynamic="true"/>
+    </extensionPoints>
+
     <actions>
         <action id="runDevInsFileAction"
                 class="cc.unitmesh.devti.language.actions.DevInsRunFileAction"

@@ -7,6 +7,9 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 
 class BrowseTool : AgentTool {
+    override val name: String get() = "Browse"
+    override val description: String = "Get the content of a given URL."
+
     override fun execute(context: AgentToolContext): AgentToolResult {
         return AgentToolResult(
             isSuccess = true,
