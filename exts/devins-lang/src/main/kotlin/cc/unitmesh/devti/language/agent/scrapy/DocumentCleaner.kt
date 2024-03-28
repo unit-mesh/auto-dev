@@ -39,16 +39,14 @@ class DocumentCleaner {
     fun articleNode(doc: Document): String? {
         var bodyElement: Element? = doc.select("html").select("body").first()
         val firstBodyElement = bodyElement ?: return null
+        // the Microdata
         for ((attr, value) in ARTICLE_BODY_ATTR) {
             bodyElement = doc.selectFirst("[$attr=$value]")
             if (bodyElement != null) {
-                // 如果找到了匹配的元素，则跳出循环
-                break
+                return bodyElement.text()
             }
         }
 
-        // 提取文章主体文本内容
-        return bodyElement?.text() ?: firstBodyElement.text()
+        return firstBodyElement.text()
     }
-
 }

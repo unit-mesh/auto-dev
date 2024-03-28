@@ -36,4 +36,22 @@ class DocumentCleanerTest {
         assertEquals("Test Description", documentContent.description)
         assertEquals("Test Text", documentContent.text)
     }
+
+    @Test
+    fun `test articleNode with valid document`() {
+        // Given
+        val html = """
+            <html>
+                <body>
+                    <div itemprop="articleBody">This is the article body</div>
+                </body>
+            </html>
+        """.trimIndent()
+
+        // When
+        val documentContent = DocumentCleaner().cleanHtml(html)
+
+        // Then
+        assertEquals("This is the article body", documentContent.text)
+    }
 }
