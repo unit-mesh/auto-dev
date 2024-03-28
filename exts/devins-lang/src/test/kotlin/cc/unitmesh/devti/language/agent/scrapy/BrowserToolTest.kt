@@ -7,7 +7,7 @@ class BrowserToolTest {
     @Test
     fun should_clean_html_with_simple_tags() {
         // When
-        val cleanedHtml = BrowserTool.cleanHtml("https://ide.unitmesh.cc/")
+        val cleanedHtml = BrowserTool.parse("https://ide.unitmesh.cc/")
         // Then
         println(cleanedHtml)
     }

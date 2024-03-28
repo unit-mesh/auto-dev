@@ -2,7 +2,6 @@ package cc.unitmesh.devti.language.agent.scrapy;
 
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNull
-import org.jsoup.Jsoup
 import org.junit.Test
 
 class DocumentCleanerTest {
@@ -18,7 +17,7 @@ class DocumentCleanerTest {
         // Then
         assertEquals("Test Title", documentContent.title)
         assertEquals("en", documentContent.language)
-        assertEquals("Test Text", documentContent.text)
+        assertEquals("Test Text", documentContent.body)
         assertNull(documentContent.description)
     }
 
@@ -34,7 +33,7 @@ class DocumentCleanerTest {
         assertEquals("Test Title", documentContent.title)
         assertNull(documentContent.language)
         assertEquals("Test Description", documentContent.description)
-        assertEquals("Test Text", documentContent.text)
+        assertEquals("Test Text", documentContent.body)
     }
 
     @Test
@@ -52,6 +51,6 @@ class DocumentCleanerTest {
         val documentContent = DocumentCleaner().cleanHtml(html)
 
         // Then
-        assertEquals("This is the article body", documentContent.text)
+        assertEquals("This is the article body", documentContent.body)
     }
 }

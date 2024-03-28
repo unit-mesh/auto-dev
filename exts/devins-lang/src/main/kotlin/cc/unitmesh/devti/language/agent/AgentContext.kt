@@ -1,5 +1,10 @@
 package cc.unitmesh.devti.language.agent
 
-class AgentContext {
+import com.intellij.openapi.project.Project
+
+class AgentContext(
+    val project: Project,
+    val argument: String
+) {
 
 }

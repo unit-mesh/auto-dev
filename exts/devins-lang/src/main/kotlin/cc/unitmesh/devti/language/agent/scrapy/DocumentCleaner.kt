@@ -15,7 +15,7 @@ class DocumentCleaner {
             title = doc.title(),
             language = metaContent(doc, "http-equiv", "Content-Language"),
             description = metaDescription(doc),
-            text = articleNode(doc)
+            body = articleNode(doc)
         )
     }
 
