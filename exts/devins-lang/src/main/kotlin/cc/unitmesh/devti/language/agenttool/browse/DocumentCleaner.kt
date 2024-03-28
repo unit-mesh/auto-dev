@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.agent.scrapy
+package cc.unitmesh.devti.language.agenttool.browse
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document

@@ -1,14 +1,14 @@
-package cc.unitmesh.devti.language.agent.scrapy
+package cc.unitmesh.devti.language.agenttool.browse
 
-import cc.unitmesh.devti.language.agent.AgentContext
-import cc.unitmesh.devti.language.agent.AgentTool
-import cc.unitmesh.devti.language.agent.ToolResult
+import cc.unitmesh.devti.language.agenttool.AgentToolContext
+import cc.unitmesh.devti.language.agenttool.AgentTool
+import cc.unitmesh.devti.language.agenttool.AgentToolResult
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 
-class BrowserTool : AgentTool {
-    override fun execute(context: AgentContext): ToolResult {
-        return ToolResult(
+class BrowseTool : AgentTool {
+    override fun execute(context: AgentToolContext): AgentToolResult {
+        return AgentToolResult(
             isSuccess = true,
             output = parse(context.argument).body
         )

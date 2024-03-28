@@ -1,8 +1,8 @@
-package cc.unitmesh.devti.language.agent
+package cc.unitmesh.devti.language.agenttool
 
 import com.intellij.openapi.project.Project
 
-class AgentContext(
+class AgentToolContext(
     val project: Project,
     val argument: String
 ) {
