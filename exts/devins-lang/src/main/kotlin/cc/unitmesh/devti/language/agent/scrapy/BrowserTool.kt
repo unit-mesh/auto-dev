@@ -4,9 +4,7 @@ import cc.unitmesh.devti.language.agent.AgentContext
 import cc.unitmesh.devti.language.agent.AgentTool
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 import org.jsoup.safety.Safelist
-import java.util.function.Consumer
 
 class BrowserTool : AgentTool {
     override fun execute(context: AgentContext) {
@@ -23,26 +21,9 @@ class BrowserTool : AgentTool {
          *
          * Intellij API: [com.intellij.inspectopedia.extractor.utils.HtmlUtils.cleanupHtml]
          */
-        fun cleanHtml(src: String): String {
-            val doc = Jsoup.parse(Jsoup.clean(src, WHITELIST))
-
-            doc.select("ul").forEach(Consumer { e: Element ->
-                e.tagName("list")
-            })
-
-            doc.select("ol").forEach(Consumer { e: Element ->
-                e.tagName("list")
-                e.attr("type", "decimal")
-            })
-
-            doc.select("code").forEach(Consumer { element: Element ->
-                element.text(
-                    element.text()
-                )
-            })
-
-            doc.outputSettings().syntax(Document.OutputSettings.Syntax.xml)
-            return doc.body().html()
+        fun cleanHtml(url: String): DocumentContent {
+            val doc: Document = Jsoup.connect(url).get()
+            return DocumentCleaner().cleanHtml(doc)
         }
     }
 }

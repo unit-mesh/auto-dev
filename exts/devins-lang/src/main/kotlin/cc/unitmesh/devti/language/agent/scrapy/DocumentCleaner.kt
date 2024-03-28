@@ -7,6 +7,10 @@ import org.jsoup.nodes.Element
 class DocumentCleaner {
     fun cleanHtml(html: String): DocumentContent {
         val doc = Jsoup.parse(html)
+        return cleanHtml(doc)
+    }
+
+    fun cleanHtml(doc: Document): DocumentContent {
         return DocumentContent(
             title = doc.title(),
             language = metaContent(doc, "http-equiv", "Content-Language"),
@@ -47,6 +51,15 @@ class DocumentCleaner {
             }
         }
 
-        return firstBodyElement.text()
+        return trySelectBestCode(firstBodyElement)
+    }
+
+    private fun trySelectBestCode(doc: Element): String {
+        val commonBestNodes = doc.select("article, main, #main, #content, #doc-content, #contents, .book-body")
+        if (commonBestNodes.isNotEmpty()) {
+            return commonBestNodes.first()?.text() ?: ""
+        }
+
+        return doc.text()
     }
 }
