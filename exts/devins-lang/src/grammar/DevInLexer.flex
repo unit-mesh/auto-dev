@@ -46,7 +46,7 @@ SYSTEM_ID=[a-zA-Z][_\-a-zA-Z0-9]*
 NUMBER=[0-9]+
 
 TEXT_SEGMENT=[^$/@#\n]+
-COMMAND_PROP=[^:\ \t\r\n]*
+COMMAND_PROP=[^\ \t\r\n]*
 CODE_CONTENT=[^\n]+
 COMMENTS=\[ ([^\]]+)? \] [^\t\r\n]*
 NEWLINE= \n | \r | \r\n

@@ -204,6 +204,15 @@ class DevInsCompiler(
                 result.isLocalCommand = true
                 ShellInsCommand(myProject, prop)
             }
+
+            BuiltinCommand.BROWSE -> {
+                result.isLocalCommand = true
+                BrowseInsCommand(myProject, prop)
+            }
+
+            else -> {
+                PrintInsCommand("/" + commandNode.commandName + ":" + prop)
+            }
         }
 
         val execResult = runBlocking { command.execute() }

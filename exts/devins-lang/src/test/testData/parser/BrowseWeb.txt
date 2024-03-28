@@ -1,0 +1,6 @@
+DevInFile
+  DevInUsedImpl(USED)
+    PsiElement(DevInTokenType.COMMAND_START)('/')
+    PsiElement(DevInTokenType.COMMAND_ID)('browse')
+    PsiElement(DevInTokenType.COLON)(':')
+    PsiElement(DevInTokenType.COMMAND_PROP)('https://ide.unitmesh.cc')

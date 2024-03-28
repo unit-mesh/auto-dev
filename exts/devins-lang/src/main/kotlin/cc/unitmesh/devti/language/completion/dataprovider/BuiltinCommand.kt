@@ -14,6 +14,7 @@ enum class BuiltinCommand(
 ) {
     FILE("file", "Read the content of a file", AllIcons.Actions.Copy, true, true),
     REV("rev", "Read git change by file", AllIcons.Vcs.History, true, true),
+
     /**
      * Every language will have a symbol completion, which is the most basic completion, for example,
      * - Java: [com.intellij.codeInsight.completion.JavaKeywordCompletion]
@@ -39,6 +40,7 @@ enum class BuiltinCommand(
         true,
         true
     ),
+    BROWSE("browse", "Get the content of a given URL.", AllIcons.Xml.Browsers.Firefox, false, true),
     ;
 
     companion object {
