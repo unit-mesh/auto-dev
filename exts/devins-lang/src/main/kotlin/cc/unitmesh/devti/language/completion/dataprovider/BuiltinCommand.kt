@@ -14,7 +14,6 @@ enum class BuiltinCommand(
 ) {
     FILE("file", "Read the content of a file", AllIcons.Actions.Copy, true, true),
     REV("rev", "Read git change by file", AllIcons.Vcs.History, true, true),
-
     /**
      * Every language will have a symbol completion, which is the most basic completion, for example,
      * - Java: [com.intellij.codeInsight.completion.JavaKeywordCompletion]
@@ -50,17 +49,13 @@ enum class BuiltinCommand(
         fun example(command: BuiltinCommand): String {
             val commandName = command.commandName
             val inputStream = BuiltinCommand::class.java.getResourceAsStream("/agent/toolExamples/$commandName.devin")
-            if (inputStream == null) {
-                throw IllegalStateException("Example file not found: $commandName.devin")
-            }
+                ?: throw IllegalStateException("Example file not found: $commandName.devin")
 
-            return inputStream!!.use {
+            return inputStream.use {
                 it.readAllBytes().toString(StandardCharsets.UTF_8)
             }
         }
 
-        fun fromString(agentName: String): BuiltinCommand? {
-            return values().find { it.commandName == agentName }
-        }
+        fun fromString(agentName: String): BuiltinCommand? = values().find { it.commandName == agentName }
     }
 }
