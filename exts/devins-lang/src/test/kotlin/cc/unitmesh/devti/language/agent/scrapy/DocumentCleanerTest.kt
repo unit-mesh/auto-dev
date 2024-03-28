@@ -1,0 +1,39 @@
+package cc.unitmesh.devti.language.agent.scrapy;
+
+import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertNull
+import org.jsoup.Jsoup
+import org.junit.Test
+
+class DocumentCleanerTest {
+
+    @Test
+    fun shouldCleanHtmlWithValidTitleAndDescription() {
+        // Given
+        val html = "<html><head><title>Test Title</title><meta http-equiv=\"Content-Language\" content=\"en\"></head><body><p>Test Text</p></body></html>"
+
+        // When
+        val documentContent = DocumentCleaner().cleanHtml(html)
+
+        // Then
+        assertEquals("Test Title", documentContent.title)
+        assertEquals("en", documentContent.language)
+        assertEquals("Test Text", documentContent.text)
+        assertNull(documentContent.description)
+    }
+
+    @Test
+    fun shouldCleanHtmlWithValidMetaDescription() {
+        // Given
+        val html = "<html><head><title>Test Title</title><meta name=\"description\" content=\"Test Description\"></head><body><p>Test Text</p></body></html>"
+
+        // When
+        val documentContent = DocumentCleaner().cleanHtml(html)
+
+        // Then
+        assertEquals("Test Title", documentContent.title)
+        assertNull(documentContent.language)
+        assertEquals("Test Description", documentContent.description)
+        assertEquals("Test Text", documentContent.text)
+    }
+}
