@@ -40,7 +40,13 @@ enum class BuiltinCommand(
         true,
         true
     ),
-    BROWSE("browse", "Get the content of a given URL.", AllIcons.Xml.Browsers.Firefox, false, true),
+    BROWSE(
+        "browse",
+        "Get the content of a given URL",
+        AllIcons.Toolwindows.WebToolWindow,
+        false,
+        true
+    ),
     ;
 
     companion object {

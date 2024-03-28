@@ -33,6 +33,7 @@ ScreenShot
 - `/symbol`: get child by symbol, like get Class by package name, format: `java.lang.String#length`,
   example: `<package>.<class>#<method>`
 - `/shell`: run shell command, like `ls`, `pwd`, etc.
+- '/browse': browse web page, like `https://ide.unitmesh.cc`
 
 ### File Command
 
@@ -98,3 +99,10 @@ The output will be:
     }
     ```
 
+### Browse Command
+
+Browse web page:
+
+    /browse:https://ide.unitmesh.cc
+
+The will be text inside body from web page.

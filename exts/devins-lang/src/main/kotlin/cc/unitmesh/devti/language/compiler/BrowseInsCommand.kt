@@ -5,7 +5,7 @@ import cc.unitmesh.devti.language.compiler.exec.InsCommand
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.project.Project
 
-class BrowseInsCommand(val myProject: Project, val prop: String) : InsCommand {
+class BrowseInsCommand(val myProject: Project, private val prop: String) : InsCommand {
     override suspend fun execute(): String? {
         var body: String? = null
         runInEdt {
