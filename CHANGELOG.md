@@ -1,6 +1,62 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v1.7.3...v) (2024-03-22)
+# [](https://github.com/unit-mesh/auto-dev/compare/v1.7.4...v) (2024-03-28)
 
 ## [Unreleased]
+
+## [1.7.4](https://github.com/unit-mesh/auto-dev/compare/v1.7.3...v[1.7.4]) (2024-03-28)
+
+### Bug Fixes
+- **core:** handle null response in JsonPath parsing ([7e60675](https://github.com/unit-mesh/auto-dev/commit/7e60675043123e566eb652fdf6acdc77f17670a8))
+- **core:** openAI custom model not work as expected ([d4eee77](https://github.com/unit-mesh/auto-dev/commit/d4eee7778e6698db378292733b927f408bed7f78)), closes [#119](https://github.com/unit-mesh/auto-dev/issues/119)
+- **devins-cpp:** move test config for Intellij IDEA 223 only, which is C++  test configurations and test discovery [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([fb588e3](https://github.com/unit-mesh/auto-dev/commit/fb588e30ca0d0b65e2c8d4a2c9df23dcf12c7e3b))
+- **devins-lang:** add basic handle for exitCode=-1 to recall function ([6bcdf15](https://github.com/unit-mesh/auto-dev/commit/6bcdf159a05a2295895027a86cebc59ec9a78279))
+- **devins-lang:** fix process termination listener [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([ff38ea9](https://github.com/unit-mesh/auto-dev/commit/ff38ea9b97d5e801883d889482d2c17d06fce192))
+- **devins-lang:** handle nullable inputStream and improve string concatenation for better performance and readability. ([910daa0](https://github.com/unit-mesh/auto-dev/commit/910daa0446b15ddb5b9b8883ff41e3d3f49e7ce1))
+- **devins-lang:** improve file content extraction ([5f8dc29](https://github.com/unit-mesh/auto-dev/commit/5f8dc29616978779e995b2fa941038cbe51b02be)), closes [#100](https://github.com/unit-mesh/auto-dev/issues/100)
+- **devins-lang:** improve file writing performance [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([6340666](https://github.com/unit-mesh/auto-dev/commit/6340666063c9a1fc9ec395c6e9f9807a79b416b5))
+- **error-handling:** ensure correct line range calculation in ErrorMessageProcessor ([fc47e49](https://github.com/unit-mesh/auto-dev/commit/fc47e492de703a33e64b7aba4d63baff3a7ea708))
+- fix IDEA 222 error in get changes data ([faaa7c9](https://github.com/unit-mesh/auto-dev/commit/faaa7c922df5dd99e7375e289240cd7b07ca3cf0))
+- **java-auto-test:** ensure thread safety when finding and parsing PsiJavaFile ([ee7a79c](https://github.com/unit-mesh/auto-dev/commit/ee7a79c407d2d0d64e4eac1403747c7e1195786b))
+- **run-service:** ensure correct process lifecycle handling and remove unnecessary imports ([cdec106](https://github.com/unit-mesh/auto-dev/commit/cdec106daf1cf1413be870bd80cf8454c8fe5ac8))
+
+### Features
+- add custom AI engine setting for inlay code complete ([7de0431](https://github.com/unit-mesh/auto-dev/commit/7de0431b7fd49fddfe3817c9762030e12c76bb7a))
+- add inlay code complete custom ai engine toggle in dev coder config ([268f309](https://github.com/unit-mesh/auto-dev/commit/268f309f7b798261f31fc85d9e92e43b2bc3edc7))
+- **auto-test:** refactor and optimize auto-test service implementations [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([3c69b77](https://github.com/unit-mesh/auto-dev/commit/3c69b772f29011a3872bb81795cb7cc853fbc6ce))
+- **browser:** init tool code [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([5ca636c](https://github.com/unit-mesh/auto-dev/commit/5ca636c7156178403ac8a855c78421df1c4e1b52))
+- **devins-android:** init Android test service support ([24a5da1](https://github.com/unit-mesh/auto-dev/commit/24a5da1b2b28d538c2cfc04f418b81c02401e3c9))
+- **devins-cpp:** add support for C++ test configurations and test discovery [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([23865dd](https://github.com/unit-mesh/auto-dev/commit/23865dd46f87d780534a91f337a642750524e320))
+- **devins-cpp:** add support for IDEA version 222 OCLanguage in test discovery ([551d815](https://github.com/unit-mesh/auto-dev/commit/551d815950e47ae9d73973b8d0dcce598fd29305))
+- **devins-cpp:** refactor for factory usage [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([9dd5c48](https://github.com/unit-mesh/auto-dev/commit/9dd5c48e8d4d7b82c66cdffc8b404ff4b8f9cd74))
+- **devins-golang:** add support for Golang run configurations and test context provider [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([f1ddea0](https://github.com/unit-mesh/auto-dev/commit/f1ddea0ed6b3c597c3347edeb734d05cef114bfc))
+- **devins-kotlin:** refactor RunService to use new ExecutionManager API [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([8e47d2e](https://github.com/unit-mesh/auto-dev/commit/8e47d2e59b7867bb374fd7e4747dedf1e14d41cc))
+- **devins-lang:** add docs support for built-in command examples [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([ebacccd](https://github.com/unit-mesh/auto-dev/commit/ebacccd2617746eed607354d8bb80f729b7339bb))
+- **devins-lang:** add markdown support for built-in command examples ([8bd3bce](https://github.com/unit-mesh/auto-dev/commit/8bd3bcecbe8228e1ae6fc0596e37a61b5e45527d))
+- **devins-lang:** add support for browsing web content with new command `/browse` ([5e8fac4](https://github.com/unit-mesh/auto-dev/commit/5e8fac471a6c65bee450f1aa593fbd0892660c06))
+- **devins-lang:** add support for built-in command examples [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([68fd6b6](https://github.com/unit-mesh/auto-dev/commit/68fd6b6afcc58144255494829d3631a041b4b207))
+- **devins-lang:** add support for LLM responses in DevInsConversations [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([5f9bf7f](https://github.com/unit-mesh/auto-dev/commit/5f9bf7faf520965d7a4250d8011c71942de9a8da))
+- **devins-lang:** add support for processing flag comments [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([13b796f](https://github.com/unit-mesh/auto-dev/commit/13b796f7ba92d102b621ace5b965d88dd9fa8d03))
+- **devins-lang:** improve conversation service and compiler [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([261780f](https://github.com/unit-mesh/auto-dev/commit/261780f17cc279599d2fd69e877875a325f995fd))
+- **devins-lang:** introduce new ShellRunService to support running shell scripts. This service simplifies the execution of shell commands within the DevIns IDE, enhancing the user experience. [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([3ce99a7](https://github.com/unit-mesh/auto-dev/commit/3ce99a7799457ad57fadb50e5d659161f8bfffe8))
+- **devins-lang:** introduce new ShellRunService to support running shell scripts. This service simplifies the execution of shell commands within the DevIns IDE, enhancing the user experience. [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([1c48d01](https://github.com/unit-mesh/auto-dev/commit/1c48d01b0fc64bc99785125c0ab608ddadf57d37))
+- **devins-lang:** refactor reorg conversation [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([56db7e5](https://github.com/unit-mesh/auto-dev/commit/56db7e5b6d1f92f2a25be53943837df4440d7785))
+- **devins-lang:** refactor reorg conversation [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([fc307a9](https://github.com/unit-mesh/auto-dev/commit/fc307a93a6657846c65a32f0435532c97e307ad3))
+- **devins-lang:** remove unused methods [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([cd1bf89](https://github.com/unit-mesh/auto-dev/commit/cd1bf897ee2b7a7af52d291f77af1af4d9cbe808))
+- **devins-python:** add support for creating Python run configurations [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([691fff5](https://github.com/unit-mesh/auto-dev/commit/691fff55851f71ea439bd6511b109f3ce67bf4cc))
+- **devins-rsut:** add support for creating Rust run configurations [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([802d634](https://github.com/unit-mesh/auto-dev/commit/802d634407606674cebeed09093e1698aeafa4dc))
+- **devins-run:** add default langauge runner support for configurations and test discovery [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([49e2ae6](https://github.com/unit-mesh/auto-dev/commit/49e2ae698f1dc710fdd4bf12e7a15a3c5ed4ec1f))
+- **devins-scala:** add support for Scala run configurations and test context provider [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([b687994](https://github.com/unit-mesh/auto-dev/commit/b6879946b2bd81ffb98d9940d839458d957e61b8))
+- **run-service:** add support for specifying a test element when creating run configurations. This enhancement allows for more targeted and efficient execution of tests within the DevIns IDE. [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([3375f8a](https://github.com/unit-mesh/auto-dev/commit/3375f8ae3298021648f705854ae084a1244beb82))
+- **run-service:** introduce new ShellRunService to support running shell scripts. This service simplifies the execution of shell commands within the DevIns IDE, enhancing the user experience. [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([44b3859](https://github.com/unit-mesh/auto-dev/commit/44b3859da27a39c13d980c393beae186aed19420))
+- **run-service:** refactor createConfiguration method to use PSI file lookup and create RunConfigurationSettings instance. This refactoring improves the readability and maintainability of the RunService class. [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([939cfe7](https://github.com/unit-mesh/auto-dev/commit/939cfe77b684453fd0cbde7826d078e6cba9046a))
+- **runner:** introduce new RunContext class and refactor RunServiceTask and RunServiceExt to use it. This change simplifies the execution context management and improves code readability. [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([3db0623](https://github.com/unit-mesh/auto-dev/commit/3db06232509f173e109d303167a6fe88e64d5e60))
+- **scrapy:** add new browser tool and document cleaner ([2b95738](https://github.com/unit-mesh/auto-dev/commit/2b95738bf35d064b73676b4813bf7564499502da))
+- **scrapy:** add new browser tool and document cleaner ([abcf8c0](https://github.com/unit-mesh/auto-dev/commit/abcf8c0a6977d7846bca0c75beb5bf33c862d62c))
+- **scrapy:** refactor and improve document cleaning logic ([cc9f956](https://github.com/unit-mesh/auto-dev/commit/cc9f956b9ef1015080508f8af6681bcf28045578))
+- **scrapy:** refactor and improve document cleaning logic ([041d743](https://github.com/unit-mesh/auto-dev/commit/041d7432bcd1112fddb07d973bf8afc75fd22223))
+- **scrapy:** refactor and improve document cleaning logic [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([898f8ed](https://github.com/unit-mesh/auto-dev/commit/898f8ed8fbf51ad06ebc7e2882d522a52365c2d2))
+- **scrapy:** refactor and improve document cleaning logic [#100](https://github.com/unit-mesh/auto-dev/issues/100) ([12a0c92](https://github.com/unit-mesh/auto-dev/commit/12a0c92fd9b1a6dbe5cd8b7342dc384a755c1b51))
+- should dispose inlay when esc ([b746704](https://github.com/unit-mesh/auto-dev/commit/b74670426f9b0e5b2e10bb8796cba8700ac12a81))
+- use custom agent when inlay complete code ([d426ab3](https://github.com/unit-mesh/auto-dev/commit/d426ab3a86e5481ac9826a0ed47e95ed33c432df))
 
 ## [1.7.3](https://github.com/unit-mesh/auto-dev/compare/v1.7.2...v[1.7.3]) (2024-03-22)
 
@@ -1285,7 +1341,8 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.7.3...HEAD
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.7.4...HEAD
+[1.7.4]: https://github.com/unit-mesh/auto-dev/compare/v1.7.3...v1.7.4
 [1.7.3]: https://github.com/unit-mesh/auto-dev/compare/v1.7.2...v1.7.3
 [1.7.2]: https://github.com/unit-mesh/auto-dev/compare/v1.7.1...v1.7.2
 [1.7.1]: https://github.com/unit-mesh/auto-dev/compare/v1.6.5...v1.7.1
