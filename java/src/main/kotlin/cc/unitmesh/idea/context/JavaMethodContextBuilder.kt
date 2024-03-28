@@ -1,6 +1,7 @@
 package cc.unitmesh.idea.context
 
 import cc.unitmesh.devti.context.MethodContext
+import cc.unitmesh.devti.context.builder.ClassContextBuilder
 import cc.unitmesh.devti.context.builder.MethodContextBuilder
 import cc.unitmesh.idea.service.JavaTypeUtil
 import com.intellij.psi.PsiElement
@@ -21,7 +22,7 @@ class JavaMethodContextBuilder : MethodContextBuilder {
         val variableContextList = parameterList.map { it }
 
         val usagesList = if (gatherUsages) {
-            JavaContextCollection.findUsages(psiElement as PsiNameIdentifierOwner)
+            ClassContextBuilder.findUsages(psiElement as PsiNameIdentifierOwner)
         } else {
             emptyList()
         }

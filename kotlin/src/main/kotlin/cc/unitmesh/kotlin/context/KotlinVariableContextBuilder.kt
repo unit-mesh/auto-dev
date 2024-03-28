@@ -1,8 +1,8 @@
 package cc.unitmesh.kotlin.context
 
 import cc.unitmesh.devti.context.VariableContext
+import cc.unitmesh.devti.context.builder.ClassContextBuilder
 import cc.unitmesh.devti.context.builder.VariableContextBuilder
-import cc.unitmesh.idea.context.JavaContextCollection
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.util.PsiTreeUtil
@@ -27,7 +27,7 @@ class KotlinVariableContextBuilder : VariableContextBuilder {
                 val psiNameIdentifierOwner = psiElement as? PsiNameIdentifierOwner
 
                 val usages = if (gatherUsages && psiNameIdentifierOwner != null) {
-                    JavaContextCollection.findUsages(psiNameIdentifierOwner)
+                    ClassContextBuilder.findUsages(psiNameIdentifierOwner)
                 } else {
                     emptyList()
                 }
@@ -43,7 +43,7 @@ class KotlinVariableContextBuilder : VariableContextBuilder {
                 val psiNameIdentifierOwner = psiElement as? PsiNameIdentifierOwner
 
                 val usages = if (gatherUsages && psiNameIdentifierOwner != null) {
-                    JavaContextCollection.findUsages(psiNameIdentifierOwner)
+                    ClassContextBuilder.findUsages(psiNameIdentifierOwner)
                 } else {
                     emptyList()
                 }

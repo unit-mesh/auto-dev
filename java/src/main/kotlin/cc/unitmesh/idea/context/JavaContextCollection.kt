@@ -1,6 +1,7 @@
 package cc.unitmesh.idea.context
 
 import cc.unitmesh.devti.context.SimpleClassStructure
+import cc.unitmesh.devti.context.builder.ClassContextBuilder
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.*
@@ -12,20 +13,6 @@ import com.intellij.psi.search.searches.ReferencesSearch
 
 object JavaContextCollection {
     private val logger = logger<JavaContextCollection>()
-    fun findUsages(nameIdentifierOwner: PsiNameIdentifierOwner): List<PsiReference> {
-        val project = nameIdentifierOwner.project
-        val searchScope = GlobalSearchScope.allScope(project) as SearchScope
-
-        return when (nameIdentifierOwner) {
-            is PsiMethod -> {
-                MethodReferencesSearch.search(nameIdentifierOwner, searchScope, true)
-            }
-
-            else -> {
-                ReferencesSearch.search((nameIdentifierOwner as PsiElement), searchScope, true)
-            }
-        }.findAll().map { it as PsiReference }
-    }
 
     /**
      * This method takes a PsiClass object as input and builds a tree of the class and its fields, including the fields of the fields, and so on. The resulting tree is represented as a HashMap where the keys are the PsiClass objects and the values are ArrayLists of PsiField objects.
@@ -123,11 +110,13 @@ object JavaContextCollection {
     }
 
     private fun isPopularFrameworks(qualifiedName: @NlsSafe String?): Boolean? {
-        return qualifiedName?.startsWith("org.springframework") == true || qualifiedName?.startsWith("org.apache") == true || qualifiedName?.startsWith(
-            "org.hibernate"
-        ) == true || qualifiedName?.startsWith("org.slf4j") == true || qualifiedName?.startsWith("org.apache") == true || qualifiedName?.startsWith(
-            "org.junit"
-        ) == true || qualifiedName?.startsWith("org.mockito") == true
+        return qualifiedName?.startsWith("org.springframework") == true ||
+                qualifiedName?.startsWith("org.apache") == true ||
+                qualifiedName?.startsWith("org.hibernate") == true ||
+                qualifiedName?.startsWith("org.slf4j") == true ||
+                qualifiedName?.startsWith("org.apache") == true ||
+                qualifiedName?.startsWith("org.junit") == true ||
+                qualifiedName?.startsWith("org.mockito") == true
     }
 
     /**

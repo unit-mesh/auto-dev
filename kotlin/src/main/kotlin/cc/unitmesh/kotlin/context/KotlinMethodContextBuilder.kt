@@ -1,8 +1,8 @@
 package cc.unitmesh.kotlin.context
 
 import cc.unitmesh.devti.context.MethodContext
+import cc.unitmesh.devti.context.builder.ClassContextBuilder
 import cc.unitmesh.devti.context.builder.MethodContextBuilder
-import cc.unitmesh.idea.context.JavaContextCollection
 import cc.unitmesh.kotlin.util.KotlinPsiUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
@@ -24,7 +24,7 @@ class KotlinMethodContextBuilder : MethodContextBuilder {
         val displayName = psiElement.language.displayName
         val valueParameters = psiElement.valueParameters.mapNotNull { it.name }
         val usages =
-            if (gatherUsages) JavaContextCollection.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
+            if (gatherUsages) ClassContextBuilder.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
 
         return MethodContext(
             psiElement,

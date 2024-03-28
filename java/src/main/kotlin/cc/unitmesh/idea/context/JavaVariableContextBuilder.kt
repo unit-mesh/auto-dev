@@ -1,6 +1,7 @@
 package cc.unitmesh.idea.context
 
 import cc.unitmesh.devti.context.VariableContext
+import cc.unitmesh.devti.context.builder.ClassContextBuilder
 import cc.unitmesh.devti.context.builder.VariableContextBuilder
 import com.intellij.psi.*
 
@@ -17,7 +18,7 @@ class JavaVariableContextBuilder : VariableContextBuilder {
         val containingClass = psiElement.getContainingClass()
 
         val references =
-            if (gatherUsages) JavaContextCollection.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
+            if (gatherUsages) ClassContextBuilder.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
 
         return VariableContext(
             psiElement,
