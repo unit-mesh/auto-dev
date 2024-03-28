@@ -5,6 +5,7 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.LiteralTextEscaper
 
 class CodeBlockLiteralTextEscaper(host: CodeBlockElement) : LiteralTextEscaper<CodeBlockElement>(host) {
+    override fun getRelevantTextRange() = CodeBlockElement.obtainRelevantTextRange(myHost)
     override fun isOneLine(): Boolean = false;
 
     override fun decode(rangeInsideHost: TextRange, outChars: StringBuilder): Boolean {
@@ -40,9 +41,5 @@ class CodeBlockLiteralTextEscaper(host: CodeBlockElement) : LiteralTextEscaper<C
         return if (rangeInsideHost.startOffset <= result && result <= rangeInsideHost.endOffset) {
             result
         } else -1
-    }
-
-    override fun getRelevantTextRange(): TextRange {
-        return CodeBlockElement.obtainRelevantTextRange(myHost)
     }
 }

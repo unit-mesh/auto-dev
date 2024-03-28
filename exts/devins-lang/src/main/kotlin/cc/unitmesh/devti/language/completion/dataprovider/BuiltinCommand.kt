@@ -2,6 +2,7 @@ package cc.unitmesh.devti.language.completion.dataprovider
 
 import cc.unitmesh.devti.language.DevInIcons
 import com.intellij.icons.AllIcons
+import java.nio.charset.StandardCharsets
 import javax.swing.Icon
 
 enum class BuiltinCommand(
@@ -42,9 +43,20 @@ enum class BuiltinCommand(
     ;
 
     companion object {
-
         fun all(): List<BuiltinCommand> {
             return values().toList()
+        }
+
+        fun example(command: BuiltinCommand): String {
+            val commandName = command.commandName
+            val inputStream = BuiltinCommand::class.java.getResourceAsStream("/agent/toolExamples/$commandName.devin")
+            if (inputStream == null) {
+                throw IllegalStateException("Example file not found: $commandName.devin")
+            }
+
+            return inputStream!!.use {
+                it.readAllBytes().toString(StandardCharsets.UTF_8)
+            }
         }
 
         fun fromString(agentName: String): BuiltinCommand? {
