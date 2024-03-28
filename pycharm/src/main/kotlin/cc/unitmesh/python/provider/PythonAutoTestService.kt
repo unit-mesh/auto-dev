@@ -12,7 +12,6 @@ import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
@@ -21,7 +20,6 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilBase
-import com.intellij.util.concurrency.annotations.RequiresReadLock
 import com.intellij.util.concurrency.annotations.RequiresWriteLock
 import com.jetbrains.python.PythonLanguage
 import com.jetbrains.python.psi.PyClass
@@ -82,7 +80,6 @@ class PythonAutoTestService : AutoTestService() {
         return TestFileContext(true, testFile, listOf(), "", PythonLanguage.INSTANCE)
     }
 
-    @RequiresReadLock
     private fun getTestNameExample(file: VirtualFile): String {
         val children = file.children
         for (child in children) {
@@ -95,8 +92,7 @@ class PythonAutoTestService : AutoTestService() {
         return "test_example.py"
     }
 
-    @RequiresWriteLock
-    fun getTestsDirectory(file: VirtualFile, project: Project): VirtualFile {
+    private fun getTestsDirectory(file: VirtualFile, project: Project): VirtualFile {
         val baseDirectory: VirtualFile? = ProjectFileIndex.getInstance(project).getContentRootForFile(file)
         if (baseDirectory == null) {
             val parent = file.parent
@@ -107,8 +103,8 @@ class PythonAutoTestService : AutoTestService() {
         return testDir
     }
 
-    private fun toTestFileName(testFileName: String, testNameExample: String): String {
-        if (testNameExample.startsWith("test_")) return "test_$testFileName.py"
+    private fun toTestFileName(testFileName: String, exampleName: String): String {
+        if (exampleName.startsWith("test_")) return "test_$testFileName.py"
         return "${testFileName}_test.py"
     }
 
