@@ -2,30 +2,11 @@ package cc.unitmesh.idea.context
 
 import cc.unitmesh.devti.context.SimpleClassStructure
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiClassReferenceType
-import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.search.SearchScope
-import com.intellij.psi.search.searches.MethodReferencesSearch
-import com.intellij.psi.search.searches.ReferencesSearch
 
 object JavaContextCollection {
     private val logger = logger<JavaContextCollection>()
-    fun findUsages(nameIdentifierOwner: PsiNameIdentifierOwner): List<PsiReference> {
-        val project = nameIdentifierOwner.project
-        val searchScope = GlobalSearchScope.allScope(project) as SearchScope
-
-        return when (nameIdentifierOwner) {
-            is PsiMethod -> {
-                MethodReferencesSearch.search(nameIdentifierOwner, searchScope, true)
-            }
-
-            else -> {
-                ReferencesSearch.search((nameIdentifierOwner as PsiElement), searchScope, true)
-            }
-        }.findAll().map { it as PsiReference }
-    }
 
     /**
      * This method takes a PsiClass object as input and builds a tree of the class and its fields, including the fields of the fields, and so on. The resulting tree is represented as a HashMap where the keys are the PsiClass objects and the values are ArrayLists of PsiField objects.
@@ -68,7 +49,7 @@ object JavaContextCollection {
             return psiStructureCache[clazz]!!
         }
 
-        if (isJavaBuiltin(qualifiedName) == true || isPopularFrameworks(qualifiedName) == true) {
+        if (isJavaBuiltin(qualifiedName) == true || isPopularFramework(qualifiedName) == true) {
             return null
         }
 
@@ -98,7 +79,7 @@ object JavaContextCollection {
                     val resolve = (field.type as PsiClassType).resolve() ?: return@mapNotNull null
                     if (resolve.qualifiedName == qualifiedName) return@mapNotNull null
 
-                    if (isJavaBuiltin(resolve.qualifiedName) == true || isPopularFrameworks(resolve.qualifiedName) == true) {
+                    if (isJavaBuiltin(resolve.qualifiedName) == true || isPopularFramework(resolve.qualifiedName) == true) {
                         return@mapNotNull null
                     }
 
@@ -122,12 +103,17 @@ object JavaContextCollection {
         return simpleClassStructure
     }
 
-    private fun isPopularFrameworks(qualifiedName: @NlsSafe String?): Boolean? {
-        return qualifiedName?.startsWith("org.springframework") == true || qualifiedName?.startsWith("org.apache") == true || qualifiedName?.startsWith(
-            "org.hibernate"
-        ) == true || qualifiedName?.startsWith("org.slf4j") == true || qualifiedName?.startsWith("org.apache") == true || qualifiedName?.startsWith(
-            "org.junit"
-        ) == true || qualifiedName?.startsWith("org.mockito") == true
+    private val popularFrameworks = listOf(
+        "org.springframework",
+        "org.apache",
+        "org.hibernate",
+        "org.slf4j",
+        "org.junit",
+        "org.mockito"
+    )
+
+    private fun isPopularFramework(qualifiedName: String?): Boolean {
+        return popularFrameworks.any { qualifiedName?.startsWith(it) == true }
     }
 
     /**

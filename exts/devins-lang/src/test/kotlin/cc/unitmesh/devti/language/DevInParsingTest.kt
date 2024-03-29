@@ -40,11 +40,7 @@ class DevInParsingTest : ParsingTestCase("parser", "devin", DevInParserDefinitio
         doTest(true)
     }
 
-    fun testSystemCalling() {
-        doTest(true)
-    }
-
-    fun testSingleComment() {
+    fun testBrowseWeb() {
         doTest(true)
     }
 }

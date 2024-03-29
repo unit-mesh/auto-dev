@@ -16,14 +16,11 @@ class CustomCommandCompletion : CompletionProvider<CompletionParameters>() {
     ) {
         val project = parameters.originalFile.project ?: return
         CustomCommand.all(project).forEach {
-            result.addElement(
-                PrioritizedLookupElement.withPriority(
-                    LookupElementBuilder.create(it.commandName)
-                        .withIcon(it.icon)
-                        .withTypeText(it.content, true),
-                    0.0
-                )
-            )
+            val element = LookupElementBuilder.create(it.commandName)
+                .withIcon(it.icon)
+                .withTypeText(it.content, true)
+
+            result.addElement(PrioritizedLookupElement.withPriority(element, 0.0))
         }
     }
 }

@@ -27,8 +27,8 @@ class CppAutoTestService : AutoTestService() {
             return null
         }
 
-        val cmakelist = cmakeLists.readText()
-        if (!cmakelist.contains("catch")) {
+        val cmakelistsContent = cmakeLists.readText()
+        if (!cmakelistsContent.contains("catch")) {
             return null
         }
 
@@ -38,12 +38,9 @@ class CppAutoTestService : AutoTestService() {
     }
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
-        // 1. check project root test folder, if not exist, create it
         val baseDir = project.guessProjectDir() ?: return null
 
-        val sourceVirtualFile = sourceFile.virtualFile
-
-        val testFilePath = getTestFilePath(sourceVirtualFile)
+        val testFilePath = getTestFilePath(sourceFile.virtualFile)
         val testFile = WriteAction.computeAndWait<VirtualFile?, Throwable> {
             baseDir.findOrCreateChildData(this, testFilePath)
         } ?: return null
@@ -59,8 +56,7 @@ class CppAutoTestService : AutoTestService() {
         val relatedClasses = lookupRelevantClass(project, element)
 
         return TestFileContext(
-            true,
-            testFile,
+            true, testFile,
             relatedClasses,
             "",
             sourceFile.language,

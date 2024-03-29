@@ -21,7 +21,7 @@ class ScalaClassContextBuilder : ClassContextBuilder {
         val functions = psiElement.methods.toList()
         val allFields = psiElement.fields.toList()
         val superClass = psiElement.supers.mapNotNull { it.qualifiedName }.toList()
-        val usages = findUsages(psiElement as PsiNameIdentifierOwner)
+        val usages = ClassContextBuilder.findUsages(psiElement as PsiNameIdentifierOwner)
 
         val annotations = psiElement.annotations.mapNotNull {
             it.text
@@ -40,19 +40,4 @@ class ScalaClassContextBuilder : ClassContextBuilder {
             annotations
         )
     }
-}
-
-fun findUsages(nameIdentifierOwner: PsiNameIdentifierOwner): List<PsiReference> {
-    val project = nameIdentifierOwner.project
-    val searchScope = GlobalSearchScope.allScope(project) as SearchScope
-
-    return when (nameIdentifierOwner) {
-        is PsiMethod -> {
-            MethodReferencesSearch.search(nameIdentifierOwner, searchScope, true)
-        }
-
-        else -> {
-            ReferencesSearch.search((nameIdentifierOwner as PsiElement), searchScope, true)
-        }
-    }.findAll().map { it as PsiReference }
 }

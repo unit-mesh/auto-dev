@@ -2,7 +2,6 @@ package cc.unitmesh.kotlin.context
 
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.builder.ClassContextBuilder
-import cc.unitmesh.idea.context.JavaContextCollection
 import cc.unitmesh.kotlin.util.KotlinPsiUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
@@ -23,7 +22,7 @@ class KotlinClassContextBuilder : ClassContextBuilder {
         val functions = KotlinPsiUtil.getFunctions(psiElement)
         val allFields = getPrimaryConstructorFields(psiElement)
         val usages =
-            if (gatherUsages) JavaContextCollection.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
+            if (gatherUsages) ClassContextBuilder.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
 
         val annotations: List<String> = psiElement.annotationEntries.mapNotNull {
             it.text

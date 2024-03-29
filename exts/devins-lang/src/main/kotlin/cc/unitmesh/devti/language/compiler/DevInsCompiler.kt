@@ -122,7 +122,7 @@ class DevInsCompiler(
                 val variableId = id?.text
                 val variable = ToolHubVariable.lookup(myProject, variableId)
                 if (variable.isNotEmpty()) {
-                    output.append(variable.map { it }.joinToString("\n"))
+                    output.append(variable.joinToString("\n") { it })
                     return
                 }
 
@@ -204,6 +204,15 @@ class DevInsCompiler(
                 result.isLocalCommand = true
                 ShellInsCommand(myProject, prop)
             }
+
+            BuiltinCommand.BROWSE -> {
+                result.isLocalCommand = true
+                BrowseInsCommand(myProject, prop)
+            }
+
+            else -> {
+                PrintInsCommand("/" + commandNode.commandName + ":" + prop)
+            }
         }
 
         val execResult = runBlocking { command.execute() }
@@ -243,6 +252,7 @@ class DevInsCompiler(
                 break
             }
         }
+
         return devInCode
     }
 }

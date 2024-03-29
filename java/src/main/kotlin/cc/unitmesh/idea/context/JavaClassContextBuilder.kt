@@ -18,7 +18,7 @@ class JavaClassContextBuilder : ClassContextBuilder {
         val methods = psiElement.methods.toList()
 
         val usages =
-            if (gatherUsages) JavaContextCollection.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
+            if (gatherUsages) ClassContextBuilder.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
 
         val annotations: List<String> = psiElement.annotations.mapNotNull {
             it.text

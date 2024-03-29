@@ -1,13 +1,16 @@
 package cc.unitmesh.devti.settings
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.custom.schema.CUSTOM_AGENT_FILE_NAME
 import cc.unitmesh.devti.custom.schema.CUSTOM_PROMPTS_FILE_NAME
+import com.intellij.ide.IdeBundle
+import com.intellij.ide.actions.RevealFileAction
+import com.intellij.idea.LoggerFactory
 import com.intellij.json.JsonLanguage
 import com.intellij.lang.Language
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.colors.EditorColorsUtil
 import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.help.HelpManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.psi.PsiFile
@@ -183,6 +186,13 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             .addLLMParam(gitLabUrlParam)
             .addLLMParam(gitLabTokenParam)
                 .addSeparator()
+                .addComponent(com.intellij.ui.dsl.builder.panel {
+                    row {
+                        comment("For OpenAI LLM, config OpenAI Key & OpenAI Model & Custom OpenAI Host <a>Open Log for Debug</a>") {
+                            RevealFileAction.openFile(LoggerFactory.getLogFilePath())
+                        }
+                    }
+                })
                 .addLLMParams(currentLLMParams)
                 .addVerticalGap(2)
                 .addSeparator()

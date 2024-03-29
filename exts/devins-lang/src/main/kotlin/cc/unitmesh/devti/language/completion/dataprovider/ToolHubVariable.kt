@@ -9,7 +9,14 @@ import com.intellij.openapi.util.NlsSafe
  * For example, you prompt could be:
  * ```devin
  * Here is the tools you can use:
- * $agent
+ * $agents
+ * ```
+ *
+ * Or
+ *
+ * ```devin
+ * Here is the tools you can use:
+ * $commands
  * ```
  */
 enum class ToolHubVariable(val hubName: String, val type: String, val description: String) {
@@ -26,7 +33,7 @@ enum class ToolHubVariable(val hubName: String, val type: String, val descriptio
         /**
          * @param variableId should be one of the [ToolHubVariable] name
          */
-        fun lookup(myProject: Project, variableId: @NlsSafe String?): List<String> {
+        fun lookup(myProject: Project, variableId: String?): List<String> {
             return when (variableId) {
                 AGENTS.hubName -> CustomAgentConfig.loadFromProject(myProject).map {
                     "- " + it.name + ". " + it.description

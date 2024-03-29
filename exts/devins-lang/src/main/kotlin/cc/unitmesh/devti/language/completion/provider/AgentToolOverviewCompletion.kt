@@ -25,5 +25,4 @@ class AgentToolOverviewCompletion : CompletionProvider<CompletionParameters>() {
             result.addElement(PrioritizedLookupElement.withPriority(elements, 0.0))
         }
     }
-
 }
