@@ -188,7 +188,6 @@ class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBund
         }
         row(AutoDevBundle.message("settings.autodev.coder.customEnginePrompt")){}
         row() {
-            // TODO: spike better way for support 213 and 221
             fullWidthCell(customEnginePrompt)
                 .bind(
                     componentGet = { it.text },
