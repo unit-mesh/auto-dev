@@ -40,7 +40,8 @@ import org.jetbrains.annotations.VisibleForTesting
  * @constructor Creates an instance of `CustomSSEProcessor`.
  */
 open class CustomSSEProcessor(private val project: Project) {
-    open var hasSuccessRequest: Boolean = true
+    open var hasSuccessRequest: Boolean = false
+    private var lastParseFailedResponse: String = ""
     open val requestFormat: String = ""
     open val responseFormat: String = ""
     private val logger = logger<CustomSSEProcessor>()
@@ -91,27 +92,13 @@ open class CustomSSEProcessor(private val project: Project) {
 
                                 // new JsonPath lib caught the exception, so we need to handle when it is null
                                 if (chunk == null) {
-                                    // if first chunk parse failed, notice user to check response format
-                                    if(hasSuccessRequest) {
-                                        val errorMsg = """
-                                        **Failed** to parse response.origin response is: 
-                                        <code>${sse.data}</code>
-                                         please check your response format: 
-                                        **$responseFormat**\n""".trimIndent()
-
-                                        // TODO add refresh feature
-                                        trySend(errorMsg)
-                                        close()
-                                    } else {
-                                        logger.info("Failed to parse response.origin response is: ${sse.data}")
-                                    }
-                                    return@blockingForEach
+                                    lastParseFailedResponse = sse.data
+                                    logger.info("Failed to parse response.origin response is: ${sse.data}, response format: $responseFormat")
+                                } else {
+                                    hasSuccessRequest = true
+                                    output += chunk
+                                    trySend(chunk)
                                 }
-
-                                hasSuccessRequest = true
-
-                                output += chunk
-                                trySend(chunk)
                             } else {
                                 val result: ChatCompletionResult =
                                     ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
@@ -124,6 +111,18 @@ open class CustomSSEProcessor(private val project: Project) {
                             }
                         }
 
+                    // when stream finished, check if any response parsed succeeded
+                    // if not, notice user check response format
+                    if (!hasSuccessRequest) {
+                        val errorMsg = """
+                                        **Failed** to parse response.origin response is: 
+                                        <code>${lastParseFailedResponse}</code>
+                                         please check your response format: 
+                                        **$responseFormat**\n""".trimIndent()
+
+                        // TODO add refresh feature
+                        trySend(errorMsg)
+                    }
                     recording.write(RecordingInstruction(promptText, output))
                     close()
                 }
