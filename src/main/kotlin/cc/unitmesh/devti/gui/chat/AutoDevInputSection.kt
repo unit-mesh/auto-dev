@@ -21,7 +21,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.ComponentValidator
 import com.intellij.openapi.ui.ValidationInfo
-import com.intellij.openapi.ui.popup.JBPopup
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.impl.InternalDecorator
 import com.intellij.temporary.gui.block.AutoDevCoolBorder
@@ -58,8 +57,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     private var customRag: ComboBox<CustomAgentConfig> = ComboBox(MutableCollectionComboBoxModel(listOf()))
 
     private val logger = logger<AutoDevInputSection>()
-
-    private var popup: JBPopup? = null
 
     val editorListeners = EventDispatcher.create(AutoDevInputListener::class.java)
     private var tokenizer: Tokenizer? = null

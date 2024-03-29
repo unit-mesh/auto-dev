@@ -69,6 +69,6 @@
     </actions>
 
     <extensions defaultExtensionNs="cc.unitmesh">
-        <customAgentResponse implementation="cc.unitmesh.devti.language.provider.DevInsCustomAgentResponse"/>
+        <languageProcessor implementation="cc.unitmesh.devti.language.provider.DevInsCustomAgentResponse"/>
     </extensions>
 </idea-plugin>

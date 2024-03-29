@@ -168,8 +168,8 @@
                         interface="cc.unitmesh.devti.provider.context.ChatContextProvider"
                         dynamic="true"/>
 
-        <extensionPoint qualifiedName="cc.unitmesh.customAgentResponse"
-                        interface="cc.unitmesh.devti.provider.devins.AgentResponsePostProcessor"
+        <extensionPoint qualifiedName="cc.unitmesh.languageProcessor"
+                        interface="cc.unitmesh.devti.provider.devins.LanguagePromptProcessor"
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.customDevInsCompletionProvider"

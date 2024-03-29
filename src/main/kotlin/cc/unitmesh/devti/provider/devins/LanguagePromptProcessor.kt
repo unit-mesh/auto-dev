@@ -14,16 +14,19 @@ data class CustomAgentContext(
  * Handle the response of the custom agent, and return the result to the user.
  * Specify for [cc.unitmesh.devti.language.DevInLanguage]
  */
-interface AgentResponsePostProcessor {
+interface LanguagePromptProcessor {
     val name: String
 
     @RequiresBackgroundThread
     fun execute(project: Project, context: CustomAgentContext): String
 
-    companion object {
-        val EP_NAME = ExtensionPointName<AgentResponsePostProcessor>("cc.unitmesh.customAgentResponse")
+    @RequiresBackgroundThread
+    fun compile(project: Project, text: String): String
 
-        fun instance(languageName: String): List<AgentResponsePostProcessor> {
+    companion object {
+        val EP_NAME = ExtensionPointName<LanguagePromptProcessor>("cc.unitmesh.languageProcessor")
+
+        fun instance(languageName: String): List<LanguagePromptProcessor> {
             return EP_NAME.extensionList.filter { it.name == languageName }
         }
     }

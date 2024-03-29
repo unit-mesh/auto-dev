@@ -9,6 +9,7 @@ import cc.unitmesh.devti.fullHeight
 import cc.unitmesh.devti.fullWidth
 import cc.unitmesh.devti.gui.chat.welcome.WelcomePanel
 import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.provider.devins.LanguagePromptProcessor
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.lang.html.HTMLLanguage
 import com.intellij.openapi.Disposable
@@ -88,7 +89,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         inputSection = AutoDevInputSection(chatCodingService.project, disposable)
         inputSection.addListener(object : AutoDevInputListener {
             override fun onSubmit(component: AutoDevInputSection, trigger: AutoDevInputTrigger) {
-                val prompt = component.text
+                var prompt = component.text
                 component.text = ""
 
                 if (prompt.isEmpty() || prompt == "\n") {
@@ -96,6 +97,11 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
                 }
 
                 val context = ChatContext(null, "", "")
+
+                val postProcessors = LanguagePromptProcessor.instance("DevIn").firstOrNull()
+                if (postProcessors != null) {
+                    prompt = postProcessors.compile(chatCodingService.project, prompt)
+                }
 
                 chatCodingService.actionType = ChatActionType.CHAT
                 chatCodingService.handlePromptAndResponse(this@ChatCodingPanel, object : ContextPrompter() {
