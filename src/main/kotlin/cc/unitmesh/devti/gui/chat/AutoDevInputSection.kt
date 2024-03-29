@@ -5,8 +5,6 @@ import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.agent.configurable.customAgentSetting
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.agent.model.CustomAgentState
-import cc.unitmesh.devti.custom.compile.CustomVariable
-import cc.unitmesh.devti.gui.chat.variable.AutoDevVariableList
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.llms.tokenizer.TokenizerImpl
 import cc.unitmesh.devti.settings.AutoDevSettingsState
@@ -24,16 +22,11 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.ComponentValidator
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.ui.popup.JBPopup
-import com.intellij.openapi.ui.popup.JBPopupFactory
-import com.intellij.openapi.ui.popup.JBPopupListener
-import com.intellij.openapi.ui.popup.LightweightWindowEvent
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.impl.InternalDecorator
 import com.intellij.temporary.gui.block.AutoDevCoolBorder
-import com.intellij.ui.JBColor
 import com.intellij.ui.MutableCollectionComboBoxModel
 import com.intellij.ui.SimpleListCellRenderer
-import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.EventDispatcher
 import com.intellij.util.ui.JBEmptyBorder
@@ -43,11 +36,7 @@ import com.intellij.util.ui.components.BorderLayoutPanel
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.awt.Color
-import java.awt.Component
 import java.awt.Dimension
-import java.awt.Point
-import java.awt.event.KeyAdapter
-import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.util.function.Supplier
@@ -108,23 +97,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                 if (i != input.height) {
                     revalidate()
                 }
-
-//                if (event.newFragment.contentEquals("$")) {
-//                    if (popup == null) {
-//                        popup = createPopup()
-//                    }
-//
-//                    if (popup?.isVisible == true) {
-//                        popup?.cancel()
-//                    }
-//
-//                    if (popup?.isDisposed == true) {
-//                        popup = createPopup()
-//                        showPopupAbove(popup!!, this@AutoDevInputSection)
-//                    } else {
-//                        showPopupAbove(popup!!, this@AutoDevInputSection)
-//                    }
-//                }
             }
         }
 
@@ -173,70 +145,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         })
 
         tokenizer = TokenizerImpl.INSTANCE
-    }
-
-    private fun createPopup(): JBPopup {
-        val list: AutoDevVariableList = AutoDevVariableList.from(CustomVariable.all()) { item ->
-            input.text += item.customVariable.variable
-            this.popup?.cancel()
-        }
-
-        list.selectedIndex = 0
-
-        list.addKeyListener(object : KeyAdapter() {
-            override fun keyPressed(e: KeyEvent?) {
-                if (!hasPopup()) return
-
-                val itemsCount = list.getItemsCount()
-
-                when (e?.keyCode) {
-                    KeyEvent.VK_ENTER -> {
-                        e.consume()
-                        val selectedItem = list.getSelectedValue()
-                        if (selectedItem != null) {
-                            text += "${selectedItem.customVariable.variable} "
-                        }
-
-                        this@AutoDevInputSection.popup?.cancel()
-                        input.requestFocus()
-                        input.caretModel.moveToOffset(input.text.length - 1)
-                    }
-
-                    KeyEvent.VK_DOWN -> {
-                        val selectedIndex = list.selectedIndex
-                        if (selectedIndex < itemsCount - 1) {
-                            list.setSelectedIndex(selectedIndex + 1)
-                        } else {
-                            list.setSelectedIndex(0)
-                        }
-                    }
-
-                    KeyEvent.VK_UP -> {
-                        val selectedIndex = list.selectedIndex
-                        if (selectedIndex > 0) {
-                            list.setSelectedIndex(selectedIndex - 1)
-                        } else {
-                            list.setSelectedIndex(itemsCount - 1)
-                        }
-                    }
-                }
-            }
-        })
-
-        val popups = JBPopupFactory.getInstance()
-            .createComponentPopupBuilder(list, null)
-            .setFocusable(true)
-            .setRequestFocus(true)
-            .setCancelOnClickOutside(true)
-            .setCancelOnWindowDeactivation(true)
-            .setMinSize(Dimension(this@AutoDevInputSection.width, 0))
-            .createPopup()
-
-        return popups
-    }
-
-    fun hasPopup(): Boolean {
-        return popup?.isVisible == true && popup?.isDisposed == false
     }
 
     private fun loadRagApps(): List<CustomAgentConfig> {
@@ -329,19 +237,4 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         }
 
     val focusableComponent: JComponent get() = input
-}
-
-fun showPopupAbove(popup: JBPopup, component: Component) {
-    val northWest = RelativePoint(component, Point())
-
-    popup.addListener(object : JBPopupListener {
-        override fun beforeShown(event: LightweightWindowEvent) {
-            val location = Point(popup.locationOnScreen).apply { y = northWest.screenPoint.y - popup.size.height }
-
-            popup.setLocation(location)
-            popup.removeListener(this)
-        }
-    })
-
-    popup.show(northWest)
 }

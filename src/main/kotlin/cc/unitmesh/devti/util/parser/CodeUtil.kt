@@ -64,6 +64,13 @@ class Code(val language: Language, val text: String, val isComplete: Boolean) {
             return Code(language, trimmedCode, codeClosed)
         }
 
+        /**
+         * Searches for a language by its name and returns the corresponding [Language] object. If the language is not found,
+         * [PlainTextLanguage.INSTANCE] is returned.
+         *
+         * @param languageName The name of the language to find.
+         * @return The [Language] object corresponding to the given name, or [PlainTextLanguage.INSTANCE] if the language is not found.
+         */
         fun findLanguage(languageName: String): Language {
             val fixedLanguage = when (languageName) {
                 "csharp" -> "c#"
