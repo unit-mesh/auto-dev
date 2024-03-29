@@ -10,7 +10,6 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiJavaFile
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.util.PsiUtilBase
 
