@@ -22,17 +22,18 @@ class ScalaTestService : AutoTestService() {
     override fun isApplicable(element: PsiElement): Boolean = element is ScalaPsiElement
     override fun runConfigurationClass(project: Project): Class<out RunProfile>? = ScalaTestRunConfiguration::class.java
 
+    // since 222~232 has compatibility issues, we need to comment it out
     override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
         val scalaFile = PsiManager.getInstance(project).findFile(virtualFile) as? ScalaFile ?: return null
-        val settings = RunManager.getInstance(project).createConfiguration("Scala tests", ScalaTestConfigurationType().confFactory())
-        val configuration = settings.configuration as ScalaTestRunConfiguration
-        val packageTestData = AllInPackageTestData(configuration)
-        packageTestData.workingDirectory = scalaFile.project.basePath
-        configuration.`testConfigurationData_$eq`(packageTestData)
-        configuration.testKind = packageTestData.kind
-        configuration.module = ModuleUtilCore.findModuleForPsiElement(scalaFile)
-
-        return settings.configuration
+//        val settings = RunManager.getInstance(project).createConfiguration("Scala tests", ScalaTestConfigurationType().confFactory())
+//        val configuration = settings.configuration as ScalaTestRunConfiguration
+//        val packageTestData = AllInPackageTestData(configuration)
+//        packageTestData.workingDirectory = scalaFile.project.basePath
+//        configuration.`testConfigurationData_$eq`(packageTestData)
+//        configuration.testKind = packageTestData.kind
+//        configuration.module = ModuleUtilCore.findModuleForPsiElement(scalaFile)
+//        return settings.configuration
+        return null
     }
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
