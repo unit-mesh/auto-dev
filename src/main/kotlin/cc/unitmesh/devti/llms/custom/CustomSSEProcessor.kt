@@ -41,7 +41,7 @@ import org.jetbrains.annotations.VisibleForTesting
  */
 open class CustomSSEProcessor(private val project: Project) {
     open var hasSuccessRequest: Boolean = false
-    private var lastParseFailedResponse: String = ""
+    private var parseFailedResponses: MutableList<String> = mutableListOf()
     open val requestFormat: String = ""
     open val responseFormat: String = ""
     private val logger = logger<CustomSSEProcessor>()
@@ -92,7 +92,7 @@ open class CustomSSEProcessor(private val project: Project) {
 
                                 // new JsonPath lib caught the exception, so we need to handle when it is null
                                 if (chunk == null) {
-                                    lastParseFailedResponse = sse.data
+                                    parseFailedResponses.add(sse.data)
                                     logger.info("Failed to parse response.origin response is: ${sse.data}, response format: $responseFormat")
                                 } else {
                                     hasSuccessRequest = true
@@ -115,13 +115,14 @@ open class CustomSSEProcessor(private val project: Project) {
                     // if not, notice user check response format
                     if (!hasSuccessRequest) {
                         val errorMsg = """
-                                        **Failed** to parse response.origin response is: 
-                                        <code>${lastParseFailedResponse}</code>
-                                         please check your response format: 
-                                        **$responseFormat**\n""".trimIndent()
+                                        |**Failed** to parse response.please check your response format: 
+                                        |**$responseFormat** origin responses is: 
+                                        |- ${parseFailedResponses.joinToString("\n- ")}
+                                        |""".trimMargin()
 
                         // TODO add refresh feature
-                        trySend(errorMsg)
+                        // don't use trySend, it may be ignored by 'close()` op
+                        send(errorMsg)
                     }
                     recording.write(RecordingInstruction(promptText, output))
                     close()
@@ -138,6 +139,8 @@ open class CustomSSEProcessor(private val project: Project) {
             return callbackFlow {
                 close()
             }
+        } finally {
+            parseFailedResponses.clear()
         }
     }
 }
