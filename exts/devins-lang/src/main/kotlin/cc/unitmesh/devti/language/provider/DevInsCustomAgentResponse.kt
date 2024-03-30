@@ -27,11 +27,7 @@ class DevInsCustomAgentResponse : LanguagePromptProcessor {
         val devInsCompiler = createCompiler(project, text)
 
         val result = devInsCompiler.compile()
-        return if (result.hasError || result.isLocalCommand) {
-            text
-        } else {
-            result.output
-        }
+        return result.output
     }
 
     /**
