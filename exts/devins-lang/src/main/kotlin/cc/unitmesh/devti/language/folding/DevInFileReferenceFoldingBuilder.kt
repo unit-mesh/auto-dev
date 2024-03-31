@@ -24,7 +24,8 @@ class DevInFileReferenceFoldingBuilder : FoldingBuilderEx() {
             override fun visitElement(element: PsiElement) {
                 if (element.elementType == DevInTypes.COMMAND_PROP) {
                     val agentId = element.parent?.findElementAt(1)?.text
-                    if (agentId == "file" && element.text.contains("/")) {
+                    val isAgentBase = agentId == "file" || agentId == "write" || agentId == "run"
+                    if (isAgentBase && element.text.contains("/")) {
                         descriptors.add(FoldingDescriptor(element.node, element.textRange))
                     }
                 }
