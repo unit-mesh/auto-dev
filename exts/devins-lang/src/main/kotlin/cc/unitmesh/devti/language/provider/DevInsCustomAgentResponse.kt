@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.language.provider
 
 import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.language.DevInLanguage
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.provider.devins.CustomAgentContext
@@ -13,11 +14,10 @@ import com.intellij.psi.util.PsiUtilBase
 
 
 class DevInsCustomAgentResponse : LanguagePromptProcessor {
-    override val name: String = "DevIn"
+    override val name: String = DevInLanguage.displayName
 
     override fun execute(project: Project, context: CustomAgentContext): String {
         val devInsCompiler = createCompiler(project, context.response)
-
         val result = devInsCompiler.compile()
         AutoDevNotifications.notify(project, result.output)
         return result.output
@@ -25,7 +25,6 @@ class DevInsCustomAgentResponse : LanguagePromptProcessor {
 
     override fun compile(project: Project, text: String): String {
         val devInsCompiler = createCompiler(project, text)
-
         val result = devInsCompiler.compile()
         return result.output
     }
@@ -48,8 +47,7 @@ class DevInsCustomAgentResponse : LanguagePromptProcessor {
             getElementAtOffset(psiFile, it)
         }
 
-        val devInsCompiler = DevInsCompiler(project, devInFile, editor, element)
-        return devInsCompiler
+        return DevInsCompiler(project, devInFile, editor, element)
     }
 
     private fun getElementAtOffset(psiFile: PsiElement, offset: Int): PsiElement? {
