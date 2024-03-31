@@ -114,7 +114,6 @@ open class DevInsRunConfigurationProfileState(
 
         console.print("\n--------------------\n", ConsoleViewContentType.NORMAL_OUTPUT)
 
-        // throw error if contains any <DevInsError>
         if (output.contains(DEVINS_ERROR)) {
             processHandler.exitWithError()
             return DefaultExecutionResult(console, processHandler)

@@ -2,6 +2,7 @@ package cc.unitmesh.devti.language.compiler
 
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.custom.compile.VariableTemplateCompiler
+import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.language.compiler.exec.*
 import cc.unitmesh.devti.language.completion.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.completion.dataprovider.CustomCommand
@@ -127,7 +128,7 @@ class DevInsCompiler(
                 }
 
                 if (editor == null || element == null) {
-                    output.append("<DevInsError> No context editor found for variable: ${used.text}")
+                    output.append("$DEVINS_ERROR No context editor found for variable: ${used.text}")
                     result.hasError = true
                     return
                 }
@@ -217,7 +218,7 @@ class DevInsCompiler(
 
         val execResult = runBlocking { command.execute() }
 
-        val isSucceed = execResult?.contains("<DevInsError>") == false
+        val isSucceed = execResult?.contains("$DEVINS_ERROR") == false
         val result = if (isSucceed) {
             val hasReadCodeBlock = commandNode in listOf(
                 BuiltinCommand.WRITE,
