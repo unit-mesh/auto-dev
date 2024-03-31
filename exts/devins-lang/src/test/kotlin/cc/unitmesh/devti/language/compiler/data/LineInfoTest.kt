@@ -54,4 +54,46 @@ class LineInfoTest {
         // then
         assertEquals(null, result)
     }
+
+    // L1C0-L2C0
+    @Test
+    fun should_createLineInfo_when_validStringWithColumnGiven() {
+        // given
+        val validString = "filepath#L1C0-L2C0"
+
+        // when
+        val result = LineInfo.fromString(validString)
+
+        // then
+        val expected = LineInfo(1, 2, 0, 0)
+        assertEquals(expected, result)
+    }
+
+    // L1-L2C0
+    @Test
+    fun should_createLineInfo_when_validStringWithEndColumnGiven() {
+        // given
+        val validString = "filepath#L1-L2C0"
+
+        // when
+        val result = LineInfo.fromString(validString)
+
+        // then
+        val expected = LineInfo(1, 2, 0, 0)
+        assertEquals(expected, result)
+    }
+
+    // L2C0-L3
+    @Test
+    fun should_createLineInfo_when_validStringWithStartColumnGiven() {
+        // given
+        val validString = "filepath#L2C0-L3"
+
+        // when
+        val result = LineInfo.fromString(validString)
+
+        // then
+        val expected = LineInfo(2, 3, 0, 0)
+        assertEquals(expected, result)
+    }
 }
