@@ -2,6 +2,7 @@ package cc.unitmesh.devti.language.documentation
 
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.custom.compile.CustomVariable
+import cc.unitmesh.devti.language.DevInLanguage
 import cc.unitmesh.devti.language.completion.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.psi.DevInTypes
 import cc.unitmesh.devti.util.parser.convertMarkdownToHtml
@@ -27,7 +28,8 @@ class DevInsDocumentationProvider : AbstractDocumentationProvider() {
             DevInTypes.COMMAND_ID -> {
                 val command = BuiltinCommand.all().find { it.commandName == element.text } ?: return null
                 val example = BuiltinCommand.example(command)
-                "${command.description}\nExample:\n```devin\n$example\n```\n "
+                val lang = DevInLanguage.displayName
+                "${command.description}\nExample:\n```$lang\n$example\n```\n "
             }
 
             DevInTypes.VARIABLE_ID -> {

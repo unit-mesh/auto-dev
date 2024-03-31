@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.compiler.exec
 
+import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.provider.devins.DevInsSymbolProvider
 import com.intellij.openapi.project.Project
 
@@ -13,7 +14,7 @@ class SymbolInsCommand(val myProject: Project, val prop: String) :
         }
 
         if (result.isEmpty()) {
-            return "<DevInsError> No symbol found: $prop"
+            return "$DEVINS_ERROR No symbol found: $prop"
         }
 
         return result.joinToString("\n")

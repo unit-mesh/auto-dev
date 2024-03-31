@@ -4,6 +4,7 @@ import cc.unitmesh.devti.agent.CustomAgentExecutor
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
 import cc.unitmesh.devti.language.psi.DevInFile
+import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.language.run.flow.DevInsConversationService
 import cc.unitmesh.devti.language.status.DevInsRunListener
 import cc.unitmesh.devti.llms.LLMProvider
@@ -103,7 +104,7 @@ open class DevInsRunConfigurationProfileState(
         val agent = compileResult.executeAgent
 
         output.split("\n").forEach {
-            if (it.contains("<DevInsError>")) {
+            if (it.contains(DEVINS_ERROR)) {
                 console.print(it, ConsoleViewContentType.LOG_ERROR_OUTPUT)
             } else {
                 console.print(it, ConsoleViewContentType.USER_INPUT)
@@ -114,7 +115,7 @@ open class DevInsRunConfigurationProfileState(
         console.print("\n--------------------\n", ConsoleViewContentType.NORMAL_OUTPUT)
 
         // throw error if contains any <DevInsError>
-        if (output.contains("<DevInsError>")) {
+        if (output.contains(DEVINS_ERROR)) {
             processHandler.exitWithError()
             return DefaultExecutionResult(console, processHandler)
         }

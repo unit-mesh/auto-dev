@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.compiler.exec
 
+import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.language.compiler.service.ShellRunService
 import cc.unitmesh.devti.language.utils.lookupFile
 import com.intellij.execution.RunnerAndConfigurationSettings
@@ -20,7 +21,7 @@ import com.intellij.sh.run.ShRunner
  */
 class ShellInsCommand(val myProject: Project, private val argument: String) : InsCommand {
     override suspend fun execute(): String? {
-        val virtualFile = myProject.lookupFile(argument.trim()) ?: return "<DevInsError>: File not found: $argument"
+        val virtualFile = myProject.lookupFile(argument.trim()) ?: return "$DEVINS_ERROR: File not found: $argument"
         val psiFile = PsiManager.getInstance(myProject).findFile(virtualFile) as? ShFile
         val settings: RunnerAndConfigurationSettings? = ShellRunService().createRunSettings(myProject, virtualFile, psiFile)
 
@@ -31,7 +32,7 @@ class ShellInsCommand(val myProject: Project, private val argument: String) : In
 
         val workingDirectory = virtualFile.parent.path
         val shRunner = ApplicationManager.getApplication().getService(ShRunner::class.java)
-            ?: return "<DevInsError>: Shell runner not found"
+            ?: return "$DEVINS_ERROR: Shell runner not found"
 
         if (shRunner.isAvailable(myProject)) {
             shRunner.run(myProject, virtualFile.path, workingDirectory, "RunDevInsShell", true)

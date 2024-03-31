@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.compiler.exec
 
+import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.language.completion.dataprovider.FileFunc
 import cc.unitmesh.devti.language.utils.canBeAdded
 import com.intellij.openapi.project.Project
@@ -13,14 +14,14 @@ class FileFuncInsCommand(val myProject: Project, val prop: String) : InsCommand 
             |Example: @file-func:regex(".*\.kt")
         """.trimMargin()
 
-        val fileFunction = FileFunc.fromString(functionName) ?: return "<DevInsError>: Unknown function: $functionName"
+        val fileFunction = FileFunc.fromString(functionName) ?: return "$DEVINS_ERROR: Unknown function: $functionName"
         when (fileFunction) {
             FileFunc.Regex -> {
                 try {
                     val regex = Regex(args[0])
                     return regexFunction(regex, myProject).joinToString(", ")
                 } catch (e: Exception) {
-                    return "<DevInsError>: ${e.message}"
+                    return DEVINS_ERROR + ": ${e.message}"
                 }
             }
         }

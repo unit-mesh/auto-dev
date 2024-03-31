@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.compiler.exec
 
+import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.language.compiler.model.LineInfo
 import cc.unitmesh.devti.language.utils.lookupFile
 import cc.unitmesh.devti.util.parser.Code
@@ -15,11 +16,11 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
         val range: LineInfo? = LineInfo.fromString(argument)
         val filename = argument.split("#")[0]
 
-        val virtualFile = myProject.lookupFile(filename) ?: return "<DevInsError>: File not found: $argument"
+        val virtualFile = myProject.lookupFile(filename) ?: return "$DEVINS_ERROR: File not found: $argument"
         val psiFile = PsiManager.getInstance(myProject).findFile(virtualFile)
-            ?: return "<DevInsError>: File not found: $argument"
+            ?: return "$DEVINS_ERROR: File not found: $argument"
         val document = PsiDocumentManager.getInstance(myProject).getDocument(psiFile)
-            ?: return "<DevInsError>: File not found: $argument"
+            ?: return "$DEVINS_ERROR: File not found: $argument"
 
         val resultMsg = WriteAction.computeAndWait<String, Throwable> {
             val startLine = range?.startLine ?: 0
@@ -31,7 +32,7 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
             try {
                 document.replaceString(startOffset, endOffset, content)
             } catch (e: Exception) {
-                return@computeAndWait "<DevInsError>: ${e.message}"
+                return@computeAndWait "$DEVINS_ERROR: ${e.message}"
             }
 
             return@computeAndWait "Writing to file: $argument"
