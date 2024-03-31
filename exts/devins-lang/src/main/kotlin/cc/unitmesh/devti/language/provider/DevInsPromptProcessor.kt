@@ -13,7 +13,7 @@ import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.util.PsiUtilBase
 
 
-class DevInsCustomAgentResponse : LanguagePromptProcessor {
+class DevInsPromptProcessor : LanguagePromptProcessor {
     override val name: String = DevInLanguage.displayName
 
     override fun execute(project: Project, context: CustomAgentContext): String {
