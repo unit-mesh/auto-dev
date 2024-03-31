@@ -32,8 +32,8 @@ ScreenShot
 - `/commit`: commit changes to git
 - `/symbol`: get child by symbol, like get Class by package name, format: `java.lang.String#length`,
   example: `<package>.<class>#<method>`
-- `/shell`: run shell command, like `ls`, `pwd`, etc.
-- '/browse': browse web page, like `https://ide.unitmesh.cc`
+- `/shell`: run shell command or shell script, like `ls`, `pwd`, etc.
+- `/browse`: browse web page, like `https://ide.unitmesh.cc`
 
 ### File Command
 
@@ -41,9 +41,11 @@ Read file content:
 
     Explain code /file:src/main/java/com/example/Controller.java
 
+will call LLM to handle it.
+
 ### Write Command
 
-write file content:
+write content to file:
 
     /write:src/main/java/com/example/Controller.java#L1-L12
     ```java
@@ -59,6 +61,8 @@ write file content:
 Read git change by git revision:
 
     Explain code /rev:HEAD~1
+
+will call LLM to handle it.
 
 ### Run Command
 
@@ -105,4 +109,4 @@ Browse web page:
 
     /browse:https://ide.unitmesh.cc
 
-The will be text inside body from web page.
+It will be text inside the body from web page.

@@ -19,7 +19,6 @@ permalink: /features/chat-width-code
 
 ## Write test for this
 
-
 ## Generate test data (APIs)
 
 support language: Java
