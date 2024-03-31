@@ -23,7 +23,7 @@ class DevInFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, DevI
          * Create a temp DevInFile from a string.
          */
         fun fromString(project: Project, text: String): DevInFile {
-            val filename = DevInLanguage.displayName + "-${UUID.randomUUID()}.devin"
+            val filename = DevInLanguage.displayName + "-${UUID.randomUUID()}." + DevInFileType.INSTANCE.defaultExtension
             val devInFile = PsiFileFactory.getInstance(project)
                 .createFileFromText(filename, DevInLanguage, text) as DevInFile
 

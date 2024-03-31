@@ -28,7 +28,7 @@ class CodeFenceLanguageCompletion : CompletionProvider<CompletionParameters>() {
     }
 
     private fun createLanguageIcon(language: Language): Icon {
-        return DeferredIconImpl(null, language, true) { curLanguage: Language -> curLanguage.associatedFileType?.icon }
+        return DeferredIconImpl(null, language, true) { it.associatedFileType?.icon }
     }
 
     private class MyInsertHandler : InsertHandler<LookupElement> {

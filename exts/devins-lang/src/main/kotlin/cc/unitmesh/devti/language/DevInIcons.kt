@@ -8,7 +8,6 @@ object DevInIcons {
     val DEFAULT: Icon = IconLoader.getIcon("/icons/devin.svg", DevInIcons::class.java)
     @JvmField
     val COMMAND: Icon = IconLoader.getIcon("/icons/devins-command.svg", DevInIcons::class.java)
-
     @JvmField
     val Terminal: Icon = IconLoader.getIcon("/icons/terminal.svg", DevInIcons::class.java)
 }
