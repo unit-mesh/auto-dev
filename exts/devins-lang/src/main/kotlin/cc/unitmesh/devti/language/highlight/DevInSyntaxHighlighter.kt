@@ -32,6 +32,8 @@ class DevInSyntaxHighlighter : SyntaxHighlighter {
             ATTRIBUTES[DevInTypes.COMMAND_ID] = DefaultLanguageHighlighterColors.KEYWORD
             ATTRIBUTES[DevInTypes.COMMAND_PROP] = DefaultLanguageHighlighterColors.STRING
 
+            ATTRIBUTES[DevInTypes.LINE_INFO] = DefaultLanguageHighlighterColors.NUMBER
+
             ATTRIBUTES[DevInTypes.CODE_BLOCK_START] = DefaultLanguageHighlighterColors.KEYWORD
             ATTRIBUTES[DevInTypes.CODE_BLOCK_END] = DefaultLanguageHighlighterColors.KEYWORD
             ATTRIBUTES[DevInTypes.LANGUAGE_ID] = DefaultLanguageHighlighterColors.CONSTANT

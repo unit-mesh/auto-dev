@@ -24,3 +24,22 @@ interaction with LLM, we later renamed it to DevIns. This change was prompted by
 AI company, to avoid confusion. The name DevIns, derived from DevInstruction, succinctly captures the essence of the
 language in guiding the AI Agent's actions.
 
+## AutoDev/Netscape Navigator
+
+Return Code:
+
+```devin
+/symbol:cc.unitmesh.devti.language.lexer.DevInsLexer.parse
+```
+
+Hyperlink to the IDE:
+
+```devin
+/link:cc.unitmesh.devti.language.lexer.DevInsLexer.parse
+```
+
+L1C2 = Line 1 Column 2
+
+```devin
+/file:cpp/src/main/kotlin/cc/unitmesh/cpp/context/CppFileContextBuilder.kt#L1C2-L23
+```
