@@ -31,7 +31,11 @@ interface DevInsSymbolProvider {
      * - If the parent is Package, the children will be classes
      * - If the parent is Class, the children will be methods and fields
      *
-     * Format: `java.lang.String#length`, means: `<package>.<class>#<method>`
+     * Format: `java.lang.String#length`, means:
+     * - `<package>.<class>#<method>`
+     * - `<package>.<class>#<field>`
+     * - `<package>.<class>#<constructor>`
+     *
      */
     fun resolveSymbol(project: Project, symbol: String): List<String>
 
