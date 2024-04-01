@@ -27,7 +27,7 @@ class FileReferenceLanguageProvider : CompletionProvider<CompletionParameters>()
          * Recent open files
          */
         EditorHistoryManager.getInstance(project).fileList.forEach {
-            if (!canBeAdded(it)) return@forEach
+            if (!it.canBeAdded()) return@forEach
             result.addElement(buildElement(it, basePath))
         }
 
@@ -35,7 +35,7 @@ class FileReferenceLanguageProvider : CompletionProvider<CompletionParameters>()
          * Project Files
          */
         ProjectFileIndex.getInstance(project).iterateContent {
-            if (!canBeAdded(it)) return@iterateContent true
+            if (!it.canBeAdded()) return@iterateContent true
             result.addElement(buildElement(it, basePath))
             true
         }
