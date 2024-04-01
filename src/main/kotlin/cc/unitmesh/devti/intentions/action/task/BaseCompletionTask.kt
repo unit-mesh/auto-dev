@@ -8,6 +8,7 @@ import cc.unitmesh.devti.intentions.action.CodeCompletionBaseIntention
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.statusbar.AutoDevStatusService
+import cc.unitmesh.devti.util.parser.Code
 import com.intellij.openapi.actionSystem.CustomShortcutSet
 import com.intellij.openapi.actionSystem.KeyboardShortcut
 import com.intellij.openapi.application.invokeLater
@@ -66,10 +67,12 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
                     return@collect
                 }
 
-                suggestion.append(char as String)
+                val parsedContent = Code.parse(char).text;
+
+                suggestion.append(parsedContent)
                 invokeLater {
                     if (!isCanceled && !request.isReplacement) {
-                        InsertUtil.insertStreamingToDoc(project, char, editor, currentOffset)
+                        InsertUtil.insertStreamingToDoc(project, parsedContent, editor, currentOffset)
                         currentOffset += char.length
                     }
                 }
