@@ -4,6 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.util.parser.parseCodeFromString
 import com.intellij.database.console.DatabaseRunners
 import com.intellij.database.console.runConfiguration.DatabaseScriptRunner
+import com.intellij.database.util.DasUtil
 import com.intellij.lang.Language
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
