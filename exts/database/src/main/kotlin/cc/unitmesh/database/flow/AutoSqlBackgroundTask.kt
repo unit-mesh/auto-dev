@@ -2,6 +2,9 @@ package cc.unitmesh.database.flow
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.util.parser.parseCodeFromString
+import com.intellij.database.console.DatabaseRunners
+import com.intellij.database.console.runConfiguration.DatabaseScriptRunner
+import com.intellij.lang.Language
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
@@ -14,7 +17,8 @@ import com.intellij.sql.psi.SqlLanguage
 class AutoSqlBackgroundTask(
     private val project: Project,
     private val flow: AutoSqlFlow,
-    private val editor: Editor
+    private val editor: Editor,
+    val language: Language
 ) : Task.Backgroundable(project, "Gen SQL", true) {
     private val logger = logger<AutoSqlBackgroundTask>()
 
@@ -44,7 +48,7 @@ class AutoSqlBackgroundTask(
         // verify sql script with parser
         try {
             val sqlDefine =
-                PsiFileFactory.getInstance(project).createFileFromText("temp.sql", SqlLanguage.INSTANCE, sqlScript)
+                PsiFileFactory.getInstance(project).createFileFromText("temp.sql", language, sqlScript)
             // if there is no error, we can insert the code to editor
         } catch (e: Exception) {
             logger.error("SQL Script parse error: $e")

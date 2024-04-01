@@ -61,7 +61,7 @@ class AutoSqlAction : ChatBaseIntention() {
             val llmProvider = LlmFactory().create(project)
             val prompter = AutoSqlFlow(genSqlContext, actions, contentPanel, llmProvider)
 
-            val task = AutoSqlBackgroundTask(project, prompter, editor)
+            val task = AutoSqlBackgroundTask(project, prompter, editor, file.language)
             ProgressManager.getInstance()
                 .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
         }
