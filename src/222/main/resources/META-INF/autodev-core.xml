@@ -226,7 +226,7 @@
                 class="cc.unitmesh.devti.actions.InlayCompleteCodeAction"
                 text="Inlay Complete Code"
                 description="Inlay complete code!" >
-            <keyboard-shortcut keymap="$default" first-keystroke="control PERIOD"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="alt PERIOD"/>
             <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
         </action>
         <action id="cc.unitmesh.devti.disposeInlayCompleteCode"
