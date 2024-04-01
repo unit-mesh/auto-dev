@@ -51,7 +51,7 @@ class AutoSqlFlow(
 
         val prompter = templateRender.renderTemplate(template)
 
-        logger.info("Prompt: $prompter")
+        logger.info("AutoSQL step 1 flow: $prompter")
         return prompter
     }
 
@@ -70,7 +70,7 @@ class AutoSqlFlow(
 
         val prompter = templateRender.renderTemplate(template)
 
-        logger.info("Prompt: $prompter")
+        logger.info("AutoSQL step 2 flow: $prompter")
         return prompter
     }
 

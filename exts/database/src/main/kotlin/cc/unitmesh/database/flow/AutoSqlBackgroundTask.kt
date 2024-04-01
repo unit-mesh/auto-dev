@@ -8,6 +8,8 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiFileFactory
+import com.intellij.sql.psi.SqlLanguage
 
 class AutoSqlBackgroundTask(
     private val project: Project,
@@ -39,10 +41,17 @@ class AutoSqlBackgroundTask(
         val sqlScript = flow.design(tableNames)[0]
 
         logger.info("SQL Script: $sqlScript")
+        // verify sql script with parser
+        try {
+            val sqlDefine =
+                PsiFileFactory.getInstance(project).createFileFromText("temp.sql", SqlLanguage.INSTANCE, sqlScript)
+            // if there is no error, we can insert the code to editor
+        } catch (e: Exception) {
+            logger.error("SQL Script parse error: $e")
+        }
+
         WriteCommandAction.runWriteCommandAction(project, "Gen SQL", "cc.unitmesh.livingDoc", {
-            // new line
             editor.document.insertString(editor.caretModel.offset, "\n")
-            // insert sql script
             val code = parseCodeFromString(sqlScript).first()
             editor.document.insertString(editor.caretModel.offset + "\n".length, code)
         })
