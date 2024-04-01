@@ -9,7 +9,10 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiFileFactory
+import com.intellij.sql.psi.SqlFile
 
 class AutoSqlBackgroundTask(
     private val project: Project,
@@ -44,9 +47,14 @@ class AutoSqlBackgroundTask(
         logger.info("SQL Script: $sqlScript")
         // verify sql script with parser
         try {
-            val sqlDefine =
+            val sqlFile =
                 PsiFileFactory.getInstance(project).createFileFromText("temp.sql", language, sqlScript)
-            // if there is no error, we can insert the code to editor
+                        as SqlFile
+
+            val errors = sqlFile.verifySqlElement()
+            if (errors.isNotEmpty()) {
+                logger.error("SQL Script parse error: ${errors[0]}")
+            }
         } catch (e: Exception) {
             logger.error("SQL Script parse error: $e")
         }
@@ -58,5 +66,26 @@ class AutoSqlBackgroundTask(
         })
 
         indicator.fraction = 1.0
+    }
+}
+
+fun SqlFile.verifySqlElement(): MutableList<String> {
+    val errors = mutableListOf<String>()
+    val visitor = object : SqlSyntaxCheckingVisitor() {
+        override fun visitElement(element: PsiElement) {
+            if (element is PsiErrorElement) {
+                errors.add("Syntax error at position ${element.textRange.startOffset}: ${element.errorDescription}")
+            }
+            super.visitElement(element)
+        }
+    }
+
+    this.accept(visitor)
+    return errors
+}
+
+abstract class SqlSyntaxCheckingVisitor : com.intellij.psi.PsiElementVisitor() {
+    override fun visitElement(element: PsiElement) {
+        element.children.forEach { it.accept(this) }
     }
 }
