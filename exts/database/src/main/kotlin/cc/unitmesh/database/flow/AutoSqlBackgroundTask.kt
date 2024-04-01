@@ -2,9 +2,6 @@ package cc.unitmesh.database.flow
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.util.parser.parseCodeFromString
-import com.intellij.database.console.DatabaseRunners
-import com.intellij.database.console.runConfiguration.DatabaseScriptRunner
-import com.intellij.database.util.DasUtil
 import com.intellij.lang.Language
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
@@ -13,7 +10,6 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFileFactory
-import com.intellij.sql.psi.SqlLanguage
 
 class AutoSqlBackgroundTask(
     private val project: Project,
