@@ -7,6 +7,10 @@ openharmony/lib/ohos-cpp-lsp-client-3.1.0.501.jar, 自研 C++ PSI 模块
 JS 类：`class class com.huawei.ace.language.psi.impl.JavaScriptIdentifierNameImpl`
 CPP 类：`class class com.huawei.ideacpp.psi.impl.CPPIdentifierImpl`
 
+Todos:
+
+- [ ] Regenerate code in Syntax error part.
+
 ## 设计思念
 
 三个新要素：新的语言、遗留系统迁移、新的 UI 框架。

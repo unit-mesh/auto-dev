@@ -51,7 +51,7 @@ class AutoSqlFlow(
 
         val prompter = templateRender.renderTemplate(template)
 
-        logger.info("Prompt: $prompter")
+        logger.info("AutoSQL step 1 flow: $prompter")
         return prompter
     }
 
@@ -70,8 +70,18 @@ class AutoSqlFlow(
 
         val prompter = templateRender.renderTemplate(template)
 
-        logger.info("Prompt: $prompter")
+        logger.info("AutoSQL step 2 flow: $prompter")
         return prompter
+    }
+
+    override fun fix(errors: String): String {
+        panel.addMessage(errors, true, errors)
+        panel.addMessage(AutoDevBundle.message("autodev.loading"))
+
+        return runBlocking {
+            val prompt = llm.stream(errors, "")
+            return@runBlocking panel.updateMessage(prompt)
+        }
     }
 
     fun getAllTables(): List<String> {
