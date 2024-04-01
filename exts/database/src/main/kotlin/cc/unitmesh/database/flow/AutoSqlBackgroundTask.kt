@@ -3,6 +3,7 @@ package cc.unitmesh.database.flow
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.util.parser.parseCodeFromString
 import com.intellij.lang.Language
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
@@ -45,9 +46,11 @@ class AutoSqlBackgroundTask(
         val sqlScript = flow.design(tableNames)[0]
 
         try {
-            val sqlFile =
-                PsiFileFactory.getInstance(project).createFileFromText("temp.sql", language, sqlScript)
+            val sqlCode = parseCodeFromString(sqlScript).first()
+            val sqlFile = runReadAction {
+                PsiFileFactory.getInstance(project).createFileFromText("temp.sql", language, sqlCode)
                         as SqlFile
+            }
 
             val errors = sqlFile.verifySqlElement()
             if (errors.isNotEmpty()) {
@@ -89,6 +92,8 @@ fun SqlFile.verifySqlElement(): MutableList<String> {
 
 abstract class SqlSyntaxCheckingVisitor : com.intellij.psi.PsiElementVisitor() {
     override fun visitElement(element: PsiElement) {
-        element.children.forEach { it.accept(this) }
+        runReadAction {
+            element.children.forEach { it.accept(this) }
+        }
     }
 }
