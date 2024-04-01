@@ -74,6 +74,16 @@ class AutoSqlFlow(
         return prompter
     }
 
+    override fun fix(errors: String): String {
+        panel.addMessage(errors, true, errors)
+        panel.addMessage(AutoDevBundle.message("autodev.loading"))
+
+        return runBlocking {
+            val prompt = llm.stream(errors, "")
+            return@runBlocking panel.updateMessage(prompt)
+        }
+    }
+
     fun getAllTables(): List<String> {
         return actions.dasTables.map { it.name }
     }

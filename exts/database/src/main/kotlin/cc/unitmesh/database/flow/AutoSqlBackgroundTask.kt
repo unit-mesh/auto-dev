@@ -44,8 +44,6 @@ class AutoSqlBackgroundTask(
         indicator.text = AutoDevBundle.message("autosql.generate.generate")
         val sqlScript = flow.design(tableNames)[0]
 
-        logger.info("SQL Script: $sqlScript")
-        // verify sql script with parser
         try {
             val sqlFile =
                 PsiFileFactory.getInstance(project).createFileFromText("temp.sql", language, sqlScript)
@@ -53,19 +51,24 @@ class AutoSqlBackgroundTask(
 
             val errors = sqlFile.verifySqlElement()
             if (errors.isNotEmpty()) {
-                logger.error("SQL Script parse error: ${errors[0]}")
+                val response = flow.fix(errors.joinToString("\n"))
+                val code = parseCodeFromString(response).last()
+                writeToFile(code, indicator)
             }
         } catch (e: Exception) {
             logger.error("SQL Script parse error: $e")
         }
 
+        writeToFile(sqlScript, indicator)
+        indicator.fraction = 1.0
+    }
+
+    private fun writeToFile(sqlScript: String, indicator: ProgressIndicator) {
         WriteCommandAction.runWriteCommandAction(project, "Gen SQL", "cc.unitmesh.livingDoc", {
             editor.document.insertString(editor.caretModel.offset, "\n")
             val code = parseCodeFromString(sqlScript).first()
             editor.document.insertString(editor.caretModel.offset + "\n".length, code)
         })
-
-        indicator.fraction = 1.0
     }
 }
 

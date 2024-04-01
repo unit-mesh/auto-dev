@@ -38,4 +38,14 @@ interface TaskFlow<Tasking> {
     fun execute(context: Any): String {
         return ""
     }
+
+    /**
+     * This method is used to fix the errors in the task flow.
+     *
+     * @param errors The errors that need to be fixed.
+     * @return A string representing the fixed errors.
+     */
+    fun fix(errors: String): String {
+        return ""
+    }
 }
