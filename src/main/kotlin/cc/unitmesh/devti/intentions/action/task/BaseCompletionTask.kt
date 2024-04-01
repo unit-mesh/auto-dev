@@ -6,6 +6,7 @@ import cc.unitmesh.devti.util.InsertUtil
 import cc.unitmesh.devti.util.LLMCoroutineScope
 import cc.unitmesh.devti.intentions.action.CodeCompletionBaseIntention
 import cc.unitmesh.devti.llms.LlmFactory
+import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.statusbar.AutoDevStatusService
 import cc.unitmesh.devti.util.parser.Code
@@ -38,7 +39,9 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
         AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
 
         val prompt = promptText()
-        val flow: Flow<String> = LlmFactory().create(request.project).stream(prompt, "", keepHistory())
+
+        val keepHistory = keepHistory() && prompt.length < AutoDevSettingsState.maxTokenLength
+        val flow: Flow<String> = LlmFactory().create(request.project).stream(prompt, "", keepHistory)
         logger.info("Prompt: $prompt")
 
         DumbAwareAction.create {

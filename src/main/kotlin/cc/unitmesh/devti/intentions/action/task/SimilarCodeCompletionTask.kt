@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.intentions.action.task
 
+import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
 import com.intellij.lang.LanguageCommenters
 
@@ -28,20 +29,34 @@ class SimilarCodeCompletionTask(private val request: CodeCompletionRequest) : Ba
     private val commenter = LanguageCommenters.INSTANCE.forLanguage(request.element!!.language)
     private val commentPrefix = commenter?.lineCommentPrefix
 
+    val start = "code complete for given code, just return rest part of code. \n"
+    val end = "\nreturn rest code:"
     override fun promptText(): String {
         val documentLength = request.editor.document.textLength
+        val prefix = generatePrefix(documentLength)
+
+        return if (chunksString == null) {
+            "$start$prefix\n$end"
+        } else {
+            "$start: \n$commentPrefix\n$chunksString\n$prefix\n$end"
+        }
+    }
+
+    private fun generatePrefix(documentLength: Int): String {
         val prefix = if (request.offset > documentLength) {
             request.prefixText
         } else {
-            val text = request.editor.document.text
-            text.substring(0, request.offset)
+            request.editor.document.text.substring(0, request.offset)
         }
 
-        return if (chunksString == null) {
-            "code complete for given code, just return rest part of code. \n$prefix\n\nreturn rest code:"
-        } else {
-            "complete code for given code, just return rest part of code.: \n$commentPrefix\n$chunksString\n$prefix\n\nreturn rest code:"
+        val prefixMaxLength =
+            AutoDevSettingsState.maxTokenLength - start.length - (commentPrefix?.length ?: 0) - (chunksString?.length
+                ?: 0)
+        if (prefix.length >= prefixMaxLength){
+            return prefix.substring(prefix.length - prefixMaxLength)
         }
+
+        return prefix
     }
 }
 
