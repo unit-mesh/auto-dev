@@ -219,6 +219,9 @@ class KotlinAutoTestService : AutoTestService() {
             val document = FileDocumentManager.getInstance().getDocument(testFile)
             document?.setText(testFileContent)
 
+            // TODO: fix import
+            // org.jetbrains.kotlin.idea.quickfix.ImportFix
+
             testFile
         }
     }

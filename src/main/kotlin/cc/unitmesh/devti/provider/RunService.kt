@@ -6,12 +6,15 @@ import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiErrorElement
+import com.intellij.psi.PsiFile
 
 interface RunService {
     private val logger: Logger get() = logger<RunService>()
@@ -86,6 +89,29 @@ interface RunService {
         runManager.selectedConfiguration = settings
 
         return settings
+    }
+
+    fun PsiFile.collectPsiError(): MutableList<String> {
+        val errors = mutableListOf<String>()
+        val visitor = object : JavaSyntaxCheckingVisitor() {
+            override fun visitElement(element: PsiElement) {
+                if (element is PsiErrorElement) {
+                    errors.add("Syntax error at position ${element.textRange.startOffset}: ${element.errorDescription}")
+                }
+                super.visitElement(element)
+            }
+        }
+
+        this.accept(visitor)
+        return errors
+    }
+
+    abstract class JavaSyntaxCheckingVisitor : com.intellij.psi.PsiElementVisitor() {
+        override fun visitElement(element: PsiElement) {
+            runReadAction {
+                element.children.forEach { it.accept(this) }
+            }
+        }
     }
 
     private fun createDefaultTestConfigurations(project: Project, element: PsiElement): RunnerAndConfigurationSettings? {

@@ -30,6 +30,12 @@ class JavaAutoTestService : AutoTestService() {
     override fun isApplicable(element: PsiElement): Boolean = element.language is JavaLanguage
 
     override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
+        val psiFile = PsiManager.getInstance(project).findFile(virtualFile) as? PsiJavaFile ?: return null
+
+        if(psiFile.collectPsiError().isNotEmpty()) {
+            return null
+        }
+
         return createConfigForGradle(virtualFile, project)
     }
 
@@ -148,6 +154,7 @@ class JavaAutoTestService : AutoTestService() {
             val document = FileDocumentManager.getInstance().getDocument(testFile)
             document?.setText(testFileContent)
 
+            // OptimizeImportsFix
             testFile
         }
     }
