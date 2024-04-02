@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.temporary.getElementToAction
 
@@ -28,16 +29,17 @@ abstract class ChatBaseAction : AnAction() {
         val document = event.getData(CommonDataKeys.EDITOR)?.document
 
         val caretModel = event.getData(CommonDataKeys.EDITOR)?.caretModel
-        var prefixText = caretModel?.currentCaret?.selectedText ?: ""
+        var prompt = caretModel?.currentCaret?.selectedText ?: ""
 
         val file = event.getData(CommonDataKeys.PSI_FILE)
 
         val lineEndOffset = document?.getLineEndOffset(document.getLineNumber(caretModel?.offset ?: 0)) ?: 0
 
         // if selectedText is empty, then we use the cursor position to get the text
-        if (prefixText.isEmpty()) {
-            prefixText = document?.text?.substring(0, lineEndOffset) ?: ""
+        if (prompt.isEmpty()) {
+            prompt = document?.text?.substring(0, lineEndOffset) ?: ""
         }
+
         val suffixText = document?.text?.substring(lineEndOffset) ?: ""
 
         val prompter = ContextPrompter.prompter(file?.language?.displayName ?: "")
@@ -48,17 +50,22 @@ abstract class ChatBaseAction : AnAction() {
 
         val element = getElementToAction(project, editor) ?: return
 
-        prompter.initContext(getActionType(), prefixText, file, project, caretModel?.offset ?: 0, element)
+        prompt += addAdditionInfo(project, editor, element)
+        prompter.initContext(getActionType(), prompt, file, project, caretModel?.offset ?: 0, element)
 
         sendToChatPanel(project) { panel, service ->
             val chatContext = ChatContext(
                 getReplaceableAction(event),
-                prefixText,
+                prompt,
                 suffixText
             )
 
             service.handlePromptAndResponse(panel, prompter, chatContext, newChatContext = true)
         }
+    }
+
+    open fun addAdditionInfo(project: Project, editor: Editor, element: PsiElement): String {
+        return ""
     }
 
     fun selectElement(elementToExplain: PsiElement, editor: Editor) {

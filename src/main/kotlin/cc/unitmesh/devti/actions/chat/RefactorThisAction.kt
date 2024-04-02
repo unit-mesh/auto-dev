@@ -3,16 +3,16 @@ package cc.unitmesh.devti.actions.chat
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
+import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
+
 
 class RefactorThisAction : ChatBaseAction() {
-
     init{
         val presentation = getTemplatePresentation()
         presentation.text = AutoDevBundle.message("settings.autodev.rightClick.refactor")
@@ -36,8 +36,41 @@ class RefactorThisAction : ChatBaseAction() {
         e.presentation.isEnabled = false
     }
 
-    fun collectProblems(element: PsiElement) {
-//       Highlighters
+    override fun addAdditionInfo(project: Project, editor: Editor, element: PsiElement): String {
+        return collectProblems(project, editor, element)?.let {
+            "\n\n// relative static analysis result: $it"
+        } ?: ""
+    }
+
+    /**
+     * Collects all the problems found in the given `project`, within the specified `editor` and `element`.
+     *
+     * @param project The project in which the problems are to be collected.
+     * @param editor The editor that is associated with the element.
+     * @param element The PsiElement for which the problems are to be collected.
+     * @return A string containing all the problems found, separated by new lines, or `null` if no problems were found.
+     */
+    private fun collectProblems(project: Project, editor: Editor, element: PsiElement): String? {
+        val range = element.textRange
+        val document = editor.document
+        val errors: MutableList<String> = mutableListOf()
+        DaemonCodeAnalyzerEx.processHighlights(
+            document,
+            project,
+            null,
+            range.startOffset,
+            range.endOffset
+        ) { info ->
+            if (info.description != null) {
+                errors.add(info.description)
+            }
+
+            true
+        }
+
+        return errors.joinToString("\n") {
+            "// - $it"
+        }
     }
 
     override fun getReplaceableAction(event: AnActionEvent): (response: String) -> Unit {
