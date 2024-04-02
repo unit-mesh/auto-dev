@@ -39,7 +39,15 @@ class RefactorThisAction : ChatBaseAction() {
         } ?: ""
     }
 
-    fun collectProblems(project: Project, editor: Editor, element: PsiElement): String? {
+    /**
+     * Collects all the problems found in the given `project`, within the specified `editor` and `element`.
+     *
+     * @param project The project in which the problems are to be collected.
+     * @param editor The editor that is associated with the element.
+     * @param element The PsiElement for which the problems are to be collected.
+     * @return A string containing all the problems found, separated by new lines, or `null` if no problems were found.
+     */
+    private fun collectProblems(project: Project, editor: Editor, element: PsiElement): String? {
         val range = element.textRange
         val document = editor.document
         val errors: MutableList<String> = mutableListOf()
