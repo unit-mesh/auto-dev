@@ -39,6 +39,10 @@ fun sendToChatPanel(project: Project, runnable: (ChatCodingPanel, ChatCodingServ
     sendToChatWindow(project, actionType, runnable)
 }
 
+fun sendToChatPanel(project: Project, actionType: ChatActionType,  runnable: (ChatCodingPanel, ChatCodingService) -> Unit) {
+    sendToChatWindow(project, actionType, runnable)
+}
+
 fun sendToChatPanel(project: Project, actionType: ChatActionType, prompter: ContextPrompter) {
     sendToChatWindow(project, actionType) { contentPanel, chatCodingService ->
         chatCodingService.handlePromptAndResponse(contentPanel, prompter, newChatContext = true)

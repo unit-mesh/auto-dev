@@ -40,4 +40,7 @@ object AutoDevIcons {
 
     @JvmField
     val InsertCode: Icon = IconLoader.getIcon("/icons/insert-code.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val Idea: Icon = IconLoader.getIcon("/icons/idea.svg", AutoDevIcons::class.java)
 }

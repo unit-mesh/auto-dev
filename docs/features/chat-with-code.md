@@ -15,6 +15,8 @@ permalink: /features/chat-width-code
 
 ## Refactor this
 
+In [#129](https://github.com/unit-mesh/auto-dev/issues/129), we provide more information for you to refactor code.
+
 ## Chat with this
 
 ## Write test for this

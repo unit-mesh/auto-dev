@@ -62,11 +62,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
             LLMCoroutineScope.scope(project).launch {
                 when {
                     actionType === ChatActionType.REFACTOR -> ui.updateReplaceableContent(response) {
-                        context?.replaceSelectedText?.invoke(getCodeSection(it, context.prefixText, context.suffixText))
-                    }
-
-                    actionType === ChatActionType.CODE_COMPLETE -> ui.updateReplaceableContent(response) {
-                        context?.replaceSelectedText?.invoke(getCodeSection(it, context.prefixText, context.suffixText))
+                        context?.postAction?.invoke(it)
                     }
 
                     else -> ui.updateMessage(response)
