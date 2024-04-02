@@ -56,6 +56,12 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
 
     fun fetchMaxTokenLength(): Int = maxTokenLength.toIntOrNull() ?: MAX_TOKEN_LENGTH
 
+    fun fetchLocalLanguage() : String {
+        //todo: refactor, this is hardcode and magic number. Maybe it needs to match with AbstractBundle.getLocale()
+        if (language.equals("中文")) return "zh"
+        return "en"
+    }
+
     @Synchronized
     override fun getState(): AutoDevSettingsState = this
 
@@ -64,6 +70,7 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
 
     companion object {
         val maxTokenLength: Int get() = getInstance().fetchMaxTokenLength()
+        val language: String get() = getInstance().fetchLocalLanguage()
 
         fun getInstance(): AutoDevSettingsState {
             return ApplicationManager.getApplication().getService(AutoDevSettingsState::class.java).state
