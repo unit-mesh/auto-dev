@@ -23,6 +23,7 @@ enum class ChatActionType {
     fun instruction(lang: String = "", project: Project?): String {
         val devCoderSettings = project?.coderSetting?.state
 
+        //todo: prompts
         return when (this) {
             EXPLAIN -> {
                 devCoderSettings?.explainCode.let {
