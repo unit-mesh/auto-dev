@@ -1,28 +1,65 @@
 package cc.unitmesh.devti.practise
 
 import cc.unitmesh.devti.AutoDevIcons
-import com.intellij.codeInsight.completion.InsertionContext
+import cc.unitmesh.devti.llms.LlmFactory
 import com.intellij.codeInsight.completion.PrefixMatcher
 import com.intellij.codeInsight.lookup.*
 import com.intellij.codeInsight.lookup.impl.LookupImpl
-import com.intellij.codeInsight.template.impl.TemplateManagerImpl
-import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiWhiteSpace
+import com.intellij.psi.impl.source.tree.LeafPsiElement
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.runBlocking
 
 class RenameLookupManagerListener(val project: Project) : LookupManagerListener {
+    private val llm = LlmFactory.instance.create(project)
+
+    // Variable is a badgood name. 5 better options with prefix camelCase which use Hungarian naming convention are
     override fun activeLookupChanged(oldLookup: Lookup?, newLookup: Lookup?) {
         val lookupImpl = newLookup as? LookupImpl ?: return
-
-//        val editor = lookupImpl.editor
-//        val activeTemplate = TemplateManager.getInstance(project).getActiveTemplate(editor) ?: return
 
         val lookupOriginalStart = lookupImpl.lookupOriginalStart
         val startOffset = if (lookupOriginalStart > -1) lookupOriginalStart else 0
         val psiElement = lookupImpl.psiFile?.findElementAt(startOffset)
-        val element = psiElement ?: lookupImpl.psiElement
+        val element = psiElement ?: lookupImpl.psiElement ?: return
 
-//        lookupImpl.addLookupListener(RenameLookupListener())
-        val suggestionNames = listOf("suggestion1", "suggestion2", "suggestion3")
+        val parentClass = if (element is LeafPsiElement || element is PsiWhiteSpace) {
+            element.parent?.javaClass
+        } else {
+            element.javaClass
+        }
+
+        val name = parentClass?.name ?: element.text
+
+        val prompt = runBlocking {
+            val stringFlow: Flow<String> = llm.stream(
+                """$name is a badname. Please provide 5 better options name for follow code: 
+
+                ```${element.language.displayName}
+                ${element.text}
+                ```
+
+                1.
+                """.trimIndent(),
+                "",
+                false
+            )
+
+            val sb = StringBuilder()
+            stringFlow.collect {
+                sb.append(it)
+            }
+
+            sb.toString()
+        }
+
+        // the prompt will be list format, split with \n and remove start number with regex
+        val suggestionNames = prompt.split("\n").map {
+            it.replace(Regex("^\\d+\\."), "")
+                .removeSurrounding("`")
+                .trim()
+        }
+
         suggestionNames.map {
             lookupImpl.addItem(RenameLookupElement(it), PrefixMatcher.ALWAYS_TRUE)
         }
