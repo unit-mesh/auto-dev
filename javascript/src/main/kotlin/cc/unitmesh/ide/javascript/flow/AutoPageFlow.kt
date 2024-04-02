@@ -4,6 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.flow.TaskFlow
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.llms.LLMProvider
+import cc.unitmesh.devti.template.GENIUS_PAGE
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.ide.javascript.flow.model.AutoPageContext
 import cc.unitmesh.ide.javascript.flow.model.DsComponent
@@ -24,7 +25,7 @@ class AutoPageFlow(val context: AutoPageContext, val panel: ChatCodingPanel, val
     }
 
     private fun generateStepOnePrompt(context: AutoPageContext): String {
-        val templateRender = TemplateRender("genius/page")
+        val templateRender = TemplateRender(GENIUS_PAGE)
         val template = templateRender.getTemplate("page-gen-clarify.vm")
 
         templateRender.context = context
@@ -48,7 +49,7 @@ class AutoPageFlow(val context: AutoPageContext, val panel: ChatCodingPanel, val
     }
 
     private fun generateStepTwoPrompt(selectedComponents: List<DsComponent>): String {
-        val templateRender = TemplateRender("genius/page")
+        val templateRender = TemplateRender(GENIUS_PAGE)
         val template = templateRender.getTemplate("page-gen-design.vm")
 
         context.pages = selectedComponents.map { it.format() }

@@ -25,10 +25,6 @@ class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBund
     private val inEditorCompletionCheckBox = JCheckBox()
     private val noChatHistoryCheckBox = JCheckBox()
 
-    private val explainCodeField = JTextField()
-    private val refactorCodeField = JTextField()
-    private val fixIssueCodeField = JTextField()
-
     private val useCustomAIEngineWhenInlayCodeComplete = JCheckBox()
         .apply {
             toolTipText = "You can use custom LLM to inlay complete code."
@@ -41,8 +37,6 @@ class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBund
     private val customEngineServerParam = JTextField()
     private val customEngineTokenParam = JPasswordField()
     private val customEnginePrompt = JsonLanguageField(project, "", "Custom your prompt here",  INLAY_PROMPTS_FILE_NAME)
-
-    private val generateTestField = JTextField()
 
     val settings = project.service<AutoDevCoderSettingService>()
     val state = settings.state.copy()
@@ -81,38 +75,6 @@ class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBund
                     componentGet = { it.isSelected },
                     componentSet = { component, value -> component.isSelected = value },
                     prop = state::inEditorCompletion.toMutableProperty()
-                )
-        }
-        row(AutoDevBundle.message("settings.autodev.coder.explainCode")) {
-            fullWidthCell(explainCodeField)
-                .bind(
-                    componentGet = { it.text },
-                    componentSet = { component, value -> component.text = value },
-                    prop = state::explainCode.toMutableProperty()
-                )
-        }
-        row(AutoDevBundle.message("settings.autodev.coder.refactorCode")) {
-            fullWidthCell(refactorCodeField)
-                .bind(
-                    componentGet = { it.text },
-                    componentSet = { component, value -> component.text = value },
-                    prop = state::refactorCode.toMutableProperty()
-                )
-        }
-        row(AutoDevBundle.message("settings.autodev.coder.fixIssueCode")) {
-            fullWidthCell(fixIssueCodeField)
-                .bind(
-                    componentGet = { it.text },
-                    componentSet = { component, value -> component.text = value },
-                    prop = state::fixIssueCode.toMutableProperty()
-                )
-        }
-        row(AutoDevBundle.message("settings.autodev.coder.generateTest")) {
-            fullWidthCell(generateTestField)
-                .bind(
-                    componentGet = { it.text },
-                    componentSet = { component, value -> component.text = value },
-                    prop = state::generateTest.toMutableProperty()
                 )
         }
 
@@ -201,10 +163,6 @@ class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBund
                 it.recordingInLocal = state.recordingInLocal
                 it.disableAdvanceContext = state.disableAdvanceContext
                 it.inEditorCompletion = state.inEditorCompletion
-                it.explainCode = state.explainCode
-                it.refactorCode = state.refactorCode
-                it.fixIssueCode = state.fixIssueCode
-                it.generateTest = state.generateTest
                 it.useCustomAIEngineWhenInlayCodeComplete = state.useCustomAIEngineWhenInlayCodeComplete
                 it.delaySecondsParam = state.delaySecondsParam
                 it.maxTokenLengthParam = state.maxTokenLengthParam

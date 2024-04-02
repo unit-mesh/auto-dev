@@ -5,6 +5,7 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.llms.LlmFactory
+import cc.unitmesh.devti.template.GENIUS_PRACTISES
 import cc.unitmesh.devti.vcs.VcsPrompting
 import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.template.TemplateRender
@@ -149,7 +150,7 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
     }
 
     private fun generateCommitMessage(diff: String, project: Project): String {
-        val templateRender = TemplateRender("genius/practises")
+        val templateRender = TemplateRender(GENIUS_PRACTISES)
         val template = templateRender.getTemplate("gen-commit-msg.vm")
 
         val historyExamples = try {

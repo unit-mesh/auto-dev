@@ -2,6 +2,7 @@ package cc.unitmesh.devti.template
 
 import cc.unitmesh.cf.core.llms.LlmMsg
 import cc.unitmesh.devti.custom.team.TeamPromptsBuilder
+import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.template.TemplateRoleSplitter
 import com.intellij.openapi.project.ProjectManager
 import org.apache.velocity.VelocityContext
@@ -9,8 +10,17 @@ import org.apache.velocity.app.Velocity
 import java.io.StringWriter
 import java.nio.charset.Charset
 
+val ROOT = "genius"
+val GENIUS_SRE = "/sre"
+val GENIUS_MIGRATION = "/migration"
+val GENIUS_SQL = "/sql"
+val GENIUS_HARMONYOS = "/harmonyos"
+val GENIUS_PAGE = "/page"
+val GENIUS_PRACTISES = "/practises"
+val GENIUS_CODE = "/code"
+val GENIUS_CICD = "/cicd"
+val GENIUS_ERROR = "/error"
 class TemplateRender(val pathPrefix: String) {
-    private val defaultPrefix: String = pathPrefix.trimEnd('/')
     private val velocityContext = VelocityContext()
     private val splitter = TemplateRoleSplitter()
     var context: Any = ""
@@ -41,6 +51,7 @@ class TemplateRender(val pathPrefix: String) {
      * @throws TemplateNotFoundError if the specified file cannot be found
      */
     private fun getDefaultTemplate(filename: String): String {
+        val defaultPrefix = "$ROOT/${AutoDevSettingsState.language}/$pathPrefix".trimEnd('/')
         val path = "$defaultPrefix/$filename"
         val resourceUrl = javaClass.classLoader.getResource(path) ?: throw TemplateNotFoundError(path)
         val bytes = resourceUrl.readBytes()

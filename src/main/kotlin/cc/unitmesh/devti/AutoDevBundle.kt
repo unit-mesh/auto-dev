@@ -2,6 +2,7 @@ package cc.unitmesh.devti
 
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.DynamicBundle
+import com.intellij.openapi.diagnostic.logger
 import org.jetbrains.annotations.NonNls
 import org.jetbrains.annotations.PropertyKey
 import java.lang.invoke.MethodHandles
@@ -20,6 +21,7 @@ object AutoDevBundle : DynamicBundle(BUNDLE) {
     fun messagePointer(@PropertyKey(resourceBundle = BUNDLE) key: String, vararg params: Any) =
         getLazyMessage(key, *params)
 
+    val log = logger<AutoDevBundle>()
     override fun findBundle(
         @NonNls pathToBundle: String,
         loader: ClassLoader,
@@ -44,8 +46,7 @@ object AutoDevBundle : DynamicBundle(BUNDLE) {
             method.isAccessible = true
             MethodHandles.lookup().unreflect(method).bindTo(localeBundle).invoke(base)
         } catch (e: Throwable) {
-            // ignored, better handle this in production code
+            log.error("Failed to set parent", e)
         }
     }
-
 }

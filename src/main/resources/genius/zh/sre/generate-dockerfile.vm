@@ -1,0 +1,8 @@
+请编写一个最小步骤的 Dockerfile。
+
+${context.buildContext}
+
+- 我需要在与运行构建不同的基础镜像中进行构建
+- 我需要应用程序端口为3000
+
+仅输出 Dockerfile 内容，不要附带任何解释。

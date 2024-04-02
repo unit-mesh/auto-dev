@@ -1,0 +1,26 @@
+为以下代码编写单元测试。
+
+${context.frameworkedContext}
+
+#if( $context.relatedClasses.length() > 0 )
+    ${context.relatedClasses}
+#end
+#if( $context.currentClass.length() > 0 )
+以下是当前类的信息：
+    ${context.currentClass}
+#end
+
+以下是待测试的源代码：
+
+```$context.lang
+${context.imports}
+${context.sourceCode}
+```
+
+如果是新文件
+#if( $context.isNewFile )
+在此处使用 Markdown 代码块编写方法测试代码：
+#else
+在此处使用 Markdown 代码块编写 ${context.testClassName} 测试代码：
+#end
+

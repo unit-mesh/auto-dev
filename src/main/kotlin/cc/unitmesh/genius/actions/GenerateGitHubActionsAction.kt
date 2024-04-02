@@ -3,6 +3,7 @@ package cc.unitmesh.genius.actions
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.tasks.FileGenerateTask
 import cc.unitmesh.devti.provider.BuildSystemProvider
+import cc.unitmesh.devti.template.GENIUS_CICD
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.genius.actions.context.DevOpsContext
 import com.intellij.openapi.actionSystem.AnAction
@@ -40,7 +41,7 @@ class GenerateGitHubActionsAction : AnAction(AutoDevBundle.message("action.new.g
 
         // first, we need to guess language
         val githubActions = BuildSystemProvider.guess(project);
-        val templateRender = TemplateRender("genius/cicd")
+        val templateRender = TemplateRender(GENIUS_CICD)
         templateRender.context = DevOpsContext.from(githubActions)
         val template = templateRender.getTemplate("generate-github-action.vm")
 

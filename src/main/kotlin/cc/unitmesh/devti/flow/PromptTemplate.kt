@@ -24,7 +24,7 @@ class PromptTemplate {
     }
 
     private fun getTemplate(fileName: String): InputStream? =
-        this::class.java.classLoader.getResourceAsStream("prompts/openai/$fileName.vm")
+        this::class.java.classLoader.getResourceAsStream("prompts/default/$fileName.vm")
 
     fun createDtoAndEntity(storyDetail: String, files: List<DtClass>): String {
         val promptText: InputStream = getTemplate("create_dto_and_entity")!!
