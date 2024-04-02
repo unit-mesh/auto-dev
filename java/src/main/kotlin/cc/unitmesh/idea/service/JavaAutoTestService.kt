@@ -4,15 +4,19 @@ import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.provider.AutoTestService
 import cc.unitmesh.devti.provider.context.TestFileContext
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.execution.RunManager
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.lang.java.JavaLanguage
+import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.roots.ProjectFileIndex
@@ -155,6 +159,14 @@ class JavaAutoTestService : AutoTestService() {
             document?.setText(testFileContent)
 
             // OptimizeImportsFix
+            CommandProcessor.getInstance().runUndoTransparentAction {
+                val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return@runUndoTransparentAction
+                DaemonCodeAnalyzer.getInstance(project).autoImportReferenceAtCursor(
+                    editor,
+                    sourceFile
+                )
+            }
+
             testFile
         }
     }
