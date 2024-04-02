@@ -44,6 +44,8 @@ import javax.swing.*
 class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disposable: Disposable?) :
     SimpleToolWindowPanel(true, true),
     NullableComponent {
+    private val logger = logger<ChatCodingPanel>()
+
     private var progressBar: JProgressBar
     private val myTitle = JBLabel("Conversation")
     private val myList = JPanel(VerticalLayout(JBUI.scale(10)))
@@ -187,6 +189,13 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         return !isVisible
     }
 
+    /**
+     * Updates the replaceable content in the UI using the provided `Flow<String>`.
+     *
+     * @param content The flow of strings to update the UI with.
+     * @param replaceSelectedText A function that is called when the "Replace Selection" button is clicked,
+     *                            passing the current text to be replaced in the editor.
+     */
     suspend fun updateReplaceableContent(content: Flow<String>, replaceSelectedText: (text: String) -> Unit) {
         myList.remove(myList.componentCount - 1)
         val text = updateMessageInUi(content)
@@ -203,8 +212,6 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         progressBar.isVisible = false
         updateUI()
     }
-
-    private val logger = logger<ChatCodingPanel>()
 
     private suspend fun updateMessageInUi(content: Flow<String>): String {
         val messageView = MessageView("", ChatRole.Assistant, "")

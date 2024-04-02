@@ -3,6 +3,7 @@ package cc.unitmesh.devti.actions.chat
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx
 import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -37,7 +38,7 @@ class RefactorThisAction : ChatBaseAction() {
         e.presentation.isEnabled = false
     }
 
-    override fun addAdditionInfo(project: Project, editor: Editor, element: PsiElement): String {
+    override fun addAdditionPrompt(project: Project, editor: Editor, element: PsiElement): String {
         val commentSymbol = commentPrefix(element)
 
         //todo: prompts
@@ -82,7 +83,17 @@ class RefactorThisAction : ChatBaseAction() {
         }
     }
 
-    override fun getReplaceableAction(event: AnActionEvent): (response: String) -> Unit {
+    private val refactorIntentionsKeys = arrayOf(
+        "intentions.refactor.readability",
+        "intentions.refactor.usability",
+        "intentions.refactor.performance",
+        "intentions.refactor.maintainability",
+        "intentions.refactor.flexibility",
+        "intentions.refactor.reusability",
+        "intentions.refactor.accessibility"
+    )
+
+    override fun chatCompletedPostAction(event: AnActionEvent, panel: ChatCodingPanel): (response: String) -> Unit {
         val editor = event.getRequiredData(CommonDataKeys.EDITOR)
         val project = event.getRequiredData(CommonDataKeys.PROJECT)
         val document = editor.document
