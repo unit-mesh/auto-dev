@@ -245,27 +245,27 @@
         <!-- TODO: refactor to dynamic group: https://plugins.jetbrains.com/docs/intellij/grouping-action.html#adding-child-actions-to-the-dynamic-group -->
         <group id="org.intellij.sdk.action.GroupedActions" popup="true" text="AutoDev Chat" description="AutoDev chat">
             <action id="cc.unitmesh.devti.actions.chat.ExplainThisAction"
-                    class="cc.unitmesh.devti.actions.chat.ExplainThisAction" text="Explain This"
+                    class="cc.unitmesh.devti.actions.chat.ExplainThisAction"
                     description="Ask AI about this code">
             </action>
 
             <action id="cc.unitmesh.devti.actions.chat.RefactorThisAction"
-                    class="cc.unitmesh.devti.actions.chat.RefactorThisAction" text="Refactor This"
+                    class="cc.unitmesh.devti.actions.chat.RefactorThisAction"
                     description="Ask AI refactor this code">
             </action>
 
             <action id="cc.unitmesh.devti.actions.chat.ChatWithThisAction"
-                    class="cc.unitmesh.devti.actions.chat.ChatWithThisAction" text="Chat with This"
+                    class="cc.unitmesh.devti.actions.chat.ChatWithThisAction"
                     description="Ask AI chat with this code">
             </action>
 
             <action id="cc.unitmesh.devti.actions.chat.GenerateTestAction"
-                    class="cc.unitmesh.devti.actions.chat.GenerateTestAction" text="Write Test for This"
+                    class="cc.unitmesh.devti.actions.chat.GenerateTestAction"
                     description="Ask AI write this code">
             </action>
 
             <action id="cc.unitmesh.devti.actions.chat.GenTestDataAction"
-                    class="cc.unitmesh.devti.actions.chat.GenTestDataAction" text="Generate Test Data (APIs)"
+                    class="cc.unitmesh.devti.actions.chat.GenTestDataAction"
                     description="Ask AI generate test data">
 
                 <add-to-group group-id="GenerateGroup" anchor="last"/>
@@ -276,7 +276,6 @@
 
         <action id="cc.unitmesh.devti.QuickAssistant"
                 class="cc.unitmesh.devti.actions.quick.QuickAssistantAction"
-                text="Quick Assistant"
                 description="You can custom any assistant as you want!"
         >
             <keyboard-shortcut keymap="$default" first-keystroke="control BACK_SLASH"/>
@@ -285,13 +284,13 @@
         </action>
 
         <action id="cc.unitmesh.devti.actions.console.FixThisAction"
-                class="cc.unitmesh.devti.actions.console.FixThisAction" text="Fix This (AutoDev)"
+                class="cc.unitmesh.devti.actions.console.FixThisAction"
                 description="Ask AI fi this code">
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
         </action>
 
         <action id="autodev.Vcs.CommitMessage"
-                class="cc.unitmesh.devti.actions.vcs.CommitMessageSuggestionAction" text="Commit Message (AutoDev)"
+                class="cc.unitmesh.devti.actions.vcs.CommitMessageSuggestionAction"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                 description="Ask AI generate commit message">
 
@@ -299,7 +298,7 @@
         </action>
 
         <action id="autodev.Vcs.LLMChangelog"
-                class="cc.unitmesh.devti.actions.vcs.ReleaseNoteSuggestionAction" text="Generate Release Note (AutoDev)"
+                class="cc.unitmesh.devti.actions.vcs.ReleaseNoteSuggestionAction"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                 description="Ask AI generate release note">
 
@@ -307,7 +306,7 @@
         </action>
 
         <action id="autodev.Vcs.CodeReview"
-                class="cc.unitmesh.devti.actions.vcs.CodeReviewAction" text="CodeReview (AutoDev)"
+                class="cc.unitmesh.devti.actions.vcs.CodeReviewAction"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                 description="Ask AI to review code">
 
@@ -317,7 +316,7 @@
         </action>
 
         <action id="autodev.Vcs.PrepushReview"
-                class="cc.unitmesh.devti.actions.vcs.PrepushReviewAction" text="Prepush Review (AutoDev)"
+                class="cc.unitmesh.devti.actions.vcs.PrepushReviewAction"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                 description="Ask AI to review code">
 
@@ -327,7 +326,7 @@
         </action>
 
         <action id="cc.unitmesh.devti.actions.chat.CodeCompleteChatAction"
-                class="cc.unitmesh.devti.actions.chat.CodeCompleteChatAction" text="Code Complete (AutoDev)"
+                class="cc.unitmesh.devti.actions.chat.CodeCompleteChatAction"
                 description="Ask AI about this code">
 
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
@@ -369,7 +368,6 @@
 
         <action id="cc.unitmesh.devti.EditSettings"
                 class="cc.unitmesh.devti.actions.EditSettingsAction"
-                text="Edit Settings"
                 description="Edit AutoDev Settings"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
         </action>

@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.actions.chat
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -8,6 +9,10 @@ import com.intellij.openapi.command.WriteCommandAction
 
 class RefactorThisAction : ChatBaseAction() {
 
+    init{
+        val presentation = getTemplatePresentation()
+        presentation.text = AutoDevBundle.message("settings.autodev.rightClick.refactor")
+    }
     override fun getActionType(): ChatActionType = ChatActionType.REFACTOR
 
     override fun getReplaceableAction(event: AnActionEvent): (response: String) -> Unit {

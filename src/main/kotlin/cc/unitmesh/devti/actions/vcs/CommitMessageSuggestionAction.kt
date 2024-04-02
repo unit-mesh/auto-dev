@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.actions.vcs
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
@@ -27,6 +28,11 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.flow.*
 
 class CommitMessageSuggestionAction : ChatBaseAction() {
+
+    init{
+        val presentation = getTemplatePresentation()
+        presentation.text = AutoDevBundle.message("settings.autodev.others.commitMessage")
+    }
     override fun getActionUpdateThread(): ActionUpdateThread {
         return ActionUpdateThread.BGT
     }
