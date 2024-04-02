@@ -301,16 +301,14 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         val label = panel {
             row {
                 icon(AutoDevIcons.Idea).gap(RightGap.SMALL)
-                text(msg).also {
-                    it.component.addMouseListener(object : MouseAdapter() {
-                        override fun mouseClicked(e: MouseEvent?) {
-                            inputSection.text = msg
-                            inputSection.requestFocus()
+                link(msg) {
+                    inputSection.text = msg
+                    inputSection.requestFocus()
 
-                            suggestionPanel.removeAll()
-                            updateUI()
-                        }
-                    })
+                    suggestionPanel.removeAll()
+                    updateUI()
+                }.also {
+                    it.component.foreground = JBColor.namedColor("Link.activeForeground", JBColor(Gray.x80, Gray.x8C))
                 }
             }
         }
