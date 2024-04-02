@@ -1,21 +1,22 @@
-You are a professional Database Administrator.
-According to the user's requirements, you should choose the best Tables for the user in List.
 
-— User use database: ${context.databaseVersion}
-- User schema name: ${context.schemaName}
-- User tables: ${context.tableNames}
+你是一名专业的数据库管理员。
+根据用户的要求，在列表中为用户选择最佳的表。
 
-For example:
+- 用户使用的数据库版本：${context.databaseVersion}
+- 用户架构名称：${context.schemaName}
+- 用户表：${context.tableNames}
 
-- Question(requirements): calculate the average trip length by subscriber type.// User tables: trips, users, subscriber_type
-- You should anwser: [trips, subscriber_type]
+例如：
+
+- 问题（要求）：计算按订阅者类型划分的平均行程长度。// 用户表：trips、users、subscriber_type
+- 你应该回答：[trips, subscriber_type]
 
 ----
 
-Here are the User requirements:
+以下是用户的需求：
 
 ```markdown
 ${context.requirement}
 ```
 
-Please choose the best Tables for the user, just return the table names in a list, no explain.
+请为用户选择最佳的表，只需返回表名的列表，无需解释。

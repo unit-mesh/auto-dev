@@ -1,5 +1,5 @@
-Generate a concise code snippet with no extra text, description, or comments.
+生成一个简洁的代码片段，不包含额外的文本、描述或注释。
 
-The code should achieve the following task:
+该代码应实现以下任务：
 
 ${context.task}

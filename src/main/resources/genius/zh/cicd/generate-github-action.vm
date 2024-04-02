@@ -1,4 +1,4 @@
-Create build.yml YAML file for GitHub Action for build project and runs tests
+创建 build.yml 文件，用于 GitHub Action 构建项目并运行测试。
 
 - ${context.buildContext}
-- OS: latest ubuntu version
+- OS: 最新版本的ubuntu
