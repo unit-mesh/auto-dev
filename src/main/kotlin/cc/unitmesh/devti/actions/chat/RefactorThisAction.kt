@@ -2,16 +2,18 @@ package cc.unitmesh.devti.actions.chat
 
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
+import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx
+import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerImpl
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
+
 
 class RefactorThisAction : ChatBaseAction() {
-
     override fun getActionType(): ChatActionType = ChatActionType.REFACTOR
     override fun update(e: AnActionEvent) {
         val editor = e.getData(CommonDataKeys.EDITOR)
@@ -31,8 +33,33 @@ class RefactorThisAction : ChatBaseAction() {
         e.presentation.isEnabled = false
     }
 
-    fun collectProblems(element: PsiElement) {
-//       Highlighters
+    override fun addAdditionInfo(project: Project, editor: Editor, element: PsiElement): String {
+        return collectProblems(project, editor, element)?.let {
+            "\n\n// relative static analysis result: $it"
+        } ?: ""
+    }
+
+    fun collectProblems(project: Project, editor: Editor, element: PsiElement): String? {
+        val range = element.textRange
+        val document = editor.document
+        val errors: MutableList<String> = mutableListOf()
+        DaemonCodeAnalyzerEx.processHighlights(
+            document,
+            project,
+            null,
+            range.startOffset,
+            range.endOffset
+        ) { info ->
+            if (info.description != null) {
+                errors.add(info.description)
+            }
+
+            true
+        }
+
+        return errors.joinToString("\n") {
+            "// - $it"
+        }
     }
 
     override fun getReplaceableAction(event: AnActionEvent): (response: String) -> Unit {
