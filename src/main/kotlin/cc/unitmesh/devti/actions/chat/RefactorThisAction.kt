@@ -82,6 +82,16 @@ class RefactorThisAction : ChatBaseAction() {
         }
     }
 
+    private val refactorIntentionsKeys = arrayOf(
+        "intentions.refactor.readability",
+        "intentions.refactor.usability",
+        "intentions.refactor.performance",
+        "intentions.refactor.maintainability",
+        "intentions.refactor.flexibility",
+        "intentions.refactor.reusability",
+        "intentions.refactor.accessibility"
+    )
+
     override fun chatCompletedPostAction(event: AnActionEvent, panel: ChatCodingPanel): (response: String) -> Unit {
         val editor = event.getRequiredData(CommonDataKeys.EDITOR)
         val project = event.getRequiredData(CommonDataKeys.PROJECT)
