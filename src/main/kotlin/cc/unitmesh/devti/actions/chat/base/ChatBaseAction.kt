@@ -19,7 +19,7 @@ abstract class ChatBaseAction : AnAction() {
         private val logger = logger<ChatBaseAction>()
     }
 
-    open fun getReplaceableAction(event: AnActionEvent): ((response: String) -> Unit)? = null
+    open fun chatCompletedPostAction(event: AnActionEvent, panel: ChatCodingPanel): ((response: String) -> Unit)? = null
 
     abstract fun getActionType(): ChatActionType
 
@@ -56,13 +56,27 @@ abstract class ChatBaseAction : AnAction() {
 
         sendToChatPanel(project) { panel: ChatCodingPanel, service ->
             val chatContext = ChatContext(
-                getReplaceableAction(event),
+                chatCompletedPostAction(event, panel),
                 prompt,
                 suffixText
             )
 
             service.handlePromptAndResponse(panel, prompter, chatContext, newChatContext = true)
         }
+    }
+
+    /**
+     * After chat completion, we can provide some suggestions to the user.
+     * For example, In issue: [#129](https://github.com/unit-mesh/auto-dev/issues/129), If our user doesn't provide any
+     * refactor intention, we can provide some suggestions to the user.
+     *
+     * @param project The current project.
+     * @param editor The editor that is currently in use.
+     * @param element The PsiElement that is being completed.
+     * @return A string representing the completion suggestion, or `null` if no suggestion is available.
+     */
+    open fun chatCompletionSuggestion(project: Project, editor: Editor, element: PsiElement): String? {
+        return null
     }
 
     /**
