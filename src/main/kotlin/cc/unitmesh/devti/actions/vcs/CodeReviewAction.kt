@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.actions.vcs
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
@@ -30,6 +31,11 @@ import org.changelog.CommitParser
 val githubUrlRegex: Regex = Regex("^(https?://|git://)?(www\\.)?github\\.com/[\\w-]+/[\\w-]+(/.*)?\$")
 
 open class CodeReviewAction : ChatBaseAction() {
+
+    init{
+        val presentation = getTemplatePresentation()
+        presentation.text = AutoDevBundle.message("settings.autodev.others.codeReview")
+    }
     override fun getActionType(): ChatActionType = ChatActionType.CODE_REVIEW
 
     private val commitParser: CommitParser = CommitParser()

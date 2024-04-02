@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.actions.chat
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx
@@ -13,6 +14,10 @@ import com.intellij.psi.PsiElement
 
 
 class RefactorThisAction : ChatBaseAction() {
+    init{
+        val presentation = getTemplatePresentation()
+        presentation.text = AutoDevBundle.message("settings.autodev.rightClick.refactor")
+    }
     override fun getActionType(): ChatActionType = ChatActionType.REFACTOR
     override fun update(e: AnActionEvent) {
         val editor = e.getData(CommonDataKeys.EDITOR)

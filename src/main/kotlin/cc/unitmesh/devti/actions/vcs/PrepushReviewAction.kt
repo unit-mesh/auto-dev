@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.actions.vcs
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.vcs.VcsPrompting
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -8,6 +9,11 @@ import com.intellij.openapi.vcs.VcsDataKeys
 import com.intellij.openapi.vcs.changes.Change
 
 class PrepushReviewAction : CodeReviewAction() {
+
+    init{
+        val presentation = getTemplatePresentation()
+        presentation.text = AutoDevBundle.message("settings.autodev.others.prepushReviewAction")
+    }
     override fun update(e: AnActionEvent) {
         val data = e.getData(VcsDataKeys.CHANGES)
         if (data == null) {

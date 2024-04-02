@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.actions.vcs
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
@@ -11,6 +12,11 @@ import com.intellij.vcs.log.VcsLogDataKeys
 
 
 class ReleaseNoteSuggestionAction : AnAction() {
+
+    init{
+        val presentation = getTemplatePresentation()
+        presentation.text = AutoDevBundle.message("settings.autodev.others.generateReleaseNote")
+    }
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val vcsLog = e.getData(VcsLogDataKeys.VCS_LOG)

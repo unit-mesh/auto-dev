@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.actions.console
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatWindow
@@ -11,6 +12,10 @@ import com.intellij.temporary.error.ErrorMessageProcessor
 
 
 class FixThisAction : ChatBaseAction() {
+    init{
+        val presentation = getTemplatePresentation()
+        presentation.text = AutoDevBundle.message("settings.autodev.others.fixThis")
+    }
     override fun getActionType(): ChatActionType = ChatActionType.FIX_ISSUE
     private val logger = logger<FixThisAction>()
 

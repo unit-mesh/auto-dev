@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.actions.chat
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
@@ -17,6 +18,11 @@ import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.temporary.getElementToAction
 
 class CodeCompleteChatAction : AnAction() {
+
+    init{
+        val presentation = getTemplatePresentation()
+        presentation.text = AutoDevBundle.message("settings.autodev.others.codeComplete")
+    }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
         return ActionUpdateThread.BGT

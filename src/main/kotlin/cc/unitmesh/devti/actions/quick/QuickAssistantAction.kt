@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.actions.quick
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.TeamPromptBaseIntention
 import cc.unitmesh.devti.custom.team.TeamPromptAction
 import cc.unitmesh.devti.custom.team.TeamPromptsBuilder
@@ -32,6 +33,11 @@ import javax.swing.AbstractAction
  * user can input custom text to call with LLM.
  */
 class QuickAssistantAction : AnAction() {
+    init{
+        val presentation = getTemplatePresentation()
+        presentation.text = AutoDevBundle.message("settings.autodev.others.quickAssistant")
+    }
+
     override fun actionPerformed(e: AnActionEvent) {
         val dataContext = e.dataContext
         val editor = dataContext.getData(CommonDataKeys.EDITOR) ?: return
