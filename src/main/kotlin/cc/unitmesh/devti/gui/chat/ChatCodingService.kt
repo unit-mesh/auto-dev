@@ -65,10 +65,6 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
                         context?.postAction?.invoke(it)
                     }
 
-                    actionType === ChatActionType.CODE_COMPLETE -> ui.updateReplaceableContent(response) {
-                        context?.postAction?.invoke(getCodeSection(it, context.prefixText, context.suffixText))
-                    }
-
                     else -> ui.updateMessage(response)
                 }
             }

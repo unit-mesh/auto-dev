@@ -1,12 +1,9 @@
 package cc.unitmesh.devti.gui.chat
 
-import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.alignRight
+import cc.unitmesh.devti.*
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.agent.view.WebBlock
 import cc.unitmesh.devti.agent.view.WebBlockView
-import cc.unitmesh.devti.fullHeight
-import cc.unitmesh.devti.fullWidth
 import cc.unitmesh.devti.gui.chat.welcome.WelcomePanel
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.provider.devins.LanguagePromptProcessor
@@ -28,6 +25,7 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
+import com.intellij.ui.dsl.builder.RightGap
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
@@ -38,7 +36,6 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.Nls
 import java.awt.BorderLayout
-import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
@@ -55,8 +52,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
     private val focusMouseListener: MouseAdapter
     private var panelContent: DialogPanel
     private val myScrollPane: JBScrollPane
-    private val delaySeconds: String
-        get() = AutoDevSettingsState.getInstance().delaySeconds
+    private val delaySeconds: String get() = AutoDevSettingsState.getInstance().delaySeconds
 
     private var suggestionPanel: JPanel = JPanel(BorderLayout())
 
@@ -198,24 +194,18 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
      * Updates the replaceable content in the UI using the provided `Flow<String>`.
      *
      * @param content The flow of strings to update the UI with.
-     * @param replaceSelectedText A function that is called when the "Replace Selection" button is clicked,
+     * @param postAction A function that is called when the "Replace Selection" button is clicked,
      *                            passing the current text to be replaced in the editor.
      */
-    suspend fun updateReplaceableContent(content: Flow<String>, replaceSelectedText: (text: String) -> Unit) {
+    suspend fun updateReplaceableContent(content: Flow<String>, postAction: (text: String) -> Unit) {
         myList.remove(myList.componentCount - 1)
         val text = updateMessageInUi(content)
-
-        val jButton = JButton(AutoDevBundle.message("chat.panel.replaceSelection"))
-        val listener = ActionListener {
-            replaceSelectedText(text)
-            myList.remove(myList.componentCount - 1)
-        }
-        jButton.addActionListener(listener)
-        myList.add(jButton)
 
         progressBar.isIndeterminate = false
         progressBar.isVisible = false
         updateUI()
+
+        postAction(text)
     }
 
     private suspend fun updateMessageInUi(content: Flow<String>): String {
@@ -310,7 +300,8 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
     fun showSuggestion(msg: @Nls String) {
         val label = panel {
             row {
-                cell(JBLabel(msg)).fullWidth().also {
+                icon(AutoDevIcons.Idea).gap(RightGap.SMALL)
+                text(msg).also {
                     it.component.addMouseListener(object : MouseAdapter() {
                         override fun mouseClicked(e: MouseEvent?) {
                             inputSection.text = msg

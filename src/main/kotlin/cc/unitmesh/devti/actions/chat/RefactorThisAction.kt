@@ -4,21 +4,20 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
-import cc.unitmesh.devti.util.parser.Code
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx
 import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 
 class RefactorThisAction : ChatBaseAction() {
-    init{
+    init {
         val presentation = getTemplatePresentation()
         presentation.text = AutoDevBundle.message("settings.autodev.rightClick.refactor")
     }
+
     override fun getActionType(): ChatActionType = ChatActionType.REFACTOR
     override fun update(e: AnActionEvent) {
         val editor = e.getData(CommonDataKeys.EDITOR)
@@ -42,7 +41,7 @@ class RefactorThisAction : ChatBaseAction() {
         val commentSymbol = commentPrefix(element)
 
         return collectProblems(project, editor, element)?.let {
-            "\n\n$commentSymbol relative static analysis result: \n\n$it"
+            "\n\n$commentSymbol relative static analysis result:\n$it"
         } ?: ""
     }
 
@@ -93,25 +92,12 @@ class RefactorThisAction : ChatBaseAction() {
     )
 
     override fun chatCompletedPostAction(event: AnActionEvent, panel: ChatCodingPanel): (response: String) -> Unit {
-        val editor = event.getRequiredData(CommonDataKeys.EDITOR)
-        val project = event.getRequiredData(CommonDataKeys.PROJECT)
-        val document = editor.document
-
-        val primaryCaret = editor.caretModel.primaryCaret;
-        val start = primaryCaret.selectionStart;
-        val end = primaryCaret.selectionEnd
-
         // get random key from refactorIntentionsKeys
         val key = refactorIntentionsKeys.random()
         val msg = AutoDevBundle.message(key)
 
-        return { response ->
+        return {
             panel.showSuggestion(msg)
-
-            val code = Code.parse(response).text
-            WriteCommandAction.runWriteCommandAction(project) {
-                document.replaceString(start, end, code)
-            }
         }
     }
 }
