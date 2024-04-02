@@ -9,6 +9,7 @@ import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.util.parser.parseCodeFromString
 import cc.unitmesh.devti.provider.AutoTestService
 import cc.unitmesh.devti.provider.context.*
+import cc.unitmesh.devti.template.GENIUS_CODE
 import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.statusbar.AutoDevStatusService
 import cc.unitmesh.devti.template.TemplateRender
@@ -48,7 +49,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
     val commenter = LanguageCommenters.INSTANCE.forLanguage(request.file.language) ?: null
     val comment = commenter?.lineCommentPrefix ?: "//"
 
-    val templateRender = TemplateRender("genius/code")
+    val templateRender = TemplateRender(GENIUS_CODE)
     val template = templateRender.getTemplate("test-gen.vm")
 
     override fun run(indicator: ProgressIndicator) {

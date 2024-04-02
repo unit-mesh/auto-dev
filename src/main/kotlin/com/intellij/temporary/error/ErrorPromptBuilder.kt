@@ -4,6 +4,7 @@ package com.intellij.temporary.error
 import com.intellij.temporary.AutoPsiUtils
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.prompting.BasePromptText
+import cc.unitmesh.devti.template.GENIUS_ERROR
 import cc.unitmesh.devti.template.TemplateRender
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.vfs.VirtualFile
@@ -47,7 +48,7 @@ class ErrorPromptBuilder(private val maxLength: Int, private val tokenizer: Toke
 
         val errorTextTrimmed = trimTextByTokenizer(errorText, maxLengthForPiece)
 
-        val templateRender = TemplateRender("genius/error")
+        val templateRender = TemplateRender(GENIUS_ERROR)
         templateRender.context = ErrorContext(errorTextTrimmed, sourceCode)
         val template = templateRender.getTemplate("fix-error.vm")
         val prompt = templateRender.renderTemplate(template)

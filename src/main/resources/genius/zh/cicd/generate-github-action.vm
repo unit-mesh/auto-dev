@@ -1,0 +1,4 @@
+Create build.yml YAML file for GitHub Action for build project and runs tests
+
+- ${context.buildContext}
+- OS: latest ubuntu version

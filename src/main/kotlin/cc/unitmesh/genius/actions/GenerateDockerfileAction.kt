@@ -2,6 +2,7 @@ package cc.unitmesh.genius.actions
 
 import cc.unitmesh.devti.custom.tasks.FileGenerateTask
 import cc.unitmesh.devti.provider.BuildSystemProvider
+import cc.unitmesh.devti.template.GENIUS_SRE
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.genius.actions.context.DevOpsContext
 import com.intellij.openapi.actionSystem.AnAction
@@ -16,7 +17,7 @@ class GenerateDockerfileAction : AnAction("Generate Dockerfile") {
         val project = e.project ?: return
 
         val dockerContexts = BuildSystemProvider.guess(project)
-        val templateRender = TemplateRender("genius/sre")
+        val templateRender = TemplateRender(GENIUS_SRE)
         templateRender.context = DevOpsContext.from(dockerContexts)
         val template = templateRender.getTemplate("generate-dockerfile.vm")
 

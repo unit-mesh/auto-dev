@@ -12,6 +12,7 @@ import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
 import cc.unitmesh.devti.settings.AutoDevSettingsState
+import cc.unitmesh.devti.template.GENIUS_PRACTISES
 import cc.unitmesh.devti.template.TemplateRender
 import com.intellij.dvcs.repo.Repository
 import com.intellij.dvcs.repo.VcsRepositoryManager
@@ -96,7 +97,7 @@ open class CodeReviewAction : ChatBaseAction() {
     }
 
     fun doCodeReview(project: Project, context: CodeReviewContext) {
-        val templateRender = TemplateRender("genius/practises")
+        val templateRender = TemplateRender(GENIUS_PRACTISES)
         val template = templateRender.getTemplate("code-review.vm")
         templateRender.context = context
         val messages = templateRender.buildMsgs(template)

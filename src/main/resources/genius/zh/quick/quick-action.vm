@@ -1,0 +1,5 @@
+Generate a concise code snippet with no extra text, description, or comments.
+
+The code should achieve the following task:
+
+${context.task}

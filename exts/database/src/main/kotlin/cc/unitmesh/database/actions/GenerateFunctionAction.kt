@@ -5,6 +5,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.template.GENIUS_MIGRATION
 import cc.unitmesh.devti.template.TemplateRender
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
@@ -38,7 +39,7 @@ class GenerateFunctionAction : ChatBaseIntention() {
         if (editor == null || file == null) return
         val selectedText = editor.selectionModel.selectedText ?: return
 
-        val templateRender = TemplateRender("genius/migration")
+        val templateRender = TemplateRender(GENIUS_MIGRATION)
         val template = templateRender.getTemplate("gen-function.vm")
         templateRender.context = SqlMigrationContext(
             lang = file.language.displayName,

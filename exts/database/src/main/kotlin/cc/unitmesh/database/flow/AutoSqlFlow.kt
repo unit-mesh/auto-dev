@@ -5,6 +5,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.flow.TaskFlow
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.llms.LLMProvider
+import cc.unitmesh.devti.template.GENIUS_SQL
 import cc.unitmesh.devti.template.TemplateRender
 import com.intellij.openapi.diagnostic.logger
 import kotlinx.coroutines.runBlocking
@@ -43,7 +44,7 @@ class AutoSqlFlow(
     }
 
     private fun generateStepOnePrompt(context: AutoSqlContext, actions: DbContextActionProvider): String {
-        val templateRender = TemplateRender("genius/sql")
+        val templateRender = TemplateRender(GENIUS_SQL)
         val template = templateRender.getTemplate("sql-gen-clarify.vm")
 
         templateRender.context = context
@@ -60,7 +61,7 @@ class AutoSqlFlow(
         actions: DbContextActionProvider,
         tableInfos: List<String>
     ): String {
-        val templateRender = TemplateRender("genius/sql")
+        val templateRender = TemplateRender(GENIUS_SQL)
         val template = templateRender.getTemplate("sql-gen-design.vm")
 
         genSqlContext.tableInfos = actions.getTableColumns(tableInfos)
