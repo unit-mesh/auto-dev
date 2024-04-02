@@ -51,7 +51,7 @@ class TemplateRender(val pathPrefix: String) {
      * @throws TemplateNotFoundError if the specified file cannot be found
      */
     private fun getDefaultTemplate(filename: String): String {
-        val defaultPrefix = "$ROOT/${AutoDevSettingsState.language}".trimEnd('/')
+        val defaultPrefix = "$ROOT/${AutoDevSettingsState.language}/$pathPrefix".trimEnd('/')
         val path = "$defaultPrefix/$filename"
         val resourceUrl = javaClass.classLoader.getResource(path) ?: throw TemplateNotFoundError(path)
         val bytes = resourceUrl.readBytes()

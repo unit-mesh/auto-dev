@@ -41,7 +41,6 @@ class RefactorThisAction : ChatBaseAction() {
     override fun addAdditionPrompt(project: Project, editor: Editor, element: PsiElement): String {
         val commentSymbol = commentPrefix(element)
 
-        //todo: prompts
         return collectProblems(project, editor, element)?.let {
             "\n\n$commentSymbol relative static analysis result: $it"
         } ?: ""
