@@ -4,6 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
+import cc.unitmesh.devti.util.parser.Code
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx
 import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -12,7 +13,6 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-
 
 class RefactorThisAction : ChatBaseAction() {
     init{
@@ -42,7 +42,7 @@ class RefactorThisAction : ChatBaseAction() {
         val commentSymbol = commentPrefix(element)
 
         return collectProblems(project, editor, element)?.let {
-            "\n\n$commentSymbol relative static analysis result: $it"
+            "\n\n$commentSymbol relative static analysis result: \n\n$it"
         } ?: ""
     }
 
@@ -101,9 +101,16 @@ class RefactorThisAction : ChatBaseAction() {
         val start = primaryCaret.selectionStart;
         val end = primaryCaret.selectionEnd
 
+        // get random key from refactorIntentionsKeys
+        val key = refactorIntentionsKeys.random()
+        val msg = AutoDevBundle.message(key)
+
         return { response ->
+            panel.showSuggestion(msg)
+
+            val code = Code.parse(response).text
             WriteCommandAction.runWriteCommandAction(project) {
-                document.replaceString(start, end, response)
+                document.replaceString(start, end, code)
             }
         }
     }

@@ -36,6 +36,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.Nls
+import java.awt.BorderLayout
 import java.awt.event.ActionListener
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -55,6 +57,8 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
     private val myScrollPane: JBScrollPane
     private val delaySeconds: String
         get() = AutoDevSettingsState.getInstance().delaySeconds
+
+    private var suggestionPanel: JPanel = JPanel(BorderLayout())
 
     init {
         focusMouseListener = object : MouseAdapter() {
@@ -115,6 +119,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
 
         panelContent = panel {
             row { cell(myScrollPane).fullWidth().fullHeight() }.resizableRow()
+            row { cell(suggestionPanel).fullWidth() }
             row { cell(progressBar).fullWidth() }
             row { cell(actionLink).alignRight() }
             row {
@@ -300,6 +305,27 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
 
     fun moveCursorToStart() {
         inputSection.moveCursorToStart()
+    }
+
+    fun showSuggestion(msg: @Nls String) {
+        val label = panel {
+            row {
+                cell(JBLabel(msg)).fullWidth().also {
+                    it.component.addMouseListener(object : MouseAdapter() {
+                        override fun mouseClicked(e: MouseEvent?) {
+                            inputSection.text = msg
+                            inputSection.requestFocus()
+
+                            suggestionPanel.removeAll()
+                            updateUI()
+                        }
+                    })
+                }
+            }
+        }
+
+        suggestionPanel.add(label)
+        updateUI()
     }
 }
 
