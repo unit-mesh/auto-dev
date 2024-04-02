@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.actions.chat.base
 
 import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.gui.sendToChatPanel
@@ -50,10 +51,10 @@ abstract class ChatBaseAction : AnAction() {
 
         val element = getElementToAction(project, editor) ?: return
 
-        prompt += addAdditionInfo(project, editor, element)
+        prompt += addAdditionPrompt(project, editor, element)
         prompter.initContext(getActionType(), prompt, file, project, caretModel?.offset ?: 0, element)
 
-        sendToChatPanel(project) { panel, service ->
+        sendToChatPanel(project) { panel: ChatCodingPanel, service ->
             val chatContext = ChatContext(
                 getReplaceableAction(event),
                 prompt,
@@ -64,9 +65,14 @@ abstract class ChatBaseAction : AnAction() {
         }
     }
 
-    open fun addAdditionInfo(project: Project, editor: Editor, element: PsiElement): String {
-        return ""
-    }
+    /**
+     * Add additional prompt to the chat context.
+     * Sample case:
+     *
+     * - Refactor: will collection code smell for the element
+     *
+     */
+    open fun addAdditionPrompt(project: Project, editor: Editor, element: PsiElement): String = ""
 
     fun selectElement(elementToExplain: PsiElement, editor: Editor) {
         val startOffset = elementToExplain.textRange.startOffset

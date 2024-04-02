@@ -37,7 +37,7 @@ class RefactorThisAction : ChatBaseAction() {
         e.presentation.isEnabled = false
     }
 
-    override fun addAdditionInfo(project: Project, editor: Editor, element: PsiElement): String {
+    override fun addAdditionPrompt(project: Project, editor: Editor, element: PsiElement): String {
         val commentSymbol = commentPrefix(element)
 
         return collectProblems(project, editor, element)?.let {
