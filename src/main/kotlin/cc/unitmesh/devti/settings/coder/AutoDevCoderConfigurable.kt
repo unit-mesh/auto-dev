@@ -78,6 +78,15 @@ class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBund
                 )
         }
 
+        row(AutoDevBundle.message("settings.autodev.coder.enableRenameSuggestion")) {
+            fullWidthCell(JCheckBox())
+                .bind(
+                    componentGet = { it.isSelected },
+                    componentSet = { component, value -> component.isSelected = value },
+                    prop = state::enableRenameSuggestion.toMutableProperty()
+                )
+        }
+
         row(AutoDevBundle.message("settings.autodev.coder.useCustomerAgentWhenInlayCodeComplete")) {
             fullWidthCell(useCustomAIEngineWhenInlayCodeComplete)
                 .bind(
@@ -173,6 +182,7 @@ class AutoDevCoderConfigurable(project: Project) : BoundConfigurable(AutoDevBund
                 it.customEngineTokenParam = state.customEngineTokenParam
                 it.customEnginePrompt = state.customEnginePrompt
                 it.noChatHistory = state.noChatHistory
+                it.enableRenameSuggestion = state.enableRenameSuggestion
             }
         }
     }

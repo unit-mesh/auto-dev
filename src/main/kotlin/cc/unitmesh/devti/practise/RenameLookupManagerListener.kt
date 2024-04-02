@@ -2,6 +2,7 @@ package cc.unitmesh.devti.practise
 
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.llms.LlmFactory
+import cc.unitmesh.devti.settings.coder.coderSetting
 import com.intellij.codeInsight.completion.PrefixMatcher
 import com.intellij.codeInsight.lookup.*
 import com.intellij.codeInsight.lookup.impl.LookupImpl
@@ -14,9 +15,10 @@ import kotlinx.coroutines.runBlocking
 class RenameLookupManagerListener(val project: Project) : LookupManagerListener {
     private val llm = LlmFactory.instance.create(project)
 
-    // Variable is a badgood name. 5 better options with prefix camelCase which use Hungarian naming convention are
     override fun activeLookupChanged(oldLookup: Lookup?, newLookup: Lookup?) {
         val lookupImpl = newLookup as? LookupImpl ?: return
+
+        if (!project.coderSetting.state.enableRenameSuggestion) return
 
         val lookupOriginalStart = lookupImpl.lookupOriginalStart
         val startOffset = if (lookupOriginalStart > -1) lookupOriginalStart else 0
@@ -56,8 +58,8 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
         // the prompt will be list format, split with \n and remove start number with regex
         val suggestionNames = prompt.split("\n").map {
             it.replace(Regex("^\\d+\\."), "")
-                .removeSurrounding("`")
                 .trim()
+                .removeSurrounding("`")
         }
 
         suggestionNames.map {
