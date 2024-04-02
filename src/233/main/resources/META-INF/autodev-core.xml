@@ -182,6 +182,11 @@
                   class="cc.unitmesh.devti.AutoDevUnloadListener"/>
     </applicationListeners>
 
+<!--    <projectListeners>-->
+<!--        <listener class="cc.unitmesh.devti.practise.RenameLookupManagerListener"-->
+<!--                  topic="com.intellij.codeInsight.lookup.LookupManagerListener"/>-->
+<!--    </projectListeners>-->
+
     <extensions defaultExtensionNs="cc.unitmesh">
         <autoDevIntention>
             <className>cc.unitmesh.devti.intentions.action.CodeCompletionInlayIntention</className>
