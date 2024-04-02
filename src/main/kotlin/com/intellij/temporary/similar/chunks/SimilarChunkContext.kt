@@ -6,10 +6,10 @@ import com.intellij.lang.Language
 import com.intellij.lang.LanguageCommenters
 
 
-class SimilarChunkContext(val language: Language, val paths: List<String>?, val chunks: List<String>?) : LLMCodeContext {
+class SimilarChunkContext(val language: Language, val paths: List<String>?, val chunks: List<String>?) :
+    LLMCodeContext {
     override fun format(): String {
-        val commenter = LanguageCommenters.INSTANCE.forLanguage(language) ?: return ""
-        val commentPrefix = commenter.lineCommentPrefix ?: return ""
+        val commentPrefix = commentPrefix(language) ?: return ""
 
         if (paths == null || chunks == null) return ""
 
@@ -30,6 +30,14 @@ class SimilarChunkContext(val language: Language, val paths: List<String>?, val 
 
         return code.split("\n").joinToString("\n") {
             "$commentSymbol $it"
+        }
+    }
+
+    companion object {
+        fun commentPrefix(language: Language): String? {
+            val commenter = LanguageCommenters.INSTANCE.forLanguage(language)
+            val commentPrefix = commenter.lineCommentPrefix
+            return commentPrefix
         }
     }
 }

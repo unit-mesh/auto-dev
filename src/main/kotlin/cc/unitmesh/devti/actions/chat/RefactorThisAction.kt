@@ -4,6 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx
+import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.command.WriteCommandAction
@@ -37,9 +38,15 @@ class RefactorThisAction : ChatBaseAction() {
     }
 
     override fun addAdditionInfo(project: Project, editor: Editor, element: PsiElement): String {
+        val commentSymbol = commentPrefix(element)
+
         return collectProblems(project, editor, element)?.let {
-            "\n\n// relative static analysis result: $it"
+            "\n\n$commentSymbol relative static analysis result: $it"
         } ?: ""
+    }
+
+    private fun commentPrefix(element: PsiElement): String {
+        return LanguageCommenters.INSTANCE.forLanguage(element.language)?.lineCommentPrefix ?: "//"
     }
 
     /**
@@ -68,8 +75,9 @@ class RefactorThisAction : ChatBaseAction() {
             true
         }
 
+        val commentSymbol = commentPrefix(element)
         return errors.joinToString("\n") {
-            "// - $it"
+            "$commentSymbol - $it"
         }
     }
 
