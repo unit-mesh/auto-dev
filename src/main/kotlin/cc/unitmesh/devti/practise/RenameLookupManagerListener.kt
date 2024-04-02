@@ -1,9 +1,12 @@
 package cc.unitmesh.devti.practise
 
-import com.intellij.codeInsight.lookup.Lookup
-import com.intellij.codeInsight.lookup.LookupListener
-import com.intellij.codeInsight.lookup.LookupManagerListener
+import cc.unitmesh.devti.AutoDevIcons
+import com.intellij.codeInsight.completion.InsertionContext
+import com.intellij.codeInsight.completion.PrefixMatcher
+import com.intellij.codeInsight.lookup.*
 import com.intellij.codeInsight.lookup.impl.LookupImpl
+import com.intellij.codeInsight.template.impl.TemplateManagerImpl
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 
 class RenameLookupManagerListener(val project: Project) : LookupManagerListener {
@@ -18,7 +21,19 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
         val psiElement = lookupImpl.psiFile?.findElementAt(startOffset)
         val element = psiElement ?: lookupImpl.psiElement
 
-        lookupImpl.addLookupListener(RenameLookupListener())
+//        lookupImpl.addLookupListener(RenameLookupListener())
+        val suggestionNames = listOf("suggestion1", "suggestion2", "suggestion3")
+        suggestionNames.map {
+            lookupImpl.addItem(RenameLookupElement(it), PrefixMatcher.ALWAYS_TRUE)
+        }
+    }
+}
+
+class RenameLookupElement(val name: String) : LookupElement() {
+    override fun getLookupString(): String = name
+    override fun renderElement(presentation: LookupElementPresentation) {
+        presentation.icon = AutoDevIcons.Idea
+        super.renderElement(presentation)
     }
 }
 
