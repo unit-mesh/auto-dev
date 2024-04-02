@@ -6,6 +6,7 @@ import cc.unitmesh.devti.settings.coder.coderSetting
 import com.intellij.codeInsight.completion.PrefixMatcher
 import com.intellij.codeInsight.lookup.*
 import com.intellij.codeInsight.lookup.impl.LookupImpl
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.impl.source.tree.LeafPsiElement
@@ -33,37 +34,42 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
 
         val name = parentClass?.name ?: element.text
 
-        val prompt = runBlocking {
-            val stringFlow: Flow<String> = llm.stream(
-                """$name is a badname. Please provide 5 better options name for follow code: 
+        val promptText = """$name is a badname. Please provide 5 better options name for follow code: 
 
                 ```${element.language.displayName}
                 ${element.text}
                 ```
 
                 1.
-                """.trimIndent(),
-                "",
-                false
-            )
+                """.trimIndent()
 
-            val sb = StringBuilder()
-            stringFlow.collect {
-                sb.append(it)
+
+        ApplicationManager.getApplication().invokeLater {
+            runBlocking {
+                val stringFlow: Flow<String> = llm.stream(
+                    promptText,
+                    "",
+                    false
+                )
+
+                val sb = StringBuilder()
+                stringFlow.collect {
+                    sb.append(it)
+                }
+
+                val result = sb.toString()
+
+                // the prompt will be list format, split with \n and remove start number with regex
+                val suggestionNames = result.split("\n").map {
+                    it.replace(Regex("^\\d+\\."), "")
+                        .trim()
+                        .removeSurrounding("`")
+                }
+
+                suggestionNames.map {
+                    lookupImpl.addItem(RenameLookupElement(it), PrefixMatcher.ALWAYS_TRUE)
+                }
             }
-
-            sb.toString()
-        }
-
-        // the prompt will be list format, split with \n and remove start number with regex
-        val suggestionNames = prompt.split("\n").map {
-            it.replace(Regex("^\\d+\\."), "")
-                .trim()
-                .removeSurrounding("`")
-        }
-
-        suggestionNames.map {
-            lookupImpl.addItem(RenameLookupElement(it), PrefixMatcher.ALWAYS_TRUE)
         }
     }
 }
@@ -74,8 +80,4 @@ class RenameLookupElement(val name: String) : LookupElement() {
         presentation.icon = AutoDevIcons.Idea
         super.renderElement(presentation)
     }
-}
-
-class RenameLookupListener : LookupListener {
-
 }
