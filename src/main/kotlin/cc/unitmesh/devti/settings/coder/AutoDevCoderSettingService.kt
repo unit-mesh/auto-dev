@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.settings.coder
 
-import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.settings.MAX_TOKEN_LENGTH
 import cc.unitmesh.devti.settings.ResponseType
 import com.intellij.openapi.components.*
@@ -27,6 +26,7 @@ class AutoDevCoderSettingService(
         var disableAdvanceContext by property(false)
         var inEditorCompletion by property(false)
         var noChatHistory by property(false)
+        var enableRenameSuggestion by property(false)
 
         var useCustomAIEngineWhenInlayCodeComplete by property(false)
         var maxTokenLengthParam: String by property(MAX_TOKEN_LENGTH.toString()) { it.isEmpty() }

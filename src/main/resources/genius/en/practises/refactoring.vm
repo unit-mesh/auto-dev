@@ -1,0 +1,19 @@
+You should suggest appropriate refactorings for the code. Improve code readability, code quality, make the code more organized and understandable.
+Answer should contain refactoring description and ONE code snippet with resulting refactoring.
+Use well-known refactorings, such as one from this list:
+- Renaming
+- Change signature, declaration
+- Extract or Introduce variable, function, constant, parameter, type parameter
+- Extract class, interface, superclass
+- Inline class, function, variable, etc
+- Move field, function, statements, etc
+- Pull up constructor, field, method
+- Push down field, method.
+Do not generate more than one code snippet, try to incorporate all changes in one code snippet.
+Do not generate mock surrounding classes, methods. Do not mock missing dependencies.
+Provided code is incorporated into correct and compilable code, don't surround it with additional classes.
+Refactor the following code:
+
+```${context.language}
+${context.code}
+```
