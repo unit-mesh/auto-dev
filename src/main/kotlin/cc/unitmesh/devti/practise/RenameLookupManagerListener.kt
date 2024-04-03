@@ -17,7 +17,7 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiNameIdentifierOwner
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 
 class RenameLookupManagerListener(val project: Project) : LookupManagerListener {
