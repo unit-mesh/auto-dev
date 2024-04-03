@@ -3,6 +3,7 @@ package cc.unitmesh.devti.practise
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.settings.coder.coderSetting
+import com.intellij.codeInsight.TargetElementUtil
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.completion.PrefixMatcher
 import com.intellij.codeInsight.lookup.Lookup
@@ -13,41 +14,36 @@ import com.intellij.codeInsight.lookup.impl.LookupImpl
 import com.intellij.codeInsight.template.impl.TemplateManagerImpl
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiWhiteSpace
-import com.intellij.psi.impl.source.tree.LeafPsiElement
+import com.intellij.psi.PsiNameIdentifierOwner
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 
 class RenameLookupManagerListener(val project: Project) : LookupManagerListener {
     private val llm = LlmFactory.instance.create(project)
+    private val logger = logger<RenameLookupManagerListener>()
 
     override fun activeLookupChanged(oldLookup: Lookup?, newLookup: Lookup?) {
         if (!project.coderSetting.state.enableRenameSuggestion) return
 
         val lookupImpl = newLookup as? LookupImpl ?: return
 
-        val lookupOriginalStart = lookupImpl.lookupOriginalStart
-        val startOffset = if (lookupOriginalStart > -1) lookupOriginalStart else 0
-        val psiElement = lookupImpl.psiFile?.findElementAt(startOffset)
-        val element = psiElement ?: lookupImpl.psiElement ?: return
+        val editor = lookupImpl.editor
 
-        val parentClass = if (element is LeafPsiElement || element is PsiWhiteSpace) {
-            element.parent?.javaClass
-        } else {
-            element.javaClass
-        }
+        // TODO() check is rename processing?
 
-        val name = parentClass?.name ?: element.text
+        val firstCaret = editor.caretModel.allCarets.firstOrNull() ?: return
+        val targetElementUtil = TargetElementUtil.getInstance()
+        val element = targetElementUtil.findTargetElement(editor, targetElementUtil.allAccepted, firstCaret.offset)
 
-        val promptText = """$name is a badname. Please provide 5 better options name for follow code: 
+        val originName = (element as? PsiNameIdentifierOwner ?: return).name ?: return
 
-                ```${element.language.displayName}
-                ${element.text}
-                ```
+        // check length
+        if (originName.isBlank()) return
 
-                1.
-                """.trimIndent()
+        val promptText =
+            "$originName is a badname. Please provide 5 better options name for follow code: \n```${element.language.displayName}\n${element.text}\n```\n\n1."
 
         ApplicationManager.getApplication().invokeLater {
             runBlocking {
@@ -60,30 +56,22 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
                 var result = ""
                 stringFlow.collect {
                     result += it
-
-                    if (!result.contains("\n")) return@collect
-
-                    // the prompt will be list format, split with \n and remove start number with regex
-                    val suggestionNames = parseSuggestion(result)
-                    result = suggestionNames.last()
-                    suggestionNames.dropLast(1)
-
-                    addItems(lookupImpl, suggestionNames)
                 }
 
+                logger.info("result: $result")
                 // add last suggestion
                 val suggestionNames = parseSuggestion(result)
-                addItem(lookupImpl, suggestionNames.last())
+                addItems(lookupImpl, suggestionNames)
 
-                lookupImpl.isCalculating = false
-                lookupImpl.refreshUi(true, false)
+//                lookupImpl.isCalculating = false
+//                lookupImpl.refreshUi(true, false)
             }
         }
     }
 
     private fun addItems(lookupImpl: LookupImpl, suggestionNames: List<String>): String {
         suggestionNames
-            .filter { it.isNotBlank() }
+            .filter { it.isBlank() }
             .map {
                 addItem(lookupImpl, it)
             }
