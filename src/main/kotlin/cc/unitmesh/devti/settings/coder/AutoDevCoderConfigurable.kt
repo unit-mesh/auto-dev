@@ -4,10 +4,8 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.schema.INLAY_PROMPTS_FILE_NAME
 import cc.unitmesh.devti.fullWidthCell
 import cc.unitmesh.devti.gui.component.JsonLanguageField
-import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.settings.ResponseType
 import cc.unitmesh.devti.settings.testConnection
-import cc.unitmesh.devti.util.LLMCoroutineScope
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.Project
@@ -16,10 +14,7 @@ import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.builder.toMutableProperty
 import com.intellij.util.containers.toArray
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import javax.swing.JCheckBox
-import javax.swing.JLabel
 import javax.swing.JPasswordField
 import javax.swing.JTextField
 
