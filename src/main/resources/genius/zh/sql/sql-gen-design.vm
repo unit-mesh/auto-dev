@@ -9,7 +9,6 @@
 
 - 问题（需求）：按订阅者类型计算平均行程长度。
 // table `subscriber_type`: average_trip_length: int, subscriber_type: string
-
 - 回答：
 ```sql
 select average_trip_length from subscriber_type where subscriber_type = 'subscriber'

@@ -6,9 +6,9 @@
 例如：
 
 - 问题（需求）：为用户构建一个填写个人信息的表单。
-// 组件名称：表单，属性：{ fields: [{name: 'name', type: 'text'}, {name: 'age', type: 'number'}] }
-// 组件名称：输入框，属性：{ name: 'name', type: 'text' }
-// 组件名称：输入框，属性：{ name: 'age', type: 'number' }
+// 组件名称: Form, props: { fields: [{name: 'name', type: 'text'}, {name: 'age', type: 'number'}] }
+// 组件名称: Input, props: { name: 'name', type: 'text' }
+// : Input, props: { name: 'age', type: 'number' }
 - 回答：
 ```react
 <Form>
