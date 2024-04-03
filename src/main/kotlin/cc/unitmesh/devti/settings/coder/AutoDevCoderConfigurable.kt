@@ -5,7 +5,7 @@ import cc.unitmesh.devti.custom.schema.INLAY_PROMPTS_FILE_NAME
 import cc.unitmesh.devti.fullWidthCell
 import cc.unitmesh.devti.gui.component.JsonLanguageField
 import cc.unitmesh.devti.settings.ResponseType
-import cc.unitmesh.devti.settings.testConnection
+import cc.unitmesh.devti.settings.testLLMConnection
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.Project
@@ -159,7 +159,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        testConnection(project)
+        testLLMConnection(project)
 
         row(AutoDevBundle.message("settings.autodev.coder.customEnginePrompt")){}
         row {

@@ -193,7 +193,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
                 })
                 .addLLMParams(currentLLMParams)
                 .addComponent(com.intellij.ui.dsl.builder.panel {
-                    testConnection(project)
+                    testLLMConnection(project)
                 })
                 .addVerticalGap(2)
                 .addSeparator()

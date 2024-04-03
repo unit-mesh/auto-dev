@@ -9,11 +9,11 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.swing.JLabel
 
-fun Panel.testConnection(project: Project?) {
+fun Panel.testLLMConnection(project: Project?) {
     row {
         // test result
         val result = JLabel("")
-        button("Test LLM") {
+        button("Test LLM Connection") {
             if (project == null) {
                 return@button
             }
