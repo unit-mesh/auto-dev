@@ -5,6 +5,7 @@ import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.gui.sendToChatPanel
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -18,6 +19,8 @@ abstract class ChatBaseAction : AnAction() {
     companion object {
         private val logger = logger<ChatBaseAction>()
     }
+
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
 
     open fun chatCompletedPostAction(event: AnActionEvent, panel: ChatCodingPanel): ((response: String) -> Unit)? = null
 
