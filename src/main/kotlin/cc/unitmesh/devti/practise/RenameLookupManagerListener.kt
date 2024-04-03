@@ -3,22 +3,24 @@ package cc.unitmesh.devti.practise
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.settings.coder.coderSetting
-import com.intellij.codeInsight.TargetElementUtil
+import cc.unitmesh.devti.util.LLMCoroutineScope
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.completion.PrefixMatcher
-import com.intellij.codeInsight.lookup.Lookup
-import com.intellij.codeInsight.lookup.LookupElement
-import com.intellij.codeInsight.lookup.LookupElementPresentation
-import com.intellij.codeInsight.lookup.LookupManagerListener
+import com.intellij.codeInsight.lookup.*
 import com.intellij.codeInsight.lookup.impl.LookupImpl
 import com.intellij.codeInsight.template.impl.TemplateManagerImpl
-import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
+import com.intellij.psi.PsiWhiteSpace
+import com.intellij.psi.impl.source.tree.LeafPsiElement
+import com.intellij.psi.util.PsiEditorUtil
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 
 class RenameLookupManagerListener(val project: Project) : LookupManagerListener {
     private val llm = LlmFactory.instance.create(project)
@@ -28,67 +30,72 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
         if (!project.coderSetting.state.enableRenameSuggestion) return
 
         val lookupImpl = newLookup as? LookupImpl ?: return
+        val editor = lookupImpl.editor as? EditorEx ?: return
 
-        val editor = lookupImpl.editor
+        val startOffset = lookupImpl.lookupOriginalStart
+        val psiFile = PsiEditorUtil.getPsiFile(editor)
 
-        // TODO() check is rename processing?
+        var targetElement: PsiElement? = null
+        if (startOffset >= 0) {
+            targetElement = psiFile.findElementAt(startOffset)
+        }
 
-        val firstCaret = editor.caretModel.allCarets.firstOrNull() ?: return
-        val targetElementUtil = TargetElementUtil.getInstance()
-        val element = targetElementUtil.findTargetElement(editor, targetElementUtil.allAccepted, firstCaret.offset)
+        if (targetElement == null) {
+            targetElement = psiFile.findElementAt(editor.caretModel.offset)
+        }
 
-        val originName = (element as? PsiNameIdentifierOwner ?: return).name ?: return
+        if (targetElement is LeafPsiElement || targetElement is PsiWhiteSpace) {
+            targetElement = targetElement.parent
+        }
 
+        val element = targetElement ?: return
+        val originName = (element as? PsiNameIdentifierOwner)?.name ?: return
         // check length
         if (originName.isBlank()) return
 
         val promptText =
             "$originName is a badname. Please provide 5 better options name for follow code: \n```${element.language.displayName}\n${element.text}\n```\n\n1."
 
-        ApplicationManager.getApplication().invokeLater {
-            runBlocking {
-                val stringFlow: Flow<String> = llm.stream(
-                    promptText,
-                    "",
-                    false
-                )
 
-                var result = ""
-                stringFlow.collect {
-                    result += it
+        val stringJob = LLMCoroutineScope.scope(project).launch {
+            val stringFlow: Flow<String> = llm.stream(promptText, "", false)
+            val sb = StringBuilder()
+            stringFlow.collect {
+                sb.append(it)
+            }
+
+            val result = sb.toString()
+            logger.info("result: $result")
+            parseSuggestions(result)
+                .filter { it.isNotBlank() }
+                .map {
+                    runReadAction {
+                        lookupImpl.addItem(RenameLookupElement(it), PrefixMatcher.ALWAYS_TRUE)
+                    }
                 }
 
-                logger.info("result: $result")
-                // add last suggestion
-                val suggestionNames = parseSuggestion(result)
-                addItems(lookupImpl, suggestionNames)
-
-//                lookupImpl.isCalculating = false
-//                lookupImpl.refreshUi(true, false)
+            runInEdt {
+                lookupImpl.isCalculating = false
+                lookupImpl.refreshUi(true, false)
             }
         }
-    }
 
-    private fun addItems(lookupImpl: LookupImpl, suggestionNames: List<String>): String {
-        suggestionNames
-            .filter { it.isBlank() }
-            .map {
-                addItem(lookupImpl, it)
+        lookupImpl.addLookupListener(object : LookupListener {
+            override fun lookupCanceled(event: LookupEvent) {
+                stringJob.cancel()
             }
+        })
 
-        return suggestionNames.last()
+        stringJob.start()
     }
 
-    private fun parseSuggestion(result: String) = result.split("\n").map {
+    private fun parseSuggestions(result: String) = result.split("\n").map {
         it.replace(Regex("^\\d+\\."), "")
             .trim()
             .removeSurrounding("`")
             .removeSuffix("()")
     }
 
-    private fun addItem(lookupImpl: LookupImpl, it: String) = runReadAction {
-        lookupImpl.addItem(RenameLookupElement(it), PrefixMatcher.ALWAYS_TRUE)
-    }
 }
 
 class RenameLookupElement(val name: String) : LookupElement() {
