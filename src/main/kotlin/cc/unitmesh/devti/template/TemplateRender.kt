@@ -37,12 +37,15 @@ class TemplateRender(val pathPrefix: String) {
      * @return the template string for the specified filename, or the default template if no override is found
      */
     fun getTemplate(filename: String): String {
-        val overrideTemplate = ProjectManager.getInstance().openProjects.firstOrNull().let {
-            TeamPromptsBuilder(it!!).overrideTemplate(pathPrefix, filename)
+        val overrideTemplate = ProjectManager.getInstance().openProjects.firstOrNull()?.let {
+            TeamPromptsBuilder(it).overrideTemplate(pathPrefix, filename)
         }
 
-        return overrideTemplate ?: getDefaultTemplate(filename)
+        return overrideTemplate ?: retrieveDefaultTemplate(filename)
     }
+
+    // cache templates
+    private val templateCache = mutableMapOf<String, String>()
 
     /**
      * Retrieves the template content from the specified file.
@@ -51,11 +54,19 @@ class TemplateRender(val pathPrefix: String) {
      * @return the content of the template as a string
      * @throws TemplateNotFoundError if the specified file cannot be found
      */
-    private fun getDefaultTemplate(filename: String): String {
+    private fun retrieveDefaultTemplate(filename: String): String {
+        if (templateCache.containsKey(filename)) {
+            return templateCache[filename]!!
+        }
+
         val path = getDefaultFilePath(filename)
         val resourceUrl = javaClass.classLoader.getResource(path) ?: throw TemplateNotFoundError(path)
         val bytes = resourceUrl.readBytes()
-        return String(bytes, Charset.forName("UTF-8"))
+
+        val string = String(bytes, Charset.forName("UTF-8"))
+
+        templateCache[filename] = string
+        return string
     }
 
     private fun getDefaultFilePath(filename: String): String {

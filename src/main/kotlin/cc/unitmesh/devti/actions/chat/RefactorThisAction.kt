@@ -4,6 +4,8 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
+import cc.unitmesh.devti.template.GENIUS_PRACTISES
+import cc.unitmesh.devti.template.TemplateRender
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx
 import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -14,8 +16,7 @@ import com.intellij.psi.PsiElement
 
 class RefactorThisAction : ChatBaseAction() {
     init {
-        val presentation = getTemplatePresentation()
-        presentation.text = AutoDevBundle.message("settings.autodev.rightClick.refactor")
+        getTemplatePresentation().text = AutoDevBundle.message("settings.autodev.rightClick.refactor")
     }
 
     override fun getActionType(): ChatActionType = ChatActionType.REFACTOR
@@ -98,6 +99,14 @@ class RefactorThisAction : ChatBaseAction() {
 
         return {
             panel.showSuggestion(msg)
+        }
+    }
+
+    companion object {
+        fun buildInstruction(lang: String): String {
+            val templateRender = TemplateRender(GENIUS_PRACTISES)
+            val template = templateRender.getTemplate("refactoring.vm")
+            return templateRender.renderTemplate(template)
         }
     }
 }

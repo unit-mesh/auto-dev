@@ -13,7 +13,3 @@ Do not generate more than one code snippet, try to incorporate all changes in on
 Do not generate mock surrounding classes, methods. Do not mock missing dependencies.
 Provided code is incorporated into correct and compilable code, don't surround it with additional classes.
 Refactor the following code:
-
-```${context.language}
-${context.code}
-```

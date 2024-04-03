@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.settings.coder.coderSetting
+import cc.unitmesh.devti.actions.chat.RefactorThisAction
 import com.intellij.openapi.project.Project
 
 enum class ChatActionType {
@@ -22,11 +22,10 @@ enum class ChatActionType {
     ;
 
     fun instruction(lang: String = "", project: Project?): String {
-        val devCoderSettings = project?.coderSetting?.state
-
         return when (this) {
             EXPLAIN -> AutoDevBundle.message("prompts.autodev.explainCode", lang)
-            REFACTOR -> AutoDevBundle.message("prompts.autodev.refactorCode", lang)
+            //             REFACTOR -> AutoDevBundle.message("prompts.autodev.refactorCode", lang)
+            REFACTOR -> RefactorThisAction.buildInstruction(lang)
 
             CODE_COMPLETE -> AutoDevBundle.message("prompts.autodev.completeCode", lang)
             GENERATE_TEST -> AutoDevBundle.message("prompts.autodev.generateTest", lang)

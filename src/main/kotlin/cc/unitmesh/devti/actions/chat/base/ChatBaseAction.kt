@@ -51,7 +51,6 @@ abstract class ChatBaseAction : AnAction() {
 
         val element = getElementToAction(project, editor) ?: return
 
-        prompt += addAdditionPrompt(project, editor, element)
         prompter.initContext(getActionType(), prompt, file, project, caretModel?.offset ?: 0, element)
 
         sendToChatPanel(project, getActionType()) { panel: ChatCodingPanel, service ->
