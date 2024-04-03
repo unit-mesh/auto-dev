@@ -50,9 +50,10 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
             targetElement = targetElement.parent
         }
 
+        // maybe user just typing, we should handle for this
         val element = targetElement ?: return
         val originName = (element as? PsiNameIdentifierOwner)?.name ?: return
-        // check length
+
         if (originName.isBlank()) return
 
         val promptText =
@@ -74,7 +75,7 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
                     .filter { it.isNotBlank() }
                     .map {
                         runReadAction {
-                            lookupImpl.addItem(RenameLookupElement(it), PrefixMatcher.ALWAYS_TRUE)
+                            lookupImpl.addItem(CustomRenameLookupElement(it), PrefixMatcher.ALWAYS_TRUE)
                         }
                     }
 
@@ -109,7 +110,7 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
 
 }
 
-class RenameLookupElement(val name: String) : LookupElement() {
+class CustomRenameLookupElement(val name: String) : LookupElement() {
     override fun getLookupString(): String = name
 
     override fun handleInsert(context: InsertionContext) {
