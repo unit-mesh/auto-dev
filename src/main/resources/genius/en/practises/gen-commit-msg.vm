@@ -16,7 +16,7 @@ $context.historyExamples
 #end
 
 #if($context.originText.length() > 0)
-User want to: $context.originText
+User origin intention was: $context.originText
 #end
 
 Diff:

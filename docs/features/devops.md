@@ -8,7 +8,7 @@ permalink: /features/devops
 
 1. click New the menu (or right-click in left project nam) -> SRE Genius(DevOps)
 
-<img src="https://unitmesh.cc/auto-dev/ci-cd.png" alt="AutoDevChat" width="400px"/>
+<img src="https://unitmesh.cc/auto-dev/ci-cd.png" alt="AutoDevChat" width="600px"/>
 
 ## Generate GitHub Actions
 

@@ -35,18 +35,18 @@ enum class ResponseAction {
 
 > Render the result directly in the chat window.
 
-<img src="https://unitmesh.cc/auto-dev/custom-agent-example.png" alt="Custom AI Agent Dropdown" width="400px"/>
+<img src="https://unitmesh.cc/auto-dev/custom-agent-example.png" alt="Custom AI Agent Dropdown" width="600px"/>
 
 ### TextChunk
 
 > Display the result in the AutoDev input box for continuous processing.
 
-<img src="https://unitmesh.cc/auto-dev/custom-agent-text-chunk.png" alt="Custom AI Agent Dropdown" width="400px"/>
+<img src="https://unitmesh.cc/auto-dev/custom-agent-text-chunk.png" alt="Custom AI Agent Dropdown" width="600px"/>
 
 ### WebView
 
 > Show the result in a WebView for front-end rendering.
 
-<img src="https://unitmesh.cc/auto-dev/custom-agent-webview.png" alt="Custom AI Agent Dropdown" width="400px"/>
+<img src="https://unitmesh.cc/auto-dev/custom-agent-webview.png" alt="Custom AI Agent Dropdown" width="600px"/>
 
 

@@ -10,7 +10,7 @@ permalink: /features/use-ai-in-editor
    Alternatively, place the caret anywhere in the editor and press `⌥` + `Enter`
 2. Select AI Actions
 
-<img src="https://unitmesh.cc/auto-dev/autodev-autotest.png" alt="AutoDev" width="400px"/>
+<img src="https://unitmesh.cc/auto-dev/autodev-autotest.png" alt="AutoDev" width="600px"/>
 
 ## Chat with this code
 

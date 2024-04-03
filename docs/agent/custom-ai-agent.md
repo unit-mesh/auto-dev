@@ -10,7 +10,7 @@ AutoDev@1.7.0
 
 Since AutoDev@1.7.0 version, we support custom AI agent, you can integrate your own AI agent into AutoDev.
 
-<img src="https://unitmesh.cc/auto-dev/custom-agent-popup.png" alt="Custom AI Agent Dropdown" width="400px"/>
+<img src="https://unitmesh.cc/auto-dev/custom-agent-popup.png" alt="Custom AI Agent Dropdown" width="600px"/>
 
 ## Custom AI Agent
 

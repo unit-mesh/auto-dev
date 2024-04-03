@@ -10,7 +10,7 @@ permalink: /features/works-with-git
 
 ### Generate commit messages
 
-<img src="https://unitmesh.cc/auto-dev/gen-commit.png" alt="Gen commit Msg" width="400px"/>
+<img src="https://unitmesh.cc/auto-dev/gen-commit.png" alt="Gen commit Msg" width="600px"/>
 
 ### Optimized commit messages
 
@@ -20,4 +20,4 @@ permalink: /features/works-with-git
 
 ## Generate Release Note
 
-<img src="https://unitmesh.cc/auto-dev/gen-commit.png" alt="ReleaseNote" width="400px"/>
+<img src="https://unitmesh.cc/auto-dev/works-with-git.png" alt="Code Review" width="600px"/>

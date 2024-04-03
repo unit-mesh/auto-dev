@@ -51,4 +51,4 @@ In [#132](https://github.com/unit-mesh/auto-dev/issues/132), we provide basic fu
 1. enable suggestion: `Settings` -> `AutoDev` -> `AutoDev Coder` -> `Enable Rename suggestion`
 2. select the variable you want to rename use `Shift` + `F6`
 
-<img src="https://unitmesh.cc/auto-dev/autodev-rename.png" alt="Rename Functions" width="400px"/>
+<img src="https://unitmesh.cc/auto-dev/autodev-rename.png" alt="Rename Functions" width="600px"/>

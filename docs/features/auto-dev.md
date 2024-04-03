@@ -24,4 +24,4 @@ permalink: /features/auto-dev
 
 2.Run click to auto-crud
 
-<img src="https://unitmesh.cc/auto-dev/auto-coding.png" alt="AutoDev" width="400px"/>
+<img src="https://unitmesh.cc/auto-dev/auto-coding.png" alt="AutoDev" width="600px"/>
