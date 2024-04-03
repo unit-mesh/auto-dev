@@ -7,6 +7,7 @@ import cc.unitmesh.template.TemplateRoleSplitter
 import com.intellij.openapi.project.ProjectManager
 import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.Velocity
+import java.io.File
 import java.io.StringWriter
 import java.nio.charset.Charset
 
@@ -51,11 +52,21 @@ class TemplateRender(val pathPrefix: String) {
      * @throws TemplateNotFoundError if the specified file cannot be found
      */
     private fun getDefaultTemplate(filename: String): String {
-        val defaultPrefix = "$ROOT/${AutoDevSettingsState.language}/$pathPrefix".trimEnd('/')
-        val path = "$defaultPrefix/$filename"
+        val path = getDefaultFilePath(filename)
         val resourceUrl = javaClass.classLoader.getResource(path) ?: throw TemplateNotFoundError(path)
         val bytes = resourceUrl.readBytes()
         return String(bytes, Charset.forName("UTF-8"))
+    }
+
+    private fun getDefaultFilePath(filename: String): String {
+        val languagePrefix = "$ROOT/${AutoDevSettingsState.language}/$pathPrefix".trimEnd('/')
+        val path = "$languagePrefix/$filename"
+        if (File(path).exists()) {
+            return path
+        }
+
+        val defaultLanguagePrefix = "$ROOT/en/$pathPrefix".trimEnd('/')
+        return "$defaultLanguagePrefix/$filename"
     }
 
     fun buildMsgs(prompt: String): List<LlmMsg.ChatMessage> {
