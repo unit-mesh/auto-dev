@@ -122,13 +122,8 @@ open class JavaContextPrompter : ContextPrompter() {
                     }
                 }
             }
-
             ChatActionType.FIX_ISSUE -> addFixIssueContext(selectedText)
-            ChatActionType.CREATE_CHANGELOG -> {
-                prompt.displayText = "generate release note base on the follow commit"
-            }
             ChatActionType.GENERATE_TEST_DATA -> prepareDataStructure(creationContext)
-
             else -> {
                 // ignore else
             }
