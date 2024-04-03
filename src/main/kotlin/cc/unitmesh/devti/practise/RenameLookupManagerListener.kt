@@ -7,6 +7,7 @@ import com.intellij.codeInsight.completion.PrefixMatcher
 import com.intellij.codeInsight.lookup.*
 import com.intellij.codeInsight.lookup.impl.LookupImpl
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.impl.source.tree.LeafPsiElement
@@ -43,7 +44,6 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
                 1.
                 """.trimIndent()
 
-
         ApplicationManager.getApplication().invokeLater {
             runBlocking {
                 val stringFlow: Flow<String> = llm.stream(
@@ -52,25 +52,45 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
                     false
                 )
 
-                val sb = StringBuilder()
+                var result = ""
                 stringFlow.collect {
-                    sb.append(it)
+                    result += it
+
+                    if (!result.contains("\n")) return@collect
+
+                    // the prompt will be list format, split with \n and remove start number with regex
+                    val suggestionNames = parseSuggestion(result)
+                    result = suggestionNames.last()
+                    suggestionNames.dropLast(1)
+
+                    addItems(lookupImpl, suggestionNames)
                 }
 
-                val result = sb.toString()
-
-                // the prompt will be list format, split with \n and remove start number with regex
-                val suggestionNames = result.split("\n").map {
-                    it.replace(Regex("^\\d+\\."), "")
-                        .trim()
-                        .removeSurrounding("`")
-                }
-
-                suggestionNames.map {
-                    lookupImpl.addItem(RenameLookupElement(it), PrefixMatcher.ALWAYS_TRUE)
-                }
+                // add last suggestion
+                val suggestionNames = parseSuggestion(result)
+                addItem(lookupImpl, suggestionNames.last())
             }
         }
+    }
+
+    private fun addItems(lookupImpl: LookupImpl, suggestionNames: List<String>): String {
+        suggestionNames
+            .filter { it.isNotBlank() }
+            .map {
+                addItem(lookupImpl, it)
+            }
+
+        return suggestionNames.last()
+    }
+
+    private fun parseSuggestion(result: String) = result.split("\n").map {
+        it.replace(Regex("^\\d+\\."), "")
+            .trim()
+            .removeSurrounding("`")
+    }
+
+    private fun addItem(lookupImpl: LookupImpl, it: String) = runReadAction {
+        lookupImpl.addItem(RenameLookupElement(it), PrefixMatcher.ALWAYS_TRUE)
     }
 }
 
