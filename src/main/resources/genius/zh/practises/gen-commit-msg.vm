@@ -1,22 +1,27 @@
-为给定的差异编写一个连贯但具有描述性的提交信息。
+为给定的 Diff编写一个连贯但具有描述性的提交信息。
 
 - 确保包含修改了什么以及为什么。
-- 以不超过50个字符的祈使句形式开头。
+- 以不超过 50 个字符的祈使句形式开头。
 - 然后留下一个空行，如有必要，继续详细说明。
 - 说明应该少于200个字符。
 
 遵循常规提交规范，例如：
-- 修复（身份验证）：修复密码正则表达式模式问题
-- 功能（存储）：添加对S3存储的支持
-- 测试（Java）：修复用户控制器的测试用例
-- 文档（文档）：在主页添加架构图
+
+- fix(authentication): 修复密码正则表达式模式问题
+- feat(storage): 添加对S3存储的支持
+- test(java): 修复用户控制器的测试用例
+- docs(architecture): 在主页添加架构图
 
 #if( $context.historyExamples.length() > 0 )
 下面是历史示例：
 $context.historyExamples
 #end
 
-差异：
+#if( $context.originText.length() > 0 )
+用户想表达的是: $context.originText
+#end
+
+Diff：
 
 ```diff
 ${context.diffContent}

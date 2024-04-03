@@ -70,10 +70,11 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
 
         val commitMessageUi = event.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL) as CommitMessage
         // empty commit message before generating
+        val originText = commitMessageUi.editorField.editor?.selectionModel?.selectedText ?: ""
         commitMessageUi.editorField.text = ""
 
         ApplicationManager.getApplication().executeOnPooledThread() {
-            val prompt = generateCommitMessage(diffContext, project)
+            val prompt = generateCommitMessage(diffContext, project, originText)
 
             logger.info("Start generating commit message.")
             logger.info(prompt)
@@ -149,7 +150,7 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         return builder.toString()
     }
 
-    private fun generateCommitMessage(diff: String, project: Project): String {
+    private fun generateCommitMessage(diff: String, project: Project, originText: String): String {
         val templateRender = TemplateRender(GENIUS_PRACTISES)
         val template = templateRender.getTemplate("gen-commit-msg.vm")
 
@@ -163,6 +164,7 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
         templateRender.context = CommitMsgGenContext(
             historyExamples = historyExamples,
             diffContent = diff,
+            originText = originText
         )
         val prompter = templateRender.renderTemplate(template)
 
@@ -175,4 +177,6 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
 data class CommitMsgGenContext(
     var historyExamples: String = "",
     var diffContent: String = "",
+    // the origin commit message which is to be optimized
+    val originText: String = "",
 )
