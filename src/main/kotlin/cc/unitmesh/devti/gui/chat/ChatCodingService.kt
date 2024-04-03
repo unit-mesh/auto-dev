@@ -20,7 +20,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
     private val llmProvider = LlmFactory().create(project)
     private val counitProcessor = project.service<CustomAgentChatProcessor>()
 
-    val action = actionType.instruction(project = project)
+    val action = actionType.instruction(project = project).requestText
 
     fun getLabel(): String = "$actionType Code"
 

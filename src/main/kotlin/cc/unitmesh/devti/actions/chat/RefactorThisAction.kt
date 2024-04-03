@@ -101,12 +101,4 @@ class RefactorThisAction : ChatBaseAction() {
             panel.showSuggestion(msg)
         }
     }
-
-    companion object {
-        fun buildInstruction(lang: String): String {
-            val templateRender = TemplateRender(GENIUS_PRACTISES)
-            val template = templateRender.getTemplate("refactoring.vm")
-            return templateRender.renderTemplate(template)
-        }
-    }
 }

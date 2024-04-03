@@ -33,15 +33,14 @@ class JavaScriptContextPrompter : ContextPrompter() {
     override fun displayPrompt(): String {
         return runBlocking {
             additionContext = collectionContext(creationContext)
-            return@runBlocking "${action!!.instruction(lang, project)}\n```$lang\n$selectedText\n```"
+            return@runBlocking "${action!!.instruction(lang, project).displayText}\n```$lang\n$selectedText\n```"
         }
     }
 
     override fun requestPrompt(): String {
         return runBlocking {
             additionContext = collectionContext(creationContext)
-            val finalPrompt = "${action!!.instruction(lang, project)}:\n$additionContext\n```${lang}\n$selectedText\n```"
-            log.info("context: $finalPrompt")
+            val finalPrompt = "${action!!.instruction(lang, project).requestText}:\n$additionContext\n```${lang}\n$selectedText\n```"
             return@runBlocking finalPrompt
         }
     }

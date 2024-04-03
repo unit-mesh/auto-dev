@@ -4,7 +4,7 @@ data class BasicTextPrompt(
     /**
      * The text to display to the user
      */
-    val displayText: String,
+    var displayText: String,
     /**
      * The text request to the server
      */

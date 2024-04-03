@@ -2,6 +2,7 @@ package cc.unitmesh.idea.prompting
 
 import cc.unitmesh.devti.custom.action.CustomPromptConfig
 import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.prompting.BasicTextPrompt
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.provider.TestDataBuilder
 import cc.unitmesh.devti.provider.context.ChatCreationContext
@@ -57,7 +58,7 @@ open class JavaContextPrompter : ContextPrompter() {
     }
 
     override fun displayPrompt(): String {
-        val instruction = createPrompt(selectedText)
+        val instruction = createPrompt(selectedText).displayText
 
         val finalPrompt = if (additionContext.isNotEmpty()) {
             "```\n$additionContext\n```\n```$lang\n$selectedText\n```\n"
@@ -73,7 +74,7 @@ open class JavaContextPrompter : ContextPrompter() {
             val instruction = createPrompt(selectedText)
             val chatContext = collectionContext(creationContext)
 
-            var finalPrompt = instruction
+            var finalPrompt = instruction.requestText
 
             if (chatContext.isNotEmpty()) {
                 finalPrompt += "\n$chatContext"
@@ -93,9 +94,9 @@ open class JavaContextPrompter : ContextPrompter() {
     }
 
 
-    private fun createPrompt(selectedText: String): String {
+    private fun createPrompt(selectedText: String): BasicTextPrompt {
         additionContext = ""
-        var prompt = action!!.instruction(lang, project)
+        val prompt = action!!.instruction(lang, project)
 
         when (action!!) {
             ChatActionType.CODE_COMPLETE -> {
@@ -123,7 +124,9 @@ open class JavaContextPrompter : ContextPrompter() {
             }
 
             ChatActionType.FIX_ISSUE -> addFixIssueContext(selectedText)
-            ChatActionType.CREATE_CHANGELOG -> prompt = "generate release note base on the follow commit"
+            ChatActionType.CREATE_CHANGELOG -> {
+                prompt.displayText = "generate release note base on the follow commit"
+            }
             ChatActionType.GENERATE_TEST_DATA -> prepareDataStructure(creationContext)
 
             else -> {
