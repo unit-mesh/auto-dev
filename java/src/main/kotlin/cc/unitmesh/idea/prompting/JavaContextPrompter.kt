@@ -86,9 +86,7 @@ open class JavaContextPrompter : ContextPrompter() {
 
             finalPrompt += "```$lang\n$selectedText\n```"
 
-            println("final prompt: $finalPrompt")
             logger.info("final prompt: $finalPrompt")
-
             return@runBlocking finalPrompt
         }
     }
