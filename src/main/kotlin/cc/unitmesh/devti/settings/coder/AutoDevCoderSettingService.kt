@@ -37,6 +37,7 @@ class AutoDevCoderSettingService(
         var customEngineServerParam by property("") { it.isEmpty() }
         var customEngineTokenParam by property("") { it.isEmpty() }
         var customEnginePrompt by property("") { it.isEmpty() }
+
         override fun copy(): AutoDevCoderSettings {
             val state = AutoDevCoderSettings()
             state.copyFrom(this)
