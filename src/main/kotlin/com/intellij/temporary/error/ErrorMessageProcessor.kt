@@ -3,7 +3,7 @@ package com.intellij.temporary.error
 
 import cc.unitmesh.devti.util.isInProject
 import cc.unitmesh.devti.llms.tokenizer.TokenizerImpl
-import cc.unitmesh.devti.prompting.BasePromptText
+import cc.unitmesh.devti.prompting.BasicTextPrompt
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.execution.filters.FileHyperlinkInfo
 import com.intellij.execution.impl.ConsoleViewImpl
@@ -67,7 +67,7 @@ object ErrorMessageProcessor {
 
     fun extracted(
         project: Project, description: ErrorDescription,
-    ): BasePromptText? {
+    ): BasicTextPrompt? {
 //    ): RuntimeErrorExplanationPrompt? {
         val consoleLineFrom = description.consoleLineFrom
         val consoleLineTo = description.consoleLineTo
