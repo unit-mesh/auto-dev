@@ -3,15 +3,20 @@ package cc.unitmesh.devti.practise
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.settings.coder.coderSetting
+import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.completion.PrefixMatcher
-import com.intellij.codeInsight.lookup.*
+import com.intellij.codeInsight.lookup.Lookup
+import com.intellij.codeInsight.lookup.LookupElement
+import com.intellij.codeInsight.lookup.LookupElementPresentation
+import com.intellij.codeInsight.lookup.LookupManagerListener
 import com.intellij.codeInsight.lookup.impl.LookupImpl
+import com.intellij.codeInsight.template.impl.TemplateManagerImpl
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.impl.source.tree.LeafPsiElement
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 
 class RenameLookupManagerListener(val project: Project) : LookupManagerListener {
@@ -69,6 +74,9 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
                 // add last suggestion
                 val suggestionNames = parseSuggestion(result)
                 addItem(lookupImpl, suggestionNames.last())
+
+                lookupImpl.isCalculating = false
+                lookupImpl.refreshUi(true, false)
             }
         }
     }
@@ -87,6 +95,7 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
         it.replace(Regex("^\\d+\\."), "")
             .trim()
             .removeSurrounding("`")
+            .removeSuffix("()")
     }
 
     private fun addItem(lookupImpl: LookupImpl, it: String) = runReadAction {
@@ -96,6 +105,18 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
 
 class RenameLookupElement(val name: String) : LookupElement() {
     override fun getLookupString(): String = name
+
+    override fun handleInsert(context: InsertionContext) {
+        val editor = context.editor
+        val templateState = TemplateManagerImpl.getTemplateState(editor)
+
+        if (templateState != null && !templateState.isFinished) {
+            @Suppress("UnstableApiUsage")
+            templateState.update()
+            templateState.considerNextTabOnLookupItemSelected(this)
+        }
+    }
+
     override fun renderElement(presentation: LookupElementPresentation) {
         presentation.icon = AutoDevIcons.Idea
         super.renderElement(presentation)
