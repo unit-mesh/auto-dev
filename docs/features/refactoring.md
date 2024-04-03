@@ -6,13 +6,29 @@ nav_order: 11
 permalink: /features/refactoring
 ---
 
-## Auto smell combination
-
 In [#129](https://github.com/unit-mesh/auto-dev/issues/129), we provide more information for you to refactor code.
+
+## Auto smell combination
 
 It Will provide more information for you to refactor code. like:
 
 - Highlighter issue in IntelliJ IDEA
+
+For example:
+
+```java
+public BlogPost updateBlog(Long id, BlogPost blogDto) {
+        String content = blogDto.getContent();
+        return blogRepository.findById(id).map(blog -> {
+            blog.setTitle(blogDto.getTitle());
+            blog.setContent(blogDto.getContent());
+            return blogRepository.save(blog);
+        }).orElse(null);
+    }
+
+// relative static analysis result:
+// - Variable 'content' is never used
+```
 
 ## Suggestions for Next Steps
 

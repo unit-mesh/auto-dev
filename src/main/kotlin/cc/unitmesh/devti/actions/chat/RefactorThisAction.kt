@@ -62,15 +62,9 @@ class RefactorThisAction : ChatBaseAction() {
         val range = element.textRange
         val document = editor.document
         val errors: MutableList<String> = mutableListOf()
-        DaemonCodeAnalyzerEx.processHighlights(
-            document,
-            project,
-            null,
-            range.startOffset,
-            range.endOffset
-        ) { info ->
-            if (info.description != null) {
-                errors.add(info.description)
+        DaemonCodeAnalyzerEx.processHighlights(document, project, null, range.startOffset, range.endOffset) {
+            if (it.description != null) {
+                errors.add(it.description)
             }
 
             true
