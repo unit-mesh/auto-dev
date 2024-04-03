@@ -83,7 +83,7 @@ class LLMApplyInlaysAction : EditorAction(ApplyInlaysHandler()), DumbAware {
     companion object {
         const val ID = "llm.applyInlays"
 
-        val logger = logger<LLMApplyInlaysAction>()
+        private val logger = logger<LLMApplyInlaysAction>()
 
         private fun isSpaceOrTab(c: Char, withNewline: Boolean): Boolean {
             return c == ' ' || c == '\t' || withNewline && c == '\n'

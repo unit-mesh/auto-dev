@@ -101,7 +101,7 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
     }
 
     companion object {
-        val logger = logger<CodeCompletionBaseIntention>()
+        private val logger = logger<CodeCompletionBaseIntention>()
 
         fun insertStringAndSaveChange(
             project: Project,
