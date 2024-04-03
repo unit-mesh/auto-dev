@@ -71,9 +71,7 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
                 }
                 val result = sb.toString()
                 logger.info("result: $result")
-                parseSuggestions(result)
-                    .filter { it.isNotBlank() }
-                    .map {
+                parseSuggestions(result).filter { it.isNotBlank() }.map {
                         runReadAction {
                             lookupImpl.addItem(CustomRenameLookupElement(it), PrefixMatcher.ALWAYS_TRUE)
                         }
@@ -118,8 +116,6 @@ class CustomRenameLookupElement(val name: String) : LookupElement() {
         val templateState = TemplateManagerImpl.getTemplateState(editor)
 
         if (templateState != null && !templateState.isFinished) {
-            @Suppress("UnstableApiUsage")
-            templateState.update()
             templateState.considerNextTabOnLookupItemSelected(this)
         }
     }
