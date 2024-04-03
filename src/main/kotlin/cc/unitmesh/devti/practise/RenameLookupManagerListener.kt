@@ -3,6 +3,8 @@ package cc.unitmesh.devti.practise
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.settings.coder.coderSetting
+import cc.unitmesh.devti.statusbar.AutoDevStatus
+import cc.unitmesh.devti.statusbar.AutoDevStatusService
 import cc.unitmesh.devti.util.LLMCoroutineScope
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.completion.PrefixMatcher
@@ -58,30 +60,39 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
 
 
         val stringJob = LLMCoroutineScope.scope(project).launch {
-            val stringFlow: Flow<String> = llm.stream(promptText, "", false)
-            val sb = StringBuilder()
-            stringFlow.collect {
-                sb.append(it)
-            }
+            AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
 
-            val result = sb.toString()
-            logger.info("result: $result")
-            parseSuggestions(result)
-                .filter { it.isNotBlank() }
-                .map {
-                    runReadAction {
-                        lookupImpl.addItem(RenameLookupElement(it), PrefixMatcher.ALWAYS_TRUE)
-                    }
+            try {
+                val stringFlow: Flow<String> = llm.stream(promptText, "", false)
+                val sb = StringBuilder()
+                stringFlow.collect {
+                    sb.append(it)
                 }
+                val result = sb.toString()
+                logger.info("result: $result")
+                parseSuggestions(result)
+                    .filter { it.isNotBlank() }
+                    .map {
+                        runReadAction {
+                            lookupImpl.addItem(RenameLookupElement(it), PrefixMatcher.ALWAYS_TRUE)
+                        }
+                    }
 
-            runInEdt {
-                lookupImpl.isCalculating = false
-                lookupImpl.refreshUi(true, false)
+                runInEdt {
+                    lookupImpl.isCalculating = false
+                    lookupImpl.refreshUi(true, false)
+                }
+            } catch (e: Exception) {
+                AutoDevStatusService.notifyApplication(AutoDevStatus.Error)
+                logger.error("Error in RenameLookupManagerListener", e)
             }
+
+            AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)
         }
 
         lookupImpl.addLookupListener(object : LookupListener {
             override fun lookupCanceled(event: LookupEvent) {
+                AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)
                 stringJob.cancel()
             }
         })
