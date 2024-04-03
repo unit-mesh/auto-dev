@@ -18,9 +18,9 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
     private val llm = LlmFactory.instance.create(project)
 
     override fun activeLookupChanged(oldLookup: Lookup?, newLookup: Lookup?) {
-        val lookupImpl = newLookup as? LookupImpl ?: return
-
         if (!project.coderSetting.state.enableRenameSuggestion) return
+
+        val lookupImpl = newLookup as? LookupImpl ?: return
 
         val lookupOriginalStart = lookupImpl.lookupOriginalStart
         val startOffset = if (lookupOriginalStart > -1) lookupOriginalStart else 0
