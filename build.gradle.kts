@@ -94,6 +94,7 @@ val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
 val ideaPlugins =
     listOf(
         "Git4Idea",
+//        "org.jetbrains.plugins.terminal",
         "com.intellij.java",
         "org.jetbrains.plugins.gradle",
         "org.jetbrains.kotlin",
