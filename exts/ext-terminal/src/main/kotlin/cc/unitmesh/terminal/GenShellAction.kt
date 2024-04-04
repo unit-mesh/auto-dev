@@ -16,7 +16,6 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.StartupUiUtil
 import com.intellij.util.ui.SwingHelper
-import org.jetbrains.plugins.terminal.TerminalToolWindowManager
 import java.awt.Component
 import java.awt.Font
 import java.awt.Point
@@ -36,7 +35,6 @@ class GenShellAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val contextComponent = e.getData(PlatformCoreDataKeys.CONTEXT_COMPONENT) ?: return
-        TerminalToolWindowManager.getInstance(project).toolWindow
         showContentRenamePopup(project, e.inputEvent?.component ?: contextComponent)
     }
 
