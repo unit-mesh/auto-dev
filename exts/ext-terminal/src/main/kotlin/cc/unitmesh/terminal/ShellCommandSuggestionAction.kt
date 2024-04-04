@@ -14,8 +14,8 @@ import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
-import com.intellij.util.ui.StartupUiUtil
 import com.intellij.util.ui.SwingHelper
+import com.intellij.util.ui.UIUtil
 import java.awt.Component
 import java.awt.Font
 import java.awt.Point
@@ -31,11 +31,12 @@ private const val OUTLINE_PROPERTY = "JComponent.outline"
 private const val ERROR_VALUE = "error"
 
 
-class GenShellAction : AnAction() {
+class ShellCommandSuggestionAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val contextComponent = e.getData(PlatformCoreDataKeys.CONTEXT_COMPONENT) ?: return
-        showContentRenamePopup(project, e.inputEvent?.component ?: contextComponent)
+
+        showContentRenamePopup(project, contextComponent)
     }
 
     fun showContentRenamePopup(project: Project, component: Component) {
@@ -45,7 +46,7 @@ class GenShellAction : AnAction() {
         }
 
         val label = JBLabel()
-        label.font = StartupUiUtil.labelFont.deriveFont(Font.BOLD)
+        label.font = UIUtil.getLabelFont().deriveFont(Font.BOLD)
 
         val panel = SwingHelper.newLeftAlignedVerticalPanel(label, Box.createVerticalStrut(JBUI.scale(2)), textField)
         panel.addFocusListener(object : FocusAdapter() {
@@ -72,7 +73,8 @@ class GenShellAction : AnAction() {
                         textField.repaint()
                         return
                     }
-//                    applyScript(content, project, textField.text)
+
+                    createShellSuggestion(project, component, textField.text)
                     balloon.hide()
                 }
             }
@@ -94,5 +96,9 @@ class GenShellAction : AnAction() {
                 IdeFocusManager.findInstance().requestFocus(component, false)
             }
         })
+    }
+
+    private fun createShellSuggestion(project: Project, component: Component, text: String) {
+        component
     }
 }
