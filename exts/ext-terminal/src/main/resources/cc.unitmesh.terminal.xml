@@ -1,0 +1,18 @@
+<idea-plugin package="cc.unitmesh.terminal">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+        <plugin id="org.jetbrains.plugins.terminal"/>
+    </dependencies>
+
+    <actions>
+
+        <action id="genShell"
+                class="cc.unitmesh.terminal.GenShellAction"
+                description="Ask AI to generate shell"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+        >
+
+            <add-to-group group-id="TerminalToolwindowActionGroup" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>

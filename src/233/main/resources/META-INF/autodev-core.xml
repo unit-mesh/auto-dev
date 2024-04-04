@@ -272,7 +272,6 @@
                     description="Ask AI generate test data">
 
                 <add-to-group group-id="GenerateGroup" anchor="last"/>
-<!--                <add-to-group group-id="TerminalToolwindowActionGroup" anchor="last"/>-->
             </action>
 
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>

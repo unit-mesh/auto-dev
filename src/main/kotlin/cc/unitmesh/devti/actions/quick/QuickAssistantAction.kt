@@ -32,7 +32,7 @@ import javax.swing.AbstractAction
  * A quick insight action is an action that can be triggered by a user,
  * user can input custom text to call with LLM.
  */
-class QuickAssistantAction : AnAction() {
+open class QuickAssistantAction : AnAction() {
     init{
         val presentation = getTemplatePresentation()
         presentation.text = AutoDevBundle.message("settings.autodev.others.quickAssistant")

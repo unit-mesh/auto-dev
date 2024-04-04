@@ -267,6 +267,7 @@ project(":plugin") {
         implementation(project(":exts:database"))
         implementation(project(":exts:ext-android"))
         implementation(project(":exts:ext-harmonyos"))
+        implementation(project(":exts:ext-terminal"))
         implementation(project(":exts:devins-lang"))
     }
 
@@ -582,6 +583,17 @@ project(":exts:ext-harmonyos") {
         version.set(ideaVersion)
         type.set("AI")
         plugins.set((ideaPlugins + prop("androidPlugin").ifBlank { "" }).filter(String::isNotEmpty))
+    }
+
+    dependencies {
+        implementation(project(":"))
+    }
+}
+
+project(":exts:ext-terminal") {
+    intellij {
+        version.set(ideaVersion)
+        plugins.set((ideaPlugins + "org.jetbrains.plugins.terminal"))
     }
 
     dependencies {
