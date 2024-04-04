@@ -11,7 +11,7 @@ Follow the Conventional Commits specification, examples:
 - docs(architecture): add architecture diagram to home page
 
 #if( $context.historyExamples.length() > 0 )
-Here is History Examples:
+Here are the user's historical commit habits:
 $context.historyExamples
 #end
 
