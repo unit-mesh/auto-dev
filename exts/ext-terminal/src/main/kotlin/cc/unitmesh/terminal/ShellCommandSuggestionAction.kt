@@ -68,9 +68,8 @@ class ShellCommandSuggestionAction : AnAction() {
             AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
 
             try {
-                val sb = StringBuilder()
                 stringFlow.collect {
-                    sb.append(it)
+                    widget.writePlainMessage(it)
                 }
             } finally {
                 AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)
