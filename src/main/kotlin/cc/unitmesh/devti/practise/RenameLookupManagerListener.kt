@@ -18,9 +18,8 @@ import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.intellij.psi.util.PsiEditorUtil
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 
 class RenameLookupManagerListener(val project: Project) : LookupManagerListener {
     private val llm = LlmFactory.instance.create(project)
@@ -55,25 +54,32 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
         val stringJob = LLMCoroutineScope.scope(project).launch {
             AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
 
+            val runJob = currentCoroutineContext().job
             try {
                 val stringFlow: Flow<String> = llm.stream(promptText, "", false)
                 val sb = StringBuilder()
-                stringFlow.collect {
+
+                stringFlow.cancellable().collect {
+                    if (runJob.job.isCancelled) {
+                        currentCoroutineContext().job.cancel()
+                    }
                     sb.append(it)
                 }
                 val result = sb.toString()
                 logger.info("result: $result")
                 extractSuggestionsFromString(result).filter { it.isNotBlank() }.map {
                     runReadAction {
-                        if (!lookupImpl.isLookupDisposed) {
+                        if (!lookupImpl.isLookupDisposed && runJob.isActive) {
                             lookupImpl.addItem(CustomRenameLookupElement(it), PrefixMatcher.ALWAYS_TRUE)
                         }
                     }
                 }
 
                 runInEdt {
-                    lookupImpl.isCalculating = false
-                    lookupImpl.refreshUi(true, false)
+                    if (!lookupImpl.isLookupDisposed && runJob.isActive) {
+                        lookupImpl.isCalculating = false
+                        lookupImpl.refreshUi(true, false)
+                    }
                 }
             } catch (e: Exception) {
                 AutoDevStatusService.notifyApplication(AutoDevStatus.Error)
@@ -86,7 +92,6 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
         lookupImpl.addLookupListener(object : LookupListener {
             override fun lookupCanceled(event: LookupEvent) {
                 AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)
-                stringJob.cancel()
             }
         })
 
