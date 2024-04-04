@@ -52,3 +52,9 @@ In [#132](https://github.com/unit-mesh/auto-dev/issues/132), we provide basic fu
 2. select the variable you want to rename use `Shift` + `F6`
 
 <img src="https://unitmesh.cc/auto-dev/autodev-rename.png" alt="Rename Functions" width="600px"/>
+
+## Resource
+
+In [How to Refactor this Code? An Exploratory Study on Developer-ChatGPT Refactoring Conversations](https://arxiv.org/abs/2402.06013) ,
+talking about how to refactoring to better understand how developers identify areas for improvement in code
+and how ChatGPT addresses developers' needs. 

@@ -18,6 +18,7 @@ import com.intellij.psi.PsiNameIdentifierOwner
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import com.intellij.psi.util.PsiEditorUtil
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -31,21 +32,7 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
         val lookupImpl = newLookup as? LookupImpl ?: return
         val editor = lookupImpl.editor as? EditorEx ?: return
 
-        val startOffset = lookupImpl.lookupOriginalStart
-        val psiFile = PsiEditorUtil.getPsiFile(editor)
-
-        var targetElement: PsiElement? = null
-        if (startOffset >= 0) {
-            targetElement = psiFile.findElementAt(startOffset)
-        }
-
-        if (targetElement == null) {
-            targetElement = psiFile.findElementAt(editor.caretModel.offset)
-        }
-
-        if (targetElement is LeafPsiElement || targetElement is PsiWhiteSpace) {
-            targetElement = targetElement.parent
-        }
+        val targetElement: PsiElement? = lookupElement(lookupImpl, editor)
 
         // maybe user just typing, we should handle for this
         val element = targetElement ?: return
@@ -96,6 +83,28 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
         })
 
         stringJob.start()
+    }
+
+    private fun lookupElement(
+        lookupImpl: LookupImpl,
+        editor: EditorEx
+    ): PsiElement? {
+        val startOffset = lookupImpl.lookupOriginalStart
+        val psiFile = PsiEditorUtil.getPsiFile(editor)
+
+        var targetElement: PsiElement? = null
+        if (startOffset >= 0) {
+            targetElement = psiFile.findElementAt(startOffset)
+        }
+
+        if (targetElement == null) {
+            targetElement = psiFile.findElementAt(editor.caretModel.offset)
+        }
+
+        if (targetElement is LeafPsiElement || targetElement is PsiWhiteSpace) {
+            targetElement = targetElement.parent
+        }
+        return targetElement
     }
 
     private fun extractSuggestionsFromString(result: String) = result.split("\n").map {
