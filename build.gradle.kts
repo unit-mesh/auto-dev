@@ -185,6 +185,9 @@ allprojects {
     sourceSets {
         main {
             java.srcDirs("src/gen")
+            if (platformVersion == 241) {
+                resources.srcDirs("src/233/main/resources")
+            }
             resources.srcDirs("src/$platformVersion/main/resources")
         }
         test {
@@ -194,6 +197,10 @@ allprojects {
     kotlin {
         sourceSets {
             main {
+                // share 233 code to 241
+                if (platformVersion == 241) {
+                    kotlin.srcDirs("src/233/main/kotlin")
+                }
                 kotlin.srcDirs("src/$platformVersion/main/kotlin")
             }
             test {
@@ -519,7 +526,7 @@ project(":rust") {
 }
 
 project(":cpp") {
-    if (platformVersion == 233) {
+    if (platformVersion == 233 || platformVersion == 241) {
         cppPlugins += "com.intellij.nativeDebug"
     }
 
