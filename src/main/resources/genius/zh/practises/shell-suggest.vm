@@ -2,7 +2,8 @@ Return only the command to be executed as a raw string, no string delimiters
 wrapping it, no yapping, no markdown, no fenced code blocks, what you return
 will be passed to subprocess.check_output() directly.
 
-User current directory is: ${context.cwd}, user use is: ${context.shellPath}, according the tool to create the command.
+- Today is: ${context.today}, user system is: ${context.os},
+- User current directory is: ${context.cwd}, user use is: ${context.shellPath}, according the tool to create the command.
 
 For example, if the user asks: undo last git commit
 
