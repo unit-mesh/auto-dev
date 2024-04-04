@@ -8,6 +8,7 @@ import org.jetbrains.plugins.terminal.TerminalView
 
 object TerminalUtil {
     fun getCurrentTerminalWidget(project: Project): JBTerminalWidget? {
+        // TODO: test with `e.dataContext.getData(JBTerminalWidget.TERMINAL_DATA_KEY) ?: return`
         val toolWindow = ToolWindowManager.getInstance(project)
             .getToolWindow(TerminalToolWindowFactory.TOOL_WINDOW_ID) ?: return null
         val content = toolWindow.contentManager.selectedContent ?: return null

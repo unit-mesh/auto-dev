@@ -13,6 +13,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.AnActionHolder
 import com.intellij.openapi.actionSystem.PlatformCoreDataKeys
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.ui.popup.Balloon
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.JBPopupListener
@@ -27,6 +28,7 @@ import com.intellij.util.ui.SwingHelper
 import com.intellij.util.ui.UIUtil
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import org.jetbrains.plugins.terminal.TerminalProjectOptionsProvider
 import java.awt.Component
 import java.awt.Font
 import java.awt.Point
@@ -42,23 +44,24 @@ private const val ERROR_VALUE = "error"
 class ShellCommandSuggestAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-
-        val popupPoint = getPreferredPopupPoint(e)
-
         val contextComponent = e.getData(PlatformCoreDataKeys.CONTEXT_COMPONENT) ?: return
 
-        showContentRenamePopup(contextComponent, popupPoint) { data ->
+        showContentRenamePopup(contextComponent, getPreferredPopupPoint(e)) { data ->
             val widget = TerminalUtil.getCurrentTerminalWidget(project) ?: return@showContentRenamePopup
             suggestCommand(widget, data, project)
         }
     }
 
-    data class ShellSuggestions(val question: String)
-
     private fun suggestCommand(widget: JBTerminalWidget, data: String, project: Project) {
         val templateRender = TemplateRender(GENIUS_PRACTISES)
         val template = templateRender.getTemplate("shell-suggest.vm")
-        templateRender.context = ShellSuggestions(data)
+
+        val options = TerminalProjectOptionsProvider.getInstance(project)
+
+        templateRender.context = ShellSuggestContext(
+            data, options.shellPath, options.startingDirectory
+                ?: project.guessProjectDir()?.path ?: System.getProperty("user.home")
+        )
         val promptText = templateRender.renderTemplate(template)
 
         val llm = LlmFactory.instance.create(project)
@@ -156,3 +159,4 @@ class ShellCommandSuggestAction : AnAction() {
     }
 }
 
+data class ShellSuggestContext(val question: String, val shellPath: String, val cwd: String)
