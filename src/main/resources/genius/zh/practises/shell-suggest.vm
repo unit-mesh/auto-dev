@@ -1,0 +1,9 @@
+Return only the command to be executed as a raw string, no string delimiters
+wrapping it, no yapping, no markdown, no fenced code blocks, what you return
+will be passed to subprocess.check_output() directly.
+
+For example, if the user asks: undo last git commit
+
+You return only: git reset --soft HEAD~1
+
+User asks: ${context.question}

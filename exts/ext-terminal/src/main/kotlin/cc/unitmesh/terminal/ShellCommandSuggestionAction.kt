@@ -2,30 +2,38 @@
 package cc.unitmesh.terminal
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.llms.LlmFactory
+import cc.unitmesh.devti.statusbar.AutoDevStatus
+import cc.unitmesh.devti.statusbar.AutoDevStatusService
+import cc.unitmesh.devti.template.GENIUS_PRACTISES
+import cc.unitmesh.devti.template.TemplateRender
+import cc.unitmesh.devti.util.LLMCoroutineScope
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.AnActionHolder
 import com.intellij.openapi.actionSystem.PlatformCoreDataKeys
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.Balloon
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.JBPopupListener
 import com.intellij.openapi.ui.popup.LightweightWindowEvent
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.ToolWindowManager
-import com.intellij.terminal.JBTerminalPanel
+import com.intellij.terminal.JBTerminalWidget
 import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.SwingHelper
 import com.intellij.util.ui.UIUtil
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import org.jetbrains.plugins.terminal.TerminalToolWindowFactory
 import org.jetbrains.plugins.terminal.TerminalView
 import java.awt.Component
 import java.awt.Font
 import java.awt.Point
 import java.awt.event.*
-import java.util.*
 import javax.swing.Box
 import javax.swing.JTextField
 import javax.swing.event.DocumentEvent
@@ -42,13 +50,34 @@ class ShellCommandSuggestionAction : AnAction() {
 
         val contextComponent = e.getData(PlatformCoreDataKeys.CONTEXT_COMPONENT) ?: return
 
-
         showContentRenamePopup(contextComponent, popupPoint) { data ->
-            val toolWindow = ToolWindowManager.getInstance(project)
-                .getToolWindow(TerminalToolWindowFactory.TOOL_WINDOW_ID) ?: return@showContentRenamePopup
-            val content = toolWindow.contentManager.selectedContent ?: return@showContentRenamePopup
-            val jbTerminalWidget = TerminalView.getWidgetByContent(content) ?: return@showContentRenamePopup
-            jbTerminalWidget.writePlainMessage("echo \"$data\"")
+            val widget = getCurrentTerminalWidget(project) ?: return@showContentRenamePopup
+            suggestCommand(widget, data, project)
+        }
+    }
+
+    data class ShellSuggestions(val question: String)
+
+    private fun suggestCommand(widget: JBTerminalWidget, data: String, project: Project) {
+        val templateRender = TemplateRender(GENIUS_PRACTISES)
+        val template = templateRender.getTemplate("shell-suggest.vm")
+        templateRender.context = ShellSuggestions(data)
+        val promptText = templateRender.renderTemplate(template)
+
+        val llm = LlmFactory.instance.create(project)
+        val stringFlow: Flow<String> = llm.stream(promptText, "", false)
+
+        LLMCoroutineScope.scope(project).launch {
+            AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
+
+            try {
+                val sb = StringBuilder()
+                stringFlow.collect {
+                    sb.append(it)
+                }
+            } finally {
+                AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)
+            }
         }
     }
 
@@ -124,5 +153,16 @@ class ShellCommandSuggestionAction : AnAction() {
                 IdeFocusManager.findInstance().requestFocus(component, false)
             }
         })
+    }
+
+    companion object {
+        // TODO: spike for multiple version support
+        fun getCurrentTerminalWidget(project: Project): JBTerminalWidget? {
+            val toolWindow = ToolWindowManager.getInstance(project)
+                .getToolWindow(TerminalToolWindowFactory.TOOL_WINDOW_ID) ?: return null
+            val content = toolWindow.contentManager.selectedContent ?: return null
+            val widget = TerminalView.getWidgetByContent(content) ?: return null
+            return widget
+        }
     }
 }
