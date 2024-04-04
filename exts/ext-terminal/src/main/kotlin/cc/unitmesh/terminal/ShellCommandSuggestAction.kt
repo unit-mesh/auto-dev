@@ -19,7 +19,6 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.JBPopupListener
 import com.intellij.openapi.ui.popup.LightweightWindowEvent
 import com.intellij.openapi.wm.IdeFocusManager
-import com.intellij.terminal.JBTerminalWidget
 import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.components.JBLabel
@@ -48,11 +47,13 @@ class ShellCommandSuggestAction : AnAction() {
 
         showContentRenamePopup(contextComponent, getPreferredPopupPoint(e)) { data ->
             val widget = TerminalUtil.getCurrentTerminalWidget(project) ?: return@showContentRenamePopup
-            suggestCommand(widget, data, project)
+            suggestCommand(data, project) { string ->
+                widget.terminalStarter?.sendString(string, true)
+            }
         }
     }
 
-    private fun suggestCommand(widget: JBTerminalWidget, data: String, project: Project) {
+    open fun suggestCommand(data: String, project: Project, function: (str: String) -> Unit?) {
         val templateRender = TemplateRender(GENIUS_PRACTISES)
         val template = templateRender.getTemplate("shell-suggest.vm")
 
@@ -77,7 +78,7 @@ class ShellCommandSuggestAction : AnAction() {
                         throw Exception("Shell command suggestion failed")
                     }
 
-                    widget.terminalStarter?.sendString(it, true)
+                    function(it)
                 }
             } finally {
                 AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)
