@@ -181,7 +181,7 @@ allprojects {
 
     val testOutput = configurations.create("testOutput")
 
-
+    if(this.name != "ext-terminal") {
     sourceSets {
         main {
             java.srcDirs("src/gen")
@@ -207,6 +207,7 @@ allprojects {
                 kotlin.srcDirs("src/$platformVersion/test/kotlin")
             }
         }
+    }
     }
 
     dependencies {
@@ -605,6 +606,25 @@ project(":exts:ext-terminal") {
 
     dependencies {
         implementation(project(":"))
+    }
+
+    sourceSets {
+        main {
+            resources.srcDirs("src/$platformVersion/main/resources")
+        }
+        test {
+            resources.srcDirs("src/$platformVersion/test/resources")
+        }
+    }
+    kotlin {
+        sourceSets {
+            main {
+                kotlin.srcDirs("src/$platformVersion/main/kotlin")
+            }
+            test {
+                kotlin.srcDirs("src/$platformVersion/test/kotlin")
+            }
+        }
     }
 }
 

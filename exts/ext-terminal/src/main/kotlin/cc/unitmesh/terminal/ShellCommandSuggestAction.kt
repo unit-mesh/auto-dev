@@ -45,44 +45,9 @@ class ShellCommandSuggestAction : AnAction() {
         val project = e.project ?: return
         val contextComponent = e.getData(PlatformCoreDataKeys.CONTEXT_COMPONENT) ?: return
 
-        showContentRenamePopup(contextComponent, getPreferredPopupPoint(e)) { data ->
-            val widget = TerminalUtil.getCurrentTerminalWidget(project) ?: return@showContentRenamePopup
-            suggestCommand(data, project) { string ->
-                widget.terminalStarter?.sendString(string, true)
-            }
-        }
-    }
-
-    open fun suggestCommand(data: String, project: Project, function: (str: String) -> Unit?) {
-        val templateRender = TemplateRender(GENIUS_PRACTISES)
-        val template = templateRender.getTemplate("shell-suggest.vm")
-
-        val options = TerminalProjectOptionsProvider.getInstance(project)
-
-        templateRender.context = ShellSuggestContext(
-            data, options.shellPath,
-            options.startingDirectory
-                ?: project.guessProjectDir()?.path ?: System.getProperty("user.home")
-        )
-        val promptText = templateRender.renderTemplate(template)
-
-        val llm = LlmFactory.instance.create(project)
-        val stringFlow: Flow<String> = llm.stream(promptText, "", false)
-
-        LLMCoroutineScope.scope(project).launch {
-            AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
-
-            try {
-                stringFlow.collect {
-                    if (it.contains("\n")) {
-                        throw Exception("Shell command suggestion failed")
-                    }
-
-                    function(it)
-                }
-            } finally {
-                AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)
-            }
+        showContentRenamePopup(contextComponent, getPreferredPopupPoint(e)) { string ->
+            TerminalUtil.sendMsg(project, string, e)
+            return@showContentRenamePopup
         }
     }
 
@@ -158,6 +123,41 @@ class ShellCommandSuggestAction : AnAction() {
                 IdeFocusManager.findInstance().requestFocus(component, false)
             }
         })
+    }
+
+    companion object {
+        fun suggestCommand(data: String, project: Project, function: (str: String) -> Unit?) {
+            val templateRender = TemplateRender(GENIUS_PRACTISES)
+            val template = templateRender.getTemplate("shell-suggest.vm")
+
+            val options = TerminalProjectOptionsProvider.getInstance(project)
+
+            templateRender.context = ShellSuggestContext(
+                data, options.shellPath,
+                options.startingDirectory
+                    ?: project.guessProjectDir()?.path ?: System.getProperty("user.home")
+            )
+            val promptText = templateRender.renderTemplate(template)
+
+            val llm = LlmFactory.instance.create(project)
+            val stringFlow: Flow<String> = llm.stream(promptText, "", false)
+
+            LLMCoroutineScope.scope(project).launch {
+                AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
+
+                try {
+                    stringFlow.collect {
+                        if (it.contains("\n")) {
+                            throw Exception("Shell command suggestion failed")
+                        }
+
+                        function(it)
+                    }
+                } finally {
+                    AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)
+                }
+            }
+        }
     }
 }
 
