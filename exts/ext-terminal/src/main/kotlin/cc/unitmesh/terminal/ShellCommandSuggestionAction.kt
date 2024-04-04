@@ -4,6 +4,7 @@ package cc.unitmesh.terminal
 import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.AnActionHolder
 import com.intellij.openapi.actionSystem.PlatformCoreDataKeys
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.Balloon
@@ -20,10 +21,7 @@ import com.intellij.util.ui.UIUtil
 import java.awt.Component
 import java.awt.Font
 import java.awt.Point
-import java.awt.event.FocusAdapter
-import java.awt.event.FocusEvent
-import java.awt.event.KeyAdapter
-import java.awt.event.KeyEvent
+import java.awt.event.*
 import javax.swing.Box
 import javax.swing.JTextField
 import javax.swing.event.DocumentEvent
@@ -35,12 +33,27 @@ private const val ERROR_VALUE = "error"
 class ShellCommandSuggestionAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
+
+        val popupPoint = getPreferredPopupPoint(e)
+
         val contextComponent = e.getData(PlatformCoreDataKeys.CONTEXT_COMPONENT) ?: return
 
-        showContentRenamePopup(project, contextComponent)
+        showContentRenamePopup(project, contextComponent, popupPoint)
     }
 
-    private fun showContentRenamePopup(project: Project, component: Component) {
+    private fun getPreferredPopupPoint(e: AnActionEvent): RelativePoint? {
+        val inputEvent = e.inputEvent
+        if (inputEvent is MouseEvent) {
+            val comp = inputEvent.getComponent()
+            if (comp is AnActionHolder) {
+                return RelativePoint(comp.parent, Point(comp.x + JBUI.scale(3), comp.y + comp.height + JBUI.scale(3)))
+            }
+        }
+
+        return null
+    }
+
+    private fun showContentRenamePopup(project: Project, component: Component, popupPoint: RelativePoint?) {
         val textField = JTextField().also {
             it.text = AutoDevBundle.message("shell.command.suggestion.action.default.text")
             it.selectAll()
@@ -91,7 +104,7 @@ class ShellCommandSuggestionAction : AnAction() {
             }
         })
 
-        balloon.show(RelativePoint(component, Point(400, 0)), Balloon.Position.above)
+        balloon.show(popupPoint, Balloon.Position.above)
         balloon.addListener(object : JBPopupListener {
             override fun onClosed(event: LightweightWindowEvent) {
                 IdeFocusManager.findInstance().requestFocus(component, false)
