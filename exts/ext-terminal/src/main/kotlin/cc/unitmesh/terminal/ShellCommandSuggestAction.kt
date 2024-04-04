@@ -8,10 +8,10 @@ import cc.unitmesh.devti.statusbar.AutoDevStatusService
 import cc.unitmesh.devti.template.GENIUS_PRACTISES
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.util.LLMCoroutineScope
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.AnActionHolder
 import com.intellij.openapi.actionSystem.PlatformCoreDataKeys
+import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.ui.popup.Balloon
@@ -25,7 +25,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.SwingHelper
 import com.intellij.util.ui.UIUtil
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import org.jetbrains.plugins.terminal.TerminalProjectOptionsProvider
 import java.awt.Component
@@ -40,14 +40,13 @@ private const val OUTLINE_PROPERTY = "JComponent.outline"
 private const val ERROR_VALUE = "error"
 
 
-class ShellCommandSuggestAction : AnAction() {
+class ShellCommandSuggestAction : DumbAwareAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val contextComponent = e.getData(PlatformCoreDataKeys.CONTEXT_COMPONENT) ?: return
 
-        showContentRenamePopup(contextComponent, getPreferredPopupPoint(e)) { string ->
+        showInputBoxPopup(contextComponent, getPreferredPopupPoint(e)) { string ->
             TerminalUtil.sendMsg(project, string, e)
-            return@showContentRenamePopup
         }
     }
 
@@ -63,7 +62,7 @@ class ShellCommandSuggestAction : AnAction() {
         return null
     }
 
-    private fun showContentRenamePopup(
+    private fun showInputBoxPopup(
         component: Component, popupPoint: RelativePoint?,
         callback: (String) -> Unit
     ) {

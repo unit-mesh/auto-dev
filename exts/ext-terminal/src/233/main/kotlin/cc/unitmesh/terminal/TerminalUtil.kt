@@ -1,6 +1,7 @@
 package cc.unitmesh.terminal
 
 import cc.unitmesh.terminal.ShellCommandSuggestAction.Companion.suggestCommand
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.terminal.JBTerminalWidget
