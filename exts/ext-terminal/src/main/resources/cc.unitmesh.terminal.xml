@@ -5,9 +5,10 @@
     </dependencies>
 
     <actions>
-        <action id="genShell"
-                class="cc.unitmesh.terminal.GenShellAction"
-                description="Ask AI to generate shell"
+        <action id="ShellSuggestionAction"
+                class="cc.unitmesh.terminal.ShellCommandSuggestionAction"
+                description="Suggestions for shell commands"
+                text="Shell Command Suggestions"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
 
             <add-to-group group-id="TerminalToolwindowActionGroup" anchor="last"/>

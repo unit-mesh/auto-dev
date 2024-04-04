@@ -6,22 +6,26 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.AnActionHolder
 import com.intellij.openapi.actionSystem.PlatformCoreDataKeys
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.Balloon
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.JBPopupListener
 import com.intellij.openapi.ui.popup.LightweightWindowEvent
 import com.intellij.openapi.wm.IdeFocusManager
+import com.intellij.openapi.wm.ToolWindowManager
+import com.intellij.terminal.JBTerminalPanel
 import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.SwingHelper
 import com.intellij.util.ui.UIUtil
+import org.jetbrains.plugins.terminal.TerminalToolWindowFactory
+import org.jetbrains.plugins.terminal.TerminalView
 import java.awt.Component
 import java.awt.Font
 import java.awt.Point
 import java.awt.event.*
+import java.util.*
 import javax.swing.Box
 import javax.swing.JTextField
 import javax.swing.event.DocumentEvent
@@ -38,7 +42,14 @@ class ShellCommandSuggestionAction : AnAction() {
 
         val contextComponent = e.getData(PlatformCoreDataKeys.CONTEXT_COMPONENT) ?: return
 
-        showContentRenamePopup(project, contextComponent, popupPoint)
+
+        showContentRenamePopup(contextComponent, popupPoint) { data ->
+            val toolWindow = ToolWindowManager.getInstance(project)
+                .getToolWindow(TerminalToolWindowFactory.TOOL_WINDOW_ID) ?: return@showContentRenamePopup
+            val content = toolWindow.contentManager.selectedContent ?: return@showContentRenamePopup
+            val jbTerminalWidget = TerminalView.getWidgetByContent(content) ?: return@showContentRenamePopup
+            jbTerminalWidget.writePlainMessage("echo \"$data\"")
+        }
     }
 
     private fun getPreferredPopupPoint(e: AnActionEvent): RelativePoint? {
@@ -53,7 +64,10 @@ class ShellCommandSuggestionAction : AnAction() {
         return null
     }
 
-    private fun showContentRenamePopup(project: Project, component: Component, popupPoint: RelativePoint?) {
+    private fun showContentRenamePopup(
+        component: Component, popupPoint: RelativePoint?,
+        callback: (String) -> Unit
+    ) {
         val textField = JTextField().also {
             it.text = AutoDevBundle.message("shell.command.suggestion.action.default.text")
             it.selectAll()
@@ -88,7 +102,7 @@ class ShellCommandSuggestionAction : AnAction() {
                         return
                     }
 
-                    createShellSuggestion(project, component, textField.text)
+                    callback(textField.text)
                     balloon.hide()
                 }
             }
@@ -110,9 +124,5 @@ class ShellCommandSuggestionAction : AnAction() {
                 IdeFocusManager.findInstance().requestFocus(component, false)
             }
         })
-    }
-
-    private fun createShellSuggestion(project: Project, component: Component, text: String) {
-        component
     }
 }
