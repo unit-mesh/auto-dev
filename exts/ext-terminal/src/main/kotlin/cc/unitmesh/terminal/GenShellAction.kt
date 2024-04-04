@@ -37,12 +37,14 @@ class GenShellAction : AnAction() {
         val project = e.project ?: return
         val contextComponent = e.getData(PlatformCoreDataKeys.CONTEXT_COMPONENT) ?: return
         TerminalToolWindowManager.getInstance(project).toolWindow
-        showContentRenamePopup(project, contextComponent)
+        showContentRenamePopup(project, e.inputEvent?.component ?: contextComponent)
     }
 
-    fun showContentRenamePopup(project: Project, contextComponent: Component) {
-        val textField = JTextField()
-        textField.selectAll()
+    fun showContentRenamePopup(project: Project, component: Component) {
+        val textField = JTextField().also {
+            it.text = "Enter your shell command here"
+            it.selectAll()
+        }
 
         val label = JBLabel()
         label.font = StartupUiUtil.labelFont.deriveFont(Font.BOLD)
@@ -88,10 +90,10 @@ class GenShellAction : AnAction() {
             }
         })
 
-        balloon.show(RelativePoint(contextComponent, Point(400, 0)), Balloon.Position.above)
+        balloon.show(RelativePoint(component, Point(400, 0)), Balloon.Position.above)
         balloon.addListener(object : JBPopupListener {
             override fun onClosed(event: LightweightWindowEvent) {
-                IdeFocusManager.findInstance().requestFocus(contextComponent, false)
+                IdeFocusManager.findInstance().requestFocus(component, false)
             }
         })
     }
