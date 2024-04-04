@@ -39,7 +39,7 @@ private const val OUTLINE_PROPERTY = "JComponent.outline"
 private const val ERROR_VALUE = "error"
 
 
-class ShellCommandSuggestionAction : AnAction() {
+class ShellCommandSuggestAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
 
@@ -69,7 +69,11 @@ class ShellCommandSuggestionAction : AnAction() {
 
             try {
                 stringFlow.collect {
-                    widget.writePlainMessage(it)
+                    if (it.contains("\n")) {
+                        throw Exception("Shell command suggestion failed")
+                    }
+
+                    widget.terminalStarter?.sendString(it, true)
                 }
             } finally {
                 AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)

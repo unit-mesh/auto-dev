@@ -4,6 +4,6 @@ will be passed to subprocess.check_output() directly.
 
 For example, if the user asks: undo last git commit
 
-You return only: git reset --soft HEAD~1
+You return only line command: git reset --soft HEAD~1
 
 User asks: ${context.question}

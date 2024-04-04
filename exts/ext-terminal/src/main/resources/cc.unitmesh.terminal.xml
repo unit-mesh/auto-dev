@@ -6,7 +6,7 @@
 
     <actions>
         <action id="ShellSuggestionAction"
-                class="cc.unitmesh.terminal.ShellCommandSuggestionAction"
+                class="cc.unitmesh.terminal.ShellCommandSuggestAction"
                 description="Suggestions for shell commands"
                 text="Shell Command Suggestions"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
