@@ -59,7 +59,8 @@ class ShellCommandSuggestAction : AnAction() {
         val options = TerminalProjectOptionsProvider.getInstance(project)
 
         templateRender.context = ShellSuggestContext(
-            data, options.shellPath, options.startingDirectory
+            data, options.shellPath,
+            options.startingDirectory
                 ?: project.guessProjectDir()?.path ?: System.getProperty("user.home")
         )
         val promptText = templateRender.renderTemplate(template)
@@ -159,4 +160,3 @@ class ShellCommandSuggestAction : AnAction() {
     }
 }
 
-data class ShellSuggestContext(val question: String, val shellPath: String, val cwd: String)
