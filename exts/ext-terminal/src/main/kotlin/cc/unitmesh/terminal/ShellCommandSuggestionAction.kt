@@ -1,6 +1,7 @@
 // Copyright 2000-2022 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package cc.unitmesh.terminal
 
+import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformCoreDataKeys
@@ -39,9 +40,9 @@ class ShellCommandSuggestionAction : AnAction() {
         showContentRenamePopup(project, contextComponent)
     }
 
-    fun showContentRenamePopup(project: Project, component: Component) {
+    private fun showContentRenamePopup(project: Project, component: Component) {
         val textField = JTextField().also {
-            it.text = "Enter your shell command here"
+            it.text = AutoDevBundle.message("shell.command.suggestion.action.default.text")
             it.selectAll()
         }
 
