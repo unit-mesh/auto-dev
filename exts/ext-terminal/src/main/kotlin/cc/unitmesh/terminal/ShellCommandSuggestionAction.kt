@@ -18,7 +18,6 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.JBPopupListener
 import com.intellij.openapi.ui.popup.LightweightWindowEvent
 import com.intellij.openapi.wm.IdeFocusManager
-import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.terminal.JBTerminalWidget
 import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.awt.RelativePoint
@@ -28,8 +27,6 @@ import com.intellij.util.ui.SwingHelper
 import com.intellij.util.ui.UIUtil
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import org.jetbrains.plugins.terminal.TerminalToolWindowFactory
-import org.jetbrains.plugins.terminal.TerminalView
 import java.awt.Component
 import java.awt.Font
 import java.awt.Point
@@ -51,7 +48,7 @@ class ShellCommandSuggestionAction : AnAction() {
         val contextComponent = e.getData(PlatformCoreDataKeys.CONTEXT_COMPONENT) ?: return
 
         showContentRenamePopup(contextComponent, popupPoint) { data ->
-            val widget = getCurrentTerminalWidget(project) ?: return@showContentRenamePopup
+            val widget = TerminalUtil.getCurrentTerminalWidget(project) ?: return@showContentRenamePopup
             suggestCommand(widget, data, project)
         }
     }
@@ -154,15 +151,5 @@ class ShellCommandSuggestionAction : AnAction() {
             }
         })
     }
-
-    companion object {
-        // TODO: spike for multiple version support
-        fun getCurrentTerminalWidget(project: Project): JBTerminalWidget? {
-            val toolWindow = ToolWindowManager.getInstance(project)
-                .getToolWindow(TerminalToolWindowFactory.TOOL_WINDOW_ID) ?: return null
-            val content = toolWindow.contentManager.selectedContent ?: return null
-            val widget = TerminalView.getWidgetByContent(content) ?: return null
-            return widget
-        }
-    }
 }
+
