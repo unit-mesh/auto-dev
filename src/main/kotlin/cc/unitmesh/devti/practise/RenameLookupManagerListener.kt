@@ -69,7 +69,7 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
                 logger.info("result: $result")
                 extractSuggestionsFromString(result).filter { it.isNotBlank() }.map {
                     runReadAction {
-                        if (!lookupImpl.isLookupDisposed && runJob.isActive) {
+                        if (!lookupImpl.isLookupDisposed && runJob.isActive && it.isNotBlank()) {
                             lookupImpl.addItem(CustomRenameLookupElement(it), PrefixMatcher.ALWAYS_TRUE)
                         }
                     }

@@ -34,7 +34,7 @@ class RustTestService : AutoTestService() {
         val cmd = CargoCommandLine.forPackage(pkg, "test", listOf("--color", "never")).copy(emulateTerminal = false)
 
         val configurationSetting = RunManager.getInstance(project)
-            .createConfiguration("tests", CargoCommandConfigurationType.getInstance().factory)
+            .createConfiguration("tests", CargoCommandConfigurationType().factory)
         val configuration = configurationSetting.configuration as CargoCommandConfiguration
         cmd.mergeWithDefault(configuration)
         configuration.setFromCmd(cmd)
