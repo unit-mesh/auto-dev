@@ -44,6 +44,14 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
             "$originName is a badname. Please provide 5 better options name for follow code: \n```${element.language.displayName}\n${element.text}\n```\n\n1."
 
 
+        try {
+            doExecuteNameSuggest(promptText, lookupImpl)
+        } catch (e: Exception) {
+            logger.warn("Error in RenameLookupManagerListener", e)
+        }
+    }
+
+    private fun doExecuteNameSuggest(promptText: String, lookupImpl: LookupImpl) {
         val stringJob = LLMCoroutineScope.scope(project).launch {
             AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
 
@@ -56,12 +64,12 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
                 val result = sb.toString()
                 logger.info("result: $result")
                 extractSuggestionsFromString(result).filter { it.isNotBlank() }.map {
-                        runReadAction {
-                            if (!lookupImpl.isLookupDisposed) {
-                                lookupImpl.addItem(CustomRenameLookupElement(it), PrefixMatcher.ALWAYS_TRUE)
-                            }
+                    runReadAction {
+                        if (!lookupImpl.isLookupDisposed) {
+                            lookupImpl.addItem(CustomRenameLookupElement(it), PrefixMatcher.ALWAYS_TRUE)
                         }
                     }
+                }
 
                 runInEdt {
                     lookupImpl.isCalculating = false
