@@ -1,20 +1,22 @@
-Write a cohesive yet descriptive commit message for a given diff.
-- Make sure to include both information What was changed and Why.
+Given the below code differences (diffs), please generate a concise, clear, and straight-to-the-point commit message.
+
+- Make sure to prioritize the main action.
+- Avoid overly verbose descriptions or unnecessary details.
 - Start with a short sentence in imperative form, no more than 50 characters long.
-- Then leave an empty line and continue with a more detailed explanation, if necessary.
-- Explanation should have less than 200 characters.
+- Then leave an empty line and continue with a more detailed explanation.
+- Write only one sentence for the first part, and two or three sentences at most for the detailed explanation.
 
 Follow the Conventional Commits specification, examples:
+#if( $context.historyExamples.length() == 0 )
 - fix(authentication): fix password regex pattern case
 - feat(storage): add support for S3 storage
 - test(java): fix test case for user controller
 - docs(architecture): add architecture diagram to home page
-
+#end
 #if( $context.historyExamples.length() > 0 )
 Here are the user's historical commit habits:
 $context.historyExamples
 #end
-
 #if($context.originText.length() > 0)
 User origin intention was: $context.originText
 #end
@@ -24,4 +26,3 @@ Diff:
 ```diff
 ${context.diffContent}
 ```
-
