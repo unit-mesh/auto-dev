@@ -18,7 +18,7 @@ object TerminalUtil {
     fun sendMsg(project: Project, data: String, e: AnActionEvent) {
         val content = getContent(project) ?: return
         val findWidgetByContent = TerminalToolWindowManager.findWidgetByContent(content) ?: return
-        val controller: TerminalPromptController? = tryGetBlockTerminalEditor(findWidgetByContent)
+        val controller: TerminalPromptController? = lookupTerminalPromptControllerByView(findWidgetByContent)
         if (controller == null) {
             trySendMsgInOld(project, data, content)
             return
@@ -36,7 +36,7 @@ object TerminalUtil {
         })
     }
 
-    private fun tryGetBlockTerminalEditor(findWidgetByContent: TerminalWidget): TerminalPromptController? {
+    private fun lookupTerminalPromptControllerByView(findWidgetByContent: TerminalWidget): TerminalPromptController? {
         val terminalView = (findWidgetByContent.component as? Wrapper)?.targetComponent ?: return null
         if (terminalView is DataProvider) {
             val controller = terminalView.getData(TerminalPromptController.KEY.name)
@@ -56,9 +56,7 @@ object TerminalUtil {
     }
 
     private fun getContent(project: Project): Content? {
-        val toolWindow = ToolWindowManager.getInstance(project)
-            .getToolWindow(TerminalToolWindowFactory.TOOL_WINDOW_ID)
-        val content = toolWindow?.contentManager?.selectedContent
-        return content
+        val toolWindow = ToolWindowManager.getInstance(project).getToolWindow(TerminalToolWindowFactory.TOOL_WINDOW_ID)
+        return toolWindow?.contentManager?.selectedContent
     }
 }
