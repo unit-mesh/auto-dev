@@ -78,13 +78,16 @@ Features:
     - Custom LLM Server. You can customize your LLM Server in `Settings` -> `Tools` -> `AutoDev`
     - Custom Living documentation.
     - Team prompts. Customize your team prompts in codebase, and distribute to your team.
-    - Custom AI Agent. You can integrate your own AI Agent into AutoDev.
     - Prompt override. You can override AutoDev's prompt in your codebase.
-- Infrastructure / DevOps
-    - CI/CD support. AutoDev will auto generate CI/CD config file.
-    - Dockerfile support. AutoDev will auto generate Dockerfile.
-- DevIns language
-    - Executable AI Agent language.
+- SDLC
+    - CI/CD config. Based on build tool, generate CI/CD config file, like `.github/workflows/build.yml`.
+    - Dockerfile. Based on your project, generate Dockerfile.
+    - Terminal. In Terminal ToolWindow, you can use custom input to generate shell/command
+    - VCS. Based on your code changes, generate commit message.
+    - Code Review. Based on your code changes, generate code review message.
+- AI Agent
+    - Executable AI Agent language: DevIns.
+    - Custom AI Agent. You can integrate your own AI Agent into AutoDev.
 - Built-in LLM Fine-tune
     - [UnitEval](https://github.com/unit-mesh/unit-eval) evaluate llm result
     - [UnitGen](https://github.com/unit-mesh/unit-gen) generate code-llm fine-tune data.
