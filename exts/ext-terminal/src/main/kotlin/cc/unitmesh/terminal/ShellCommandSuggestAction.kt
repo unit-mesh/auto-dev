@@ -125,7 +125,10 @@ class ShellCommandSuggestAction : DumbAwareAction() {
     }
 
     companion object {
-        fun suggestCommand(data: String, project: Project, function: (str: String) -> Unit?) {
+        fun suggestCommand(data: String, project: Project,
+                           chunk: (str: String) -> Unit?,
+                           done: ((str: String) -> Unit?)?
+        ) {
             val templateRender = TemplateRender(GENIUS_PRACTISES)
             val template = templateRender.getTemplate("shell-suggest.vm")
 
@@ -145,13 +148,17 @@ class ShellCommandSuggestAction : DumbAwareAction() {
                 AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
 
                 try {
+                    val sb = StringBuilder()
                     stringFlow.collect {
+                        sb.append(it)
                         if (it.contains("\n")) {
                             throw Exception("Shell command suggestion failed")
                         }
 
-                        function(it)
+                        chunk(it)
                     }
+
+                    done?.invoke(sb.toString())
                 } finally {
                     AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)
                 }

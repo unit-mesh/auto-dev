@@ -11,9 +11,9 @@ import org.jetbrains.plugins.terminal.TerminalToolWindowManager
 object TerminalUtil {
     fun sendMsg(project: Project, data: String, e: AnActionEvent) {
         val widget = getCurrentTerminalWidget(project) ?: return
-        suggestCommand(data, project) { string ->
+        suggestCommand(data, project, { string ->
             widget.terminalStarter?.sendString(string, true)
-        }
+        }, {})
     }
 
     fun getCurrentTerminalWidget(project: Project): JBTerminalWidget? {

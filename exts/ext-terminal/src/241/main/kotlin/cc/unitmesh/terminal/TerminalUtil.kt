@@ -25,19 +25,19 @@ object TerminalUtil {
         }
 
         val sb = StringBuilder()
-        suggestCommand(data, project) { string ->
+        suggestCommand(data, project, { string ->
             sb.append(string)
             null
-        }
-
-        runInEdt {
-            CopyPasteManager.copyTextToClipboard(sb.toString())
-            controller.performPaste(e.dataContext)
-        }
+        }, {
+            runInEdt {
+                CopyPasteManager.copyTextToClipboard(sb.toString())
+                controller.performPaste(e.dataContext)
+            }
+        })
     }
 
     private fun tryGetBlockTerminalEditor(findWidgetByContent: TerminalWidget): TerminalPromptController? {
-        val terminalView = (findWidgetByContent.component as Wrapper).targetComponent
+        val terminalView = (findWidgetByContent.component as? Wrapper)?.targetComponent ?: return null
         if (terminalView is DataProvider) {
             val controller = terminalView.getData(TerminalPromptController.KEY.name)
             return (controller as? TerminalPromptController)
@@ -48,9 +48,9 @@ object TerminalUtil {
 
     private fun trySendMsgInOld(project: Project, data: String, content: Content): Boolean {
         val widget = TerminalToolWindowManager.getWidgetByContent(content) ?: return true
-        suggestCommand(data, project) { string ->
+        suggestCommand(data, project, { string ->
             widget.terminalStarter?.sendString(string, true)
-        }
+        }, {})
 
         return false
     }
