@@ -4,7 +4,7 @@ import cc.unitmesh.terminal.ShellCommandSuggestAction.Companion.suggestCommand
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DataProvider
 import com.intellij.openapi.application.runInEdt
-import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.terminal.ui.TerminalWidget
@@ -12,30 +12,35 @@ import com.intellij.ui.components.panels.Wrapper
 import com.intellij.ui.content.Content
 import org.jetbrains.plugins.terminal.TerminalToolWindowFactory
 import org.jetbrains.plugins.terminal.TerminalToolWindowManager
-import org.jetbrains.plugins.terminal.exp.TerminalOutputController
+import org.jetbrains.plugins.terminal.exp.TerminalPromptController
 
 object TerminalUtil {
     fun sendMsg(project: Project, data: String, e: AnActionEvent) {
         val content = getContent(project) ?: return
         val findWidgetByContent = TerminalToolWindowManager.findWidgetByContent(content) ?: return
-        val editor = tryGetBlockTerminalEditor(findWidgetByContent)
-        if (editor == null) {
+        val controller: TerminalPromptController? = tryGetBlockTerminalEditor(findWidgetByContent)
+        if (controller == null) {
             trySendMsgInOld(project, data, content)
             return
         }
 
+        val sb = StringBuilder()
         suggestCommand(data, project) { string ->
-            runInEdt {
-                editor.document.insertString(editor.caretModel.offset, string)
-            }
+            sb.append(string)
+            null
+        }
+
+        runInEdt {
+            CopyPasteManager.copyTextToClipboard(sb.toString())
+            controller.performPaste(e.dataContext)
         }
     }
 
-    private fun tryGetBlockTerminalEditor(findWidgetByContent: TerminalWidget): EditorEx? {
+    private fun tryGetBlockTerminalEditor(findWidgetByContent: TerminalWidget): TerminalPromptController? {
         val terminalView = (findWidgetByContent.component as Wrapper).targetComponent
         if (terminalView is DataProvider) {
-            val controller = terminalView.getData(TerminalOutputController.KEY.name)
-            return (controller as? TerminalOutputController)?.outputModel?.editor
+            val controller = terminalView.getData(TerminalPromptController.KEY.name)
+            return (controller as? TerminalPromptController)
         }
 
         return null
