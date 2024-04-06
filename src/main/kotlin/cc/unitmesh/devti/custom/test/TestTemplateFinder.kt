@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 
 @Service(Service.Level.PROJECT)
-class TemplatedTestPrompt(private val project: Project) {
+class TestTemplateFinder(private val project: Project) {
     val settings = project.teamPromptsSettings
 
     /**

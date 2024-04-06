@@ -1,6 +1,6 @@
 package cc.unitmesh.idea.provider
 
-import cc.unitmesh.devti.custom.test.TemplatedTestPrompt
+import cc.unitmesh.devti.custom.test.TestTemplateFinder
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
@@ -39,7 +39,7 @@ open class JavaTestContextProvider : ChatContextProvider {
 
         val language = creationContext.sourceFile?.language?.displayName ?: "Java"
 
-        val testPrompt = project.service<TemplatedTestPrompt>()
+        val testPrompt = project.service<TestTemplateFinder>()
         val finalPrompt = when {
             isController(fileName) && isSpringRelated -> {
                 var testControllerPrompt = prompt + """
