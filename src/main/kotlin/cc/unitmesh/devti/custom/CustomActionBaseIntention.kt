@@ -11,7 +11,6 @@ import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import org.apache.velocity.VelocityContext
@@ -70,13 +69,14 @@ class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConf
 
     private fun constructCustomPrompt(
         psiElement: PsiElement,
-        selectedText: @NlsSafe String,
+        selectedText: String,
         beforeCursor: String,
         afterCursor: String
     ): CustomIntentionPrompt {
         val velocityContext = VelocityContext()
 
         val variableResolvers = arrayOf(
+            ClassStructureVariableResolver(psiElement),
             MethodInputOutputVariableResolver(psiElement),
             SimilarChunkVariableResolver(psiElement),
             SelectionVariableResolver(psiElement.language.displayName, selectedText),
