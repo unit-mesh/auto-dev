@@ -6,6 +6,9 @@ nav_order: 11
 permalink: /features/refactoring
 ---
 
+AutoDev@1.8.0
+{: .label .label-yellow }
+
 In [#129](https://github.com/unit-mesh/auto-dev/issues/129), we provide more information for you to refactor code.
 
 ## Auto smell combination

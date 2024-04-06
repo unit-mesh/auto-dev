@@ -3,10 +3,19 @@ layout: default
 title: Shell Suggest
 parent: Basic Features
 nav_order: 12
-permalink: /features/refactoring
+permalink: /features/shell-suggest
 ---
 
-## Default context
+AutoDev@1.8.0
+{: .label .label-yellow }
+
+## Shell Suggest
+
+In Terminal, we provide a feature to generate shell script by LLM.
+
+## Customize
+
+### Default context
 
 ```kotlin
 data class ShellSuggestContext(
