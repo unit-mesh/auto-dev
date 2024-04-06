@@ -38,7 +38,7 @@ class KotlinAutoTestService : AutoTestService() {
         return createConfigForGradle(virtualFile, project)
     }
 
-    override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
+    override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, psiElement: PsiElement): TestFileContext? {
         val sourceFilePath = sourceFile.virtualFile
         val parentDir = sourceFilePath.parent
         val className = sourceFile.name.replace(".kt", "") + "Test"
@@ -51,7 +51,7 @@ class KotlinAutoTestService : AutoTestService() {
             parentDir?.path
         }
 
-        val relatedModels = lookupRelevantClass(project, element).distinctBy { it.name }
+        val relatedModels = lookupRelevantClass(project, psiElement).distinctBy { it.name }
 
         if (!parentDirPath?.contains("/main/kotlin/")!!) {
             log.error("Source file is not in the src/main/java directory: $parentDirPath")
@@ -90,10 +90,10 @@ class KotlinAutoTestService : AutoTestService() {
         project.guessProjectDir()?.refresh(true, true)
 
         val currentClass: String = ReadAction.compute<String, Throwable> {
-            val classContext = when (element) {
-                is KtClassOrObject -> ClassContextProvider(false).from(element)
+            val classContext = when (psiElement) {
+                is KtClassOrObject -> ClassContextProvider(false).from(psiElement)
                 is KtNamedFunction -> {
-                    PsiTreeUtil.getParentOfType(element, KtClassOrObject::class.java)?.let {
+                    PsiTreeUtil.getParentOfType(psiElement, KtClassOrObject::class.java)?.let {
                         ClassContextProvider(false).from(it)
                     }
                 }

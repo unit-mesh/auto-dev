@@ -70,7 +70,7 @@ class PythonAutoTestService : AutoTestService() {
         return PsiTreeUtil.getParentOfType(element, PyClass::class.java, false) ?: containingFile
     }
 
-    override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
+    override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, psiElement: PsiElement): TestFileContext? {
         val testFileName = getTestNameExample(sourceFile.virtualFile)
         val testDir = getTestsDirectory(sourceFile.virtualFile, project)
         val testFile = WriteAction.computeAndWait<VirtualFile?, Throwable> {

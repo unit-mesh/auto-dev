@@ -9,7 +9,6 @@ import com.intellij.execution.RunManager
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.lang.java.JavaLanguage
-import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.CommandProcessor
@@ -43,7 +42,7 @@ class JavaAutoTestService : AutoTestService() {
         return createConfigForGradle(virtualFile, project)
     }
 
-    override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
+    override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, psiElement: PsiElement): TestFileContext? {
         val sourceFilePath = sourceFile.virtualFile
         val parentDir = sourceFilePath.parent
         val testFileName = sourceFile.name.replace(".java", "") + "Test"
@@ -55,7 +54,7 @@ class JavaAutoTestService : AutoTestService() {
             parentDir?.path
         }
 
-        val relatedModels = lookupRelevantClass(project, element).distinctBy { it.name }
+        val relatedModels = lookupRelevantClass(project, psiElement).distinctBy { it.name }
 
         // Check if the source file is in the src/main/java directory
         if (!parentDirPath?.contains("/src/main/java/")!!) {

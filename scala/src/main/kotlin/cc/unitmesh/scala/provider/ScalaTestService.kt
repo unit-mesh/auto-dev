@@ -36,7 +36,7 @@ class ScalaTestService : AutoTestService() {
         return null
     }
 
-    override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
+    override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, psiElement: PsiElement): TestFileContext? {
         TODO("Not yet implemented")
     }
 

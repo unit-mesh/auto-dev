@@ -77,6 +77,7 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
 
                 runInEdt {
                     if (!lookupImpl.isLookupDisposed && runJob.isActive) {
+                        logger.info("refreshUi for RenameLookupManagerListener")
                         lookupImpl.isCalculating = false
                         lookupImpl.refreshUi(true, false)
                     }

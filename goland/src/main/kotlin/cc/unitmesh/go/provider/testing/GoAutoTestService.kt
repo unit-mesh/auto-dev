@@ -38,8 +38,8 @@ class GoAutoTestService : AutoTestService() {
         }?.configurationSettings?.configuration
     }
 
-    override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
-        val underTestElement = getElementForTests(element) ?: return null
+    override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, psiElement: PsiElement): TestFileContext? {
+        val underTestElement = getElementForTests(psiElement) ?: return null
         val name = GoPsiUtil.getDeclarationName(underTestElement) ?: return null
         val testFileName = toTestFileName(name)
         val underTestFile = underTestElement.containingFile as? GoFile ?: return null

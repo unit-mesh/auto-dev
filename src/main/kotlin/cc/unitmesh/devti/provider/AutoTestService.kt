@@ -34,7 +34,7 @@ abstract class AutoTestService : LazyExtensionInstance<AutoTestService>(), RunSe
      *
      * @param sourceFile The source file for which to find or create a test file.
      * @param project The project in which the test file should be created.
-     * @param element The element for which the test file should be created.
+     * @param psiElement The element for which the test file should be created.
      * @return The TestFileContext object representing the found or created test file, or null if it could not be found or created.
      *
      * This method is responsible for locating an existing test file associated with the given source file and element,
@@ -43,7 +43,7 @@ abstract class AutoTestService : LazyExtensionInstance<AutoTestService>(), RunSe
      * If a test file is found or created successfully, a TestFileContext object representing the test file is returned.
      * If a test file cannot be found or created, null is returned.
      */
-    abstract fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext?
+    abstract fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, psiElement: PsiElement): TestFileContext?
 
     /**
      * Looks up the relevant classes in the project for the given element.

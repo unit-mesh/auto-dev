@@ -42,23 +42,23 @@ class JSAutoTestService : AutoTestService() {
         return LanguageApplicableUtil.isWebChatCreationContextSupported(sourceFile)
     }
 
-    override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
+    override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, psiElement: PsiElement): TestFileContext? {
         val language = sourceFile.language
-        val testFilePath = Util.getTestFilePath(element)?.toString()
+        val testFilePath = Util.getTestFilePath(psiElement)?.toString()
         if (testFilePath == null) {
-            log.warn("Failed to find test file path for: $element")
+            log.warn("Failed to find test file path for: $psiElement")
             return null
         }
 
-        val elementToTest = runReadAction { Util.getElementToTest(element) }
+        val elementToTest = runReadAction { Util.getElementToTest(psiElement) }
         if (elementToTest == null) {
-            log.warn("Failed to find element to test for: ${element}, check your function is exported.")
+            log.warn("Failed to find element to test for: ${psiElement}, check your function is exported.")
             return null
         }
 
         val elementName = JSPsiUtil.elementName(elementToTest)
         if (elementName == null) {
-            log.warn("Failed to find element name for: $element")
+            log.warn("Failed to find element name for: $psiElement")
             return null
         }
 

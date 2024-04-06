@@ -37,7 +37,7 @@ class CppAutoTestService : AutoTestService() {
         return settings?.configuration
     }
 
-    override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
+    override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, psiElement: PsiElement): TestFileContext? {
         val baseDir = project.guessProjectDir() ?: return null
 
         val testFilePath = getTestFilePath(sourceFile.virtualFile)
@@ -45,15 +45,15 @@ class CppAutoTestService : AutoTestService() {
             baseDir.findOrCreateChildData(this, testFilePath)
         } ?: return null
 
-        val currentClass = when (element) {
+        val currentClass = when (psiElement) {
             is OCFunctionDeclaration -> {
-                CppContextPrettify.printParentStructure(element)
+                CppContextPrettify.printParentStructure(psiElement)
             }
 
             else -> null
         }
 
-        val relatedClasses = lookupRelevantClass(project, element)
+        val relatedClasses = lookupRelevantClass(project, psiElement)
 
         return TestFileContext(
             true, testFile,

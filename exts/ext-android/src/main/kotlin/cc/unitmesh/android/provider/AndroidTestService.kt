@@ -15,7 +15,7 @@ class AndroidTestService : AutoTestService() {
     override fun isApplicable(element: PsiElement): Boolean = AndroidUtils.hasAndroidFacets(element.project)
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = AndroidRunConfiguration::class.java
 
-    override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, element: PsiElement): TestFileContext? {
+    override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, psiElement: PsiElement): TestFileContext? {
         TODO("Not yet implemented")
     }
 
