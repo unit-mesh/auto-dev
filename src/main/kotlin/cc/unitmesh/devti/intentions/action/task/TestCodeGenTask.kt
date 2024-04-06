@@ -4,7 +4,6 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.context.modifier.CodeModifierProvider
 import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.intentions.action.AutoTestThisBaseIntention
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.util.parser.parseCodeFromString
 import cc.unitmesh.devti.provider.AutoTestService
@@ -31,7 +30,7 @@ import kotlinx.coroutines.runBlocking
 data class TestGenPromptContext(
     var lang: String = "",
     var imports: String = "",
-    var frameworkedContext: String = "",
+    var frameworkContext: String = "",
     var currentClass: String = "",
     var relatedClasses: String = "",
     var sourceCode: String = "",
@@ -46,11 +45,11 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
     private val lang = request.file.language.displayName
     private val autoTestService = AutoTestService.context(request.element)
 
-    val commenter = LanguageCommenters.INSTANCE.forLanguage(request.file.language) ?: null
-    val comment = commenter?.lineCommentPrefix ?: "//"
+    private val commenter = LanguageCommenters.INSTANCE.forLanguage(request.file.language) ?: null
+    private val comment = commenter?.lineCommentPrefix ?: "//"
 
-    val templateRender = TemplateRender(GENIUS_CODE)
-    val template = templateRender.getTemplate("test-gen.vm")
+    private val templateRender = TemplateRender(GENIUS_CODE)
+    private val template = templateRender.getTemplate("test-gen.vm")
 
     override fun run(indicator: ProgressIndicator) {
         indicator.isIndeterminate = true
@@ -85,7 +84,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
             return@runBlocking ChatContextProvider.collectChatContextList(request.project, creationContext)
         }
 
-        testPromptContext.frameworkedContext = contextItems.joinToString("\n", transform = ChatContextItem::text)
+        testPromptContext.frameworkContext = contextItems.joinToString("\n", transform = ChatContextItem::text)
         ReadAction.compute<Unit, Throwable> {
             if (testContext.relatedClasses.isNotEmpty()) {
                 testPromptContext.relatedClasses = testContext.relatedClasses.joinToString("\n") {
@@ -116,7 +115,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         templateRender.context = testPromptContext
         val prompter = templateRender.renderTemplate(template)
 
-        logger<AutoTestThisBaseIntention>().info("Prompt: $prompter")
+        logger.info("Prompt: $prompter")
 
         indicator.fraction = 0.8
         indicator.text = AutoDevBundle.message("intentions.request.background.process.title")

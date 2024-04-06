@@ -1,6 +1,6 @@
 为以下代码编写单元测试。
 
-${context.frameworkedContext}
+${context.frameworkContext}
 
 #if( $context.relatedClasses.length() > 0 )
     ${context.relatedClasses}
