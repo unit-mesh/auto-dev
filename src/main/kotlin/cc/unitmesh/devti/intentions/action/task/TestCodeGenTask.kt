@@ -4,6 +4,8 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.context.modifier.CodeModifierProvider
 import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.intentions.action.test.TestCodeGenRequest
+import cc.unitmesh.devti.intentions.action.test.TestGenPromptContext
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.util.parser.parseCodeFromString
 import cc.unitmesh.devti.provider.AutoTestService
@@ -26,17 +28,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiNameIdentifierOwner
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
-
-data class TestGenPromptContext(
-    var lang: String = "",
-    var imports: String = "",
-    var frameworkContext: String = "",
-    var currentClass: String = "",
-    var relatedClasses: String = "",
-    var sourceCode: String = "",
-    var testClassName: String = "",
-    var isNewFile: Boolean = true,
-)
 
 class TestCodeGenTask(val request: TestCodeGenRequest) :
     Task.Backgroundable(request.project, AutoDevBundle.message("intentions.chat.code.test.name")) {

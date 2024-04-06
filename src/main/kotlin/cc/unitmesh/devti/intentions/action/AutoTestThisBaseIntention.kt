@@ -3,7 +3,7 @@ package cc.unitmesh.devti.intentions.action
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import com.intellij.temporary.getElementToAction
-import cc.unitmesh.devti.intentions.action.task.TestCodeGenRequest
+import cc.unitmesh.devti.intentions.action.test.TestCodeGenRequest
 import cc.unitmesh.devti.intentions.action.task.TestCodeGenTask
 import cc.unitmesh.devti.provider.AutoTestService
 import com.intellij.openapi.editor.Editor

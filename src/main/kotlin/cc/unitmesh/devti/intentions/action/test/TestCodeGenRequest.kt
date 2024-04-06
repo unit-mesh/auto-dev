@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.intentions.action.task
+package cc.unitmesh.devti.intentions.action.test
 
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
