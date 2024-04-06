@@ -120,5 +120,36 @@ For more, see in [AutoTestService](https://github.com/unit-mesh/auto-dev/blob/ma
     }
     ```
     
-    Start  with `import` syntax here:  
-    
+    Start  with `import` syntax here:
+
+## Resources
+
+### TestSpark
+
+TestSpark 目前支持两种测试生成策略：
+- 基于 LLM 的测试生成（使用 OpenAI 和 JetBrains 内部 AI Assistant 平台）
+- 基于本地搜索的测试生成（使用 EvoSuite）
+
+#### Method 1: LLM gen prompt example
+
+GitHub: [TestSpark](https://github.com/JetBrains-Research/TestSpark/blob/development/src/main/resources/defaults/TestSpark.properties)
+
+```vtl
+Generate unit tests in $LANGUAGE for $NAME to achieve 100% line coverage for this class.
+Dont use @Before and @After test methods.
+Make tests as atomic as possible.
+All tests should be for $TESTING_PLATFORM.
+In case of mocking, use $MOCKING_FRAMEWORK. But, do not use mocking for all tests.
+Name all methods according to the template - [MethodUnderTest][Scenario]Test, and use only English letters.
+The source code of class under test is as follows:
+$CODE
+Here are some information about other methods and classes used by the class under test. Only use them for creating objects, not your own ideas.
+$METHODS
+$POLYMORPHISM
+$TEST_SAMPLE
+```
+
+#### Method 2: EvoSuite gen 
+
+[EvoSuite](https://www.evosuite.org/) 是一个工具，可以自动生成带有 Java 代码编写的类断言的测试用例。
+
