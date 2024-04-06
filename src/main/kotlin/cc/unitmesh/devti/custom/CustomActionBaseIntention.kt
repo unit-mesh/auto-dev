@@ -43,7 +43,13 @@ class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConf
         val withRange = elementWithRange(editor, file, project) ?: return
         val selectedText = withRange.first
         val psiElement = withRange.second
-        val prompt: CustomIntentionPrompt = constructCustomPrompt(psiElement!!, selectedText)
+        val beforeCursor = editor.document.text.substring(0, editor.caretModel.offset)
+        val afterCursor = editor.document.text.substring(editor.caretModel.offset)
+
+        val prompt: CustomIntentionPrompt = constructCustomPrompt(
+            psiElement!!, selectedText,
+            beforeCursor, afterCursor
+        )
 
         if (intentionConfig.autoInvoke) {
             sendToChatPanel(project, getActionType(), object : ContextPrompter() {
@@ -62,7 +68,12 @@ class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConf
         }
     }
 
-    private fun constructCustomPrompt(psiElement: PsiElement, selectedText: @NlsSafe String): CustomIntentionPrompt {
+    private fun constructCustomPrompt(
+        psiElement: PsiElement,
+        selectedText: @NlsSafe String,
+        beforeCursor: String,
+        afterCursor: String
+    ): CustomIntentionPrompt {
         val velocityContext = VelocityContext()
 
         val variableResolvers = arrayOf(
@@ -80,6 +91,11 @@ class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConf
             val value = resolver.resolve()
             velocityContext.put(variableType, value)
         }
+
+        velocityContext.put("beforeCursor", beforeCursor)
+        velocityContext.put("afterCursor", afterCursor)
+        val filePath = psiElement.containingFile.virtualFile.path
+        velocityContext.put("filePath", filePath)
 
         val oldContextClassLoader = Thread.currentThread().getContextClassLoader()
         Thread.currentThread().setContextClassLoader(CustomActionBaseIntention::class.java.getClassLoader())
