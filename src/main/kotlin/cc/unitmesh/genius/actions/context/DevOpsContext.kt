@@ -1,10 +1,12 @@
 package cc.unitmesh.genius.actions.context
 
 import cc.unitmesh.devti.template.context.DockerfileContext
+import cc.unitmesh.devti.template.context.TemplateContext
 
 data class DevOpsContext(
     val buildContext: String,
-) {
+) : TemplateContext
+{
     companion object {
         fun from(dockerContexts: List<DockerfileContext>): DevOpsContext {
             val string = dockerContexts.joinToString("\n") {

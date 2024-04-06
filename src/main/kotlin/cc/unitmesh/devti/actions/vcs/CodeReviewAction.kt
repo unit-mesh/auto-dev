@@ -14,6 +14,7 @@ import cc.unitmesh.devti.provider.context.ChatOrigin
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.template.GENIUS_PRACTISES
 import cc.unitmesh.devti.template.TemplateRender
+import cc.unitmesh.devti.template.context.TemplateContext
 import com.intellij.dvcs.repo.Repository
 import com.intellij.dvcs.repo.VcsRepositoryManager
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -142,4 +143,4 @@ data class CodeReviewContext(
     var frameworkContext: String = "",
     val stories: MutableList<String> = mutableListOf(),
     var diffContext: String = "",
-)
+) : TemplateContext

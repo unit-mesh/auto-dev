@@ -1,5 +1,6 @@
 package cc.unitmesh.ide.javascript.flow.model
 
+import cc.unitmesh.devti.template.context.TemplateContext
 import cc.unitmesh.ide.javascript.flow.ReactAutoPage
 
 data class AutoPageContext(
@@ -11,7 +12,7 @@ data class AutoPageContext(
     val routes: List<String>,
     val frameworks: List<String> = listOf("React"),
     val language: String = "JavaScript",
-) {
+) : TemplateContext {
     companion object {
         fun build(reactAutoPage: ReactAutoPage, language: String, frameworks: List<String>): AutoPageContext {
             return AutoPageContext(

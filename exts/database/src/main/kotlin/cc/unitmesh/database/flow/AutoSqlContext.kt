@@ -1,5 +1,7 @@
 package cc.unitmesh.database.flow
 
+import cc.unitmesh.devti.template.context.TemplateContext
+
 data class AutoSqlContext(
     val requirement: String,
     val databaseVersion: String,
@@ -10,4 +12,4 @@ data class AutoSqlContext(
      * A list of table names to retrieve the columns from.
      */
     var tableInfos: List<String> = emptyList(),
-)
+) : TemplateContext

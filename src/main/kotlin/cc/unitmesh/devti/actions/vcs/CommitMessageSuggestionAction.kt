@@ -9,6 +9,7 @@ import cc.unitmesh.devti.template.GENIUS_PRACTISES
 import cc.unitmesh.devti.vcs.VcsPrompting
 import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.template.TemplateRender
+import cc.unitmesh.devti.template.context.TemplateContext
 import cc.unitmesh.devti.vcs.VcsUtil
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -179,4 +180,4 @@ data class CommitMsgGenContext(
     var diffContent: String = "",
     // the origin commit message which is to be optimized
     val originText: String = "",
-)
+) : TemplateContext

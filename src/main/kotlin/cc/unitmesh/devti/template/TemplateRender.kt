@@ -3,6 +3,8 @@ package cc.unitmesh.devti.template
 import cc.unitmesh.cf.core.llms.LlmMsg
 import cc.unitmesh.devti.custom.team.TeamPromptsBuilder
 import cc.unitmesh.devti.settings.AutoDevSettingsState
+import cc.unitmesh.devti.template.context.EmptyContext
+import cc.unitmesh.devti.template.context.TemplateContext
 import cc.unitmesh.template.TemplateRoleSplitter
 import com.intellij.openapi.project.ProjectManager
 import org.apache.velocity.VelocityContext
@@ -25,7 +27,7 @@ const val GENIUS_ERROR = "/error"
 class TemplateRender(private val pathPrefix: String) {
     private val velocityContext = VelocityContext()
     private val splitter = TemplateRoleSplitter()
-    var context: Any = ""
+    var context: TemplateContext = EmptyContext()
     /**
      * Action is also a context, but with custom methods.
      */

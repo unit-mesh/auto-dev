@@ -6,6 +6,7 @@ import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.prompting.BasicTextPrompt
 import cc.unitmesh.devti.template.GENIUS_ERROR
 import cc.unitmesh.devti.template.TemplateRender
+import cc.unitmesh.devti.template.context.TemplateContext
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
@@ -16,7 +17,7 @@ import kotlin.math.min
 data class ErrorContext(
     val errorText: String,
     val sourceCode: String,
-)
+) : TemplateContext
 
 class ErrorPromptBuilder(private val maxLength: Int, private val tokenizer: Tokenizer) {
     private val promptTemplate =
