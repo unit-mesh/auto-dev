@@ -7,12 +7,12 @@ Given the below code differences (diffs), please generate a concise, clear, and 
 - Write only one sentence for the first part, and two or three sentences at most for the detailed explanation.
 
 Follow the Conventional Commits specification, examples:
-#if( $context.historyExamples.length() == 0 )
+
 - fix(authentication): fix password regex pattern case
 - feat(storage): add support for S3 storage
 - test(java): fix test case for user controller
 - docs(architecture): add architecture diagram to home page
-#end
+
 #if( $context.historyExamples.length() > 0 )
 Here are the user's historical commit habits:
 $context.historyExamples
