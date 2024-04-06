@@ -11,16 +11,17 @@ import java.io.File
 import java.io.StringWriter
 import java.nio.charset.Charset
 
-val ROOT = "genius"
-val GENIUS_SRE = "/sre"
-val GENIUS_MIGRATION = "/migration"
-val GENIUS_SQL = "/sql"
-val GENIUS_HARMONYOS = "/harmonyos"
-val GENIUS_PAGE = "/page"
-val GENIUS_PRACTISES = "/practises"
-val GENIUS_CODE = "/code"
-val GENIUS_CICD = "/cicd"
-val GENIUS_ERROR = "/error"
+const val ROOT = "genius"
+const val GENIUS_SRE = "/sre"
+const val GENIUS_MIGRATION = "/migration"
+const val GENIUS_SQL = "/sql"
+const val GENIUS_HARMONYOS = "/harmonyos"
+const val GENIUS_PAGE = "/page"
+const val GENIUS_PRACTISES = "/practises"
+const val GENIUS_CODE = "/code"
+const val GENIUS_CICD = "/cicd"
+const val GENIUS_ERROR = "/error"
+
 class TemplateRender(val pathPrefix: String) {
     private val velocityContext = VelocityContext()
     private val splitter = TemplateRoleSplitter()
