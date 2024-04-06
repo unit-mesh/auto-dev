@@ -4,6 +4,9 @@ import cc.unitmesh.devti.custom.action.CustomPromptConfig
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 
+/**
+ * For resolve tech spec variables which maybe define by user.
+ */
 @Service(Service.Level.APP)
 class SpecResolverService {
     private val specs = CustomPromptConfig.load().spec

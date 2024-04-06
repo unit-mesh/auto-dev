@@ -43,7 +43,7 @@ class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConf
         val withRange = elementWithRange(editor, file, project) ?: return
         val selectedText = withRange.first
         val psiElement = withRange.second
-        val prompt: CustomIntentionPrompt = buildCustomPrompt(psiElement!!, selectedText)
+        val prompt: CustomIntentionPrompt = constructCustomPrompt(psiElement!!, selectedText)
 
         if (intentionConfig.autoInvoke) {
             sendToChatPanel(project, getActionType(), object : ContextPrompter() {
@@ -62,7 +62,7 @@ class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConf
         }
     }
 
-    private fun buildCustomPrompt(psiElement: PsiElement, selectedText: @NlsSafe String): CustomIntentionPrompt {
+    private fun constructCustomPrompt(psiElement: PsiElement, selectedText: @NlsSafe String): CustomIntentionPrompt {
         val velocityContext = VelocityContext()
 
         val variableResolvers = arrayOf(
