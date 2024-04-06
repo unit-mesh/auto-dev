@@ -5,7 +5,7 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.context.modifier.CodeModifierProvider
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.intentions.action.test.TestCodeGenRequest
-import cc.unitmesh.devti.intentions.action.test.TestGenPromptContext
+import cc.unitmesh.devti.intentions.action.test.TestCodeGenContext
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.util.parser.parseCodeFromString
 import cc.unitmesh.devti.provider.AutoTestService
@@ -66,7 +66,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.collect-context")
         indicator.fraction = 0.3
 
-        val testPromptContext = TestGenPromptContext()
+        val testPromptContext = TestCodeGenContext()
 
         val creationContext =
             ChatCreationContext(ChatOrigin.Intention, actionType, request.file, listOf(), element = request.element)

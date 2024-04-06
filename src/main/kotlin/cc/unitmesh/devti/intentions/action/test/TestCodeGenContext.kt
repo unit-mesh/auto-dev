@@ -1,6 +1,8 @@
 package cc.unitmesh.devti.intentions.action.test
 
-data class TestGenPromptContext(
+import cc.unitmesh.devti.template.context.TemplateContext
+
+data class TestCodeGenContext(
     var lang: String = "",
     var imports: String = "",
     var frameworkContext: String = "",
@@ -9,4 +11,4 @@ data class TestGenPromptContext(
     var sourceCode: String = "",
     var testClassName: String = "",
     var isNewFile: Boolean = true,
-)
+) : TemplateContext

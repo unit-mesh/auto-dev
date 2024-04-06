@@ -22,7 +22,7 @@ const val GENIUS_CODE = "/code"
 const val GENIUS_CICD = "/cicd"
 const val GENIUS_ERROR = "/error"
 
-class TemplateRender(val pathPrefix: String) {
+class TemplateRender(private val pathPrefix: String) {
     private val velocityContext = VelocityContext()
     private val splitter = TemplateRoleSplitter()
     var context: Any = ""
