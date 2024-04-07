@@ -29,7 +29,7 @@ class AutoTestThisBaseIntention : ChatBaseIntention() {
         val element = getElementToAction(project, editor) ?: return
         selectElement(element, editor)
 
-        val task = TestCodeGenTask(TestCodeGenRequest(file, element, project, editor, element.text))
+        val task = TestCodeGenTask(TestCodeGenRequest(file, element, project, editor))
 
         ProgressManager.getInstance()
             .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))

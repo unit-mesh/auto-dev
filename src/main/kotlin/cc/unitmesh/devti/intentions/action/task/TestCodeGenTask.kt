@@ -4,16 +4,16 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.context.modifier.CodeModifierProvider
 import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.intentions.action.test.TestCodeGenRequest
 import cc.unitmesh.devti.intentions.action.test.TestCodeGenContext
+import cc.unitmesh.devti.intentions.action.test.TestCodeGenRequest
 import cc.unitmesh.devti.llms.LlmFactory
-import cc.unitmesh.devti.util.parser.parseCodeFromString
 import cc.unitmesh.devti.provider.AutoTestService
 import cc.unitmesh.devti.provider.context.*
-import cc.unitmesh.devti.template.GENIUS_CODE
 import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.statusbar.AutoDevStatusService
+import cc.unitmesh.devti.template.GENIUS_CODE
 import cc.unitmesh.devti.template.TemplateRender
+import cc.unitmesh.devti.util.parser.parseCodeFromString
 import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
@@ -26,7 +26,7 @@ import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiNameIdentifierOwner
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 
 class TestCodeGenTask(val request: TestCodeGenRequest) :
@@ -43,7 +43,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
     private val template = templateRender.getTemplate("test-gen.vm")
 
     override fun run(indicator: ProgressIndicator) {
-        indicator.isIndeterminate = true
+        indicator.isIndeterminate = false
         indicator.fraction = 0.1
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.prepare-context")
 
@@ -98,7 +98,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         testPromptContext.sourceCode = if(request.element !is PsiNameIdentifierOwner) {
             testContext.testElement?.text ?: ""
         } else {
-            request.selectText
+            request.element.text ?: ""
         }
 
         testPromptContext.isNewFile = testContext.isNewFile
