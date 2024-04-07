@@ -142,3 +142,5 @@ src/main/gen
 !.idea/runConfigurations
 !.idea/.name
 !.idea/icon.svg
+.DS_Store
+**/.DS_Store
