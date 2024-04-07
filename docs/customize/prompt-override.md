@@ -32,6 +32,8 @@ For example, create a file named `prompts/genius/sql/sql-gen-clarify.vm`, will o
 │   └── page-gen-design.vm
 ├── practises
 │   ├── code-review.vm
+│   ├── refactoring.vm
+│   ├── shell-suggest.vm
 │   └── gen-commit-msg.vm
 ├── quick
 │   └── quick-action.vm
