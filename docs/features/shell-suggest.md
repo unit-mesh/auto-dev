@@ -13,6 +13,9 @@ AutoDev@1.8.0
 
 In Terminal, we provide a feature to generate shell script by LLM.
 
+![Shell Suggest](https://unitmesh.cc/auto-dev/autodev-shell-suggest.png)
+
+
 ## Customize
 
 ### Default context
@@ -28,4 +31,6 @@ data class ShellSuggestContext(
     val os: String = System.getProperty("os.name")
 )
 ```
+
+### Prompt output example
 

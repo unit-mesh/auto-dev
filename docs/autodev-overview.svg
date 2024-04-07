@@ -62,13 +62,13 @@
                     <g id="commit-gen" transform="translate(0.000000, 170.000000)">
                         <rect id="Rectangle" fill="#48A178" x="0" y="0" width="99" height="30" rx="8"></rect>
                         <text id="Comment-Gen" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
-                            <tspan x="10.9853516" y="19">Comment Gen</tspan>
+                            <tspan x="10.9853516" y="19">Document Gen</tspan>
                         </text>
                     </g>
                     <g id="refactor" transform="translate(0.000000, 136.000000)">
                         <rect id="Rectangle" fill="#48A178" x="0" y="0" width="99" height="30" rx="8"></rect>
-                        <text id="Refactor" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
-                            <tspan x="27.3242188" y="19">Refactor</tspan>
+                        <text id="Refactor" font-family="Helvetica" font-size="10" font-weight="normal" fill="#FFFFFF">
+                            <tspan x="10.32" y="18">Smart Refactoring</tspan>
                         </text>
                     </g>
                     <g id="bug-fix" transform="translate(0.000000, 102.000000)">

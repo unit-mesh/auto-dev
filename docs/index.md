@@ -46,12 +46,12 @@ Here is the AutoDev architecture:
 Features:
 
 - Languages support: Java, Kotlin, JavaScript/TypeScript, Rust, Python, Golang, C/C++/OC, or others...
-- Auto development mode.
-    - AutoCRUD(Spring framework）. With DevTi Protocol (like `devti://story/github/1102`) will auto
+- Auto development mode
+    - AutoCRUD (Spring framework）. With DevTi Protocol (like `devti://story/github/1102`) will auto
       generate Model-Controller-Service-Repository code.
-    - AutoSQL. Context-aware SQL generation.
+    - AutoSQL (required Database plugin). Context-aware SQL generation.
     - AutoPage (React). Context-aware Web Page generation.
-    - AutoArkUI (Mobile UI framework). Auto generate HarmonyOS ArkUI code.
+    - AutoArkUI (HarmonyOS). Auto generate HarmonyOS ArkUI code.
     - AutoTesting. create unit test intention, auto run unit test and try to fix test.
     - AutoDocument. Auto generate document.
 - Copilot mode
@@ -59,27 +59,26 @@ Features:
     - Pattern specific. Based on your code context like (Controller, Service `import`), AutoDev will suggest the best
       code to you.
     - Related code. Based on recent file changes, AutoDev will call calculate similar chunk to generate the best code.
-- Chat mode
-    - Chat with AI.
-    - Chat with selection code.
-    - Chat with code context-aware (To be implemented).
+- Chat with AI. Chat with selection code and context-aware code.
 - Customize.
     - Custom specification of prompt. For example, Controller, Service, Repository, Model, etc.
     - Custom intention action. You can add your own intention action.
     - Custom LLM Server. You can customize your LLM Server in `Settings` -> `Tools` -> `AutoDev`
-    - Custom Living documentation.
-    - Team prompts. Customize your team prompts in codebase, and distribute to your team.
+    - Custom Living documentation. Customize your own living documentation, like annotation.
+    - Team AI. Customize your team prompts in codebase, and distribute to your team.
     - Prompt override. You can override AutoDev's prompt in your codebase.
 - SDLC
-    - CI/CD config. Based on build tool, generate CI/CD config file, like `.github/workflows/build.yml`.
+    - VCS. Generate/improve commit message, release note, and more.
+    - Code Review. Generate code-review content.
+    - Smart Refactoring. AI based Rename, refactoring with code smell, refactoring suggetion and more.
     - Dockerfile. Based on your project, generate Dockerfile.
+    - CI/CD config. Based on build tool, generate CI/CD config file, like `.github/workflows/build.yml`.
     - Terminal. In Terminal ToolWindow, you can use custom input to generate shell/command
-    - VCS. Based on your code changes, generate commit message.
-    - Code Review. Based on your code changes, generate code review message.
-- AI Agent
+- Custom AI Agent
     - Executable AI Agent language: DevIns.
     - Custom AI Agent. You can integrate your own AI Agent into AutoDev.
-- Built-in LLM Fine-tune
+- Model
+    - Built-in LLM Fine-tune
     - [UnitEval](https://github.com/unit-mesh/unit-eval) evaluate llm result
     - [UnitGen](https://github.com/unit-mesh/unit-gen) generate code-llm fine-tune data.
 
