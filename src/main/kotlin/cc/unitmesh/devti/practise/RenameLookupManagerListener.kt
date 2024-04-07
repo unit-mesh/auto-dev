@@ -30,18 +30,15 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
 
         val lookupImpl = newLookup as? LookupImpl ?: return
         val editor = lookupImpl.editor as? EditorEx ?: return
-
-        val targetElement: PsiElement? = lookupElement(lookupImpl, editor)
+        val targetElement: PsiElement = lookupElement(lookupImpl, editor) ?: return
 
         // maybe user just typing, we should handle for this
-        val element = targetElement ?: return
-        val originName = (element as? PsiNameIdentifierOwner)?.name ?: return
+        val originName = (targetElement as? PsiNameIdentifierOwner)?.name ?: return
 
         if (originName.isBlank()) return
 
         val promptText =
-            "$originName is a badname. Please provide 5 better options name for follow code: \n```${element.language.displayName}\n${element.text}\n```\n\n1."
-
+            "$originName is a badname. Please provide 5 better options name for follow code: \n```${targetElement.language.displayName}\n${targetElement.text}\n```\n\n1."
 
         try {
             doExecuteNameSuggest(promptText, lookupImpl)
@@ -77,14 +74,13 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
 
                 runInEdt {
                     if (!lookupImpl.isLookupDisposed) {
-                        logger.info("refreshUi for RenameLookupManagerListener")
                         lookupImpl.isCalculating = false
                         lookupImpl.refreshUi(true, false)
                     }
                 }
             } catch (e: Exception) {
-                AutoDevStatusService.notifyApplication(AutoDevStatus.Error)
                 logger.error("Error in RenameLookupManagerListener", e)
+                AutoDevStatusService.notifyApplication(AutoDevStatus.Error)
             }
 
             AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)
@@ -118,6 +114,7 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
         if (targetElement is LeafPsiElement || targetElement is PsiWhiteSpace) {
             targetElement = targetElement.parent
         }
+
         return targetElement
     }
 
