@@ -554,7 +554,6 @@ project(":csharp") {
 project(":goland") {
     intellij {
         version.set(ideaVersion)
-//        type.set("IU")
         updateSinceUntilBuild.set(false)
         // required if Go language API is needed:
         plugins.set(prop("goPlugin").split(',').map(String::trim).filter(String::isNotEmpty))
@@ -577,7 +576,7 @@ project(":exts:ext-database") {
 project(":exts:ext-android") {
     intellij {
         version.set(ideaVersion)
-        type.set("AI")
+        type.set("AI") // means Android Studio
         plugins.set((ideaPlugins + prop("androidPlugin").ifBlank { "" }).filter(String::isNotEmpty))
     }
 
@@ -589,7 +588,7 @@ project(":exts:ext-android") {
 project(":exts:ext-harmonyos") {
     intellij {
         version.set(ideaVersion)
-        type.set("AI")
+        type.set("AI") // means Android Studio
         plugins.set((ideaPlugins + prop("androidPlugin").ifBlank { "" }).filter(String::isNotEmpty))
     }
 

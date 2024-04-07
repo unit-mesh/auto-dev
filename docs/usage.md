@@ -27,6 +27,8 @@ permalink: /quick-start
 4. fill `OpenAI API Key` with your Host OpenAI API Key.
 5. Apply and OK.
 
+ps: For OpenAI compatible, you can use `Open AI Model` to your custom OpenAI compatible model.
+
 ### OpenAI Azure Config
 
 1. open AutoDev Config in `Settings` -> `Tools` -> `AutoDev`.
