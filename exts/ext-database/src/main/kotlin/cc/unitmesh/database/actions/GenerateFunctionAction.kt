@@ -25,12 +25,8 @@ class GenerateFunctionAction : ChatBaseIntention() {
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         if (editor == null || file == null) return false
         val isOracle = file.language is OraDialect
-        val selectedText = editor.selectionModel
-        val element = file.findElementAt(selectedText.selectionStart)
-
-        if (element != null) {
-            logger.info("element: ${element.text}")
-        }
+//        val selectedText = editor.selectionModel
+//        val element = file.findElementAt(selectedText.selectionStart)
 
         return isOracle
     }
