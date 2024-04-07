@@ -272,7 +272,7 @@ project(":plugin") {
         implementation(project(":rust"))
         implementation(project(":cpp"))
         implementation(project(":scala"))
-        implementation(project(":exts:database"))
+        implementation(project(":exts:ext-database"))
         implementation(project(":exts:ext-android"))
         implementation(project(":exts:ext-harmonyos"))
         implementation(project(":exts:ext-terminal"))
@@ -445,7 +445,7 @@ project(":") {
         kover(project(":rust"))
         kover(project(":scala"))
 
-        kover(project(":exts:database"))
+        kover(project(":exts:ext-database"))
         kover(project(":exts:ext-android"))
         kover(project(":exts:devins-lang"))
     }
@@ -564,7 +564,7 @@ project(":goland") {
     }
 }
 
-project(":exts:database") {
+project(":exts:ext-database") {
     intellij {
         version.set(ideaVersion)
         plugins.set(ideaPlugins + "com.intellij.database")
