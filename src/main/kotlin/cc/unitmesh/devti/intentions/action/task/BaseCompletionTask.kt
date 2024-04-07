@@ -32,7 +32,7 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
     open fun keepHistory(): Boolean = true
 
     override fun run(indicator: ProgressIndicator) {
-        indicator.isIndeterminate = true
+        indicator.isIndeterminate = false
         indicator.fraction = 0.1
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.prepare-context")
 
@@ -57,7 +57,7 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
         val project = request.project
         var currentOffset = request.offset
 
-        indicator.isIndeterminate = true
+        indicator.isIndeterminate = false
         indicator.fraction = 0.5
         indicator.text = AutoDevBundle.message("intentions.request.background.process.title")
 
