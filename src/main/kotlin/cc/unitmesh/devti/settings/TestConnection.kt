@@ -14,9 +14,9 @@ fun Panel.testLLMConnection(project: Project?) {
         // test result
         val result = JLabel("")
         button("Test LLM Connection") {
-            if (project == null) {
-                return@button
-            }
+            if (project == null) return@button
+            result.text = ""
+
             // test custom engine
             LLMCoroutineScope.scope(project).launch {
                 try {
