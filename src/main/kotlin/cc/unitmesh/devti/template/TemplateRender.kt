@@ -73,9 +73,9 @@ class TemplateRender(private val pathPrefix: String) {
     }
 
     private fun getDefaultFilePath(filename: String): String {
-        val languagePrefix = "$ROOT/${AutoDevSettingsState.language}/$pathPrefix".trimEnd('/')
+        val languagePrefix = "$ROOT/${AutoDevSettingsState.language}$pathPrefix".trimEnd('/')
         val path = "$languagePrefix/$filename"
-        if (File(path).exists()) {
+        if (javaClass.classLoader.getResource(path) != null) {
             return path
         }
 
