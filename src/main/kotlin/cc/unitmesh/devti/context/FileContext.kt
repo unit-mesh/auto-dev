@@ -19,11 +19,7 @@ class FileContext(
 
     override fun format(): String {
         fun getFieldString(fieldName: String, fieldValue: String): String {
-            return if (fieldValue.isNotBlank()) {
-                "$fieldName: $fieldValue"
-            } else {
-                ""
-            }
+            return if (fieldValue.isNotBlank()) "$fieldName: $fieldValue" else ""
         }
 
         val filePackage = getFieldString("file package", packageString ?: "")

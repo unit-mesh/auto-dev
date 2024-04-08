@@ -22,7 +22,7 @@ class JavaVariableContextBuilder : VariableContextBuilder {
 
         return VariableContext(
             psiElement,
-            psiElement.text?:"",
+            psiElement.text ?: "",
             psiElement.name,
             containingMethod,
             containingClass,
