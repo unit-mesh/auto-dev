@@ -35,7 +35,7 @@ class LivingDocumentationTask(
 
         logger.info("Prompt: $prompt")
 
-        val stream = LlmFactory().create(project).stream(prompt, "")
+        val stream = LlmFactory().create(project).stream(prompt, "", false)
 
         var result = ""
 
