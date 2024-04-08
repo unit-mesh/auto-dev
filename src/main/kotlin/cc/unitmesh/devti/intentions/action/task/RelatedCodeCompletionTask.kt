@@ -25,6 +25,7 @@ import com.intellij.openapi.application.runReadAction
  * Note: This class does not have any public methods.
  */
 class RelatedCodeCompletionTask(private val request: CodeCompletionRequest) : BaseCompletionTask(request) {
+    override fun keepHistory(): Boolean = false;
     override fun promptText(): String {
         val lang = request.element?.language ?: throw Exception("element language is null")
         val prompter = ContextPrompter.prompter(lang.displayName)
