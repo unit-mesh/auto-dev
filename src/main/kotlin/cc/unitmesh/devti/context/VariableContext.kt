@@ -33,9 +33,7 @@ class VariableContext(
         }
     }
 
-    fun shortFormat(): String {
-        return root.text
-    }
+    fun shortFormat(): String = root.text ?: ""
 
     /**
      * Returns a formatted string representation of the method.
