@@ -29,6 +29,8 @@ class SimilarCodeCompletionTask(private val request: CodeCompletionRequest) : Ba
     private val commenter = LanguageCommenters.INSTANCE.forLanguage(request.element!!.language)
     private val commentPrefix = commenter?.lineCommentPrefix
 
+    override fun keepHistory(): Boolean = false;
+
     val start = "code complete for given code, just return rest part of code. \n"
     val end = "\nreturn rest code:"
     override fun promptText(): String {
