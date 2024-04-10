@@ -28,7 +28,7 @@ class FileGenerateTask(@JvmField val project: Project, val messages: List<LlmMsg
         val systemPrompt = messages.filter { it.role == LlmMsg.ChatRole.System }.joinToString("\n") { it.content }
 
         val stream =
-            LlmFactory().create(project).stream(requestPrompt, systemPrompt)
+            LlmFactory().create(project).stream(requestPrompt, systemPrompt, false)
 
         var result = ""
         runBlocking {
