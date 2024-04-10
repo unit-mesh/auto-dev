@@ -51,14 +51,19 @@ class JavaScriptLivingDocumentation : LivingDocumentation {
                     val existingComment = JSDocumentationUtils.findOwnDocComment(target)
                         ?: findDocFallback(target)
 
-                    val createJSDocComment: PsiElement = JSPsiElementFactory.createJSDocComment(newDoc, target)
+                    try {
+                        val createJSDocComment: PsiElement = JSPsiElementFactory.createJSDocComment(newDoc, target)
 
-                    if (existingComment != null) {
-                        existingComment.replace(createJSDocComment)
-                    } else {
-                        val parent = target.parent
-                        parent.addBefore(createJSDocComment, target)
-                        JSChangeUtil.addWs(parent.node, target.node, "\n")
+                        if (existingComment != null) {
+                            existingComment.replace(createJSDocComment)
+                        } else {
+                            val parent = target.parent
+                            parent.addBefore(createJSDocComment, target)
+                            JSChangeUtil.addWs(parent.node, target.node, "\n")
+                        }
+                    } catch (e: Exception) {
+                        editor.document.insertString(startOffset, newDoc)
+                        codeStyleManager.reformatText(target.containingFile, startOffset, newEndOffset)
                     }
                 }
 
