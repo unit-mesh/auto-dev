@@ -15,9 +15,10 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
-import java.io.File
 
 class WriteInsCommand(val myProject: Project, val argument: String, val content: String) : InsCommand {
+    private val pathSeparator = "/"
+
     override suspend fun execute(): String? {
         val content = Code.parse(content).text
 
@@ -29,13 +30,13 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
         if (virtualFile == null) {
             return runWriteAction {
                 // filepath maybe just a file name, so we need to create parent directory
-                val hasChildPath = filepath.contains(File.separator)
+                val hasChildPath = filepath.contains(pathSeparator)
                 if (hasChildPath) {
-                    val parentPath = filepath.substringBeforeLast(File.separator)
+                    val parentPath = filepath.substringBeforeLast(pathSeparator)
                     var parentDir = projectDir.findChild(parentPath)
                     if (parentDir == null) {
                         // parentDir maybe multiple level, so we need to create all parent directory
-                        val parentDirs = parentPath.split(File.separator)
+                        val parentDirs = parentPath.split(pathSeparator)
                         parentDir = projectDir
                         for (dir in parentDirs) {
                             if (dir.isEmpty()) continue
@@ -67,7 +68,7 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
     }
 
     private fun createNewContent(parentDir: VirtualFile, filepath: String, content: String): Document? {
-        val newFile = parentDir.createChildData(this, filepath.substringAfterLast(File.separator))
+        val newFile = parentDir.createChildData(this, filepath.substringAfterLast(pathSeparator))
         val document = FileDocumentManager.getInstance().getDocument(newFile) ?: return null
 
         document.setText(content)
