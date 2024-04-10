@@ -7,9 +7,11 @@ import cc.unitmesh.devti.util.parser.Code
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
@@ -26,24 +28,40 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
         val virtualFile = myProject.lookupFile(filepath)
         if (virtualFile == null) {
             return runWriteAction {
-                val parentPath = filepath.substringBeforeLast(File.separator)
-                var parentDir = projectDir.findChild(parentPath)
-                if (parentDir == null) {
-                    parentDir = projectDir.createChildDirectory(this, parentPath)
+                // filepath maybe just a file name, so we need to create parent directory
+                val hasChildPath = filepath.contains(File.separator)
+                if (hasChildPath) {
+                    val parentPath = filepath.substringBeforeLast(File.separator)
+                    var parentDir = projectDir.findChild(parentPath)
+                    if (parentDir == null) {
+                        parentDir = projectDir.createChildDirectory(this, parentPath)
+                    }
+
+                    createNewContent(parentDir, filepath, content)
+                        ?: return@runWriteAction "$DEVINS_ERROR: Create File failed: $argument"
+
+                    return@runWriteAction "Create file: $argument"
+                } else {
+                    createNewContent(projectDir, filepath, content)
+                        ?: return@runWriteAction "$DEVINS_ERROR: Create File failed: $argument"
+
+                    return@runWriteAction "Create file: $argument"
                 }
-                val newFile = parentDir.createChildData(this, filepath.substringAfterLast(File.separator))
-                val document = FileDocumentManager.getInstance().getDocument(newFile)
-                    ?: return@runWriteAction "$DEVINS_ERROR: Create File failed: $argument"
-
-                document.setText(content)
-
-                return@runWriteAction "Create file: $argument"
             }
         }
 
         val psiFile = PsiManager.getInstance(myProject).findFile(virtualFile)
             ?: return "$DEVINS_ERROR: File not found: $argument"
+
         return executeInsert(psiFile, range, content)
+    }
+
+    private fun createNewContent(parentDir: VirtualFile, filepath: String, content: String): Document? {
+        val newFile = parentDir.createChildData(this, filepath.substringAfterLast(File.separator))
+        val document = FileDocumentManager.getInstance().getDocument(newFile) ?: return null
+
+        document.setText(content)
+        return document
     }
 
     private fun executeInsert(
