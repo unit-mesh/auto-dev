@@ -52,18 +52,16 @@ class JavaScriptLivingDocumentation : LivingDocumentation {
                         ?: findDocFallback(target)
 
                     try {
-                        val createJSDocComment: PsiElement = JSPsiElementFactory.createJSDocComment(newDoc, target)
-
-                        if (existingComment != null) {
-                            existingComment.replace(createJSDocComment)
-                        } else {
-                            val parent = target.parent
-                            parent.addBefore(createJSDocComment, target)
-                            JSChangeUtil.addWs(parent.node, target.node, "\n")
-                        }
+                        didInsertComment(newDoc, target, existingComment)
                     } catch (e: Exception) {
-                        editor.document.insertString(startOffset, newDoc)
-                        codeStyleManager.reformatText(target.containingFile, startOffset, newEndOffset)
+                        // second attempt
+                        val fromSuggestion = LivingDocumentation.buildDocFromSuggestion(newDoc, "/**", "*/")
+                        try {
+                            didInsertComment(fromSuggestion, target, existingComment)
+                        } catch (e: Exception) {
+                            editor.document.insertString(startOffset, newDoc)
+                            codeStyleManager.reformatText(target.containingFile, startOffset, newEndOffset)
+                        }
                     }
                 }
 
@@ -78,6 +76,18 @@ class JavaScriptLivingDocumentation : LivingDocumentation {
                 }
             }
         })
+    }
+
+    private fun didInsertComment(newDoc: String, target: PsiElement, existingComment: JSDocComment?) {
+        val createJSDocComment: PsiElement = JSPsiElementFactory.createJSDocComment(newDoc, target)
+
+        if (existingComment != null) {
+            existingComment.replace(createJSDocComment)
+        } else {
+            val parent = target.parent
+            parent.addBefore(createJSDocComment, target)
+            JSChangeUtil.addWs(parent.node, target.node, "\n")
+        }
     }
 
     private fun findDocFallback(documentationTarget: PsiElement): JSDocComment? {
