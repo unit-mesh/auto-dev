@@ -34,7 +34,17 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
                     val parentPath = filepath.substringBeforeLast(File.separator)
                     var parentDir = projectDir.findChild(parentPath)
                     if (parentDir == null) {
-                        parentDir = projectDir.createChildDirectory(this, parentPath)
+                        // parentDir maybe multiple level, so we need to create all parent directory
+                        val parentDirs = parentPath.split(File.separator)
+                        parentDir = projectDir
+                        for (dir in parentDirs) {
+                            if (dir.isEmpty()) continue
+                            parentDir = parentDir?.createChildDirectory(this, dir)
+                        }
+
+                        if (parentDir == null) {
+                            return@runWriteAction "$DEVINS_ERROR: Create Directory failed: $parentPath"
+                        }
                     }
 
                     createNewContent(parentDir, filepath, content)

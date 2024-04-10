@@ -21,6 +21,7 @@ import com.intellij.psi.util.PsiEditorUtil
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
+// TODO: spike why TypeScript not trigger this listener when rename a class, function, but Java does
 class RenameLookupManagerListener(val project: Project) : LookupManagerListener {
     private val llm = LlmFactory.instance.create(project)
     private val logger = logger<RenameLookupManagerListener>()
