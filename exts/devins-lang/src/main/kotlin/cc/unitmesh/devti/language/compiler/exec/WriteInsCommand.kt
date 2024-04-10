@@ -10,7 +10,7 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
-import com.intellij.openapi.vfs.findOrCreateDirectory
+import com.intellij.openapi.vfs.findFileOrDirectory
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
@@ -28,7 +28,10 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
         if (virtualFile == null) {
             return runWriteAction {
                 val parentPath = filepath.substringBeforeLast(File.separator)
-                val parentDir = projectDir.findOrCreateDirectory(parentPath)
+                var parentDir = projectDir.findFileOrDirectory(parentPath)
+                if (parentDir == null) {
+                    parentDir = projectDir.createChildDirectory(this, parentPath)
+                }
                 val newFile = parentDir.createChildData(this, filepath.substringAfterLast(File.separator))
                 val document = FileDocumentManager.getInstance().getDocument(newFile)
                     ?: return@runWriteAction "$DEVINS_ERROR: Create File failed: $argument"
