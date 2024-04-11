@@ -6,6 +6,7 @@ import cc.unitmesh.devti.language.compiler.DevInsCompiler
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.provider.devins.CustomAgentContext
 import cc.unitmesh.devti.provider.devins.LanguagePromptProcessor
+import cc.unitmesh.devti.util.parser.Code
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
@@ -17,7 +18,15 @@ class DevInsPromptProcessor : LanguagePromptProcessor {
     override val name: String = DevInLanguage.displayName
 
     override fun execute(project: Project, context: CustomAgentContext): String {
-        val devInsCompiler = createCompiler(project, context.response)
+        var text = context.response
+        // re-check the language of the code
+        Code.parse(text).let {
+            if (it.language == DevInLanguage.INSTANCE) {
+                text = it.text
+            }
+        }
+
+        val devInsCompiler = createCompiler(project, text)
         val result = devInsCompiler.compile()
         AutoDevNotifications.notify(project, result.output)
         return result.output
