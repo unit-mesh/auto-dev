@@ -57,9 +57,9 @@ class CustomAgentChatProcessor(val project: Project) {
                 message.reRenderAssistantOutput()
 
                 val code = Code.parse(content)
-                 if (code.language.displayName == "DevIn") {
-                     devInCode = code.text
-                 }
+                if (code.language.displayName == "DevIn") {
+                    devInCode = code.text
+                }
 
                 ui.hiddenProgressBar()
                 ui.updateUI()
@@ -115,6 +115,20 @@ class CustomAgentChatProcessor(val project: Project) {
 
                 ui.appendWebView(content, project)
                 ui.hiddenProgressBar()
+            }
+
+            CustomAgentResponseAction.DevIns -> {
+                ui.addMessage(AutoDevBundle.message("autodev.loading"))
+                var msg = ""
+                LLMCoroutineScope.scope(project).launch {
+                    msg = ui.updateMessage(response)
+                }
+
+                llmProvider.appendLocalMessage(msg, ChatRole.Assistant)
+                ui.hiddenProgressBar()
+                ui.updateUI()
+
+                devInCode = msg
             }
         }
 

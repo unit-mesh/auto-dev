@@ -50,7 +50,8 @@
         "enum": [
           "Direct",
           "TextChunk",
-          "WebView"
+          "WebView",
+          "DevIns"
         ]
       }
     },

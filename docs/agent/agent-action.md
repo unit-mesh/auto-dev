@@ -49,4 +49,12 @@ enum class ResponseAction {
 
 <img src="https://unitmesh.cc/auto-dev/custom-agent-webview.png" alt="Custom AI Agent Dropdown" width="600px"/>
 
+### DevIns
 
+> The DevIns response action will handle the response in the DevIns language.
+
+just like the following example:
+
+```
+/write:xxx.java#L1-L12
+```

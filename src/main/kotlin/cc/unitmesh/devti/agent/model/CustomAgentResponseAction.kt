@@ -34,5 +34,10 @@ enum class CustomAgentResponseAction {
     /**
      * Display result in WebView
      */
-    WebView
+    WebView,
+
+    /**
+     * Handle with DevIns language in code block
+     */
+    DevIns
 }
