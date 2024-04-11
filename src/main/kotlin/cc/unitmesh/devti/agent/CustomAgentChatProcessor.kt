@@ -119,9 +119,8 @@ class CustomAgentChatProcessor(val project: Project) {
 
             CustomAgentResponseAction.DevIns -> {
                 ui.addMessage(AutoDevBundle.message("autodev.loading"))
-                var msg = ""
-                LLMCoroutineScope.scope(project).launch {
-                    msg = ui.updateMessage(response)
+                val msg: String = runBlocking {
+                    ui.updateMessage(response)
                 }
 
                 llmProvider.appendLocalMessage(msg, ChatRole.Assistant)
