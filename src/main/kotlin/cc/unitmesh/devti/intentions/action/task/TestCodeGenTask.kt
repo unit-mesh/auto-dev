@@ -95,10 +95,12 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
             "$comment $it"
         }
 
-        testPromptContext.sourceCode = if(request.element !is PsiNameIdentifierOwner) {
-            testContext.testElement?.text ?: ""
-        } else {
-            request.element.text ?: ""
+        testPromptContext.sourceCode = runReadAction {
+            if(request.element !is PsiNameIdentifierOwner) {
+                testContext.testElement?.text ?: ""
+            } else {
+                request.element.text ?: ""
+            }
         }
 
         testPromptContext.isNewFile = testContext.isNewFile
