@@ -62,8 +62,18 @@ AutoDev@1.8.2
 
 > The DevIns response action will handle the response in the DevIns language.
 
-just like the following example:
+just like the following example. 
 
-```
-/write:xxx.java#L1-L12
-```
+    /write:HelloWorld.java#L1-L12
+    
+    ```java
+    public class HelloWorld {
+        public static void main(String[] args) {
+            System.out.println("Hello, World!");
+        }
+    }
+    ```
+
+{: .highlight }
+The DevIns response content is different from the Custom Agent Response content. In Custom Agent Response, the code
+content should inside \`\`\`DevIns code block.
