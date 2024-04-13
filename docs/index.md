@@ -9,19 +9,12 @@ permalink: /
 <p align="center">
   <img src="https://plugins.jetbrains.com/files/21520/412905/icon/pluginIcon.svg" width="160px" height="160px" />
 </p>
-
 <p align="center">
   <a href="https://codecov.io/gh/unit-mesh/auto-dev" > 
     <img src="https://codecov.io/gh/unit-mesh/auto-dev/graph/badge.svg?token=5RzcndjFPx"/> 
   </a>
   <a href="https://github.com/unit-mesh/auto-dev/actions/workflows/build.yml">
-    <img src="https://github.com/unit-mesh/auto-dev/actions/workflows/build.yml/badge.svg" alt="Build">
-  </a>
-  <a href="https://plugins.jetbrains.com/plugin/21520-autodev">
-    <img src="https://img.shields.io/jetbrains/plugin/v/21520-autodev.svg" alt="Version">
-  </a>
-  <a href="https://plugins.jetbrains.com/plugin/21520-autodev">
-    <img src="https://img.shields.io/jetbrains/plugin/d/21520-autodev.svg" alt="Downloads">
+    <img src="https://github.com/unit-mesh/auto-dev/actions/workflows/build.yml/badge.svg" alt="Build" />
   </a>
   <a href="https://github.com/unit-mesh/chocolate-factory">
     <img src="https://img.shields.io/badge/powered_by-chocolate_factory-blue?logo=kotlin&logoColor=fff" alt="Powered By" />
@@ -30,6 +23,10 @@ permalink: /
 
 > 🧙‍AutoDev: The AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, and a helpful
 > bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Dev/Testing/Document/Agent feature 🧪 included! 🚀
+
+VSCode Version: [https://github.com/unit-mesh/auto-dev-vscode](https://github.com/unit-mesh/auto-dev-vscode)
+
+Since the License issue, we cannot upload to JetBrains Marketplace, you can download from [Releases](https://github.com/unit-mesh/auto-dev/releases).
 
 ## AutoDev Architecture
 
