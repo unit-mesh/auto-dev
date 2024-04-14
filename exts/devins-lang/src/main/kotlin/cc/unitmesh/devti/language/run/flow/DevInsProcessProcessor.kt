@@ -9,6 +9,7 @@ import cc.unitmesh.devti.language.psi.DevInVisitor
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.util.parser.Code
 import com.intellij.execution.process.ProcessEvent
+import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -58,7 +59,9 @@ class DevInsProcessProcessor(val project: Project) {
         val code = Code.parse(conversationService.getLlmResponse(scriptPath))
         val isDevInCode = code.language == DevInLanguage.INSTANCE
         if (isDevInCode) {
-            executeTask(DevInFile.fromString(project, code.text))
+            runInEdt {
+                executeTask(DevInFile.fromString(project, code.text))
+            }
         }
 
         when {
@@ -88,11 +91,13 @@ class DevInsProcessProcessor(val project: Project) {
         val compiledResult = DevInsCompiler(project, newScript).compile()
         val prompt = compiledResult.output
 
-        sendToChatWindow(project, ChatActionType.CHAT) { panel, service ->
-            service.handlePromptAndResponse(panel, object : ContextPrompter() {
-                override fun displayPrompt(): String = prompt
-                override fun requestPrompt(): String = prompt
-            }, null, true)
+        if (compiledResult.hasError) {
+            sendToChatWindow(project, ChatActionType.CHAT) { panel, service ->
+                service.handlePromptAndResponse(panel, object : ContextPrompter() {
+                    override fun displayPrompt(): String = prompt
+                    override fun requestPrompt(): String = prompt
+                }, null, true)
+            }
         }
     }
 
