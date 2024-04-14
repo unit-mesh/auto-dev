@@ -19,7 +19,10 @@
 
 VSCode Version: [https://github.com/unit-mesh/auto-dev-vscode](https://github.com/unit-mesh/auto-dev-vscode)
 
-Since the License issue, we cannot upload to JetBrains Marketplace, you can download from [Releases](https://github.com/unit-mesh/auto-dev/releases).
+As we mentioned in LICENSE issue at the beginning of this project, JetBrains has reasonable grounds to consider
+the plugin to be the content infringing their own IP right.
+So, since 2024.4, AutoDev was unavailable in the JetBrains Plugin Repository, you can download from
+[Releases](https://github.com/unit-mesh/auto-dev/releases)
 
 [Quick Start →](https://ide.unitmesh.cc/quick-start)
 

@@ -7,7 +7,16 @@ permalink: /quick-start
 
 # Usage
 
-1. Install from JetBrains Plugin Repository: [AutoDev](https://plugins.jetbrains.com/plugin/21520-autodev)
+As we mentioned in LICENSE issue at the beginning of this project, JetBrains has reasonable grounds to consider 
+the plugin to be the content infringing their own IP right.
+So, since 2024.4, AutoDev was unavailable in the JetBrains Plugin Repository, you can download from 
+[Releases](https://github.com/unit-mesh/auto-dev/releases)
+
+~~1. Install from JetBrains Plugin Repository: [AutoDev](https://plugins.jetbrains.com/plugin/21520-autodev)~~
+1. Download from [Releases](https://github.com/unit-mesh/auto-dev/releases)
+   - AutoDev-*-222.zip, for version 2022.2~2023.2
+   - AutoDev-*-233.zip, for version 2023.3~2023.3
+   - AutoDev-*-241.zip, for version 2024.1~
 2. Configure GitHub Token (optional) and OpenAI config in `Settings` -> `Tools` -> `AutoDev`
 
 ## Config
