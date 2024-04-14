@@ -28,31 +28,33 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
 
         val virtualFile = myProject.lookupFile(filepath)
         if (virtualFile == null) {
-            return runWriteAction {
-                // filepath maybe just a file name, so we need to create parent directory
-                val hasChildPath = filepath.contains(pathSeparator)
-                if (hasChildPath) {
-                    val parentPath = filepath.substringBeforeLast(pathSeparator)
-                    var parentDir = projectDir.findChild(parentPath)
-                    if (parentDir == null) {
-                        // parentDir maybe multiple level, so we need to create all parent directory
-                        val parentDirs = parentPath.split(pathSeparator)
-                        parentDir = projectDir
-                        for (dir in parentDirs) {
-                            if (dir.isEmpty()) continue
-                            parentDir = parentDir?.createChildDirectory(this, dir)
-                        }
-
-                        if (parentDir == null) {
-                            return@runWriteAction "$DEVINS_ERROR: Create Directory failed: $parentPath"
-                        }
+            // filepath maybe just a file name, so we need to create parent directory
+            val hasChildPath = filepath.contains(pathSeparator)
+            if (hasChildPath) {
+                val parentPath = filepath.substringBeforeLast(pathSeparator)
+                var parentDir = projectDir.findChild(parentPath)
+                if (parentDir == null) {
+                    // parentDir maybe multiple level, so we need to create all parent directory
+                    val parentDirs = parentPath.split(pathSeparator)
+                    parentDir = projectDir
+                    for (dir in parentDirs) {
+                        if (dir.isEmpty()) continue
+                        parentDir = parentDir?.createChildDirectory(this, dir)
                     }
 
+                    if (parentDir == null) {
+                        return "$DEVINS_ERROR: Create Directory failed: $parentPath"
+                    }
+                }
+
+                return runWriteAction {
                     createNewContent(parentDir, filepath, content)
                         ?: return@runWriteAction "$DEVINS_ERROR: Create File failed: $argument"
 
                     return@runWriteAction "Create file: $argument"
-                } else {
+                }
+            } else {
+                return runWriteAction {
                     createNewContent(projectDir, filepath, content)
                         ?: return@runWriteAction "$DEVINS_ERROR: Create File failed: $argument"
 
