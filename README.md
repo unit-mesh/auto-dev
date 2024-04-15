@@ -9,12 +9,6 @@
   <a href="https://github.com/unit-mesh/auto-dev/actions/workflows/build.yml">
     <img src="https://github.com/unit-mesh/auto-dev/actions/workflows/build.yml/badge.svg" alt="Build" />
   </a>
-  <a href="https://plugins.jetbrains.com/plugin/21520-autodev">
-    <img src="https://img.shields.io/jetbrains/plugin/v/21520-autodev.svg" alt="Version" />
-  </a>
-  <a href="https://plugins.jetbrains.com/plugin/21520-autodev">
-    <img src="https://img.shields.io/jetbrains/plugin/d/21520-autodev.svg" alt="Downloads" />
-  </a>
   <a href="https://github.com/unit-mesh/chocolate-factory">
     <img src="https://img.shields.io/badge/powered_by-chocolate_factory-blue?logo=kotlin&logoColor=fff" alt="Powered By" />
   </a>  
@@ -22,6 +16,13 @@
 
 > 🧙‍AutoDev: The AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, and a helpful
 > bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Dev/Testing/Document/Agent feature 🧪 included! 🚀
+
+VSCode Version: [https://github.com/unit-mesh/auto-dev-vscode](https://github.com/unit-mesh/auto-dev-vscode)
+
+As we mentioned in LICENSE issue at the beginning of this project, JetBrains has reasonable grounds to consider
+the plugin to be the content infringing their own IP right.
+So, since 2024.4, AutoDev was unavailable in the JetBrains Plugin Repository, you can download from
+[Releases](https://github.com/unit-mesh/auto-dev/releases)
 
 [Quick Start →](https://ide.unitmesh.cc/quick-start)
 

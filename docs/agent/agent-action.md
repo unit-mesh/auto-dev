@@ -27,7 +27,13 @@ enum class ResponseAction {
     /**
      * Display result in WebView
      */
-    WebView
+    WebView,
+    
+    /**
+     * DevIns response action
+     * since: AutoDev@1.7.0
+     */
+    DevIns
 }
 ```
 
@@ -49,4 +55,25 @@ enum class ResponseAction {
 
 <img src="https://unitmesh.cc/auto-dev/custom-agent-webview.png" alt="Custom AI Agent Dropdown" width="600px"/>
 
+### DevIns
 
+AutoDev@1.8.2
+{: .label .label-yellow }
+
+> The DevIns response action will handle the response in the DevIns language.
+
+just like the following example. 
+
+    /write:HelloWorld.java#L1-L12
+    
+    ```java
+    public class HelloWorld {
+        public static void main(String[] args) {
+            System.out.println("Hello, World!");
+        }
+    }
+    ```
+
+{: .highlight }
+The DevIns response content is different from the Custom Agent Response content. In Custom Agent Response, the code
+content should inside \`\`\`DevIns code block.

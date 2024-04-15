@@ -37,6 +37,8 @@ ScreenShot
 
 ### File Command
 
+based on [#143](https://github.com/unit-mesh/auto-dev/issues/143), we keep "/" as `File.separator` for macOS, Windows and Unix.
+
 Read file content:
 
     Explain code /file:src/main/java/com/example/Controller.java

@@ -57,7 +57,7 @@ class Code(val language: Language, val text: String, val isComplete: Boolean) {
                 return Code(findLanguage("markdown"), content.replace("\\n", "\n"), codeClosed)
             }
 
-            if (languageId == "devin") {
+            if (languageId == "devin" || languageId == "devins") {
                 trimmedCode = trimmedCode.replace("\\`\\`\\`", "```")
             }
 

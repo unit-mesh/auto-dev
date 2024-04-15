@@ -7,6 +7,7 @@ import cc.unitmesh.devti.provider.LivingDocumentation
 import cc.unitmesh.devti.custom.document.LivingDocumentationType
 import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.statusbar.AutoDevStatusService
+import cc.unitmesh.devti.util.parser.Code
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
@@ -46,6 +47,11 @@ class LivingDocumentationTask(
         }
 
         logger.info("Result: $result")
+
+        // result maybe surroding by ```
+        if (result.startsWith("```") && result.endsWith("```")) {
+            result = Code.parse(result).text
+        }
 
         documentation.updateDoc(target, result, type, editor)
         AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)

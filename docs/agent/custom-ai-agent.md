@@ -47,6 +47,12 @@ Demo:
       "token": "eyJhbGci"
     },
     "responseAction": "WebView"
+  },
+  {
+    "name": "DevInInsert",
+    "description": "Update",
+    "url": "http://127.0.0.1:8765/api/agent/devins-sample",
+    "responseAction": "DevIns"
   }
 ]
 ```

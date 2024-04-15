@@ -20,7 +20,7 @@ fun Panel.testLLMConnection(project: Project?) {
             // test custom engine
             LLMCoroutineScope.scope(project).launch {
                 try {
-                    val flowString: Flow<String> = LlmFactory.instance.create(project).stream("hi", "")
+                    val flowString: Flow<String> = LlmFactory.instance.create(project).stream("hi", "", false)
                     flowString.collect {
                         result.text += it
                     }

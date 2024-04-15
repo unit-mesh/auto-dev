@@ -95,10 +95,12 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
             "$comment $it"
         }
 
-        testPromptContext.sourceCode = if(request.element !is PsiNameIdentifierOwner) {
-            testContext.testElement?.text ?: ""
-        } else {
-            request.element.text ?: ""
+        testPromptContext.sourceCode = runReadAction {
+            if(request.element !is PsiNameIdentifierOwner) {
+                testContext.testElement?.text ?: ""
+            } else {
+                request.element.text ?: ""
+            }
         }
 
         testPromptContext.isNewFile = testContext.isNewFile
@@ -112,7 +114,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         indicator.text = AutoDevBundle.message("intentions.request.background.process.title")
 
         val flow: Flow<String> = try {
-            LlmFactory().create(request.project).stream(prompter, "")
+            LlmFactory().create(request.project).stream(prompter, "", false)
         } catch (e: Exception) {
             AutoDevStatusService.notifyApplication(AutoDevStatus.Error)
             logger.error("Failed to create LLM for: $lang", e)
