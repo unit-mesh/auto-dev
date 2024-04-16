@@ -44,6 +44,7 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import kotlin.math.max
 import kotlin.math.min
+import kotlinx.serialization.decodeFromString
 
 /**
  *
