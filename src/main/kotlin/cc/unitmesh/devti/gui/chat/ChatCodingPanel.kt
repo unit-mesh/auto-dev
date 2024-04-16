@@ -90,9 +90,16 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
 
         inputSection = AutoDevInputSection(chatCodingService.project, disposable)
         inputSection.addListener(object : AutoDevInputListener {
+            override fun onStop(component: AutoDevInputSection) {
+                chatCodingService.stop()
+                inputSection.showSendButton()
+            }
+
             override fun onSubmit(component: AutoDevInputSection, trigger: AutoDevInputTrigger) {
                 var prompt = component.text
                 component.text = ""
+
+                inputSection.showStopButton()
 
                 if (prompt.isEmpty() || prompt == "\n") {
                     return
@@ -216,6 +223,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         var text = ""
         content.onCompletion {
             logger.info("onCompletion ${it?.message}")
+            inputSection.showSendButton()
         }.catch {
             it.printStackTrace()
         }.collect {
