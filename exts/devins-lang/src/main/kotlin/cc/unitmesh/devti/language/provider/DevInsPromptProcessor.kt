@@ -29,6 +29,14 @@ class DevInsPromptProcessor : LanguagePromptProcessor {
         val devInsCompiler = createCompiler(project, text)
         val result = devInsCompiler.compile()
         AutoDevNotifications.notify(project, result.output)
+
+        if (result.nextJob != null) {
+            val nextJob = result.nextJob!!
+            val nextResult = createCompiler(project, nextJob).compile()
+            AutoDevNotifications.notify(project, nextResult.output)
+            return nextResult.output
+        }
+
         return result.output
     }
 
@@ -50,6 +58,13 @@ class DevInsPromptProcessor : LanguagePromptProcessor {
         text: String
     ): DevInsCompiler {
         val devInFile = DevInFile.fromString(project, text)
+        return createCompiler(project, devInFile)
+    }
+
+    private fun createCompiler(
+        project: Project,
+        devInFile: DevInFile
+    ): DevInsCompiler {
         val editor = FileEditorManager.getInstance(project).selectedTextEditor
         val element: PsiElement? = editor?.caretModel?.currentCaret?.offset?.let {
             val psiFile = PsiUtilBase.getPsiFileInEditor(editor, project) ?: return@let null

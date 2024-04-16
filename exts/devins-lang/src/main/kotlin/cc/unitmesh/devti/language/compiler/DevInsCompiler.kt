@@ -14,6 +14,7 @@ import cc.unitmesh.devti.language.psi.DevInUsed
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
 import kotlinx.coroutines.runBlocking
@@ -48,10 +49,23 @@ class DevInsCompiler(
 
                     output.append(it.text)
                 }
+
                 DevInTypes.USED -> processUsed(it as DevInUsed)
                 DevInTypes.COMMENTS -> {
-                    // ignore comment
+                    if (it.text.startsWith("[flow]:")) {
+                        val fileName = it.text.substringAfter("[flow]:").trim()
+                        val content =
+                            myProject.guessProjectDir()?.findFileByRelativePath(fileName)?.let { virtualFile ->
+                                virtualFile.inputStream.bufferedReader().use { reader -> reader.readText() }
+                            }
+
+                        if (content != null) {
+                            val devInFile = DevInFile.fromString(myProject, content)
+                            result.nextJob = devInFile
+                        }
+                    }
                 }
+
                 else -> {
                     output.append(it.text)
                     logger.warn("Unknown element type: ${it.elementType}")

@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.language.compiler
 
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
+import cc.unitmesh.devti.language.psi.DevInFile
 
 data class DevInsCompiledResult(
     /**
@@ -13,6 +14,10 @@ data class DevInsCompiledResult(
     var output: String = "",
     var isLocalCommand: Boolean = false,
     var hasError: Boolean = false,
-    var executeAgent: CustomAgentConfig? = null
+    var executeAgent: CustomAgentConfig? = null,
+    /**
+     * Next job to be executed
+     */
+    var nextJob: DevInFile? = null
 ) {
 }
