@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.run.flow
 
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.language.DevInLanguage
@@ -17,6 +18,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.psi.psiUtil.startOffset
+import com.intellij.psi.PsiWhiteSpace
+import com.intellij.psi.util.PsiUtilBase
+import com.intellij.openapi.fileEditor.FileEditorManager
+
 
 @Service(Service.Level.PROJECT)
 class DevInsProcessProcessor(val project: Project) {
@@ -88,17 +93,67 @@ class DevInsProcessProcessor(val project: Project) {
      * @param newScript The new script to be run.
      */
     fun executeTask(newScript: DevInFile) {
-        val compiledResult = DevInsCompiler(project, newScript).compile()
-        val prompt = compiledResult.output
+        val devInsCompiler = createCompiler(project, newScript)
+        val result = devInsCompiler.compile()
+        if(result.output != "") {
+            AutoDevNotifications.notify(project, result.output)
+        }
 
-        if (compiledResult.hasError) {
+        if (result.hasError) {
             sendToChatWindow(project, ChatActionType.CHAT) { panel, service ->
                 service.handlePromptAndResponse(panel, object : ContextPrompter() {
-                    override fun displayPrompt(): String = prompt
-                    override fun requestPrompt(): String = prompt
+                    override fun displayPrompt(): String = result.output
+                    override fun requestPrompt(): String = result.output
                 }, null, true)
             }
         }
+        else {
+            if (result.nextJob != null) {
+                val nextJob = result.nextJob!!
+                val nextResult = createCompiler(project, nextJob).compile()
+                if(nextResult.output != "") {
+                    AutoDevNotifications.notify(project, nextResult.output)
+                }
+            }
+        }
+    }
+
+    /**
+     * Creates a new instance of `DevInsCompiler`.
+     *
+     * @param project The current project.
+     * @param text The source code text.
+     * @return A new instance of `DevInsCompiler`.
+     */
+    private fun createCompiler(
+        project: Project,
+        text: String
+    ): DevInsCompiler {
+        val devInFile = DevInFile.fromString(project, text)
+        return createCompiler(project, devInFile)
+    }
+
+    private fun createCompiler(
+        project: Project,
+        devInFile: DevInFile
+    ): DevInsCompiler {
+        val editor = FileEditorManager.getInstance(project).selectedTextEditor
+        val element: PsiElement? = editor?.caretModel?.currentCaret?.offset?.let {
+            val psiFile = PsiUtilBase.getPsiFileInEditor(editor, project) ?: return@let null
+            getElementAtOffset(psiFile, it)
+        }
+
+        return DevInsCompiler(project, devInFile, editor, element)
+    }
+
+    private fun getElementAtOffset(psiFile: PsiElement, offset: Int): PsiElement? {
+        var element = psiFile.findElementAt(offset) ?: return null
+
+        if (element is PsiWhiteSpace) {
+            element = element.getParent()
+        }
+
+        return element
     }
 
     /**
