@@ -38,7 +38,7 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
     override fun run(indicator: ProgressIndicator) {
         val prompt = promptText()
 
-        val flow: Flow<String> = llmFactory.create(request.project).stream(prompt, "")
+        val flow: Flow<String> = llmFactory.create(request.project).stream(prompt, "", false)
         logger.info("Prompt: $prompt")
 
         val editor = request.editor
@@ -90,7 +90,7 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
         logger.warn("Prompt: $prompt")
         LLMCoroutineScope.scope(project).launch {
             //TODO: check to refactor, this maybe hardcode
-            val flow: Flow<String> = llmFactory.createForInlayCodeComplete(project).stream(prompt, "")
+            val flow: Flow<String> = llmFactory.createForInlayCodeComplete(project).stream(prompt, "", false)
             val suggestion = StringBuilder()
             flow.collect {
                 suggestion.append(it)
