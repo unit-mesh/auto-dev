@@ -4,8 +4,6 @@ import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtil
-import org.jetbrains.annotations.NotNull
-import org.jetbrains.annotations.Nullable
 
 object JavaRelatedContext {
     fun findRelatedClassesAndCleanUp(method: PsiMethod): List<PsiClass> {
@@ -33,7 +31,7 @@ object JavaRelatedContext {
         return classDescription
     }
 
-    fun prepareContainingClassContext(@NotNull method: PsiMethod): PsiClass? {
+    fun prepareContainingClassContext(method: PsiMethod): PsiClass? {
         val file = method.containingFile.copy() as PsiFile
         val containingClass = method.containingClass ?: return null
         val psiElement = PsiTreeUtil.findSameElementInCopy(method, file)
