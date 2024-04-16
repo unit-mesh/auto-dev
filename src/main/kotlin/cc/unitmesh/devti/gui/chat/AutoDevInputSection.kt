@@ -32,8 +32,8 @@ import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.components.BorderLayoutPanel
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import java.awt.CardLayout
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.event.MouseAdapter
@@ -41,6 +41,7 @@ import java.awt.event.MouseEvent
 import java.util.function.Supplier
 import javax.swing.Box
 import javax.swing.JComponent
+import javax.swing.JPanel
 import kotlin.math.max
 import kotlin.math.min
 
@@ -50,8 +51,11 @@ import kotlin.math.min
 class AutoDevInputSection(private val project: Project, val disposable: Disposable?) : BorderLayoutPanel() {
     private val input: AutoDevInput
     private val documentListener: DocumentListener
-    private val buttonPresentation: Presentation
-    private val button: ActionButton
+    private val sendButtonPresentation: Presentation
+    private val stopButtonPresentation: Presentation
+    private val sendButton: ActionButton
+    private val stopButton: ActionButton
+    private val buttonPanel = JPanel(CardLayout())
 
     private val defaultRag: CustomAgentConfig = CustomAgentConfig("<Select Custom Agent>", "Normal")
     private var customRag: ComboBox<CustomAgentConfig> = ComboBox(MutableCollectionComboBoxModel(listOf()))
@@ -70,18 +74,37 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         }
 
     init {
-        val presentation = Presentation(AutoDevBundle.message("chat.panel.send"))
-        presentation.setIcon(AutoDevIcons.Send)
-        buttonPresentation = presentation
-        button = ActionButton(
+        val sendButtonPresentation = Presentation(AutoDevBundle.message("chat.panel.send"))
+        sendButtonPresentation.setIcon(AutoDevIcons.Send)
+        this.sendButtonPresentation = sendButtonPresentation
+
+        val stopButtonPresentation = Presentation("Stop")
+        stopButtonPresentation.setIcon(AutoDevIcons.Idea)
+        this.stopButtonPresentation = stopButtonPresentation
+
+        sendButton = ActionButton(
             DumbAwareAction.create {
                 object : DumbAwareAction("") {
                     override fun actionPerformed(e: AnActionEvent) {
+                        showStopButton()
                         editorListeners.multicaster.onSubmit(this@AutoDevInputSection, AutoDevInputTrigger.Button)
                     }
                 }.actionPerformed(it)
             },
-            buttonPresentation,
+            this.sendButtonPresentation,
+            "",
+            Dimension(20, 20)
+        )
+
+        stopButton = ActionButton(
+            DumbAwareAction.create {
+                object : DumbAwareAction("") {
+                    override fun actionPerformed(e: AnActionEvent) {
+                        editorListeners.multicaster.onStop(this@AutoDevInputSection)
+                    }
+                }.actionPerformed(it)
+            },
+            this.stopButtonPresentation,
             "",
             Dimension(20, 20)
         )
@@ -125,13 +148,17 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             layoutPanel.addToLeft(customRag)
         }
 
+
+        buttonPanel.add(sendButton, "Send")
+        buttonPanel.add(stopButton, "Stop")
+
         layoutPanel.addToCenter(horizontalGlue)
-        layoutPanel.addToRight(button)
+        layoutPanel.addToRight(buttonPanel)
         addToBottom(layoutPanel)
 
         ComponentValidator(disposable!!).withValidator(Supplier<ValidationInfo?> {
             val validationInfo: ValidationInfo? = this.getInputValidationInfo()
-            button.setEnabled(validationInfo == null)
+            sendButton.setEnabled(validationInfo == null)
             return@Supplier validationInfo
         }).installOn((this as JComponent)).revalidate()
 
@@ -142,6 +169,16 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         })
 
         tokenizer = TokenizerImpl.INSTANCE
+    }
+
+    fun showStopButton() {
+        (buttonPanel.layout as? CardLayout)?.show(buttonPanel, "Stop")
+        stopButton.isEnabled = true
+    }
+
+    fun showSendButton() {
+        (buttonPanel.layout as? CardLayout)?.show(buttonPanel, "Send")
+        buttonPanel.isEnabled = true
     }
 
     private fun loadRagApps(): List<CustomAgentConfig> {

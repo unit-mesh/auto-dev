@@ -13,6 +13,7 @@ import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
@@ -22,7 +23,13 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
 
     val action = actionType.instruction(project = project).requestText
 
+    var currentJob: Job? = null
+
     fun getLabel(): String = "$actionType Code"
+
+    fun stop() {
+        currentJob?.cancel()
+    }
 
     fun handlePromptAndResponse(
         ui: ChatCodingPanel,
@@ -30,6 +37,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         context: ChatContext? = null,
         newChatContext: Boolean
     ) {
+        currentJob?.cancel()
         var requestPrompt = prompter.requestPrompt()
         var displayPrompt = prompter.displayPrompt()
 
@@ -59,7 +67,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
 
         ApplicationManager.getApplication().executeOnPooledThread {
             val response = this.makeChatBotRequest(requestPrompt, newChatContext)
-            LLMCoroutineScope.scope(project).launch {
+            currentJob = LLMCoroutineScope.scope(project).launch {
                 when {
                     actionType === ChatActionType.REFACTOR -> ui.updateReplaceableContent(response) {
                         context?.postAction?.invoke(it)
@@ -84,7 +92,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         ApplicationManager.getApplication().executeOnPooledThread {
             val response = llmProvider.stream(requestPrompt, systemPrompt)
 
-            LLMCoroutineScope.scope(project).launch {
+            currentJob = LLMCoroutineScope.scope(project).launch {
                 ui.updateMessage(response)
             }
         }
