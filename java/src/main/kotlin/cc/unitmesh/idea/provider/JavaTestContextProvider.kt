@@ -10,7 +10,6 @@ import com.intellij.lang.java.JavaLanguage
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
@@ -83,10 +82,10 @@ open class JavaTestContextProvider : ChatContextProvider {
     open fun checkIsSpringRelated(creationContext: ChatCreationContext) =
         runReadAction { creationContext.element?.let { isSpringRelated(it) } ?: false }
 
-    protected fun isService(fileName: @NlsSafe String?) =
+    protected fun isService(fileName: String?) =
         fileName?.let { MvcUtil.isService(it, langFileSuffix()) } ?: false
 
-    protected fun isController(fileName: @NlsSafe String?) =
+    protected fun isController(fileName: String?) =
         fileName?.let { MvcUtil.isController(it, langFileSuffix()) } ?: false
 
 
@@ -103,8 +102,6 @@ open class JavaTestContextProvider : ChatContextProvider {
      * and checks if the project uses JUnit 5 or JUnit 4. Based on the result, it sets the rule string
      * accordingly. Finally, it adds the rule to the projectJunitCache and returns the rule string.
      */
-    // todo: lookup module deps
-    // val module = ModuleUtilCore.findModuleForPsiElement(sourceFile!!)
     protected fun junitRule(project: Project): String {
         if (projectJunitCache.containsKey(project)) {
             return projectJunitCache[project]!!

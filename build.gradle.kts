@@ -54,7 +54,7 @@ fun prop(name: String): String =
     extra.properties[name] as? String
         ?: error("Property `$name` is not defined in gradle.properties")
 
-val basePluginArchiveName = "intellij-autodev"
+val basePluginArchiveName = "autodev-jetbrains"
 
 val javaScriptPlugins = listOf("JavaScript")
 val pycharmPlugins = listOf("PythonCore")
