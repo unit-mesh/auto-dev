@@ -5,6 +5,7 @@ import cc.unitmesh.devti.prompting.code.TestStack
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
+import cc.unitmesh.idea.context.library.LibraryDescriptor
 import cc.unitmesh.idea.context.library.SpringLibrary
 import com.intellij.openapi.externalSystem.model.project.LibraryData
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
@@ -78,12 +79,10 @@ open class SpringContextProvider : ChatContextProvider {
         libraryDataList?.forEach {
             val name = it.groupId + ":" + it.artifactId
             if (!hasMatchSpringMvc) {
-                SpringLibrary.SPRING_MVC.forEach { entry ->
-                    entry.coords.forEach { coord ->
-                        if (name.contains(coord)) {
-                            testStack.coreFrameworks.putIfAbsent(entry.shortText, true)
-                            hasMatchSpringMvc = true
-                        }
+                SpringLibrary.SPRING_MVC.forEach { entry: LibraryDescriptor ->
+                    if (name.contains(entry.coords)) {
+                        testStack.coreFrameworks.putIfAbsent(entry.shortText, true)
+                        hasMatchSpringMvc = true
                     }
                 }
             }
