@@ -19,7 +19,7 @@
                 description="Ask AI fix this code">
 
             <add-to-group group-id="Terminal.PromptContextMenu" anchor="first"/>
-            <add-to-group group-id="Terminal.OutputContextMenu" anchor="after"/>
+            <add-to-group group-id="Terminal.OutputContextMenu" anchor="before" relative-to-action="Terminal.CopyBlock"/>
         </action>
     </actions>
 </idea-plugin>
