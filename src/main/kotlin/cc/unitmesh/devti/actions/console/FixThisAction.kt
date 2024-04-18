@@ -24,7 +24,7 @@ class FixThisAction : ChatBaseAction() {
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
-        var prompt: BasicTextPrompt? = null
+        val prompt: BasicTextPrompt?
         val description: ErrorDescription? = ErrorMessageProcessor.getErrorDescription(event)
         if (description == null) {
             val editor = event.getData(CommonDataKeys.EDITOR) ?: return
