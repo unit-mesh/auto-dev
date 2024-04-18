@@ -280,6 +280,7 @@
         <action id="cc.unitmesh.devti.QuickAssistant"
                 class="cc.unitmesh.devti.actions.quick.QuickAssistantAction"
                 description="You can custom any assistant as you want!"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
         >
             <keyboard-shortcut keymap="$default" first-keystroke="control BACK_SLASH"/>
 
@@ -288,7 +289,8 @@
 
         <action id="cc.unitmesh.devti.actions.console.FixThisAction"
                 class="cc.unitmesh.devti.actions.console.FixThisAction"
-                description="Ask AI fi this code">
+                description="Ask AI fix this code"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
         </action>
 

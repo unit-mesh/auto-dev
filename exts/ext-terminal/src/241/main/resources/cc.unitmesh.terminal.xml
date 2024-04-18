@@ -14,9 +14,10 @@
             <add-to-group group-id="TerminalToolwindowActionGroup" anchor="last"/>
         </action>
 
-        <action id="cc.unitmesh.devti.actions.console.FixThisAction"
+        <action id="terminal.FixAction"
                 class="cc.unitmesh.devti.actions.console.FixThisAction"
-                description="Ask AI fix this code">
+                description="Ask AI fix this code"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
 
             <add-to-group group-id="Terminal.PromptContextMenu" anchor="first"/>
             <add-to-group group-id="Terminal.OutputContextMenu" anchor="before" relative-to-action="Terminal.CopyBlock"/>
