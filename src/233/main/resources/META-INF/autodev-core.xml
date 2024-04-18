@@ -294,6 +294,14 @@
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
         </action>
 
+<!--        <action id="runnerBar.FixAction"-->
+<!--                class="cc.unitmesh.devti.actions.run.RunPanelFixAction"-->
+<!--                description="Ask AI fix error in tool bar"-->
+<!--                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">-->
+
+<!--            <add-to-group group-id="RunTab.TopToolbar" anchor="first"/>-->
+<!--        </action>-->
+
         <action id="autodev.Vcs.CommitMessage"
                 class="cc.unitmesh.devti.actions.vcs.CommitMessageSuggestionAction"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
