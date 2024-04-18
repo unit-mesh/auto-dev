@@ -19,10 +19,6 @@
 
         <chatContextProvider implementation="cc.unitmesh.python.PythonFrameworkContextProvider"/>
 
-        <contextPrompter
-                language="Python"
-                implementation="cc.unitmesh.python.provider.PythonContextPrompter"/>
-
         <devFlowProvider
                 language="Python"
                 implementation="cc.unitmesh.python.provider.PythonAutoDevFlow"/>
