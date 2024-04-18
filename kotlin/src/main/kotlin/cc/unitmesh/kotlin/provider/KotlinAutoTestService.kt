@@ -53,9 +53,8 @@ class KotlinAutoTestService : AutoTestService() {
 
         val relatedModels = lookupRelevantClass(project, psiElement).distinctBy { it.name }
 
-        // todo: spike for variant source file path
-        if (!(parentDirPath.contains("/main/java") && parentDirPath.contains("/main/kotlin"))) {
-            log.error("Source file is not in the src/main/kotlin or src/main/java directory: $parentDirPath")
+        if (!(parentDirPath.contains("/main/java") || parentDirPath.contains("/main/kotlin"))) {
+            log.error("SourceFile is not under the main/kotlin or main/java directory: $parentDirPath")
             return null
         }
 
