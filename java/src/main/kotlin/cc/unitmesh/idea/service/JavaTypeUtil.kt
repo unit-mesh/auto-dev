@@ -49,10 +49,16 @@ object JavaTypeUtil {
             element.parameterList.parameters.filter {
                 it.type is PsiClassReferenceType
             }.map {
-                val resolve = (it.type as PsiClassReferenceType).resolve() ?: return@map null
-                if (!isProjectContent(resolve)) {
-                    return@map null
-                }
+                val type = it.type as PsiClassReferenceType
+                val resolve: PsiClass = type.resolve() ?: return@map null
+                val typeParametersTypeList: List<PsiType> = getTypeParametersType(type)
+
+                val relatedClass = mutableListOf(it.type)
+                relatedClass.addAll(typeParametersTypeList)
+
+                relatedClass
+                    .filter { isProjectContent((it as PsiClassReferenceType).resolve() ?: return@filter false) }
+                    .forEach { resolvedClasses.putAll(resolveByType(it)) }
 
                 resolvedClasses[it.name] = resolve
             }
@@ -62,6 +68,20 @@ object JavaTypeUtil {
         }
 
         return resolvedClasses.filter { isProjectContent(it.value) }.toMap()
+    }
+
+    private fun getTypeParametersType(
+        psiType: PsiClassReferenceType
+    ): List<PsiType> {
+        val result = psiType.resolveGenerics()
+        val psiClass = result.element;
+        if (psiClass != null) {
+            val substitutor = result.substitutor
+            return psiClass.typeParameters.map {
+                substitutor.substitute(it)
+            }.filterNotNull()
+        }
+        return emptyList()
     }
 }
 
