@@ -4,6 +4,7 @@ import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.provider.AutoTestService
 import cc.unitmesh.devti.provider.context.TestFileContext
+import cc.unitmesh.idea.context.getContainingClass
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.execution.RunManager
 import com.intellij.execution.configurations.RunConfiguration
@@ -24,6 +25,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.findParentOfType
 import org.jetbrains.plugins.gradle.service.execution.GradleExternalTaskConfigurationType
 import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration
 import java.io.File
@@ -100,12 +102,27 @@ class JavaAutoTestService : AutoTestService() {
             importList.flatMap { it.allImportStatements.map { import -> import.text } }
         }
 
+        val currentClass = extracted(psiElement)
+
         return if (testFile != null) {
-            TestFileContext(isNewFile, testFile, relatedModels, testFileName, sourceFile.language, null, imports)
+            TestFileContext(isNewFile, testFile, relatedModels, testFileName, sourceFile.language, currentClass, imports)
         } else {
             val targetFile = createTestFile(sourceFile, testDir!!, packageName, project)
-            TestFileContext(isNewFile = true, targetFile, relatedModels, "", sourceFile.language, null, imports)
+            TestFileContext(isNewFile = true, targetFile, relatedModels, "", sourceFile.language, currentClass, imports)
         }
+    }
+
+    private fun extracted(psiElement: PsiElement) : String? {
+        var currentClass: ClassContext? = null;
+
+        val classContextProvider = ClassContextProvider(false)
+        if (psiElement is PsiClass) {
+            currentClass = classContextProvider.from(psiElement)
+        } else if (psiElement is PsiMethod) {
+            currentClass = psiElement.containingClass?.let { classContextProvider.from(it) }
+        }
+
+        return currentClass?.format();
     }
 
     override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {
