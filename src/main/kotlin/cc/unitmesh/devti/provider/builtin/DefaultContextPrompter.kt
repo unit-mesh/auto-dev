@@ -3,11 +3,9 @@ package cc.unitmesh.devti.provider.builtin
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
-import com.intellij.psi.PsiFile
 import kotlinx.coroutines.runBlocking
 
 class DefaultContextPrompter : ContextPrompter() {
-    private var similarChunkCache: MutableMap<PsiFile, String?> = mutableMapOf()
     override fun displayPrompt(): String {
         return getPrompt()
     }
@@ -23,14 +21,11 @@ class DefaultContextPrompter : ContextPrompter() {
             additionContext = collectionContext(creationContext)
         }
 
+        val prompt = action!!.instruction(lang, project).requestText
         if (file == null) {
-            return "$action\n$additionContext\n```${lang}\n$selectedText\n```"
+            return "$prompt\n$additionContext\n```${lang}\n$selectedText\n```"
         }
 
-//        if (file !in similarChunkCache) {
-//            similarChunkCache[file!!] = SimilarChunksWithPaths.createQuery(file!!)
-//        }
-
-        return "$action\n```${lang}\n$selectedText\n```"
+        return "$prompt\n```${lang}\n$selectedText\n```"
     }
 }

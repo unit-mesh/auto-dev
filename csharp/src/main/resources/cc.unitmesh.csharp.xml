@@ -8,7 +8,5 @@
     <extensions defaultExtensionNs="cc.unitmesh">
         <classContextBuilder language="C#"
                              implementationClass="cc.unitmesh.csharp.context.CSharpClassContextBuilder"/>
-
-        <contextPrompter language="C#" implementation="cc.unitmesh.csharp.provider.CsharpContextPrompter"/>
     </extensions>
 </idea-plugin>

@@ -16,8 +16,6 @@ class CSharpClassContextBuilder : ClassContextBuilder {
             methods = listOf(),
             fields = listOf(),
             usages = listOf(),
-
-            )
+        )
     }
-
 }

@@ -48,15 +48,9 @@ class ErrorPromptBuilder(private val maxLength: Int, private val tokenizer: Toke
         }
 
         val errorTextTrimmed = trimTextByTokenizer(errorText, maxLengthForPiece)
-
-        val templateRender = TemplateRender(GENIUS_ERROR)
-        templateRender.context = ErrorContext(errorTextTrimmed, sourceCode)
-        val template = templateRender.getTemplate("fix-error.vm")
-        val prompt = templateRender.renderTemplate(template)
-
         val formattedDisplayText = format(displayText, "```\n$errorTextTrimmed\n```\n", sourceCode)
 
-        return BasicTextPrompt(formattedDisplayText, prompt)
+        return buildDisplayPrompt(errorTextTrimmed, sourceCode, formattedDisplayText)
     }
 
     private fun trimByGreedyScopeSelection(errorPlace: ErrorPlace, maxTokenCount: Int): ErrorScope? {
@@ -153,5 +147,15 @@ class ErrorPromptBuilder(private val maxLength: Int, private val tokenizer: Toke
     private fun trimTextByTokenizer(text: String, maxTokenCount: Int): String {
         val offset = findTrimPositionForMaxTokens(text, maxTokenCount)
         return text.substring(0, min(text.length, offset))
+    }
+
+    companion object {
+        fun buildDisplayPrompt(errorTextTrimmed: String, sourceCode: String, displayText: String): BasicTextPrompt {
+            val templateRender = TemplateRender(GENIUS_ERROR)
+            templateRender.context = ErrorContext(errorTextTrimmed, sourceCode)
+            val template = templateRender.getTemplate("fix-error.vm")
+            val prompt = templateRender.renderTemplate(template)
+            return BasicTextPrompt(displayText, prompt)
+        }
     }
 }

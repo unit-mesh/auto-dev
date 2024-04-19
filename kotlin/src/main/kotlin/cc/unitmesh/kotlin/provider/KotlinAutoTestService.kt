@@ -49,18 +49,21 @@ class KotlinAutoTestService : AutoTestService() {
 
         val parentDirPath = ReadAction.compute<String, Throwable> {
             parentDir?.path
-        }
+        } ?: return null
 
         val relatedModels = lookupRelevantClass(project, psiElement).distinctBy { it.name }
 
-        if (!parentDirPath?.contains("/main/kotlin/")!!) {
-            log.error("Source file is not in the src/main/java directory: $parentDirPath")
+        if (!(parentDirPath.contains("/main/java") || parentDirPath.contains("/main/kotlin"))) {
+            log.error("SourceFile is not under the main/kotlin or main/java directory: $parentDirPath")
             return null
         }
 
         var isNewFile = false
 
-        val testDirPath = parentDir.path.replace("/main/kotlin/", "/test/kotlin/")
+        val testDirPath = parentDir.path
+            .replace("/main/kotlin/", "/test/kotlin/")
+            .replace("/main/java/", "/test/java/")
+
         var testDir = LocalFileSystem.getInstance().findFileByPath(testDirPath)
 
         if (testDir == null || !testDir.isDirectory) {
