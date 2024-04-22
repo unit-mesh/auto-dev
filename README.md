@@ -21,7 +21,9 @@ VSCode Version: [https://github.com/unit-mesh/auto-dev-vscode](https://github.co
 
 Regarding the matter discussed in the LICENSE issue at the project's outset, we want to address the complexity of JetBrain plugin development. In the process, we referenced certain code and API designs from the JetBrains Community version and the JetBrains AI Assistant plugin. JetBrains understandably reserves the right to view this as potential infringement on their intellectual property.
 
-Therefore, as of April 2024, AutoDev is no longer available on the JetBrains Plugin Marketplace. However, for users of older versions, you can access downloads from our Releases page.
+Therefore, as of April 2024, AutoDev is no longer available on the JetBrains Plugin Marketplace. However, for older versions' AutoDev, you can access downloads from our Releases page. 
+
+Additionally, we extend a warm invitation to participate in the development of the VSCode version. Your contributions are greatly appreciated.
 
 [Quick Start →](https://ide.unitmesh.cc/quick-start)
 
