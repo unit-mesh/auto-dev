@@ -4,6 +4,7 @@ import cc.unitmesh.devti.context.MethodContext
 import cc.unitmesh.devti.context.builder.ClassContextBuilder
 import cc.unitmesh.devti.context.builder.MethodContextBuilder
 import cc.unitmesh.idea.service.JavaTypeUtil
+import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiNameIdentifierOwner
@@ -29,7 +30,7 @@ class JavaMethodContextBuilder : MethodContextBuilder {
 
         val ios: List<PsiElement> = JavaTypeUtil.resolveByMethod(psiElement).values.mapNotNull { it }
 
-        return MethodContext(
+        return runReadAction { MethodContext(
             psiElement,
             text = psiElement.text,
             name = psiElement.name,
@@ -41,7 +42,7 @@ class JavaMethodContextBuilder : MethodContextBuilder {
             includeClassContext,
             usagesList,
             ios
-        )
+        )}
     }
 
     private fun processReturnTypeText(returnType: String?): String? {
@@ -50,8 +51,8 @@ class JavaMethodContextBuilder : MethodContextBuilder {
 }
 
 fun getSignatureString(method: PsiMethod): String {
-    val bodyStart = method.body?.startOffsetInParent ?: method.textLength
-    val text = method.text
+    val bodyStart = runReadAction { method.body?.startOffsetInParent ?: method.textLength }
+    val text = runReadAction { method.text }
     val substring = text.substring(0, bodyStart)
     val trimmed = substring.replace('\n', ' ').trim()
     return trimmed

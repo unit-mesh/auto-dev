@@ -3,6 +3,7 @@ package cc.unitmesh.idea.context
 import cc.unitmesh.devti.context.VariableContext
 import cc.unitmesh.devti.context.builder.ClassContextBuilder
 import cc.unitmesh.devti.context.builder.VariableContextBuilder
+import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.*
 
 class JavaVariableContextBuilder : VariableContextBuilder {
@@ -14,13 +15,13 @@ class JavaVariableContextBuilder : VariableContextBuilder {
     ): VariableContext? {
         if (psiElement !is PsiVariable) return null
 
-        val containingMethod = psiElement.getContainingMethod()
-        val containingClass = psiElement.getContainingClass()
+        val containingMethod = runReadAction {psiElement.getContainingMethod()  }
+        val containingClass = runReadAction {  psiElement.getContainingClass()}
 
         val references =
             if (gatherUsages) ClassContextBuilder.findUsages(psiElement as PsiNameIdentifierOwner) else emptyList()
 
-        return VariableContext(
+        return runReadAction {  VariableContext(
             psiElement,
             psiElement.text ?: "",
             psiElement.name,
@@ -29,7 +30,7 @@ class JavaVariableContextBuilder : VariableContextBuilder {
             references,
             withMethodContext,
             withClassContext
-        )
+        )}
     }
 }
 

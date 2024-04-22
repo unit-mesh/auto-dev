@@ -2,6 +2,7 @@ package cc.unitmesh.idea.context
 
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.builder.ClassContextBuilder
+import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
@@ -10,9 +11,9 @@ class JavaClassContextBuilder : ClassContextBuilder {
     override fun getClassContext(psiElement: PsiElement, gatherUsages: Boolean): ClassContext? {
         if (psiElement !is PsiClass) return null
 
-        val supers = psiElement.extendsList?.referenceElements?.mapNotNull {
+        val supers = runReadAction {  psiElement.extendsList?.referenceElements?.mapNotNull {
             it.text
-        }
+        }}
 
         val fields = psiElement.fields.toList()
         val methods = psiElement.methods.toList()
