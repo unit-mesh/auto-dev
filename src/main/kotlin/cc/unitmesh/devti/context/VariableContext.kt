@@ -2,6 +2,7 @@ package cc.unitmesh.devti.context
 
 import cc.unitmesh.devti.context.base.NamedElementContext
 import com.google.gson.Gson
+import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
 
@@ -33,7 +34,7 @@ class VariableContext(
         }
     }
 
-    fun shortFormat(): String = root.text ?: ""
+    fun shortFormat(): String = runReadAction {  root.text ?: ""}
 
     /**
      * Returns a formatted string representation of the method.

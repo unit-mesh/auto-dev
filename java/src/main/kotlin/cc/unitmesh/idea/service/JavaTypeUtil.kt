@@ -1,5 +1,6 @@
 package cc.unitmesh.idea.service
 
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiClassReferenceType
@@ -45,29 +46,31 @@ object JavaTypeUtil {
      */
     fun resolveByMethod(element: PsiElement): Map<String, PsiClass> {
         val resolvedClasses = mutableMapOf<String, PsiClass>()
-        if (element is PsiMethod) {
-            element.parameterList.parameters.filter {
-                it.type is PsiClassReferenceType
-            }.map {
-                val type = it.type as PsiClassReferenceType
-                val resolve: PsiClass = type.resolve() ?: return@map null
-                val typeParametersTypeList: List<PsiType> = getTypeParametersType(type)
+        runReadAction {
+            if (element is PsiMethod) {
+                element.parameterList.parameters.filter {
+                    it.type is PsiClassReferenceType
+                }.map {
+                    val type = it.type as PsiClassReferenceType
+                    val resolve: PsiClass = type.resolve() ?: return@map null
+                    val typeParametersTypeList: List<PsiType> = getTypeParametersType(type)
 
-                val relatedClass = mutableListOf(it.type)
-                relatedClass.addAll(typeParametersTypeList)
+                    val relatedClass = mutableListOf(it.type)
+                    relatedClass.addAll(typeParametersTypeList)
 
-                relatedClass
-                    .filter { isProjectContent((it as PsiClassReferenceType).resolve() ?: return@filter false) }
-                    .forEach { resolvedClasses.putAll(resolveByType(it)) }
+                    relatedClass
+                        .filter { isProjectContent((it as PsiClassReferenceType).resolve() ?: return@filter false) }
+                        .forEach { resolvedClasses.putAll(resolveByType(it)) }
 
-                resolvedClasses[it.name] = resolve
+                    resolvedClasses[it.name] = resolve
+                }
+
+                val outputType = element.returnTypeElement?.type
+                resolvedClasses.putAll(resolveByType(outputType))
             }
-
-            val outputType = element.returnTypeElement?.type
-            resolvedClasses.putAll(resolveByType(outputType))
         }
 
-        return resolvedClasses.filter { isProjectContent(it.value) }.toMap()
+        return runReadAction {resolvedClasses.filter { isProjectContent(it.value) }.toMap()}
     }
 
     private fun getTypeParametersType(
@@ -76,10 +79,10 @@ object JavaTypeUtil {
         val result = psiType.resolveGenerics()
         val psiClass = result.element;
         if (psiClass != null) {
-            val substitutor = result.substitutor
-            return psiClass.typeParameters.map {
+            val substitutor = runReadAction { result.substitutor }
+            return runReadAction { psiClass.typeParameters.map {
                 substitutor.substitute(it)
-            }.filterNotNull()
+            }.filterNotNull()}
         }
         return emptyList()
     }
@@ -87,5 +90,6 @@ object JavaTypeUtil {
 
 fun isProjectContent(element: PsiElement): Boolean {
     val virtualFile = PsiUtil.getVirtualFile(element)
-    return virtualFile == null || ProjectFileIndex.getInstance(element.project).isInContent(virtualFile)
+    val project = runReadAction { element.project }
+    return virtualFile == null || ProjectFileIndex.getInstance(project).isInContent(virtualFile)
 }

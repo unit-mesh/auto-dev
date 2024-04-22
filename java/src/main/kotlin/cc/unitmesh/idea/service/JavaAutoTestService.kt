@@ -119,7 +119,7 @@ class JavaAutoTestService : AutoTestService() {
         if (psiElement is PsiClass) {
             currentClass = classContextProvider.from(psiElement)
         } else if (psiElement is PsiMethod) {
-            currentClass = psiElement.containingClass?.let { classContextProvider.from(it) }
+            currentClass = runReadAction {   psiElement.containingClass?.let { classContextProvider.from(it) }}
         }
 
         return currentClass?.format();
