@@ -19,7 +19,7 @@ class JavaMethodContextBuilder : MethodContextBuilder {
             return null
         }
 
-        val parameterList = psiElement.parameters.mapNotNull { it.name }
+        val parameterList = runReadAction { psiElement.parameters.mapNotNull { it.name }}
         val variableContextList = parameterList.map { it }
 
         val usagesList = if (gatherUsages) {

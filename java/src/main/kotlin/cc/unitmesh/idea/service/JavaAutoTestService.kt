@@ -35,7 +35,7 @@ class JavaAutoTestService : AutoTestService() {
     override fun isApplicable(element: PsiElement): Boolean = element.language is JavaLanguage
 
     override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
-        val psiFile = PsiManager.getInstance(project).findFile(virtualFile) as? PsiJavaFile ?: return null
+        val psiFile = runReadAction {PsiManager.getInstance(project).findFile(virtualFile)} as? PsiJavaFile ?: return null
 
         if(psiFile.collectPsiError().isNotEmpty()) {
             return null
