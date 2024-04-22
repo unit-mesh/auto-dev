@@ -19,8 +19,8 @@ ${context.sourceCode}
 
 如果是新文件
 #if( $context.isNewFile )
-在此处使用 Markdown 代码块编写方法测试代码：
+请包含package和import，在此处使用 Markdown 代码块编写方法测试代码：
 #else
-在此处使用 Markdown 代码块编写 ${context.testClassName} 测试代码：
+请包含package和import, 在此处使用 Markdown 代码块编写 ${context.testClassName} 测试代码：
 #end
 

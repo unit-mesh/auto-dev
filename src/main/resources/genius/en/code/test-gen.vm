@@ -21,8 +21,8 @@ ${context.sourceCode}
 
 ## if newFile
 #if( $context.isNewFile )
-Start method test code with Markdown code block here:
+Should include package and imports. Start method test code with Markdown code block here:
 #else
-Start ${context.testClassName} test code with Markdown code block here:
+Should include package and imports. Start ${context.testClassName} test code with Markdown code block here:
 #end
 
