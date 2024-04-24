@@ -3,7 +3,6 @@ package cc.unitmesh.devti.provider
 import cc.unitmesh.devti.custom.document.LivingDocumentationType
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageExtension
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.SelectionModel
 import com.intellij.psi.PsiElement
@@ -49,13 +48,13 @@ interface LivingDocumentation {
             return null
         }
 
-        fun buildDocFromSuggestion(suggestion: String, commentStart: String, commentEnd: String): String {
-            val startIndex = suggestion.indexOf(commentStart)
+        fun buildDocFromSuggestion(suggestDoc: String, commentStart: String, commentEnd: String): String {
+            val startIndex = suggestDoc.indexOf(commentStart)
             if (startIndex < 0) {
                 return ""
             }
 
-            val docComment = suggestion.substring(startIndex)
+            val docComment = suggestDoc.substring(startIndex)
             val endIndex = docComment.indexOf(commentEnd, commentStart.length)
             if (endIndex < 0) {
                 return docComment + commentEnd
