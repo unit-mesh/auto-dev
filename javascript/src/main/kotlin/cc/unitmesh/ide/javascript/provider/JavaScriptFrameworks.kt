@@ -9,7 +9,9 @@ enum class JsWebFrameworks(val presentation: String, val packageName: String) {
     Astro("Astro", "astro"),
     Lit("Lit", "lit"),
     Solid("Solid", "solid-js"),
-    Preact("Preact", "preact")
+    Preact("Preact", "preact"),
+    Next("Next", "next"),
+    Nuxt("Nuxt", "nuxt"),
 }
 
 enum class JsTestFrameworks(val presentation: String, val packageName: String) {
