@@ -20,8 +20,10 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.VcsDataKeys
 import com.intellij.openapi.vcs.changes.Change
+import com.intellij.openapi.vcs.changes.CurrentContentRevision
 import com.intellij.openapi.vcs.ui.CommitMessage
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.vcs.commit.CommitWorkflowUi
 import com.intellij.vcs.log.VcsLogFilterCollection
 import com.intellij.vcs.log.VcsLogProvider
 import com.intellij.vcs.log.impl.VcsProjectLog
@@ -60,7 +62,8 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
 
     override fun executeAction(event: AnActionEvent) {
         val project = event.project ?: return
-        val changes = VcsUtil.getChanges(event) ?: return
+        val commitWorkflowUi = VcsUtil.getCommitWorkFlowUi(event) ?: return
+        val changes = getChanges(commitWorkflowUi) ?: return
         val diffContext = project.service<VcsPrompting>().prepareContext(changes)
 
         if (diffContext.isEmpty() || diffContext == "\n") {
@@ -171,6 +174,21 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
 
         logger.info("Prompt: $prompter")
         return prompter
+    }
+
+    fun getChanges(commitWorkflowUi: CommitWorkflowUi): List<Change>? {
+        val changes = commitWorkflowUi.getIncludedChanges()
+        val unversionedFiles = commitWorkflowUi.getIncludedUnversionedFiles()
+
+        val unversionedFileChanges = unversionedFiles.map {
+            Change(null, CurrentContentRevision(it))
+        }
+
+        if (changes.isNotEmpty() || unversionedFileChanges.isNotEmpty()) {
+            return changes + unversionedFileChanges
+        }
+
+        return null
     }
 }
 
