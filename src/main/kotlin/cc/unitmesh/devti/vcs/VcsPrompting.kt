@@ -81,7 +81,6 @@ class VcsPrompting(private val project: Project) {
         return writer.toString()
     }
 
-
     fun getChanges(): List<Change> {
         val changeListManager = ChangeListManager.getInstance(project)
         return changeListManager.changeLists.flatMap { it.changes }
