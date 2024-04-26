@@ -55,6 +55,7 @@ data class CustomAgentConfig(
     val transition: List<CustomFlowTransition> = emptyList(),
     val interactive: InteractionType = InteractionType.ChatPanel,
     val auth: CustomAgentAuth? = null,
+    val defaultTimeout: Long = 10,
 ) {
     var state: CustomAgentState = CustomAgentState.START
 

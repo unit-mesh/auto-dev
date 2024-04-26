@@ -87,7 +87,7 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
         } ?: return "$DEVINS_ERROR: File not found: $argument"
 
         val startLine = range?.startLine ?: 0
-        val endLine = range?.endLine ?: document.lineCount
+        val endLine = if (document.lineCount == 0) 1 else range?.endLine ?: document.lineCount
 
         try {
             val startOffset = document.getLineStartOffset(startLine)
