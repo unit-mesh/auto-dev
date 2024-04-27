@@ -39,7 +39,14 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
                     parentDir = projectDir
                     for (dir in parentDirs) {
                         if (dir.isEmpty()) continue
-                        parentDir = runWriteAction { parentDir?.createChildDirectory(this, dir) }
+                        
+                        //check child folder if exist? if not, create it
+                        if(parentDir?.findChild(dir) == null) {
+                            parentDir = runWriteAction { parentDir?.createChildDirectory(this, dir) }
+                        }
+                        else {
+                            parentDir = parentDir?.findChild(dir)
+                        }
                     }
 
                     if (parentDir == null) {
