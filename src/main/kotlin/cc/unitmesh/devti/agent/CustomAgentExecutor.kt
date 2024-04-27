@@ -10,6 +10,7 @@ import cc.unitmesh.devti.llms.custom.updateCustomFormat
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -50,7 +51,7 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor(project) {
             }
         }
 
-        client = client.newBuilder().build()
+        client = client.newBuilder().connectTimeout(agent.defaultTimeout, TimeUnit.SECONDS).readTimeout(agent.defaultTimeout, TimeUnit.SECONDS).build()
         val call = client.newCall(builder.url(agent.url).post(body).build())
 
         return when (agent.responseAction) {
