@@ -181,7 +181,7 @@ class DevInsCompiler(
                 if (devInCode == null) {
                     PrintInsCommand("/" + commandNode.commandName + ":" + prop)
                 } else {
-                    WriteInsCommand(myProject, prop, devInCode.text)
+                    WriteInsCommand(myProject, prop, devInCode.text, used)
                 }
             }
 

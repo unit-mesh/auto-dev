@@ -2,6 +2,7 @@ package cc.unitmesh.devti.language.compiler.exec
 
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.language.compiler.model.LineInfo
+import cc.unitmesh.devti.language.psi.DevInUsed
 import cc.unitmesh.devti.language.utils.lookupFile
 import cc.unitmesh.devti.util.parser.Code
 import com.intellij.openapi.application.runReadAction
@@ -16,13 +17,14 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 
-class WriteInsCommand(val myProject: Project, val argument: String, val content: String) : InsCommand {
+class WriteInsCommand(val myProject: Project, val argument: String, val content: String, val used: DevInUsed) :
+    InsCommand {
     private val pathSeparator = "/"
 
     override suspend fun execute(): String? {
         val content = Code.parse(content).text
 
-        val range: LineInfo? = LineInfo.fromString(argument)
+        val range: LineInfo? = LineInfo.fromString(used.text)
         val filepath = argument.split("#")[0]
         val projectDir = myProject.guessProjectDir() ?: return "$DEVINS_ERROR: Project directory not found"
 
@@ -39,12 +41,11 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
                     parentDir = projectDir
                     for (dir in parentDirs) {
                         if (dir.isEmpty()) continue
-                        
+
                         //check child folder if exist? if not, create it
-                        if(parentDir?.findChild(dir) == null) {
+                        if (parentDir?.findChild(dir) == null) {
                             parentDir = runWriteAction { parentDir?.createChildDirectory(this, dir) }
-                        }
-                        else {
+                        } else {
                             parentDir = parentDir?.findChild(dir)
                         }
                     }
