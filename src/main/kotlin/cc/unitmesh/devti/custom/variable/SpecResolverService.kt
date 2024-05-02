@@ -9,9 +9,7 @@ import com.intellij.openapi.components.Service
  */
 @Service(Service.Level.APP)
 class SpecResolverService {
-    private val specs = CustomPromptConfig.load().spec
-
-    fun resolvers(): List<SpecVariableResolver> = specs.map { (key, value) ->
+    fun resolvers(): List<SpecVariableResolver> = CustomPromptConfig.load().spec.map { (key, value) ->
         SpecVariableResolver("SPEC_$key", value)
     }
 
