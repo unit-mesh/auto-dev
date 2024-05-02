@@ -46,7 +46,7 @@ class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConf
         val afterCursor = editor.document.text.substring(editor.caretModel.offset)
 
         val prompt: CustomIntentionPrompt = constructCustomPrompt(
-            psiElement!!, selectedText,
+            psiElement!!, findAllMatches(selectedText, intentionConfig.selectedRegex),
             beforeCursor, afterCursor
         )
 
@@ -65,6 +65,20 @@ class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConf
                 panel.setInput(prompt.displayPrompt)
             }
         }
+    }
+
+    private fun findAllMatches(input: String, regex: String): String {
+        if (regex == "") return input
+        if (input = "") return input
+        val builder = StringBuilder()
+        val pattern = Pattern.compile(regex)
+        val matcher = pattern.matcher(input)
+
+        while (matcher.find()) {
+            builder.append(matcher.group()).append("\n")
+        }
+
+        return builder.toString()
     }
 
     private fun constructCustomPrompt(
