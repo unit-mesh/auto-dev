@@ -16,6 +16,7 @@ import com.intellij.psi.PsiFile
 import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.Velocity
 import java.io.StringWriter
+import java.util.regex.Pattern
 
 class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConfig) : ChatBaseIntention() {
     private val logger = logger<CustomActionBaseIntention>()
@@ -69,11 +70,12 @@ class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConf
 
     private fun findAllMatches(input: String, regex: String): String {
         if (regex == "") return input
-        if (input = "") return input
-        val builder = StringBuilder()
-        val pattern = Pattern.compile(regex)
-        val matcher = pattern.matcher(input)
+        if (input == "") return input
 
+        val builder = StringBuilder()
+
+        val customPattern = Pattern.compile(regex)
+        val matcher = customPattern.matcher(input)
         while (matcher.find()) {
             builder.append(matcher.group()).append("\n")
         }
