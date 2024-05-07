@@ -132,3 +132,20 @@ $.choices[0].delta.content
 $.choices[0].delta.content 
 ```
 
+
+### ChatGLM examples
+
+- Custom Response Type：SSE
+- Custom Engine Server：https://open.bigmodel.cn/api/paas/v4/chat/completions
+- Request body format:
+```json
+{ "customFields": {"model": "glm-4", "stream": true},   "messageKeys": {"role": "role", "content": "content"} }
+```
+- Response format: 
+
+```
+$.choices[0].delta.content 
+```
+
+
+
