@@ -48,7 +48,7 @@ If your llm server has a custom request format, you can:
 
 - Add top level field to the request body via `customFields`
 - Add custom headers to the request via `customHeaders`
-- Customize the messages key via `messageKeys`
+- Customize the messages key via `messageKeys` (optional)
 
 For example:
 
@@ -98,8 +98,7 @@ And the request body will be:
 - Custom Engine Server：https://api.moonshot.cn/v1/chat/completions 
 - Request body format
 ```json
-{ "customFields": {"model": "moonshot-v1-8k", "stream": true },   "messageKeys": {"role": "role", "content": 
-"content"} }
+{ "customFields": {"model": "moonshot-v1-8k", "stream": true } }
 ```
 - Response format:
 ```
@@ -112,7 +111,7 @@ $.choices[0].delta.content
 - Custom Engine Server：https://api.deepseek.com/v1/chat/completions
 - Request body format:
 ```json
-{ "customFields": {"model": "deepseek-chat", "stream": true},   "messageKeys": {"role": "role", "content": "content"} }
+{ "customFields": {"model": "deepseek-chat", "stream": true} }
 ```
 - Response format: 
 ```
@@ -125,7 +124,7 @@ $.choices[0].delta.content
 - Custom Engine Server：https://api.lingyiwangwu.com/v1/chat/completions
 - Request body format:
 ```json
-{ "customFields": {"model": "yi-34b-chat", "stream": true},   "messageKeys": {"role": "role", "content": "content"} }
+{ "customFields": {"model": "yi-34b-chat", "stream": true} }
 ```
 - Response format: 
 ```
@@ -141,7 +140,7 @@ more detail see in: [#90](https://github.com/unit-mesh/auto-dev/issues/90)
 - Custom Engine Server：https://open.bigmodel.cn/api/paas/v4/chat/completions
 - Request body format:
 ```json
-{ "customFields": {"model": "glm-4", "stream": true},   "messageKeys": {"role": "role", "content": "content"} }
+{ "customFields": {"model": "glm-4", "stream": true} }
 ```
 - Response format: 
 
