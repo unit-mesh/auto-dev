@@ -87,9 +87,9 @@ Features:
 
 AutoDev fine-tune models:
 
-| name          | model download (HuggingFace)                                    | finetune Notebook                    | model download (OpenBayes)                                                          |
-|---------------|-----------------------------------------------------------------|--------------------------------------|-------------------------------------------------------------------------------------|
-| DeepSeek 6.7B | [AutoDev Coder](https://huggingface.co/unit-mesh/autodev-coder) | [finetune.ipynb](finetunes/deepseek) | [AutoDev Coder](https://openbayes.com/console/phodal/models/rCmer1KQSgp/9/overview) |
+| name          | model download (HuggingFace)                                    | model download (OpenBayes)                                                          |
+|---------------|-----------------------------------------------------------------|-------------------------------------------------------------------------------------|
+| DeepSeek 6.7B | [AutoDev Coder](https://huggingface.co/unit-mesh/autodev-coder) | AutoDev Coder](https://openbayes.com/console/phodal/models/rCmer1KQSgp/9/overview) |
 
 ### Language Support (for Fine-tuning)
 
