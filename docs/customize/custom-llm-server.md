@@ -135,6 +135,8 @@ $.choices[0].delta.content
 
 ### ChatGLM examples
 
+more detail see in: [#90](https://github.com/unit-mesh/auto-dev/issues/90)
+
 - Custom Response Type：SSE
 - Custom Engine Server：https://open.bigmodel.cn/api/paas/v4/chat/completions
 - Request body format:
