@@ -130,6 +130,20 @@ diff --git a/src/main/java/cc/unitmesh/untitled/demo/controller/BlogCategoryCont
 ```"""
 
 
+@app.post("/api/agent/devins-write", response_class=PlainTextResponse)
+def mock_devins(messages: Messages):
+    return """
+```devin
+/write:src/main/java/com/booking/BookingController.java#L1-L2
+
+\\`\\`\\`java
+/**
+ * ===========================================================================
+*/
+\\`\\`\\`
+```"""
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     exc_str = f'{exc}'.replace('\n', ' ').replace('   ', ' ')

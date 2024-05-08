@@ -28,7 +28,7 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
         val filepath = argument.split("#")[0]
         val projectDir = myProject.guessProjectDir() ?: return "$DEVINS_ERROR: Project directory not found"
 
-        val virtualFile = myProject.lookupFile(filepath)
+        val virtualFile = runReadAction { myProject.lookupFile(filepath) }
         if (virtualFile == null) {
             // filepath maybe just a file name, so we need to create parent directory
             val hasChildPath = filepath.contains(pathSeparator)
