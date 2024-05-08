@@ -2,7 +2,6 @@
     <resource-bundle>messages.AutoDevBundle</resource-bundle>
 
     <depends>com.intellij.modules.platform</depends>
-    <depends>Git4Idea</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="AutoDev.notification.group" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
@@ -308,26 +307,6 @@
                 description="Ask AI generate release note">
 
             <add-to-group group-id="Vcs.Log.ContextMenu" relative-to-action="Vcs.ShowDiffWithLocal" anchor="after"/>
-        </action>
-
-        <action id="autodev.Vcs.CodeReview"
-                class="cc.unitmesh.devti.actions.vcs.CodeReviewAction"
-                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
-                description="Ask AI to review code">
-
-            <add-to-group group-id="Vcs.Log.ChangesBrowser.Popup" relative-to-action="Vcs.RepositoryChangesBrowserMenu"
-                          anchor="after"/>
-            <add-to-group group-id="Vcs.Log.ContextMenu" relative-to-action="Vcs.ShowDiffWithLocal" anchor="after"/>
-        </action>
-
-        <action id="autodev.Vcs.PrepushReview"
-                class="cc.unitmesh.devti.actions.vcs.PrepushReviewAction"
-                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
-                description="Ask AI to review code">
-
-            <add-to-group group-id="ChangesViewToolbar" anchor="last"/>
-            <add-to-group group-id="ChangesViewPopupMenu" relative-to-action="ChangesView.Revert" anchor="after"/>
-
         </action>
 
         <action id="cc.unitmesh.devti.actions.chat.CodeCompleteChatAction"

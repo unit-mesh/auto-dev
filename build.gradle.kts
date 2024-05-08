@@ -93,7 +93,6 @@ val scalaPlugin = prop("scalaPlugin")
 val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
 val ideaPlugins =
     listOf(
-        "Git4Idea",
 //        "org.jetbrains.plugins.terminal",
         "com.intellij.java",
         "org.jetbrains.plugins.gradle",
@@ -415,7 +414,6 @@ project(":") {
         implementation(libs.kotlinx.serialization.json)
 
         implementation("cc.unitmesh:cocoa-core:0.4.5")
-        implementation("cc.unitmesh:git-commit-message:0.4.5")
 
         // kanban
         implementation(libs.github.api)
@@ -601,10 +599,12 @@ project(":exts:ext-harmonyos") {
 project(":exts:ext-git") {
     intellij {
         version.set(ideaVersion)
+        plugins.set(ideaPlugins + "Git4Idea")
     }
 
     dependencies {
         implementation(project(":"))
+        implementation("cc.unitmesh:git-commit-message:0.4.5")
     }
 }
 
@@ -645,11 +645,12 @@ project(":exts:devins-lang") {
 
     intellij {
         version.set(ideaVersion)
-        plugins.set((ideaPlugins + "org.intellij.plugins.markdown" + "com.jetbrains.sh"))
+        plugins.set((ideaPlugins + "org.intellij.plugins.markdown" + "com.jetbrains.sh" + "Git4Idea"))
     }
 
     dependencies {
         implementation(project(":"))
+        implementation(project(":exts:ext-git"))
     }
 
     tasks {

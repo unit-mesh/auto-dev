@@ -1,0 +1,27 @@
+<idea-plugin package="cc.unitmesh.git">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+        <plugin id="Git4Idea"/>
+    </dependencies>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <action id="autodev.Vcs.CodeReview"
+                class="cc.unitmesh.git.actions.vcs.CodeReviewAction"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+                description="Ask AI to review code">
+
+            <add-to-group group-id="Vcs.Log.ChangesBrowser.Popup" relative-to-action="Vcs.RepositoryChangesBrowserMenu"
+                          anchor="after"/>
+            <add-to-group group-id="Vcs.Log.ContextMenu" relative-to-action="Vcs.ShowDiffWithLocal" anchor="after"/>
+        </action>
+
+        <action id="autodev.Vcs.PrepushReview"
+                class="cc.unitmesh.git.actions.vcs.PrepushReviewAction"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+                description="Ask AI to review code">
+
+            <add-to-group group-id="ChangesViewToolbar" anchor="last"/>
+            <add-to-group group-id="ChangesViewPopupMenu" relative-to-action="ChangesView.Revert" anchor="after"/>
+        </action>
+    </extensions>
+</idea-plugin>

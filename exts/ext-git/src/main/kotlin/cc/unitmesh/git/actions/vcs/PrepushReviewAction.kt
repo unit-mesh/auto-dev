@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.actions.vcs
+package cc.unitmesh.git.actions.vcs
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.vcs.VcsPrompting
