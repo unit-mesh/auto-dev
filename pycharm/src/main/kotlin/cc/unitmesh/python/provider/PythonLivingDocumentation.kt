@@ -135,23 +135,23 @@ fun buildAndInsert(replacementText: String, anchor: PyDocStringOwner): PyDocStri
     val manager = PsiDocumentManager.getInstance(anchor.project)
     val document = manager.getDocument(anchor.containingFile)!!
     val beforeStatements = statements.prevSibling
-    var replacementWithLineBreaks = """
-                
-                $indentation$replacementText
-                """.trimIndent()
+    var replacementWithLineBreaks = (indentation + replacementText).trimIndent()
     if (statements.statements.isNotEmpty()) {
-        replacementWithLineBreaks += """
-                    
-                    $indentation
-                    """.trimIndent()
+        replacementWithLineBreaks += indentation.trimIndent()
     }
+
     val range = beforeStatements.textRange
-    if (beforeStatements !is PsiWhiteSpace) {
-        document.insertString(range.endOffset, replacementWithLineBreaks)
-    } else if (statements.statements.isEmpty() && beforeStatements.textContains('\n')) {
-        document.insertString(range.startOffset, replacementWithLineBreaks)
-    } else {
-        document.replaceString(range.startOffset, range.endOffset, replacementWithLineBreaks)
+
+    when {
+        beforeStatements !is PsiWhiteSpace -> {
+            document.insertString(range.endOffset, replacementWithLineBreaks)
+        }
+        statements.statements.isEmpty() && beforeStatements.textContains('\n') -> {
+            document.insertString(range.startOffset, replacementWithLineBreaks)
+        }
+        else -> {
+            document.replaceString(range.startOffset, range.endOffset, replacementWithLineBreaks)
+        }
     }
 
     return anchor

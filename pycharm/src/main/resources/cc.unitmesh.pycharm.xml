@@ -22,9 +22,6 @@
         <devFlowProvider
                 language="Python"
                 implementation="cc.unitmesh.python.provider.PythonAutoDevFlow"/>
-        <promptStrategy
-                language="Python"
-                implementation="cc.unitmesh.python.provider.PythonPromptStrategyAdvisor"/>
 
         <testContextProvider
                 language="Python"
