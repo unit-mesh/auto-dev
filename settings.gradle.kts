@@ -24,6 +24,8 @@ include(
     "exts:ext-android",
     "exts:ext-harmonyos",
     "exts:ext-terminal",
+    // git4idea is the git plugin for IntelliJ IDEA, so we rename it to `exts-git`
+    "exts:ext-git",
 
     // the Input Language support for AutoDev
     "exts:devins-lang"

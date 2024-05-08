@@ -275,6 +275,7 @@ project(":plugin") {
         implementation(project(":exts:ext-database"))
         implementation(project(":exts:ext-android"))
         implementation(project(":exts:ext-harmonyos"))
+        implementation(project(":exts:ext-git"))
         implementation(project(":exts:ext-terminal"))
         implementation(project(":exts:devins-lang"))
     }
@@ -597,6 +598,16 @@ project(":exts:ext-harmonyos") {
     }
 }
 
+project(":exts:ext-git") {
+    intellij {
+        version.set(ideaVersion)
+    }
+
+    dependencies {
+        implementation(project(":"))
+    }
+}
+
 project(":exts:ext-terminal") {
     intellij {
         version.set(ideaVersion)
@@ -661,7 +672,6 @@ project(":exts:devins-lang") {
         }
     }
 }
-
 
 fun File.isPluginJar(): Boolean {
     if (!isFile) return false
