@@ -1,6 +1,9 @@
 package cc.unitmesh.devti.language.compiler.exec
 
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiNamedElement
+import com.intellij.psi.util.PsiTreeUtil
 
 enum class BuiltinRefactorCommand {
     RENAME,
@@ -59,6 +62,9 @@ class RefactorInsCommand(val myProject: Project, private val argument: String, p
         when (command) {
             BuiltinRefactorCommand.RENAME -> {
                 val (from, to) = textSegment.split(" to ")
+
+                // first get the element to rename
+
                 // in currently we only support rename class in java, kotlin
                 // also use RenameQuickFix to rename element
             }
@@ -78,6 +84,19 @@ class RefactorInsCommand(val myProject: Project, private val argument: String, p
         }
 
         return null
+    }
+
+    fun executeRename(psiElement: PsiElement, newName: String) {
+        val named = PsiTreeUtil.getNonStrictParentOfType(
+            psiElement,
+            PsiNamedElement::class.java
+        )
+        if (named == null) return
+//        val name = if (named is PsiNamedElementWithCustomPresentation) named.presentationName else named.name
+        val name = named.name
+
+//        val range: TextRange = getRange(psiElement)
+//        updater.rename(named, psiElement, names)
     }
 }
 
