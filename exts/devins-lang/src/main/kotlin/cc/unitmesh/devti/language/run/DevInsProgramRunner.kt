@@ -21,6 +21,8 @@ class DevInsProgramRunner : GenericProgramRunner<RunnerSettings>(), Disposable {
 
     private val connection = ApplicationManager.getApplication().messageBus.connect(this)
 
+    private var isSubscribed = false
+
     override fun getRunnerId(): String = RUNNER_ID
 
     override fun canRun(executorId: String, profile: RunProfile) = profile is DevInsConfiguration
@@ -32,11 +34,17 @@ class DevInsProgramRunner : GenericProgramRunner<RunnerSettings>(), Disposable {
         FileDocumentManager.getInstance().saveAllDocuments()
 
         val result = AtomicReference<RunContentDescriptor>()
-        connection.subscribe(DevInsRunListener.TOPIC, object : DevInsRunListener {
-            override fun runFinish(string: String, event: ProcessEvent, scriptPath: String) {
-                environment.project.service<DevInsProcessProcessor>().process(string, event, scriptPath)
-            }
-        })
+
+        //避免多次subscribe
+        if(!isSubscribed) {
+            connection.subscribe(DevInsRunListener.TOPIC, object : DevInsRunListener {
+                override fun runFinish(string: String, event: ProcessEvent, scriptPath: String) {
+                    environment.project.service<DevInsProcessProcessor>().process(string, event, scriptPath)
+                }
+            })
+
+            isSubscribed = true
+        }
 
         ApplicationManager.getApplication().invokeAndWait {
             val showRunContent = showRunContent(devInState.execute(environment.executor, this), environment)
