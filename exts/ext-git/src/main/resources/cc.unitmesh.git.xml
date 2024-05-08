@@ -4,7 +4,7 @@
         <plugin id="Git4Idea"/>
     </dependencies>
 
-    <extensions defaultExtensionNs="cc.unitmesh">
+    <actions>
         <action id="autodev.Vcs.CodeReview"
                 class="cc.unitmesh.git.actions.vcs.CodeReviewAction"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
@@ -23,5 +23,6 @@
             <add-to-group group-id="ChangesViewToolbar" anchor="last"/>
             <add-to-group group-id="ChangesViewPopupMenu" relative-to-action="ChangesView.Revert" anchor="after"/>
         </action>
-    </extensions>
+    </actions>
+    >
 </idea-plugin>
