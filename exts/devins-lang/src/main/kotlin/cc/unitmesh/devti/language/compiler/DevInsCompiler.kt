@@ -225,6 +225,11 @@ class DevInsCompiler(
                 BrowseInsCommand(myProject, prop)
             }
 
+            BuiltinCommand.Refactor -> {
+                result.isLocalCommand = true
+                RefactorInsCommand(myProject, prop)
+            }
+
             else -> {
                 PrintInsCommand("/" + commandNode.commandName + ":" + prop)
             }

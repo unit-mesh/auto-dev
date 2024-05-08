@@ -1,0 +1,5 @@
+/refactor:rename cc.unitmesh.devti.language.run.DevInsProgramRunner to cc.unitmesh.devti.language.run.DevInsProgramRunnerImpl
+/refactor:safeDelete cc.unitmesh.devti.language.run.DevInsProgramRunnerImpl
+/refactor:delete cc.unitmesh.devti.language.run.DevInsProgramRunnerImpl
+/refactor:move cc.unitmesh.devti.language.DevInsProgramRunner to cc.unitmesh.devti.language.run.DevInsProgramRunner
+/refactor:extractMethod cc.unitmesh.devti.language.run.DevInsProgramRunnerImpl.run#L20-L30

@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.completion.dataprovider
 
+import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.language.DevInIcons
 import com.intellij.icons.AllIcons
 import java.nio.charset.StandardCharsets
@@ -45,6 +46,13 @@ enum class BuiltinCommand(
         "Get the content of a given URL",
         AllIcons.Toolwindows.WebToolWindow,
         false,
+        true
+    ),
+    Refactor(
+        "refactor",
+        "Refactor the content of a file",
+        AutoDevIcons.Idea,
+        true,
         true
     ),
     ;
