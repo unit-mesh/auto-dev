@@ -34,13 +34,6 @@ class RustClassContextBuilderTest: BasePlatformTestCase() {
         // when
         val decl = PsiTreeUtil.getChildrenOfTypeAsList(code, RsStructItem::class.java).first()
 
-        ApplicationManager.getApplication().extensionArea.registerExtensionPoint(
-            "cc.unitmesh.variableContextBuilder",
-            "cc.unitmesh.devti.context.builder.VariableContextBuilder",
-            ExtensionPoint.Kind.BEAN_CLASS,
-            true
-        )
-
         // then
         val result = RustClassContextBuilder().getClassContext(decl, false)!!
         assertEquals("Entry", result.name)
