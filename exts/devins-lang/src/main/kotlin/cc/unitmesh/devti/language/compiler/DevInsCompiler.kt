@@ -227,7 +227,8 @@ class DevInsCompiler(
 
             BuiltinCommand.Refactor -> {
                 result.isLocalCommand = true
-                RefactorInsCommand(myProject, prop)
+                val nextTextSegment = lookupNextTextSegment(used)
+                RefactorInsCommand(myProject, prop, nextTextSegment)
             }
 
             else -> {
@@ -274,6 +275,23 @@ class DevInsCompiler(
         }
 
         return devInCode
+    }
+
+    private fun lookupNextTextSegment(used: DevInUsed): String {
+        val textSegment: StringBuilder = StringBuilder()
+        var next: PsiElement? = used
+        while (true) {
+            next = next?.nextSibling
+            if (next == null) {
+                break
+            }
+
+            if (next.elementType == DevInTypes.TEXT_SEGMENT) {
+                textSegment.append(next.text)
+            }
+        }
+
+        return textSegment.toString()
     }
 }
 

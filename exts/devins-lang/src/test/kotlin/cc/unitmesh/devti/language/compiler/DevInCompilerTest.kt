@@ -27,5 +27,17 @@ class DevInCompilerTest : LightJavaCodeInsightFixtureTestCase() {
 //            fail(e.message)
         }
     }
+
+    fun testForRefactoring() {
+        val code = "/refactor:rename cc.unitmesh.devti.language.run.DevInsProgramRunner to cc.unitmesh.devti.language.run.DevInsProgramRunnerImpl"
+        val file = myFixture.configureByText("test.devin", code)
+
+        try {
+            val compile = DevInsCompiler(project, file as DevInFile, myFixture.editor).compile()
+            println(compile.output)
+        } catch (e: Exception) {
+//            fail(e.message)
+        }
+    }
 }
 

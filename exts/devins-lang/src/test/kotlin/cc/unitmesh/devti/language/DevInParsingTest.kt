@@ -43,4 +43,8 @@ class DevInParsingTest : ParsingTestCase("parser", "devin", DevInParserDefinitio
     fun testBrowseWeb() {
         doTest(true)
     }
+
+    fun testAutoRefactor() {
+        doTest(true)
+    }
 }
