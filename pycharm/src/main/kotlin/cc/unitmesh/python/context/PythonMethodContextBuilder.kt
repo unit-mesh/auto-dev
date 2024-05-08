@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull
 
 class PythonMethodContextBuilder : MethodContextBuilder {
     override fun getMethodContext(
-        @NotNull psiElement: PsiElement,
+        psiElement: PsiElement,
         includeClassContext: Boolean,
         gatherUsages: Boolean
     ): MethodContext? {
@@ -24,7 +24,7 @@ class PythonMethodContextBuilder : MethodContextBuilder {
         val returnType = returnStatementType?.name ?: ""
         val language = psiElement.language.displayName
         val enclosingClass = psiElement.containingClass
-        val signature = psiElement.qualifiedName
+        val signature = psiElement.name
         val name = psiElement.name
         val text = psiElement.text
         val paramNames = psiElement.parameterList.parameters.mapNotNull { it.name }

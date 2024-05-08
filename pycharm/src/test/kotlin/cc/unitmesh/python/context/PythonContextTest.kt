@@ -30,7 +30,8 @@ print(p1.age) """
         assertEquals(classContext.format(), """'package: /foo.bar
 class Person {
   
-  
-}""");
+  + __init__
+  + myfunc
+}""")
     }
 }
