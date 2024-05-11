@@ -159,7 +159,9 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        testLLMConnection(project)
+        if (project != null) {
+            testLLMConnection(project)
+        }
 
         row(AutoDevBundle.message("settings.autodev.coder.customEnginePrompt")){}
         row {

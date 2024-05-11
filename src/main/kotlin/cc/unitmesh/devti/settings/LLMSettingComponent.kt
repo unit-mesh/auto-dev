@@ -163,7 +163,9 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
                 })
                 .addLLMParams(currentLLMParams)
                 .addComponent(panel {
-                    testLLMConnection(project)
+                    if (project != null) {
+                        testLLMConnection(project)
+                    }
                 })
                 .addVerticalGap(2)
                 .addSeparator()
