@@ -19,6 +19,8 @@ include(
 )
 
 include(
+    "local-bundle",
+
     "exts:ext-database",
     // since JetBrains also call `android.jar`, so we rename it to `ext-android`
     "exts:ext-android",

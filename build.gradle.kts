@@ -271,6 +271,9 @@ project(":plugin") {
         implementation(project(":rust"))
         implementation(project(":cpp"))
         implementation(project(":scala"))
+
+        implementation(project(":local-bundle"))
+
         implementation(project(":exts:ext-database"))
         implementation(project(":exts:ext-android"))
         implementation(project(":exts:ext-harmonyos"))
@@ -605,6 +608,16 @@ project(":exts:ext-git") {
     dependencies {
         implementation(project(":"))
         implementation("cc.unitmesh:git-commit-message:0.4.5")
+    }
+}
+
+project(":local-bundle") {
+    intellij {
+        version.set(ideaVersion)
+    }
+
+    dependencies {
+        implementation(project(":"))
     }
 }
 
