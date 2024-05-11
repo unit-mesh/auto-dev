@@ -176,7 +176,7 @@
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.jsonTextProvider"
-                        interface="cc.unitmesh.devti.provider.JsonTextProvider"
+                        interface="cc.unitmesh.devti.provider.local.JsonTextProvider"
                         dynamic="true"/>
     </extensionPoints>
 

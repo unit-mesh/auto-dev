@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.provider
+package cc.unitmesh.devti.provider.local
 
 import cc.unitmesh.devti.provider.devins.DevInsSymbolProvider
 import com.intellij.openapi.extensions.ExtensionPointName

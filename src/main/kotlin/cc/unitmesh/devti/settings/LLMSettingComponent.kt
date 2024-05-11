@@ -1,24 +1,15 @@
 package cc.unitmesh.devti.settings
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.custom.schema.CUSTOM_PROMPTS_FILE_NAME
+import cc.unitmesh.devti.custom.schema.CUSTOM_AGENT_FILE_NAME
+import cc.unitmesh.devti.gui.component.JsonLanguageField
 import com.intellij.ide.actions.RevealFileAction
 import com.intellij.idea.LoggerFactory
-import com.intellij.json.JsonLanguage
-import com.intellij.lang.Language
-import com.intellij.openapi.editor.Document
-import com.intellij.openapi.editor.colors.EditorColorsUtil
-import com.intellij.openapi.editor.ex.EditorEx
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
-import com.intellij.psi.PsiFile
 import com.intellij.ui.EditorTextField
-import com.intellij.ui.LanguageTextField
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.FormBuilder
-import java.awt.Dimension
-import java.awt.FontMetrics
 import javax.swing.JPanel
 
 class LLMSettingComponent(private val settings: AutoDevSettingsState) {
@@ -56,36 +47,12 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
 
     val project = ProjectManager.getInstance().openProjects.firstOrNull()
     private val customEnginePrompt: EditorTextField by lazy {
-        class SettingJsonField : LanguageTextField(JsonLanguage.INSTANCE, project, settings.customPrompts,
-            object : SimpleDocumentCreator() {
-                override fun createDocument(value: String?, language: Language?, project: Project?): Document {
-                    return createDocument(value, language, project, this)
-                }
-
-                override fun customizePsiFile(file: PsiFile?) {
-                    file?.name = CUSTOM_PROMPTS_FILE_NAME
-                }
-            }
-        ) {
-            override fun createEditor(): EditorEx {
-                return super.createEditor().apply {
-                    setShowPlaceholderWhenFocused(true)
-                    setHorizontalScrollbarVisible(false)
-                    setVerticalScrollbarVisible(true)
-                    setPlaceholder(AutoDevBundle.message("autodev.custom.prompt.placeholder"))
-
-                    val scheme = EditorColorsUtil.getColorSchemeForBackground(this.colorsScheme.defaultBackground)
-                    this.colorsScheme = this.createBoundColorSchemeDelegate(scheme)
-
-                    val metrics: FontMetrics = getFontMetrics(font)
-                    val columnWidth = metrics.charWidth('m')
-                    isOneLineMode = false
-                    preferredSize = Dimension(25 * columnWidth, 25 * metrics.height)
-                }
-            }
-        }
-
-        SettingJsonField()
+        JsonLanguageField(
+            project!!,
+            settings.customPrompts,
+            AutoDevBundle.message("autodev.custom.prompt.placeholder"),
+            CUSTOM_AGENT_FILE_NAME
+        )
     }
 
     private val llmGroups = mapOf<AIEngines, List<LLMParam>>(
