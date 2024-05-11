@@ -5,7 +5,7 @@
         <plugin id="com.intellij.modules.json"/>
     </dependencies>
 
-    <actions>
-
-    </actions>
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <jsonTextProvider implementation="cc.unitmesh.local.provider.LocalJsonTextProvider"/>
+    </extensions>
 </idea-plugin>
