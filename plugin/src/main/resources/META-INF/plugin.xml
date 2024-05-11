@@ -31,6 +31,7 @@
         <module name="cc.unitmesh.cpp"/>
         <module name="cc.unitmesh.scala"/>
 <!--        <module name="cc.unitmesh.csharp"/>-->
+        <module name="cc.unitmesh.local"/>
 
         <!-- extension modules -->
         <module name="cc.unitmesh.database"/>

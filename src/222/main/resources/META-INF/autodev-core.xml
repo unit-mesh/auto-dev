@@ -173,6 +173,10 @@
         <extensionPoint qualifiedName="cc.unitmesh.customDevInsCompletionProvider"
                         interface="cc.unitmesh.devti.provider.devins.DevInsCompletionProvider"
                         dynamic="true"/>
+
+        <extensionPoint qualifiedName="cc.unitmesh.jsonTextProvider"
+                        interface="cc.unitmesh.devti.provider.JsonTextProvider"
+                        dynamic="true"/>
     </extensionPoints>
 
     <applicationListeners>
