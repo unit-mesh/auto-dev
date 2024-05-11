@@ -14,13 +14,13 @@ import java.awt.Dimension
 import java.awt.FontMetrics
 
 interface JsonTextProvider {
-    fun createComponent(myProject: Project, value: String, placeholder: String, fileName: String): LanguageTextField
+    fun createComponent(myProject: Project?, value: String, placeholder: String, fileName: String): LanguageTextField
 
     companion object {
         private val EP_NAME: ExtensionPointName<JsonTextProvider> =
             ExtensionPointName("cc.unitmesh.jsonTextProvider")
 
-        fun create(myProject: Project, value: String, placeholder: String, fileName: String): LanguageTextField {
+        fun create(myProject: Project?, value: String, placeholder: String, fileName: String): LanguageTextField {
             return EP_NAME.extensionList.map {
                 it.createComponent(myProject, value, placeholder, fileName)
             }.firstOrNull() ?: DefaultLanguageField(myProject, value, placeholder, fileName)
@@ -29,7 +29,7 @@ interface JsonTextProvider {
 }
 
 class DefaultLanguageField(
-    private val myProject: Project,
+    private val myProject: Project?,
     val value: String,
     private val placeholder: String,
     private val fileName: String

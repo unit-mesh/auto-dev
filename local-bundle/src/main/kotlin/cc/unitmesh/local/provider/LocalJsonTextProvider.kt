@@ -15,7 +15,7 @@ import java.awt.FontMetrics
 
 class LocalJsonTextProvider : JsonTextProvider {
     override fun createComponent(
-        myProject: Project,
+        myProject: Project?,
         value: String,
         placeholder: String,
         fileName: String
@@ -25,7 +25,7 @@ class LocalJsonTextProvider : JsonTextProvider {
 }
 
 class JsonLanguageField(
-    private val myProject: Project,
+    private val myProject: Project?,
     val value: String,
     private val placeholder: String,
     private val fileName: String

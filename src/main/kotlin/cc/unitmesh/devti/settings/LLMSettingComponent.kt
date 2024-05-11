@@ -48,7 +48,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     val project = ProjectManager.getInstance().openProjects.firstOrNull()
     private val customEnginePrompt: EditorTextField by lazy {
         JsonLanguageField(
-            project!!,
+            project,
             settings.customPrompts,
             AutoDevBundle.message("autodev.custom.prompt.placeholder"),
             CUSTOM_AGENT_FILE_NAME
