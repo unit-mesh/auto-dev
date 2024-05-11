@@ -1,0 +1,11 @@
+<idea-plugin package="cc.unitmesh.local">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+        <plugin id="com.intellij.modules.vcs"/>
+        <plugin id="com.intellij.modules.json"/>
+    </dependencies>
+
+    <actions>
+
+    </actions>
+</idea-plugin>

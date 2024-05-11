@@ -24,5 +24,4 @@
             <add-to-group group-id="ChangesViewPopupMenu" relative-to-action="ChangesView.Revert" anchor="after"/>
         </action>
     </actions>
-    >
 </idea-plugin>
