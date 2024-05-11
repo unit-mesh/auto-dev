@@ -12,8 +12,10 @@ import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.psi.PsiFile
+import com.intellij.ui.EditorTextField
 import com.intellij.ui.LanguageTextField
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.FormBuilder
 import java.awt.Dimension
 import java.awt.FontMetrics
@@ -53,8 +55,8 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
 
 
     val project = ProjectManager.getInstance().openProjects.firstOrNull()
-    private val customEnginePrompt by lazy {
-        object : LanguageTextField(JsonLanguage.INSTANCE, project, settings.customPrompts,
+    private val customEnginePrompt: EditorTextField by lazy {
+        class SettingJsonField : LanguageTextField(JsonLanguage.INSTANCE, project, settings.customPrompts,
             object : SimpleDocumentCreator() {
                 override fun createDocument(value: String?, language: Language?, project: Project?): Document {
                     return createDocument(value, language, project, this)
@@ -66,7 +68,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             }
         ) {
             override fun createEditor(): EditorEx {
-
                 return super.createEditor().apply {
                     setShowPlaceholderWhenFocused(true)
                     setHorizontalScrollbarVisible(false)
@@ -78,11 +79,13 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
 
                     val metrics: FontMetrics = getFontMetrics(font)
                     val columnWidth = metrics.charWidth('m')
-                    setOneLineMode(false)
+                    isOneLineMode = false
                     preferredSize = Dimension(25 * columnWidth, 25 * metrics.height)
                 }
             }
         }
+
+        SettingJsonField()
     }
 
     private val llmGroups = mapOf<AIEngines, List<LLMParam>>(
@@ -184,7 +187,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             .addLLMParam(gitLabUrlParam)
             .addLLMParam(gitLabTokenParam)
                 .addSeparator()
-                .addComponent(com.intellij.ui.dsl.builder.panel {
+                .addComponent(panel {
                     row {
                         comment("For OpenAI LLM, config OpenAI Key & OpenAI Model & Custom OpenAI Host <a>Open Log for Debug</a>") {
                             RevealFileAction.openFile(LoggerFactory.getLogFilePath())
@@ -192,7 +195,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
                     }
                 })
                 .addLLMParams(currentLLMParams)
-                .addComponent(com.intellij.ui.dsl.builder.panel {
+                .addComponent(panel {
                     testLLMConnection(project)
                 })
                 .addVerticalGap(2)
