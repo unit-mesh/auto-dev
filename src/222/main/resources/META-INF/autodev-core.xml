@@ -297,22 +297,6 @@
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
         </action>
 
-        <action id="autodev.Vcs.CommitMessage"
-                class="cc.unitmesh.devti.actions.vcs.CommitMessageSuggestionAction"
-                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
-                description="Ask AI generate commit message">
-
-            <add-to-group group-id="Vcs.MessageActionGroup"/>
-        </action>
-
-        <action id="autodev.Vcs.LLMChangelog"
-                class="cc.unitmesh.devti.actions.vcs.ReleaseNoteSuggestionAction"
-                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
-                description="Ask AI generate release note">
-
-            <add-to-group group-id="Vcs.Log.ContextMenu" relative-to-action="Vcs.ShowDiffWithLocal" anchor="after"/>
-        </action>
-
         <action id="cc.unitmesh.devti.actions.chat.CodeCompleteChatAction"
                 class="cc.unitmesh.devti.actions.chat.CodeCompleteChatAction"
                 description="Ask AI about this code">
