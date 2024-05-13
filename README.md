@@ -1,7 +1,7 @@
 <p align="center">
   <img src="plugin/src/main/resources/META-INF/pluginIcon.svg" width="160px" height="160px"  alt="logo" />
 </p>
-<h1 align="center">AutoDev</h1>
+<h1 align="center">AutoDev for Intellij</h1>
 <p align="center">
   <a href="https://codecov.io/gh/unit-mesh/auto-dev" > 
     <img src="https://codecov.io/gh/unit-mesh/auto-dev/graph/badge.svg?token=5RzcndjFPx"/> 
