@@ -9,8 +9,9 @@ permalink: /
 <p align="center">
   <img src="https://plugins.jetbrains.com/files/21520/412905/icon/pluginIcon.svg" width="160px" height="160px" />
 </p>
+<h1 align="center">AutoDev for Intellij Platform</h1>
 <p align="center">
-  <a href="https://codecov.io/gh/unit-mesh/auto-dev" > 
+  <a href="https://codecov.io/gh/unit-mesh/auto-dev"> 
     <img src="https://codecov.io/gh/unit-mesh/auto-dev/graph/badge.svg?token=5RzcndjFPx"/> 
   </a>
   <a href="https://github.com/unit-mesh/auto-dev/actions/workflows/build.yml">
@@ -23,6 +24,9 @@ permalink: /
 
 > 🧙‍AutoDev: The AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, and a helpful
 > bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Dev/Testing/Document/Agent feature 🧪 included! 🚀
+
+support IntelliJ IDEA, Android Studio, PyCharm, WebStorm, CLion,
+GoLand, RubyMine, AppCode, DataGrip, Rider, MPS, and more.
 
 VSCode Version: [https://github.com/unit-mesh/auto-dev-vscode](https://github.com/unit-mesh/auto-dev-vscode)
 
