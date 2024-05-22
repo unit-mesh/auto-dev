@@ -45,6 +45,7 @@ open class CustomSSEProcessor(private val project: Project) {
     open val requestFormat: String = ""
     open val responseFormat: String = ""
     private val logger = logger<CustomSSEProcessor>()
+
     private val recording: Recording
         get() {
             if (project.coderSetting.state.recordingInLocal == true) {
@@ -68,7 +69,7 @@ open class CustomSSEProcessor(private val project: Project) {
     }
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
-    fun streamSSE(call: Call, promptText: String): Flow<String> {
+    fun streamSSE(call: Call, promptText: String, keepHistory: Boolean = false): Flow<String> {
         val sseFlowable = Flowable
             .create({ emitter: FlowableEmitter<SSE> ->
                 call.enqueue(ResponseBodyCallback(emitter, true))

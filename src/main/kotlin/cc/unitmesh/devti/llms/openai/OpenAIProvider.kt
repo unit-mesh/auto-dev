@@ -135,6 +135,11 @@ class OpenAIProvider(val project: Project) : LLMProvider {
                     }
 
                 recording.write(RecordingInstruction(promptText, output))
+
+                if ((!keepHistory) || project.coderSetting.state.noChatHistory) {
+                    clearMessage()
+                }
+
                 close()
             }
         }
@@ -146,14 +151,14 @@ class OpenAIProvider(val project: Project) : LLMProvider {
             messages.add(systemMessage)
         }
 
-        val systemMessage = ChatMessage(ChatMessageRole.USER.value(), promptText)
+        val userMessage = ChatMessage(ChatMessageRole.USER.value(), promptText)
 
         historyMessageLength += promptText.length
         if (historyMessageLength > maxTokenLength) {
             messages.clear()
         }
 
-        messages.add(systemMessage)
+        messages.add(userMessage)
         logger.info("messages length: ${messages.size}")
 
         val chatCompletionRequest = ChatCompletionRequest.builder()
@@ -161,10 +166,6 @@ class OpenAIProvider(val project: Project) : LLMProvider {
             .temperature(0.0)
             .messages(messages)
             .build()
-
-        if (!keepHistory) {
-            clearMessage()
-        }
 
         return chatCompletionRequest
     }
