@@ -67,7 +67,7 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
                 logger.info("result: $result")
                 extractSuggestionsFromString(result).filter {
                     // since AI could not do well in math, like 5 result, we should filter it
-                    it.isNotBlank() && it.contains(" ")
+                    it.isNotBlank() || it.contains(" ")
                 }.map {
                     runReadAction {
                         if (!lookupImpl.isLookupDisposed && runJob.isActive && it.isNotBlank()) {
