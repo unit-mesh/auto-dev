@@ -6,14 +6,11 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.ex.FocusChangeListener
 import com.intellij.openapi.ui.ErrorBorderCapable
-import com.intellij.ui.scale.JBUIScale
 import com.intellij.util.ObjectUtils
 import com.intellij.util.ui.JBInsets
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.MacUIUtil
-import com.intellij.util.ui.UIUtil
 import java.awt.*
-import java.awt.geom.Path2D
 import java.awt.geom.Rectangle2D
 import javax.swing.JComponent
 import javax.swing.border.Border
