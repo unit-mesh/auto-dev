@@ -5,17 +5,18 @@ nav_order: 2
 parent: Workflow
 ---
 
-required:
+Required Intellij Plugin:
 
 Database Tools and SQL
 {: .label .label-yellow }
 
 Demo Video: [https://www.bilibili.com/video/BV1Ye411h7Qu/](https://www.bilibili.com/video/BV1Ye411h7Qu/)
 
-implementation: [cc.unitmesh.database.flow.AutoSqlFlow](
+implementation: cc.unitmesh.database.flow.AutoSqlFlow
 
-1. based on user input, AI select the target tables.
-2. generate the SQL scripts for the target tables.
+1. user should connect to DataSource/Database
+2. based on user input, AI select the target tables.
+3. generate the SQL scripts for the target tables.
     - generate columns of selected tables.
     - generate SQL scripts for selected tables.
 
