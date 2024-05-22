@@ -8,7 +8,6 @@ import cc.unitmesh.devti.agent.configurable.customAgentSetting
 import cc.unitmesh.devti.agent.model.CustomAgentState
 import cc.unitmesh.devti.custom.compile.CustomVariable
 import cc.unitmesh.devti.llms.LlmFactory
-import cc.unitmesh.devti.util.parser.PostCodeProcessor
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
@@ -20,10 +19,9 @@ import kotlinx.coroutines.launch
 class ChatCodingService(var actionType: ChatActionType, val project: Project) {
     private val llmProvider = LlmFactory().create(project)
     private val counitProcessor = project.service<CustomAgentChatProcessor>()
+    private var currentJob: Job? = null
 
     val action = actionType.instruction(project = project).requestText
-
-    var currentJob: Job? = null
 
     fun getLabel(): String = "$actionType Code"
 
@@ -100,15 +98,6 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
 
     private fun makeChatBotRequest(requestPrompt: String, newChatContext: Boolean): Flow<String> {
         return llmProvider.stream(requestPrompt, "", keepHistory = !newChatContext)
-    }
-
-    private fun getCodeSection(content: String, prefixText: String, suffixText: String): String {
-        val pattern = "```(.+?)```".toRegex(RegexOption.DOT_MATCHES_ALL)
-        val match = pattern.find(content)
-
-        if (match != null) return match.groupValues[1].trim()
-
-        return PostCodeProcessor(prefixText, suffixText, content).execute()
     }
 
     fun clearSession() {
