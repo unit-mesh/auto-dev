@@ -26,17 +26,103 @@ def mock_market(messages: Messages):
 Here are the APIs you can use:
 
 ```markdown
-GET /wp/v2/posts
-GET /wp/v2/posts/{id}
-POST /wp/v2/posts
-PUT /wp/v2/posts/{id}
-DELETE /wp/v2/posts/{id}
+### Account Endpoints
 
-GET /wp/v2/pages
-GET /wp/v2/pages/{id}
-POST /wp/v2/pages
-PUT /wp/v2/pages/{id}
-DELETE /wp/v2/pages/{id}
+#### GET /accounts
+- **Input**: 
+  {
+    "headers": {
+      "Authorization": "Bearer {access_token}"
+    }
+  }
+- **Output**: 
+  [
+    {
+      "id": "12345",
+      "name": "Checking Account",
+      "balance": 1500.75,
+      "currency": "USD",
+      "type": "checking"
+    },
+    {
+      "id": "67890",
+      "name": "Savings Account",
+      "balance": 5000.00,
+      "currency": "USD",
+      "type": "savings"
+    }
+  ]
+
+#### GET /accounts/{id}
+- **Input**: 
+  {
+    "headers": {
+      "Authorization": "Bearer {access_token}"
+    }
+  }
+- **Output**: 
+  {
+    "id": "12345",
+    "name": "Checking Account",
+    "balance": 1500.75,
+    "currency": "USD",
+    "type": "checking"
+  }
+
+#### POST /accounts
+- **Input**: 
+  {
+    "headers": {
+      "Authorization": "Bearer {access_token}"
+    },
+    "body": {
+      "name": "New Account",
+      "type": "checking",
+      "currency": "USD",
+      "initial_balance": 1000.00
+    }
+  }
+- **Output**: 
+  {
+    "id": "11223",
+    "name": "New Account",
+    "balance": 1000.00,
+    "currency": "USD",
+    "type": "checking"
+  }
+
+#### PUT /accounts/{id}
+- **Input**: 
+  {
+    "headers": {
+      "Authorization": "Bearer {access_token}"
+    },
+    "body": {
+      "name": "Updated Account Name",
+      "balance": 2000.00,
+      "currency": "USD"
+    }
+  }
+- **Output**: 
+  {
+    "id": "12345",
+    "name": "Updated Account Name",
+    "balance": 2000.00,
+    "currency": "USD",
+    "type": "checking"
+  }
+#### DELETE /accounts/{id}
+- **Input**: 
+  {
+    "headers": {
+      "Authorization": "Bearer {access_token}"
+    }
+  }
+  ```
+- **Output**: 
+  {
+    "status": "204 No Content"
+  }
 ```"""
 
 
