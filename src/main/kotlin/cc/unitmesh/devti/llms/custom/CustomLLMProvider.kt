@@ -64,6 +64,10 @@ class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(
         client = client.newBuilder().readTimeout(timeout).build()
         val call = client.newCall(builder.url(url).post(body).build())
 
+        if (!keepHistory || project.coderSetting.state.noChatHistory) {
+            clearMessage()
+        }
+
         return if (autoDevSettingsState.customEngineResponseType == ResponseType.SSE.name) {
             streamSSE(call, promptText)
         } else {

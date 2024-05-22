@@ -99,7 +99,7 @@ class OpenAIProvider(val project: Project) : LLMProvider {
     }
 
     override fun prompt(promptText: String): String {
-        val completionRequest = prepareRequest(promptText, "")
+        val completionRequest = prepareRequest(promptText, "", true)
 
         val completion = service.createChatCompletion(completionRequest)
         val output = completion
@@ -110,16 +110,12 @@ class OpenAIProvider(val project: Project) : LLMProvider {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun stream(promptText: String, systemPrompt: String, keepHistory: Boolean): Flow<String> {
-        if (!keepHistory) {
+        if ((!keepHistory) || project.coderSetting.state.noChatHistory) {
             clearMessage()
         }
 
-        if (project.coderSetting.state.noChatHistory) {
-            messages.clear()
-        }
-
         var output = ""
-        val completionRequest = prepareRequest(promptText, systemPrompt)
+        val completionRequest = prepareRequest(promptText, systemPrompt, keepHistory)
 
         return callbackFlow {
             withContext(Dispatchers.IO) {
@@ -144,7 +140,7 @@ class OpenAIProvider(val project: Project) : LLMProvider {
         }
     }
 
-    private fun prepareRequest(promptText: String, systemPrompt: String): ChatCompletionRequest? {
+    private fun prepareRequest(promptText: String, systemPrompt: String, keepHistory: Boolean): ChatCompletionRequest? {
         if (messages.isEmpty()) {
             val systemMessage = ChatMessage(ChatMessageRole.SYSTEM.value(), systemPrompt)
             messages.add(systemMessage)
@@ -160,11 +156,17 @@ class OpenAIProvider(val project: Project) : LLMProvider {
         messages.add(systemMessage)
         logger.info("messages length: ${messages.size}")
 
-        return ChatCompletionRequest.builder()
+        val chatCompletionRequest = ChatCompletionRequest.builder()
             .model(openAiVersion)
             .temperature(0.0)
             .messages(messages)
             .build()
+
+        if (!keepHistory) {
+            clearMessage()
+        }
+
+        return chatCompletionRequest
     }
 
     companion object {
