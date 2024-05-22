@@ -65,7 +65,10 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
                 }
                 val result = sb.toString()
                 logger.info("result: $result")
-                extractSuggestionsFromString(result).filter { it.isNotBlank() }.map {
+                extractSuggestionsFromString(result).filter {
+                    // since AI could not do well in math, like 5 result, we should filter it
+                    it.isNotBlank() && it.contains(" ")
+                }.map {
                     runReadAction {
                         if (!lookupImpl.isLookupDisposed && runJob.isActive && it.isNotBlank()) {
                             lookupImpl.addItem(CustomRenameLookupElement(it), PrefixMatcher.ALWAYS_TRUE)
@@ -123,6 +126,8 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
         it.replace(Regex("^\\d+\\."), "")
             .trim()
             .removeSurrounding("`")
+            // for markdown highlight
+            .removeSurrounding("**")
             .removeSuffix("()")
     }
 }
