@@ -7,7 +7,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 import com.jetbrains.python.psi.PyFunction
 import com.jetbrains.python.psi.types.TypeEvalContext
-import org.jetbrains.annotations.NotNull
 
 class PythonMethodContextBuilder : MethodContextBuilder {
     override fun getMethodContext(

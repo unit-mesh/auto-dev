@@ -12,11 +12,10 @@ class PythonAutoDevFlow : DevFlowProvider() {
     override fun initContext(kanban: Kanban?, aiRunner: LLMProvider, component: ChatCodingPanel, project: Project) {
     }
 
-    override fun getOrCreateStoryDetail(id: String): String {
-        return ""
-    }
+    override fun getOrCreateStoryDetail(id: String): String = ""
 
     override fun updateOrCreateDtoAndEntity(storyDetail: String) {}
+
     override fun fetchSuggestEndpoint(storyDetail: String): TargetEndpoint {
         return TargetEndpoint("", DtClass("", listOf()), false)
     }
