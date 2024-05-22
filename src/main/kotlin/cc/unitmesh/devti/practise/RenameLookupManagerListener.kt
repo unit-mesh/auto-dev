@@ -64,7 +64,7 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
                     sb.append(it)
                 }
                 val result = sb.toString()
-                logger.info("result: $result")
+
                 extractSuggestionsFromString(result).filter {
                     // since AI could not do well in math, like 5 results, we should filter it
                     it.isNotBlank() && !it.contains(" ")
