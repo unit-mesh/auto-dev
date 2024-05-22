@@ -17,7 +17,6 @@ interface CompletableMessage {
 
     companion object {
         val key: DataKey<CompletableMessage> = DataKey.create("CompletableMessage")
-
     }
 }
 

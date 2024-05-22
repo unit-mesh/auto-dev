@@ -3,17 +3,21 @@ package cc.unitmesh.devti.gui.chat.message
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.temporary.gui.block.CompletableMessage
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAwareToggleAction
 import com.intellij.openapi.project.ProjectManager
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
 import javax.swing.Icon
 
 enum class ChatMessageRating {
     None,
     Like,
-    Dislike
+    Dislike,
+    Copy
 }
 
 abstract class AutoDevRateMessageAction : DumbAwareToggleAction() {
@@ -22,7 +26,7 @@ abstract class AutoDevRateMessageAction : DumbAwareToggleAction() {
     abstract fun getReactionIcon(): Icon
     abstract fun getReactionIconSelected(): Icon
 
-    private fun getMessage(event: AnActionEvent): CompletableMessage? {
+    public fun getMessage(event: AnActionEvent): CompletableMessage? {
         return event.dataContext.getData(CompletableMessage.key)
     }
 
@@ -58,5 +62,20 @@ abstract class AutoDevRateMessageAction : DumbAwareToggleAction() {
         override fun getReactionIcon(): Icon = AutoDevIcons.Dislike
 
         override fun getReactionIconSelected(): Icon = AutoDevIcons.Disliked
+    }
+
+    class Copy : AutoDevRateMessageAction() {
+        override fun getReaction(): ChatMessageRating = ChatMessageRating.Copy
+
+        override fun getReactionIcon(): Icon = AllIcons.Actions.Copy
+
+        override fun getReactionIconSelected(): Icon = AllIcons.Actions.Copy
+
+        override fun setSelected(e: AnActionEvent, state: Boolean) {
+            val message = getMessage(e) ?: return
+            val selection = StringSelection(message.text)
+            val clipboard = Toolkit.getDefaultToolkit().systemClipboard
+            clipboard.setContents(selection, null)
+        }
     }
 }

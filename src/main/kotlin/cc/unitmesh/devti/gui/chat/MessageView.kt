@@ -2,6 +2,7 @@ package cc.unitmesh.devti.gui.chat
 
 
 import cc.unitmesh.devti.gui.component.DisplayComponent
+import com.intellij.openapi.actionSystem.DataProvider
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl
 import com.intellij.openapi.application.ApplicationManager
@@ -20,10 +21,11 @@ import javax.swing.*
 import kotlin.jvm.internal.Ref
 
 class MessageView(private val message: String, val role: ChatRole, private val displayText: String) :
-    JBPanel<MessageView>() {
+    JBPanel<MessageView>(), DataProvider {
     private val myNameLabel: Component
     private val component: DisplayComponent = DisplayComponent(message)
     private var centerPanel: JPanel = JPanel(VerticalLayout(JBUI.scale(8)))
+    private var messageView: SimpleMessage? = null
 
     init {
         isDoubleBuffered = true
@@ -56,6 +58,7 @@ class MessageView(private val message: String, val role: ChatRole, private val d
         if (role == ChatRole.User) {
             ApplicationManager.getApplication().invokeLater {
                 val simpleMessage = SimpleMessage(displayText, message, role)
+                messageView = simpleMessage
                 renderInPartView(simpleMessage)
             }
         } else {
@@ -75,7 +78,7 @@ class MessageView(private val message: String, val role: ChatRole, private val d
 
         if (group != null) {
             val toolbar = ActionToolbarImpl(javaClass.getName(), group, true)
-            toolbar.setLayoutPolicy(0)
+//            toolbar.setLayoutPolicy(0)
             toolbar.component.setOpaque(false)
             toolbar.component.setBorder(JBUI.Borders.empty())
             toolbar.setTargetComponent(this)
@@ -129,6 +132,7 @@ class MessageView(private val message: String, val role: ChatRole, private val d
             centerPanel.add(createTitlePanel())
 
             val message = SimpleMessage(answer, answer, ChatRole.Assistant)
+            this.messageView = message
             renderInPartView(message)
 
             centerPanel.revalidate()
@@ -239,5 +243,13 @@ class MessageView(private val message: String, val role: ChatRole, private val d
             return parts
         }
 
+    }
+
+    override fun getData(dataId: String): CompletableMessage? {
+        return if (CompletableMessage.key.`is`(dataId)) {
+           return this.messageView
+        } else {
+            null
+        }
     }
 }
