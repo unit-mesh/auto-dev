@@ -1,6 +1,6 @@
 ---
 layout: default
-title: FAQ
+title: Troubleshooting
 nav_order: 100
 ---
 
