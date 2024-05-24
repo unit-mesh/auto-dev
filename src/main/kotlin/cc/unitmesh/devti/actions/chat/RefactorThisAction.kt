@@ -13,7 +13,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 
-class RefactorThisAction : ChatBaseAction() {
+open class RefactorThisAction : ChatBaseAction() {
     init {
         getTemplatePresentation().text = AutoDevBundle.message("settings.autodev.rightClick.refactor")
     }
@@ -42,13 +42,11 @@ class RefactorThisAction : ChatBaseAction() {
         val commentSymbol = commentPrefix(element)
 
         return collectProblems(project, editor, element)?.let {
-            // cc.unitmesh.untitled.demo.entity.Author
-            // check if the element has class, then search in a local project
             "\n\n$commentSymbol relative static analysis result:\n$it"
         } ?: ""
     }
 
-    private fun commentPrefix(element: PsiElement): String {
+    open fun commentPrefix(element: PsiElement): String {
         return LanguageCommenters.INSTANCE.forLanguage(element.language)?.lineCommentPrefix ?: "//"
     }
 
@@ -60,7 +58,7 @@ class RefactorThisAction : ChatBaseAction() {
      * @param element The PsiElement for which the problems are to be collected.
      * @return A string containing all the problems found, separated by new lines, or `null` if no problems were found.
      */
-    private fun collectProblems(project: Project, editor: Editor, element: PsiElement): String? {
+    open fun collectProblems(project: Project, editor: Editor, element: PsiElement): String? {
         val range = element.textRange
         val document = editor.document
         val errors: MutableList<String> = mutableListOf()

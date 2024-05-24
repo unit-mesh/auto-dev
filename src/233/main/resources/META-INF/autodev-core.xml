@@ -252,6 +252,11 @@
                     description="Ask AI refactor this code">
             </action>
 
+            <action id="cc.unitmesh.devti.actions.chat.FixThisAction"
+                    class="cc.unitmesh.devti.actions.chat.FixThisAction"
+                    description="Ask AI refactor this code">
+            </action>
+
             <action id="cc.unitmesh.devti.actions.chat.ChatWithThisAction"
                     class="cc.unitmesh.devti.actions.chat.ChatWithThisAction"
                     description="Ask AI chat with this code">
