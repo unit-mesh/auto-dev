@@ -93,7 +93,7 @@ interface RunService {
 
     fun PsiFile.collectPsiError(): MutableList<String> {
         val errors = mutableListOf<String>()
-        val visitor = object : JavaSyntaxCheckingVisitor() {
+        val visitor = object : PsiSyntaxCheckingVisitor() {
             override fun visitElement(element: PsiElement) {
                 if (element is PsiErrorElement) {
                     errors.add("Syntax error at position ${element.textRange.startOffset}: ${element.errorDescription}")
@@ -106,7 +106,7 @@ interface RunService {
         return errors
     }
 
-    abstract class JavaSyntaxCheckingVisitor : com.intellij.psi.PsiElementVisitor() {
+    abstract class PsiSyntaxCheckingVisitor : com.intellij.psi.PsiElementVisitor() {
         override fun visitElement(element: PsiElement) {
             runReadAction {
                 element.children.forEach { it.accept(this) }

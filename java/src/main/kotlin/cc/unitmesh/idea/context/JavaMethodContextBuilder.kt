@@ -28,7 +28,11 @@ class JavaMethodContextBuilder : MethodContextBuilder {
             emptyList()
         }
 
-        val ios: List<PsiElement> = JavaTypeUtil.resolveByMethod(psiElement).values.mapNotNull { it }
+        val ios: List<PsiElement> = try {
+            JavaTypeUtil.resolveByMethod(psiElement).values.mapNotNull { it }
+        } catch (e: Exception) {
+            emptyList()
+        }
 
         return runReadAction { MethodContext(
             psiElement,

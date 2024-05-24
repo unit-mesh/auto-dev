@@ -178,7 +178,8 @@ class JavaAutoTestService : AutoTestService() {
 
     override fun hasSyntaxError(outputFile: VirtualFile, project: Project): Boolean {
         val sourceFile = runReadAction { PsiManager.getInstance(project).findFile(outputFile) as? PsiJavaFile } ?: return true
-        return sourceFile.collectPsiError().isNotEmpty()
+        val collectPsiError = sourceFile.collectPsiError()
+        return collectPsiError.isNotEmpty()
     }
 
     private fun createTestFile(
@@ -210,7 +211,8 @@ class JavaAutoTestService : AutoTestService() {
             val canonicalName = runReadAction {
                 val psiFile: PsiJavaFile =
                     PsiManager.getInstance(project).findFile(virtualFile) as? PsiJavaFile ?: return@runReadAction null
-                psiFile.packageName + "." + virtualFile.nameWithoutExtension
+                // skip for non-test files
+                (psiFile.packageName + "." + virtualFile.nameWithoutExtension).removePrefix(".")
             } ?: return null
 
             val runManager = RunManager.getInstance(project)

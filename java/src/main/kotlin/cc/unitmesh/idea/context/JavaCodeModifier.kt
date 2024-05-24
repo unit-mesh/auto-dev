@@ -44,7 +44,7 @@ open class JavaCodeModifier : CodeModifier {
 
         if (classes.isNotEmpty()) {
             val lastClass = classes.last()
-            val classEndOffset = lastClass.textRange.endOffset
+            val classEndOffset = runReadAction { lastClass.textRange.endOffset }
 
             val newCode = try {
                 runReadAction {
