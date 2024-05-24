@@ -28,7 +28,7 @@ import com.intellij.util.text.nullize
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
-class RunServiceTask(
+open class RunServiceTask(
     private val project: Project,
     private val virtualFile: VirtualFile,
     private val testElement: PsiElement?,
@@ -42,7 +42,7 @@ class RunServiceTask(
     private fun runnerId() = runner?.runnerId ?: DefaultRunExecutor.EXECUTOR_ID
 
     override fun run(indicator: ProgressIndicator) {
-        doRun(indicator)
+        runAndCollectTestResults(indicator)
     }
 
     /**
@@ -52,7 +52,7 @@ class RunServiceTask(
      * @param indicator A progress indicator that is used to track the progress of the execution.
      * @return The check result of the executed run configuration, or `null` if no run configuration could be created.
      */
-    fun doRun(indicator: ProgressIndicator?): RunnerResult? {
+    private fun runAndCollectTestResults(indicator: ProgressIndicator?): RunnerResult? {
         val settings: RunnerAndConfigurationSettings? = runService.createRunSettings(project, virtualFile, testElement)
         if (settings == null) {
             logger<RunServiceTask>().warn("No run configuration found for file: ${virtualFile.path}")
@@ -198,7 +198,7 @@ class RunServiceTask(
         val env =
             ExecutionEnvironmentBuilder.create(DefaultRunExecutor.getRunExecutorInstance(), this)
                 .activeTarget()
-                .build(callback(runContext))
+                .build(processRunCompletionAction(runContext))
 
         if (runner == null || env.state == null) {
             runContext.latch.countDown()
@@ -210,7 +210,17 @@ class RunServiceTask(
         return true
     }
 
-    fun callback(runContext: RunContext) = ProgramRunner.Callback { descriptor ->
+    /**
+     * This function defines a process run completion action to be executed once a process run by the program runner completes.
+     * It is designed to handle the aftermath of a process execution, including stopping the process and notifying the run context.
+     *
+     * @param runContext The context in which the run operation is being executed. It provides the necessary information
+     *                   and handles to manage the run process, including a latch to synchronize the completion of the run.
+     *                   The run context is also responsible for disposing of resources once the run completes.
+     *
+     * Note: This function uses the 'return@Callback' syntax to exit the lambda expression early in case of a null descriptor.
+     */
+    fun processRunCompletionAction(runContext: RunContext) = ProgramRunner.Callback { descriptor ->
         // Descriptor can be null in some cases.
         // For example, IntelliJ Rust's test runner provides null here if compilation fails
         if (descriptor == null) {
