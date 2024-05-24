@@ -201,16 +201,6 @@
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
         <autoDevIntention>
-            <className>cc.unitmesh.devti.intentions.action.CodeCompletionBaseIntention</className>
-            <bundleName>messages.AutoDevBundle</bundleName>
-            <categoryKey>intention.category.llm</categoryKey>
-        </autoDevIntention>
-        <autoDevIntention>
-            <className>cc.unitmesh.devti.intentions.action.CodeCompletionInlayIntention</className>
-            <bundleName>messages.AutoDevBundle</bundleName>
-            <categoryKey>intention.category.llm</categoryKey>
-        </autoDevIntention>
-        <autoDevIntention>
             <className>cc.unitmesh.devti.intentions.action.AutoTestThisBaseIntention</className>
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
