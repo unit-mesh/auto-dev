@@ -176,6 +176,11 @@ class JavaAutoTestService : AutoTestService() {
         DaemonCodeAnalyzer.getInstance(project).autoImportReferenceAtCursor(editor, sourceFile)
     }
 
+    override fun hasSyntaxError(outputFile: VirtualFile, project: Project): Boolean {
+        val sourceFile = runReadAction { PsiManager.getInstance(project).findFile(outputFile) as? PsiJavaFile } ?: return true
+        return sourceFile.collectPsiError().isNotEmpty()
+    }
+
     private fun createTestFile(
         sourceFile: PsiFile,
         testDir: VirtualFile,

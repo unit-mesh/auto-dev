@@ -59,6 +59,10 @@ abstract class AutoTestService : LazyExtensionInstance<AutoTestService>(), RunSe
 
     }
 
+    open fun hasSyntaxError(outputFile: VirtualFile, project: Project): Boolean {
+        return true
+    }
+
     companion object {
         val log = logger<AutoTestService>()
         private val EP_NAME: ExtensionPointName<AutoTestService> =

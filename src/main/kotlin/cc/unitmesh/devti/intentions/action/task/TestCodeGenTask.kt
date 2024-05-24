@@ -127,11 +127,13 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         runBlocking {
             writeTestToFile(request.project, flow, testContext)
 
-            autoTestService?.fixImports(testContext.outputFile, request.project)
-
             navigateTestFile(testContext.outputFile, request.project)
 
-            autoTestService?.runFile(request.project, testContext.outputFile, testContext.testElement)
+            autoTestService?.fixImports(testContext.outputFile, request.project)
+
+            if (autoTestService?.hasSyntaxError(testContext.outputFile, request.project) == false) {
+                autoTestService.runFile(request.project, testContext.outputFile, testContext.testElement)
+            }
 
             AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)
             indicator.fraction = 1.0
