@@ -44,6 +44,7 @@ You can customize your prompt in `Settings` -> `Tools` -> `AutoDev`
 - priority: the priority of the action, the higher will be first. (0~1000 was recommended)
 - template: the template of the action, you can use `${SPEC_controller}` to insert spec, `${SELECTION}` to insert
   selected code.
+- selectedRegex (since @1.8.3 from [#174](https://github.com/unit-mesh/auto-dev/pull/174)): the regex to match the selected code 
 
 ## Variables
 
