@@ -27,7 +27,7 @@ class JavaClassContextBuilder : ClassContextBuilder {
 
         return ClassContext(
             psiElement, psiElement.text, psiElement.name, methods, fields, supers, usages,
-            displayName = psiElement.qualifiedName,
+            displayName = runReadAction { psiElement.qualifiedName },
             annotations
         )
     }

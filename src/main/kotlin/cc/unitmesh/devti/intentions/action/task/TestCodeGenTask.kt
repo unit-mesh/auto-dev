@@ -14,10 +14,13 @@ import cc.unitmesh.devti.statusbar.AutoDevStatusService
 import cc.unitmesh.devti.template.GENIUS_CODE
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.util.parser.parseCodeFromString
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.progress.ProgressIndicator
@@ -123,6 +126,9 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
 
         runBlocking {
             writeTestToFile(request.project, flow, testContext)
+
+            autoTestService?.fixImports(testContext.outputFile, request.project)
+
             navigateTestFile(testContext.outputFile, request.project)
 
             autoTestService?.runFile(request.project, testContext.outputFile, testContext.testElement)

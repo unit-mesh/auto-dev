@@ -5,6 +5,7 @@ import cc.unitmesh.devti.provider.context.TestFileContext
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.serviceContainer.LazyExtensionInstance
@@ -53,6 +54,10 @@ abstract class AutoTestService : LazyExtensionInstance<AutoTestService>(), RunSe
      * @return a list of ClassContext objects representing the relevant classes found in the project
      */
     abstract fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext>
+
+    open fun fixImports(outputFile: VirtualFile, project: Project) {
+
+    }
 
     companion object {
         val log = logger<AutoTestService>()

@@ -11,6 +11,8 @@ import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.lang.java.JavaLanguage
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.invokeAndWaitIfNeeded
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.WriteCommandAction
@@ -35,9 +37,10 @@ class JavaAutoTestService : AutoTestService() {
     override fun isApplicable(element: PsiElement): Boolean = element.language is JavaLanguage
 
     override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
-        val psiFile = runReadAction {PsiManager.getInstance(project).findFile(virtualFile)} as? PsiJavaFile ?: return null
+        val psiFile =
+            runReadAction { PsiManager.getInstance(project).findFile(virtualFile) } as? PsiJavaFile ?: return null
 
-        if(psiFile.collectPsiError().isNotEmpty()) {
+        if (psiFile.collectPsiError().isNotEmpty()) {
             return null
         }
 
@@ -105,21 +108,29 @@ class JavaAutoTestService : AutoTestService() {
         val currentClass = extracted(psiElement)
 
         return if (testFile != null) {
-            TestFileContext(isNewFile, testFile, relatedModels, testFileName, sourceFile.language, currentClass, imports)
+            TestFileContext(
+                isNewFile,
+                testFile,
+                relatedModels,
+                testFileName,
+                sourceFile.language,
+                currentClass,
+                imports
+            )
         } else {
             val targetFile = createTestFile(sourceFile, testDir!!, packageName, project)
             TestFileContext(isNewFile = true, targetFile, relatedModels, "", sourceFile.language, currentClass, imports)
         }
     }
 
-    private fun extracted(psiElement: PsiElement) : String? {
+    private fun extracted(psiElement: PsiElement): String? {
         var currentClass: ClassContext? = null;
 
         val classContextProvider = ClassContextProvider(false)
         if (psiElement is PsiClass) {
-            currentClass = classContextProvider.from(psiElement)
+            currentClass = runReadAction { classContextProvider.from(psiElement) }
         } else if (psiElement is PsiMethod) {
-            currentClass = runReadAction {   psiElement.containingClass?.let { classContextProvider.from(it) }}
+            currentClass = runReadAction { psiElement.containingClass?.let { classContextProvider.from(it) } }
         }
 
         return currentClass?.format();
@@ -157,6 +168,13 @@ class JavaAutoTestService : AutoTestService() {
         }
     }
 
+    override fun fixImports(outputFile: VirtualFile, project: Project) {
+        val sourceFile =
+            runReadAction { PsiManager.getInstance(project).findFile(outputFile) as? PsiJavaFile } ?: return
+
+        val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return
+        DaemonCodeAnalyzer.getInstance(project).autoImportReferenceAtCursor(editor, sourceFile)
+    }
 
     private fun createTestFile(
         sourceFile: PsiFile,
@@ -166,23 +184,12 @@ class JavaAutoTestService : AutoTestService() {
     ): VirtualFile {
         val sourceFileName = sourceFile.name
         val testFileName = sourceFileName.replace(".java", "Test.java")
-        val testFileContent = "package $packageName;\n\n"
+        val testFileContent = ""
 
         return WriteCommandAction.runWriteCommandAction<VirtualFile>(project) {
             val testFile = testDir.createChildData(this, testFileName)
-
             val document = FileDocumentManager.getInstance().getDocument(testFile)
             document?.setText(testFileContent)
-
-            // OptimizeImportsFix
-            CommandProcessor.getInstance().runUndoTransparentAction {
-                val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return@runUndoTransparentAction
-                DaemonCodeAnalyzer.getInstance(project).autoImportReferenceAtCursor(
-                    editor,
-                    sourceFile
-                )
-            }
-
             testFile
         }
     }
@@ -196,7 +203,8 @@ class JavaAutoTestService : AutoTestService() {
             val name = virtualFile.name
 
             val canonicalName = runReadAction {
-                val psiFile: PsiJavaFile = PsiManager.getInstance(project).findFile(virtualFile) as? PsiJavaFile ?: return@runReadAction null
+                val psiFile: PsiJavaFile =
+                    PsiManager.getInstance(project).findFile(virtualFile) as? PsiJavaFile ?: return@runReadAction null
                 psiFile.packageName + "." + virtualFile.nameWithoutExtension
             } ?: return null
 
