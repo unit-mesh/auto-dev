@@ -1,17 +1,11 @@
 package cc.unitmesh.devti.update
 
-import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
-import com.intellij.openapi.startup.StartupManager
-import com.intellij.openapi.updateSettings.impl.PluginDownloader
-import com.intellij.openapi.updateSettings.impl.UpdateChecker
-import com.intellij.openapi.updateSettings.impl.UpdateSettings
-import com.intellij.openapi.util.BuildNumber
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import java.time.ZonedDateTime
 
