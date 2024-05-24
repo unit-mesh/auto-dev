@@ -51,7 +51,7 @@ class KotlinCodeModifier : CodeModifier {
                 val psiClass = ktFile?.classes?.firstOrNull()
                 if (psiClass == null) {
                     log.error("Failed to find KotlinClass in the source file: $ktFile, code: $code")
-
+                    insertClass(sourceFile, project, code)
                     return@runReadAction null
                 }
 
