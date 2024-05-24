@@ -37,7 +37,7 @@ class KotlinTestDataBuilderTest : LightPlatformTestCase() {
 
     fun testShouldParseBaseRoute() {
         val createFile = KtPsiFactory(project).createFile("UserController.kt", code)
-        val builder = KotlinTestDataBuilder()
+        val builder = KotlinPsiElementDataBuilder()
 
         val firstFunction = PsiTreeUtil.findChildOfType(createFile, KtNamedFunction::class.java)!!
 
@@ -74,7 +74,7 @@ class KotlinTestDataBuilderTest : LightPlatformTestCase() {
             """.trimIndent()
 
         val createFile = KtPsiFactory(project).createFile("UserController.kt", code)
-        val builder = KotlinTestDataBuilder()
+        val builder = KotlinPsiElementDataBuilder()
 
         val firstFunction = PsiTreeUtil.findChildOfType(createFile, KtNamedFunction::class.java)!!
         val outboundData = builder.outboundData(firstFunction)
@@ -106,7 +106,7 @@ class KotlinTestDataBuilderTest : LightPlatformTestCase() {
         }
 
         val createFile = KtPsiFactory(project).createFile("UserController.kt", code)
-        val builder = KotlinTestDataBuilder()
+        val builder = KotlinPsiElementDataBuilder()
 
         val firstFunction = PsiTreeUtil.findChildOfType(createFile, KtNamedFunction::class.java)!!
         val outboundData = builder.outboundData(firstFunction)
@@ -174,7 +174,7 @@ class KotlinTestDataBuilderTest : LightPlatformTestCase() {
         """.trimIndent()
 
         val createFile = KtPsiFactory(project).createFile("MethodController.kt", code)
-        val builder = KotlinTestDataBuilder()
+        val builder = KotlinPsiElementDataBuilder()
 
         val firstFunction = PsiTreeUtil.findChildOfType(createFile, KtNamedFunction::class.java)!!
         val outboundData = builder.outboundData(firstFunction)

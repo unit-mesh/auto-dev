@@ -129,7 +129,7 @@
 
         <extensionPoint qualifiedName="cc.unitmesh.testDataBuilder"
                         beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
-            <with attribute="implementationClass" implements="cc.unitmesh.devti.provider.TestDataBuilder"/>
+            <with attribute="implementationClass" implements="cc.unitmesh.devti.provider.PsiElementDataBuilder"/>
         </extensionPoint>
 
         <extensionPoint qualifiedName="cc.unitmesh.buildSystemProvider"

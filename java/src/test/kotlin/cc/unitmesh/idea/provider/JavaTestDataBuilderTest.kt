@@ -2,8 +2,6 @@ package cc.unitmesh.idea.provider;
 
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.testFramework.LightPlatformTestCase
-import com.intellij.testFramework.PsiTestUtil
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase
 
 class JavaTestDataBuilderTest : LightJavaCodeInsightFixtureTestCase() {
@@ -28,7 +26,7 @@ class JavaTestDataBuilderTest : LightJavaCodeInsightFixtureTestCase() {
         )
 
         val method = PsiTreeUtil.findChildOfType(springController, PsiMethod::class.java)
-        val baseRoute = JavaTestDataBuilder().baseRoute(method!!)
+        val baseRoute = JavaPsiElementDataBuilder().baseRoute(method!!)
         assertEquals("/api", baseRoute)
     }
 }

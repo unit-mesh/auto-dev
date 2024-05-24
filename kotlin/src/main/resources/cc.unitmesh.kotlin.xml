@@ -15,7 +15,7 @@
                              implementationClass="cc.unitmesh.kotlin.provider.KotlinLivingDocumentation"/>
 
         <testDataBuilder language="kotlin"
-                         implementationClass="cc.unitmesh.kotlin.provider.KotlinTestDataBuilder"/>
+                         implementationClass="cc.unitmesh.kotlin.provider.KotlinPsiElementDataBuilder"/>
 
         <classContextBuilder language="kotlin"
                              implementationClass="cc.unitmesh.kotlin.context.KotlinClassContextBuilder"/>

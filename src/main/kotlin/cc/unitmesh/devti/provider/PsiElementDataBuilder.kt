@@ -29,7 +29,7 @@ import com.intellij.psi.PsiElement
  * @see Language
  * @see LanguageExtension
  */
-interface TestDataBuilder {
+interface PsiElementDataBuilder {
     /**
      * Lookup the base route of the Method for parent
      */
@@ -40,10 +40,10 @@ interface TestDataBuilder {
     fun outboundData(element: PsiElement): Map<String, String> = mapOf()
 
     companion object {
-        private val languageExtension: LanguageExtension<TestDataBuilder> =
+        private val languageExtension: LanguageExtension<PsiElementDataBuilder> =
             LanguageExtension("cc.unitmesh.testDataBuilder")
 
-        fun forLanguage(language: Language): TestDataBuilder? {
+        fun forLanguage(language: Language): PsiElementDataBuilder? {
             return languageExtension.forLanguage(language)
         }
     }

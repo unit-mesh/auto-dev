@@ -1,12 +1,12 @@
 package cc.unitmesh.idea.provider
 
-import cc.unitmesh.devti.provider.TestDataBuilder
+import cc.unitmesh.devti.provider.PsiElementDataBuilder
 import cc.unitmesh.idea.context.JavaContextCollection
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiClassReferenceType
 
-open class JavaTestDataBuilder : TestDataBuilder {
+open class JavaPsiElementDataBuilder : PsiElementDataBuilder {
     /**
      * Returns the base route of a given Kotlin language method.
      *

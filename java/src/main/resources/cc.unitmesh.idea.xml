@@ -25,7 +25,7 @@
                              implementationClass="cc.unitmesh.idea.provider.JavaLivingDocumentation"/>
 
         <testDataBuilder language="JAVA"
-                         implementationClass="cc.unitmesh.idea.provider.JavaTestDataBuilder"/>
+                         implementationClass="cc.unitmesh.idea.provider.JavaPsiElementDataBuilder"/>
 
         <chatContextProvider implementation="cc.unitmesh.idea.provider.JavaVersionProvider"/>
         <chatContextProvider implementation="cc.unitmesh.idea.provider.SpringContextProvider"/>

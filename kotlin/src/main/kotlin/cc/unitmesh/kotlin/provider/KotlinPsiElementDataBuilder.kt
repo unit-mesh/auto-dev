@@ -1,6 +1,6 @@
 package cc.unitmesh.kotlin.provider
 
-import cc.unitmesh.devti.provider.TestDataBuilder
+import cc.unitmesh.devti.provider.PsiElementDataBuilder
 import cc.unitmesh.idea.service.isProjectContent
 import cc.unitmesh.kotlin.context.KotlinClassContextBuilder
 import com.intellij.psi.PsiElement
@@ -11,7 +11,7 @@ import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.getContentRange
 
-class KotlinTestDataBuilder : TestDataBuilder {
+class KotlinPsiElementDataBuilder : PsiElementDataBuilder {
     override fun baseRoute(element: PsiElement): String {
         if (element !is KtNamedFunction) return ""
 

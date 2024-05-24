@@ -42,6 +42,8 @@ class RefactorThisAction : ChatBaseAction() {
         val commentSymbol = commentPrefix(element)
 
         return collectProblems(project, editor, element)?.let {
+            // cc.unitmesh.untitled.demo.entity.Author
+            // check if the element has class, then search in a local project
             "\n\n$commentSymbol relative static analysis result:\n$it"
         } ?: ""
     }

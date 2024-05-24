@@ -4,13 +4,13 @@ import cc.unitmesh.devti.custom.action.CustomPromptConfig
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.prompting.BasicTextPrompt
 import cc.unitmesh.devti.provider.ContextPrompter
-import cc.unitmesh.devti.provider.TestDataBuilder
+import cc.unitmesh.devti.provider.PsiElementDataBuilder
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.idea.MvcUtil
 import cc.unitmesh.idea.flow.MvcContextService
-import cc.unitmesh.idea.provider.JavaTestDataBuilder
+import cc.unitmesh.idea.provider.JavaPsiElementDataBuilder
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -24,7 +24,7 @@ import kotlinx.coroutines.runBlocking
 open class JavaContextPrompter : ContextPrompter() {
     private val logger = logger<JavaContextPrompter>()
     private var additionContext: String = ""
-    protected open val testDataBuilder: TestDataBuilder = JavaTestDataBuilder()
+    protected open val psiElementDataBuilder: PsiElementDataBuilder = JavaPsiElementDataBuilder()
 
     private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private var customPromptConfig: CustomPromptConfig? = null
@@ -132,16 +132,16 @@ open class JavaContextPrompter : ContextPrompter() {
 
     open fun prepareDataStructure(creationContext: ChatCreationContext) {
         val element = creationContext.element ?: return logger.error("element is null")
-        testDataBuilder.baseRoute(element).let {
+        psiElementDataBuilder.baseRoute(element).let {
             if (it.isNotEmpty()) {
                 additionContext += "// base URL route: \n$it\n"
             }
         }
 
-        testDataBuilder.inboundData(element).forEach { (_, value) ->
+        psiElementDataBuilder.inboundData(element).forEach { (_, value) ->
             additionContext += "// compare this request body relate info: \n$value\n"
         }
-        testDataBuilder.outboundData(element).forEach { (_, value) ->
+        psiElementDataBuilder.outboundData(element).forEach { (_, value) ->
             additionContext += "// compare this response relate classes : \n$value\n"
         }
     }
