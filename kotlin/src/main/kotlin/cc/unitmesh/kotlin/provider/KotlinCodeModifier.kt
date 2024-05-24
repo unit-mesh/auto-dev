@@ -36,7 +36,7 @@ class KotlinCodeModifier : CodeModifier {
             return false
         }
 
-        if (code.startsWith("import") && code.contains("class ")) {
+        if ((code.startsWith("import ") || code.startsWith("package ")) && code.contains("class ")) {
             return insertClass(sourceFile, project, code)
         }
 
@@ -50,7 +50,8 @@ class KotlinCodeModifier : CodeModifier {
                 val ktFile = lookupFile(project, sourceFile)
                 val psiClass = ktFile?.classes?.firstOrNull()
                 if (psiClass == null) {
-                    log.error("Failed to find PsiClass in the source file: $ktFile, code: $code")
+                    log.error("Failed to find KotlinClass in the source file: $ktFile, code: $code")
+
                     return@runReadAction null
                 }
 
