@@ -146,7 +146,7 @@ class OpenAIProvider(val project: Project) : LLMProvider {
     }
 
     private fun prepareRequest(promptText: String, systemPrompt: String, keepHistory: Boolean): ChatCompletionRequest? {
-        if (messages.isEmpty()) {
+        if (systemPrompt.isNotEmpty()) {
             val systemMessage = ChatMessage(ChatMessageRole.SYSTEM.value(), systemPrompt)
             messages.add(systemMessage)
         }
