@@ -47,7 +47,6 @@
         <lang.documentationProvider language="DevIn"
                                     id="devinsDocumentationProvider"
                                     implementationClass="cc.unitmesh.devti.language.documentation.DevInsDocumentationProvider"/>
-        <documentationProvider implementation="cc.unitmesh.devti.language.documentation.DevInsDocumentationProvider"/>
 
         <localInspection language="DevIn" groupPath="DevIn" groupName="Lints"
                          displayName="Duplicate agent declaration"
