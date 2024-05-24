@@ -114,7 +114,7 @@ class KotlinAutoTestService : AutoTestService() {
         return if (testFile != null) {
             TestFileContext(isNewFile, testFile, relatedModels, className, sourceFile.language, currentClass, imports)
         } else {
-            val targetFile = createTestFile(sourceFile, testDir!!, packageName, project)
+            val targetFile = createTestFile(sourceFile, testDir!!, project)
             TestFileContext(isNewFile = true, targetFile, relatedModels, "", sourceFile.language, currentClass, imports)
         }
     }
@@ -209,12 +209,11 @@ class KotlinAutoTestService : AutoTestService() {
     private fun createTestFile(
         sourceFile: PsiFile,
         testDir: VirtualFile,
-        packageName: String,
         project: Project
     ): VirtualFile {
         val sourceFileName = sourceFile.name
         val testFileName = sourceFileName.replace(".kt", "Test.kt")
-        val testFileContent = "package $packageName;\n\n"
+        val testFileContent = ""
 
         return WriteCommandAction.runWriteCommandAction<VirtualFile>(project) {
             val testFile = testDir.createChildData(this, testFileName)
