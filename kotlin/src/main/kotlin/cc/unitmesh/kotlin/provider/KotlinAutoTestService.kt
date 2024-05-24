@@ -7,22 +7,32 @@ import cc.unitmesh.devti.provider.AutoTestService
 import cc.unitmesh.idea.service.JavaAutoTestService.Companion.createConfigForGradle
 import cc.unitmesh.kotlin.util.KotlinPsiUtil
 import cc.unitmesh.kotlin.util.getReturnTypeReferences
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
+import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
+import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiJavaFile
+import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.util.messages.MessageBusConnection
 import org.jetbrains.kotlin.idea.KotlinLanguage
+import org.jetbrains.kotlin.idea.codeInsight.KotlinReferenceImporter
 import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.getValueParameters
@@ -220,11 +230,58 @@ class KotlinAutoTestService : AutoTestService() {
 
             val document = FileDocumentManager.getInstance().getDocument(testFile)
             document?.setText(testFileContent)
-
-            // TODO: fix import
-            // org.jetbrains.kotlin.idea.quickfix.ImportFix
-
             testFile
         }
+    }
+
+    override fun collectSyntaxError(
+        outputFile: VirtualFile,
+        project: Project,
+        runAction: ((errors: List<String>) -> Unit)?
+    ) {
+        val sourceFile: KtFile  = runReadAction { PsiManager.getInstance(project).findFile(outputFile) as? KtFile } ?: return
+        val collectPsiError = sourceFile.collectPsiError()
+        if (collectPsiError.isNotEmpty()) {
+            runAction?.invoke(collectPsiError)
+            return
+        }
+
+        val document = runReadAction { FileDocumentManager.getInstance().getDocument(outputFile) } ?: return
+        val range = TextRange(0, document.textLength)
+
+        DaemonCodeAnalyzerEx.getInstance(project).restart(sourceFile);
+
+        val hintDisposable = Disposer.newDisposable()
+        val busConnection: MessageBusConnection = project.messageBus.connect(hintDisposable)
+
+        class DaemonListener : DaemonCodeAnalyzer.DaemonListener {
+            val errors = mutableListOf<String>()
+
+            override fun daemonFinished() {
+                DaemonCodeAnalyzerEx.processHighlights(document, project, HighlightSeverity.ERROR, range.startOffset, range.endOffset) {
+                    if (it.description != null) {
+                        errors.add(it.description)
+                    }
+
+                    true
+                }
+
+                runAction?.invoke(errors)
+                busConnection.disconnect()
+                Disposer.dispose(hintDisposable)
+            }
+        }
+
+        busConnection.subscribe<DaemonCodeAnalyzer.DaemonListener>(
+            DaemonCodeAnalyzer.DAEMON_EVENT_TOPIC,
+            DaemonListener()
+        )
+    }
+
+    override fun tryFixSyntaxError(outputFile: VirtualFile, project: Project) {
+        val sourceFile = PsiManager.getInstance(project).findFile(outputFile) as? KtFile ?: return
+        val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return
+        val importer = KotlinReferenceImporter()
+        importer.autoImportReferenceAtCursor(editor, sourceFile)
     }
 }

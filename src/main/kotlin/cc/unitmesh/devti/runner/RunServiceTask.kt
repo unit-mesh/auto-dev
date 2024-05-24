@@ -55,7 +55,7 @@ class RunServiceTask(
     fun doRun(indicator: ProgressIndicator?): RunnerResult? {
         val settings: RunnerAndConfigurationSettings? = runService.createRunSettings(project, virtualFile, testElement)
         if (settings == null) {
-            logger<RunServiceTask>().error("No run configuration found for file: ${virtualFile.path}")
+            logger<RunServiceTask>().warn("No run configuration found for file: ${virtualFile.path}")
             return null
         }
 
