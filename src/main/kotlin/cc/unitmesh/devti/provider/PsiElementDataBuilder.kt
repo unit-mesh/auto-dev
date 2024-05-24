@@ -1,7 +1,9 @@
 package cc.unitmesh.devti.provider
 
+import cc.unitmesh.devti.context.ClassContext
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageExtension
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 
 /**
@@ -38,6 +40,8 @@ interface PsiElementDataBuilder {
     fun inboundData(element: PsiElement): Map<String, String> = mapOf()
 
     fun outboundData(element: PsiElement): Map<String, String> = mapOf()
+
+    fun lookupElement(project: Project, canonicalName: String): ClassContext? = null
 
     companion object {
         private val languageExtension: LanguageExtension<PsiElementDataBuilder> =

@@ -2,6 +2,7 @@ package cc.unitmesh.devti.actions.chat
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.provider.PsiElementDataBuilder
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
@@ -17,8 +18,23 @@ class FixThisAction : RefactorThisAction() {
     override fun addAdditionPrompt(project: Project, editor: Editor, element: PsiElement): String {
         val commentSymbol = commentPrefix(element)
 
-        return collectProblems(project, editor, element)?.let {
-            "\n\n$commentSymbol relative static analysis result:\n$it"
+        return collectProblems(project, editor, element)?.let { problem ->
+            var relatedCode = ""
+            getCanonicalName(problem).map {
+                val classContext = PsiElementDataBuilder.forLanguage(element.language)?.lookupElement(project, it)
+                classContext.let { context ->
+                    relatedCode += context?.format() ?: ""
+                }
+            }
+
+            buildString {
+                append("\n\n$commentSymbol relative static analysis result:\n$problem")
+                if (relatedCode.isNotEmpty()) {
+                    relatedCode.split("\n").forEach {
+                        append("\n$commentSymbol $it")
+                    }
+                }
+            }
         } ?: ""
     }
 

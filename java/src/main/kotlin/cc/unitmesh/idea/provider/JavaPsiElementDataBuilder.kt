@@ -1,10 +1,15 @@
 package cc.unitmesh.idea.provider
 
+import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.provider.PsiElementDataBuilder
+import cc.unitmesh.devti.util.isInProject
+import cc.unitmesh.idea.context.JavaClassContextBuilder
 import cc.unitmesh.idea.context.JavaContextCollection
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiClassReferenceType
+import com.intellij.psi.search.GlobalSearchScope
 
 open class JavaPsiElementDataBuilder : PsiElementDataBuilder {
     /**
@@ -92,5 +97,10 @@ open class JavaPsiElementDataBuilder : PsiElementDataBuilder {
         result += processing(returnType)
 
         return result
+    }
+
+    override fun lookupElement(project: Project, canonicalName: String): ClassContext? {
+        val psiClass: PsiClass = JavaPsiFacade.getInstance(project).findClass(canonicalName, GlobalSearchScope.projectScope(project)) ?: return null
+        return JavaClassContextBuilder().getClassContext(psiClass, false)
     }
 }
