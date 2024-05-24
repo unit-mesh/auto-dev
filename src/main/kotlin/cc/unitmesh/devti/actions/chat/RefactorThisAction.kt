@@ -61,7 +61,7 @@ open class RefactorThisAction : ChatBaseAction() {
     open fun collectProblems(project: Project, editor: Editor, element: PsiElement): String? {
         val range = element.textRange
         val document = editor.document
-        val errors: MutableList<String> = mutableListOf()
+        var errors: MutableList<String> = mutableListOf()
         DaemonCodeAnalyzerEx.processHighlights(document, project, null, range.startOffset, range.endOffset) {
             if (it.description != null) {
                 errors.add(it.description)
@@ -71,6 +71,8 @@ open class RefactorThisAction : ChatBaseAction() {
         }
 
         val commentSymbol = commentPrefix(element)
+        // remove dupcliated descriptions
+        errors = errors.distinct().toMutableList()
         return errors.joinToString("\n") {
             "$commentSymbol - $it"
         }
