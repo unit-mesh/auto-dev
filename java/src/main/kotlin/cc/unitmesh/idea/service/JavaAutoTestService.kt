@@ -168,7 +168,7 @@ class JavaAutoTestService : AutoTestService() {
         }
     }
 
-    override fun tryFixSyntax(outputFile: VirtualFile, project: Project) {
+    override fun tryFixSyntaxError(outputFile: VirtualFile, project: Project) {
         val sourceFile =
             runReadAction { PsiManager.getInstance(project).findFile(outputFile) as? PsiJavaFile } ?: return
 
@@ -176,7 +176,7 @@ class JavaAutoTestService : AutoTestService() {
         DaemonCodeAnalyzer.getInstance(project).autoImportReferenceAtCursor(editor, sourceFile)
     }
 
-    override fun syntaxAnalysis(outputFile: VirtualFile, project: Project, runAction: ((errors: List<String>) -> Unit)?) {
+    override fun collectSyntaxError(outputFile: VirtualFile, project: Project, runAction: ((errors: List<String>) -> Unit)?) {
         val sourceFile = runReadAction { PsiManager.getInstance(project).findFile(outputFile) as? PsiJavaFile } ?: return
         val collectPsiError = sourceFile.collectPsiError()
         if (collectPsiError.isNotEmpty()) {

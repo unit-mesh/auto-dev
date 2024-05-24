@@ -55,11 +55,27 @@ abstract class AutoTestService : LazyExtensionInstance<AutoTestService>(), RunSe
      */
     abstract fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext>
 
-    open fun syntaxAnalysis(outputFile: VirtualFile, project: Project, runAction: ((errors: List<String>) -> Unit)?) {
+    /**
+     * This method is used to collect syntax errors from a given project and write them to an output file.
+     * It takes the output file, the project to check, and an optional action to be executed with the list of errors.
+     *
+     * @param outputFile The virtual file where the syntax errors will be written to.
+     * @param project The project to be analyzed for syntax errors.
+     * @param runAction An optional lambda function that takes a list of strings as its parameter, representing the syntax errors.
+     *                  If provided, this action is invoked with an empty list of errors, indicating no syntax errors were found.
+     */
+    open fun collectSyntaxError(outputFile: VirtualFile, project: Project, runAction: ((errors: List<String>) -> Unit)?) {
         runAction?.invoke(emptyList())
     }
 
-    open fun tryFixSyntax(outputFile: VirtualFile, project: Project) {
+    /**
+     * Attempts to fix syntax errors in the given Kotlin file within the project.
+     * This method is designed to be overridden by subclasses to provide custom syntax error fixing logic.
+     *
+     * @param outputFile The virtual file that needs to have its syntax errors fixed.
+     * @param project The current project in which the file resides.
+     */
+    open fun tryFixSyntaxError(outputFile: VirtualFile, project: Project) {
 
     }
 

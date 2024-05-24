@@ -126,8 +126,8 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
 
             navigateTestFile(testContext.outputFile, request.project)
 
-            autoTestService?.syntaxAnalysis(testContext.outputFile, request.project) {
-                autoTestService.tryFixSyntax(testContext.outputFile, request.project)
+            autoTestService?.collectSyntaxError(testContext.outputFile, request.project) {
+                autoTestService.tryFixSyntaxError(testContext.outputFile, request.project)
 
                 if (it.isNotEmpty()) {
                     AutoDevNotifications.error(request.project, "Test has error: ${it.joinToString("\n")}")
