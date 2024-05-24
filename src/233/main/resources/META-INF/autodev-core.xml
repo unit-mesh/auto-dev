@@ -32,6 +32,8 @@
                 serviceInterface="com.intellij.temporary.inlay.codecomplete.LLMInlayManager"
                 serviceImplementation="com.intellij.temporary.inlay.codecomplete.LLMInlayManagerImpl"/>
 
+        <postStartupActivity implementation="cc.unitmesh.devti.update.AutoDevUpdateStartupActivity"/>-->
+
         <typedHandler order="first, before completionAutoPopup"
                       implementation="cc.unitmesh.devti.inlay.TypeOverHandler"/>
 

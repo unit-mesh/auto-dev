@@ -4,7 +4,13 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
+import com.intellij.openapi.diagnostic.Logger
+import com.intellij.util.xmlb.Converter
 import com.intellij.util.xmlb.XmlSerializerUtil
+import com.intellij.util.xmlb.annotations.OptionTag
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
 @State(name = "cc.unitmesh.devti.settings.DevtiSettingsState", storages = [Storage("DevtiSettings.xml")])
 class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
@@ -50,6 +56,9 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
      */
     var customEngineRequestFormat = ""
 
+    @OptionTag(value = "lastCheckTime", converter = ZonedDateTimeConverter::class)
+    var lastCheck: ZonedDateTime? = null
+
 
     var language = DEFAULT_HUMAN_LANGUAGE
     var maxTokenLength = MAX_TOKEN_LENGTH.toString()
@@ -72,8 +81,18 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
         val maxTokenLength: Int get() = getInstance().fetchMaxTokenLength()
         val language: String get() = getInstance().fetchLocalLanguage()
 
+        var lastCheckTime: ZonedDateTime? = getInstance().lastCheck
+
         fun getInstance(): AutoDevSettingsState {
             return ApplicationManager.getApplication().getService(AutoDevSettingsState::class.java).state
+        }
+
+        class ZonedDateTimeConverter : Converter<ZonedDateTime>() {
+            override fun toString(value: ZonedDateTime): String? = value.format(DateTimeFormatter.ISO_ZONED_DATE_TIME)
+
+            override fun fromString(value: String): ZonedDateTime? {
+                return ZonedDateTime.parse(value, DateTimeFormatter.ISO_ZONED_DATE_TIME)
+            }
         }
     }
 
