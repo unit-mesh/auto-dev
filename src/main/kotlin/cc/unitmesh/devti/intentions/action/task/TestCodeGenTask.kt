@@ -14,13 +14,10 @@ import cc.unitmesh.devti.statusbar.AutoDevStatusService
 import cc.unitmesh.devti.template.GENIUS_CODE
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.util.parser.parseCodeFromString
-import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
-import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runReadAction
-import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.progress.ProgressIndicator
@@ -129,10 +126,15 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
 
             navigateTestFile(testContext.outputFile, request.project)
 
-            autoTestService?.fixImports(testContext.outputFile, request.project)
+            autoTestService?.syntaxAnalysis(testContext.outputFile, request.project) {
+                autoTestService.tryFixSyntax(testContext.outputFile, request.project)
 
-            if (autoTestService?.hasSyntaxError(testContext.outputFile, request.project) == false) {
-                autoTestService.runFile(request.project, testContext.outputFile, testContext.testElement)
+                if (it.isNotEmpty()) {
+                    AutoDevNotifications.error(request.project, "Test has error: ${it.joinToString("\n")}")
+                    indicator.fraction = 1.0
+                } else {
+                    autoTestService.runFile(request.project, testContext.outputFile, testContext.testElement)
+                }
             }
 
             AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)

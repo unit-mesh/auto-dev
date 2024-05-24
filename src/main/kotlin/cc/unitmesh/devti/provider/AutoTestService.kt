@@ -55,12 +55,12 @@ abstract class AutoTestService : LazyExtensionInstance<AutoTestService>(), RunSe
      */
     abstract fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext>
 
-    open fun fixImports(outputFile: VirtualFile, project: Project) {
-
+    open fun syntaxAnalysis(outputFile: VirtualFile, project: Project, runAction: ((errors: List<String>) -> Unit)?) {
+        runAction?.invoke(emptyList())
     }
 
-    open fun hasSyntaxError(outputFile: VirtualFile, project: Project): Boolean {
-        return true
+    open fun tryFixSyntax(outputFile: VirtualFile, project: Project) {
+
     }
 
     companion object {
