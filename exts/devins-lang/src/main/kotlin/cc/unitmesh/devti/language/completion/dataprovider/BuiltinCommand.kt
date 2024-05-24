@@ -45,7 +45,7 @@ enum class BuiltinCommand(
         "browse",
         "Get the content of a given URL",
         AllIcons.Toolwindows.WebToolWindow,
-        false,
+        true,
         true
     ),
     Refactor(
