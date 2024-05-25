@@ -262,11 +262,6 @@
                     description="Ask AI chat with this code">
             </action>
 
-            <action id="cc.unitmesh.devti.actions.chat.GenerateTestAction"
-                    class="cc.unitmesh.devti.actions.chat.GenerateTestAction"
-                    description="Ask AI write this code">
-            </action>
-
             <action id="cc.unitmesh.devti.actions.chat.GenTestDataAction"
                     class="cc.unitmesh.devti.actions.chat.GenTestDataAction"
                     description="Ask AI generate test data">
