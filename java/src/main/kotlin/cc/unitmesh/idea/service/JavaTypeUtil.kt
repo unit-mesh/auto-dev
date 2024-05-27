@@ -50,19 +50,19 @@ object JavaTypeUtil {
             if (element is PsiMethod) {
                 element.parameterList.parameters.filter {
                     it.type is PsiClassReferenceType
-                }.map {
-                    val type = it.type as PsiClassReferenceType
+                }.map { parameter ->
+                    val type = parameter.type as PsiClassReferenceType
                     val resolve: PsiClass = type.resolve() ?: return@map null
                     val typeParametersTypeList: List<PsiType> = getTypeParametersType(type)
 
-                    val relatedClass = mutableListOf(it.type)
+                    val relatedClass = mutableListOf(parameter.type)
                     relatedClass.addAll(typeParametersTypeList)
 
                     relatedClass
                         .filter { isProjectContent((it as PsiClassReferenceType).resolve() ?: return@filter false) }
                         .forEach { resolvedClasses.putAll(resolveByType(it)) }
 
-                    resolvedClasses[it.name] = resolve
+                    resolvedClasses[parameter.name] = resolve
                 }
 
                 val outputType = element.returnTypeElement?.type
@@ -80,9 +80,11 @@ object JavaTypeUtil {
         val psiClass = result.element;
         if (psiClass != null) {
             val substitutor = runReadAction { result.substitutor }
-            return runReadAction { psiClass.typeParameters.map {
-                substitutor.substitute(it)
-            }.filterNotNull()}
+            return runReadAction {
+                psiClass.typeParameters.mapNotNull {
+                    substitutor.substitute(it)
+                }
+            }
         }
         return emptyList()
     }
