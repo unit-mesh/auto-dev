@@ -1,9 +1,8 @@
 package cc.unitmesh.devti.language.compiler.exec
 
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiNamedElement
-import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.openapi.project.guessProjectDir
+import com.intellij.psi.PsiManager
 
 enum class BuiltinRefactorCommand {
     RENAME,
@@ -57,6 +56,11 @@ enum class BuiltinRefactorCommand {
 class RefactorInsCommand(val myProject: Project, private val argument: String, private val textSegment: String) :
     InsCommand {
     override suspend fun execute(): String? {
+        val targetFile = myProject.guessProjectDir()?.findFileByRelativePath(textSegment) ?: return "File not found: $textSegment"
+        val psiFile = PsiManager.getInstance(myProject).findFile(targetFile) ?: return "PsiFile not found: $textSegment"
+        val refactoringTool = cc.unitmesh.devti.provider.RefactoringTool.forLanguage(psiFile.language)
+            ?: return "Refactoring tool not found for language: ${psiFile.language}"
+
         val command = BuiltinRefactorCommand.fromString(argument) ?: return "Unknown refactor command: $argument"
 
         when (command) {
@@ -64,40 +68,24 @@ class RefactorInsCommand(val myProject: Project, private val argument: String, p
                 val (from, to) = textSegment.split(" to ")
 
                 // first get the element to rename
-
                 // in currently we only support rename class in java, kotlin
                 // also use RenameQuickFix to rename element
             }
 
             BuiltinRefactorCommand.SAFEDELETE -> {
-                // in every language, we need to check the usage of the symbol before delete it
-                // SafeDeleteFix is a good example which is based on LocalQuickFixOnPsiElement
-
+                refactoringTool.safeDelete(psiFile)
             }
 
             BuiltinRefactorCommand.DELETE -> {
-
+                refactoringTool.safeDelete(psiFile)
             }
 
             BuiltinRefactorCommand.MOVE -> {
-                // MoveToPackageFix is a good example which is based on LocalQuickFixOnPsiElement
+                refactoringTool.move(psiFile, textSegment)
             }
         }
 
         return null
-    }
-
-    fun executeRename(psiElement: PsiElement, newName: String) {
-        val named = PsiTreeUtil.getNonStrictParentOfType(
-            psiElement,
-            PsiNamedElement::class.java
-        )
-        if (named == null) return
-//        val name = if (named is PsiNamedElementWithCustomPresentation) named.presentationName else named.name
-        val name = named.name
-
-//        val range: TextRange = getRange(psiElement)
-//        updater.rename(named, psiElement, names)
     }
 }
 

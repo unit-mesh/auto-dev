@@ -12,9 +12,11 @@ interface RefactoringTool {
 
     fun safeDelete(element: PsiElement): Boolean
 
-    fun safeDelete(element: PsiNameIdentifierOwner, deleteReferences: Boolean): Boolean
-
-    fun move(element: PsiNameIdentifierOwner, target: PsiNameIdentifierOwner): Boolean
+    /**
+     * In Java the canonicalName is the fully qualified name of the target package.
+     * In Kotlin the canonicalName is the fully qualified name of the target package or class.
+     */
+    fun move(element: PsiElement, canonicalName: String): Boolean
 
     companion object {
         private val languageExtension: LanguageExtension<RefactoringTool> =
