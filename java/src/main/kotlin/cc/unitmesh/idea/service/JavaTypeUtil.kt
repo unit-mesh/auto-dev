@@ -50,7 +50,7 @@ object JavaTypeUtil {
             return emptyMap()
         }
 
-        runReadAction {
+        return runReadAction {
             element.parameterList.parameters.filter {
                 it.type is PsiClassReferenceType
             }.map { parameter ->
@@ -70,25 +70,25 @@ object JavaTypeUtil {
 
             val outputType = element.returnTypeElement?.type
             resolvedClasses.putAll(resolveByType(outputType))
-        }
 
-        return runReadAction {resolvedClasses.filter { isProjectContent(it.value) }.toMap()}
+            // todo: add for second level functions
+
+            resolvedClasses.filter { isProjectContent(it.value) }.toMap()
+        }
     }
 
     private fun getTypeParametersType(
         psiType: PsiClassReferenceType
     ): List<PsiType> {
         val result = psiType.resolveGenerics()
-        val psiClass = result.element;
-        if (psiClass != null) {
-            val substitutor = runReadAction { result.substitutor }
-            return runReadAction {
-                psiClass.typeParameters.mapNotNull {
-                    substitutor.substitute(it)
-                }
+        val psiClass = result.element ?: return emptyList();
+
+        return runReadAction {
+            val substitutor = result.substitutor
+            psiClass.typeParameters.mapNotNull {
+                substitutor.substitute(it)
             }
         }
-        return emptyList()
     }
 }
 
