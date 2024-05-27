@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.actions
+package cc.unitmesh.devti.actions.completion
 
 import com.intellij.temporary.inlay.codecomplete.presentation.EditorUtilCopy
 import com.intellij.application.options.CodeStyle

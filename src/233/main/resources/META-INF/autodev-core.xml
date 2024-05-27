@@ -212,21 +212,21 @@
 
     <actions>
         <action id="llm.applyInlays"
-                class="cc.unitmesh.devti.actions.LLMApplyInlaysAction">
+                class="cc.unitmesh.devti.actions.completion.LLMApplyInlaysAction">
             <keyboard-shortcut first-keystroke="TAB" keymap="$default"/>
             <override-text place="MainMenu" text="Apply Completions to Editor"/>
             <override-text place="EditorPopup" text="Accept"/>
         </action>
 
         <action id="cc.unitmesh.devti.inlayCompleteCode"
-                class="cc.unitmesh.devti.actions.InlayCompleteCodeAction"
+                class="cc.unitmesh.devti.actions.completion.InlayCompleteCodeAction"
                 text="Inlay Complete Code"
                 description="Inlay complete code!" >
             <keyboard-shortcut keymap="$default" first-keystroke="alt PERIOD"/>
             <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
         </action>
         <action id="cc.unitmesh.devti.disposeInlayCompleteCode"
-                class="cc.unitmesh.devti.actions.InlayCompleteCodeDisposedAction"
+                class="cc.unitmesh.devti.actions.completion.InlayCompleteCodeDisposedAction"
                 text="Disposed Inlay Complete Code"
                 description="Disposed Inlay complete code!" >
             <keyboard-shortcut keymap="$default" first-keystroke="ESCAPE"/>

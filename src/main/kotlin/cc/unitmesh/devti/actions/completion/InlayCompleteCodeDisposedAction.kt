@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.actions
+package cc.unitmesh.devti.actions.completion
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
