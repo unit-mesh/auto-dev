@@ -3,8 +3,11 @@ package cc.unitmesh.devti.provider
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageExtension
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 
 interface RefactoringTool {
+    fun lookupFile(path: String): PsiFile?
+
     fun rename(sourceName: String, targetName: String): Boolean
 
     fun safeDelete(element: PsiElement): Boolean
@@ -25,6 +28,7 @@ interface RefactoringTool {
                 return refactoringTool
             }
 
+            // If no refactoring tool is found for the specified language, return first
             return null
         }
     }

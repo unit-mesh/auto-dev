@@ -10,6 +10,8 @@ import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiJavaFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.search.FileTypeIndex
@@ -19,35 +21,42 @@ import com.intellij.psi.search.GlobalSearchScope
 class JavaRefactoringTool : RefactoringTool {
     val project = ProjectManager.getInstance().openProjects.firstOrNull()
 
+    override fun lookupFile(path: String): PsiFile? {
+        if (project == null) return null
+
+        val elementInfo = getElementInfo(path)
+        val searchScope = GlobalSearchScope.allScope(project)
+        val javaFiles: Collection<VirtualFile> = FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
+
+        val className = elementInfo.className
+        val packageName = elementInfo.pkgName
+
+
+        val sourceFile: VirtualFile = javaFiles.firstOrNull {
+            it.name == "$className.java" && it.parent.name == packageName
+        } ?: return null
+
+        val psiFile = PsiManager.getInstance(project).findFile(sourceFile) ?: return null
+        return psiFile
+    }
+
     override fun rename(sourceName: String, targetName: String): Boolean {
         if (project == null) {
             return false
         }
 
-        val searchScope = GlobalSearchScope.allScope(project)
         val elementInfo = getElementInfo(targetName)
-        var psiFile: com.intellij.psi.PsiFile? = null
+        val psiFile: PsiFile? = null
 
         // find psi element by cannocial name which is sourceName
         val element = runReadAction {
             if (elementInfo.isMethod) {
-                val javaFiles: Collection<VirtualFile> = FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
                 val className = elementInfo.className
-                val packageName = elementInfo.pkgName
-
-                val sourceFile: VirtualFile? = javaFiles.firstOrNull {
-                    it.name == "$className.java" && it.parent.name == packageName
-                }
-
-                if (sourceFile == null) {
-                    return@runReadAction null
-                }
-
-                psiFile = PsiManager.getInstance(project).findFile(sourceFile) ?: return@runReadAction null
-                val javaFile = psiFile as? com.intellij.psi.PsiJavaFile ?: return@runReadAction null
+                val javaFile = this.lookupFile(sourceName) as? PsiJavaFile ?: return@runReadAction null
 
                 val psiMethod: PsiMethod =
-                    javaFile.classes.firstOrNull { it.name == className }?.methods?.firstOrNull { it.name == elementInfo.methodName }
+                    javaFile.classes.firstOrNull { it.name == className }
+                        ?.methods?.firstOrNull { it.name == elementInfo.methodName }
                         ?: return@runReadAction null
 
                 psiMethod
