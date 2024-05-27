@@ -2,12 +2,15 @@ package cc.unitmesh.devti.provider
 
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageExtension
+import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNameIdentifierOwner
 
 interface RefactoringTool {
-    fun rename(element: PsiNameIdentifierOwner, newName: String): Boolean
+    fun rename(project: Project, psiFile: PsiFile, element: PsiNameIdentifierOwner, newName: String): Boolean
 
-    fun safeDelete(element: PsiNameIdentifierOwner): Boolean
+    fun safeDelete(element: PsiElement): Boolean
 
     fun safeDelete(element: PsiNameIdentifierOwner, deleteReferences: Boolean): Boolean
 

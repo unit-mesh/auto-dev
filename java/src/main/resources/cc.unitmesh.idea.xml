@@ -27,6 +27,9 @@
         <testDataBuilder language="JAVA"
                          implementationClass="cc.unitmesh.idea.provider.JavaPsiElementDataBuilder"/>
 
+        <refactoringTool language="JAVA"
+                         implementationClass="cc.unitmesh.idea.provider.JavaRefactoringTool"/>
+
         <chatContextProvider implementation="cc.unitmesh.idea.provider.JavaVersionProvider"/>
         <chatContextProvider implementation="cc.unitmesh.idea.provider.SpringContextProvider"/>
         <chatContextProvider implementation="cc.unitmesh.idea.provider.JavaTestContextProvider"/>

@@ -72,6 +72,7 @@ class RefactorInsCommand(val myProject: Project, private val argument: String, p
             BuiltinRefactorCommand.SAFEDELETE -> {
                 // in every language, we need to check the usage of the symbol before delete it
                 // SafeDeleteFix is a good example which is based on LocalQuickFixOnPsiElement
+
             }
 
             BuiltinRefactorCommand.DELETE -> {
