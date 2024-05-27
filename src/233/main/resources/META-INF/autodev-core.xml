@@ -135,6 +135,11 @@
             <with attribute="implementationClass" implements="cc.unitmesh.devti.provider.PsiElementDataBuilder"/>
         </extensionPoint>
 
+        <extensionPoint qualifiedName="cc.unitmesh.refactoringTool"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass" implements="cc.unitmesh.devti.provider.RefactoringTool"/>
+        </extensionPoint>
+
         <extensionPoint qualifiedName="cc.unitmesh.buildSystemProvider"
                         interface="cc.unitmesh.devti.provider.BuildSystemProvider"
                         dynamic="true"/>
