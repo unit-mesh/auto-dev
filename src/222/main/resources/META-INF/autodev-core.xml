@@ -25,11 +25,17 @@
                              parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                              id="cc.unitmesh.autodevCoder"
                              bundle="messages.AutoDevBundle" key="settings.autodev.coder"/>
+
+        <applicationService serviceImplementation="cc.unitmesh.devti.settings.AutoDevSettingsState"/>
+
         <applicationService
                 serviceInterface="com.intellij.temporary.inlay.codecomplete.LLMInlayManager"
                 serviceImplementation="com.intellij.temporary.inlay.codecomplete.LLMInlayManagerImpl"/>
 
-        <applicationService serviceImplementation="cc.unitmesh.devti.settings.AutoDevSettingsState"/>
+
+        <typedHandler order="first, before completionAutoPopup"
+                      implementation="cc.unitmesh.devti.inlay.TypeOverHandler"/>
+
 
         <statusBarWidgetFactory id="AIAssistant"
                                 implementation="cc.unitmesh.devti.statusbar.AutoDevStatusBarWidgetFactory"/>
@@ -62,9 +68,6 @@
 
         <notificationGroup id="AutoDev.notify" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
                            key="name"/>
-        <!--        <editorFactoryListener implementation="cc.unitmesh.devti.editor.inlay.AutoDevEditorListener"/>-->
-        <!--        <typedHandler order="first, before completionAutoPopup"-->
-        <!--                      implementation="cc.unitmesh.devti.inlay.TypeOverHandler"/>-->
 
         <intentionAction>
             <className>cc.unitmesh.devti.intentions.AutoDevIntentionHelper</className>
@@ -82,7 +85,6 @@
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
         <ProviderFactory implementation="cc.unitmesh.devti.custom.schema.AutoDevJsonSchemaProviderFactory"/>
         <ProviderFactory implementation="cc.unitmesh.devti.custom.schema.AutoDevPromptJsonSchemaProviderFactory"/>
-        <ProviderFactory implementation="cc.unitmesh.devti.custom.schema.InlayCodePromptsJsonSchemaProviderFactory"/>
     </extensions>
 
     <extensionPoints>
@@ -171,11 +173,11 @@
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.customDevInsCompletionProvider"
-                        interface="cc.unitmesh.devti.provider.devins.DevInsCompletionProvider"
+                        interface="cc.unitmesh.devti.provider.devins.DevInsSymbolProvider"
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.jsonTextProvider"
-                        interface="cc.unitmesh.devti.provider.JsonTextProvider"
+                        interface="cc.unitmesh.devti.provider.local.JsonTextProvider"
                         dynamic="true"/>
     </extensionPoints>
 
@@ -188,11 +190,6 @@
         <listener class="cc.unitmesh.devti.practise.RenameLookupManagerListener"
                   topic="com.intellij.codeInsight.lookup.LookupManagerListener"/>
     </projectListeners>
-
-    <!--    <projectListeners>-->
-    <!--        <listener topic="com.intellij.openapi.command.CommandListener"-->
-    <!--                  class="cc.unitmesh.devti.editor.inlay.LLMCommandListener"/>-->
-    <!--    </projectListeners>-->
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <autoDevIntention>
@@ -219,6 +216,7 @@
             <override-text place="MainMenu" text="Apply Completions to Editor"/>
             <override-text place="EditorPopup" text="Accept"/>
         </action>
+
         <action id="cc.unitmesh.devti.inlayCompleteCode"
                 class="cc.unitmesh.devti.actions.completion.InlayCompleteCodeAction"
                 text="Inlay Complete Code"
@@ -237,6 +235,7 @@
                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT" searchable="false">
 
             <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
+            <add-to-group group-id="Floating.CodeToolbar" anchor="first"/>
         </group>
 
         <!-- For right click -->
@@ -249,6 +248,11 @@
 
             <action id="cc.unitmesh.devti.actions.chat.RefactorThisAction"
                     class="cc.unitmesh.devti.actions.chat.RefactorThisAction"
+                    description="Ask AI refactor this code">
+            </action>
+
+            <action id="cc.unitmesh.devti.actions.chat.FixThisAction"
+                    class="cc.unitmesh.devti.actions.chat.FixThisAction"
                     description="Ask AI refactor this code">
             </action>
 
@@ -270,6 +274,7 @@
         <action id="cc.unitmesh.devti.QuickAssistant"
                 class="cc.unitmesh.devti.actions.quick.QuickAssistantAction"
                 description="You can custom any assistant as you want!"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
         >
             <keyboard-shortcut keymap="$default" first-keystroke="control BACK_SLASH"/>
 
@@ -278,7 +283,8 @@
 
         <action id="cc.unitmesh.devti.actions.console.FixThisAction"
                 class="cc.unitmesh.devti.actions.console.FixThisAction"
-                description="Ask AI fi this code">
+                description="Ask AI fix this code"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
         </action>
 
