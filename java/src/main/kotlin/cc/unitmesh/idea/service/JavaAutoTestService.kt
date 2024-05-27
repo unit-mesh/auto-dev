@@ -52,9 +52,6 @@ class JavaAutoTestService : AutoTestService() {
         val parentDir = sourceFilePath.parent
         val testFileName = sourceFile.name.replace(".java", "") + "Test"
 
-        val packageName = ReadAction.compute<String, Throwable> {
-            (sourceFile as PsiJavaFile).packageName
-        }
         val parentDirPath = ReadAction.compute<String, Throwable> {
             parentDir?.path
         }
