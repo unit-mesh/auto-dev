@@ -8,7 +8,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNameIdentifierOwner
 
 interface RefactoringTool {
-    fun rename(project: Project, psiFile: PsiFile, element: PsiNameIdentifierOwner, newName: String): Boolean
+    fun rename(sourceName: String, targetName: String): Boolean
 
     fun safeDelete(element: PsiElement): Boolean
 
