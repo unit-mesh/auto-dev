@@ -46,28 +46,30 @@ object JavaTypeUtil {
      */
     fun resolveByMethod(element: PsiElement): Map<String, PsiClass> {
         val resolvedClasses = mutableMapOf<String, PsiClass>()
+        if (element !is PsiMethod) {
+            return emptyMap()
+        }
+
         runReadAction {
-            if (element is PsiMethod) {
-                element.parameterList.parameters.filter {
-                    it.type is PsiClassReferenceType
-                }.map { parameter ->
-                    val type = parameter.type as PsiClassReferenceType
-                    val resolve: PsiClass = type.resolve() ?: return@map null
-                    val typeParametersTypeList: List<PsiType> = getTypeParametersType(type)
+            element.parameterList.parameters.filter {
+                it.type is PsiClassReferenceType
+            }.map { parameter ->
+                val type = parameter.type as PsiClassReferenceType
+                val resolve: PsiClass = type.resolve() ?: return@map null
+                val typeParametersTypeList: List<PsiType> = getTypeParametersType(type)
 
-                    val relatedClass = mutableListOf(parameter.type)
-                    relatedClass.addAll(typeParametersTypeList)
+                val relatedClass = mutableListOf(parameter.type)
+                relatedClass.addAll(typeParametersTypeList)
 
-                    relatedClass
-                        .filter { isProjectContent((it as PsiClassReferenceType).resolve() ?: return@filter false) }
-                        .forEach { resolvedClasses.putAll(resolveByType(it)) }
+                relatedClass
+                    .filter { isProjectContent((it as PsiClassReferenceType).resolve() ?: return@filter false) }
+                    .forEach { resolvedClasses.putAll(resolveByType(it)) }
 
-                    resolvedClasses[parameter.name] = resolve
-                }
-
-                val outputType = element.returnTypeElement?.type
-                resolvedClasses.putAll(resolveByType(outputType))
+                resolvedClasses[parameter.name] = resolve
             }
+
+            val outputType = element.returnTypeElement?.type
+            resolvedClasses.putAll(resolveByType(outputType))
         }
 
         return runReadAction {resolvedClasses.filter { isProjectContent(it.value) }.toMap()}

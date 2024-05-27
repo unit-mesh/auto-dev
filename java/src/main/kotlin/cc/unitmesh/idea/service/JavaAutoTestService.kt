@@ -52,9 +52,7 @@ class JavaAutoTestService : AutoTestService() {
         val parentDir = sourceFilePath.parent
         val testFileName = sourceFile.name.replace(".java", "") + "Test"
 
-        val parentDirPath = ReadAction.compute<String, Throwable> {
-            parentDir?.path
-        }
+        val parentDirPath = ReadAction.compute<String, Throwable> { parentDir?.path }
 
         val relatedModels = lookupRelevantClass(project, psiElement).distinctBy { it.name }
 
