@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.compiler.exec
 
+import com.intellij.lang.Language
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.psi.PsiFile
@@ -57,10 +58,9 @@ enum class BuiltinRefactorCommand {
 class RefactorInsCommand(val myProject: Project, private val argument: String, private val textSegment: String) :
     InsCommand {
     override suspend fun execute(): String? {
-        val targetFile = myProject.guessProjectDir()?.findFileByRelativePath(textSegment) ?: return "File not found: $textSegment"
-        val psiFile: PsiFile = PsiManager.getInstance(myProject).findFile(targetFile) ?: return "PsiFile not found: $textSegment"
-        val refactoringTool = cc.unitmesh.devti.provider.RefactoringTool.forLanguage(psiFile.language)
-            ?: return "Refactoring tool not found for language: ${psiFile.language}"
+        val java = Language.findLanguageByID("JAVA") ?: return "Java language not found"
+        val refactoringTool = cc.unitmesh.devti.provider.RefactoringTool.forLanguage(java)
+            ?: return "Refactoring tool not found for Java"
 
         val command = BuiltinRefactorCommand.fromString(argument) ?: return "Unknown refactor command: $argument"
 
@@ -71,15 +71,19 @@ class RefactorInsCommand(val myProject: Project, private val argument: String, p
             }
 
             BuiltinRefactorCommand.SAFEDELETE -> {
+                val psiFile = refactoringTool.lookupFile(textSegment) ?: return "File not found"
                 refactoringTool.safeDelete(psiFile)
             }
 
             BuiltinRefactorCommand.DELETE -> {
+                val psiFile = refactoringTool.lookupFile(textSegment) ?: return "File not found"
                 refactoringTool.safeDelete(psiFile)
             }
 
             BuiltinRefactorCommand.MOVE -> {
-                refactoringTool.move(psiFile, textSegment)
+                val (from, to) = textSegment.split(" to ")
+                val psiFile = refactoringTool.lookupFile(from) ?: return "File not found"
+                refactoringTool.move(psiFile, to)
             }
         }
 

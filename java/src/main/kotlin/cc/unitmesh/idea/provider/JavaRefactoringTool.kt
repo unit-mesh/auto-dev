@@ -17,7 +17,6 @@ import com.intellij.psi.PsiMethod
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 
-
 class JavaRefactoringTool : RefactoringTool {
     val project = ProjectManager.getInstance().openProjects.firstOrNull()
 

@@ -28,8 +28,9 @@ interface RefactoringTool {
                 return refactoringTool
             }
 
-            // If no refactoring tool is found for the specified language, return first
-            return null
+            // If no refactoring tool is found for the specified language, return java
+            val javaLanguage = Language.findLanguageByID("JAVA") ?: return null
+            return languageExtension.forLanguage(javaLanguage)
         }
     }
 }
