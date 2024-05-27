@@ -33,6 +33,7 @@ import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration
 import java.io.File
 
 class JavaAutoTestService : AutoTestService() {
+    private val maxLevelOneClass = 5;
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = GradleRunConfiguration::class.java
     override fun isApplicable(element: PsiElement): Boolean = element.language is JavaLanguage
 
@@ -149,6 +150,22 @@ class JavaAutoTestService : AutoTestService() {
                 is PsiMethod -> {
                     resolvedClasses.putAll(JavaTypeUtil.resolveByMethod(element))
                 }
+            }
+
+            if (resolvedClasses.isEmpty()) {
+                return@compute elements
+            }
+
+            if ((resolvedClasses.size <= maxLevelOneClass) || element is PsiMethod) {
+                // load all second childrens
+                val childClasses: MutableMap<String, PsiClass> = mutableMapOf()
+                resolvedClasses.forEach { (key, value) ->
+                    value.fields.forEach { field ->
+                        childClasses.putAll(JavaTypeUtil.resolveByType(field.type))
+                    }
+                }
+
+                resolvedClasses.putAll(childClasses)
             }
 
             // find the class in the same project

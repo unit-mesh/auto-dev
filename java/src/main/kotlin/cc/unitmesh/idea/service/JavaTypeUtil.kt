@@ -7,7 +7,7 @@ import com.intellij.psi.impl.source.PsiClassReferenceType
 import com.intellij.psi.util.PsiUtil
 
 object JavaTypeUtil {
-    private fun resolveByType(outputType: PsiType?): Map<String, PsiClass> {
+    fun resolveByType(outputType: PsiType?): Map<String, PsiClass> {
         val resolvedClasses = mutableMapOf<String, PsiClass>()
         if (outputType is PsiClassReferenceType) {
             val resolveClz = outputType.resolve()
