@@ -2,6 +2,7 @@ package cc.unitmesh.devti.language.compiler.exec
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 
 enum class BuiltinRefactorCommand {
@@ -57,7 +58,7 @@ class RefactorInsCommand(val myProject: Project, private val argument: String, p
     InsCommand {
     override suspend fun execute(): String? {
         val targetFile = myProject.guessProjectDir()?.findFileByRelativePath(textSegment) ?: return "File not found: $textSegment"
-        val psiFile = PsiManager.getInstance(myProject).findFile(targetFile) ?: return "PsiFile not found: $textSegment"
+        val psiFile: PsiFile = PsiManager.getInstance(myProject).findFile(targetFile) ?: return "PsiFile not found: $textSegment"
         val refactoringTool = cc.unitmesh.devti.provider.RefactoringTool.forLanguage(psiFile.language)
             ?: return "Refactoring tool not found for language: ${psiFile.language}"
 
@@ -66,10 +67,7 @@ class RefactorInsCommand(val myProject: Project, private val argument: String, p
         when (command) {
             BuiltinRefactorCommand.RENAME -> {
                 val (from, to) = textSegment.split(" to ")
-
-                // first get the element to rename
-                // in currently we only support rename class in java, kotlin
-                // also use RenameQuickFix to rename element
+                refactoringTool.rename(from, to)
             }
 
             BuiltinRefactorCommand.SAFEDELETE -> {

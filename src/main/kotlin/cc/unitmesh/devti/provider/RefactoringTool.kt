@@ -2,10 +2,7 @@ package cc.unitmesh.devti.provider
 
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageExtension
-import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiNameIdentifierOwner
 
 interface RefactoringTool {
     fun rename(sourceName: String, targetName: String): Boolean
