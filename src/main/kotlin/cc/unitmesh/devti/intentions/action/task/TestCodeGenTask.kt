@@ -130,7 +130,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
                 autoTestService.tryFixSyntaxError(testContext.outputFile, request.project)
 
                 if (it.isNotEmpty()) {
-                    AutoDevNotifications.error(request.project, "Test has error: ${it.joinToString("\n")}")
+                    AutoDevNotifications.warn(request.project, "Test has error, skip auto run test: ${it.joinToString("\n")}")
                     indicator.fraction = 1.0
                 } else {
                     autoTestService.runFile(request.project, testContext.outputFile, testContext.testElement)

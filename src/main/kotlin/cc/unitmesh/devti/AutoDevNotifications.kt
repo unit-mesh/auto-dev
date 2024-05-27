@@ -17,4 +17,8 @@ object AutoDevNotifications {
     fun error(project: Project, msg: String) {
         group()?.createNotification(msg, NotificationType.ERROR)?.notify(project)
     }
+
+    fun warn(project: Project, msg: String) {
+        group()?.createNotification(msg, NotificationType.WARNING)?.notify(project)
+    }
 }
