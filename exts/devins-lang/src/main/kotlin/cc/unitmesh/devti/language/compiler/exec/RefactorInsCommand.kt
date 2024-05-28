@@ -2,6 +2,7 @@ package cc.unitmesh.devti.language.compiler.exec
 
 import cc.unitmesh.devti.language.completion.dataprovider.BuiltinRefactorCommand
 import com.intellij.lang.Language
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
@@ -57,7 +58,7 @@ class RefactorInsCommand(val myProject: Project, private val argument: String, p
                 var psiFile: PsiFile? = null
                 val editor = FileEditorManager.getInstance(myProject).selectedTextEditor
                 if (editor != null) {
-                    val currentFile = editor.virtualFile
+                    val currentFile = FileDocumentManager.getInstance().getFile(editor.document) ?: return "File not found"
                     psiFile = PsiManager.getInstance(myProject).findFile(currentFile)
                 }
 
