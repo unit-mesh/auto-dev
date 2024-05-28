@@ -64,7 +64,7 @@ class RefactorInsCommand(val myProject: Project, private val argument: String, p
         when (command) {
             BuiltinRefactorCommand.RENAME -> {
                 val (from, to) = textSegment.split(" to ")
-                refactoringTool.rename(from.trim(), to.trim())
+                refactoringTool.rename(from.trim(), to.trim(), null)
             }
 
             BuiltinRefactorCommand.SAFEDELETE -> {
