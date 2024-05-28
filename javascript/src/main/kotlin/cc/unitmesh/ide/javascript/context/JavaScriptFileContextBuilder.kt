@@ -12,11 +12,11 @@ import com.intellij.psi.util.PsiTreeUtil
 class JavaScriptFileContextBuilder : FileContextBuilder {
     override fun getFileContext(psiFile: PsiFile): FileContext? {
         val file = psiFile.virtualFile ?: return null
-        val importDeclarations: List<PsiElement> = ES6ImportPsiUtil.getImportDeclarations((psiFile as PsiElement))
+        val importDeclarations = ES6ImportPsiUtil.getImportDeclarations((psiFile as PsiElement))
 
-        val classes: List<PsiElement> =
+        val classes =
             PsiTreeUtil.getChildrenOfTypeAsList(psiFile as PsiElement, JSClass::class.java)
-        val functions: List<PsiElement> =
+        val functions =
             PsiTreeUtil.getChildrenOfTypeAsList(psiFile as PsiElement, JSFunction::class.java)
 
         return FileContext(

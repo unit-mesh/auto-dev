@@ -35,6 +35,9 @@
         <testContextProvider language="JavaScript" implementation="cc.unitmesh.ide.javascript.provider.testing.JSAutoTestService"/>
         <testContextProvider language="TypeScript" implementation="cc.unitmesh.ide.javascript.provider.testing.JSAutoTestService"/>
 
+        <refactoringTool language="TypeScript"
+                         implementationClass="cc.unitmesh.ide.javascript.provider.TypeScriptRefactoringTool"/>
+
         <livingDocumentation language="JavaScript"
                              implementationClass="cc.unitmesh.ide.javascript.provider.JavaScriptLivingDocumentation"/>
         <livingDocumentation language="TypeScript"

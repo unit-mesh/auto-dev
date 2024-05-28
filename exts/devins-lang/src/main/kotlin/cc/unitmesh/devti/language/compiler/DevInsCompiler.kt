@@ -288,6 +288,7 @@ class DevInsCompiler(
 
             if (next.elementType == DevInTypes.TEXT_SEGMENT) {
                 textSegment.append(next.text)
+                break
             }
         }
 
