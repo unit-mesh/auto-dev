@@ -53,7 +53,7 @@ class JavaRefactoringTool : RefactoringTool {
 
         val elementInfo = getElementInfo(sourceName, psiFile) ?: return false
 
-        val element: PsiNamedElement = psiFile ?: (navigatablePsiElement(elementInfo, sourceName) ?: return false)
+        val element: PsiNamedElement = psiFile ?: (searchPsiElementByName(elementInfo, sourceName) ?: return false)
 
         try {
             RenameElementFix(element, targetName)
@@ -67,10 +67,7 @@ class JavaRefactoringTool : RefactoringTool {
         return true
     }
 
-    private fun navigatablePsiElement(
-        elementInfo: ElementInfo,
-        sourceName: String
-    ): PsiNamedElement? = runReadAction {
+    private fun searchPsiElementByName(elementInfo: ElementInfo, sourceName: String): PsiNamedElement? = runReadAction {
         when {
             elementInfo.isMethod -> {
                 val className = elementInfo.className
