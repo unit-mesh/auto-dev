@@ -1,6 +1,7 @@
 // Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package cc.unitmesh.idea.provider
 
+import cc.unitmesh.devti.provider.RefactorInstElement
 import cc.unitmesh.devti.provider.RefactoringTool
 import com.intellij.codeInsight.daemon.impl.quickfix.RenameElementFix
 import com.intellij.codeInsight.daemon.impl.quickfix.SafeDeleteFix
@@ -83,23 +84,23 @@ class JavaRefactoringTool : RefactoringTool {
         return true
     }
 
-    private fun searchPsiElementByName(elementInfo: ElementInfo, sourceName: String): PsiNamedElement? = runReadAction {
+    private fun searchPsiElementByName(refactorInstElement: RefactorInstElement, sourceName: String): PsiNamedElement? = runReadAction {
         when {
-            elementInfo.isMethod -> {
-                val className = elementInfo.className
+            refactorInstElement.isMethod -> {
+                val className = refactorInstElement.className
                 val javaFile = this.lookupFile(sourceName) as? PsiJavaFile ?: return@runReadAction null
 
                 val psiMethod: PsiMethod =
                     javaFile.classes.firstOrNull { it.name == className }
-                        ?.methods?.firstOrNull { it.name == elementInfo.methodName }
+                        ?.methods?.firstOrNull { it.name == refactorInstElement.methodName }
                         ?: return@runReadAction null
 
                 psiMethod
             }
 
-            elementInfo.isClass -> {
+            refactorInstElement.isClass -> {
                 val javaFile = this.lookupFile(sourceName) as? PsiJavaFile ?: return@runReadAction null
-                javaFile.classes.firstOrNull { it.name == elementInfo.className }
+                javaFile.classes.firstOrNull { it.name == refactorInstElement.className }
             }
 
             else -> {
@@ -109,24 +110,15 @@ class JavaRefactoringTool : RefactoringTool {
         }
     }
 
-    data class ElementInfo(
-        val isClass: Boolean,
-        val isMethod: Boolean,
-        val methodName: String,
-        val canonicalName: String,
-        val className: String,
-        val pkgName: String
-    )
-
     /**
      * input will be canonicalName#methodName or just methodName
      */
-    private fun getElementInfo(input: String, psiFile: PsiFile?): ElementInfo? {
+    private fun getElementInfo(input: String, psiFile: PsiFile?): RefactorInstElement? {
         if (!input.contains("#") && psiFile != null) {
             val javaFile = psiFile as? PsiJavaFile ?: return null
             val className = javaFile.classes.firstOrNull()?.name ?: return null
             val canonicalName = javaFile.packageName + "." + className
-            return ElementInfo(true, true, input, canonicalName, className, javaFile.packageName)
+            return RefactorInstElement(true, true, input, canonicalName, className, javaFile.packageName)
         }
 
         val isMethod = input.contains("#")
@@ -142,7 +134,7 @@ class JavaRefactoringTool : RefactoringTool {
             isClass = true
         }
 
-        return ElementInfo(isClass, isMethod, methodName, canonicalName, maybeClassName, pkgName)
+        return RefactorInstElement(isClass, isMethod, methodName, canonicalName, maybeClassName, pkgName)
     }
 
     override fun safeDelete(element: PsiElement): Boolean {
