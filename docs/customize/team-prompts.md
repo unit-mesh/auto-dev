@@ -8,7 +8,7 @@ permalink: /custom/team-prompts
 
 > Discover new ways to collaborate and share your brilliance with your team.
 
-The default Team Prompts path is prompts/, which is the prompts/ directory located in the project's root directory.
+The default Team Prompts path is `prompts/`, which is the `prompts/` directory located in the project's root directory.
 
 AutoDev currently utilizes the Apache Velocity template engine, allowing you to customize your Team Prompts by modifying
 template files.
