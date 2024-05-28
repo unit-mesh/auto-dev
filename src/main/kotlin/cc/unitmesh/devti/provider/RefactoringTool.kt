@@ -1,5 +1,7 @@
 package cc.unitmesh.devti.provider
 
+import com.intellij.codeInsight.daemon.impl.quickfix.SafeDeleteFix
+import com.intellij.codeInspection.MoveToPackageFix
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageExtension
 import com.intellij.psi.PsiElement
@@ -38,13 +40,33 @@ interface RefactoringTool {
      * @return true if the element was successfully deleted without any issues, false otherwise. This indicates whether
      * the deletion was performed and considered safe.
      */
-    fun safeDelete(element: PsiElement): Boolean
+    fun safeDelete(element: PsiElement): Boolean {
+        val delete = SafeDeleteFix(element)
+        try {
+            delete.invoke(element.project, element.containingFile, element, element)
+        } catch (e: Exception) {
+            return false
+        }
+
+        return true
+    }
 
     /**
      * In Java the canonicalName is the fully qualified name of the target package.
      * In Kotlin the canonicalName is the fully qualified name of the target package or class.
      */
-    fun move(element: PsiElement, canonicalName: String): Boolean
+    fun move(element: PsiElement, canonicalName: String): Boolean {
+        val file = element.containingFile
+        val fix = MoveToPackageFix(file, canonicalName)
+
+        try {
+            fix.invoke(file.project, file, element, element)
+        } catch (e: Exception) {
+            return false
+        }
+
+        return true
+    }
 
     companion object {
         private val languageExtension: LanguageExtension<RefactoringTool> =

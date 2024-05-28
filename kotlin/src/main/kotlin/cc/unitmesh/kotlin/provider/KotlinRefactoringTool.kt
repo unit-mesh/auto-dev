@@ -89,30 +89,6 @@ class KotlinRefactoringTool : RefactoringTool {
         return true
     }
 
-    override fun safeDelete(element: PsiElement): Boolean {
-        val delete = SafeDeleteFix(element)
-        try {
-            delete.invoke(element.project, element.containingFile, element, element)
-        } catch (e: Exception) {
-            return false
-        }
-
-        return true
-    }
-
-    override fun move(element: PsiElement, canonicalName: String): Boolean {
-        val file = element.containingFile
-        val fix = MoveToPackageFix(file, canonicalName)
-
-        try {
-            fix.invoke(file.project, file, element, element)
-        } catch (e: Exception) {
-            return false
-        }
-
-        return true
-    }
-
     /// todo: since Kotlin can expose function in package, we need to spike better way for Kotlin,
     private fun getElementInfo(input: String, psiFile: PsiFile?): RefactorInstElement? {
         if (!input.contains("#") && psiFile != null) {
