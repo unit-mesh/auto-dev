@@ -9,4 +9,5 @@ class CustomIntentionConfig {
     var matchRegex: String = ""
     var template: String = ""
     val priority: Int = 0
+    var selectedRegex: String = ""
 }
