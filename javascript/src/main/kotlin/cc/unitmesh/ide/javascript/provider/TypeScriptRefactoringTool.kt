@@ -2,7 +2,6 @@ package cc.unitmesh.ide.javascript.provider
 
 import cc.unitmesh.devti.provider.RefactorInstElement
 import cc.unitmesh.devti.provider.RefactoringTool
-import cc.unitmesh.ide.javascript.context.JavaScriptFileContextBuilder
 import com.intellij.codeInsight.daemon.impl.quickfix.RenameElementFix
 import com.intellij.lang.javascript.JavaScriptFileType
 import com.intellij.lang.javascript.psi.JSFile
@@ -40,8 +39,15 @@ class TypeScriptRefactoringTool : RefactoringTool {
         return sourceFile
     }
 
+    private val identifierPattern = Regex("^[a-zA-Z_][a-zA-Z0-9_]*$")
+
     override fun rename(sourceName: String, targetName: String, psiFile: PsiFile?): Boolean {
         if (project == null) return false
+        // if targetElement is not a valid function name, return false
+        if (!identifierPattern.matches(targetName)) {
+            return false
+        }
+
 
         val elementInfo = getElementInfo(sourceName, psiFile) ?: return false
 
@@ -53,6 +59,16 @@ class TypeScriptRefactoringTool : RefactoringTool {
                     PsiTreeUtil.getChildrenOfTypeAsList(psiFile as PsiElement, JSFunction::class.java)
 
                 when {
+                    elementInfo.isClass -> {
+                        val className = elementInfo.className
+
+                        val findClass = classes.firstOrNull {
+                            it.name == targetName
+                        }
+
+                        findClass as PsiNamedElement
+                    }
+
                     elementInfo.isMethod -> {
                         val methodName = elementInfo.methodName
                         val className = elementInfo.className
@@ -62,16 +78,6 @@ class TypeScriptRefactoringTool : RefactoringTool {
                                 ?.children?.firstOrNull { it is JSFunction && it.name == methodName }
 
                         (psiMethod ?: functions.firstOrNull { it.name == methodName } ?: psiFile) as PsiNamedElement
-                    }
-
-                    elementInfo.isClass -> {
-                        val className = elementInfo.className
-
-                        val findClass = classes.firstOrNull {
-                            it.name == className
-                        }
-
-                        findClass as PsiNamedElement
                     }
 
                     else -> {
@@ -84,12 +90,6 @@ class TypeScriptRefactoringTool : RefactoringTool {
         } else {
             null
         } ?: return false
-
-        // if targetElement is not a valid function name, return false
-        val regex = Regex("^[a-zA-Z_][a-zA-Z0-9_]*$")
-        if (!regex.matches(targetName)) {
-            return false
-        }
 
         try {
             var target = targetName
