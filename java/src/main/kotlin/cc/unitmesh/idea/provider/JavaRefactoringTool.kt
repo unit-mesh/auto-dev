@@ -171,13 +171,9 @@ class JavaRefactoringTool : RefactoringTool {
                 }
             }
 
-            if (!ProgressManager.getInstance()
-                    .runProcessWithProgressSynchronously(
-                        runnable,
-                        RefactoringBundle.message("searching.for.variables"),
-                        true,
-                        myProject
-                    )
+            if (!ProgressManager.getInstance().runProcessWithProgressSynchronously(
+                    runnable, RefactoringBundle.message("searching.for.variables"), true, myProject
+                )
             ) {
                 return
             }
@@ -187,14 +183,14 @@ class JavaRefactoringTool : RefactoringTool {
                     *PsiUtilCore.toPsiElementArray(renamer.elements)
                 )
             ) return
+
             val performAutomaticRename = ThrowableRunnable<RuntimeException> {
                 CommandProcessor.getInstance().markCurrentCommandAsGlobal(myProject)
                 val classified = RenameProcessor.classifyUsages(renamer.elements, usages)
                 for (element in renamer.elements) {
                     val newElementName = renamer.getNewName(element)
                     if (newElementName != null) {
-                        val infos =
-                            classified[element]
+                        val infos = classified[element]
                         RenameUtil.doRename(
                             element,
                             newElementName,
