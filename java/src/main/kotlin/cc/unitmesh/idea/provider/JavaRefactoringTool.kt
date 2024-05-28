@@ -50,10 +50,26 @@ class JavaRefactoringTool : RefactoringTool {
 
     override fun rename(sourceName: String, targetName: String, psiFile: PsiFile?): Boolean {
         if (project == null) return false
-
         val elementInfo = getElementInfo(sourceName, psiFile) ?: return false
 
-        val element: PsiNamedElement = psiFile ?: (searchPsiElementByName(elementInfo, sourceName) ?: return false)
+        val element: PsiNamedElement =
+            if (psiFile != null) {
+                if (psiFile is PsiJavaFile) {
+                    val methodName = elementInfo.methodName
+                    val className = elementInfo.className
+
+                    val psiMethod: PsiMethod? =
+                        psiFile.classes.firstOrNull { it.name == className }
+                            ?.methods?.firstOrNull { it.name == methodName }
+
+                    psiMethod ?: psiFile
+                } else {
+                    psiFile
+                }
+
+            } else {
+                searchPsiElementByName(elementInfo, sourceName) ?: return false
+            }
 
         try {
             RenameElementFix(element, targetName)
