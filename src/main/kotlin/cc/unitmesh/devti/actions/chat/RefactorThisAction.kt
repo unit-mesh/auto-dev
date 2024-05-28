@@ -45,7 +45,19 @@ open class RefactorThisAction : ChatBaseAction() {
             "\n\n$commentSymbol relative static analysis result:\n$it"
         } ?: ""
 
-        return staticCodeResults
+        val devinRefactorPrompt: String =
+            """- You should summary in the end. 
+                |- If you had rename method, return follow format
+                |```DevIn
+                |rename: <sourceName> to <targetName>
+                |```
+                |- If you had delete method, return follow format
+                |```DevIn
+                |delete: <sourceName>
+                |```
+            """.trimMargin()
+
+        return staticCodeResults + devinRefactorPrompt
     }
 
     open fun commentPrefix(element: PsiElement): String {
