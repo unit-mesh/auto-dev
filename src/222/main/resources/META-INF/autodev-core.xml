@@ -304,6 +304,9 @@
             <action id="AutoDev.ToolWindow.Snippet.InsertCode"
                     icon="cc.unitmesh.devti.AutoDevIcons.InsertCode"
                     class="cc.unitmesh.devti.gui.snippet.AutoDevInsertCodeAction"/>
+            <action id="AutoDev.ToolWindow.Snippet.RunDevIns"
+                    icon="AllIcons.Actions.Execute"
+                    class="cc.unitmesh.devti.gui.snippet.AutoDevRunDevInsAction"/>
         </group>
 
         <group id="AutoDev.ToolWindow.Chat.TitleActions">
