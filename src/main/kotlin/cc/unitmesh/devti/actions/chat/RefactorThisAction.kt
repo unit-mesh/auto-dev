@@ -41,9 +41,11 @@ open class RefactorThisAction : ChatBaseAction() {
     override fun addAdditionPrompt(project: Project, editor: Editor, element: PsiElement): String {
         val commentSymbol = commentPrefix(element)
 
-        return collectProblems(project, editor, element)?.let {
+        val staticCodeResults = collectProblems(project, editor, element)?.let {
             "\n\n$commentSymbol relative static analysis result:\n$it"
         } ?: ""
+
+        return staticCodeResults
     }
 
     open fun commentPrefix(element: PsiElement): String {

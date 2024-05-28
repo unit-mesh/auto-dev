@@ -48,38 +48,12 @@ class JavaRefactoringTool : RefactoringTool {
         return sourceFile
     }
 
-    override fun rename(sourceName: String, targetName: String): Boolean {
-        if (project == null) {
-            return false
-        }
+    override fun rename(sourceName: String, targetName: String, psiFile: PsiFile?): Boolean {
+        if (project == null) return false
 
         val elementInfo = getElementInfo(sourceName)
 
-        val element: PsiNamedElement = runReadAction {
-            when {
-                elementInfo.isMethod -> {
-                    val className = elementInfo.className
-                    val javaFile = this.lookupFile(sourceName) as? PsiJavaFile ?: return@runReadAction null
-
-                    val psiMethod: PsiMethod =
-                        javaFile.classes.firstOrNull { it.name == className }
-                            ?.methods?.firstOrNull { it.name == elementInfo.methodName }
-                            ?: return@runReadAction null
-
-                    psiMethod
-                }
-
-                elementInfo.isClass -> {
-                    val javaFile = this.lookupFile(sourceName) as? PsiJavaFile ?: return@runReadAction null
-                    javaFile.classes.firstOrNull { it.name == elementInfo.className }
-                }
-
-                else -> {
-                    val javaFile = this.lookupFile(sourceName) as? PsiJavaFile ?: return@runReadAction null
-                    javaFile
-                }
-            }
-        } ?: return false
+        val element: PsiNamedElement = psiFile ?: (navigatablePsiElement(elementInfo, sourceName) ?: return false)
 
         try {
             RenameElementFix(element, targetName)
@@ -91,6 +65,35 @@ class JavaRefactoringTool : RefactoringTool {
         }
 
         return true
+    }
+
+    private fun navigatablePsiElement(
+        elementInfo: ElementInfo,
+        sourceName: String
+    ) : PsiNamedElement? = runReadAction {
+        when {
+            elementInfo.isMethod -> {
+                val className = elementInfo.className
+                val javaFile = this.lookupFile(sourceName) as? PsiJavaFile ?: return@runReadAction null
+
+                val psiMethod: PsiMethod =
+                    javaFile.classes.firstOrNull { it.name == className }
+                        ?.methods?.firstOrNull { it.name == elementInfo.methodName }
+                        ?: return@runReadAction null
+
+                psiMethod
+            }
+
+            elementInfo.isClass -> {
+                val javaFile = this.lookupFile(sourceName) as? PsiJavaFile ?: return@runReadAction null
+                javaFile.classes.firstOrNull { it.name == elementInfo.className }
+            }
+
+            else -> {
+                val javaFile = this.lookupFile(sourceName) as? PsiJavaFile ?: return@runReadAction null
+                javaFile
+            }
+        }
     }
 
     data class ElementInfo(

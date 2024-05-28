@@ -8,7 +8,7 @@ import com.intellij.psi.PsiFile
 interface RefactoringTool {
     fun lookupFile(path: String): PsiFile?
 
-    fun rename(sourceName: String, targetName: String): Boolean
+    fun rename(sourceName: String, targetName: String, psiFile: PsiFile?): Boolean
 
     fun safeDelete(element: PsiElement): Boolean
 
