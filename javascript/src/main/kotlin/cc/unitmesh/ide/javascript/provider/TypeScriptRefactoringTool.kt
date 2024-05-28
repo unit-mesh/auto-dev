@@ -8,7 +8,6 @@ import com.intellij.lang.javascript.psi.JSFile
 import com.intellij.lang.javascript.psi.JSFunction
 import com.intellij.lang.javascript.psi.ecmal4.JSClass
 import com.intellij.openapi.project.ProjectManager
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiNamedElement
@@ -17,6 +16,8 @@ import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.util.PsiTreeUtil
 
 class TypeScriptRefactoringTool : RefactoringTool {
+    private val identifierPattern = Regex("^[a-zA-Z_][a-zA-Z0-9_]*$")
+
     val project = ProjectManager.getInstance().openProjects.firstOrNull()
 
     override fun lookupFile(path: String): PsiFile? {
@@ -39,7 +40,37 @@ class TypeScriptRefactoringTool : RefactoringTool {
         return sourceFile
     }
 
-    private val identifierPattern = Regex("^[a-zA-Z_][a-zA-Z0-9_]*$")
+    private fun findNamedElement(psiFile: PsiFile?, elementInfo: RefactorInstElement): PsiNamedElement? {
+        return when (psiFile) {
+            is JSFile -> findElementInJSFile(psiFile, elementInfo)
+            else -> null
+        }
+    }
+
+    private fun findElementInJSFile(jsFile: JSFile, elementInfo: RefactorInstElement): PsiNamedElement? {
+        val classes = PsiTreeUtil.getChildrenOfTypeAsList(jsFile, JSClass::class.java)
+        val functions = PsiTreeUtil.getChildrenOfTypeAsList(jsFile, JSFunction::class.java)
+
+        return when {
+            elementInfo.isClass -> findClassByName(classes, elementInfo.className)
+            elementInfo.isMethod -> findMethodByName(classes, functions, elementInfo.methodName)
+            else -> null
+        }
+    }
+
+    private fun findClassByName(classes: List<JSClass>, className: String): PsiNamedElement? {
+        return classes.firstOrNull { it.name == className }
+    }
+
+    private fun findMethodByName(
+        classes: List<JSClass>,
+        functions: List<JSFunction>,
+        methodName: String
+    ): PsiNamedElement? {
+        return classes.firstNotNullOfOrNull {
+            it.findFunctionByName(methodName)
+        } ?: functions.firstOrNull { it.name == methodName }
+    }
 
     override fun rename(sourceName: String, targetName: String, psiFile: PsiFile?): Boolean {
         if (project == null) return false
@@ -48,49 +79,8 @@ class TypeScriptRefactoringTool : RefactoringTool {
             return false
         }
 
-
         val elementInfo = getElementInfo(sourceName, psiFile) ?: return false
-
-        val element: PsiNamedElement = if (psiFile != null) {
-            if (psiFile is JSFile) {
-                val classes: List<JSClass> =
-                    PsiTreeUtil.getChildrenOfTypeAsList(psiFile as PsiElement, JSClass::class.java)
-                val functions: List<JSFunction> =
-                    PsiTreeUtil.getChildrenOfTypeAsList(psiFile as PsiElement, JSFunction::class.java)
-
-                when {
-                    elementInfo.isClass -> {
-                        val className = elementInfo.className
-
-                        val findClass = classes.firstOrNull {
-                            it.name == className
-                        }
-
-                        findClass as PsiNamedElement
-                    }
-
-                    elementInfo.isMethod -> {
-                        val methodName = elementInfo.methodName
-                        val psiMethod: JSFunction? = classes.firstNotNullOfOrNull { it.findFunctionByName(methodName) }
-
-                        if (psiMethod != null) {
-                            psiMethod
-                        } else {
-                            // direct under JSFile's function
-                            functions.firstOrNull { it.name == methodName }
-                        }
-                    }
-
-                    else -> {
-                        null
-                    }
-                }
-            } else {
-                null
-            }
-        } else {
-            null
-        } ?: return false
+        val element = findNamedElement(psiFile, elementInfo) ?: return false
 
         try {
             var target = targetName
@@ -112,14 +102,11 @@ class TypeScriptRefactoringTool : RefactoringTool {
     private fun getElementInfo(input: String, psiFile: PsiFile?): RefactorInstElement? {
         if (!input.contains("#") && psiFile != null) {
             val jsFile = psiFile as? JSFile ?: return null
-            val className = input
-            val canonicalName = input
-
             // check input name is uppercase
-            val isClass = className[0].isUpperCase()
-            val isMethod = className[0].isLowerCase()
+            val isClass = input[0].isUpperCase()
+            val isMethod = input[0].isLowerCase()
 
-            return RefactorInstElement(isClass, isMethod, input, canonicalName, className, jsFile.name)
+            return RefactorInstElement(isClass, isMethod, input, input, input, jsFile.name)
         }
 
         val isMethod = input.contains("#")
