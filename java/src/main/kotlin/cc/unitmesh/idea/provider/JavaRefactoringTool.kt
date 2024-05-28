@@ -1,21 +1,18 @@
 package cc.unitmesh.idea.provider
 
 import cc.unitmesh.devti.provider.RefactoringTool
-import cc.unitmesh.idea.spring.lookupPackageName
 import com.intellij.codeInsight.daemon.impl.quickfix.SafeDeleteFix
 import com.intellij.codeInspection.MoveToPackageFix
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.jvm.analysis.quickFix.RenameQuickFix
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.ProjectManager
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiJavaFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.search.FileTypeIndex
-import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
 
 class JavaRefactoringTool : RefactoringTool {
@@ -47,7 +44,6 @@ class JavaRefactoringTool : RefactoringTool {
         val elementInfo = getElementInfo(sourceName)
         val psiFile: PsiFile? = null
 
-        // find psi element by cannocial name which is sourceName
         val element = runReadAction {
             when {
                 elementInfo.isMethod -> {
@@ -74,12 +70,14 @@ class JavaRefactoringTool : RefactoringTool {
             }
         } ?: return false
 
+        if (psiFile == null) return false
+
         val renameQuickFix = RenameQuickFix(element, targetName)
         val startElement = element
         val endElement = element
 
         try {
-            renameQuickFix.invoke(project, psiFile!!, startElement, endElement)
+            renameQuickFix.invoke(project, psiFile, startElement, endElement)
         } catch (e: Exception) {
             return false
         }

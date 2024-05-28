@@ -67,23 +67,23 @@ class RefactorInsCommand(val myProject: Project, private val argument: String, p
         when (command) {
             BuiltinRefactorCommand.RENAME -> {
                 val (from, to) = textSegment.split(" to ")
-                refactoringTool.rename(from, to)
+                refactoringTool.rename(from.trim(), to.trim())
             }
 
             BuiltinRefactorCommand.SAFEDELETE -> {
-                val psiFile = refactoringTool.lookupFile(textSegment) ?: return "File not found"
+                val psiFile = refactoringTool.lookupFile(textSegment.trim()) ?: return "File not found"
                 refactoringTool.safeDelete(psiFile)
             }
 
             BuiltinRefactorCommand.DELETE -> {
-                val psiFile = refactoringTool.lookupFile(textSegment) ?: return "File not found"
+                val psiFile = refactoringTool.lookupFile(textSegment.trim()) ?: return "File not found"
                 refactoringTool.safeDelete(psiFile)
             }
 
             BuiltinRefactorCommand.MOVE -> {
                 val (from, to) = textSegment.split(" to ")
-                val psiFile = refactoringTool.lookupFile(from) ?: return "File not found"
-                refactoringTool.move(psiFile, to)
+                val psiFile = refactoringTool.lookupFile(from.trim()) ?: return "File not found"
+                refactoringTool.move(psiFile, to.trim())
             }
         }
 
