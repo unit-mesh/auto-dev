@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.language.compiler.exec
 
 import cc.unitmesh.devti.language.completion.dataprovider.BuiltinRefactorCommand
+import cc.unitmesh.devti.language.psi.DevInFile
 import com.intellij.lang.Language
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -59,7 +60,14 @@ class RefactorInsCommand(val myProject: Project, private val argument: String, p
                 val editor = FileEditorManager.getInstance(myProject).selectedTextEditor
                 if (editor != null) {
                     val currentFile = FileDocumentManager.getInstance().getFile(editor.document) ?: return "File not found"
-                    psiFile = PsiManager.getInstance(myProject).findFile(currentFile)
+                    val currentPsiFile = PsiManager.getInstance(myProject).findFile(currentFile)
+
+                    // will not handle the case where the current file is not a DevInFile
+                    psiFile = if (currentPsiFile is DevInFile) {
+                        null
+                    } else {
+                        currentPsiFile
+                    }
                 }
 
                 refactoringTool.rename(from.trim(), to.trim(), psiFile)
