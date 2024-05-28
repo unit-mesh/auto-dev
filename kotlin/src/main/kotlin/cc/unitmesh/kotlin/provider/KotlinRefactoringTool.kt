@@ -1,6 +1,8 @@
 package cc.unitmesh.kotlin.provider
 
 import cc.unitmesh.devti.provider.RefactoringTool
+import com.intellij.codeInsight.daemon.impl.quickfix.SafeDeleteFix
+import com.intellij.codeInspection.MoveToPackageFix
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -17,10 +19,26 @@ class KotlinRefactoringTool : RefactoringTool {
     }
 
     override fun safeDelete(element: PsiElement): Boolean {
-        return false
+        val delete = SafeDeleteFix(element)
+        try {
+            delete.invoke(element.project, element.containingFile, element, element)
+        } catch (e: Exception) {
+            return false
+        }
+
+        return true
     }
 
     override fun move(element: PsiElement, canonicalName: String): Boolean {
-        return false
+        val file = element.containingFile
+        val fix = MoveToPackageFix(file, canonicalName)
+
+        try {
+            fix.invoke(file.project, file, element, element)
+        } catch (e: Exception) {
+            return false
+        }
+
+        return true
     }
 }
