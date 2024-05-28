@@ -14,6 +14,7 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 
 /**
@@ -33,6 +34,7 @@ class TeamPromptExecTask(
     val editor: Editor,
     private val intentionConfig: TeamPromptAction,
     val element: PsiElement?,
+    private val targetFile: VirtualFile?
 ) :
     Task.Backgroundable(project, AutoDevBundle.message("intentions.request.background.process.title")) {
     override fun run(indicator: ProgressIndicator) {
@@ -83,6 +85,14 @@ class TeamPromptExecTask(
                     override fun keepHistory(): Boolean = false
                     override fun promptText(): String = msgString
                 }
+
+                ProgressManager.getInstance()
+                    .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+            }
+
+            InteractionType.ReplaceCurrentFile -> {
+                val fileName = targetFile?.path
+                val task = FileGenerateTask(project, msgs, fileName)
 
                 ProgressManager.getInstance()
                     .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))

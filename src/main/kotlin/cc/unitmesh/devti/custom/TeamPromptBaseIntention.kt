@@ -49,7 +49,7 @@ class TeamPromptBaseIntention(val intentionConfig: TeamPromptAction, val trySele
             it.copy(content = compiler.compile(it.content))
         }
 
-        val task: Task.Backgroundable = TeamPromptExecTask(project, msgs, editor, intentionConfig, element)
+        val task: Task.Backgroundable = TeamPromptExecTask(project, msgs, editor, intentionConfig, element, null)
         ProgressManager.getInstance()
             .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
     }

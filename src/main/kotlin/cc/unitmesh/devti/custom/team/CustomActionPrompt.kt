@@ -3,6 +3,9 @@ package cc.unitmesh.devti.custom.team
 import cc.unitmesh.cf.core.llms.LlmMsg
 import cc.unitmesh.template.TemplateRoleSplitter
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.vfs.VirtualFile
 import org.yaml.snakeyaml.Yaml
 
 enum class CustomActionType {
@@ -14,10 +17,27 @@ data class CustomActionPrompt(
     var interaction: InteractionType = InteractionType.AppendCursorStream,
     var priority: Int = 0,
     var type: CustomActionType = CustomActionType.Default,
+    /**
+     * batchFileRegex represents a regular expression used for matching files in batch mode.
+     * When this regex is set, it will be used to determine which files should be included
+     * in batch operations, such as file processing or mass operations.
+     * The regex should be a valid regular expression string according to the regex
+     * capabilities of the host environment.
+     * It is expected that this variable will be set with an appropriate regex pattern
+     * before batch operations are initiated.
+     */
+    var batchFileRegex: String = "",
+
     var other: Map<String, Any> = mapOf(),
     // the rest of the content is the chat messages
     var msgs: List<LlmMsg.ChatMessage> = listOf(),
 ) {
+    /// glob mode
+    fun batchFiles(project: Project): List<VirtualFile> {
+        val regex = Regex(batchFileRegex)
+        return project.guessProjectDir()?.children?.filter { regex.matches(it.name) } ?: emptyList()
+    }
+
     companion object {
         private val logger = logger<CustomActionPrompt>()
 

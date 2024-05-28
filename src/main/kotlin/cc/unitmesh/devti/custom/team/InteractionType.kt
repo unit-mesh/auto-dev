@@ -5,6 +5,7 @@ enum class InteractionType {
     AppendCursor,
     AppendCursorStream,
     OutputFile,
-    ReplaceSelection
+    ReplaceSelection,
+    ReplaceCurrentFile,
     ;
 }
