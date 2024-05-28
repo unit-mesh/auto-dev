@@ -4,16 +4,15 @@ import cc.unitmesh.devti.provider.RefactoringTool
 import com.intellij.codeInsight.daemon.impl.quickfix.SafeDeleteFix
 import com.intellij.codeInspection.MoveToPackageFix
 import com.intellij.ide.highlighter.JavaFileType
-import com.intellij.jvm.analysis.quickFix.RenameQuickFix
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.project.ProjectManager
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiJavaFile
-import com.intellij.psi.PsiManager
-import com.intellij.psi.PsiMethod
+import com.intellij.psi.*
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.ProjectScope
+import com.intellij.refactoring.listeners.RefactoringElementListener
+import com.intellij.refactoring.rename.RenameUtil
+import com.intellij.usageView.UsageInfo
 
 class JavaRefactoringTool : RefactoringTool {
     val project = ProjectManager.getInstance().openProjects.firstOrNull()
@@ -42,7 +41,6 @@ class JavaRefactoringTool : RefactoringTool {
         }
 
         val elementInfo = getElementInfo(sourceName)
-        val psiFile: PsiFile? = null
 
         val element = runReadAction {
             when {
@@ -70,14 +68,10 @@ class JavaRefactoringTool : RefactoringTool {
             }
         } ?: return false
 
-        if (psiFile == null) return false
-
-        val renameQuickFix = RenameQuickFix(element, targetName)
-        val startElement = element
-        val endElement = element
-
         try {
-            renameQuickFix.invoke(project, psiFile, startElement, endElement)
+            CommandProcessor.getInstance().executeCommand(project, {
+                RenameUtil.doRename(element, targetName, UsageInfo.EMPTY_ARRAY, project, RefactoringElementListener.DEAF)
+            }, "Rename", null);
         } catch (e: Exception) {
             return false
         }
