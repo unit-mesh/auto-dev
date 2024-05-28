@@ -1,21 +1,8 @@
 package cc.unitmesh.devti.language.compiler.exec
 
+import cc.unitmesh.devti.language.completion.dataprovider.BuiltinRefactorCommand
 import com.intellij.lang.Language
 import com.intellij.openapi.project.Project
-
-enum class BuiltinRefactorCommand {
-    RENAME,
-    SAFEDELETE,
-    DELETE,
-    MOVE
-    ;
-
-    companion object {
-        fun fromString(command: String): BuiltinRefactorCommand? {
-            return values().find { it.name.equals(command, ignoreCase = true) }
-        }
-    }
-}
 
 /**
  * `RefactorInsCommand` is a class that implements the `InsCommand` interface. It is responsible for executing

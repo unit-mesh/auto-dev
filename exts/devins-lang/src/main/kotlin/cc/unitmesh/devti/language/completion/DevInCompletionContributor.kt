@@ -43,6 +43,11 @@ class DevInCompletionContributor : CompletionContributor() {
             valuePattern(BuiltinCommand.FILE_FUNC.commandName),
             FileFunctionProvider()
         )
+        extend(
+            CompletionType.BASIC,
+            valuePattern(BuiltinCommand.Refactor.commandName),
+            RefactoringFuncProvider()
+        )
     }
 
     private inline fun <reified I : PsiElement> psiElement() = PlatformPatterns.psiElement(I::class.java)
