@@ -55,7 +55,7 @@ class JavaRefactoringTool : RefactoringTool {
 
         val elementInfo = getElementInfo(sourceName)
 
-        val element = runReadAction {
+        val element: PsiNamedElement = runReadAction {
             when {
                 elementInfo.isMethod -> {
                     val className = elementInfo.className
@@ -82,15 +82,6 @@ class JavaRefactoringTool : RefactoringTool {
         } ?: return false
 
         try {
-//            CommandProcessor.getInstance().executeCommand(project, {
-//                RenameUtil.doRename(
-//                    element,
-//                    targetName,
-//                    UsageInfo.EMPTY_ARRAY,
-//                    project,
-//                    RefactoringElementListener.DEAF
-//                )
-//            }, "Rename", null);
             performRefactoringRename(project, element, targetName)
         } catch (e: Exception) {
             return false
@@ -169,73 +160,55 @@ class JavaRefactoringTool : RefactoringTool {
 
     fun performRefactoringRename(myProject: Project, elementToRename: PsiNamedElement, newName: String) {
         for (renamerFactory in AutomaticRenamerFactory.EP_NAME.extensionList) {
-            if (isRenamerFactoryApplicable(renamerFactory, elementToRename)) {
-                val usages: List<UsageInfo> = ArrayList()
-                val renamer = renamerFactory.createRenamer(elementToRename, newName, ArrayList())
-                if (renamer.hasAnythingToRename()) {
-                    if (!ApplicationManager.getApplication().isUnitTestMode) {
-                        val renamingDialog = AutomaticRenamingDialog(myProject, renamer)
-                        if (!renamingDialog.showAndGet()) {
-                            continue
-                        }
-                    }
+            if (!isRenamerFactoryApplicable(renamerFactory, elementToRename)) continue
+            val usages: List<UsageInfo> = ArrayList()
+            val renamer = renamerFactory.createRenamer(elementToRename, newName, ArrayList())
+            if (!renamer.hasAnythingToRename()) continue
 
-                    val runnable = Runnable {
-                        ApplicationManager.getApplication().runReadAction {
-                            renamer.findUsages(usages, false, false)
-                        }
-                    }
+            val runnable = Runnable {
+                ApplicationManager.getApplication().runReadAction {
+                    renamer.findUsages(usages, false, false)
+                }
+            }
 
-                    if (!ProgressManager.getInstance()
-                            .runProcessWithProgressSynchronously(
-                                runnable,
-                                RefactoringBundle.message("searching.for.variables"),
-                                true,
-                                myProject
-                            )
-                    ) {
-                        return
-                    }
+            if (!ProgressManager.getInstance()
+                    .runProcessWithProgressSynchronously(
+                        runnable,
+                        RefactoringBundle.message("searching.for.variables"),
+                        true,
+                        myProject
+                    )
+            ) {
+                return
+            }
 
-                    if (!CommonRefactoringUtil.checkReadOnlyStatus(
+            if (!CommonRefactoringUtil.checkReadOnlyStatus(
+                    myProject,
+                    *PsiUtilCore.toPsiElementArray(renamer.elements)
+                )
+            ) return
+            val performAutomaticRename = ThrowableRunnable<RuntimeException> {
+                CommandProcessor.getInstance().markCurrentCommandAsGlobal(myProject)
+                val classified = RenameProcessor.classifyUsages(renamer.elements, usages)
+                for (element in renamer.elements) {
+                    val newElementName = renamer.getNewName(element)
+                    if (newElementName != null) {
+                        val infos =
+                            classified[element]
+                        RenameUtil.doRename(
+                            element,
+                            newElementName,
+                            infos.toTypedArray(),
                             myProject,
-                            *PsiUtilCore.toPsiElementArray(renamer.elements)
+                            RefactoringElementListener.DEAF
                         )
-                    ) return
-                    val performAutomaticRename =
-                        ThrowableRunnable<RuntimeException> {
-                            CommandProcessor.getInstance()
-                                .markCurrentCommandAsGlobal(myProject)
-                            val classified =
-                                RenameProcessor.classifyUsages(
-                                    renamer.elements,
-                                    usages
-                                )
-                            for (element in renamer.elements) {
-                                val newElementName = renamer.getNewName(element)
-                                if (newElementName != null) {
-                                    val infos =
-                                        classified[element]
-                                    RenameUtil.doRename(
-                                        element,
-                                        newElementName,
-                                        infos.toTypedArray(),
-                                        myProject,
-                                        RefactoringElementListener.DEAF
-                                    )
-                                }
-                            }
-                        }
-                    if (ApplicationManager.getApplication().isUnitTestMode) {
-                        WriteCommandAction.writeCommandAction(myProject)
-                            .withName(getCommandName()).run(performAutomaticRename)
-                    } else {
-                        ApplicationManager.getApplication().invokeLater {
-                            WriteCommandAction.writeCommandAction(myProject)
-                                .withName(getCommandName()).run(performAutomaticRename)
-                        }
                     }
                 }
+            }
+
+            ApplicationManager.getApplication().invokeLater {
+                WriteCommandAction.writeCommandAction(myProject)
+                    .withName(getCommandName()).run(performAutomaticRename)
             }
         }
     }
