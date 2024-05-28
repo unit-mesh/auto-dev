@@ -33,7 +33,7 @@ class JavaRefactoringTool : RefactoringTool {
     override fun lookupFile(path: String): PsiFile? {
         if (project == null) return null
 
-        val elementInfo = getElementInfo(path)
+        val elementInfo = getElementInfo(path, null) ?: return null
         val searchScope = ProjectScope.getProjectScope(project)
         val javaFiles: List<PsiJavaFile> = FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
             .mapNotNull { PsiManager.getInstance(project).findFile(it) as? PsiJavaFile }
@@ -51,7 +51,7 @@ class JavaRefactoringTool : RefactoringTool {
     override fun rename(sourceName: String, targetName: String, psiFile: PsiFile?): Boolean {
         if (project == null) return false
 
-        val elementInfo = getElementInfo(sourceName)
+        val elementInfo = getElementInfo(sourceName, psiFile) ?: return false
 
         val element: PsiNamedElement = psiFile ?: (navigatablePsiElement(elementInfo, sourceName) ?: return false)
 
@@ -70,7 +70,7 @@ class JavaRefactoringTool : RefactoringTool {
     private fun navigatablePsiElement(
         elementInfo: ElementInfo,
         sourceName: String
-    ) : PsiNamedElement? = runReadAction {
+    ): PsiNamedElement? = runReadAction {
         when {
             elementInfo.isMethod -> {
                 val className = elementInfo.className
@@ -105,7 +105,17 @@ class JavaRefactoringTool : RefactoringTool {
         val pkgName: String
     )
 
-    private fun getElementInfo(input: String): ElementInfo {
+    /**
+     * input will be canonicalName#methodName or just methodName
+     */
+    private fun getElementInfo(input: String, psiFile: PsiFile?): ElementInfo? {
+        if (!input.contains("#") && psiFile != null) {
+            val javaFile = psiFile as? PsiJavaFile ?: return null
+            val className = javaFile.classes.firstOrNull()?.name ?: return null
+            val canonicalName = javaFile.packageName + "." + className
+            return ElementInfo(true, true, input, canonicalName, className, javaFile.packageName)
+        }
+
         val isMethod = input.contains("#")
         val methodName = input.substringAfter("#")
         val canonicalName = input.substringBefore("#")

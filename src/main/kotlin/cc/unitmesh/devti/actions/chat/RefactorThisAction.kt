@@ -4,6 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
+import cc.unitmesh.devti.provider.RefactoringTool
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx
 import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -44,6 +45,9 @@ open class RefactorThisAction : ChatBaseAction() {
         val staticCodeResults = collectProblems(project, editor, element)?.let {
             "\n\n$commentSymbol relative static analysis result:\n$it"
         } ?: ""
+
+        val refactoringTool = RefactoringTool.forLanguage(element.language)
+        refactoringTool ?: return staticCodeResults
 
         val devinRefactorPrompt: String =
             """```

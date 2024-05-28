@@ -2,7 +2,10 @@ package cc.unitmesh.devti.language.compiler.exec
 
 import cc.unitmesh.devti.language.completion.dataprovider.BuiltinRefactorCommand
 import com.intellij.lang.Language
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiManager
 
 /**
  * `RefactorInsCommand` is a class that implements the `InsCommand` interface. It is responsible for executing
@@ -51,7 +54,14 @@ class RefactorInsCommand(val myProject: Project, private val argument: String, p
         when (command) {
             BuiltinRefactorCommand.RENAME -> {
                 val (from, to) = textSegment.split(" to ")
-                refactoringTool.rename(from.trim(), to.trim(), null)
+                var psiFile: PsiFile? = null
+                val editor = FileEditorManager.getInstance(myProject).selectedTextEditor
+                if (editor != null) {
+                    val currentFile = editor.virtualFile
+                    psiFile = PsiManager.getInstance(myProject).findFile(currentFile)
+                }
+
+                refactoringTool.rename(from.trim(), to.trim(), psiFile)
             }
 
             BuiltinRefactorCommand.SAFEDELETE -> {

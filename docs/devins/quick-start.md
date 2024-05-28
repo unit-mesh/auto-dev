@@ -34,7 +34,7 @@ ScreenShot
   example: `<package>.<class>#<method>`
 - `/shell`: run shell command or shell script, like `ls`, `pwd`, etc.
 - `/browse`: browse web page, like `https://ide.unitmesh.cc`
-- `/refactor`: refactor code, like `rename`, `delete`, `move` etc. (since @1.8.6)
+- `/refactor`: refactor code, like `rename`, `delete`, `move` etc. (since @1.8.6) (Java only)
 
 ### File Command
 
