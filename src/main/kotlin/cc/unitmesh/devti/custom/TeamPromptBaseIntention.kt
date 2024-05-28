@@ -12,7 +12,7 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.readText
+import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.temporary.calculateFrontendElementToExplain
@@ -57,7 +57,7 @@ class TeamPromptBaseIntention(val intentionConfig: TeamPromptAction, val trySele
             val files = actionPrompt.batchFiles(project)
             if (files.isNotEmpty()) {
                 files.forEach { vfile ->
-                    compiler.set("all", vfile.readText())
+                    compiler.set("all", VfsUtilCore.loadText(vfile))
                     val msgs = chatMessages.map {
                         it.copy(content = compiler.compile(it.content))
                     }
