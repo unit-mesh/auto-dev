@@ -113,7 +113,8 @@ example: [https://github.com/unit-mesh/untitled/tree/english/prompts](https://gi
 
 ### Batch File example
 
- 核心点：`batchFileRegex` 用于匹配批量文件，`codeOnly` 用于只显示代码部分。
+核心点：`batchFileRegex` 用于匹配批量文件，`codeOnly: true` 只将纯代码部分放入文件，`interaction: ReplaceCurrentFile`
+用于替换当前文件。
 
     ---
     interaction: ReplaceCurrentFile
