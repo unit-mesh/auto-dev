@@ -46,15 +46,16 @@ open class RefactorThisAction : ChatBaseAction() {
         } ?: ""
 
         val devinRefactorPrompt: String =
-            """- You should summary in the end. 
+            """```
+                |- You should summary in the end with `DevIn` language in markdown fence-code block, I will handle it.
+                |- the DevIn language current only support rename and delete method.
                 |- If you had rename method, return follow format
                 |```DevIn
-                |rename: <sourceName> to <targetName>
+                |/rename: <sourceName> to <targetName>
                 |```
                 |- If you had delete method, return follow format
                 |```DevIn
-                |delete: <sourceName>
-                |```
+                |/delete: <sourceName>
             """.trimMargin()
 
         return staticCodeResults + devinRefactorPrompt
