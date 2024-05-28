@@ -2,9 +2,6 @@ package cc.unitmesh.devti.language.compiler.exec
 
 import com.intellij.lang.Language
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.guessProjectDir
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiManager
 
 enum class BuiltinRefactorCommand {
     RENAME,

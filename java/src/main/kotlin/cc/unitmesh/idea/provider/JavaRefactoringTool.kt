@@ -2,6 +2,7 @@
 package cc.unitmesh.idea.provider
 
 import cc.unitmesh.devti.provider.RefactoringTool
+import com.intellij.codeInsight.daemon.impl.quickfix.RenameElementFix
 import com.intellij.codeInsight.daemon.impl.quickfix.SafeDeleteFix
 import com.intellij.codeInspection.MoveToPackageFix
 import com.intellij.ide.highlighter.JavaFileType
@@ -19,7 +20,6 @@ import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.util.PsiUtilCore
 import com.intellij.refactoring.RefactoringBundle
 import com.intellij.refactoring.listeners.RefactoringElementListener
-import com.intellij.refactoring.rename.AutomaticRenamingDialog
 import com.intellij.refactoring.rename.RenameProcessor
 import com.intellij.refactoring.rename.RenameUtil
 import com.intellij.refactoring.rename.naming.AutomaticRenamerFactory
@@ -82,6 +82,9 @@ class JavaRefactoringTool : RefactoringTool {
         } ?: return false
 
         try {
+            RenameElementFix(element, targetName)
+                .invoke(project, element.containingFile, element, element)
+
             performRefactoringRename(project, element, targetName)
         } catch (e: Exception) {
             return false
@@ -158,6 +161,7 @@ class JavaRefactoringTool : RefactoringTool {
         return renamerFactory.isApplicable(elementToRename)
     }
 
+    /// the AutomaticRenamerFactory support for testing rename
     fun performRefactoringRename(myProject: Project, elementToRename: PsiNamedElement, newName: String) {
         for (renamerFactory in AutomaticRenamerFactory.EP_NAME.extensionList) {
             if (!isRenamerFactoryApplicable(renamerFactory, elementToRename)) continue
