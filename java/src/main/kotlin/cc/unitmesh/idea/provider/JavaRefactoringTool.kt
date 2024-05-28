@@ -1,18 +1,31 @@
+// Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package cc.unitmesh.idea.provider
 
 import cc.unitmesh.devti.provider.RefactoringTool
 import com.intellij.codeInsight.daemon.impl.quickfix.SafeDeleteFix
 import com.intellij.codeInspection.MoveToPackageFix
 import com.intellij.ide.highlighter.JavaFileType
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.CommandProcessor
+import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.util.NlsContexts
 import com.intellij.psi.*
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.ProjectScope
+import com.intellij.psi.util.PsiUtilCore
+import com.intellij.refactoring.RefactoringBundle
 import com.intellij.refactoring.listeners.RefactoringElementListener
+import com.intellij.refactoring.rename.AutomaticRenamingDialog
+import com.intellij.refactoring.rename.RenameProcessor
 import com.intellij.refactoring.rename.RenameUtil
+import com.intellij.refactoring.rename.naming.AutomaticRenamerFactory
+import com.intellij.refactoring.util.CommonRefactoringUtil
 import com.intellij.usageView.UsageInfo
+import com.intellij.util.ThrowableRunnable
 
 class JavaRefactoringTool : RefactoringTool {
     val project = ProjectManager.getInstance().openProjects.firstOrNull()
@@ -69,9 +82,16 @@ class JavaRefactoringTool : RefactoringTool {
         } ?: return false
 
         try {
-            CommandProcessor.getInstance().executeCommand(project, {
-                RenameUtil.doRename(element, targetName, UsageInfo.EMPTY_ARRAY, project, RefactoringElementListener.DEAF)
-            }, "Rename", null);
+//            CommandProcessor.getInstance().executeCommand(project, {
+//                RenameUtil.doRename(
+//                    element,
+//                    targetName,
+//                    UsageInfo.EMPTY_ARRAY,
+//                    project,
+//                    RefactoringElementListener.DEAF
+//                )
+//            }, "Rename", null);
+            performRefactoringRename(project, element, targetName)
         } catch (e: Exception) {
             return false
         }
@@ -138,5 +158,89 @@ class JavaRefactoringTool : RefactoringTool {
         }
 
         return true
+    }
+
+    protected fun isRenamerFactoryApplicable(
+        renamerFactory: AutomaticRenamerFactory,
+        elementToRename: PsiNamedElement
+    ): Boolean {
+        return renamerFactory.isApplicable(elementToRename)
+    }
+
+    fun performRefactoringRename(myProject: Project, elementToRename: PsiNamedElement, newName: String) {
+        for (renamerFactory in AutomaticRenamerFactory.EP_NAME.extensionList) {
+            if (isRenamerFactoryApplicable(renamerFactory, elementToRename)) {
+                val usages: List<UsageInfo> = ArrayList()
+                val renamer = renamerFactory.createRenamer(elementToRename, newName, ArrayList())
+                if (renamer.hasAnythingToRename()) {
+                    if (!ApplicationManager.getApplication().isUnitTestMode) {
+                        val renamingDialog = AutomaticRenamingDialog(myProject, renamer)
+                        if (!renamingDialog.showAndGet()) {
+                            continue
+                        }
+                    }
+
+                    val runnable = Runnable {
+                        ApplicationManager.getApplication().runReadAction {
+                            renamer.findUsages(usages, false, false)
+                        }
+                    }
+
+                    if (!ProgressManager.getInstance()
+                            .runProcessWithProgressSynchronously(
+                                runnable,
+                                RefactoringBundle.message("searching.for.variables"),
+                                true,
+                                myProject
+                            )
+                    ) {
+                        return
+                    }
+
+                    if (!CommonRefactoringUtil.checkReadOnlyStatus(
+                            myProject,
+                            *PsiUtilCore.toPsiElementArray(renamer.elements)
+                        )
+                    ) return
+                    val performAutomaticRename =
+                        ThrowableRunnable<RuntimeException> {
+                            CommandProcessor.getInstance()
+                                .markCurrentCommandAsGlobal(myProject)
+                            val classified =
+                                RenameProcessor.classifyUsages(
+                                    renamer.elements,
+                                    usages
+                                )
+                            for (element in renamer.elements) {
+                                val newElementName = renamer.getNewName(element)
+                                if (newElementName != null) {
+                                    val infos =
+                                        classified[element]
+                                    RenameUtil.doRename(
+                                        element,
+                                        newElementName,
+                                        infos.toTypedArray(),
+                                        myProject,
+                                        RefactoringElementListener.DEAF
+                                    )
+                                }
+                            }
+                        }
+                    if (ApplicationManager.getApplication().isUnitTestMode) {
+                        WriteCommandAction.writeCommandAction(myProject)
+                            .withName(getCommandName()).run(performAutomaticRename)
+                    } else {
+                        ApplicationManager.getApplication().invokeLater {
+                            WriteCommandAction.writeCommandAction(myProject)
+                                .withName(getCommandName()).run(performAutomaticRename)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun getCommandName(): @NlsContexts.Command String? {
+        return "Rename"
     }
 }
