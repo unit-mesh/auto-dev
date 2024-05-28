@@ -31,6 +31,11 @@ data class CustomActionPrompt(
      */
     var batchFileRegex: String = "",
 
+    /**
+     * will parse code block and insert to docs
+     */
+    var codeOnly: Boolean = false,
+
     var other: Map<String, Any> = mapOf(),
     // the rest of the content is the chat messages
     var msgs: List<LlmMsg.ChatMessage> = listOf(),
@@ -125,6 +130,12 @@ data class CustomActionPrompt(
                     (frontMatterMap["batchFileRegex"] as String).removeSurrounding("\"").removeSurrounding("'")
                 } catch (e: Exception) {
                     ""
+                }
+
+                prompt.codeOnly = try {
+                    frontMatterMap["codeOnly"] as Boolean
+                } catch (e: Exception) {
+                    false
                 }
 
                 prompt.priority = try {

@@ -4,6 +4,7 @@ import cc.unitmesh.cf.core.llms.LlmMsg
 import cc.unitmesh.cf.core.parser.MarkdownCode
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.llms.LlmFactory
+import cc.unitmesh.devti.util.parser.Code
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
@@ -19,7 +20,12 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlinx.coroutines.flow.*
 
-class FileGenerateTask(@JvmField val project: Project, val messages: List<LlmMsg.ChatMessage>, val fileName: String?) :
+class FileGenerateTask(
+    @JvmField val project: Project,
+    val messages: List<LlmMsg.ChatMessage>,
+    val fileName: String?,
+    val codeOnly: Boolean = false
+) :
     Task.Backgroundable(project, AutoDevBundle.message("intentions.request.background.process.title")) {
     private val projectRoot = project.guessProjectDir()!!
 
@@ -50,8 +56,15 @@ class FileGenerateTask(@JvmField val project: Project, val messages: List<LlmMsg
             file.createNewFile()
         }
 
-        file.writeText(result)
-        refreshAndOpenInEditor(Path(projectRoot.path), projectRoot)
+        if (codeOnly) {
+            val code = Code.parse(result).text
+            file.writeText(code)
+            refreshAndOpenInEditor(file.toPath(), projectRoot)
+            return
+        } else {
+            file.writeText(result)
+            refreshAndOpenInEditor(Path(projectRoot.path), projectRoot)
+        }
     }
 
     protected fun refreshAndOpenInEditor(file: Path, parentDir: VirtualFile) {

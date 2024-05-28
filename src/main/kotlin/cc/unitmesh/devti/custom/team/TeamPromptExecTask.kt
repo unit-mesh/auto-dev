@@ -92,7 +92,7 @@ class TeamPromptExecTask(
 
             InteractionType.ReplaceCurrentFile -> {
                 val fileName = targetFile?.path
-                val task = FileGenerateTask(project, msgs, fileName)
+                val task = FileGenerateTask(project, msgs, fileName, codeOnly = intentionConfig.actionPrompt.codeOnly)
 
                 ProgressManager.getInstance()
                     .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))

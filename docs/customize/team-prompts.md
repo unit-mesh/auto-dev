@@ -34,6 +34,8 @@ The Team Prompts file format is .vtl, which is the Velocity Template Language fi
 ---
 interaction: AppendCursorStream # the interaction type, support AppendCursorStream, ChatPanel, AppendCursor, OutputFile
 priority: 99
+batchFileRegex: ".*" # the regex to match the batch file
+codeOnly: false # only show the code part
 ---    
 ```
 
@@ -49,6 +51,7 @@ interaction type:
 - OutputFile, the prompt will be inserted in the output file, `output-{timestamp}.{extension}`, the extension will be
   parsed from the result's language.
 - ReplaceSelection, the prompt will replace the current selection (since version@1.6.3)
+- ReplaceCurrentFile, the prompt will replace the current file (since version@1.8.6)
 
 ## English Examples
 
@@ -107,3 +110,20 @@ example: [https://github.com/unit-mesh/untitled/tree/english/prompts](https://gi
 
 完整的 TDD
 示例：[https://github.com/unit-mesh/untitled/tree/master/prompts](https://github.com/unit-mesh/untitled/tree/master/prompts)
+
+### Batch File example
+
+ 核心点：`batchFileRegex` 用于匹配批量文件，`codeOnly` 用于只显示代码部分。
+
+    ---
+    interaction: ReplaceCurrentFile
+    batchFileRegex: "**/*.ts"
+    codeOnly: true
+    ---
+    
+    重构用户的代码。
+    要求：只在一个 markdown 代码块返回重构完的代码
+    
+    ${all}
+
+
