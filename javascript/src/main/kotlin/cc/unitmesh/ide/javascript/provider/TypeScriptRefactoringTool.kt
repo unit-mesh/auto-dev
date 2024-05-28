@@ -71,13 +71,14 @@ class TypeScriptRefactoringTool : RefactoringTool {
 
                     elementInfo.isMethod -> {
                         val methodName = elementInfo.methodName
-                        val className = elementInfo.className
+                        val psiMethod: JSFunction? = classes.firstNotNullOfOrNull { it.findFunctionByName(methodName) }
 
-                        val psiMethod: PsiElement? =
-                            classes.firstOrNull { it.name == className }
-                                ?.children?.firstOrNull { it is JSFunction && it.name == methodName }
-
-                        (psiMethod ?: functions.firstOrNull { it.name == methodName } ?: psiFile) as PsiNamedElement
+                        if (psiMethod != null) {
+                            psiMethod
+                        } else {
+                            // direct under JSFile's function
+                            functions.firstOrNull { it.name == methodName }
+                        }
                     }
 
                     else -> {
@@ -114,7 +115,11 @@ class TypeScriptRefactoringTool : RefactoringTool {
             val className = input
             val canonicalName = input
 
-            return RefactorInstElement(true, true, input, canonicalName, className, jsFile.name)
+            // check input name is uppercase
+            val isClass = className[0].isUpperCase()
+            val isMethod = className[0].isLowerCase()
+
+            return RefactorInstElement(isClass, isMethod, input, canonicalName, className, jsFile.name)
         }
 
         val isMethod = input.contains("#")
