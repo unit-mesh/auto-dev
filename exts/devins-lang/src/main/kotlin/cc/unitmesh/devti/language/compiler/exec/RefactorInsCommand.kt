@@ -47,8 +47,22 @@ import com.intellij.psi.PsiManager
 class RefactorInsCommand(val myProject: Project, private val argument: String, private val textSegment: String) :
     InsCommand {
     override suspend fun execute(): String? {
-        val java = Language.findLanguageByID("JAVA") ?: return "Java language not found"
-        val refactoringTool = cc.unitmesh.devti.provider.RefactoringTool.forLanguage(java)
+        var currentEditFile: PsiFile? = null
+        val editor = FileEditorManager.getInstance(myProject).selectedTextEditor
+        if (editor != null) {
+            val currentFile = FileDocumentManager.getInstance().getFile(editor.document) ?: return "File not found"
+            val currentPsiFile = PsiManager.getInstance(myProject).findFile(currentFile)
+
+            // will not handle the case where the current file is not a DevInFile
+            currentEditFile = if (currentPsiFile is DevInFile) {
+                null
+            } else {
+                currentPsiFile
+            }
+        }
+
+        val language = currentEditFile?.language ?: Language.findLanguageByID("JAVA") ?: return "Language not found"
+        val refactoringTool = cc.unitmesh.devti.provider.RefactoringTool.forLanguage(language)
             ?: return "Refactoring tool not found for Java"
 
         val command = BuiltinRefactorCommand.fromString(argument) ?: return "Unknown refactor command: $argument"
@@ -56,21 +70,7 @@ class RefactorInsCommand(val myProject: Project, private val argument: String, p
         when (command) {
             BuiltinRefactorCommand.RENAME -> {
                 val (from, to) = textSegment.split(" to ")
-                var psiFile: PsiFile? = null
-                val editor = FileEditorManager.getInstance(myProject).selectedTextEditor
-                if (editor != null) {
-                    val currentFile = FileDocumentManager.getInstance().getFile(editor.document) ?: return "File not found"
-                    val currentPsiFile = PsiManager.getInstance(myProject).findFile(currentFile)
-
-                    // will not handle the case where the current file is not a DevInFile
-                    psiFile = if (currentPsiFile is DevInFile) {
-                        null
-                    } else {
-                        currentPsiFile
-                    }
-                }
-
-                refactoringTool.rename(from.trim(), to.trim(), psiFile)
+                refactoringTool.rename(from.trim(), to.trim(), currentEditFile)
             }
 
             BuiltinRefactorCommand.SAFEDELETE -> {

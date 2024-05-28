@@ -6,14 +6,10 @@ import com.intellij.codeInsight.daemon.impl.quickfix.RenameElementFix
 import com.intellij.codeInsight.daemon.impl.quickfix.SafeDeleteFix
 import com.intellij.codeInspection.MoveToPackageFix
 import com.intellij.openapi.project.ProjectManager
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiManager
-import com.intellij.psi.PsiNamedElement
+import com.intellij.psi.*
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.ProjectScope
 import org.jetbrains.kotlin.idea.KotlinFileType
-import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtNamedFunction
 
@@ -41,7 +37,12 @@ class KotlinRefactoringTool : RefactoringTool {
 
     override fun rename(sourceName: String, targetName: String, psiFile: PsiFile?): Boolean {
         if (project == null) return false
-        val elementInfo = getElementInfo(sourceName, psiFile) ?: return false
+        val retrieveElementInfo = getElementInfo(sourceName, psiFile)
+        val elementInfo = if (retrieveElementInfo != null) {
+            retrieveElementInfo
+        } else {
+            return false
+        }
 
         val element: PsiNamedElement =
             if (psiFile != null) {
@@ -51,17 +52,14 @@ class KotlinRefactoringTool : RefactoringTool {
                     val pkgName = elementInfo.pkgName
 
                     if (elementInfo.isMethod) {
-                        // lookup by class and function
-                        val findClassAndMethod: KtNamedFunction? = psiFile.classes
-                            .filterIsInstance<KtClass>()
-                            .firstOrNull { it: KtClass ->
+                        val findClassAndMethod: PsiMethod? = psiFile.classes
+                            .firstOrNull {
                                 it.name == className
-                            }?.declarations?.filterIsInstance<KtNamedFunction>()
-                            ?.firstOrNull { it.name == methodName }
+                            }
+                            ?.findMethodsByName(methodName, false)?.firstOrNull()
 
                         // lookup by function only
-                        findClassAndMethod
-                            ?: (psiFile.declarations
+                        findClassAndMethod ?: (psiFile.declarations
                                 .filterIsInstance<KtNamedFunction>()
                                 .firstOrNull {
                                     it.name == methodName

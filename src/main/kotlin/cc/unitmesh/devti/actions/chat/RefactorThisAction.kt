@@ -53,9 +53,9 @@ open class RefactorThisAction : ChatBaseAction() {
             """```
                 |- You should summary in the end with `DevIn` language in markdown fence-code block, I will handle it.
                 |- the DevIn language current only support rename method.
-                |- If you had rename method or class, return follow format:
+                |- If you had rename method name or class name, return follow format:
                 |```DevIn
-                |/refactor:rename <sourceName> to <targetName>
+                |/refactor:rename <sourceMethodName> to <targetMethodName>
             """.trimMargin()
 
         return staticCodeResults + devinRefactorPrompt
