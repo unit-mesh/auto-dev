@@ -10,7 +10,7 @@ enum class CustomVariable(val variable: String, val description: String) {
     LANGUAGE("language", "The language of the file"),
     COMMENT_SYMBOL("commentSymbol", "The comment symbol of the language"),
     FRAMEWORK_CONTEXT("frameworkContext", "The context of the framework"),
-
+    ALL("all", "All the text")
     ;
 
     companion object {

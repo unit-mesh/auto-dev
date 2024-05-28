@@ -30,6 +30,7 @@ class VariableTemplateCompiler(
         this.set(CustomVariable.SELECTION.variable, editor.selectionModel.selectedText ?: selectedText)
         this.set(CustomVariable.BEFORE_CURSOR.variable, file.text.substring(0, editor.caretModel.offset))
         this.set(CustomVariable.AFTER_CURSOR.variable, file.text.substring(editor.caretModel.offset))
+        this.set(CustomVariable.ALL.variable, file.text)
     }
 
     fun set(key: String, value: String) {

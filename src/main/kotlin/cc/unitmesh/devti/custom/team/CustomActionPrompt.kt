@@ -7,6 +7,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import org.yaml.snakeyaml.Yaml
+import java.nio.file.FileSystems
+import java.nio.file.PathMatcher
 
 enum class CustomActionType {
     Default,
@@ -34,8 +36,8 @@ data class CustomActionPrompt(
 ) {
     /// glob mode
     fun batchFiles(project: Project): List<VirtualFile> {
-        val regex = Regex(batchFileRegex)
-        return project.guessProjectDir()?.children?.filter { regex.matches(it.name) } ?: emptyList()
+        val matcher: PathMatcher = FileSystems.getDefault().getPathMatcher("glob:$batchFileRegex")
+        return project.guessProjectDir()?.children?.filter { matcher.matches(it.toNioPath()) } ?: emptyList()
     }
 
     companion object {
