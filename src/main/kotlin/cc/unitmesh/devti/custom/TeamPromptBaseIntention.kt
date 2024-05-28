@@ -1,5 +1,7 @@
 package cc.unitmesh.devti.custom
 
+import cc.unitmesh.cf.core.llms.LlmMsg
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.custom.team.TeamPromptAction
 import cc.unitmesh.devti.custom.team.TeamPromptExecTask
 import cc.unitmesh.devti.custom.compile.VariableTemplateCompiler
@@ -10,6 +12,7 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.temporary.calculateFrontendElementToExplain
 
@@ -24,7 +27,8 @@ import com.intellij.temporary.calculateFrontendElementToExplain
  * @param intentionConfig The configuration for the team prompt action.
  *
  */
-class TeamPromptBaseIntention(val intentionConfig: TeamPromptAction, val trySelectElement: Boolean) : ChatBaseIntention() {
+class TeamPromptBaseIntention(val intentionConfig: TeamPromptAction, val trySelectElement: Boolean) :
+    ChatBaseIntention() {
     override fun priority(): Int = intentionConfig.actionPrompt.priority
     override fun getText(): String = intentionConfig.actionName
     override fun getFamilyName(): String = intentionConfig.actionName
@@ -44,11 +48,36 @@ class TeamPromptBaseIntention(val intentionConfig: TeamPromptAction, val trySele
 
         val compiler = VariableTemplateCompiler(language, file, element, editor, elementPair?.first ?: "")
 
-        val chatMessages = intentionConfig.actionPrompt.msgs
+        val actionPrompt = intentionConfig.actionPrompt
+        val chatMessages = actionPrompt.msgs
         val msgs = chatMessages.map {
             it.copy(content = compiler.compile(it.content))
         }
 
+        if (actionPrompt.batchFileRegex != "") {
+            val batchFileRegex = actionPrompt.batchFiles(project)
+            if (batchFileRegex.isNotEmpty()) {
+                val task: Task.Backgroundable =
+                    TeamPromptExecTask(project, msgs, editor, intentionConfig, element, batchFileRegex.first())
+                ProgressManager.getInstance()
+                    .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+            } else {
+                AutoDevNotifications.error(
+                    project,
+                    "No files found for batch processing, please check the regex. " + "Regex: ${actionPrompt.batchFileRegex}"
+                )
+            }
+        } else {
+            executeSingleJob(project, msgs, editor, element)
+        }
+    }
+
+    private fun executeSingleJob(
+        project: Project,
+        msgs: List<LlmMsg.ChatMessage>,
+        editor: Editor,
+        element: PsiElement?
+    ) {
         val task: Task.Backgroundable = TeamPromptExecTask(project, msgs, editor, intentionConfig, element, null)
         ProgressManager.getInstance()
             .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
