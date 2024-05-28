@@ -8,6 +8,7 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import org.yaml.snakeyaml.Yaml
 import java.nio.file.FileSystems
+import java.nio.file.Path
 import java.nio.file.PathMatcher
 
 enum class CustomActionType {
@@ -37,8 +38,24 @@ data class CustomActionPrompt(
     /// glob mode
     fun batchFiles(project: Project): List<VirtualFile> {
         val matcher: PathMatcher = FileSystems.getDefault().getPathMatcher("glob:$batchFileRegex")
-        return project.guessProjectDir()?.children?.filter { matcher.matches(it.toNioPath()) } ?: emptyList()
+        val projectBaseDir = project.guessProjectDir() ?: return emptyList()
+        return getAllFiles(projectBaseDir).filter { matcher.matches(it.toNioPath()) }
     }
+
+    fun getAllFiles(virtualFile: VirtualFile): List<VirtualFile> {
+        val fileList = mutableListOf<VirtualFile>()
+        if (virtualFile.isDirectory) {
+            virtualFile.children.forEach { child ->
+                fileList.addAll(getAllFiles(child))
+            }
+        } else {
+            fileList.add(virtualFile)
+        }
+
+        return fileList
+    }
+
+    fun VirtualFile.toNioPath(): Path = java.nio.file.Paths.get(this.path)
 
     companion object {
         private val logger = logger<CustomActionPrompt>()
@@ -102,6 +119,12 @@ data class CustomActionPrompt(
                     InteractionType.valueOf(frontMatterMap["interaction"] as String)
                 } catch (e: Exception) {
                     InteractionType.AppendCursorStream
+                }
+
+                prompt.batchFileRegex = try {
+                    (frontMatterMap["batchFileRegex"] as String).removeSurrounding("\"").removeSurrounding("'")
+                } catch (e: Exception) {
+                    ""
                 }
 
                 prompt.priority = try {

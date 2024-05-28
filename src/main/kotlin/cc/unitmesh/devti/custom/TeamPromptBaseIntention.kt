@@ -12,6 +12,7 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.readText
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.temporary.calculateFrontendElementToExplain
@@ -50,17 +51,21 @@ class TeamPromptBaseIntention(val intentionConfig: TeamPromptAction, val trySele
 
         val actionPrompt = intentionConfig.actionPrompt
         val chatMessages = actionPrompt.msgs
-        val msgs = chatMessages.map {
-            it.copy(content = compiler.compile(it.content))
-        }
+
 
         if (actionPrompt.batchFileRegex != "") {
-            val batchFileRegex = actionPrompt.batchFiles(project)
-            if (batchFileRegex.isNotEmpty()) {
-                val task: Task.Backgroundable =
-                    TeamPromptExecTask(project, msgs, editor, intentionConfig, element, batchFileRegex.first())
-                ProgressManager.getInstance()
-                    .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+            val files = actionPrompt.batchFiles(project)
+            if (files.isNotEmpty()) {
+                files.forEach { vfile ->
+                    compiler.set("all", vfile.readText())
+                    val msgs = chatMessages.map {
+                        it.copy(content = compiler.compile(it.content))
+                    }
+
+                    val task: Task.Backgroundable = TeamPromptExecTask(project, msgs, editor, intentionConfig, element, vfile)
+                    ProgressManager.getInstance()
+                        .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+                }
             } else {
                 AutoDevNotifications.error(
                     project,
@@ -68,6 +73,10 @@ class TeamPromptBaseIntention(val intentionConfig: TeamPromptAction, val trySele
                 )
             }
         } else {
+            val msgs = chatMessages.map {
+                it.copy(content = compiler.compile(it.content))
+            }
+
             executeSingleJob(project, msgs, editor, element)
         }
     }

@@ -20,6 +20,7 @@ permalink: /customize/variables
 - methodName: Used to get the method name of the current method.
 - frameworkContext: Used to get the framework context of the current file, for example: `spring`, `junit`, `mockito`,
   etc.
+- all: Used to get all the variables. (since @1.8.6)
 
 ## 中文版本（Chinese version）
 
@@ -32,6 +33,7 @@ permalink: /customize/variables
 - filePath: 用于获取当前文件的文件路径。
 - methodName: 用于获取当前方法的方法名。
 - frameworkContext: 用于获取当前文件的框架上下文，例如：`spring`、`junit`、`mockito` 等。
+- all: 用于获取所有变量。 (since @1.8.6)
 
 # Methods
 
