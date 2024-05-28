@@ -63,7 +63,7 @@ class TypeScriptRefactoringTool : RefactoringTool {
                         val className = elementInfo.className
 
                         val findClass = classes.firstOrNull {
-                            it.name == targetName
+                            it.name == className
                         }
 
                         findClass as PsiNamedElement
@@ -111,8 +111,8 @@ class TypeScriptRefactoringTool : RefactoringTool {
     private fun getElementInfo(input: String, psiFile: PsiFile?): RefactorInstElement? {
         if (!input.contains("#") && psiFile != null) {
             val jsFile = psiFile as? JSFile ?: return null
-            val className = jsFile.name.substringBefore(".")
-            val canonicalName = jsFile.name
+            val className = input
+            val canonicalName = input
 
             return RefactorInstElement(true, true, input, canonicalName, className, jsFile.name)
         }

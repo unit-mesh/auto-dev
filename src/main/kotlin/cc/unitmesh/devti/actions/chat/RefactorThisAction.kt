@@ -55,7 +55,7 @@ open class RefactorThisAction : ChatBaseAction() {
                 |- the DevIn language current only support rename method.
                 |- If you had rename method name or class name, return follow format:
                 |```DevIn
-                |/refactor:rename <sourceMethodName> to <targetMethodName>
+                |/refactor:rename <sourceMethodName> to <targetMethodName> // method and class only
             """.trimMargin()
 
         return staticCodeResults + devinRefactorPrompt
