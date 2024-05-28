@@ -55,11 +55,11 @@ open class RefactorThisAction : ChatBaseAction() {
                 |- the DevIn language current only support rename and delete method.
                 |- If you had rename method, return follow format
                 |```DevIn
-                |/rename: <sourceName> to <targetName>
+                |/refactor:rename <sourceName> to <targetName>
                 |```
                 |- If you had delete method, return follow format
                 |```DevIn
-                |/delete: <sourceName>
+                |/refactor:delete: <sourceName>
             """.trimMargin()
 
         return staticCodeResults + devinRefactorPrompt
