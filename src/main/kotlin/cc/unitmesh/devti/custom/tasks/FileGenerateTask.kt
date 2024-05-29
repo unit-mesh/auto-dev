@@ -24,9 +24,10 @@ class FileGenerateTask(
     @JvmField val project: Project,
     val messages: List<LlmMsg.ChatMessage>,
     val fileName: String?,
-    val codeOnly: Boolean = false
+    val codeOnly: Boolean = false,
+    val taskName: String = AutoDevBundle.message("intentions.request.background.process.title")
 ) :
-    Task.Backgroundable(project, AutoDevBundle.message("intentions.request.background.process.title")) {
+    Task.Backgroundable(project, taskName) {
     private val projectRoot = project.guessProjectDir()!!
 
     override fun run(indicator: ProgressIndicator) {

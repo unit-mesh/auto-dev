@@ -35,9 +35,9 @@ class TeamPromptExecTask(
     private val intentionConfig: TeamPromptAction,
     val element: PsiElement?,
     private val targetFile: VirtualFile?,
-    val taskName: String?
+    val taskName: String = AutoDevBundle.message("intentions.request.background.process.title")
 ) :
-    Task.Backgroundable(project, taskName ?: AutoDevBundle.message("intentions.request.background.process.title")) {
+    Task.Backgroundable(project, taskName) {
     override fun run(indicator: ProgressIndicator) {
         val offset = runReadAction { editor.caretModel.offset }
 
@@ -71,7 +71,7 @@ class TeamPromptExecTask(
             InteractionType.OutputFile -> {
                 val fileName = intentionConfig.actionPrompt.other["fileName"] as String?
 
-                val task = FileGenerateTask(project, msgs, fileName)
+                val task = FileGenerateTask(project, msgs, fileName, taskName = taskName)
                 ProgressManager.getInstance()
                     .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
             }
@@ -93,7 +93,7 @@ class TeamPromptExecTask(
 
             InteractionType.ReplaceCurrentFile -> {
                 val fileName = targetFile?.path
-                val task = FileGenerateTask(project, msgs, fileName, codeOnly = intentionConfig.actionPrompt.codeOnly)
+                val task = FileGenerateTask(project, msgs, fileName, codeOnly = intentionConfig.actionPrompt.codeOnly, taskName = taskName)
 
                 ProgressManager.getInstance()
                     .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))

@@ -64,7 +64,7 @@ class TeamPromptBaseIntention(val intentionConfig: TeamPromptAction, val trySele
                     }
 
                     // display progress like 1/2 in the title
-                    val taskName = "processing ${index + 1}/$length ${intentionConfig.actionName}"
+                    val taskName = "${intentionConfig.actionName} ${index + 1}/$length "
                     val task: Task.Backgroundable =
                         TeamPromptExecTask(project, msgs, editor, intentionConfig, element, vfile, taskName)
                     ProgressManager.getInstance()
@@ -91,7 +91,7 @@ class TeamPromptBaseIntention(val intentionConfig: TeamPromptAction, val trySele
         editor: Editor,
         element: PsiElement?
     ) {
-        val task: Task.Backgroundable = TeamPromptExecTask(project, msgs, editor, intentionConfig, element, null, null)
+        val task: Task.Backgroundable = TeamPromptExecTask(project, msgs, editor, intentionConfig, element, null)
         ProgressManager.getInstance()
             .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
     }
