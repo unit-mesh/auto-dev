@@ -15,10 +15,12 @@ when generate test file, will use these templates.
 For example:
 
 ```kotlin
+// You should use follow @SpringBootTest with RANDOM_PORT for the web environment, or you test will be failed.
+// You should use @ExtendWith(SpringExtension::class) for the test class.
+// For example:
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ExtendWith(SpringExtension::class)
-class /* Here some be {ControllerName} */ ControllerTest {
-
+class /* Here some be {ControllerName} */ControllerTest {
     private lateinit var mockMvc: MockMvc
 
     // other some mock beans
