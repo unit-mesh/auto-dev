@@ -1,7 +1,7 @@
 ---
 layout: default
-title: Batch AI Action
-parent: Custom extension Context Agent
+title: Custom extension Context Agent
+parent: Customize Features
 nav_order: 16
 permalink: /custom/extension-context-agent
 ---
