@@ -32,8 +32,8 @@ class FixThisAction : RefactorThisAction() {
             }
 
             buildString {
-                append("\n\n$commentSymbol relative static analysis result:\n$problem")
                 if (relatedCode.isNotEmpty()) {
+                    append("\n\n$commentSymbol relative static analysis result:\n$problem")
                     relatedCode.split("\n").forEach {
                         append("\n$commentSymbol $it")
                     }
