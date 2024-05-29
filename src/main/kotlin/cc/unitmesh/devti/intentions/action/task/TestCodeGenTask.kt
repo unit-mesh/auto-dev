@@ -193,6 +193,8 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
     }
 
     private fun getRAGContext(testPromptContext: TestCodeGenContext): String {
+        if (!project.customAgentSetting.enableCustomRag) return ""
+
         val agent = loadRagApp() ?: return ""
 
         val query = testPromptContext.sourceCode
