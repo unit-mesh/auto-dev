@@ -4,7 +4,7 @@ import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.devti.provider.AutoTestService
-import cc.unitmesh.idea.service.JavaAutoTestService.Companion.createConfigForGradle
+import cc.unitmesh.idea.service.createConfigForGradle
 import cc.unitmesh.kotlin.util.KotlinPsiUtil
 import cc.unitmesh.kotlin.util.getReturnTypeReferences
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer

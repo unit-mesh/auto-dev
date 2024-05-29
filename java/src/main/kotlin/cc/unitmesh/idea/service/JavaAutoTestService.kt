@@ -6,13 +6,11 @@ import cc.unitmesh.devti.provider.AutoTestService
 import cc.unitmesh.devti.provider.context.TestFileContext
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx
-import com.intellij.codeInsight.daemon.impl.quickfix.ImportClassFix
 import com.intellij.execution.RunManager
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.lang.java.JavaLanguage
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
@@ -33,10 +31,9 @@ import com.intellij.util.messages.MessageBusConnection
 import org.jetbrains.plugins.gradle.service.execution.GradleExternalTaskConfigurationType
 import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration
 import java.io.File
-import java.util.concurrent.ExecutionException
 
 class JavaAutoTestService : AutoTestService() {
-    private val maxLevelOneClass = 5;
+    private val maxLevelOneClass = 8
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = GradleRunConfiguration::class.java
     override fun isApplicable(element: PsiElement): Boolean = element.language is JavaLanguage
 
@@ -189,26 +186,6 @@ class JavaAutoTestService : AutoTestService() {
 
         val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return
         DaemonCodeAnalyzer.getInstance(project).autoImportReferenceAtCursor(editor, sourceFile)
-
-//        val offset: Int = editor.caretModel.offset
-//        val ref: PsiJavaCodeReferenceElement =
-//            sourceFile.findReferenceAt(offset - 1) as? PsiJavaCodeReferenceElement ?: return
-//
-//        try {
-//            createImportFix(ref).doFix(editor, false, false, true)
-//        } catch (e: Exception) {
-//            log.warn("Failed to fix syntax error: ${e.message}")
-//        }
-
-    }
-
-    @Throws(InterruptedException::class, ExecutionException::class)
-    private fun createImportFix(ref: PsiJavaCodeReferenceElement): ImportClassFix {
-        return ApplicationManager.getApplication().executeOnPooledThread<ImportClassFix> {
-            ReadAction.compute<ImportClassFix, java.lang.RuntimeException> {
-                ImportClassFix(ref)
-            }
-        }.get()
     }
 
     override fun collectSyntaxError(outputFile: VirtualFile, project: Project, runAction: ((errors: List<String>) -> Unit)?) {
@@ -262,42 +239,42 @@ class JavaAutoTestService : AutoTestService() {
 
     companion object {
         private val log = logger<JavaAutoTestService>()
+    }
+}
 
-        fun createConfigForGradle(virtualFile: VirtualFile, project: Project): GradleRunConfiguration? {
-            val name = virtualFile.name
+fun createConfigForGradle(virtualFile: VirtualFile, project: Project): GradleRunConfiguration? {
+    val name = virtualFile.name
 
-            val canonicalName = runReadAction {
-                val psiFile: PsiJavaFile =
-                    PsiManager.getInstance(project).findFile(virtualFile) as? PsiJavaFile ?: return@runReadAction null
-                // skip for non-test files
-                (psiFile.packageName + "." + virtualFile.nameWithoutExtension).removePrefix(".")
-            } ?: return null
+    val canonicalName = runReadAction {
+        val psiFile: PsiJavaFile =
+            PsiManager.getInstance(project).findFile(virtualFile) as? PsiJavaFile ?: return@runReadAction null
+        // skip for non-test files
+        (psiFile.packageName + "." + virtualFile.nameWithoutExtension).removePrefix(".")
+    } ?: return null
 
-            val runManager = RunManager.getInstance(project)
+    val runManager = RunManager.getInstance(project)
 
-            var moduleName = ""
-            val moduleForFile = runReadAction { ProjectFileIndex.getInstance(project).getModuleForFile(virtualFile) }
-            // a moduleForFile.name will be like <project>.<module>.<testModule>, so we need to remove the last part and first part
-            if (moduleForFile != null) {
-                val moduleNameSplit = moduleForFile.name.split(".").drop(1).dropLast(1).joinToString(":")
-                if (moduleNameSplit.isNotEmpty()) {
-                    moduleName = "$moduleNameSplit:"
-                }
-            }
-
-            // todo: add maven ??
-            val configuration = runManager.createConfiguration(name, GradleExternalTaskConfigurationType::class.java)
-            val runConfiguration = configuration.configuration as GradleRunConfiguration
-
-            runConfiguration.isDebugServerProcess = false
-            runConfiguration.settings.externalProjectPath = project.guessProjectDir()?.path
-            // todo: add module for test
-            runConfiguration.rawCommandLine = moduleName + "test --tests \"${canonicalName}\""
-
-            runManager.addConfiguration(configuration)
-            runManager.selectedConfiguration = configuration
-
-            return runConfiguration
+    var moduleName = ""
+    val moduleForFile = runReadAction { ProjectFileIndex.getInstance(project).getModuleForFile(virtualFile) }
+    // a moduleForFile.name will be like <project>.<module>.<testModule>, so we need to remove the last part and first part
+    if (moduleForFile != null) {
+        val moduleNameSplit = moduleForFile.name.split(".").drop(1).dropLast(1).joinToString(":")
+        if (moduleNameSplit.isNotEmpty()) {
+            moduleName = "$moduleNameSplit:"
         }
     }
+
+    // todo: add maven ??
+    val configuration = runManager.createConfiguration(name, GradleExternalTaskConfigurationType::class.java)
+    val runConfiguration = configuration.configuration as GradleRunConfiguration
+
+    runConfiguration.isDebugServerProcess = false
+    runConfiguration.settings.externalProjectPath = project.guessProjectDir()?.path
+    // todo: add module for test
+    runConfiguration.rawCommandLine = moduleName + "test --tests \"${canonicalName}\""
+
+    runManager.addConfiguration(configuration)
+    runManager.selectedConfiguration = configuration
+
+    return runConfiguration
 }
