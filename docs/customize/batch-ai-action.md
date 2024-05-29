@@ -13,6 +13,8 @@ Team Prompts path is `prompts/`, which is the `prompts/` directory located in th
 
 Through the `batchFileRegex` configuration, you can specify the file to be processed in batch.
 
+Entry point: `Right-click` on the project -> `AutoDev AI AutoAction` -> `Batch AI Action`
+
 ## 批量 AI 操作（Chinese example）
 
 核心点：`batchFileRegex` 用于匹配批量文件，`codeOnly: true` 只将纯代码部分放入文件，`interaction: ReplaceCurrentFile`
