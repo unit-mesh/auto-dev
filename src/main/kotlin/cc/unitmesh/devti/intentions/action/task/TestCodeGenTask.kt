@@ -32,8 +32,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiNameIdentifierOwner
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.decodeFromString
 
 class TestCodeGenTask(val request: TestCodeGenRequest) :
     Task.Backgroundable(request.project, AutoDevBundle.message("intentions.chat.code.test.name")) {
@@ -110,7 +108,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         }
 
         testPromptContext.isNewFile = testContext.isNewFile
-        testPromptContext.extContext = getRAGContext(testPromptContext)
+        testPromptContext.extContext = getCustomAgentTestContext(testPromptContext)
 
         templateRender.context = testPromptContext
         val prompter = templateRender.renderTemplate(template)
@@ -192,10 +190,10 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         private val logger = logger<TestCodeGenTask>()
     }
 
-    private fun getRAGContext(testPromptContext: TestCodeGenContext): String {
+    private fun getCustomAgentTestContext(testPromptContext: TestCodeGenContext): String {
         if (!project.customAgentSetting.enableCustomRag) return ""
 
-        val agent = loadRagApp() ?: return ""
+        val agent = loadTestRagConfig() ?: return ""
 
         val query = testPromptContext.sourceCode
         val stringFlow: Flow<String> = CustomAgentExecutor(project).execute(query, agent) ?: return ""
@@ -206,10 +204,11 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
                 responseBuilder.append(string)
             }
         }
+
         return responseBuilder.toString()
     }
 
-    private fun loadRagApp(): CustomAgentConfig? {
+    private fun loadTestRagConfig(): CustomAgentConfig? {
         val rags = CustomAgentConfig.loadFromProject(project)
         if (rags.isEmpty()) return null
 
