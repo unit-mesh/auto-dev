@@ -6,6 +6,9 @@ nav_order: 15
 permalink: /custom/batch
 ---
 
+AutoDev@1.8.6
+{: .label .label-yellow }
+
 # Batch AI Action
 
 We use Team Prompts to provide a way to batch process files in the project. The default 
