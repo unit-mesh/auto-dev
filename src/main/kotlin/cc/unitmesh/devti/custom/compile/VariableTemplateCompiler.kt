@@ -92,6 +92,10 @@ class VariableTemplateCompiler(
                 "javascript" -> "//"
                 "typescript" -> "//"
                 "go" -> "//"
+                "c", "c++", "c#" -> "//"
+                "rust" -> "//"
+                "ruby" -> "#"
+                "shell" -> "#"
                 else -> "-"
             }
         )
