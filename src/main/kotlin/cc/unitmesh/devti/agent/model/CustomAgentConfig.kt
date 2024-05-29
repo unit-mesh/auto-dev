@@ -56,6 +56,7 @@ data class CustomAgentConfig(
     val interactive: InteractionType = InteractionType.ChatPanel,
     val auth: CustomAgentAuth? = null,
     val defaultTimeout: Long = 10,
+    val enabled: Boolean = true,
 ) {
     var state: CustomAgentState = CustomAgentState.START
 
@@ -67,7 +68,11 @@ data class CustomAgentConfig(
             } catch (e: Exception) {
                 emptyList()
             }
-            return configs
+
+            /**
+             * Only return enabled agents
+             */
+            return configs.filter { it.enabled }
         }
     }
 }
