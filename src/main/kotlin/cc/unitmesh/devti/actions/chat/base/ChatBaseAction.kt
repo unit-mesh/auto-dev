@@ -15,10 +15,8 @@ import com.intellij.openapi.editor.CaretModel
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
-import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.temporary.getElementToAction
-import com.intellij.util.DocumentUtil
 
 abstract class ChatBaseAction : AnAction() {
     companion object {
@@ -72,28 +70,10 @@ abstract class ChatBaseAction : AnAction() {
         }
     }
 
-    fun commentPrefix(element: PsiElement): String {
-        return LanguageCommenters.INSTANCE.forLanguage(element.language)?.lineCommentPrefix ?: "//"
-    }
-
     private fun buildSelectionText(editor: Editor, caretModel: CaretModel?): @NlsSafe String {
         if (caretModel?.currentCaret?.selectedText.isNullOrEmpty()) {
             return ""
         }
-
-//        val selection = editor.selectionModel
-//        val document = editor.document
-//        val firstLine: Int = document.getLineNumber(selection.selectionStart)
-//        val lastLine: Int = document.getLineNumber(selection.selectionEnd)
-//
-//        val commentCodeWithLine = buildString {
-//            for (i in firstLine..lastLine) {
-//                val range: TextRange = DocumentUtil.getLineTextRange(document, i)
-//                append("$i ${document.getText(range)}\n")
-//            }
-//        }
-//
-//        return commentCodeWithLine
 
         return caretModel?.currentCaret?.selectedText ?: ""
     }
@@ -127,4 +107,8 @@ abstract class ChatBaseAction : AnAction() {
 
         editor.selectionModel.setSelection(startOffset, endOffset)
     }
+}
+
+fun commentPrefix(element: PsiElement): String {
+    return LanguageCommenters.INSTANCE.forLanguage(element.language)?.lineCommentPrefix ?: "//"
 }

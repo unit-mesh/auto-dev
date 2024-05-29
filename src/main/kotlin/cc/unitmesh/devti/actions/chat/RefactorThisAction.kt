@@ -2,11 +2,11 @@ package cc.unitmesh.devti.actions.chat
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
+import cc.unitmesh.devti.actions.chat.base.commentPrefix
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.provider.RefactoringTool
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx
-import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -61,34 +61,6 @@ open class RefactorThisAction : ChatBaseAction() {
         return staticCodeResults + devinRefactorPrompt
     }
 
-    /**
-     * Collects all the problems found in the given `project`, within the specified `editor` and `element`.
-     *
-     * @param project The project in which the problems are to be collected.
-     * @param editor The editor that is associated with the element.
-     * @param element The PsiElement for which the problems are to be collected.
-     * @return A string containing all the problems found, separated by new lines, or `null` if no problems were found.
-     */
-    open fun collectProblems(project: Project, editor: Editor, element: PsiElement): String? {
-        val range = element.textRange
-        val document = editor.document
-        var errors: MutableList<String> = mutableListOf()
-        DaemonCodeAnalyzerEx.processHighlights(document, project, null, range.startOffset, range.endOffset) {
-            if (it.description != null) {
-                errors.add(it.description)
-            }
-
-            true
-        }
-
-        val commentSymbol = commentPrefix(element)
-        // remove dupcliated descriptions
-        errors = errors.distinct().toMutableList()
-        return errors.joinToString("\n") {
-            "$commentSymbol - $it"
-        }
-    }
-
     private val refactorIntentionsKeys = arrayOf(
         "intentions.refactor.readability",
         "intentions.refactor.usability",
@@ -106,6 +78,36 @@ open class RefactorThisAction : ChatBaseAction() {
 
         return {
             panel.showSuggestion(msg)
+        }
+    }
+
+    companion object {
+        /**
+         * Collects all the problems found in the given `project`, within the specified `editor` and `element`.
+         *
+         * @param project The project in which the problems are to be collected.
+         * @param editor The editor that is associated with the element.
+         * @param element The PsiElement for which the problems are to be collected.
+         * @return A string containing all the problems found, separated by new lines, or `null` if no problems were found.
+         */
+        fun collectProblems(project: Project, editor: Editor, element: PsiElement): String? {
+            val range = element.textRange
+            val document = editor.document
+            var errors: MutableList<String> = mutableListOf()
+            DaemonCodeAnalyzerEx.processHighlights(document, project, null, range.startOffset, range.endOffset) {
+                if (it.description != null) {
+                    errors.add(it.description)
+                }
+
+                true
+            }
+
+            val commentSymbol = commentPrefix(element)
+            // remove dupcliated descriptions
+            errors = errors.distinct().toMutableList()
+            return errors.joinToString("\n") {
+                "$commentSymbol - $it"
+            }
         }
     }
 }

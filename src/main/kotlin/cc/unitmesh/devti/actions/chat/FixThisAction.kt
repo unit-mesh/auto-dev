@@ -1,16 +1,12 @@
 package cc.unitmesh.devti.actions.chat
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.actions.chat.base.commentPrefix
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.PsiElementDataBuilder
-import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
-import com.intellij.refactoring.suggested.endOffset
-import com.intellij.refactoring.suggested.startOffset
-import com.intellij.util.DocumentUtil
 
 class FixThisAction : RefactorThisAction() {
     init {
@@ -20,26 +16,7 @@ class FixThisAction : RefactorThisAction() {
     override fun getActionType(): ChatActionType = ChatActionType.FIX_ISSUE
 
     override fun addAdditionPrompt(project: Project, editor: Editor, element: PsiElement): String {
-        val commentSymbol = commentPrefix(element)
-
-        return collectProblems(project, editor, element)?.let { problem ->
-            var relatedCode = ""
-            getCanonicalName(problem).map {
-                val classContext = PsiElementDataBuilder.forLanguage(element.language)?.lookupElement(project, it)
-                classContext.let { context ->
-                    relatedCode += context?.format() ?: ""
-                }
-            }
-
-            buildString {
-                if (relatedCode.isNotEmpty()) {
-                    append("\n\n$commentSymbol relative static analysis result:\n$problem")
-                    relatedCode.split("\n").forEach {
-                        append("\n$commentSymbol $it")
-                    }
-                }
-            }
-        } ?: ""
+        return collectElementProblemAsSting(element, project, editor)
     }
 
     companion object {
@@ -55,6 +32,33 @@ class FixThisAction : RefactorThisAction() {
             val matches = CANONICAL_NAME_REGEX_PATTERN.findAll(input)
             val canonicalNames = matches.map { it.value.substring(1, it.value.length - 1) }.toList()
             return canonicalNames
+        }
+
+        fun collectElementProblemAsSting(
+            element: PsiElement,
+            project: Project,
+            editor: Editor
+        ): String {
+            val commentSymbol = commentPrefix(element)
+
+            return collectProblems(project, editor, element)?.let { problem ->
+                var relatedCode = ""
+                getCanonicalName(problem).map {
+                    val classContext = PsiElementDataBuilder.forLanguage(element.language)?.lookupElement(project, it)
+                    classContext.let { context ->
+                        relatedCode += context?.format() ?: ""
+                    }
+                }
+
+                buildString {
+                    if (relatedCode.isNotEmpty()) {
+                        append("\n\n$commentSymbol relative static analysis result:\n$problem")
+                        relatedCode.split("\n").forEach {
+                            append("\n$commentSymbol $it")
+                        }
+                    }
+                }
+            } ?: ""
         }
     }
 }
