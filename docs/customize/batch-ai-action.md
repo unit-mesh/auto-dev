@@ -13,7 +13,13 @@ Team Prompts path is `prompts/`, which is the `prompts/` directory located in th
 
 Through the `batchFileRegex` configuration, you can specify the file to be processed in batch.
 
-Entry point: `Right-click` on the project -> `AutoDev AI AutoAction` -> `Batch AI Action`
+**Scenes**: When you need to batch process files in the project, such as refactoring, formatting, etc.
+
+- Vue2 to Vue3 migration
+- Refactor the user's code
+- Comments for all code
+
+**Entry point**: `Right-click` on the project -> `AutoDev AI AutoAction` -> `Batch AI Action`
 
 ## 批量 AI 操作（Chinese example）
 
