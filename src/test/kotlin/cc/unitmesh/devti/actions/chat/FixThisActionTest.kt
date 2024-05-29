@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.actions.chat;
 
+import cc.unitmesh.devti.actions.chat.base.getCanonicalName
 import org.junit.Test
 import org.junit.Assert.*
 
@@ -12,7 +13,7 @@ class FixThisActionTest {
         val input = "No match here"
 
         // When
-        val result = FixThisAction.getCanonicalName(input)
+        val result = getCanonicalName(input)
 
         // Then
         assertTrue(result.isEmpty())
@@ -25,7 +26,7 @@ class FixThisActionTest {
         val expected = listOf("cc.unitmesh.untitled.demo.entity.Author")
 
         // When
-        val result = FixThisAction.getCanonicalName(input)
+        val result = getCanonicalName(input)
 
         // Then
         assertEquals(expected, result)
@@ -38,7 +39,7 @@ class FixThisActionTest {
         val expected = listOf("cc.unitmesh.untitled.demo.entity.Author", "cc.unitmesh.untitled.demo.entity.Second")
 
         // When
-        val result = FixThisAction.getCanonicalName(input)
+        val result = getCanonicalName(input)
 
         // Then
         assertEquals(expected, result)
