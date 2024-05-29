@@ -183,15 +183,9 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     }
 
     private fun loadRagApps(): List<CustomAgentConfig> {
-        val ragsJsonConfig = project.customAgentSetting.ragsJsonConfig
-        if (ragsJsonConfig.isEmpty()) return listOf(defaultRag)
+        val rags = CustomAgentConfig.loadFromProject(project)
 
-        val rags = try {
-            Json.decodeFromString<List<CustomAgentConfig>>(ragsJsonConfig)
-        } catch (e: Exception) {
-            logger.warn("Failed to parse custom rag apps", e)
-            listOf()
-        }
+        if (rags.isEmpty()) return listOf(defaultRag)
 
         return listOf(defaultRag) + rags
     }

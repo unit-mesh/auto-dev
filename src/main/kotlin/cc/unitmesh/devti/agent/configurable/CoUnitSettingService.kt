@@ -12,6 +12,10 @@ class CoUnitProjectSettingsService(
     val project: Project,
 ) : SimplePersistentStateComponent<CoUnitProjectSettingsService.CoUnitProjectSettings>(CoUnitProjectSettings()) {
     val enableCustomRag: Boolean get() = state.enableCustomRag
+
+    /**
+     *  Use [cc.unitmesh.devti.agent.model.CustomAgentConfig.loadFromProject]
+     */
     val ragsJsonConfig: String get() = state.agentJsonConfig
 
     fun modify(action: (CoUnitProjectSettings) -> Unit) {

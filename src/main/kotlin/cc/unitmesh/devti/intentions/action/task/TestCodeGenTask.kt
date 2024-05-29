@@ -210,20 +210,8 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
     }
 
     private fun loadRagApp(): CustomAgentConfig? {
-        val ragsJsonConfig = project.customAgentSetting.ragsJsonConfig
-        if (ragsJsonConfig.isEmpty()) return null
-
-        val rags = try {
-            Json.decodeFromString<List<CustomAgentConfig>>(ragsJsonConfig)
-        } catch (e: Exception) {
-            logger.warn("Failed to parse custom rag apps", e)
-            listOf()
-        }
-
-        if (rags.isEmpty()) {
-            return null
-        }
-
+        val rags = CustomAgentConfig.loadFromProject(project)
+        if (rags.isEmpty()) return null
 
         return rags.firstOrNull { it.name == CustomExtContext.TextContext.agentName }
     }
