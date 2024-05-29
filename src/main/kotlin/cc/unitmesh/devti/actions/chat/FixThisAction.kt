@@ -3,9 +3,14 @@ package cc.unitmesh.devti.actions.chat
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.provider.PsiElementDataBuilder
+import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
+import com.intellij.refactoring.suggested.endOffset
+import com.intellij.refactoring.suggested.startOffset
+import com.intellij.util.DocumentUtil
 
 class FixThisAction : RefactorThisAction() {
     init {

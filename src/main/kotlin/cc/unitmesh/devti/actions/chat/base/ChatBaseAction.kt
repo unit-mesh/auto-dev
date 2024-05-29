@@ -5,15 +5,20 @@ import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.gui.sendToChatPanel
+import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.editor.CaretModel
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.NlsSafe
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.temporary.getElementToAction
+import com.intellij.util.DocumentUtil
 
 abstract class ChatBaseAction : AnAction() {
     companion object {
@@ -33,9 +38,10 @@ abstract class ChatBaseAction : AnAction() {
         val document = event.getData(CommonDataKeys.EDITOR)?.document
 
         val caretModel = event.getData(CommonDataKeys.EDITOR)?.caretModel
-        var prompt = caretModel?.currentCaret?.selectedText ?: ""
-
+        val editor = event.getData(CommonDataKeys.EDITOR) ?: return
         val file = event.getData(CommonDataKeys.PSI_FILE)
+
+        var prompt = buildSelectionText(editor, caretModel)
 
         val lineEndOffset = document?.getLineEndOffset(document.getLineNumber(caretModel?.offset ?: 0)) ?: 0
 
@@ -49,8 +55,6 @@ abstract class ChatBaseAction : AnAction() {
         val prompter = ContextPrompter.prompter(file?.language?.displayName ?: "")
 
         logger.info("use prompter: ${prompter.javaClass}")
-
-        val editor = event.getData(CommonDataKeys.EDITOR) ?: return
 
         val element = getElementToAction(project, editor) ?: return
 
@@ -66,6 +70,32 @@ abstract class ChatBaseAction : AnAction() {
 
             service.handlePromptAndResponse(panel, prompter, chatContext, newChatContext = true)
         }
+    }
+
+    fun commentPrefix(element: PsiElement): String {
+        return LanguageCommenters.INSTANCE.forLanguage(element.language)?.lineCommentPrefix ?: "//"
+    }
+
+    private fun buildSelectionText(editor: Editor, caretModel: CaretModel?): @NlsSafe String {
+        if (caretModel?.currentCaret?.selectedText.isNullOrEmpty()) {
+            return ""
+        }
+
+//        val selection = editor.selectionModel
+//        val document = editor.document
+//        val firstLine: Int = document.getLineNumber(selection.selectionStart)
+//        val lastLine: Int = document.getLineNumber(selection.selectionEnd)
+//
+//        val commentCodeWithLine = buildString {
+//            for (i in firstLine..lastLine) {
+//                val range: TextRange = DocumentUtil.getLineTextRange(document, i)
+//                append("$i ${document.getText(range)}\n")
+//            }
+//        }
+//
+//        return commentCodeWithLine
+
+        return caretModel?.currentCaret?.selectedText ?: ""
     }
 
     /**

@@ -61,10 +61,6 @@ open class RefactorThisAction : ChatBaseAction() {
         return staticCodeResults + devinRefactorPrompt
     }
 
-    open fun commentPrefix(element: PsiElement): String {
-        return LanguageCommenters.INSTANCE.forLanguage(element.language)?.lineCommentPrefix ?: "//"
-    }
-
     /**
      * Collects all the problems found in the given `project`, within the specified `editor` and `element`.
      *
