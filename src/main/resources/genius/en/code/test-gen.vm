@@ -11,7 +11,7 @@ ${context.relatedClasses}
 This is the class where the source code resides:
 ${context.currentClass}
 #end
-
+${context.extContext}
 Here is the source code to be tested:
 
 ```$context.lang

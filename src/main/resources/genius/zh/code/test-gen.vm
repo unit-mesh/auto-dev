@@ -9,7 +9,7 @@ ${context.frameworkContext}
 以下是当前类的信息：
     ${context.currentClass}
 #end
-
+${context.extContext}
 以下是待测试的源代码：
 
 ```$context.lang
