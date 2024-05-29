@@ -27,7 +27,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiJavaFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.messages.MessageBusConnection
@@ -278,7 +277,7 @@ class KotlinAutoTestService : AutoTestService() {
         )
     }
 
-    override fun tryFixSyntaxError(outputFile: VirtualFile, project: Project) {
+    override fun tryFixSyntaxError(outputFile: VirtualFile, project: Project, issues: List<String>) {
         val sourceFile = PsiManager.getInstance(project).findFile(outputFile) as? KtFile ?: return
         val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return
         val importer = KotlinReferenceImporter()

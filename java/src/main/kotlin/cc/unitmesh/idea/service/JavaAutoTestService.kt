@@ -180,7 +180,7 @@ class JavaAutoTestService : AutoTestService() {
         }
     }
 
-    override fun tryFixSyntaxError(outputFile: VirtualFile, project: Project) {
+    override fun tryFixSyntaxError(outputFile: VirtualFile, project: Project, issues: List<String>) {
         val sourceFile =
             runReadAction { PsiManager.getInstance(project).findFile(outputFile) as? PsiJavaFile } ?: return
 

@@ -75,8 +75,8 @@ abstract class AutoTestService : LazyExtensionInstance<AutoTestService>(), RunSe
      * @param outputFile The virtual file that needs to have its syntax errors fixed.
      * @param project The current project in which the file resides.
      */
-    open fun tryFixSyntaxError(outputFile: VirtualFile, project: Project) {
-
+    open fun tryFixSyntaxError(outputFile: VirtualFile, project: Project, issues: List<String>) {
+        // send to chat panel
     }
 
     companion object {

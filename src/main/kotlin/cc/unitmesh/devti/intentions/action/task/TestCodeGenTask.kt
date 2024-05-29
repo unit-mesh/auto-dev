@@ -8,6 +8,7 @@ import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.context.modifier.CodeModifierProvider
 import cc.unitmesh.devti.custom.CustomExtContext
 import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.intentions.action.test.TestCodeGenContext
 import cc.unitmesh.devti.intentions.action.test.TestCodeGenRequest
 import cc.unitmesh.devti.llms.LlmFactory
@@ -132,8 +133,9 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
             navigateTestFile(testContext.outputFile, request.project)
 
             autoTestService?.collectSyntaxError(testContext.outputFile, request.project) {
-                autoTestService.tryFixSyntaxError(testContext.outputFile, request.project)
+                autoTestService.tryFixSyntaxError(testContext.outputFile, request.project, it)
 
+                // todo: should rerun check here.
                 if (it.isNotEmpty()) {
                     AutoDevNotifications.warn(request.project, "Test has error, skip auto run test: ${it.joinToString("\n")}")
                     indicator.fraction = 1.0
