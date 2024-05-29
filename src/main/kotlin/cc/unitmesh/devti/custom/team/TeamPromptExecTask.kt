@@ -34,9 +34,10 @@ class TeamPromptExecTask(
     val editor: Editor,
     private val intentionConfig: TeamPromptAction,
     val element: PsiElement?,
-    private val targetFile: VirtualFile?
+    private val targetFile: VirtualFile?,
+    val taskName: String?
 ) :
-    Task.Backgroundable(project, AutoDevBundle.message("intentions.request.background.process.title")) {
+    Task.Backgroundable(project, taskName ?: AutoDevBundle.message("intentions.request.background.process.title")) {
     override fun run(indicator: ProgressIndicator) {
         val offset = runReadAction { editor.caretModel.offset }
 

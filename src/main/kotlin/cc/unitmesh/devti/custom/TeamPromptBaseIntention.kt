@@ -56,13 +56,17 @@ class TeamPromptBaseIntention(val intentionConfig: TeamPromptAction, val trySele
         if (actionPrompt.batchFileRegex != "") {
             val files = actionPrompt.batchFiles(project)
             if (files.isNotEmpty()) {
-                files.forEach { vfile ->
+                val length = files.size
+                files.forEachIndexed { index, vfile ->
                     compiler.set("all", VfsUtilCore.loadText(vfile))
                     val msgs = chatMessages.map {
                         it.copy(content = compiler.compile(it.content))
                     }
 
-                    val task: Task.Backgroundable = TeamPromptExecTask(project, msgs, editor, intentionConfig, element, vfile)
+                    // display progress like 1/2 in the title
+                    val taskName = "processing ${index + 1}/$length ${intentionConfig.actionName}"
+                    val task: Task.Backgroundable =
+                        TeamPromptExecTask(project, msgs, editor, intentionConfig, element, vfile, taskName)
                     ProgressManager.getInstance()
                         .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
                 }
@@ -87,7 +91,7 @@ class TeamPromptBaseIntention(val intentionConfig: TeamPromptAction, val trySele
         editor: Editor,
         element: PsiElement?
     ) {
-        val task: Task.Backgroundable = TeamPromptExecTask(project, msgs, editor, intentionConfig, element, null)
+        val task: Task.Backgroundable = TeamPromptExecTask(project, msgs, editor, intentionConfig, element, null, null)
         ProgressManager.getInstance()
             .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
     }
