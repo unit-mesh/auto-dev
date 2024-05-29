@@ -6,6 +6,7 @@ import cc.unitmesh.devti.agent.CustomAgentExecutor
 import cc.unitmesh.devti.agent.configurable.customAgentSetting
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.context.modifier.CodeModifierProvider
+import cc.unitmesh.devti.custom.CustomExtContext
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.intentions.action.test.TestCodeGenContext
 import cc.unitmesh.devti.intentions.action.test.TestCodeGenRequest
@@ -206,7 +207,6 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         return responseBuilder.toString()
     }
 
-    //this is hard code should be refactoring
     private fun loadRagApp(): CustomAgentConfig? {
         val ragsJsonConfig = project.customAgentSetting.ragsJsonConfig
         if (ragsJsonConfig.isEmpty()) return null
@@ -223,6 +223,6 @@ class TestCodeGenTask(val request: TestCodeGenRequest) :
         }
 
 
-        return rags.filter { it.name == "@autodev.ext-context.test" }.firstOrNull()
+        return rags.firstOrNull { it.name == CustomExtContext.TextContext.agentName }
     }
 }

@@ -14,6 +14,9 @@ data class TestCodeGenContext(
     /**
      * in issue [195](https://github.com/unit-mesh/auto-dev/issues/195), we introduction autodev ext context for
      * user to introduce their own context, this is the context for autodev ext
+     *
+     * see in [cc.unitmesh.devti.custom.CustomExtContext]
+     *
      * ```json
      * {
      *     "name": "@autodev.ext-context.test"
