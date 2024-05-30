@@ -9,5 +9,5 @@ class TestCodeGenRequest(
     val file: PsiFile,
     val element: PsiElement,
     val project: Project,
-    val editor: Editor
+    val editor: Editor?
 )

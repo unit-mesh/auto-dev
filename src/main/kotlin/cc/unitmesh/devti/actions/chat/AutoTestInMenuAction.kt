@@ -2,13 +2,13 @@
 package cc.unitmesh.devti.actions.chat
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.intentions.action.task.TestCodeGenTask
+import cc.unitmesh.devti.intentions.action.test.TestCodeGenRequest
+import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ActionPlaces.PROJECT_VIEW_POPUP
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.actionSystem.PlatformCoreDataKeys
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.MessageType
 import com.intellij.openapi.ui.popup.JBPopupFactory
@@ -21,6 +21,8 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.impl.file.PsiDirectoryFactory
 
 class AutoTestInMenuAction : AnAction(AutoDevBundle.message("intentions.chat.code.test.name")) {
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
+
     fun getActionType(): ChatActionType = ChatActionType.GENERATE_TEST
 
     override fun update(e: AnActionEvent) {
@@ -53,15 +55,21 @@ class AutoTestInMenuAction : AnAction(AutoDevBundle.message("intentions.chat.cod
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val files = getSelectedWritableFiles(e)
+        val editor = e.getData(CommonDataKeys.EDITOR)
 
         if (files.isEmpty()) {
             showNothingToConvertErrorMessage(project)
             return
         }
 
-        // AutoTest for files
-        // AutoTestService.getInstance(project).generateTest(files, module)
-        AutoDevNotifications.warn(project, "Some thing run")
+        files.forEach { file ->
+            val task = TestCodeGenTask(
+                TestCodeGenRequest(file, file, project, editor),
+                AutoDevBundle.message("intentions.chat.code.test.name")
+            )
+            ProgressManager.getInstance()
+                .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+        }
     }
 
     private fun showNothingToConvertErrorMessage(project: Project) {

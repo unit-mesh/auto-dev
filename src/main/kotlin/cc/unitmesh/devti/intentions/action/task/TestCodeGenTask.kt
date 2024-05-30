@@ -8,7 +8,6 @@ import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.context.modifier.CodeModifierProvider
 import cc.unitmesh.devti.custom.CustomExtContext
 import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.intentions.action.test.TestCodeGenContext
 import cc.unitmesh.devti.intentions.action.test.TestCodeGenRequest
 import cc.unitmesh.devti.llms.LlmFactory
@@ -34,8 +33,8 @@ import com.intellij.psi.PsiNameIdentifierOwner
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 
-class TestCodeGenTask(val request: TestCodeGenRequest) :
-    Task.Backgroundable(request.project, AutoDevBundle.message("intentions.chat.code.test.name")) {
+class TestCodeGenTask(val request: TestCodeGenRequest, val displayMessage: String) :
+    Task.Backgroundable(request.project, displayMessage) {
 
     private val actionType = ChatActionType.GENERATE_TEST
     private val lang = request.file.language.displayName
