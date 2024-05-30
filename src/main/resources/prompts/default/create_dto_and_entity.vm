@@ -28,8 +28,6 @@ public class {responseName} {
 
 // {if not exist}
 ```java
-package // relate to base package name: {packageName};
-
 import javax.persistence.*;
 
 @Entity
