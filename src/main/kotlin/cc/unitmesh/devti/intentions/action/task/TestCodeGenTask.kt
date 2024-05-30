@@ -125,7 +125,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest, private val displayMessag
 
         logger.info("Prompt: $prompter")
 
-        indicator.fraction = 0.8
+        indicator.fraction = 0.6
         indicator.text = AutoDevBundle.message("intentions.request.background.process.title")
 
         val flow: Flow<String> = try {
@@ -135,6 +135,9 @@ class TestCodeGenTask(val request: TestCodeGenRequest, private val displayMessag
             logger.error("Failed to create LLM for: $lang", e)
             return
         }
+
+        indicator.fraction = 0.8
+        indicator.text = AutoDevBundle.message("intentions.chat.code.test.verify")
 
         runBlocking {
             writeTestToFile(request.project, flow, testContext)
