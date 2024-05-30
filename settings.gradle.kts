@@ -28,6 +28,8 @@ include(
     "exts:ext-terminal",
     // git4idea is the git plugin for IntelliJ IDEA, so we rename it to `exts-git`
     "exts:ext-git",
+    // for http test
+    "exts:ext-http-client",
 
     // the Input Language support for AutoDev
     "exts:devins-lang"

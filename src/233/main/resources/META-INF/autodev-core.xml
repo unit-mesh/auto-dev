@@ -185,6 +185,10 @@
         <extensionPoint qualifiedName="cc.unitmesh.jsonTextProvider"
                         interface="cc.unitmesh.devti.provider.local.JsonTextProvider"
                         dynamic="true"/>
+
+        <extensionPoint qualifiedName="cc.unitmesh.httpClientExecutor"
+                        interface="cc.unitmesh.devti.provider.http.HttpClientProvider"
+                        dynamic="true"/>
     </extensionPoints>
 
     <applicationListeners>

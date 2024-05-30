@@ -1,0 +1,10 @@
+<idea-plugin package="cc.unitmesh.http">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+        <plugin id="com.jetbrains.restClient"/>
+    </dependencies>
+
+    <actions>
+
+    </actions>
+</idea-plugin>

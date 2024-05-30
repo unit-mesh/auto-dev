@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.gui.snippet
 
 import cc.unitmesh.devti.provider.devins.LanguagePromptProcessor
+import cc.unitmesh.devti.provider.http.HttpClientProvider
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -37,6 +38,7 @@ class AutoDevRunDevInsAction : DumbAwareAction() {
         when (language) {
             "http request" -> {
                 // call http request processor
+                HttpClientProvider.all().forEach { it.execute(project, text) }
             }
 
             "DevIn" -> {

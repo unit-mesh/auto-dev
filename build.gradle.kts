@@ -278,6 +278,7 @@ project(":plugin") {
         implementation(project(":exts:ext-android"))
         implementation(project(":exts:ext-harmonyos"))
         implementation(project(":exts:ext-git"))
+        implementation(project(":exts:ext-http-client"))
         implementation(project(":exts:ext-terminal"))
         implementation(project(":exts:devins-lang"))
     }
@@ -608,6 +609,17 @@ project(":exts:ext-git") {
     dependencies {
         implementation(project(":"))
         implementation("cc.unitmesh:git-commit-message:0.4.5")
+    }
+}
+
+project(":exts:ext-http-client") {
+    intellij {
+        version.set(ideaVersion)
+        plugins.set(ideaPlugins + "com.jetbrains.restClient")
+    }
+
+    dependencies {
+        implementation(project(":"))
     }
 }
 
