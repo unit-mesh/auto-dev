@@ -332,13 +332,22 @@
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFromTemplate"/>
         </action>
 
-        <group id="DevOpsGenius.NewActions" popup="true" icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
+        <group id="AutoDev.NewActions" popup="true" icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
             <separator/>
             <action id="GeniusDockerfile" class="cc.unitmesh.genius.actions.GenerateDockerfileAction"/>
             <action id="GeniusGitHubActions" class="cc.unitmesh.genius.actions.GenerateGitHubActionsAction"/>
 
             <add-to-group group-id="NewGroup" anchor="last"/>
         </group>
+
+        <action id="AutoDev.BatchTest"
+                icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+                class="cc.unitmesh.devti.actions.chat.AutoTestInMenuAction">
+
+            <add-to-group group-id="CodeMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+            <add-to-group group-id="EditorTabPopupMenu" anchor="last"/>
+        </action>
 
         <action id="cc.unitmesh.devti.EditSettings"
                 class="cc.unitmesh.devti.actions.EditSettingsAction"
