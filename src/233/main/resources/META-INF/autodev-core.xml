@@ -344,8 +344,8 @@
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                 class="cc.unitmesh.devti.actions.chat.AutoTestInMenuAction">
 
-            <add-to-group group-id="CodeMenu" anchor="last"/>
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="ProjectViewPopupMenuRefactoringGroup" />
+            <add-to-group group-id="RefactoringMenu" anchor="last"/>
             <add-to-group group-id="EditorTabPopupMenu" anchor="last"/>
         </action>
 

@@ -21,7 +21,7 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.impl.file.PsiDirectoryFactory
 
 class AutoTestInMenuAction : AnAction(AutoDevBundle.message("intentions.chat.code.test.name")) {
-    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     fun getActionType(): ChatActionType = ChatActionType.GENERATE_TEST
 
@@ -51,10 +51,10 @@ class AutoTestInMenuAction : AnAction(AutoDevBundle.message("intentions.chat.cod
     }
 
     private fun isEnabled(e: AnActionEvent): Boolean {
-        val files = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY) ?: return false
         val project = e.project ?: return false
         if (project.isDisposed) return false
         if (e.getData(PlatformCoreDataKeys.MODULE) == null) return false
+        val files = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY) ?: return false
 
         fun isWritableJavaFile(file: VirtualFile): Boolean {
             return file.isWritable
