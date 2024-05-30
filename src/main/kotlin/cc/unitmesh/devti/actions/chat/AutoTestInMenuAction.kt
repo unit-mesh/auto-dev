@@ -7,6 +7,7 @@ import cc.unitmesh.devti.intentions.action.task.TestCodeGenTask
 import cc.unitmesh.devti.intentions.action.test.TestCodeGenRequest
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ActionPlaces.PROJECT_VIEW_POPUP
+import com.intellij.openapi.progress.EmptyProgressIndicator
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
@@ -53,8 +54,10 @@ class AutoTestInMenuAction : AnAction(AutoDevBundle.message("intentions.chat.cod
             executor.submit {
                 val progressMessage = """${index + 1}/${total} Processing file ${file.name} for test generation"""
                 ProgressManager.getInstance().runProcessWithProgressSynchronously(
-                    { task.run(BackgroundableProcessIndicator(task)) },
-                    progressMessage, false, project
+                    {
+                        task.run(object : EmptyProgressIndicator() {})
+                    },
+                    progressMessage, true, project
                 )
             }
         }

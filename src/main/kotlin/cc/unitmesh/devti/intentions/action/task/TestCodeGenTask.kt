@@ -134,7 +134,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest, private val displayMessag
             writeTestToFile(request.project, flow, testContext)
             navigateTestFile(testContext.outputFile, request.project)
 
-            indicator.fraction = 0.8
+            indicator.fraction = 1.0
             indicator.text = AutoDevBundle.message("intentions.chat.code.test.verify")
 
             try {
