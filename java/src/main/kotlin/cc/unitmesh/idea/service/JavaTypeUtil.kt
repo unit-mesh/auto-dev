@@ -39,6 +39,25 @@ object JavaTypeUtil {
         return resolvedClasses.filter { isProjectContent(it.value) }.toMap()
     }
 
+    fun resolveByClass(element: PsiElement): Map<String, PsiClass> {
+        val resolvedClasses = mutableMapOf<String, PsiClass>()
+        if (element !is PsiClass) {
+            return emptyMap()
+        }
+
+        return runReadAction {
+            element.fields.forEach { field ->
+                resolvedClasses.putAll(resolveByType(field.type))
+            }
+
+            element.methods.forEach { method ->
+                resolvedClasses.putAll(resolveByMethod(method))
+            }
+
+            resolvedClasses.filter { isProjectContent(it.value) }.toMap()
+        }
+    }
+
     /**
      * The resolved classes include all the classes in the method signature. For example, if the method signature is
      * Int, will return Int, but if the method signature is List<Int>, will return List and Int.

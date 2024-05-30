@@ -33,7 +33,7 @@ import com.intellij.psi.PsiNameIdentifierOwner
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 
-class TestCodeGenTask(val request: TestCodeGenRequest, val displayMessage: String) :
+class TestCodeGenTask(val request: TestCodeGenRequest, private val displayMessage: String) :
     Task.Backgroundable(request.project, displayMessage) {
 
     private val actionType = ChatActionType.GENERATE_TEST

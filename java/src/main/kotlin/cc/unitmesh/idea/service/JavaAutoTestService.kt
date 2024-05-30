@@ -141,6 +141,11 @@ class JavaAutoTestService : AutoTestService() {
             resolvedClasses.putAll(JavaTypeUtil.resolveByField(element))
 
             when (element) {
+                is PsiJavaFile -> {
+                    element.classes.forEach { psiClass ->
+                        resolvedClasses.putAll(JavaTypeUtil.resolveByClass(psiClass))
+                    }
+                }
                 is PsiClass -> {
                     element.methods.forEach { method ->
                         resolvedClasses.putAll(JavaTypeUtil.resolveByMethod(method))

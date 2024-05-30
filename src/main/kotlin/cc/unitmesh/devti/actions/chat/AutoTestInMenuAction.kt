@@ -7,6 +7,7 @@ import cc.unitmesh.devti.intentions.action.task.TestCodeGenTask
 import cc.unitmesh.devti.intentions.action.test.TestCodeGenRequest
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ActionPlaces.PROJECT_VIEW_POPUP
+import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
@@ -19,6 +20,7 @@ import com.intellij.openapi.wm.WindowManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.impl.file.PsiDirectoryFactory
+import java.util.concurrent.Executors
 
 class AutoTestInMenuAction : AnAction(AutoDevBundle.message("intentions.chat.code.test.name")) {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
@@ -39,15 +41,26 @@ class AutoTestInMenuAction : AnAction(AutoDevBundle.message("intentions.chat.cod
             return
         }
 
-        files.forEach { file ->
+        val executor = Executors.newSingleThreadExecutor()
+        val total = files.size
+
+        files.forEachIndexed { index, file ->
             val task = TestCodeGenTask(
                 TestCodeGenRequest(file, file, project, editor),
                 AutoDevBundle.message("intentions.chat.code.test.name")
             )
 
-            ProgressManager.getInstance()
-                .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+            executor.submit {
+                ProgressManager.getInstance().runProcessWithProgressSynchronously(
+                        { task.run(BackgroundableProcessIndicator(task)) },
+                        """${index}/${total} Processing file $file for test generation""",
+                        false,
+                        project
+                    )
+            }
         }
+
+        executor.shutdown()
     }
 
     private fun isEnabled(e: AnActionEvent): Boolean {
