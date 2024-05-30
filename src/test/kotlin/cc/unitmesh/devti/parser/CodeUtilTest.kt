@@ -59,4 +59,11 @@ class CodeUtilTest {
         val code = Code.parse(content)
         assertEquals(code.text, "GET /wp/v2/posts")
     }
+
+    @Test
+    fun should_handle_http_request() {
+        val content = "```http request\\nGET /wp/v2/posts\\n```"
+        val code = Code.parse(content)
+        assertEquals(code.text, "GET /wp/v2/posts")
+    }
 }

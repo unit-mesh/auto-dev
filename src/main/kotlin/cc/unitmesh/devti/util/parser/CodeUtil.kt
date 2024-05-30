@@ -6,7 +6,7 @@ import com.intellij.openapi.fileTypes.PlainTextLanguage
 class Code(val language: Language, val text: String, val isComplete: Boolean) {
     companion object {
         fun parse(content: String): Code {
-            val regex = Regex("```([\\w#+]*)")
+            val regex = Regex("```([\\w#+\\s]*)")
             // convert content \\n to \n
             val lines = content
                 .replace("\\n", "\n").lines()
