@@ -123,10 +123,18 @@ class JavaAutoTestService : AutoTestService() {
         var currentClass: ClassContext? = null;
 
         val classContextProvider = ClassContextProvider(false)
-        if (psiElement is PsiClass) {
-            currentClass = runReadAction { classContextProvider.from(psiElement) }
-        } else if (psiElement is PsiMethod) {
-            currentClass = runReadAction { psiElement.containingClass?.let { classContextProvider.from(it) } }
+        when (psiElement) {
+            is PsiJavaFile -> {
+                currentClass = runReadAction { psiElement.classes.firstOrNull()?.let { classContextProvider.from(it) } }
+            }
+
+            is PsiClass -> {
+                currentClass = runReadAction { classContextProvider.from(psiElement) }
+            }
+
+            is PsiMethod -> {
+                currentClass = runReadAction { psiElement.containingClass?.let { classContextProvider.from(it) } }
+            }
         }
 
         return currentClass?.format();
@@ -146,6 +154,7 @@ class JavaAutoTestService : AutoTestService() {
                         resolvedClasses.putAll(JavaTypeUtil.resolveByClass(psiClass))
                     }
                 }
+
                 is PsiClass -> {
                     element.methods.forEach { method ->
                         resolvedClasses.putAll(JavaTypeUtil.resolveByMethod(method))
@@ -193,8 +202,13 @@ class JavaAutoTestService : AutoTestService() {
         DaemonCodeAnalyzer.getInstance(project).autoImportReferenceAtCursor(editor, sourceFile)
     }
 
-    override fun collectSyntaxError(outputFile: VirtualFile, project: Project, runAction: ((errors: List<String>) -> Unit)?) {
-        val sourceFile = runReadAction { PsiManager.getInstance(project).findFile(outputFile) as? PsiJavaFile } ?: return
+    override fun collectSyntaxError(
+        outputFile: VirtualFile,
+        project: Project,
+        runAction: ((errors: List<String>) -> Unit)?
+    ) {
+        val sourceFile =
+            runReadAction { PsiManager.getInstance(project).findFile(outputFile) as? PsiJavaFile } ?: return
         val collectPsiError = sourceFile.collectPsiError()
         if (collectPsiError.isNotEmpty()) {
             runAction?.invoke(collectPsiError)
@@ -213,7 +227,13 @@ class JavaAutoTestService : AutoTestService() {
             DaemonCodeAnalyzer.DAEMON_EVENT_TOPIC,
             object : DaemonCodeAnalyzer.DaemonListener {
                 override fun daemonFinished() {
-                    DaemonCodeAnalyzerEx.processHighlights(document, project, HighlightSeverity.ERROR, range.startOffset, range.endOffset) {
+                    DaemonCodeAnalyzerEx.processHighlights(
+                        document,
+                        project,
+                        HighlightSeverity.ERROR,
+                        range.startOffset,
+                        range.endOffset
+                    ) {
                         if (it.description != null) {
                             errors.add(it.description)
                         }
