@@ -29,9 +29,14 @@ class PromptTemplate {
     fun createDtoAndEntity(storyDetail: String, files: List<DtClass>): String {
         val promptText: InputStream = getTemplate("create_dto_and_entity")!!
         val promptTextString = promptText.bufferedReader().use { it.readText() }
+        val basePackageName = files.first {
+            it.name.endsWith("Controller")
+        }.packageName
+
         return promptTextString
             .replace("{entityList}", files.joinToString(",") { it.name })
             .replace("{storyDetail}", storyDetail)
+            .replace("{basePackageName}", basePackageName)
     }
 
     fun createOrUpdateControllerMethod(

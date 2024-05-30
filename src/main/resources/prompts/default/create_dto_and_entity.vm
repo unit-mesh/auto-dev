@@ -8,6 +8,8 @@
 ###
 // {if not exist}
 ```java
+package // relate to base package name: {packageName};
+
 import lombok.Data;
 
 @Data
@@ -18,6 +20,8 @@ public class {requestName} {
 
 // {if not exist}
 ```java
+package // relate to base package name: {packageName};
+
 import lombok.Data;
 
 @Data
@@ -28,6 +32,8 @@ public class {responseName} {
 
 // {if not exist}
 ```java
+package // relate to base package name: {packageName};
+
 import javax.persistence.*;
 
 @Entity

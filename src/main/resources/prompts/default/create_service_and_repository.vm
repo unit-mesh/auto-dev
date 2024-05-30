@@ -4,6 +4,7 @@
 - 你返回的代码示例如下：
 ###
 ```java
+package // relate to base package name;
 import org.springframework.stereotype.Service;
 
 @Service
