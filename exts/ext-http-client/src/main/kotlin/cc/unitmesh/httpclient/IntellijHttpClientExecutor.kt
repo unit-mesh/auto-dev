@@ -9,6 +9,8 @@ import com.intellij.httpClient.http.request.run.HttpRequestExecutorExtensionFact
 import com.intellij.httpClient.http.request.run.HttpRequestRunConfigurationExecutor
 import com.intellij.httpClient.http.request.run.config.HttpRequestRunConfiguration
 import com.intellij.httpClient.http.request.run.config.HttpRequestRunConfigurationType
+import com.intellij.ide.scratch.ScratchFileService
+import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
@@ -16,7 +18,14 @@ import com.intellij.psi.PsiManager
 
 class IntellijHttpClientExecutor : HttpClientProvider {
     override fun execute(project: Project, virtualFile: VirtualFile, text: String) {
-        val psiFile: PsiFile = PsiManager.getInstance(project).findFile(virtualFile) ?: return
+        val originFile: PsiFile = PsiManager.getInstance(project).findFile(virtualFile) ?: return
+
+        // create temporary file for http request
+        ScratchFileService.getInstance()
+        val scratchFile = ScratchRootType.getInstance()
+            .createScratchFile(project, "autodev-http-request.http", originFile.language, text) ?: return
+
+        val psiFile = PsiManager.getInstance(project).findFile(scratchFile) ?: return
 
         val runner: RunnerAndConfigurationSettings = ConfigurationContext(psiFile)
             .configurationsFromContext
@@ -28,10 +37,12 @@ class IntellijHttpClientExecutor : HttpClientProvider {
         val configuration = HttpRequestRunConfiguration(project, factory, "HttpRequest")
 
         val runManager: RunManager = RunManager.getInstance(project)
-        runManager.setUniqueNameIfNeeded(configuration)
-        runManager.addConfiguration(runner)
 
+        configuration.settings.filePath = virtualFile.path
+
+        runManager.setUniqueNameIfNeeded(configuration)
         runner.isTemporary = true
+        runManager.addConfiguration(runner)
 
         val selectedRunner = runManager.selectedConfiguration
         if ((selectedRunner == null || selectedRunner.isTemporary) && runManager.shouldSetRunConfigurationFromContext()) {
