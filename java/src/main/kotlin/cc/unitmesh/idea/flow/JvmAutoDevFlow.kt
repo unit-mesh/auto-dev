@@ -182,7 +182,7 @@ class JvmAutoDevFlow : DevFlowProvider() {
 
         val services = parseCodeFromString(result)
         services.forEach { service ->
-            createCodeByType(service, true)
+            createCodeByType(service, false)
         }
     }
 
