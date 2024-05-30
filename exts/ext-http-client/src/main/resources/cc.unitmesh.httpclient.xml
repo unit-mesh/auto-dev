@@ -5,6 +5,6 @@
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
-        <httpClientExecutor implementation="cc.unitmesh.devti.http.IntellijHttpClientExecutor"/>
+        <httpClientExecutor implementation="cc.unitmesh.httpclient.IntellijHttpClientExecutor"/>
     </extensions>
 </idea-plugin>
