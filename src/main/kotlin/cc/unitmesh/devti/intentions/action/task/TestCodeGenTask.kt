@@ -201,6 +201,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest, private val displayMessag
         private val logger = logger<TestCodeGenTask>()
     }
 
+    // todo: update query condition
     private fun getCustomAgentTestContext(testPromptContext: TestCodeGenContext): String {
         if (!project.customAgentSetting.enableCustomRag) return ""
 

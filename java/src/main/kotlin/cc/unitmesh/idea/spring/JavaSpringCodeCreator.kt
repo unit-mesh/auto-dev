@@ -113,13 +113,19 @@ class JavaSpringCodeCreator(val project: Project) : SpringBaseCrud {
     override fun createService(code: String): DtClass? = createClassByCode(code, getAllServiceFiles(), "service")
 
     private fun createClassByCode(code: String, psiFiles: List<PsiFile>, layerName: String): DtClass? {
+        // REMOVE PREFIX ```JAVA from code
+        val fixedCode = code.removePrefix("```java")
+            .removePrefix("```JAVA")
+            .removeSuffix("```")
+            .trim()
+
         val packageName = if (psiFiles.isNotEmpty()) {
             psiFiles.firstOrNull()?.lookupPackageName()?.packageName
         } else {
             packageCloseToController(layerName)
         }
 
-        val newCode = "package $packageName;\n\n$code"
+        val newCode = "package $packageName;\n\n$fixedCode"
 
         if (packageName == null) {
             log.warn("No package statement found in file ${psiFiles.firstOrNull()?.name}")

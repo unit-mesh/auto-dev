@@ -198,21 +198,13 @@ class JvmAutoDevFlow : DevFlowProvider() {
         }
     }
 
-    private fun createCodeByType(
-        code: String,
-        isNeedCreateController: Boolean = false,
-        controllerName: String = "",
-    ) {
+    private fun createCodeByType(code: String, isNeedCreateController: Boolean = false, controllerName: String = "") {
         JavaParseUtil.splitClass(code).forEach {
             createCode(it, controllerName, isNeedCreateController)
         }
     }
 
-    private fun createCode(
-        code: String,
-        controllerName: String,
-        isNeedCreateController: Boolean,
-    ) {
+    private fun createCode(code: String, controllerName: String, isNeedCreateController: Boolean, ) {
         when {
             isNeedCreateController || processor.isController(code) -> {
                 selectedControllerCode = code
@@ -223,12 +215,12 @@ class JvmAutoDevFlow : DevFlowProvider() {
                 processor.createService(code)
             }
 
-            processor.isEntity(code) -> {
-                processor.createEntity(code)
-            }
-
             processor.isDto(code) -> {
                 processor.createDto(code)
+            }
+
+            processor.isEntity(code) -> {
+                processor.createEntity(code)
             }
 
             processor.isRepository(code) -> {
