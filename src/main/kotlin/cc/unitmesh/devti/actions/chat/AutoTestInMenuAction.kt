@@ -7,8 +7,8 @@ import cc.unitmesh.devti.intentions.action.task.TestCodeGenTask
 import cc.unitmesh.devti.intentions.action.test.TestCodeGenRequest
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ActionPlaces.PROJECT_VIEW_POPUP
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.EmptyProgressIndicator
-import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
@@ -42,9 +42,26 @@ class AutoTestInMenuAction : AnAction(AutoDevBundle.message("intentions.chat.cod
             return
         }
 
-        val executor = Executors.newSingleThreadExecutor()
-        val total = files.size
+        if (files.size == 1) {
+            val file = files[0]
 
+            val task = TestCodeGenTask(
+                TestCodeGenRequest(file, file, project, editor),
+                AutoDevBundle.message("intentions.chat.code.test.name")
+            )
+
+            ProgressManager.getInstance()
+                .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+
+            return
+        }
+
+        batchGenerateTests(files, project, editor)
+    }
+
+    private fun batchGenerateTests(files: List<PsiFile>, project: Project, editor: Editor?) {
+        val total = files.size
+        val executor = Executors.newSingleThreadExecutor()
         files.forEachIndexed { index, file ->
             val task = TestCodeGenTask(
                 TestCodeGenRequest(file, file, project, editor),
