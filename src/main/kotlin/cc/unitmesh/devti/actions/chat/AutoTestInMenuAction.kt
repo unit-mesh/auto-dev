@@ -1,12 +1,98 @@
+// Copyright 2000-2023 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package cc.unitmesh.devti.actions.chat
 
+import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.gui.chat.ChatActionType
+import com.intellij.openapi.actionSystem.ActionPlaces.PROJECT_VIEW_POPUP
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.actionSystem.PlatformCoreDataKeys
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.MessageType
+import com.intellij.openapi.ui.popup.JBPopupFactory
+import com.intellij.openapi.vfs.VfsUtilCore
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileVisitor
+import com.intellij.openapi.wm.WindowManager
+import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiManager
+import com.intellij.psi.impl.file.PsiDirectoryFactory
 
-class AutoTestInMenuAction : AnAction("Generate Test") {
+class AutoTestInMenuAction : AnAction(AutoDevBundle.message("intentions.chat.code.test.name")) {
     fun getActionType(): ChatActionType = ChatActionType.GENERATE_TEST
-    override fun actionPerformed(e: AnActionEvent) {
 
+    override fun update(e: AnActionEvent) {
+        e.presentation.isEnabledAndVisible = isEnabled(e)
     }
+
+    private fun isEnabled(e: AnActionEvent): Boolean {
+        val files = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY) ?: return false
+        val project = e.project ?: return false
+        if (project.isDisposed) return false
+        if (e.getData(PlatformCoreDataKeys.MODULE) == null) return false
+
+        fun isWritableJavaFile(file: VirtualFile): Boolean {
+            return file.isWritable
+        }
+
+        fun isWritablePackageDirectory(file: VirtualFile): Boolean {
+            val directory = PsiManager.getInstance(project).findDirectory(file) ?: return false
+            return PsiDirectoryFactory.getInstance(project).isPackage(directory) && file.isWritable
+        }
+
+        if (e.place != PROJECT_VIEW_POPUP && files.any(::isWritablePackageDirectory)) {
+            return true
+        }
+
+        return files.any(::isWritableJavaFile)
+    }
+
+
+    override fun actionPerformed(e: AnActionEvent) {
+        val project = e.project ?: return
+        val files = getSelectedWritableFiles(e)
+
+        if (files.isEmpty()) {
+            showNothingToConvertErrorMessage(project)
+            return
+        }
+
+        // AutoTest for files
+        // AutoTestService.getInstance(project).generateTest(files, module)
+        AutoDevNotifications.warn(project, "Some thing run")
+    }
+
+    private fun showNothingToConvertErrorMessage(project: Project) {
+        val statusBar = WindowManager.getInstance().getStatusBar(project)
+        JBPopupFactory.getInstance()
+            .createHtmlTextBalloonBuilder(AutoDevBundle.message("batch.nothing.to.testing"), MessageType.ERROR, null)
+            .createBalloon()
+            .showInCenterOf(statusBar.component)
+    }
+
+    private fun getSelectedWritableFiles(e: AnActionEvent): List<PsiFile> {
+        val virtualFilesAndDirectories = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY) ?: return emptyList()
+        val project = e.project ?: return emptyList()
+        val psiManager = PsiManager.getInstance(project)
+        return getAllFilesRecursively(virtualFilesAndDirectories)
+            .asSequence()
+            .mapNotNull { psiManager.findFile(it) }
+            .filter { it.isWritable }
+            .toList()
+    }
+}
+
+fun getAllFilesRecursively(filesOrDirs: Array<VirtualFile>): Collection<VirtualFile> {
+    val result = ArrayList<VirtualFile>()
+    for (file in filesOrDirs) {
+        VfsUtilCore.visitChildrenRecursively(file, object : VirtualFileVisitor<Unit>() {
+            override fun visitFile(file: VirtualFile): Boolean {
+                result.add(file)
+                return true
+            }
+        })
+    }
+    return result
 }

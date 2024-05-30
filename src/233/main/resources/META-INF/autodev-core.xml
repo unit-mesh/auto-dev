@@ -351,7 +351,7 @@
 
         <action id="cc.unitmesh.devti.EditSettings"
                 class="cc.unitmesh.devti.actions.EditSettingsAction"
-                description="Edit AutoDev Settings"
+                description="Edit autoDev settings"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
         </action>
 
