@@ -127,8 +127,14 @@ interface RunService {
      * @return The result of the run operation, or `null` if an error occurred.
      */
     fun runFile(project: Project, virtualFile: VirtualFile, psiElement: PsiElement?): String? {
-        val runTask = RunServiceTask(project, virtualFile, psiElement, this)
-        ProgressManager.getInstance().run(runTask)
+        try {
+            val runTask = RunServiceTask(project, virtualFile, psiElement, this)
+            ProgressManager.getInstance().run(runTask)
+        } catch (e: Exception) {
+            logger.error("Failed to run file: ${virtualFile.name}", e)
+            return e.message
+        }
+
         return null
     }
 }

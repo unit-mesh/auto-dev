@@ -2,6 +2,7 @@
 package cc.unitmesh.devti.runner
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.provider.RunService
 import com.intellij.execution.*
 import com.intellij.execution.executors.DefaultRunExecutor
@@ -82,7 +83,7 @@ open class RunServiceTask(
         @Suppress("UnstableApiUsage")
         invokeAndWaitIfNeeded { }
 
-        val testResults = testRoots.map { it.toCheckResult() }
+        val testResults = testRoots.mapNotNull { it.toCheckResult() }
         if (testResults.isEmpty()) return RunnerResult.noTestsRun
 
         val firstFailure = testResults.firstOrNull { it.status != RunnerStatus.Solved }
@@ -90,14 +91,19 @@ open class RunServiceTask(
         return result
     }
 
-    protected fun SMTestProxy.SMRootTestProxy.toCheckResult(): RunnerResult {
+    protected fun SMTestProxy.SMRootTestProxy.toCheckResult(): RunnerResult? {
         if (finishedSuccessfully()) return RunnerResult(RunnerStatus.Solved, "CONGRATULATIONS")
 
         val failedChildren = collectChildren(object : Filter<SMTestProxy>() {
             override fun shouldAccept(test: SMTestProxy): Boolean = test.isLeaf && !test.finishedSuccessfully()
         })
 
-        val firstFailedTest = failedChildren.firstOrNull() ?: error("Testing failed although no failed tests found")
+        val firstFailedTest = failedChildren.firstOrNull()
+        if (firstFailedTest == null) {
+            AutoDevNotifications.warn(project, "Testing failed although no failed tests found")
+            return null
+        }
+
         val diff = firstFailedTest.diffViewerProvider?.let {
             CheckResultDiff(it.left, it.right, it.diffTitle)
         }

@@ -47,23 +47,17 @@ class TestCodeGenTask(val request: TestCodeGenRequest, private val displayMessag
     private val template = templateRender.getTemplate("test-gen.vm")
 
     override fun run(indicator: ProgressIndicator) {
-        val autoTestService = AutoTestService.context(request.element)
+        val autoTestService = AutoTestService.context(request.element) ?: return
 
         indicator.isIndeterminate = false
         indicator.fraction = 0.1
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.prepare-context")
 
         AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
-        val testContext = autoTestService?.findOrCreateTestFile(request.file, request.project, request.element)
+        val testContext = autoTestService.findOrCreateTestFile(request.file, request.project, request.element)
         DumbService.getInstance(request.project).waitForSmartMode()
 
         if (testContext == null) {
-            if (autoTestService == null) {
-                AutoDevStatusService.notifyApplication(AutoDevStatus.Error)
-                logger.error("Could not find WriteTestService for: ${request.file}, language: $lang")
-                return
-            }
-
             AutoDevStatusService.notifyApplication(AutoDevStatus.Error)
             logger.error("Failed to create test file for: ${request.file}")
             return
@@ -136,24 +130,27 @@ class TestCodeGenTask(val request: TestCodeGenRequest, private val displayMessag
             return
         }
 
-        indicator.fraction = 0.8
-        indicator.text = AutoDevBundle.message("intentions.chat.code.test.verify")
-
         runBlocking {
             writeTestToFile(request.project, flow, testContext)
-
             navigateTestFile(testContext.outputFile, request.project)
 
-            autoTestService?.collectSyntaxError(testContext.outputFile, request.project) {
-                autoTestService.tryFixSyntaxError(testContext.outputFile, request.project, it)
+            indicator.fraction = 0.8
+            indicator.text = AutoDevBundle.message("intentions.chat.code.test.verify")
 
-                // todo: should rerun check here.
-                if (it.isNotEmpty()) {
-                    AutoDevNotifications.warn(request.project, "Test has error, skip auto run test: ${it.joinToString("\n")}")
-                    indicator.fraction = 1.0
-                } else {
-                    autoTestService.runFile(request.project, testContext.outputFile, testContext.testElement)
+            try {
+                autoTestService.collectSyntaxError(testContext.outputFile, request.project) {
+                    autoTestService.tryFixSyntaxError(testContext.outputFile, request.project, it)
+
+                    if (it.isNotEmpty()) {
+                        AutoDevNotifications.warn(request.project, "Test has error, skip auto run test: ${it.joinToString("\n")}")
+                        indicator.fraction = 1.0
+                    } else {
+                        autoTestService.runFile(request.project, testContext.outputFile, testContext.testElement)
+                    }
                 }
+            } catch (e: Exception) {
+                AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)
+                indicator.fraction = 1.0
             }
 
             AutoDevStatusService.notifyApplication(AutoDevStatus.Ready)
