@@ -4,11 +4,12 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 
-class GenTestDataAction : ChatBaseAction() {
+class GenerateApiTestAction : ChatBaseAction() {
 
     init{
         val presentation = getTemplatePresentation()
-        presentation.text = AutoDevBundle.message("settings.autodev.rightClick.apiTestData")
+        presentation.text = AutoDevBundle.message("settings.autodev.rightClick.genApiTest")
     }
+
     override fun getActionType(): ChatActionType = ChatActionType.GENERATE_TEST_DATA
 }

@@ -267,8 +267,8 @@
                     description="Ask AI chat with this code">
             </action>
 
-            <action id="cc.unitmesh.devti.actions.chat.GenTestDataAction"
-                    class="cc.unitmesh.devti.actions.chat.GenTestDataAction"
+            <action id="cc.unitmesh.devti.actions.chat.GenerateApiTestAction"
+                    class="cc.unitmesh.devti.actions.chat.GenerateApiTestAction"
                     description="Ask AI generate test data">
 
                 <add-to-group group-id="GenerateGroup" anchor="last"/>
