@@ -102,10 +102,18 @@ class TestCodeGenTask(val request: TestCodeGenRequest, private val displayMessag
         }
 
         testPromptContext.sourceCode = runReadAction {
-            if(request.element !is PsiNameIdentifierOwner) {
-                testContext.testElement?.text ?: ""
-            } else {
-                request.element.text ?: ""
+            when (request.element) {
+                is PsiFile -> {
+                    request.element.text ?: ""
+                }
+
+                !is PsiNameIdentifierOwner -> {
+                    testContext.testElement?.text ?: ""
+                }
+
+                else -> {
+                    request.element.text ?: ""
+                }
             }
         }
 

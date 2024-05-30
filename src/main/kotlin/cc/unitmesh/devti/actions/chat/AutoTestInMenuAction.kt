@@ -51,12 +51,11 @@ class AutoTestInMenuAction : AnAction(AutoDevBundle.message("intentions.chat.cod
             )
 
             executor.submit {
+                val progressMessage = """${index + 1}/${total} Processing file ${file.name} for test generation"""
                 ProgressManager.getInstance().runProcessWithProgressSynchronously(
-                        { task.run(BackgroundableProcessIndicator(task)) },
-                        """${index}/${total} Processing file $file for test generation""",
-                        false,
-                        project
-                    )
+                    { task.run(BackgroundableProcessIndicator(task)) },
+                    progressMessage, false, project
+                )
             }
         }
 
