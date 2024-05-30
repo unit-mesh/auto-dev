@@ -29,6 +29,27 @@ class AutoTestInMenuAction : AnAction(AutoDevBundle.message("intentions.chat.cod
         e.presentation.isEnabledAndVisible = isEnabled(e)
     }
 
+    override fun actionPerformed(e: AnActionEvent) {
+        val project = e.project ?: return
+        val files = getSelectedWritableFiles(e)
+        val editor = e.getData(CommonDataKeys.EDITOR)
+
+        if (files.isEmpty()) {
+            showNothingToConvertErrorMessage(project)
+            return
+        }
+
+        files.forEach { file ->
+            val task = TestCodeGenTask(
+                TestCodeGenRequest(file, file, project, editor),
+                AutoDevBundle.message("intentions.chat.code.test.name")
+            )
+
+            ProgressManager.getInstance()
+                .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+        }
+    }
+
     private fun isEnabled(e: AnActionEvent): Boolean {
         val files = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY) ?: return false
         val project = e.project ?: return false
@@ -49,27 +70,6 @@ class AutoTestInMenuAction : AnAction(AutoDevBundle.message("intentions.chat.cod
         }
 
         return files.any(::isWritableJavaFile)
-    }
-
-
-    override fun actionPerformed(e: AnActionEvent) {
-        val project = e.project ?: return
-        val files = getSelectedWritableFiles(e)
-        val editor = e.getData(CommonDataKeys.EDITOR)
-
-        if (files.isEmpty()) {
-            showNothingToConvertErrorMessage(project)
-            return
-        }
-
-        files.forEach { file ->
-            val task = TestCodeGenTask(
-                TestCodeGenRequest(file, file, project, editor),
-                AutoDevBundle.message("intentions.chat.code.test.name")
-            )
-            ProgressManager.getInstance()
-                .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
-        }
     }
 
     private fun showNothingToConvertErrorMessage(project: Project) {

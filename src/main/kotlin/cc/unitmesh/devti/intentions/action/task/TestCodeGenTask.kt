@@ -38,7 +38,6 @@ class TestCodeGenTask(val request: TestCodeGenRequest, val displayMessage: Strin
 
     private val actionType = ChatActionType.GENERATE_TEST
     private val lang = request.file.language.displayName
-    private val autoTestService = AutoTestService.context(request.element)
 
     private val commenter = LanguageCommenters.INSTANCE.forLanguage(request.file.language) ?: null
     private val comment = commenter?.lineCommentPrefix ?: "//"
@@ -47,6 +46,8 @@ class TestCodeGenTask(val request: TestCodeGenRequest, val displayMessage: Strin
     private val template = templateRender.getTemplate("test-gen.vm")
 
     override fun run(indicator: ProgressIndicator) {
+        val autoTestService = AutoTestService.context(request.element)
+
         indicator.isIndeterminate = false
         indicator.fraction = 0.1
         indicator.text = AutoDevBundle.message("intentions.chat.code.test.step.prepare-context")
