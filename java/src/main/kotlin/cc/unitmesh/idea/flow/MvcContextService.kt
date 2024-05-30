@@ -49,9 +49,7 @@ class MvcContextService(private val project: Project) {
         val file = psiFile as? PsiJavaFileImpl
         val relevantModel = prepareServiceContext(file)
 
-        return """
-${relevantModel?.joinToString("\n")}
-"""
+        return "\n${relevantModel?.joinToString("\n")}\n"
     }
 
     private fun prepareServiceContext(serviceFile: PsiJavaFileImpl?): List<PsiClass>? {
@@ -74,9 +72,11 @@ ${relevantModel?.joinToString("\n")}
         val relevantModel = (services ?: emptyList()) + (models ?: emptyList())
 
         val clazz = fromJavaFile(file)
-        return """
-${relevantModel.joinToString("\n", transform = DtClass.Companion::formatPsi)}
-//current path: ${clazz.path}
-"""
+
+        val classList = relevantModel.map {
+            DtClass.Companion.formatPsi(it, clazz.packageName ?: "")
+        }
+
+        return "\n${classList.joinToString("\n")}\n//current path: ${clazz.path}\n"
     }
 }

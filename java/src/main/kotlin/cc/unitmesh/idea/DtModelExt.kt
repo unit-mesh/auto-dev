@@ -7,12 +7,12 @@ import cc.unitmesh.devti.context.model.DtParameter
 import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiJavaFile
 import com.intellij.psi.impl.source.PsiJavaFileImpl
 
-private val classCache = mutableMapOf<String, DtClass>()
 private val fileCache = mutableMapOf<String, DtClass>()
 
-fun fromJavaFile(file: PsiJavaFileImpl?): DtClass {
+fun fromJavaFile(file: PsiJavaFile?): DtClass {
     val path = file?.virtualFile?.path ?: ""
     val cachedClass = fileCache[path]
     if (cachedClass != null) {
@@ -20,28 +20,24 @@ fun fromJavaFile(file: PsiJavaFileImpl?): DtClass {
     }
 
     return runReadAction {
+        val packageName = file?.packageName ?: ""
         val psiClass = file?.classes?.firstOrNull() ?: return@runReadAction DtClass("", emptyList())
-        val fromPsi = DtClass.fromPsi(psiClass)
+        val fromPsi = DtClass.fromPsi(psiClass, packageName)
         fileCache[path] = fromPsi
 
         return@runReadAction fromPsi
     }
 }
 
-fun DtClass.Companion.formatPsi(psiClass: PsiClass): String {
-    return fromPsi(psiClass).commentFormat()
+fun DtClass.Companion.formatPsi(psiClass: PsiClass, packageName: String = ""): String {
+    return fromPsi(psiClass, packageName).commentFormat()
 }
 
 fun DtClass.Companion.fromJavaFile(file: PsiFile): DtClass {
     return fromJavaFile(file as? PsiJavaFileImpl)
 }
 
-fun DtClass.Companion.fromPsi(originClass: PsiClass): DtClass {
-    classCache[originClass.qualifiedName ?: ""]?.let {
-        return it
-    }
-
-
+fun DtClass.Companion.fromPsi(originClass: PsiClass, packageName: String): DtClass {
     val path = originClass.containingFile?.virtualFile?.path ?: ""
     val psiClass = runReadAction { originClass.copy() as PsiClass }
 
@@ -81,13 +77,12 @@ fun DtClass.Companion.fromPsi(originClass: PsiClass): DtClass {
     }
 
     val dtClass = DtClass(
-        packageName = psiClass.qualifiedName ?: "",
+        packageName = packageName,
         path = path,
         name = psiClass.name ?: "",
         methods = methods,
         fields = fields
     )
 
-    classCache[psiClass.qualifiedName ?: ""] = dtClass
     return dtClass
 }
