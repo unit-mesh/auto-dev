@@ -19,7 +19,7 @@ class AutoDevRunDevInsAction : DumbAwareAction() {
         val file = FileDocumentManager.getInstance().getFile(document) ?: return
 
         val language = PsiManager.getInstance(project).findFile(file)?.language?.id ?: return
-        e.presentation.isEnabled = language == "http request" || (language == "DevIn" && hasDevInProcessor(language))
+        e.presentation.isEnabled = language == "HTTP Request" || (language == "DevIn" && hasDevInProcessor(language))
     }
 
     private fun hasDevInProcessor(language: @NlsSafe String) =
@@ -36,7 +36,7 @@ class AutoDevRunDevInsAction : DumbAwareAction() {
         val language = PsiManager.getInstance(project).findFile(file)?.language?.id ?: return
 
         when (language) {
-            "http request" -> {
+            "HTTP Request" -> {
                 // call http request processor
                 HttpClientProvider.all().forEach { it.execute(project, file, text) }
             }

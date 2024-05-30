@@ -1,10 +1,10 @@
-<idea-plugin package="cc.unitmesh.http">
+<idea-plugin package="cc.unitmesh.httpclient">
     <!--suppress PluginXmlValidity -->
     <dependencies>
         <plugin id="com.jetbrains.restClient"/>
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
-        <httpClientExecutor implementation="cc.unitmesh.http.IntellijHttpClientExecutor"/>
+        <httpClientExecutor implementation="cc.unitmesh.devti.http.IntellijHttpClientExecutor"/>
     </extensions>
 </idea-plugin>
