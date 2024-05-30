@@ -144,6 +144,21 @@ open class JavaContextPrompter : ContextPrompter() {
         psiElementDataBuilder.outboundData(element).forEach { (_, value) ->
             additionContext += "// compare this response relate classes : \n$value\n"
         }
+
+        additionContext += """You can use the following examples to output API, which use Intellij `http request` language:
+            |
+            |```http request
+            | ### GET request to example server
+            | GET https://examples.http-client.intellij.net/get
+            | 
+            | ### POST request to example server
+            | POST http://localhost:80/api/item
+            | Content-Type: application/json
+            | {
+            |   "name": "item1"
+            | }
+            |```
+            """.trimMargin()
     }
 
     private fun addFixIssueContext(selectedText: String) {
