@@ -1,12 +1,17 @@
 package cc.unitmesh.kotlin.util
 
 import org.jetbrains.kotlin.psi.KtClassOrObject
+import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtFunction
 import org.jetbrains.kotlin.psi.KtNamedFunction
 
 object KotlinPsiUtil {
     fun getFunctions(kotlinClass: KtClassOrObject): List<KtFunction> {
         return kotlinClass.getDeclarations().filterIsInstance<KtFunction>()
+    }
+
+    fun getClasses(ktFile: KtFile): List<KtClassOrObject> {
+        return ktFile.declarations.filterIsInstance<KtClassOrObject>()
     }
 
     fun signatureString(signatureString: KtNamedFunction): String {

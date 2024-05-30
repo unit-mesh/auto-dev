@@ -2,6 +2,7 @@ package cc.unitmesh.kotlin.provider
 
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.context.ClassContextProvider
+import cc.unitmesh.devti.context.FileContextProvider
 import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.devti.provider.AutoTestService
 import cc.unitmesh.idea.service.createConfigForGradle
@@ -52,10 +53,6 @@ class KotlinAutoTestService : AutoTestService() {
         val parentDir = sourceFilePath.parent
         val className = sourceFile.name.replace(".kt", "") + "Test"
 
-        val packageName = ReadAction.compute<String, Throwable> {
-            (sourceFile as KtFile).packageFqName.asString()
-        }
-
         val parentDirPath = ReadAction.compute<String, Throwable> {
             parentDir?.path
         } ?: return null
@@ -103,6 +100,7 @@ class KotlinAutoTestService : AutoTestService() {
 
         val currentClass: String = ReadAction.compute<String, Throwable> {
             val classContext = when (psiElement) {
+                is KtFile -> FileContextProvider().from(psiElement)
                 is KtClassOrObject -> ClassContextProvider(false).from(psiElement)
                 is KtNamedFunction -> {
                     PsiTreeUtil.getParentOfType(psiElement, KtClassOrObject::class.java)?.let {
@@ -142,6 +140,13 @@ class KotlinAutoTestService : AutoTestService() {
 
                 resolvedClasses.putAll(resolveByFields(element))
             }
+
+            if (element is KtFile) {
+                KotlinPsiUtil.getClasses(element).forEach {
+                    resolvedClasses.putAll(resolveByFields(it))
+                }
+            }
+
 
             // find the class in the same project
             resolvedClasses.forEach { (_, psiClass) ->
