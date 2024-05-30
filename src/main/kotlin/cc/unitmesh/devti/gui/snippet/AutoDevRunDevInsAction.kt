@@ -38,7 +38,7 @@ class AutoDevRunDevInsAction : DumbAwareAction() {
         when (language) {
             "http request" -> {
                 // call http request processor
-                HttpClientProvider.all().forEach { it.execute(project, text) }
+                HttpClientProvider.all().forEach { it.execute(project, file, text) }
             }
 
             "DevIn" -> {
