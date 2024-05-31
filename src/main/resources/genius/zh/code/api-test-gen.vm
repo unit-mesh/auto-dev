@@ -1,0 +1,28 @@
+Generate API test request (with `http request` code block) based on given code and request/response info.
+So that we can use it to test for APIs.
+
+// base URL route: ${context.baseUri}
+// compare this request body relate info:
+// ${context.requestBody}
+// compare this related class maybe you can use
+// ${context.relatedClasses}
+
+You should use the following format to output API, which use Intellij platform `http request` language:
+
+```http request
+### GET request to example server
+GET https://examples.http-client.intellij.net/get
+
+### POST request to example server
+POST http://localhost:80/api/item
+Content-Type: application/json
+{
+"name": "item1"
+}
+```
+
+Given code:
+```${context.language}
+${context.code}
+```
+

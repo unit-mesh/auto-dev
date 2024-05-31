@@ -18,15 +18,17 @@ For example, create a file named `prompts/genius/sql/sql-gen-clarify.vm`, will o
 ## Supported Action
 
 ```bash
-├── harmonyos
-│   ├── arkui-clarify.vm
-│   └── arkui-design.vm
 ├── cicd
 │   └── generate-github-action.vm
 ├── code
-│   ├── code-complete.vm
+│   ├── api-test-gen.vm
 │   ├── code-gen.vm
 │   └── test-gen.vm
+├── error
+│   └── fix-error.vm
+├── harmonyos
+│   ├── arkui-clarify.vm
+│   └── arkui-design.vm
 ├── page
 │   ├── page-gen-clarify.vm
 │   └── page-gen-design.vm
