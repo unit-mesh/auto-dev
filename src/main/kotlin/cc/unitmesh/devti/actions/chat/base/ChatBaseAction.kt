@@ -39,22 +39,19 @@ abstract class ChatBaseAction : AnAction() {
         val editor = event.getData(CommonDataKeys.EDITOR) ?: return
         val file = event.getData(CommonDataKeys.PSI_FILE)
 
-        var prompt = buildSelectionText(editor, caretModel)
 
         val lineEndOffset = document?.getLineEndOffset(document.getLineNumber(caretModel?.offset ?: 0)) ?: 0
-
-        // if selectedText is empty, then we use the cursor position to get the text
-        if (prompt.isEmpty()) {
-            prompt = document?.text?.substring(0, lineEndOffset) ?: ""
-        }
-
+        val prefixText = buildSelectionText(editor, caretModel)
         val suffixText = document?.text?.substring(lineEndOffset) ?: ""
-
         val prompter = ContextPrompter.prompter(file?.language?.displayName ?: "")
 
         logger.info("use prompter: ${prompter.javaClass}")
 
         val element = getElementToAction(project, editor) ?: return
+        var prompt = element.text
+        if (prompt.isEmpty()) {
+            prompt = prefixText
+        }
 
         prompt += addAdditionPrompt(project, editor, element)
         prompter.initContext(getActionType(), prompt, file, project, caretModel?.offset ?: 0, element)
@@ -62,7 +59,7 @@ abstract class ChatBaseAction : AnAction() {
         sendToChatPanel(project, getActionType()) { panel: ChatCodingPanel, service ->
             val chatContext = ChatContext(
                 chatCompletedPostAction(event, panel),
-                prompt,
+                prefixText,
                 suffixText
             )
 
