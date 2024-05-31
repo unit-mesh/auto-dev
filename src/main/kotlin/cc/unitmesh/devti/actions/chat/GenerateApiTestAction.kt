@@ -6,21 +6,10 @@ import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.template.context.TemplateContext
 
 class GenerateApiTestAction : ChatBaseAction() {
-
     init {
         val presentation = getTemplatePresentation()
         presentation.text = AutoDevBundle.message("settings.autodev.rightClick.genApiTest")
     }
 
     override fun getActionType(): ChatActionType = ChatActionType.GENERATE_TEST_DATA
-}
-
-data class GenApiTestContext(
-    val language: String,
-    val frameworkContext: String,
-    val requestBody: String,
-    val relatedClasses: List<String>,
-    val code: String
-) : TemplateContext {
-
 }

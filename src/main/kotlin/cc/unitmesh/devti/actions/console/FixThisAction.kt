@@ -19,12 +19,14 @@ class FixThisAction : ChatBaseAction() {
         val presentation = getTemplatePresentation()
         presentation.text = AutoDevBundle.message("settings.autodev.others.fixThis")
     }
+
     override fun getActionType(): ChatActionType = ChatActionType.FIX_ISSUE
     private val logger = logger<FixThisAction>()
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
         val prompt: BasicTextPrompt?
+
         val description: ErrorDescription? = ErrorMessageProcessor.getErrorDescription(event)
         if (description == null) {
             val editor = event.getData(CommonDataKeys.EDITOR) ?: return

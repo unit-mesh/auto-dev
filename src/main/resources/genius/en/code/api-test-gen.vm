@@ -1,7 +1,7 @@
 Generate API test request (with `http request` code block) based on given code and request/response info.
 So that we can use it to test for APIs.
 
-// base URL route: ${context.baseUrl}
+// base URL route: ${context.baseUri}
 // compare this request body relate info:
 // ${context.requestBody}
 #if( $context.relatedClasses.length() > 0 )

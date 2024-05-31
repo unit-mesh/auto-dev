@@ -2,6 +2,7 @@ package cc.unitmesh.idea.prompting
 
 import cc.unitmesh.devti.custom.action.CustomPromptConfig
 import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.chat.GenApiTestContext
 import cc.unitmesh.devti.prompting.BasicTextPrompt
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.provider.PsiElementDataBuilder
@@ -121,44 +122,37 @@ open class JavaContextPrompter : ContextPrompter() {
                 }
             }
             ChatActionType.FIX_ISSUE -> addFixIssueContext(selectedText)
-            ChatActionType.GENERATE_TEST_DATA -> prepareDataStructure(creationContext)
+            ChatActionType.GENERATE_TEST_DATA -> prepareDataStructure(creationContext, action!!)
             else -> {
                 // ignore else
             }
         }
 
-        return prompt
+        return prompt.renderTemplate()
     }
 
-    open fun prepareDataStructure(creationContext: ChatCreationContext) {
+    open fun prepareDataStructure(creationContext: ChatCreationContext, action: ChatActionType) {
         val element = creationContext.element ?: return logger.error("element is null")
+        var baseUri = ""
+        var requestBody = ""
+        var relatedClasses = ""
+
         psiElementDataBuilder.baseRoute(element).let {
-            if (it.isNotEmpty()) {
-                additionContext += "// base URL route: \n$it\n"
-            }
+            baseUri = it
         }
 
         psiElementDataBuilder.inboundData(element).forEach { (_, value) ->
-            additionContext += "// compare this request body relate info: \n$value\n"
+            requestBody = value
         }
         psiElementDataBuilder.outboundData(element).forEach { (_, value) ->
-            additionContext += "// compare this response relate classes : \n$value\n"
+            relatedClasses = value
         }
 
-        additionContext += """You can use the following examples to output API, which use Intellij `http request` language:
-            |
-            |```http request
-            | ### GET request to example server
-            | GET https://examples.http-client.intellij.net/get
-            | 
-            | ### POST request to example server
-            | POST http://localhost:80/api/item
-            | Content-Type: application/json
-            | {
-            |   "name": "item1"
-            | }
-            |```
-            """.trimMargin()
+        if (action == ChatActionType.GENERATE_TEST_DATA) {
+            (action.context as GenApiTestContext).baseUri = baseUri
+            (action.context as GenApiTestContext).requestBody = requestBody
+            (action.context as GenApiTestContext).relatedClasses = relatedClasses.split(",")
+        }
     }
 
     private fun addFixIssueContext(selectedText: String) {

@@ -1,6 +1,9 @@
 package cc.unitmesh.devti.prompting
 
-data class BasicTextPrompt(
+import cc.unitmesh.devti.template.TemplateRender
+import cc.unitmesh.devti.template.context.TemplateContext
+
+class BasicTextPrompt(
     /**
      * The text to display to the user
      */
@@ -8,5 +11,22 @@ data class BasicTextPrompt(
     /**
      * The text request to the server
      */
-    val requestText: String
-)
+    var requestText: String,
+
+    val templateRender: TemplateRender? = null,
+
+    val context: TemplateContext? = null
+) {
+    fun renderTemplate(): BasicTextPrompt {
+        if (templateRender != null) {
+            if (context != null) {
+                templateRender.context = context
+            }
+
+            displayText = templateRender.renderTemplate(displayText)
+            requestText = templateRender.renderTemplate(requestText)
+        }
+
+        return this
+    }
+}
