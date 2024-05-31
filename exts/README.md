@@ -6,6 +6,7 @@ In this folder, you can find some advanced extensions for AutoDev.
 - Android. This extension allows you to build Android with GenAI ability.
 - HarmonyOS. This extension allows you to build HarmonyOS with GenAI ability.
 - Terminal. Integration with terminal with GenAI ability.
+- HttpClient. Provider http API test ability.
 
 Others:
 
