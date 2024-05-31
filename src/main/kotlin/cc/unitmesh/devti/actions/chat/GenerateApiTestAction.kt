@@ -3,7 +3,9 @@ package cc.unitmesh.devti.actions.chat
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.template.context.TemplateContext
+import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 
 class GenerateApiTestAction : ChatBaseAction() {
     init {
@@ -12,4 +14,11 @@ class GenerateApiTestAction : ChatBaseAction() {
     }
 
     override fun getActionType(): ChatActionType = ChatActionType.GENERATE_TEST_DATA
+
+    override fun addAdditionPrompt(project: Project, editor: Editor, element: PsiElement): String {
+        this.getActionType().context.code = element.text
+        this.getActionType().context.language = element.language.displayName
+
+        return ""
+    }
 }

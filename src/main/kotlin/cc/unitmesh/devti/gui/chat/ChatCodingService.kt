@@ -21,8 +21,6 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
     private val counitProcessor = project.service<CustomAgentChatProcessor>()
     private var currentJob: Job? = null
 
-    val action = actionType.instruction(project = project).requestText
-
     fun getLabel(): String = "$actionType Code"
 
     fun stop() {

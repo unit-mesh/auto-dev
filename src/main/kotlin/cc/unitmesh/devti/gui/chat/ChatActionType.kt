@@ -9,35 +9,36 @@ import cc.unitmesh.devti.template.context.EmptyContext
 import cc.unitmesh.devti.template.context.TemplateContext
 import com.intellij.openapi.project.Project
 
-data class GenApiTestContext(
+open class ChatTemplateContext(
     var language: String = "",
+    var code: String = "",
+) : TemplateContext
+
+class GenApiTestContext(
     var baseUri: String = "",
     var frameworkContext: String = "",
     var requestBody: String = "",
     var relatedClasses: List<String> = emptyList(),
-    var code: String = "",
-) : TemplateContext {
+) : ChatTemplateContext()
 
-}
-
-enum class ChatActionType(var context: TemplateContext) {
-    CHAT(EmptyContext()),
-    REFACTOR(EmptyContext()),
-    EXPLAIN(EmptyContext()),
-    CODE_COMPLETE(EmptyContext()),
-    GENERATE_TEST(EmptyContext()),
+enum class ChatActionType(var context: ChatTemplateContext) {
+    CHAT(ChatTemplateContext()),
+    REFACTOR(ChatTemplateContext()),
+    EXPLAIN(ChatTemplateContext()),
+    CODE_COMPLETE(ChatTemplateContext()),
+    GENERATE_TEST(ChatTemplateContext()),
     GENERATE_TEST_DATA(GenApiTestContext()),
-    GEN_COMMIT_MESSAGE(EmptyContext()),
-    FIX_ISSUE(EmptyContext()),
-    CREATE_CHANGELOG(EmptyContext()),
-    CREATE_GENIUS(EmptyContext()),
-    CUSTOM_COMPLETE(EmptyContext()),
-    CUSTOM_ACTION(EmptyContext()),
-    CUSTOM_AGENT(EmptyContext()),
-    CODE_REVIEW(EmptyContext())
+    GEN_COMMIT_MESSAGE(ChatTemplateContext()),
+    FIX_ISSUE(ChatTemplateContext()),
+    CREATE_CHANGELOG(ChatTemplateContext()),
+    CREATE_GENIUS(ChatTemplateContext()),
+    CUSTOM_COMPLETE(ChatTemplateContext()),
+    CUSTOM_ACTION(ChatTemplateContext()),
+    CUSTOM_AGENT(ChatTemplateContext()),
+    CODE_REVIEW(ChatTemplateContext())
     ;
 
-    fun instruction(lang: String = "", project: Project?, context: TemplateContext? = null): BasicTextPrompt {
+    fun instruction(lang: String = "", project: Project?): BasicTextPrompt {
         return when (this) {
             EXPLAIN -> {
                 val message = AutoDevBundle.message("prompts.autodev.explainCode", lang)
@@ -49,7 +50,7 @@ enum class ChatActionType(var context: TemplateContext) {
                 val templateRender = TemplateRender(GENIUS_PRACTISES)
                 val template = templateRender.getTemplate("refactoring.vm")
 
-                BasicTextPrompt(displayText, template, templateRender, EmptyContext())
+                BasicTextPrompt(displayText, template, templateRender, this.context)
             }
 
             CODE_COMPLETE -> {
@@ -84,7 +85,7 @@ enum class ChatActionType(var context: TemplateContext) {
                 val templateRender = TemplateRender(GENIUS_CODE)
                 val template = templateRender.getTemplate("api-test-gen.vm")
 
-                BasicTextPrompt(displayText, template, templateRender, GenApiTestContext())
+                BasicTextPrompt(displayText, template, templateRender, this.context)
             }
         }
     }

@@ -4,10 +4,8 @@ So that we can use it to test for APIs.
 // base URL route: ${context.baseUri}
 // compare this request body relate info:
 // ${context.requestBody}
-#if( $context.relatedClasses.length() > 0 )
-// Here is the relate class maybe you can use
-//    ${context.relatedClasses}
-#end
+// compare this related class maybe you can use
+// ${context.relatedClasses}
 
 You should use the following format to output API, which use Intellij platform `http request` language:
 
