@@ -1,11 +1,10 @@
 package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.prompting.BasicTextPrompt
+import cc.unitmesh.devti.prompting.TextTemplatePrompt
 import cc.unitmesh.devti.template.GENIUS_CODE
 import cc.unitmesh.devti.template.GENIUS_PRACTISES
 import cc.unitmesh.devti.template.TemplateRender
-import cc.unitmesh.devti.template.context.EmptyContext
 import cc.unitmesh.devti.template.context.TemplateContext
 import com.intellij.openapi.project.Project
 
@@ -38,11 +37,11 @@ enum class ChatActionType(var context: ChatTemplateContext) {
     CODE_REVIEW(ChatTemplateContext())
     ;
 
-    fun instruction(lang: String = "", project: Project?): BasicTextPrompt {
+    fun instruction(lang: String = "", project: Project?): TextTemplatePrompt {
         return when (this) {
             EXPLAIN -> {
                 val message = AutoDevBundle.message("prompts.autodev.explainCode", lang)
-                BasicTextPrompt(message, message)
+                TextTemplatePrompt(message, message)
             }
 
             REFACTOR -> {
@@ -50,42 +49,42 @@ enum class ChatActionType(var context: ChatTemplateContext) {
                 val templateRender = TemplateRender(GENIUS_PRACTISES)
                 val template = templateRender.getTemplate("refactoring.vm")
 
-                BasicTextPrompt(displayText, template, templateRender, this.context)
+                TextTemplatePrompt(displayText, template, templateRender, this.context)
             }
 
             CODE_COMPLETE -> {
                 val text = AutoDevBundle.message("prompts.autodev.completeCode", lang)
-                BasicTextPrompt(text, text)
+                TextTemplatePrompt(text, text)
             }
 
             GENERATE_TEST -> {
                 val text = AutoDevBundle.message("prompts.autodev.generateTest", lang)
-                BasicTextPrompt(text, text)
+                TextTemplatePrompt(text, text)
             }
 
             FIX_ISSUE -> {
                 val text = AutoDevBundle.message("prompts.autodev.fixProblem", lang)
-                BasicTextPrompt(text, text)
+                TextTemplatePrompt(text, text)
             }
 
-            GEN_COMMIT_MESSAGE -> BasicTextPrompt("", "")
+            GEN_COMMIT_MESSAGE -> TextTemplatePrompt("", "")
             CREATE_CHANGELOG -> {
                 val text = AutoDevBundle.message("prompts.autodev.generateReleaseNote")
-                BasicTextPrompt(text, text)
+                TextTemplatePrompt(text, text)
             }
 
-            CHAT -> BasicTextPrompt("", "")
-            CUSTOM_COMPLETE -> BasicTextPrompt("", "")
-            CUSTOM_ACTION -> BasicTextPrompt("", "")
-            CUSTOM_AGENT -> BasicTextPrompt("", "")
-            CODE_REVIEW -> BasicTextPrompt("", "")
-            CREATE_GENIUS -> BasicTextPrompt("", "")
+            CHAT -> TextTemplatePrompt("", "")
+            CUSTOM_COMPLETE -> TextTemplatePrompt("", "")
+            CUSTOM_ACTION -> TextTemplatePrompt("", "")
+            CUSTOM_AGENT -> TextTemplatePrompt("", "")
+            CODE_REVIEW -> TextTemplatePrompt("", "")
+            CREATE_GENIUS -> TextTemplatePrompt("", "")
             GENERATE_TEST_DATA -> {
                 val displayText = AutoDevBundle.message("prompts.autodev.generateTestData", lang)
                 val templateRender = TemplateRender(GENIUS_CODE)
                 val template = templateRender.getTemplate("api-test-gen.vm")
 
-                BasicTextPrompt(displayText, template, templateRender, this.context)
+                TextTemplatePrompt(displayText, template, templateRender, this.context)
             }
         }
     }

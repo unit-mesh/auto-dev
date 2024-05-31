@@ -3,7 +3,7 @@ package cc.unitmesh.devti.prompting
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.template.context.TemplateContext
 
-class BasicTextPrompt(
+class TextTemplatePrompt(
     /**
      * The text to display to the user
      */
@@ -13,11 +13,17 @@ class BasicTextPrompt(
      */
     var requestText: String,
 
+    /**
+     * The template render to use
+     */
     val templateRender: TemplateRender? = null,
 
+    /**
+     * The context to use for the template
+     */
     val context: TemplateContext? = null
 ) {
-    fun renderTemplate(): BasicTextPrompt {
+    fun renderTemplate(): TextTemplatePrompt {
         if (templateRender != null) {
             if (context != null) {
                 templateRender.context = context

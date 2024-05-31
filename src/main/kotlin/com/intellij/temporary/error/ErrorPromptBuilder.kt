@@ -3,7 +3,7 @@ package com.intellij.temporary.error
 
 import com.intellij.temporary.AutoPsiUtils
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
-import cc.unitmesh.devti.prompting.BasicTextPrompt
+import cc.unitmesh.devti.prompting.TextTemplatePrompt
 import cc.unitmesh.devti.template.GENIUS_ERROR
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.template.context.TemplateContext
@@ -26,7 +26,7 @@ class ErrorPromptBuilder(private val maxLength: Int, private val tokenizer: Toke
         "Please help me understand what the problem is and try to fix the code. Here's the console output and the program text:\nConsole output:\n%s\nTexts of programs:\n%s"
 
     @JvmSynthetic
-    fun buildPrompt(errorText: String, list: List<ErrorPlace>): BasicTextPrompt {
+    fun buildPrompt(errorText: String, list: List<ErrorPlace>): TextTemplatePrompt {
         var sourceCode = ""
         val maxLengthForPiece = (maxLength - (promptTemplate.length - 10)) / 2
         var currentMaxTokenCount = maxLengthForPiece
@@ -150,12 +150,12 @@ class ErrorPromptBuilder(private val maxLength: Int, private val tokenizer: Toke
     }
 
     companion object {
-        fun buildDisplayPrompt(errorTextTrimmed: String, sourceCode: String, displayText: String): BasicTextPrompt {
+        fun buildDisplayPrompt(errorTextTrimmed: String, sourceCode: String, displayText: String): TextTemplatePrompt {
             val templateRender = TemplateRender(GENIUS_ERROR)
             templateRender.context = ErrorContext(errorTextTrimmed, sourceCode)
             val template = templateRender.getTemplate("fix-error.vm")
             val prompt = templateRender.renderTemplate(template)
-            return BasicTextPrompt(displayText, prompt)
+            return TextTemplatePrompt(displayText, prompt)
         }
     }
 }

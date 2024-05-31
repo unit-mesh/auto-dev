@@ -3,7 +3,7 @@ package cc.unitmesh.idea.prompting
 import cc.unitmesh.devti.custom.action.CustomPromptConfig
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.GenApiTestContext
-import cc.unitmesh.devti.prompting.BasicTextPrompt
+import cc.unitmesh.devti.prompting.TextTemplatePrompt
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.provider.PsiElementDataBuilder
 import cc.unitmesh.devti.provider.context.ChatCreationContext
@@ -93,7 +93,7 @@ open class JavaContextPrompter : ContextPrompter() {
     }
 
 
-    private fun createPrompt(selectedText: String): BasicTextPrompt {
+    private fun createPrompt(selectedText: String): TextTemplatePrompt {
         additionContext = ""
         val prompt = action!!.instruction(lang, project)
 

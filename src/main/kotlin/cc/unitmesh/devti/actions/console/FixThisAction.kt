@@ -4,7 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatWindow
-import cc.unitmesh.devti.prompting.BasicTextPrompt
+import cc.unitmesh.devti.prompting.TextTemplatePrompt
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -25,7 +25,7 @@ class FixThisAction : ChatBaseAction() {
 
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
-        val prompt: BasicTextPrompt?
+        val prompt: TextTemplatePrompt?
 
         val description: ErrorDescription? = ErrorMessageProcessor.getErrorDescription(event)
         if (description == null) {
