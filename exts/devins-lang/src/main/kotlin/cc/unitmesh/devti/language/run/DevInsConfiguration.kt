@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.language.run
 
-import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.language.DevInBundle
 import cc.unitmesh.devti.language.DevInIcons
 import cc.unitmesh.devti.runconfig.config.readString

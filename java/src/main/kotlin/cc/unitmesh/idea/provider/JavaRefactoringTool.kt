@@ -4,29 +4,12 @@ package cc.unitmesh.idea.provider
 import cc.unitmesh.devti.provider.RefactorInstElement
 import cc.unitmesh.devti.provider.RefactoringTool
 import com.intellij.codeInsight.daemon.impl.quickfix.RenameElementFix
-import com.intellij.codeInsight.daemon.impl.quickfix.SafeDeleteFix
-import com.intellij.codeInspection.MoveToPackageFix
 import com.intellij.ide.highlighter.JavaFileType
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
-import com.intellij.openapi.command.CommandProcessor
-import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
-import com.intellij.openapi.util.NlsContexts
 import com.intellij.psi.*
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.ProjectScope
-import com.intellij.psi.util.PsiUtilCore
-import com.intellij.refactoring.RefactoringBundle
-import com.intellij.refactoring.listeners.RefactoringElementListener
-import com.intellij.refactoring.rename.RenameProcessor
-import com.intellij.refactoring.rename.RenameUtil
-import com.intellij.refactoring.rename.naming.AutomaticRenamerFactory
-import com.intellij.refactoring.util.CommonRefactoringUtil
-import com.intellij.usageView.UsageInfo
-import com.intellij.util.ThrowableRunnable
 
 class JavaRefactoringTool : RefactoringTool {
     val project = ProjectManager.getInstance().openProjects.firstOrNull()

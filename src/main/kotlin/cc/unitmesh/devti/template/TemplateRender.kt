@@ -9,7 +9,6 @@ import cc.unitmesh.template.TemplateRoleSplitter
 import com.intellij.openapi.project.ProjectManager
 import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.Velocity
-import java.io.File
 import java.io.StringWriter
 import java.nio.charset.Charset
 
