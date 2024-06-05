@@ -18,8 +18,12 @@ class ClassContextProvider(private val gatherUsages: Boolean) : LLMCodeContextPr
 
     override fun from(psiElement: PsiElement): ClassContext {
         for (provider in providers) {
-            provider.getClassContext(psiElement, gatherUsages)?.let {
-                return it
+            try {
+                provider.getClassContext(psiElement, gatherUsages)?.let {
+                    return it
+                }
+            } catch (e: Exception) {
+                logger<ClassContextProvider>().error("Error while getting class context from $provider", e)
             }
         }
 
