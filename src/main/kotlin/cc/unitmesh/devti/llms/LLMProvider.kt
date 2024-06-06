@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.callbackFlow
 interface LLMProvider {
     val defaultTimeout: Long get() = 600
 
+    @Deprecated("Use stream instead")
     fun prompt(promptText: String): String
 
     @OptIn(ExperimentalCoroutinesApi::class)
