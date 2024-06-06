@@ -19,7 +19,7 @@ class AutoSqlBackgroundTask(
     private val project: Project,
     private val flow: AutoSqlFlow,
     private val editor: Editor,
-    val language: Language
+    private val language: Language
 ) : Task.Backgroundable(project, "Gen SQL", true) {
     private val logger = logger<AutoSqlBackgroundTask>()
 
@@ -30,6 +30,7 @@ class AutoSqlBackgroundTask(
         val tables = flow.clarify()
 
         logger.info("Tables: $tables")
+
         // tables will be list in string format, like: `[table1, table2]`, we need to parse to Lists
         val tableNames = tables.substringAfter("[").substringBefore("]")
             .split(", ").map { it.trim() }

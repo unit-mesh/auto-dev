@@ -69,9 +69,9 @@ class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(
         }
 
         return if (autoDevSettingsState.customEngineResponseType == ResponseType.SSE.name) {
-            streamSSE(call, promptText, keepHistory)
+            streamSSE(call, promptText, keepHistory, messages)
         } else {
-            streamJson(call, promptText)
+            streamJson(call, promptText, messages)
         }
     }
 

@@ -4,6 +4,7 @@ import cc.unitmesh.devti.coder.recording.EmptyRecording
 import cc.unitmesh.devti.coder.recording.JsonlRecording
 import cc.unitmesh.devti.coder.recording.Recording
 import cc.unitmesh.devti.coder.recording.RecordingInstruction
+import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.settings.coder.coderSetting
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.components.service
@@ -56,12 +57,13 @@ open class CustomSSEProcessor(private val project: Project) {
         }
 
 
-    fun streamJson(call: Call, promptText: String): Flow<String> = callbackFlow {
+    fun streamJson(call: Call, promptText: String, messages: MutableList<Message>): Flow<String> = callbackFlow {
         call.enqueue(JSONBodyResponseCallback(responseFormat) {
             withContext(Dispatchers.IO) {
                 send(it)
             }
 
+            messages += Message(ChatRole.Assistant.roleName(), it)
             recording.write(RecordingInstruction(promptText, it))
             close()
         })
@@ -69,7 +71,7 @@ open class CustomSSEProcessor(private val project: Project) {
     }
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
-    fun streamSSE(call: Call, promptText: String, keepHistory: Boolean = false): Flow<String> {
+    fun streamSSE(call: Call, promptText: String, keepHistory: Boolean = false, messages: MutableList<Message>): Flow<String> {
         val sseFlowable = Flowable
             .create({ emitter: FlowableEmitter<SSE> ->
                 call.enqueue(ResponseBodyCallback(emitter, true))
@@ -126,6 +128,8 @@ open class CustomSSEProcessor(private val project: Project) {
                         // don't use trySend, it may be ignored by 'close()` op
                         send(errorMsg)
                     }
+
+                    messages += Message(ChatRole.Assistant.roleName(), output)
                     recording.write(RecordingInstruction(promptText, output))
                     close()
                 }

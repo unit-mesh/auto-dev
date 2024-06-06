@@ -135,6 +135,7 @@ class OpenAIProvider(val project: Project) : LLMProvider {
                     }
 
                 recording.write(RecordingInstruction(promptText, output))
+                messages.add(ChatMessage(ChatMessageRole.ASSISTANT.value(), output))
 
                 if ((!keepHistory) || project.coderSetting.state.noChatHistory) {
                     clearMessage()

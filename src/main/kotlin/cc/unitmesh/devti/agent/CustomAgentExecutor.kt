@@ -22,11 +22,14 @@ import okhttp3.RequestBody.Companion.toRequestBody
 class CustomAgentExecutor(val project: Project) : CustomSSEProcessor(project) {
     private var client = OkHttpClient()
     private val logger = logger<CustomAgentExecutor>()
+    private val messages: MutableList<Message> = mutableListOf()
 
     override var requestFormat: String = ""
     override var responseFormat: String = ""
 
     fun execute(promptText: String, agent: CustomAgentConfig): Flow<String>? {
+        messages.add(Message("user", promptText))
+
         this.requestFormat = agent.connector?.requestFormat ?: this.requestFormat
         this.responseFormat = agent.connector?.responseFormat ?: this.responseFormat
 
@@ -56,11 +59,11 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor(project) {
 
         return when (agent.responseAction) {
             CustomAgentResponseAction.Stream -> {
-                streamSSE(call, promptText)
+                streamSSE(call, promptText, messages = messages)
             }
 
             else -> {
-                streamJson(call, promptText)
+                streamJson(call, promptText, messages)
             }
         }
     }

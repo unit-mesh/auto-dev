@@ -68,9 +68,9 @@ class InlayCustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProce
         val call = client.newCall(builder.url(url).post(body).build())
 
         return if (autoDevSettingsState.customEngineResponseTypeParam == ResponseType.SSE.name) {
-            streamSSE(call, promptText)
+            streamSSE(call, promptText, messages = messages)
         } else {
-            streamJson(call, promptText)
+            streamJson(call, promptText, messages)
         }
     }
 
