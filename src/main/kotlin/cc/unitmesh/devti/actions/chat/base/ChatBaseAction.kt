@@ -63,7 +63,7 @@ abstract class ChatBaseAction : AnAction() {
                 suffixText
             )
 
-            service.handlePromptAndResponse(panel, prompter, chatContext, newChatContext = true)
+            service.handlePromptAndResponse(panel, prompter, chatContext, keepHistory = true)
         }
     }
 

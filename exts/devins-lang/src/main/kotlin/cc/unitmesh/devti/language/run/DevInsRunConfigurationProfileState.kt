@@ -171,7 +171,7 @@ open class DevInsRunConfigurationProfileState(
             LLMCoroutineScope.scope(myProject).launch {
                 val llmResult = StringBuilder()
                 runBlocking {
-                    llm.stream(output, "", false).collect {
+                    llm.stream(output, "", true).collect {
                         llmResult.append(it)
                         console.print(it, ConsoleViewContentType.NORMAL_OUTPUT)
                     }

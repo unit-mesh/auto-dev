@@ -31,7 +31,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         ui: ChatCodingPanel,
         prompter: ContextPrompter,
         context: ChatContext? = null,
-        newChatContext: Boolean
+        keepHistory: Boolean
     ) {
         currentJob?.cancel()
         var requestPrompt = prompter.requestPrompt()
@@ -62,7 +62,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         ui.addMessage(AutoDevBundle.message("autodev.loading"))
 
         ApplicationManager.getApplication().executeOnPooledThread {
-            val response = this.makeChatBotRequest(requestPrompt, newChatContext)
+            val response = this.makeChatBotRequest(requestPrompt, keepHistory)
             currentJob = LLMCoroutineScope.scope(project).launch {
                 when {
                     actionType === ChatActionType.REFACTOR -> ui.updateReplaceableContent(response) {
