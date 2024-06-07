@@ -18,19 +18,13 @@ class JavaVersionProvider : ChatContextProvider {
         creationContext: ChatCreationContext
     ): List<ChatContextItem> {
         val psiFile = creationContext.sourceFile
-        val containsJavaFile = { psiFile?.containingFile?.virtualFile?.extension?.equals("java", true) ?: false }
 
-        if (!containsJavaFile()) {
-            return emptyList()
-        }
+        psiFile?.containingFile?.virtualFile?.extension?.equals("java", true) ?: return emptyList()
 
         val languageLevel = detectLanguageLevel(project, psiFile) ?: return emptyList()
-        return listOf(
-            ChatContextItem(
-                JavaVersionProvider::class,
-                "You are working on a project that uses Java SDK version $languageLevel."
-            )
-        )
+        val prompt = "You are working on a project that uses Java SDK version $languageLevel."
+
+        return listOf(ChatContextItem(JavaVersionProvider::class, prompt))
     }
 
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
