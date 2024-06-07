@@ -34,14 +34,9 @@ class JavaVersionProvider : ChatContextProvider {
     }
 
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
-        val sourceFile = creationContext.sourceFile
-        if (sourceFile != null && sourceFile.language == JavaLanguage.INSTANCE) {
-            return false
-        }
-        val projectSdk = ProjectRootManager.getInstance(project).projectSdk
-        if (projectSdk != null) {
-            return projectSdk.sdkType is JavaSdkType
-        }
+        val sourceFile = creationContext.sourceFile ?: return false
+        if (sourceFile.language != JavaLanguage.INSTANCE) return false
+        if (ProjectRootManager.getInstance(project).projectSdk !is JavaSdkType) return false
 
         val module: Module = try {
             ModuleUtilCore.findModuleForFile(sourceFile)
@@ -49,8 +44,6 @@ class JavaVersionProvider : ChatContextProvider {
             return false
         } ?: return false
 
-        val sdk = ModuleRootManager.getInstance(module).sdk
-
-        return sdk != null && sdk.sdkType is JavaSdkType
+        return ModuleRootManager.getInstance(module).sdk is JavaSdkType
     }
 }
