@@ -28,7 +28,7 @@ open class SpringContextProvider : ChatContextProvider {
     }
 
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
-        val techStacks = prepareLibrary(project)
+        val techStacks = convertTechStack(project)
 
         if (techStacks.coreFrameworks().isEmpty() && techStacks.testFrameworks().isEmpty()) {
             return emptyList()
@@ -68,62 +68,63 @@ open class SpringContextProvider : ChatContextProvider {
             )
         )
     }
+}
 
-    private fun prepareLibrary(project: Project): TestStack {
-        val libraryDataList = prepareLibraryData(project)
+fun convertTechStack(project: Project): TestStack {
+    val libraryDataList = prepareLibraryData(project)
 
-        val testStack = TestStack()
-        var hasMatchSpringMvc = false
-        var hasMatchSpringData = false
+    val testStack = TestStack()
+    var hasMatchSpringMvc = false
+    var hasMatchSpringData = false
 
-        libraryDataList?.forEach {
-            val name = it.groupId + ":" + it.artifactId
-            if (!hasMatchSpringMvc) {
-                SpringLibrary.SPRING_MVC.forEach { entry: LibraryDescriptor ->
-                    if (name.contains(entry.coords)) {
-                        testStack.coreFrameworks.putIfAbsent(entry.shortText, true)
-                        hasMatchSpringMvc = true
-                    }
-                }
-            }
-
-            if (!hasMatchSpringData) {
-                SpringLibrary.SPRING_DATA.forEach { entry ->
-                    entry.coords.forEach { coord ->
-                        if (name.contains(coord)) {
-                            testStack.coreFrameworks.putIfAbsent(entry.shortText, true)
-                            hasMatchSpringData = true
-                        }
-                    }
-                }
-            }
-
-            when {
-                name.contains("org.springframework.boot:spring-boot-test") -> {
-                    testStack.testFrameworks.putIfAbsent("Spring Boot Test", true)
-                }
-
-                name.contains("org.assertj:assertj-core") -> {
-                    testStack.testFrameworks.putIfAbsent("AssertJ", true)
-                }
-
-                name.contains("org.junit.jupiter:junit-jupiter") -> {
-                    testStack.testFrameworks.putIfAbsent("JUnit 5", true)
-                }
-
-                name.contains("org.mockito:mockito-core") -> {
-                    testStack.testFrameworks.putIfAbsent("Mockito", true)
-                }
-
-                name.contains("com.h2database:h2") -> {
-                    testStack.testFrameworks.putIfAbsent("H2", true)
+    libraryDataList?.forEach {
+        val name = it.groupId + ":" + it.artifactId
+        if (!hasMatchSpringMvc) {
+            SpringLibrary.SPRING_MVC.forEach { entry: LibraryDescriptor ->
+                if (name.contains(entry.coords)) {
+                    testStack.coreFrameworks.putIfAbsent(entry.shortText, true)
+                    hasMatchSpringMvc = true
                 }
             }
         }
 
-        return testStack
+        if (!hasMatchSpringData) {
+            SpringLibrary.SPRING_DATA.forEach { entry ->
+                entry.coords.forEach { coord ->
+                    if (name.contains(coord)) {
+                        testStack.coreFrameworks.putIfAbsent(entry.shortText, true)
+                        hasMatchSpringData = true
+                    }
+                }
+            }
+        }
+
+        when {
+            name.contains("org.springframework.boot:spring-boot-test") -> {
+                testStack.testFrameworks.putIfAbsent("Spring Boot Test", true)
+            }
+
+            name.contains("org.assertj:assertj-core") -> {
+                testStack.testFrameworks.putIfAbsent("AssertJ", true)
+            }
+
+            name.contains("org.junit.jupiter:junit-jupiter") -> {
+                testStack.testFrameworks.putIfAbsent("JUnit 5", true)
+            }
+
+            name.contains("org.mockito:mockito-core") -> {
+                testStack.testFrameworks.putIfAbsent("Mockito", true)
+            }
+
+            name.contains("com.h2database:h2") -> {
+                testStack.testFrameworks.putIfAbsent("H2", true)
+            }
+        }
     }
+
+    return testStack
 }
+
 
 fun prepareLibraryData(project: Project): List<LibraryData>? {
     val basePath = project.basePath ?: return null
