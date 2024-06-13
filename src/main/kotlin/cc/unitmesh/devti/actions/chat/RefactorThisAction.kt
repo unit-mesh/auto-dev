@@ -72,7 +72,6 @@ open class RefactorThisAction : ChatBaseAction() {
     )
 
     override fun chatCompletedPostAction(event: AnActionEvent, panel: ChatCodingPanel): (response: String) -> Unit {
-        // get random key from refactorIntentionsKeys
         val key = refactorIntentionsKeys.random()
         val msg = AutoDevBundle.message(key)
 

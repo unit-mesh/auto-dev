@@ -49,7 +49,7 @@ abstract class ChatBaseAction : AnAction() {
 
         val element = getElementToAction(project, editor) ?: return
         var prompt = element.text
-        if (prompt.isEmpty()) {
+        if (prefixText.isNotEmpty()) {
             prompt = prefixText
         }
 
