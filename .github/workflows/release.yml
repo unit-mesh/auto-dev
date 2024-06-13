@@ -66,6 +66,10 @@ jobs:
         run: |
           ./gradlew patchChangelog --release-note="$CHANGELOG"
 
+      # Publish the plugin to JetBrains Marketplace
+      - name: Build Plugin
+        run: ./gradlew :plugin:buildPlugin
+
       # Upload artifact as a release asset
       - name: Upload Release Asset
         env:
