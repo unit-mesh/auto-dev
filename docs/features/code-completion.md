@@ -14,12 +14,11 @@ with feature: load custom spec
 
 <img src="https://unitmesh.cc/auto-dev/chat-code-completion.png" alt="Chat code completion" width="600px"/>
 
-## Streaming code completion
-
-1. anywhere in the editor and press `⌥` + `Enter`
-
-<img src="https://unitmesh.cc/auto-dev/stream-code-completion.png" alt="Chat code completion" width="600px"/>
-
 ## Inlay code completion 
 
-1. anywhere in the editor and press `⌥` + `Enter`
+1. anywhere in the editor and press `⌥` + `.`
+
+## Custom Completion LLM
+
+1. open AutoDev Config in `Settings` -> `Tools` -> `AutoDev`.
+2. select `AutoDev Coder`

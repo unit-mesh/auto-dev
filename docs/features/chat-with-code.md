@@ -11,6 +11,13 @@ permalink: /features/chat-width-code
 
 <img src="https://unitmesh.cc/auto-dev/chat-with-code.png" alt="Chat code completion" width="600px"/>
 
+## Normal Chat
+
+1. Click AutoDev on the right toolbar to open AutoDev.
+2. In the input field, type your question and press `Shift` + `Enter` to submit your question.
+
+<img src="https://unitmesh.cc/auto-dev/normal-chat.png" alt="Normal Chat" width="600px"/>
+
 ## Explain this
 
 ## Refactor this
