@@ -39,7 +39,6 @@ abstract class ChatBaseAction : AnAction() {
         val editor = event.getData(CommonDataKeys.EDITOR) ?: return
         val file = event.getData(CommonDataKeys.PSI_FILE)
 
-
         val lineEndOffset = document?.getLineEndOffset(document.getLineNumber(caretModel?.offset ?: 0)) ?: 0
         val prefixText = buildSelectionText(editor, caretModel)
         val suffixText = document?.text?.substring(lineEndOffset) ?: ""
