@@ -3,6 +3,7 @@
     <dependencies>
         <plugin id="com.intellij.modules.java"/>
         <plugin id="org.jetbrains.plugins.gradle"/>
+        <plugin id="org.jetbrains.idea.maven"/>
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
@@ -31,7 +32,7 @@
                          implementationClass="cc.unitmesh.idea.provider.JavaRefactoringTool"/>
 
         <chatContextProvider implementation="cc.unitmesh.idea.provider.JavaVersionProvider"/>
-        <chatContextProvider implementation="cc.unitmesh.idea.provider.SpringContextProvider"/>
+        <chatContextProvider implementation="cc.unitmesh.idea.provider.SpringGradleContextProvider"/>
         <chatContextProvider implementation="cc.unitmesh.idea.provider.JavaTestContextProvider"/>
 
         <contextPrompter

@@ -12,7 +12,7 @@ import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.gradle.util.GradleConstants
 
-open class SpringContextProvider : ChatContextProvider {
+open class SpringGradleContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
         return hasProjectLibraries(project) && creationContext.action != ChatActionType.CODE_COMPLETE
     }
@@ -45,7 +45,7 @@ open class SpringContextProvider : ChatContextProvider {
             isController() -> {
                 return listOf(
                     ChatContextItem(
-                        SpringContextProvider::class,
+                        SpringGradleContextProvider::class,
                         "You are working on a project that uses ${techStacks.coreFrameworks.keys.joinToString(",")} to build RESTful APIs."
                     )
                 )
@@ -54,7 +54,7 @@ open class SpringContextProvider : ChatContextProvider {
             isService() -> {
                 return listOf(
                     ChatContextItem(
-                        SpringContextProvider::class,
+                        SpringGradleContextProvider::class,
                         "You are working on a project that uses ${techStacks.coreFrameworks.keys.joinToString(",")} to build business logic."
                     )
                 )
@@ -63,7 +63,7 @@ open class SpringContextProvider : ChatContextProvider {
 
         return listOf(
             ChatContextItem(
-                SpringContextProvider::class,
+                SpringGradleContextProvider::class,
                 "You are working on a project that uses ${techStacks.coreFrameworks.keys.joinToString(",")} to build business logic."
             )
         )

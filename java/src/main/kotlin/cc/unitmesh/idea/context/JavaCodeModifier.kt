@@ -100,7 +100,7 @@ open class JavaCodeModifier : CodeModifier {
         } catch (e: Throwable) {
             WriteCommandAction.runWriteCommandAction(project) {
                 val document = PsiDocumentManager.getInstance(project).getDocument(lastClass.containingFile)
-                document?.insertString(classEndOffset - 1, "\n    " + newCode)
+                document?.insertString(classEndOffset - 1, "\n    $newCode")
             }
 
             return false
