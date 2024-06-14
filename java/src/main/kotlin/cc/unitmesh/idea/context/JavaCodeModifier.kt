@@ -37,45 +37,11 @@ open class JavaCodeModifier : CodeModifier {
             return false
         }
 
-        val isClassStarted = trimCode.startsWith("import") || trimCode.startsWith("package")
-        val isFullCode = isClassStarted && trimCode.contains("class ")
-        // check is sourceFile has class
-        val classes = runReadAction { lookupFile(project, sourceFile).classes }
+        val isFullCode = (trimCode.startsWith("import") || trimCode.startsWith("package")) && trimCode.contains("class ")
 
-        if (classes.isNotEmpty()) {
-            val lastClass = classes.last()
-            val classEndOffset = runReadAction { lastClass.textRange.endOffset }
-
-            val psiFile = try {
-                PsiFileFactory.getInstance(project)
-                    .createFileFromText("Test.java", JavaLanguage.INSTANCE, trimCode)
-            } catch (e: Throwable) {
-                log.warn("Failed to create file from text: $trimCode", e)
-                null
-            }
-
-            val newCode = psiFile?.text ?: trimCode
-
-            try {
-                val newClassMethods = runReadAction {
-                    psiFile?.children?.firstOrNull { it is PsiClass }?.children?.filterIsInstance<PsiMethod>()
-                }
-
-                WriteCommandAction.runWriteCommandAction(project) {
-                    newClassMethods?.forEach {
-                        lastClass.add(it)
-                    }
-                }
-            } catch (e: Throwable) {
-                WriteCommandAction.runWriteCommandAction(project) {
-                    val document = PsiDocumentManager.getInstance(project).getDocument(lastClass.containingFile)
-                    document?.replaceString(0, classEndOffset, newCode)
-                }
-
-                return false
-            }
-
-            return true
+        val existTestFileClasses = runReadAction { lookupFile(project, sourceFile).classes }
+        if (existTestFileClasses.isNotEmpty()) {
+            return insertToExistClass(existTestFileClasses, project, trimCode)
         }
 
         if (isFullCode) {
@@ -83,6 +49,45 @@ open class JavaCodeModifier : CodeModifier {
         }
 
         insertMethod(sourceFile, project, trimCode)
+        return true
+    }
+
+    private fun insertToExistClass(
+        testFileClasses: Array<out PsiClass>,
+        project: Project,
+        trimCode: String
+    ): Boolean {
+        val lastClass = testFileClasses.last()
+        val classEndOffset = runReadAction { lastClass.textRange.endOffset }
+
+        val psiFile = try {
+            PsiFileFactory.getInstance(project)
+                .createFileFromText("Test.java", JavaLanguage.INSTANCE, trimCode)
+        } catch (e: Throwable) {
+            log.warn("Failed to create file from text: $trimCode", e)
+            null
+        }
+
+        val newCode = psiFile?.text ?: trimCode
+        try {
+            val newClassMethods = runReadAction {
+                psiFile?.children?.firstOrNull { it is PsiClass }?.children?.filterIsInstance<PsiMethod>()
+            }
+
+            WriteCommandAction.runWriteCommandAction(project) {
+                newClassMethods?.forEach {
+                    lastClass.add(it)
+                }
+            }
+        } catch (e: Throwable) {
+            WriteCommandAction.runWriteCommandAction(project) {
+                val document = PsiDocumentManager.getInstance(project).getDocument(lastClass.containingFile)
+                document?.insertString(classEndOffset - 1, "\n    " + newCode)
+            }
+
+            return false
+        }
+
         return true
     }
 
