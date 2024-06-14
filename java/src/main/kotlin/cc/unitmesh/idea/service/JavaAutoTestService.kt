@@ -325,19 +325,17 @@ fun createConfigForGradle(virtualFile: VirtualFile, project: Project): GradleRun
 fun createConfigForMaven(virtualFile: VirtualFile, project: Project): MavenRunConfiguration? {
     val mavenProjectsManager = MavenProjectsManager.getInstance(project);
 
-    var moduleName = ""
-    val moduleForFile = runReadAction { ProjectFileIndex.getInstance(project).getModuleForFile(virtualFile) }
-    if (moduleForFile != null) {
-        val moduleNameSplit = moduleForFile.name.split(".").drop(1).dropLast(1).joinToString(":")
-        if (moduleNameSplit.isNotEmpty()) {
-            moduleName = "$moduleNameSplit:"
-        }
+    val moduleName = runReadAction { ProjectFileIndex.getInstance(project).getModuleForFile(virtualFile) }.let {
+        it?.name ?: ""
     }
 
-    val trulyMavenProject = mavenProjectsManager.projects.filter {
-        it.mavenId.groupId == moduleName
-    }.firstOrNull() ?: return null
+    var trulyMavenProject = mavenProjectsManager.projects.filter {
+        it.mavenId.artifactId == moduleName
+    }.firstOrNull()
 
+    if (trulyMavenProject == null) {
+        trulyMavenProject = mavenProjectsManager.projects.first() ?: return null
+    }
 
     val pomFile = trulyMavenProject.file.name
 
