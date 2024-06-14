@@ -46,22 +46,33 @@ open class JavaCodeModifier : CodeModifier {
             val lastClass = classes.last()
             val classEndOffset = runReadAction { lastClass.textRange.endOffset }
 
-            val newCode = try {
-                runReadAction {
-                    val createFileFromText =
-                        PsiFileFactory.getInstance(project)
-                            .createFileFromText("Test.java", JavaLanguage.INSTANCE, trimCode)
-
-                    createFileFromText?.text ?: trimCode
-                }
+            val psiFile = try {
+                PsiFileFactory.getInstance(project)
+                    .createFileFromText("Test.java", JavaLanguage.INSTANCE, trimCode)
             } catch (e: Throwable) {
                 log.warn("Failed to create file from text: $trimCode", e)
-                trimCode
+                null
             }
 
-            WriteCommandAction.runWriteCommandAction(project) {
-                val document = PsiDocumentManager.getInstance(project).getDocument(lastClass.containingFile)
-                document?.replaceString(0, classEndOffset, newCode)
+            val newCode = psiFile?.text ?: trimCode
+
+            try {
+                val newClassMethods = runReadAction {
+                    psiFile?.children?.firstOrNull { it is PsiClass }?.children?.filterIsInstance<PsiMethod>()
+                }
+
+                WriteCommandAction.runWriteCommandAction(project) {
+                    newClassMethods?.forEach {
+                        lastClass.add(it)
+                    }
+                }
+            } catch (e: Throwable) {
+                WriteCommandAction.runWriteCommandAction(project) {
+                    val document = PsiDocumentManager.getInstance(project).getDocument(lastClass.containingFile)
+                    document?.replaceString(0, classEndOffset, newCode)
+                }
+
+                return false
             }
 
             return true
