@@ -5,7 +5,7 @@ import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.context.FileContextProvider
 import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.devti.provider.AutoTestService
-import cc.unitmesh.idea.service.createConfigForGradle
+import cc.unitmesh.idea.service.createConfigForJava
 import cc.unitmesh.kotlin.util.KotlinPsiUtil
 import cc.unitmesh.kotlin.util.getReturnTypeReferences
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
@@ -45,7 +45,7 @@ class KotlinAutoTestService : AutoTestService() {
     override fun isApplicable(element: PsiElement): Boolean = element.language is KotlinLanguage
 
     override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
-        return createConfigForGradle(virtualFile, project)
+        return createConfigForJava(virtualFile, project)
     }
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, psiElement: PsiElement): TestFileContext? {

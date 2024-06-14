@@ -15,6 +15,7 @@ import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
@@ -30,11 +31,11 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.messages.MessageBusConnection
 import org.jetbrains.idea.maven.execution.MavenRunConfiguration
 import org.jetbrains.idea.maven.execution.MavenRunConfigurationType
-import org.jetbrains.idea.maven.execution.MavenRunner
 import org.jetbrains.idea.maven.execution.MavenRunnerParameters
 import org.jetbrains.idea.maven.project.MavenProjectsManager
 import org.jetbrains.plugins.gradle.service.execution.GradleExternalTaskConfigurationType
 import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration
+import org.jetbrains.plugins.gradle.util.GradleConstants
 import java.io.File
 
 class JavaAutoTestService : AutoTestService() {
@@ -50,7 +51,7 @@ class JavaAutoTestService : AutoTestService() {
             return null
         }
 
-        return createConfigForGradle(virtualFile, project)
+        return createConfigForJava(virtualFile, project)
     }
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, psiElement: PsiElement): TestFileContext? {
@@ -272,6 +273,18 @@ class JavaAutoTestService : AutoTestService() {
     }
 }
 
+fun createConfigForJava(virtualFile: VirtualFile, project: Project): RunConfiguration? {
+    val gradleLibraryData = ProjectDataManager.getInstance().getExternalProjectData(
+        project, GradleConstants.SYSTEM_ID, project.basePath!!
+    )
+
+    if (gradleLibraryData == null) {
+        return createConfigForMaven(virtualFile, project)
+    }
+
+    return createConfigForGradle(virtualFile, project)
+}
+
 fun createConfigForGradle(virtualFile: VirtualFile, project: Project): GradleRunConfiguration? {
     val name = virtualFile.name
 
@@ -311,11 +324,9 @@ fun createConfigForGradle(virtualFile: VirtualFile, project: Project): GradleRun
 
 fun createConfigForMaven(virtualFile: VirtualFile, project: Project): MavenRunConfiguration? {
     val mavenProjectsManager = MavenProjectsManager.getInstance(project);
-//    val mavenRunner = MavenRunner.getInstance(project);
 
     var moduleName = ""
     val moduleForFile = runReadAction { ProjectFileIndex.getInstance(project).getModuleForFile(virtualFile) }
-    // a moduleForFile.name will be like <project>.<module>.<testModule>, so we need to remove the last part and first part
     if (moduleForFile != null) {
         val moduleNameSplit = moduleForFile.name.split(".").drop(1).dropLast(1).joinToString(":")
         if (moduleNameSplit.isNotEmpty()) {
@@ -330,10 +341,10 @@ fun createConfigForMaven(virtualFile: VirtualFile, project: Project): MavenRunCo
 
     val pomFile = trulyMavenProject.file.name
 
-    val parameters: MavenRunnerParameters = MavenRunnerParameters(true, trulyMavenProject.directory, pomFile, listOf("test"),
-            mavenProjectsManager.explicitProfiles.enabledProfiles, arrayListOf()
+    val parameters = MavenRunnerParameters(
+        true, trulyMavenProject.directory, pomFile, listOf("test"),
+        mavenProjectsManager.explicitProfiles.enabledProfiles, arrayListOf()
     )
-
 
     val runnerAndConfigurationSettings =
         MavenRunConfigurationType.createRunnerAndConfigurationSettings(null, null, parameters, project)
