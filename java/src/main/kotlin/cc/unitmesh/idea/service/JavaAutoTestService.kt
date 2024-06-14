@@ -32,6 +32,8 @@ import com.intellij.util.messages.MessageBusConnection
 import org.jetbrains.idea.maven.execution.MavenRunConfiguration
 import org.jetbrains.idea.maven.execution.MavenRunConfigurationType
 import org.jetbrains.idea.maven.execution.MavenRunnerParameters
+import org.jetbrains.idea.maven.execution.MavenRunnerSettings
+import org.jetbrains.idea.maven.project.MavenGeneralSettings
 import org.jetbrains.idea.maven.project.MavenProjectsManager
 import org.jetbrains.plugins.gradle.service.execution.GradleExternalTaskConfigurationType
 import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration
@@ -347,5 +349,12 @@ fun createConfigForMaven(virtualFile: VirtualFile, project: Project): MavenRunCo
     val runnerAndConfigurationSettings =
         MavenRunConfigurationType.createRunnerAndConfigurationSettings(null, null, parameters, project)
 
-    return runnerAndConfigurationSettings.configuration as MavenRunConfiguration
+    val runManager = RunManager.getInstance(project)
+
+    val configuration = runnerAndConfigurationSettings.configuration
+
+    runManager.addConfiguration(runnerAndConfigurationSettings)
+    runManager.selectedConfiguration = runnerAndConfigurationSettings
+
+    return configuration as MavenRunConfiguration
 }
