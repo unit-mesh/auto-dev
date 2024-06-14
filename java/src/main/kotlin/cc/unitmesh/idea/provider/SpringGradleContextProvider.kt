@@ -10,6 +10,7 @@ import cc.unitmesh.idea.context.library.SpringLibrary
 import com.intellij.openapi.externalSystem.model.project.LibraryData
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.project.Project
+import org.jetbrains.idea.maven.project.MavenProjectsManager
 import org.jetbrains.plugins.gradle.util.GradleConstants
 
 open class SpringGradleContextProvider : ChatContextProvider {
@@ -125,8 +126,13 @@ fun convertTechStack(project: Project): TestStack {
     return testStack
 }
 
+data class SimpleLibraryData(val groupId: String?, val artifactId: String?, val version: String?)
 
-fun prepareLibraryData(project: Project): List<LibraryData>? {
+fun prepareLibraryData(project: Project): List<SimpleLibraryData>? {
+    return prepareGradleLibrary(project) ?: prepareMavenLibrary(project)
+}
+
+fun prepareGradleLibrary(project: Project): List<SimpleLibraryData>? {
     val basePath = project.basePath ?: return null
     val projectData = ProjectDataManager.getInstance().getExternalProjectData(
         project, GradleConstants.SYSTEM_ID, basePath
@@ -138,5 +144,19 @@ fun prepareLibraryData(project: Project): List<LibraryData>? {
         it.data as LibraryData
     }
 
-    return libraryDataList
+    // to SimpleLibraryData
+
+    return libraryDataList?.map {
+        SimpleLibraryData(it.groupId, it.artifactId, it.version)
+    }
+}
+
+fun prepareMavenLibrary(project: Project): List<SimpleLibraryData>? {
+    val projectDependencies: List<org.jetbrains.idea.maven.model.MavenArtifact> = MavenProjectsManager.getInstance(project).projects.flatMap {
+        it.dependencies
+    }
+
+    return projectDependencies.map {
+        SimpleLibraryData(it.groupId, it.artifactId, it.version)
+    }
 }
