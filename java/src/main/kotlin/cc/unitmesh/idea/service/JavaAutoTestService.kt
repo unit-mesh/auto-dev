@@ -28,6 +28,11 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.messages.MessageBusConnection
+import org.jetbrains.idea.maven.execution.MavenRunConfiguration
+import org.jetbrains.idea.maven.execution.MavenRunConfigurationType
+import org.jetbrains.idea.maven.execution.MavenRunner
+import org.jetbrains.idea.maven.execution.MavenRunnerParameters
+import org.jetbrains.idea.maven.project.MavenProjectsManager
 import org.jetbrains.plugins.gradle.service.execution.GradleExternalTaskConfigurationType
 import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration
 import java.io.File
@@ -302,4 +307,36 @@ fun createConfigForGradle(virtualFile: VirtualFile, project: Project): GradleRun
     runManager.selectedConfiguration = configuration
 
     return runConfiguration
+}
+
+fun createConfigForMaven(virtualFile: VirtualFile, project: Project): MavenRunConfiguration? {
+    val mavenProjectsManager = MavenProjectsManager.getInstance(project);
+//    val mavenRunner = MavenRunner.getInstance(project);
+
+    var moduleName = ""
+    val moduleForFile = runReadAction { ProjectFileIndex.getInstance(project).getModuleForFile(virtualFile) }
+    // a moduleForFile.name will be like <project>.<module>.<testModule>, so we need to remove the last part and first part
+    if (moduleForFile != null) {
+        val moduleNameSplit = moduleForFile.name.split(".").drop(1).dropLast(1).joinToString(":")
+        if (moduleNameSplit.isNotEmpty()) {
+            moduleName = "$moduleNameSplit:"
+        }
+    }
+
+    val trulyMavenProject = mavenProjectsManager.projects.filter {
+        it.mavenId.groupId == moduleName
+    }.firstOrNull() ?: return null
+
+
+    val pomFile = trulyMavenProject.file.name
+
+    val parameters: MavenRunnerParameters = MavenRunnerParameters(true, trulyMavenProject.directory, pomFile, listOf("test"),
+            mavenProjectsManager.explicitProfiles.enabledProfiles, arrayListOf()
+    )
+
+
+    val runnerAndConfigurationSettings =
+        MavenRunConfigurationType.createRunnerAndConfigurationSettings(null, null, parameters, project)
+
+    return runnerAndConfigurationSettings.configuration as MavenRunConfiguration
 }
