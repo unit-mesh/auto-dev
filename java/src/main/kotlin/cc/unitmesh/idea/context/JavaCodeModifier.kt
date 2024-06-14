@@ -27,8 +27,26 @@ open class JavaCodeModifier : CodeModifier {
         sourceFile: VirtualFile,
     ) = PsiManager.getInstance(project).findFile(sourceFile) as PsiJavaFile
 
+    /**
+     * This function is used to insert test code into a specified source file in a Kotlin project.
+     * It takes the source file, project, and the test code as parameters.
+     *
+     * The function first trims the test code by removing leading and trailing whitespaces, as well as any surrounding triple backticks and "java" prefix.
+     * If the trimmed code does not contain the "@Test" annotation, a warning is logged and the method code is inserted into the source file.
+     *
+     * It then checks if the trimmed code is a full class code (starts with "import" or "package" and contains "class ").
+     * If the source file already contains classes, the function inserts the test code into an existing class.
+     *
+     * If the trimmed code is a full class code, the function inserts a new class into the source file.
+     *
+     * If none of the above conditions are met, the function inserts the test code as a method into the source file.
+     *
+     * @param sourceFile The VirtualFile representing the source file where the test code will be inserted.
+     * @param project The Project to which the source file belongs.
+     * @param code The test code to be inserted into the source file.
+     * @return Boolean value indicating whether the test code was successfully inserted.
+     */
     override fun insertTestCode(sourceFile: VirtualFile, project: Project, code: String): Boolean {
-        // remove surrounding ``` markdown code block
         val trimCode = code.trim().removeSurrounding("```").removePrefix("java")
 
         if (!trimCode.contains("@Test")) {
