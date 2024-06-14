@@ -32,28 +32,27 @@ class JavaVariableContextBuilder : VariableContextBuilder {
             withClassContext
         )}
     }
-}
 
-fun PsiElement.getContainingMethod(): PsiMethod? {
-    var context: PsiElement? = this.context
-    while (context != null) {
-        if (context is PsiMethod) return context
+    private fun PsiElement.getContainingMethod(): PsiMethod? {
+        var context: PsiElement? = this.context
+        while (context != null) {
+            if (context is PsiMethod) return context
 
-        context = context.context
+            context = context.context
+        }
+
+        return null
     }
 
-    return null
-}
+    private fun PsiElement.getContainingClass(): PsiClass? {
+        var context: PsiElement? = this.context
+        while (context != null) {
+            if (context is PsiClass) return context
+            if (context is PsiMember) return context.containingClass
 
-fun PsiElement.getContainingClass(): PsiClass? {
-    var context: PsiElement? = this.context
-    while (context != null) {
-        if (context is PsiClass) return context
-        if (context is PsiMember) return context.containingClass
+            context = context.context
+        }
 
-        context = context.context
+        return null
     }
-
-    return null
 }
-

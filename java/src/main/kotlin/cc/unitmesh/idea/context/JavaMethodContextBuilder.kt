@@ -52,12 +52,12 @@ class JavaMethodContextBuilder : MethodContextBuilder {
     private fun processReturnTypeText(returnType: String?): String? {
         return if (returnType == "void") null else returnType
     }
-}
 
-fun getSignatureString(method: PsiMethod): String {
-    val bodyStart = runReadAction { method.body?.startOffsetInParent ?: method.textLength }
-    val text = runReadAction { method.text }
-    val substring = text.substring(0, bodyStart)
-    val trimmed = substring.replace('\n', ' ').trim()
-    return trimmed
+    private fun getSignatureString(method: PsiMethod): String {
+        val bodyStart = runReadAction { method.body?.startOffsetInParent ?: method.textLength }
+        val text = runReadAction { method.text }
+        val substring = text.substring(0, bodyStart)
+        val trimmed = substring.replace('\n', ' ').trim()
+        return trimmed
+    }
 }
