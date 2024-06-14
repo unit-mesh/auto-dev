@@ -18,11 +18,13 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.TextRange
+import com.intellij.openapi.util.ThrowableComputable
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -32,8 +34,7 @@ import com.intellij.util.messages.MessageBusConnection
 import org.jetbrains.idea.maven.execution.MavenRunConfiguration
 import org.jetbrains.idea.maven.execution.MavenRunConfigurationType
 import org.jetbrains.idea.maven.execution.MavenRunnerParameters
-import org.jetbrains.idea.maven.execution.MavenRunnerSettings
-import org.jetbrains.idea.maven.project.MavenGeneralSettings
+import org.jetbrains.idea.maven.project.MavenProject
 import org.jetbrains.idea.maven.project.MavenProjectsManager
 import org.jetbrains.plugins.gradle.service.execution.GradleExternalTaskConfigurationType
 import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration
@@ -325,25 +326,24 @@ fun createConfigForGradle(virtualFile: VirtualFile, project: Project): GradleRun
 }
 
 fun createConfigForMaven(virtualFile: VirtualFile, project: Project): MavenRunConfiguration? {
-    val mavenProjectsManager = MavenProjectsManager.getInstance(project);
+    val projectsManager = MavenProjectsManager.getInstance(project);
 
-    val moduleName = runReadAction { ProjectFileIndex.getInstance(project).getModuleForFile(virtualFile) }.let {
-        it?.name ?: ""
+    val mavenProject: MavenProject = projectsManager.findProject(virtualFile) ?: return null
+    val module = runReadAction { projectsManager.findModule(mavenProject) } ?: return null
+
+    var trulyMavenProject = projectsManager.projects.firstOrNull {
+        it.mavenId.artifactId == module.name
     }
 
-    var trulyMavenProject = mavenProjectsManager.projects.filter {
-        it.mavenId.artifactId == moduleName
-    }.firstOrNull()
-
     if (trulyMavenProject == null) {
-        trulyMavenProject = mavenProjectsManager.projects.first() ?: return null
+        trulyMavenProject = projectsManager.projects.first() ?: return null
     }
 
     val pomFile = trulyMavenProject.file.name
 
     val parameters = MavenRunnerParameters(
         true, trulyMavenProject.directory, pomFile, listOf("test"),
-        mavenProjectsManager.explicitProfiles.enabledProfiles, arrayListOf()
+        projectsManager.explicitProfiles.enabledProfiles, arrayListOf()
     )
 
     val runnerAndConfigurationSettings =
