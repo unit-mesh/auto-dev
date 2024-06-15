@@ -88,7 +88,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(AutoDevBundle.message("settings.autodev.coder.useCustomerAgentWhenInlayCodeComplete")) {
+        row(AutoDevBundle.message("settings.autodev.coder.useCustomAIEngineWhenInlayCodeComplete")) {
             fullWidthCell(useCustomAIEngineWhenInlayCodeComplete)
                 .bind(
                     componentGet = { it.isSelected },
