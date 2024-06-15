@@ -1,4 +1,4 @@
-package cc.unitmesh.genius.actions.context
+package cc.unitmesh.devti.actions.context
 
 import cc.unitmesh.devti.template.context.DockerfileContext
 import cc.unitmesh.devti.template.context.TemplateContext

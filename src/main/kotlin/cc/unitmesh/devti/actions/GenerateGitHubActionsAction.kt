@@ -1,11 +1,11 @@
-package cc.unitmesh.genius.actions
+package cc.unitmesh.devti.actions
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.tasks.FileGenerateTask
 import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.template.GENIUS_CICD
 import cc.unitmesh.devti.template.TemplateRender
-import cc.unitmesh.genius.actions.context.DevOpsContext
+import cc.unitmesh.devti.actions.context.DevOpsContext
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.progress.ProgressManager

@@ -325,10 +325,12 @@
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFromTemplate"/>
         </action>
 
-        <group id="AutoDev.NewActions" popup="true" icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
+        <group id="AutoDev.NewActions"
+               text="AutoDev CI/CD Actions"
+               popup="true" icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
             <separator/>
-            <action id="GeniusDockerfile" class="cc.unitmesh.genius.actions.GenerateDockerfileAction"/>
-            <action id="GeniusGitHubActions" class="cc.unitmesh.genius.actions.GenerateGitHubActionsAction"/>
+            <action id="GeniusDockerfile" class="cc.unitmesh.devti.actions.GenerateDockerfileAction"/>
+            <action id="GeniusGitHubActions" class="cc.unitmesh.devti.actions.GenerateGitHubActionsAction"/>
 
             <add-to-group group-id="NewGroup" anchor="last"/>
         </group>
