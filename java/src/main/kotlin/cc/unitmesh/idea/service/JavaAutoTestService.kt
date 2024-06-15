@@ -7,6 +7,7 @@ import cc.unitmesh.devti.provider.context.TestFileContext
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx
 import com.intellij.execution.RunManager
+import com.intellij.execution.configurations.JavaParameters
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.lang.annotation.HighlightSeverity
@@ -345,6 +346,14 @@ fun createConfigForMaven(virtualFile: VirtualFile, project: Project): MavenRunCo
         true, trulyMavenProject.directory, pomFile, listOf("test"),
         projectsManager.explicitProfiles.enabledProfiles, arrayListOf()
     )
+
+    // $MODULE_WORKING_DIR$
+    //
+    // -ea Method: com.example.demo.MathHelperTest should_ReturnSum_When_GivenTwoPositiveNumbers
+    // /Users/phodal/Library/Java/JavaVirtualMachines/corretto-18.0.2/Contents/Home/bin/java
+    // -ea -Didea.test.cyclic.buffer.size=1048576
+    // -javaagent:ideaIU-2024.1/lib/idea_rt.jar=54637:1/bin -Dfile.encoding=UTF-8
+    // -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8
 
     val runnerAndConfigurationSettings =
         MavenRunConfigurationType.createRunnerAndConfigurationSettings(null, null, parameters, project)
