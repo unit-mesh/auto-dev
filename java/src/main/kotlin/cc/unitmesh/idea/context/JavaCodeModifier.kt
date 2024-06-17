@@ -14,9 +14,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.*
 
 open class JavaCodeModifier : CodeModifier {
-    companion object {
-        val log = logger<JavaAutoTestService>()
-    }
+    private val log = logger<JavaCodeModifier>()
 
     override fun isApplicable(language: Language): Boolean {
         return language is JavaLanguage
