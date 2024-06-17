@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.context
 
 import cc.unitmesh.devti.context.base.NamedElementContext
-import com.google.gson.Gson
 import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
@@ -18,20 +17,16 @@ class VariableContext(
 ) : NamedElementContext(
     root, text, name
 ) {
-    private val methodContext: MethodContext?
-    private val classContext: ClassContext?
+    private val methodContext: MethodContext? = if (includeMethodContext && enclosingMethod != null) {
+        MethodContextProvider(false, false).from(enclosingMethod)
+    } else {
+        null
+    }
 
-    init {
-        methodContext = if (includeMethodContext && enclosingMethod != null) {
-            MethodContextProvider(false, false).from(enclosingMethod)
-        } else {
-            null
-        }
-        classContext = if (includeClassContext && enclosingClass != null) {
-            ClassContextProvider(false).from(enclosingClass)
-        } else {
-            null
-        }
+    private val classContext: ClassContext? = if (includeClassContext && enclosingClass != null) {
+        ClassContextProvider(false).from(enclosingClass)
+    } else {
+        null
     }
 
     fun shortFormat(): String = runReadAction {  root.text ?: ""}
