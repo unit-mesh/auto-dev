@@ -609,7 +609,7 @@ project(":exts:ext-git") {
 
     dependencies {
         implementation(project(":"))
-        implementation("cc.unitmesh:git-commit-message:0.4.5")
+        implementation("cc.unitmesh:git-commit-message:0.4.6")
     }
 }
 
