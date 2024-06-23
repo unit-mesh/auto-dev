@@ -7,7 +7,6 @@ import cc.unitmesh.devti.provider.context.TestFileContext
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx
 import com.intellij.execution.RunManager
-import com.intellij.execution.configurations.JavaParameters
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.lang.annotation.HighlightSeverity
