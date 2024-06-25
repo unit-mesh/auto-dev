@@ -79,6 +79,8 @@ class LLMInlayManagerImpl : LLMInlayManager {
     override fun collectInlays(editor: Editor, startOffset: Int, endOffset: Int): List<LLMInlayRenderer> {
         val model = editor.inlayModel
 
+        if (endOffset <= startOffset) return emptyList()
+
         val inlays = mutableListOf<Inlay<*>>().apply {
             addAll(model.getInlineElementsInRange(startOffset, endOffset))
             addAll(model.getAfterLineEndElementsInRange(startOffset, endOffset))
