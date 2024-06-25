@@ -8,6 +8,7 @@ import cc.unitmesh.devti.util.LLMCoroutineScope
 import com.intellij.codeInsight.completion.PrefixMatcher
 import com.intellij.codeInsight.lookup.*
 import com.intellij.codeInsight.lookup.impl.LookupImpl
+import com.intellij.codeInsight.template.TemplateManager
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
@@ -35,6 +36,9 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
 
         // maybe user just typing, we should handle for this
         val originName = (targetElement as? PsiNameIdentifierOwner)?.name ?: return
+
+        // avoid user typing in template. only suggest that user refactor the name
+        TemplateManager.getInstance(project).getActiveTemplate(editor) ?: return
 
         if (originName.isBlank()) return
 
