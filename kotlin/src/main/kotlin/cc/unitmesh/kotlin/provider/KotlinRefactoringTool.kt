@@ -5,6 +5,7 @@ import cc.unitmesh.devti.provider.RefactoringTool
 import com.intellij.codeInsight.daemon.impl.quickfix.RenameElementFix
 import com.intellij.codeInsight.daemon.impl.quickfix.SafeDeleteFix
 import com.intellij.codeInspection.MoveToPackageFix
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.psi.*
 import com.intellij.psi.search.FileTypeIndex
@@ -83,6 +84,7 @@ class KotlinRefactoringTool : RefactoringTool {
         try {
             rename.invoke(project, psiFile, element, element)
         } catch (e: Exception) {
+            logger<KotlinRefactoringTool>().error("Error in renaming", e)
             return false
         }
 

@@ -34,7 +34,7 @@ data class SimpleClassStructure(
      *}
      *```
      */
-    private fun simplePuml(simpleClassStructure: SimpleClassStructure): String {
+    private fun classStructureToPlantUML(simpleClassStructure: SimpleClassStructure): String {
         val children = simpleClassStructure.children.joinToString("\n") { "  ${it.fieldName}: ${it.fieldType}" }
         return "class ${simpleClassStructure.fieldType} {\n" +
                 children +
@@ -68,7 +68,7 @@ data class SimpleClassStructure(
      */
     override fun toString(): String {
         val puml = StringBuilder()
-        puml.append(simplePuml(this))
+        puml.append(classStructureToPlantUML(this))
 
         createChildPuml(children)
 
@@ -82,7 +82,7 @@ data class SimpleClassStructure(
 
     private fun createChildPuml(data: List<SimpleClassStructure>) {
         data.filter { !it.builtIn }.forEach {
-            childPuml[it.fieldType] = simplePuml(it)
+            childPuml[it.fieldType] = classStructureToPlantUML(it)
             createChildPuml(it.children)
         }
     }

@@ -419,6 +419,7 @@ project(":") {
         implementation(libs.kotlinx.serialization.json)
 
         implementation("cc.unitmesh:cocoa-core:0.4.6")
+        implementation("cc.unitmesh:sentence-transformers:0.4.6")
 
         // kanban
         implementation(libs.github.api)
