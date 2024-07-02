@@ -55,7 +55,7 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
                 if (response.body == null) {
                     throw AutoDevHttpException("Response body is null", response.code)
                 } else {
-                    throw AutoDevHttpException(response.body?.toString() ?: "", response.code)
+                    throw AutoDevHttpException(response.body?.string() ?: "", response.code)
                 }
             }
             val inputStream = response.body!!.byteStream()
