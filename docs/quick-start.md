@@ -38,12 +38,13 @@ So, since 2024.4, AutoDev was unavailable in the JetBrains Plugin Repository, yo
 
 ps: For OpenAI compatible, you can use `Open AI Model` to your custom OpenAI compatible model.
 
-### OpenAI Azure Config
+### Azure OpenAI Config
 
 1. open AutoDev Config in `Settings` -> `Tools` -> `AutoDev`.
-2. select `AI Engine` -> `Azure`, select `Open AI Model` -> `gpt-3.5-turbo`
-3. fill `Custom OpenAI Host` with your OpenAI API Endpoint. (with Key in URL)
-4. Apply and OK.
+2. ~~select `AI Engine` -> `Azure`, select `Open AI Model` -> `gpt-3.5-turbo`~~
+3. select `AI Engine` -> `Custom`
+4. fill `Custom Engine Server` and `Custom Engine Token` if needed.
+5. Apply and OK.
 
 ### Xunfei Xinghuo
 
