@@ -74,12 +74,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
                     customEngineResponseFormatParam,
                     customEngineRequestBodyFormatParam,
             ),
-            AIEngines.XingHuo to listOf(
-                    xingHuoApiVersionParam,
-                    xingHuoAppIDParam,
-                    xingHuoApiKeyParam,
-                    xingHuoApiSecretParam,
-            ),
     )
 
 
