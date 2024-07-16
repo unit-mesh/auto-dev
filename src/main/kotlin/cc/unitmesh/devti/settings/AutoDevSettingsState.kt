@@ -35,7 +35,6 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
     var xingHuoApiSecrect = ""
     var xingHuoApiKey = ""
 
-
     /**
      * 自定义引擎返回的数据格式是否是 [SSE](https://www.ruanyifeng.com/blog/2017/05/server-sent_events.html) 格式
      */

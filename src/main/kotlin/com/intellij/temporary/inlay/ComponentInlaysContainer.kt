@@ -54,7 +54,6 @@ internal class ComponentInlaysContainer(val editor: Editor) : JComponent() {
 
         bounds = SwingUtilities.calculateInnerArea(content, null as Rectangle?)
         inlays.forEach {
-//             it.renderer.component.setSize(bounds.width, it.renderer.inlaySize.height)
             it.renderer.component.size = it.renderer.inlaySize
         }
     }
