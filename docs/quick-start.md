@@ -46,13 +46,6 @@ ps: For OpenAI compatible, you can use `Open AI Model` to your custom OpenAI com
 4. fill `Custom Engine Server` and `Custom Engine Token` if needed.
 5. Apply and OK.
 
-### Xunfei Xinghuo
-
-1. open AutoDev Config in `Settings` -> `Tools` -> `AutoDev`.
-2. select `AI Engine` -> `Xinghuo`
-3. fill `AppId`, `AppKey`, `AppSecret` with your Xunfei Xinghuo API Key.
-4. Apply and OK.
-
 ### Custom Config / OpenAI compatible
 
 Tested: 零一万物（[#94](https://github.com/unit-mesh/auto-dev/issues/94)）, 月之暗面（Moonshot

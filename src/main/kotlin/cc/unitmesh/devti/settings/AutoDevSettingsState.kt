@@ -4,13 +4,11 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.util.xmlb.Converter
 import com.intellij.util.xmlb.XmlSerializerUtil
 import com.intellij.util.xmlb.annotations.OptionTag
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
 
 @State(name = "cc.unitmesh.devti.settings.DevtiSettingsState", storages = [Storage("DevtiSettings.xml")])
 class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
@@ -29,15 +27,6 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
     var customPrompts = ""
     var customModel = ""
 
-    // 星火有三个版本 https://console.xfyun.cn/services/bm3
-    var xingHuoApiVersion = XingHuoApiVersion.V3
-    var xingHuoAppId = ""
-    var xingHuoApiSecrect = ""
-    var xingHuoApiKey = ""
-
-    /**
-     * 自定义引擎返回的数据格式是否是 [SSE](https://www.ruanyifeng.com/blog/2017/05/server-sent_events.html) 格式
-     */
     var customEngineResponseType = ResponseType.SSE.name
     /**
      * should be a json path
