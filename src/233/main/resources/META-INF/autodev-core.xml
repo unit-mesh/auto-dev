@@ -51,6 +51,8 @@
         <!-- Run Configurations -->
         <programRunner implementation="cc.unitmesh.devti.runconfig.AutoDevCommandRunner"/>
 
+<!--        <copyPastePostProcessor implementation="cc.unitmesh.devti.smartpaste.SmartCopyPasteProcessor"/>-->
+
         <toolWindow id="AutoDev"
                     doNotActivateOnStart="true"
                     anchor="right"
