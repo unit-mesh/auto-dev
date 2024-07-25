@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 
 private val CANONICAL_NAME_REGEX_PATTERN = Regex("""\(([a-zA-Z]+(\.[a-zA-Z]+)+(\.[a-zA-Z0-9_]+))\)""")
+
 /**
  * Extracts canonical names from the given item using regex.
  *
@@ -40,11 +41,7 @@ fun collectProblems(project: Project, editor: Editor, element: PsiElement): Stri
     }
 
     val commentSymbol = commentPrefix(element)
-    // remove dupcliated descriptions
-    errors = errors.distinct().toMutableList()
-    return errors.joinToString("\n") {
-        "$commentSymbol - $it"
-    }
+    return errors.distinct().joinToString("\n") { "$commentSymbol - $it" }
 }
 
 /**
