@@ -10,10 +10,10 @@ prompt.
 
 ## How to use
 
-create a folder named `prompt/genius` in your project root directory, then create the prompt file which defined in
+create a folder named `prompt/` in your project root directory, then create the prompt file which defined in
 Supported Action.
 
-For example, create a file named `prompts/genius/sql/sql-gen-clarify.vm`, will override the clarify prompt of AutoSQL/GenSQL
+For example, create a file named `prompts/sql/sql-gen-clarify.vm`, will override the clarify prompt of AutoSQL/GenSQL
 
 ## Supported Action
 
