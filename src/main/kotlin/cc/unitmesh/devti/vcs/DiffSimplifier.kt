@@ -32,6 +32,17 @@ class DiffSimplifier(val project: Project) {
         try {
             val writer = StringWriter()
             val basePath = project.basePath ?: throw RuntimeException("Project base path is null.")
+            val binaryOrTooLargeChanges: List<String> = changes.stream()
+                .filter { change -> isBinaryOrTooLarge(change!!) }
+                .map {
+                    when(it.type) {
+                        Change.Type.NEW -> "new file ${it.afterRevision?.file?.path}"
+                        Change.Type.DELETED -> "delete file ${it.beforeRevision?.file?.path}"
+                        Change.Type.MODIFICATION -> "modify file ${it.beforeRevision?.file?.path}"
+                        Change.Type.MOVED -> "rename file from ${it.beforeRevision?.file?.path} to ${it.afterRevision?.file?.path}"
+                    }
+                }
+                .toList()
 
             val filteredChanges = changes.stream()
                 .filter { change -> !isBinaryOrTooLarge(change!!) }
@@ -71,6 +82,7 @@ class DiffSimplifier(val project: Project) {
             )
 
             originChanges = writer.toString()
+            originChanges += binaryOrTooLargeChanges.joinToString("\n")
             return postProcess(originChanges)
         } catch (e: Exception) {
             if (originChanges.isNotEmpty()) {
