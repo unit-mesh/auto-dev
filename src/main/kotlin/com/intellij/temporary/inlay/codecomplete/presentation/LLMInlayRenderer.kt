@@ -5,7 +5,6 @@ import com.intellij.openapi.editor.EditorCustomElementRenderer
 import com.intellij.openapi.editor.Inlay
 import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.temporary.inlay.presentation.LLMTextInlayPainter
-import org.apache.commons.lang.StringUtils
 import org.jetbrains.annotations.NonNls
 import java.awt.Graphics
 import java.awt.Rectangle
@@ -13,30 +12,15 @@ import java.awt.Rectangle
 class LLMInlayRenderer(editor: Editor, lines: List<String?>) : EditorCustomElementRenderer {
     private val lines: List<String>
     private val content: String
-    fun setCachedWidth(cachedWidth: Int) {
-        this.cachedWidth = cachedWidth
-    }
-
-    private val textAttributes: TextAttributes
-    private var inlay: Inlay<EditorCustomElementRenderer>? = null
-    fun setCachedHeight(cachedHeight: Int) {
-        this.cachedHeight = cachedHeight
-    }
-
-    fun getLines(): List<String> {
-        return lines
-    }
-
-    fun getContent(): String {
-        return content
-    }
-
     private var cachedWidth = -1
     private var cachedHeight = -1
 
+    private val textAttributes: TextAttributes
+    private var inlay: Inlay<EditorCustomElementRenderer>? = null
+
     init {
         this.lines = PresentationUtil.replaceLeadingTabs(lines, 4)
-        content = StringUtils.join(lines, "\n")
+        content = lines.joinToString("\n")
         textAttributes = PresentationUtil.getTextAttributes(editor)
     }
 
@@ -46,10 +30,6 @@ class LLMInlayRenderer(editor: Editor, lines: List<String?>) : EditorCustomEleme
 
     fun setInlay(inlay: Inlay<EditorCustomElementRenderer>) {
         this.inlay = inlay
-    }
-
-    fun getContentLines(): List<String> {
-        return lines
     }
 
     override fun getContextMenuGroupId(inlay: Inlay<*>): @NonNls String {

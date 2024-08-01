@@ -6,7 +6,6 @@ import cc.unitmesh.devti.util.parser.Code
 import cc.unitmesh.devti.util.parser.PostCodeProcessor
 import com.intellij.injected.editor.EditorWindow
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
@@ -15,7 +14,6 @@ import com.intellij.openapi.editor.Inlay
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.impl.ImaginaryEditor
 import com.intellij.openapi.editor.impl.InlayModelImpl
-import com.intellij.openapi.fileEditor.FileDocumentSynchronizationVetoer
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
@@ -136,9 +134,7 @@ class LLMInlayManagerImpl : LLMInlayManager {
         val inlays = collectInlays(editor, tabRange.startOffset, tabRange.endOffset)
         if (inlays.isEmpty()) return 0
 
-        val completionCount = inlays.count {
-            it.getInlay()?.renderer?.javaClass?.name?.contains("LLMInlayRenderer") ?: false
-        }
+        val completionCount = inlays.count { it.getInlay()?.renderer is LLMInlayRenderer }
 
         if (completionCount > 0) {
             logger.debug("Completion inlays found: $completionCount")
