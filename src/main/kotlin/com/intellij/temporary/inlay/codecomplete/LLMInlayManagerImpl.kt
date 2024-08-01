@@ -14,6 +14,7 @@ import com.intellij.openapi.editor.EditorCustomElementRenderer
 import com.intellij.openapi.editor.Inlay
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.editor.impl.ImaginaryEditor
+import com.intellij.openapi.editor.impl.InlayModelImpl
 import com.intellij.openapi.fileEditor.FileDocumentSynchronizationVetoer
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
@@ -77,7 +78,7 @@ class LLMInlayManagerImpl : LLMInlayManager {
 
     @RequiresEdt
     override fun collectInlays(editor: Editor, startOffset: Int, endOffset: Int): List<LLMInlayRenderer> {
-        val model = editor.inlayModel
+        val model = editor.inlayModel as? InlayModelImpl ?: return emptyList()
 
         if (endOffset <= startOffset) return emptyList()
 
