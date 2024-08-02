@@ -79,7 +79,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     private val currentLLMParams: List<LLMParam>
         get() {
             return llmGroups[_currentSelectedEngine]
-                    ?: throw IllegalStateException("Unknown engine: ${settings.aiEngine}")
+                    ?: throw IllegalStateException("Unknown engine: ${aiEngineParam.value}")
         }
 
     private fun FormBuilder.addLLMParams(llmParams: List<LLMParam>): FormBuilder = apply {
@@ -120,10 +120,11 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
 
 
     fun applySettings(settings: AutoDevSettingsState, updateParams: Boolean = false) {
-        panel.removeAll()
-        if (updateParams) {
-            updateParams(settings)
+
+        if (updateParams && engineChanged(settings).also { updateParams(settings) }) {
+            return
         }
+        panel.removeAll()
 
         formBuilder
                 .addLLMParam(languageParam)
@@ -229,6 +230,10 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
                 settings.customEngineResponseFormat != customEngineResponseFormatParam.value ||
                 settings.customEngineRequestFormat != customEngineRequestBodyFormatParam.value ||
                 settings.delaySeconds != delaySecondsParam.value
+    }
+
+    private fun engineChanged(settings: AutoDevSettingsState): Boolean {
+        return settings.aiEngine != aiEngineParam.value
     }
 
     init {
