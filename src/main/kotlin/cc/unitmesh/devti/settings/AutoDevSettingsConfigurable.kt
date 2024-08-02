@@ -14,7 +14,7 @@ class AutoDevSettingsConfigurable : Configurable {
 
     override fun apply() = component.exportSettings(AutoDevSettingsState.getInstance())
 
-    override fun reset() = component.applySettings(AutoDevSettingsState.getInstance())
+    override fun reset() = component.applySettings(AutoDevSettingsState.getInstance(), true)
     override fun getPreferredFocusedComponent(): JComponent? = null
 
     @Nullable
