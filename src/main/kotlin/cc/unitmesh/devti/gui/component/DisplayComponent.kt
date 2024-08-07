@@ -1,11 +1,11 @@
 package cc.unitmesh.devti.gui.component
 
-import com.intellij.openapi.util.text.StringUtil
 import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.UIUtil
 import javax.accessibility.AccessibleContext
 import javax.swing.JEditorPane
 import org.apache.commons.text.StringEscapeUtils
+import org.jsoup.Jsoup
 
 class DisplayComponent(question: String) : JEditorPane() {
     init {
