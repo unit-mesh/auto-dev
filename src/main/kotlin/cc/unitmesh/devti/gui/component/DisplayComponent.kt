@@ -5,6 +5,7 @@ import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.UIUtil
 import javax.accessibility.AccessibleContext
 import javax.swing.JEditorPane
+import org.apache.commons.text.StringEscapeUtils
 
 class DisplayComponent(question: String) : JEditorPane() {
     init {
@@ -16,8 +17,7 @@ class DisplayComponent(question: String) : JEditorPane() {
         this.text = question
         this.isOpaque = false
         this.putClientProperty(
-            AccessibleContext.ACCESSIBLE_NAME_PROPERTY,
-            StringUtil.unescapeXmlEntities(StringUtil.stripHtml(question, " "))
+            AccessibleContext.ACCESSIBLE_NAME_PROPERTY, stripHtmlAndUnescapeXmlEntities(question)
         )
 
         if (this.caret != null) {
@@ -27,5 +27,12 @@ class DisplayComponent(question: String) : JEditorPane() {
 
     fun updateMessage(content: String) {
         this.text = content
+    }
+
+    private fun stripHtmlAndUnescapeXmlEntities(input: String): String {
+        // 使用 Jsoup 去除HTML标签
+        val text = Jsoup.parse(input).text()
+        // 使用 Apache Commons Text 解码XML实体
+        return StringEscapeUtils.unescapeXml(text)
     }
 }
