@@ -30,9 +30,7 @@ class DisplayComponent(question: String) : JEditorPane() {
     }
 
     private fun stripHtmlAndUnescapeXmlEntities(input: String): String {
-        // 使用 Jsoup 去除HTML标签
         val text = Jsoup.parse(input).text()
-        // 使用 Apache Commons Text 解码XML实体
         return StringEscapeUtils.unescapeXml(text)
     }
 }

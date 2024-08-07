@@ -434,6 +434,8 @@ project(":") {
         // token count
         implementation("com.knuddels:jtokkit:1.0.0")
 
+        implementation("org.apache.commons:commons-text:1.12.0")
+
         // junit
         testImplementation("io.kotest:kotest-assertions-core:5.7.2")
         testImplementation("junit:junit:4.13.2")
