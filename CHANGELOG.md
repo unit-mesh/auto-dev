@@ -1,16 +1,28 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v1.8.7-RELEASE...v) (2024-06-13)
+# [](https://github.com/unit-mesh/auto-dev/compare/v1.8.8...v) (2024-08-07)
 
 ## [Unreleased]
 
-## [1.8.7-RELEASE](https://github.com/unit-mesh/auto-dev/compare/v1.8.7-SNAPSHOT...v[1.8.7-RELEASE]) (2024-06-13)
+## [1.8.8](https://github.com/unit-mesh/auto-dev/compare/v1.8.7-RELEASE...v[1.8.8]) (2024-08-07)
 
 ### Bug Fixes
-- **java:** simplify JavaVersionProvider isApplicable method ([4c20a81](https://github.com/unit-mesh/auto-dev/commit/4c20a8123cbc19459548cb1732392463eae2e210))
+- **codecomplete:** handle empty range in collectInlays function ([48901f8](https://github.com/unit-mesh/auto-dev/commit/48901f8ae6f53982da2ae3bfc88b6d6547557cde))
+- **devti:** fix response body handling in ResponseBodyCallback [#209](https://github.com/unit-mesh/auto-dev/issues/209) ([cef9581](https://github.com/unit-mesh/auto-dev/commit/cef958174117dd609edbab6c52b789b29cb19c70))
+- Failed to reset on the autoDevSettings UI ([8b16443](https://github.com/unit-mesh/auto-dev/commit/8b164436c39a19467e3bc4c23a44d84fab89baae))
+- fix import ([50f3c8b](https://github.com/unit-mesh/auto-dev/commit/50f3c8be3d1ee8183e28c569376db87066e2b55f))
+- **LLMInlayManager:** use InlayModelImpl for inlay model ([86d0840](https://github.com/unit-mesh/auto-dev/commit/86d08408a031f29ce28743b703932bea9f2ef876))
+- wrong trigger when user typing from code. ([08f8fbb](https://github.com/unit-mesh/auto-dev/commit/08f8fbb5a9ed06337f22b1a2a852969fa472edeb))
 
-## [1.8.7-SNAPSHOT](https://github.com/unit-mesh/auto-dev/compare/v1.8.6-RELEASE...v[1.8.7-SNAPSHOT]) (2024-06-06)
+### Features
+- **diff-simplifier:** Include binary or large changes in output ([8fc6255](https://github.com/unit-mesh/auto-dev/commit/8fc625507fae4fa26c39d6963fa23c87f06662f3))
+- **JavaAutoTestService:** update cocoa-core dependency and remove unused import ([56a6fa3](https://github.com/unit-mesh/auto-dev/commit/56a6fa37a1eb65d6439033a7b2c3cc0dc9ae51c0))
+- **service:** add support for creating Maven run configuration [#164](https://github.com/unit-mesh/auto-dev/issues/164) ([cdc003a](https://github.com/unit-mesh/auto-dev/commit/cdc003ae040cbaa20898a3f891295852c4b6f969))
+- **smartpaste:** add SmartCopyPasteProcessor ([4b427b4](https://github.com/unit-mesh/auto-dev/commit/4b427b46cb861544f79cd9e10ae5e5ab66e80677))
+
+## [1.8.7-RELEASE](https://github.com/unit-mesh/auto-dev/compare/v1.8.6-RELEASE...v[1.8.7-RELEASE]) (2024-06-13)
 
 ### Bug Fixes
 - **context:** handle exceptions in ClassContextProvider [#199](https://github.com/unit-mesh/auto-dev/issues/199) ([347c452](https://github.com/unit-mesh/auto-dev/commit/347c4522a1b682f5300aaa1372c1592ef243bf58))
+- **java:** simplify JavaVersionProvider isApplicable method ([4c20a81](https://github.com/unit-mesh/auto-dev/commit/4c20a8123cbc19459548cb1732392463eae2e210))
 
 ### Features
 - **api-test:** add API test request generation template [#198](https://github.com/unit-mesh/auto-dev/issues/198) ([177a66c](https://github.com/unit-mesh/auto-dev/commit/177a66ce551564747a035cbac75b6d0762fe6850))
@@ -1615,9 +1627,10 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.8.7-RELEASE...HEAD
-[1.8.7-SNAPSHOT]: https://github.com/unit-mesh/auto-dev/compare/v1.8.6-RELEASE...v1.8.7-SNAPSHOT
-[1.8.7-RELEASE]: https://github.com/unit-mesh/auto-dev/compare/v1.8.7-SNAPSHOT...v1.8.7-RELEASE
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.8.8-RELEASE...HEAD
+[1.8.8]: https://github.com/unit-mesh/auto-dev/compare/v1.8.7-RELEASE...v1.8.8
+[1.8.8-RELEASE]: https://github.com/unit-mesh/auto-dev/compare/v1.8.8...v1.8.8-RELEASE
+[1.8.7-RELEASE]: https://github.com/unit-mesh/auto-dev/compare/v1.8.6-RELEASE...v1.8.7-RELEASE
 [1.8.6-SNAPSHOT]: https://github.com/unit-mesh/auto-dev/compare/v1.8.5-RC...v1.8.6-SNAPSHOT
 [1.8.6-RELEASE]: https://github.com/unit-mesh/auto-dev/compare/v1.8.6-SNAPSHOT...v1.8.6-RELEASE
 [1.8.5-RC]: https://github.com/unit-mesh/auto-dev/compare/v1.8.4-RC...v1.8.5-RC
