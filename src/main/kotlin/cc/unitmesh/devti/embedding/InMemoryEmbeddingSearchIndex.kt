@@ -27,7 +27,7 @@ import kotlin.to
  */
 class InMemoryEmbeddingSearchIndex(root: Path, limit: Int? = null) : EmbeddingSearchIndex {
     private var idToEmbedding: MutableMap<String, FloatArray> = CollectionFactory.createSmallMemoryFootprintMap()
-    private val uncheckedIds: MutableSet<String> = ConcurrentCollectionFactory.createConcurrentSet()
+    private val uncheckedIds: MutableSet<String> = java.util.concurrent.ConcurrentHashMap.newKeySet()
     private val lock = ReentrantReadWriteLock()
 
     private val fileManager = LocalEmbeddingIndexFileManager(root)
