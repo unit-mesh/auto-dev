@@ -1,8 +1,6 @@
 // Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package cc.unitmesh.devti.embedding
 
-
-import com.intellij.concurrency.ConcurrentCollectionFactory
 import com.intellij.util.containers.CollectionFactory
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
@@ -20,7 +18,8 @@ import kotlin.concurrent.write
 class DiskSynchronizedEmbeddingSearchIndex(val root: Path, limit: Int? = null) : EmbeddingSearchIndex {
     private var indexToId: MutableMap<Int, String> = CollectionFactory.createSmallMemoryFootprintMap()
     private var idToEntry: MutableMap<String, IndexEntry> = CollectionFactory.createSmallMemoryFootprintMap()
-    private val uncheckedIds: MutableSet<String> = ConcurrentCollectionFactory.createConcurrentSet()
+    private val uncheckedIds: MutableSet<String> = java.util.concurrent.ConcurrentHashMap.newKeySet()
+
     var changed: Boolean = false
 
     private val lock = ReentrantReadWriteLock()
