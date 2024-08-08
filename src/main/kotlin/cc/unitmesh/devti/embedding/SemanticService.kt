@@ -12,7 +12,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.toNioPathOrNull
 import kotlinx.coroutines.*
 import java.io.File
 import java.nio.file.Path
@@ -128,4 +127,8 @@ fun VirtualFile.canBeAdded(): Boolean {
     if (this.fileType.isBinary || FileUtilRt.isTooLarge(this.length)) return false
 
     return true
+}
+
+fun VirtualFile.toNioPathOrNull(): Path? {
+    return runCatching { toNioPath() }.getOrNull()
 }
