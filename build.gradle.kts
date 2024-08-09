@@ -182,36 +182,38 @@ allprojects {
     val testOutput = configurations.create("testOutput")
 
     if(this.name != "ext-terminal") {
-    sourceSets {
-        main {
-            java.srcDirs("src/gen")
-            if (platformVersion == 241) {
-                resources.srcDirs("src/233/main/resources")
-            }
-            resources.srcDirs("src/$platformVersion/main/resources")
-        }
-        test {
-            resources.srcDirs("src/$platformVersion/test/resources")
-        }
-    }
-    kotlin {
         sourceSets {
             main {
-                // share 233 code to 241
+                java.srcDirs("src/gen")
                 if (platformVersion == 241) {
-                    kotlin.srcDirs("src/233/main/kotlin")
+                    resources.srcDirs("src/233/main/resources")
                 }
-                kotlin.srcDirs("src/$platformVersion/main/kotlin")
+                resources.srcDirs("src/$platformVersion/main/resources")
             }
             test {
-                kotlin.srcDirs("src/$platformVersion/test/kotlin")
+                resources.srcDirs("src/$platformVersion/test/resources")
             }
         }
-    }
+        kotlin {
+            sourceSets {
+                main {
+                    // share 233 code to 241
+                    if (platformVersion == 241) {
+                        kotlin.srcDirs("src/233/main/kotlin")
+                    }
+                    kotlin.srcDirs("src/$platformVersion/main/kotlin")
+                }
+                test {
+                    kotlin.srcDirs("src/$platformVersion/test/kotlin")
+                }
+            }
+        }
     }
 
     dependencies {
         compileOnly(kotlin("stdlib-jdk8"))
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+
         testOutput(sourceSets.getByName("test").output.classesDirs)
     }
 }
@@ -725,5 +727,3 @@ fun File.isManifestFile(): Boolean {
     }
     return rootNode.name() == "idea-plugin"
 }
-
-
