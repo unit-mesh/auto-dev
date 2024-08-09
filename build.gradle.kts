@@ -212,9 +212,6 @@ allprojects {
 
     dependencies {
         compileOnly(kotlin("stdlib-jdk8"))
-
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
-
         testOutput(sourceSets.getByName("test").output.classesDirs)
     }
 }

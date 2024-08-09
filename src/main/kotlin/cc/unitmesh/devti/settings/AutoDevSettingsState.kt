@@ -55,7 +55,7 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
 
     fun fetchLocalLanguage() : String {
         //todo: refactor, this is hardcode and magic number. Maybe it needs to match with AbstractBundle.getLocale()
-        if (language.equals("中文")) return "zh"
+        if (language == "中文") return "zh"
         return "en"
     }
 
