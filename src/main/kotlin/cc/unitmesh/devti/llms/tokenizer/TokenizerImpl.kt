@@ -21,8 +21,8 @@ class TokenizerImpl : Tokenizer {
     override fun tokenize(chunk: String): IntArrayList? {
         return encoding.encode(chunk, maxTokenLength).tokens
     }
+}
 
-    companion object {
-        val INSTANCE = ApplicationManager.getApplication().getService(TokenizerImpl::class.java)
-    }
+object TokenizerFactory {
+    fun createTokenizer(): Tokenizer =  ApplicationManager.getApplication().getService(TokenizerImpl::class.java)
 }

@@ -6,7 +6,7 @@ import cc.unitmesh.devti.agent.configurable.customAgentSetting
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.agent.model.CustomAgentState
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
-import cc.unitmesh.devti.llms.tokenizer.TokenizerImpl
+import cc.unitmesh.devti.llms.tokenizer.TokenizerFactory
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -32,7 +32,6 @@ import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.components.BorderLayoutPanel
-import kotlinx.serialization.json.Json
 import java.awt.CardLayout
 import java.awt.Color
 import java.awt.Dimension
@@ -44,7 +43,6 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import kotlin.math.max
 import kotlin.math.min
-import kotlinx.serialization.decodeFromString
 
 /**
  *
@@ -65,7 +63,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     val editorListeners = EventDispatcher.create(AutoDevInputListener::class.java)
     private var tokenizer: Tokenizer? = try {
-        lazy { TokenizerImpl.INSTANCE }.value
+        lazy { TokenizerFactory.createTokenizer() }.value
     } catch (e: Exception) {
         logger.error("TokenizerImpl.INSTANCE is not available", e)
         null

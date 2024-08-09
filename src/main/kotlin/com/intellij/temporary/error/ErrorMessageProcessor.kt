@@ -1,8 +1,8 @@
 // Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.intellij.temporary.error
 
+import cc.unitmesh.devti.llms.tokenizer.TokenizerFactory
 import cc.unitmesh.devti.util.isInProject
-import cc.unitmesh.devti.llms.tokenizer.TokenizerImpl
 import cc.unitmesh.devti.prompting.TextTemplatePrompt
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.execution.filters.FileHyperlinkInfo
@@ -80,7 +80,7 @@ object ErrorMessageProcessor {
             extractErrorPlaces(project, consoleLineFrom, consoleLineTo, consoleEditor)
 
         val errorPromptBuilder =
-            ErrorPromptBuilder(AutoDevSettingsState.maxTokenLength, TokenizerImpl.INSTANCE)
+            ErrorPromptBuilder(AutoDevSettingsState.maxTokenLength, TokenizerFactory.createTokenizer())
 
         return errorPromptBuilder.buildPrompt(extractedText, extractedErrorPlaces)
     }

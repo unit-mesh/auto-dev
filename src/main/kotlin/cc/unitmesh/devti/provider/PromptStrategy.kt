@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.provider
 
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
-import cc.unitmesh.devti.llms.tokenizer.TokenizerImpl
+import cc.unitmesh.devti.llms.tokenizer.TokenizerFactory
 import cc.unitmesh.devti.prompting.CodePromptText
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.extensions.ExtensionPointName
@@ -26,7 +26,7 @@ abstract class PromptStrategy : LazyExtensionInstance<PromptStrategy>() {
     @Attribute("implementationClass")
     var implementationClass: String? = null
 
-    private val tokenizer: Tokenizer = TokenizerImpl.INSTANCE
+    private val tokenizer: Tokenizer = TokenizerFactory.createTokenizer()
 
     override fun getImplementationClassName(): String? = implementationClass
 
