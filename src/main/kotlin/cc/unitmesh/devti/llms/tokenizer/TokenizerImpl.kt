@@ -9,7 +9,8 @@ import com.knuddels.jtokkit.api.EncodingType
 import com.knuddels.jtokkit.api.IntArrayList
 
 @Service(Service.Level.APP)
-class TokenizerImpl(private val maxTokenLength: Int = 8192) : Tokenizer {
+class TokenizerImpl : Tokenizer {
+    private val maxTokenLength: Int = 16384
     private var registry: EncodingRegistry? = Encodings.newDefaultEncodingRegistry()
     private var encoding: Encoding = registry?.getEncoding(EncodingType.CL100K_BASE)!!
 
