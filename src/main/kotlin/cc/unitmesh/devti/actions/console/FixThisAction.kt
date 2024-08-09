@@ -1,11 +1,11 @@
 package cc.unitmesh.devti.actions.console
 
-import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.prompting.TextTemplatePrompt
 import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.settings.LanguageChangedCallback.presentationText
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.diagnostic.logger
@@ -16,8 +16,7 @@ import com.intellij.temporary.error.ErrorPromptBuilder
 
 class FixThisAction : ChatBaseAction() {
     init{
-        val presentation = getTemplatePresentation()
-        presentation.text = AutoDevBundle.message("settings.autodev.others.fixThis")
+        presentationText("settings.autodev.others.fixThis", templatePresentation)
     }
 
     override fun getActionType(): ChatActionType = ChatActionType.FIX_ISSUE

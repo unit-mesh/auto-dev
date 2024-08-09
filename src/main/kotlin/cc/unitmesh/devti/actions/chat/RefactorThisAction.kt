@@ -7,6 +7,7 @@ import cc.unitmesh.devti.actions.chat.base.commentPrefix
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.provider.RefactoringTool
+import cc.unitmesh.devti.settings.LanguageChangedCallback.presentationText
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -16,7 +17,7 @@ import com.intellij.psi.PsiElement
 
 open class RefactorThisAction : ChatBaseAction() {
     init {
-        getTemplatePresentation().text = AutoDevBundle.message("settings.autodev.rightClick.refactor")
+        presentationText("settings.autodev.rightClick.refactor", templatePresentation)
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT

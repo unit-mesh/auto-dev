@@ -1,13 +1,12 @@
 package cc.unitmesh.devti.actions.chat
 
-import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.settings.LanguageChangedCallback.presentationText
 
 class ExplainThisAction() : ChatBaseAction() {
     init{
-        val presentation = getTemplatePresentation()
-        presentation.text = AutoDevBundle.message("settings.autodev.rightClick.explain")
+        presentationText("settings.autodev.rightClick.explain", templatePresentation)
     }
 
     override fun getActionType(): ChatActionType = ChatActionType.EXPLAIN

@@ -3,18 +3,19 @@ package cc.unitmesh.devti.settings
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.schema.CUSTOM_AGENT_FILE_NAME
 import cc.unitmesh.devti.gui.component.JsonLanguageField
+import cc.unitmesh.devti.settings.LanguageChangedCallback.jBLabel
 import com.intellij.ide.actions.RevealFileAction
 import com.intellij.idea.LoggerFactory
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.ui.EditorTextField
-import com.intellij.ui.components.JBLabel
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.FormBuilder
 import javax.swing.JPanel
 
 class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     // 以下 LLMParam 变量不要改名，因为这些变量名会被用作配置文件的 key
-    private val languageParam by LLMParam.creating { ComboBox(settings.language, HUMAN_LANGUAGES.toList()) }
+    private val languageParam by LLMParam.creating({ LanguageChangedCallback.language = it}) {
+        ComboBox(settings.language, HUMAN_LANGUAGES.values().map { it.display }) }
     private val aiEngineParam by LLMParam.creating(onChange = { onSelectedEngineChanged() }) {
         ComboBox(settings.aiEngine, AIEngines.values().toList().map { it.name })
     }
@@ -43,9 +44,9 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
         JsonLanguageField(
             project,
             settings.customPrompts,
-            AutoDevBundle.message("autodev.custom.prompt.placeholder"),
+            AutoDevBundle.messageWithLanguageFromLLMSetting("autodev.custom.prompt.placeholder"),
             CUSTOM_AGENT_FILE_NAME
-        )
+        ).apply { LanguageChangedCallback.placeholder("autodev.custom.prompt.placeholder", this, 1) }
     }
 
     private val llmGroups = mapOf<AIEngines, List<LLMParam>>(
@@ -93,20 +94,20 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     private fun LLMParam.addToFormBuilder(formBuilder: FormBuilder) {
         when (this.type) {
             LLMParam.ParamType.Password -> {
-                formBuilder.addLabeledComponent(JBLabel(this.label), ReactivePasswordField(this) {
+                formBuilder.addLabeledComponent(jBLabel(this.label), ReactivePasswordField(this) {
                     this.text = it.value
                     this.isEnabled = it.isEditable
                 }, 1, false)
             }
 
             LLMParam.ParamType.Text -> {
-                formBuilder.addLabeledComponent(JBLabel(this.label), ReactiveTextField(this) {
+                formBuilder.addLabeledComponent(jBLabel(this.label), ReactiveTextField(this) {
                     this.isEnabled = it.isEditable
                 }, 1, false)
             }
 
             LLMParam.ParamType.ComboBox -> {
-                formBuilder.addLabeledComponent(JBLabel(this.label), ReactiveComboBox(this), 1, false)
+                formBuilder.addLabeledComponent(jBLabel(this.label), ReactiveComboBox(this), 1, false)
             }
 
             else -> {
@@ -157,7 +158,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
                 })
                 .addVerticalGap(2)
                 .addSeparator()
-                .addLabeledComponent(JBLabel("Custom Engine Prompt (Json): "), customEnginePrompt, 1, true)
+                .addLabeledComponent(jBLabel("settings.autodev.coder.customEnginePrompt", 1), customEnginePrompt, 1, true)
                 .addComponentFillVertically(JPanel(), 0)
                 .panel
 
@@ -238,5 +239,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
 
     init {
         applySettings(settings)
+        LanguageChangedCallback.language = AutoDevSettingsState.getInstance().language
     }
 }

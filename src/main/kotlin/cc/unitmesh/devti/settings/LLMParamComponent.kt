@@ -140,10 +140,7 @@ class LLMParam(
                     override fun getValue(thisRef: Any?, property: KProperty<*>): LLMParam {
                         return param ?: this@Companion.block().apply {
                             if (label.isEmpty()) {
-                                val key = "settings.${property.name}"
-                                label = runCatching {  bundle.getMessage(key) }.getOrElse {
-                                    "WARNNING-KEY:add key: settings.$key to AutoDevBundle.properties"
-                                }
+                                label = "settings.${property.name}"
                             }
 
                             this.onChange = onChange

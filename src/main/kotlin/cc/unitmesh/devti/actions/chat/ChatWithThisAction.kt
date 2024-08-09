@@ -1,9 +1,9 @@
 package cc.unitmesh.devti.actions.chat
 
-import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatWindow
+import cc.unitmesh.devti.settings.LanguageChangedCallback.presentationText
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.temporary.getElementToAction
@@ -11,8 +11,7 @@ import com.intellij.temporary.getElementToAction
 class ChatWithThisAction : ChatBaseAction() {
 
     init{
-        val presentation = getTemplatePresentation()
-        presentation.text = AutoDevBundle.message("settings.autodev.rightClick.chat")
+        presentationText("settings.autodev.rightClick.chat", templatePresentation)
     }
     override fun getActionType(): ChatActionType = ChatActionType.CHAT
 

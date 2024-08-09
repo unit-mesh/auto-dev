@@ -1,6 +1,5 @@
 package cc.unitmesh.git.actions.vcs
 
-import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
@@ -12,6 +11,7 @@ import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
 import cc.unitmesh.devti.settings.AutoDevSettingsState
+import cc.unitmesh.devti.settings.LanguageChangedCallback.presentationText
 import cc.unitmesh.devti.template.GENIUS_PRACTISES
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.template.context.TemplateContext
@@ -35,8 +35,7 @@ val githubUrlRegex: Regex = Regex("^(https?://|git://)?(www\\.)?github\\.com/[\\
 open class CodeReviewAction : ChatBaseAction() {
 
     init{
-        val presentation = getTemplatePresentation()
-        presentation.text = AutoDevBundle.message("settings.autodev.others.codeReview")
+        presentationText("settings.autodev.others.codeReview", templatePresentation)
     }
     override fun getActionType(): ChatActionType = ChatActionType.CODE_REVIEW
 
