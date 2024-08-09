@@ -64,7 +64,13 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     private val logger = logger<AutoDevInputSection>()
 
     val editorListeners = EventDispatcher.create(AutoDevInputListener::class.java)
-    private var tokenizer: Tokenizer? = null
+    private var tokenizer: Tokenizer? = try {
+        lazy { TokenizerImpl.INSTANCE }.value
+    } catch (e: Exception) {
+        logger.error("TokenizerImpl.INSTANCE is not available", e)
+        null
+    }
+
     var text: String
         get() {
             return input.text
@@ -168,8 +174,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                 this@AutoDevInputSection.initEditor()
             }
         })
-
-        tokenizer = TokenizerImpl.INSTANCE
     }
 
     fun showStopButton() {

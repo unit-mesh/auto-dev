@@ -23,7 +23,6 @@ class TokenizerImpl : Tokenizer {
     }
 
     companion object {
-        val INSTANCE =
-            ApplicationManager.getApplication().getService(TokenizerImpl::class.java)
+        val INSTANCE = ApplicationManager.getApplication().getService(TokenizerImpl::class.java)
     }
 }
