@@ -1,15 +1,15 @@
 package cc.unitmesh.devti.actions.chat
 
-import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.actions.chat.base.collectElementProblemAsSting
 import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.settings.LanguageChangedCallback.presentationText
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 
 class FixThisAction : RefactorThisAction() {
     init {
-        getTemplatePresentation().text = AutoDevBundle.message("settings.autodev.rightClick.fixthis")
+        presentationText("settings.autodev.rightClick.fixthis", templatePresentation)
     }
 
     override fun getActionType(): ChatActionType = ChatActionType.FIX_ISSUE

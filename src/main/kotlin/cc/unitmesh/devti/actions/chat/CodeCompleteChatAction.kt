@@ -1,12 +1,12 @@
 package cc.unitmesh.devti.actions.chat
 
-import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.ChatContext
 import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.settings.LanguageChangedCallback.presentationText
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -20,8 +20,7 @@ import com.intellij.temporary.getElementToAction
 class CodeCompleteChatAction : AnAction() {
 
     init{
-        val presentation = getTemplatePresentation()
-        presentation.text = AutoDevBundle.message("settings.autodev.others.codeComplete")
+        presentationText("settings.autodev.others.codeComplete", templatePresentation)
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {

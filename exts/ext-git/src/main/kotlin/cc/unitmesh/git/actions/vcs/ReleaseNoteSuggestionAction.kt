@@ -1,11 +1,11 @@
 package cc.unitmesh.git.actions.vcs
 
-import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.settings.LanguageChangedCallback.presentationText
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.vcs.log.VcsLogDataKeys
@@ -14,8 +14,7 @@ import com.intellij.vcs.log.VcsLogDataKeys
 class ReleaseNoteSuggestionAction : AnAction() {
 
     init{
-        val presentation = getTemplatePresentation()
-        presentation.text = AutoDevBundle.message("settings.autodev.others.generateReleaseNote")
+        presentationText("settings.autodev.others.generateReleaseNote", templatePresentation)
     }
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return

@@ -4,6 +4,9 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.schema.INLAY_PROMPTS_FILE_NAME
 import cc.unitmesh.devti.fullWidthCell
 import cc.unitmesh.devti.gui.component.JsonLanguageField
+import cc.unitmesh.devti.settings.LanguageChangedCallback.placeholder
+import cc.unitmesh.devti.settings.LanguageChangedCallback.jLabel
+import cc.unitmesh.devti.settings.LanguageChangedCallback.tips
 import cc.unitmesh.devti.settings.ResponseType
 import cc.unitmesh.devti.settings.testLLMConnection
 import com.intellij.openapi.components.service
@@ -21,14 +24,14 @@ import javax.swing.JTextField
 class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable(AutoDevBundle.message("settings.autodev.coder")) {
     private val recordingInLocalCheckBox = JCheckBox()
     private val disableAdvanceContextCheckBox = JCheckBox().apply {
-        toolTipText = AutoDevBundle.message("settings.autodev.coder.disableAdvanceContext.tips")
+        tips("settings.autodev.coder.disableAdvanceContext.tips", this)
     }
     private val inEditorCompletionCheckBox = JCheckBox()
     private val noChatHistoryCheckBox = JCheckBox()
 
     private val useCustomAIEngineWhenInlayCodeComplete = JCheckBox()
         .apply {
-            toolTipText = "You can use custom LLM to inlay complete code."
+            tips("settings.autodev.coder.useCustomAIEngineWhenInlayCodeComplete.tips", this)
         }
     private val maxTokenLengthParam = JTextField()
     private val delaySecondsParam: JTextField = JTextField()
@@ -37,13 +40,14 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
     private val customEngineRequestBodyFormatParam = JTextField()
     private val customEngineServerParam = JTextField()
     private val customEngineTokenParam = JPasswordField()
-    private val customEnginePrompt = JsonLanguageField(project, "", "Custom your prompt here",  INLAY_PROMPTS_FILE_NAME)
+    private val customEnginePrompt = JsonLanguageField(project, "", AutoDevBundle.messageWithLanguageFromLLMSetting("autodev.custom.prompt.placeholder"),  INLAY_PROMPTS_FILE_NAME)
+        .apply { placeholder("autodev.custom.prompt.placeholder", this, 2) }
 
     val settings = project.service<AutoDevCoderSettingService>()
     val state = settings.state.copy()
 
     override fun createPanel(): DialogPanel = panel {
-        row(AutoDevBundle.message("settings.autodev.coder.recordingInLocal")) {
+        row(jLabel("settings.autodev.coder.recordingInLocal")) {
             fullWidthCell(recordingInLocalCheckBox)
                 .bind(
                     componentGet = { it.isSelected },
@@ -52,7 +56,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(AutoDevBundle.message("settings.autodev.coder.disableAdvanceContext")) {
+        row(jLabel("settings.autodev.coder.disableAdvanceContext")) {
             fullWidthCell(disableAdvanceContextCheckBox)
                 .bind(
                     componentGet = { it.isSelected },
@@ -61,7 +65,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(AutoDevBundle.message("settings.autodev.coder.noChatHistory")) {
+        row(jLabel("settings.autodev.coder.noChatHistory")) {
             fullWidthCell(noChatHistoryCheckBox)
                 .bind(
                     componentGet = { it.isSelected },
@@ -70,7 +74,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(AutoDevBundle.message("settings.autodev.coder.inEditorCompletion")) {
+        row(jLabel("settings.autodev.coder.inEditorCompletion")) {
             fullWidthCell(inEditorCompletionCheckBox)
                 .bind(
                     componentGet = { it.isSelected },
@@ -79,7 +83,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(AutoDevBundle.message("settings.autodev.coder.enableRenameSuggestion")) {
+        row(jLabel("settings.autodev.coder.enableRenameSuggestion")) {
             fullWidthCell(JCheckBox())
                 .bind(
                     componentGet = { it.isSelected },
@@ -88,7 +92,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(AutoDevBundle.message("settings.autodev.coder.useCustomAIEngineWhenInlayCodeComplete")) {
+        row(jLabel("settings.autodev.coder.useCustomAIEngineWhenInlayCodeComplete")) {
             fullWidthCell(useCustomAIEngineWhenInlayCodeComplete)
                 .bind(
                     componentGet = { it.isSelected },
@@ -97,7 +101,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(AutoDevBundle.message("settings.autodev.coder.delaySecondsParam")) {
+        row(jLabel("settings.autodev.coder.delaySecondsParam")) {
             fullWidthCell(delaySecondsParam)
                 .bind(
                     componentGet = { it.text },
@@ -106,7 +110,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(AutoDevBundle.message("settings.autodev.coder.maxTokenLengthParam")) {
+        row(jLabel("settings.autodev.coder.maxTokenLengthParam")) {
             fullWidthCell(maxTokenLengthParam)
                 .bind(
                     componentGet = { it.text },
@@ -115,7 +119,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(AutoDevBundle.message("settings.autodev.coder.customEngineResponseTypeParam")) {
+        row(jLabel("settings.autodev.coder.customEngineResponseTypeParam")) {
             fullWidthCell(customEngineResponseTypeParam)
                 .bind(
                     componentGet = { it.selectedItem?.toString() ?: ResponseType.SSE.name },
@@ -124,7 +128,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(AutoDevBundle.message("settings.autodev.coder.customEngineResponseFormatParam")) {
+        row(jLabel("settings.autodev.coder.customEngineResponseFormatParam")) {
             fullWidthCell(customEngineResponseFormatParam)
                 .bind(
                     componentGet = { it.text },
@@ -133,7 +137,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(AutoDevBundle.message("settings.autodev.coder.customEngineRequestBodyFormatParam")) {
+        row(jLabel("settings.autodev.coder.customEngineRequestBodyFormatParam")) {
             fullWidthCell(customEngineRequestBodyFormatParam)
                 .bind(
                     componentGet = { it.text },
@@ -142,7 +146,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(AutoDevBundle.message("settings.autodev.coder.customEngineServerParam")) {
+        row(jLabel("settings.autodev.coder.customEngineServerParam")) {
             fullWidthCell(customEngineServerParam)
                 .bind(
                     componentGet = { it.text },
@@ -150,7 +154,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                     prop = state::customEngineServerParam.toMutableProperty()
                 )
         }
-        row(AutoDevBundle.message("settings.autodev.coder.customEngineTokenParam")) {
+        row(jLabel("settings.autodev.coder.customEngineTokenParam")) {
             fullWidthCell(customEngineTokenParam)
                 .bind(
                     componentGet = { it.text },
@@ -163,7 +167,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
             testLLMConnection(project)
         }
 
-        row(AutoDevBundle.message("settings.autodev.coder.customEnginePrompt")){}
+        row(jLabel("settings.autodev.coder.customEnginePrompt", 2)) {}
         row {
             fullWidthCell(customEnginePrompt)
                 .bind(

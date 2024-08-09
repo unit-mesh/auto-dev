@@ -1,17 +1,21 @@
 package cc.unitmesh.devti
 
 import cc.unitmesh.devti.settings.AutoDevSettingsState
+import cc.unitmesh.devti.settings.LanguageChangedCallback
+import com.intellij.BundleBase
 import com.intellij.DynamicBundle
-import com.intellij.openapi.diagnostic.logger
+import com.intellij.util.ArrayUtilRt
 import org.jetbrains.annotations.NonNls
 import org.jetbrains.annotations.PropertyKey
-import java.lang.invoke.MethodHandles
-import java.util.*
+import java.util.function.Supplier
 
 @NonNls
 private const val BUNDLE = "messages.AutoDevBundle"
 
 object AutoDevBundle : DynamicBundle(BUNDLE) {
+
+    private val myBundleClassLoader = AutoDevBundle::class.java.classLoader
+
     @Suppress("SpreadOperator")
     @JvmStatic
     fun message(@PropertyKey(resourceBundle = BUNDLE) key: String, vararg params: Any) = getMessage(key, *params)
@@ -21,32 +25,45 @@ object AutoDevBundle : DynamicBundle(BUNDLE) {
     fun messagePointer(@PropertyKey(resourceBundle = BUNDLE) key: String, vararg params: Any) =
         getLazyMessage(key, *params)
 
-    val log = logger<AutoDevBundle>()
-    override fun findBundle(
-        @NonNls pathToBundle: String,
-        loader: ClassLoader,
-        control: ResourceBundle.Control
-    ): ResourceBundle {
-        val base = super.findBundle(pathToBundle, loader, control)
-        // load your bundle from baseName_<language>.properties, e.g. "baseName_zh.properties"
-        val localizedPath = pathToBundle + "_" + AutoDevSettingsState.language
-        val localeBundle = super.findBundle(
-            localizedPath,
-            AutoDevBundle::class.java.getClassLoader(), control
-        )
-        if (base != localeBundle) {
-            setParent(localeBundle, base)
-            return localeBundle
-        }
-        return base
+    @Suppress("SpreadOperator")
+    @JvmStatic
+    fun messageWithLanguageFromLLMSetting(@PropertyKey(resourceBundle = BUNDLE) key: String, vararg params: Any) =
+        messageWithLanguage(key, LanguageChangedCallback.language, *params)
+
+    @Suppress("SpreadOperator")
+    @JvmStatic
+    fun messageWithLanguage(@PropertyKey(resourceBundle = BUNDLE) key: String, language: String, vararg params: Any) =
+        getMessage(key, language, *params)
+
+    @Suppress("SpreadOperator", "unused")
+    @JvmStatic
+    fun messagePointerWithLanguage(
+        @PropertyKey(resourceBundle = BUNDLE) key: String,
+        language: String,
+        vararg params: Any
+    ) = getLazyMessage(key, language, *params)
+
+    override fun getMessage(key: String, vararg params: Any?): String {
+        return getMessage(key, AutoDevSettingsState.language, *params)
     }
-    private fun setParent(localeBundle: ResourceBundle, base: ResourceBundle) {
-        try {
-            val method = ResourceBundle::class.java.getDeclaredMethod("setParent", ResourceBundle::class.java)
-            method.isAccessible = true
-            MethodHandles.lookup().unreflect(method).bindTo(localeBundle).invoke(base)
-        } catch (e: Throwable) {
-            log.error("Failed to set parent", e)
-        }
+
+    override fun getLazyMessage(key: String, vararg params: Any?): Supplier<String> {
+        return getLazyMessage(key, AutoDevSettingsState.language, *params)
+    }
+
+    private fun getMessage(key: String, language: String, vararg params: Any?): String {
+        return BundleBase.messageOrDefault(
+            getResourceBundle(myBundleClassLoader, buildPathToBundle(language)),
+            key,
+            null,
+            *params
+        )
+    }
+
+    private fun getLazyMessage(key: String, language: String, vararg params: Any?): Supplier<String> =
+        Supplier { getMessage(key, language, if (params.size == 0) ArrayUtilRt.EMPTY_OBJECT_ARRAY else params); }
+
+    private fun buildPathToBundle(language: String): String {
+        return BUNDLE + "_" + language;
     }
 }

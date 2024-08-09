@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.actions.quick
 
-import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.TeamPromptBaseIntention
 import cc.unitmesh.devti.custom.team.TeamPromptAction
 import cc.unitmesh.devti.custom.team.TeamPromptsBuilder
@@ -9,6 +8,7 @@ import cc.unitmesh.devti.gui.quick.QuickPromptField.Companion.QUICK_ASSISTANT_CA
 import cc.unitmesh.devti.gui.quick.QuickPromptField.Companion.QUICK_ASSISTANT_SUBMIT_ACTION
 import cc.unitmesh.devti.intentions.action.task.BaseCompletionTask
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
+import cc.unitmesh.devti.settings.LanguageChangedCallback.presentationText
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.service
@@ -34,8 +34,7 @@ import javax.swing.AbstractAction
  */
 open class QuickAssistantAction : AnAction() {
     init{
-        val presentation = getTemplatePresentation()
-        presentation.text = AutoDevBundle.message("settings.autodev.others.quickAssistant")
+        presentationText("settings.autodev.others.quickAssistant", templatePresentation)
     }
 
     override fun actionPerformed(e: AnActionEvent) {

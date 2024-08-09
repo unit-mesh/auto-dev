@@ -2,6 +2,7 @@ package cc.unitmesh.devti.settings.custom
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.fullWidthCell
+import cc.unitmesh.devti.settings.LanguageChangedCallback.jLabel
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.Project
@@ -17,7 +18,7 @@ class PromptLibraryConfigurable(project: Project) : BoundConfigurable(AutoDevBun
     val state = settings.state.copy()
 
     override fun createPanel(): DialogPanel = panel {
-        row(AutoDevBundle.message("settings.external.team.prompts.path")) {
+        row(jLabel("settings.external.team.prompts.path")) {
             fullWidthCell(teamPromptsField)
                 .bind(
                     componentGet = { it.text },

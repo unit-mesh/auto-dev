@@ -1,16 +1,15 @@
 package cc.unitmesh.devti.actions.chat
 
-import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.settings.LanguageChangedCallback.presentationText
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 
 class GenerateApiTestAction : ChatBaseAction() {
     init {
-        val presentation = getTemplatePresentation()
-        presentation.text = AutoDevBundle.message("settings.autodev.rightClick.genApiTest")
+        presentationText("settings.autodev.rightClick.genApiTest", templatePresentation)
     }
 
     override fun getActionType(): ChatActionType = ChatActionType.GENERATE_TEST_DATA

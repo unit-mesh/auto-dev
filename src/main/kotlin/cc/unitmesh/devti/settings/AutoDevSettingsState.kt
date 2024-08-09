@@ -55,10 +55,8 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
 
     fun fetchMaxTokenLength(): Int = maxTokenLength.toIntOrNull() ?: MAX_TOKEN_LENGTH
 
-    fun fetchLocalLanguage() : String {
-        //todo: refactor, this is hardcode and magic number. Maybe it needs to match with AbstractBundle.getLocale()
-        if (language == "中文") return "zh"
-        return "en"
+    fun fetchLocalLanguage(display: String = language) : String {
+        return HUMAN_LANGUAGES.getAbbrByDispay(display)
     }
 
     @Synchronized
