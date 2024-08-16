@@ -2,9 +2,11 @@ package cc.unitmesh.devti.settings
 
 import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.components.JBPasswordField
 import com.intellij.ui.components.JBTextField
 import java.awt.event.ItemEvent
+import javax.swing.event.DocumentEvent
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
@@ -38,9 +40,9 @@ fun ReactiveTextField(param: LLMParam, initBlock: JBTextField.(LLMParam) -> Unit
 
     component.initBlock(reactive)
 
-    component.document.addUndoableEditListener {
+    component.document.addDocumentListener(CustomDocumentListener{
         param.value = component.text
-    }
+    })
     return component
 }
 
@@ -53,10 +55,10 @@ fun ReactivePasswordField(param: LLMParam, initBlock: JBPasswordField.(LLMParam)
     }
 
     component.initBlock(reactive.value)
-    component.document.addUndoableEditListener {
-        if (component.password.joinToString("") == param.value) return@addUndoableEditListener
+    component.document.addDocumentListener(CustomDocumentListener{
+        if (component.password.joinToString("") == param.value) return@CustomDocumentListener
         reactive.value.value = component.password.joinToString("")
-    }
+    })
 
     return component
 }
@@ -76,6 +78,12 @@ fun ReactiveComboBox(param: LLMParam, initBlock: ComboBox<String>.(LLMParam) -> 
         }
     }
     return component
+}
+
+class CustomDocumentListener(val onChange: () -> Unit) : DocumentAdapter() {
+    override fun textChanged(e: DocumentEvent) {
+        onChange()
+    }
 }
 
 
