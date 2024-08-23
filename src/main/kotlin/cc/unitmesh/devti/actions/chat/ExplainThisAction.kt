@@ -1,10 +1,10 @@
 package cc.unitmesh.devti.actions.chat
 
-import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
+import cc.unitmesh.devti.actions.chat.base.ChatCheckForUpdateAction
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.settings.LanguageChangedCallback.presentationText
 
-class ExplainThisAction() : ChatBaseAction() {
+class ExplainThisAction() : ChatCheckForUpdateAction() {
     init{
         presentationText("settings.autodev.rightClick.explain", templatePresentation)
     }

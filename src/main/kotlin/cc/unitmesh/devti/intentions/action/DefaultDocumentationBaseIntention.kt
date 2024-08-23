@@ -7,6 +7,7 @@ import cc.unitmesh.devti.provider.LivingDocumentation
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
+import com.intellij.psi.util.PsiUtilBase
 
 class DefaultDocumentationBaseIntention: BasedDocumentationBaseIntention() {
     override val config: CustomDocumentationConfig = CustomDocumentationConfig.default()
@@ -16,9 +17,12 @@ class DefaultDocumentationBaseIntention: BasedDocumentationBaseIntention() {
     override fun getFamilyName(): String = AutoDevBundle.message("intentions.living.documentation.family.name")
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
-        if (editor == null || file == null) return false
+        if (editor == null || file == null || !file.isWritable) return false
 
-        val livingDocumentation = LivingDocumentation.forLanguage(file.language)
-        return livingDocumentation != null
+        return LivingDocumentation.forLanguage(file.language)?.let {
+            editor.selectionModel.selectedText != null || PsiUtilBase.getElementAtCaret(editor)?.run {
+                it.findNearestDocumentationTarget(this) != null
+            } ?: false
+        } ?: false
     }
 }

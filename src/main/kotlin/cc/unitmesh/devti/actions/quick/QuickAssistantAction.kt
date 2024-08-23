@@ -37,6 +37,13 @@ open class QuickAssistantAction : AnAction() {
         presentationText("settings.autodev.others.quickAssistant", templatePresentation)
     }
 
+    override fun getActionUpdateThread() = ActionUpdateThread.BGT
+
+    override fun update(e: AnActionEvent) {
+        e.presentation.isEnabled = e.getData(CommonDataKeys.PSI_FILE)?.isWritable ?: false
+    }
+
+
     override fun actionPerformed(e: AnActionEvent) {
         val dataContext = e.dataContext
         val editor = dataContext.getData(CommonDataKeys.EDITOR) ?: return

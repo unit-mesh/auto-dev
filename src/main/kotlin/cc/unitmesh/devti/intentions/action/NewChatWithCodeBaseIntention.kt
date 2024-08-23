@@ -17,7 +17,7 @@ class NewChatWithCodeBaseIntention : ChatBaseIntention() {
     override fun getFamilyName(): String = AutoDevBundle.message("intentions.chat.new.family.name")
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
-        if (editor == null || file == null) return false
+        if (editor == null || file == null || getElementToAction(project, editor)?.text?.isBlank() ?: true) return false
 
         this.title = computeTitle(project, file, getCurrentSelectionAsRange(editor))
         return true

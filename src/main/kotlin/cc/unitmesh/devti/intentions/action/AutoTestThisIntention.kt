@@ -21,7 +21,7 @@ class AutoTestThisIntention : ChatBaseIntention() {
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         val psiElement = file?.originalElement ?: return false
         val service = AutoTestService.context(psiElement)
-        return service != null
+        return service != null && getElementToAction(project, editor)?.text?.isNotBlank() ?: false
     }
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {

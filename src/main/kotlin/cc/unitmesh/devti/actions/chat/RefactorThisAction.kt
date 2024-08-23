@@ -1,39 +1,29 @@
 package cc.unitmesh.devti.actions.chat
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
+import cc.unitmesh.devti.actions.chat.base.ChatCheckForUpdateAction
 import cc.unitmesh.devti.actions.chat.base.collectProblems
 import cc.unitmesh.devti.actions.chat.base.commentPrefix
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.provider.RefactoringTool
 import cc.unitmesh.devti.settings.LanguageChangedCallback.presentationText
-import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 
-open class RefactorThisAction : ChatBaseAction() {
+open class RefactorThisAction : ChatCheckForUpdateAction() {
     init {
         presentationText("settings.autodev.rightClick.refactor", templatePresentation)
     }
 
-    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
     override fun getActionType(): ChatActionType = ChatActionType.REFACTOR
     override fun update(e: AnActionEvent) {
-        val editor = e.getData(CommonDataKeys.EDITOR)
         val file = e.getData(CommonDataKeys.PSI_FILE)
-        val project = e.getData(CommonDataKeys.PROJECT)
-
-        if (editor == null || file == null || project == null) {
-            e.presentation.isEnabled = false
-            return
-        }
-
-        if (file.isWritable) {
-            e.presentation.isEnabled = true
+        if (file != null && file.isWritable) {
+            super.update(e)
             return
         }
 
