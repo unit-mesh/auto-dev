@@ -11,8 +11,9 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
+import java.util.function.Supplier
 
-class IntentionsActionGroup : ActionGroup(AutoDevBundle.message("intentions.assistant.name"), true), DumbAware {
+class IntentionsActionGroup : ActionGroup(Supplier { AutoDevBundle.message("intentions.assistant.name") }, true), DumbAware {
     override fun getChildren(e: AnActionEvent?): Array<AnAction> {
         val project: Project = e?.project ?: return emptyArray()
         val editor: Editor = e.getData(CommonDataKeys.EDITOR) ?: return emptyArray()

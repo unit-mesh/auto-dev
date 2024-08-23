@@ -238,8 +238,8 @@
         </group>
 
         <!-- For right click -->
-        <!-- TODO: refactor to dynamic group: https://plugins.jetbrains.com/docs/intellij/grouping-action.html#adding-child-actions-to-the-dynamic-group -->
-        <group id="org.intellij.sdk.action.GroupedActions" popup="true" text="AutoDev Chat" description="AutoDev chat">
+        <group id="autodev.groups.AutoChatDynamicActionGroup" popup="true" description="AutoDev chat"
+               class="cc.unitmesh.devti.actions.groups.AutoChatDynamicActionGroup">
             <action id="cc.unitmesh.devti.actions.chat.ExplainThisAction"
                     class="cc.unitmesh.devti.actions.chat.ExplainThisAction"
                     description="Ask AI about this code">

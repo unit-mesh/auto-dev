@@ -16,7 +16,7 @@ import com.intellij.psi.PsiFile
 
 object IntentionHelperUtil {
     val EP_NAME: ExtensionPointName<IntentionActionBean> = ExtensionPointName("cc.unitmesh.autoDevIntention")
-    fun getAiAssistantIntentions(project: Project, editor: Editor, file: PsiFile): List<IntentionAction> {
+    fun getAiAssistantIntentions(project: Project, editor: Editor?, file: PsiFile): List<IntentionAction> {
         val extensionList = EP_NAME.extensionList
 
         val builtinIntentions = extensionList

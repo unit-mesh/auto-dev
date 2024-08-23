@@ -22,6 +22,7 @@ class AutoDevIntentionHelper : IntentionAction, Iconable {
 
         val instance = InjectedLanguageManager.getInstance(project)
         return instance.getTopLevelFile(file)?.virtualFile != null
+                && IntentionHelperUtil.getAiAssistantIntentions(project, editor, file).isNotEmpty()
     }
 
     override fun invoke(project: Project, editor: Editor, file: PsiFile) {
