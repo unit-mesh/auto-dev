@@ -52,16 +52,13 @@ object AutoDevBundle : DynamicBundle(BUNDLE) {
     }
 
     private fun getMessage(key: String, language: String, vararg params: Any?): String {
-        return BundleBase.messageOrDefault(
-            getResourceBundle(myBundleClassLoader, buildPathToBundle(language)),
-            key,
-            null,
-            *params
-        )
+        val resourceBundle = getResourceBundle(myBundleClassLoader, buildPathToBundle(language))
+        return BundleBase.messageOrDefault(resourceBundle, key, null, *params)
     }
 
-    private fun getLazyMessage(key: String, language: String, vararg params: Any?): Supplier<String> =
-        Supplier { getMessage(key, language, if (params.size == 0) ArrayUtilRt.EMPTY_OBJECT_ARRAY else params); }
+    private fun getLazyMessage(key: String, language: String, vararg params: Any?): Supplier<String> = Supplier {
+        getMessage(key, language, if (params.isEmpty()) ArrayUtilRt.EMPTY_OBJECT_ARRAY else params);
+    }
 
     private fun buildPathToBundle(language: String): String {
         return BUNDLE + "_" + language;
