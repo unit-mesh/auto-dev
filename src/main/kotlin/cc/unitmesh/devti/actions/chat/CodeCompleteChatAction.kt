@@ -14,7 +14,6 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.IndexNotReadyException
-import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.temporary.getElementToAction
 
 class CodeCompleteChatAction : AnAction() {

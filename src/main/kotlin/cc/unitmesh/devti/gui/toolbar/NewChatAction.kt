@@ -1,13 +1,12 @@
 package cc.unitmesh.devti.gui.toolbar
 
-import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
+import cc.unitmesh.devti.settings.LanguageChangedCallback.componentStateChanged
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.DumbAwareAction
-import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.components.panels.Wrapper
 import com.intellij.util.ui.JBInsets
 import com.intellij.util.ui.JBUI
@@ -20,8 +19,7 @@ class NewChatAction : DumbAwareAction(), CustomComponentAction {
     override fun actionPerformed(e: AnActionEvent) = Unit
 
     override fun createCustomComponent(presentation: Presentation, place: String): JComponent {
-        val message = AutoDevBundle.message("chat.panel.new")
-        val button: JButton = object : JButton(message) {
+        val button: JButton = object : JButton() {
             init {
                 putClientProperty("ActionToolbar.smallVariant", true)
                 putClientProperty("customButtonInsets", JBInsets(1, 1, 1, 1).asUIResource())
@@ -47,12 +45,14 @@ class NewChatAction : DumbAwareAction(), CustomComponentAction {
 
                     // change content displayName AutoDevBundle.message("autodev.chat")
                     contentManager.contents.forEach {
-                        it.displayName = AutoDevBundle.message("autodev.chat")
+                        AutoDevToolWindowFactory.setInitialDisplayName(it)
                     }
 
                     codingPanel.resetChatSession()
                 }
             }
+        }.apply {
+            componentStateChanged("chat.panel.new", this) { b, d -> b.text = d }
         }
 
         return Wrapper(button).also {

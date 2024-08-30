@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.gui.chat
 
-import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.settings.LanguageChangedCallback.placeholder
 import cc.unitmesh.devti.util.parser.Code.Companion.findLanguage
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.*
@@ -50,7 +50,7 @@ class AutoDevInput(
 
     init {
         isOneLineMode = false
-        updatePlaceholderText()
+        placeholder("chat.panel.initial.text", this)
         setFontInheritedFromLAF(true)
         addSettingsProvider {
             it.putUserData(IncrementalFindAction.SEARCH_DISABLED, true)
@@ -99,11 +99,6 @@ class AutoDevInput(
 
     override fun onEditorAdded(editor: Editor) {
         editorListeners.multicaster.editorAdded((editor as EditorEx))
-    }
-
-    private fun updatePlaceholderText() {
-        setPlaceholder(AutoDevBundle.message("chat.panel.initial.text"))
-        repaint()
     }
 
     public override fun createEditor(): EditorEx {

@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.actions.groups
 
-import cc.unitmesh.devti.settings.LanguageChangedCallback
+import cc.unitmesh.devti.settings.LanguageChangedCallback.presentationText
 import com.intellij.openapi.actionSystem.ActionGroupUtil
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -18,8 +18,7 @@ import com.intellij.openapi.project.DumbAware
 class AutoChatDynamicActionGroup : DefaultActionGroup(), DumbAware {
 
     init {
-        LanguageChangedCallback.presentationText("autodev.chat",
-            templatePresentation.also { it.isHideGroupIfEmpty = true })
+        presentationText("autodev.chat", templatePresentation.also { it.isHideGroupIfEmpty = true }, 1)
     }
 
     override fun getActionUpdateThread() = ActionUpdateThread.BGT

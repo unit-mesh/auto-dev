@@ -8,6 +8,8 @@ import cc.unitmesh.devti.agent.model.CustomAgentState
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.llms.tokenizer.TokenizerFactory
 import cc.unitmesh.devti.settings.AutoDevSettingsState
+import com.intellij.ide.IdeTooltip
+import com.intellij.ide.IdeTooltipManager
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Presentation
@@ -21,9 +23,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.ComponentValidator
 import com.intellij.openapi.ui.ValidationInfo
+import com.intellij.openapi.ui.popup.Balloon.Position
+import com.intellij.openapi.util.NlsContexts
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.impl.InternalDecorator
 import com.intellij.temporary.gui.block.AutoDevCoolBorder
+import com.intellij.ui.HintHint
 import com.intellij.ui.MutableCollectionComboBoxModel
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.components.JBLabel
@@ -35,6 +40,7 @@ import com.intellij.util.ui.components.BorderLayoutPanel
 import java.awt.CardLayout
 import java.awt.Color
 import java.awt.Dimension
+import java.awt.Point
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.util.function.Supplier
@@ -91,7 +97,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             DumbAwareAction.create {
                 object : DumbAwareAction("") {
                     override fun actionPerformed(e: AnActionEvent) {
-                        showStopButton()
                         editorListeners.multicaster.onSubmit(this@AutoDevInputSection, AutoDevInputTrigger.Button)
                     }
                 }.actionPerformed(it)
@@ -179,6 +184,19 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         stopButton.isEnabled = true
     }
 
+    fun showTooltip(text: @NlsContexts.Tooltip String) {
+        showTooltip(input, Position.above, text)
+    }
+
+    fun showTooltip(component: JComponent, position: Position, text: @NlsContexts.Tooltip String) {
+        val point = Point(component.x, component.y)
+        val tipComponent = IdeTooltipManager.initPane(
+            text, HintHint(component, point).setAwtTooltip(true).setPreferredPosition(position), null
+        )
+        val tooltip = IdeTooltip(component, point, tipComponent)
+        IdeTooltipManager.getInstance().show(tooltip, true)
+    }
+
     fun showSendButton() {
         (buttonPanel.layout as? CardLayout)?.show(buttonPanel, "Send")
         buttonPanel.isEnabled = true
@@ -254,6 +272,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         }
 
         customRag.selectedItem = defaultRag
+        text = ""
     }
 
     fun moveCursorToStart() {
