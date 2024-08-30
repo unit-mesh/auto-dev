@@ -8,6 +8,7 @@ import cc.unitmesh.devti.gui.chat.welcome.WelcomePanel
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.provider.devins.LanguagePromptProcessor
 import cc.unitmesh.devti.settings.AutoDevSettingsState
+import cc.unitmesh.devti.settings.LanguageChangedCallback.componentStateChanged
 import com.intellij.lang.html.HTMLLanguage
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.diagnostic.logger
@@ -63,8 +64,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
             }
         }
 
-        val panel = WelcomePanel()
-        myList.add(panel)
+        myList.add(WelcomePanel())
 
         myTitle.foreground = JBColor.namedColor("Label.infoForeground", JBColor(Gray.x80, Gray.x8C))
         myTitle.font = JBFont.label()
@@ -84,7 +84,9 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
 
         val actionLink = panel {
             row {
-                text(AutoDevBundle.message("label.submit.issue"))
+                text("").apply {
+                    componentStateChanged("label.submit.issue", this.component) { c, d -> c.text = d }
+                }
             }
         }
 
@@ -92,16 +94,16 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         inputSection.addListener(object : AutoDevInputListener {
             override fun onStop(component: AutoDevInputSection) {
                 chatCodingService.stop()
-                inputSection.showSendButton()
+                hiddenProgressBar()
             }
 
             override fun onSubmit(component: AutoDevInputSection, trigger: AutoDevInputTrigger) {
                 var prompt = component.text
                 component.text = ""
 
-                inputSection.showStopButton()
 
-                if (prompt.isEmpty() || prompt == "\n") {
+                if (prompt.isEmpty() || prompt.isBlank()) {
+                    component.showTooltip(AutoDevBundle.message("chat.input.tips"))
                     return
                 }
 
@@ -175,12 +177,12 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
             myList.remove(myList.componentCount - 1)
         }
 
-        progressBar.isVisible = true
+        showProgressBar()
 
         val result = updateMessageInUi(content)
 
         progressBar.isIndeterminate = false
-        progressBar.isVisible = false
+        hiddenProgressBar()
         updateUI()
 
         return result
@@ -206,10 +208,11 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
      */
     suspend fun updateReplaceableContent(content: Flow<String>, postAction: (text: String) -> Unit) {
         myList.remove(myList.componentCount - 1)
+        showProgressBar()
         val text = updateMessageInUi(content)
 
         progressBar.isIndeterminate = false
-        progressBar.isVisible = false
+        hiddenProgressBar()
         updateUI()
 
         postAction(text)
@@ -223,7 +226,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         var text = ""
         content.onCompletion {
             logger.info("onCompletion ${it?.message}")
-            inputSection.showSendButton()
+            hiddenProgressBar()
         }.catch {
             it.printStackTrace()
         }.collect {
@@ -258,9 +261,11 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
      * Resets the chat session by clearing the current session and updating the UI.
      */
     fun resetChatSession() {
+        chatCodingService.stop()
+        suggestionPanel.removeAll()
         chatCodingService.clearSession()
-        progressBar.isVisible = false
         myList.removeAll()
+        myList.add(WelcomePanel())
         this.hiddenProgressBar()
         this.resetAgent()
         updateUI()
@@ -280,6 +285,12 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
 
     fun hiddenProgressBar() {
         progressBar.isVisible = false
+        inputSection.showSendButton()
+    }
+
+    fun showProgressBar() {
+        progressBar.isVisible = true
+        inputSection.showStopButton()
     }
 
     fun removeLastMessage() {
