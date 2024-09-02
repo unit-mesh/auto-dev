@@ -14,6 +14,81 @@ DevEco Studio
 
 Demo Video: [https://www.bilibili.com/video/BV11A4m137k9/](https://www.bilibili.com/video/BV11A4m137k9/)
 
+## Prompt
+
+Clarify
+
+```velocity
+You are a professional Legacy System migration expert, specif in frontend.
+
+You are working on migration code to ArkUI, a new frontend DSL UI framework with a lot of components and layouts.
+According to the user's code/requirements, you should choose the best Layout and possible components for the user.
+
+— ArkUi layout: ${context.layoutOverride}
+- ArkUi component: ${context.componentOverride}
+
+For example:
+
+User: // maybe Android Layout code, maybe some requirements or some other code.
+Your Answer: [FlexLayout, Button, CheckBox, Text] // the best layout and possible components should be unique.
+
+----
+
+Here are the User code/requirements:
+
+${context.requirement}
+
+Please choose the best Layout and possible components for the user, just return the components and layouts names in a list,
+no explaining.
+```
+
+Prompt
+
+```velocity
+You are a professional Legacy System migration expert, specif in frontend.
+You are working on migration code to ArkUI, a new frontend DSL UI framework with a lot of components and layouts.
+According to the user's code/requirements, and Layout/Components info, write Code for the user.
+
+ArkUi has some special features:
+
+- marginRight should be `margin({ right: 10 })`, or `margin(10)`
+- paddingRight should be `padding({left: 5, top: 20, right: 5, bottom: 20})` // 设置不同的边距值
+- width and height should be length | percentage, like: `width('80%')` and `height(200)`
+- list data should use `ForEach`, like: `ForEach(this.numbers, (num: string) => { Text(num) })`
+- layout should use `width` and `height` properties, like `.width('80%').height(200)`
+
+ArkUI layout and components infos:
+
+${context.elements}
+
+For example:
+
+- User requirements: "a ArkUI Hello, World"
+// component info: Row({ space: 35 }) { /*...*/}.width('90%')
+// component info: Button('Ok', { type: ButtonType.Normal, stateEffect: true }),
+- Answer:
+Row() {
+    Column() {
+        Text(this.message)
+        .fontSize(50)
+        .fontWeight(FontWeight.Bold)
+    }
+    .width('100%')
+}
+.height('100%')
+
+----
+
+Here are the requirements:
+
+
+${context.requirement}
+
+You should use provided components and follow sample code, please write your code with Markdown code syntax, no explanation is needed:
+
+```
+
+
 ## Implementation
 
 Select the requirement in text, select `Auto Generate ArkUI`.
