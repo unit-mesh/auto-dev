@@ -51,7 +51,7 @@ open class JavaPsiElementDataBuilder : PsiElementDataBuilder {
 
     private fun handleFromType(parameter: PsiParameter): Map<@NlsSafe String, String> {
         when (val type = parameter.type) {
-            is PsiClassType -> processingClassType(type)
+            is PsiClassType -> return processingClassType(type)
         }
 
         return emptyMap()
