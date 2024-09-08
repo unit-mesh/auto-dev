@@ -13,12 +13,17 @@ class AutoDevRunDevInsAction : DumbAwareAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
 
     override fun update(e: AnActionEvent) {
-        val editor = e.getData(com.intellij.openapi.actionSystem.PlatformDataKeys.EDITOR) ?: return
         val project = e.project ?: return
+        val editor = e.getData(com.intellij.openapi.actionSystem.PlatformDataKeys.EDITOR) ?: return
         val document = editor.document
         val file = FileDocumentManager.getInstance().getFile(document) ?: return
 
-        val language = PsiManager.getInstance(project).findFile(file)?.language?.id ?: return
+        val language = try {
+            PsiManager.getInstance(project).findFile(file)?.language?.id
+        } catch (e: Exception) {
+            null
+        } ?: return
+
         e.presentation.isEnabled = language == "HTTP Request" || (language == "DevIn" && hasDevInProcessor(language))
     }
 
