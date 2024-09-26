@@ -2,8 +2,6 @@ rootProject.name = "AutoDev-Intellij"
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
-include("plugin")
-
 include(
     "pycharm",
     "java",

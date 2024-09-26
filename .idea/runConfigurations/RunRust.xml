@@ -10,7 +10,7 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value=":plugin:runIde" />
+          <option value="runIde" />
         </list>
       </option>
       <option name="vmOptions" value="" />
