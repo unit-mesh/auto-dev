@@ -59,7 +59,6 @@ val basePluginArchiveName = "autodev-jetbrains"
 val javaScriptPlugins = listOf("JavaScript")
 val pycharmPlugins = listOf("PythonCore")
 val javaPlugins = listOf("com.intellij.java", "org.jetbrains.kotlin")
-//val kotlinPlugins = listOf("org.jetbrains.kotlin")
 val clionVersion = prop("clionVersion")
 
 // https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html#modules-specific-to-functionality
@@ -93,7 +92,6 @@ val scalaPlugin = prop("scalaPlugin")
 val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
 val ideaPlugins =
     listOf(
-//        "org.jetbrains.plugins.terminal",
         "com.intellij.java",
         "org.jetbrains.plugins.gradle",
         "org.jetbrains.idea.maven",
