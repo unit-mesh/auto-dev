@@ -35,7 +35,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
-import org.jetbrains.annotations.Nls
 import java.awt.BorderLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -316,7 +315,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         inputSection.moveCursorToStart()
     }
 
-    fun showSuggestion(msg: @Nls String) {
+    fun showSuggestion(msg: String) {
         val label = panel {
             row {
                 icon(AutoDevIcons.Idea).gap(RightGap.SMALL)

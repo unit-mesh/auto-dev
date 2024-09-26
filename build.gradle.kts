@@ -427,6 +427,9 @@ project(":core") {
         }
 
         implementation("com.theokanning.openai-gpt3-java:service:0.18.2")
+        implementation("com.squareup.okhttp3:okhttp:4.4.1")
+        implementation("com.squareup.okhttp3:okhttp-sse:4.4.1")
+
         implementation("com.squareup.retrofit2:converter-jackson:2.9.0")
         implementation("com.squareup.retrofit2:converter-gson:2.9.0")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
