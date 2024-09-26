@@ -11,7 +11,7 @@ include(
     "javascript",
     "goland",
     "rust",
-    "csharp",
+//    "csharp",
     "cpp",
     "scala",
 )
