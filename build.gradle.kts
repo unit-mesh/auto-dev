@@ -33,7 +33,8 @@ fun environment(key: String) = providers.environmentVariable(key)
 val basePluginArchiveName = "autodev-jetbrains"
 
 val javaScriptPlugins = listOf("JavaScript")
-val pycharmPlugins = listOf("PythonCore")
+//val pycharmPlugins = listOf("PythonCore")
+val pycharmPlugins = listOf("Pythonid")
 val javaPlugins = listOf("com.intellij.java", "org.jetbrains.kotlin")
 val clionVersion = prop("clionVersion")
 
@@ -166,7 +167,7 @@ allprojects {
 
     val testOutput = configurations.create("testOutput")
 
-    if(this.name != "ext-terminal") {
+    if (this.name != "ext-terminal") {
         sourceSets {
             main {
                 java.srcDirs("src/gen")
@@ -428,7 +429,6 @@ project(":pycharm") {
             intellijPlugins(ideaPlugins)
             intellijPlugins(pycharmPlugins)
         }
-
 
         implementation(project(":"))
     }
