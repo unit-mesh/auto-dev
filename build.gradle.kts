@@ -126,6 +126,7 @@ subprojects {
 
         intellijPlatform {
             defaultRepositories()
+            jetbrainsRuntime()
         }
     }
 
@@ -193,6 +194,7 @@ subprojects {
     }
 
     dependencies {
+
         compileOnly(kotlin("stdlib-jdk8"))
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
 
