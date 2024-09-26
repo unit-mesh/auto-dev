@@ -1,33 +1,16 @@
-// The MIT License (MIT)
-//
-//Copyright (c) 2015 Aleksey Kladov, Evgeny Kurbatsky, Alexey Kudinkin and contributors
-//Copyright (c) 2016 JetBrains
-//
-//Permission is hereby granted, free of charge, to any person obtaining a copy
-//of this software and associated documentation files (the "Software"), to deal
-//in the Software without restriction, including without limitation the rights
-//to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//copies of the Software, and to permit persons to whom the Software is
-//furnished to do so, subject to the following conditions:
-//
-//The above copyright notice and this permission notice shall be included in all
-//copies or substantial portions of the Software.
-//
-//THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//SOFTWARE.
-
+import groovy.util.Node
 import groovy.xml.XmlParser
 import org.gradle.api.JavaVersion.VERSION_17
 import org.jetbrains.changelog.Changelog
-import org.jetbrains.intellij.tasks.PatchPluginXmlTask
-import org.jetbrains.intellij.tasks.PublishPluginTask
-import org.jetbrains.intellij.tasks.RunIdeTask
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType.*
+import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformDependenciesExtension
+import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformTestingExtension
+import org.jetbrains.intellij.platform.gradle.tasks.RunIdeTask
+import org.jetbrains.intellij.platform.gradle.utils.extensionProvider
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.util.*
 
 // The same as `--stacktrace` param
 gradle.startParameter.showStacktrace = ShowStacktrace.ALWAYS
@@ -141,13 +124,6 @@ allprojects {
         }
     }
 
-//    intellij {
-//        version.set(baseVersion)
-//        updateSinceUntilBuild.set(true)
-//        instrumentCode.set(false)
-//        sandboxDir.set("$buildDir/$baseIDE-sandbox-$platformVersion")
-//    }
-
     configure<JavaPluginExtension> {
         sourceCompatibility = VERSION_17
         targetCompatibility = VERSION_17
@@ -162,11 +138,6 @@ allprojects {
                 apiVersion = "1.7"
                 freeCompilerArgs = listOf("-Xjvm-default=all")
             }
-        }
-
-        withType<PatchPluginXmlTask> {
-            sinceBuild.set(prop("pluginSinceBuild"))
-            untilBuild.set(prop("pluginUntilBuild"))
         }
 
         // All these tasks don't make sense for non-root subprojects
@@ -282,123 +253,6 @@ project(":plugin") {
         implementation(project(":exts:ext-terminal"))
         implementation(project(":exts:devins-lang"))
     }
-
-    // Collects all jars produced by compilation of project modules and merges them into singe one.
-    // We need to put all plugin manifest files into single jar to make new plugin model work
-    val mergePluginJarTask = task<Jar>("mergePluginJars") {
-        duplicatesStrategy = DuplicatesStrategy.FAIL
-        archiveBaseName.set(basePluginArchiveName)
-
-        exclude("META-INF/MANIFEST.MF")
-        exclude("**/classpath.index")
-
-        val pluginLibDir by lazy {
-            val sandboxTask = tasks.prepareSandbox.get()
-            sandboxTask.destinationDir.resolve("${sandboxTask.pluginName.get()}/lib")
-        }
-
-        val pluginJars by lazy {
-            pluginLibDir.listFiles().orEmpty().filter {
-                it.isPluginJar()
-            }
-        }
-
-        destinationDirectory.set(project.layout.dir(provider { pluginLibDir }))
-
-        doFirst {
-            for (file in pluginJars) {
-                from(zipTree(file))
-            }
-        }
-
-        doLast {
-            delete(pluginJars)
-        }
-    }
-
-    // Add plugin sources to the plugin ZIP.
-    // gradle-intellij-plugin will use it as a plugin sources if the plugin is used as a dependency
-    val createSourceJar = task<Jar>("createSourceJar") {
-        for (prj in pluginProjects) {
-            from(prj.kotlin.sourceSets.main.get().kotlin) {
-                include("**/*.java")
-                include("**/*.kt")
-            }
-        }
-
-        destinationDirectory.set(layout.buildDirectory.dir("libs"))
-        archiveBaseName.set(basePluginArchiveName)
-        archiveClassifier.set("src")
-    }
-
-    tasks {
-        buildPlugin {
-            dependsOn(createSourceJar)
-            from(createSourceJar) { into("lib/src") }
-            // Set proper name for final plugin zip.
-            // Otherwise, base name is the same as gradle module name
-            archiveBaseName.set(basePluginArchiveName)
-        }
-
-        runIde { enabled = true }
-
-        prepareSandbox {
-            finalizedBy(mergePluginJarTask)
-            enabled = true
-        }
-
-        buildSearchableOptions {
-            // Force `mergePluginJarTask` be executed before `buildSearchableOptions`
-            // Otherwise, `buildSearchableOptions` task can't load the plugin and searchable options are not built.
-            // Should be dropped when jar merging is implemented in `gradle-intellij-plugin` itself
-            dependsOn(mergePluginJarTask)
-            enabled = false
-        }
-
-        withType<RunIdeTask> {
-            // Default args for IDEA installation
-            jvmArgs("-Xmx768m", "-XX:+UseG1GC", "-XX:SoftRefLRUPolicyMSPerMB=50")
-            // Disable plugin auto reloading. See `com.intellij.ide.plugins.DynamicPluginVfsListener`
-            jvmArgs("-Didea.auto.reload.plugins=false")
-            // Don't show "Tip of the Day" at startup
-            jvmArgs("-Dide.show.tips.on.startup.default.value=false")
-            // uncomment if `unexpected exception ProcessCanceledException` prevents you from debugging a running IDE
-            // jvmArgs("-Didea.ProcessCanceledException=disabled")
-        }
-
-        withType<PatchPluginXmlTask> {
-            pluginDescription.set(provider { file("description.html").readText() })
-
-            changelog {
-                version.set(properties("pluginVersion"))
-                groups.empty()
-                path.set(rootProject.file("CHANGELOG.md").toString())
-                repositoryUrl.set(properties("pluginRepositoryUrl"))
-            }
-
-            val changelog = project.changelog
-            // Get the latest available change notes from the changelog file
-            changeNotes.set(properties("pluginVersion").map { pluginVersion ->
-                with(changelog) {
-                    renderItem(
-                        (getOrNull(pluginVersion) ?: getUnreleased())
-                            .withHeader(false)
-                            .withEmptySections(false),
-
-                        Changelog.OutputType.HTML,
-                    )
-                }
-            })
-        }
-
-        withType<PublishPluginTask> {
-            dependsOn("patchChangelog")
-            token.set(environment("PUBLISH_TOKEN"))
-            channels.set(properties("pluginVersion").map {
-                listOf(it.split('-').getOrElse(1) { "default" }.split('.').first())
-            })
-        }
-    }
 }
 
 project(":") {
@@ -467,6 +321,75 @@ project(":") {
                 .map { it.configurations }
                 .flatMap { it.filter { c -> c.isCanBeResolved } }
                 .forEach { it.resolve() }
+        }
+    }
+
+    tasks {
+        buildPlugin {
+            dependsOn(createSourceJar)
+            from(createSourceJar) { into("lib/src") }
+            // Set proper name for final plugin zip.
+            // Otherwise, base name is the same as gradle module name
+            archiveBaseName.set(basePluginArchiveName)
+        }
+
+        runIde { enabled = true }
+
+        prepareSandbox {
+            finalizedBy(mergePluginJarTask)
+            enabled = true
+        }
+
+        buildSearchableOptions {
+            // Force `mergePluginJarTask` be executed before `buildSearchableOptions`
+            // Otherwise, `buildSearchableOptions` task can't load the plugin and searchable options are not built.
+            // Should be dropped when jar merging is implemented in `gradle-intellij-plugin` itself
+            dependsOn(mergePluginJarTask)
+            enabled = false
+        }
+
+        withType<RunIdeTask> {
+            // Default args for IDEA installation
+            jvmArgs("-Xmx768m", "-XX:+UseG1GC", "-XX:SoftRefLRUPolicyMSPerMB=50")
+            // Disable plugin auto reloading. See `com.intellij.ide.plugins.DynamicPluginVfsListener`
+            jvmArgs("-Didea.auto.reload.plugins=false")
+            // Don't show "Tip of the Day" at startup
+            jvmArgs("-Dide.show.tips.on.startup.default.value=false")
+            // uncomment if `unexpected exception ProcessCanceledException` prevents you from debugging a running IDE
+            // jvmArgs("-Didea.ProcessCanceledException=disabled")
+        }
+
+        withType<PatchPluginXmlTask> {
+            pluginDescription.set(provider { file("description.html").readText() })
+
+            changelog {
+                version.set(properties("pluginVersion"))
+                groups.empty()
+                path.set(rootProject.file("CHANGELOG.md").toString())
+                repositoryUrl.set(properties("pluginRepositoryUrl"))
+            }
+
+            val changelog = project.changelog
+            // Get the latest available change notes from the changelog file
+            changeNotes.set(properties("pluginVersion").map { pluginVersion ->
+                with(changelog) {
+                    renderItem(
+                        (getOrNull(pluginVersion) ?: getUnreleased())
+                            .withHeader(false)
+                            .withEmptySections(false),
+
+                        Changelog.OutputType.HTML,
+                    )
+                }
+            })
+        }
+
+        withType<PublishPluginTask> {
+            dependsOn("patchChangelog")
+            token.set(environment("PUBLISH_TOKEN"))
+            channels.set(properties("pluginVersion").map {
+                listOf(it.split('-').getOrElse(1) { "default" }.split('.').first())
+            })
         }
     }
 }
