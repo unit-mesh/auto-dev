@@ -144,3 +144,4 @@ src/main/gen
 !.idea/icon.svg
 .DS_Store
 **/.DS_Store
+.intellijPlatform

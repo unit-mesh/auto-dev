@@ -33,8 +33,7 @@ fun environment(key: String) = providers.environmentVariable(key)
 val basePluginArchiveName = "autodev-jetbrains"
 
 val javaScriptPlugins = listOf("JavaScript")
-//val pycharmPlugins = listOf("PythonCore")
-val pycharmPlugins = listOf("Pythonid")
+val pycharmPlugins = listOf(prop("pythonPlugin"))
 val javaPlugins = listOf("com.intellij.java", "org.jetbrains.kotlin")
 val clionVersion = prop("clionVersion")
 
@@ -159,10 +158,7 @@ allprojects {
             }
         }
 
-        // Root project (i.e. `:plugin`) enables them itself if needed
-//        runIde { enabled = false }
-//        prepareSandbox { enabled = false }
-//        buildSearchableOptions { enabled = false }
+        prepareSandbox { enabled = false }
     }
 
     val testOutput = configurations.create("testOutput")
@@ -426,8 +422,7 @@ project(":pycharm") {
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
-            intellijPlugins(ideaPlugins)
-            intellijPlugins(pycharmPlugins)
+            intellijPlugins(ideaPlugins + pycharmPlugins)
         }
 
         implementation(project(":"))
@@ -531,10 +526,6 @@ project(":goland") {
 }
 
 project(":exts:ext-database") {
-//    intellij {
-//        version.set(ideaVersion)
-//        plugins.set(ideaPlugins + "com.intellij.database")
-//    }
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
