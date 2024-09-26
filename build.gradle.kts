@@ -94,13 +94,6 @@ val baseVersion = when (baseIDE) {
     else -> error("Unexpected IDE name: `$baseIDE`")
 }
 
-repositories {
-    intellijPlatform {
-        defaultRepositories()
-        jetbrainsRuntime()
-    }
-}
-
 changelog {
     version.set(properties("pluginVersion"))
     groups.empty()
@@ -124,6 +117,8 @@ allprojects {
     }
 
     repositories {
+        mavenCentral()
+
         intellijPlatform {
             defaultRepositories()
         }
