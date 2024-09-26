@@ -68,10 +68,10 @@ jobs:
 
       # Publish the plugin to JetBrains Marketplace
       - name: Build Plugin
-        run: ./gradlew :plugin:buildPlugin
+        run: ./gradlew buildPlugin
 
       # Upload artifact as a release asset
       - name: Upload Release Asset
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ github.event.release.tag_name }} ./plugin/build/distributions/*
+        run: gh release upload ${{ github.event.release.tag_name }} ./build/distributions/*

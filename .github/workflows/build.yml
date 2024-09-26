@@ -96,7 +96,7 @@ jobs:
 
       # Run tests
       - name: Build Plugin
-        run: ./gradlew :plugin:buildPlugin
+        run: ./gradlew buildPlugin
 
       # Run tests
       - name: Build Coverage
@@ -113,7 +113,7 @@ jobs:
         id: artifact
         shell: bash
         run: |
-          cd ${{ github.workspace }}/plugin/build/distributions
+          cd ${{ github.workspace }}/build/distributions
           FILENAME=`ls *.zip`
           unzip "$FILENAME" -d content
 
@@ -124,7 +124,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.artifact.outputs.filename }}
-          path: ./plugin/build/distributions/content/*/*
+          path: ./build/distributions/content/*/*
 
   # Prepare a draft release for GitHub Releases page for the manual verification
   # If accepted and published, release workflow would be triggered

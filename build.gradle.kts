@@ -3,12 +3,9 @@ import groovy.xml.XmlParser
 import org.gradle.api.JavaVersion.VERSION_17
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
-import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType.*
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformDependenciesExtension
-import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformTestingExtension
 import org.jetbrains.intellij.platform.gradle.tasks.RunIdeTask
-import org.jetbrains.intellij.platform.gradle.utils.extensionProvider
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
@@ -206,74 +203,7 @@ allprojects {
     }
 }
 
-//project(":plugin") {
-//    apply {
-//        plugin("org.jetbrains.changelog")
-//    }
-//
-//    version = prop("pluginVersion") + "-$platformVersion"
-//
-//    intellij {
-//        pluginName.set(basePluginArchiveName)
-//        val pluginList: MutableList<String> = mutableListOf("Git4Idea")
-//        when (lang) {
-//            "idea" -> {
-//                pluginList += javaPlugins
-//            }
-//
-//            "scala" -> {
-//                pluginList += javaPlugins + scalaPlugin
-//            }
-//
-//            "python" -> {
-//                pluginList += pycharmPlugins
-//            }
-//
-//            "go" -> {
-//                pluginList += listOf("org.jetbrains.plugins.go")
-//            }
-//
-//            "cpp" -> {
-//                pluginList += clionPlugins
-//            }
-//
-//            "rust" -> {
-//                pluginList += rustPlugins
-//            }
-//        }
-//
-//        plugins.set(pluginList)
-//    }
-//
-//    dependencies {
-//        implementation(project(":"))
-//        implementation(project(":java"))
-//        implementation(project(":kotlin"))
-//        implementation(project(":pycharm"))
-//        implementation(project(":javascript"))
-//        implementation(project(":goland"))
-//        implementation(project(":rust"))
-//        implementation(project(":cpp"))
-//        implementation(project(":scala"))
-//
-//        implementation(project(":local-bundle"))
-//
-//        implementation(project(":exts:ext-database"))
-//        implementation(project(":exts:ext-android"))
-//        implementation(project(":exts:ext-harmonyos"))
-//        implementation(project(":exts:ext-git"))
-//        implementation(project(":exts:ext-http-client"))
-//        implementation(project(":exts:ext-terminal"))
-//        implementation(project(":exts:devins-lang"))
-//    }
-//}
-
 project(":") {
-//    intellij {
-//        version.set(ideaVersion)
-//        plugins.set(ideaPlugins)
-//    }
-
     repositories {
         intellijPlatform {
             defaultRepositories()
@@ -300,13 +230,10 @@ project(":") {
 
         pluginVerification {
             freeArgs = listOf("-mute", "TemplateWordInPluginId,ForbiddenPluginIdPrefix")
-//            failureLevel = listOf(VerifyPluginTask.FailureLevel.MISSING_DEPENDENCIES)
             ides {
                 select {
                     sinceBuild = "242"
                     untilBuild = "243"
-//                    sinceBuild = prop("pluginSinceBuild")
-//                    untilBuild = prop("pluginUntilBuild")
                 }
             }
         }
@@ -324,6 +251,34 @@ project(":") {
             } else {
                 jetbrainsRuntime()
             }
+
+            val pluginList: MutableList<String> = mutableListOf("Git4Idea")
+            when (lang) {
+                "idea" -> {
+                    pluginList += javaPlugins
+                }
+
+                "scala" -> {
+                    pluginList += javaPlugins + scalaPlugin
+                }
+
+                "python" -> {
+                    pluginList += pycharmPlugins
+                }
+
+                "go" -> {
+                    pluginList += listOf("org.jetbrains.plugins.go")
+                }
+
+                "cpp" -> {
+                    pluginList += clionPlugins
+                }
+
+                "rust" -> {
+                    pluginList += rustPlugins
+                }
+            }
+            intellijPlugins(pluginList)
 
             pluginModule(implementation(project(":")))
             pluginModule(implementation(project(":java")))
@@ -385,7 +340,7 @@ project(":") {
 
         kover(project(":"))
         kover(project(":cpp"))
-        kover(project(":csharp"))
+//        kover(project(":csharp"))
         kover(project(":goland"))
         kover(project(":java"))
         kover(project(":javascript"))
@@ -467,10 +422,6 @@ project(":") {
 }
 
 project(":pycharm") {
-//    intellij {
-//        version.set(pycharmVersion)
-//        plugins.set(pycharmPlugins)
-//    }
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
@@ -485,10 +436,6 @@ project(":pycharm") {
 
 
 project(":java") {
-//    intellij {
-//        version.set(ideaVersion)
-//        plugins.set(ideaPlugins)
-//    }
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
@@ -500,10 +447,6 @@ project(":java") {
 }
 
 project(":javascript") {
-//    intellij {
-//        version.set(ideaVersion)
-//        plugins.set(javaScriptPlugins)
-//    }
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
@@ -516,10 +459,6 @@ project(":javascript") {
 }
 
 project(":kotlin") {
-//    intellij {
-//        version.set(ideaVersion)
-//        plugins.set(ideaPlugins)
-//    }
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
@@ -532,10 +471,6 @@ project(":kotlin") {
 }
 
 project(":scala") {
-//    intellij {
-//        version.set(ideaVersion)
-//        plugins.set(ideaPlugins + scalaPlugin)
-//    }
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
@@ -548,10 +483,6 @@ project(":scala") {
 }
 
 project(":rust") {
-//    intellij {
-//        version.set(ideaVersion)
-//        plugins.set(rustPlugins)
-//    }
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
@@ -567,10 +498,6 @@ project(":cpp") {
         cppPlugins += "com.intellij.nativeDebug"
     }
 
-//    intellij {
-//        version.set(clionVersion)
-//        plugins.set(cppPlugins)
-//    }
     dependencies {
         intellijPlatform {
             intellijIde(clionVersion)
@@ -581,28 +508,18 @@ project(":cpp") {
     }
 }
 
-project(":csharp") {
-//    intellij {
-//        version.set(riderVersion)
-//        plugins.set(riderPlugins)
+//project(":csharp") {
+//    dependencies {
+//        intellijPlatform {
+//            intellijIde(riderVersion)
+//            intellijPlugins(riderPlugins)
+//        }
+//
+//        implementation(project(":"))
 //    }
-    dependencies {
-        intellijPlatform {
-            intellijIde(riderVersion)
-            intellijPlugins(riderPlugins)
-        }
-
-        implementation(project(":"))
-    }
-}
+//}
 
 project(":goland") {
-//    intellij {
-//        version.set(ideaVersion)
-//        updateSinceUntilBuild.set(false)
-//        // required if Go language API is needed:
-//        plugins.set(prop("goPlugin").split(',').map(String::trim).filter(String::isNotEmpty))
-//    }
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
@@ -628,11 +545,6 @@ project(":exts:ext-database") {
 }
 
 project(":exts:ext-android") {
-//    intellij {
-//        version.set(ideaVersion)
-//        plugins.set((ideaPlugins + prop("androidPlugin").ifBlank { "" }).filter(String::isNotEmpty))
-//    }
-
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
@@ -644,12 +556,6 @@ project(":exts:ext-android") {
 }
 
 project(":exts:ext-harmonyos") {
-//    intellij {
-//        version.set(ideaVersion)
-//        type.set("AI") // means Android Studio
-//        plugins.set((ideaPlugins + prop("androidPlugin").ifBlank { "" }).filter(String::isNotEmpty))
-//    }
-
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
@@ -662,11 +568,6 @@ project(":exts:ext-harmonyos") {
 }
 
 project(":exts:ext-git") {
-//    intellij {
-//        version.set(ideaVersion)
-//        plugins.set(ideaPlugins + "Git4Idea")
-//    }
-
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
@@ -679,11 +580,6 @@ project(":exts:ext-git") {
 }
 
 project(":exts:ext-http-client") {
-//    intellij {
-//        version.set(ideaVersion)
-//        plugins.set(ideaPlugins + "com.jetbrains.restClient")
-//    }
-
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
@@ -695,9 +591,6 @@ project(":exts:ext-http-client") {
 }
 
 project(":local-bundle") {
-//    intellij {
-//        version.set(ideaVersion)
-//    }
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
@@ -708,11 +601,6 @@ project(":local-bundle") {
 }
 
 project(":exts:ext-terminal") {
-//    intellij {
-//        version.set(ideaVersion)
-//        plugins.set((ideaPlugins + "org.jetbrains.plugins.terminal"))
-//    }
-
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
@@ -746,11 +634,6 @@ project(":exts:devins-lang") {
     apply {
         plugin("org.jetbrains.grammarkit")
     }
-
-//    intellij {
-//        version.set(ideaVersion)
-//        plugins.set((ideaPlugins + "org.intellij.plugins.markdown" + "com.jetbrains.sh" + "Git4Idea"))
-//    }
 
     dependencies {
         intellijPlatform {
