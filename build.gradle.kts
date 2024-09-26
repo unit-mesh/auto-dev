@@ -105,13 +105,15 @@ changelog {
 }
 
 repositories {
+    mavenCentral()
+
     intellijPlatform {
         defaultRepositories()
         jetbrainsRuntime()
     }
 }
 
-allprojects {
+subprojects {
     apply {
         plugin("idea")
         plugin("kotlin")
@@ -198,224 +200,217 @@ allprojects {
     }
 }
 
-project(":") {
-    apply {
-        plugin("org.jetbrains.changelog")
-        plugin("org.jetbrains.intellij.platform.module")
-        plugin("org.jetbrains.intellij.platform")
+intellijPlatform {
+    projectName = basePluginArchiveName
+    pluginConfiguration {
+        id = "cc.unitmesh.devti"
+        name = "AutoDev"
+        version = prop("pluginVersion")
+
+        ideaVersion {
+            sinceBuild = prop("pluginSinceBuild")
+            untilBuild = prop("pluginUntilBuild")
+        }
+
+        vendor {
+            name = "Phodal Huang"
+        }
     }
 
-    repositories {
-        intellijPlatform {
-            defaultRepositories()
+//    pluginVerification {
+//        ides {
+//            recommended()
+//        }
+//    }
+
+    instrumentCode = false
+    buildSearchableOptions = false
+}
+
+dependencies {
+    intellijPlatform {
+        pluginVerifier()
+        intellijIde(prop("ideaVersion"))
+        if (hasProp("jbrVersion")) {
+            jetbrainsRuntime(prop("jbrVersion"))
+        } else {
             jetbrainsRuntime()
         }
+
+        val pluginList: MutableList<String> = mutableListOf("Git4Idea")
+        when (lang) {
+            "idea" -> {
+                pluginList += javaPlugins
+            }
+
+            "scala" -> {
+                pluginList += javaPlugins + scalaPlugin
+            }
+
+            "python" -> {
+                pluginList += pycharmPlugins
+            }
+
+            "go" -> {
+                pluginList += listOf("org.jetbrains.plugins.go")
+            }
+
+            "cpp" -> {
+                pluginList += clionPlugins
+            }
+
+            "rust" -> {
+                pluginList += rustPlugins
+            }
+        }
+        intellijPlugins(pluginList)
+
+        pluginModule(implementation(project(":core")))
+        pluginModule(implementation(project(":java")))
+        pluginModule(implementation(project(":kotlin")))
+        pluginModule(implementation(project(":pycharm")))
+        pluginModule(implementation(project(":javascript")))
+        pluginModule(implementation(project(":goland")))
+        pluginModule(implementation(project(":rust")))
+        pluginModule(implementation(project(":cpp")))
+        pluginModule(implementation(project(":scala")))
+        pluginModule(implementation(project(":local-bundle")))
+        pluginModule(implementation(project(":exts:ext-database")))
+        pluginModule(implementation(project(":exts:ext-android")))
+        pluginModule(implementation(project(":exts:ext-harmonyos")))
+        pluginModule(implementation(project(":exts:ext-git")))
+        pluginModule(implementation(project(":exts:ext-http-client")))
+        pluginModule(implementation(project(":exts:ext-terminal")))
+        pluginModule(implementation(project(":exts:devins-lang")))
+
+        testFramework(TestFrameworkType.Bundled)
     }
 
-    intellijPlatform {
-        projectName = basePluginArchiveName
-        pluginConfiguration {
-            id = "cc.unitmesh.devti"
-            name = "AutoDev"
-            version = prop("pluginVersion")
+    implementation(project(":core"))
+    implementation(project(":java"))
+    implementation(project(":kotlin"))
+    implementation(project(":pycharm"))
+    implementation(project(":javascript"))
+    implementation(project(":goland"))
+    implementation(project(":rust"))
+    implementation(project(":cpp"))
+    implementation(project(":scala"))
+    implementation(project(":local-bundle"))
+    implementation(project(":exts:ext-database"))
+    implementation(project(":exts:ext-android"))
+    implementation(project(":exts:ext-harmonyos"))
+    implementation(project(":exts:ext-git"))
+    implementation(project(":exts:ext-http-client"))
+    implementation(project(":exts:ext-terminal"))
+    implementation(project(":exts:devins-lang"))
 
-            ideaVersion {
-                sinceBuild = prop("pluginSinceBuild")
-                untilBuild = prop("pluginUntilBuild")
-            }
-
-            vendor {
-                name = "Phodal Huang"
-            }
-        }
-
-        pluginVerification {
-            freeArgs = listOf("-mute", "TemplateWordInPluginId,ForbiddenPluginIdPrefix")
-            ides {
-                select {
-                    sinceBuild = "242"
-                    untilBuild = "243"
-                }
-            }
-        }
-
-        instrumentCode = false
-        buildSearchableOptions = false
-    }
-
-    dependencies {
-        intellijPlatform {
-            pluginVerifier()
-            intellijIde(prop("ideaVersion"))
-            if (hasProp("jbrVersion")) {
-                jetbrainsRuntime(prop("jbrVersion"))
-            } else {
-                jetbrainsRuntime()
-            }
-
-            val pluginList: MutableList<String> = mutableListOf("Git4Idea")
-            when (lang) {
-                "idea" -> {
-                    pluginList += javaPlugins
-                }
-
-                "scala" -> {
-                    pluginList += javaPlugins + scalaPlugin
-                }
-
-                "python" -> {
-                    pluginList += pycharmPlugins
-                }
-
-                "go" -> {
-                    pluginList += listOf("org.jetbrains.plugins.go")
-                }
-
-                "cpp" -> {
-                    pluginList += clionPlugins
-                }
-
-                "rust" -> {
-                    pluginList += rustPlugins
-                }
-            }
-            intellijPlugins(pluginList)
-
-            pluginModule(implementation(project(":core")))
-            pluginModule(implementation(project(":java")))
-            pluginModule(implementation(project(":kotlin")))
-            pluginModule(implementation(project(":pycharm")))
-            pluginModule(implementation(project(":javascript")))
-            pluginModule(implementation(project(":goland")))
-            pluginModule(implementation(project(":rust")))
-            pluginModule(implementation(project(":cpp")))
-            pluginModule(implementation(project(":scala")))
-            pluginModule(implementation(project(":local-bundle")))
-            pluginModule(implementation(project(":exts:ext-database")))
-            pluginModule(implementation(project(":exts:ext-android")))
-            pluginModule(implementation(project(":exts:ext-harmonyos")))
-            pluginModule(implementation(project(":exts:ext-git")))
-            pluginModule(implementation(project(":exts:ext-http-client")))
-            pluginModule(implementation(project(":exts:ext-terminal")))
-            pluginModule(implementation(project(":exts:devins-lang")))
-
-            testFramework(TestFrameworkType.Bundled)
-        }
-
-        kover(project(":cpp"))
-        kover(project(":core"))
+    kover(project(":cpp"))
+    kover(project(":core"))
 //        kover(project(":csharp"))
-        kover(project(":goland"))
-        kover(project(":java"))
-        kover(project(":javascript"))
-        kover(project(":kotlin"))
-        kover(project(":pycharm"))
-        kover(project(":rust"))
-        kover(project(":scala"))
+    kover(project(":goland"))
+    kover(project(":java"))
+    kover(project(":javascript"))
+    kover(project(":kotlin"))
+    kover(project(":pycharm"))
+    kover(project(":rust"))
+    kover(project(":scala"))
 
-        kover(project(":exts:ext-database"))
-        kover(project(":exts:ext-android"))
-        kover(project(":exts:devins-lang"))
+    kover(project(":exts:ext-database"))
+    kover(project(":exts:ext-android"))
+    kover(project(":exts:devins-lang"))
+}
+
+tasks {
+    val projectName = project.extensionProvider.flatMap { it.projectName }
+
+    composedJar {
+        archiveBaseName.convention(projectName)
     }
 
-    tasks {
-        val projectName = project.extensionProvider.flatMap { it.projectName }
+    withType<RunIdeTask> {
+        // Default args for IDEA installation
+        jvmArgs("-Xmx768m", "-XX:+UseG1GC", "-XX:SoftRefLRUPolicyMSPerMB=50")
+        // Disable plugin auto reloading. See `com.intellij.ide.plugins.DynamicPluginVfsListener`
+        jvmArgs("-Didea.auto.reload.plugins=false")
+        // Don't show "Tip of the Day" at startup
+        jvmArgs("-Dide.show.tips.on.startup.default.value=false")
+        // uncomment if `unexpected exception ProcessCanceledException` prevents you from debugging a running IDE
+        // jvmArgs("-Didea.ProcessCanceledException=disabled")
+    }
 
-        composedJar {
-            archiveBaseName.convention(projectName)
+    patchPluginXml {
+        pluginDescription.set(provider { file("src/description.html").readText() })
+
+        changelog {
+            version.set(properties("pluginVersion"))
+            groups.empty()
+            path.set(rootProject.file("CHANGELOG.md").toString())
+            repositoryUrl.set(properties("pluginRepositoryUrl"))
         }
 
-        withType<RunIdeTask> {
-            // Default args for IDEA installation
-            jvmArgs("-Xmx768m", "-XX:+UseG1GC", "-XX:SoftRefLRUPolicyMSPerMB=50")
-            // Disable plugin auto reloading. See `com.intellij.ide.plugins.DynamicPluginVfsListener`
-            jvmArgs("-Didea.auto.reload.plugins=false")
-            // Don't show "Tip of the Day" at startup
-            jvmArgs("-Dide.show.tips.on.startup.default.value=false")
-            // uncomment if `unexpected exception ProcessCanceledException` prevents you from debugging a running IDE
-            // jvmArgs("-Didea.ProcessCanceledException=disabled")
-        }
+        val changelog = project.changelog
+        // Get the latest available change notes from the changelog file
+        changeNotes.set(properties("pluginVersion").map { pluginVersion ->
+            with(changelog) {
+                renderItem(
+                    (getOrNull(pluginVersion) ?: getUnreleased())
+                        .withHeader(false)
+                        .withEmptySections(false),
 
-        patchPluginXml {
-            pluginDescription.set(provider { file("src/description.html").readText() })
-
-            changelog {
-                version.set(properties("pluginVersion"))
-                groups.empty()
-                path.set(rootProject.file("CHANGELOG.md").toString())
-                repositoryUrl.set(properties("pluginRepositoryUrl"))
+                    Changelog.OutputType.HTML,
+                )
             }
+        })
+    }
 
-            val changelog = project.changelog
-            // Get the latest available change notes from the changelog file
-            changeNotes.set(properties("pluginVersion").map { pluginVersion ->
-                with(changelog) {
-                    renderItem(
-                        (getOrNull(pluginVersion) ?: getUnreleased())
-                            .withHeader(false)
-                            .withEmptySections(false),
+    buildPlugin {
+        archiveBaseName.set(basePluginArchiveName)
+        archiveVersion.set(prop("pluginVersion") + "-" + prop("platformVersion"))
+    }
 
-                        Changelog.OutputType.HTML,
-                    )
-                }
-            })
-        }
+    publishPlugin {
+        dependsOn("patchChangelog")
+        token.set(environment("PUBLISH_TOKEN"))
+        channels.set(properties("pluginVersion").map {
+            listOf(it.split('-').getOrElse(1) { "default" }.split('.').first())
+        })
+    }
 
-        buildPlugin {
-            val newName = basePluginArchiveName + "-" + properties("pluginVersion").get()
-            archiveBaseName.set(newName)
-        }
-
-        publishPlugin {
-            dependsOn("patchChangelog")
-            token.set(environment("PUBLISH_TOKEN"))
-            channels.set(properties("pluginVersion").map {
-                listOf(it.split('-').getOrElse(1) { "default" }.split('.').first())
-            })
-        }
-
-        intellijPlatformTesting {
-            // Generates event scheme for JetBrains Academy plugin FUS events to `build/eventScheme.json`
-            runIde.register("buildEventsScheme") {
-                task {
-                    args(
-                        "buildEventsScheme",
-                        "--outputFile=${buildDir()}/eventScheme.json",
-                        "--pluginId=com.jetbrains.edu"
-                    )
-                    // Force headless mode to be able to run command on CI
-                    systemProperty("java.awt.headless", "true")
-                    // BACKCOMPAT: 2024.1. Update value to 242 and this comment
-                    // `IDEA_BUILD_NUMBER` variable is used by `buildEventsScheme` task to write `buildNumber` to output json.
-                    // It will be used by TeamCity automation to set minimal IDE version for new events
-                    environment("IDEA_BUILD_NUMBER", "241")
-                }
+    intellijPlatformTesting {
+        // Generates event scheme for JetBrains Academy plugin FUS events to `build/eventScheme.json`
+        runIde.register("buildEventsScheme") {
+            task {
+                args(
+                    "buildEventsScheme",
+                    "--outputFile=${buildDir()}/eventScheme.json",
+                    "--pluginId=com.jetbrains.edu"
+                )
+                // Force headless mode to be able to run command on CI
+                systemProperty("java.awt.headless", "true")
+                // BACKCOMPAT: 2024.1. Update value to 242 and this comment
+                // `IDEA_BUILD_NUMBER` variable is used by `buildEventsScheme` task to write `buildNumber` to output json.
+                // It will be used by TeamCity automation to set minimal IDE version for new events
+                environment("IDEA_BUILD_NUMBER", "241")
             }
-
-            runIde.register("runInSplitMode") {
-                splitMode = true
-
-                // Specify custom sandbox directory to have a stable path to log file
-                sandboxDirectory = intellijPlatform.sandboxContainer.dir("split-mode-sandbox-${prop("platformVersion")}")
-
-                plugins {
-                    plugins(ideaPlugins)
-                }
-            }
-
-            customRunIdeTask(IntellijIdeaUltimate, prop("ideaVersion"), baseTaskName = "Idea")
         }
+
+        runIde.register("runInSplitMode") {
+            splitMode = true
+
+            // Specify custom sandbox directory to have a stable path to log file
+            sandboxDirectory =
+                intellijPlatform.sandboxContainer.dir("split-mode-sandbox-${prop("platformVersion")}")
+
+            plugins {
+                plugins(ideaPlugins)
+            }
+        }
+
+        customRunIdeTask(IntellijIdeaUltimate, prop("ideaVersion"), baseTaskName = "Idea")
     }
 }
 
 project(":core") {
-    repositories {
-        intellijPlatform {
-            defaultRepositories()
-            jetbrainsRuntime()
-        }
-    }
-
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
