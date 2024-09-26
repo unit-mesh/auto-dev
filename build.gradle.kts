@@ -3,9 +3,12 @@ import groovy.xml.XmlParser
 import org.gradle.api.JavaVersion.VERSION_17
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType.IntellijIdeaUltimate
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformDependenciesExtension
+import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformTestingExtension
 import org.jetbrains.intellij.platform.gradle.tasks.RunIdeTask
+import org.jetbrains.intellij.platform.gradle.utils.extensionProvider
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
@@ -196,6 +199,12 @@ allprojects {
 }
 
 project(":") {
+    apply {
+        plugin("org.jetbrains.changelog")
+        plugin("org.jetbrains.intellij.platform.module")
+        plugin("org.jetbrains.intellij.platform")
+    }
+
     repositories {
         intellijPlatform {
             defaultRepositories()
@@ -272,6 +281,7 @@ project(":") {
             }
             intellijPlugins(pluginList)
 
+            pluginModule(implementation(project(":core")))
             pluginModule(implementation(project(":java")))
             pluginModule(implementation(project(":kotlin")))
             pluginModule(implementation(project(":pycharm")))
@@ -292,44 +302,8 @@ project(":") {
             testFramework(TestFrameworkType.Bundled)
         }
 
-        implementation(libs.bundles.openai)
-        implementation(libs.bundles.markdown)
-        implementation(libs.yaml)
-
-        implementation(libs.json.pathkt)
-
-        implementation("org.jetbrains:markdown:0.6.1")
-        implementation(libs.kotlinx.serialization.json)
-
-        // chocolate factory
-        // follow: https://onnxruntime.ai/docs/get-started/with-java.html
-//        implementation("com.microsoft.onnxruntime:onnxruntime:1.18.0")
-//        implementation("ai.djl.huggingface:tokenizers:0.29.0")
-
-        implementation("cc.unitmesh:cocoa-core:1.0.0")
-        implementation("cc.unitmesh:document:1.0.0")
-
-        // kanban
-        implementation(libs.github.api)
-        implementation("org.gitlab4j:gitlab4j-api:5.3.0")
-
-        // template engine
-        implementation("org.apache.velocity:velocity-engine-core:2.3")
-
-        // http request/response
-        implementation(libs.jackson.module.kotlin)
-
-        // token count
-        implementation("com.knuddels:jtokkit:1.0.0")
-
-        implementation("org.apache.commons:commons-text:1.12.0")
-
-        // junit
-        testImplementation("io.kotest:kotest-assertions-core:5.7.2")
-        testImplementation("junit:junit:4.13.2")
-        testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.9.3")
-
         kover(project(":cpp"))
+        kover(project(":core"))
 //        kover(project(":csharp"))
         kover(project(":goland"))
         kover(project(":java"))
@@ -344,25 +318,11 @@ project(":") {
         kover(project(":exts:devins-lang"))
     }
 
-    task("resolveDependencies") {
-        doLast {
-            rootProject.allprojects
-                .map { it.configurations }
-                .flatMap { it.filter { c -> c.isCanBeResolved } }
-                .forEach { it.resolve() }
-        }
-    }
-
     tasks {
-        buildPlugin {
-            val newName = basePluginArchiveName + "-" + properties("pluginVersion").get()
-            archiveBaseName.set(newName)
-        }
+        val projectName = project.extensionProvider.flatMap { it.projectName }
 
-        runIde { enabled = true }
-
-        buildSearchableOptions {
-            enabled = false
+        composedJar {
+            archiveBaseName.convention(projectName)
         }
 
         withType<RunIdeTask> {
@@ -401,12 +361,49 @@ project(":") {
             })
         }
 
+        buildPlugin {
+            val newName = basePluginArchiveName + "-" + properties("pluginVersion").get()
+            archiveBaseName.set(newName)
+        }
+
         publishPlugin {
             dependsOn("patchChangelog")
             token.set(environment("PUBLISH_TOKEN"))
             channels.set(properties("pluginVersion").map {
                 listOf(it.split('-').getOrElse(1) { "default" }.split('.').first())
             })
+        }
+
+        intellijPlatformTesting {
+            // Generates event scheme for JetBrains Academy plugin FUS events to `build/eventScheme.json`
+            runIde.register("buildEventsScheme") {
+                task {
+                    args(
+                        "buildEventsScheme",
+                        "--outputFile=${buildDir()}/eventScheme.json",
+                        "--pluginId=com.jetbrains.edu"
+                    )
+                    // Force headless mode to be able to run command on CI
+                    systemProperty("java.awt.headless", "true")
+                    // BACKCOMPAT: 2024.1. Update value to 242 and this comment
+                    // `IDEA_BUILD_NUMBER` variable is used by `buildEventsScheme` task to write `buildNumber` to output json.
+                    // It will be used by TeamCity automation to set minimal IDE version for new events
+                    environment("IDEA_BUILD_NUMBER", "241")
+                }
+            }
+
+            runIde.register("runInSplitMode") {
+                splitMode = true
+
+                // Specify custom sandbox directory to have a stable path to log file
+                sandboxDirectory = intellijPlatform.sandboxContainer.dir("split-mode-sandbox-${prop("platformVersion")}")
+
+                plugins {
+                    plugins(ideaPlugins)
+                }
+            }
+
+            customRunIdeTask(IntellijIdeaUltimate, prop("ideaVersion"), baseTaskName = "Idea")
         }
     }
 }
@@ -443,7 +440,6 @@ project(":core") {
         implementation("com.nfeld.jsonpathkt:jsonpathkt:2.0.1")
 
         implementation("org.jetbrains:markdown:0.6.1")
-//        implementation(libs.kotlinx.serialization.json)
 
         // chocolate factory
         // follow: https://onnxruntime.ai/docs/get-started/with-java.html
@@ -746,6 +742,53 @@ data class TypeWithVersion(val type: IntelliJPlatformType, val version: String)
 fun String.toTypeWithVersion(): TypeWithVersion {
     val (code, version) = split("-", limit = 2)
     return TypeWithVersion(IntelliJPlatformType.fromCode(code), version)
+}
+
+/**
+ * Creates `run$[baseTaskName]` Gradle task to run IDE of given [type]
+ * via `runIde` task with plugins according to [ideToPlugins] map
+ */
+fun IntelliJPlatformTestingExtension.customRunIdeTask(
+    type: IntelliJPlatformType,
+    versionWithCode: String? = null,
+    baseTaskName: String = type.name,
+) {
+    runIde.register("run$baseTaskName") {
+        useInstaller = false
+
+        if (versionWithCode != null) {
+            val version = versionWithCode.toTypeWithVersion().version
+
+            this.type = type
+            this.version = version
+        } else {
+            val pathProperty = baseTaskName.replaceFirstChar { it.lowercaseChar() } + "Path"
+            // Avoid throwing exception during property calculation.
+            // Some IDE tooling (for example, Package Search plugin) may try to calculate properties during `Sync` phase for all tasks.
+            // In our case, some `run*` task may not have `pathProperty` in your `gradle.properties`,
+            // and as a result, the `Sync` tool window will show you the error thrown by `prop` function.
+            //
+            // The following solution just moves throwing the corresponding error to task execution,
+            // i.e., only when a task is actually invoked
+            if (hasProp(pathProperty)) {
+                localPath.convention(layout.dir(provider { file(prop(pathProperty)) }))
+            } else {
+                task {
+                    doFirst {
+                        throw GradleException("Property `$pathProperty` is not defined in gradle.properties")
+                    }
+                }
+            }
+        }
+
+        // Specify custom sandbox directory to have a stable path to log file
+        sandboxDirectory =
+            intellijPlatform.sandboxContainer.dir("${baseTaskName.lowercase()}-sandbox-${prop("platformVersion")}")
+
+        plugins {
+            plugins(ideaPlugins)
+        }
+    }
 }
 
 fun IntelliJPlatformDependenciesExtension.intellijIde(versionWithCode: String) {
