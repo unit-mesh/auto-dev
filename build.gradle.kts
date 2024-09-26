@@ -126,7 +126,6 @@ allprojects {
     apply {
         plugin("idea")
         plugin("kotlin")
-        plugin("org.jetbrains.intellij")
         plugin("org.jetbrains.kotlinx.kover")
     }
 
@@ -142,12 +141,12 @@ allprojects {
         }
     }
 
-    intellij {
-        version.set(baseVersion)
-        updateSinceUntilBuild.set(true)
-        instrumentCode.set(false)
-        sandboxDir.set("$buildDir/$baseIDE-sandbox-$platformVersion")
-    }
+//    intellij {
+//        version.set(baseVersion)
+//        updateSinceUntilBuild.set(true)
+//        instrumentCode.set(false)
+//        sandboxDir.set("$buildDir/$baseIDE-sandbox-$platformVersion")
+//    }
 
     configure<JavaPluginExtension> {
         sourceCompatibility = VERSION_17

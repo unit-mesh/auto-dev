@@ -1,6 +1,5 @@
 rootProject.name = "AutoDev-Intellij"
 
-enableFeaturePreview("VERSION_CATALOGS")
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 include("plugin")
@@ -10,7 +9,6 @@ include(
     "java",
     "kotlin",
     "javascript",
-    // since JetBrains also call `go.jar`, so we rename it to `goland` for avoiding conflict
     "goland",
     "rust",
     "csharp",

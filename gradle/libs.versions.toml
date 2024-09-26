@@ -5,7 +5,7 @@ annotations = "24.0.1"
 dokka = "1.9.10"
 kotlin = "1.9.10"
 changelog = "2.1.2"
-gradleIntelliJPlugin = "1.17.2"
+gradleIntelliJPlugin = "2.0.1"
 qodana = "0.1.13"
 kover = "0.7.5"
 
@@ -45,7 +45,7 @@ yaml = "org.yaml:snakeyaml:2.2"
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
-gradleIntelliJPlugin = { id = "org.jetbrains.intellij", version.ref = "gradleIntelliJPlugin" }
+gradleIntelliJPlugin = { id = "org.jetbrains.intellij.platform", version.ref = "gradleIntelliJPlugin" }
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 qodana = { id = "org.jetbrains.qodana", version.ref = "qodana" }
