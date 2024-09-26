@@ -272,7 +272,6 @@ project(":") {
             }
             intellijPlugins(pluginList)
 
-            pluginModule(implementation(project(":")))
             pluginModule(implementation(project(":java")))
             pluginModule(implementation(project(":kotlin")))
             pluginModule(implementation(project(":pycharm")))
@@ -330,7 +329,6 @@ project(":") {
         testImplementation("junit:junit:4.13.2")
         testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.9.3")
 
-        kover(project(":"))
         kover(project(":cpp"))
 //        kover(project(":csharp"))
         kover(project(":goland"))
@@ -379,7 +377,7 @@ project(":") {
         }
 
         patchPluginXml {
-            pluginDescription.set(provider { file("description.html").readText() })
+            pluginDescription.set(provider { file("src/description.html").readText() })
 
             changelog {
                 version.set(properties("pluginVersion"))
@@ -413,6 +411,76 @@ project(":") {
     }
 }
 
+project(":core") {
+    repositories {
+        intellijPlatform {
+            defaultRepositories()
+            jetbrainsRuntime()
+        }
+    }
+
+    dependencies {
+        intellijPlatform {
+            intellijIde(prop("ideaVersion"))
+            intellijPlugins(ideaPlugins)
+            testFramework(TestFrameworkType.Bundled)
+        }
+
+        implementation("com.theokanning.openai-gpt3-java:service:0.18.2")
+        implementation("com.squareup.retrofit2:converter-jackson:2.9.0")
+        implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
+        implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
+
+        implementation("org.commonmark:commonmark:0.21.0")
+        implementation("org.commonmark:commonmark-ext-gfm-tables:0.21.0")
+
+        implementation("org.yaml:snakeyaml:2.2")
+
+        implementation("com.nfeld.jsonpathkt:jsonpathkt:2.0.1")
+
+        implementation("org.jetbrains:markdown:0.6.1")
+//        implementation(libs.kotlinx.serialization.json)
+
+        // chocolate factory
+        // follow: https://onnxruntime.ai/docs/get-started/with-java.html
+//        implementation("com.microsoft.onnxruntime:onnxruntime:1.18.0")
+//        implementation("ai.djl.huggingface:tokenizers:0.29.0")
+
+        implementation("cc.unitmesh:cocoa-core:1.0.0")
+        implementation("cc.unitmesh:document:1.0.0")
+
+        // kanban
+        implementation("org.kohsuke:github-api:1.314")
+        implementation("org.gitlab4j:gitlab4j-api:5.3.0")
+
+        // template engine
+        implementation("org.apache.velocity:velocity-engine-core:2.3")
+
+        // http request/response
+        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
+
+        // token count
+        implementation("com.knuddels:jtokkit:1.0.0")
+
+        implementation("org.apache.commons:commons-text:1.12.0")
+
+        // junit
+        testImplementation("io.kotest:kotest-assertions-core:5.7.2")
+        testImplementation("junit:junit:4.13.2")
+        testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.9.3")
+    }
+
+    task("resolveDependencies") {
+        doLast {
+            rootProject.allprojects
+                .map { it.configurations }
+                .flatMap { it.filter { c -> c.isCanBeResolved } }
+                .forEach { it.resolve() }
+        }
+    }
+}
+
 project(":pycharm") {
     dependencies {
         intellijPlatform {
@@ -420,7 +488,7 @@ project(":pycharm") {
             intellijPlugins(ideaPlugins + pycharmPlugins)
         }
 
-        implementation(project(":"))
+        implementation(project(":core"))
     }
 }
 
@@ -432,7 +500,7 @@ project(":java") {
             intellijPlugins(ideaPlugins)
         }
 
-        implementation(project(":"))
+        implementation(project(":core"))
     }
 }
 
@@ -444,7 +512,7 @@ project(":javascript") {
             intellijPlugins(javaScriptPlugins)
         }
 
-        implementation(project(":"))
+        implementation(project(":core"))
     }
 }
 
@@ -455,7 +523,7 @@ project(":kotlin") {
             intellijPlugins(ideaPlugins)
         }
 
-        implementation(project(":"))
+        implementation(project(":core"))
         implementation(project(":java"))
     }
 }
@@ -467,7 +535,7 @@ project(":scala") {
             intellijPlugins(ideaPlugins + scalaPlugin)
         }
 
-        implementation(project(":"))
+        implementation(project(":core"))
         implementation(project(":java"))
     }
 }
@@ -479,7 +547,7 @@ project(":rust") {
             intellijPlugins(rustPlugins)
         }
 
-        implementation(project(":"))
+        implementation(project(":core"))
     }
 }
 
@@ -494,7 +562,7 @@ project(":cpp") {
             intellijPlugins(cppPlugins)
         }
 
-        implementation(project(":"))
+        implementation(project(":core"))
     }
 }
 
@@ -505,7 +573,7 @@ project(":cpp") {
 //            intellijPlugins(riderPlugins)
 //        }
 //
-//        implementation(project(":"))
+//        implementation(project(":core"))
 //    }
 //}
 
@@ -516,7 +584,7 @@ project(":goland") {
             intellijPlugins(prop("goPlugin").split(',').map(String::trim).filter(String::isNotEmpty))
         }
 
-        implementation(project(":"))
+        implementation(project(":core"))
     }
 }
 
@@ -526,7 +594,7 @@ project(":exts:ext-database") {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins + "com.intellij.database")
         }
-        implementation(project(":"))
+        implementation(project(":core"))
     }
 }
 
@@ -537,7 +605,7 @@ project(":exts:ext-android") {
             intellijPlugins((ideaPlugins + prop("androidPlugin").ifBlank { "" }).filter(String::isNotEmpty))
         }
 
-        implementation(project(":"))
+        implementation(project(":core"))
     }
 }
 
@@ -549,7 +617,7 @@ project(":exts:ext-harmonyos") {
         }
 
 
-        implementation(project(":"))
+        implementation(project(":core"))
     }
 }
 
@@ -560,7 +628,7 @@ project(":exts:ext-git") {
             intellijPlugins(ideaPlugins + "Git4Idea")
         }
 
-        implementation(project(":"))
+        implementation(project(":core"))
         implementation("cc.unitmesh:git-commit-message:0.4.6")
     }
 }
@@ -572,7 +640,7 @@ project(":exts:ext-http-client") {
             intellijPlugins(ideaPlugins + "com.jetbrains.restClient")
         }
 
-        implementation(project(":"))
+        implementation(project(":core"))
     }
 }
 
@@ -582,7 +650,7 @@ project(":local-bundle") {
             intellijIde(prop("ideaVersion"))
         }
 
-        implementation(project(":"))
+        implementation(project(":core"))
     }
 }
 
@@ -593,7 +661,7 @@ project(":exts:ext-terminal") {
             intellijPlugins(ideaPlugins + "org.jetbrains.plugins.terminal")
         }
 
-        implementation(project(":"))
+        implementation(project(":core"))
     }
 
     sourceSets {
@@ -627,7 +695,7 @@ project(":exts:devins-lang") {
             intellijPlugins(ideaPlugins + "org.intellij.plugins.markdown" + "com.jetbrains.sh" + "Git4Idea")
         }
 
-        implementation(project(":"))
+        implementation(project(":core"))
         implementation(project(":exts:ext-git"))
     }
 
