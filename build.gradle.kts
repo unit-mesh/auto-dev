@@ -219,11 +219,11 @@ intellijPlatform {
         }
     }
 
-//    pluginVerification {
-//        ides {
-//            recommended()
-//        }
-//    }
+    pluginVerification {
+        ides {
+            recommended()
+        }
+    }
 
     instrumentCode = false
     buildSearchableOptions = false
