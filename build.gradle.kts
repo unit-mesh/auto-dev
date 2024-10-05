@@ -236,6 +236,7 @@ project(":") {
         pluginVerification {
             freeArgs = listOf("-mute", "TemplateWordInPluginId,ForbiddenPluginIdPrefix")
             ides {
+                ide(IntellijIdeaUltimate, "2024.2")
                 select {
                     types = listOf(IntellijIdeaUltimate)
                     sinceBuild = "242"
