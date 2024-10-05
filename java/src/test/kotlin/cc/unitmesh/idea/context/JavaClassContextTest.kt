@@ -7,10 +7,12 @@ import com.intellij.lang.java.JavaLanguage
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiJavaFile
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase
+import org.intellij.lang.annotations.Language
 
 class JavaClassContextTest : LightJavaCodeInsightFixtureTestCase() {
     private val fileFactory: PsiFileFactory get() = PsiFileFactory.getInstance(project)
 
+    @Language("Java")
     private val originCode = """
     BlogService blogService;
 
@@ -49,6 +51,7 @@ public class BlogController {
 }
 """.trimIndent()
 
+    @Language("Java")
     private val serviceCode: String = """
 package cc.unitmesh.untitled.demo.service;
 
@@ -106,11 +109,10 @@ class BlogController {
     }
 
     fun testShould_convert_function_to_string() {
-        myFixture.addClass(serviceCode)
+        val serviceClass = myFixture.addClass(serviceCode)
         myFixture.addClass(controllerCode)
 
-        val serviceFile = myFixture.findClass("cc.unitmesh.untitled.demo.service.BlogService")
-        val psiElement = serviceFile.methods[0]
+        val psiElement = serviceClass.methods[0]
         val context = MethodContextProvider(false, true).from(psiElement)
 
         assertEquals(
