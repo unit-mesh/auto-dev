@@ -9,7 +9,7 @@ import java.io.File
 class CustomActionIntentionConfigConfigTest {
     @Test
     fun should_serial_from_readme_string() {
-        val readmeFile = File("README.md").readText()
+        val readmeFile = File("../README.md").readText()
         val codeBlocks = parseCodeFromString(readmeFile)
         val configExample = codeBlocks.last()
         val config = CustomPromptConfig.tryParse(configExample)
