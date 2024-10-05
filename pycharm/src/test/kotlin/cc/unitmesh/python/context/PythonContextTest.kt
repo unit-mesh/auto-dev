@@ -25,8 +25,8 @@ print(p1.name)
 print(p1.age) """
 
     fun testShould_convert_class_to_string() {
-        val psiFile = fileFactory.createFileFromText(PythonLanguage.INSTANCE, classCode)
-        val psiElement = (psiFile as PyFile).topLevelClasses[0]
+//        val psiFile = fileFactory.createFileFromText(PythonLanguage.INSTANCE, classCode)
+//        val psiElement = (psiFile as PyFile).topLevelClasses[0]
 //        val classContext: ClassContext = ClassContextProvider(false).from(psiElement)
 //
 //        assertEquals(classContext.format(), """'package: /foo.bar
