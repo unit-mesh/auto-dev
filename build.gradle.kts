@@ -560,7 +560,7 @@ project(":rust") {
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
-            intellijPlugins(rustPlugins)
+            intellijPlugins(ideaPlugins + rustPlugins)
         }
 
         implementation(project(":core"))
