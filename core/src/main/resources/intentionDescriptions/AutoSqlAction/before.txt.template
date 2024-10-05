@@ -1,0 +1,4 @@
+SELECT title, content, author, published_at
+FROM blogs
+ORDER BY published_at DESC
+LIMIT 10;
