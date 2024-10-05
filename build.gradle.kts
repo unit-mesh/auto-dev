@@ -113,7 +113,10 @@ repositories {
     }
 }
 
-subprojects {
+configure(
+    subprojects
+            - project(":exts")
+) {
     apply {
         plugin("idea")
         plugin("kotlin")
@@ -197,6 +200,7 @@ subprojects {
 
         compileOnly(kotlin("stdlib-jdk8"))
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
         testOutput(sourceSets.getByName("test").output.classesDirs)
     }
@@ -433,6 +437,10 @@ project(":") {
 }
 
 project(":core") {
+    apply {
+        plugin("org.jetbrains.kotlin.plugin.serialization")
+    }
+
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
@@ -481,6 +489,7 @@ project(":core") {
 
         implementation("org.apache.commons:commons-text:1.12.0")
 
+        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
         // junit
         testImplementation("io.kotest:kotest-assertions-core:5.7.2")
         testImplementation("junit:junit:4.13.2")
