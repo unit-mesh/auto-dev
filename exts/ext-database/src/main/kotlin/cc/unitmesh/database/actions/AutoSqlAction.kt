@@ -8,7 +8,9 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import cc.unitmesh.devti.llms.LlmFactory
+import com.intellij.database.model.DasTable
 import com.intellij.database.model.ObjectKind
+import com.intellij.database.model.RawDataSource
 import com.intellij.database.psi.DbPsiFacade
 import com.intellij.database.util.DasUtil
 import com.intellij.openapi.editor.Editor
@@ -16,7 +18,6 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
-import com.intellij.sql.dialects.sqlite.SqliteDialect
 
 
 class AutoSqlAction : ChatBaseIntention() {
@@ -43,9 +44,8 @@ class AutoSqlAction : ChatBaseIntention() {
         val databaseVersion = rawDataSource.databaseVersion
         val schemaName = rawDataSource.name.substringBeforeLast('@')
         val dasTables = rawDataSource.let {
-            val tables = DasUtil.getTables(it)
-            tables.filter { table -> table.kind == ObjectKind.TABLE &&
-                    (table.dasParent?.name == schemaName || (file.language == SqliteDialect.INSTANCE && table.dasParent?.name == "main"))
+            DasUtil.getTables(rawDataSource).filter { table ->
+                table.kind == ObjectKind.TABLE && (table.dasParent?.name == schemaName || isSQLiteTable(it, table))
             }
         }.toList()
 
@@ -69,5 +69,10 @@ class AutoSqlAction : ChatBaseIntention() {
                 .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
         }
     }
+
+    private fun isSQLiteTable(
+        rawDataSource: RawDataSource,
+        table: DasTable,
+    ) = (rawDataSource.databaseVersion.name == "SQLite" && table.dasParent?.name == "main")
 }
 
