@@ -9,7 +9,7 @@ import com.intellij.psi.PsiElement
 
 class FixThisAction : RefactorThisAction() {
     init {
-        presentationText("settings.autodev.rightClick.fixthis", templatePresentation)
+        presentationText("settings.autodev.rightClick.fixThis", templatePresentation)
     }
 
     override fun getActionType(): ChatActionType = ChatActionType.FIX_ISSUE
