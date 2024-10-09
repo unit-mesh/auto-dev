@@ -16,6 +16,7 @@
         <action id="autodev.Vcs.LLMChangelog"
                 class="cc.unitmesh.git.actions.vcs.ReleaseNoteSuggestionAction"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+                text="Generate Release Note (AutoDev Placeholder)"
                 description="Ask AI generate release note">
 
             <add-to-group group-id="Vcs.Log.ContextMenu" relative-to-action="Vcs.ShowDiffWithLocal" anchor="after"/>
@@ -24,7 +25,7 @@
         <action id="autodev.Vcs.CodeReview"
                 class="cc.unitmesh.git.actions.vcs.CodeReviewAction"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
-                text="Code Review (AutoDev)"
+                text="Code Review (AutoDev Placeholder)"
                 description="Ask AI to review code">
 
             <add-to-group group-id="Vcs.Log.ChangesBrowser.Popup" relative-to-action="Vcs.RepositoryChangesBrowserMenu"
