@@ -9,11 +9,11 @@ import com.intellij.openapi.vfs.VirtualFile
 
 @Service(Service.Level.PROJECT)
 class TeamPromptsBuilder(private val project: Project) {
-    private val settings = project.teamPromptsSettings
-    private val baseDir = settings.state.teamPromptsDir
+    private val baseDir get() = project.teamPromptsSettings.state.teamPromptsDir
+    private val basePromptDir get() = project.guessProjectDir()?.findChild(baseDir)
 
     fun default(): List<TeamPromptAction> {
-        val promptsDir = project.guessProjectDir()?.findChild(baseDir) ?: return emptyList()
+        val promptsDir = basePromptDir ?: return emptyList()
         val filterPrompts = promptsDir.children.filter { it.name.endsWith(".vm") }
 
         return buildPrompts(filterPrompts)
@@ -25,7 +25,7 @@ class TeamPromptsBuilder(private val project: Project) {
      * For example: `prompts/quick/quick-action-name.vm`
      */
     fun quickPrompts(): List<TeamPromptAction> {
-        val promptsDir = project.guessProjectDir()?.findChild(baseDir) ?: return emptyList()
+        val promptsDir = basePromptDir ?: return emptyList()
         val quickPromptDir = promptsDir.findChild("quick") ?: return emptyList()
         val quickPromptFiles = quickPromptDir.children.filter { it.name.endsWith(".vm") }
 
@@ -38,7 +38,7 @@ class TeamPromptsBuilder(private val project: Project) {
      * For example: `prompts/flows/flow-action-name.devin`
      */
     fun flows(): List<VirtualFile> {
-        val promptsDir = project.guessProjectDir()?.findChild(baseDir) ?: return emptyList()
+        val promptsDir = basePromptDir ?: return emptyList()
         val promptDir = promptsDir.findChild("flows") ?: return emptyList()
         val devinFiles = promptDir.children.filter { it.name.endsWith(".devin") }
 
@@ -49,7 +49,7 @@ class TeamPromptsBuilder(private val project: Project) {
         return prompts.map {
             // a prompt should be named as <actionName>.vm, and we need to replace - with " "
             val promptName = it.nameWithoutExtension.replace("-", " ")
-            // load content of the prompt file
+
             val promptContent = runReadAction { it.inputStream.readBytes().toString(Charsets.UTF_8) }
             val actionPrompt = CustomActionPrompt.fromContent(promptContent)
 
@@ -58,11 +58,10 @@ class TeamPromptsBuilder(private val project: Project) {
     }
 
     fun overrideTemplate(pathPrefix: String, filename: String): String? {
-        val promptsDir = project.guessProjectDir()?.findChild(baseDir) ?: return null
+        val promptsDir = basePromptDir ?: return null
         val path = "$pathPrefix/$filename"
 
-        val overrideFile = promptsDir.findFileByRelativePath(path)
-            ?: return null
+        val overrideFile = promptsDir.findFileByRelativePath(path) ?: return null
         return runReadAction { overrideFile.inputStream.readBytes().toString(Charsets.UTF_8) }
     }
 }
