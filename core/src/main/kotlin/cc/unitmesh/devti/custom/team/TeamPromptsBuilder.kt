@@ -40,9 +40,7 @@ class TeamPromptsBuilder(private val project: Project) {
     fun flows(): List<VirtualFile> {
         val promptsDir = basePromptDir ?: return emptyList()
         val promptDir = promptsDir.findChild("flows") ?: return emptyList()
-        val devinFiles = promptDir.children.filter { it.name.endsWith(".devin") }
-
-        return devinFiles
+        return promptDir.children.filter { it.name.endsWith(".devin") }
     }
 
     private fun buildPrompts(prompts: List<VirtualFile>): List<TeamPromptAction> {

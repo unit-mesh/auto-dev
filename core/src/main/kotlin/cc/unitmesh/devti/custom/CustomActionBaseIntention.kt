@@ -74,10 +74,14 @@ class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConf
 
         val builder = StringBuilder()
 
-        val customPattern = Pattern.compile(regex)
-        val matcher = customPattern.matcher(input)
-        while (matcher.find()) {
-            builder.append(matcher.group()).append("\n")
+        try {
+            val pattern = Pattern.compile(regex)
+            val matcher = pattern.matcher(input)
+            while (matcher.find()) {
+                builder.append(matcher.group()).append("\n")
+            }
+        } catch (e: Exception) {
+            logger.error("Failed to compile regex: $regex", e)
         }
 
         return builder.toString()
