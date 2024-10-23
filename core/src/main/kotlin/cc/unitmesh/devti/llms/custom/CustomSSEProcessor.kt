@@ -114,6 +114,8 @@ open class CustomSSEProcessor(private val project: Project) {
 
                                 val completion = result.choices[0].message
                                 if (completion != null && completion.content != null) {
+                                    hasSuccessRequest = true
+
                                     output += completion.content
                                     trySend(completion.content)
                                 }
