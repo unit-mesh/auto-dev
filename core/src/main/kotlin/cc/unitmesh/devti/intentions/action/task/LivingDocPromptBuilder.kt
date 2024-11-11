@@ -74,7 +74,8 @@ open class LivingDocPromptBuilder(
         if (context.name == null) return null
 
         var instruction =
-            "Write documentation for given ${context.root.language.displayName} language method " + context.name + "."
+            "Write documentation for given ${context.root.language.displayName} language method " + context.name + ".\n"
+
         if (context.paramNames.isNotEmpty() && documentation.parameterTagInstruction != null) {
             instruction = """
                 $instruction
