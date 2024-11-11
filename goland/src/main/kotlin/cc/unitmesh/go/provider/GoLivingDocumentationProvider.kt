@@ -59,7 +59,7 @@ class GoLivingDocumentationProvider : LivingDocumentation {
         )
 
         if (element != null && GoPsiUtil.isTopLevelDeclaration(element)) {
-            return element as PsiNameIdentifierOwner
+            return element as? PsiNameIdentifierOwner
         }
 
         return null
