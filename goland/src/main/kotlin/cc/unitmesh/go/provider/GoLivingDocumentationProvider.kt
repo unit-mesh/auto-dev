@@ -19,7 +19,7 @@ class GoLivingDocumentationProvider : LivingDocumentation {
             "Do not mention the containing package",
         )
 
-    override fun startEndString(type: LivingDocumentationType): Pair<String, String> = "/*" to "*/"
+    override fun startEndString(type: LivingDocumentationType): Pair<String, String>? = null
 
     override fun updateDoc(target: PsiElement, newDoc: String, type: LivingDocumentationType, editor: Editor) {
         val project = runReadAction { target.project }

@@ -20,7 +20,7 @@ interface LivingDocumentation {
     val parameterTagInstruction: String? get() = null
     val returnTagInstruction: String? get() = null
 
-    fun startEndString(type: LivingDocumentationType): Pair<String, String>
+    fun startEndString(type: LivingDocumentationType): Pair<String, String>?
 
     fun updateDoc(target: PsiElement, newDoc: String, type: LivingDocumentationType, editor: Editor)
 
