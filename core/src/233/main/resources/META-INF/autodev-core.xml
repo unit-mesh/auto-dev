@@ -2,7 +2,6 @@
     <resource-bundle>messages.AutoDevBundle</resource-bundle>
 
     <depends>com.intellij.modules.platform</depends>
-    <depends optional="true" config-file="json-empty.xml">com.intellij.modules.json</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="AutoDev.notification.group" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
