@@ -10,4 +10,4 @@ permalink: /features/code-review
 
 <img src="https://unitmesh.cc/auto-dev/works-with-git.png" alt="Code Review" width="600px"/>
 
-impl code: [CodeReviewAction](https://github.com/unit-mesh/auto-dev/blob/master/src/main/kotlin/cc/unitmesh/devti/actions/vcs/CodeReviewAction.kt)
+impl code: [CodeReviewAction](https://github.com/unit-mesh/auto-dev/blob/master/exts/ext-git/src/main/kotlin/cc/unitmesh/git/actions/vcs/CodeReviewAction.kt)
