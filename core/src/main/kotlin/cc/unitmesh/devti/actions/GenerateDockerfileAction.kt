@@ -23,7 +23,7 @@ class GenerateDockerfileAction : AnAction("Generate Dockerfile") {
 
         val msgs = templateRender.buildMsgs(template)
 
-        val task: Task.Backgroundable = FileGenerateTask(project, msgs, "Dockerfile")
+        val task: Task.Backgroundable = FileGenerateTask(project, msgs, "Dockerfile", codeOnly = true)
         ProgressManager.getInstance()
             .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
     }
