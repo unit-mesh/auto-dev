@@ -28,10 +28,10 @@ fun getCanonicalName(input: String): List<String> {
  * @param element The PsiElement for which the problems are to be collected.
  * @return A string containing all the problems found, separated by new lines, or `null` if no problems were found.
  */
-fun collectProblems(project: Project, editor: Editor, element: PsiElement): String? {
+fun collectProblems(project: Project, editor: Editor, element: PsiElement): String {
     val range = element.textRange
     val document = editor.document
-    var errors: MutableList<String> = mutableListOf()
+    val errors: MutableList<String> = mutableListOf()
     DaemonCodeAnalyzerEx.processHighlights(document, project, null, range.startOffset, range.endOffset) {
         if (it.description != null) {
             errors.add(it.description)
@@ -59,7 +59,7 @@ fun collectElementProblemAsSting(
 ): String {
     val commentSymbol = commentPrefix(element)
 
-    return collectProblems(project, editor, element)?.let { problem ->
+    return collectProblems(project, editor, element).let { problem ->
         var relatedCode = ""
         getCanonicalName(problem).map {
             val classContext = PsiElementDataBuilder.forLanguage(element.language)?.lookupElement(project, it)
