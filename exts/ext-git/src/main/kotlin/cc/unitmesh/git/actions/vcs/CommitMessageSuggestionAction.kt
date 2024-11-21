@@ -10,6 +10,7 @@ import cc.unitmesh.devti.vcs.VcsPrompting
 import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.template.context.TemplateContext
+import cc.unitmesh.devti.util.parser.Code
 import cc.unitmesh.devti.vcs.VcsUtil
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -33,9 +34,10 @@ import kotlinx.coroutines.flow.*
 
 class CommitMessageSuggestionAction : ChatBaseAction() {
 
-    init{
+    init {
         presentationText("settings.autodev.others.commitMessage", templatePresentation)
     }
+
     override fun getActionUpdateThread(): ActionUpdateThread {
         return ActionUpdateThread.BGT
     }
@@ -96,10 +98,14 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
                             }
                         }
                         .cancellable().collect {
-                        invokeLater {
-                            commitMessageUi.editorField.text += it
+                            invokeLater {
+                                commitMessageUi.editorField.text += it
+                            }
                         }
-                    }
+                }
+
+                if (result.startsWith("```") && result.endsWith("```")) {
+                    commitMessageUi.editorField.text = Code.parse(result).text
                 }
             } catch (e: Exception) {
                 event.presentation.icon = AutoDevStatus.Error.icon
