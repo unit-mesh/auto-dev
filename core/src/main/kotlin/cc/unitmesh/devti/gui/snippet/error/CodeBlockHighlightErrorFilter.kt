@@ -7,8 +7,7 @@ import com.intellij.psi.PsiErrorElement
 
 class CodeBlockHighlightErrorFilter : HighlightErrorFilter() {
     override fun shouldHighlightErrorElement(element: PsiErrorElement): Boolean {
-        val containingFile = element.containingFile
-        val highlightedFile = containingFile?.virtualFile ?: return true
+        val highlightedFile = element.containingFile?.virtualFile ?: return true
         return !AutoDevSnippetFile.isSnippet(highlightedFile)
     }
 }
