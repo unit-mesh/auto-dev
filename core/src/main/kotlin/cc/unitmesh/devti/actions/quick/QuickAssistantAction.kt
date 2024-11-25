@@ -116,11 +116,13 @@ open class QuickAssistantAction : AnAction() {
 
         val actionMap = component.actionMap
 
+        val language = element?.language?.displayName ?: ""
+
         actionMap.put(QUICK_ASSISTANT_SUBMIT_ACTION, object : AbstractAction() {
             override fun actionPerformed(e: ActionEvent?) {
                 val text =
-                    """Generate a concise code snippet with no extra text, description, or comments. 
-                        |The code should achieve the following task: ${component.getText()}"""
+                    """Generate a concise $language code snippet with no extra text, description, or comments. 
+                        | The code should achieve the following task: ${component.getText()}"""
                         .trimMargin()
 
                 val offset = editor.caretModel.offset
