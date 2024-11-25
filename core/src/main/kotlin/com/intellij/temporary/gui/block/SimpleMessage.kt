@@ -7,7 +7,7 @@ import cc.unitmesh.devti.gui.chat.message.ChatMessageRating
 class SimpleMessage(
     override val displayText: String,
     override val text: String,
-    val chatRole: ChatRole,
+    private val chatRole: ChatRole,
     override var rating: ChatMessageRating = ChatMessageRating.None
 ) : CompletableMessage {
     private val textListeners: MutableList<MessageBlockTextListener> = mutableListOf()

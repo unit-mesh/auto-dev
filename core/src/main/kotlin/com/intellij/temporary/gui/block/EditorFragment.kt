@@ -23,11 +23,8 @@ import javax.swing.Box
 import javax.swing.JComponent
 
 
-class AIAssistantFoldLabel(side: ChatRole) : JBLabel("", 0) {
-    private val side: ChatRole
-
+class AIAssistantFoldLabel(private val side: ChatRole) : JBLabel("", 0) {
     init {
-        this.side = side
         setOpaque(true)
         isVisible = false
     }
@@ -57,12 +54,11 @@ class EditorPadding(private val editor: Editor, pad: Int) :
 
 class EditorFragment(private val project: Project, private val editor: EditorEx, message: CompletableMessage) {
     private val editorLineThreshold = 6
-    private val expandCollapseTextLabel: AIAssistantFoldLabel
+    private val expandCollapseTextLabel: AIAssistantFoldLabel = AIAssistantFoldLabel(message.getRole())
     private val content: BorderLayoutPanel
     private var collapsed = false
 
     init {
-        expandCollapseTextLabel = AIAssistantFoldLabel(message.getRole())
         content = object : BorderLayoutPanel() {
             override fun getPreferredSize(): Dimension {
                 val preferredSize = super.getPreferredSize()
