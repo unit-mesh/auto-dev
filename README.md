@@ -36,6 +36,8 @@ bridges for Human-AI-IDE:
 
 With built-in syntax highlighting and auto-completion, you can use DevIns as next-generation AI Agent language.
 
+🆕🆕🆕: New AI agent language: [https://github.com/phodal/shire](https://github.com/phodal/shire)
+
 ## AutoDev Architecture
 
 Here is the AutoDev architecture:
