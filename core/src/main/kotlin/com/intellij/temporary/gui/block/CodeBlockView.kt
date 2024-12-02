@@ -5,9 +5,9 @@ import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.util.parser.Code
 import com.intellij.lang.Language
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.ActionGroup
+import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
-import com.intellij.openapi.actionSystem.ex.ActionUtil
-import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
@@ -162,25 +162,23 @@ class CodeBlockView(
             val editor: EditorEx =
                 createCodeViewerEditor(project, file, document, disposable)
 
-            val toolbarActionGroup = ActionUtil.getActionGroup("AutoDev.ToolWindow.Snippet.Toolbar")!!
+            val toolbarActionGroup = ActionManager.getInstance().getAction("AutoDev.ToolWindow.Snippet.Toolbar") as ActionGroup
             toolbarActionGroup.let {
-                val toolbar: ActionToolbarImpl =
-                    object : ActionToolbarImpl(ActionPlaces.MAIN_TOOLBAR, toolbarActionGroup, true) {
-                        override fun updateUI() {
-                            super.updateUI()
-                            editor.component.setBorder(JBUI.Borders.empty())
-                        }
-                    }
+                val toolbar = ActionManager.getInstance().createActionToolbar(
+                    ActionPlaces.MAIN_TOOLBAR,
+                    toolbarActionGroup,
+                    true
+                )
 
-                toolbar.setBackground(editor.backgroundColor)
-                toolbar.setOpaque(true)
+                toolbar.component.setBackground(editor.backgroundColor)
+                toolbar.component.setOpaque(true)
                 toolbar.targetComponent = editor.contentComponent
-                editor.headerComponent = toolbar
+                editor.headerComponent = toolbar.component
 
                 val connect = project.messageBus.connect(disposable)
                 val topic: Topic<EditorColorsListener> = EditorColorsManager.TOPIC
                 connect.subscribe(topic, EditorColorsListener {
-                    toolbar.setBackground(editor.backgroundColor)
+                    toolbar.component.setBackground(editor.backgroundColor)
                 })
             }
 
