@@ -108,25 +108,20 @@ open class JavaTestContextProvider : ChatContextProvider {
         }
 
         var rule = ""
-        var hasJunit5 = false
-        var hasJunit4 = false
-        prepareLibraryData(project)?.forEach {
-            if (it.groupId == "org.junit.jupiter") {
-                hasJunit5 = true
-                return@forEach
+        val libraryData = prepareLibraryData(project)
+        libraryData?.forEach {
+            when (it.groupId) {
+                "org.assertj" -> {
+                    rule += "- This project uses AssertJ, you should import `org.assertj.core.api.Assertions` and use `assertThat` method."
+                }
+                "org.junit.jupiter" -> {
+                    rule +=
+                        "- This project uses JUnit 5, you should import `org.junit.jupiter.api.Test` and use `@Test` annotation."
+                }
+                "junit" -> {
+                    rule += "- This project uses JUnit 4, you should import `org.junit.Test` and use `@Test` annotation."
+                }
             }
-
-            if (it.groupId == "junit") {
-                hasJunit4 = true
-                return@forEach
-            }
-        }
-
-        if (hasJunit5) {
-            rule =
-                "- This project uses JUnit 5, you should import `org.junit.jupiter.api.Test` and use `@Test` annotation."
-        } else if (hasJunit4) {
-            rule = "- This project uses JUnit 4, you should import `org.junit.Test` and use `@Test` annotation."
         }
 
         projectJunitCache[project] = rule
