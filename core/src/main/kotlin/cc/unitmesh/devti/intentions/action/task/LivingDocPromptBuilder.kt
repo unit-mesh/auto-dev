@@ -142,7 +142,9 @@ open class LivingDocPromptBuilder(
                 instruction.append("\n\nStart your documentation with ${startEndString.first} here, and ends with `${startEndString.second}`.\n")
             }
 
-            instruction.append(documentation.forbiddenRules.joinToString { "\n- $it\n" })
+            documentation.forbiddenRules.forEach {
+                instruction.append("\n- $it\n")
+            }
             instruction.toString()
         }
     }
