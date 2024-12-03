@@ -48,6 +48,7 @@ class CustomLivingDocPromptBuilder(
 
             val lang = target.language.displayName;
             if (config.example != null) {
+                instruction.append("Examples: \n")
                 instruction.append("Question: ```$lang\n${config.example.question}\n```\n")
                 instruction.append("Answer: ${config.example.answer}\n")
                 instruction.append("Question: ```$lang\n${target.text}\n```\n")
