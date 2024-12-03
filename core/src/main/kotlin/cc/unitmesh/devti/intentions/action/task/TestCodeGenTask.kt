@@ -31,13 +31,12 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNameIdentifierOwner
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 
-class TestCodeGenTask(val request: TestCodeGenRequest, private val displayMessage: String) :
+class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
     Task.Backgroundable(request.project, displayMessage) {
 
     private val actionType = ChatActionType.GENERATE_TEST
@@ -186,7 +185,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest, private val displayMessag
                         val editor = FileEditorManager.getInstance(project).selectedTextEditor
                         editor?.document?.replaceString(0, editor.document.textLength, it)
                         editor?.caretModel?.moveToOffset(editor.document.textLength)
-                        editor?.scrollingModel?.scrollToCaret(ScrollType.RELATIVE);
+                        editor?.scrollingModel?.scrollToCaret(ScrollType.RELATIVE)
                     }
                 }
             }
