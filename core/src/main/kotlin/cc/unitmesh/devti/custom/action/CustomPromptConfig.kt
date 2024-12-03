@@ -5,7 +5,6 @@ import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.diagnostic.logger
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 @Serializable
@@ -21,9 +20,7 @@ data class CustomPromptConfig(
         private val logger = logger<CustomPromptConfig>()
 
         fun load(): CustomPromptConfig {
-            val config = tryParse(AutoDevSettingsState.getInstance().customPrompts)
-            logger.info("Loaded prompt config: $config")
-            return config
+            return tryParse(AutoDevSettingsState.getInstance().customPrompts)
         }
 
         fun default(): CustomPromptConfig = CustomPromptConfig(
