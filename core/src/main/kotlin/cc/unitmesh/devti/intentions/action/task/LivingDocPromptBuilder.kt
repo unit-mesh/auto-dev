@@ -48,7 +48,7 @@ open class LivingDocPromptBuilder(
     protected val contextProviders = listOf(
         VariableContextProvider(false, false, false),
         ClassContextProvider(false),
-        MethodContextProvider(false, false)
+        MethodContextProvider(true, false)
     )
 
     private fun contextInstruction(context: LLMCodeContext?): String? {
@@ -91,7 +91,10 @@ open class LivingDocPromptBuilder(
                 """.trimIndent()
         }
 
-        return instruction.trimStart()
+        // here is related context information of the method
+
+        val related = "\nHere is related context information of the method\n\n```${context.language}" + context.format() + "\n```\n"
+        return instruction.trimStart() + related
     }
 
     /**
@@ -139,7 +142,7 @@ open class LivingDocPromptBuilder(
                 instruction.append("\n\nStart your documentation with ${startEndString.first} here, and ends with `${startEndString.second}`.\n")
             }
 
-            instruction.append(documentation.forbiddenRules.joinToString { "\n- $it" })
+            instruction.append(documentation.forbiddenRules.joinToString { "\n- $it\n" })
             instruction.toString()
         }
     }

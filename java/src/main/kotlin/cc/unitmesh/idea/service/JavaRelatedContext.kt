@@ -60,6 +60,13 @@ object JavaRelatedContext {
         return psiElement
     }
 
+    fun cleanUp(psiMethod: PsiMethod): PsiMethod {
+        val psiElement = psiMethod.copy() as PsiMethod
+        psiElement.body?.delete()
+        psiElement.docComment?.delete()
+        return psiElement
+    }
+
     private fun findSuperClasses(psiClass: PsiClass): List<PsiClass> {
         val superClass = psiClass.superClass ?: return emptyList()
         if (isProjectContent(superClass)) {
