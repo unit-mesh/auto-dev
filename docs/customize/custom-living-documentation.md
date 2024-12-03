@@ -8,6 +8,8 @@ permalink: /custom/living-documentation
 
 # Custom Documentation
 
+## Living Documentation example
+
 goto: `Settings` -> `Tools` -> `AutoDev` -> `Customize Engine prompt`, and add your own prompt.
 
 ```json
@@ -32,7 +34,7 @@ goto: `Settings` -> `Tools` -> `AutoDev` -> `Customize Engine prompt`, and add y
 }
 ```
 
-## Example:
+**Output**
 
 ```java
 @ScenarioDescription(
@@ -46,4 +48,46 @@ public BookMeetingRoomResponse bookMeetingRoom(@RequestBody BookMeetingRoomReque
     BeanUtils.copyProperties(meetingRoom, response);
     return response;
 }
+```
+
+## Normal Example
+
+
+```json
+{
+  "documentations": [
+    {
+      "title": "生成 Java 方法级别注释",
+      "prompt": "生成 JavaDoc 方法级别的注释，只返回方法的注释。\n要求：1. 需要使用写明方法的使用法。2. 只返回方法的注释，使用注释符号 /** 开头\n\n",
+      "start": "",
+      "end": "",
+      "type": "normal",
+      "example": {
+        "question": "    public void addEdge(int a, int b) {\n        graph.get(a).add(b);\n        graph.get(b).add(a); // Assuming an undirected graph\n    }",
+        "answer": "    /**\n     * 向图中添加一条边。\n     *\n     * <pre>\n     *    {@code\n     *        Calculate graph = new Calculate(5); // 创建一个具有5个节点的图\n     *        graph.addEdge(0, 1); // 在节点0和节点1之间添加边\n     *        // 假定这是一个无向图，因此边(0,1)和边(1,0)都会被添加\n     *    }\n     * </pre>\n     *\n     * @param a 节点A的索引\n     * @param b 节点B的索引\n     *          两个节点都应在添加边之前先添加到图中\n     */\n"
+      }
+    }
+}
+```
+
+
+**Output**
+
+```java
+    /**
+     * 向图中添加一条边。
+     *
+     * <pre>
+     *    {@code
+     *        Calculate graph = new Calculate(5); // 创建一个具有5个节点的图
+     *        graph.addEdge(0, 1); // 在节点0和节点1之间添加边
+     *        // 假定这是一个无向图，因此边(0,1)和边(1,0)都会被添加
+     *    }
+     * </pre>
+     *
+     * @param a 节点A的索引
+     * @param b 节点B的索引
+     *          两个节点都应在添加边之前先添加到图中
+     */
+
 ```
