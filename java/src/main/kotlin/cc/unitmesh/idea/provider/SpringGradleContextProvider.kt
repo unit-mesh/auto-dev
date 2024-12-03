@@ -151,7 +151,7 @@ fun prepareGradleLibrary(project: Project): List<SimpleLibraryData>? {
     }
 }
 
-fun prepareMavenLibrary(project: Project): List<SimpleLibraryData>? {
+fun prepareMavenLibrary(project: Project): List<SimpleLibraryData> {
     val projectDependencies: List<org.jetbrains.idea.maven.model.MavenArtifact> = MavenProjectsManager.getInstance(project).projects.flatMap {
         it.dependencies
     }

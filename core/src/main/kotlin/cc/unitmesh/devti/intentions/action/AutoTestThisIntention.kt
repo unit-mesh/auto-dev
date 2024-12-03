@@ -6,7 +6,6 @@ import com.intellij.temporary.getElementToAction
 import cc.unitmesh.devti.intentions.action.test.TestCodeGenRequest
 import cc.unitmesh.devti.intentions.action.task.TestCodeGenTask
 import cc.unitmesh.devti.provider.AutoTestService
-import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
