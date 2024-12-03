@@ -19,26 +19,39 @@ class CustomLivingDocPromptBuilder(
             val instruction = StringBuilder(fallbackText)
 
             var inOutString = ""
-            this.contextProviders.firstNotNullOfOrNull { contextProvider ->
-                when (val llmQueryContext = contextProvider.from(target)) {
-                    is MethodContext -> {
-                        inOutString = llmQueryContext.inputOutputString()
-                    }
+            val context = contextProviders.firstNotNullOfOrNull { contextProvider ->
+                val llmQueryContext = contextProvider.from(target)
+
+                if (llmQueryContext != null) {
+                    return@firstNotNullOfOrNull llmQueryContext
+                }
+
+                return@firstNotNullOfOrNull null
+            }
+
+            if (context != null) {
+                val related = "\nHere is related context information of the method\n\n```${target.language}\n" + context.format() + "\n```\n"
+                instruction.append(related)
+            }
+
+            when (context) {
+                is MethodContext -> {
+                    inOutString = context.inputOutputString()
                 }
             }
 
             if (inOutString.isNotEmpty()) {
-                instruction.append("\nCompare this snippet: \n")
+                instruction.append("\nInput and output: \n")
                 instruction.append(inOutString)
                 instruction.append("\n")
             }
 
             val lang = target.language.displayName;
             if (config.example != null) {
-                instruction.append("Q: ```$lang\n${config.example.question}\n```\n")
-                instruction.append("A: ${config.example.answer}\n")
-                instruction.append("Q: ```$lang\n${target.text}\n```\n")
-                instruction.append("A: ")
+                instruction.append("Question: ```$lang\n${config.example.question}\n```\n")
+                instruction.append("Answer: ${config.example.answer}\n")
+                instruction.append("Question: ```$lang\n${target.text}\n```\n")
+                instruction.append("Answer: ")
             }
 
             return@compute instruction.toString();

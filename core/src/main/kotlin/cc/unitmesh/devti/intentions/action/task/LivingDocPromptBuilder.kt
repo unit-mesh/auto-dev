@@ -46,12 +46,12 @@ open class LivingDocPromptBuilder(
     private val logger = logger<LivingDocPromptBuilder>()
 
     protected val contextProviders = listOf(
-        VariableContextProvider(false, false, false),
+        MethodContextProvider(true, false),
         ClassContextProvider(false),
-        MethodContextProvider(true, false)
+        VariableContextProvider(false, false, false)
     )
 
-    private fun contextInstruction(context: LLMCodeContext?): String? {
+    protected fun contextInstruction(context: LLMCodeContext?): String? {
         return when (context) {
             is ClassContext -> classInstruction(context)
             is MethodContext -> methodInstruction(context)
@@ -93,7 +93,7 @@ open class LivingDocPromptBuilder(
 
         // here is related context information of the method
 
-        val related = "\nHere is related context information of the method\n\n```${context.language}" + context.format() + "\n```\n"
+        val related = "\nHere is related context information of the method\n\n```${context.language}\n" + context.format() + "\n```\n"
         return instruction.trimStart() + related
     }
 
