@@ -37,7 +37,7 @@ class JavaClassContextBuilderTest: LightPlatformTestCase() {
                     "'@RestController, @RequestMapping(\"/user\")\n" +
                     "class UserController {\n" +
                     "  \n" +
-                    "  + @GetMapping     public UserDTO getUsers()\n" +
+                    "  + @GetMapping     public UserDTO getUsers();\n" +
                     "}"        )
     }
 }

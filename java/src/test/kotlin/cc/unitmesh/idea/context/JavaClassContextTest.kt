@@ -101,9 +101,9 @@ public class BlogService {
 '@Controller
 class BlogController {
   BlogService blogService;
-  + public BlogController(BlogService blogService)
-  + @PostMapping("/blog")     public BlogPost createBlog(CreateBlogDto blogDto)
-  + @GetMapping("/blog")     public List<BlogPost> getBlog()
+  + public BlogController(BlogService blogService);
+  + @PostMapping("/blog")     public BlogPost createBlog(CreateBlogDto blogDto);
+  + @GetMapping("/blog")     public List<BlogPost> getBlog();
 }"""
         )
     }
