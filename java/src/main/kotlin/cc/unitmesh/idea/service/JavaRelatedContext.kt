@@ -87,13 +87,13 @@ object JavaRelatedContext {
 
     private fun findRelatedClasses(method: PsiMethod): List<PsiClass> {
         val parameters = method.parameterList.parameters
+
         val parameterTypes = parameters.map { it.type }
         val genericTypes = parameters.flatMap { (it.type as? PsiClassType)?.parameters?.toList() ?: emptyList() }
+
         val mentionedTypes = parameterTypes + method.returnType + genericTypes
         val relatedTypes = mentionedTypes.filterIsInstance<PsiClassType>()
-        val resolvedClasses = relatedTypes.mapNotNull { it.resolve() }
-        val projectContentClasses = resolvedClasses.filter { isProjectContent(it) }
-        return projectContentClasses.toList()
+        return relatedTypes.mapNotNull { it.resolve() }.filter { isProjectContent(it) }
     }
 
     fun isProjectContent(element: PsiElement): Boolean {
