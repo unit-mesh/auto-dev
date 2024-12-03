@@ -38,7 +38,7 @@ class JSAutoTestService : AutoTestService() {
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = NpmRunConfiguration::class.java
 
     override fun isApplicable(element: PsiElement): Boolean {
-        val sourceFile: PsiFile = element.containingFile ?: return false
+        val sourceFile = runReadAction { element.containingFile } ?: return false
         return LanguageApplicableUtil.isWebChatCreationContextSupported(sourceFile)
     }
 

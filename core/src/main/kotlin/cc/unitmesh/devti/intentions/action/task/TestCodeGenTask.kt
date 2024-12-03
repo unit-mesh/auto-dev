@@ -22,16 +22,19 @@ import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNameIdentifierOwner
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 
 class TestCodeGenTask(val request: TestCodeGenRequest, private val displayMessage: String) :
@@ -131,8 +134,8 @@ class TestCodeGenTask(val request: TestCodeGenRequest, private val displayMessag
         }
 
         runBlocking {
-            writeTestToFile(request.project, flow, testContext)
             navigateTestFile(testContext.outputFile, request.project)
+            writeTestToFile(request.project, flow, testContext)
 
             indicator.fraction = 1.0
             indicator.text = AutoDevBundle.message("intentions.chat.code.test.verify")
@@ -142,7 +145,10 @@ class TestCodeGenTask(val request: TestCodeGenRequest, private val displayMessag
                     autoTestService.tryFixSyntaxError(testContext.outputFile, request.project, it)
 
                     if (it.isNotEmpty()) {
-                        AutoDevNotifications.warn(request.project, "Test has error, skip auto run test: ${it.joinToString("\n")}")
+                        AutoDevNotifications.warn(
+                            request.project,
+                            "Test has error, skip auto run test: ${it.joinToString("\n")}"
+                        )
                         indicator.fraction = 1.0
                     } else {
                         autoTestService.runFile(request.project, testContext.outputFile, testContext.testElement)
@@ -169,6 +175,26 @@ class TestCodeGenTask(val request: TestCodeGenRequest, private val displayMessag
         flow: Flow<String>,
         context: TestFileContext,
     ) {
+        val isTargetEmpty = context.outputFile.length == 0L
+        if (context.isNewFile || isTargetEmpty) {
+            val suggestion = StringBuilder()
+            flow.collect {
+                suggestion.append(it)
+                val codeBlocks = parseCodeFromString(suggestion.toString())
+                codeBlocks.forEach {
+                    WriteCommandAction.writeCommandAction(project).compute<Any, RuntimeException> {
+                        val editor = FileEditorManager.getInstance(project).selectedTextEditor
+                        editor?.document?.replaceString(0, editor.document.textLength, it)
+                        editor?.caretModel?.moveToOffset(editor.document.textLength)
+                        editor?.scrollingModel?.scrollToCaret(ScrollType.RELATIVE);
+                    }
+                }
+            }
+
+            logger.info("LLM suggestion: $suggestion")
+            return
+        }
+
         val suggestion = StringBuilder()
         flow.collect {
             suggestion.append(it)
