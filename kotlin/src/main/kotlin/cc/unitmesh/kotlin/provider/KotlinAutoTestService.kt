@@ -243,7 +243,8 @@ class KotlinAutoTestService : AutoTestService() {
         project: Project,
         runAction: ((errors: List<String>) -> Unit)?
     ) {
-        val sourceFile: KtFile  = runReadAction { PsiManager.getInstance(project).findFile(outputFile) as? KtFile } ?: return
+        val sourceFile: KtFile =
+            runReadAction { PsiManager.getInstance(project).findFile(outputFile) as? KtFile } ?: return
         val collectPsiError = sourceFile.collectPsiError()
         if (collectPsiError.isNotEmpty()) {
             runAction?.invoke(collectPsiError)
@@ -262,7 +263,13 @@ class KotlinAutoTestService : AutoTestService() {
             val errors = mutableListOf<String>()
 
             override fun daemonFinished() {
-                DaemonCodeAnalyzerEx.processHighlights(document, project, HighlightSeverity.ERROR, range.startOffset, range.endOffset) {
+                DaemonCodeAnalyzerEx.processHighlights(
+                    document,
+                    project,
+                    HighlightSeverity.ERROR,
+                    range.startOffset,
+                    range.endOffset
+                ) {
                     if (it.description != null) {
                         errors.add(it.description)
                     }
@@ -283,7 +290,10 @@ class KotlinAutoTestService : AutoTestService() {
     }
 
     override fun tryFixSyntaxError(outputFile: VirtualFile, project: Project, issues: List<String>) {
-        val sourceFile = PsiManager.getInstance(project).findFile(outputFile) as? KtFile ?: return
+        val sourceFile = runReadAction {
+            PsiManager.getInstance(project).findFile(outputFile) as? KtFile
+        } ?: return
+
         val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return
         val importer = KotlinReferenceImporter()
         importer.autoImportReferenceAtCursor(editor, sourceFile)
