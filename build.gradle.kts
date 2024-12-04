@@ -301,7 +301,7 @@ project(":") {
             pluginModule(implementation(project(":javascript")))
             pluginModule(implementation(project(":goland")))
             pluginModule(implementation(project(":rust")))
-            pluginModule(implementation(project(":cpp")))
+//            pluginModule(implementation(project(":cpp")))
             pluginModule(implementation(project(":scala")))
             pluginModule(implementation(project(":local-bundle")))
             pluginModule(implementation(project(":exts:ext-database")))
@@ -322,7 +322,7 @@ project(":") {
         implementation(project(":javascript"))
         implementation(project(":goland"))
         implementation(project(":rust"))
-        implementation(project(":cpp"))
+//        implementation(project(":cpp"))
         implementation(project(":scala"))
         implementation(project(":local-bundle"))
         implementation(project(":exts:ext-database"))
@@ -333,7 +333,7 @@ project(":") {
         implementation(project(":exts:ext-terminal"))
         implementation(project(":exts:devins-lang"))
 
-        kover(project(":cpp"))
+//        kover(project(":cpp"))
         kover(project(":core"))
         kover(project(":goland"))
         kover(project(":java"))
@@ -579,20 +579,20 @@ project(":rust") {
     }
 }
 
-project(":cpp") {
-    if (platformVersion == 233 || platformVersion == 241) {
-        cppPlugins += "com.intellij.nativeDebug"
-    }
-
-    dependencies {
-        intellijPlatform {
-            intellijIde(clionVersion)
-            intellijPlugins(cppPlugins)
-        }
-
-        implementation(project(":core"))
-    }
-}
+//project(":cpp") {
+//    if (platformVersion == 233 || platformVersion == 241) {
+//        cppPlugins += "com.intellij.nativeDebug"
+//    }
+//
+//    dependencies {
+//        intellijPlatform {
+//            intellijIde(clionVersion)
+//            intellijPlugins(cppPlugins)
+//        }
+//
+//        implementation(project(":core"))
+//    }
+//}
 
 //project(":csharp") {
 //    dependencies {
