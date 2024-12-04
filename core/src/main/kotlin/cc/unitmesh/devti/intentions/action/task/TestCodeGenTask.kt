@@ -19,12 +19,12 @@ import cc.unitmesh.devti.template.GENIUS_CODE
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.util.parser.parseCodeFromString
 import com.intellij.lang.LanguageCommenters
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ReadAction
-import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.application.*
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.ScrollType
+import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
@@ -133,7 +133,6 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
         }
 
         runBlocking {
-            navigateTestFile(testContext.outputFile, request.project)
             writeTestToFile(request.project, flow, testContext)
 
             indicator.fraction = 1.0
@@ -174,15 +173,26 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
         flow: Flow<String>,
         context: TestFileContext,
     ) {
+        val fileEditorManager = FileEditorManager.getInstance(project)
+        var editors: Array<FileEditor> = emptyArray()
+        ApplicationManager.getApplication().invokeAndWait {
+            editors = fileEditorManager.openFile(context.outputFile, true)
+        }
+
+        if (editors.isNotEmpty()) {
+            fileEditorManager.setSelectedEditor(context.outputFile, "text-editor")
+        }
+
         val isTargetEmpty = context.outputFile.length == 0L
-        if (context.isNewFile || isTargetEmpty) {
+        if (editors.isNotEmpty() && (context.isNewFile || isTargetEmpty)) {
             val suggestion = StringBuilder()
+            val editor = fileEditorManager.selectedTextEditor
+
             flow.collect {
                 suggestion.append(it)
                 val codeBlocks = parseCodeFromString(suggestion.toString())
                 codeBlocks.forEach {
                     WriteCommandAction.writeCommandAction(project).compute<Any, RuntimeException> {
-                        val editor = FileEditorManager.getInstance(project).selectedTextEditor
                         editor?.document?.replaceString(0, editor.document.textLength, it)
                         editor?.caretModel?.moveToOffset(editor.document.textLength)
                         editor?.scrollingModel?.scrollToCaret(ScrollType.RELATIVE)
@@ -207,18 +217,6 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
         val codeBlocks = parseCodeFromString(suggestion.toString())
         codeBlocks.forEach {
             modifier.insertTestCode(context.outputFile, project, it)
-        }
-    }
-
-    private fun navigateTestFile(testFile: VirtualFile, project: Project) {
-        ApplicationManager.getApplication().invokeLater {
-            val fileEditorManager = FileEditorManager.getInstance(project)
-            val editors = fileEditorManager.openFile(testFile, true)
-
-            // If the file is already open in the editor, focus on the editor tab
-            if (editors.isNotEmpty()) {
-                fileEditorManager.setSelectedEditor(testFile, "text-editor")
-            }
         }
     }
 
