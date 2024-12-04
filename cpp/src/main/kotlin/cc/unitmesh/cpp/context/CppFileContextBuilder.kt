@@ -14,13 +14,18 @@ class CppFileContextBuilder : FileContextBuilder {
     override fun getFileContext(psiFile: PsiFile): FileContext? {
         if (psiFile !is OCFile) return null
 
-        val name = psiFile.name
-        val path = psiFile.virtualFile.path
-
         val includes = PsiTreeUtil.getChildrenOfTypeAsList(psiFile, OCIncludeDirective::class.java)
         val structLikes = PsiTreeUtil.getChildrenOfTypeAsList(psiFile, OCStructLike::class.java)
         val functions = PsiTreeUtil.getChildrenOfTypeAsList(psiFile, OCFunctionDeclaration::class.java)
 
-        return FileContext(psiFile, name, path, null, includes, structLikes, functions)
+        return FileContext(
+            psiFile,
+            name = psiFile.name,
+            path = psiFile.virtualFile.path,
+            null,
+            includes,
+            structLikes,
+            functions
+        )
     }
 }
