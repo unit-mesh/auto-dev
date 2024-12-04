@@ -38,6 +38,7 @@ import org.jetbrains.plugins.gradle.service.execution.GradleExternalTaskConfigur
 import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration
 import org.jetbrains.plugins.gradle.util.GradleConstants
 import java.io.File
+import java.util.concurrent.CompletableFuture
 
 class JavaAutoTestService : AutoTestService() {
     private val maxLevelOneClass = 8
@@ -214,6 +215,8 @@ class JavaAutoTestService : AutoTestService() {
         project: Project,
         runAction: ((errors: List<String>) -> Unit)?
     ) {
+        val future: CompletableFuture<Unit> = CompletableFuture()
+
         val sourceFile =
             runReadAction { PsiManager.getInstance(project).findFile(outputFile) as? PsiJavaFile } ?: return
         val collectPsiError = sourceFile.collectPsiError()
@@ -248,12 +251,12 @@ class JavaAutoTestService : AutoTestService() {
                         true
                     }
 
+                    future.complete(null)
                     runAction?.invoke(errors)
                     busConnection.disconnect()
                     Disposer.dispose(hintDisposable)
                 }
             })
-
     }
 
     private fun createTestFile(sourceFile: PsiFile, testDir: VirtualFile, project: Project): VirtualFile {

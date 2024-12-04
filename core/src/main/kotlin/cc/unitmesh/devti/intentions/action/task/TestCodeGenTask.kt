@@ -38,7 +38,7 @@ import kotlinx.coroutines.runBlocking
 
 class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
     Task.Backgroundable(request.project, displayMessage) {
-
+    private val logger = logger<TestCodeGenTask>()
     private val actionType = ChatActionType.GENERATE_TEST
     private val lang = request.file.language.displayName
 
@@ -87,10 +87,9 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
                 }
             }
 
-            testPromptContext.currentClass =
-                runReadAction { testContext.currentObject }?.lines()?.joinToString("\n") {
-                    "$comment $it"
-                } ?: ""
+            testPromptContext.currentClass = runReadAction { testContext.currentObject }?.lines()?.joinToString("\n") {
+                "$comment $it"
+            } ?: ""
         }
 
         testPromptContext.imports = testContext.imports.joinToString("\n") {
@@ -218,10 +217,6 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
         codeBlocks.forEach {
             modifier.insertTestCode(context.outputFile, project, it)
         }
-    }
-
-    companion object {
-        private val logger = logger<TestCodeGenTask>()
     }
 
     private fun getCustomAgentTestContext(testPromptContext: TestCodeGenContext): String {
