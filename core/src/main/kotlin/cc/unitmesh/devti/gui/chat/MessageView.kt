@@ -78,10 +78,9 @@ class MessageView(private val message: String, val role: ChatRole, private val d
 
         if (group != null) {
             val toolbar = ActionToolbarImpl(javaClass.getName(), group, true)
-//            toolbar.setLayoutPolicy(0)
             toolbar.component.setOpaque(false)
             toolbar.component.setBorder(JBUI.Borders.empty())
-            toolbar.setTargetComponent(this)
+            toolbar.targetComponent = this
             panel.addToRight(toolbar.component)
         }
 

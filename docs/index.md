@@ -25,7 +25,7 @@ permalink: /
 > 🧙‍AutoDev: The AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, and a helpful
 > bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Dev/Testing/Document/Agent feature 🧪 included! 🚀
 
-support IntelliJ IDEA, Android Studio, PyCharm, WebStorm, CLion,
+support IntelliJ IDEA, Android Studio, PyCharm, WebStorm, CLion (TBC),
 GoLand, RubyMine, AppCode, DataGrip, Rider, MPS, and more.
 
 VSCode Version: [https://github.com/unit-mesh/auto-dev-vscode](https://github.com/unit-mesh/auto-dev-vscode)
@@ -50,7 +50,7 @@ Here is the AutoDev architecture:
 
 Features:
 
-- Languages support: Java, Kotlin, JavaScript/TypeScript, Rust, Python, Golang, C/C++/OC, or others...
+- Languages support: Java, Kotlin, JavaScript/TypeScript, Rust, Python, Golang, C/C++/OC (TBC), or others...
 - Auto development mode
     - AutoCRUD (Spring framework）. With DevTi Protocol (like `devti://story/github/1102`) will auto
       generate Model-Controller-Service-Repository code.
