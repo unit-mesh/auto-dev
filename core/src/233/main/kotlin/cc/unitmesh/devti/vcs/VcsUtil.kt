@@ -6,6 +6,6 @@ import com.intellij.vcs.commit.CommitWorkflowUi
 
 object VcsUtil {
     fun getCommitWorkFlowUi(e: AnActionEvent): CommitWorkflowUi? {
-        return e.getData(VcsDataKeys.COMMIT_WORKFLOW_UI) ?: return null
+        return e.getData(VcsDataKeys.COMMIT_WORKFLOW_UI)
     }
 }
