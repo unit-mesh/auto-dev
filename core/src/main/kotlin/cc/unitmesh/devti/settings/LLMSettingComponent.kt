@@ -75,7 +75,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
         applySettings(settings, updateParams = false)
     }
     private val _currentSelectedEngine: AIEngines
-        get() = AIEngines.values().first { it.name.lowercase() == aiEngineParam.value.lowercase() }
+        get() = AIEngines.values().firstOrNull { it.name.lowercase() == aiEngineParam.value.lowercase() } ?: AIEngines.OpenAI
 
     private val currentLLMParams: List<LLMParam>
         get() {
