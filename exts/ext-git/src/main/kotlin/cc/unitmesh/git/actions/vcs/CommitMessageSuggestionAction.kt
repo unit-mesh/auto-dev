@@ -10,6 +10,7 @@ import cc.unitmesh.devti.vcs.VcsPrompting
 import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.template.context.TemplateContext
+import cc.unitmesh.devti.util.LLMCoroutineScope
 import cc.unitmesh.devti.util.parser.Code
 import cc.unitmesh.devti.vcs.VcsUtil
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -29,7 +30,7 @@ import com.intellij.vcs.log.VcsLogFilterCollection
 import com.intellij.vcs.log.VcsLogProvider
 import com.intellij.vcs.log.impl.VcsProjectLog
 import com.intellij.vcs.log.visible.filters.VcsLogFilterObject
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
 class CommitMessageSuggestionAction : ChatBaseAction() {
@@ -43,6 +44,8 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
     }
 
     private val logger = logger<CommitMessageSuggestionAction>()
+
+    private var currentJob: Job? = null
 
     override fun getActionType(): ChatActionType = ChatActionType.GEN_COMMIT_MESSAGE
 
@@ -73,12 +76,13 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
             return
         }
 
-        val commitMessageUi = event.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL) as CommitMessage
+        val editorField = (event.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL) as CommitMessage).editorField
         // empty commit message before generating
-        val originText = commitMessageUi.editorField.editor?.selectionModel?.selectedText ?: ""
-        commitMessageUi.editorField.text = ""
+        val originText = editorField.editor?.selectionModel?.selectedText ?: ""
+        currentJob?.cancel()
+        editorField.text = ""
 
-        ApplicationManager.getApplication().executeOnPooledThread() {
+        ApplicationManager.getApplication().executeOnPooledThread {
             val prompt = generateCommitMessage(diffContext, project, originText)
 
             logger.info("Start generating commit message.")
@@ -87,25 +91,25 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
             event.presentation.icon = AutoDevStatus.InProgress.icon
             try {
                 val stream = LlmFactory().create(project).stream(prompt, "", false)
-                var result = ""
-
-                runBlocking {
-                    stream
-                        .onCompletion {
-                            event.presentation.icon = AutoDevStatus.Ready.icon
-                            if (result.startsWith("```") && result.endsWith("```")) {
-                                result = result.removePrefix("```").removeSuffix("```")
+                currentJob = LLMCoroutineScope.scope(project).launch {
+                    runBlocking {
+                        stream
+                            .onCompletion {
+                                event.presentation.icon = AutoDevStatus.Ready.icon
                             }
-                        }
-                        .cancellable().collect {
-                            invokeLater {
-                                commitMessageUi.editorField.text += it
+                            .cancellable().collect {
+                                invokeLater {
+                                    if (this@launch.isActive) editorField.text += it
+                                }
                             }
-                        }
-                }
+                    }
 
-                if (result.startsWith("```") && result.endsWith("```")) {
-                    commitMessageUi.editorField.text = Code.parse(result).text
+                    val text = editorField.text
+                    if (isActive && text.startsWith("```") && text.endsWith("```")) {
+                        invokeLater {
+                            editorField.text = Code.parse(text).text
+                        }
+                    }
                 }
             } catch (e: Exception) {
                 event.presentation.icon = AutoDevStatus.Error.icon
