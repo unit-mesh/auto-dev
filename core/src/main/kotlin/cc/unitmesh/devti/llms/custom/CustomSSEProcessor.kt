@@ -188,7 +188,7 @@ fun JsonObject.updateCustomBody(customRequest: String): JsonObject {
             val customRequestJson = Json.parseToJsonElement(customRequest).jsonObject
             customRequestJson["customFields"]?.let { customFields ->
                 customFields.jsonObject.forEach { (key, value) ->
-                    put(key, value.jsonPrimitive)
+                    put(key, value)
                 }
             }
 
