@@ -1,7 +1,6 @@
 // Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.intellij.temporary.gui.block
 
-import cc.unitmesh.devti.gui.chat.ChatRole
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.event.CaretEvent
@@ -19,15 +18,6 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.Box
 import javax.swing.JComponent
-
-
-class AIAssistantFoldLabel(private val side: ChatRole) : JBLabel("", 0) {
-    init {
-        setOpaque(true)
-        isVisible = false
-    }
-}
-
 
 class EditorPadding(private val editor: Editor, pad: Int) :
     Box.Filler(Dimension(pad, 0), Dimension(pad, 0), Dimension(pad, 32767)) {
@@ -52,7 +42,11 @@ class EditorPadding(private val editor: Editor, pad: Int) :
 
 class EditorFragment(private val editor: EditorEx, message: CompletableMessage) {
     private val editorLineThreshold = 6
-    private val expandCollapseTextLabel: AIAssistantFoldLabel = AIAssistantFoldLabel(message.getRole())
+    private val expandCollapseTextLabel: JBLabel = JBLabel(message.getRole().roleName(), 0).apply {
+        setOpaque(true)
+        isVisible = false
+    }
+
     private val content: BorderLayoutPanel
     private var collapsed = false
 

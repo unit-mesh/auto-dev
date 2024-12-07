@@ -5,6 +5,8 @@ import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.util.LLMCoroutineScope
 import cc.unitmesh.devti.intentions.action.CodeCompletionBaseIntention
+import cc.unitmesh.devti.statusbar.AutoDevStatus
+import cc.unitmesh.devti.statusbar.AutoDevStatusService
 import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.command.WriteCommandAction
@@ -76,27 +78,34 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
         }
 
         val prompt = if (chunksString == null) {
-            "complete code for given code: \n$prefix"
+            "Complete code: \n$prefix"
         } else {
-            "complete code for given code: \n$commentPrefix\n$chunksString\n$prefix"
+            "Complete code: \n$commentPrefix\n$chunksString\n$prefix"
         }
 
         return prompt
     }
 
     fun execute(onFirstCompletion: Consumer<String>?) {
+        AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
         val prompt = promptText()
 
         logger.warn("Prompt: $prompt")
         LLMCoroutineScope.scope(project).launch {
-            //TODO: check to refactor, this maybe hardcode
-            val flow: Flow<String> = llmFactory.createForInlayCodeComplete(project).stream(prompt, "", false)
-            val suggestion = StringBuilder()
-            flow.collect {
-                suggestion.append(it)
-            }
+            try {
+                val flow: Flow<String> = llmFactory.createForInlayCodeComplete(project).stream(prompt, "", false)
+                val suggestion = StringBuilder()
+                flow.collect {
+                    AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
+                    suggestion.append(it)
+                }
 
-            onFirstCompletion?.accept(suggestion.toString())
+                AutoDevStatusService.notifyApplication(AutoDevStatus.Done)
+                onFirstCompletion?.accept(suggestion.toString())
+            } catch (e: Exception) {
+                logger.error("Failed to generate code completion suggestion: ${e.message}")
+                AutoDevStatusService.notifyApplication(AutoDevStatus.Error)
+            }
         }
     }
 

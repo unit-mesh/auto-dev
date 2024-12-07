@@ -12,14 +12,19 @@ class PostCodeProcessor(
     private val indent = " ".repeat(indentSize)
     private val methodDeclLine = Regex("^(?:^|\\s+)(?:@[A-Z]\\w+|(?:(?:public|private|protected)\\s+)?.*\\{)")
 
-    // todo: find a better way to format code
     fun execute(): String {
         if (completeCode.isEmpty()) {
             return completeCode
         }
 
-        var lines: MutableList<String> = completeCode.split("\n").toMutableList()
-        val isFirstLineNeedIndent = !prefixCode.endsWith(indent)
+        var code = completeCode
+        val prefix = prefixCode.trim()
+        if (completeCode.startsWith(prefix)) {
+            code = completeCode.substring(prefix.length)
+        }
+
+        var lines: MutableList<String> = code.split("\n").toMutableList()
+        val isFirstLineNeedIndent = !prefix.endsWith(indent)
 
         if (methodDeclLine.matches(lines[0])) {
             if (isFirstLineNeedIndent && lines[0].startsWith(indent)) {
@@ -27,20 +32,18 @@ class PostCodeProcessor(
             }
         }
 
-        // if lastLine not indented, indent all lines
         if (!lines.last().startsWith(indent)) {
             lines = lines.map { indent + it }.toMutableList()
         }
 
         val results = lines.joinToString("\n")
-        val leftBraceCount = (prefixCode + completeCode + suffixCode).count { it == '{' }
-        val rightBraceCount = (prefixCode + completeCode + suffixCode).count { it == '}' }
+        val leftBraceCount = (prefix + code + suffixCode).count { it == '{' }
+        val rightBraceCount = (prefix + code + suffixCode).count { it == '}' }
 
         val reversed = results.reversed()
         var toRemoveBrace = rightBraceCount - leftBraceCount
         val stringBuilder = StringBuilder()
 
-        // Loop through the reversed string and remove unnecessary right braces
         for (i in reversed.indices) {
             if (toRemoveBrace > 0 && (reversed[i] == '}' || reversed[i] == '\n' || reversed[i] == ' ')) {
                 if (reversed[i] == '}') {

@@ -43,6 +43,7 @@ class CodeCompletionRequest(
                 document.modificationStamp
             }
 
+            val prefixText = prefix ?: document.text.substring(0, offset)
             val suffixText = suffix ?: document.text.substring(offset)
 
             return CodeCompletionRequest(
@@ -50,7 +51,7 @@ class CodeCompletionRequest(
                 useTabs,
                 tabWidth,
                 file.virtualFile,
-                prefix ?: document.text,
+                prefixText ?: document.text,
                 offset,
                 documentVersion,
                 element,

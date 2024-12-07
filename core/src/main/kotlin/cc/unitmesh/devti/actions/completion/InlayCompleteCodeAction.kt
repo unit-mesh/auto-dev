@@ -12,9 +12,8 @@ import com.intellij.temporary.inlay.codecomplete.LLMInlayManager
  */
 class InlayCompleteCodeAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
-        val dataContext = e.dataContext
-        val editor = dataContext.getData(CommonDataKeys.EDITOR) ?: return
-        val project = dataContext.getData(CommonDataKeys.PROJECT) ?: return
+        val editor = e.getData(CommonDataKeys.EDITOR) ?: return
+        val project = e.getData(CommonDataKeys.PROJECT) ?: return
         if (project.isDisposed) return;
 
         val commandProcessor = CommandProcessor.getInstance()

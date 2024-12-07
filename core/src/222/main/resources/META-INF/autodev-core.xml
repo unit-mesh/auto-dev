@@ -219,7 +219,7 @@
 
         <action id="cc.unitmesh.devti.inlayCompleteCode"
                 class="cc.unitmesh.devti.actions.completion.InlayCompleteCodeAction"
-                text="Inlay Complete Code"
+                text="Inlay Complete Code (AutoDev)"
                 description="Inlay complete code!" >
             <keyboard-shortcut keymap="$default" first-keystroke="alt PERIOD"/>
             <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>

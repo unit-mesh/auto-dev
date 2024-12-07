@@ -51,11 +51,7 @@ class LLMApplyInlaysAction : EditorAction(ApplyInlaysHandler()), DumbAware {
         val instance = LLMInlayManager.getInstance()
         val tabRange = TextRange.create(caretOffset, caretOffsetAfterTab)
 
-        if (instance.countCompletionInlays(editor, tabRange) > 0) {
-            return false
-        }
-
-        return true
+        return instance.countCompletionInlays(editor, tabRange) <= 0
     }
 
 

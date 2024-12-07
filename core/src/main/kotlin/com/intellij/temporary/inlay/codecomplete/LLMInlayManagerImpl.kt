@@ -19,6 +19,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.KeyWithDefaultValue
 import com.intellij.openapi.util.TextRange
+import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiUtilBase
 import com.intellij.temporary.inlay.codecomplete.presentation.LLMInlayRenderer
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
@@ -65,6 +66,11 @@ class LLMInlayManagerImpl : LLMInlayManager {
             try {
                 document.insertString(request.offset, currentCompletion)
                 editor.caretModel.moveToOffset(request.offset + currentCompletion.length)
+
+                val range = TextRange(request.offset, request.offset + currentCompletion.length)
+                val psiFile = PsiUtilBase.getPsiFileInEditor(editor, project) ?: return@runWriteCommandAction
+                val codeStyleManager = CodeStyleManager.getInstance(project)
+                codeStyleManager.reformatText(psiFile, range.startOffset, range.endOffset)
             } finally {
                 //
             }
