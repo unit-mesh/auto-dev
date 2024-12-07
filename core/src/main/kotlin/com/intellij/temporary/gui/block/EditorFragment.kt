@@ -68,11 +68,13 @@ class EditorFragment(private val project: Project, private val editor: EditorEx,
                     val lineHeight = editor.lineHeight
                     val insets = editor.scrollPane.getInsets()
                     val height = lineHeight * editorLineThreshold + insets.height
+
                     var editorMaxHeight = height + expandCollapseTextLabel.preferredSize.height + getInsets().height
-                    val it = editor.headerComponent
-                    if (it != null) {
-                        editorMaxHeight += it.getPreferredSize().height
+                    val header = editor.headerComponent
+                    if (header != null) {
+                        editorMaxHeight += header.getPreferredSize().height
                     }
+
                     return Dimension(preferredSize.width, editorMaxHeight)
                 }
 
@@ -83,7 +85,7 @@ class EditorFragment(private val project: Project, private val editor: EditorEx,
         content.setBorder(
             JBUI.Borders.compound(
                 JBUI.Borders.empty(10, 0),
-                JBUI.Borders.customLine(JBColor(13949150, 4740710))
+                JBUI.Borders.customLine(JBColor(0xD4E1570, 0x474071))
             )
         )
         content.setOpaque(false)
@@ -96,12 +98,12 @@ class EditorFragment(private val project: Project, private val editor: EditorEx,
             override fun mouseClicked(e: MouseEvent?) {
                 setCollapsed(!getCollapsed())
             }
-        } as MouseListener)
+        })
     }
 
-    fun getCollapsed(): Boolean {
-        return collapsed
-    }
+    fun getContent(): JComponent = content
+
+    fun getCollapsed(): Boolean = collapsed
 
     fun setCollapsed(value: Boolean) {
         collapsed = value
@@ -111,18 +113,8 @@ class EditorFragment(private val project: Project, private val editor: EditorEx,
     fun updateExpandCollapseLabel() {
         val linesCount = editor.document.lineCount
         expandCollapseTextLabel.isVisible = linesCount > editorLineThreshold
-        if (collapsed) {
-            expandCollapseTextLabel.text = "More lines"
-            expandCollapseTextLabel.icon = AllIcons.General.ChevronDown
-            return
-        }
-
-        expandCollapseTextLabel.text = ""
-        expandCollapseTextLabel.icon = AllIcons.General.ChevronUp
-    }
-
-    fun getContent(): JComponent {
-        return content
+        expandCollapseTextLabel.text = if (collapsed) "More lines" else ""
+        expandCollapseTextLabel.icon = if (collapsed) AllIcons.General.ChevronDown else AllIcons.General.ChevronUp
     }
 }
 
