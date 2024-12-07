@@ -4,6 +4,7 @@ import cc.unitmesh.devti.provider.devins.LanguagePromptProcessor
 import cc.unitmesh.devti.provider.http.HttpClientProvider
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.util.NlsSafe
@@ -18,10 +19,8 @@ class AutoDevRunDevInsAction : DumbAwareAction() {
         val document = editor.document
         val file = FileDocumentManager.getInstance().getFile(document) ?: return
 
-        val language = try {
+        val language = runReadAction {
             PsiManager.getInstance(project).findFile(file)?.language?.id
-        } catch (e: Exception) {
-            null
         } ?: return
 
         e.presentation.isEnabled = language == "HTTP Request" || (language == "DevIn" && hasDevInProcessor(language))
@@ -42,7 +41,6 @@ class AutoDevRunDevInsAction : DumbAwareAction() {
 
         when (language) {
             "HTTP Request" -> {
-                // call http request processor
                 HttpClientProvider.all().forEach { it.execute(project, file, text) }
             }
 

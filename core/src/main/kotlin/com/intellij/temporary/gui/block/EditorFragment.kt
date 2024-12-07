@@ -7,7 +7,6 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.event.CaretEvent
 import com.intellij.openapi.editor.event.CaretListener
 import com.intellij.openapi.editor.ex.EditorEx
-import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
@@ -18,7 +17,6 @@ import java.awt.Graphics
 import java.awt.Insets
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import java.awt.event.MouseListener
 import javax.swing.Box
 import javax.swing.JComponent
 
@@ -52,7 +50,7 @@ class EditorPadding(private val editor: Editor, pad: Int) :
 }
 
 
-class EditorFragment(private val project: Project, private val editor: EditorEx, message: CompletableMessage) {
+class EditorFragment(private val editor: EditorEx, message: CompletableMessage) {
     private val editorLineThreshold = 6
     private val expandCollapseTextLabel: AIAssistantFoldLabel = AIAssistantFoldLabel(message.getRole())
     private val content: BorderLayoutPanel

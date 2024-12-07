@@ -185,7 +185,7 @@ class CodeBlockView(
             editor.scrollPane.setBorder(JBUI.Borders.empty())
             editor.component.setBorder(JBUI.Borders.empty())
 
-            val editorFragment = EditorFragment(project, editor, message)
+            val editorFragment = EditorFragment(editor, message)
             editorFragment.setCollapsed(forceFoldEditorByDefault)
             editorFragment.updateExpandCollapseLabel()
 
