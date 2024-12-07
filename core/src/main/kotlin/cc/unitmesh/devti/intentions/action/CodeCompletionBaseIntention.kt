@@ -61,8 +61,4 @@ class CodeCompletionBaseIntention : ChatBaseIntention() {
                 .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
         }
     }
-
-    companion object {
-        private val logger = logger<CodeCompletionBaseIntention>()
-    }
 }

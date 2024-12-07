@@ -9,6 +9,7 @@ import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.coder.AutoDevCoderSettingService
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 
 @Service
@@ -27,8 +28,10 @@ class LlmFactory {
 
     fun createForInlayCodeComplete(project: Project): LLMProvider {
         if(project.service<AutoDevCoderSettingService>().state.useCustomAIEngineWhenInlayCodeComplete) {
+            logger<LlmFactory>().info("useCustomAIEngineWhenInlayCodeComplete: ${project.service<AutoDevCoderSettingService>().state.useCustomAIEngineWhenInlayCodeComplete}")
             return project.getService(InlayCustomLLMProvider::class.java)
         }
+
         return create(project);
     }
 

@@ -33,6 +33,7 @@ class SimilarCodeCompletionTask(private val request: CodeCompletionRequest) : Ba
 
     val start = "code complete for given code, just return rest part of code. \n"
     val end = "\nreturn rest code:"
+
     override fun promptText(): String {
         val documentLength = request.editor.document.textLength
         val prefix = generatePrefix(documentLength)

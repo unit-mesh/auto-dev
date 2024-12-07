@@ -21,8 +21,6 @@ import java.time.Duration
 //TODO: refactor, this provider copy from CustomLLMProvider
 @Service(Service.Level.PROJECT)
 class InlayCustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(project) {
-
-
     private val autoDevSettingsState = project.service<AutoDevCoderSettingService>().state
     private val url get() = autoDevSettingsState.customEngineServerParam
     private val key get() = autoDevSettingsState.customEngineTokenParam
