@@ -1,6 +1,56 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v1.8.8...v) (2024-08-07)
+# [](https://github.com/unit-mesh/auto-dev/compare/v1.8.16...v) (2024-12-07)
 
 ## [Unreleased]
+
+## [1.8.16](https://github.com/unit-mesh/auto-dev/compare/v1.8.15...v[1.8.16]) (2024-12-07)
+
+### Bug Fixes
+- **builder:** 优化上下文提供者处理逻辑 ([c5e7fb5](https://github.com/unit-mesh/auto-dev/commit/c5e7fb5ceec808621be60804eb0b48827b9217a3))
+- **core:** Optimize TestCodeGenTask and JSAutoTestService logic ([276342c](https://github.com/unit-mesh/auto-dev/commit/276342cf9d9615348cac134d8f0f967651592414))
+- **core:** 修复自定义提示配置加载时的日志记录 ([bdf63f5](https://github.com/unit-mesh/auto-dev/commit/bdf63f5a625ef327a6aaec8499ab2ca5c9816fd4))
+- **CustomSSEProcessor:** 支持自定义大模型 customFields 使用复杂类型字段 ([#248](https://github.com/unit-mesh/auto-dev/issues/248)) ([8c0bb92](https://github.com/unit-mesh/auto-dev/commit/8c0bb9201945ab75a62965b3a22346e0b644223f))
+- **java:** Clean up PsiMethod and improve MethodContext creation ([19647cf](https://github.com/unit-mesh/auto-dev/commit/19647cf56d6fe65674b2d1923f11042fe6c69a60))
+- **java:** 优化 findRelatedClasses 方法以避免不必要的类型解析 ([9d3340f](https://github.com/unit-mesh/auto-dev/commit/9d3340fbbd70766109ec24abc6ac222861e6c175))
+- **LLMSettingComponent:** 修复新装用户引擎未选择情况下的 `Array contains no element matching the predicate.` 异常 ([#247](https://github.com/unit-mesh/auto-dev/issues/247)) ([10848e3](https://github.com/unit-mesh/auto-dev/commit/10848e3a4077bbbaeccb79d35c8349aaad1da31c))
+- **tests:** update Kotlin test cases with proper syntax and semicolon usage ([a54aabd](https://github.com/unit-mesh/auto-dev/commit/a54aabd5fdc61775a519383e1953f872e3348846))
+
+### Features
+- **document:** Add examples to custom living doc prompt builder ([dd2cd39](https://github.com/unit-mesh/auto-dev/commit/dd2cd39e04ec002323a927da0065039a2da0c7ef))
+- **java:** add support for AssertJ and update JUnit detection logic ([e1e9c26](https://github.com/unit-mesh/auto-dev/commit/e1e9c26cbf660ed20c180edf65e79ef049d005ca))
+
+## [1.8.15](https://github.com/unit-mesh/auto-dev/compare/v1.8.12...v[1.8.15]) (2024-11-16)
+
+### Reverts
+- Revert "chore(plugin): update IntelliJ dependency and add JSON module config" ([f49134b](https://github.com/unit-mesh/auto-dev/commit/f49134bf550957556a2fcaeb873ee1b7d4230d16))
+
+## [1.8.12](https://github.com/unit-mesh/auto-dev/compare/v[1.8.12]-ALPHA...v[1.8.12]) (2024-10-05)
+
+### Features
+- **build:** add kotlinx serialization plugin and dependency [#239](https://github.com/unit-mesh/auto-dev/issues/239) ([055633c](https://github.com/unit-mesh/auto-dev/commit/055633c1f992483648a54aa10a38cfd040833d4e))
+
+## [1.8.12-ALPHA](https://github.com/unit-mesh/auto-dev/compare/v1.8.11...v[1.8.12-ALPHA]) (2024-09-26)
+
+### Features
+- **build.gradle.kts:** add IntelliJ platform plugins and tasks [#236](https://github.com/unit-mesh/auto-dev/issues/236) ([a884459](https://github.com/unit-mesh/auto-dev/commit/a884459b6cb57e426bc94decebd4283fa96b0a14))
+- **build:** upgrade Gradle version and IntelliJ plugin [#236](https://github.com/unit-mesh/auto-dev/issues/236) ([82c9ab5](https://github.com/unit-mesh/auto-dev/commit/82c9ab540c5cf0849b813da7081bc94631a4137d))
+- **github-actions:** update build workflow and split tasks into separate jobs ([a92966b](https://github.com/unit-mesh/auto-dev/commit/a92966bca0262f885131dbdded5ea6b45bcba4ee))
+- **gradle:** increase JVM memory for Kotlin and Gradle [#236](https://github.com/unit-mesh/auto-dev/issues/236) ([ddd30c1](https://github.com/unit-mesh/auto-dev/commit/ddd30c1a207083b59be2cf2a0beb399c60415b20))
+
+## [1.8.11](https://github.com/unit-mesh/auto-dev/compare/v1.8.9-SNAPSHOT...v[1.8.11]) (2024-09-08)
+
+### Bug Fixes
+- **gui:** handle exceptions in language detection ([40f1c0d](https://github.com/unit-mesh/auto-dev/commit/40f1c0d89d8e47a2a8f64c703d0c23cbf011a2d8))
+- **provider:** return immediately in handleFromType for PsiClassType ([6c92163](https://github.com/unit-mesh/auto-dev/commit/6c921634ac130289a4ca9ab0e9eec33b5b6157c3))
+- Unable to receive notifications when changes are made to the document ([#228](https://github.com/unit-mesh/auto-dev/issues/228)) ([22cd295](https://github.com/unit-mesh/auto-dev/commit/22cd29579053e60f9695ae4dfc3751039d67c6a9))
+
+## [1.8.9-SNAPSHOT](https://github.com/unit-mesh/auto-dev/compare/v1.8.8...v[1.8.9-SNAPSHOT]) (2024-08-09)
+
+### Bug Fixes
+- **settings:** update comparison and remove unused dependency ([853dd9d](https://github.com/unit-mesh/auto-dev/commit/853dd9d377f66ee5245e80707cdc36511717b16c))
+
+### Features
+- **embedding:** add LocalEmbedding class for text embedding [#200](https://github.com/unit-mesh/auto-dev/issues/200) ([2af87cc](https://github.com/unit-mesh/auto-dev/commit/2af87ccb07d38cdd80b91c55f3a0ea9b1d889770))
+- **embedding:** implement in-memory and disk-synchronized embedding search indices [#200](https://github.com/unit-mesh/auto-dev/issues/200) ([6d5ca70](https://github.com/unit-mesh/auto-dev/commit/6d5ca70311af20d4ac1b84816f6c3194297f22b1))
 
 ## [1.8.8](https://github.com/unit-mesh/auto-dev/compare/v1.8.7-RELEASE...v[1.8.8]) (2024-08-07)
 
@@ -18,11 +68,15 @@
 - **service:** add support for creating Maven run configuration [#164](https://github.com/unit-mesh/auto-dev/issues/164) ([cdc003a](https://github.com/unit-mesh/auto-dev/commit/cdc003ae040cbaa20898a3f891295852c4b6f969))
 - **smartpaste:** add SmartCopyPasteProcessor ([4b427b4](https://github.com/unit-mesh/auto-dev/commit/4b427b46cb861544f79cd9e10ae5e5ab66e80677))
 
-## [1.8.7-RELEASE](https://github.com/unit-mesh/auto-dev/compare/v1.8.6-RELEASE...v[1.8.7-RELEASE]) (2024-06-13)
+## [1.8.7-RELEASE](https://github.com/unit-mesh/auto-dev/compare/v1.8.7-SNAPSHOT...v[1.8.7-RELEASE]) (2024-06-13)
+
+### Bug Fixes
+- **java:** simplify JavaVersionProvider isApplicable method ([4c20a81](https://github.com/unit-mesh/auto-dev/commit/4c20a8123cbc19459548cb1732392463eae2e210))
+
+## [1.8.7-SNAPSHOT](https://github.com/unit-mesh/auto-dev/compare/v1.8.6-RELEASE...v[1.8.7-SNAPSHOT]) (2024-06-06)
 
 ### Bug Fixes
 - **context:** handle exceptions in ClassContextProvider [#199](https://github.com/unit-mesh/auto-dev/issues/199) ([347c452](https://github.com/unit-mesh/auto-dev/commit/347c4522a1b682f5300aaa1372c1592ef243bf58))
-- **java:** simplify JavaVersionProvider isApplicable method ([4c20a81](https://github.com/unit-mesh/auto-dev/commit/4c20a8123cbc19459548cb1732392463eae2e210))
 
 ### Features
 - **api-test:** add API test request generation template [#198](https://github.com/unit-mesh/auto-dev/issues/198) ([177a66c](https://github.com/unit-mesh/auto-dev/commit/177a66ce551564747a035cbac75b6d0762fe6850))
@@ -1627,10 +1681,16 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.8.8-RELEASE...HEAD
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.8.16...HEAD
+[1.8.16]: https://github.com/unit-mesh/auto-dev/compare/v1.8.15...v1.8.16
+[1.8.15]: https://github.com/unit-mesh/auto-dev/compare/v1.8.12...v1.8.15
+[1.8.12]: https://github.com/unit-mesh/auto-dev/compare/v1.8.12-ALPHA...v1.8.12
+[1.8.12-ALPHA]: https://github.com/unit-mesh/auto-dev/compare/v1.8.11...v1.8.12-ALPHA
+[1.8.11]: https://github.com/unit-mesh/auto-dev/compare/v1.8.9-SNAPSHOT...v1.8.11
+[1.8.9-SNAPSHOT]: https://github.com/unit-mesh/auto-dev/compare/v1.8.8...v1.8.9-SNAPSHOT
 [1.8.8]: https://github.com/unit-mesh/auto-dev/compare/v1.8.7-RELEASE...v1.8.8
-[1.8.8-RELEASE]: https://github.com/unit-mesh/auto-dev/compare/v1.8.8...v1.8.8-RELEASE
-[1.8.7-RELEASE]: https://github.com/unit-mesh/auto-dev/compare/v1.8.6-RELEASE...v1.8.7-RELEASE
+[1.8.7-SNAPSHOT]: https://github.com/unit-mesh/auto-dev/compare/v1.8.6-RELEASE...v1.8.7-SNAPSHOT
+[1.8.7-RELEASE]: https://github.com/unit-mesh/auto-dev/compare/v1.8.7-SNAPSHOT...v1.8.7-RELEASE
 [1.8.6-SNAPSHOT]: https://github.com/unit-mesh/auto-dev/compare/v1.8.5-RC...v1.8.6-SNAPSHOT
 [1.8.6-RELEASE]: https://github.com/unit-mesh/auto-dev/compare/v1.8.6-SNAPSHOT...v1.8.6-RELEASE
 [1.8.5-RC]: https://github.com/unit-mesh/auto-dev/compare/v1.8.4-RC...v1.8.5-RC
