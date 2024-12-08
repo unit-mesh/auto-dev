@@ -16,6 +16,6 @@ class CodePartEditorInfo(
     var language: Language
         get() = file.language
         set(value) {
-            file.setLanguage(value)
+            file.language = value
         }
 }
