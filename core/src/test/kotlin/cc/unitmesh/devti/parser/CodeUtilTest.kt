@@ -20,7 +20,6 @@ class CodeUtilTest {
 
         val code = Code.parse(markdown)
 
-//        assertEquals(code.language.id, "java")
         assertEquals(
             code.text, """
             |public class HelloWorld {
