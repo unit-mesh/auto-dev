@@ -3,11 +3,11 @@ package cc.unitmesh.devti.util.parser
 import com.intellij.lang.Language
 import com.intellij.openapi.fileTypes.PlainTextLanguage
 
-class Code(val language: Language, val text: String, val isComplete: Boolean) {
+class CodeFence(val language: Language, val text: String, val isComplete: Boolean, val extension: String? = "") {
     companion object {
-        fun parse(content: String): Code {
+        fun parse(content: String): CodeFence {
             val regex = Regex("```([\\w#+\\s]*)")
-            val lines = content.lines()
+            val lines = content.replace("\\n", "\n").lines()
 
             var codeStarted = false
             var codeClosed = false
@@ -30,36 +30,16 @@ class Code(val language: Language, val text: String, val isComplete: Boolean) {
                 }
             }
 
-            var startIndex = 0
-            var endIndex = codeBuilder.length - 1
-
-            while (startIndex <= endIndex) {
-                if (!codeBuilder[startIndex].isWhitespace()) {
-                    break
-                }
-                startIndex++
-            }
-
-            while (endIndex >= startIndex) {
-                if (!codeBuilder[endIndex].isWhitespace()) {
-                    break
-                }
-                endIndex--
-            }
-
-            var trimmedCode = codeBuilder.substring(startIndex, endIndex + 1).toString()
+            val trimmedCode = codeBuilder.trim().toString()
             val language = findLanguage(languageId ?: "")
+            val extension =
+                language.associatedFileType?.defaultExtension ?: lookupFileExt(languageId ?: "txt")
 
-            // if content is not empty, but code is empty, then it's a markdown
-            if (trimmedCode.isEmpty()) {
-                return Code(findLanguage("markdown"), content.replace("\\n", "\n"), codeClosed)
+            return if (trimmedCode.isEmpty()) {
+                CodeFence(language, "", codeClosed, extension)
+            } else {
+                CodeFence(language, trimmedCode, codeClosed, extension)
             }
-
-            if (languageId == "devin" || languageId == "devins") {
-                trimmedCode = trimmedCode.replace("\\`\\`\\`", "```")
-            }
-
-            return Code(language, trimmedCode, codeClosed)
         }
 
         /**
@@ -82,6 +62,35 @@ class Code(val language: Language, val text: String, val isComplete: Boolean) {
 
             return registeredLanguages.find { it.displayName.equals(fixedLanguage, ignoreCase = true) }
                 ?: PlainTextLanguage.INSTANCE
+        }
+
+        fun lookupFileExt(languageId: String): String {
+            return when (languageId.lowercase()) {
+                "c#" -> "cs"
+                "c++" -> "cpp"
+                "c" -> "c"
+                "java" -> "java"
+                "javascript" -> "js"
+                "kotlin" -> "kt"
+                "python" -> "py"
+                "ruby" -> "rb"
+                "swift" -> "swift"
+                "typescript" -> "ts"
+                "markdown" -> "md"
+                "sql" -> "sql"
+                "plantuml" -> "puml"
+                "shell" -> "sh"
+                "objective-c" -> "m"
+                "objective-c++" -> "mm"
+                "go" -> "go"
+                "html" -> "html"
+                "css" -> "css"
+                "dart" -> "dart"
+                "scala" -> "scala"
+                "rust" -> "rs"
+                "http request" -> "http"
+                else -> languageId
+            }
         }
     }
 }

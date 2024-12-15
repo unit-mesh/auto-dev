@@ -11,7 +11,7 @@ import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.template.context.TemplateContext
 import cc.unitmesh.devti.util.LLMCoroutineScope
-import cc.unitmesh.devti.util.parser.Code
+import cc.unitmesh.devti.util.parser.CodeFence
 import cc.unitmesh.devti.vcs.VcsUtil
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -107,7 +107,7 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
                     val text = editorField.text
                     if (isActive && text.startsWith("```") && text.endsWith("```")) {
                         invokeLater {
-                            editorField.text = Code.parse(text).text
+                            editorField.text = CodeFence.parse(text).text
                         }
                     }
                 }

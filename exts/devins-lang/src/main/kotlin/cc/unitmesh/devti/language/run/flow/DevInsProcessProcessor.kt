@@ -8,7 +8,7 @@ import cc.unitmesh.devti.language.compiler.DevInsCompiler
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.psi.DevInVisitor
 import cc.unitmesh.devti.provider.ContextPrompter
-import cc.unitmesh.devti.util.parser.Code
+import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runReadAction
@@ -61,7 +61,7 @@ class DevInsProcessProcessor(val project: Project) {
     fun process(output: String, event: ProcessEvent, scriptPath: String) {
         conversationService.updateIdeOutput(scriptPath, output)
 
-        val code = Code.parse(conversationService.getLlmResponse(scriptPath))
+        val code = CodeFence.parse(conversationService.getLlmResponse(scriptPath))
         val isDevInCode = code.language == DevInLanguage.INSTANCE
         if (isDevInCode) {
             runInEdt {

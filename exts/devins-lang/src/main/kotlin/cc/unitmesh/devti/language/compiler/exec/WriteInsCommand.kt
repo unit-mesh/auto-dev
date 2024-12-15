@@ -4,7 +4,7 @@ import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.language.compiler.model.LineInfo
 import cc.unitmesh.devti.language.psi.DevInUsed
 import cc.unitmesh.devti.language.utils.lookupFile
-import cc.unitmesh.devti.util.parser.Code
+import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.WriteCommandAction
@@ -22,7 +22,7 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
     private val pathSeparator = "/"
 
     override suspend fun execute(): String? {
-        val content = Code.parse(content).text
+        val content = CodeFence.parse(content).text
 
         val range: LineInfo? = LineInfo.fromString(used.text)
         val filepath = argument.split("#")[0]

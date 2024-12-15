@@ -1,7 +1,7 @@
 // Copyright 2000-2021 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package cc.unitmesh.devti.language
 
-import cc.unitmesh.devti.util.parser.Code.Companion.findLanguage
+import cc.unitmesh.devti.util.parser.CodeFence.Companion.findLanguage
 import cc.unitmesh.devti.language.parser.CodeBlockElement
 import cc.unitmesh.devti.language.psi.DevInTypes
 import com.intellij.lang.Language

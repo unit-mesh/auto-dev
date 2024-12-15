@@ -2,7 +2,7 @@ package com.intellij.temporary.inlay.codecomplete
 
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionTask
-import cc.unitmesh.devti.util.parser.Code
+import cc.unitmesh.devti.util.parser.CodeFence
 import cc.unitmesh.devti.util.parser.PostCodeProcessor
 import com.intellij.injected.editor.EditorWindow
 import com.intellij.openapi.Disposable
@@ -116,7 +116,7 @@ class LLMInlayManagerImpl : LLMInlayManager {
         CodeCompletionTask(request).execute { completion ->
             if (completion.isEmpty()) return@execute
 
-            val completeCode = Code.parse(completion).text
+            val completeCode = CodeFence.parse(completion).text
             currentCompletion = PostCodeProcessor(request.prefixText, request.suffixText, completeCode).execute()
 
             WriteCommandAction.runWriteCommandAction(editor.project) {

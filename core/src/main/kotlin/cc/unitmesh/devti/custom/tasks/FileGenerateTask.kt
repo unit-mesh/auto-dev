@@ -4,7 +4,7 @@ import cc.unitmesh.cf.core.llms.LlmMsg
 import cc.unitmesh.cf.core.parser.MarkdownCode
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.llms.LlmFactory
-import cc.unitmesh.devti.util.parser.Code
+import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.runBlocking
 import java.nio.file.Path
 import kotlin.io.path.Path
-import kotlinx.coroutines.flow.*
 
 class FileGenerateTask(
     @JvmField val project: Project,
@@ -58,7 +57,7 @@ class FileGenerateTask(
         }
 
         if (codeOnly) {
-            val code = Code.parse(result).text
+            val code = CodeFence.parse(result).text
             file.writeText(code)
             refreshAndOpenInEditor(file.toPath(), projectRoot)
             return

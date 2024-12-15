@@ -9,8 +9,7 @@ import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.pair.arch.ProjectPackageTree
 import cc.unitmesh.devti.pair.tasking.Tasking
 import cc.unitmesh.devti.provider.architecture.LayeredArchProvider
-import cc.unitmesh.devti.util.parser.Code
-import com.intellij.lang.html.HTMLLanguage
+import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.fileTypes.PlainTextLanguage
 import com.intellij.openapi.project.Project
@@ -54,7 +53,7 @@ class AutoDevPairToolWindow(val project: Project, val disposable: Disposable) : 
             row {
                 val text = layeredArch?.print() ?: "No Layered Arch"
                 val block = CodeBlock(SimpleMessage(text, text, ChatRole.User))
-                block.code = Code(PlainTextLanguage.INSTANCE, text, true)
+                block.code = CodeFence(PlainTextLanguage.INSTANCE, text, true)
 
                 val codeBlockView = CodeBlockView(block, project, disposable)
                 val component = codeBlockView.getComponent()

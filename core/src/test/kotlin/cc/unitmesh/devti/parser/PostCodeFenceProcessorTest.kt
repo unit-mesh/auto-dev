@@ -4,7 +4,7 @@ import cc.unitmesh.devti.util.parser.PostCodeProcessor
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class PostCodeProcessorTest {
+class PostCodeFenceProcessorTest {
     @Test
     fun should_handle_with_no_indent_code() {
         val prefix = "public class Test {\n"

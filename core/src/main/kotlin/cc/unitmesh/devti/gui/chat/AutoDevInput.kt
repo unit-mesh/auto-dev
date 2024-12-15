@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.devti.settings.LanguageChangedCallback.placeholder
-import cc.unitmesh.devti.util.parser.Code.Companion.findLanguage
+import cc.unitmesh.devti.util.parser.CodeFence.Companion.findLanguage
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ex.AnActionListener

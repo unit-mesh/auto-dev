@@ -6,7 +6,7 @@ import cc.unitmesh.devti.language.compiler.DevInsCompiler
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.provider.devins.CustomAgentContext
 import cc.unitmesh.devti.provider.devins.LanguagePromptProcessor
-import cc.unitmesh.devti.util.parser.Code
+import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
@@ -20,7 +20,7 @@ class DevInsPromptProcessor : LanguagePromptProcessor {
     override fun execute(project: Project, context: CustomAgentContext): String {
         var text = context.response
         // re-check the language of the code
-        Code.parse(text).let {
+        CodeFence.parse(text).let {
             if (it.language == DevInLanguage.INSTANCE) {
                 text = it.text
             }

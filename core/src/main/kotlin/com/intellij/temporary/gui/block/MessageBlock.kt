@@ -1,7 +1,7 @@
 // Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.intellij.temporary.gui.block
 
-import cc.unitmesh.devti.util.parser.Code
+import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.lang.Language
 
 interface MessageBlock {
@@ -65,13 +65,13 @@ class TextBlock(val msg: CompletableMessage) : AbstractMessageBlock(msg) {
 class CodeBlock(private val msg: CompletableMessage, language: Language = Language.ANY) : AbstractMessageBlock(msg) {
     override var type: MessageBlockType = MessageBlockType.CodeEditor
 
-    var code: Code
+    var code: CodeFence
 
     init {
-        this.code = Code(language, msg.text, false)
+        this.code = CodeFence(language, msg.text, false)
     }
 
     override fun onContentChanged(content: String) {
-        this.code = Code.parse(content)
+        this.code = CodeFence.parse(content)
     }
 }

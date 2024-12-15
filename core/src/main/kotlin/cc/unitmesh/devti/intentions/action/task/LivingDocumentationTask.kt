@@ -7,14 +7,13 @@ import cc.unitmesh.devti.provider.LivingDocumentation
 import cc.unitmesh.devti.custom.document.LivingDocumentationType
 import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.statusbar.AutoDevStatusService
-import cc.unitmesh.devti.util.parser.Code
+import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.psi.PsiElement
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.flow.*
 
 /**
  * The `LivingDocumentationTask` class represents a background task for generating living documentation.
@@ -50,7 +49,7 @@ class LivingDocumentationTask(
 
         // result maybe surroding by ```
         if (result.startsWith("```") && result.endsWith("```")) {
-            result = Code.parse(result).text
+            result = CodeFence.parse(result).text
         }
 
         documentation.updateDoc(target, result, type, editor)

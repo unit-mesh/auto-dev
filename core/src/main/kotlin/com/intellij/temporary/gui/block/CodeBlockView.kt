@@ -2,7 +2,7 @@
 package com.intellij.temporary.gui.block
 
 import cc.unitmesh.devti.gui.chat.ChatRole
-import cc.unitmesh.devti.util.parser.Code
+import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.lang.Language
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionGroup
@@ -70,7 +70,7 @@ class CodeBlockView(
     }
 
     private fun updateOrCreateCodeView(): CodePartEditorInfo? {
-        val code: Code = getBlock().code
+        val code: CodeFence = getBlock().code
         if (editorInfo == null) {
             val graphProperty = PropertyGraph(null, false).property(code.text)
             val editorInfo: CodePartEditorInfo = createCodeViewer(

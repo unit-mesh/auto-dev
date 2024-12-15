@@ -11,7 +11,7 @@ import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.provider.devins.LanguagePromptProcessor
 import cc.unitmesh.devti.provider.devins.CustomAgentContext
 import cc.unitmesh.devti.util.LLMCoroutineScope
-import cc.unitmesh.devti.util.parser.Code
+import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
@@ -56,7 +56,7 @@ class CustomAgentChatProcessor(val project: Project) {
                 llmProvider.appendLocalMessage(content, ChatRole.Assistant)
                 message.reRenderAssistantOutput()
 
-                val code = Code.parse(content)
+                val code = CodeFence.parse(content)
                 if (code.language.displayName == "DevIn") {
                     devInCode = code.text
                 }
@@ -76,7 +76,7 @@ class CustomAgentChatProcessor(val project: Project) {
                 ui.hiddenProgressBar()
                 ui.updateUI()
 
-                val code = Code.parse(msg)
+                val code = CodeFence.parse(msg)
                 if (code.language.displayName == "DevIn") {
                     devInCode = code.text
                 }

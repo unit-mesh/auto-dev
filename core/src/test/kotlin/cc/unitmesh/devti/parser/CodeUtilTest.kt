@@ -1,13 +1,13 @@
 package cc.unitmesh.devti.parser
 
-import cc.unitmesh.devti.util.parser.Code
+import cc.unitmesh.devti.util.parser.CodeFence
+import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
 import org.junit.Test
 
-class CodeUtilTest {
-    @Test
-    fun should_parse_code_from_markdown_java_hello_world() {
+class CodeUtilTest  : BasePlatformTestCase() {
+    fun testShould_parse_code_from_markdown_java_hello_world() {
         val markdown = """
             |```java
             |public class HelloWorld {
@@ -18,7 +18,7 @@ class CodeUtilTest {
             |```
         """.trimMargin()
 
-        val code = Code.parse(markdown)
+        val code = CodeFence.parse(markdown)
 
         assertEquals(
             code.text, """
@@ -32,8 +32,7 @@ class CodeUtilTest {
         assertTrue(code.isComplete)
     }
 
-    @Test
-    fun should_handle_code_not_complete_from_markdown() {
+    fun testShould_handle_code_not_complete_from_markdown() {
         val markdown = """
             |```java
             |public class HelloWorld {
@@ -41,7 +40,7 @@ class CodeUtilTest {
             |        System.out.println("Hello, World");
         """.trimMargin()
 
-        val code = Code.parse(markdown)
+        val code = CodeFence.parse(markdown)
         assertEquals(
             code.text, """
             |public class HelloWorld {
@@ -52,17 +51,15 @@ class CodeUtilTest {
         assertTrue(!code.isComplete)
     }
 
-    @Test
-    fun should_handle_pure_markdown_content() {
+    fun testShould_handle_pure_markdown_content() {
         val content = "```markdown\nGET /wp/v2/posts\n```"
-        val code = Code.parse(content)
+        val code = CodeFence.parse(content)
         assertEquals(code.text, "GET /wp/v2/posts")
     }
 
-    @Test
-    fun should_handle_http_request() {
+    fun testShould_handle_http_request() {
         val content = "```http request\nGET /wp/v2/posts\n```"
-        val code = Code.parse(content)
+        val code = CodeFence.parse(content)
         assertEquals(code.text, "GET /wp/v2/posts")
     }
 }

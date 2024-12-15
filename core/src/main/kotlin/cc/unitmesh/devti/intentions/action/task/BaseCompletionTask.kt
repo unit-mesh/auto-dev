@@ -9,7 +9,7 @@ import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.statusbar.AutoDevStatusService
-import cc.unitmesh.devti.util.parser.Code
+import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.actionSystem.CustomShortcutSet
 import com.intellij.openapi.actionSystem.KeyboardShortcut
 import com.intellij.openapi.application.invokeLater
@@ -70,7 +70,7 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
                     return@collect
                 }
 
-                val parsedContent = Code.parse(char).text;
+                val parsedContent = CodeFence.parse(char).text;
 
                 suggestion.append(parsedContent)
                 invokeLater {
