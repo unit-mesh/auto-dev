@@ -53,6 +53,9 @@ class CodeFence(val language: Language, val text: String, val isComplete: Boolea
             val fixedLanguage = when (languageName) {
                 "csharp" -> "c#"
                 "cpp" -> "c++"
+                "shell" -> "Shell Script"
+                "sh" -> "Shell Script"
+                "http" -> "HTTP Request"
                 else -> languageName
             }
 
