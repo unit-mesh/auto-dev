@@ -220,25 +220,29 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
     private suspend fun updateMessageInUi(content: Flow<String>): String {
         val messageView = MessageView("", ChatRole.Assistant, "")
         myList.add(messageView)
-        val startTime = System.currentTimeMillis() // 记录代码开始执行的时间
-
+        val startTime = System.currentTimeMillis()
         var text = ""
-        content.onCompletion {
-            logger.info("onCompletion ${it?.message}")
-            hiddenProgressBar()
-        }.catch {
-            it.printStackTrace()
-        }.collect {
-            text += it
+        val batchSize = 5
+        val buffer = mutableListOf<String>()
 
+        content
+            .buffer(capacity = 10)
+            .collect { newText ->
+                buffer.add(newText)
+                if (buffer.size >= batchSize) {
+                    text += buffer.joinToString("")
+                    buffer.clear()
+                    messageView.updateContent(text)
+                }
+            }
+        // 处理剩余的缓冲内容
+        if (buffer.isNotEmpty()) {
+            text += buffer.joinToString("")
             messageView.updateContent(text)
-            messageView.scrollToBottom()
         }
 
         if (delaySeconds.isNotEmpty()) {
             val elapsedTime = System.currentTimeMillis() - startTime
-            // waiting for the last message to be rendered, like sleep 5 ms?
-            // 此处的 20s 出自 openAI 免费账户访问 3/min
             withContext(Dispatchers.IO) {
                 val delaySec = delaySeconds.toLong()
                 val remainingTime = maxOf(delaySec * 1000 - elapsedTime, 0)
@@ -247,7 +251,6 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         }
 
         messageView.reRenderAssistantOutput()
-
         return text
     }
 
