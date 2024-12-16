@@ -26,11 +26,23 @@ class DisplayComponent(question: String) : JEditorPane() {
     }
 
     fun updateMessage(content: String) {
+        // 记录当前的选中状态
+        val selectionStart = this.selectionStart
+        val selectionEnd = this.selectionEnd
         this.text = content
+        if (selectionStart != selectionEnd) {
+            SwingUtilities.invokeLater {
+                this.setSelectionStart(selectionStart)
+                this.setSelectionEnd(selectionEnd)
+            }
+        }
     }
 
+
     private fun stripHtmlAndUnescapeXmlEntities(input: String): String {
+        // 使用 Jsoup 去除 HTML 标签
         val text = Jsoup.parse(input).text()
+        // 使用 Apache Commons Text 解码 XML 实体
         return StringEscapeUtils.unescapeXml(text)
     }
 }
