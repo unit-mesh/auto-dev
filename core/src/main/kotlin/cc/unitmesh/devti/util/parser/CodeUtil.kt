@@ -32,8 +32,11 @@ class CodeFence(val language: Language, val text: String, val isComplete: Boolea
 
             val trimmedCode = codeBuilder.trim().toString()
             val language = findLanguage(languageId ?: "")
-            val extension =
+            val extension = try {
                 language.associatedFileType?.defaultExtension ?: lookupFileExt(languageId ?: "txt")
+            } catch (e: Exception) {
+                lookupFileExt(languageId ?: "txt")
+            }
 
             return if (trimmedCode.isEmpty()) {
                 CodeFence(language, "", codeClosed, extension)
