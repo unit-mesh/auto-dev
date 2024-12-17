@@ -11,7 +11,11 @@ import org.jetbrains.android.util.AndroidUtils
 
 class AndroidChatContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
-        return AndroidUtils.hasAndroidFacets(project)
+        return try {
+            AndroidUtils.hasAndroidFacets(project)
+        } catch (e: Throwable) {
+            false
+        }
     }
 
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
