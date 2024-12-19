@@ -19,9 +19,13 @@ class AutoDevRunDevInsAction : DumbAwareAction() {
         val document = editor.document
         val file = FileDocumentManager.getInstance().getFile(document) ?: return
 
-        val language = runReadAction {
-            PsiManager.getInstance(project).findFile(file)?.language?.id
-        } ?: return
+        val language = try {
+            runReadAction {
+                PsiManager.getInstance(project).findFile(file)?.language?.id
+            } ?: return
+        } catch (e: Exception) {
+            return
+        }
 
         e.presentation.isEnabled = language == "HTTP Request" || (language == "DevIn" && hasDevInProcessor(language))
     }
