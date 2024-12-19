@@ -246,7 +246,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     }
 
     private fun getInputValidationInfo(): ValidationInfo? {
-        val text = input.getDocument().text
+        val text = input.document.text
         val textLength = (this.tokenizer)?.count(text) ?: text.length
 
         val exceed: Int = textLength - AutoDevSettingsState.maxTokenLength
