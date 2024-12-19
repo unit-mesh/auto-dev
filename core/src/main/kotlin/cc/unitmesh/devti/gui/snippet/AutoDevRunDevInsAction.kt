@@ -4,7 +4,6 @@ import cc.unitmesh.devti.provider.devins.LanguagePromptProcessor
 import cc.unitmesh.devti.provider.http.HttpClientProvider
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.util.NlsSafe
@@ -14,17 +13,13 @@ class AutoDevRunDevInsAction : DumbAwareAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
 
     override fun update(e: AnActionEvent) {
-        val project = e.project ?: return
         val editor = e.getData(com.intellij.openapi.actionSystem.PlatformDataKeys.EDITOR) ?: return
-        val document = editor.document
-        val file = FileDocumentManager.getInstance().getFile(document) ?: return
+        val file = FileDocumentManager.getInstance().getFile(editor.document) ?: return
 
-        val language = try {
-            runReadAction {
-                PsiManager.getInstance(project).findFile(file)?.language?.id
-            } ?: return
-        } catch (e: Exception) {
-            return
+        val language = when(file.extension) {
+            "http" -> "HTTP Request"
+            "devin" -> "DevIn"
+            else -> ""
         }
 
         e.presentation.isEnabled = language == "HTTP Request" || (language == "DevIn" && hasDevInProcessor(language))

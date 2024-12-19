@@ -11,7 +11,9 @@ The following user stories are related to these changes:
 ${context.stories.joinToString("\n")}
 #end
 
+```patch
 ${context.diffContext}
+```
 
 As your Tech lead, I am only concerned with key code review issues. Please provide me with a critical summary.
 Submit your key insights under 5 sentences in here:

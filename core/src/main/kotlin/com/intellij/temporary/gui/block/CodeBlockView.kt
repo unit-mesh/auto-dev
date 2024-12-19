@@ -21,8 +21,6 @@ import com.intellij.openapi.editor.ex.FocusChangeListener
 import com.intellij.openapi.editor.ex.MarkupModelEx
 import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory
 import com.intellij.openapi.fileEditor.FileDocumentManager
-import com.intellij.openapi.fileTypes.PlainTextFileType
-import com.intellij.openapi.fileTypes.UnknownFileType
 import com.intellij.openapi.observable.properties.GraphProperty
 import com.intellij.openapi.observable.properties.PropertyGraph
 import com.intellij.openapi.project.Project
@@ -151,10 +149,9 @@ class CodeBlockView(
             message: CompletableMessage,
         ): CodePartEditorInfo {
             val forceFoldEditorByDefault = message.getRole() === ChatRole.User
-            val file = LightVirtualFile(AUTODEV_SNIPPET_NAME, language, graphProperty.get())
-            if (file.fileType == UnknownFileType.INSTANCE) {
-                file.fileType = PlainTextFileType.INSTANCE
-            }
+
+            val ext = CodeFence.lookupFileExt(language.displayName)
+            val file = LightVirtualFile("shire.${ext}", language, graphProperty.get())
 
             val document: Document =
                 file.findDocument() ?: throw IllegalStateException("Document not found")
