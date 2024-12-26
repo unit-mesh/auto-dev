@@ -11,9 +11,7 @@ ${context.frameworkContext}
     ${context.stories.joinToString("\n")}
 #end
 
-```patch
 ${context.diffContext}
-```
 
 作为您的技术负责人，我只关注关键的代码审查问题。请在此提供关键总结。
 在此处以不超过 5 句话提交您的关键见解：
