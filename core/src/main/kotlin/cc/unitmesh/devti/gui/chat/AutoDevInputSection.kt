@@ -155,6 +155,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             }
             customRag.selectedItem = defaultRag
 
+            input.preferredSize = Dimension(input.preferredSize.width, 48)
             layoutPanel.addToLeft(customRag)
         }
 

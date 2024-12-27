@@ -8,6 +8,7 @@ import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.util.ProcessingContext
+import kotlinx.html.dom.document
 
 class CustomAgentCompletion : CompletionProvider<CompletionParameters>() {
     override fun addCompletions(
@@ -17,11 +18,11 @@ class CustomAgentCompletion : CompletionProvider<CompletionParameters>() {
     ) {
         val configs: List<CustomAgentConfig> = CustomAgentConfig.loadFromProject(parameters.originalFile.project)
         configs.forEach { config ->
-            result.addElement(LookupElementBuilder.create(config.name)
+            result.addElement(
+                LookupElementBuilder.create(config.name)
                 .withInsertHandler { context, _ ->
-                    context.editor.caretModel.moveCaretRelatively(
-                        1 + config.name.length, 0, false, false, false
-                    )
+                    context.document.insertString(context.tailOffset, " ")
+                    context.editor.caretModel.moveCaretRelatively(1, 0, false, true, false)
 
                     val toolWindow = AutoDevToolWindowFactory.getToolWindow(context.project)
                     toolWindow?.contentManager?.contents?.map { it.component }?.forEach {
