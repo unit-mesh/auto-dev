@@ -133,7 +133,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         input.addDocumentListener(documentListener)
         input.recreateDocument()
 
-        input.border = JBEmptyBorder(4)
+        input.border = JBEmptyBorder(10)
 
         addToCenter(input)
         val layoutPanel = BorderLayoutPanel()
@@ -148,11 +148,11 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
         if (project.customAgentSetting.enableCustomRag) {
             customRag = ComboBox(MutableCollectionComboBoxModel(loadRagApps()))
-            customRag.setRenderer(SimpleListCellRenderer.create { label: JBLabel, value: CustomAgentConfig?, _: Int ->
+            customRag.renderer = SimpleListCellRenderer.create { label: JBLabel, value: CustomAgentConfig?, _: Int ->
                 if (value != null) {
                     label.text = value.name
                 }
-            })
+            }
             customRag.selectedItem = defaultRag
 
             layoutPanel.addToLeft(customRag)
@@ -280,6 +280,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     }
 
     fun moveCursorToStart() {
+        input.requestFocus()
         input.caretModel.moveToOffset(0)
     }
 

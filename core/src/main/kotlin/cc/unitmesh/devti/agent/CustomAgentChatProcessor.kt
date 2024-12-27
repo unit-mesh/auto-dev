@@ -75,6 +75,7 @@ class CustomAgentChatProcessor(val project: Project) {
                 llmProvider.appendLocalMessage(msg, ChatRole.Assistant)
                 ui.hiddenProgressBar()
                 ui.updateUI()
+                ui.moveCursorToStart()
 
                 val code = CodeFence.parse(msg)
                 if (code.language.displayName == "DevIn") {

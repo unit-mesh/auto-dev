@@ -20,7 +20,7 @@ class CustomAgentCompletion : CompletionProvider<CompletionParameters>() {
             result.addElement(LookupElementBuilder.create(config.name)
                 .withInsertHandler { context, _ ->
                     context.editor.caretModel.moveCaretRelatively(
-                        1, 0, false, false, false
+                        1 + config.name.length, 0, false, false, false
                     )
 
                     val toolWindow = AutoDevToolWindowFactory.getToolWindow(context.project)

@@ -43,6 +43,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
                 selectedCustomAgent.state === CustomAgentState.START -> {
                     counitProcessor.handleChat(prompter, ui, llmProvider)
                     ui.resetAgent()
+                    ui.moveCursorToStart()
                     return
                 }
 
@@ -61,6 +62,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
 
         ui.addMessage(requestPrompt, true, displayPrompt)
         ui.addMessage(AutoDevBundle.message("autodev.loading"))
+
 
         ApplicationManager.getApplication().executeOnPooledThread {
             val response = this.makeChatBotRequest(requestPrompt, keepHistory)
