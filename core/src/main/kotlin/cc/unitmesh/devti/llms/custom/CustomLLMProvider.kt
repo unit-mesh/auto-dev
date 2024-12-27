@@ -35,6 +35,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(
     override fun clearMessage() = messages.clear()
 
     override fun appendLocalMessage(msg: String, role: ChatRole) {
+        if (msg.isEmpty()) return
         messages += Message(role.roleName(), msg)
     }
 

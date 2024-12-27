@@ -49,7 +49,7 @@ open class CustomSSEProcessor(private val project: Project) {
 
     private val recording: Recording
         get() {
-            if (project.coderSetting.state.recordingInLocal == true) {
+            if (project.coderSetting.state.recordingInLocal) {
                 return project.service<JsonlRecording>()
             }
 
@@ -63,7 +63,9 @@ open class CustomSSEProcessor(private val project: Project) {
                 send(it)
             }
 
-            messages += Message(ChatRole.Assistant.roleName(), it)
+            if (it.isNotEmpty()) {
+                messages += Message(ChatRole.Assistant.roleName(), it)
+            }
             recording.write(RecordingInstruction(promptText, it))
             close()
         })
@@ -98,7 +100,6 @@ open class CustomSSEProcessor(private val project: Project) {
                                 // {"id":"cmpl-ac26a17e","object":"chat.completion.chunk","created":1858403,"model":"yi-34b-chat","choices":[{"delta":{"role":"assistant"},"index":0}],"content":"","lastOne":false}
 
                                 val chunk: String? = JsonPath.parse(sse!!.data)?.read(responseFormat)
-
                                 // new JsonPath lib caught the exception, so we need to handle when it is null
                                 if (chunk == null) {
                                     parseFailedResponses.add(sse.data)
@@ -136,7 +137,10 @@ open class CustomSSEProcessor(private val project: Project) {
                         send(errorMsg)
                     }
 
-                    messages += Message(ChatRole.Assistant.roleName(), output)
+                    if (output.isNotEmpty()) {
+                        messages += Message(ChatRole.Assistant.roleName(), output)
+                    }
+
                     recording.write(RecordingInstruction(promptText, output))
                     close()
                 }
