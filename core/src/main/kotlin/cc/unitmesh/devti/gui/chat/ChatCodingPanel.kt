@@ -43,8 +43,6 @@ import javax.swing.*
 class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disposable: Disposable?) :
     SimpleToolWindowPanel(true, true),
     NullableComponent {
-    private val logger = logger<ChatCodingPanel>()
-
     private var progressBar: JProgressBar
     private val myTitle = JBLabel("Conversation")
     private val myList = JPanel(VerticalLayout(JBUI.scale(10)))
@@ -301,6 +299,12 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         }
 
         updateUI()
+    }
+
+    fun selectAgent(config: CustomAgentConfig) {
+        inputSection.let {
+            it?.selectAgent(config)
+        }
     }
 
     fun appendWebView(content: String, project: Project) {

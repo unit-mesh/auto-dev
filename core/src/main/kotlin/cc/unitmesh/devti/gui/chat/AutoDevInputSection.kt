@@ -224,6 +224,10 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         return result
     }
 
+    fun selectAgent(config: CustomAgentConfig) {
+        customRag.selectedItem = config
+    }
+
     fun setContent(trimMargin: String) {
         val focusManager = IdeFocusManager.getInstance(project)
         focusManager.requestFocus(input, true)
