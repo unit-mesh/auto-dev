@@ -72,3 +72,49 @@ Demo:
   }
 ]
 ```
+
+### responseAction
+
+```kotlin
+enum class CustomAgentResponseAction {
+    /**
+     * Direct display result
+     */
+    Direct,
+
+    /**
+     * Stream response
+     */
+    Stream,
+
+    /**
+     * Text splitting result
+     */
+    TextChunk,
+
+    /**
+     * Display result in WebView
+     */
+    WebView,
+
+    /**
+     * Handle by DevIns language compile and run in code block.
+     * @since: AutoDev@1.8.2
+     */
+    DevIns
+}
+```
+
+### interactive
+
+```kotlin
+enum class InteractionType {
+    ChatPanel,
+    AppendCursor,
+    AppendCursorStream,
+    OutputFile,
+    ReplaceSelection,
+    ReplaceCurrentFile,
+    ;
+}
+```

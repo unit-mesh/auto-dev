@@ -8,7 +8,7 @@ nav_order: 2
 ## Response Action
 
 ```kotlin
-enum class ResponseAction {
+enum class CustomAgentResponseAction {
     /**
      * Direct display result
      */
@@ -28,10 +28,10 @@ enum class ResponseAction {
      * Display result in WebView
      */
     WebView,
-    
+
     /**
-     * DevIns response action
-     * since: AutoDev@1.7.0
+     * Handle by DevIns language compile and run in code block.
+     * @since: AutoDev@1.8.2
      */
     DevIns
 }
