@@ -10,6 +10,7 @@ import cc.unitmesh.devti.custom.compile.CustomVariable
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
@@ -27,12 +28,15 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         currentJob?.cancel()
     }
 
+    private var isLastAgent: Boolean = false
+
     fun handlePromptAndResponse(
         ui: ChatCodingPanel,
         prompter: ContextPrompter,
         context: ChatContext? = null,
         keepHistory: Boolean
     ) {
+        var chatHistory: List<LlmMsg.ChatMessage> = emptyList()
         currentJob?.cancel()
         var requestPrompt = prompter.requestPrompt()
         var displayPrompt = prompter.displayPrompt()
@@ -41,9 +45,18 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
             val selectedCustomAgent = ui.getSelectedCustomAgent()
             when {
                 selectedCustomAgent.state === CustomAgentState.START -> {
-                    counitProcessor.handleChat(prompter, ui, llmProvider)
-                    ui.resetAgent()
-                    ui.moveCursorToStart()
+                    isLastAgent = true
+                    val response = ApplicationManager.getApplication().executeOnPooledThread<String?> {
+                        val output = counitProcessor.handleChat(prompter, ui, llmProvider)
+
+                        runInEdt {
+                            ui.resetAgent()
+                            ui.moveCursorToStart()
+                        }
+
+                        output
+                    }
+
                     return
                 }
 
@@ -59,13 +72,16 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
             }
         }
 
+        if (isLastAgent) {
+            isLastAgent = false
+            chatHistory = ui.getHistoryMessages()
+        }
 
         ui.addMessage(requestPrompt, true, displayPrompt)
         ui.addMessage(AutoDevBundle.message("autodev.loading"))
 
-
         ApplicationManager.getApplication().executeOnPooledThread {
-            val response = this.makeChatBotRequest(requestPrompt, keepHistory)
+            val response = this.makeChatBotRequest(requestPrompt, keepHistory, chatHistory)
             currentJob = LLMCoroutineScope.scope(project).launch {
                 when {
                     actionType === ChatActionType.REFACTOR -> ui.updateReplaceableContent(response) {
@@ -97,7 +113,17 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         }
     }
 
-    private fun makeChatBotRequest(requestPrompt: String, newChatContext: Boolean): Flow<String> {
+    private fun makeChatBotRequest(
+        requestPrompt: String,
+        newChatContext: Boolean,
+        chatHistory: List<LlmMsg.ChatMessage>
+    ): Flow<String> {
+        if (chatHistory.isNotEmpty()) {
+            chatHistory.forEach {
+                llmProvider.appendLocalMessage(it.content, ChatRole.valueOf(it.role.name))
+            }
+        }
+
         return llmProvider.stream(requestPrompt, "", keepHistory = !newChatContext)
     }
 

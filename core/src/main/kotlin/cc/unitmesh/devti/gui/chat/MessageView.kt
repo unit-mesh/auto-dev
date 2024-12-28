@@ -20,7 +20,7 @@ import java.awt.*
 import javax.swing.*
 import kotlin.jvm.internal.Ref
 
-class MessageView(private val message: String, val role: ChatRole, private val displayText: String) :
+class MessageView(val message: String, val role: ChatRole, private val displayText: String) :
     JBPanel<MessageView>(), DataProvider {
     private val myNameLabel: Component
     private val component: DisplayComponent = DisplayComponent(message)

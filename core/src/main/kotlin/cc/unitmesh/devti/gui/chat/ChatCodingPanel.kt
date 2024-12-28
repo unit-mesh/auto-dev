@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.gui.chat
 
+import cc.unitmesh.cf.core.llms.LlmMsg
 import cc.unitmesh.devti.*
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.agent.view.WebBlock
@@ -11,7 +12,6 @@ import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.LanguageChangedCallback.componentStateChanged
 import com.intellij.lang.html.HTMLLanguage
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.NullableComponent
@@ -169,6 +169,18 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         }
     }
 
+    fun getHistoryMessages(): List<LlmMsg.ChatMessage> {
+        val messages = mutableListOf<LlmMsg.ChatMessage>()
+        for (i in 0 until myList.componentCount) {
+            val component = myList.getComponent(i)
+            if (component is MessageView) {
+                val role = LlmMsg.ChatRole.valueOf(component.role.name)
+                messages.add(LlmMsg.ChatMessage(role, component.message, null))
+            }
+        }
+        return messages
+    }
+
     suspend fun updateMessage(content: Flow<String>): String {
         if (myList.componentCount > 0) {
             myList.remove(myList.componentCount - 1)
@@ -215,7 +227,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         postAction(text)
     }
 
-    private suspend fun updateMessageInUi(content: Flow<String>): String {
+    suspend fun updateMessageInUi(content: Flow<String>): String {
         val messageView = MessageView("", ChatRole.Assistant, "")
         myList.add(messageView)
         val startTime = System.currentTimeMillis()
