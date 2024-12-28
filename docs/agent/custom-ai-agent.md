@@ -56,22 +56,23 @@ Demo:
     "defaultTimeout": 20
   },
   {
-    "name": "AIStream",
-    "description": "AI Stream",
-    "url": "http://127.0.0.1:8765/api/agent/devins-sample",
+    "name": "DifyAI",
+    "description": "Dify Example",
+    "url": "https://api.dify.ai/v1/completion-messages",
     "auth": {
       "type": "Bearer",
-      "token": "eyJhbGci"
+      "token": "app-abcd"
     },
     "connector": {
-      "requestFormat": "{\"customFields\": {\"model\": \"yi-34b-chat\", \"stream\": true}}",
-      "responseFormat": "$.choices[0].delta.content"
+      "requestFormat": "{\"fields\": {\"inputs\": {\"feature\": \"$content\"}, \"response_mode\": \"streaming\", \"user\": \"phodal\" }}",
+      "responseFormat": "$.answer"
     },
-    "responseAction": "Stream",
-    "defaultTimeout": 20
+    "responseAction": "Stream"
   }
 ]
 ```
+
+Notes: Dify API support by [#251](https://github.com/unit-mesh/auto-dev/issues/251), since 1.8.18 version
 
 ### responseAction
 

@@ -121,6 +121,7 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
             emitter.onComplete()
         } catch (t: Throwable) {
             logger<ResponseBodyCallback>().error("Error while reading SSE", t)
+            logger<ResponseBodyCallback>().error("Request: ${call.request()}")
             onFailure(call, IOException(t))
         } finally {
             if (reader != null) {
