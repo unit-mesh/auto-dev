@@ -86,11 +86,11 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     init {
         val sendButtonPresentation = Presentation(AutoDevBundle.message("chat.panel.send"))
-        sendButtonPresentation.setIcon(AutoDevIcons.Send)
+        sendButtonPresentation.icon = AutoDevIcons.Send
         this.sendButtonPresentation = sendButtonPresentation
 
         val stopButtonPresentation = Presentation("Stop")
-        stopButtonPresentation.setIcon(AutoDevIcons.Stop)
+        stopButtonPresentation.icon = AutoDevIcons.Stop
         this.stopButtonPresentation = stopButtonPresentation
 
         sendButton = ActionButton(
@@ -101,9 +101,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                     }
                 }.actionPerformed(it)
             },
-            this.sendButtonPresentation,
-            "",
-            Dimension(20, 20)
+            this.sendButtonPresentation, "", Dimension(20, 20)
         )
 
         stopButton = ActionButton(
@@ -114,9 +112,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                     }
                 }.actionPerformed(it)
             },
-            this.stopButtonPresentation,
-            "",
-            Dimension(20, 20)
+            this.stopButtonPresentation, "", Dimension(20, 20)
         )
 
         input = AutoDevInput(project, listOf(), disposable, this)

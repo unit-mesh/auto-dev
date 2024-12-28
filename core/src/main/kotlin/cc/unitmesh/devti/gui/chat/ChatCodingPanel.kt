@@ -302,9 +302,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
     }
 
     fun selectAgent(config: CustomAgentConfig) {
-        inputSection.let {
-            it?.selectAgent(config)
-        }
+        inputSection.selectAgent(config)
     }
 
     fun appendWebView(content: String, project: Project) {

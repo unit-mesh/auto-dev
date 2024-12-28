@@ -64,7 +64,6 @@ class AutoDevInput(
             object : AnAction() {
                 override fun actionPerformed(actionEvent: AnActionEvent) {
                     val editor = editor ?: return
-
                     // Insert a new line
                     CommandProcessor.getInstance().executeCommand(project, {
                         val eol = "\n"
