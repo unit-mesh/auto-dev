@@ -1,6 +1,33 @@
-# [](https://github.com/unit-mesh/auto-dev/compare/v1.8.16...v) (2024-12-07)
+# [](https://github.com/unit-mesh/auto-dev/compare/v1.8.18...v) (2024-12-28)
 
 ## [Unreleased]
+
+## [1.8.18](https://github.com/unit-mesh/auto-dev/compare/v1.8.17...v[1.8.18]) (2024-12-28)
+
+### Bug Fixes
+- **android:** handle exceptions in isApplicable method ([8725848](https://github.com/unit-mesh/auto-dev/commit/872584853e9772bfe89fe06ef0a62b3735b41594))
+- **code-review:** 移除代码审查模板中的冗余代码块标记 ([028d881](https://github.com/unit-mesh/auto-dev/commit/028d8817e2ca78041c4b19b335efadfdadcefadc))
+- **gui:** handle exceptions in AutoDevRunDevInsAction ([9572a61](https://github.com/unit-mesh/auto-dev/commit/9572a614a3189b48353752958d6e92ddc8b04c70))
+- **gui:** simplify document text access in AutoDevInputSection ([f5236c8](https://github.com/unit-mesh/auto-dev/commit/f5236c84b9c6da1ea33934314018c8afc15be7ac))
+- **llms:** skip empty messages in CustomSSEProcessor ([f9337d6](https://github.com/unit-mesh/auto-dev/commit/f9337d6e49163594e797128f259c5e42fccf342a))
+
+### Features
+- **agent:** add Dify API support and enhance custom agent config [#251](https://github.com/unit-mesh/auto-dev/issues/251) ([9cc5268](https://github.com/unit-mesh/auto-dev/commit/9cc526862783b14bbcf578e4874e330198bf855f))
+- **chat:** enhance chat handling with history and response tracking ([803e184](https://github.com/unit-mesh/auto-dev/commit/803e184d8388b16643d5aaadfb2f24209509b86b)), closes [#251](https://github.com/unit-mesh/auto-dev/issues/251)
+- **code-review:** 添加 diff 上下文展示和版本更新 ([eba213a](https://github.com/unit-mesh/auto-dev/commit/eba213a22203f676f8048057aa982a0603348f8a))
+- **completion:** enhance agent selection in completion ([3b1b3bb](https://github.com/unit-mesh/auto-dev/commit/3b1b3bb4ba156a480ad1dc1a1d5eb12140578bc2))
+- **custom:** add dynamic field replacement in custom requests [#251](https://github.com/unit-mesh/auto-dev/issues/251) ([ba50600](https://github.com/unit-mesh/auto-dev/commit/ba506007b887a573811da2512dac8cbfcc96499e))
+- **parser:** add support for shell script and HTTP request language names ([c7d5f80](https://github.com/unit-mesh/auto-dev/commit/c7d5f80f4843082f4d7cec2e04bc052e09ef0543))
+- **ui:** enhance cursor positioning and UI adjustments ([ccbe3e2](https://github.com/unit-mesh/auto-dev/commit/ccbe3e23f0d0c6d8b6c61262379450a3960bf9c1))
+
+## [1.8.17](https://github.com/unit-mesh/auto-dev/compare/v1.8.16...v[1.8.17]) (2024-12-11)
+
+### Bug Fixes
+- **parser:** correct newline escaping in test cases ([b0cc99a](https://github.com/unit-mesh/auto-dev/commit/b0cc99a4d4102c993099e247cb66d34b2b3e7956))
+- **parser:** remove unnecessary newline replacement ([831f747](https://github.com/unit-mesh/auto-dev/commit/831f747f5101ef9ad63dcf756adfc40456820daf))
+
+### Features
+- **code-completion:** enhance inlay code completion and formatting ([c2585bb](https://github.com/unit-mesh/auto-dev/commit/c2585bba132a5345b1508c51e14185e7efee19a9))
 
 ## [1.8.16](https://github.com/unit-mesh/auto-dev/compare/v1.8.15...v[1.8.16]) (2024-12-07)
 
@@ -1681,7 +1708,9 @@
 - update for configure ([1eb22b8](https://github.com/unit-mesh/auto-dev/commit/1eb22b8a0dfb9aa6a379aa6fb05dd93bf07c05af))
 - use single binding ([9092752](https://github.com/unit-mesh/auto-dev/commit/9092752a4a79ff64d062e089137f427a83db3988))
 
-[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.8.16...HEAD
+[Unreleased]: https://github.com/unit-mesh/auto-dev/compare/v1.8.18...HEAD
+[1.8.18]: https://github.com/unit-mesh/auto-dev/compare/v1.8.17...v1.8.18
+[1.8.17]: https://github.com/unit-mesh/auto-dev/compare/v1.8.16...v1.8.17
 [1.8.16]: https://github.com/unit-mesh/auto-dev/compare/v1.8.15...v1.8.16
 [1.8.15]: https://github.com/unit-mesh/auto-dev/compare/v1.8.12...v1.8.15
 [1.8.12]: https://github.com/unit-mesh/auto-dev/compare/v1.8.12-ALPHA...v1.8.12
