@@ -8,6 +8,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
@@ -80,7 +81,9 @@ class CodeBlockView(
             if (codePartEditorInfo!!.language == code.language) {
                 editorInfo!!.language = code.language
             }
-
+            ApplicationManager.getApplication().runWriteAction{
+                editorInfo!!.editor.document.setText(code.text)
+            }
             editorInfo!!.code.set(code.text)
         }
 

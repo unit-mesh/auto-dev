@@ -260,7 +260,6 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
             }
         }
 
-        messageView.reRenderAssistantOutput()
         return text
     }
 

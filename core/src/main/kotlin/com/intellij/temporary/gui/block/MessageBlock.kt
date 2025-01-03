@@ -3,11 +3,19 @@ package com.intellij.temporary.gui.block
 
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.lang.Language
+import java.math.BigInteger
+import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
 
 interface MessageBlock {
     val type: MessageBlockType
     fun getTextContent(): String
     fun getMessage(): CompletableMessage
+    fun setNeedUpdate(needUpdate: Boolean)
+    fun isNeedUpdate(): Boolean
+    fun getIdentifier(): String
+    fun getMessageBlockView(): MessageBlockView?
+    fun setMessageBlockView(messageBlockView: MessageBlockView)
     fun addContent(addedContent: String)
     fun replaceContent(content: String)
     fun addTextListener(textListener: MessageBlockTextListener)
@@ -16,12 +24,50 @@ interface MessageBlock {
 
 abstract class AbstractMessageBlock(open val completableMessage: CompletableMessage) : MessageBlock {
     private val contentBuilder: StringBuilder = StringBuilder()
+    private var identifier: String = ""
+    private var needUpdate: Boolean = true
+    private var messageBlockView: MessageBlockView? = null
     private val textListeners: MutableList<MessageBlockTextListener> = mutableListOf()
 
+    companion object {
+        fun encode(bytes: ByteArray): String {
+            var md5 = ""
+            try {
+                val messageDigest = MessageDigest.getInstance("MD5")
+                messageDigest.update(bytes)
+                md5 = BigInteger(1, messageDigest.digest()).toString(16)
+            } catch (noSuchAlgorithmException: NoSuchAlgorithmException) {
+                // empty catch block
+            }
+            return md5
+        }
+    }
+    override fun isNeedUpdate(): Boolean {
+        return needUpdate
+    }
+
+    override fun setNeedUpdate(needUpdate: Boolean) {
+        this.needUpdate = needUpdate
+    }
+
+    override fun getMessageBlockView(): MessageBlockView? {
+        return messageBlockView;
+    }
+
+    override fun setMessageBlockView(messageBlockView: MessageBlockView) {
+        this.messageBlockView = messageBlockView;
+    }
+
+    override fun getIdentifier(): String {
+        return identifier;
+    }
+
     override fun addContent(addedContent: String) {
+        contentBuilder.clear()
         contentBuilder.append(addedContent)
         onContentAdded(addedContent)
         val content = contentBuilder.toString()
+        identifier = encode(content.toByteArray())
         onContentChanged(content)
         fireTextChanged(content)
     }
@@ -29,6 +75,7 @@ abstract class AbstractMessageBlock(open val completableMessage: CompletableMess
     override fun replaceContent(content: String) {
         contentBuilder.clear()
         contentBuilder.append(content)
+        identifier = encode(content.toByteArray())
         onContentChanged(content)
         fireTextChanged(content)
     }

@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.gui.chat
 
 
-import cc.unitmesh.devti.gui.component.DisplayComponent
 import com.intellij.openapi.actionSystem.DataProvider
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl
@@ -23,9 +22,9 @@ import kotlin.jvm.internal.Ref
 class MessageView(val message: String, val role: ChatRole, private val displayText: String) :
     JBPanel<MessageView>(), DataProvider {
     private val myNameLabel: Component
-    private val component: DisplayComponent = DisplayComponent(message)
     private var centerPanel: JPanel = JPanel(VerticalLayout(JBUI.scale(8)))
     private var messageView: SimpleMessage? = null
+    private var blocks: MutableList<MessageBlock> = ArrayList()
 
     init {
         isDoubleBuffered = true
@@ -55,17 +54,10 @@ class MessageView(val message: String, val role: ChatRole, private val displayTe
         centerPanel.add(myNameLabel)
         add(centerPanel, BorderLayout.CENTER)
 
-        if (role == ChatRole.User) {
-            ApplicationManager.getApplication().invokeLater {
-                val simpleMessage = SimpleMessage(displayText, message, role)
-                messageView = simpleMessage
-                renderInPartView(simpleMessage)
-            }
-        } else {
-            component.updateMessage(message)
-            component.revalidate()
-            component.repaint()
-            centerPanel.add(component)
+        ApplicationManager.getApplication().invokeLater {
+            val simpleMessage = SimpleMessage(displayText, message, role)
+            messageView = simpleMessage
+            renderInPartView(simpleMessage)
         }
     }
 
@@ -89,25 +81,58 @@ class MessageView(val message: String, val role: ChatRole, private val displayTe
     }
 
     private fun renderInPartView(message: SimpleMessage) {
-        val parts = layoutAll(message)
-        parts.forEach {
-            val blockView = when (it) {
-                is CodeBlock -> {
-                    val project = ProjectManager.getInstance().openProjects.firstOrNull()
-                    CodeBlockView(it, project!!) { }
-                }
-
-                else -> TextBlockView(it)
-            }
-
-            blockView.initialize()
-            val component = blockView.getComponent() ?: return@forEach
-
-            component.setForeground(JBUI.CurrentTheme.Label.foreground())
-            centerPanel.add(component)
+        val incrBlocks = layoutAll(message)
+        if (incrBlocks.isEmpty()) {
+            return
         }
+        if (this.blocks.isEmpty()) {
+            blocks.addAll(incrBlocks)
+        } else {
+            var newBlock: MessageBlock
+            var i = 0
+            while (i < minOf(this.blocks.size, incrBlocks.size)) {
+                val oldBlock = this.blocks[i]
+                newBlock = incrBlocks[i]
+                if (oldBlock.getIdentifier() == newBlock.getIdentifier()) { // 如果新旧内容一样忽略
+                    i++
+                    continue
+                }
+                oldBlock.setNeedUpdate(true)
+                oldBlock.addContent(newBlock.getTextContent())
+                i++
+            }
+            for (j in i until incrBlocks.size) {
+                newBlock = incrBlocks[j]
+                newBlock.setNeedUpdate(true)
+                this.blocks.add(newBlock) // 添加到 blocks
+            }
+        }
+        renderComponent();
     }
 
+    private fun renderComponent(){
+        blocks.forEach { block ->
+            if (!block.isNeedUpdate()) return@forEach
+
+            if (block.getMessageBlockView() == null) {
+                val blockView = when (block) {
+                    is CodeBlock -> {
+                        val project = ProjectManager.getInstance().openProjects.first()
+                        CodeBlockView(block, project) { }
+                    }
+                    else -> TextBlockView(block)
+                }
+                blockView.initialize()
+                block.setMessageBlockView(blockView)
+
+                val component = blockView.getComponent() ?: return@forEach
+                component.setForeground(JBUI.CurrentTheme.Label.foreground())
+                centerPanel.add(component)
+            }
+            block.setNeedUpdate(false)
+        }
+
+    }
     private var answer: String = ""
 
     fun updateContent(content: String) {
@@ -124,7 +149,7 @@ class MessageView(val message: String, val role: ChatRole, private val displayTe
 
     fun reRenderAssistantOutput() {
         ApplicationManager.getApplication().invokeLater {
-            centerPanel.remove(component)
+
             centerPanel.updateUI()
 
             centerPanel.add(myNameLabel)
@@ -148,8 +173,8 @@ class MessageView(val message: String, val role: ChatRole, private val displayTe
         override fun done() {
             try {
                 get()
-                component.updateMessage(message)
-                component.updateUI()
+                val simpleMessage = SimpleMessage(message, this@MessageView.message, role)
+                renderInPartView(simpleMessage)
             } catch (e: Exception) {
                 logger.error(message, e.message)
             }
@@ -246,7 +271,7 @@ class MessageView(val message: String, val role: ChatRole, private val displayTe
 
     override fun getData(dataId: String): CompletableMessage? {
         return if (CompletableMessage.key.`is`(dataId)) {
-           return this.messageView
+            return this.messageView
         } else {
             null
         }
