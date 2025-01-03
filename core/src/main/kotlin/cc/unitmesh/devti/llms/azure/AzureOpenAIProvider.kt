@@ -10,7 +10,9 @@ import cc.unitmesh.devti.coder.recording.RecordingInstruction
 import cc.unitmesh.devti.llms.custom.ResponseBodyCallback
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.coder.coderSetting
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
@@ -147,7 +149,8 @@ class AzureOpenAIProvider(val project: Project) : LLMProvider {
 
         val builder = Request.Builder()
         val request = builder
-            .url(url)
+            .url("http://chatgpt.tiny-test.wke-office.test.wacai.info/openai/deployments/gpt-4o-omni/chat/completions?api-version=2024-06-01")
+            .header("api-key", "45a7a7914f0b4bac807f03088d97f20a")
             .post(body)
             .build()
 
@@ -165,13 +168,19 @@ class AzureOpenAIProvider(val project: Project) : LLMProvider {
             sseFlowable
                 .doOnError(Throwable::printStackTrace)
                 .blockingForEach { sse ->
+                    var objectMapper = ObjectMapper()
+                    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                     val result: ChatCompletionResult =
-                        ObjectMapper().readValue(sse!!.data, ChatCompletionResult::class.java)
-                    val completion = result.choices[0].message
-                    if (completion != null && completion.content != null) {
-                        output += completion.content
-                        trySend(completion.content)
+                        objectMapper.readValue(sse!!.data, ChatCompletionResult::class.java)
+                    if(result.choices.isNotEmpty()){
+                        val completion = result.choices[0].message
+                        if (completion != null && completion.content != null) {
+                            output += completion.content
+                            print(completion.content)
+                            trySend(completion.content)
+                        }
                     }
+
                 }
 
             recording.write(RecordingInstruction(promptText, output))
