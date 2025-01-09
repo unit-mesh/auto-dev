@@ -6,6 +6,10 @@ import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.settings.LanguageChangedCallback.presentationText
+import cc.unitmesh.devti.template.GENIUS_MIGRATION
+import cc.unitmesh.devti.template.GENIUS_PRACTISES
+import cc.unitmesh.devti.template.TemplateRender
+import cc.unitmesh.devti.template.context.TemplateContext
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.vcs.log.VcsLogDataKeys
@@ -34,8 +38,15 @@ class ReleaseNoteSuggestionAction : AnAction() {
         contentManager?.removeAllContents(true)
         contentManager?.addContent(content!!)
 
+        val templateRender = TemplateRender(GENIUS_PRACTISES)
+        val template = templateRender.getTemplate("release-note.vm")
         val commitMsgs = stringList.joinToString(",")
-        val prompt = "generate release note based on follow info: $commitMsgs"
+
+        templateRender.context = ReleaseNoteSuggestionContext(
+            commitMsgs = commitMsgs,
+        )
+
+        val prompt = templateRender.renderTemplate(template)
 
         toolWindowManager?.activate {
             chatCodingService.handlePromptAndResponse(contentPanel, object : ContextPrompter() {
@@ -45,3 +56,7 @@ class ReleaseNoteSuggestionAction : AnAction() {
         }
     }
 }
+
+data class ReleaseNoteSuggestionContext(
+    val commitMsgs: String = "",
+) : TemplateContext

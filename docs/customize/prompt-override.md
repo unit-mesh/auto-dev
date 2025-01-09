@@ -34,9 +34,10 @@ For example, create a file named `prompts/sql/sql-gen-clarify.vm`, will override
 │   └── page-gen-design.vm
 ├── practises
 │   ├── code-review.vm
+│   ├── gen-commit-msg.vm
 │   ├── refactoring.vm
-│   ├── shell-suggest.vm
-│   └── gen-commit-msg.vm
+│   ├── release-note.vm
+│   └── shell-suggest.vm
 ├── quick
 │   └── quick-action.vm
 ├── sql

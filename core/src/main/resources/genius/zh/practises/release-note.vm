@@ -1,0 +1,3 @@
+根据如下的提交信息，生成本次发布的 Release Note：:
+
+$context.commitMsgs
