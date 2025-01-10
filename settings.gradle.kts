@@ -11,7 +11,6 @@ include(
     "javascript",
     "goland",
     "rust",
-    "scala",
 )
 
 include(

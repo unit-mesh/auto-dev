@@ -38,34 +38,12 @@ val basePluginArchiveName = "autodev-jetbrains"
 val javaScriptPlugins = listOf("JavaScript")
 val pycharmPlugins = listOf(prop("pythonPlugin"))
 val javaPlugins = listOf("com.intellij.java", "org.jetbrains.kotlin")
-val clionVersion = prop("clionVersion")
-
-// https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html#modules-specific-to-functionality
-val clionPlugins = listOf(
-    "com.intellij.cidr.base",
-    "com.intellij.cidr.lang",
-    "com.intellij.clion",
-    prop("rustPlugin"),
-    "org.toml.lang"
-)
-var cppPlugins: List<String> = listOf(
-    "com.intellij.cidr.lang",
-    "com.intellij.clion",
-    "com.intellij.cidr.base",
-    "org.jetbrains.plugins.clion.test.google",
-    "org.jetbrains.plugins.clion.test.catch"
-)
 
 val rustPlugins = listOf(
     prop("rustPlugin"),
     "org.toml.lang"
 )
 
-val riderVersion = prop("riderVersion")
-val riderPlugins: List<String> = listOf(
-    "rider-plugins-appender",
-    "org.intellij.intelliLang",
-)
 val scalaPlugin = prop("scalaPlugin")
 
 val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
@@ -91,8 +69,6 @@ val baseVersion = when (baseIDE) {
     "idea" -> ideaVersion
     "pycharm" -> pycharmVersion
     "goland" -> golandVersion
-    "clion" -> clionVersion
-    "rider" -> riderVersion
     "javascript" -> webstormVersion
     else -> error("Unexpected IDE name: `$baseIDE`")
 }
@@ -272,20 +248,12 @@ project(":") {
                     pluginList += javaPlugins
                 }
 
-                "scala" -> {
-                    pluginList += javaPlugins + scalaPlugin
-                }
-
                 "python" -> {
                     pluginList += pycharmPlugins
                 }
 
                 "go" -> {
                     pluginList += listOf("org.jetbrains.plugins.go")
-                }
-
-                "cpp" -> {
-                    pluginList += clionPlugins
                 }
 
                 "rust" -> {
@@ -301,12 +269,9 @@ project(":") {
             pluginModule(implementation(project(":javascript")))
             pluginModule(implementation(project(":goland")))
             pluginModule(implementation(project(":rust")))
-//            pluginModule(implementation(project(":cpp")))
-            pluginModule(implementation(project(":scala")))
+
             pluginModule(implementation(project(":local-bundle")))
             pluginModule(implementation(project(":exts:ext-database")))
-            pluginModule(implementation(project(":exts:ext-android")))
-            pluginModule(implementation(project(":exts:ext-harmonyos")))
             pluginModule(implementation(project(":exts:ext-git")))
             pluginModule(implementation(project(":exts:ext-http-client")))
             pluginModule(implementation(project(":exts:ext-terminal")))
@@ -326,14 +291,11 @@ project(":") {
         implementation(project(":scala"))
         implementation(project(":local-bundle"))
         implementation(project(":exts:ext-database"))
-        implementation(project(":exts:ext-android"))
-        implementation(project(":exts:ext-harmonyos"))
         implementation(project(":exts:ext-git"))
         implementation(project(":exts:ext-http-client"))
         implementation(project(":exts:ext-terminal"))
         implementation(project(":exts:devins-lang"))
 
-//        kover(project(":cpp"))
         kover(project(":core"))
         kover(project(":goland"))
         kover(project(":java"))
@@ -344,7 +306,6 @@ project(":") {
         kover(project(":scala"))
 
         kover(project(":exts:ext-database"))
-        kover(project(":exts:ext-android"))
         kover(project(":exts:devins-lang"))
     }
 
@@ -579,32 +540,6 @@ project(":rust") {
     }
 }
 
-//project(":cpp") {
-//    if (platformVersion == 233 || platformVersion == 241) {
-//        cppPlugins += "com.intellij.nativeDebug"
-//    }
-//
-//    dependencies {
-//        intellijPlatform {
-//            intellijIde(clionVersion)
-//            intellijPlugins(cppPlugins)
-//        }
-//
-//        implementation(project(":core"))
-//    }
-//}
-
-//project(":csharp") {
-//    dependencies {
-//        intellijPlatform {
-//            intellijIde(riderVersion)
-//            intellijPlugins(riderPlugins)
-//        }
-//
-//        implementation(project(":core"))
-//    }
-//}
-
 project(":goland") {
     dependencies {
         intellijPlatform {
@@ -622,29 +557,6 @@ project(":exts:ext-database") {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins + "com.intellij.database")
         }
-        implementation(project(":core"))
-    }
-}
-
-project(":exts:ext-android") {
-    dependencies {
-        intellijPlatform {
-            intellijIde(prop("ideaVersion"))
-            intellijPlugins((ideaPlugins + prop("androidPlugin").ifBlank { "" }).filter(String::isNotEmpty))
-        }
-
-        implementation(project(":core"))
-    }
-}
-
-project(":exts:ext-harmonyos") {
-    dependencies {
-        intellijPlatform {
-            intellijIde(prop("ideaVersion"))
-            intellijPlugins((ideaPlugins + prop("androidPlugin").ifBlank { "" }).filter(String::isNotEmpty))
-        }
-
-
         implementation(project(":core"))
     }
 }
