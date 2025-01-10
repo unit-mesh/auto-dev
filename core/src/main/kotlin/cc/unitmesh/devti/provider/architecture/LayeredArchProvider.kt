@@ -9,7 +9,6 @@ interface LayeredArchProvider {
     fun getLayeredArch(project: Project): ProjectPackageTree
 
     companion object {
-
         private val EP_NAME = ExtensionPointName<LayeredArchProvider>("cc.unitmesh.layeredArchProvider")
 
         fun find(project: Project): LayeredArchProvider? {
