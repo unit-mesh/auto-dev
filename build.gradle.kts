@@ -44,8 +44,6 @@ val rustPlugins = listOf(
     "org.toml.lang"
 )
 
-val scalaPlugin = prop("scalaPlugin")
-
 val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
 val ideaPlugins =
     listOf(
@@ -287,8 +285,7 @@ project(":") {
         implementation(project(":javascript"))
         implementation(project(":goland"))
         implementation(project(":rust"))
-//        implementation(project(":cpp"))
-        implementation(project(":scala"))
+
         implementation(project(":local-bundle"))
         implementation(project(":exts:ext-database"))
         implementation(project(":exts:ext-git"))
@@ -303,7 +300,6 @@ project(":") {
         kover(project(":kotlin"))
         kover(project(":pycharm"))
         kover(project(":rust"))
-        kover(project(":scala"))
 
         kover(project(":exts:ext-database"))
         kover(project(":exts:devins-lang"))
@@ -510,18 +506,6 @@ project(":kotlin") {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins)
-        }
-
-        implementation(project(":core"))
-        implementation(project(":java"))
-    }
-}
-
-project(":scala") {
-    dependencies {
-        intellijPlatform {
-            intellijIde(prop("ideaVersion"))
-            intellijPlugins(ideaPlugins + scalaPlugin)
         }
 
         implementation(project(":core"))
