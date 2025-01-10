@@ -50,11 +50,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     }
 
     private val llmGroups = mapOf<AIEngines, List<LLMParam>>(
-            AIEngines.Azure to listOf(
-                    openAIModelsParam,
-                    openAIKeyParam,
-                    customOpenAIHostParam,
-            ),
             AIEngines.OpenAI to listOf(
                     openAIModelsParam,
                     openAIKeyParam,

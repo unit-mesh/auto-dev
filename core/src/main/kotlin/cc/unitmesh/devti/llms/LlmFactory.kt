@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.llms
 
-import cc.unitmesh.devti.llms.azure.AzureOpenAIProvider
 import cc.unitmesh.devti.llms.custom.CustomLLMProvider
 import cc.unitmesh.devti.llms.custom.InlayCustomLLMProvider
 import cc.unitmesh.devti.llms.openai.OpenAIProvider
@@ -22,7 +21,6 @@ class LlmFactory {
         return when (aiEngine) {
             AIEngines.OpenAI -> project.getService(OpenAIProvider::class.java)
             AIEngines.Custom -> project.getService(CustomLLMProvider::class.java)
-            AIEngines.Azure -> project.getService(AzureOpenAIProvider::class.java)
         }
     }
 
