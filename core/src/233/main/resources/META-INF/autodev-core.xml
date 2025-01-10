@@ -51,8 +51,6 @@
         <!-- Run Configurations -->
         <programRunner implementation="cc.unitmesh.devti.runconfig.AutoDevCommandRunner"/>
 
-<!--        <copyPastePostProcessor implementation="cc.unitmesh.devti.smartpaste.SmartCopyPasteProcessor"/>-->
-
         <toolWindow id="AutoDev"
                     doNotActivateOnStart="true"
                     anchor="right"
@@ -60,14 +58,6 @@
                     canCloseContents="true"
                     icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                     factoryClass="cc.unitmesh.devti.gui.AutoDevToolWindowFactory"/>
-
-        <!--        <toolWindow id="AutoDev Pair"-->
-        <!--                    doNotActivateOnStart="true"-->
-        <!--                    anchor="left"-->
-        <!--                    secondary="true"-->
-        <!--                    canCloseContents="false"-->
-        <!--                    icon="cc.unitmesh.devti.AutoDevIcons.AI_PAIR"-->
-        <!--                    factoryClass="cc.unitmesh.devti.gui.AutoDevPairToolWindowFactory"/>-->
 
         <notificationGroup id="AutoDev.notify" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
                            key="name"/>
@@ -84,11 +74,6 @@
         <daemon.intentionActionFilter
                 implementation="cc.unitmesh.devti.gui.snippet.error.CodeBlockIntentionActionFilter"/>
     </extensions>
-
-<!--    <extensions defaultExtensionNs="JavaScript.JsonSchema">-->
-<!--        <ProviderFactory implementation="cc.unitmesh.devti.custom.schema.AutoDevJsonSchemaProviderFactory"/>-->
-<!--        <ProviderFactory implementation="cc.unitmesh.devti.custom.schema.AutoDevPromptJsonSchemaProviderFactory"/>-->
-<!--    </extensions>-->
 
     <extensionPoints>
         <extensionPoint qualifiedName="cc.unitmesh.autoDevIntention"

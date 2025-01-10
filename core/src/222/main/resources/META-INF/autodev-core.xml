@@ -58,14 +58,6 @@
                     icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                     factoryClass="cc.unitmesh.devti.gui.AutoDevToolWindowFactory"/>
 
-        <!--        <toolWindow id="AutoDev Pair"-->
-        <!--                    doNotActivateOnStart="true"-->
-        <!--                    anchor="left"-->
-        <!--                    secondary="true"-->
-        <!--                    canCloseContents="false"-->
-        <!--                    icon="cc.unitmesh.devti.AutoDevIcons.AI_PAIR"-->
-        <!--                    factoryClass="cc.unitmesh.devti.gui.AutoDevPairToolWindowFactory"/>-->
-
         <notificationGroup id="AutoDev.notify" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
                            key="name"/>
 
