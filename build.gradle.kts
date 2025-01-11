@@ -177,6 +177,11 @@ configure(
 
         testOutput(sourceSets.test.get().output.classesDirs)
 
+        if (platformVersion == 223) {
+            // https://mvnrepository.com/artifact/org.jetbrains/annotations
+            implementation("org.jetbrains:annotations:26.0.1")
+        }
+
         intellijPlatform {
             testFramework(TestFrameworkType.Bundled)
         }
