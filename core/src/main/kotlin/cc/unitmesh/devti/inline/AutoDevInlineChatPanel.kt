@@ -41,7 +41,7 @@ class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), Edit
         val prompt = AutoDevInlineChatService.getInstance().prompt(project, input)
         val flow: Flow<String>? = LlmFactory.instance.create(project).stream(prompt, "", false)
 
-        val panelView = InlineChatPanelView(project)
+        val panelView = InlineChatPanelView(project, editor)
         panelView.minimumSize = Dimension(800, 40)
         setContent(panelView)
 
@@ -68,17 +68,16 @@ class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), Edit
     init {
         border = BorderFactory.createCompoundBorder(
             BorderFactory.createCompoundBorder(
-                BorderFactory.createEmptyBorder(12, 12, 12, 12),
-                RoundedLineBorder(JBColor.LIGHT_GRAY, 18, 1)
+                BorderFactory.createEmptyBorder(4, 4, 4, 4),
+                RoundedLineBorder(JBColor.LIGHT_GRAY, 12, 1)
             ),
             BorderFactory.createCompoundBorder(
                 AutoDevLineBorder(JBColor.border(), 1, true, 8),
-                BorderFactory.createMatteBorder(10, 10, 10, 10, JBColor.PanelBackground)
+                BorderFactory.createMatteBorder(6, 8, 6, 8, JBColor.PanelBackground)
             )
         )
 
         isOpaque = false
-        cursor = Cursor.getPredefinedCursor(0)
 
         val c = GridBagConstraints()
         c.gridx = 0
@@ -86,21 +85,6 @@ class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), Edit
         c.weightx = 1.0
         c.fill = 2
         add(inputPanel, c)
-
-        val cancelPresentation = Presentation("Cancel")
-        cancelPresentation.icon = AllIcons.Actions.Cancel
-        val cancelButton = ActionButton(
-            DumbAwareAction.create {
-                AutoDevInlineChatService.getInstance().closeInlineChat(editor)
-            },
-            cancelPresentation, "", Dimension(24, 20)
-        )
-        cancelButton.isOpaque = true
-        cancelButton.background = JBColor.PanelBackground
-        c.gridx = 1
-        c.weightx = 0.0
-        c.fill = 1
-        add(cancelButton, c)
 
         val jPanel = JPanel(BorderLayout())
         jPanel.isVisible = false
@@ -163,7 +147,7 @@ class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), Edit
             }
 
             this.centerPanel.removeAll()
-            this.centerPanel.add(content, BorderLayout.CENTER)
+            this.centerPanel.add(content, BorderLayout.SOUTH)
 
             this@AutoDevInlineChatPanel.redraw()
         }
@@ -228,7 +212,16 @@ class ShireInlineChatInputPanel(
             }
         })
         textArea.inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.SHIFT_DOWN_MASK), "newlineAction")
+
+        val submitPresentation = Presentation("Submit")
+        submitPresentation.icon = AllIcons.Actions.Execute
+        val submitButton = ActionButton(
+            DumbAwareAction.create { submit() },
+            submitPresentation, "", Dimension(40, 20)
+        )
+
         add(textArea)
+        add(submitButton, BorderLayout.EAST)
     }
 
     private fun submit() {

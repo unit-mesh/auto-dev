@@ -4,25 +4,26 @@ import cc.unitmesh.devti.sketch.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.LangSketch
 import cc.unitmesh.devti.sketch.LanguageSketchProvider
 import cc.unitmesh.devti.sketch.highlight.CodeHighlightSketch
-import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.application.runInEdt
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileTypes.PlainTextLanguage
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.NullableComponent
 import com.intellij.openapi.ui.SimpleToolWindowPanel
-import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
 import javax.swing.JPanel
 import javax.swing.ScrollPaneConstants
 import javax.swing.SwingUtilities
 
-class InlineChatPanelView(val project: Project, ) : SimpleToolWindowPanel(true, true),
+class InlineChatPanelView(val project: Project, editor: Editor, ) : SimpleToolWindowPanel(true, true),
     NullableComponent {
     private var myList = JPanel(VerticalLayout(JBUI.scale(0))).apply {
         this.isOpaque = true
@@ -50,6 +51,13 @@ class InlineChatPanelView(val project: Project, ) : SimpleToolWindowPanel(true, 
 
     init {
         contentPanel.add(scrollPanel, BorderLayout.CENTER)
+        contentPanel.addKeyListener(object : KeyAdapter() {
+            override fun keyPressed(e: KeyEvent) {
+                if (e.keyCode == KeyEvent.VK_ESCAPE) {
+                    AutoDevInlineChatService.getInstance().closeInlineChat(editor)
+                }
+            }
+        })
         setContent(contentPanel)
     }
 
