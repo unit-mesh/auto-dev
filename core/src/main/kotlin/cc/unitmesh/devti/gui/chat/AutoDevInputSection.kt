@@ -7,6 +7,7 @@ import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.agent.model.CustomAgentState
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.llms.tokenizer.TokenizerFactory
+import cc.unitmesh.devti.provider.RelatedClassesProvider.Companion
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.codeInsight.lookup.LookupManagerListener
 import com.intellij.icons.AllIcons

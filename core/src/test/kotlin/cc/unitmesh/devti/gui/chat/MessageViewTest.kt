@@ -1,12 +1,12 @@
 package cc.unitmesh.devti.gui.chat
 
 import com.intellij.temporary.gui.block.SimpleMessage
+import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import junit.framework.TestCase.assertEquals
 import org.junit.Test
 
-class MessageViewTest {
-    @Test
-    fun should_parse_code_from_markdown_java_hello_world() {
+class MessageViewTest: BasePlatformTestCase() {
+    fun testShould_parse_code_from_markdown_java_hello_world() {
         val markdown = """
             |complete code:
             |```java
@@ -34,8 +34,7 @@ class MessageViewTest {
         """.trimMargin())
     }
 
-    @Test
-    fun should_spilt_three_parts_when_has_two_code_block() {
+    fun testShould_spilt_three_parts_when_has_two_code_block() {
         val markdown = """
             |complete code:
             |```java
