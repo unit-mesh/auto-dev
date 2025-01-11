@@ -24,8 +24,15 @@ class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(
     private val url get() = autoDevSettingsState.customEngineServer
     private val key get() = autoDevSettingsState.customEngineToken
 
-    override val requestFormat: String get() = autoDevSettingsState.customEngineRequestFormat
-    override val responseFormat get() = autoDevSettingsState.customEngineResponseFormat
+    private val modelName: String
+        get() = AutoDevSettingsState.getInstance().customModel
+
+    override val requestFormat: String get() = autoDevSettingsState.customEngineRequestFormat.ifEmpty {
+        """{ "customFields": {"model": "$modelName", "temperature": 0.0, "stream": true} }"""
+    }
+    override val responseFormat get() = autoDevSettingsState.customEngineResponseFormat.ifEmpty {
+        "\$.choices[0].delta.content"
+    }
 
     private var client = OkHttpClient()
     private val timeout = Duration.ofSeconds(defaultTimeout)
@@ -69,11 +76,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(
             clearMessage()
         }
 
-        return if (autoDevSettingsState.customEngineResponseType == ResponseType.SSE.name) {
-            streamSSE(call, promptText, keepHistory, messages)
-        } else {
-            streamJson(call, promptText, messages)
-        }
+        return streamSSE(call, promptText, keepHistory, messages)
     }
 
     fun prompt(instruction: String, input: String): String {

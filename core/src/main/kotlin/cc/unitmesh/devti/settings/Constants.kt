@@ -1,19 +1,12 @@
 package cc.unitmesh.devti.settings
 
-val OPENAI_MODEL = arrayOf("gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4", "custom")
 val AI_ENGINES = arrayOf("OpenAI", "Custom")
-
-enum class AIEngines {
-    OpenAI, Custom
-}
 
 enum class ResponseType {
     SSE, JSON;
 }
 
 val DEFAULT_AI_ENGINE = AI_ENGINES[0]
-
-val DEFAULT_AI_MODEL = OPENAI_MODEL[0]
 
 @Suppress("unused")
 enum class HUMAN_LANGUAGES(val abbr: String, val display: String) {
