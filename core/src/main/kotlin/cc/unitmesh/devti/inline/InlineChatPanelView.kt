@@ -1,9 +1,13 @@
 package cc.unitmesh.devti.inline
 
+import cc.unitmesh.devti.gui.chat.AutoDevInputSection
 import cc.unitmesh.devti.sketch.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.LangSketch
+import cc.unitmesh.devti.util.parser.CodeFence
 import cc.unitmesh.devti.sketch.LanguageSketchProvider
 import cc.unitmesh.devti.sketch.highlight.CodeHighlightSketch
+import com.intellij.icons.AllIcons
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileTypes.PlainTextLanguage
@@ -11,6 +15,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.NullableComponent
 import com.intellij.openapi.ui.SimpleToolWindowPanel
+import com.intellij.ui.JBColor
+import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.dsl.builder.panel
@@ -19,15 +25,27 @@ import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import javax.swing.JPanel
+import javax.swing.JProgressBar
 import javax.swing.ScrollPaneConstants
 import javax.swing.SwingUtilities
 
-class InlineChatPanelView(val project: Project, val editor: Editor?) : SimpleToolWindowPanel(true, true),
-    NullableComponent {
+class InlineChatPanelView(val project: Project, val editor: Editor?, showInput: Boolean = true) : SimpleToolWindowPanel(true, true),
+    NullableComponent, Disposable {
+    private var progressBar: CustomProgressBar = CustomProgressBar(this)
+    private var shireInput: AutoDevInputSection = AutoDevInputSection(project, this)
+
     private var myList = JPanel(VerticalLayout(JBUI.scale(0))).apply {
         this.isOpaque = true
         this.background = UIUtil.getLabelBackground()
+    }
+
+    private var userPrompt: JPanel = JPanel(BorderLayout()).apply {
+        this.isOpaque = true
+        this.background = JBUI.CurrentTheme.CustomFrameDecorations.titlePaneInactiveBackground()
+        this.border = JBUI.Borders.empty(10, 0)
     }
 
     private var contentPanel = JPanel(BorderLayout()).apply {
@@ -36,6 +54,8 @@ class InlineChatPanelView(val project: Project, val editor: Editor?) : SimpleToo
     }
 
     private var panelContent: DialogPanel = panel {
+        row { cell(progressBar).fullWidth() }
+        row { cell(userPrompt).fullWidth().fullHeight() }
         row { cell(myList).fullWidth().fullHeight() }
     }
 
@@ -60,11 +80,17 @@ class InlineChatPanelView(val project: Project, val editor: Editor?) : SimpleToo
                 }
             }
         })
+
+        if (showInput) {
+            contentPanel.add(shireInput, BorderLayout.SOUTH)
+        }
+
         setContent(contentPanel)
     }
 
     fun onStart() {
         initializePreAllocatedBlocks(project)
+        progressBar.isIndeterminate = true
     }
 
     private val blockViews: MutableList<LangSketch> = mutableListOf()
@@ -78,8 +104,36 @@ class InlineChatPanelView(val project: Project, val editor: Editor?) : SimpleToo
         }
     }
 
+    override fun dispose() {
+    }
+
+    fun addRequestPrompt(text: String) {
+        runInEdt {
+            val codeBlockViewer = CodeHighlightSketch(project, text, CodeFence.findLanguage("Markdown")).apply {
+                initEditor(text)
+            }
+
+            codeBlockViewer.editorFragment?.setCollapsed(true)
+            codeBlockViewer.editorFragment!!.updateExpandCollapseLabel()
+            codeBlockViewer.editorFragment!!.editor.backgroundColor = JBColor(0xF7FAFDF, 0x2d2f30)
+
+            val panel = panel {
+                row {
+                    cell(codeBlockViewer).fullWidth()
+                }
+            }.also {
+                it.border = JBUI.Borders.empty(10, 0)
+            }
+
+            userPrompt.add(panel, BorderLayout.CENTER)
+
+            this.revalidate()
+            this.repaint()
+        }
+    }
+
     fun onUpdate(text: String) {
-        val codeFenceList = cc.unitmesh.devti.util.parser.CodeFence.parseAll(text)
+        val codeFenceList = CodeFence.parseAll(text)
 
         runInEdt {
             codeFenceList.forEachIndexed { index, codeFence ->
@@ -134,6 +188,8 @@ class InlineChatPanelView(val project: Project, val editor: Editor?) : SimpleToo
             }
         }
 
+        progressBar.isIndeterminate = false
+        progressBar.isVisible = false
         scrollToBottom()
     }
 
@@ -155,5 +211,38 @@ class InlineChatPanelView(val project: Project, val editor: Editor?) : SimpleToo
 
     override fun isNull(): Boolean {
         return !isVisible
+    }
+
+    fun cancel(s: String) = runCatching { handleCancel?.invoke(s) }
+}
+
+class CustomProgressBar(private val view: InlineChatPanelView) : JPanel(BorderLayout()) {
+    private val progressBar: JProgressBar = JProgressBar()
+
+    var isIndeterminate = progressBar.isIndeterminate
+        set(value) {
+            progressBar.isIndeterminate = value
+            field = value
+        }
+
+    private val cancelLabel = JBLabel(AllIcons.Actions.CloseHovered)
+
+    init {
+
+        cancelLabel.setBorder(JBUI.Borders.empty(0, 5))
+        cancelLabel.addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent?) {
+                view.cancel("This progressBar is canceled")
+            }
+        })
+
+        add(progressBar, BorderLayout.CENTER)
+        add(cancelLabel, BorderLayout.EAST)
+    }
+
+    override fun setVisible(visible: Boolean) {
+        super.setVisible(visible)
+        progressBar.isVisible = visible
+        cancelLabel.isVisible = visible
     }
 }
