@@ -69,6 +69,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     private val sendButton: ActionButton
     private val stopButton: ActionButton
     private val buttonPanel = JPanel(CardLayout())
+    private val inputPanel = BorderLayoutPanel()
 
     private val listModel = DefaultListModel<ModelWrapper>()
     private val elementsList = JBList(listModel)
@@ -142,9 +143,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         input.recreateDocument()
         input.border = JBEmptyBorder(10)
 
-        this.add(input, BorderLayout.CENTER)
-        this.add(elementsList, BorderLayout.NORTH)
-
         val layoutPanel = BorderLayoutPanel()
         val horizontalGlue = Box.createHorizontalGlue()
         horizontalGlue.addMouseListener(object : MouseAdapter() {
@@ -174,7 +172,12 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
         layoutPanel.addToCenter(horizontalGlue)
         layoutPanel.addToRight(buttonPanel)
-        addToBottom(layoutPanel)
+
+        inputPanel.add(input, BorderLayout.CENTER)
+        inputPanel.addToBottom(layoutPanel)
+
+        this.add(elementsList, BorderLayout.NORTH)
+        this.add(inputPanel, BorderLayout.CENTER)
 
         ComponentValidator(disposable!!).withValidator(Supplier<ValidationInfo?> {
             val validationInfo: ValidationInfo? = this.getInputValidationInfo()
@@ -224,11 +227,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         elementsList.cellRenderer = RelatedFileListCellRenderer()
         elementsList.setEmptyText("")
 
-        val scrollPane = JBScrollPane(elementsList)
-        scrollPane.preferredSize = Dimension(-1, 80)
-        scrollPane.horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS
-        scrollPane.verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
-
         elementsList.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 val list = e.source as JBList<*>
@@ -255,8 +253,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                 } ?: list.clearSelection()
             }
         })
-
-        add(scrollPane, BorderLayout.NORTH)
     }
 
     private fun updateElements(elements: List<PsiElement>?) {
@@ -296,7 +292,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     fun initEditor() {
         val editorEx = this.input.editor as? EditorEx ?: return
-        setBorder(AutoDevCoolBorder(editorEx, this))
+        inputPanel.setBorder(AutoDevCoolBorder(editorEx, this))
         UIUtil.setOpaqueRecursively(this, false)
         this.revalidate()
     }
