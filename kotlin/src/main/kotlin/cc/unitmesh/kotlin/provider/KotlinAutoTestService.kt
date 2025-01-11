@@ -43,6 +43,9 @@ class KotlinAutoTestService : AutoTestService() {
     private val log = logger<KotlinAutoTestService>()
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = GradleRunConfiguration::class.java
     override fun isApplicable(element: PsiElement): Boolean = element.language is KotlinLanguage
+    override fun isApplicable(project: Project, file: VirtualFile): Boolean {
+        return file.extension == "kt"
+    }
 
     override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
         return createConfigForJava(virtualFile, project)

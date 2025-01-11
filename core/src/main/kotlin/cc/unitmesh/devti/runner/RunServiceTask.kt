@@ -1,49 +1,59 @@
 // Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package cc.unitmesh.devti.runner
 
-import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.provider.RunService
 import com.intellij.execution.*
+import com.intellij.execution.ExecutionManager.Companion.EXECUTION_TOPIC
 import com.intellij.execution.executors.DefaultRunExecutor
-import com.intellij.execution.impl.ExecutionManagerImpl
 import com.intellij.execution.process.*
+import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.testframework.Filter
 import com.intellij.execution.testframework.sm.runner.SMTRunnerEventsAdapter
-import com.intellij.execution.testframework.sm.runner.SMTRunnerEventsListener
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
-import com.intellij.util.messages.MessageBusConnection
 import com.intellij.util.text.nullize
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.CompletableFuture
+import cc.unitmesh.devti.AutoDevNotifications
 
 open class RunServiceTask(
     private val project: Project,
     private val virtualFile: VirtualFile,
     private val testElement: PsiElement?,
-    private val runService: RunService,
-    private val runner: ProgramRunner<*>? = null
-) : com.intellij.openapi.progress.Task.Backgroundable(
-    project,
-    AutoDevBundle.message("progress.run.task"),
-    true
+    private val fileRunService: RunService,
+    private val runner: ProgramRunner<*>? = null,
+    private val future: CompletableFuture<String>? = null,
+) : ConfigurationRunner, Task.Backgroundable(
+    project, "Running task", true
 ) {
-    private fun runnerId() = runner?.runnerId ?: DefaultRunExecutor.EXECUTOR_ID
+    override fun runnerId() = runner?.runnerId ?: DefaultRunExecutor.EXECUTOR_ID
 
     override fun run(indicator: ProgressIndicator) {
-        runAndCollectTestResults(indicator)
+        if (future != null) {
+            runInBackgroundAndCollectToFuture()
+        } else {
+            runAndCollectTestResults(indicator)
+        }
+    }
+
+    private fun runInBackgroundAndCollectToFuture() {
+        val settings: RunnerAndConfigurationSettings =
+            fileRunService.createRunSettings(project, virtualFile, testElement)
+                ?: throw IllegalStateException("No run configuration found for file: ${virtualFile.path}")
+
+        runAnCollectStdOutput(settings, project, future!!)
     }
 
     /**
@@ -54,7 +64,8 @@ open class RunServiceTask(
      * @return The check result of the executed run configuration, or `null` if no run configuration could be created.
      */
     private fun runAndCollectTestResults(indicator: ProgressIndicator?): RunnerResult? {
-        val settings: RunnerAndConfigurationSettings? = runService.createRunSettings(project, virtualFile, testElement)
+        val settings: RunnerAndConfigurationSettings? =
+            fileRunService.createRunSettings(project, virtualFile, testElement)
         if (settings == null) {
             logger<RunServiceTask>().warn("No run configuration found for file: ${virtualFile.path}")
             return null
@@ -62,22 +73,14 @@ open class RunServiceTask(
 
         settings.isActivateToolWindowBeforeRun = false
 
-        val stderr = StringBuilder()
-        val processListener = object : OutputListener() {
-            override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
-                if (ProcessOutputType.isStderr(outputType)) {
-                    stderr.append(event.text)
-                }
-            }
-        }
-
         val testRoots = mutableListOf<SMTestProxy.SMRootTestProxy>()
         val testEventsListener = object : SMTRunnerEventsAdapter() {
             override fun onTestingStarted(testsRoot: SMTestProxy.SMRootTestProxy) {
                 testRoots += testsRoot
             }
         }
-        val runContext = RunContext(processListener, null, CountDownLatch(1))
+
+        val runContext = createRunContext()
         executeRunConfigures(project, settings, runContext, testEventsListener, indicator)
 
         @Suppress("UnstableApiUsage")
@@ -91,7 +94,7 @@ open class RunServiceTask(
         return result
     }
 
-    protected fun SMTestProxy.SMRootTestProxy.toCheckResult(): RunnerResult? {
+    private fun SMTestProxy.SMRootTestProxy.toCheckResult(): RunnerResult? {
         if (finishedSuccessfully()) return RunnerResult(RunnerStatus.Solved, "CONGRATULATIONS")
 
         val failedChildren = collectChildren(object : Filter<SMTestProxy>() {
@@ -148,105 +151,78 @@ open class RunServiceTask(
     private fun fillWithIncorrect(message: String): String =
         message.nullize(nullizeSpaces = true) ?: "Incorrect"
 
-    fun executeRunConfigures(
-        project: Project,
-        settings: RunnerAndConfigurationSettings,
-        runContext: RunContext,
-        testEventsListener: SMTRunnerEventsAdapter,
-        indicator: ProgressIndicator?
-    ) {
-        val connection = project.messageBus.connect()
-        try {
-            return executeRunConfigurations(connection, settings, runContext, testEventsListener, indicator)
-        } finally {
-            connection.disconnect()
-        }
-    }
+    companion object {
+        fun runAnCollectStdOutput(
+            settings: RunnerAndConfigurationSettings, project: Project, completableFuture: CompletableFuture<String>,
+        ) {
+            val executorInstance = DefaultRunExecutor.getRunExecutorInstance()
+            val env = ExecutionEnvironmentBuilder
+                .createOrNull(executorInstance, settings.configuration)
+                ?.build() ?: throw IllegalStateException("Failed to create execution environment")
 
-    private fun executeRunConfigurations(
-        connection: MessageBusConnection,
-        configurations: RunnerAndConfigurationSettings,
-        runContext: RunContext,
-        testEventsListener: SMTRunnerEventsListener?,
-        indicator: ProgressIndicator?
-    ) {
-        testEventsListener?.let {
-            connection.subscribe(SMTRunnerEventsListener.TEST_STATUS, it)
-        }
-        Disposer.register(connection, runContext)
+            val runContentManager = ExecutionManager.getInstance(project).getContentManager()
 
-        runInEdt {
-            connection.subscribe(
-                ExecutionManager.EXECUTION_TOPIC,
-                CheckExecutionListener(runnerId(), runContext)
-            )
+            val processAdapter = object : ProcessAdapter() {
+                val stdout = StringBuilder()
+                val stderr = StringBuilder()
+                override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
+                    when (outputType) {
+                        ProcessOutputTypes.STDOUT -> stdout.append(event.text)
+                        ProcessOutputTypes.STDERR -> stderr.append(event.text)
+                        ProcessOutputTypes.SYSTEM -> {
+                            // ignore system output
+                        }
 
-            try {
-                configurations.startRunConfigurationExecution(runContext)
-            } catch (e: ExecutionException) {
-                runContext.latch.countDown()
-            }
-        }
+                        else -> {}
+                    }
+                }
 
-        while (indicator?.isCanceled != true) {
-            val result = runContext.latch.await(100, TimeUnit.MILLISECONDS)
-            if (result) break
-        }
-
-        if (indicator?.isCanceled == true) {
-            Disposer.dispose(runContext)
-        }
-    }
-
-    @Throws(ExecutionException::class)
-    private fun RunnerAndConfigurationSettings.startRunConfigurationExecution(runContext: RunContext): Boolean {
-        val runner = ProgramRunner.getRunner(runnerId(), configuration)
-        val env =
-            ExecutionEnvironmentBuilder.create(DefaultRunExecutor.getRunExecutorInstance(), this)
-                .activeTarget()
-                .build(processRunCompletionAction(runContext))
-
-        if (runner == null || env.state == null) {
-            runContext.latch.countDown()
-            return false
-        }
-
-        runContext.environments.add(env)
-        runner.execute(env)
-        return true
-    }
-
-    /**
-     * This function defines a process run completion action to be executed once a process run by the program runner completes.
-     * It is designed to handle the aftermath of a process execution, including stopping the process and notifying the run context.
-     *
-     * @param runContext The context in which the run operation is being executed. It provides the necessary information
-     *                   and handles to manage the run process, including a latch to synchronize the completion of the run.
-     *                   The run context is also responsible for disposing of resources once the run completes.
-     *
-     * Note: This function uses the 'return@Callback' syntax to exit the lambda expression early in case of a null descriptor.
-     */
-    fun processRunCompletionAction(runContext: RunContext) = ProgramRunner.Callback { descriptor ->
-        // Descriptor can be null in some cases.
-        // For example, IntelliJ Rust's test runner provides null here if compilation fails
-        if (descriptor == null) {
-            runContext.latch.countDown()
-            return@Callback
-        }
-
-        Disposer.register(runContext) {
-            ExecutionManagerImpl.stopProcess(descriptor)
-        }
-        val processHandler = descriptor.processHandler
-        if (processHandler != null) {
-            processHandler.addProcessListener(object : ProcessAdapter() {
                 override fun processTerminated(event: ProcessEvent) {
-                    runContext.latch.countDown()
+                    when (event.exitCode) {
+                        0 -> completableFuture.complete(stdout.toString())
+                        else -> completableFuture.completeExceptionally(IllegalStateException("$stderr\nProcess terminated with non-zero exit code: ${event.exitCode}"))
+                    }
+                }
+            }
+
+            settings.isActivateToolWindowBeforeRun = false
+            settings.isTemporary = true
+            settings.isFocusToolWindowBeforeRun = false
+
+            val disposable = Disposer.newDisposable()
+            val connection = ApplicationManager.getApplication().messageBus.connect(disposable)
+            connection.subscribe(EXECUTION_TOPIC, object : ExecutionListener {
+                override fun processStarting(executorId: String, env: ExecutionEnvironment, handler: ProcessHandler) {
+                    handler.addProcessListener(processAdapter)
+                }
+
+                override fun processTerminated(
+                    executorId: String,
+                    env: ExecutionEnvironment,
+                    handler: ProcessHandler,
+                    exitCode: Int,
+                ) {
+                    super.processTerminated(executorId, env, handler, exitCode)
+                    connection.disconnect()
+
+                    if (exitCode != 0) {
+                        completableFuture.completeExceptionally(IllegalStateException("Process terminated with non-zero exit code: $exitCode"))
+                    } else {
+                        val content = runContentManager.getReuseContent(env) ?: return
+                        runInEdt {
+                            runContentManager.removeRunContent(executorInstance, content)
+                        }
+                    }
                 }
             })
-            runContext.processListener?.let {
-                processHandler.addProcessListener(it)
-            }
+
+            ExecutionManager.getInstance(project).restartRunProfile(
+                project,
+                executorInstance,
+                env.executionTarget,
+                settings,
+                null
+            )
         }
     }
 }

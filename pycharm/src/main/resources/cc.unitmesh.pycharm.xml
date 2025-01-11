@@ -27,5 +27,7 @@
                 language="Python"
                 implementation="cc.unitmesh.python.provider.PythonAutoTestService"/>
 
+        <runService implementation="cc.unitmesh.python.provider.PythonRunService"/>
+
     </extensions>
 </idea-plugin>

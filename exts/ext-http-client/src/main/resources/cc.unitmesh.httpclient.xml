@@ -6,5 +6,7 @@
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <httpClientExecutor implementation="cc.unitmesh.httpclient.IntellijHttpClientExecutor"/>
+
+        <runService implementation="cc.unitmesh.httpclient.HttpClientFileRunService"/>
     </extensions>
 </idea-plugin>

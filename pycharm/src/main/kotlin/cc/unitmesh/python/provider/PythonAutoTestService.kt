@@ -29,6 +29,8 @@ import com.jetbrains.python.run.PythonRunConfigurationProducer
 
 class PythonAutoTestService : AutoTestService() {
     override fun isApplicable(element: PsiElement): Boolean = element.language.displayName == "Python"
+    override fun isApplicable(project: Project, file: VirtualFile): Boolean = file.extension == "py"
+
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = PythonRunConfiguration::class.java
 
     override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {

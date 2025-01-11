@@ -24,6 +24,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -40,6 +41,11 @@ class JSAutoTestService : AutoTestService() {
     override fun isApplicable(element: PsiElement): Boolean {
         val sourceFile = runReadAction { element.containingFile } ?: return false
         return LanguageApplicableUtil.isWebChatCreationContextSupported(sourceFile)
+    }
+
+    override fun isApplicable(project: Project, file: VirtualFile): Boolean {
+        val psiFile = PsiManager.getInstance(project).findFile(file) as? JSFile ?: return false
+        return LanguageApplicableUtil.isWebChatCreationContextSupported(psiFile)
     }
 
     override fun findOrCreateTestFile(sourceFile: PsiFile, project: Project, psiElement: PsiElement): TestFileContext? {

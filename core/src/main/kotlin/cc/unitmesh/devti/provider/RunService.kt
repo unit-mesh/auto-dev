@@ -4,20 +4,27 @@ import cc.unitmesh.devti.runner.RunServiceTask
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.actions.ConfigurationContext
+import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
+import com.intellij.execution.util.ExecUtil
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiManager
+import java.util.concurrent.CompletableFuture
 
 interface RunService {
     private val logger: Logger get() = logger<RunService>()
+    
+    fun isApplicable(project: Project, file: VirtualFile): Boolean
 
     /**
      * Retrieves the run configuration class for the given project.
@@ -49,9 +56,13 @@ interface RunService {
      * @param virtualFile The virtual file for which the configuration should be created.
      * @return The created or found run configuration settings, or `null` if no suitable configuration could be
      */
-    fun createRunSettings(project: Project, virtualFile: VirtualFile, testElement: PsiElement?): RunnerAndConfigurationSettings? {
+    fun createRunSettings(
+        project: Project,
+        virtualFile: VirtualFile,
+        testElement: PsiElement?,
+    ): RunnerAndConfigurationSettings? {
         if (testElement != null) {
-            val settings = createDefaultTestConfigurations(project, testElement)
+            val settings = createDefaultConfigurations(project, testElement)
             if (settings != null) {
                 return settings
             }
@@ -63,11 +74,7 @@ interface RunService {
             it.name == virtualFile.nameWithoutExtension && (it.javaClass == runConfigureClass)
         }
 
-        var isTemporary = false
-
-        // try to create config if not founds
         if (testConfig == null) {
-            isTemporary = true
             testConfig = createConfiguration(project, virtualFile)
         }
 
@@ -82,13 +89,19 @@ interface RunService {
             return null
         }
 
-        if (isTemporary) {
-            settings.isTemporary = true
-        }
-
+        settings.isTemporary = true
         runManager.selectedConfiguration = settings
 
         return settings
+    }
+
+    fun createDefaultConfigurations(
+        project: Project,
+        element: PsiElement,
+    ): RunnerAndConfigurationSettings? {
+        return runReadAction {
+            ConfigurationContext(element).configurationsFromContext?.firstOrNull()?.configurationSettings
+        }
     }
 
     fun PsiFile.collectPsiError(): MutableList<String> {
@@ -114,13 +127,12 @@ interface RunService {
         }
     }
 
-    private fun createDefaultTestConfigurations(project: Project, element: PsiElement): RunnerAndConfigurationSettings? {
-        return ConfigurationContext(element).configurationsFromContext?.firstOrNull()?.configurationSettings
-    }
-
     /**
-     * This function is responsible for running a file within a specified project and virtual file.
-     * It creates a run configuration using the provided parameters and then attempts to execute it using the `ExecutionManager`. The function returns `null` if an error occurs during the configuration creation or execution process.
+     * This function is responsible for running a file within a specified project and virtual file. It is a synchronous operation.
+     * [runFileAsync] should be used for asynchronous operations.
+     *
+     * It creates a run configuration using the provided parameters and then attempts to execute it using
+     * the `ExecutionManager`. The function returns `null` if an error occurs during the configuration creation or execution process.
      *
      * @param project The project within which the file is to be run.
      * @param virtualFile The virtual file that represents the file to be run.
@@ -136,6 +148,89 @@ interface RunService {
         }
 
         return null
+    }
+
+    /**
+     * This function is responsible for running a file within a specified project and virtual file asynchronously.
+     *
+     * @param project The project within which the file is to be run.
+     * @param virtualFile The virtual file that represents the file to be run.
+     * @return The result of the run operation, or `null` if an error occurred.
+     */
+    fun runFileAsync(project: Project, virtualFile: VirtualFile, psiElement: PsiElement?): String? {
+        val future: CompletableFuture<String> = CompletableFuture<String>()
+
+        try {
+            val runTask = RunServiceTask(project, virtualFile, psiElement, this, future = future)
+            ProgressManager.getInstance().run(runTask)
+        } catch (e: Exception) {
+            logger.error("Failed to run file: ${virtualFile.name}", e)
+            future.completeExceptionally(e)
+            return e.message
+        }
+
+        return future.get()
+    }
+
+    companion object {
+        val EP_NAME: ExtensionPointName<RunService> = ExtensionPointName("cc.unitmesh.runService")
+
+        fun provider(project: Project, file: VirtualFile): RunService? {
+            val fileRunServices = EP_NAME.extensionList
+            return fileRunServices.firstOrNull {
+                runReadAction { it.isApplicable(project, file) }
+            }
+        }
+
+        fun runInCli(project: Project, psiFile: PsiFile, args: List<String>? = null): String? {
+            val commandLine = when (psiFile.language.displayName.lowercase()) {
+                "python" -> GeneralCommandLine("python3", psiFile.virtualFile.path)
+                "javascript" -> GeneralCommandLine("node", psiFile.virtualFile.path)
+                "ecmascript 6" -> GeneralCommandLine("node", psiFile.virtualFile.path)
+                "ruby" -> GeneralCommandLine("ruby", psiFile.virtualFile.path)
+                "shell script" -> GeneralCommandLine("sh", psiFile.virtualFile.path)
+                // kotlin script, `kotlinc -script hello.kts`
+                "kotlin" -> GeneralCommandLine("kotlinc", "-script", psiFile.virtualFile.path)
+                else -> {
+                    logger<RunService>().warn("Unsupported language: ${psiFile.language.displayName}")
+                    return null
+                }
+            }
+
+            if (args != null) {
+                commandLine.addParameters(args)
+            }
+
+            commandLine.setWorkDirectory(project.basePath)
+            return try {
+                val output = ExecUtil.execAndGetOutput(commandLine)
+                output.stdout
+            } catch (e: Exception) {
+                e.printStackTrace()
+                e.message
+            }
+        }
+
+        fun runInCli(project: Project, virtualFile: VirtualFile, args: List<String>? = null): String? {
+            val psiFile = runReadAction { PsiManager.getInstance(project).findFile(virtualFile) } ?: return null
+            return runInCli(project, psiFile, args)
+        }
+
+        /**
+         * We will handle Shire UnSupported FileType here
+         */
+        fun retryRun(project: Project, virtualFile: VirtualFile, args: List<String>? = null): String? {
+            val defaultRunService = object : RunService {
+                override fun isApplicable(project: Project, file: VirtualFile): Boolean = true
+                override fun runConfigurationClass(project: Project): Class<out RunProfile>? = null
+            }
+
+            val file = runReadAction { PsiManager.getInstance(project).findFile(virtualFile) }
+
+            defaultRunService.createRunSettings(project, virtualFile, file) ?: return null
+
+            return defaultRunService.runFile(project, virtualFile, null)
+        }
     }
 }
 

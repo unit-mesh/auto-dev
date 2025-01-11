@@ -187,6 +187,10 @@
                         beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
             <with attribute="implementationClass" implements="cc.unitmesh.devti.provider.RelatedClassesProvider"/>
         </extensionPoint>
+
+        <extensionPoint qualifiedName="cc.unitmesh.runService"
+                        interface="cc.unitmesh.devti.provider.RunService"
+                        dynamic="true"/>
     </extensionPoints>
 
     <applicationListeners>

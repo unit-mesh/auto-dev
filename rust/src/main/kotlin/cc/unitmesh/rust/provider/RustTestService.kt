@@ -27,6 +27,9 @@ import org.rust.lang.core.psi.*
 class RustTestService : AutoTestService() {
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = CargoCommandConfiguration::class.java
     override fun isApplicable(element: PsiElement): Boolean = element.language is RsLanguage
+    override fun isApplicable(project: Project, file: VirtualFile): Boolean {
+        return file.extension == "rs"
+    }
 
     override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
         val pkg = findCargoPackage(project, virtualFile) ?: return null

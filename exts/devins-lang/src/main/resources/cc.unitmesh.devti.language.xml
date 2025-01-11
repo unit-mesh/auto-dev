@@ -69,5 +69,7 @@
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <languageProcessor implementation="cc.unitmesh.devti.language.provider.DevInsPromptProcessor"/>
+
+        <runService implementation="cc.unitmesh.devti.language.compiler.service.ShellRunService"/>
     </extensions>
 </idea-plugin>

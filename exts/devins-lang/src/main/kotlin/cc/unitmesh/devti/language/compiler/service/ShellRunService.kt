@@ -12,6 +12,10 @@ import com.intellij.sh.run.ShConfigurationType
 import com.intellij.sh.run.ShRunConfiguration
 
 class ShellRunService : RunService {
+    override fun isApplicable(project: Project, file: VirtualFile): Boolean {
+        return file.extension == "sh" || file.extension == "bash"
+    }
+
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = ShRunConfiguration::class.java
     override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
         val psiFile = PsiManager.getInstance(project).findFile(virtualFile) as? ShFile ?: return null
