@@ -133,6 +133,7 @@ class CodeFence(
                 "cpp" -> "c++"
                 "shell" -> "Shell Script"
                 "sh" -> "Shell Script"
+                "bash" -> "Shell Script"
                 "http" -> "HTTP Request"
                 else -> languageName
             }
