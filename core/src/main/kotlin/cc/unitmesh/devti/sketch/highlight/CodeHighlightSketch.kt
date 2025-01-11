@@ -27,6 +27,7 @@ import com.intellij.ui.components.JBPanel
 import com.intellij.util.concurrency.annotations.RequiresReadLock
 import com.intellij.util.ui.JBUI
 import cc.unitmesh.devti.sketch.LangSketch
+import com.intellij.util.ui.JBEmptyBorder
 import java.awt.BorderLayout
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.JComponent
@@ -52,7 +53,10 @@ class CodeHighlightSketch(val project: Project, val text: String, private var id
 
         val editor = createCodeViewerEditor(project, text, ideaLanguage, this)
 
-        editor.component.border = JBUI.Borders.empty(10, 0)
+        border = JBEmptyBorder(8)
+        layout = BorderLayout(JBUI.scale(8), 0)
+        background = JBColor(0xEAEEF7, 0x2d2f30)
+
         editor.component.isOpaque = true
 
         editorFragment = EditorFragment(editor, editorLineThreshold)
@@ -60,8 +64,6 @@ class CodeHighlightSketch(val project: Project, val text: String, private var id
 
         if (ideaLanguage?.displayName != "Markdown" && ideaLanguage != PlainTextLanguage.INSTANCE) {
             setupActionBar(project, editor)
-        } else {
-            editor.backgroundColor = JBColor.PanelBackground
         }
     }
 

@@ -83,8 +83,6 @@ class SingleFileDiffView(
                     }
                 }
             }
-        }.apply {
-            background = JBColor.PanelBackground
         }
 
         val fileContainer = JPanel(BorderLayout(10, 10)).also {

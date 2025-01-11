@@ -15,7 +15,6 @@ import java.awt.event.MouseEvent
 import javax.swing.Box
 import javax.swing.JComponent
 
-
 class EditorPadding(private val editor: Editor, pad: Int) :
     Box.Filler(Dimension(pad, pad), Dimension(pad, pad), Dimension(pad, pad)) {
     init {

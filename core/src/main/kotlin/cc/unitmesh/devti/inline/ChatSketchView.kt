@@ -26,6 +26,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import kotlinx.coroutines.flow.cancellable
@@ -48,18 +49,17 @@ class ChatSketchView(val project: Project, val editor: Editor?, private val show
 
     private var myList = JPanel(VerticalLayout(JBUI.scale(0))).apply {
         this.isOpaque = true
-        this.background = UIUtil.getLabelBackground()
+        this.background = JBColor(0xEAEEF7, 0x2d2f30)
     }
 
     private var userPrompt: JPanel = JPanel(BorderLayout()).apply {
         this.isOpaque = true
-        this.background = JBUI.CurrentTheme.CustomFrameDecorations.titlePaneInactiveBackground()
+        this.background = JBColor(0xEAEEF7, 0x2d2f30)
         this.border = JBUI.Borders.empty(10, 0)
     }
 
     private var contentPanel = JPanel(BorderLayout()).apply {
         this.isOpaque = true
-        this.background = UIUtil.getLabelBackground()
     }
 
     private var panelContent: DialogPanel = panel {
@@ -103,12 +103,17 @@ class ChatSketchView(val project: Project, val editor: Editor?, private val show
                 }
 
                 override fun onSubmit(component: AutoDevInputSection, trigger: AutoDevInputTrigger) {
-                    val prompt = component.text
+                    var prompt = component.text
                     component.text = ""
 
                     if (prompt.isEmpty() || prompt.isBlank()) {
                         component.showTooltip(AutoDevBundle.message("chat.input.tips"))
                         return
+                    }
+
+                    val postProcessors = LanguagePromptProcessor.instance("DevIn").firstOrNull()
+                    if (postProcessors != null) {
+                        prompt = postProcessors.compile(chatCodingService.project, prompt)
                     }
 
                     /// load prompt template
@@ -142,7 +147,8 @@ class ChatSketchView(val project: Project, val editor: Editor?, private val show
 
     fun onStart() {
         initializePreAllocatedBlocks(project)
-        progressBar.isIndeterminate = !showInput
+        progressBar.isIndeterminate = true
+        progressBar.isVisible = !showInput
     }
 
     fun hiddenProgressBar() {
@@ -171,7 +177,6 @@ class ChatSketchView(val project: Project, val editor: Editor?, private val show
 
             codeBlockViewer.editorFragment?.setCollapsed(true)
             codeBlockViewer.editorFragment!!.updateExpandCollapseLabel()
-            codeBlockViewer.editorFragment!!.editor.backgroundColor = JBColor(0xF7FAFDF, 0x2d2f30)
 
             val panel = panel {
                 row {

@@ -47,10 +47,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
 
         myHeaderPanel.add(header, BorderLayout.EAST)
         mainPanel.add(myHeaderPanel)
-        mainPanel.border = JBUI.Borders.compound(
-            JBUI.Borders.empty(0, 10),
-            JBUI.Borders.customLine(JBColor.border(), 1, 1, 1, 1)
-        )
+        mainPanel.border = JBUI.Borders.compound(JBUI.Borders.empty(0, 10))
 
         ApplicationManager.getApplication().invokeAndWait {
             if (filePatches.isEmpty()) {
@@ -114,7 +111,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
         panel.add(rejectButton)
         panel.add(viewDiffButton)
 
-        panel.background = JBColor(0xF5F5F5, 0x333333)
+        panel.background = JBColor(0xEAEEF7, 0x2d2f30)
 
         return panel
     }
