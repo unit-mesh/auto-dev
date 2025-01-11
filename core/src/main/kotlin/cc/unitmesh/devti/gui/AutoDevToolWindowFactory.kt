@@ -3,7 +3,7 @@ package cc.unitmesh.devti.gui
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
-import cc.unitmesh.devti.inline.InlineChatPanelView
+import cc.unitmesh.devti.inline.ChatSketchView
 import cc.unitmesh.devti.settings.LanguageChangedCallback.componentStateChanged
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.application.ApplicationManager
@@ -27,7 +27,7 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
         val contentPanel = ChatCodingPanel(chatCodingService, toolWindow.disposable)
         val chatPanel = contentFactory.createContent(contentPanel, "Chat", false)
 
-        val sketchView = InlineChatPanelView(project, null)
+        val sketchView = ChatSketchView(project, null)
         val sketchPanel = contentFactory.createContent(sketchView, "Sketch", false)
 
         ApplicationManager.getApplication().invokeLater {

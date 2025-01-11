@@ -102,7 +102,8 @@ class AutoDevInput(
     }
 
     override fun onEditorAdded(editor: Editor) {
-        editorListeners.multicaster.editorAdded((editor as EditorEx))
+        // when debug or AutoDev show in first, the editorListeners will be null
+        editorListeners?.multicaster?.editorAdded((editor as EditorEx))
     }
 
     public override fun createEditor(): EditorEx {

@@ -61,7 +61,7 @@ data class ModelWrapper(val psiElement: PsiElement, var panel: JPanel? = null, v
 /**
  *
  */
-class AutoDevInputSection(private val project: Project, val disposable: Disposable?) : BorderLayoutPanel() {
+class AutoDevInputSection(private val project: Project, val disposable: Disposable?, showAgent: Boolean = true) : BorderLayoutPanel() {
     private val input: AutoDevInput
     private val documentListener: DocumentListener
     private val sendButtonPresentation: Presentation
@@ -153,7 +153,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         })
         layoutPanel.setOpaque(false)
 
-        if (project.customAgentSetting.enableCustomRag) {
+        if (project.customAgentSetting.enableCustomRag && showAgent) {
             customRag = ComboBox(MutableCollectionComboBoxModel(loadRagApps()))
             customRag.renderer = SimpleListCellRenderer.create { label: JBLabel, value: CustomAgentConfig?, _: Int ->
                 if (value != null) {

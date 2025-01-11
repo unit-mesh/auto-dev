@@ -35,7 +35,8 @@ enum class ChatActionType(var context: ChatTemplateContext) {
     CUSTOM_ACTION(ChatTemplateContext()),
     CUSTOM_AGENT(ChatTemplateContext()),
     CODE_REVIEW(ChatTemplateContext()),
-    INLINE_CHAT(ChatTemplateContext())
+    INLINE_CHAT(ChatTemplateContext()),
+    SKETCH(ChatTemplateContext())
     ;
 
     fun instruction(lang: String = "", project: Project?): TextTemplatePrompt {
@@ -92,6 +93,14 @@ enum class ChatActionType(var context: ChatTemplateContext) {
                 val displayText = AutoDevBundle.message("prompts.autodev.inlineChat", lang)
                 val templateRender = TemplateRender(GENIUS_CODE)
                 val template = templateRender.getTemplate("inline-chat.vm")
+
+                TextTemplatePrompt(displayText, template, templateRender, this.context)
+            }
+
+            SKETCH -> {
+                val displayText = AutoDevBundle.message("prompts.autodev.sketch", lang)
+                val templateRender = TemplateRender(GENIUS_CODE)
+                val template = templateRender.getTemplate("sketch.vm")
 
                 TextTemplatePrompt(displayText, template, templateRender, this.context)
             }

@@ -113,7 +113,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         }
     }
 
-    private fun makeChatBotRequest(
+    fun makeChatBotRequest(
         requestPrompt: String,
         newChatContext: Boolean,
         chatHistory: List<LlmMsg.ChatMessage>

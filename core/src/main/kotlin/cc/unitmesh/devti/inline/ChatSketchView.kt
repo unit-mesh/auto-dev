@@ -1,13 +1,19 @@
 package cc.unitmesh.devti.inline
 
-import cc.unitmesh.devti.gui.chat.AutoDevInputSection
+import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.gui.chat.*
+import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.provider.devins.LanguagePromptProcessor
 import cc.unitmesh.devti.sketch.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.LangSketch
 import cc.unitmesh.devti.util.parser.CodeFence
 import cc.unitmesh.devti.sketch.LanguageSketchProvider
 import cc.unitmesh.devti.sketch.highlight.CodeHighlightSketch
+import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileTypes.PlainTextLanguage
@@ -22,6 +28,8 @@ import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
+import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.launch
 import java.awt.BorderLayout
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
@@ -32,10 +40,11 @@ import javax.swing.JProgressBar
 import javax.swing.ScrollPaneConstants
 import javax.swing.SwingUtilities
 
-class InlineChatPanelView(val project: Project, val editor: Editor?, showInput: Boolean = true) : SimpleToolWindowPanel(true, true),
+class ChatSketchView(val project: Project, val editor: Editor?, private val showInput: Boolean = true) :
+    SimpleToolWindowPanel(true, true),
     NullableComponent, Disposable {
     private var progressBar: CustomProgressBar = CustomProgressBar(this)
-    private var shireInput: AutoDevInputSection = AutoDevInputSection(project, this)
+    private var shireInput: AutoDevInputSection = AutoDevInputSection(project, this, showAgent = false)
 
     private var myList = JPanel(VerticalLayout(JBUI.scale(0))).apply {
         this.isOpaque = true
@@ -85,6 +94,46 @@ class InlineChatPanelView(val project: Project, val editor: Editor?, showInput: 
             shireInput.also {
                 border = JBUI.Borders.empty(8)
             }
+
+            val chatCodingService = ChatCodingService(ChatActionType.SKETCH, project)
+            shireInput.addListener(object : AutoDevInputListener {
+                override fun onStop(component: AutoDevInputSection) {
+                    chatCodingService.stop()
+                    hiddenProgressBar()
+                }
+
+                override fun onSubmit(component: AutoDevInputSection, trigger: AutoDevInputTrigger) {
+                    val prompt = component.text
+                    component.text = ""
+
+                    if (prompt.isEmpty() || prompt.isBlank()) {
+                        component.showTooltip(AutoDevBundle.message("chat.input.tips"))
+                        return
+                    }
+
+                    /// load prompt template
+                    addRequestPrompt(prompt)
+
+                    ApplicationManager.getApplication().executeOnPooledThread {
+                        val flow = chatCodingService.makeChatBotRequest(prompt, true, emptyList())
+                        val suggestion = StringBuilder()
+
+                        AutoDevCoroutineScope.scope(project).launch {
+                            flow.cancellable()?.collect { char ->
+                                suggestion.append(char)
+
+                                invokeLater {
+                                    this@ChatSketchView.onUpdate(suggestion.toString())
+                                }
+                            }
+
+                            this@ChatSketchView.onFinish(suggestion.toString())
+                        }
+                    }
+                }
+            })
+
+
             contentPanel.add(shireInput, BorderLayout.SOUTH)
         }
 
@@ -93,7 +142,11 @@ class InlineChatPanelView(val project: Project, val editor: Editor?, showInput: 
 
     fun onStart() {
         initializePreAllocatedBlocks(project)
-        progressBar.isIndeterminate = true
+        progressBar.isIndeterminate = !showInput
+    }
+
+    fun hiddenProgressBar() {
+        progressBar.isVisible = false
     }
 
     private val blockViews: MutableList<LangSketch> = mutableListOf()
@@ -219,7 +272,7 @@ class InlineChatPanelView(val project: Project, val editor: Editor?, showInput: 
     fun cancel(s: String) = runCatching { handleCancel?.invoke(s) }
 }
 
-class CustomProgressBar(private val view: InlineChatPanelView) : JPanel(BorderLayout()) {
+class CustomProgressBar(private val view: ChatSketchView) : JPanel(BorderLayout()) {
     private val progressBar: JProgressBar = JProgressBar()
 
     var isIndeterminate = progressBar.isIndeterminate
