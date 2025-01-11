@@ -31,6 +31,7 @@ import com.intellij.util.EventDispatcher
 import com.intellij.util.messages.MessageBusConnection
 import com.intellij.util.ui.JBUI
 import java.awt.Color
+import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
 import java.util.*
 import javax.swing.KeyStroke
@@ -57,32 +58,31 @@ class AutoDevInput(
         }
 
         DumbAwareAction.create {
-            object : AnAction() {
-                override fun actionPerformed(actionEvent: AnActionEvent) {
-                    val editor = editor ?: return
-                    // Insert a new line
-                    CommandProcessor.getInstance().executeCommand(project, {
-                        val eol = "\n"
-                        val document = editor.document
-                        val caretOffset = editor.caretModel.offset
-                        val lineEndOffset = document.getLineEndOffset(document.getLineNumber(caretOffset))
-                        val textAfterCaret = document.getText(TextRange(caretOffset, lineEndOffset))
+            val editor = editor ?: return@create
+            // Insert a new line
+            CommandProcessor.getInstance().executeCommand(project, {
+                val eol = "\n"
+                val document = editor.document
+                val caretOffset = editor.caretModel.offset
+                val lineEndOffset = document.getLineEndOffset(document.getLineNumber(caretOffset))
+                val textAfterCaret = document.getText(TextRange(caretOffset, lineEndOffset))
 
-                        WriteCommandAction.runWriteCommandAction(project) {
-                            if (textAfterCaret.isBlank()) {
-                                document.insertString(caretOffset, eol)
-                            } else {
-                                document.insertString(caretOffset, eol)
-                                editor.caretModel.moveToOffset(caretOffset + eol.length)
-                            }
-                        }
-                    }, "Insert New Line", null)
+                WriteCommandAction.runWriteCommandAction(project) {
+                    if (textAfterCaret.isBlank()) {
+                        document.insertString(caretOffset, eol)
+                        // move to next line
+                        EditorModificationUtil.moveCaretRelatively(editor, 1)
+                    } else {
+                        document.insertString(caretOffset, eol)
+                        editor.caretModel.moveToOffset(caretOffset + eol.length)
+                    }
                 }
-            }
+            }, "Insert New Line", null)
         }.registerCustomShortcutSet(
             CustomShortcutSet(
                 KeyboardShortcut(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.CTRL_DOWN_MASK), null),
-                KeyboardShortcut(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.META_DOWN_MASK), null)
+                KeyboardShortcut(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.META_DOWN_MASK), null),
+                KeyboardShortcut(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.SHIFT_DOWN_MASK), null),
             ), this
         )
 
@@ -113,6 +113,7 @@ class AutoDevInput(
         editor.caretModel.moveToOffset(0)
         editor.scrollPane.setBorder(border)
         editor.contentComponent.setOpaque(false)
+
         return editor
     }
 
@@ -160,7 +161,13 @@ class AutoDevInput(
             "Append text",
             "intentions.write.action",
             {
-                insertStringAndSaveChange(project, text, this.editor!!.document, this.editor!!.document.textLength, false)
+                insertStringAndSaveChange(
+                    project,
+                    text,
+                    this.editor!!.document,
+                    this.editor!!.document.textLength,
+                    false
+                )
             })
     }
 }

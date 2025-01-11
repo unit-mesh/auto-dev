@@ -5,9 +5,9 @@ import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.agent.configurable.customAgentSetting
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.agent.model.CustomAgentState
+import cc.unitmesh.devti.gui.chat.ui.RelatedFileListCellRenderer
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.llms.tokenizer.TokenizerFactory
-import cc.unitmesh.devti.provider.RelatedClassesProvider.Companion
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.codeInsight.lookup.LookupManagerListener
 import com.intellij.icons.AllIcons
@@ -163,7 +163,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             }
             customRag.selectedItem = defaultRag
 
-            input.minimumSize = Dimension(input.minimumSize.width, 48)
+            input.minimumSize = Dimension(input.minimumSize.width, 64)
             layoutPanel.addToLeft(customRag)
         }
 
@@ -295,8 +295,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     fun initEditor() {
         val editorEx = this.input.editor as? EditorEx ?: return
-
-        setBorder(AutoDevCoolBorder(editorEx, this))
+        this.input.setBorder(AutoDevCoolBorder(editorEx, this))
         UIUtil.setOpaqueRecursively(this, false)
         this.revalidate()
     }
