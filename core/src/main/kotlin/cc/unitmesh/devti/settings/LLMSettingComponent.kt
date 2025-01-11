@@ -26,11 +26,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     private val customModelParam: LLMParam by LLMParam.creating { Editable(settings.customModel) }
     private val customOpenAIHostParam: LLMParam by LLMParam.creating { Editable(settings.customOpenAiHost) }
 
-    private val gitTypeParam: LLMParam by LLMParam.creating { ComboBox(settings.gitType, GIT_TYPE.toList()) }
-    private val gitLabUrlParam: LLMParam by LLMParam.creating { Editable(settings.gitlabUrl) }
-    private val gitLabTokenParam: LLMParam by LLMParam.creating { Password(settings.gitlabToken) }
-
-    private val gitHubTokenParam by LLMParam.creating { Password(settings.githubToken) }
     private val customEngineServerParam by LLMParam.creating { Editable(settings.customEngineServer) }
     private val customEngineTokenParam by LLMParam.creating { Password(settings.customEngineToken) }
 
@@ -130,14 +125,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
                 .addLLMParam(maxTokenLengthParam)
                 .addLLMParam(delaySecondsParam)
             .addSeparator()
-                .addTooltip("Select Git Type")
-            .addLLMParam(gitTypeParam)
-            .addTooltip("GitHub Token is for AutoCRUD Model")
-                .addLLMParam(gitHubTokenParam)
-            .addTooltip("GitLab options is for AutoCRUD Model")
-            .addLLMParam(gitLabUrlParam)
-            .addLLMParam(gitLabTokenParam)
-                .addSeparator()
                 .addComponent(panel {
                     row {
                         comment("For OpenAI LLM, config OpenAI Key & OpenAI Model & Custom OpenAI Host <a>Open Log for Debug</a>") {
@@ -164,10 +151,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     private fun updateParams(settings: AutoDevSettingsState) {
         settings.apply {
             maxTokenLengthParam.value = maxTokenLength
-            gitTypeParam.value = gitType
-            gitHubTokenParam.value = githubToken
-            gitLabTokenParam.value = gitlabToken
-            gitLabUrlParam.value = gitlabUrl
             openAIKeyParam.value = openAiKey
             customModelParam.value = customModel
             customOpenAIHostParam.value = customOpenAiHost
@@ -187,10 +170,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     fun exportSettings(destination: AutoDevSettingsState) {
         destination.apply {
             maxTokenLength = maxTokenLengthParam.value
-            gitType = gitTypeParam.value
-            githubToken = gitHubTokenParam.value
-            gitlabUrl = gitLabUrlParam.value
-            gitlabToken = gitLabTokenParam.value
             openAiKey = openAIKeyParam.value
             customModel = customModelParam.value
             customOpenAiHost = customOpenAIHostParam.value
@@ -209,10 +188,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
 
     fun isModified(settings: AutoDevSettingsState): Boolean {
         return settings.maxTokenLength != maxTokenLengthParam.value ||
-                settings.gitType != gitTypeParam.value ||
-                settings.githubToken != gitHubTokenParam.value ||
-                settings.gitlabUrl != gitLabUrlParam.value ||
-                settings.gitlabToken != gitLabTokenParam.value ||
                 settings.openAiKey != openAIKeyParam.value ||
                 settings.customModel != customModelParam.value ||
                 settings.aiEngine != aiEngineParam.value ||

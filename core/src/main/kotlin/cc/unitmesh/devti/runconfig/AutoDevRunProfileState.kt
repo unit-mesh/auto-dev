@@ -9,6 +9,7 @@ import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.provider.DevFlowProvider
 import cc.unitmesh.devti.runconfig.options.AutoCRUDConfigurationOptions
 import cc.unitmesh.devti.settings.AutoDevSettingsState
+import cc.unitmesh.devti.settings.devops.devopsPromptsSettings
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
@@ -24,18 +25,11 @@ class AutoDevRunProfileState(
     val project: Project,
     val options: AutoCRUDConfigurationOptions,
 ) : RunProfileState {
-    private val githubToken: String
-    private val gitlabToken: String
-    private val gitType: String
-    private val gitlabUrl: String
-
-    init {
-        val instance = AutoDevSettingsState.getInstance()
-        githubToken = instance.githubToken
-        gitlabToken = instance.gitlabToken
-        gitType = instance.gitType
-        gitlabUrl = instance.gitlabUrl
-    }
+    val state = project.devopsPromptsSettings.state
+    private val githubToken: String = state.githubToken
+    private val gitlabToken: String = state.gitlabToken
+    private val gitType: String = state.gitType
+    private val gitlabUrl: String = state.gitlabUrl
 
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult? {
         val kanban: Kanban = when (gitType.lowercase()) {
@@ -51,7 +45,6 @@ class AutoDevRunProfileState(
                 GitHubIssue(options.githubRepo(), githubToken)
             }
         }
-
 
         // TODO: support other language
         val flowProvider = DevFlowProvider.flowProvider("java")

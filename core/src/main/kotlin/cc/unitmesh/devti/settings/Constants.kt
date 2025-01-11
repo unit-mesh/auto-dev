@@ -7,9 +7,6 @@ enum class AIEngines {
     OpenAI, Custom
 }
 
-val GIT_TYPE = arrayOf("Github" , "Gitlab")
-val DEFAULT_GIT_TYPE = GIT_TYPE[0]
-
 enum class ResponseType {
     SSE, JSON;
 }

@@ -14,10 +14,6 @@ import java.time.format.DateTimeFormatter
 @Service(Service.Level.APP)
 @State(name = "cc.unitmesh.devti.settings.DevtiSettingsState", storages = [Storage("DevtiSettings.xml")])
 class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
-    var gitType = DEFAULT_GIT_TYPE
-    var githubToken = ""
-    var gitlabToken = ""
-    var gitlabUrl = ""
     var openAiKey = ""
     var openAiModel = DEFAULT_AI_MODEL
     var delaySeconds = ""
