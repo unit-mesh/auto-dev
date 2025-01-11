@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.llms.openai
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.chat.ChatRole
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.coder.recording.EmptyRecording
@@ -53,7 +54,7 @@ class OpenAIProvider(val project: Project) : LLMProvider {
     private val service: OpenAiService
         get() {
             if (openAiKey.isEmpty()) {
-                throw IllegalStateException("You LLM server Key is empty")
+                throw IllegalStateException(AutoDevBundle.message("settings.autodev.llm.key.not.set"))
             }
 
             var openAiProxy = AutoDevSettingsState.getInstance().customOpenAiHost
@@ -98,6 +99,7 @@ class OpenAIProvider(val project: Project) : LLMProvider {
         messages.add(message)
     }
 
+    @Deprecated("Use stream instead")
     override fun prompt(promptText: String): String {
         val completionRequest = prepareRequest(promptText, "", true)
 
