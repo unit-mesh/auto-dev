@@ -413,11 +413,13 @@ project(":core") {
             testFramework(TestFrameworkType.Bundled)
         }
 
-        implementation("com.squareup.okhttp3:okhttp:4.4.1")
-        implementation("com.squareup.okhttp3:okhttp-sse:4.4.1")
+        implementation("io.reactivex.rxjava3:rxjava:3.1.10")
 
-        implementation("com.squareup.retrofit2:converter-jackson:2.9.0")
-        implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+        implementation("com.squareup.okhttp3:okhttp:4.12.0")
+        implementation("com.squareup.okhttp3:okhttp-sse:4.12.0")
+
+        implementation("com.squareup.retrofit2:converter-jackson:2.11.0")
+        implementation("com.squareup.retrofit2:converter-gson:2.11.0")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
         implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
 
@@ -428,26 +430,24 @@ project(":core") {
 
         implementation("com.nfeld.jsonpathkt:jsonpathkt:2.0.1")
 
-        implementation("org.jetbrains:markdown:0.6.1")
+        implementation("org.jetbrains:markdown:0.7.3")
 
         // chocolate factory
         // follow: https://onnxruntime.ai/docs/get-started/with-java.html
 //        implementation("com.microsoft.onnxruntime:onnxruntime:1.18.0")
 //        implementation("ai.djl.huggingface:tokenizers:0.29.0")
-//        implementation("cc.unitmesh:cocoa-core:1.0.0")
+        implementation("cc.unitmesh:cocoa-core:1.0.0")
 //        implementation("cc.unitmesh:document:1.0.0")
 
         // kanban
-        implementation("org.kohsuke:github-api:1.314")
-        implementation("org.gitlab4j:gitlab4j-api:5.3.0")
+        implementation("org.kohsuke:github-api:1.326")
+        implementation("org.gitlab4j:gitlab4j-api:5.8.0")
 
         // template engine
         implementation("org.apache.velocity:velocity-engine-core:2.3")
 
         // token count
         implementation("com.knuddels:jtokkit:1.0.0")
-
-        implementation("org.apache.commons:commons-text:1.12.0")
 
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
         // junit
