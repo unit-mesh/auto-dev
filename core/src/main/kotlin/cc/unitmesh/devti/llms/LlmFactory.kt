@@ -10,7 +10,6 @@ import com.intellij.openapi.project.Project
 
 @Service
 class LlmFactory {
-
     fun create(project: Project): LLMProvider {
         return project.getService(CustomLLMProvider::class.java)
     }

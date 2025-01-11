@@ -413,7 +413,6 @@ project(":core") {
             testFramework(TestFrameworkType.Bundled)
         }
 
-        implementation("com.theokanning.openai-gpt3-java:service:0.18.2")
         implementation("com.squareup.okhttp3:okhttp:4.4.1")
         implementation("com.squareup.okhttp3:okhttp-sse:4.4.1")
 
@@ -445,9 +444,6 @@ project(":core") {
 
         // template engine
         implementation("org.apache.velocity:velocity-engine-core:2.3")
-
-        // http request/response
-        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
 
         // token count
         implementation("com.knuddels:jtokkit:1.0.0")
