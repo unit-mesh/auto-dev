@@ -2,7 +2,7 @@ package cc.unitmesh.devti.settings
 
 import cc.unitmesh.devti.fullWidthCell
 import cc.unitmesh.devti.llms.LlmFactory
-import cc.unitmesh.devti.util.LLMCoroutineScope
+import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import com.intellij.openapi.project.Project
 import com.intellij.ui.dsl.builder.Panel
 import kotlinx.coroutines.flow.*
@@ -18,7 +18,7 @@ fun Panel.testLLMConnection(project: Project?) {
             result.text = ""
 
             // test custom engine
-            LLMCoroutineScope.scope(project).launch {
+            AutoDevCoroutineScope.scope(project).launch {
                 try {
                     val flowString: Flow<String> = LlmFactory.instance.create(project).stream("hi", "", false)
                     flowString.collect {

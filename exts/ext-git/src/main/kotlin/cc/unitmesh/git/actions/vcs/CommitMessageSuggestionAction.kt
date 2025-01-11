@@ -10,7 +10,7 @@ import cc.unitmesh.devti.vcs.VcsPrompting
 import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.template.context.TemplateContext
-import cc.unitmesh.devti.util.LLMCoroutineScope
+import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.util.parser.CodeFence
 import cc.unitmesh.devti.vcs.VcsUtil
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -91,7 +91,7 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
             event.presentation.icon = AutoDevStatus.InProgress.icon
             try {
                 val stream = LlmFactory().create(project).stream(prompt, "", false)
-                currentJob = LLMCoroutineScope.scope(project).launch {
+                currentJob = AutoDevCoroutineScope.scope(project).launch {
                     runBlocking {
                         stream
                             .onCompletion {

@@ -2,7 +2,7 @@ package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.cf.core.llms.LlmMsg
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.util.LLMCoroutineScope
+import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.agent.CustomAgentChatProcessor
 import cc.unitmesh.devti.agent.configurable.customAgentSetting
 import cc.unitmesh.devti.agent.model.CustomAgentState
@@ -82,7 +82,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
 
         ApplicationManager.getApplication().executeOnPooledThread {
             val response = this.makeChatBotRequest(requestPrompt, keepHistory, chatHistory)
-            currentJob = LLMCoroutineScope.scope(project).launch {
+            currentJob = AutoDevCoroutineScope.scope(project).launch {
                 when {
                     actionType === ChatActionType.REFACTOR -> ui.updateReplaceableContent(response) {
                         context?.postAction?.invoke(it)
@@ -107,7 +107,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         ApplicationManager.getApplication().executeOnPooledThread {
             val response = llmProvider.stream(requestPrompt, systemPrompt)
 
-            currentJob = LLMCoroutineScope.scope(project).launch {
+            currentJob = AutoDevCoroutineScope.scope(project).launch {
                 ui.updateMessage(response)
             }
         }

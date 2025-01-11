@@ -9,7 +9,7 @@ import cc.unitmesh.devti.language.run.flow.DevInsConversationService
 import cc.unitmesh.devti.language.status.DevInsRunListener
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.llms.LlmFactory
-import cc.unitmesh.devti.util.LLMCoroutineScope
+import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
@@ -137,7 +137,7 @@ open class DevInsRunConfigurationProfileState(
         ApplicationManager.getApplication().invokeLater {
             val stringFlow: Flow<String>? = CustomAgentExecutor(project = myProject).execute(output, agent)
             if (stringFlow != null) {
-                LLMCoroutineScope.scope(myProject).launch {
+                AutoDevCoroutineScope.scope(myProject).launch {
                     val llmResult = StringBuilder()
                     runBlocking {
                         stringFlow.collect {
@@ -168,7 +168,7 @@ open class DevInsRunConfigurationProfileState(
                 return@invokeLater
             }
 
-            LLMCoroutineScope.scope(myProject).launch {
+            AutoDevCoroutineScope.scope(myProject).launch {
                 val llmResult = StringBuilder()
                 runBlocking {
                     llm.stream(output, "", true).collect {

@@ -176,6 +176,11 @@
         <extensionPoint qualifiedName="cc.unitmesh.jsonTextProvider"
                         interface="cc.unitmesh.devti.provider.local.JsonTextProvider"
                         dynamic="true"/>
+
+        <!-- Lang Sketch Provider -->
+        <extensionPoint qualifiedName="cc.unitmesh.langSketchProvider"
+                        interface="cc.unitmesh.devti.sketch.LanguageSketchProvider"
+                        dynamic="true" />
     </extensionPoints>
 
     <applicationListeners>
@@ -204,6 +209,8 @@
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
+
+        <langSketchProvider implementation="cc.unitmesh.devti.sketch.patch.DiffLangSketchProvider"/>
     </extensions>
 
     <actions>
@@ -257,8 +264,8 @@
                     description="Ask AI chat with this code">
             </action>
 
-            <action id="cc.unitmesh.devti.actions.chat.GenTestDataAction"
-                    class="cc.unitmesh.devti.actions.chat.GenTestDataAction"
+            <action id="cc.unitmesh.devti.actions.chat.GenerateApiTestAction"
+                    class="cc.unitmesh.devti.actions.chat.GenerateApiTestAction"
                     description="Ask AI generate test data">
 
                 <add-to-group group-id="GenerateGroup" anchor="last"/>

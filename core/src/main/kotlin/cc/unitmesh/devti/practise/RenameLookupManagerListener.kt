@@ -4,7 +4,7 @@ import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.statusbar.AutoDevStatusService
-import cc.unitmesh.devti.util.LLMCoroutineScope
+import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import com.intellij.codeInsight.completion.PrefixMatcher
 import com.intellij.codeInsight.lookup.*
 import com.intellij.codeInsight.lookup.impl.LookupImpl
@@ -53,7 +53,7 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
     }
 
     private fun doExecuteNameSuggest(promptText: String, lookupImpl: LookupImpl) {
-        val stringJob = LLMCoroutineScope.scope(project).launch {
+        val stringJob = AutoDevCoroutineScope.scope(project).launch {
             AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
 
             val runJob = currentCoroutineContext().job

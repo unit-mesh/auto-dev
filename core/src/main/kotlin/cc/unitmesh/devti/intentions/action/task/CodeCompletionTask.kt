@@ -3,7 +3,7 @@ package cc.unitmesh.devti.intentions.action.task
 import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.llms.LlmFactory
-import cc.unitmesh.devti.util.LLMCoroutineScope
+import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.intentions.action.CodeCompletionBaseIntention
 import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.statusbar.AutoDevStatusService
@@ -20,7 +20,6 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.codeStyle.CodeStyleManager
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.util.function.Consumer
 import kotlin.jvm.internal.Ref
@@ -44,7 +43,7 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
         logger.info("Prompt: $prompt")
 
         val editor = request.editor
-        LLMCoroutineScope.scope(request.project).launch {
+        AutoDevCoroutineScope.scope(request.project).launch {
             val currentOffset = Ref.IntRef()
             currentOffset.element = request.offset
 
@@ -91,7 +90,7 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
         val prompt = promptText()
 
         logger.warn("Prompt: $prompt")
-        LLMCoroutineScope.scope(project).launch {
+        AutoDevCoroutineScope.scope(project).launch {
             try {
                 val flow: Flow<String> = llmFactory.createForInlayCodeComplete(project).stream(prompt, "", false)
                 val suggestion = StringBuilder()

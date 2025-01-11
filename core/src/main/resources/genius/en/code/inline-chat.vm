@@ -1,0 +1,11 @@
+According user's selection code and question to answer:
+
+User's selection code:
+
+```${context.language}
+${context.selection}
+```
+
+User's question:
+
+${context.question}

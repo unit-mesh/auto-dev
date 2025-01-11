@@ -3,8 +3,16 @@ package cc.unitmesh.devti.util.parser
 import com.intellij.lang.Language
 import com.intellij.openapi.fileTypes.PlainTextLanguage
 
-class CodeFence(val language: Language, val text: String, val isComplete: Boolean, val extension: String? = "") {
+class CodeFence(
+    val language: Language,
+    val text: String,
+    var isComplete: Boolean,
+    val extension: String? = null,
+    val originLanguage: String? = null
+) {
     companion object {
+        private var lastTxtBlock: CodeFence? = null
+
         fun parse(content: String): CodeFence {
             val regex = Regex("```([\\w#+\\s]*)")
             val lines = content.replace("\\n", "\n").lines()
@@ -32,18 +40,85 @@ class CodeFence(val language: Language, val text: String, val isComplete: Boolea
 
             val trimmedCode = codeBuilder.trim().toString()
             val language = findLanguage(languageId ?: "")
-            val extension = try {
+            val extension =
                 language.associatedFileType?.defaultExtension ?: lookupFileExt(languageId ?: "txt")
-            } catch (e: Exception) {
-                lookupFileExt(languageId ?: "txt")
-            }
 
             return if (trimmedCode.isEmpty()) {
-                CodeFence(language, "", codeClosed, extension)
+                CodeFence(language, "", codeClosed, extension, languageId)
             } else {
-                CodeFence(language, trimmedCode, codeClosed, extension)
+                CodeFence(language, trimmedCode, codeClosed, extension, languageId)
             }
         }
+
+        fun parseAll(content: String): List<CodeFence> {
+            val codeFences = mutableListOf<CodeFence>()
+            val regex = Regex("```([\\w#+\\s]*)")
+            val lines = content.replace("\\n", "\n").lines()
+
+            var codeStarted = false
+            var languageId: String? = null
+            val codeBuilder = StringBuilder()
+            val textBuilder = StringBuilder()
+
+            for ((index, line) in lines.withIndex()) {
+                if (!codeStarted) {
+                    val matchResult = regex.find(line.trimStart())
+                    if (matchResult != null) {
+                        if (textBuilder.isNotEmpty()) {
+                            val textBlock = CodeFence(
+                                findLanguage("markdown"), textBuilder.trim().toString(), false, "txt"
+                            )
+
+                            lastTxtBlock = textBlock
+                            codeFences.add(textBlock)
+                            textBuilder.clear()
+                        }
+
+                        languageId = matchResult.groups[1]?.value
+                        codeStarted = true
+                    } else {
+                        textBuilder.append(line).append("\n")
+                    }
+                } else {
+                    if (lastTxtBlock != null && lastTxtBlock?.isComplete == false) {
+                        lastTxtBlock!!.isComplete = true
+                    }
+
+                    if (line.startsWith("```")) {
+                        val codeContent = codeBuilder.trim().toString()
+                        val codeFence = parse("```$languageId\n$codeContent\n```")
+                        codeFences.add(codeFence)
+
+                        codeBuilder.clear()
+                        codeStarted = false
+
+                        languageId = null
+                    } else {
+                        codeBuilder.append(line).append("\n")
+                    }
+                }
+            }
+
+            val ideaLanguage = findLanguage(languageId ?: "markdown")
+            if (textBuilder.isNotEmpty()) {
+                val normal = CodeFence(ideaLanguage, textBuilder.trim().toString(), true, null, languageId)
+                codeFences.add(normal)
+            }
+
+            if (codeStarted) {
+                val codeContent = codeBuilder.trim().toString()
+                if (codeContent.isNotEmpty()) {
+                    val codeFence = parse("```$languageId\n$codeContent\n")
+                    codeFences.add(codeFence)
+                } else {
+                    val defaultLanguage = CodeFence(ideaLanguage, codeContent, false, null, languageId)
+                    codeFences.add(defaultLanguage)
+                }
+            }
+
+            return codeFences
+        }
+
 
         /**
          * Searches for a language by its name and returns the corresponding [Language] object. If the language is not found,
@@ -63,8 +138,7 @@ class CodeFence(val language: Language, val text: String, val isComplete: Boolea
             }
 
             val languages = Language.getRegisteredLanguages()
-            val registeredLanguages = languages
-                .filter { it.displayName.isNotEmpty() }
+            val registeredLanguages = languages.filter { it.displayName.isNotEmpty() }
 
             return registeredLanguages.find { it.displayName.equals(fixedLanguage, ignoreCase = true) }
                 ?: PlainTextLanguage.INSTANCE

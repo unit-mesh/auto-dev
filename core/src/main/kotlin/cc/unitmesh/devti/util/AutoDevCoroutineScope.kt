@@ -9,14 +9,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 
 @Service(Service.Level.PROJECT)
-class LLMCoroutineScope {
+class AutoDevCoroutineScope {
     private val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
-        Logger.getInstance(LLMCoroutineScope::class.java).error(throwable)
+        Logger.getInstance(AutoDevCoroutineScope::class.java).error(throwable)
     }
 
     val coroutineScope: CoroutineScope = CoroutineScope(SupervisorJob() + coroutineExceptionHandler)
 
     companion object {
-        fun scope(project: Project): CoroutineScope = project.service<LLMCoroutineScope>().coroutineScope
+        fun scope(project: Project): CoroutineScope = project.service<AutoDevCoroutineScope>().coroutineScope
     }
 }

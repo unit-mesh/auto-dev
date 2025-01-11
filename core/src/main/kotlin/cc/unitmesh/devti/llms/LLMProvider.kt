@@ -1,10 +1,12 @@
 package cc.unitmesh.devti.llms
 
 import cc.unitmesh.devti.gui.chat.ChatRole
+import com.intellij.execution.ui.ConsoleView
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.cancellable
 
 interface LLMProvider {
     val defaultTimeout: Long get() = 600
