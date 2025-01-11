@@ -2,9 +2,9 @@ package cc.unitmesh.devti.custom.schema
 
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.jetbrains.jsonSchema.extension.JsonSchemaFileProvider
-import com.jetbrains.jsonSchema.extension.JsonSchemaProviderFactory
 import com.jetbrains.jsonSchema.extension.SchemaType
 
 const val CUSTOM_AGENT_FILE_NAME = "AutoDevCustomAgentFile.json"
@@ -23,16 +23,10 @@ class CustomAgentSchemaFileProvider(val project: Project): JsonSchemaFileProvide
     }
 
     override fun getName(): String = "AutoDevCustomAgentFile"
-
-    override fun getSchemaFile(): VirtualFile? {
-        return JsonSchemaProviderFactory.getResourceFile(this::class.java, customAgentSchemaFile)
-    }
-
-    override fun getSchemaType(): SchemaType {
-        return SchemaType.schema
-    }
+    override fun getSchemaFile() = VfsUtil.findFileByURL(javaClass.getResource(CUSTOM_AGENT_SCHEMA_FILE)!!)
+    override fun getSchemaType(): SchemaType = SchemaType.embeddedSchema
 
     companion object {
-        private const val customAgentSchemaFile = "autodev-custom-agent.json"
+        private const val CUSTOM_AGENT_SCHEMA_FILE = "autodev-custom-agent.json"
     }
 }

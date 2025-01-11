@@ -37,7 +37,9 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             settings.customPrompts,
             AutoDevBundle.messageWithLanguageFromLLMSetting("autodev.custom.prompt.placeholder"),
             CUSTOM_AGENT_FILE_NAME
-        ).apply { LanguageChangedCallback.placeholder("autodev.custom.prompt.placeholder", this, 1) }
+        ).apply {
+            LanguageChangedCallback.placeholder("autodev.custom.prompt.placeholder", this, 1)
+        }
     }
 
     private val currentLLMParams: List<LLMParam>
@@ -96,7 +98,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             .addLLMParams(currentLLMParams)
             .addLLMParam(maxTokenLengthParam)
             .addLLMParam(delaySecondsParam)
-            .addSeparator()
             .addComponent(panel {
                 if (project != null) {
                     testLLMConnection(project)
@@ -108,8 +109,8 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
                     }
                 }
             })
-            .addVerticalGap(2)
             .addSeparator()
+            .addVerticalGap(2)
             .addLabeledComponent(jBLabel("settings.autodev.coder.customEnginePrompt", 1), customEnginePrompt, 1, true)
             .addComponentFillVertically(JPanel(), 0)
             .panel
