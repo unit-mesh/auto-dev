@@ -63,11 +63,20 @@ class AutoDevInput(
                     // Insert a new line
                     CommandProcessor.getInstance().executeCommand(project, {
                         val eol = "\n"
+                        val document = editor.document
                         val caretOffset = editor.caretModel.offset
-                        editor.document.insertString(caretOffset, eol)
-                        editor.caretModel.moveToOffset(caretOffset + eol.length)
-                        EditorModificationUtil.scrollToCaret(editor)
-                    }, null, null)
+                        val lineEndOffset = document.getLineEndOffset(document.getLineNumber(caretOffset))
+                        val textAfterCaret = document.getText(TextRange(caretOffset, lineEndOffset))
+
+                        WriteCommandAction.runWriteCommandAction(project) {
+                            if (textAfterCaret.isBlank()) {
+                                document.insertString(caretOffset, eol)
+                            } else {
+                                document.insertString(caretOffset, eol)
+                                editor.caretModel.moveToOffset(caretOffset + eol.length)
+                            }
+                        }
+                    }, "Insert New Line", null)
                 }
             }
         }.registerCustomShortcutSet(

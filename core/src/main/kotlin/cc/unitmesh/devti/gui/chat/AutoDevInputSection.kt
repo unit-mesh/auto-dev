@@ -138,10 +138,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
         input.addDocumentListener(documentListener)
         input.recreateDocument()
-
         input.border = JBEmptyBorder(10)
 
-//        addToCenter(input)
         this.add(input, BorderLayout.CENTER)
         this.add(elementsList, BorderLayout.NORTH)
 
@@ -164,7 +162,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             }
             customRag.selectedItem = defaultRag
 
-            input.preferredSize = Dimension(input.preferredSize.width, 48)
+            input.minimumSize = Dimension(input.minimumSize.width, 48)
             layoutPanel.addToLeft(customRag)
         }
 
