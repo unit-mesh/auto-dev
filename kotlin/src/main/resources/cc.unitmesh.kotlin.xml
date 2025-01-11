@@ -29,8 +29,8 @@
         <variableContextBuilder language="kotlin"
                                 implementationClass="cc.unitmesh.kotlin.context.KotlinVariableContextBuilder"/>
 
-        <refactoringTool language="kotlin"
-                         implementationClass="cc.unitmesh.kotlin.provider.KotlinRefactoringTool"/>
+        <relatedClassProvider language="kotlin"
+                              implementationClass="cc.unitmesh.kotlin.provider.KotlinRelatedClassProvider"/>
 
         <chatContextProvider implementation="cc.unitmesh.kotlin.provider.KotlinVersionProvider"/>
         <chatContextProvider implementation="cc.unitmesh.kotlin.provider.KotlinTestContextProvider"/>

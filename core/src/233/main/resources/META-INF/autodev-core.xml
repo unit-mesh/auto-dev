@@ -191,6 +191,11 @@
         <extensionPoint qualifiedName="cc.unitmesh.langSketchProvider"
                         interface="cc.unitmesh.devti.sketch.LanguageSketchProvider"
                         dynamic="true" />
+
+        <extensionPoint qualifiedName="cc.unitmesh.relatedClassProvider"
+                        beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
+            <with attribute="implementationClass" implements="cc.unitmesh.devti.provider.RelatedClassesProvider"/>
+        </extensionPoint>
     </extensionPoints>
 
     <applicationListeners>

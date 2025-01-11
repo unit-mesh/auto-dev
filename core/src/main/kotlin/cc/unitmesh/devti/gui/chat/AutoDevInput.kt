@@ -6,6 +6,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ex.AnActionListener
 import com.intellij.openapi.command.CommandProcessor
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorModificationUtil
@@ -17,6 +18,12 @@ import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider
 import com.intellij.openapi.fileTypes.FileTypes
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.util.TextRange
+import com.intellij.openapi.util.io.FileUtil
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.temporary.gui.block.findDocument
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.EditorTextField
@@ -28,17 +35,6 @@ import java.awt.event.KeyEvent
 import java.util.*
 import javax.swing.KeyStroke
 
-
-enum class AutoDevInputTrigger {
-    Button,
-    Key
-}
-
-interface AutoDevInputListener : EventListener {
-    fun editorAdded(editor: EditorEx) {}
-    fun onSubmit(component: AutoDevInputSection, trigger: AutoDevInputTrigger) {}
-    fun onStop(component: AutoDevInputSection) {}
-}
 
 class AutoDevInput(
     project: Project,
@@ -148,4 +144,41 @@ class AutoDevInput(
             inputDocument.addDocumentListener(listener)
         }
     }
+
+    fun appendText(text: String) {
+        WriteCommandAction.runWriteCommandAction(
+            project,
+            "Append text",
+            "intentions.write.action",
+            {
+                insertStringAndSaveChange(project, text, this.editor!!.document, this.editor!!.document.textLength, false)
+            })
+    }
+}
+
+fun insertStringAndSaveChange(
+    project: Project,
+    content: String,
+    document: Document,
+    startOffset: Int,
+    withReformat: Boolean,
+) {
+    if (startOffset < 0 || startOffset > document.textLength) return
+
+    document.insertString(startOffset, content)
+    PsiDocumentManager.getInstance(project).commitDocument(document)
+
+    if (!withReformat) return
+
+    val psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document)
+    psiFile?.let { file ->
+        val reformatRange = TextRange(startOffset, startOffset + content.length)
+        CodeStyleManager.getInstance(project).reformatText(file, listOf(reformatRange))
+    }
+}
+
+fun VirtualFile.relativePath(project: Project): String {
+    val projectDir = project.guessProjectDir()!!.toNioPath().toFile()
+    val relativePath = FileUtil.getRelativePath(projectDir, this.toNioPath().toFile())
+    return relativePath ?: this.path
 }

@@ -8,16 +8,21 @@ import cc.unitmesh.devti.agent.model.CustomAgentState
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.llms.tokenizer.TokenizerFactory
 import cc.unitmesh.devti.settings.AutoDevSettingsState
+import com.intellij.codeInsight.lookup.LookupManagerListener
+import com.intellij.icons.AllIcons
 import com.intellij.ide.IdeTooltip
 import com.intellij.ide.IdeTooltipManager
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.impl.ActionButton
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.fileEditor.FileEditorManagerEvent
+import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
@@ -27,29 +32,30 @@ import com.intellij.openapi.ui.popup.Balloon.Position
 import com.intellij.openapi.util.NlsContexts
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.impl.InternalDecorator
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiManager
 import com.intellij.temporary.gui.block.AutoDevCoolBorder
 import com.intellij.ui.HintHint
 import com.intellij.ui.MutableCollectionComboBoxModel
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.components.JBList
+import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.EventDispatcher
 import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import com.intellij.util.ui.components.BorderLayoutPanel
-import java.awt.CardLayout
-import java.awt.Color
-import java.awt.Dimension
-import java.awt.Point
+import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.util.function.Supplier
-import javax.swing.Box
-import javax.swing.JComponent
-import javax.swing.JPanel
+import javax.swing.*
 import kotlin.math.max
 import kotlin.math.min
 
+data class ModelWrapper(val psiElement: PsiElement, var panel: JPanel? = null, var namePanel: JPanel? = null)
 /**
  *
  */
@@ -61,6 +67,9 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     private val sendButton: ActionButton
     private val stopButton: ActionButton
     private val buttonPanel = JPanel(CardLayout())
+
+    private val listModel = DefaultListModel<ModelWrapper>()
+    private val elementsList = JBList(listModel)
 
     private val defaultRag: CustomAgentConfig = CustomAgentConfig("<Select Custom Agent>", "Normal")
     private var customRag: ComboBox<CustomAgentConfig> = ComboBox(MutableCollectionComboBoxModel(listOf()))
@@ -85,6 +94,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         }
 
     init {
+        setupElementsList()
         val sendButtonPresentation = Presentation(AutoDevBundle.message("chat.panel.send"))
         sendButtonPresentation.icon = AutoDevIcons.Send
         this.sendButtonPresentation = sendButtonPresentation
@@ -131,7 +141,10 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
         input.border = JBEmptyBorder(10)
 
-        addToCenter(input)
+//        addToCenter(input)
+        this.add(input, BorderLayout.CENTER)
+        this.add(elementsList, BorderLayout.NORTH)
+
         val layoutPanel = BorderLayoutPanel()
         val horizontalGlue = Box.createHorizontalGlue()
         horizontalGlue.addMouseListener(object : MouseAdapter() {
@@ -174,6 +187,80 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                 this@AutoDevInputSection.initEditor()
             }
         })
+        setupEditorListener()
+        setupRelatedListener()
+    }
+
+    private fun setupEditorListener() {
+        project.messageBus.connect(disposable!!).subscribe(
+            FileEditorManagerListener.FILE_EDITOR_MANAGER,
+            object : FileEditorManagerListener {
+                override fun selectionChanged(event: FileEditorManagerEvent) {
+                    val file = event.newFile ?: return
+                    val psiFile = PsiManager.getInstance(project).findFile(file) ?: return
+                    cc.unitmesh.devti.provider.RelatedClassesProvider.provide(psiFile.language) ?: return
+                    ApplicationManager.getApplication().invokeLater {
+                        listModel.addIfAbsent(psiFile)
+                    }
+                }
+            }
+        )
+    }
+
+    private fun setupRelatedListener() {
+        project.messageBus.connect(disposable!!)
+            .subscribe(LookupManagerListener.TOPIC, ShireInputLookupManagerListener(project) {
+                ApplicationManager.getApplication().invokeLater {
+                    val relatedElements = cc.unitmesh.devti.provider.RelatedClassesProvider.provide(it.language)?.lookup(it)
+                    updateElements(relatedElements)
+                }
+            })
+    }
+
+    private fun setupElementsList() {
+        elementsList.selectionMode = ListSelectionModel.SINGLE_SELECTION
+        elementsList.layoutOrientation = JList.HORIZONTAL_WRAP
+        elementsList.visibleRowCount = 2
+        elementsList.cellRenderer = RelatedFileListCellRenderer()
+        elementsList.setEmptyText("")
+
+        val scrollPane = JBScrollPane(elementsList)
+        scrollPane.preferredSize = Dimension(-1, 80)
+        scrollPane.horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS
+        scrollPane.verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
+
+        elementsList.addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
+                val list = e.source as JBList<*>
+                val index = list.locationToIndex(e.point)
+                if (index != -1) {
+                    val wrapper = listModel.getElementAt(index)
+                    val cellBounds = list.getCellBounds(index, index)
+                    wrapper.panel?.components?.firstOrNull { it.contains(e.x - cellBounds.x - it.x, it.height - 1) }?.let {
+                        when {
+                            it is JPanel -> {
+                                listModel.removeElement(wrapper)
+                                wrapper.psiElement.containingFile?.let { psiFile ->
+                                    val relativePath = psiFile.virtualFile.relativePath(project)
+                                    input.appendText("\n/" + "file" + ":${relativePath}")
+                                    listModel.indexOf(wrapper.psiElement).takeIf { it != -1 }?.let { listModel.remove(it) }
+                                    val relatedElements = cc.unitmesh.devti.provider.RelatedClassesProvider.provide(psiFile.language)?.lookup(psiFile)
+                                    updateElements(relatedElements)
+                                }
+                            }
+                            it is JLabel && it.icon == AllIcons.Actions.Close -> listModel.removeElement(wrapper)
+                            else -> list.clearSelection()
+                        }
+                    } ?: list.clearSelection()
+                }
+            }
+        })
+
+        add(scrollPane, BorderLayout.NORTH)
+    }
+
+    private fun updateElements(elements: List<PsiElement>?) {
+        elements?.forEach { listModel.addIfAbsent(it) }
     }
 
     fun showStopButton() {
@@ -289,4 +376,16 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         }
 
     val focusableComponent: JComponent get() = input
+}
+
+private fun DefaultListModel<ModelWrapper>.addIfAbsent(psiFile: PsiElement) {
+    val isValid = when (psiFile) {
+        is PsiFile -> psiFile.isValid
+        else -> true
+    }
+    if (!isValid) return
+
+    if (elements().asIterator().asSequence().none { it.psiElement == psiFile }) {
+        addElement(ModelWrapper(psiFile))
+    }
 }
