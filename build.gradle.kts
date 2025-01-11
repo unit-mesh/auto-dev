@@ -434,9 +434,8 @@ project(":core") {
         // follow: https://onnxruntime.ai/docs/get-started/with-java.html
 //        implementation("com.microsoft.onnxruntime:onnxruntime:1.18.0")
 //        implementation("ai.djl.huggingface:tokenizers:0.29.0")
-
-        implementation("cc.unitmesh:cocoa-core:1.0.0")
-        implementation("cc.unitmesh:document:1.0.0")
+//        implementation("cc.unitmesh:cocoa-core:1.0.0")
+//        implementation("cc.unitmesh:document:1.0.0")
 
         // kanban
         implementation("org.kohsuke:github-api:1.314")
