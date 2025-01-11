@@ -96,6 +96,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         }
 
     init {
+        input = AutoDevInput(project, listOf(), disposable, this)
+
         setupElementsList()
         val sendButtonPresentation = Presentation(AutoDevBundle.message("chat.panel.send"))
         sendButtonPresentation.icon = AutoDevIcons.Send
@@ -126,8 +128,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             },
             this.stopButtonPresentation, "", Dimension(20, 20)
         )
-
-        input = AutoDevInput(project, listOf(), disposable, this)
 
         documentListener = object : DocumentListener {
             override fun documentChanged(event: DocumentEvent) {
@@ -320,6 +320,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     override fun getBackground(): Color? {
         // it seems that the input field is not ready when this method is called
+        if (this.input == null) return super.getBackground()
+
         val editor = input.editor ?: return super.getBackground()
         return editor.colorsScheme.defaultBackground
     }

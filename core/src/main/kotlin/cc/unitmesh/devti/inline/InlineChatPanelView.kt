@@ -23,7 +23,7 @@ import javax.swing.JPanel
 import javax.swing.ScrollPaneConstants
 import javax.swing.SwingUtilities
 
-class InlineChatPanelView(val project: Project, editor: Editor) : SimpleToolWindowPanel(true, true),
+class InlineChatPanelView(val project: Project, val editor: Editor?) : SimpleToolWindowPanel(true, true),
     NullableComponent {
     private var myList = JPanel(VerticalLayout(JBUI.scale(0))).apply {
         this.isOpaque = true
@@ -54,7 +54,9 @@ class InlineChatPanelView(val project: Project, editor: Editor) : SimpleToolWind
         contentPanel.addKeyListener(object : KeyAdapter() {
             override fun keyPressed(e: KeyEvent) {
                 if (e.keyCode == KeyEvent.VK_ESCAPE) {
-                    AutoDevInlineChatService.getInstance().closeInlineChat(editor)
+                    if (editor != null) {
+                        AutoDevInlineChatService.getInstance().closeInlineChat(editor)
+                    }
                 }
             }
         })

@@ -3,8 +3,8 @@ package cc.unitmesh.devti.gui
 import cc.unitmesh.devti.gui.chat.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
+import cc.unitmesh.devti.inline.InlineChatPanelView
 import cc.unitmesh.devti.settings.LanguageChangedCallback.componentStateChanged
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.DumbAware
@@ -20,17 +20,23 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
         const val id = "AutoDev"
     }
 
+    private val contentFactory = ContentFactory.getInstance()
+
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         cc.unitmesh.devti.inline.ShireInlineChatProvider.addListener(project)
 
         val chatCodingService = ChatCodingService(ChatActionType.CHAT, project)
         val contentPanel = ChatCodingPanel(chatCodingService, toolWindow.disposable)
-        val content = ContentFactory.getInstance().createContent(contentPanel, "", false).apply {
+        val chatPanel = contentFactory.createContent(contentPanel, "AutoDev Chat", false).apply {
             setInitialDisplayName(this)
         }
 
+        val sketchView = InlineChatPanelView(project, null)
+        val sketchPanel = contentFactory.createContent(sketchView, "AutoDev Sketch", false)
+
         ApplicationManager.getApplication().invokeLater {
-            toolWindow.contentManager.addContent(content)
+            toolWindow.contentManager.addContent(chatPanel)
+            toolWindow.contentManager.addContent(sketchPanel)
         }
     }
 
