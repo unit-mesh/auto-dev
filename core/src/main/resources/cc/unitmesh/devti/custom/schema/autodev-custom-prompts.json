@@ -90,6 +90,7 @@
         "required": [
           "title",
           "prompt",
+          "type",
           "example"
         ]
       }
