@@ -1,7 +1,5 @@
-package com.phodal.shire.inline
+package cc.unitmesh.devti.inline
 
-import cc.unitmesh.devti.inline.AutoDevGutterIconRenderer
-import cc.unitmesh.devti.inline.AutoDevInlineChatService
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.editor.Editor

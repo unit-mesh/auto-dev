@@ -8,6 +8,7 @@ import cc.unitmesh.devti.agent.model.CustomAgentState
 import cc.unitmesh.devti.gui.chat.ui.RelatedFileListCellRenderer
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.llms.tokenizer.TokenizerFactory
+import cc.unitmesh.devti.provider.RelatedClassesProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.codeInsight.lookup.LookupManagerListener
 import com.intellij.icons.AllIcons
@@ -197,7 +198,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                 override fun selectionChanged(event: FileEditorManagerEvent) {
                     val file = event.newFile ?: return
                     val psiFile = PsiManager.getInstance(project).findFile(file) ?: return
-                    cc.unitmesh.devti.provider.RelatedClassesProvider.provide(psiFile.language) ?: return
+                    RelatedClassesProvider.provide(psiFile.language) ?: return
                     ApplicationManager.getApplication().invokeLater {
                         listModel.addIfAbsent(psiFile)
                     }
@@ -210,7 +211,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         project.messageBus.connect(disposable!!)
             .subscribe(LookupManagerListener.TOPIC, ShireInputLookupManagerListener(project) {
                 ApplicationManager.getApplication().invokeLater {
-                    val relatedElements = cc.unitmesh.devti.provider.RelatedClassesProvider.provide(it.language)?.lookup(it)
+                    val relatedElements = RelatedClassesProvider.provide(it.language)?.lookup(it)
                     updateElements(relatedElements)
                 }
             })
@@ -232,26 +233,26 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             override fun mouseClicked(e: MouseEvent) {
                 val list = e.source as JBList<*>
                 val index = list.locationToIndex(e.point)
-                if (index != -1) {
-                    val wrapper = listModel.getElementAt(index)
-                    val cellBounds = list.getCellBounds(index, index)
-                    wrapper.panel?.components?.firstOrNull { it.contains(e.x - cellBounds.x - it.x, it.height - 1) }?.let {
-                        when {
-                            it is JPanel -> {
-                                listModel.removeElement(wrapper)
-                                wrapper.psiElement.containingFile?.let { psiFile ->
-                                    val relativePath = psiFile.virtualFile.relativePath(project)
-                                    input.appendText("\n/" + "file" + ":${relativePath}")
-                                    listModel.indexOf(wrapper.psiElement).takeIf { it != -1 }?.let { listModel.remove(it) }
-                                    val relatedElements = cc.unitmesh.devti.provider.RelatedClassesProvider.provide(psiFile.language)?.lookup(psiFile)
-                                    updateElements(relatedElements)
-                                }
+                if (index == -1) return
+
+                val wrapper = listModel.getElementAt(index)
+                val cellBounds = list.getCellBounds(index, index)
+                wrapper.panel?.components?.firstOrNull { it.contains(e.x - cellBounds.x - it.x, it.height - 1) }?.let { component ->
+                    when {
+                        component is JPanel -> {
+                            listModel.removeElement(wrapper)
+                            wrapper.psiElement.containingFile?.let { psiFile ->
+                                val relativePath = psiFile.virtualFile.relativePath(project)
+                                input.appendText("\n/" + "file" + ":${relativePath}")
+                                listModel.indexOf(wrapper.psiElement).takeIf { it != -1 }?.let { listModel.remove(it) }
+                                val relatedElements = RelatedClassesProvider.provide(psiFile.language)?.lookup(psiFile)
+                                updateElements(relatedElements)
                             }
-                            it is JLabel && it.icon == AllIcons.Actions.Close -> listModel.removeElement(wrapper)
-                            else -> list.clearSelection()
                         }
-                    } ?: list.clearSelection()
-                }
+                        component is JLabel && component.icon == AllIcons.Actions.Close -> listModel.removeElement(wrapper)
+                        else -> list.clearSelection()
+                    }
+                } ?: list.clearSelection()
             }
         })
 
@@ -319,8 +320,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     override fun getBackground(): Color? {
         // it seems that the input field is not ready when this method is called
-        if (this.input == null) return super.getBackground()
-
         val editor = input.editor ?: return super.getBackground()
         return editor.colorsScheme.defaultBackground
     }

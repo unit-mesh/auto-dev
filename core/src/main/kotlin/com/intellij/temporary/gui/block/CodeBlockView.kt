@@ -91,7 +91,6 @@ class CodeBlockView(
     }
 
     companion object {
-
         private fun createCodeViewerEditor(
             project: Project,
             file: LightVirtualFile,
