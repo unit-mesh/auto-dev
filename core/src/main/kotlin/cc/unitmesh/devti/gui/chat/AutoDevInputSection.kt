@@ -296,7 +296,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     fun initEditor() {
         val editorEx = this.input.editor as? EditorEx ?: return
-        this.input.setBorder(AutoDevCoolBorder(editorEx, this))
+        setBorder(AutoDevCoolBorder(editorEx, this))
         UIUtil.setOpaqueRecursively(this, false)
         this.revalidate()
     }

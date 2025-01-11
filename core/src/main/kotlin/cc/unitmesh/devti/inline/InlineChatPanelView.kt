@@ -82,6 +82,9 @@ class InlineChatPanelView(val project: Project, val editor: Editor?, showInput: 
         })
 
         if (showInput) {
+            shireInput.also {
+                border = JBUI.Borders.empty(8)
+            }
             contentPanel.add(shireInput, BorderLayout.SOUTH)
         }
 

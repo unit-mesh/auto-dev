@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.inline
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
@@ -59,19 +60,21 @@ class AutoDevGutterHandler(private val project: Project) : Disposable {
     }
 
     fun updateGutterIconWithSelection(editor: Editor) {
-        if (!editor.selectionModel.hasSelection()) {
-            gutterIcons[editor]?.let {
-                removeGutterIcon(editor, it.highlighter)
+        runReadAction {
+            if (!editor.selectionModel.hasSelection()) {
+                gutterIcons[editor]?.let {
+                    removeGutterIcon(editor, it.highlighter)
+                }
+
+                return@runReadAction
             }
 
-            return
-        }
-
-        val selectionStart = editor.document.getLineNumber(editor.selectionModel.selectionStart)
-        if (selectionStart >= 0 && selectionStart < editor.document.lineCount) {
-            val gutterIconInfo = gutterIcons[editor]
-            if (gutterIconInfo?.line != selectionStart) {
-                addGutterIcon(editor, selectionStart)
+            val selectionStart = editor.document.getLineNumber(editor.selectionModel.selectionStart)
+            if (selectionStart >= 0 && selectionStart < editor.document.lineCount) {
+                val gutterIconInfo = gutterIcons[editor]
+                if (gutterIconInfo?.line != selectionStart) {
+                    addGutterIcon(editor, selectionStart)
+                }
             }
         }
     }
