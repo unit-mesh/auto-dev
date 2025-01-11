@@ -65,13 +65,13 @@ class EditorFragment(private val editor: EditorEx, message: CompletableMessage) 
         }.apply {
             border = JBUI.Borders.compound(
                 JBUI.Borders.empty(10, 0),
-                JBUI.Borders.customLine(JBColor(0xD4E1570, 0x474071))
+                JBUI.Borders.customLine(JBColor.border())
             )
             isOpaque = false
 
-            addToLeft(EditorPadding(editor, 5))
+            addToLeft(EditorPadding(editor, 2))
             addToCenter(editor.component)
-            addToRight(EditorPadding(editor, 5))
+            addToRight(EditorPadding(editor, 2))
             addToBottom(expandCollapseTextLabel)
         }
     }

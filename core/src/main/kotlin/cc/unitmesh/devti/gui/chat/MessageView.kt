@@ -49,7 +49,6 @@ class MessageView(val message: String, val role: ChatRole, private val displayTe
 
         centerPanel = JPanel(VerticalLayout(JBUI.scale(8)))
         centerPanel.isOpaque = false
-        centerPanel.border = JBUI.Borders.emptyRight(8)
 
         centerPanel.add(myNameLabel)
         add(centerPanel, BorderLayout.CENTER)
