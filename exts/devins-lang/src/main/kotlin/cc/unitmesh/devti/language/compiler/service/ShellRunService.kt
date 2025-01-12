@@ -4,21 +4,44 @@ import cc.unitmesh.devti.provider.RunService
 import com.intellij.execution.RunManager
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import com.intellij.sh.psi.ShFile
 import com.intellij.sh.run.ShConfigurationType
 import com.intellij.sh.run.ShRunConfiguration
+import com.intellij.sh.run.ShRunner
 
 class ShellRunService : RunService {
     override fun isApplicable(project: Project, file: VirtualFile): Boolean {
         return file.extension == "sh" || file.extension == "bash"
     }
 
+    override fun runFile(project: Project, virtualFile: VirtualFile, psiElement: PsiElement?): String? {
+        val workingDirectory = virtualFile.parent.path
+        val shRunner = ApplicationManager.getApplication().getService(ShRunner::class.java)
+            ?: return "Shell runner not found"
+
+
+        /// lookup virtual file if not exist use scratch file
+
+
+        if (shRunner.isAvailable(project)) {
+            shRunner.run(project, virtualFile.path, workingDirectory, "RunShireShell", true)
+        }
+
+        return "Running shell command: ${virtualFile.path}"
+    }
+
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = ShRunConfiguration::class.java
     override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
-        val psiFile = PsiManager.getInstance(project).findFile(virtualFile) as? ShFile ?: return null
+        val psiFile = runReadAction {
+            PsiManager.getInstance(project).findFile(virtualFile) as? ShFile
+        } ?: return null
+
         val configurationSetting = RunManager.getInstance(project)
             .createConfiguration(psiFile.name, ShConfigurationType.getInstance())
 

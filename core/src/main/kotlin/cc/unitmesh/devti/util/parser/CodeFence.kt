@@ -170,6 +170,8 @@ class CodeFence(
                 "scala" -> "scala"
                 "rust" -> "rs"
                 "http request" -> "http"
+                "shell script" -> "sh"
+                "bash" -> "sh"
                 else -> languageId
             }
         }

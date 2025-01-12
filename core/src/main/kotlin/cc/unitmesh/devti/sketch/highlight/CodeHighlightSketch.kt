@@ -62,7 +62,7 @@ class CodeHighlightSketch(val project: Project, val text: String, private var id
         editorFragment = EditorFragment(editor, editorLineThreshold)
         add(editorFragment!!.getContent(), BorderLayout.CENTER)
 
-        if (ideaLanguage?.displayName != "Markdown" && ideaLanguage != PlainTextLanguage.INSTANCE) {
+        if (textLanguage != null && textLanguage?.lowercase() != "markdown") {
             setupActionBar(project, editor)
         }
     }
