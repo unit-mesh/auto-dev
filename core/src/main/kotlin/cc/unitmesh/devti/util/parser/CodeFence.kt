@@ -173,5 +173,34 @@ class CodeFence(
                 else -> languageId
             }
         }
+
+        fun displayNameByExt(extension: String): String {
+            return when (extension.lowercase()) {
+                "cs" -> "C#"
+                "cpp" -> "C++"
+                "c" -> "C"
+                "java" -> "Java"
+                "js" -> "JavaScript"
+                "kt" -> "Kotlin"
+                "py" -> "Python"
+                "rb" -> "Ruby"
+                "swift" -> "Swift"
+                "ts" -> "TypeScript"
+                "md" -> "Markdown"
+                "sql" -> "SQL"
+                "puml" -> "PlantUML"
+                "sh" -> "Shell Script"
+                "m" -> "Objective-C"
+                "mm" -> "Objective-C++"
+                "go" -> "Go"
+                "html" -> "HTML"
+                "css" -> "CSS"
+                "dart" -> "Dart"
+                "scala" -> "Scala"
+                "rs" -> "Rust"
+                "http" -> "HTTP Request"
+                else -> extension
+            }
+        }
     }
 }

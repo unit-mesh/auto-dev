@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.gui.snippet
 
+import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -40,7 +41,9 @@ class AutoDevLanguageLabelAction : DumbAwareAction(), CustomComponentAction {
     override fun update(e: AnActionEvent) {
         val editor = e.dataContext.getData(CommonDataKeys.EDITOR) ?: return
         val lightVirtualFile = FileDocumentManager.getInstance().getFile(editor.document) as? LightVirtualFile ?: return
-        e.presentation.putClientProperty(LANGUAGE_PRESENTATION_KEY, lightVirtualFile.language.displayName)
+        val displayName =
+            lightVirtualFile.language.displayName ?: CodeFence.displayNameByExt(lightVirtualFile.extension ?: "txt")
+        e.presentation.putClientProperty(LANGUAGE_PRESENTATION_KEY, displayName)
     }
 
     companion object {
