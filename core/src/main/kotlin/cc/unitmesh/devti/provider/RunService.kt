@@ -23,7 +23,7 @@ import java.util.concurrent.CompletableFuture
 
 interface RunService {
     private val logger: Logger get() = logger<RunService>()
-    
+
     fun isApplicable(project: Project, file: VirtualFile): Boolean
 
     /**
@@ -176,8 +176,7 @@ interface RunService {
         val EP_NAME: ExtensionPointName<RunService> = ExtensionPointName("cc.unitmesh.runService")
 
         fun provider(project: Project, file: VirtualFile): RunService? {
-            val fileRunServices = EP_NAME.extensionList
-            return fileRunServices.firstOrNull {
+            return EP_NAME.extensionList.firstOrNull {
                 runReadAction { it.isApplicable(project, file) }
             }
         }

@@ -34,7 +34,7 @@ import javax.swing.*
 class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), EditorCustomElementRenderer,
     Disposable {
     var inlay: Inlay<*>? = null
-    val inputPanel = ShireInlineChatInputPanel(this, onSubmit = { input ->
+    val inputPanel = AutoDevInlineChatInput(this, onSubmit = { input ->
         this.centerPanel.isVisible = true
         val project = editor.project!!
 
@@ -169,7 +169,7 @@ class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), Edit
     }
 }
 
-class ShireInlineChatInputPanel(
+class AutoDevInlineChatInput(
     val autoDevInlineChatPanel: AutoDevInlineChatPanel,
     val onSubmit: (String) -> Unit,
 ) : JPanel(GridBagLayout()), Disposable {

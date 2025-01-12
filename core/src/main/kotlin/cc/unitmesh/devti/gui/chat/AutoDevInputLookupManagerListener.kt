@@ -10,7 +10,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 
-class ShireInputLookupManagerListener(
+class AutoDevInputLookupManagerListener(
     private val project: Project,
     private val callback: ((PsiFile) -> Unit)? = null,
 ) : LookupManagerListener {

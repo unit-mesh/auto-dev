@@ -2,7 +2,7 @@ package cc.unitmesh.devti.inline
 
 import com.intellij.openapi.project.Project
 
-object ShireInlineChatProvider {
+object AutoDevInlineChatProvider {
     fun addListener(project: Project) {
         AutoDevGutterHandler.getInstance(project).listen()
     }

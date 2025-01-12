@@ -25,12 +25,10 @@ class ShellRunService : RunService {
         val shRunner = ApplicationManager.getApplication().getService(ShRunner::class.java)
             ?: return "Shell runner not found"
 
-
         /// lookup virtual file if not exist use scratch file
 
-
         if (shRunner.isAvailable(project)) {
-            shRunner.run(project, virtualFile.path, workingDirectory, "RunShireShell", true)
+            shRunner.run(project, virtualFile.path, workingDirectory, "Shell Run Service", true)
         }
 
         return "Running shell command: ${virtualFile.path}"

@@ -43,7 +43,6 @@ import com.intellij.ui.MutableCollectionComboBoxModel
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBList
-import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.EventDispatcher
 import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
@@ -212,7 +211,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     private fun setupRelatedListener() {
         project.messageBus.connect(disposable!!)
-            .subscribe(LookupManagerListener.TOPIC, ShireInputLookupManagerListener(project) {
+            .subscribe(LookupManagerListener.TOPIC, AutoDevInputLookupManagerListener(project) {
                 ApplicationManager.getApplication().invokeLater {
                     val relatedElements = RelatedClassesProvider.provide(it.language)?.lookup(it)
                     updateElements(relatedElements)

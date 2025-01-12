@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.update
 
-import cc.unitmesh.devti.inline.ShireInlineChatProvider
+import cc.unitmesh.devti.inline.AutoDevInlineChatProvider
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
@@ -11,6 +11,6 @@ class AutoDevUpdateStartupActivity : ProjectActivity {
     override suspend fun execute(project: Project) {
         if (ApplicationManager.getApplication().isUnitTestMode) return
 
-        ShireInlineChatProvider.addListener(project)
+        AutoDevInlineChatProvider.addListener(project)
     }
 }
