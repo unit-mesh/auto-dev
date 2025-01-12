@@ -52,7 +52,7 @@ val ideaPlugins =
         "org.jetbrains.idea.maven",
         "org.jetbrains.kotlin",
         "JavaScript"
-    )
+    ) + prop("pythonPlugin")
 
 var baseIDE = prop("baseIDE")
 val platformVersion = prop("platformVersion").toInt()

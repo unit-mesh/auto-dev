@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.gui.snippet
 
+import cc.unitmesh.devti.AutoDevNotifications
 import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -9,13 +10,14 @@ import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.vfs.readText
 import com.intellij.psi.PsiManager
 import cc.unitmesh.devti.provider.RunService
+import com.intellij.openapi.actionSystem.PlatformDataKeys
 
-class AutoDevRunDevInsAction : DumbAwareAction() {
+class AutoDevRunAction : DumbAwareAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
 
     override fun update(e: AnActionEvent) {
         val project = e.project ?: return
-        val editor = e.getData(com.intellij.openapi.actionSystem.PlatformDataKeys.EDITOR) ?: return
+        val editor = e.getData(PlatformDataKeys.EDITOR) ?: return
         val document = editor.document
         val file = FileDocumentManager.getInstance().getFile(document)
 
@@ -31,7 +33,7 @@ class AutoDevRunDevInsAction : DumbAwareAction() {
     }
 
     override fun actionPerformed(e: AnActionEvent) {
-        val editor = e.getData(com.intellij.openapi.actionSystem.PlatformDataKeys.EDITOR) ?: return
+        val editor = e.getData(PlatformDataKeys.EDITOR) ?: return
         val project = e.project ?: return
 
         val document = editor.document
@@ -50,9 +52,10 @@ class AutoDevRunDevInsAction : DumbAwareAction() {
                 psiFile,
             )
         } finally {
-            runWriteAction {
-                scratchFile.delete(this)
-            }
+            AutoDevNotifications.notify(project, "Run Success")
+//            runWriteAction {
+//                scratchFile.delete(this)
+//            }
         }
     }
 }
