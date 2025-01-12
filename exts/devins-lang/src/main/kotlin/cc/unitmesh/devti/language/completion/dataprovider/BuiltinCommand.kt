@@ -41,20 +41,9 @@ enum class BuiltinCommand(
         true,
         true
     ),
-    BROWSE(
-        "browse",
-        "Get the content of a given URL",
-        AllIcons.Toolwindows.WebToolWindow,
-        true,
-        true
-    ),
-    Refactor(
-        "refactor",
-        "Refactor the content of a file",
-        AutoDevIcons.Idea,
-        true,
-        true
-    ),
+    BROWSE("browse", "Get the content of a given URL", AllIcons.Toolwindows.WebToolWindow, true, true),
+    Refactor("refactor", "Refactor the content of a file", AutoDevIcons.Idea, true, true),
+    DIR("dir", "List files and directories in a tree-like structure", AllIcons.Actions.ProjectDirectory, true, true),
     ;
 
     companion object {

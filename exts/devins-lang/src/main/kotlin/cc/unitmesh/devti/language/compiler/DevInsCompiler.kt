@@ -231,6 +231,11 @@ class DevInsCompiler(
                 RefactorInsCommand(myProject, prop, nextTextSegment)
             }
 
+            BuiltinCommand.DIR -> {
+                result.isLocalCommand = true
+                DirInsCommand(myProject, prop)
+            }
+
             else -> {
                 PrintInsCommand("/" + commandNode.commandName + ":" + prop)
             }
