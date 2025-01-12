@@ -2,7 +2,7 @@ package cc.unitmesh.git.actions.vcs
 
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
-import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.settings.LanguageChangedCallback.presentationText
 import cc.unitmesh.devti.template.GENIUS_PRACTISES

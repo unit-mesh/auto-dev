@@ -4,7 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.actions.chat.base.ChatCheckForUpdateAction
 import cc.unitmesh.devti.actions.chat.base.collectProblems
 import cc.unitmesh.devti.actions.chat.base.commentPrefix
-import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.provider.RefactoringTool
 import cc.unitmesh.devti.settings.LanguageChangedCallback.presentationText

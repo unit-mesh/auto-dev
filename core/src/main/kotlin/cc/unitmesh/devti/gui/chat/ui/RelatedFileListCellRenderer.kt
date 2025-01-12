@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.gui.chat.ui
 
-import cc.unitmesh.devti.gui.chat.ModelWrapper
 import com.intellij.icons.AllIcons
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout

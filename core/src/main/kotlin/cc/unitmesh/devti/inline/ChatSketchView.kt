@@ -2,7 +2,10 @@ package cc.unitmesh.devti.inline
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.chat.*
-import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
+import cc.unitmesh.devti.gui.chat.ui.AutoDevInputListener
+import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
+import cc.unitmesh.devti.gui.chat.ui.AutoDevInputTrigger
 import cc.unitmesh.devti.provider.devins.LanguagePromptProcessor
 import cc.unitmesh.devti.sketch.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.LangSketch
@@ -26,9 +29,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
-import com.intellij.util.ui.UIUtil
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.launch
 import java.awt.BorderLayout

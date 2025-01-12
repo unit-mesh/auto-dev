@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.actions.console
 
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
-import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.prompting.TextTemplatePrompt
 import cc.unitmesh.devti.provider.ContextPrompter

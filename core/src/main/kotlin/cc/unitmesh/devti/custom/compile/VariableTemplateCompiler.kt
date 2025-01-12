@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.custom.compile
 
 import cc.unitmesh.devti.custom.team.DefaultTeamContextProvider
-import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin

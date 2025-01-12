@@ -1,6 +1,7 @@
-package cc.unitmesh.devti.gui.chat
+package cc.unitmesh.devti.gui.chat.view
 
 
+import cc.unitmesh.devti.gui.chat.message.ChatRole
 import com.intellij.openapi.actionSystem.DataProvider
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl

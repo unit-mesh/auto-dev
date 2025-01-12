@@ -1,10 +1,10 @@
 package cc.unitmesh.devti.actions.chat
 
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
-import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
-import cc.unitmesh.devti.gui.chat.ChatContext
+import cc.unitmesh.devti.gui.chat.message.ChatContext
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.settings.LanguageChangedCallback.presentationText
 import com.intellij.openapi.actionSystem.ActionUpdateThread

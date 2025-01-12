@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.gui.chat
+package cc.unitmesh.devti.gui.chat.view
 
 import cc.unitmesh.devti.agent.view.WebBlockView
 import com.intellij.temporary.gui.block.CodeBlockView

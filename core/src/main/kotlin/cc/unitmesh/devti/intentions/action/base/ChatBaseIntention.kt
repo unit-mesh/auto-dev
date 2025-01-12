@@ -3,7 +3,7 @@ package cc.unitmesh.devti.intentions.action.base
 import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.temporary.calculateFrontendElementToExplain
 import com.intellij.temporary.getElementToAction
-import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.gui.sendToChatPanel
 import com.intellij.codeInsight.intention.IntentionAction

@@ -5,6 +5,14 @@ import cc.unitmesh.devti.*
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.agent.view.WebBlock
 import cc.unitmesh.devti.agent.view.WebBlockView
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
+import cc.unitmesh.devti.gui.chat.message.ChatContext
+import cc.unitmesh.devti.gui.chat.message.ChatRole
+import cc.unitmesh.devti.gui.chat.ui.AutoDevInputListener
+import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
+import cc.unitmesh.devti.gui.chat.ui.AutoDevInputTrigger
+import cc.unitmesh.devti.gui.chat.view.FrontendCodeView
+import cc.unitmesh.devti.gui.chat.view.MessageView
 import cc.unitmesh.devti.gui.chat.welcome.WelcomePanel
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.provider.devins.LanguagePromptProcessor

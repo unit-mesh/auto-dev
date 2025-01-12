@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.intentions.action.task
 
-import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.application.runReadAction
 

@@ -4,7 +4,7 @@ import cc.unitmesh.devti.coder.recording.EmptyRecording
 import cc.unitmesh.devti.coder.recording.JsonlRecording
 import cc.unitmesh.devti.coder.recording.Recording
 import cc.unitmesh.devti.coder.recording.RecordingInstruction
-import cc.unitmesh.devti.gui.chat.ChatRole
+import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.settings.coder.coderSetting
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.components.service

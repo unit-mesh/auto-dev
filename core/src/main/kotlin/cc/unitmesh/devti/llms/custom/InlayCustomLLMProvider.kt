@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.llms.custom
 
-import cc.unitmesh.devti.gui.chat.ChatRole
+import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.settings.ResponseType
 import cc.unitmesh.devti.settings.coder.AutoDevCoderSettingService

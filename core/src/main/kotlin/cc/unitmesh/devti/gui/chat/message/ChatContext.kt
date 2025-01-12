@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.gui.chat
+package cc.unitmesh.devti.gui.chat.message
 
 data class ChatContext(
     val postAction: ((response: String) -> Unit)? = null,

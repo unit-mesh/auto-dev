@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.gui.chat
+package cc.unitmesh.devti.gui.chat.ui
 
 import cc.unitmesh.devti.settings.LanguageChangedCallback.placeholder
 import cc.unitmesh.devti.util.parser.CodeFence.Companion.findLanguage
@@ -31,7 +31,6 @@ import com.intellij.util.EventDispatcher
 import com.intellij.util.messages.MessageBusConnection
 import com.intellij.util.ui.JBUI
 import java.awt.Color
-import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
 import java.util.*
 import javax.swing.KeyStroke

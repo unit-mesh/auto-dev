@@ -2,7 +2,7 @@
 package cc.unitmesh.devti.actions.chat
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.intentions.action.task.TestCodeGenTask
 import cc.unitmesh.devti.intentions.action.test.TestCodeGenRequest
 import com.intellij.openapi.actionSystem.*

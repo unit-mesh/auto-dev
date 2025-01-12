@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.gui.chat
+package cc.unitmesh.devti.gui.chat.message
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.prompting.TextTemplatePrompt

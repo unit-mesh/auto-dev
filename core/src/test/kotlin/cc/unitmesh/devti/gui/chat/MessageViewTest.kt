@@ -1,9 +1,9 @@
 package cc.unitmesh.devti.gui.chat
 
+import cc.unitmesh.devti.gui.chat.message.ChatRole
+import cc.unitmesh.devti.gui.chat.view.MessageView
 import com.intellij.temporary.gui.block.SimpleMessage
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import junit.framework.TestCase.assertEquals
-import org.junit.Test
 
 class MessageViewTest: BasePlatformTestCase() {
     fun testShould_parse_code_from_markdown_java_hello_world() {

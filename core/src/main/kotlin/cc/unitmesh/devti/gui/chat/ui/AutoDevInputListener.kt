@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.gui.chat
+package cc.unitmesh.devti.gui.chat.ui
 
 import com.intellij.openapi.editor.ex.EditorEx
 import java.util.*
