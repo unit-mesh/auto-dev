@@ -42,8 +42,24 @@ enum class BuiltinCommand(
         true
     ),
     BROWSE("browse", "Get the content of a given URL", AllIcons.Toolwindows.WebToolWindow, true, true),
-    Refactor("refactor", "Refactor the content of a file", AutoDevIcons.Idea, true, true),
+    REFACTOR("refactor", "Refactor the content of a file", AutoDevIcons.Idea, true, true),
+    STRUCTURE(
+        "structure",
+        "Get the structure of a file with AST/PSI",
+        AllIcons.Toolwindows.ToolWindowStructure,
+        true,
+        true
+    ),
     DIR("dir", "List files and directories in a tree-like structure", AllIcons.Actions.ProjectDirectory, true, true),
+
+
+    DATABASE(
+        "database",
+        "Read the content of a database, /database:query\n```sql\nSELECT * FROM table\n```",
+        AllIcons.Toolwindows.ToolWindowHierarchy,
+        true,
+        true
+    ),
     ;
 
     companion object {

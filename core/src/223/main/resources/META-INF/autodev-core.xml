@@ -191,6 +191,12 @@
         <extensionPoint qualifiedName="cc.unitmesh.runService"
                         interface="cc.unitmesh.devti.provider.RunService"
                         dynamic="true"/>
+
+        <!-- Toolchain Function Provider -->
+        <extensionPoint qualifiedName="cc.unitmesh.toolchainFunctionProvider"
+                        interface="cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider"
+                        dynamic="true">
+        </extensionPoint>
     </extensionPoints>
 
     <applicationListeners>

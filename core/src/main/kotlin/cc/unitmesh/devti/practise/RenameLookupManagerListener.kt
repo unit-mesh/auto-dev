@@ -75,7 +75,8 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
                 }.map {
                     runReadAction {
                         if (!lookupImpl.isLookupDisposed && runJob.isActive && it.isNotBlank()) {
-                            lookupImpl.addItem(CustomRenameLookupElement(it), PrefixMatcher.ALWAYS_TRUE)
+                            val newSuggestion = it.removeSurrounding("`")
+                            lookupImpl.addItem(CustomRenameLookupElement(newSuggestion), PrefixMatcher.ALWAYS_TRUE)
                         }
                     }
                 }

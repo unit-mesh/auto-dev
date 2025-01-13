@@ -11,6 +11,7 @@ import com.intellij.openapi.vfs.readText
 import com.intellij.psi.PsiManager
 import cc.unitmesh.devti.provider.RunService
 import com.intellij.openapi.actionSystem.PlatformDataKeys
+import com.intellij.testFramework.LightVirtualFile
 
 class AutoDevRunAction : DumbAwareAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
@@ -22,11 +23,8 @@ class AutoDevRunAction : DumbAwareAction() {
         val file = FileDocumentManager.getInstance().getFile(document)
 
         if (file != null) {
-            val psiFile = PsiManager.getInstance(project).findFile(file)
-            if (psiFile != null) {
-                e.presentation.isEnabled = RunService.provider(project, file) != null
-                return
-            }
+            e.presentation.isEnabled = RunService.provider(project, file) != null
+            return
         }
 
         e.presentation.isEnabled = false

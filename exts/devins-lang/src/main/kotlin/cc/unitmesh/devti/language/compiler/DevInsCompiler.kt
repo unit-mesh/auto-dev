@@ -225,7 +225,7 @@ class DevInsCompiler(
                 BrowseInsCommand(myProject, prop)
             }
 
-            BuiltinCommand.Refactor -> {
+            BuiltinCommand.REFACTOR -> {
                 result.isLocalCommand = true
                 val nextTextSegment = lookupNextTextSegment(used)
                 RefactorInsCommand(myProject, prop, nextTextSegment)
@@ -234,6 +234,17 @@ class DevInsCompiler(
             BuiltinCommand.DIR -> {
                 result.isLocalCommand = true
                 DirInsCommand(myProject, prop)
+            }
+
+            BuiltinCommand.DATABASE -> {
+                result.isLocalCommand = true
+                val shireCode: String? = lookupNextCode(used)?.text
+                DatabaseInsCommand(myProject, prop, shireCode)
+            }
+
+            BuiltinCommand.STRUCTURE -> {
+                result.isLocalCommand = true
+                StructureInCommand(myProject, prop)
             }
 
             else -> {
@@ -248,7 +259,8 @@ class DevInsCompiler(
             val hasReadCodeBlock = commandNode in listOf(
                 BuiltinCommand.WRITE,
                 BuiltinCommand.PATCH,
-                BuiltinCommand.COMMIT
+                BuiltinCommand.COMMIT,
+                BuiltinCommand.DATABASE
             )
 
             if (hasReadCodeBlock) {

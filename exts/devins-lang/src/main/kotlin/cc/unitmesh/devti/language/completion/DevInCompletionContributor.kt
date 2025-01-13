@@ -45,7 +45,7 @@ class DevInCompletionContributor : CompletionContributor() {
         )
         extend(
             CompletionType.BASIC,
-            valuePattern(BuiltinCommand.Refactor.commandName),
+            valuePattern(BuiltinCommand.REFACTOR.commandName),
             RefactoringFuncProvider()
         )
     }
