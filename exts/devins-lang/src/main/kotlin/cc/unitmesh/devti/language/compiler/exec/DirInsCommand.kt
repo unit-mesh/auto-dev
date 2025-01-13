@@ -6,7 +6,25 @@ import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiManager
 
 /**
- *  Dir List files and directories in a tree-like structure
+ * The `DirInsCommand` class is responsible for listing files and directories in a tree-like structure for a given directory path within a project.
+ * It implements the `InsCommand` interface and provides an `execute` method to perform the directory listing operation asynchronously.
+ *
+ * The tree structure is visually represented using indentation and symbols (`├──`, `└──`) to denote files and subdirectories. Files are listed
+ * first, followed by subdirectories, which are recursively processed to display their contents.
+ *
+ * Example output:
+ * ```
+ * myDirectory/
+ *   ├── file1.txt
+ *   ├── file2.txt
+ *   └── subDirectory/
+ *       ├── file3.txt
+ *       └── subSubDirectory/
+ *           └── file4.txt
+ * ```
+ *
+ * @param myProject The project instance in which the directory resides.
+ * @param dir The path of the directory to list.
  */
 class DirInsCommand(private val myProject: Project, private val dir: String) : InsCommand {
     private val output = StringBuilder()
