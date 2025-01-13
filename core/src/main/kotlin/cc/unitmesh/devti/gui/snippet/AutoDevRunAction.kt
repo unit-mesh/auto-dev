@@ -46,16 +46,16 @@ class AutoDevRunAction : DumbAwareAction() {
             ?: return
 
         try {
-            RunService.provider(project, file)?.runFile(
+            RunService.provider(project, file)
+                ?.runFile(project, scratchFile, psiFile) ?: AutoDevNotifications.notify(
                 project,
-                scratchFile,
-                psiFile,
+                "Run Failed, no provider"
             )
         } finally {
             AutoDevNotifications.notify(project, "Run Success")
-//            runWriteAction {
-//                scratchFile.delete(this)
-//            }
+            runWriteAction {
+                scratchFile.delete(this)
+            }
         }
     }
 }
