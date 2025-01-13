@@ -65,6 +65,13 @@ enum class BuiltinCommand(
         true,
         true
     ),
+    RELATED(
+        "related",
+        "Get related content by the current file",
+        AllIcons.Actions.Find,
+        true,
+        true
+    ),
     ;
 
     companion object {

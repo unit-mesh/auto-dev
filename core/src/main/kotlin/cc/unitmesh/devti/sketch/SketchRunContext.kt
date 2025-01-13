@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.sketch.run
+package cc.unitmesh.devti.sketch
 
 import com.intellij.openapi.vfs.VirtualFile
 

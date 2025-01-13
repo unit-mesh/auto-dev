@@ -11,9 +11,20 @@ object JavaTypeUtil {
         val resolvedClasses = mutableMapOf<String, PsiClass>()
         if (outputType is PsiClassReferenceType) {
             val resolveClz = outputType.resolve()
+
             outputType.parameters.filterIsInstance<PsiClassReferenceType>().forEach {
-                if (resolveClz != null) {
-                    resolvedClasses[it.canonicalText] = resolveClz
+                val resolve = it.resolve()
+                if (resolve != null) {
+                    resolvedClasses[it.canonicalText] = resolve
+                }
+
+                it.typeArguments().map { argType ->
+                    if (argType is PsiClassReferenceType) {
+                        val resolvedArgType = argType.resolve()
+                        if (resolvedArgType != null) {
+                            resolvedClasses[argType.canonicalText] = resolvedArgType
+                        }
+                    }
                 }
             }
 

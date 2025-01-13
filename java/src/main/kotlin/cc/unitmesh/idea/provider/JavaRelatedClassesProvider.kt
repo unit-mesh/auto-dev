@@ -2,6 +2,7 @@ package cc.unitmesh.idea.provider
 
 import cc.unitmesh.devti.provider.RelatedClassesProvider
 import cc.unitmesh.idea.context.JavaContextCollection
+import cc.unitmesh.idea.service.JavaTypeUtil.resolveByType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.roots.ProjectFileIndex
@@ -16,6 +17,7 @@ class JavaRelatedClassesProvider : RelatedClassesProvider {
                 .flatMap { findSuperClasses(it) }
                 .map { cleanUp(it) }
                 .toList()
+                .distinct()
 
             is PsiClass -> findRelatedClasses(element)
             else -> emptyList()
@@ -83,13 +85,20 @@ class JavaRelatedClassesProvider : RelatedClassesProvider {
         val parameterTypes = parameters.map { it.type }
 
         val genericTypes = parameters.flatMap { (it.type as? PsiClassType)?.parameters?.toList() ?: emptyList() }
+
+        val returnType = if (method.returnTypeElement?.type != null) {
+            resolveByType(method.returnTypeElement?.type!!).values
+        } else {
+            emptyList()
+        }
+
         val mentionedTypes = parameterTypes + genericTypes
 
         val filterIsInstance = mentionedTypes.filterIsInstance<PsiClassType>()
             .distinct()
 
         return@runReadAction ApplicationManager.getApplication().executeOnPooledThread<List<PsiClass>> {
-            return@executeOnPooledThread filterIsInstance
+            return@executeOnPooledThread returnType + filterIsInstance
                 .mapNotNull { runReadAction { it.resolve() } }
                 .filter { isProjectContent(it) }
                 .toList()

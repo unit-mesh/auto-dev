@@ -1,7 +1,6 @@
-package cc.unitmesh.devti.language.compiler
+package cc.unitmesh.devti.language.compiler.exec
 
 import cc.unitmesh.devti.language.agenttool.browse.BrowseTool
-import cc.unitmesh.devti.language.compiler.exec.InsCommand
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.project.Project
 
