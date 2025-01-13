@@ -247,6 +247,11 @@ class DevInsCompiler(
                 StructureInCommand(myProject, prop)
             }
 
+            BuiltinCommand.LOCAL_SEARCH -> {
+                result.isLocalCommand = true
+                LocalSearchInsCommand(myProject, prop)
+            }
+
             else -> {
                 PrintInsCommand("/" + commandNode.commandName + ":" + prop)
             }
