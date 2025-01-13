@@ -1,11 +1,15 @@
-According user's selection code and question to answer:
+According user's selection code and question to answer user's question.
+
+Project context:
+
+$frameworkContext
 
 User's selection code:
 
-```${context.language}
-${context.selection}
+```${language}
+${selection}
 ```
 
 User's question:
 
-${context.question}
+${input}

@@ -38,7 +38,7 @@ class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), Edit
         this.centerPanel.isVisible = true
         val project = editor.project!!
 
-        val prompt = AutoDevInlineChatService.getInstance().prompt(project, input)
+        val prompt = AutoDevInlineChatService.getInstance().prompt(project, input, editor)
         val flow: Flow<String>? = LlmFactory.instance.create(project).stream(prompt, "", false)
 
         val panelView = ChatSketchView(project, editor)

@@ -8,6 +8,10 @@ import cc.unitmesh.devti.provider.context.ChatOrigin
 import com.intellij.lang.Language
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ProjectManager
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNameIdentifierOwner
@@ -99,5 +103,21 @@ class VariableTemplateCompiler(
                 else -> "-"
             }
         )
+    }
+
+    companion object {
+        fun create(project: Project): VariableTemplateCompiler? {
+            val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return null
+            val file: PsiFile = PsiDocumentManager.getInstance(project).getPsiFile(editor.document) ?: return null
+            val selectedText = editor.selectionModel.selectedText ?: ""
+
+            return VariableTemplateCompiler(
+                language = file.language,
+                file = file,
+                element = null,
+                editor = editor,
+                selectedText = selectedText
+            )
+        }
     }
 }

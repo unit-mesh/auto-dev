@@ -114,6 +114,10 @@ class TemplateRender(private val pathPrefix: String) {
 
         return result
     }
+
+    fun addVariable(key: String, value: String) {
+        velocityContext.put(key, value)
+    }
 }
 
 class TemplateNotFoundError(path: String) : Exception("Prompt not found at path: $path")
