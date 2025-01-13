@@ -30,6 +30,11 @@ class DevInCompletionContributor : CompletionContributor() {
         )
         extend(
             CompletionType.BASIC,
+            (valuePatterns(listOf(BuiltinCommand.DIR))),
+            DirReferenceLanguageProvider()
+        )
+        extend(
+            CompletionType.BASIC,
             valuePattern(BuiltinCommand.REV.commandName),
             RevisionReferenceLanguageProvider()
         )
