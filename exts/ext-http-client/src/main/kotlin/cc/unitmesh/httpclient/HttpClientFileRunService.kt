@@ -7,7 +7,7 @@ import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
-import com.intellij.httpClient.http.request.HttpRequestPsiFile
+import com.intellij.httpClient.http.request.HttpRequestFileType
 import com.intellij.httpClient.http.request.run.HttpRequestExecutorExtensionFactory
 import com.intellij.httpClient.http.request.run.HttpRequestRunConfigurationExecutor
 import com.intellij.httpClient.http.request.run.config.HttpRequestRunConfiguration
@@ -20,7 +20,7 @@ import com.intellij.psi.PsiManager
 
 class HttpClientFileRunService : RunService {
     override fun isApplicable(project: Project, file: VirtualFile): Boolean {
-        return PsiManager.getInstance(project).findFile(file) is HttpRequestPsiFile
+        return file.extension == HttpRequestFileType.INSTANCE.defaultExtension
     }
 
     override fun runConfigurationClass(project: Project): Class<out RunProfile> {
