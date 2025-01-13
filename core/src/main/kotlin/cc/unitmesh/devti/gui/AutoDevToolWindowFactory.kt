@@ -34,9 +34,8 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
             val contentManager = toolWindow.contentManager
             contentManager.addContent(chatPanel)
 
-            val sketchView = ChatSketchView(project, null)
+            val sketchView = ChatSketchView(project, null, true)
             val sketchPanel = contentFactory.createContent(sketchView, "Sketch", false)
-
             contentManager.addContent(sketchPanel)
 
             contentManager.setSelectedContent(chatPanel)

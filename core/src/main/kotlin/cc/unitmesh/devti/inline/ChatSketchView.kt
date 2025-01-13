@@ -266,6 +266,7 @@ class ChatSketchView(val project: Project, val editor: Editor?, private val show
             this.minimumSize = JBUI.size(800, height)
         } else {
             this.minimumSize = JBUI.size(800, maxHeight)
+            scrollPanel.minimumSize = JBUI.size(800, maxHeight)
         }
     }
 

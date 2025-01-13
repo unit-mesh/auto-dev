@@ -22,6 +22,7 @@ import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.AlignY
 import com.intellij.ui.dsl.builder.Cell
+import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.JBUI.CurrentTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
@@ -68,12 +69,12 @@ class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), Edit
     init {
         border = BorderFactory.createCompoundBorder(
             BorderFactory.createCompoundBorder(
-                BorderFactory.createEmptyBorder(4, 4, 4, 4),
+                BorderFactory.createEmptyBorder(0, 0, 0, 0),
                 RoundedLineBorder(JBColor.LIGHT_GRAY, 12, 1)
             ),
             BorderFactory.createCompoundBorder(
                 AutoDevLineBorder(JBColor.border(), 1, true, 8),
-                BorderFactory.createMatteBorder(6, 8, 6, 8, JBColor.PanelBackground)
+                BorderFactory.createMatteBorder(6, 8, 6, 8, JBColor.border())
             )
         )
 
@@ -84,7 +85,7 @@ class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), Edit
         c.gridy = 0
         c.weightx = 1.0
         c.fill = GridBagConstraints.HORIZONTAL
-        add(inputPanel, c)
+        add(this.inputPanel, c)
 
         this.centerPanel = JPanel(BorderLayout()).apply {
             isOpaque = false
@@ -147,7 +148,7 @@ class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), Edit
             }
 
             this.centerPanel.removeAll()
-            this.centerPanel.add(content, BorderLayout.SOUTH)
+            this.centerPanel.add(content, BorderLayout.CENTER)
 
             this@AutoDevInlineChatPanel.redraw()
         }
