@@ -5,7 +5,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
 
-
 /**
  * Todo: Spike different search API in Intellij
  * - [com.intellij.util.indexing.FileBasedIndex]
@@ -20,6 +19,9 @@ import com.intellij.openapi.vfs.VirtualFile
  *
  */
 class LocalSearchInsCommand(val myProject: Project, private val scope: String, val text: String?) : InsCommand {
+    private val MAX_LINE_SIZE = 180
+    private val OVERLAP = 5
+
     override suspend fun execute(): String {
         val text = (text ?: scope).trim()
         /// check text length if less then 3 return alert slowly
@@ -27,7 +29,7 @@ class LocalSearchInsCommand(val myProject: Project, private val scope: String, v
             throw IllegalArgumentException("Text length should be more than 5")
         }
 
-        val textSearch = search(myProject, text, 5)
+        val textSearch = search(myProject, text, OVERLAP)
         return textSearch.map { (file, lines) ->
             val filePath = file.path
             val linesWithContext = lines.joinToString("\n")
@@ -47,7 +49,7 @@ class LocalSearchInsCommand(val myProject: Project, private val scope: String, v
      *         the lines of context around the keyword in that file. The context includes the matched line and the specified
      *         number of lines before and after it.
      */
-    private fun search(project: Project, keyword: String, overlap: Int): Map<VirtualFile, List<String>> {
+    private fun search(project: Project, keyword: String, overlap: Int = 5): Map<VirtualFile, List<String>> {
         val result = mutableMapOf<VirtualFile, List<String>>()
 
         ProjectFileIndex.getInstance(project).iterateContent { file ->
@@ -57,7 +59,9 @@ class LocalSearchInsCommand(val myProject: Project, private val scope: String, v
 
             val content = file.contentsToByteArray().toString(Charsets.UTF_8).lines()
             val matchedIndices = content.withIndex()
-                .filter { (_, line) -> line.contains(keyword) }
+                .filter { (_, line) ->
+                    line.length < MAX_LINE_SIZE && line.contains(keyword)
+                }
                 .map { it.index }
 
             if (matchedIndices.isNotEmpty()) {
@@ -71,6 +75,7 @@ class LocalSearchInsCommand(val myProject: Project, private val scope: String, v
             }
             true
         }
+
         return result
     }
 }
