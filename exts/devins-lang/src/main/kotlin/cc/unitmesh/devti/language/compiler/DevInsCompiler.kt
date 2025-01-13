@@ -249,7 +249,8 @@ class DevInsCompiler(
 
             BuiltinCommand.LOCAL_SEARCH -> {
                 result.isLocalCommand = true
-                LocalSearchInsCommand(myProject, prop)
+                val shireCode: String? = lookupNextCode(used)?.text
+                LocalSearchInsCommand(myProject, prop, shireCode)
             }
 
             else -> {
