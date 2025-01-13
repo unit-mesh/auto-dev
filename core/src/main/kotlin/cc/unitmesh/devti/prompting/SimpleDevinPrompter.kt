@@ -11,6 +11,7 @@ import cc.unitmesh.devti.template.TemplateRender
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.temporary.getElementToAction
@@ -20,8 +21,7 @@ abstract class SimpleDevinPrompter {
     abstract val templateRender: TemplateRender
     abstract val template: String
 
-    fun prompt(project: Project, userInput: String, editor: Editor): String {
-
+    fun prompting(project: Project, userInput: String, editor: Editor?): String {
         /// handle with Velocity
         val variableCompile = VariableTemplateCompiler.create(project, editor)
         if (variableCompile == null) {
@@ -40,9 +40,10 @@ abstract class SimpleDevinPrompter {
     }
 
     private fun collectFrameworkContext(
-        editor: Editor,
+        myEditor: Editor?,
         project: Project
     ): String {
+        val editor = myEditor ?: FileEditorManager.getInstance(project).selectedTextEditor ?: return ""
         val file = FileDocumentManager.getInstance().getFile(editor.document)
         val psiFile = runReadAction {
             return@runReadAction file?.let { _ ->

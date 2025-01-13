@@ -22,7 +22,6 @@ import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.AlignY
 import com.intellij.ui.dsl.builder.Cell
-import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.JBUI.CurrentTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
@@ -39,10 +38,10 @@ class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), Edit
         this.centerPanel.isVisible = true
         val project = editor.project!!
 
-        val prompt = AutoDevInlineChatService.getInstance().prompt(project, input, editor)
+        val prompt = AutoDevInlineChatService.getInstance().prompting(project, input, editor)
         val flow: Flow<String>? = LlmFactory.instance.create(project).stream(prompt, "", false)
 
-        val panelView = ChatSketchView(project, editor)
+        val panelView = SketchToolWindow(project, editor)
         panelView.minimumSize = Dimension(800, 40)
         addToCenter(panelView)
 
