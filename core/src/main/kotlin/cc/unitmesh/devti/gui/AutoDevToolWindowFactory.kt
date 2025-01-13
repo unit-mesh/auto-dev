@@ -25,14 +25,18 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val chatCodingService = ChatCodingService(ChatActionType.CHAT, project)
         val contentPanel = ChatCodingPanel(chatCodingService, toolWindow.disposable)
-        val chatPanel = contentFactory.createContent(contentPanel, "Chat", false)
 
-        val sketchView = ChatSketchView(project, null)
-        val sketchPanel = contentFactory.createContent(sketchView, "Sketch", false)
+        val chatPanel = contentFactory.createContent(contentPanel, "AutoDev Chat", false).apply {
+            setInitialDisplayName(this)
+        }
 
         ApplicationManager.getApplication().invokeLater {
             val contentManager = toolWindow.contentManager
             contentManager.addContent(chatPanel)
+
+            val sketchView = ChatSketchView(project, null)
+            val sketchPanel = contentFactory.createContent(sketchView, "Sketch", false)
+
             contentManager.addContent(sketchPanel)
 
             contentManager.setSelectedContent(chatPanel)
