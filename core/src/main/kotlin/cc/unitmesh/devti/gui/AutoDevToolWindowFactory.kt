@@ -3,7 +3,7 @@ package cc.unitmesh.devti.gui
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
-import cc.unitmesh.devti.inline.SketchToolWindow
+import cc.unitmesh.devti.sketch.SketchToolWindow
 import cc.unitmesh.devti.settings.LanguageChangedCallback.componentStateChanged
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.application.ApplicationManager

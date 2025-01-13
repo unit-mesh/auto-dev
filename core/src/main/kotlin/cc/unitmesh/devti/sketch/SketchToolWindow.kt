@@ -1,12 +1,12 @@
-package cc.unitmesh.devti.inline
+package cc.unitmesh.devti.sketch
 
 import cc.unitmesh.devti.gui.chat.*
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
-import cc.unitmesh.devti.sketch.ExtensionLangSketch
-import cc.unitmesh.devti.sketch.LangSketch
+import cc.unitmesh.devti.inline.AutoDevInlineChatService
+import cc.unitmesh.devti.inline.fullHeight
+import cc.unitmesh.devti.inline.fullWidth
 import cc.unitmesh.devti.util.parser.CodeFence
-import cc.unitmesh.devti.sketch.LanguageSketchProvider
 import cc.unitmesh.devti.sketch.highlight.CodeHighlightSketch
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable

@@ -2,6 +2,7 @@ package cc.unitmesh.devti.inline
 
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.llms.cancelHandler
+import cc.unitmesh.devti.sketch.SketchToolWindow
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import com.intellij.icons.AllIcons
 import com.intellij.ide.KeyboardAwareFocusOwner

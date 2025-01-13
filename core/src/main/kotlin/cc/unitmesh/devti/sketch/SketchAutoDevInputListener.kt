@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.inline
+package cc.unitmesh.devti.sketch
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.chat.ChatCodingService
