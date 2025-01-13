@@ -13,8 +13,6 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.ProcessingContext
-import org.jetbrains.annotations.NonNls
-import java.io.File
 
 class FileReferenceLanguageProvider : CompletionProvider<CompletionParameters>() {
     override fun addCompletions(
@@ -33,25 +31,20 @@ class FileReferenceLanguageProvider : CompletionProvider<CompletionParameters>()
             result.addElement(buildElement(it, basePath, 99.0))
         }
 
-        /**
-         * Project Files
-         */
         ProjectFileIndex.getInstance(project).iterateContent {
             if (!it.canBeAdded()) return@iterateContent true
+            if (!ProjectFileIndex.getInstance(project).isInContent(it)) return@iterateContent true
+
             result.addElement(buildElement(it, basePath, 1.0))
             true
         }
     }
 
-    private fun buildElement(
-        virtualFile: VirtualFile,
-        basePath: @NonNls String,
-        priority: Double,
-    ): LookupElement {
-        val removePrefix = virtualFile.path.removePrefix(basePath)
-        val relativePath: String = removePrefix.removePrefix(File.separator)
+    private fun buildElement(virtualFile: VirtualFile, basePath: String, priority: Double): LookupElement {
+        val filepath = virtualFile.path.removePrefix(basePath)
 
-        val elementBuilder = LookupElementBuilder.create(relativePath)
+        val elementBuilder = LookupElementBuilder.create(virtualFile.name)
+            .withTailText(filepath)
             .withIcon(VirtualFilePresentation.getIcon(virtualFile))
             .withInsertHandler { context, _ ->
                 context.editor.caretModel.moveCaretRelatively(1, 1, false, false, false)
