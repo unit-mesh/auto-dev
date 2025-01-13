@@ -43,7 +43,7 @@ class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), Edit
 
         val panelView = ChatSketchView(project, editor)
         panelView.minimumSize = Dimension(800, 40)
-        setContent(panelView)
+        addToCenter(panelView)
 
         AutoDevCoroutineScope.scope(project).launch {
             val suggestion = StringBuilder()
@@ -83,21 +83,21 @@ class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), Edit
         c.gridx = 0
         c.gridy = 0
         c.weightx = 1.0
-        c.fill = 2
+        c.fill = GridBagConstraints.HORIZONTAL
         add(inputPanel, c)
 
-        val jPanel = JPanel(BorderLayout())
-        jPanel.isVisible = false
-        jPanel.addMouseListener(object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent) {
-                IdeFocusManager.getInstance(editor.project).requestFocus(inputPanel.getInputComponent(), true)
-            }
-        })
-        this.centerPanel = jPanel
+        this.centerPanel = JPanel(BorderLayout()).apply {
+            isOpaque = false
+            this.addMouseListener(object : MouseAdapter() {
+                override fun mouseClicked(e: MouseEvent) {
+                    IdeFocusManager.getInstance(editor.project).requestFocus(inputPanel.getInputComponent(), true)
+                }
+            })
+        }
 
         c.gridx = 0
         c.gridy = 1
-        c.fill = 1
+        c.fill = GridBagConstraints.BOTH
         add(this.centerPanel, c)
 
         this.inAllChildren { child ->
@@ -139,7 +139,7 @@ class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), Edit
         repaint()
     }
 
-    private fun setContent(content: JComponent) {
+    private fun addToCenter(content: JComponent) {
         content.isOpaque = true
         ApplicationManager.getApplication().invokeLater {
             if (!this.centerPanel.isVisible) {

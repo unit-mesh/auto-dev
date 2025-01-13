@@ -42,7 +42,7 @@ import javax.swing.JProgressBar
 import javax.swing.ScrollPaneConstants
 import javax.swing.SwingUtilities
 
-class ChatSketchView(val project: Project, val editor: Editor?, private val showInput: Boolean = true) :
+class ChatSketchView(val project: Project, val editor: Editor?, private val showInput: Boolean = false) :
     SimpleToolWindowPanel(true, true),
     NullableComponent, Disposable {
     private var progressBar: CustomProgressBar = CustomProgressBar(this)
@@ -50,12 +50,10 @@ class ChatSketchView(val project: Project, val editor: Editor?, private val show
 
     private var myList = JPanel(VerticalLayout(JBUI.scale(0))).apply {
         this.isOpaque = true
-        this.background = JBColor(0xEAEEF7, 0x2d2f30)
     }
 
     private var userPrompt: JPanel = JPanel(BorderLayout()).apply {
         this.isOpaque = true
-        this.background = JBColor(0xEAEEF7, 0x2d2f30)
         this.border = JBUI.Borders.empty(10, 0)
     }
 

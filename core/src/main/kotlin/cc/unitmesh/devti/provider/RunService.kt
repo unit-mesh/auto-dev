@@ -177,7 +177,9 @@ interface RunService {
 
         fun provider(project: Project, file: VirtualFile): RunService? {
             return EP_NAME.extensionList.firstOrNull {
-                runReadAction { it.isApplicable(project, file) }
+                runReadAction {
+                    it.isApplicable(project, file)
+                }
             }
         }
 

@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.inline
 
+import cc.unitmesh.devti.provider.devins.LanguagePromptProcessor
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
@@ -61,7 +62,13 @@ class AutoDevInlineChatService : Disposable {
     }
 
     fun prompt(project: Project, prompt: String): String {
-        return prompt
+        var finalPrompt = prompt
+        val postProcessors = LanguagePromptProcessor.instance("DevIn").firstOrNull()
+        if (postProcessors != null) {
+            finalPrompt = postProcessors.compile(project, prompt)
+        }
+
+        return finalPrompt
     }
 
     companion object {

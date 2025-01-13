@@ -161,13 +161,8 @@ class AutoDevInput(
             "Append text",
             "intentions.write.action",
             {
-                insertStringAndSaveChange(
-                    project,
-                    text,
-                    this.editor!!.document,
-                    this.editor!!.document.textLength,
-                    false
-                )
+                val document = this.editor!!.document
+                insertStringAndSaveChange(project, text, document, document.textLength, false)
             })
     }
 }
