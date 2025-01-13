@@ -28,6 +28,10 @@
 
         <chatContextProvider implementation="cc.unitmesh.database.provider.SqlChatContextProvider"/>
 
+        <toolchainFunctionProvider implementation="cc.unitmesh.database.provider.DatabaseFunctionProvider"/>
+
+        <runService implementation="cc.unitmesh.database.provider.SqlRunService"/>
+
         <livingDocumentation
                 language="SQL"
                 implementationClass="cc.unitmesh.database.provider.SqlLivingDocumentationProvider"/>
