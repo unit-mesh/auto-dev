@@ -1,31 +1,22 @@
 package cc.unitmesh.devti.inline
 
-import cc.unitmesh.devti.custom.compile.VariableTemplateCompiler
-import cc.unitmesh.devti.gui.chat.message.ChatActionType
-import cc.unitmesh.devti.provider.context.ChatContextItem
-import cc.unitmesh.devti.provider.context.ChatContextProvider
-import cc.unitmesh.devti.provider.context.ChatCreationContext
-import cc.unitmesh.devti.provider.context.ChatOrigin
-import cc.unitmesh.devti.provider.devins.LanguagePromptProcessor
+import cc.unitmesh.devti.prompting.SimpleDevinPrompter
 import cc.unitmesh.devti.template.GENIUS_CODE
 import cc.unitmesh.devti.template.TemplateRender
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.IdeFocusManager
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.temporary.getElementToAction
-import kotlinx.coroutines.runBlocking
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.set
 
 @Service(Service.Level.APP)
-class AutoDevInlineChatService : Disposable {
+class AutoDevInlineChatService : Disposable, SimpleDevinPrompter() {
     private val allChats: ConcurrentHashMap<String, AutoDevInlineChatPanel> = ConcurrentHashMap()
+    override val templateRender = TemplateRender(GENIUS_CODE)
+    override val template = templateRender.getTemplate("inline-chat.vm")
 
     fun showInlineChat(editor: Editor) {
         var canShowInlineChat = true
@@ -71,48 +62,6 @@ class AutoDevInlineChatService : Disposable {
         editor.contentComponent.revalidate()
         editor.contentComponent.repaint()
         allChats.remove(editor.fileUrl())
-    }
-
-    val templateRender = TemplateRender(GENIUS_CODE)
-    private val template = templateRender.getTemplate("inline-chat.vm")
-
-    fun prompt(project: Project, userInput: String, editor: Editor): String {
-        val file = FileDocumentManager.getInstance().getFile(editor.document)
-        val psiFile = runReadAction {
-            return@runReadAction file?.let { file ->
-                return@let PsiDocumentManager.getInstance(project).getPsiFile(editor.document)
-            }
-        }
-
-        val element = getElementToAction(project, editor)
-        val creationContext =
-            ChatCreationContext(ChatOrigin.Intention, ChatActionType.SKETCH, psiFile, listOf(), element = element)
-        val contextItems: List<ChatContextItem> = runBlocking {
-            return@runBlocking ChatContextProvider.collectChatContextList(project, creationContext)
-        }
-        val frameworkContext = contextItems.joinToString("\n") { it.text }
-
-        val variableCompile = VariableTemplateCompiler.create(project)
-        if (variableCompile == null) {
-            templateRender.addVariable("input", userInput)
-            templateRender.addVariable("frameworkContext", frameworkContext)
-            return templateRender.renderTemplate(template)
-        }
-
-        val finalPrompt: String
-        val postProcessors = LanguagePromptProcessor.instance("DevIn").firstOrNull()
-        if (postProcessors != null) {
-            val compileTemplate = postProcessors.compile(project, template)
-            variableCompile.set("input", userInput)
-            variableCompile.set("frameworkContext", frameworkContext)
-            finalPrompt = variableCompile.compile(compileTemplate)
-        } else {
-            variableCompile.set("input", userInput)
-            variableCompile.set("frameworkContext", frameworkContext)
-            finalPrompt = variableCompile.compile(userInput)
-        }
-
-        return finalPrompt
     }
 
     companion object {

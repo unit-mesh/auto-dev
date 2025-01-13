@@ -6,9 +6,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.editor.markup.GutterIconRenderer
 import javax.swing.Icon
 
-class AutoDevGutterIconRenderer(
-    val line: Int, val onClick: () -> Unit,
-) : GutterIconRenderer() {
+class AutoDevGutterIconRenderer(val line: Int, val onClick: () -> Unit) : GutterIconRenderer() {
     override fun getClickAction(): AnAction {
         return object : AnAction() {
             override fun actionPerformed(e: AnActionEvent) {

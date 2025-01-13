@@ -95,7 +95,7 @@ class AutoDevGutterHandler(private val project: Project) : Disposable {
         gutterIcons[editor] = GutterIconData(line, highlighter)
     }
 
-    fun removeGutterIcon(editor: Editor, highlighter: RangeHighlighter? = null) {
+    private fun removeGutterIcon(editor: Editor, highlighter: RangeHighlighter? = null) {
         if (highlighter != null) editor.markupModel.removeHighlighter(highlighter)
         gutterIcons.remove(editor)
     }
@@ -104,12 +104,12 @@ class AutoDevGutterHandler(private val project: Project) : Disposable {
         gutterIcons.forEach {
             removeGutterIcon(it.key, it.value?.highlighter)
         }
+
         disposable?.let { Disposer.dispose(it) }
         disposable = null
     }
 
     companion object {
-
         fun getInstance(project: Project): AutoDevGutterHandler {
             return project.getService(AutoDevGutterHandler::class.java)
         }

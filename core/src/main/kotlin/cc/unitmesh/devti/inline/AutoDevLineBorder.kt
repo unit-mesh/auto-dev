@@ -33,6 +33,7 @@ class AutoDevLineBorder(color: Color, thickness: Int, roundedCorners: Boolean, v
                     (height - size).toFloat()
                 )
             }
+
             val shape = Path2D.Float(0)
             shape.append(outer, false)
             shape.append(inner, false)
