@@ -2,17 +2,18 @@ package cc.unitmesh.devti.language.completion.dataprovider
 
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.language.DevInIcons
+import cc.unitmesh.devti.sketch.Toolchain
 import com.intellij.icons.AllIcons
 import java.nio.charset.StandardCharsets
 import javax.swing.Icon
 
 enum class BuiltinCommand(
-    val commandName: String,
-    val description: String,
+    override val commandName: String,
+    override val description: String,
     val icon: Icon,
     val hasCompletion: Boolean = false,
     val requireProps: Boolean = false,
-) {
+) : Toolchain {
     FILE("file", "Read the content of a file", AllIcons.Actions.Copy, true, true),
     REV("rev", "Read git change by file", AllIcons.Vcs.History, true, true),
 

@@ -17,6 +17,8 @@ data class SketchRunContext(
     @JvmField val time: String,
     /// The USER's requirements
     @JvmField val input: String,
+    /// toolList
+    @JvmField val toolList: List<Toolchain>
 ) {
 
 }
@@ -24,30 +26,6 @@ data class SketchRunContext(
 /**
  * todo use [cc.unitmesh.devti.language.compiler.exec.InsCommand] to run the sketch
  */
-enum class SketchToolchain(val toolName: String, val description: String) {
-    RELATED_CODE("RelatedCode", "Find related code snippets across your codebase"),
+enum class Toolchain(open val commandName: String, open val description: String) {
 
-    /// similar code search
-    SIMILAR_CODE("SimilarCode", "Find similar code snippets based on semantic search"),
-
-    /// text search
-    GREP_SEARCH("GrepSearch", "Search for a specified pattern within files"),
-
-    /// `Find`
-    FIND("Find", "Search for files and directories using glob patterns"),
-
-    /// TREE DIR
-    TREE_DIR("TreeDir", "List files and directories in a tree-like structure"),
-
-    /// VIEW FILE
-    VIEW_FILE("ViewFile", "View the contents of a file"),
-
-    /// VIEW SYMBOL
-    VIEW_SYMBOL("ViewSymbol", "View file by symbol, like package, class, function, etc."),
-
-    /// WRITE TO FILE
-    WRITE_FILE("WriteFile", "Write to a file"),
-
-    /// RUN COMMAND
-    RUN_COMMAND("RunCommand", "Run a command in the terminal"),
 }
