@@ -106,7 +106,11 @@ class CodeHighlightSketch(val project: Project, val text: String, private var id
         ): EditorEx {
             var editorText = text
             val language = ideaLanguage ?: CodeFence.findLanguage("Plain text")
-            val ext = CodeFence.lookupFileExt(language.displayName)
+            val ext = if (language.displayName == "Plain text") {
+                CodeFence.lookupFileExt(language.displayName)
+            } else {
+                language.associatedFileType?.defaultExtension ?: "Unknown"
+            }
             /// check text easyline starts with Lineno and :, for example: 1:
             var isShowLineNo = true
             editorText.lines().forEach {

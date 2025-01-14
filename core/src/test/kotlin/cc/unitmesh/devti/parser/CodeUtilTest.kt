@@ -85,6 +85,27 @@ class CodeUtilTest  : BasePlatformTestCase() {
         assertTrue(code.isComplete)
     }
 
+    fun testShouldParseUndoneHtmlCode() {
+        val content = """
+// patch to call tools for step 3 with DevIns language, should use DevIns code fence
+<devin>
+/patch:src/main/index.html
+```patch
+// the index.html code
+```
+""".trimIndent()
+        val code = CodeFence.parse(content)
+        assertFalse(code.isComplete)
+        assertEquals(
+            code.text, """
+/patch:src/main/index.html
+```patch
+// the index.html code
+```
+""".trimIndent()
+        )
+    }
+
     /// parse all with devins
     fun testShouldParseAllWithDevin() {
         val content = """

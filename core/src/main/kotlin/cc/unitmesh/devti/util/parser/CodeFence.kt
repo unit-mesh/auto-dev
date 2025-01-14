@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.util.parser
 
+import ai.grazie.nlp.utils.length
 import com.intellij.lang.Language
 import com.intellij.openapi.fileTypes.PlainTextLanguage
 
@@ -12,17 +13,28 @@ class CodeFence(
 ) {
     companion object {
         private var lastTxtBlock: CodeFence? = null
+        val devinStartRegex = Regex("<devin>")
+        val devinEndRegex = Regex("</devin>")
 
         fun parse(content: String): CodeFence {
             val markdownRegex = Regex("```([\\w#+\\s]*)")
-            val devinRegex = Regex("<devin>(.*?)</devin>", RegexOption.DOT_MATCHES_ALL)
+
             val lines = content.replace("\\n", "\n").lines()
 
-            // 首先尝试匹配 DevIns 格式
-            val devinMatch = devinRegex.find(content)
-            if (devinMatch != null) {
-                val devinContent = devinMatch.groups[1]?.value?.trim() ?: ""
-                return CodeFence(findLanguage("devin"), devinContent, true, "devin", "devin")
+            // 检查是否存在 devin 开始标签
+            val startMatch = devinStartRegex.find(content)
+            if (startMatch != null) {
+                val endMatch = devinEndRegex.find(content)
+                val isComplete = endMatch != null
+
+                // 提取内容：如果有结束标签就截取中间内容，没有就取整个后续内容
+                val devinContent = if (isComplete) {
+                    content.substring(startMatch.range.last + 1, endMatch!!.range.first).trim()
+                } else {
+                    content.substring(startMatch.range.last + 1).trim()
+                }
+
+                return CodeFence(findLanguage("DevIn"), devinContent, isComplete, "devin", "DevIn")
             }
 
             // 原有的 Markdown 代码块解析逻辑
@@ -61,34 +73,63 @@ class CodeFence(
 
         fun parseAll(content: String): List<CodeFence> {
             val codeFences = mutableListOf<CodeFence>()
-            
-            // 处理 devin 格式，使用新的标签格式
-            val devinRegex = Regex("<devin>(.*?)</devin>", RegexOption.DOT_MATCHES_ALL)
-            val devinMatches = devinRegex.findAll(content)
-            devinMatches.forEach { match ->
-                val devinContent = match.groups[1]?.value?.trim() ?: ""
-                codeFences.add(CodeFence(findLanguage("devin"), devinContent, true, "devin", "devin"))
+            var currentIndex = 0
+
+            val startMatches = devinStartRegex.findAll(content)
+            for (startMatch in startMatches) {
+                // 处理标签前的文本
+                if (startMatch.range.first > currentIndex) {
+                    val beforeText = content.substring(currentIndex, startMatch.range.first)
+                    if (beforeText.isNotEmpty()) {
+                        parseMarkdownContent(beforeText, codeFences)
+                    }
+                }
+
+                // 处理 devin 标签内容
+                val searchRegion = content.substring(startMatch.range.first)
+                val endMatch = devinEndRegex.find(searchRegion)
+                val isComplete = endMatch != null
+
+                val devinContent = if (isComplete) {
+                    searchRegion.substring(startMatch.range.length, endMatch!!.range.first).trim()
+                } else {
+                    searchRegion.substring(startMatch.range.length).trim()
+                }
+
+                codeFences.add(CodeFence(findLanguage("DevIn"), devinContent, isComplete, "devin", "DevIn"))
+                currentIndex = if (isComplete) {
+                    startMatch.range.first + endMatch!!.range.last + 1
+                } else {
+                    content.length
+                }
             }
 
-            // 处理markdown格式 - 移除所有devin标签，以免干扰markdown解析
-            val contentWithoutDevin = devinRegex.replace(content, "")
+            // 处理最后剩余的内容
+            if (currentIndex < content.length) {
+                val remainingContent = content.substring(currentIndex)
+                parseMarkdownContent(remainingContent, codeFences)
+            }
+
+            return codeFences
+        }
+
+        private fun parseMarkdownContent(content: String, codeFences: MutableList<CodeFence>) {
             val regex = Regex("```([\\w#+\\s]*)")
-            val lines = contentWithoutDevin.replace("\\n", "\n").lines()
+            val lines = content.replace("\\n", "\n").lines()
 
             var codeStarted = false
             var languageId: String? = null
             val codeBuilder = StringBuilder()
             val textBuilder = StringBuilder()
 
-            for ((index, line) in lines.withIndex()) {
+            for (line in lines) {
                 if (!codeStarted) {
                     val matchResult = regex.find(line.trimStart())
                     if (matchResult != null) {
                         if (textBuilder.isNotEmpty()) {
                             val textBlock = CodeFence(
-                                findLanguage("markdown"), textBuilder.trim().toString(), false, "txt"
+                                findLanguage("markdown"), textBuilder.trim().toString(), true, "txt"
                             )
-
                             lastTxtBlock = textBlock
                             codeFences.add(textBlock)
                             textBuilder.clear()
@@ -100,18 +141,19 @@ class CodeFence(
                         textBuilder.append(line).append("\n")
                     }
                 } else {
-                    if (lastTxtBlock != null && lastTxtBlock?.isComplete == false) {
-                        lastTxtBlock!!.isComplete = true
-                    }
-
                     if (line.startsWith("```")) {
                         val codeContent = codeBuilder.trim().toString()
-                        val codeFence = parse("```$languageId\n$codeContent\n```")
+                        val codeFence = CodeFence(
+                            findLanguage(languageId ?: ""),
+                            codeContent,
+                            true,
+                            lookupFileExt(languageId ?: "txt"),
+                            languageId
+                        )
                         codeFences.add(codeFence)
 
                         codeBuilder.clear()
                         codeStarted = false
-
                         languageId = null
                     } else {
                         codeBuilder.append(line).append("\n")
@@ -119,26 +161,29 @@ class CodeFence(
                 }
             }
 
-            val ideaLanguage = findLanguage(languageId ?: "markdown")
+            // 处理最后的文本内容
             if (textBuilder.isNotEmpty()) {
-                val normal = CodeFence(ideaLanguage, textBuilder.trim().toString(), true, null, languageId)
-                codeFences.add(normal)
+                val textBlock = CodeFence(
+                    findLanguage("markdown"), 
+                    textBuilder.trim().toString(), 
+                    true, 
+                    "txt"
+                )
+                codeFences.add(textBlock)
             }
 
-            if (codeStarted) {
-                val codeContent = codeBuilder.trim().toString()
-                if (codeContent.isNotEmpty()) {
-                    val codeFence = parse("```$languageId\n$codeContent\n")
-                    codeFences.add(codeFence)
-                } else {
-                    val defaultLanguage = CodeFence(ideaLanguage, codeContent, false, null, languageId)
-                    codeFences.add(defaultLanguage)
-                }
+            // 处理未闭合的代码块
+            if (codeStarted && codeBuilder.isNotEmpty()) {
+                val codeFence = CodeFence(
+                    findLanguage(languageId ?: ""),
+                    codeBuilder.trim().toString(),
+                    false,
+                    lookupFileExt(languageId ?: "txt"),
+                    languageId
+                )
+                codeFences.add(codeFence)
             }
-
-            return codeFences
         }
-
 
         /**
          * Searches for a language by its name and returns the corresponding [Language] object. If the language is not found,
@@ -192,6 +237,7 @@ class CodeFence(
                 "http request" -> "http"
                 "shell script" -> "sh"
                 "bash" -> "sh"
+                "devin" -> "devin"
                 else -> languageId
             }
         }
