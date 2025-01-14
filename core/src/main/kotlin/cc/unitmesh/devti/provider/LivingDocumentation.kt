@@ -42,10 +42,6 @@ interface LivingDocumentation {
                 return documentation
             }
 
-            if (language.displayName == "TypeScript" || language.displayName == "ArkTS") {
-                return HarmonyOsLivingDocumentation()
-            }
-
             return null
         }
 
