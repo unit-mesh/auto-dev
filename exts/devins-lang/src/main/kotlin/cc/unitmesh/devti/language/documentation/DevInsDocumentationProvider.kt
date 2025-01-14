@@ -55,7 +55,7 @@ class DevInsDocumentationProvider : AbstractDocumentationProvider() {
         fun allCommands(): List<String> {
             return BuiltinCommand.all().map {
                 val example = BuiltinCommand.example(it)
-                "${it.commandName}: ${it.description}\nExample:\n```$example\n```"
+                "name: /${it.commandName}:\ndesc: ${it.description}\nExample:\n```devin\n$example\n```"
             }
         }
     }

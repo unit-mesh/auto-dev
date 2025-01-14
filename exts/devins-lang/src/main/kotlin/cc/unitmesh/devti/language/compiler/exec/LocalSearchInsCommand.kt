@@ -20,13 +20,13 @@ import com.intellij.openapi.vfs.VirtualFile
  */
 class LocalSearchInsCommand(val myProject: Project, private val scope: String, val text: String?) : InsCommand {
     private val MAX_LINE_SIZE = 180
-    private val OVERLAP = 5
+    private val OVERLAP = 4
 
     override suspend fun execute(): String {
         val text = (text ?: scope).trim()
         /// check text length if less then 3 return alert slowly
         if (text.length < 3) {
-            throw IllegalArgumentException("Text length should be more than 5")
+            throw IllegalArgumentException("Text length should be more than 4")
         }
 
         val textSearch = search(myProject, text, OVERLAP)
@@ -49,7 +49,7 @@ class LocalSearchInsCommand(val myProject: Project, private val scope: String, v
      *         the lines of context around the keyword in that file. The context includes the matched line and the specified
      *         number of lines before and after it.
      */
-    private fun search(project: Project, keyword: String, overlap: Int = 5): Map<VirtualFile, List<String>> {
+    private fun search(project: Project, keyword: String, overlap: Int = OVERLAP): Map<VirtualFile, List<String>> {
         val result = mutableMapOf<VirtualFile, List<String>>()
 
         ProjectFileIndex.getInstance(project).iterateContent { file ->
