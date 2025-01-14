@@ -88,12 +88,12 @@ Here is an example output to the USER:
             ```
         </devin>
 
-        // patch to call tools for step 3 with DevIn language, should use `
+        // patch to call tools for step 2 with DevIn language, should use `
         <devin></devin>
         ` tag with DevIn language
         // 如果要应用补丁，请使用 `/patch` 命令，然后在代码块中编写补丁
         <devin>
-            /patch:src/main/index.html
+            /patch
             ```patch
             // the index.html code
             ```

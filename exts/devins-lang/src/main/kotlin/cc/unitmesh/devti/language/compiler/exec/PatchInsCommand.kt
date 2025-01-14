@@ -22,7 +22,7 @@ class PatchInsCommand(val myProject: Project, val prop: String, val codeContent:
 
         val filePatches: MutableList<FilePatch> = myReader.allPatches
 
-        ApplicationManager.getApplication().invokeLater {
+        ApplicationManager.getApplication().invokeAndWait {
             val matchedPatches =
                 MatchPatchPaths(myProject).execute(filePatches, true)
 
@@ -35,7 +35,7 @@ class PatchInsCommand(val myProject: Project, val prop: String, val codeContent:
             shelfExecutor.apply(filePatches, patchGroups, null, prop, additionalInfo)
         }
 
-        return "Patch in Progress..."
+        return "Applied ${filePatches.size} patches."
     }
 
 }
