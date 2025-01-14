@@ -18,7 +18,7 @@ object JavaTypeUtil {
                     resolvedClasses[it.canonicalText] = resolve
                 }
 
-                it.typeArguments().map { argType ->
+                it.parameters.map { argType ->
                     if (argType is PsiClassReferenceType) {
                         val resolvedArgType = argType.resolve()
                         if (resolvedArgType != null) {
