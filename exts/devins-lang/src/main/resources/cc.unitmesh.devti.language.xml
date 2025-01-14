@@ -71,6 +71,7 @@
         <languageProcessor implementation="cc.unitmesh.devti.language.provider.DevInsPromptProcessor"/>
 
         <runService implementation="cc.unitmesh.devti.language.compiler.service.ShellRunService"/>
+        <runService implementation="cc.unitmesh.devti.language.compiler.service.DevInRunService"/>
 
         <sketchToolchainProvider implementation="cc.unitmesh.devti.language.compiler.DevInsSketchToolchainProvider"/>
     </extensions>
