@@ -6,8 +6,11 @@ import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
 import cc.unitmesh.devti.inline.AutoDevInlineChatService
 import cc.unitmesh.devti.inline.fullHeight
 import cc.unitmesh.devti.inline.fullWidth
+import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.util.parser.CodeFence
-import cc.unitmesh.devti.sketch.highlight.CodeHighlightSketch
+import cc.unitmesh.devti.sketch.ui.highlight.CodeHighlightSketch
+import cc.unitmesh.devti.sketch.ui.LangSketch
+import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.runInEdt
@@ -85,7 +88,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
             }
 
             val chatCodingService = ChatCodingService(ChatActionType.SKETCH, project)
-            shireInput.addListener(SketchAutoDevInputListener(project, chatCodingService, this))
+            shireInput.addListener(SketchInputListener(project, chatCodingService, this))
             contentPanel.add(shireInput, BorderLayout.SOUTH)
         }
 

@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.sketch.patch
+package cc.unitmesh.devti.sketch.ui.patch
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.VcsApplicationSettings

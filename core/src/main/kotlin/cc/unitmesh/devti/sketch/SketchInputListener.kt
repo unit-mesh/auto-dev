@@ -15,7 +15,7 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.launch
 
-class SketchAutoDevInputListener(
+class SketchInputListener(
     private val project: Project,
     private val chatCodingService: ChatCodingService,
     private val toolWindow: SketchToolWindow

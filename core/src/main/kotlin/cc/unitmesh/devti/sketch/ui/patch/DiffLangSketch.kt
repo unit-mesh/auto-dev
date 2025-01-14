@@ -1,7 +1,7 @@
-package cc.unitmesh.devti.sketch.patch
+package cc.unitmesh.devti.sketch.ui.patch
 
 import cc.unitmesh.devti.AutoDevNotifications
-import cc.unitmesh.devti.sketch.ExtensionLangSketch
+import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.util.findFile
 import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.icons.AllIcons

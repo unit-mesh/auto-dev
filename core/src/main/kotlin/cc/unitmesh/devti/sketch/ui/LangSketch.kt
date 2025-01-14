@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.sketch
+package cc.unitmesh.devti.sketch.ui
 
 import com.intellij.lang.Language
 import com.intellij.openapi.Disposable

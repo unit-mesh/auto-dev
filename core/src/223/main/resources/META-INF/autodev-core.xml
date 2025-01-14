@@ -180,7 +180,10 @@
 
         <!-- Lang Sketch Provider -->
         <extensionPoint qualifiedName="cc.unitmesh.langSketchProvider"
-                        interface="cc.unitmesh.devti.sketch.LanguageSketchProvider"
+                        interface="cc.unitmesh.devti.sketch.ui.LanguageSketchProvider"
+                        dynamic="true" />
+        <extensionPoint qualifiedName="cc.unitmesh.sketchToolchainProvider"
+                        interface="cc.unitmesh.devti.sketch.SketchToolchainProvider"
                         dynamic="true" />
 
         <extensionPoint qualifiedName="cc.unitmesh.relatedClassProvider"

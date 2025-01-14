@@ -1,7 +1,7 @@
-package cc.unitmesh.devti.sketch.patch
+package cc.unitmesh.devti.sketch.ui.patch
 
-import cc.unitmesh.devti.sketch.ExtensionLangSketch
-import cc.unitmesh.devti.sketch.LanguageSketchProvider
+import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
+import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import com.intellij.openapi.project.Project
 
 class DiffLangSketchProvider : LanguageSketchProvider {

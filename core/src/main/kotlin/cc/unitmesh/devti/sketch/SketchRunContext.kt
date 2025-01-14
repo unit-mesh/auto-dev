@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.sketch
 
+import cc.unitmesh.devti.template.context.TemplateContext
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
@@ -27,7 +28,7 @@ data class SketchRunContext(
     @JvmField val toolList: List<Toolchain>,
     /// shell path: The user's shell is
     @JvmField val shell: String = System.getenv("SHELL") ?: "/bin/bash",
-) {
+) : TemplateContext {
     companion object {
         fun create(project: Project, editor: Editor): SketchRunContext {
             val currentFile: VirtualFile = FileDocumentManager.getInstance().getFile(editor.document)!!
@@ -36,8 +37,8 @@ data class SketchRunContext(
                 selectedFile = emptyList(),
                 relatedFiles = emptyList(),
                 input = editor.document.text,
-                toolList = emptyList(),
                 workspace = workspace(project),
+                toolList = SketchToolchainProvider.collect(project, editor),
             )
         }
     }
@@ -51,11 +52,4 @@ private fun time() = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(java.util.Da
 private fun workspace(myProject: Project? = null): String {
     val project = myProject ?: ProjectManager.getInstance().openProjects.firstOrNull()
     return project?.guessProjectDir()?.path ?: ""
-}
-
-/**
- * todo use [cc.unitmesh.devti.language.compiler.exec.InsCommand] to run the sketch
- */
-enum class Toolchain(open val commandName: String, open val description: String) {
-
 }

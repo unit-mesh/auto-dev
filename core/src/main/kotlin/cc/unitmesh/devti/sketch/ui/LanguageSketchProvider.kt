@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.sketch
+package cc.unitmesh.devti.sketch.ui
 
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project

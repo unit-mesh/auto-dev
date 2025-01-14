@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.sketch.patch
+package cc.unitmesh.devti.sketch.ui.patch
 
 import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.diff.DiffContentFactoryEx
@@ -25,7 +25,7 @@ import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.RightGap
 import com.intellij.ui.dsl.builder.panel
-import cc.unitmesh.devti.sketch.LangSketch
+import cc.unitmesh.devti.sketch.ui.LangSketch
 import com.intellij.openapi.vfs.VfsUtilCore
 import java.awt.BorderLayout
 import java.awt.event.MouseAdapter

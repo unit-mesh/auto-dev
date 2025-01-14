@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.sketch.highlight
+package cc.unitmesh.devti.sketch.ui.highlight
 
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.lang.Language
@@ -26,7 +26,8 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.intellij.util.concurrency.annotations.RequiresReadLock
 import com.intellij.util.ui.JBUI
-import cc.unitmesh.devti.sketch.LangSketch
+import cc.unitmesh.devti.sketch.ui.LangSketch
+import com.intellij.openapi.util.text.StringUtil
 import com.intellij.util.ui.JBEmptyBorder
 import java.awt.BorderLayout
 import java.util.concurrent.atomic.AtomicBoolean
@@ -85,7 +86,7 @@ class CodeHighlightSketch(val project: Project, val text: String, private var id
 
         WriteCommandAction.runWriteCommandAction(project) {
             val document = editorFragment?.editor?.document
-            val normalizedText = com.intellij.openapi.util.text.StringUtil.convertLineSeparators(text)
+            val normalizedText = StringUtil.convertLineSeparators(text)
             document?.replaceString(0, document.textLength, normalizedText)
         }
     }
