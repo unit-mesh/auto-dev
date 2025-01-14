@@ -109,6 +109,8 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
                         invokeLater {
                             editorField.text = CodeFence.parse(text).text
                         }
+                    } else {
+                        editorField.text = text.removePrefix("```").removeSuffix("```")
                     }
                 }
             } catch (e: Exception) {
