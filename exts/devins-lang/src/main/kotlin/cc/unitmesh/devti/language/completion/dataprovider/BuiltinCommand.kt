@@ -30,7 +30,7 @@ enum class BuiltinCommand(
         true,
         true
     ),
-    WRITE("write", "Write content to a file, /write:path/to/file:L1-L2", AllIcons.Actions.Edit, true, true),
+    WRITE("write", "Write content to a file with markdown code block, /write:path/to/file:L1-L2", AllIcons.Actions.Edit, true, true),
     PATCH("patch", "Apply patch to a file, /patch:path/to/file", AllIcons.Vcs.Patch_file, false),
     RUN("run", "Run the content of a file", AllIcons.Actions.Execute, true, true),
     SHELL("shell", "Run shell command", DevInIcons.Terminal, true, true),
@@ -73,6 +73,7 @@ enum class BuiltinCommand(
         true,
         true
     ),
+    OPEN("open", "Open a file in the editor", AllIcons.Actions.MenuOpen, false),
     ;
 
     companion object {

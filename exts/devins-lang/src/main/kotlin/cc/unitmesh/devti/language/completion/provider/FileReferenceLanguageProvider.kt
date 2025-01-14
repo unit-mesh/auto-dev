@@ -7,6 +7,8 @@ import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.codeInsight.lookup.LookupElementPresentation
+import com.intellij.codeInsight.lookup.LookupElementRenderer
 import com.intellij.ide.presentation.VirtualFilePresentation
 import com.intellij.openapi.fileEditor.impl.EditorHistoryManager
 import com.intellij.openapi.project.guessProjectDir
@@ -41,11 +43,17 @@ class FileReferenceLanguageProvider : CompletionProvider<CompletionParameters>()
     }
 
     private fun buildElement(virtualFile: VirtualFile, basePath: String, priority: Double): LookupElement {
-        val filepath = virtualFile.path.removePrefix(basePath)
+        val filepath = virtualFile.path.removePrefix(basePath).removePrefix("/")
 
-        val elementBuilder = LookupElementBuilder.create(virtualFile.name)
-            .withTailText(filepath)
+        val elementBuilder = LookupElementBuilder.create(filepath)
             .withIcon(VirtualFilePresentation.getIcon(virtualFile))
+            .withCaseSensitivity(false)
+            .withRenderer(object : LookupElementRenderer<LookupElement>() {
+                override fun renderElement(element: LookupElement, presentation: LookupElementPresentation) {
+                    presentation.itemText = virtualFile.name
+                    presentation.tailText = filepath
+                }
+            })
             .withInsertHandler { context, _ ->
                 context.editor.caretModel.moveCaretRelatively(1, 1, false, false, false)
             }

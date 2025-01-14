@@ -50,13 +50,4 @@ class DevInsDocumentationProvider : AbstractDocumentationProvider() {
         contextElement: PsiElement?,
         targetOffset: Int
     ): PsiElement? = contextElement ?: file.findElementAt(targetOffset)
-
-    companion object {
-        fun allCommands(): List<String> {
-            return BuiltinCommand.all().map {
-                val example = BuiltinCommand.example(it)
-                "name: /${it.commandName}:\ndesc: ${it.description}\nExample:\n```devin\n$example\n```"
-            }
-        }
-    }
 }

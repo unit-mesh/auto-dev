@@ -100,11 +100,16 @@ class TemplateRender(private val pathPrefix: String) {
         return messages
     }
 
-    fun renderTemplate(template: String): String {
+    fun renderTemplate(template: String, customContext: Any? = null): String {
         val oldContextClassLoader = Thread.currentThread().getContextClassLoader()
         Thread.currentThread().setContextClassLoader(TemplateRender::class.java.getClassLoader())
 
-        velocityContext.put("context", context)
+        if (customContext != null) {
+            velocityContext.put("context", customContext)
+        } else {
+            velocityContext.put("context", this.context)
+        }
+
         val sw = StringWriter()
         Velocity.evaluate(velocityContext, sw, "#" + this.javaClass.name, template)
         val result = sw.toString()

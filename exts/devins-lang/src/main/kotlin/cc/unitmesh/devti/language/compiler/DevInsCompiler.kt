@@ -254,10 +254,14 @@ class DevInsCompiler(
                 LocalSearchInsCommand(myProject, prop, shireCode)
             }
 
-
             BuiltinCommand.RELATED -> {
                 result.isLocalCommand = true
                 RelatedSymbolInsCommand(myProject, prop)
+            }
+
+            BuiltinCommand.OPEN -> {
+                result.isLocalCommand = true
+                OpenInsCommand(myProject, prop)
             }
 
             else -> {

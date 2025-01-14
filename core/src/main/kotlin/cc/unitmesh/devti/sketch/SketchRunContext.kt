@@ -1,44 +1,56 @@
 package cc.unitmesh.devti.sketch
 
+import cc.unitmesh.devti.sketch.run.ShellUtil
 import cc.unitmesh.devti.template.context.TemplateContext
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiManager
 import java.text.SimpleDateFormat
 
 data class SketchRunContext(
-    // Current File
-    @JvmField val currentFile: VirtualFile,
-    /// related files
-    @JvmField val selectedFile: List<VirtualFile>,
-    /// ast related files
-    @JvmField val relatedFiles: List<VirtualFile>,
-    // The absolute path of the USER's workspace
-    @JvmField val workspace: String = workspace(),
-    // The USER's OS
-    @JvmField val os: String = osInfo(),
-    // The current time in YYYY-MM-DD HH:MM:SS format
-    @JvmField val time: String = time(),
-    /// The USER's requirements
-    @JvmField val input: String,
-    /// toolList
-    @JvmField val toolList: List<Toolchain>,
-    /// shell path: The user's shell is
-    @JvmField val shell: String = System.getenv("SHELL") ?: "/bin/bash",
+    val currentFile: VirtualFile,
+    val currentElement: PsiElement? = null,
+    val selectedFile: List<VirtualFile>,
+    val relatedFiles: List<VirtualFile>,
+    val workspace: String = workspace(),
+    val os: String = osInfo(),
+    val time: String = time(),
+    val userInput: String,
+    val toolList: String,
+    val shell: String = System.getenv("SHELL") ?: "/bin/bash",
 ) : TemplateContext {
     companion object {
-        fun create(project: Project, editor: Editor): SketchRunContext {
-            val currentFile: VirtualFile = FileDocumentManager.getInstance().getFile(editor.document)!!
+        fun create(project: Project, myEditor: Editor?, input: String): SketchRunContext {
+            val editor = myEditor ?: FileEditorManager.getInstance(project).selectedTextEditor
+            val currentFile: VirtualFile = if (editor != null) {
+                FileDocumentManager.getInstance().getFile(editor.document)!!
+            } else {
+                FileEditorManager.getInstance(project).selectedFiles.first()
+            }
+
+            val psi = PsiManager.getInstance(project).findFile(currentFile)
+
+            val currentElement = if (editor != null) {
+                psi?.findElementAt(editor.caretModel.offset)
+            } else {
+                null
+            }
+
             return SketchRunContext(
                 currentFile = currentFile,
+                currentElement = currentElement,
                 selectedFile = emptyList(),
                 relatedFiles = emptyList(),
-                input = editor.document.text,
+                userInput = input,
                 workspace = workspace(project),
-                toolList = SketchToolchainProvider.collect(project, editor),
+                toolList = SketchToolchainProvider.collect(project).joinToString("\n"),
+                shell = ShellUtil.listShell()?.firstOrNull() ?: "/bin/bash"
             )
         }
     }
