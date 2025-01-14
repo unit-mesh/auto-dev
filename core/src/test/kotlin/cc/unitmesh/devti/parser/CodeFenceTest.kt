@@ -2,11 +2,8 @@ package cc.unitmesh.devti.parser
 
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertTrue
-import org.junit.Test
 
-class CodeUtilTest  : BasePlatformTestCase() {
+class CodeFenceTest  : BasePlatformTestCase() {
     fun testShould_parse_code_from_markdown_java_hello_world() {
         val markdown = """
             |```java

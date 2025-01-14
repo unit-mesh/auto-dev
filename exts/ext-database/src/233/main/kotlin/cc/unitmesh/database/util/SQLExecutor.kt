@@ -4,13 +4,12 @@ import com.intellij.database.console.JdbcConsole
 import com.intellij.database.console.JdbcConsoleProvider
 import com.intellij.database.console.evaluation.EvaluationRequest
 import com.intellij.database.console.session.DatabaseSession
-import com.intellij.database.console.session.DatabaseSessionManager
 import com.intellij.database.console.session.getSessionTitle
-import com.intellij.database.datagrid.*
+import com.intellij.database.datagrid.GridDataRequest
+import com.intellij.database.datagrid.GridRow
 import com.intellij.database.model.RawDataSource
 import com.intellij.database.script.PersistenceConsoleProvider
 import com.intellij.database.settings.DatabaseSettings
-import com.intellij.database.util.DbImplUtilCore
 import com.intellij.database.vfs.DbVFSUtils
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runInEdt
@@ -139,7 +138,7 @@ object SQLExecutor {
                     "getAttachDataSourceRunners",
                     PsiFile::class.java,
                     String::class.java,
-                    com.intellij.util.Consumer::class.java
+                    Consumer::class.java
                 )
             @Suppress("UNCHECKED_CAST")
             return getRunners.invoke(null, info.file, title, consumer) as MutableList<PersistenceConsoleProvider.Runner>
@@ -169,14 +168,14 @@ object SQLExecutor {
     }
 
     private fun executeSql(project: Project, dataSource: RawDataSource, query: String): String? {
-        val future: CompletableFuture<String> = CompletableFuture()
-        val localDs = DbImplUtilCore.getLocalDataSource(dataSource)
+        val future: java.util.concurrent.CompletableFuture<String> = java.util.concurrent.CompletableFuture()
+        val localDs = com.intellij.database.util.DbImplUtilCore.getLocalDataSource(dataSource)
 
-        val session = DatabaseSessionManager.getSession(project, localDs)
+        val session = com.intellij.database.console.session.DatabaseSessionManager.getSession(project, localDs)
         val messageBus = session.messageBus
         messageBus.addConsumer(object : MyCompatDataConsumer() {
-            var result = mutableListOf<GridRow>()
-            override fun addRows(context: GridDataRequest.Context, rows: MutableList<out GridRow>) {
+            var result = mutableListOf<com.intellij.database.datagrid.GridRow>()
+            override fun addRows(context: com.intellij.database.datagrid.GridDataRequest.Context, rows: MutableList<out com.intellij.database.datagrid.GridRow>) {
                 result += rows
                 if (rows.size < 100) {
                     future.complete(result.toString())
@@ -185,22 +184,23 @@ object SQLExecutor {
         })
 
         val request =
-            object : DataRequest.QueryRequest(session, query, DataRequest.newConstraints(dataSource.dbms), null) {}
+            object : com.intellij.database.datagrid.DataRequest.QueryRequest(session, query,
+                newConstraints(dataSource.dbms), null) {}
         messageBus.dataProducer.processRequest(request)
         return future.get()
     }
 
-    private fun createConsole(project: Project, file: LightVirtualFile): JdbcConsole? {
-        val attached = JdbcConsoleProvider.findOrCreateSession(project, file) ?: return null
-        return JdbcConsoleProvider.attachConsole(project, attached, file)
+    private fun createConsole(project: com.intellij.openapi.project.Project, file: com.intellij.testFramework.LightVirtualFile): com.intellij.database.console.JdbcConsole? {
+        val attached = com.intellij.database.console.JdbcConsoleProvider.findOrCreateSession(project, file) ?: return null
+        return com.intellij.database.console.JdbcConsoleProvider.attachConsole(project, attached, file)
     }
 
-    abstract class MyCompatDataConsumer : DataConsumer {
+    abstract class MyCompatDataConsumer : com.intellij.database.datagrid.DataConsumer {
         override fun setColumns(
-            context: GridDataRequest.Context,
+            context: com.intellij.database.datagrid.GridDataRequest.Context,
             subQueryIndex: Int,
             resultSetIndex: Int,
-            columns: Array<out GridColumn>,
+            columns: Array<out com.intellij.database.datagrid.GridColumn>,
             firstRowNum: Int,
         ) {
             // for Compatibility in IDEA 2023.2.8
@@ -208,16 +208,16 @@ object SQLExecutor {
 
         /// will remove in latest version, so we need to use reflection to call this method in future
         override fun setColumns(
-            context: GridDataRequest.Context,
+            context: com.intellij.database.datagrid.GridDataRequest.Context,
             resultSetIndex: Int,
-            columns: Array<out GridColumn>,
+            columns: Array<out com.intellij.database.datagrid.GridColumn>,
             firstRowNum: Int,
         ) {
             // for Compatibility in IDEA 2023.2.8
         }
 
 
-        override fun afterLastRowAdded(context: GridDataRequest.Context, total: Int) {
+        override fun afterLastRowAdded(context: com.intellij.database.datagrid.GridDataRequest.Context, total: Int) {
             // for Compatibility in IDEA 2023.2.8
         }
     }

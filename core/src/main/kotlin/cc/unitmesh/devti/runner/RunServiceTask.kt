@@ -187,7 +187,7 @@ open class RunServiceTask(
 
             settings.isActivateToolWindowBeforeRun = false
             settings.isTemporary = true
-            settings.isFocusToolWindowBeforeRun = false
+//            settings.isFocusToolWindowBeforeRun = false
 
             val disposable = Disposer.newDisposable()
             val connection = ApplicationManager.getApplication().messageBus.connect(disposable)

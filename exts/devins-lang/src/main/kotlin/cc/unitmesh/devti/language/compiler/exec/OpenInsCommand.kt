@@ -1,18 +1,19 @@
 package cc.unitmesh.devti.language.compiler.exec
 
+import cc.unitmesh.devti.language.utils.lookupFile
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 
 class OpenInsCommand(val myProject: Project, private val filename: String) : InsCommand {
     override suspend fun execute(): String? {
-        val editor = FileEditorManager.getInstance(myProject).selectedTextEditor
-        val currentFile = if (editor != null) {
-            FileDocumentManager.getInstance().getFile(editor.document)!!
-        } else {
-            FileEditorManager.getInstance(myProject).selectedFiles.first()
+        FileDocumentManager.getInstance().saveAllDocuments()
+
+        val file = myProject.lookupFile(filename)
+        if (file != null) {
+            FileEditorManager.getInstance(myProject).openFile(file, true)
         }
 
-        return currentFile.name
+        return "Opening $filename..."
     }
 }

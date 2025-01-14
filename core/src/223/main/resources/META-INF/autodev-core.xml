@@ -37,7 +37,7 @@
                 serviceInterface="com.intellij.temporary.inlay.codecomplete.LLMInlayManager"
                 serviceImplementation="com.intellij.temporary.inlay.codecomplete.LLMInlayManagerImpl"/>
 
-        <postStartupActivity implementation="cc.unitmesh.devti.update.AutoDevUpdateStartupActivity"/>
+<!--        <postStartupActivity implementation="cc.unitmesh.devti.update.AutoDevUpdateStartupActivity"/>-->
 
         <typedHandler order="first, before completionAutoPopup"
                       implementation="cc.unitmesh.devti.inlay.TypeOverHandler"/>
@@ -229,7 +229,7 @@
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
 
-        <langSketchProvider implementation="cc.unitmesh.devti.sketch.patch.DiffLangSketchProvider"/>
+        <langSketchProvider implementation="cc.unitmesh.devti.sketch.ui.patch.DiffLangSketchProvider"/>
     </extensions>
 
     <actions>
@@ -329,7 +329,7 @@
                     class="cc.unitmesh.devti.gui.snippet.AutoDevInsertCodeAction"/>
             <action id="AutoDev.ToolWindow.Snippet.RunDevIns"
                     icon="AllIcons.Actions.Execute"
-                    class="cc.unitmesh.devti.gui.snippet.AutoDevRunDevInsAction"/>
+                    class="cc.unitmesh.devti.gui.snippet.AutoDevRunAction"/>
         </group>
 
         <group id="AutoDev.ToolWindow.Chat.TitleActions">

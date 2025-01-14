@@ -14,7 +14,7 @@ import com.intellij.psi.PsiManager
 import java.text.SimpleDateFormat
 
 data class SketchRunContext(
-    val currentFile: VirtualFile,
+    val currentFile: VirtualFile?,
     val currentElement: PsiElement? = null,
     val selectedFile: List<VirtualFile>,
     val relatedFiles: List<VirtualFile>,
@@ -28,13 +28,17 @@ data class SketchRunContext(
     companion object {
         fun create(project: Project, myEditor: Editor?, input: String): SketchRunContext {
             val editor = myEditor ?: FileEditorManager.getInstance(project).selectedTextEditor
-            val currentFile: VirtualFile = if (editor != null) {
+            val currentFile: VirtualFile? = if (editor != null) {
                 FileDocumentManager.getInstance().getFile(editor.document)!!
             } else {
-                FileEditorManager.getInstance(project).selectedFiles.first()
+                FileEditorManager.getInstance(project).selectedFiles.firstOrNull()
             }
 
-            val psi = PsiManager.getInstance(project).findFile(currentFile)
+            val psi = if (currentFile != null) {
+                PsiManager.getInstance(project).findFile(currentFile)
+            } else {
+                null
+            }
 
             val currentElement = if (editor != null) {
                 psi?.findElementAt(editor.caretModel.offset)

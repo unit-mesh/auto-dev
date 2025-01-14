@@ -240,7 +240,6 @@ class CustomProgressBar(private val view: SketchToolWindow) : JPanel(BorderLayou
     private val cancelLabel = JBLabel(AllIcons.Actions.CloseHovered)
 
     init {
-
         cancelLabel.setBorder(JBUI.Borders.empty(0, 5))
         cancelLabel.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
