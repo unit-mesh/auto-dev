@@ -2,6 +2,7 @@
 package cc.unitmesh.devti.language.parser
 
 import cc.unitmesh.devti.language.psi.DevInTypes
+import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.util.TextRange
@@ -38,6 +39,10 @@ class CodeBlockElement(node: ASTNode) : ASTWrapperPsiElement(node), PsiLanguageI
 
     fun getLanguageId(): PsiElement? {
         return findChildByType(DevInTypes.LANGUAGE_ID)
+    }
+
+    fun codeText(): String {
+        return CodeFence.parse(this.text).text
     }
 
     companion object {

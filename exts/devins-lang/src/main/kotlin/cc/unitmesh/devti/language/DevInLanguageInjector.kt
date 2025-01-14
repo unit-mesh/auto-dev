@@ -5,6 +5,7 @@ import cc.unitmesh.devti.util.parser.CodeFence.Companion.findLanguage
 import cc.unitmesh.devti.language.parser.CodeBlockElement
 import cc.unitmesh.devti.language.psi.DevInTypes
 import com.intellij.lang.Language
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.InjectedLanguagePlaces
 import com.intellij.psi.LanguageInjector
@@ -33,7 +34,11 @@ class DevInLanguageInjector : LanguageInjector {
         val first = elements.first()
         val last = elements.last()
 
-        val textRange = TextRange.create(first.startOffsetInParent, last.startOffsetInParent + last.textLength)
-        registrar.addPlace(language, textRange, null, null)
+        try {
+            val textRange = TextRange.create(first.startOffsetInParent, last.startOffsetInParent + last.textLength)
+            registrar.addPlace(language, textRange, null, null)
+        } catch (e: Exception) {
+            logger<DevInLanguageInjector>().warn("Failed to inject language", e)
+        }
     }
 }

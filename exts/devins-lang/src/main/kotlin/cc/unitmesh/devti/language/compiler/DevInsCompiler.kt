@@ -181,7 +181,7 @@ class DevInsCompiler(
                 if (devInCode == null) {
                     PrintInsCommand("/" + commandNode.commandName + ":" + prop)
                 } else {
-                    WriteInsCommand(myProject, prop, devInCode.text, used)
+                    WriteInsCommand(myProject, prop, devInCode.codeText(), used)
                 }
             }
 
@@ -191,7 +191,7 @@ class DevInsCompiler(
                 if (devInCode == null) {
                     PrintInsCommand("/" + commandNode.commandName + ":" + prop)
                 } else {
-                    PatchInsCommand(myProject, prop, devInCode.text)
+                    PatchInsCommand(myProject, prop, devInCode.codeText())
                 }
             }
 
@@ -201,7 +201,7 @@ class DevInsCompiler(
                 if (devInCode == null) {
                     PrintInsCommand("/" + commandNode.commandName + ":" + prop)
                 } else {
-                    CommitInsCommand(myProject, devInCode.text)
+                    CommitInsCommand(myProject, devInCode.codeText())
                 }
             }
 

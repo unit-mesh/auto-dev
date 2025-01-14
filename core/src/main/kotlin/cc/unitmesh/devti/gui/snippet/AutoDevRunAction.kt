@@ -1,17 +1,14 @@
 package cc.unitmesh.devti.gui.snippet
 
 import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.provider.RunService
 import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.DumbAwareAction
-import com.intellij.openapi.vfs.readText
 import com.intellij.psi.PsiManager
-import cc.unitmesh.devti.provider.RunService
-import com.intellij.openapi.actionSystem.PlatformDataKeys
-import com.intellij.testFramework.LightVirtualFile
 
 class AutoDevRunAction : DumbAwareAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
@@ -40,20 +37,15 @@ class AutoDevRunAction : DumbAwareAction() {
             ?: return
 
         val scratchFile = ScratchRootType.getInstance()
-            .createScratchFile(project, file.name, psiFile.language, file.readText())
+            .createScratchFile(project, file.name, psiFile.language, document.text)
             ?: return
 
         try {
             RunService.provider(project, file)
-                ?.runFile(project, scratchFile, psiFile) ?: AutoDevNotifications.notify(
-                project,
-                "Run Failed, no provider"
-            )
+                ?.runFile(project, scratchFile, psiFile)
+                ?: AutoDevNotifications.notify(project, "Run Failed, no provider")
         } finally {
             AutoDevNotifications.notify(project, "Run Success")
-            runWriteAction {
-                scratchFile.delete(this)
-            }
         }
     }
 }
