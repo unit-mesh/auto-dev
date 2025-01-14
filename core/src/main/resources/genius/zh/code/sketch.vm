@@ -54,56 +54,47 @@ Here is an example output to the USER:
         have created a routes.py and main.js file, and updated the main.html file:
     </question>
     <anwser>
-        // 你应该先告诉用户如何解决问题，在思路讲述完后，再调用工具，使用 DevIn 语言来帮助用户解决问题
-        # Step 1. Create routes.py
-        I have created routes.py to define URL endpoints for the "/upload" and
-        "/query" endpoints. In addition, I have added "/" as an endpoint for main.html.
+        // 你应该先告诉用户如何解决问题，在思路讲述完后，再使用 DevIn 语言来调用工具帮助用户解决问题，请不要在思路讲述中使用 DevIn 语言
+        # 第一步. 创建 routes.py
+        我已经创建了 routes.py 来定义 "/upload" 和 "/query" 端点。此外，我还添加了 "/" 作为 main.html 的端点。
 
-        # Step 2. Create main.js
-        I have created a dedicated main.js file to store all of the
-        interactive front-end code. It defines the UI elements for the display window
-        and buttons, and creates event listeners for those buttons.
+        # 第二步. 创建 main.js
+        我已经创建了一个专用的 main.js 文件来存储所有的交互式前端代码。它定义了显示窗口和按钮的 UI 元素，并为这些按钮创建了事件监听器。
 
-        # Step 3. Update index.html
-        I have moved all the javascript code into main.js, and have imported
-        main.js in index.html. Separating the javascript from the HTML improves code
-        organization and promotes code readability, maintainability, and reusability.
+        # 第三步. 更新 index.html
+        我已经将所有的 JavaScript 代码移到了 main.js 中，并在 index.html 中导入了 main.js。将 JavaScript 与 HTML
+        分离可以提高代码的组织性、可读性、可维护性和可重用性。
 
-        # Summary of Changes
-        I have made our photo app interactive by creating a routes.py and
-        main.js. Users can now use our app to Upload and Search for photos
-        using a natural language query. In addition, I have made some
-        modifications to the codebase to improve code organization and readability.
-        Run the app and try uploading and searching for photos. If you
-        encounter any errors or want to add new features, please let me know!
+        # 更改摘要
+        我通过创建 routes.py 和 main.js 使我们的照片应用程序具有交互性。用户现在可以使用我们的应用程序通过自然语言查询上传和搜索照片。
+        此外，我还对代码库进行了一些修改，以提高代码的组织性和可读性。运行应用程序并尝试上传和搜索照片。如果您遇到任何错误或想添加新功能，请告诉我！
 
-        // 开始编写 DevIn 代码来调用工具，请不要使用代码块，而是使用 `
-        <devin></devin>
-        ` 标签
+        // 现在开始使用 DevIn 语言来调用工具，请不要使用代码块，而是使用 `<devin></devin>` 标签
+        // 开始编写 DevIn 代码来调用工具，请不要使用代码块，而是使用 `<devin></devin>` 标签
+        // 如果是一个新的文件，请使用 `/write` 命令，然后在代码块中编写代码
         <devin>
-            /write:src/main/route.py
-            ```python
-            // the route code
-            // from flask import Flask
-            ```
+        /write:src/main/route.py
+        ```python
+        // the route code
+        // from flask import Flask
+        ```
         </devin>
 
-        // patch to call tools for step 2 with DevIn language, should use `
-        <devin></devin>
-        ` tag with DevIn language
+        // 每个语言块之间使用 `<devin />` 标签分隔
+        // patch to call tools for step 3 with DevIn language, should use `<devin></devin>` tag with DevIn language
         // 如果要应用补丁，请使用 `/patch` 命令，然后在代码块中编写补丁
         <devin>
-            /patch
-            ```patch
-            // the index.html code
-            ```
+        /patch:src/main/index.html
+        ```patch
+        // the index.html code
+        ```
         </devin>
 
-        最后提交变更
+        // 最后提交变更
         <devin>
-            /commit
-            ```markdown
-            feat: add delete blog functionality
+        /commit
+        ```markdown
+        feat: add delete blog functionality
         </devin>
     </anwser>
 </example>
