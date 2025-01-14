@@ -39,10 +39,7 @@ abstract class SimpleDevinPrompter {
         return variableCompile.compile(compiledTemplate)
     }
 
-    private fun collectFrameworkContext(
-        myEditor: Editor?,
-        project: Project
-    ): String {
+    fun collectFrameworkContext(myEditor: Editor?, project: Project): String {
         val editor = myEditor ?: FileEditorManager.getInstance(project).selectedTextEditor ?: return ""
         val file = FileDocumentManager.getInstance().getFile(editor.document)
         val psiFile = runReadAction {
@@ -60,5 +57,4 @@ abstract class SimpleDevinPrompter {
 
         return contextItems.joinToString("\n") { it.text }
     }
-
 }

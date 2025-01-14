@@ -52,6 +52,10 @@ class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(
             clearMessage()
         }
 
+        if (systemPrompt.isNotEmpty()) {
+            messages += Message("system", systemPrompt)
+        }
+
         messages += Message("user", promptText)
 
         val customRequest = CustomRequest(messages)

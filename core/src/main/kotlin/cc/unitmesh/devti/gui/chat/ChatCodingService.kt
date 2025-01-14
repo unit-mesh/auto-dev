@@ -133,4 +133,8 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
     fun clearSession() {
         llmProvider.clearMessage()
     }
+
+    fun request(systemPrompt: String, userPrompt: String): Flow<String> {
+        return llmProvider.stream(userPrompt, systemPrompt, keepHistory = true)
+    }
 }
