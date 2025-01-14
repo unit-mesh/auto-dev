@@ -16,7 +16,7 @@ import kotlin.collections.set
 class AutoDevInlineChatService : Disposable, SimpleDevinPrompter() {
     private val allChats: ConcurrentHashMap<String, AutoDevInlineChatPanel> = ConcurrentHashMap()
     override val templateRender = TemplateRender(GENIUS_CODE)
-    override val template = templateRender.getTemplate("inline-chat.vm")
+    override val template = templateRender.getTemplate("inline-chat.devin")
 
     fun showInlineChat(editor: Editor) {
         var canShowInlineChat = true

@@ -92,7 +92,7 @@ enum class ChatActionType(var context: ChatTemplateContext) {
             INLINE_CHAT -> {
                 val displayText = AutoDevBundle.message("prompts.autodev.inlineChat", lang)
                 val templateRender = TemplateRender(GENIUS_CODE)
-                val template = templateRender.getTemplate("inline-chat.vm")
+                val template = templateRender.getTemplate("inline-chat.devin")
 
                 TextTemplatePrompt(displayText, template, templateRender, this.context)
             }
@@ -100,7 +100,7 @@ enum class ChatActionType(var context: ChatTemplateContext) {
             SKETCH -> {
                 val displayText = AutoDevBundle.message("prompts.autodev.sketch", lang)
                 val templateRender = TemplateRender(GENIUS_CODE)
-                val template = templateRender.getTemplate("sketch.vm")
+                val template = templateRender.getTemplate("sketch.devin")
 
                 TextTemplatePrompt(displayText, template, templateRender, this.context)
             }
