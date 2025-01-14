@@ -8,12 +8,12 @@ import java.nio.charset.StandardCharsets
 import javax.swing.Icon
 
 enum class BuiltinCommand(
-    override val commandName: String,
-    override val description: String,
+    val commandName: String,
+    val description: String,
     val icon: Icon,
     val hasCompletion: Boolean = false,
     val requireProps: Boolean = false,
-) : Toolchain {
+) {
     FILE("file", "Read the content of a file", AllIcons.Actions.Copy, true, true),
     REV("rev", "Read git change by file", AllIcons.Vcs.History, true, true),
 
