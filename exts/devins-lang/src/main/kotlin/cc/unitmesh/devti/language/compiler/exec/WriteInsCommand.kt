@@ -22,8 +22,6 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
     private val pathSeparator = "/"
 
     override suspend fun execute(): String? {
-        val content = CodeFence.parse(content).text
-
         val range: LineInfo? = LineInfo.fromString(used.text)
         val filepath = argument.split("#")[0]
         val projectDir = myProject.guessProjectDir() ?: return "$DEVINS_ERROR: Project directory not found"
