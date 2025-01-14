@@ -27,6 +27,7 @@ class SketchInputListener(
 
     init {
         systemPrompt = templateRender.renderTemplate(template, SketchRunContext.create(project, null, ""))
+        toolWindow.addRequestPrompt(systemPrompt)
     }
 
     override fun onStop(component: AutoDevInputSection) {

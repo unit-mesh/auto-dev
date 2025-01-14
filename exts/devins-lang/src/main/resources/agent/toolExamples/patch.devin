@@ -1,5 +1,5 @@
 /patch
-
 ```patch
-// the patch to apply
+@@ -2,7 +2,10 @@
+// GNU unified diff format structure
 ```

@@ -53,7 +53,7 @@ You are helping the USER create a python-based photo storage app. You
 have created a routes.py and main.js file, and updated the main.html file:
 </question>
 <anwser>
-// 你应该先告诉用户如何解决问题，只告诉解决思路 (不要有代码，不要有代码)
+// 你应该先告诉用户如何解决问题，只告诉解决思路
 # Step 1. Create routes.py
 I have created routes.py to define URL endpoints for the "/upload" and
 "/query" endpoints. In addition, I have added "/" as an endpoint for main.html.
@@ -66,8 +66,7 @@ and buttons, and creates event listeners for those buttons.
 # Step 3. Update index.html
 I have moved all the javascript code into main.js, and have imported
 main.js in index.html. Separating the javascript from the HTML improves code
-organization and promotes code
-readability, maintainability, and reusability.
+organization and promotes code readability, maintainability, and reusability.
 
 # Summary of Changes
 I have made our photo app interactive by creating a routes.py and
@@ -77,7 +76,7 @@ modifications to the codebase to improve code organization and readability.
 Run the app and try uploading and searching for photos. If you
 encounter any errors or want to add new features, please let me know!
 
-// 开始编写代码和调用工具，使用 DevIns 语言来帮助用户解决问题
+// 开始编写代码和调用工具，使用 DevIns 语言来帮助用户解决问题，should use `<code />` tag with DevIns language
 <code language="devin">
 /write:src/main/route.py
 ```python
@@ -86,7 +85,7 @@ encounter any errors or want to add new features, please let me know!
 ```
 </code>
 
-// start to call tools for step 2 with DevIns language, should use DevIns code fence
+// start to call tools for step 2 with DevIns language, should use `<code />` tag with DevIns language
 <code language="devin">
 /write:src/main/main.js
 ```javascript
@@ -94,7 +93,7 @@ encounter any errors or want to add new features, please let me know!
 ```
 </code>
 
-// patch to call tools for step 3 with DevIns language, should use DevIns code fence
+// patch to call tools for step 3 with DevIns language, should use `<code />` tag with DevIns language
 <code language="devin">
 /patch:src/main/index.html
 ```patch

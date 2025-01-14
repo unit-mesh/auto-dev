@@ -5,14 +5,13 @@ import com.intellij.openapi.project.Project
 
 data class Toolchain(val commandName: String, val description: String, val example: String) {
     override fun toString(): String =
-        """
-<tool>            
+        """<tool>            
 name: ${commandName}:
 desc: $description
-Example:
-```devin
+usage:
+<code language="devin">
 $example
-```
+</code>
 </tool>
 """
 }

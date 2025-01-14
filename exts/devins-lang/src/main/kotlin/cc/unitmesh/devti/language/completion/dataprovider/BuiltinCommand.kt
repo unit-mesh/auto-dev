@@ -31,7 +31,7 @@ enum class BuiltinCommand(
         true
     ),
     WRITE("write", "Write content to a file with markdown code block, /write:path/to/file:L1-L2", AllIcons.Actions.Edit, true, true),
-    PATCH("patch", "Apply patch to a file, /patch:path/to/file", AllIcons.Vcs.Patch_file, false),
+    PATCH("patch", "Apply GNU unified diff format structure patch to a file, /patch:path/to/file", AllIcons.Vcs.Patch_file, false),
     RUN("run", "Run the content of a file", AllIcons.Actions.Execute, true, true),
     SHELL("shell", "Run shell command", DevInIcons.Terminal, true, true),
     COMMIT("commit", "Commit the content of a file", AllIcons.Vcs.CommitNode, false),

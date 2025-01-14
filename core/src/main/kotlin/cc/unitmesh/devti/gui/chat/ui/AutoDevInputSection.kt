@@ -117,11 +117,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
         stopButton = ActionButton(
             DumbAwareAction.create {
-                object : DumbAwareAction("") {
-                    override fun actionPerformed(e: AnActionEvent) {
-                        editorListeners.multicaster.onStop(this@AutoDevInputSection)
-                    }
-                }.actionPerformed(it)
+                editorListeners.multicaster.onStop(this@AutoDevInputSection)
             },
             this.stopButtonPresentation, "", Dimension(20, 20)
         )
