@@ -51,17 +51,17 @@ enum class BuiltinCommand(
         true
     ),
     DIR("dir", "List files and directories in a tree-like structure", AllIcons.Actions.ProjectDirectory, true, true),
-    LOCAL_SEARCH(
-        "localSearch",
-        "Search text in the project will return 5 line before and after",
-        AllIcons.Actions.Search,
-        true,
-        true
-    ),
     DATABASE(
         "database",
         "Read the content of a database, /database:query\n```sql\nSELECT * FROM table\n```",
         AllIcons.Toolwindows.ToolWindowHierarchy,
+        true,
+        true
+    ),
+    LOCAL_SEARCH(
+        "localSearch",
+        "Search text in the project will return 5 line before and after",
+        AllIcons.Actions.Search,
         true,
         true
     ),

@@ -10,32 +10,30 @@ object JavaTypeUtil {
     fun resolveByType(outputType: PsiType?): Map<String, PsiClass> {
         val resolvedClasses = mutableMapOf<String, PsiClass>()
         if (outputType is PsiClassReferenceType) {
-            val resolveClz = outputType.resolve()
-
-            outputType.parameters.filterIsInstance<PsiClassReferenceType>().forEach {
-                val resolve = it.resolve()
-                if (resolve != null) {
-                    resolvedClasses[it.canonicalText] = resolve
-                }
-
-                it.parameters.map { argType ->
-                    if (argType is PsiClassReferenceType) {
-                        val resolvedArgType = argType.resolve()
-                        if (resolvedArgType != null) {
-                            resolvedClasses[argType.canonicalText] = resolvedArgType
-                        }
-                    }
-                }
-            }
-
-            val canonicalText = outputType.canonicalText
-            if (resolveClz != null) {
-                resolvedClasses[canonicalText] = resolveClz
-            }
+            resolvedClasses.putAll(resolveTypeReferences(outputType))
         }
 
         return resolvedClasses.filter { isProjectContent(it.value) }.toMap()
     }
+
+    private fun resolveTypeReferences(outputType: PsiClassReferenceType): MutableMap<String, PsiClass> {
+        val resolvedClasses = mutableMapOf<String, PsiClass>()
+
+        fun resolveRecursively(type: PsiClassReferenceType) {
+            val resolvedClass = type.resolve()
+            if (resolvedClass != null) {
+                resolvedClasses[type.canonicalText] = resolvedClass
+            }
+
+            type.parameters.filterIsInstance<PsiClassReferenceType>().forEach { childType ->
+                resolveRecursively(childType)
+            }
+        }
+
+        resolveRecursively(outputType)
+        return resolvedClasses
+    }
+
 
     fun resolveByField(element: PsiElement): Map<String, PsiClass> {
         val psiFile = element.containingFile as PsiJavaFile
