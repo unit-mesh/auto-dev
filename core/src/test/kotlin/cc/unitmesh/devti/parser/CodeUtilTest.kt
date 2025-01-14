@@ -66,12 +66,12 @@ class CodeUtilTest  : BasePlatformTestCase() {
     fun testShouldParseHtmlCode() {
         val content = """
 // patch to call tools for step 3 with DevIns language, should use DevIns code fence
-<code language="devin">
+<devin>
 /patch:src/main/index.html
 ```patch
 // the index.html code
 ```
-</code>
+</devin>
 """.trimIndent()
         val code = CodeFence.parse(content)
         assertEquals(
@@ -88,9 +88,9 @@ class CodeUtilTest  : BasePlatformTestCase() {
     /// parse all with devins
     fun testShouldParseAllWithDevin() {
         val content = """
-            |<code language="devin">
+            |<devin>
             |// the index.html code
-            |</code>
+            |</devin>
             |
             |```java
             |public class HelloWorld {

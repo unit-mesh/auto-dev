@@ -15,7 +15,7 @@ class CodeFence(
 
         fun parse(content: String): CodeFence {
             val markdownRegex = Regex("```([\\w#+\\s]*)")
-            val devinRegex = Regex("<code language=\"devin\">(.*?)</code>", RegexOption.DOT_MATCHES_ALL)
+            val devinRegex = Regex("<devin>(.*?)</devin>", RegexOption.DOT_MATCHES_ALL)
             val lines = content.replace("\\n", "\n").lines()
 
             // 首先尝试匹配 DevIns 格式
@@ -62,8 +62,8 @@ class CodeFence(
         fun parseAll(content: String): List<CodeFence> {
             val codeFences = mutableListOf<CodeFence>()
             
-            // 处理 devin 格式
-            val devinRegex = Regex("<code language=\"devin\">(.*?)</code>", RegexOption.DOT_MATCHES_ALL)
+            // 处理 devin 格式，使用新的标签格式
+            val devinRegex = Regex("<devin>(.*?)</devin>", RegexOption.DOT_MATCHES_ALL)
             val devinMatches = devinRegex.findAll(content)
             devinMatches.forEach { match ->
                 val devinContent = match.groups[1]?.value?.trim() ?: ""

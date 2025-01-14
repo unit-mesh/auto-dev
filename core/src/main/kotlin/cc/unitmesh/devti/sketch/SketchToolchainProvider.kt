@@ -9,9 +9,9 @@ data class Toolchain(val commandName: String, val description: String, val examp
 name: ${commandName}:
 desc: $description
 usage:
-<code language="devin">
+<devin>
 $example
-</code>
+</devin>
 </tool>
 """
 }
