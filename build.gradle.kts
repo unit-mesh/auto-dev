@@ -444,7 +444,7 @@ project(":core") {
         implementation("org.gitlab4j:gitlab4j-api:5.8.0")
 
         // template engine
-        implementation("org.apache.velocity:velocity-engine-core:2.3")
+        implementation("org.apache.velocity:velocity-engine-core:2.4.1")
 
         // token count
         implementation("com.knuddels:jtokkit:1.0.0")

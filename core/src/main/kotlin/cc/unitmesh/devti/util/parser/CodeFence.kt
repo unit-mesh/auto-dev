@@ -14,9 +14,18 @@ class CodeFence(
         private var lastTxtBlock: CodeFence? = null
 
         fun parse(content: String): CodeFence {
-            val regex = Regex("```([\\w#+\\s]*)")
+            val markdownRegex = Regex("```([\\w#+\\s]*)")
+            val devinRegex = Regex("<code language=\"devin\">(.*?)</code>", RegexOption.DOT_MATCHES_ALL)
             val lines = content.replace("\\n", "\n").lines()
 
+            // 首先尝试匹配 DevIns 格式
+            val devinMatch = devinRegex.find(content)
+            if (devinMatch != null) {
+                val devinContent = devinMatch.groups[1]?.value?.trim() ?: ""
+                return CodeFence(findLanguage("devin"), devinContent, true, "devin", "devin")
+            }
+
+            // 原有的 Markdown 代码块解析逻辑
             var codeStarted = false
             var codeClosed = false
             var languageId: String? = null
@@ -24,7 +33,7 @@ class CodeFence(
 
             for (line in lines) {
                 if (!codeStarted) {
-                    val matchResult: MatchResult? = regex.find(line.trimStart())
+                    val matchResult: MatchResult? = markdownRegex.find(line.trimStart())
                     if (matchResult != null) {
                         val substring = matchResult.groups[1]?.value
                         languageId = substring
@@ -52,8 +61,19 @@ class CodeFence(
 
         fun parseAll(content: String): List<CodeFence> {
             val codeFences = mutableListOf<CodeFence>()
+            
+            // 处理 devin 格式
+            val devinRegex = Regex("<code language=\"devin\">(.*?)</code>", RegexOption.DOT_MATCHES_ALL)
+            val devinMatches = devinRegex.findAll(content)
+            devinMatches.forEach { match ->
+                val devinContent = match.groups[1]?.value?.trim() ?: ""
+                codeFences.add(CodeFence(findLanguage("devin"), devinContent, true, "devin", "devin"))
+            }
+
+            // 处理markdown格式 - 移除所有devin标签，以免干扰markdown解析
+            val contentWithoutDevin = devinRegex.replace(content, "")
             val regex = Regex("```([\\w#+\\s]*)")
-            val lines = content.replace("\\n", "\n").lines()
+            val lines = contentWithoutDevin.replace("\\n", "\n").lines()
 
             var codeStarted = false
             var languageId: String? = null

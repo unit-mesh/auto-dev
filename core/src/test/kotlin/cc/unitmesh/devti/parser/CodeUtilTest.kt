@@ -62,4 +62,62 @@ class CodeUtilTest  : BasePlatformTestCase() {
         val code = CodeFence.parse(content)
         assertEquals(code.text, "GET /wp/v2/posts")
     }
+
+    fun testShouldParseHtmlCode() {
+        val content = """
+// patch to call tools for step 3 with DevIns language, should use DevIns code fence
+<code language="devin">
+/patch:src/main/index.html
+```patch
+// the index.html code
+```
+</code>
+""".trimIndent()
+        val code = CodeFence.parse(content)
+        assertEquals(
+            code.text, """
+/patch:src/main/index.html
+```patch
+// the index.html code
+```
+""".trimIndent()
+        )
+        assertTrue(code.isComplete)
+    }
+
+    /// parse all with devins
+    fun testShouldParseAllWithDevin() {
+        val content = """
+            |<code language="devin">
+            |// the index.html code
+            |</code>
+            |
+            |```java
+            |public class HelloWorld {
+            |    public static void main(String[] args) {
+            |        System.out.println("Hello, World");
+            |    }
+            |}
+            |```
+        """.trimMargin()
+
+        val codeFences = CodeFence.parseAll(content)
+        assertEquals(codeFences.size, 3)
+        assertEquals(
+            codeFences[0].text, """
+            |// the index.html code
+        """.trimMargin()
+        )
+        assertTrue(codeFences[0].isComplete)
+        assertEquals(
+            codeFences[2].text, """
+            |public class HelloWorld {
+            |    public static void main(String[] args) {
+            |        System.out.println("Hello, World");
+            |    }
+            |}
+        """.trimMargin()
+        )
+        assertTrue(codeFences[2].isComplete)
+    }
 }
