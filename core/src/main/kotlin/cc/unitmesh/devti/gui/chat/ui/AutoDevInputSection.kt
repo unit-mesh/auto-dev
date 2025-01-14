@@ -56,10 +56,12 @@ import kotlin.math.max
 import kotlin.math.min
 
 data class ModelWrapper(val psiElement: PsiElement, var panel: JPanel? = null, var namePanel: JPanel? = null)
+
 /**
  *
  */
-class AutoDevInputSection(private val project: Project, val disposable: Disposable?, showAgent: Boolean = true) : BorderLayoutPanel() {
+class AutoDevInputSection(private val project: Project, val disposable: Disposable?, showAgent: Boolean = true) :
+    BorderLayoutPanel() {
     private val input: AutoDevInput
     private val documentListener: DocumentListener
     private val sendButtonPresentation: Presentation
@@ -108,11 +110,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
         sendButton = ActionButton(
             DumbAwareAction.create {
-                object : DumbAwareAction("") {
-                    override fun actionPerformed(e: AnActionEvent) {
-                        editorListeners.multicaster.onSubmit(this@AutoDevInputSection, AutoDevInputTrigger.Button)
-                    }
-                }.actionPerformed(it)
+                editorListeners.multicaster.onSubmit(this@AutoDevInputSection, AutoDevInputTrigger.Button)
             },
             this.sendButtonPresentation, "", Dimension(20, 20)
         )
@@ -233,22 +231,29 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
                 val wrapper = listModel.getElementAt(index)
                 val cellBounds = list.getCellBounds(index, index)
-                wrapper.panel?.components?.firstOrNull { it.contains(e.x - cellBounds.x - it.x, it.height - 1) }?.let { component ->
-                    when {
-                        component is JPanel -> {
-                            listModel.removeElement(wrapper)
-                            wrapper.psiElement.containingFile?.let { psiFile ->
-                                val relativePath = psiFile.virtualFile.relativePath(project)
-                                input.appendText("\n/" + "file" + ":${relativePath}")
-                                listModel.indexOf(wrapper.psiElement).takeIf { it != -1 }?.let { listModel.remove(it) }
-                                val relatedElements = RelatedClassesProvider.provide(psiFile.language)?.lookup(psiFile)
-                                updateElements(relatedElements)
+                wrapper.panel?.components?.firstOrNull { it.contains(e.x - cellBounds.x - it.x, it.height - 1) }
+                    ?.let { component ->
+                        when {
+                            component is JPanel -> {
+                                listModel.removeElement(wrapper)
+                                wrapper.psiElement.containingFile?.let { psiFile ->
+                                    val relativePath = psiFile.virtualFile.relativePath(project)
+                                    input.appendText("\n/" + "file" + ":${relativePath}")
+                                    listModel.indexOf(wrapper.psiElement).takeIf { it != -1 }
+                                        ?.let { listModel.remove(it) }
+                                    val relatedElements =
+                                        RelatedClassesProvider.provide(psiFile.language)?.lookup(psiFile)
+                                    updateElements(relatedElements)
+                                }
                             }
+
+                            component is JLabel && component.icon == AllIcons.Actions.Close -> listModel.removeElement(
+                                wrapper
+                            )
+
+                            else -> list.clearSelection()
                         }
-                        component is JLabel && component.icon == AllIcons.Actions.Close -> listModel.removeElement(wrapper)
-                        else -> list.clearSelection()
-                    }
-                } ?: list.clearSelection()
+                    } ?: list.clearSelection()
             }
         })
     }

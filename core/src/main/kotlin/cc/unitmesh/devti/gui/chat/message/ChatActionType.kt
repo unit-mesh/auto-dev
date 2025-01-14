@@ -100,7 +100,7 @@ enum class ChatActionType(var context: ChatTemplateContext) {
             SKETCH -> {
                 val displayText = AutoDevBundle.message("prompts.autodev.sketch", lang)
                 val templateRender = TemplateRender(GENIUS_CODE)
-                val template = templateRender.getTemplate("sketch.devin")
+                val template = templateRender.getTemplate("sketch.vm")
 
                 TextTemplatePrompt(displayText, template, templateRender, this.context)
             }
