@@ -1,5 +1,7 @@
 package cc.unitmesh.devti.language.compiler.exec
 
+import cc.unitmesh.devti.devin.InsCommand
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.utils.lookupFile
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDirectory
@@ -27,6 +29,8 @@ import com.intellij.psi.PsiManager
  * @param dir The path of the directory to list.
  */
 class DirInsCommand(private val myProject: Project, private val dir: String) : InsCommand {
+    override val commandName: BuiltinCommand = BuiltinCommand.DIR
+
     private val output = StringBuilder()
 
     override suspend fun execute(): String? {

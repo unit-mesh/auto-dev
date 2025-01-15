@@ -11,8 +11,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import cc.unitmesh.devti.language.utils.lookupFile
 import cc.unitmesh.devti.context.FileContextProvider
+import cc.unitmesh.devti.devin.InsCommand
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 
 class StructureInCommand(val myProject: Project, val prop: String) : InsCommand {
+    override val commandName: BuiltinCommand = BuiltinCommand.STRUCTURE
+
     private val logger = logger<StructureInCommand>()
     override suspend fun execute(): String? {
         val virtualFile = file(myProject, prop)

@@ -14,14 +14,13 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 object ShellUtil {
-    fun listShell() : List<String>? {
+    private fun listWslShell() : List<String>? {
         if (WSLDistribution.findWslExe() == null) return listOf()
         val distributions = WslDistributionManager.getInstance().installedDistributions
-
         return distributions.mapNotNull { it.shellPath }
     }
 
-    private fun detectShells(): List<String> {
+    fun detectShells(): List<String> {
         val shells: MutableList<String> = ArrayList()
         if (SystemInfo.isUnix) {
             addIfExists(shells, "/bin/bash")

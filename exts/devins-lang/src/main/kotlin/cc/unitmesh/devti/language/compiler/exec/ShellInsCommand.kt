@@ -1,5 +1,7 @@
 package cc.unitmesh.devti.language.compiler.exec
 
+import cc.unitmesh.devti.devin.InsCommand
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.language.compiler.service.ShellRunService
 import cc.unitmesh.devti.language.utils.lookupFile
@@ -25,6 +27,8 @@ import java.io.IOException
  * @param shellFile The path to the file within the project whose content should be executed as a shell command.
  */
 class ShellInsCommand(val myProject: Project, private val shellFile: String?, val shellcoNTENT: String?) : InsCommand {
+    override val commandName: BuiltinCommand = BuiltinCommand.SHELL
+
     override suspend fun execute(): String? {
         val shRunner = ApplicationManager.getApplication().getService(ShRunner::class.java)
             ?: return "$DEVINS_ERROR: Shell runner not found"

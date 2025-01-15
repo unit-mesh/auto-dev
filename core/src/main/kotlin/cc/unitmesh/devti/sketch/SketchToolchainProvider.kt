@@ -5,15 +5,11 @@ import com.intellij.openapi.project.Project
 
 data class Toolchain(val commandName: String, val description: String, val example: String) {
     override fun toString(): String =
-        """<tool>            
-name: ${commandName}:
-desc: $description
-usage:
+        """<tool>name: ${commandName}, desc: $description, example:
 <devin>
 $example
 </devin>
-</tool>
-"""
+</tool>"""
 }
 
 interface SketchToolchainProvider {

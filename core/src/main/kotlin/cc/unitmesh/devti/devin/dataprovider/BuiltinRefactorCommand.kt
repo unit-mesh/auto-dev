@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.completion.dataprovider
+package cc.unitmesh.devti.devin.dataprovider
 
 enum class BuiltinRefactorCommand(val funcName: String, val description: String) {
     RENAME("rename", "Rename a file"),

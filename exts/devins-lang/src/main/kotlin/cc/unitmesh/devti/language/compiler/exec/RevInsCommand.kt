@@ -1,5 +1,7 @@
 package cc.unitmesh.devti.language.compiler.exec
 
+import cc.unitmesh.devti.devin.InsCommand
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.DevInBundle
 import cc.unitmesh.devti.vcs.VcsPrompting
 import com.intellij.openapi.components.service
@@ -25,6 +27,8 @@ import java.util.concurrent.CompletableFuture
  *
  */
 class RevInsCommand(private val myProject: Project, private val revision: String) : InsCommand {
+    override val commandName: BuiltinCommand = BuiltinCommand.REV
+
     override suspend fun execute(): String? {
         val repository = GitRepositoryManager.getInstance(myProject).repositories.firstOrNull() ?: return null
         val future = CompletableFuture<List<Change>>()

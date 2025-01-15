@@ -1,8 +1,6 @@
-package cc.unitmesh.devti.language.completion.dataprovider
+package cc.unitmesh.devti.devin.dataprovider
 
 import cc.unitmesh.devti.AutoDevIcons
-import cc.unitmesh.devti.language.DevInIcons
-import cc.unitmesh.devti.sketch.Toolchain
 import com.intellij.icons.AllIcons
 import java.nio.charset.StandardCharsets
 import javax.swing.Icon
@@ -33,7 +31,7 @@ enum class BuiltinCommand(
     WRITE("write", "Write content to a file with markdown code block, /write:path/to/file:L1-L2", AllIcons.Actions.Edit, true, true),
     PATCH("patch", "Apply GNU unified diff format structure patch to a file, /patch:path/to/file", AllIcons.Vcs.Patch_file, false),
     RUN("run", "Run the content of a file", AllIcons.Actions.Execute, true, true),
-    SHELL("shell", "Run shell command", DevInIcons.Terminal, true, true),
+    SHELL("shell", "Run shell command", AllIcons.Debugger.Console, true, true),
     COMMIT("commit", "Commit the content of a file", AllIcons.Vcs.CommitNode, false),
     FILE_FUNC(
         "file-func",

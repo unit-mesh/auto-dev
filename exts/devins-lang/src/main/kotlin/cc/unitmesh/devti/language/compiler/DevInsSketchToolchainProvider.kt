@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.compiler
 
-import cc.unitmesh.devti.language.completion.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.sketch.SketchToolchainProvider
 import cc.unitmesh.devti.sketch.Toolchain
 

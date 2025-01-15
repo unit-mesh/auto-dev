@@ -1,7 +1,7 @@
-package cc.unitmesh.devti.language.completion.dataprovider
+package cc.unitmesh.devti.devin.dataprovider
 
 import cc.unitmesh.devti.custom.team.TeamPromptsBuilder
-import cc.unitmesh.devti.language.DevInIcons
+import cc.unitmesh.devti.AutoDevIcons
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import javax.swing.Icon
@@ -9,7 +9,7 @@ import javax.swing.Icon
 data class CustomCommand(
     val commandName: String,
     val content: String,
-    val icon: Icon = DevInIcons.COMMAND
+    val icon: Icon = AutoDevIcons.COMMAND
 ) {
     companion object {
         fun all(project: Project): List<CustomCommand> {

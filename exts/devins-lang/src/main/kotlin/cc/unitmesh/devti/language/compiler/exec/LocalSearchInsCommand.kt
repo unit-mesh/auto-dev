@@ -1,5 +1,7 @@
 package cc.unitmesh.devti.language.compiler.exec
 
+import cc.unitmesh.devti.devin.InsCommand
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.utils.canBeAdded
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
@@ -19,6 +21,8 @@ import com.intellij.openapi.vfs.VirtualFile
  *
  */
 class LocalSearchInsCommand(val myProject: Project, private val scope: String, val text: String?) : InsCommand {
+    override val commandName: BuiltinCommand = BuiltinCommand.LOCAL_SEARCH
+
     private val MAX_LINE_SIZE = 180
     private val OVERLAP = 4
 

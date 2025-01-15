@@ -2,7 +2,7 @@ package cc.unitmesh.devti.language.completion
 
 import cc.unitmesh.devti.language.completion.provider.FileFunctionProvider
 import cc.unitmesh.devti.language.completion.provider.*
-import cc.unitmesh.devti.language.completion.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.psi.DevInTypes
 import cc.unitmesh.devti.language.psi.DevInUsed
 import com.intellij.codeInsight.completion.CompletionContributor
@@ -40,7 +40,7 @@ class DevInCompletionContributor : CompletionContributor() {
         )
         extend(
             CompletionType.BASIC,
-            valuePattern(BuiltinCommand.SYMBOL.commandName),
+            (valuePatterns(listOf(BuiltinCommand.SYMBOL, BuiltinCommand.RELATED))),
             SymbolReferenceLanguageProvider()
         )
         extend(

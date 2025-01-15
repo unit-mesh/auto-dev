@@ -1,5 +1,9 @@
 package cc.unitmesh.devti.language.compiler.exec
 
+import cc.unitmesh.devti.devin.InsCommand
+import cc.unitmesh.devti.devin.InsCommandListener
+import cc.unitmesh.devti.devin.InsCommandStatus
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.compiler.model.LineInfo
 import cc.unitmesh.devti.language.utils.lookupFile
 import com.intellij.openapi.diagnostic.logger
@@ -14,6 +18,8 @@ import com.intellij.psi.PsiManager
  *
  */
 class FileInsCommand(private val myProject: Project, private val prop: String) : InsCommand {
+    override val commandName: BuiltinCommand = BuiltinCommand.FILE
+
     private val logger = logger<FileInsCommand>()
     private val output = StringBuilder()
 
@@ -29,6 +35,8 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
             logger.warn("File not found: $virtualFile")
             return null
         }
+
+        InsCommandListener.notify(this, InsCommandStatus.SUCCESS, virtualFile)
 
         contentsToByteArray.let { bytes ->
             val lang = virtualFile.let {

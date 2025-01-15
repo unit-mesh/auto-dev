@@ -125,7 +125,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
                 initEditor(text)
             }
 
-            codeBlockViewer.editorFragment?.setCollapsed(true)
+            codeBlockViewer.editorFragment!!.setCollapsed(true)
             codeBlockViewer.editorFragment!!.updateExpandCollapseLabel()
 
             val panel = panel {

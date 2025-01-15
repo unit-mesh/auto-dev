@@ -2,11 +2,12 @@ package cc.unitmesh.devti.language.compiler
 
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.custom.compile.VariableTemplateCompiler
+import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.language.compiler.exec.*
-import cc.unitmesh.devti.language.completion.dataprovider.BuiltinCommand
-import cc.unitmesh.devti.language.completion.dataprovider.CustomCommand
-import cc.unitmesh.devti.language.completion.dataprovider.ToolHubVariable
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.devin.dataprovider.CustomCommand
+import cc.unitmesh.devti.devin.dataprovider.ToolHubVariable
 import cc.unitmesh.devti.language.parser.CodeBlockElement
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.psi.DevInTypes

@@ -21,6 +21,9 @@ object AutoDevIcons {
     val AI_PAIR: Icon = IconLoader.getIcon("/icons/autodev-pair.svg", AutoDevIcons::class.java)
 
     @JvmField
+    val COMMAND: Icon = IconLoader.getIcon("/icons/devins-command.svg", AutoDevIcons::class.java)
+
+    @JvmField
     val IntProgress = AnimatedIcon.Default()
 
     @JvmField

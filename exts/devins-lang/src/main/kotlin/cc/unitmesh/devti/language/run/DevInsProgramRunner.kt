@@ -54,5 +54,7 @@ class DevInsProgramRunner : GenericProgramRunner<RunnerSettings>(), Disposable {
         return result.get()
     }
 
-    override fun dispose() {}
+    override fun dispose() {
+        connection.disconnect()
+    }
 }

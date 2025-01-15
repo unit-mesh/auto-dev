@@ -1,8 +1,7 @@
-package cc.unitmesh.devti.language.completion.dataprovider
+package cc.unitmesh.devti.devin.dataprovider
 
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.NlsSafe
 
 /**
  * The tool hub provides a list of tools - agents and commands for the AI Agent to decide which one to call

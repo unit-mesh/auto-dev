@@ -29,7 +29,6 @@ import com.intellij.vcs.commit.CommitWorkflowUi
 import com.intellij.vcs.log.VcsLogFilterCollection
 import com.intellij.vcs.log.VcsLogProvider
 import com.intellij.vcs.log.impl.VcsProjectLog
-import com.intellij.vcs.log.runInEdt
 import com.intellij.vcs.log.visible.filters.VcsLogFilterObject
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -112,7 +111,7 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
                         }
                     } else {
                         invokeLater {
-                            editorField.text = text.removePrefix("```").removeSuffix("```")
+                            editorField.text = text.removePrefix("```\n").removeSuffix("```")
                         }
                     }
                 }

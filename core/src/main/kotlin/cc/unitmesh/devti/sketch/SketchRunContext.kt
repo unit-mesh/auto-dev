@@ -64,7 +64,7 @@ data class SketchRunContext(
                 userInput = input,
                 workspace = workspace(project),
                 toolList = SketchToolchainProvider.collect(project).joinToString("\n"),
-                shell = ShellUtil.listShell()?.firstOrNull() ?: "/bin/bash",
+                shell = ShellUtil.detectShells().firstOrNull() ?: "/bin/bash",
                 frameworkContext = runBlocking {
                     return@runBlocking ChatContextProvider.collectChatContextList(project, creationContext)
                 }.joinToString(",", transform = ChatContextItem::text)

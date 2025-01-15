@@ -1,5 +1,7 @@
 package cc.unitmesh.devti.language.compiler.exec
 
+import cc.unitmesh.devti.devin.InsCommand
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diff.impl.patch.FilePatch
 import com.intellij.openapi.diff.impl.patch.PatchReader
@@ -12,6 +14,8 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.containers.MultiMap
 
 class PatchInsCommand(val myProject: Project, val prop: String, val codeContent: String) : InsCommand {
+    override val commandName: BuiltinCommand = BuiltinCommand.PATCH
+
     override suspend fun execute(): String? {
         FileDocumentManager.getInstance().saveAllDocuments()
 
@@ -33,9 +37,9 @@ class PatchInsCommand(val myProject: Project, val prop: String, val codeContent:
 
             val additionalInfo = myReader.getAdditionalInfo(ApplyPatchDefaultExecutor.pathsFromGroups(patchGroups))
             shelfExecutor.apply(filePatches, patchGroups, null, prop, additionalInfo)
+//            InsCommandListener.notify(this, "done")
         }
 
         return "Applied ${filePatches.size} patches."
     }
-
 }
