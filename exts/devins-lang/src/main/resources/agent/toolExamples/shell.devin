@@ -1,1 +1,7 @@
+执行单个 shell 命令
 /shell:execute.sh
+执行 shell 脚本
+/shell:execute
+```
+echo "Hello, World!"
+```

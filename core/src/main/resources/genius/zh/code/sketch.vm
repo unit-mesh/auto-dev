@@ -108,12 +108,10 @@ have created a routes.py and main.js file, and updated the main.html file.
 // the index.html code
 ```
 </devin>
-// 通过执行 /run 命令来运行应用程序或者指令
-我将启动 Flask 服务器并运行我们的应用程序，请手动点击运行按钮。
-<devin>
+// 请用 bash 命令来启动应用程序
+```bash
 /shell:start.sh
-</devin>
-
+```
 // 给出对应的变更信息
 <devin>
 /commit
@@ -157,12 +155,10 @@ feat: add delete blog functionality
 //
 ```
 </devin>
-我将启动 Spring 服务器并运行我们的应用程序，请手动点击运行按钮。
-<devin>
+// 你需要根据上下文来生成启动命令，可以尽可能使用 bash 命令来启动应用程序
 ```bash
 ./gradlew :bootRun
 ```
-</devin>
 </your.anwser.step2>
 </example>
 
@@ -192,4 +188,4 @@ It is crucial to proceed step-by-step, waiting for the user's message after each
 By waiting for and carefully considering the user's response after each tool use, you can react accordingly and make informed decisions about how to proceed with the task. This iterative process helps ensure the overall success and accuracy of your work.
 </thinking>
 
-请在拥有足够的上下文信息后开始编码。如果需要更多上下文信息，请告知我。
+请在确保拥有足够的上下文信息后，再开始编码。如果上下文信息不足，请告知我，我将提供给你。
