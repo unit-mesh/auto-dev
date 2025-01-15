@@ -65,6 +65,9 @@ class CodeHighlightSketch(val project: Project, val text: String, private var id
 
         if (textLanguage != null && textLanguage?.lowercase() != "markdown") {
             setupActionBar(project, editor)
+            if (textLanguage?.lowercase() == "devin") {
+                editorFragment?.setCollapsed(true)
+            }
         }
     }
 
@@ -88,6 +91,12 @@ class CodeHighlightSketch(val project: Project, val text: String, private var id
             val document = editorFragment?.editor?.document
             val normalizedText = StringUtil.convertLineSeparators(text)
             document?.replaceString(0, document.textLength, normalizedText)
+
+            document?.lineCount?.let {
+                if (it > editorLineThreshold) {
+                    editorFragment?.updateExpandCollapseLabel()
+                }
+            }
         }
     }
 

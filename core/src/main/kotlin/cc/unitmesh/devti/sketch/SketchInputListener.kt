@@ -52,19 +52,19 @@ class SketchInputListener(
             return
         }
 
-        val relatedFiles: MutableList<VirtualFile> = mutableListOf()
-        connection.subscribe(InsCommandListener.TOPIC, object : InsCommandListener {
-            override fun onFinish(command: InsCommand, status: InsCommandStatus, file: VirtualFile?) {
-                when(command.commandName) {
-                    BuiltinCommand.FILE -> {
-                        if (status == InsCommandStatus.SUCCESS) {
-                            file?.let { relatedFiles.add(it) }
-                        }
-                    }
-                    else -> {}
-                }
-            }
-        })
+//        val relatedFiles: MutableList<VirtualFile> = mutableListOf()
+//        connection.subscribe(InsCommandListener.TOPIC, object : InsCommandListener {
+//            override fun onFinish(command: InsCommand, status: InsCommandStatus, file: VirtualFile?) {
+//                when(command.commandName) {
+//                    BuiltinCommand.FILE -> {
+//                        if (status == InsCommandStatus.SUCCESS) {
+//                            file?.let { relatedFiles.add(it) }
+//                        }
+//                    }
+//                    else -> {}
+//                }
+//            }
+//        })
 
         val postProcessors = LanguagePromptProcessor.instance("DevIn").firstOrNull()
         val compiledInput = postProcessors?.compile(project, userInput) ?: userInput

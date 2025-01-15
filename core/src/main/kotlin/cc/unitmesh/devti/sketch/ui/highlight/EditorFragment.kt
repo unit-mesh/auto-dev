@@ -30,7 +30,7 @@ class EditorPadding(private val editor: Editor, pad: Int) :
 }
 
 
-class EditorFragment(var editor: EditorEx, private val editorLineThreshold: Int = 6) {
+class EditorFragment(var editor: EditorEx, private val editorLineThreshold: Int = EDITOR_LINE_THRESHOLD) {
     private val expandCollapseTextLabel: JBLabel = JBLabel("", 0).apply {
         isOpaque = true
         isVisible = false
@@ -96,6 +96,10 @@ class EditorFragment(var editor: EditorEx, private val editorLineThreshold: Int 
         expandCollapseTextLabel.isVisible = linesCount > editorLineThreshold
         expandCollapseTextLabel.text = if (collapsed) "More lines" else ""
         expandCollapseTextLabel.icon = if (collapsed) AllIcons.General.ChevronDown else AllIcons.General.ChevronUp
+    }
+
+    companion object {
+        private const val EDITOR_LINE_THRESHOLD = 6
     }
 }
 

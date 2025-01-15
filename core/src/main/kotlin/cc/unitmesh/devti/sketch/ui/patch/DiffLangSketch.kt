@@ -1,12 +1,14 @@
 package cc.unitmesh.devti.sketch.ui.patch
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.util.findFile
-import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.command.CommandProcessor
+import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.command.undo.UndoManager
 import com.intellij.openapi.diff.impl.patch.PatchReader
 import com.intellij.openapi.diff.impl.patch.TextFilePatch
@@ -18,6 +20,7 @@ import com.intellij.openapi.vcs.changes.patch.AbstractFilePatchInProgress
 import com.intellij.openapi.vcs.changes.patch.ApplyPatchDefaultExecutor
 import com.intellij.openapi.vcs.changes.patch.MatchPatchPaths
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.panels.VerticalLayout
@@ -117,7 +120,12 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
     }
 
     private fun handleAcceptAction() {
-        ApplicationManager.getApplication().invokeAndWait {
+        PsiDocumentManager.getInstance(myProject).commitAllDocuments();
+        val commandProcessor: CommandProcessor = CommandProcessor.getInstance()
+
+        commandProcessor.executeCommand(myProject, {
+            commandProcessor.markCurrentCommandAsGlobal(myProject)
+
             val matchedPatches =
                 MatchPatchPaths(myProject).execute(filePatches, true)
 
@@ -128,13 +136,13 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
 
             if (filePatches.isEmpty()) {
                 AutoDevNotifications.error(myProject, "PatchProcessor: no patches found")
-                return@invokeAndWait
+                return@executeCommand
             }
 
             val pathsFromGroups = ApplyPatchDefaultExecutor.pathsFromGroups(patchGroups)
             val additionalInfo = myReader.getAdditionalInfo(pathsFromGroups)
             shelfExecutor.apply(filePatches, patchGroups, null, "LlmGen.diff", additionalInfo)
-        }
+        }, "ApplyPatch", null, UndoConfirmationPolicy.REQUEST_CONFIRMATION, false);
     }
 
     private fun handleRejectAction() {

@@ -107,7 +107,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
 
     private val blockViews: MutableList<LangSketch> = mutableListOf()
     private fun initializePreAllocatedBlocks(project: Project) {
-        repeat(16) {
+        repeat(32) {
             runInEdt {
                 val codeBlockViewer = CodeHighlightSketch(project, "", PlainTextLanguage.INSTANCE)
                 blockViews.add(codeBlockViewer)
@@ -136,6 +136,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
                 it.border = JBUI.Borders.empty(10, 0)
             }
 
+            userPrompt.removeAll()
             userPrompt.add(panel, BorderLayout.CENTER)
 
             this.revalidate()
@@ -177,8 +178,12 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
 
             while (blockViews.size > codeFenceList.size) {
                 val lastIndex = blockViews.lastIndex
-                blockViews.removeAt(lastIndex)
-                myList.remove(lastIndex)
+                try {
+                    blockViews.removeAt(lastIndex)
+                    myList.remove(lastIndex)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
 
             myList.revalidate()
