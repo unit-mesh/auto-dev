@@ -50,7 +50,7 @@ class ShellInsCommand(val myProject: Project, private val shellFile: String?, va
             ShellRunService().createRunSettings(myProject, virtualFile, psiFile)
 
         if (settings != null) {
-            ShellRunService().runFile(myProject, virtualFile, psiFile)
+            ShellRunService().runFile(myProject, virtualFile, psiFile, true)
             return "Running shell file: $shellFile"
         }
 

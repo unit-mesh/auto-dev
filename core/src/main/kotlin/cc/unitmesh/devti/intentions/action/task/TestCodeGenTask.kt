@@ -146,7 +146,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
                         )
                         indicator.fraction = 1.0
                     } else {
-                        autoTestService.runFile(request.project, testContext.outputFile, testContext.testElement)
+                        autoTestService.runFile(request.project, testContext.outputFile, testContext.testElement, false)
                     }
                 }
             } catch (e: Exception) {

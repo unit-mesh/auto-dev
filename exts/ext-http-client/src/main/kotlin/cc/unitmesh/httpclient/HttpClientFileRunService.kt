@@ -27,7 +27,7 @@ class HttpClientFileRunService : RunService {
         return HttpRequestRunConfiguration::class.java
     }
 
-    override fun runFile(project: Project, virtualFile: VirtualFile, psiElement: PsiElement?): String? {
+    override fun runFile(project: Project, virtualFile: VirtualFile, psiElement: PsiElement?, isFromToolAction: Boolean): String? {
         val runner: RunnerAndConfigurationSettings = runReadAction {
             val psiFile = PsiManager.getInstance(project).findFile(virtualFile)
                 ?: return@runReadAction null

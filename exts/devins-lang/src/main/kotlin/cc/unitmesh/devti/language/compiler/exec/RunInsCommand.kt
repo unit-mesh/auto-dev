@@ -26,7 +26,7 @@ class RunInsCommand(val myProject: Project, private val argument: String) : InsC
                 PsiManager.getInstance(myProject).findFile(virtualFile) ?: return "$DEVINS_ERROR: File not found: $argument"
             val testService =
                 AutoTestService.context(psiFile) ?: return "$DEVINS_ERROR: No test service found for file: $argument"
-            testService.runFile(myProject, virtualFile, null)
+            testService.runFile(myProject, virtualFile, null, true)
 
             return "Running tests for file: $argument"
         } catch (e: Exception) {

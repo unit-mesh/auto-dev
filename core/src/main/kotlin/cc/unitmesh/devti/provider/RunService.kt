@@ -138,7 +138,7 @@ interface RunService {
      * @param virtualFile The virtual file that represents the file to be run.
      * @return The result of the run operation, or `null` if an error occurred.
      */
-    fun runFile(project: Project, virtualFile: VirtualFile, psiElement: PsiElement?): String? {
+    fun runFile(project: Project, virtualFile: VirtualFile, psiElement: PsiElement?, isFromToolAction: Boolean): String? {
         try {
             val runTask = RunServiceTask(project, virtualFile, psiElement, this)
             ProgressManager.getInstance().run(runTask)
@@ -230,7 +230,7 @@ interface RunService {
 
             defaultRunService.createRunSettings(project, virtualFile, file) ?: return null
 
-            return defaultRunService.runFile(project, virtualFile, null)
+            return defaultRunService.runFile(project, virtualFile, null, false)
         }
     }
 }

@@ -20,7 +20,7 @@ class ShellRunService : RunService {
         return file.extension == "sh" || file.extension == "bash"
     }
 
-    override fun runFile(project: Project, virtualFile: VirtualFile, psiElement: PsiElement?): String? {
+    override fun runFile(project: Project, virtualFile: VirtualFile, psiElement: PsiElement?, isFromToolAction: Boolean): String? {
         val workingDirectory = virtualFile.parent.path
         val shRunner = ApplicationManager.getApplication().getService(ShRunner::class.java)
             ?: return "Shell runner not found"
