@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.sketch
 
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
+import cc.unitmesh.devti.gui.chat.ui.relativePath
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
@@ -20,9 +21,9 @@ import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
 
 data class SketchRunContext(
-    val currentFile: VirtualFile?,
+    val currentFile: String?,
     val currentElement: PsiElement? = null,
-    val selectedFile: List<VirtualFile>,
+    val openedFiles: List<VirtualFile>,
     val relatedFiles: List<VirtualFile>,
     val workspace: String = workspace(),
     val os: String = osInfo(),
@@ -41,6 +42,8 @@ data class SketchRunContext(
                 FileEditorManager.getInstance(project).selectedFiles.firstOrNull()
             }
 
+            val otherFiles = FileEditorManager.getInstance(project).selectedFiles.filter { it != currentFile }
+
             val psi = if (currentFile != null) {
                 PsiManager.getInstance(project).findFile(currentFile)
             } else {
@@ -57,9 +60,9 @@ data class SketchRunContext(
                 ChatCreationContext(ChatOrigin.Intention, ChatActionType.CHAT, psi, listOf(), element = psi)
 
             return SketchRunContext(
-                currentFile = currentFile,
+                currentFile = currentFile?.relativePath(project),
                 currentElement = currentElement,
-                selectedFile = emptyList(),
+                openedFiles = otherFiles,
                 relatedFiles = emptyList(),
                 userInput = input,
                 workspace = workspace(project),
