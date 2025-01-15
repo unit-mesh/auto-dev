@@ -1,1 +1,3 @@
+/run::bootRun
+运行测试
 /run:src/main/cc/unitmesh/PythonPromptStrategyTest.kt

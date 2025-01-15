@@ -5,6 +5,7 @@ import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.language.utils.lookupFile
 import cc.unitmesh.devti.provider.AutoTestService
+import cc.unitmesh.devti.provider.ProjectRunService
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
@@ -20,6 +21,17 @@ class RunInsCommand(val myProject: Project, private val argument: String) : InsC
     override val commandName: BuiltinCommand = BuiltinCommand.RUN
 
     override suspend fun execute(): String? {
+        val task = ProjectRunService.all().mapNotNull { projectRun ->
+            val hasTasks = projectRun.tasks(myProject).any { task -> task.contains(argument) }
+            if (hasTasks) projectRun else null
+        }
+
+        if (task.isNotEmpty()) {
+            task.first().run(myProject, argument)
+            return "Task run successfully: $argument"
+        }
+
+
         val virtualFile = myProject.lookupFile(argument.trim()) ?: return "$DEVINS_ERROR: File not found: $argument"
         try {
             val psiFile: PsiFile =

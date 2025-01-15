@@ -71,6 +71,8 @@
 
         <customDevInsCompletionProvider
                 implementation="cc.unitmesh.idea.provider.JavaCustomDevInsSymbolProvider"/>
+
+        <runProjectService implementation="cc.unitmesh.idea.provider.JvmRunProjectService"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

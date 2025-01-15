@@ -81,6 +81,9 @@ Here is an example output to the USER:
     我已经将所有的 JavaScript 代码移到了 main.js 中，并在 index.html 中导入了 main.js。将 JavaScript 与 HTML
     分离可以提高代码的组织性、可读性、可维护性和可重用性。
 
+    # 第三步. 运行应用程序
+    现在，您可以运行应用程序并尝试上传和搜索照片。如果您遇到任何错误或想添加新功能，请告诉我！
+
     # 变更总结
     我通过创建 routes.py 和 main.js 使我们的照片应用程序具有交互性。用户现在可以使用我们的应用程序通过自然语言查询上传和搜索照片。
     此外，我还对代码库进行了一些修改，以提高代码的组织性和可读性。运行应用程序并尝试上传和搜索照片。如果您遇到任何错误或想添加新功能，请告诉我！
@@ -104,6 +107,11 @@ Here is an example output to the USER:
     ```patch
     // the index.html code
     ```
+    </devin>
+
+    // 通过执行 /run 命令来运行应用程序
+    <devin>
+    /com
     </devin>
 
     // 给出对应的变更信息

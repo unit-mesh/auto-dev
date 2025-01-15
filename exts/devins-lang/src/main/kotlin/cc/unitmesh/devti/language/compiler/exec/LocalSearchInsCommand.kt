@@ -2,6 +2,7 @@ package cc.unitmesh.devti.language.compiler.exec
 
 import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.gui.chat.ui.relativePath
 import cc.unitmesh.devti.language.utils.canBeAdded
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
@@ -35,7 +36,7 @@ class LocalSearchInsCommand(val myProject: Project, private val scope: String, v
 
         val textSearch = search(myProject, text, OVERLAP)
         return textSearch.map { (file, lines) ->
-            val filePath = file.path
+            val filePath = file.relativePath(myProject)
             val linesWithContext = lines.joinToString("\n")
             "$filePath\n$linesWithContext"
         }.joinToString("\n")
@@ -72,7 +73,9 @@ class LocalSearchInsCommand(val myProject: Project, private val scope: String, v
                 val linesWithContext = matchedIndices.flatMap { index ->
                     val start = (index - overlap).coerceAtLeast(0)
                     val end = (index + overlap).coerceAtMost(content.size - 1)
-                    content.subList(start, end + 1)
+                    content.subList(start, end + 1).mapIndexed { offset, line ->
+                        "${start + offset + 1} $line"
+                    }
                 }.distinct()
 
                 result[file] = linesWithContext
