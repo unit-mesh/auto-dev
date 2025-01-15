@@ -38,6 +38,7 @@ import javax.swing.SwingUtilities
 class SketchToolWindow(val project: Project, val editor: Editor?, private val showInput: Boolean = false) :
     SimpleToolWindowPanel(true, true),
     NullableComponent, Disposable {
+    private val chatCodingService = ChatCodingService(ChatActionType.SKETCH, project)
     private var progressBar: CustomProgressBar = CustomProgressBar(this)
     private var shireInput: AutoDevInputSection = AutoDevInputSection(project, this, showAgent = false)
 
@@ -87,7 +88,6 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
                 border = JBUI.Borders.empty(8)
             }
 
-            val chatCodingService = ChatCodingService(ChatActionType.SKETCH, project)
             shireInput.addListener(SketchInputListener(project, chatCodingService, this))
             contentPanel.add(shireInput, BorderLayout.SOUTH)
         }
@@ -117,6 +117,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
     }
 
     override fun dispose() {
+        chatCodingService.clearSession()
     }
 
     fun addRequestPrompt(text: String) {

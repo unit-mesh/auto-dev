@@ -105,7 +105,7 @@ class CodeHighlightSketch(
     override fun doneUpdateText(text_: String) {
         if (ideaLanguage?.displayName == "DevIn") {
             /// get the text from the editor
-            val parse = CodeFence.parse(text)
+            val parse = CodeFence.parse(editorFragment!!.editor.document.text)
             if (parse.originLanguage == "diff" || parse.originLanguage == "patch") {
                 val provide = LanguageSketchProvider.provide("patch")?.create(project, text)
                 provide?.let {
