@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.sketch
 
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
+import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
@@ -66,7 +67,7 @@ data class SketchRunContext(
                 shell = ShellUtil.listShell()?.firstOrNull() ?: "/bin/bash",
                 frameworkContext = runBlocking {
                     return@runBlocking ChatContextProvider.collectChatContextList(project, creationContext)
-                }.joinToString("\n")
+                }.joinToString(",", transform = ChatContextItem::text)
             )
         }
     }
