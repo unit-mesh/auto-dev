@@ -1,5 +1,9 @@
 package cc.unitmesh.devti.sketch
 
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
+import cc.unitmesh.devti.provider.context.ChatContextProvider
+import cc.unitmesh.devti.provider.context.ChatCreationContext
+import cc.unitmesh.devti.provider.context.ChatOrigin
 import cc.unitmesh.devti.sketch.run.ShellUtil
 import cc.unitmesh.devti.template.context.TemplateContext
 import com.intellij.openapi.editor.Editor
@@ -11,6 +15,7 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
+import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
 
 data class SketchRunContext(
@@ -24,6 +29,7 @@ data class SketchRunContext(
     val userInput: String,
     val toolList: String,
     val shell: String = System.getenv("SHELL") ?: "/bin/bash",
+    val frameworkContext: String = ""
 ) : TemplateContext {
     companion object {
         fun create(project: Project, myEditor: Editor?, input: String): SketchRunContext {
@@ -46,6 +52,9 @@ data class SketchRunContext(
                 null
             }
 
+            val creationContext =
+                ChatCreationContext(ChatOrigin.Intention, ChatActionType.CHAT, psi, listOf(), element = psi)
+
             return SketchRunContext(
                 currentFile = currentFile,
                 currentElement = currentElement,
@@ -54,7 +63,10 @@ data class SketchRunContext(
                 userInput = input,
                 workspace = workspace(project),
                 toolList = SketchToolchainProvider.collect(project).joinToString("\n"),
-                shell = ShellUtil.listShell()?.firstOrNull() ?: "/bin/bash"
+                shell = ShellUtil.listShell()?.firstOrNull() ?: "/bin/bash",
+                frameworkContext = runBlocking {
+                    return@runBlocking ChatContextProvider.collectChatContextList(project, creationContext)
+                }.joinToString("\n")
             )
         }
     }
