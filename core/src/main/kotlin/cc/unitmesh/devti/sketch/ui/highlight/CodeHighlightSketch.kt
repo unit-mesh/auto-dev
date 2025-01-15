@@ -27,13 +27,15 @@ import com.intellij.ui.components.JBPanel
 import com.intellij.util.concurrency.annotations.RequiresReadLock
 import com.intellij.util.ui.JBUI
 import cc.unitmesh.devti.sketch.ui.LangSketch
+import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.util.ui.JBEmptyBorder
 import java.awt.BorderLayout
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.JComponent
 
-class CodeHighlightSketch(val project: Project, val text: String, private var ideaLanguage: Language?,
+class CodeHighlightSketch(
+    val project: Project, val text: String, private var ideaLanguage: Language?,
     val editorLineThreshold: Int = 6
 ) :
     JBPanel<CodeHighlightSketch>(BorderLayout()), DataProvider, LangSketch {
@@ -95,6 +97,23 @@ class CodeHighlightSketch(val project: Project, val text: String, private var id
             document?.lineCount?.let {
                 if (it > editorLineThreshold) {
                     editorFragment?.updateExpandCollapseLabel()
+                }
+            }
+        }
+    }
+
+    override fun doneUpdateText(text_: String) {
+        if (ideaLanguage?.displayName == "DevIn") {
+            /// get the text from the editor
+            val parse = CodeFence.parse(text)
+            if (parse.originLanguage == "diff" || parse.originLanguage == "patch") {
+                val provide = LanguageSketchProvider.provide("patch")?.create(project, text)
+                provide?.let {
+                    val panel = provide.getComponent()
+                    panel.border = JBEmptyBorder(8)
+                    add(panel, BorderLayout.CENTER)
+                    revalidate()
+                    repaint()
                 }
             }
         }

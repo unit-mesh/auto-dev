@@ -121,7 +121,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
 
     fun addRequestPrompt(text: String) {
         runInEdt {
-            val codeBlockViewer = CodeHighlightSketch(project, text, CodeFence.findLanguage("Markdown")).apply {
+            val codeBlockViewer = CodeHighlightSketch(project, text, PlainTextLanguage.INSTANCE).apply {
                 initEditor(text)
             }
 

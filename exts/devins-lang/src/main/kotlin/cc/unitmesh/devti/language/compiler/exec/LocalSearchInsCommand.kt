@@ -38,7 +38,7 @@ class LocalSearchInsCommand(val myProject: Project, private val scope: String, v
         return textSearch.map { (file, lines) ->
             val filePath = file.relativePath(myProject)
             val linesWithContext = lines.joinToString("\n")
-            "$filePath\n$linesWithContext"
+            "file: $filePath\n$linesWithContext"
         }.joinToString("\n")
     }
 

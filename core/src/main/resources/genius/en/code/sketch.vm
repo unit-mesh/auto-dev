@@ -14,7 +14,7 @@ Your main goal is to follow the USER's instructions at each message.
 - The absolute path of the USER's workspaces is: ${context.workspace}
 - The user's shell is ${context.shell}
 - User's workspace context is: ${context.frameworkContext}
-- Current time is: ${context.now}
+- Current time is: ${context.time}
 
 Steps will be run asynchronously, so sometimes you will not yet see that steps
 are still running. If you need to see the output of previous tools before
