@@ -189,7 +189,12 @@ fun insertStringAndSaveChange(
 }
 
 fun VirtualFile.relativePath(project: Project): String {
-    val projectDir = project.guessProjectDir()!!.toNioPath().toFile()
-    val relativePath = FileUtil.getRelativePath(projectDir, this.toNioPath().toFile())
-    return relativePath ?: this.path
+    if (this is LightVirtualFile) return ""
+    try {
+        val projectDir = project.guessProjectDir()!!.toNioPath().toFile()
+        val relativePath = FileUtil.getRelativePath(projectDir, this.toNioPath().toFile())
+        return relativePath ?: this.path
+    } catch (e: Exception) {
+        return this.path
+    }
 }
