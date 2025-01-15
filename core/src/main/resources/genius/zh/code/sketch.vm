@@ -52,7 +52,7 @@ say 'I will edit your file'.
 Here is an example output to the USER:
 
 <example id="enough-context">
-    // 当用户给出足够的上下文信息时，可以直接开始编码
+    // 当用户给出足够的上下文信息时，可以直接开始编码；如果需要更多上下文信息，请直接调用 DevIn 工具获取
     <user.question>
     You are helping the USER create a python-based photo storage app. You
     have created a routes.py and main.js file, and updated the main.html file.
@@ -108,10 +108,9 @@ Here is an example output to the USER:
     // the index.html code
     ```
     </devin>
-
-    // 通过执行 /run 命令来运行应用程序
+    // 通过执行 /run 命令来运行应用程序或者指令
     <devin>
-    /com
+    /shell:start.sh
     </devin>
 
     // 给出对应的变更信息

@@ -47,6 +47,12 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
         }
     }
 
+    fun createSketchToolWindow(project: Project, toolWindow: ToolWindow) {
+        val sketchView = SketchToolWindow(project, null, true)
+        val sketchPanel = contentFactory.createContent(sketchView, "Sketch", false)
+        toolWindow.contentManager.addContent(sketchPanel)
+    }
+
     /**
      * for idea 223 (aka 2022.3) which don't have [com.intellij.openapi.startup.ProjectActivity]
      */

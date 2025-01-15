@@ -3,6 +3,7 @@ package cc.unitmesh.devti.gui.toolbar
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.settings.LanguageChangedCallback.componentStateChanged
+import cc.unitmesh.devti.sketch.SketchToolWindow
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction
 import com.intellij.openapi.diagnostic.logger
@@ -35,16 +36,24 @@ class NewChatAction : DumbAwareAction(), CustomComponentAction {
 
                     val toolWindowManager = AutoDevToolWindowFactory.getToolWindow(project)
                     val contentManager = toolWindowManager?.contentManager
+
+                    val sketchPanel =
+                        contentManager?.component?.components?.filterIsInstance<SketchToolWindow>()?.firstOrNull()
+
+                    if (sketchPanel == null) {
+                        AutoDevToolWindowFactory().createSketchToolWindow(project, toolWindowManager!!)
+                    }
+
                     val codingPanel =
                         contentManager?.component?.components?.filterIsInstance<ChatCodingPanel>()?.firstOrNull()
 
                     if (codingPanel == null) {
-                        AutoDevToolWindowFactory().createToolWindowContent(project, toolWindowManager!!)
+                        AutoDevToolWindowFactory().createToolWindowContent(project, toolWindowManager)
                         return@addActionListener
                     }
 
                     // change content displayName AutoDevBundle.message("autodev.chat")
-                    contentManager.contents.forEach {
+                    contentManager.contents.filter { it.component is ChatCodingPanel }.forEach {
                         AutoDevToolWindowFactory.setInitialDisplayName(it)
                     }
 
