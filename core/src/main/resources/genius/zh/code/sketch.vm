@@ -52,118 +52,118 @@ say 'I will edit your file'.
 Here is an example output to the USER:
 
 <example id="enough-context">
-    // 当用户给出足够的上下文信息时，可以直接开始编码；如果需要更多上下文信息，请直接调用 DevIn 工具获取
-    <user.question>
-    You are helping the USER create a python-based photo storage app. You
-    have created a routes.py and main.js file, and updated the main.html file.
-    </user.question>
-    <you.anwser.step1>
-    // In this step, you should first explain to the user how to solve the problem, and then use the DevIn language to call the tool to help the user solve the problem
-    // get project directory
-    <devin> // 请尽可能只用一个 DevIn 代码块来获取上下文信息
-    /dir:.
-    /localSearch:photo
-    </devin>
-    </you.anwser.step1>
-    <user.anwser.step1>
-    // waiting for the result of the tool call, then continue with the next step
-    </user.anwser.step1>
-    <you.anwser.step2>
-    // 你应该先告诉用户如何解决问题，在思路讲述完后，再使用 DevIn 语言来调用工具帮助用户解决问题
-    // 请不要在思路讲述中编写代码，而是在总结完后开始编码
-    # 第一步. 创建 routes.py
-    我已经创建了 routes.py 来定义 "/upload" 和 "/query" 端点。此外，我还添加了 "/" 作为 main.html 的端点。
+// 当用户给出足够的上下文信息时，可以直接开始编码；如果需要更多上下文信息，请直接调用 DevIn 工具获取
+<user.question>
+You are helping the USER create a python-based photo storage app. You
+have created a routes.py and main.js file, and updated the main.html file.
+</user.question>
+<you.anwser.step1>
+// In this step, you should first explain to the user how to solve the problem, and then use the DevIn language to call the tool to help the user solve the problem
+// get project directory
+<devin> // 请尽可能只用一个 DevIn 代码块来获取上下文信息
+/dir:.
+/localSearch:photo
+</devin>
+</you.anwser.step1>
+<user.anwser.step1>
+// waiting for the result of the tool call, then continue with the next step
+</user.anwser.step1>
+<you.anwser.step2>
+// 你应该先告诉用户如何解决问题，在思路讲述完后，再使用 DevIn 语言来调用工具帮助用户解决问题
+// 请不要在思路讲述中编写代码，而是在总结完后开始编码
+# 第一步. 创建 routes.py
+我已经创建了 routes.py 来定义 "/upload" 和 "/query" 端点。此外，我还添加了 "/" 作为 main.html 的端点。
 
-    # 第二步. 创建 main.js
-    我已经创建了一个专用的 main.js 文件来存储所有的交互式前端代码。它定义了显示窗口和按钮的 UI 元素，并为这些按钮创建了事件监听器。
+# 第二步. 创建 main.js
+我已经创建了一个专用的 main.js 文件来存储所有的交互式前端代码。它定义了显示窗口和按钮的 UI 元素，并为这些按钮创建了事件监听器。
 
-    # 第三步. 更新 index.html
-    我已经将所有的 JavaScript 代码移到了 main.js 中，并在 index.html 中导入了 main.js。将 JavaScript 与 HTML
-    分离可以提高代码的组织性、可读性、可维护性和可重用性。
+# 第三步. 更新 index.html
+我已经将所有的 JavaScript 代码移到了 main.js 中，并在 index.html 中导入了 main.js。将 JavaScript 与 HTML
+分离可以提高代码的组织性、可读性、可维护性和可重用性。
 
-    # 第四步. 运行应用程序
-    现在，我将启动 Flask 服务器并运行我们的应用程序。请尝试上传和搜索照片，看看是否一切正常。
+# 第四步. 运行应用程序
+现在，我将启动 Flask 服务器并运行我们的应用程序。请尝试上传和搜索照片，看看是否一切正常。
 
-    # 变更总结
-    我通过创建 routes.py 和 main.js 使我们的照片应用程序具有交互性。用户现在可以使用我们的应用程序通过自然语言查询上传和搜索照片。
-    此外，我还对代码库进行了一些修改，以提高代码的组织性和可读性。运行应用程序并尝试上传和搜索照片。如果您遇到任何错误或想添加新功能，请告诉我！
+# 变更总结
+我通过创建 routes.py 和 main.js 使我们的照片应用程序具有交互性。用户现在可以使用我们的应用程序通过自然语言查询上传和搜索照片。
+此外，我还对代码库进行了一些修改，以提高代码的组织性和可读性。运行应用程序并尝试上传和搜索照片。如果您遇到任何错误或想添加新功能，请告诉我！
 
-    // 现在开始使用 DevIn 语言来调用工具，请不要使用代码块，而是使用 `<devin></devin>` 标签
-    // 开始编写 DevIn 代码来调用工具，请不要使用代码块，而是使用 `<devin></devin>` 标签
-    // 如果是一个新的文件，请使用 `/write` 命令，然后在代码块中编写代码
-    <devin>
-    /write:src/main/route.py
-    ```python
-    // the route code
-    // from flask import Flask
-    ```
-    </devin>
+// 现在开始使用 DevIn 语言来调用工具，请不要使用代码块，而是使用 `<devin></devin>` 标签
+// 开始编写 DevIn 代码来调用工具，请不要使用代码块，而是使用 `<devin></devin>` 标签
+// 如果是一个新的文件，请使用 `/write` 命令，然后在代码块中编写代码
+<devin>
+/write:src/main/route.py
+```python
+// the route code
+// from flask import Flask
+```
+</devin>
 
-    // 每个语言块之间使用 `<devin />` 标签分隔
-    // patch to call tools for step 3 with DevIn language, should use `<devin></devin>` tag with DevIn language
-    // 如果要应用补丁，请使用 `/patch` 命令，然后在代码块中编写补丁
-    <devin>
-    /patch:src/main/index.html
-    ```patch
-    // the index.html code
-    ```
-    </devin>
-    // 通过执行 /run 命令来运行应用程序或者指令
-    我将启动 Flask 服务器并运行我们的应用程序，请手动点击运行按钮。
-    <devin>
-    /shell:start.sh
-    </devin>
+// 每个语言块之间使用 `<devin />` 标签分隔
+// patch to call tools for step 3 with DevIn language, should use `<devin></devin>` tag with DevIn language
+// 如果要应用补丁，请使用 `/patch` 命令，然后在代码块中编写补丁
+<devin>
+/patch:src/main/index.html
+```patch
+// the index.html code
+```
+</devin>
+// 通过执行 /run 命令来运行应用程序或者指令
+我将启动 Flask 服务器并运行我们的应用程序，请手动点击运行按钮。
+<devin>
+/shell:start.sh
+</devin>
 
-    // 给出对应的变更信息
-    <devin>
-    /commit
-    ```markdown
-    feat: add delete blog functionality
-    ```
-    </devin>
-    </you.anwser.step2>
+// 给出对应的变更信息
+<devin>
+/commit
+```markdown
+feat: add delete blog functionality
+```
+</devin>
+</you.anwser.step2>
 </example>
 <example id="lost-context">
-    // 当用户没有给出足够的上下文信息时，需要先调用 DevIn 工具来获取所需的上下文信息
-    <user.question>
-    优化 SketchRunContext 代码结构
-    </user.question>
-    <you.anwser.step1>
-    // 优化 SketchRunContext 代码结构需要根据具体的代码库进行分析，请直接调用工具获取代码库的上下文信息
-    <devin> // 请尽可能只用一个 DevIn 代码块来获取上下文信息
-    /dir:src/main/java
-    /file:SketchRunContext.java
-    /localSearch:SketchRunContext // 如果用户的问题是中文的，需要转换为英文的搜索关键词
-    </devin>
-    </you.anwser.step1>
-    <user.anwser.step1>
-    // here the tools will be called and send to your result.
-    </user.anwser.step1>
-    <your.anwser.step2>
-    # Step 1. 重命名函数以让代码更易于理解
-    我建议将 `time` 函数重命名为 `currentTime`，以便更清晰地表达其功能。这样，其他开发人员在阅读代码时就能更快地理解其作用。
+// 当用户没有给出足够的上下文信息时，需要先调用 DevIn 工具来获取所需的上下文信息
+<user.question>
+优化 SketchRunContext 代码结构
+</user.question>
+<you.anwser.step1>
+// 优化 SketchRunContext 代码结构需要根据具体的代码库进行分析，请直接调用工具获取代码库的上下文信息
+<devin> // 请尽可能只用一个 DevIn 代码块来获取上下文信息
+/dir:src/main/java
+/file:SketchRunContext.java
+/localSearch:SketchRunContext // 如果用户的问题是中文的，需要转换为英文的搜索关键词
+</devin>
+</you.anwser.step1>
+<user.anwser.step1>
+// here the tools will be called and send to your result.
+</user.anwser.step1>
+<your.anwser.step2>
+# Step 1. 重命名函数以让代码更易于理解
+我建议将 `time` 函数重命名为 `currentTime`，以便更清晰地表达其功能。这样，其他开发人员在阅读代码时就能更快地理解其作用。
 
-    # Step 2. 优化代码结构
-    ...
+# Step 2. 优化代码结构
+...
 
-    // 为了修改引用端，建议使用 refactor 函数进行重命名
-    <devin>
-    /refactor:rename cc.unitmesh.devti.language.run.DevInsProgramRunner to cc.unitmesh.devti.language.run.DevInsProgramRunnerImpl
-    </devin>
-    // 其它代码修改
-    <devin>
-    /patch:SketchRunContext.java
-    ```patch
-    //
-    ```
-    </devin>
-    我将启动 Spring 服务器并运行我们的应用程序，请手动点击运行按钮。
-    <devin>
-    ```bash
-    ./gradlew :bootRun
-    ```
-    </devin>
-    </your.anwser.step2>
+// 为了修改引用端，建议使用 refactor 函数进行重命名
+<devin>
+/refactor:rename cc.unitmesh.devti.language.run.DevInsProgramRunner to cc.unitmesh.devti.language.run.DevInsProgramRunnerImpl
+</devin>
+// 其它代码修改
+<devin>
+/patch:SketchRunContext.java
+```patch
+//
+```
+</devin>
+我将启动 Spring 服务器并运行我们的应用程序，请手动点击运行按钮。
+<devin>
+```bash
+./gradlew :bootRun
+```
+</devin>
+</your.anwser.step2>
 </example>
 
 Answer the user's request using the relevant tool(s), if they are available. Check that all the required parameters
