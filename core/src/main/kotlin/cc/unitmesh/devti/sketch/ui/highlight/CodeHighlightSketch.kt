@@ -107,14 +107,16 @@ class CodeHighlightSketch(
             /// get the text from the editor
             val parse = CodeFence.parse(editorFragment!!.editor.document.text)
             if (parse.originLanguage == "diff" || parse.originLanguage == "patch") {
-                val provide = LanguageSketchProvider.provide("patch")?.create(project, text)
-                provide?.let {
-                    val panel = provide.getComponent()
-                    panel.border = JBEmptyBorder(8)
-                    add(panel, BorderLayout.CENTER)
-                    revalidate()
-                    repaint()
-                }
+                val langSketch = LanguageSketchProvider.provide("patch")?.create(project, parse.text) ?: return
+
+                val panel = langSketch.getComponent()
+                panel.border = JBEmptyBorder(8)
+                add(panel, BorderLayout.SOUTH)
+
+                editorFragment?.updateExpandCollapseLabel()
+
+                revalidate()
+                repaint()
             }
         }
     }

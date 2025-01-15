@@ -55,6 +55,8 @@ class DevInRunService : RunService {
         val settings = createRunSettings(project, virtualFile, psiElement) ?: return null
         val runConfiguration = settings.configuration as DevInsConfiguration
 
+        runConfiguration.showConsole = !isFromToolAction
+
         val executorInstance = DefaultRunExecutor.getRunExecutorInstance()
         val builder = ExecutionEnvironmentBuilder.createOrNull(executorInstance, runConfiguration)
             ?: return null

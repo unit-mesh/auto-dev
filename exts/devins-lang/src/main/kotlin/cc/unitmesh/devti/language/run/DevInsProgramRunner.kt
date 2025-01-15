@@ -15,6 +15,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import java.util.concurrent.atomic.AtomicReference
+import javax.swing.JPanel
 
 class DevInsProgramRunner : GenericProgramRunner<RunnerSettings>(), Disposable {
     private val RUNNER_ID: String = "DevInsProgramRunner"
@@ -29,6 +30,7 @@ class DevInsProgramRunner : GenericProgramRunner<RunnerSettings>(), Disposable {
 
     override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor? {
         if (environment.runProfile !is DevInsConfiguration) return null
+        val configuration = environment.runProfile as DevInsConfiguration
         val devInState = state as DevInsRunConfigurationProfileState
 
         FileDocumentManager.getInstance().saveAllDocuments()
@@ -36,7 +38,7 @@ class DevInsProgramRunner : GenericProgramRunner<RunnerSettings>(), Disposable {
         val result = AtomicReference<RunContentDescriptor>()
 
         //避免多次subscribe
-        if(!isSubscribed) {
+        if (!isSubscribed) {
             connection.subscribe(DevInsRunListener.TOPIC, object : DevInsRunListener {
                 override fun runFinish(string: String, event: ProcessEvent, scriptPath: String) {
                     environment.project.service<DevInsProcessProcessor>().process(string, event, scriptPath)
@@ -47,8 +49,13 @@ class DevInsProgramRunner : GenericProgramRunner<RunnerSettings>(), Disposable {
         }
 
         ApplicationManager.getApplication().invokeAndWait {
-            val showRunContent = showRunContent(devInState.execute(environment.executor, this), environment)
-            result.set(showRunContent)
+            val executionResult = devInState.execute(environment.executor, this)
+            if (configuration.showConsole) {
+                val showRunContent = showRunContent(executionResult, environment)
+                result.set(showRunContent)
+            } else {
+                result.set(null)
+            }
         }
 
         return result.get()
