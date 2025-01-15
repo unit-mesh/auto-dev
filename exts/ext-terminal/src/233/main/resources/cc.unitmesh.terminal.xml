@@ -14,4 +14,8 @@
             <add-to-group group-id="TerminalToolwindowActionGroup" anchor="last"/>
         </action>
     </actions>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <langSketchProvider implementation="cc.unitmesh.terminal.sketch.TerminalDiffLangSketchProvider"/>
+    </extensions>
 </idea-plugin>

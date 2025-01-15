@@ -31,19 +31,27 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
             setInitialDisplayName(this)
         }
 
-        // for idea 223
-        AutoDevInlineChatProvider.addListener(project)
+        initInlineChatForIdea223(project)
 
         ApplicationManager.getApplication().invokeLater {
-            val contentManager = toolWindow.contentManager
-            contentManager.addContent(chatPanel)
+            toolWindow.contentManager.addContent(chatPanel)
 
-            val sketchView = SketchToolWindow(project, null, true)
-            val sketchPanel = contentFactory.createContent(sketchView, "Sketch", false)
-            contentManager.addContent(sketchPanel)
+            val hasSketch =
+                toolWindow.contentManager.component.components?.filterIsInstance<SketchToolWindow>()?.firstOrNull()
 
-            contentManager.setSelectedContent(chatPanel)
+            if (hasSketch == null) {
+                val sketchView = SketchToolWindow(project, null, true)
+                val sketchPanel = contentFactory.createContent(sketchView, "Sketch", false)
+                toolWindow.contentManager.addContent(sketchPanel)
+            }
         }
+    }
+
+    /**
+     * for idea 223 (aka 2022.3) which don't have [com.intellij.openapi.startup.ProjectActivity]
+     */
+    private fun initInlineChatForIdea223(project: Project) {
+        AutoDevInlineChatProvider.addListener(project)
     }
 
     override fun init(toolWindow: ToolWindow) {
