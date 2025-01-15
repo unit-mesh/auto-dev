@@ -114,8 +114,6 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
         panel.add(rejectButton)
         panel.add(viewDiffButton)
 
-        panel.background = JBColor(0xEAEEF7, 0x2d2f30)
-
         return panel
     }
 
