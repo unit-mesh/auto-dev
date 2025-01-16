@@ -14,7 +14,6 @@ import com.intellij.icons.AllIcons
 import com.intellij.ide.IdeTooltip
 import com.intellij.ide.IdeTooltipManager
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.application.ApplicationManager
@@ -22,6 +21,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.project.DumbAwareAction
@@ -31,10 +31,10 @@ import com.intellij.openapi.ui.ComponentValidator
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.ui.popup.Balloon.Position
 import com.intellij.openapi.util.NlsContexts
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.impl.InternalDecorator
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.temporary.gui.block.AutoDevCoolBorder
 import com.intellij.ui.HintHint
@@ -55,7 +55,7 @@ import javax.swing.*
 import kotlin.math.max
 import kotlin.math.min
 
-data class ModelWrapper(val psiElement: PsiElement, var panel: JPanel? = null, var namePanel: JPanel? = null)
+data class ModelWrapper(val virtualFile: VirtualFile, var panel: JPanel? = null, var namePanel: JPanel? = null)
 
 /**
  *
@@ -182,8 +182,15 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                 this@AutoDevInputSection.initEditor()
             }
         })
+
         setupEditorListener()
         setupRelatedListener()
+
+        /// get current open file and add to the list
+        val currentFile = FileEditorManager.getInstance(project).selectedFiles.firstOrNull()
+        currentFile?.let {
+            listModel.addIfAbsent(currentFile)
+        }
     }
 
     private fun setupEditorListener() {
@@ -192,10 +199,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             object : FileEditorManagerListener {
                 override fun selectionChanged(event: FileEditorManagerEvent) {
                     val file = event.newFile ?: return
-                    val psiFile = PsiManager.getInstance(project).findFile(file) ?: return
-                    RelatedClassesProvider.provide(psiFile.language) ?: return
                     ApplicationManager.getApplication().invokeLater {
-                        listModel.addIfAbsent(psiFile)
+                        listModel.addIfAbsent(file)
                     }
                 }
             }
@@ -232,11 +237,17 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                         when {
                             component is JPanel -> {
                                 listModel.removeElement(wrapper)
-                                wrapper.psiElement.containingFile?.let { psiFile ->
-                                    val relativePath = psiFile.virtualFile.relativePath(project)
-                                    input.appendText("\n/" + "file" + ":${relativePath}")
-                                    listModel.indexOf(wrapper.psiElement).takeIf { it != -1 }
-                                        ?.let { listModel.remove(it) }
+                                val vfile = wrapper.virtualFile
+                                val relativePath = vfile.path.substringAfter(project.basePath!!).removePrefix("/")
+                                listModel.addIfAbsent(vfile)
+
+                                input.appendText("\n/" + "file" + ":${relativePath}")
+                                listModel.indexOf(wrapper.virtualFile).takeIf { it != -1 }
+                                    ?.let { listModel.remove(it) }
+
+                                // invoake later
+                                ApplicationManager.getApplication().invokeLater {
+                                    val psiFile = PsiManager.getInstance(project).findFile(vfile) ?: return@invokeLater
                                     val relatedElements =
                                         RelatedClassesProvider.provide(psiFile.language)?.lookup(psiFile)
                                     updateElements(relatedElements)
@@ -254,8 +265,12 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         })
     }
 
+//    private fun updateElements(elements: List<VirtualFile>?) {
+//        elements?.forEach { listModel.addIfAbsent(it) }
+//    }
+
     private fun updateElements(elements: List<PsiElement>?) {
-        elements?.forEach { listModel.addIfAbsent(it) }
+        elements?.forEach { listModel.addIfAbsent(it.containingFile.virtualFile) }
     }
 
     fun showStopButton() {
@@ -372,14 +387,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     val focusableComponent: JComponent get() = input
 }
 
-private fun DefaultListModel<ModelWrapper>.addIfAbsent(psiFile: PsiElement) {
-    val isValid = when (psiFile) {
-        is PsiFile -> psiFile.isValid
-        else -> true
-    }
-    if (!isValid) return
-
-    if (elements().asIterator().asSequence().none { it.psiElement == psiFile }) {
-        addElement(ModelWrapper(psiFile))
+private fun DefaultListModel<ModelWrapper>.addIfAbsent(vfile: VirtualFile) {
+    if (elements().asIterator().asSequence().none { it.virtualFile == vfile }) {
+        addElement(ModelWrapper(vfile))
     }
 }

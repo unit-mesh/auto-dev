@@ -18,17 +18,16 @@ class RelatedFileListCellRenderer : ListCellRenderer<ModelWrapper> {
         isSelected: Boolean,
         cellHasFocus: Boolean,
     ): Component {
-        val psiElement = value.psiElement
         val panel = value.panel ?: JPanel(FlowLayout(FlowLayout.LEFT, 3, 0)).apply {
             accessibleContext.accessibleName = "Element Panel"
 
             border = JBUI.Borders.empty(2, 5)
 
             val namePanel = JPanel(layout)
-            val iconLabel = JLabel(psiElement.containingFile?.fileType?.icon ?: AllIcons.FileTypes.Unknown)
+            val iconLabel = JLabel(value.virtualFile.fileType.icon ?: AllIcons.FileTypes.Unknown)
             namePanel.add(iconLabel)
 
-            val nameLabel = JLabel(psiElement.containingFile?.name ?: "Unknown")
+            val nameLabel = JLabel(value.virtualFile.name)
             namePanel.add(nameLabel)
 
             add(namePanel)
