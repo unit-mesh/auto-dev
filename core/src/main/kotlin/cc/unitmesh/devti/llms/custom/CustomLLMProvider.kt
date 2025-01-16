@@ -26,12 +26,14 @@ class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(
     private val modelName: String
         get() = AutoDevSettingsState.getInstance().customModel
 
-    override val requestFormat: String get() = autoDevSettingsState.customEngineRequestFormat.ifEmpty {
-        """{ "customFields": {"model": "$modelName", "temperature": 0.0, "stream": true} }"""
-    }
-    override val responseFormat get() = autoDevSettingsState.customEngineResponseFormat.ifEmpty {
-        "\$.choices[0].delta.content"
-    }
+    override val requestFormat: String
+        get() = autoDevSettingsState.customEngineRequestFormat.ifEmpty {
+            """{ "customFields": {"model": "$modelName", "temperature": 0.0, "stream": true} }"""
+        }
+    override val responseFormat
+        get() = autoDevSettingsState.customEngineResponseFormat.ifEmpty {
+            "\$.choices[0].delta.content"
+        }
 
     private var client = OkHttpClient()
     private val timeout = Duration.ofSeconds(defaultTimeout)
@@ -53,7 +55,13 @@ class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(
         }
 
         if (systemPrompt.isNotEmpty()) {
-            messages += Message("system", systemPrompt)
+            if (messages.isNotEmpty() && messages[0].role != "system") {
+                messages.add(0, Message("system", systemPrompt))
+            } else if (messages.isEmpty()) {
+                messages.add(Message("system", systemPrompt))
+            } else {
+                messages[0] = Message("system", systemPrompt)
+            }
         }
 
         messages += Message("user", promptText)
