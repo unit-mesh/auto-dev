@@ -1,8 +1,8 @@
 package cc.unitmesh.devti.sketch.ui.patch
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.diff.DiffStreamHandler
+import cc.unitmesh.devti.sketch.ui.LangSketch
 import com.intellij.diff.DiffContentFactoryEx
 import com.intellij.diff.chains.SimpleDiffRequestChain
 import com.intellij.diff.chains.SimpleDiffRequestProducer
@@ -12,31 +12,24 @@ import com.intellij.diff.requests.SimpleDiffRequest
 import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
 import com.intellij.openapi.application.runInEdt
+import com.intellij.openapi.command.CommandProcessor
+import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.command.undo.UndoManager
+import com.intellij.openapi.diff.impl.patch.ApplyPatchStatus
 import com.intellij.openapi.diff.impl.patch.TextFilePatch
 import com.intellij.openapi.diff.impl.patch.apply.GenericPatchApplier
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.DialogPanel
+import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.ui.DarculaColors
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.components.panels.HorizontalLayout
 import com.intellij.ui.components.panels.VerticalLayout
-import com.intellij.ui.dsl.builder.AlignX
-import com.intellij.ui.dsl.builder.RightGap
-import com.intellij.ui.dsl.builder.panel
-import cc.unitmesh.devti.sketch.ui.LangSketch
-import cc.unitmesh.devti.util.findFile
-import com.intellij.openapi.command.CommandProcessor
-import com.intellij.openapi.command.UndoConfirmationPolicy
-import com.intellij.openapi.diff.impl.patch.ApplyPatchStatus
-import com.intellij.openapi.vcs.changes.patch.AbstractFilePatchInProgress
-import com.intellij.openapi.vcs.changes.patch.MatchPatchPaths
-import com.intellij.openapi.vfs.VfsUtilCore
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.util.containers.MultiMap
+import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.event.MouseAdapter
@@ -54,7 +47,7 @@ class SingleFileDiffView(
 ) : LangSketch {
     private val mainPanel: JPanel = JPanel(VerticalLayout(5))
     private val myHeaderPanel: JPanel = JPanel(BorderLayout())
-    private var filePanel: DialogPanel? = null
+    private var filePanel: JPanel? = null
     var diffFile: ChainDiffVirtualFile? = null
     private val appliedPatch = GenericPatchApplier.apply(virtualFile.readText(), patch.hunks)
     private val oldCode = virtualFile.readText()
@@ -86,16 +79,16 @@ class SingleFileDiffView(
             })
         }
 
-        filePanel = panel {
-            row {
-                cell(filepathLabel).align(AlignX.FILL).resizableColumn()
-                actions.forEachIndexed { index, action ->
-                    cell(action).align(AlignX.LEFT)
-                    if (index < actions.size - 1) {
-                        this@panel.gap(RightGap.SMALL)
-                    }
-                }
+        val actionPanel = JPanel(HorizontalLayout(UIUtil.DEFAULT_HGAP)).apply {
+            actions.forEach { button ->
+                add(button)
             }
+        }
+
+        filePanel = JPanel(BorderLayout()).apply {
+            add(filepathLabel, BorderLayout.WEST)
+            add(actionPanel, BorderLayout.EAST)
+            border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
         }
 
         val fileContainer = JPanel(BorderLayout(10, 10)).also {
@@ -155,7 +148,6 @@ class SingleFileDiffView(
         val fileEditor = FileEditorManager.getInstance(myProject).getSelectedEditor(virtualFile)
 
         val rollback = JButton(AllIcons.Actions.Rollback).apply {
-            isContentAreaFilled = false
             border = BorderFactory.createEmptyBorder()
             preferredSize = Dimension(32, 32)
             toolTipText = AutoDevBundle.message("sketch.patch.action.rollback.tooltip")
@@ -172,7 +164,6 @@ class SingleFileDiffView(
 
         val runStreamButton = JButton(AllIcons.Actions.RunAll).apply {
             preferredSize = Dimension(32, 32)
-            isContentAreaFilled = false
             border = BorderFactory.createEmptyBorder()
             border = BorderFactory.createEmptyBorder()
             toolTipText = AutoDevBundle.message("sketch.patch.action.runDiff.tooltip")
@@ -189,7 +180,6 @@ class SingleFileDiffView(
 
         val repairButton = JButton(AllIcons.Toolwindows.ToolWindowBuild).apply {
             preferredSize = Dimension(32, 32)
-            isContentAreaFilled = false
             border = BorderFactory.createEmptyBorder()
             toolTipText = AutoDevBundle.message("sketch.patch.action.repairDiff.tooltip")
             isEnabled = appliedPatch?.status != ApplyPatchStatus.SUCCESS

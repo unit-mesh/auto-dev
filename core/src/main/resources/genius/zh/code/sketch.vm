@@ -102,7 +102,7 @@ have created a routes.py and main.js file, and updated the main.html file.
 // the index.html code
 ```
 </devin>
-// step 4, 测试应用程序，验证代码变更
+// step 4, 启动、测试应用程序，验证代码变更
 ```http
 // the http code
 ```
