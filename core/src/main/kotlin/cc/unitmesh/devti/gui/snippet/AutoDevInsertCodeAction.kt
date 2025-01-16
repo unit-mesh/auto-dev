@@ -6,12 +6,14 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.vfs.readText
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.codeStyle.CodeStyleManager
+import com.intellij.testFramework.LightVirtualFile
 
 
 class AutoDevInsertCodeAction : DumbAwareAction() {
@@ -29,7 +31,8 @@ class AutoDevInsertCodeAction : DumbAwareAction() {
             PsiDocumentManager.getInstance(project).getPsiFile(document)
         }
 
-        if (psiFile?.language?.displayName == "DevIn" &&
+        val file = FileDocumentManager.getInstance().getFile(editor.document) as? LightVirtualFile
+        if (file?.language?.displayName == "DevIn" &&
             ToolWindowManager.getInstance(project).getToolWindow("AutoDev") != null
         ) {
             AutoInputService.getInstance(project).putText(newText)

@@ -4,6 +4,7 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.provider.RunService
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
+import com.intellij.icons.AllIcons
 import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.lang.Language
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -43,56 +44,58 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
                     it.preferredSize = Dimension(it.preferredSize.width, 120)
                 }
 
-                layout = JPanel(VerticalLayout(JBUI.scale(10))).apply {
-                    add(JLabel("Terminal"), BorderLayout.NORTH)
-                    add(terminalWidget!!.component, BorderLayout.CENTER)
-                    val buttonPanel = JPanel(BorderLayout())
-                    buttonPanel.add(JButton("Run").apply {
-                        addMouseListener(object : MouseAdapter() {
-                            override fun mouseClicked(e: MouseEvent?) {
-                                val tempShellName = "temp" + System.currentTimeMillis() + ".sh"
-                                val language = Language.findLanguageByID("Shell Script")!!
-                                val scratchFile = ScratchRootType.getInstance()
-                                    .createScratchFile(project, tempShellName, language, content)
-                                    ?: return
+                layout = object : JPanel(BorderLayout()) {
+                    init {
+                        add(JLabel("Terminal"), BorderLayout.NORTH)
+                        add(terminalWidget!!.component, BorderLayout.CENTER)
+                        val buttonPanel = JPanel(BorderLayout())
+                        buttonPanel.add(JButton(AllIcons.Toolwindows.ToolWindowRun).apply {
+                            addMouseListener(object : MouseAdapter() {
+                                override fun mouseClicked(e: MouseEvent?) {
+                                    val tempShellName = "temp" + System.currentTimeMillis() + ".sh"
+                                    val language = Language.findLanguageByID("Shell Script")!!
+                                    val scratchFile = ScratchRootType.getInstance()
+                                        .createScratchFile(project, tempShellName, language, content)
+                                        ?: return
 
-                                try {
-                                    RunService.provider(project, scratchFile)
-                                        ?.runFile(project, scratchFile, null, isFromToolAction = true)
-                                        ?: AutoDevNotifications.notify(project, "Run Failed, no provider")
-                                } catch (e: Exception) {
-                                    AutoDevNotifications.notify(project, "Run Failed: ${e.message}")
-                                }
-                            }
-                        })
-                    }, BorderLayout.WEST)
-                    buttonPanel.add(JButton("Pop up Terminal").apply {
-                        addMouseListener(object : MouseAdapter() {
-                            override fun mouseClicked(e: MouseEvent?) {
-                                var popup: JBPopup? = null
-                                popup = JBPopupFactory.getInstance()
-                                    .createComponentPopupBuilder(terminalWidget!!.component, null)
-                                    .setProject(project)
-                                    .setResizable(true)
-                                    .setMovable(true)
-                                    .setTitle("Terminal")
-                                    .setCancelButton(MinimizeButton("Hide"))
-                                    .setCancelOnClickOutside(true)
-                                    .setCancelOnWindowDeactivation(false)
-                                    .setCancelCallback {
-                                        layout!!.addLayoutComponent("terminal", terminalWidget!!.component)
-                                        true
+                                    try {
+                                        RunService.provider(project, scratchFile)
+                                            ?.runFile(project, scratchFile, null, isFromToolAction = true)
+                                            ?: AutoDevNotifications.notify(project, "Run Failed, no provider")
+                                    } catch (e: Exception) {
+                                        AutoDevNotifications.notify(project, "Run Failed: ${e.message}")
                                     }
-                                    .setFocusable(true)
-                                    .setRequestFocus(true)
-                                    .createPopup()
+                                }
+                            })
+                        }, BorderLayout.WEST)
+                        buttonPanel.add(JButton("Pop up Terminal").apply {
+                            addMouseListener(object : MouseAdapter() {
+                                override fun mouseClicked(e: MouseEvent?) {
+                                    var popup: JBPopup? = null
+                                    popup = JBPopupFactory.getInstance()
+                                        .createComponentPopupBuilder(terminalWidget!!.component, null)
+                                        .setProject(project)
+                                        .setResizable(true)
+                                        .setMovable(true)
+                                        .setTitle("Terminal")
+                                        .setCancelButton(MinimizeButton("Hide"))
+                                        .setCancelOnClickOutside(true)
+                                        .setCancelOnWindowDeactivation(false)
+                                        .setCancelCallback {
+                                            layout!!.addLayoutComponent("terminal", terminalWidget!!.component)
+                                            true
+                                        }
+                                        .setFocusable(true)
+                                        .setRequestFocus(true)
+                                        .createPopup()
 
-                                val editor = FileEditorManager.getInstance(project).selectedTextEditor!!
-                                popup.showInBestPositionFor(editor)
-                            }
-                        })
-                    }, BorderLayout.EAST)
-                    add(buttonPanel, BorderLayout.SOUTH)
+                                    val editor = FileEditorManager.getInstance(project).selectedTextEditor!!
+                                    popup.showInBestPositionFor(editor)
+                                }
+                            })
+                        }, BorderLayout.EAST)
+                        add(buttonPanel, BorderLayout.SOUTH)
+                    }
                 }
 
                 layout!!.border = JBUI.Borders.compound(

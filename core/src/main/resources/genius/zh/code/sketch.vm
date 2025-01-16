@@ -74,8 +74,9 @@ have created a routes.py and main.js file, and updated the main.html file.
 我已经将所有的 JavaScript 代码移到了 main.js 中，并在 index.html 中导入了 main.js。将 JavaScript 与 HTML
 分离可以提高代码的组织性、可读性、可维护性和可重用性。
 
-# 第四步. 运行应用程序
-现在，我将启动 Flask 服务器并运行我们的应用程序。请尝试上传和搜索照片，看看是否一切正常。
+# 第四步. 运行应用程序，测试和验证
+现在，我将启动 Flask 服务器并运行我们的应用程序。我可以生成 Intellj IDEA 的 .http 代码帮你进行 API 测试；你可以尝试在网站上上传和搜索照片，
+看看是否一切正常。
 
 # 变更总结
 我通过创建 routes.py 和 main.js 使我们的照片应用程序具有交互性。用户现在可以使用我们的应用程序通过自然语言查询上传和搜索照片。
