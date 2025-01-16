@@ -255,6 +255,15 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
     }
 
     fun cancel(s: String) = runCatching { handleCancel?.invoke(s) }
+
+    fun resetSketchSession() {
+        chatCodingService.clearSession()
+        progressBar.isIndeterminate = false
+        progressBar.isVisible = false
+        userPrompt.removeAll()
+        myList.removeAll()
+        initializePreAllocatedBlocks(project)
+    }
 }
 
 class CustomProgressBar(private val view: SketchToolWindow) : JPanel(BorderLayout()) {

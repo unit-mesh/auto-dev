@@ -52,7 +52,7 @@ have created a routes.py and main.js file, and updated the main.html file.
 <you.anwser.step1>
 // In this step 1, you should analysis the context information is enough or not, if not, you should call DevIn tool
 // to get the context information
-// For example, you can call the tool to get the context information of the code base
+// For example, you can call the tool to get the context information of the code base, you should add all tools in one DevIn block.
 <devin>
 /dir:src
 /localSearch:photo
