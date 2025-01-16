@@ -84,26 +84,24 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
     }
 
     private fun createHeaderAction(): JComponent {
-        val acceptButton = JButton(AutoDevBundle.message("sketch.patch.action.accept")).apply {
-            icon = AllIcons.Actions.SetDefault
+        val acceptButton = JButton(AllIcons.Actions.SetDefault).apply {
             toolTipText = AutoDevBundle.message("sketch.patch.action.accept.tooltip")
             addActionListener {
                 handleAcceptAction()
             }
         }
 
-        val rejectButton = JButton(AutoDevBundle.message("sketch.patch.action.reject")).apply {
-            this.icon = AllIcons.Actions.Rollback
+        val rejectButton = JButton(AllIcons.Actions.Rollback).apply {
             this.toolTipText = AutoDevBundle.message("sketch.patch.action.reject.tooltip")
             addActionListener {
                 handleRejectAction()
             }
         }
 
-        val viewDiffButton = JButton(AutoDevBundle.message("sketch.patch.action.viewDiff")).apply {
+        val viewDiffButton = JButton(AllIcons.Actions.ListChanges).apply {
             this.toolTipText = AutoDevBundle.message("sketch.patch.action.viewDiff.tooltip")
-            this.icon = AllIcons.Actions.ListChanges
             addActionListener {
+                /// use StreamDiff
                 handleViewDiffAction()
             }
         }
