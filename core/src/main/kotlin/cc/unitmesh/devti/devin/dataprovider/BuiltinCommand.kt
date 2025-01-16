@@ -13,7 +13,7 @@ enum class BuiltinCommand(
     val requireProps: Boolean = false,
 ) {
     FILE("file", "Read the content of a file", AllIcons.Actions.Copy, true, true),
-    REV("rev", "Read git change by file", AllIcons.Vcs.History, true, true),
+    REV("rev", "Read git change by hash", AllIcons.Vcs.History, true, true),
 
     /**
      * Every language will have a symbol completion, which is the most basic completion, for example,
