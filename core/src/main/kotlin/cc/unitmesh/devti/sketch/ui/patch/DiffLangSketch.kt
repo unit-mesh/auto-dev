@@ -53,9 +53,12 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
     private val filePatches: MutableList<TextFilePatch> = myReader.textPatches
 
     init {
-//        val header = createHeaderAction()
-//        myHeaderPanel.add(header, BorderLayout.EAST)
-        mainPanel.add(myHeaderPanel)
+        if (filePatches.size > 1) {
+            val header = createHeaderAction()
+            myHeaderPanel.add(header, BorderLayout.EAST)
+            mainPanel.add(myHeaderPanel)
+        }
+
         mainPanel.border = JBUI.Borders.compound(JBUI.Borders.empty(0, 10))
 
         ApplicationManager.getApplication().invokeAndWait {
