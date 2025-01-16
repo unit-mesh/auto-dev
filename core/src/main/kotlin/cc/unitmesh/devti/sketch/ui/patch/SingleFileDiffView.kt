@@ -155,6 +155,8 @@ class SingleFileDiffView(
         val fileEditor = FileEditorManager.getInstance(myProject).getSelectedEditor(virtualFile)
 
         val rollback = JButton(AllIcons.Actions.Rollback).apply {
+            isContentAreaFilled = false
+            border = BorderFactory.createEmptyBorder()
             preferredSize = Dimension(32, 32)
             toolTipText = AutoDevBundle.message("sketch.patch.action.rollback.tooltip")
             isEnabled = undoManager.isUndoAvailable(fileEditor)
@@ -170,6 +172,9 @@ class SingleFileDiffView(
 
         val runStreamButton = JButton(AllIcons.Actions.RunAll).apply {
             preferredSize = Dimension(32, 32)
+            isContentAreaFilled = false
+            border = BorderFactory.createEmptyBorder()
+            border = BorderFactory.createEmptyBorder()
             toolTipText = AutoDevBundle.message("sketch.patch.action.runDiff.tooltip")
             isEnabled = appliedPatch?.status == ApplyPatchStatus.SUCCESS
 
@@ -184,8 +189,11 @@ class SingleFileDiffView(
 
         val repairButton = JButton(AllIcons.Toolwindows.ToolWindowBuild).apply {
             preferredSize = Dimension(32, 32)
+            isContentAreaFilled = false
+            border = BorderFactory.createEmptyBorder()
             toolTipText = AutoDevBundle.message("sketch.patch.action.repairDiff.tooltip")
             isEnabled = appliedPatch?.status != ApplyPatchStatus.SUCCESS
+            background = if (isEnabled) JBColor(0xFF0000, 0xFF0000) else JPanel().background
 
             addActionListener {
                 FileEditorManager.getInstance(myProject).openFile(virtualFile, true)

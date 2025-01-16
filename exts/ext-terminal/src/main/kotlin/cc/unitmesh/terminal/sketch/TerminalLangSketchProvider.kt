@@ -46,7 +46,9 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
 
                 layout = object : JPanel(BorderLayout()) {
                     init {
-                        add(JLabel("Terminal"), BorderLayout.NORTH)
+                        add(JLabel("Terminal").also {
+                            it.border = JBUI.Borders.empty(5, 0)
+                        }, BorderLayout.NORTH)
                         add(terminalWidget!!.component, BorderLayout.CENTER)
                         val buttonPanel = JPanel(BorderLayout())
                         buttonPanel.add(JButton(AllIcons.Toolwindows.ToolWindowRun).apply {
@@ -99,8 +101,7 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
                 }
 
                 layout!!.border = JBUI.Borders.compound(
-                    JBUI.Borders.empty(0, 10),
-                    JBUI.Borders.customLine(JBColor.border())
+                    JBUI.Borders.empty(5, 10),
                 )
             }
 

@@ -2,6 +2,7 @@ package cc.unitmesh.devti.sketch
 
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.ui.relativePath
+import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
@@ -31,7 +32,8 @@ data class SketchRunContext(
     val userInput: String,
     val toolList: String,
     val shell: String = System.getenv("SHELL") ?: "/bin/bash",
-    val frameworkContext: String = ""
+    val frameworkContext: String = "",
+    val buildTool: String = "",
 ) : TemplateContext {
     companion object {
         fun create(project: Project, myEditor: Editor?, input: String): SketchRunContext {
@@ -42,7 +44,7 @@ data class SketchRunContext(
                 FileEditorManager.getInstance(project).selectedFiles.firstOrNull()
             }
 
-            val otherFiles = FileEditorManager.getInstance(project).selectedFiles.filter { it != currentFile }
+            val otherFiles = FileEditorManager.getInstance(project).openFiles.filter { it != currentFile }
 
             val psi = if (currentFile != null) {
                 PsiManager.getInstance(project).findFile(currentFile)
@@ -59,6 +61,14 @@ data class SketchRunContext(
             val creationContext =
                 ChatCreationContext(ChatOrigin.Intention, ChatActionType.CHAT, psi, listOf(), element = psi)
 
+            val buildInfo = BuildSystemProvider.guess(project).firstOrNull()
+            val buildTool = if (buildInfo != null) {
+                "${buildInfo.buildToolName} ${buildInfo.buildToolVersion} ${buildInfo.languageName} ${buildInfo.languageVersion}"
+            } else {
+                ""
+            }
+
+
             return SketchRunContext(
                 currentFile = currentFile?.relativePath(project),
                 currentElement = currentElement,
@@ -70,7 +80,8 @@ data class SketchRunContext(
                 shell = ShellUtil.detectShells().firstOrNull() ?: "/bin/bash",
                 frameworkContext = runBlocking {
                     return@runBlocking ChatContextProvider.collectChatContextList(project, creationContext)
-                }.joinToString(",", transform = ChatContextItem::text)
+                }.joinToString(",", transform = ChatContextItem::text),
+                buildTool = buildTool,
             )
         }
     }
