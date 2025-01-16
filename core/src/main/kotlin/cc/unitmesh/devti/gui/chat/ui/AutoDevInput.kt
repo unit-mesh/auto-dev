@@ -7,7 +7,6 @@ import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ex.AnActionListener
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.components.Service
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorModificationUtil
@@ -36,29 +35,6 @@ import java.awt.event.KeyEvent
 import java.util.*
 import javax.swing.KeyStroke
 
-
-@Service(Service.Level.PROJECT)
-class AutoInputService(val project: Project) {
-    private var autoDevInput: AutoDevInput? = null
-
-    fun registerAutoDevInput(input: AutoDevInput) {
-        autoDevInput = input
-    }
-
-    fun putText(text: String) {
-        autoDevInput?.appendText(text)
-    }
-
-    fun deregisterAutoDevInput(input: AutoDevInput) {
-        autoDevInput = null
-    }
-
-    companion object {
-        fun getInstance(project: Project): AutoInputService {
-            return project.getService(AutoInputService::class.java)
-        }
-    }
-}
 
 class AutoDevInput(
     project: Project,

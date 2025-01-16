@@ -1,7 +1,7 @@
-执行单个 shell 命令
+执行单个 shell 脚本
 /shell:execute.sh
-执行 shell 脚本（确保这个脚本是安全的）
-/shell:execute
+执行 shell 命令（需要确保命令是安全的，无需用户确认就可以执行）
+/shell:execute.sh
 ```
 echo "Hello, World!"
 ```

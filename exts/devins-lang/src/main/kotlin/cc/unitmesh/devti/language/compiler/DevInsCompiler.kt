@@ -218,8 +218,8 @@ class DevInsCompiler(
 
             BuiltinCommand.SHELL -> {
                 result.isLocalCommand = true
-                val nextTextSegment = lookupNextTextSegment(used)
-                ShellInsCommand(myProject, prop, nextTextSegment)
+                val shireCode: String? = lookupNextCode(used)?.codeText()
+                ShellInsCommand(myProject, prop, shireCode)
             }
 
             BuiltinCommand.BROWSE -> {

@@ -119,7 +119,7 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
         }
     }
 
-    private fun executeShellScriptOnClick(
+    fun executeShellScriptOnClick(
         project: Project,
         content: String
     ): MouseAdapter = object : MouseAdapter() {
@@ -139,7 +139,7 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
         }
     }
 
-    private fun createCommandLineForScript(project: Project, scriptText: String): GeneralCommandLine {
+    fun createCommandLineForScript(project: Project, scriptText: String): GeneralCommandLine {
         val workingDirectory = project.basePath
         val commandLine = PtyCommandLine()
         commandLine.withConsoleMode(false)
