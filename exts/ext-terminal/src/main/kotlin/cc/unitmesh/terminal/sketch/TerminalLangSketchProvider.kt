@@ -1,11 +1,15 @@
 package cc.unitmesh.terminal.sketch
 
 import cc.unitmesh.devti.AutoDevNotifications
-import cc.unitmesh.devti.provider.RunService
+import cc.unitmesh.devti.sketch.run.ShellUtil
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
+import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.configurations.PtyCommandLine
+import com.intellij.execution.process.KillableProcessHandler
+import com.intellij.execution.process.ProcessAdapter
+import com.intellij.execution.process.ProcessEvent
 import com.intellij.icons.AllIcons
-import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.lang.Language
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
@@ -24,6 +28,7 @@ import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
+
 
 class TerminalLangSketchProvider : LanguageSketchProvider {
     override fun isSupported(lang: String): Boolean = lang == "bash"
@@ -46,6 +51,7 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
                         add(JLabel("Terminal").also {
                             it.border = JBUI.Borders.empty(5, 0)
                         }, BorderLayout.NORTH)
+
                         add(terminalWidget!!.component, BorderLayout.CENTER)
 
                         val buttonPanel = JPanel(BorderLayout())
@@ -53,7 +59,7 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
                             addMouseListener(executeShellScriptOnClick(project, content))
                         }, BorderLayout.WEST)
                         buttonPanel.add(JButton("Pop up Terminal").apply {
-                            addMouseListener(executePopup(terminalWidget, project, panelLayout))
+                            addMouseListener(executePopup(terminalWidget, project))
                         }, BorderLayout.EAST)
 
                         add(buttonPanel, BorderLayout.SOUTH)
@@ -64,6 +70,36 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
                     JBUI.Borders.empty(5, 10),
                 )
             }
+
+
+            private fun executePopup(terminalWidget: JBTerminalWidget?, project: Project): MouseAdapter =
+                object : MouseAdapter() {
+                    override fun mouseClicked(e: MouseEvent?) {
+                        var popup: JBPopup? = null
+                        popup = JBPopupFactory.getInstance()
+                            .createComponentPopupBuilder(terminalWidget!!.component, null)
+                            .setProject(project)
+                            .setResizable(true)
+                            .setMovable(true)
+                            .setTitle("Terminal")
+                            .setCancelButton(MinimizeButton("Hide"))
+                            .setCancelCallback {
+                                popup?.cancel()
+                                panelLayout!!.remove(terminalWidget.component)
+                                panelLayout!!.add(terminalWidget.component)
+
+                                panelLayout!!.revalidate()
+                                panelLayout!!.repaint()
+                                true
+                            }
+                            .setFocusable(true)
+                            .setRequestFocus(true)
+                            .createPopup()
+
+                        val editor = FileEditorManager.getInstance(project).selectedTextEditor!!
+                        popup.showInBestPositionFor(editor)
+                    }
+                }
 
             override fun getExtensionName(): String = "Terminal"
             override fun getViewText(): String = content
@@ -88,48 +124,31 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
         content: String
     ): MouseAdapter = object : MouseAdapter() {
         override fun mouseClicked(e: MouseEvent?) {
-            val tempShellName = "temp" + System.currentTimeMillis() + ".sh"
-            val language = Language.findLanguageByID("Shell Script")!!
-            val scratchFile = ScratchRootType.getInstance()
-                .createScratchFile(project, tempShellName, language, content)
-                ?: return
+            val commandLine = createCommandLineForScript(project, content)
+            val processBuilder = commandLine.toProcessBuilder()
+            val process = processBuilder.start()
+            val processHandler = KillableProcessHandler(process, commandLine.commandLineString)
+            processHandler.startNotify()
 
-            try {
-                RunService.provider(project, scratchFile)
-                    ?.runFile(project, scratchFile, null, isFromToolAction = true)
-                    ?: AutoDevNotifications.notify(project, "Run Failed, no provider")
-            } catch (e: Exception) {
-                AutoDevNotifications.notify(project, "Run Failed: ${e.message}")
-            }
+            processHandler.addProcessListener(object : ProcessAdapter() {
+                override fun processTerminated(event: ProcessEvent) {
+                    AutoDevNotifications.notify(project, "Process terminated with exit code ${event.exitCode}")
+                    processHandler.destroyProcess()
+                }
+            })
         }
     }
 
-    private fun executePopup(terminalWidget: JBTerminalWidget?, project: Project, panelLayout: JPanel?): MouseAdapter =
-        object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent?) {
-                var popup: JBPopup? = null
-                popup = JBPopupFactory.getInstance()
-                    .createComponentPopupBuilder(terminalWidget!!.component, null)
-                    .setProject(project)
-                    .setResizable(true)
-                    .setMovable(true)
-                    .setTitle("Terminal")
-                    .setCancelButton(MinimizeButton("Hide"))
-                    .setCancelOnClickOutside(true)
-                    .setCancelOnWindowDeactivation(false)
-                    .setCancelCallback {
-                        panelLayout!!.add("terminal", terminalWidget!!.component)
-                        popup!!.closeOk(null)
-                        panelLayout.revalidate()
-                        panelLayout.repaint()
-                        true
-                    }
-                    .setFocusable(true)
-                    .setRequestFocus(true)
-                    .createPopup()
-
-                val editor = FileEditorManager.getInstance(project).selectedTextEditor!!
-                popup.showInBestPositionFor(editor)
-            }
-        }
+    private fun createCommandLineForScript(project: Project, scriptText: String): GeneralCommandLine {
+        val workingDirectory = project.basePath
+        val commandLine = PtyCommandLine()
+        commandLine.withConsoleMode(false)
+        commandLine.withInitialColumns(120)
+        commandLine.withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
+        commandLine.setWorkDirectory(workingDirectory!!)
+        commandLine.withExePath(ShellUtil.detectShells().first())
+        commandLine.withParameters("-c")
+        commandLine.withParameters(scriptText)
+        return commandLine
+    }
 }

@@ -33,6 +33,7 @@ import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import javax.swing.JButton
 import javax.swing.JPanel
 import javax.swing.JProgressBar
 import javax.swing.ScrollPaneConstants
@@ -60,8 +61,8 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
         this.isOpaque = true
     }
 
-    val header = JBLabel(AllIcons.Actions.Copy).apply {
-        this.border = JBUI.Borders.empty(10, 0)
+    val header = JButton(AllIcons.Actions.Copy).apply {
+        this.border = JBUI.Borders.empty(10, 20)
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
                 val selection = StringSelection(myText)

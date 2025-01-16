@@ -183,7 +183,7 @@ class SingleFileDiffView(
             border = BorderFactory.createEmptyBorder()
             toolTipText = AutoDevBundle.message("sketch.patch.action.repairDiff.tooltip")
             isEnabled = appliedPatch?.status != ApplyPatchStatus.SUCCESS
-            background = if (isEnabled) JBColor(0xFF0000, 0xFF0000) else JPanel().background
+            foreground = if (isEnabled) JBColor(0xFF0000, 0xFF0000) else JPanel().background
 
             addActionListener {
                 FileEditorManager.getInstance(myProject).openFile(virtualFile, true)
