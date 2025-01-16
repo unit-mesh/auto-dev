@@ -44,8 +44,8 @@ class AutoDevRunAction : DumbAwareAction() {
             RunService.provider(project, file)
                 ?.runFile(project, scratchFile, psiFile, isFromToolAction = true)
                 ?: AutoDevNotifications.notify(project, "Run Failed, no provider")
-        } finally {
-            AutoDevNotifications.notify(project, "Run Success")
+        } catch (e: Exception) {
+            AutoDevNotifications.notify(project, "Run Failed: ${e.message}")
         }
     }
 }
