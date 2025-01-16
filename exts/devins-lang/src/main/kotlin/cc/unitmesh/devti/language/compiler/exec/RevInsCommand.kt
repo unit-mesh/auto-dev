@@ -2,21 +2,8 @@ package cc.unitmesh.devti.language.compiler.exec
 
 import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
-import cc.unitmesh.devti.language.DevInBundle
-import cc.unitmesh.devti.vcs.VcsPrompting
-import com.intellij.openapi.components.service
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.Task
-import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
+import cc.unitmesh.devti.provider.RevisionProvider
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vcs.changes.Change
-import git4idea.GitRevisionNumber
-import git4idea.changes.GitCommittedChangeListProvider
-import git4idea.repo.GitRepositoryManager
-import kotlinx.coroutines.future.await
-import kotlinx.coroutines.runBlocking
-import java.util.concurrent.CompletableFuture
 
 
 /**
@@ -30,27 +17,9 @@ class RevInsCommand(private val myProject: Project, private val revision: String
     override val commandName: BuiltinCommand = BuiltinCommand.REV
 
     override suspend fun execute(): String? {
-        val repository = GitRepositoryManager.getInstance(myProject).repositories.firstOrNull() ?: return null
-        val future = CompletableFuture<List<Change>>()
-
-        val task = object : Task.Backgroundable(myProject, DevInBundle.message("devin.ref.loading"), false) {
-            override fun run(indicator: ProgressIndicator) {
-                val committedChangeList = GitCommittedChangeListProvider.getCommittedChangeList(
-                    myProject!!, repository.root, GitRevisionNumber(revision)
-                )?.changes?.toList()
-
-                future.complete(committedChangeList)
-            }
-        }
-
-        ProgressManager.getInstance()
-            .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
-
-
-        return runBlocking {
-            val changes = future.await()
-            val diffContext = myProject.service<VcsPrompting>().prepareContext(changes)
-            "\n```diff\n${diffContext}\n```\n"
-        }
+        return RevisionProvider.provide()?.let {
+            val changes = it.fetchChanges(myProject, revision)
+            return changes ?: "No changes found for revision $revision"
+        } ?: "No revision provider found"
     }
 }

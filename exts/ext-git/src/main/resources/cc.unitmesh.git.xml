@@ -42,4 +42,8 @@
             <add-to-group group-id="ChangesViewPopupMenu" relative-to-action="ChangesView.Revert" anchor="after"/>
         </action>
     </actions>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <revisionProvider implementation="cc.unitmesh.git.actions.vcs.GitRevisionProvider"/>
+    </extensions>
 </idea-plugin>
