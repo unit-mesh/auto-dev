@@ -2,6 +2,9 @@ package cc.unitmesh.devti.sketch.ui.patch
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.diff.DiffStreamHandler
+import cc.unitmesh.devti.diff.DiffStreamService
+import cc.unitmesh.devti.diff.model.streamDiff
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.util.findFile
 import com.intellij.icons.AllIcons
@@ -12,6 +15,8 @@ import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.command.undo.UndoManager
 import com.intellij.openapi.diff.impl.patch.PatchReader
 import com.intellij.openapi.diff.impl.patch.TextFilePatch
+import com.intellij.openapi.diff.impl.patch.apply.GenericPatchApplier
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.FileEditorProvider
 import com.intellij.openapi.project.Project
@@ -26,6 +31,8 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.containers.MultiMap
 import com.intellij.util.ui.JBUI
+import git4idea.changes.filePath
+import kotlinx.coroutines.flow.flowOf
 import java.awt.BorderLayout
 import javax.swing.BoxLayout
 import javax.swing.JButton
@@ -101,8 +108,21 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
         val viewDiffButton = JButton(AllIcons.Actions.ListChanges).apply {
             this.toolTipText = AutoDevBundle.message("sketch.patch.action.viewDiff.tooltip")
             addActionListener {
-                /// use StreamDiff
                 handleViewDiffAction()
+            }
+        }
+
+        val runStreamButton = JButton(AllIcons.Actions.RunAll).apply {
+            this.toolTipText = AutoDevBundle.message("sketch.patch.action.runDiff.tooltip")
+            addActionListener {
+                showStreamDiff()
+            }
+        }
+
+        val repairButton = JButton(AllIcons.Actions.Redo).apply {
+            this.toolTipText = AutoDevBundle.message("sketch.patch.action.repairDiff.tooltip")
+            addActionListener {
+                AutoDevNotifications.error(myProject, "Not implemented yet")
             }
         }
 
@@ -111,8 +131,46 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
         panel.add(acceptButton)
         panel.add(rejectButton)
         panel.add(viewDiffButton)
+        panel.add(runStreamButton)
+        panel.add(repairButton)
 
         return panel
+    }
+
+    private fun showStreamDiff() {
+        val matchedPatches =
+            MatchPatchPaths(myProject).execute(filePatches, true)
+
+        val patchGroups = MultiMap<VirtualFile, AbstractFilePatchInProgress<*>>()
+        for (patchInProgress in matchedPatches) {
+            patchGroups.putValue(patchInProgress.base, patchInProgress)
+        }
+
+        val parsedPatch = filePatches.single()
+
+        val findFile = myProject.findFile(parsedPatch.beforeFileName!!)
+        if (findFile == null) {
+            AutoDevNotifications.error(myProject, "PatchProcessor: no before file found")
+            return
+        }
+
+        FileEditorManager.getInstance(myProject).openFile(findFile, true)
+        val editor =  FileEditorManager.getInstance(myProject).selectedTextEditor ?: return
+        val oldCode = findFile.readText()
+        val newText = GenericPatchApplier.apply(oldCode, parsedPatch.hunks)!!.patchedText
+
+        val diffStreamHandler = DiffStreamHandler(
+            myProject,
+            editor = editor,
+            0,
+            oldCode.lines().size,
+            onClose = {
+            },
+            onFinish = {
+
+            })
+
+        diffStreamHandler.normalDiff(oldCode, newText)
     }
 
     private fun handleAcceptAction() {

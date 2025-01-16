@@ -159,6 +159,24 @@ class DiffStreamHandler(
         }
     }
 
+    fun normalDiff(originContent: String,  newContent: String) {
+        val lines = originContent.lines()
+        val newLines = newContent.lines()
+
+        isRunning = true
+        cc.unitmesh.devti.util.AutoDevCoroutineScope.scope(project).launch {
+            streamDiff(lines, flowOf(*newLines.toTypedArray())).collect {
+                ApplicationManager.getApplication().invokeLater {
+                    WriteCommandAction.runWriteCommandAction(project) {
+                        updateByDiffType(it)
+                    }
+                }
+            }
+
+            handleFinishedResponse(newContent)
+        }
+    }
+
     private fun updateByDiffType(diffLine: DiffLine) {
         when (diffLine) {
             is DiffLine.New -> handleNewLine(diffLine.line)
