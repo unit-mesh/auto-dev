@@ -15,7 +15,6 @@ import com.intellij.vcs.log.VcsLogDataKeys
 
 
 class ReleaseNoteSuggestionAction : AnAction() {
-
     init{
         presentationText("settings.autodev.others.generateReleaseNote", templatePresentation)
     }
