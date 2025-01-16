@@ -49,9 +49,6 @@ class DevInRunService : RunService {
         psiElement: PsiElement?,
         isFromToolAction: Boolean
     ): String? {
-//        if (isFromToolAction) {
-//            return runDevInsFile(project, virtualFile, psiElement)
-//        }
         val settings = createRunSettings(project, virtualFile, psiElement) ?: return null
         val runConfiguration = settings.configuration as DevInsConfiguration
 

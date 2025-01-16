@@ -58,9 +58,6 @@ import kotlin.math.min
 
 data class ModelWrapper(val virtualFile: VirtualFile, var panel: JPanel? = null, var namePanel: JPanel? = null)
 
-/**
- *
- */
 class AutoDevInputSection(private val project: Project, val disposable: Disposable?, showAgent: Boolean = true) :
     BorderLayoutPanel() {
     private val input: AutoDevInput
@@ -265,10 +262,6 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
             }
         })
     }
-
-//    private fun updateElements(elements: List<VirtualFile>?) {
-//        elements?.forEach { listModel.addIfAbsent(it) }
-//    }
 
     private fun updateElements(elements: List<PsiElement>?) {
         elements?.forEach { listModel.addIfAbsent(it.containingFile.virtualFile) }
