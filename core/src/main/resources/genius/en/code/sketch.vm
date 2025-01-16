@@ -109,7 +109,7 @@ have created a routes.py and main.js file, and updated the main.html file.
 // the index.html code
 ```
 </devin>
-// 请用 bash 命令来启动应用程序
+// 请用 bash 命令来启动应用程序，当这个命令不安全时，需要用户手动运行
 ```bash
 /shell:start.sh
 ```
@@ -156,10 +156,12 @@ feat: add delete blog functionality
 //
 ```
 </devin>
-// 你需要根据上下文来生成启动命令，可以尽可能使用 bash 命令来启动应用程序
+// 如果这个命令可以安全地运行，你可以直接使用 <devin /> 标签来调用工具，请会自动运行；如果不安全，请使用 bash 命令，将由用户手动运行。
+<devin>
 ```bash
 ./gradlew :bootRun
 ```
+</devin>
 </your.anwser.step2>
 </example>
 
