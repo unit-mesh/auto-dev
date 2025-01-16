@@ -214,6 +214,11 @@
                         interface="cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider"
                         dynamic="true">
         </extensionPoint>
+
+        <extensionPoint qualifiedName="cc.unitmesh.revisionProvider"
+                        interface="cc.unitmesh.devti.provider.RevisionProvider"
+                        dynamic="true">
+        </extensionPoint>
     </extensionPoints>
 
     <applicationListeners>

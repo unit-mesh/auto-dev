@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.sketch
 
+import cc.unitmesh.devti.alignRight
 import cc.unitmesh.devti.gui.chat.*
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
@@ -26,6 +27,8 @@ import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
@@ -42,6 +45,8 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
     private var progressBar: CustomProgressBar = CustomProgressBar(this)
     private var shireInput: AutoDevInputSection = AutoDevInputSection(project, this, showAgent = false)
 
+    private var myText: String = ""
+
     private var myList = JPanel(VerticalLayout(JBUI.scale(0))).apply {
         this.isOpaque = true
     }
@@ -55,9 +60,25 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
         this.isOpaque = true
     }
 
+    val header = JBLabel(AllIcons.Actions.Copy).apply {
+        this.border = JBUI.Borders.empty(10, 0)
+        addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent?) {
+                val selection = StringSelection(myText)
+                val clipboard = Toolkit.getDefaultToolkit().systemClipboard
+                clipboard.setContents(selection, null)
+            }
+        })
+    }
+
     private var panelContent: DialogPanel = panel {
         row { cell(progressBar).fullWidth() }
         row { cell(userPrompt).fullWidth().fullHeight() }
+        row {
+            panel {
+                row { cell(header).alignRight() }
+            }
+        }
         row { cell(myList).fullWidth().fullHeight() }
     }
 
@@ -146,6 +167,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
     }
 
     fun onUpdate(text: String) {
+        myText = text
         val codeFenceList = CodeFence.parseAll(text)
 
         runInEdt {
@@ -195,6 +217,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
     }
 
     fun onFinish(text: String) {
+        myText = text
         runInEdt {
             blockViews.filter { it.getViewText().isNotEmpty() }.forEach {
                 it.doneUpdateText(text)

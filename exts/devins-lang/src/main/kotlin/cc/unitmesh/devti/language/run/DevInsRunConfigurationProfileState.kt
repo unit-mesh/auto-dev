@@ -22,12 +22,17 @@ import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.ui.ConsoleViewContentType
+import com.intellij.ide.scratch.ScratchFileService
+import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.ui.components.panels.NonOpaquePanel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -159,12 +164,17 @@ open class DevInsRunConfigurationProfileState(
         output: String,
         console: ConsoleViewWrapperBase,
         processHandler: ProcessHandler,
-        isLocalMode: Boolean
+        isLocalMode: Boolean,
     ) {
         ApplicationManager.getApplication().invokeLater {
             if (isLocalMode) {
                 console.print("Local command detected, running in local mode", ConsoleViewContentType.SYSTEM_OUTPUT)
                 processHandler.detachProcess()
+
+                if (!configuration.showConsole) {
+                    cleanup(configuration)
+                }
+
                 return@invokeLater
             }
 
@@ -181,6 +191,31 @@ open class DevInsRunConfigurationProfileState(
                 myProject.service<DevInsConversationService>()
                     .updateLlmResponse(configuration.getScriptPath(), llmResult.toString())
                 processHandler.detachProcess()
+
+                if (!configuration.showConsole) {
+                    cleanup(configuration)
+                }
+            }
+        }
+    }
+
+    private fun cleanup(configuration: DevInsConfiguration) {
+        val virtualFile =
+            VirtualFileManager.getInstance().findFileByUrl("file://${configuration.getScriptPath()}")
+        val fileService: ScratchFileService = ScratchFileService.getInstance()
+        if (virtualFile != null) {
+            val foundFile = runReadAction {
+                fileService.findFile(
+                    ScratchRootType.getInstance(),
+                    virtualFile.name,
+                    ScratchFileService.Option.existing_only
+                )
+            }
+
+            if (foundFile != null) {
+                runWriteAction {
+                    foundFile.delete(this)
+                }
             }
         }
     }
