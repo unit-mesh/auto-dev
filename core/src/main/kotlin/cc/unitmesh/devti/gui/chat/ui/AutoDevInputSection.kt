@@ -9,6 +9,7 @@ import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.llms.tokenizer.TokenizerFactory
 import cc.unitmesh.devti.provider.RelatedClassesProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
+import cc.unitmesh.devti.util.isInProject
 import com.intellij.codeInsight.lookup.LookupManagerListener
 import com.intellij.icons.AllIcons
 import com.intellij.ide.IdeTooltip
@@ -385,10 +386,12 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         }
 
     val focusableComponent: JComponent get() = input
-}
 
-private fun DefaultListModel<ModelWrapper>.addIfAbsent(vfile: VirtualFile) {
-    if (elements().asIterator().asSequence().none { it.virtualFile == vfile }) {
-        addElement(ModelWrapper(vfile))
+    private fun DefaultListModel<ModelWrapper>.addIfAbsent(vfile: VirtualFile) {
+        if (!isInProject(vfile, project)) return
+        if (elements().asIterator().asSequence().none { it.virtualFile == vfile }) {
+            addElement(ModelWrapper(vfile))
+        }
     }
+
 }

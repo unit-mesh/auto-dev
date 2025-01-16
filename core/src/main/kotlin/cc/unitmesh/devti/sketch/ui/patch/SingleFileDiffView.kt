@@ -1,6 +1,8 @@
 package cc.unitmesh.devti.sketch.ui.patch
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.diff.DiffStreamHandler
 import com.intellij.diff.DiffContentFactoryEx
 import com.intellij.diff.chains.SimpleDiffRequestChain
 import com.intellij.diff.chains.SimpleDiffRequestProducer
@@ -26,8 +28,17 @@ import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.RightGap
 import com.intellij.ui.dsl.builder.panel
 import cc.unitmesh.devti.sketch.ui.LangSketch
+import cc.unitmesh.devti.util.findFile
+import com.intellij.openapi.command.CommandProcessor
+import com.intellij.openapi.command.UndoConfirmationPolicy
+import com.intellij.openapi.diff.impl.patch.ApplyPatchStatus
+import com.intellij.openapi.vcs.changes.patch.AbstractFilePatchInProgress
+import com.intellij.openapi.vcs.changes.patch.MatchPatchPaths
 import com.intellij.openapi.vfs.VfsUtilCore
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.util.containers.MultiMap
 import java.awt.BorderLayout
+import java.awt.Dimension
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.BorderFactory
@@ -45,6 +56,8 @@ class SingleFileDiffView(
     private val myHeaderPanel: JPanel = JPanel(BorderLayout())
     private var filePanel: DialogPanel? = null
     var diffFile: ChainDiffVirtualFile? = null
+    private val appliedPatch = GenericPatchApplier.apply(virtualFile.readText(), patch.hunks)
+    private val oldCode = virtualFile.readText()
 
     init {
         val contentPanel = JPanel(BorderLayout())
@@ -142,11 +155,9 @@ class SingleFileDiffView(
         val fileEditor = FileEditorManager.getInstance(myProject).getSelectedEditor(virtualFile)
 
         val rollback = JButton(AllIcons.Actions.Rollback).apply {
+            preferredSize = Dimension(32, 32)
             toolTipText = AutoDevBundle.message("sketch.patch.action.rollback.tooltip")
             isEnabled = undoManager.isUndoAvailable(fileEditor)
-            border = null
-            isFocusPainted = false
-            isContentAreaFilled = false
 
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent?) {
@@ -157,8 +168,69 @@ class SingleFileDiffView(
             })
         }
 
-        return listOf(rollback)
+        val runStreamButton = JButton(AllIcons.Actions.RunAll).apply {
+            preferredSize = Dimension(32, 32)
+            toolTipText = AutoDevBundle.message("sketch.patch.action.runDiff.tooltip")
+            isEnabled = appliedPatch?.status == ApplyPatchStatus.SUCCESS
+
+            addActionListener {
+                val document = FileDocumentManager.getInstance().getDocument(virtualFile) ?: return@addActionListener
+                PsiDocumentManager.getInstance(myProject).commitDocument(document)
+                CommandProcessor.getInstance().executeCommand(myProject, {
+                    showStreamDiff()
+                }, "RunStream", null, UndoConfirmationPolicy.REQUEST_CONFIRMATION, false)
+            }
+        }
+
+        val repairButton = JButton(AllIcons.Toolwindows.ToolWindowBuild).apply {
+            preferredSize = Dimension(32, 32)
+            toolTipText = AutoDevBundle.message("sketch.patch.action.repairDiff.tooltip")
+            isEnabled = appliedPatch?.status != ApplyPatchStatus.SUCCESS
+
+            addActionListener {
+                FileEditorManager.getInstance(myProject).openFile(virtualFile, true)
+                val editor = FileEditorManager.getInstance(myProject).selectedTextEditor ?: return@addActionListener
+
+                val diffStreamHandler = DiffStreamHandler(
+                    myProject,
+                    editor = editor,
+                    0,
+                    oldCode.lines().size,
+                    onClose = {
+                    },
+                    onFinish = {
+
+                    })
+
+                diffStreamHandler.streamDiffLinesToEditor(
+                    oldCode, "Please repair the diff, return all repaird code. \n" +
+                            "Here is the original code: \n\n$oldCode" + "\n\nHere is the patched code: \n\n${patch.singleHunkPatchText}"
+                )
+            }
+        }
+
+        return listOf(rollback, runStreamButton, repairButton)
     }
+
+    private fun showStreamDiff() {
+        FileEditorManager.getInstance(myProject).openFile(virtualFile, true)
+        val editor = FileEditorManager.getInstance(myProject).selectedTextEditor ?: return
+        val newText = appliedPatch!!.patchedText
+
+        val diffStreamHandler = DiffStreamHandler(
+            myProject,
+            editor = editor,
+            0,
+            oldCode.lines().size,
+            onClose = {
+            },
+            onFinish = {
+
+            })
+
+        diffStreamHandler.normalDiff(oldCode, newText)
+    }
+
 
     override fun getViewText(): String = virtualFile.readText()
 

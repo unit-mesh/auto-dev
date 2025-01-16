@@ -53,9 +53,8 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
     private val filePatches: MutableList<TextFilePatch> = myReader.textPatches
 
     init {
-        val header = createHeaderAction()
-
-        myHeaderPanel.add(header, BorderLayout.EAST)
+//        val header = createHeaderAction()
+//        myHeaderPanel.add(header, BorderLayout.EAST)
         mainPanel.add(myHeaderPanel)
         mainPanel.border = JBUI.Borders.compound(JBUI.Borders.empty(0, 10))
 
@@ -112,65 +111,13 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
             }
         }
 
-        val runStreamButton = JButton(AllIcons.Actions.RunAll).apply {
-            this.toolTipText = AutoDevBundle.message("sketch.patch.action.runDiff.tooltip")
-            addActionListener {
-                showStreamDiff()
-            }
-        }
-
-        val repairButton = JButton(AllIcons.Actions.Redo).apply {
-            this.toolTipText = AutoDevBundle.message("sketch.patch.action.repairDiff.tooltip")
-            addActionListener {
-                AutoDevNotifications.error(myProject, "Not implemented yet")
-            }
-        }
-
         val panel = JPanel()
         panel.layout = BoxLayout(panel, BoxLayout.X_AXIS)
         panel.add(acceptButton)
         panel.add(rejectButton)
         panel.add(viewDiffButton)
-        panel.add(runStreamButton)
-        panel.add(repairButton)
 
         return panel
-    }
-
-    private fun showStreamDiff() {
-        val matchedPatches =
-            MatchPatchPaths(myProject).execute(filePatches, true)
-
-        val patchGroups = MultiMap<VirtualFile, AbstractFilePatchInProgress<*>>()
-        for (patchInProgress in matchedPatches) {
-            patchGroups.putValue(patchInProgress.base, patchInProgress)
-        }
-
-        val parsedPatch = filePatches.single()
-
-        val findFile = myProject.findFile(parsedPatch.beforeFileName!!)
-        if (findFile == null) {
-            AutoDevNotifications.error(myProject, "PatchProcessor: no before file found")
-            return
-        }
-
-        FileEditorManager.getInstance(myProject).openFile(findFile, true)
-        val editor =  FileEditorManager.getInstance(myProject).selectedTextEditor ?: return
-        val oldCode = findFile.readText()
-        val newText = GenericPatchApplier.apply(oldCode, parsedPatch.hunks)!!.patchedText
-
-        val diffStreamHandler = DiffStreamHandler(
-            myProject,
-            editor = editor,
-            0,
-            oldCode.lines().size,
-            onClose = {
-            },
-            onFinish = {
-
-            })
-
-        diffStreamHandler.normalDiff(oldCode, newText)
     }
 
     private fun handleAcceptAction() {
