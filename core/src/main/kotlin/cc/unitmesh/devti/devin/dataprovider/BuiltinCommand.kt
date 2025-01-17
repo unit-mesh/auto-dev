@@ -12,9 +12,8 @@ enum class BuiltinCommand(
     val hasCompletion: Boolean = false,
     val requireProps: Boolean = false,
 ) {
-    FILE("file", "Read the content of a file", AllIcons.Actions.Copy, true, true),
-    REV("rev", "Read git change by hash", AllIcons.Vcs.History, true, true),
-
+    FILE("file", "Read the content of a file by project relative path", AllIcons.Actions.Copy, true, true),
+    REV("rev", "Read git changes by hash; for other git operations, it is recommended to use native git commands", AllIcons.Vcs.History, true, true),
     /**
      * Every language will have a symbol completion, which is the most basic completion, for example,
      * - Java: [com.intellij.codeInsight.completion.JavaKeywordCompletion]
@@ -23,16 +22,16 @@ enum class BuiltinCommand(
      */
     SYMBOL(
         "symbol",
-        "Read content by Java/Kotlin canonicalName",
+        "Read content by Java/Kotlin canonical name, such as package name, class name.",
         AllIcons.Toolwindows.ToolWindowStructure,
         true,
         true
     ),
     WRITE("write", "Write content to a file with markdown code block, /write:path/to/file:L1-L2", AllIcons.Actions.Edit, true, true),
     PATCH("patch", "Apply GNU unified diff format structure patch to a file, /patch:path/to/file", AllIcons.Vcs.Patch_file, false),
-    RUN("run", "Run the content of a file", AllIcons.Actions.Execute, true, true),
-    SHELL("shell", "Run shell command", AllIcons.Debugger.Console, true, true),
-    COMMIT("commit", "Commit the content of a file", AllIcons.Vcs.CommitNode, false),
+    RUN("run", "Run the IDE's built-in command, like build tool, test.", AllIcons.Actions.Execute, true, true),
+    SHELL("shell", "Execute a shell command and collect (ProcessBuild) the result", AllIcons.Debugger.Console, true, true),
+    COMMIT("commit", "Do commit with current workspace with some messages.", AllIcons.Vcs.CommitNode, false),
     FILE_FUNC(
         "file-func",
         "Read the name of a file, support for: " + FileFunc.values().joinToString(",") { it.funcName },
@@ -40,8 +39,8 @@ enum class BuiltinCommand(
         true,
         true
     ),
-    BROWSE("browse", "Get the content of a given URL", AllIcons.Toolwindows.WebToolWindow, true, true),
-    REFACTOR("refactor", "Refactor the content of a file", AutoDevIcons.Idea, true, true),
+    BROWSE("browse", "Fetch the content of a given URL.", AllIcons.Toolwindows.WebToolWindow, true, true),
+    REFACTOR("refactor", "Refactor the content of a file, only support for rename, safeDelete and move.", AutoDevIcons.Idea, true, true),
     STRUCTURE(
         "structure",
         "Get the structure of a file with AST/PSI",
@@ -59,14 +58,14 @@ enum class BuiltinCommand(
     ),
     LOCAL_SEARCH(
         "localSearch",
-        "Search text in the project will return 5 line before and after",
+        "Search text in the scope (current only support project) will return 5 line before and after",
         AllIcons.Actions.Search,
         true,
         true
     ),
     RELATED(
         "related",
-        "Get related content by the current file",
+        "Get related code by AST (abstract syntax tree) for the current file",
         AllIcons.Actions.Find,
         true,
         true
