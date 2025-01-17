@@ -26,13 +26,16 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
+import com.sun.java.accessibility.util.AWTEventMonitor.addActionListener
 import java.awt.BorderLayout
+import java.awt.Dimension
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import javax.swing.BorderFactory
 import javax.swing.JButton
 import javax.swing.JPanel
 import javax.swing.JProgressBar
@@ -63,6 +66,8 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
 
     val header = JButton(AllIcons.Actions.Copy).apply {
         this.border = JBUI.Borders.empty(10, 20)
+        this.isOpaque = true
+        this.preferredSize = Dimension(32, 32)
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
                 val selection = StringSelection(myText)
@@ -73,12 +78,19 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
     }
 
     private var panelContent: DialogPanel = panel {
-        row { cell(progressBar).fullWidth() }
+        if (showInput) {
+            // 开启 AI 降临模式（全自动化） with toggle
+            row {
+                checkBox("AI 降临模式（全自动化）").apply {
+                    addActionListener {
+                        ///
+                    }
+                }
+            }
+        }
         row { cell(userPrompt).fullWidth().fullHeight() }
         row {
-            panel {
-                row { cell(header).alignRight() }
-            }
+            cell(header).alignRight()
         }
         row { cell(myList).fullWidth().fullHeight() }
     }
@@ -104,6 +116,8 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
                 }
             }
         })
+
+        contentPanel.add(progressBar, BorderLayout.SOUTH)
 
         if (showInput) {
             shireInput.also {

@@ -70,6 +70,8 @@ class CodeHighlightSketch(
             if (textLanguage?.lowercase() == "devin") {
                 editorFragment?.setCollapsed(true)
             }
+        } else {
+            editor.backgroundColor = JBColor.PanelBackground
         }
     }
 

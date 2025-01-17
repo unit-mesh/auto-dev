@@ -182,7 +182,7 @@ class AutoDevInlineChatInput(
             override fun skipKeyEventDispatcher(event: KeyEvent): Boolean = true
 
             init {
-                isOpaque = false
+                isOpaque = true
                 isFocusable = true
                 lineWrap = true
                 wrapStyleWord = true
@@ -190,7 +190,7 @@ class AutoDevInlineChatInput(
             }
         }
 
-        border = AutoDevLineBorder(CurrentTheme.Focus.focusColor(), 1, true, 8)
+        border = AutoDevLineBorder(CurrentTheme.Focus.focusColor(), 1, true, 2)
 
         // escape to close
         textArea.actionMap.put("escapeAction", object : AbstractAction() {

@@ -11,6 +11,7 @@ import cc.unitmesh.devti.provider.RelatedClassesProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.util.isInProject
 import com.intellij.codeInsight.lookup.LookupManagerListener
+import com.intellij.diff.editor.DiffVirtualFileBase
 import com.intellij.icons.AllIcons
 import com.intellij.ide.IdeTooltip
 import com.intellij.ide.IdeTooltipManager
@@ -187,7 +188,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         /// get current open file and add to the list
         val currentFile = FileEditorManager.getInstance(project).selectedFiles.firstOrNull()
         currentFile?.let {
-            listModel.addIfAbsent(currentFile)
+            listModel.addIfAbsent(currentFile, first = true)
         }
     }
 
@@ -380,11 +381,17 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
 
     val focusableComponent: JComponent get() = input
 
-    private fun DefaultListModel<ModelWrapper>.addIfAbsent(vfile: VirtualFile) {
+    private fun DefaultListModel<ModelWrapper>.addIfAbsent(vfile: VirtualFile, first: Boolean = false) {
         if (!isInProject(vfile, project)) return
-        if (elements().asIterator().asSequence().none { it.virtualFile == vfile }) {
-            addElement(ModelWrapper(vfile))
+        if (vfile is DiffVirtualFileBase) return
+
+        if (elements().asSequence().none { it.virtualFile == vfile }) {
+            val modelWrapper = ModelWrapper(vfile)
+            if (first) {
+                insertElementAt(modelWrapper, 0)
+            } else {
+                addElement(modelWrapper)
+            }
         }
     }
-
 }
