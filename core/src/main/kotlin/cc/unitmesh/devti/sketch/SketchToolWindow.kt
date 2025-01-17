@@ -258,6 +258,10 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
         val devinCodeFence = codeFenceList.filter { it.language.displayName == "DevIn" }
 
         devinCodeFence.forEach {
+            if (it.text.contains("<DevinsError>")) {
+                return
+            }
+
             val commands = setOf(
                 BuiltinCommand.DIR,
                 BuiltinCommand.LOCAL_SEARCH,
