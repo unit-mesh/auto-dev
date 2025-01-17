@@ -1,6 +1,6 @@
 package cc.unitmesh.ide.javascript.provider
 
-import cc.unitmesh.devti.prompting.code.TestStack
+import cc.unitmesh.devti.prompting.code.TechStack
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
@@ -89,7 +89,7 @@ class JavaScriptContextProvider : ChatContextProvider {
             "The project uses TypeScript language" + (version?.let { ", version: $version" } ?: ""))
     }
 
-    private fun prepareStack(snapshot: JsDependenciesSnapshot): TestStack {
+    private fun prepareStack(snapshot: JsDependenciesSnapshot): TechStack {
         val devDependencies = mutableMapOf<String, String>()
         val dependencies = mutableMapOf<String, String>()
 
@@ -122,7 +122,7 @@ class JavaScriptContextProvider : ChatContextProvider {
             }
         }
 
-        return TestStack(frameworks, testFrameworks, dependencies, devDependencies)
+        return TechStack(frameworks, testFrameworks, dependencies, devDependencies)
     }
 }
 

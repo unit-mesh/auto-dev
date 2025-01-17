@@ -11,6 +11,7 @@ import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
@@ -75,6 +76,7 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
         val psiFile = PsiManager.getInstance(myProject).findFile(virtualFile)
             ?: return "$DEVINS_ERROR: File not found: $argument"
 
+        FileEditorManager.getInstance(myProject).openFile(virtualFile, true)
         return executeInsert(psiFile, range, content)
     }
 
@@ -82,6 +84,7 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
         val newFile = parentDir.createChildData(this, filepath.substringAfterLast(pathSeparator))
         val document = FileDocumentManager.getInstance().getDocument(newFile) ?: return null
 
+        FileEditorManager.getInstance(myProject).openFile(newFile, true)
         document.setText(content)
         return document
     }
