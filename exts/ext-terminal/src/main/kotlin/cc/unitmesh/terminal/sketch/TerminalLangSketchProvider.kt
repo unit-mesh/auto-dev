@@ -108,7 +108,7 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
             }
 
             override fun doneUpdateText(text: String) {
-                terminalWidget!!.terminalStarter?.sendString(content, true)
+                terminalWidget!!.terminalStarter?.sendString(content, false)
             }
 
             override fun getComponent(): JComponent = panelLayout!!
@@ -132,7 +132,7 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
 
             processHandler.addProcessListener(object : ProcessAdapter() {
                 override fun processTerminated(event: ProcessEvent) {
-                    AutoDevNotifications.notify(project, "Process terminated with exit code ${event.exitCode}")
+                    AutoDevNotifications.notify(project, "Process terminated with exit code ${event.exitCode}, ${event.text}")
                     processHandler.destroyProcess()
                 }
             })

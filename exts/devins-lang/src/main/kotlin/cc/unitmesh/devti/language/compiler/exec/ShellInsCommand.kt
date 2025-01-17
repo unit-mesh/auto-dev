@@ -15,9 +15,7 @@ import com.intellij.execution.process.KillableProcessHandler
 import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
@@ -27,7 +25,6 @@ import com.intellij.sh.psi.ShFile
 import com.intellij.sh.run.ShRunner
 import java.awt.Toolkit.getDefaultToolkit
 import java.io.IOException
-import java.util.concurrent.CompletableFuture
 
 /**
  * A class that implements the `InsCommand` interface to execute a shell command within the IntelliJ IDEA environment.
@@ -55,7 +52,8 @@ class ShellInsCommand(val myProject: Project, private val shellFile: String?, va
             processHandler.addProcessListener(object : ProcessAdapter() {
                 override fun processTerminated(event: ProcessEvent) {
                     super.processTerminated(event)
-                    val allOutput = process.outputStream.buffered()
+                    // get output from process
+                    val allOutput = process.inputStream.bufferedReader().use { it.readText() }
                     val hasToolwindow = ToolWindowManager.getInstance(myProject).getToolWindow("AutoDev")
                     if (hasToolwindow != null) {
                         AutoInputService.getInstance(myProject).putText(allOutput.toString())

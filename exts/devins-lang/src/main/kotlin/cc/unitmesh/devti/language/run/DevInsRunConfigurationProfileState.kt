@@ -27,6 +27,7 @@ import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.components.service
@@ -202,19 +203,20 @@ open class DevInsRunConfigurationProfileState(
     private fun cleanup(configuration: DevInsConfiguration) {
         val virtualFile =
             VirtualFileManager.getInstance().findFileByUrl("file://${configuration.getScriptPath()}")
-        val fileService: ScratchFileService = ScratchFileService.getInstance()
+        val service: ScratchFileService = ScratchFileService.getInstance()
         if (virtualFile != null) {
+            val scratchRootType = ScratchRootType.getInstance()
             val foundFile = runReadAction {
-                fileService.findFile(
-                    ScratchRootType.getInstance(),
-                    virtualFile.name,
-                    ScratchFileService.Option.existing_only
-                )
+                service.findFile(scratchRootType, virtualFile.name, ScratchFileService.Option.existing_only)
             }
 
             if (foundFile != null) {
-                runWriteAction {
-                    foundFile.delete(this)
+                AutoDevCoroutineScope.scope(myProject).launch {
+                    runInEdt {
+                        runWriteAction {
+                            foundFile.delete(this)
+                        }
+                    }
                 }
             }
         }

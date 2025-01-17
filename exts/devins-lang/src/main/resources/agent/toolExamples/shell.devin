@@ -1,6 +1,10 @@
+Notes: If you have this tool, note that you DO have the ability to run commands directly on the USER's system.
+Note that the user will have to approve the command before it is executed. The user may reject it if it is not to their liking.
+The actual command will NOT execute until the user approves it. The user may not approve it immediately. Do NOT assume the command has started running.
+If the step is WAITING for user approval, it has NOT started running.
 执行单个 shell 脚本
 /shell:execute.sh
-执行 shell 命令（需要确保命令是安全的，无需用户确认就可以执行）
+执行 shell 命令（请确保你的 shell 命令是安全的，并且能让应用程序读取到输出）
 /shell:execute.sh
 ```
 echo "Hello, World!"
