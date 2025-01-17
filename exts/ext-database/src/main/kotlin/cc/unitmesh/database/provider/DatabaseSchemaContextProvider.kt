@@ -4,6 +4,9 @@ import cc.unitmesh.database.util.SqlContextBuilder
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
+import com.intellij.database.model.basic.BasicSchema
+import com.intellij.database.util.DasUtil
+import com.intellij.database.util.DbUtil
 import com.intellij.openapi.project.Project
 import com.intellij.sql.dialects.SqlLanguageDialect
 import com.intellij.sql.psi.SqlFile
@@ -17,6 +20,23 @@ class DatabaseSchemaContextProvider : ChatContextProvider {
     }
 
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
+        val dataSources = DbUtil.getDataSources(project)
+        if (dataSources.isEmpty) return emptyList()
+
+        val infos = dataSources.mapNotNull {
+            val dbNames = it.delegateDataSource?.databaseVersion ?: return@mapNotNull null
+            val nameInfo = dbNames.name + " " + dbNames.version
+
+//            val schema = it.delegateDataSource?.model as? BasicSchema ?: return@mapNotNull null
+//            val schemaInfo = SqlContextBuilder.formatSchema(schema) ?: return@mapNotNull null
+            val text = "This project use $nameInfo"
+            return@mapNotNull ChatContextItem(DatabaseSchemaContextProvider::class, text)
+        }.toList()
+
+        return infos
+    }
+
+    private fun collectByElement(creationContext: ChatCreationContext): List<ChatContextItem> {
         val file = creationContext.element?.containingFile as? SqlFile ?: return emptyList()
         val ds = SqlImplUtil.getDataSources(file).firstOrNull() ?: return emptyList()
 
