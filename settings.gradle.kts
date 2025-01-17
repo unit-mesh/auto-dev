@@ -22,6 +22,8 @@ include(
     "exts:ext-git",
     // for http test
     "exts:ext-http-client",
+    "exts:ext-plantuml",
+    "exts:ext-mermaid",
 
     // the Input Language support for AutoDev
     "exts:devins-lang"

@@ -11,6 +11,7 @@ import org.jetbrains.intellij.platform.gradle.tasks.RunIdeTask
 import org.jetbrains.intellij.platform.gradle.utils.extensionProvider
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
+import kotlin.collections.plus
 
 // The same as `--stacktrace` param
 gradle.startParameter.showStacktrace = ShowStacktrace.ALWAYS
@@ -52,7 +53,7 @@ val ideaPlugins =
         "org.jetbrains.idea.maven",
         "org.jetbrains.kotlin",
         "JavaScript"
-    ) + prop("pythonPlugin")
+    ) + prop("pythonPlugin") + prop("platformPlugins").split(",")
 
 var baseIDE = prop("baseIDE")
 val platformVersion = prop("platformVersion").toInt()
@@ -278,6 +279,8 @@ project(":") {
             pluginModule(implementation(project(":exts:ext-git")))
             pluginModule(implementation(project(":exts:ext-http-client")))
             pluginModule(implementation(project(":exts:ext-terminal")))
+            pluginModule(implementation(project(":exts:ext-mermaid")))
+            pluginModule(implementation(project(":exts:ext-plantuml")))
             pluginModule(implementation(project(":exts:devins-lang")))
 
             testFramework(TestFrameworkType.Bundled)
@@ -296,6 +299,8 @@ project(":") {
         implementation(project(":exts:ext-git"))
         implementation(project(":exts:ext-http-client"))
         implementation(project(":exts:ext-terminal"))
+        implementation(project(":exts:ext-mermaid"))
+        implementation(project(":exts:ext-plantuml"))
         implementation(project(":exts:devins-lang"))
 
         kover(project(":core"))
@@ -567,6 +572,29 @@ project(":exts:ext-http-client") {
         implementation(project(":core"))
     }
 }
+
+project(":exts:ext-mermaid") {
+    dependencies {
+        intellijPlatform {
+            intellijIde(prop("ideaVersion"))
+            intellijPlugins(ideaPlugins + prop("mermaidPlugin"))
+        }
+
+        implementation(project(":core"))
+    }
+}
+
+project(":exts:ext-plantuml") {
+    dependencies {
+        intellijPlatform {
+            intellijIde(prop("ideaVersion"))
+            intellijPlugins(ideaPlugins + prop("plantUmlPlugin"))
+        }
+
+        implementation(project(":core"))
+    }
+}
+
 
 project(":local-bundle") {
     dependencies {
