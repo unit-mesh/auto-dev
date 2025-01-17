@@ -4,6 +4,7 @@ import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.gui.chat.ui.relativePath
 import cc.unitmesh.devti.language.utils.canBeAdded
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
@@ -34,7 +35,7 @@ class LocalSearchInsCommand(val myProject: Project, private val scope: String, v
             throw IllegalArgumentException("Text length should be more than 4")
         }
 
-        val textSearch = search(myProject, text, OVERLAP)
+        val textSearch = runReadAction { search(myProject, text, OVERLAP) }
         return textSearch.map { (file, lines) ->
             val filePath = file.relativePath(myProject)
             val linesWithContext = lines.joinToString("\n")

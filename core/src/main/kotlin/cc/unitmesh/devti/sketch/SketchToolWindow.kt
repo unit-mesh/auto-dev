@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.sketch
 
 import cc.unitmesh.devti.alignRight
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
@@ -17,6 +18,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.runInEdt
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileTypes.PlainTextLanguage
 import com.intellij.openapi.project.Project
@@ -78,7 +80,9 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
         if (showInput) {
             row {
                 checkBox("AI 降临模式（全自动化）").apply {
-                    AutoSketchMode.getInstance(project).isEnable = this.component.isSelected
+                    this.component.addActionListener {
+                        AutoSketchMode.getInstance(project).isEnable = this.component.isSelected
+                    }
                 }
             }
         }
@@ -99,6 +103,8 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
 
     var handleCancel: ((String) -> Unit)? = null
 
+    private val listener = SketchInputListener(project, chatCodingService, this)
+
     init {
         contentPanel.add(scrollPanel, BorderLayout.CENTER)
         contentPanel.addKeyListener(object : KeyAdapter() {
@@ -118,7 +124,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
                 border = JBUI.Borders.empty(8)
             }
 
-            shireInput.addListener(SketchInputListener(project, chatCodingService, this))
+            shireInput.addListener(listener)
             contentPanel.add(shireInput, BorderLayout.SOUTH)
         }
 
@@ -252,12 +258,25 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
         val devinCodeFence = codeFenceList.filter { it.language.displayName == "DevIn" }
 
         devinCodeFence.forEach {
+            val commands = setOf(
+                BuiltinCommand.DIR,
+                BuiltinCommand.LOCAL_SEARCH,
+                BuiltinCommand.REV,
+                BuiltinCommand.STRUCTURE,
+                BuiltinCommand.SYMBOL,
+                BuiltinCommand.DATABASE
+            )
+            if (commands.any { command -> it.text.contains("/" + command.commandName + ":") }) {
+                return listener.manualSend(it.text)
+            }
+
             val scratchFile = ScratchRootType.getInstance()
                 .createScratchFile(project, "sketch.shire", it.language, it.text)
                 ?: return
 
-            val psiFile = PsiManager.getInstance(project).findFile(scratchFile)
-                ?: return
+            val psiFile = runReadAction {
+                PsiManager.getInstance(project).findFile(scratchFile)
+            } ?: return
 
             RunService.provider(project, scratchFile)
                 ?.runFile(project, scratchFile, psiFile, isFromToolAction = true)

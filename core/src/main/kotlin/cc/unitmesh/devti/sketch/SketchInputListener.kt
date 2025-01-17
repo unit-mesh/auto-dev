@@ -1,10 +1,6 @@
 package cc.unitmesh.devti.sketch
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.devin.InsCommand
-import cc.unitmesh.devti.devin.InsCommandListener
-import cc.unitmesh.devti.devin.InsCommandStatus
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputListener
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
@@ -18,7 +14,6 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.launch
 
@@ -52,6 +47,10 @@ class SketchInputListener(
             return
         }
 
+        manualSend(userInput)
+    }
+
+    override fun manualSend(userInput: String) {
         val postProcessors = LanguagePromptProcessor.instance("DevIn").firstOrNull()
         val compiledInput = postProcessors?.compile(project, userInput) ?: userInput
 
