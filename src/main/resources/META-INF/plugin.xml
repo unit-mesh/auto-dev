@@ -34,6 +34,8 @@
         <!-- extension modules -->
         <module name="cc.unitmesh.database"/>
         <module name="cc.unitmesh.terminal"/>
+        <module name="cc.unitmesh.mermaid"/>
+        <module name="cc.unitmesh.plantuml"/>
         <module name="cc.unitmesh.git"/>
         <module name="cc.unitmesh.devti.language"/>
         <module name="cc.unitmesh.httpclient"/>
