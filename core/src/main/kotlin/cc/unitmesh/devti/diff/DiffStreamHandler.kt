@@ -30,6 +30,8 @@ import com.intellij.openapi.vfs.VirtualFile
 import cc.unitmesh.devti.diff.model.DiffLine
 import cc.unitmesh.devti.diff.model.streamDiff
 import cc.unitmesh.devti.llms.LlmFactory
+import cc.unitmesh.devti.util.AutoDevCoroutineScope
+import cc.unitmesh.devti.util.parser.CodeFence
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.flowOf
@@ -117,38 +119,36 @@ class DiffStreamHandler(
         isRunning = true
         val flow: Flow<String> = LlmFactory.instance.create(project).stream(prompt, "", false)
         var lastLineNo = 0
-        cc.unitmesh.devti.util.AutoDevCoroutineScope.scope(project).launch {
+        AutoDevCoroutineScope.scope(project).launch {
             val suggestion = StringBuilder()
             flow.cancellable().collect { char ->
                 suggestion.append(char)
-                val code = cc.unitmesh.devti.util.parser.CodeFence.parse(suggestion.toString())
-                if (PlainTextLanguage.INSTANCE != code.language && code.language.displayName != "Markdown" && code.text.isNotEmpty()) {
-                    var value: List<String> = code.text.lines()
-                    value = value.dropLast(1)
+                val code = CodeFence.parse(suggestion.toString())
+                var value: List<String> = code.text.lines()
+                value = value.dropLast(1)
 
-                    if (value.isEmpty()) return@collect
+                if (value.isEmpty()) return@collect
 
-                    val newLines = if (lastLineNo < value.size) {
-                        value.subList(lastLineNo, value.size)
-                    } else {
-                        listOf()
-                    }
+                val newLines = if (lastLineNo < value.size) {
+                    value.subList(lastLineNo, value.size)
+                } else {
+                    listOf()
+                }
 
-                    if (newLines.isEmpty()) return@collect
+                if (newLines.isEmpty()) return@collect
 
-                    val flowValue: Flow<String> = flowOf(*newLines.toTypedArray())
-                    val oldLinesContent = if (lastLineNo + newLines.size <= lines.size) {
-                        lines.subList(lastLineNo, lastLineNo + newLines.size)
-                    } else {
-                        listOf()
-                    }
-                    lastLineNo = value.size
+                val flowValue: Flow<String> = flowOf(*newLines.toTypedArray())
+                val oldLinesContent = if (lastLineNo + newLines.size <= lines.size) {
+                    lines.subList(lastLineNo, lastLineNo + newLines.size)
+                } else {
+                    listOf()
+                }
+                lastLineNo = value.size
 
-                    streamDiff(oldLinesContent, flowValue).collect {
-                        ApplicationManager.getApplication().invokeLater {
-                            WriteCommandAction.runWriteCommandAction(project) {
-                                updateByDiffType(it)
-                            }
+                streamDiff(oldLinesContent, flowValue).collect {
+                    ApplicationManager.getApplication().invokeLater {
+                        WriteCommandAction.runWriteCommandAction(project) {
+                            updateByDiffType(it)
                         }
                     }
                 }

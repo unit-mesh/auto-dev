@@ -11,7 +11,9 @@ import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.observable.util.onceWhenFocusGained
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.ui.popup.JBPopup
@@ -19,6 +21,7 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.util.MinimizeButton
 import com.intellij.terminal.JBTerminalWidget
 import com.intellij.util.ui.JBUI
+import com.jediterm.terminal.ui.TerminalWidgetListener
 import org.jetbrains.plugins.terminal.LocalTerminalDirectRunner
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -108,7 +111,10 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
             }
 
             override fun doneUpdateText(text: String) {
-                terminalWidget!!.terminalStarter?.sendString(content, false)
+                ApplicationManager.getApplication().invokeLater {
+                    Thread.sleep(1000) // todo: change to when terminal ready
+                    terminalWidget!!.terminalStarter?.sendString(content, false)
+                }
             }
 
             override fun getComponent(): JComponent = panelLayout!!
