@@ -3,27 +3,32 @@ package cc.unitmesh.devti.sketch.ui.patch
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.diff.DiffStreamHandler
 import cc.unitmesh.devti.sketch.ui.LangSketch
+import cc.unitmesh.devti.template.GENIUS_CODE
+import cc.unitmesh.devti.template.TemplateRender
+import cc.unitmesh.devti.template.context.TemplateContext
 import com.intellij.diff.DiffContentFactoryEx
 import com.intellij.diff.chains.SimpleDiffRequestChain
 import com.intellij.diff.chains.SimpleDiffRequestProducer
 import com.intellij.diff.editor.ChainDiffVirtualFile
 import com.intellij.diff.editor.DiffEditorTabFilesManager
+import com.intellij.diff.editor.DiffVirtualFileBase
 import com.intellij.diff.requests.SimpleDiffRequest
 import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.command.CommandProcessor
-import com.intellij.openapi.command.UndoConfirmationPolicy
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.command.undo.UndoManager
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diff.impl.patch.ApplyPatchStatus
 import com.intellij.openapi.diff.impl.patch.TextFilePatch
 import com.intellij.openapi.diff.impl.patch.apply.GenericPatchApplier
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiDocumentManager
 import com.intellij.ui.DarculaColors
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
@@ -42,29 +47,27 @@ import javax.swing.JPanel
 
 class SingleFileDiffView(
     private val myProject: Project,
-    private val virtualFile: VirtualFile,
+    private val currentFile: VirtualFile,
     val patch: TextFilePatch,
+    val viewDiffAction: () -> Unit
 ) : LangSketch {
     private val mainPanel: JPanel = JPanel(VerticalLayout(5))
     private val myHeaderPanel: JPanel = JPanel(BorderLayout())
     private var filePanel: JPanel? = null
     var diffFile: ChainDiffVirtualFile? = null
-    private val appliedPatch = GenericPatchApplier.apply(virtualFile.readText(), patch.hunks)
-    private val oldCode = virtualFile.readText()
+    private val appliedPatch = GenericPatchApplier.apply(currentFile.readText(), patch.hunks)
+    private val oldCode = currentFile.readText()
 
     init {
         val contentPanel = JPanel(BorderLayout())
         val actions = createActionButtons()
-        val filepathLabel = JBLabel(virtualFile.name).apply {
-            icon = virtualFile.fileType.icon
+        val filepathLabel = JBLabel(currentFile.name).apply {
+            icon = currentFile.fileType.icon
             border = BorderFactory.createEmptyBorder(2, 10, 2, 10)
 
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent?) {
-                    val isShowDiffSuccess = showDiff()
-                    if (isShowDiffSuccess) return
-
-                    FileEditorManager.getInstance(myProject).openFile(virtualFile, true)
+                    FileEditorManager.getInstance(myProject).openFile(currentFile, true)
                 }
 
                 override fun mouseEntered(e: MouseEvent) {
@@ -100,41 +103,42 @@ class SingleFileDiffView(
         mainPanel.add(contentPanel)
     }
 
-    private fun showDiff(): Boolean {
-        if (diffFile != null) {
-            showDiffFile(diffFile!!)
-            return true
-        }
-
-        val document = FileDocumentManager.getInstance().getDocument(virtualFile) ?: return false
-        val appliedPatch = GenericPatchApplier.apply(document.text, patch.hunks)
-            ?: return false
-
-        val newText = appliedPatch.patchedText
-        val diffFactory = DiffContentFactoryEx.getInstanceEx()
-        val currentDocContent = diffFactory.create(myProject, virtualFile)
-        val newDocContent = diffFactory.create(newText)
-
-        val diffRequest =
-            SimpleDiffRequest(
-                "Shire Diff - ${patch.beforeFileName}",
-                currentDocContent,
-                newDocContent,
-                "Original",
-                "AI generated"
-            )
-
-        val producer = SimpleDiffRequestProducer.create(virtualFile.path) {
-            diffRequest
-        }
-
-        val chain = SimpleDiffRequestChain.fromProducer(producer)
-        runInEdt {
-            diffFile = ChainDiffVirtualFile(chain, "Diff")
-            showDiffFile(diffFile!!)
-        }
-
-        return true
+    private fun showDiff() {
+        viewDiffAction()
+//        if (diffFile != null) {
+//            showDiffFile(diffFile!!)
+//            return true
+//        }
+//
+//        val document = FileDocumentManager.getInstance().getDocument(currentFile) ?: return false
+//        val appliedPatch = GenericPatchApplier.apply(document.text, patch.hunks)
+//            ?: return false
+//
+//        val newText = appliedPatch.patchedText
+//        val diffFactory = DiffContentFactoryEx.getInstanceEx()
+//        val currentDocContent = diffFactory.create(myProject, currentFile)
+//        val newDocContent = diffFactory.create(newText)
+//
+//        val diffRequest =
+//            SimpleDiffRequest(
+//                "Shire Diff - ${patch.beforeFileName}",
+//                currentDocContent,
+//                newDocContent,
+//                "Original",
+//                "AI generated"
+//            )
+//
+//        val producer = SimpleDiffRequestProducer.create(currentFile.path) {
+//            diffRequest
+//        }
+//
+//        val chain = SimpleDiffRequestChain.fromProducer(producer)
+//        runInEdt {
+//            diffFile = ChainDiffVirtualFile(chain, "Diff")
+//            showDiffFile(diffFile!!)
+//        }
+//
+//        return true
     }
 
     private val diffEditorTabFilesManager = DiffEditorTabFilesManager.getInstance(myProject)
@@ -145,7 +149,7 @@ class SingleFileDiffView(
 
     private fun createActionButtons(): List<JButton> {
         val undoManager = UndoManager.getInstance(myProject)
-        val fileEditor = FileEditorManager.getInstance(myProject).getSelectedEditor(virtualFile)
+        val fileEditor = FileEditorManager.getInstance(myProject).getSelectedEditor(currentFile)
 
         val rollback = JButton(AllIcons.Actions.Rollback).apply {
             border = BorderFactory.createEmptyBorder()
@@ -162,19 +166,40 @@ class SingleFileDiffView(
             })
         }
 
+        val viewDiffButton = JButton(AllIcons.Actions.ListChanges).apply {
+            border = BorderFactory.createEmptyBorder()
+            preferredSize = Dimension(32, 32)
+            toolTipText = AutoDevBundle.message("sketch.patch.action.viewDiff.tooltip")
+
+            addMouseListener(object : MouseAdapter() {
+                override fun mouseClicked(e: MouseEvent?) {
+                    showDiff()
+                }
+            })
+        }
+
         val runStreamButton = JButton(AllIcons.Actions.RunAll).apply {
             preferredSize = Dimension(32, 32)
-            border = BorderFactory.createEmptyBorder()
             border = BorderFactory.createEmptyBorder()
             toolTipText = AutoDevBundle.message("sketch.patch.action.runDiff.tooltip")
             isEnabled = appliedPatch?.status == ApplyPatchStatus.SUCCESS
 
             addActionListener {
-                val document = FileDocumentManager.getInstance().getDocument(virtualFile) ?: return@addActionListener
-                PsiDocumentManager.getInstance(myProject).commitDocument(document)
+                val document = FileDocumentManager.getInstance().getDocument(currentFile)
+                if (document == null) {
+                    logger<SingleFileDiffView>().error("Document is null for file: ${currentFile.path}")
+                    return@addActionListener
+                }
+
                 CommandProcessor.getInstance().executeCommand(myProject, {
-                    showStreamDiff()
-                }, "RunStream", null, UndoConfirmationPolicy.REQUEST_CONFIRMATION, false)
+                    WriteCommandAction.runWriteCommandAction(myProject) {
+                        document.setText(appliedPatch!!.patchedText)
+
+                        if (currentFile is DiffVirtualFileBase) {
+                            FileEditorManager.getInstance(myProject).closeFile(currentFile)
+                        }
+                    }
+                }, "ApplyPatch", null)
             }
         }
 
@@ -186,32 +211,24 @@ class SingleFileDiffView(
             foreground = if (isEnabled) JBColor(0xFF0000, 0xFF0000) else JPanel().background
 
             addActionListener {
-                FileEditorManager.getInstance(myProject).openFile(virtualFile, true)
+                FileEditorManager.getInstance(myProject).openFile(currentFile, true)
                 val editor = FileEditorManager.getInstance(myProject).selectedTextEditor ?: return@addActionListener
 
-                val diffStreamHandler = DiffStreamHandler(
-                    myProject,
-                    editor = editor,
-                    0,
-                    oldCode.lines().size,
-                    onClose = {
-                    },
-                    onFinish = {
+                val failurePatch = if (patch.hunks.size > 1) {
+                    patch.hunks.joinToString("\n") { it.text }
+                } else {
+                    patch.singleHunkPatchText
+                }
 
-                    })
-
-                diffStreamHandler.streamDiffLinesToEditor(
-                    oldCode, "Please repair the diff, return all repaird code. \n" +
-                            "Here is the original code: \n\n$oldCode" + "\n\nHere is the patched code: \n\n${patch.singleHunkPatchText}"
-                )
+                applyDiffRepairSuggestion(myProject, editor, oldCode, failurePatch)
             }
         }
 
-        return listOf(rollback, runStreamButton, repairButton)
+        return listOf(rollback, viewDiffButton, runStreamButton, repairButton)
     }
 
     private fun showStreamDiff() {
-        FileEditorManager.getInstance(myProject).openFile(virtualFile, true)
+        FileEditorManager.getInstance(myProject).openFile(currentFile, true)
         val editor = FileEditorManager.getInstance(myProject).selectedTextEditor ?: return
         val newText = appliedPatch!!.patchedText
 
@@ -230,7 +247,7 @@ class SingleFileDiffView(
     }
 
 
-    override fun getViewText(): String = virtualFile.readText()
+    override fun getViewText(): String = currentFile.readText()
 
     override fun updateViewText(text: String) {}
 
@@ -239,11 +256,33 @@ class SingleFileDiffView(
     override fun updateLanguage(language: Language?, originLanguage: String?) {}
 
     override fun dispose() {}
-
-    fun openDiffView() {
-        showDiff()
-    }
 }
+
+fun applyDiffRepairSuggestion(project: Project, editor: Editor, oldCode: String, patchedCode: String) {
+    val diffStreamHandler = DiffStreamHandler(
+        project,
+        editor = editor,
+        0,
+        oldCode.lines().size,
+        onClose = {
+        },
+        onFinish = {
+
+        })
+
+    val templateRender = TemplateRender(GENIUS_CODE)
+    val template = templateRender.getTemplate("repair-diff.vm")
+
+    templateRender.context = DiffRepairContext(oldCode, patchedCode)
+    val prompt = templateRender.renderTemplate(template)
+
+    diffStreamHandler.streamDiffLinesToEditor(oldCode, prompt)
+}
+
+data class DiffRepairContext(
+    val oldCode: String,
+    val patchedCode: String,
+) : TemplateContext
 
 fun VirtualFile.readText(): String {
     return VfsUtilCore.loadText(this)

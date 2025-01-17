@@ -45,7 +45,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
     private val filePatches: MutableList<TextFilePatch> = myReader.textPatches
 
     init {
-        if (filePatches.size > 1) {
+        if (filePatches.size > 1 || filePatches.any { it.beforeFileName == null }) {
             val header = createHeaderAction()
             myHeaderPanel.add(header, BorderLayout.EAST)
             mainPanel.add(myHeaderPanel)
@@ -63,19 +63,19 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
                 val diffPanel = when {
                     patch.beforeFileName != null -> {
                         val originFile = myProject.findFile(patch.beforeFileName!!) ?: return@forEachIndexed
-                        SingleFileDiffView(myProject, originFile, patch)
+                        SingleFileDiffView(myProject, originFile, patch, ::handleViewDiffAction)
                     }
 
                     patch.afterFileName != null -> {
                         val content = patch.singleHunkPatchText
                         val virtualFile = LightVirtualFile(patch.afterFileName!!, content)
-                        SingleFileDiffView(myProject, virtualFile, patch)
+                        SingleFileDiffView(myProject, virtualFile, patch, ::handleViewDiffAction)
                     }
 
                     else -> {
                         val content = patch.singleHunkPatchText
                         val virtualFile = LightVirtualFile("ErrorPatchFile", content)
-                        SingleFileDiffView(myProject, virtualFile, patch)
+                        SingleFileDiffView(myProject, virtualFile, patch, ::handleViewDiffAction)
                     }
                 }
 
@@ -149,42 +149,14 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
         }
     }
 
-    private fun handleViewDiffAction() {
+    fun handleViewDiffAction() {
         val beforeFileNames = filePatches.mapNotNull { it.beforeFileName }
         if (beforeFileNames.size > 1) {
-            return defaultView()
+            MyApplyPatchFromClipboardDialog(myProject, patchContent).show()
+            return
         } else {
-            val editorProvider = FileEditorProvider.EP_FILE_EDITOR_PROVIDER.extensionList.firstOrNull {
-                it.javaClass.simpleName == "DiffPatchFileEditorProvider"
-            }
-
-            if (editorProvider != null) {
-                val virtualFile = LightVirtualFile("diff.diff", patchContent)
-                val editor = editorProvider.createEditor(myProject, virtualFile)
-                object : DialogWrapper(myProject) {
-                    init {
-                        title = "Diff Preview"
-                        setOKButtonText("Accept")
-                        init()
-                    }
-
-                    override fun doOKAction() {
-                        handleAcceptAction()
-                        super.doOKAction()
-                    }
-
-                    override fun createCenterPanel(): JComponent {
-                        return editor.component
-                    }
-                }.show()
-            } else {
-                return defaultView()
-            }
+            showSingleDiff(this@DiffLangSketch.myProject, this@DiffLangSketch.patchContent) { handleAcceptAction() }
         }
-    }
-
-    private fun defaultView() {
-        MyApplyPatchFromClipboardDialog(myProject, patchContent).show()
     }
 
     override fun getExtensionName(): String = "patch"
@@ -196,4 +168,34 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
     override fun getComponent(): JComponent = mainPanel
     override fun updateLanguage(language: Language?, originLanguage: String?) {}
     override fun dispose() {}
+}
+
+fun showSingleDiff(project: Project, patchContent: String, handleAccept: (() -> Unit)?) {
+    val editorProvider = FileEditorProvider.EP_FILE_EDITOR_PROVIDER.extensionList.firstOrNull {
+        it.javaClass.simpleName == "DiffPatchFileEditorProvider"
+    }
+
+    if (editorProvider != null) {
+        val virtualFile = LightVirtualFile("AutoDev-Diff-Lang.diff", patchContent)
+        val editor = editorProvider.createEditor(project, virtualFile)
+        object : DialogWrapper(project) {
+            init {
+                title = "Diff Preview"
+                setOKButtonText("Accept")
+                init()
+            }
+
+            override fun doOKAction() {
+                handleAccept?.invoke()
+                super.doOKAction()
+            }
+
+            override fun createCenterPanel(): JComponent {
+                return editor.component
+            }
+        }.show()
+    } else {
+        MyApplyPatchFromClipboardDialog(project, patchContent).show()
+        return
+    }
 }

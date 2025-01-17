@@ -1,0 +1,7 @@
+Please help me repair the diff, and return all repaired code.
+
+Here is the original code: ${context.oldCode}
+
+Here is the patched code:
+
+${context.patch}
