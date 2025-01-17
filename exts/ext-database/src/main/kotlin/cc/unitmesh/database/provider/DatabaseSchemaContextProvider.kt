@@ -4,8 +4,8 @@ import cc.unitmesh.database.util.SqlContextBuilder
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
-import com.intellij.database.model.basic.BasicSchema
 import com.intellij.database.util.DasUtil
+import com.intellij.database.util.DbImplUtilCore
 import com.intellij.database.util.DbUtil
 import com.intellij.openapi.project.Project
 import com.intellij.sql.dialects.SqlLanguageDialect
@@ -26,9 +26,6 @@ class DatabaseSchemaContextProvider : ChatContextProvider {
         val infos = dataSources.mapNotNull {
             val dbNames = it.delegateDataSource?.databaseVersion ?: return@mapNotNull null
             val nameInfo = dbNames.name + " " + dbNames.version
-
-//            val schema = it.delegateDataSource?.model as? BasicSchema ?: return@mapNotNull null
-//            val schemaInfo = SqlContextBuilder.formatSchema(schema) ?: return@mapNotNull null
             val text = "This project use $nameInfo"
             return@mapNotNull ChatContextItem(DatabaseSchemaContextProvider::class, text)
         }.toList()

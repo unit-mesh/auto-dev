@@ -1,13 +1,17 @@
 package cc.unitmesh.database.provider
 
-import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
+import cc.unitmesh.database.provider.DatabaseFunction.values
 import cc.unitmesh.database.util.DatabaseSchemaAssistant
+import cc.unitmesh.database.util.DatabaseSchemaAssistant.getTableColumn
+import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.database.model.DasTable
 import com.intellij.database.model.RawDataSource
+import com.intellij.database.util.DasUtil
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 
 enum class DatabaseFunction(val funName: String) {
+    Schema("schema"),
     Table("table"),
     Column("column"),
     Query("query")
@@ -35,10 +39,19 @@ class DatabaseFunctionProvider : ToolchainFunctionProvider {
             ?: throw IllegalArgumentException("Shire[Database]: Invalid Database function name")
 
         return when (databaseFunction) {
+            DatabaseFunction.Schema -> listSchemas(args, project)
             DatabaseFunction.Table -> executeTableFunction(args, project)
             DatabaseFunction.Column -> executeColumnFunction(args, project)
             DatabaseFunction.Query -> executeSqlFunction(args, project)
         }
+    }
+
+    private fun listSchemas(args: List<Any>, project: Project): Any {
+        return DatabaseSchemaAssistant.allRawDatasource(project).map {
+            DasUtil.getTables(it).toList().map<DasTable, String> {
+                getTableColumn(it)
+            }
+        }.flatten()
     }
 
     private fun executeTableFunction(args: List<Any>, project: Project): Any {
