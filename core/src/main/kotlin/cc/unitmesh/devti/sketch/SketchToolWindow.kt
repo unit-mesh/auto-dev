@@ -1,18 +1,20 @@
 package cc.unitmesh.devti.sketch
 
 import cc.unitmesh.devti.alignRight
-import cc.unitmesh.devti.gui.chat.*
+import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
 import cc.unitmesh.devti.inline.AutoDevInlineChatService
 import cc.unitmesh.devti.inline.fullHeight
 import cc.unitmesh.devti.inline.fullWidth
+import cc.unitmesh.devti.provider.RunService
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
-import cc.unitmesh.devti.util.parser.CodeFence
-import cc.unitmesh.devti.sketch.ui.highlight.CodeHighlightSketch
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
+import cc.unitmesh.devti.sketch.ui.highlight.CodeHighlightSketch
+import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.icons.AllIcons
+import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.editor.Editor
@@ -21,12 +23,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.NullableComponent
 import com.intellij.openapi.ui.SimpleToolWindowPanel
+import com.intellij.psi.PsiManager
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
-import com.sun.java.accessibility.util.AWTEventMonitor.addActionListener
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.Toolkit
@@ -35,12 +37,7 @@ import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.BorderFactory
-import javax.swing.JButton
-import javax.swing.JPanel
-import javax.swing.JProgressBar
-import javax.swing.ScrollPaneConstants
-import javax.swing.SwingUtilities
+import javax.swing.*
 
 class SketchToolWindow(val project: Project, val editor: Editor?, private val showInput: Boolean = false) :
     SimpleToolWindowPanel(true, true),
@@ -79,12 +76,9 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
 
     private var panelContent: DialogPanel = panel {
         if (showInput) {
-            // 开启 AI 降临模式（全自动化） with toggle
             row {
                 checkBox("AI 降临模式（全自动化）").apply {
-                    addActionListener {
-                        ///
-                    }
+                    AutoSketchMode.getInstance(project).isEnable = this.component.isSelected
                 }
             }
         }
@@ -246,6 +240,28 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
         progressBar.isIndeterminate = false
         progressBar.isVisible = false
         scrollToBottom()
+
+        if (AutoSketchMode.getInstance(project).isEnable) {
+            startAutoSketchMode(text)
+        }
+    }
+
+
+    fun startAutoSketchMode(text: String) {
+        val codeFenceList = CodeFence.parseAll(text)
+        val devinCodeFence = codeFenceList.filter { it.language.displayName == "DevIn" }
+
+        devinCodeFence.forEach {
+            val scratchFile = ScratchRootType.getInstance()
+                .createScratchFile(project, "sketch.shire", it.language, it.text)
+                ?: return
+
+            val psiFile = PsiManager.getInstance(project).findFile(scratchFile)
+                ?: return
+
+            RunService.provider(project, scratchFile)
+                ?.runFile(project, scratchFile, psiFile, isFromToolAction = true)
+        }
     }
 
     private fun scrollToBottom() {
