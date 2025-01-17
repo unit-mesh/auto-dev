@@ -151,7 +151,8 @@ class SingleFileDiffView(
         val undoManager = UndoManager.getInstance(myProject)
         val fileEditor = FileEditorManager.getInstance(myProject).getSelectedEditor(currentFile)
 
-        val rollback = JButton(AllIcons.Actions.Rollback).apply {
+        val rollback = JButton("Rollback").apply {
+            icon = AllIcons.Actions.Rollback
             border = BorderFactory.createEmptyBorder()
             preferredSize = Dimension(32, 32)
             toolTipText = AutoDevBundle.message("sketch.patch.action.rollback.tooltip")
@@ -166,7 +167,8 @@ class SingleFileDiffView(
             })
         }
 
-        val viewDiffButton = JButton(AllIcons.Actions.ListChanges).apply {
+        val viewDiffButton = JButton("View").apply {
+            icon = AllIcons.Actions.ListChanges
             border = BorderFactory.createEmptyBorder()
             preferredSize = Dimension(32, 32)
             toolTipText = AutoDevBundle.message("sketch.patch.action.viewDiff.tooltip")
@@ -178,7 +180,8 @@ class SingleFileDiffView(
             })
         }
 
-        val runStreamButton = JButton(AllIcons.Actions.RunAll).apply {
+        val runStreamButton = JButton("Apply").apply {
+            icon = AllIcons.Actions.RunAll
             preferredSize = Dimension(32, 32)
             border = BorderFactory.createEmptyBorder()
             toolTipText = AutoDevBundle.message("sketch.patch.action.runDiff.tooltip")
@@ -203,7 +206,8 @@ class SingleFileDiffView(
             }
         }
 
-        val repairButton = JButton(AllIcons.Toolwindows.ToolWindowBuild).apply {
+        val repairButton = JButton("Repair").apply {
+            icon = AllIcons.Toolwindows.ToolWindowBuild
             preferredSize = Dimension(32, 32)
             border = BorderFactory.createEmptyBorder()
             toolTipText = AutoDevBundle.message("sketch.patch.action.repairDiff.tooltip")
