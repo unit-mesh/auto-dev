@@ -62,7 +62,12 @@ class CodeHighlightSketch(
 
         editor.component.isOpaque = true
 
-        editorFragment = EditorFragment(editor, editorLineThreshold)
+        if (ideaLanguage?.displayName == "DevIn") {
+            editorFragment = EditorFragment(editor, 1)
+        } else {
+            editorFragment = EditorFragment(editor, editorLineThreshold)
+        }
+
         add(editorFragment!!.getContent(), BorderLayout.CENTER)
 
         if (textLanguage != null && textLanguage?.lowercase() != "markdown" && ideaLanguage != PlainTextLanguage.INSTANCE) {

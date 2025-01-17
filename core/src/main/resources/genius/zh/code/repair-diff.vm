@@ -4,4 +4,4 @@ Here is the original code: ${context.oldCode}
 
 Here is the patched code:
 
-${context.patch}
+${context.patchedCode}

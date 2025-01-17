@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.compiler.exec
 
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import com.intellij.openapi.project.Project
@@ -18,8 +19,13 @@ class DatabaseInsCommand(val myProject: Project, private val prop: String, priva
             listOf()
         }
 
-        val result = ToolchainFunctionProvider.lookup("DatabaseFunctionProvider")
-            ?.execute(myProject, prop, args, emptyMap())
+        val result = try {
+            ToolchainFunctionProvider.lookup("DatabaseFunctionProvider")
+                ?.execute(myProject, prop, args, emptyMap())
+        } catch (e: Exception) {
+            AutoDevNotifications.notify(myProject, "Error: ${e.message}")
+            return "Error: ${e.message}"
+        }
 
         return result?.toString() ?: "No database provider found"
     }
