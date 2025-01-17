@@ -42,7 +42,6 @@ import kotlin.math.min
  * via https://github.com/cursive-ide/component-inlay-example/blob/master/src/main/kotlin/inlays/EditorComponentInlaysManager.kt
  */
 class EditorComponentInlaysManager(val editor: EditorImpl, private val onlyOneInlay: Boolean) : Disposable {
-
     private val managedInlays = mutableMapOf<ComponentWrapper, Disposable>()
     private val editorWidthWatcher = EditorTextWidthWatcher()
 

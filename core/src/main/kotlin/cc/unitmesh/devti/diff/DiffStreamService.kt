@@ -15,7 +15,6 @@
  */
 package cc.unitmesh.devti.diff
 
-import cc.unitmesh.devti.diff.DiffStreamHandler
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.editor.Editor
 

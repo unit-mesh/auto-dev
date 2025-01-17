@@ -38,6 +38,7 @@ class VerticalDiffBlock(
     private val project: Project,
     var startLine: Int,
     private val onAcceptReject: (VerticalDiffBlock, Boolean) -> Unit,
+    private val acceptAll: () -> Unit,
 ) {
     val deletedLines: MutableList<String> = mutableListOf();
     val addedLines: MutableList<String> = mutableListOf();
@@ -165,7 +166,7 @@ class VerticalDiffBlock(
                 JBColor(0x99FF0000.toInt(), 0x99FF0000.toInt())
             ).apply {
                 addActionListener {
-                    handleReject();
+                    handleReject()
                     onAcceptReject(this@VerticalDiffBlock, false)
                 }
 
@@ -177,7 +178,7 @@ class VerticalDiffBlock(
                 JBColor(0x8AA653, 0x8AA653)
             ).apply {
                 addActionListener {
-                    handleAccept();
+                    handleAccept()
                     onAcceptReject(this@VerticalDiffBlock, true)
                 }
             }
@@ -193,7 +194,8 @@ class VerticalDiffBlock(
     }
 
     private fun handleAccept() {
-        clearEditorUI()
+//        clearEditorUI()
+        acceptAll()
     }
 
     private fun revertDiff() {
@@ -261,7 +263,7 @@ class VerticalDiffBlock(
             }
         }.apply {
             foreground = Gray._240
-            font = Font("Arial", Font.BOLD, 9)
+            font = Font("Arial", Font.BOLD, 12)
             isContentAreaFilled = false
             isOpaque = false
             border = BorderFactory.createEmptyBorder(4, 2, 4, 2)

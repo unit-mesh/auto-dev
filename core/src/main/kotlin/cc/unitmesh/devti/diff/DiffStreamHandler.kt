@@ -72,8 +72,8 @@ class DiffStreamHandler(
     private val editor: Editor,
     private val startLine: Int,
     private val endLine: Int,
-    private val onClose: () -> Unit,
-    private val onFinish: (response: String) -> Unit,
+    private val onClose: (() -> Unit)? = null,
+    private val onFinish: ((response: String) -> Unit)? = null,
 ) {
     private data class CurLineState(
         var index: Int, var highlighter: RangeHighlighter? = null, var diffBlock: VerticalDiffBlock? = null,
@@ -95,7 +95,6 @@ class DiffStreamHandler(
     }
 
     fun acceptAll() {
-        editor.markupModel.removeAllHighlighters()
         resetState()
     }
 
@@ -159,7 +158,7 @@ class DiffStreamHandler(
         }
     }
 
-    fun normalDiff(originContent: String,  newContent: String) {
+    fun normalDiff(originContent: String, newContent: String) {
         val lines = originContent.lines()
         val newLines = newContent.lines()
 
@@ -208,14 +207,14 @@ class DiffStreamHandler(
         }
 
         if (diffBlocks.isEmpty()) {
-            onClose()
+            onClose?.invoke()
         }
     }
 
 
     private fun createDiffBlock(): VerticalDiffBlock {
         val diffBlock = VerticalDiffBlock(
-            editor, project, curLine.index, ::handleDiffBlockAcceptOrReject
+            editor, project, curLine.index, ::handleDiffBlockAcceptOrReject, ::acceptAll
         )
 
         diffBlocks.add(diffBlock)
@@ -286,9 +285,8 @@ class DiffStreamHandler(
         isRunning = false
 
         // Close the Edit input
-        onClose()
+        onClose?.invoke()
     }
-
 
     private fun undoChanges() {
         WriteCommandAction.runWriteCommandAction(project) {
@@ -316,7 +314,7 @@ class DiffStreamHandler(
             // the last line in the diff stream is in the middle of a diff block.
             curLine.diffBlock?.onLastDiffLine()
 
-            onFinish(response)
+            onFinish?.invoke(response)
             cleanupProgressHighlighters()
         }
     }
