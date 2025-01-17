@@ -3,6 +3,7 @@ package cc.unitmesh.devti.language.compiler.exec
 import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.utils.lookupFile
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiManager
@@ -38,7 +39,7 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
         val psiDirectory = PsiManager.getInstance(myProject).findDirectory(virtualFile) ?: return null
 
         output.appendLine("$dir/")
-        listDirectory(psiDirectory, 1)
+        runReadAction { listDirectory(psiDirectory, 1) }
 
         return output.toString()
     }
