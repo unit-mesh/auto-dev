@@ -33,7 +33,7 @@ data class SketchRunContext(
     val toolList: String,
     val shell: String = System.getenv("SHELL") ?: "/bin/bash",
     val frameworkContext: String = "",
-    val buildTool: String = "",
+    val buildTool: String = ""
 ) : TemplateContext {
     companion object {
         fun create(project: Project, myEditor: Editor?, input: String): SketchRunContext {
@@ -67,7 +67,6 @@ data class SketchRunContext(
             } else {
                 ""
             }
-
 
             return SketchRunContext(
                 currentFile = currentFile?.relativePath(project),

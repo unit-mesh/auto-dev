@@ -10,7 +10,7 @@ import com.intellij.sql.psi.SqlFile
 import com.intellij.sql.psi.SqlLanguage
 import com.intellij.sql.psi.impl.SqlImplUtil
 
-class SqlChatContextProvider : ChatContextProvider {
+class DatabaseSchemaContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
         val element = creationContext.element ?: return false
         return element.language is SqlLanguageDialect || element.language is SqlLanguage
@@ -33,7 +33,7 @@ class SqlChatContextProvider : ChatContextProvider {
             "```$displayName\n\nConsider the following database schema:\n$schemaDescription\n```"
         }
 
-        return listOf(ChatContextItem(SqlChatContextProvider::class, text))
+        return listOf(ChatContextItem(DatabaseSchemaContextProvider::class, text))
     }
 }
 
