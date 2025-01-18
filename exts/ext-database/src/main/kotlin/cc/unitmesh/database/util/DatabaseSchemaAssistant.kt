@@ -7,6 +7,7 @@ import com.intellij.database.psi.DbDataSource
 import com.intellij.database.psi.DbPsiFacade
 import com.intellij.database.util.DasUtil
 import com.intellij.openapi.project.Project
+import com.intellij.sql.isNullOr
 
 object DatabaseSchemaAssistant {
     fun getDataSources(project: Project): List<DbDataSource> = DbPsiFacade.getInstance(project).dataSources.toList()
@@ -69,10 +70,14 @@ object DatabaseSchemaAssistant {
 
     private fun displayTable(table: DasTable): String {
         val dasColumns = DasUtil.getColumns(table)
-        val columns = dasColumns.map { column ->
-            "${column.name}: ${column.dasType.toDataType()}"
-        }.joinToString(", ")
+        val columns = dasColumns.joinToString(",") { column ->
+            "${column.name} ${column.dasType.toDataType()}${if (column.isNullOr("")) "" else " NOT NULL"}"
+        }
 
-        return "TableName: ${table.name}, Columns: { $columns }"
+        return """
+    CREATE TABLE ${table.name} (
+            $columns
+        );
+    """.trimIndent()
     }
 }

@@ -98,13 +98,17 @@ class DatabaseFunctionProvider : ToolchainFunctionProvider {
         val sqlQuery = args.first()
         return DatabaseSchemaAssistant.executeSqlQuery(project, sqlQuery as String)
     }
-
     private fun executeColumnFunction(args: List<Any>, project: Project): Any {
         if (args.isEmpty()) {
             val allTables = DatabaseSchemaAssistant.getAllTables(project)
-            return allTables.map {
-                DatabaseSchemaAssistant.getTableColumn(it)
+            val map = allTables.map {
+                getTableColumn(it)
             }
+            return """
+                |```sql
+                |${map.joinToString("\n")}
+                |```
+            """.trimMargin()
         }
 
         when (val first = args[0]) {
