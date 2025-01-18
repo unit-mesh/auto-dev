@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.sketch
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.alignRight
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.gui.chat.ChatCodingService
@@ -79,7 +80,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
     private var panelContent: DialogPanel = panel {
         if (showInput) {
             row {
-                checkBox("AI 降临模式（全自动化）").apply {
+                checkBox(AutoDevBundle.message("sketch.composer.mode")).apply {
                     this.component.addActionListener {
                         AutoSketchMode.getInstance(project).isEnable = this.component.isSelected
                     }
