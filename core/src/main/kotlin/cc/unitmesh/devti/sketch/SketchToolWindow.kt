@@ -253,40 +253,28 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
         }
     }
 
-
     fun startAutoSketchMode(text: String) {
         val codeFenceList = CodeFence.parseAll(text)
         val devinCodeFence = codeFenceList.filter { it.language.displayName == "DevIn" }
 
-        devinCodeFence.forEach {
-            if (it.text.contains("<DevinsError>")) {
-                return
+        val allCode = devinCodeFence.filter {
+            it.text.contains("<DevinsError>") || BuiltinCommand.READ_COMMANDS.any { command ->
+                it.text.contains("/" + command.commandName + ":")
             }
-
-            val commands = setOf(
-                BuiltinCommand.DIR,
-                BuiltinCommand.LOCAL_SEARCH,
-                BuiltinCommand.FILE,
-                BuiltinCommand.REV,
-                BuiltinCommand.STRUCTURE,
-                BuiltinCommand.SYMBOL,
-                BuiltinCommand.DATABASE
-            )
-            if (commands.any { command -> it.text.contains("/" + command.commandName + ":") }) {
-                return listener.manualSend(it.text)
-            }
-
-            val scratchFile = ScratchRootType.getInstance()
-                .createScratchFile(project, "sketch.shire", it.language, it.text)
-                ?: return
-
-            val psiFile = runReadAction {
-                PsiManager.getInstance(project).findFile(scratchFile)
-            } ?: return
-
-            RunService.provider(project, scratchFile)
-                ?.runFile(project, scratchFile, psiFile, isFromToolAction = true)
         }
+
+        if (allCode.isEmpty()) return
+
+        val scratchFile = ScratchRootType.getInstance()
+            .createScratchFile(project, "sketch.shire", allCode.first().language, allCode.first().text)
+            ?: return
+
+        val psiFile = runReadAction {
+            PsiManager.getInstance(project).findFile(scratchFile)
+        } ?: return
+
+        RunService.provider(project, scratchFile)
+            ?.runFile(project, scratchFile, psiFile, isFromToolAction = true)
     }
 
     private fun scrollToBottom() {
