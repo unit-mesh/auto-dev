@@ -5,6 +5,7 @@ import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.utils.lookupFile
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiManager
 
@@ -39,12 +40,17 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
         val psiDirectory = PsiManager.getInstance(myProject).findDirectory(virtualFile) ?: return null
 
         output.appendLine("$dir/")
-        runReadAction { listDirectory(psiDirectory, 1) }
+        runReadAction { listDirectory(myProject, psiDirectory, 1) }
 
         return output.toString()
     }
 
-    private fun listDirectory(directory: PsiDirectory, depth: Int) {
+    private fun listDirectory(project: Project, directory: PsiDirectory, depth: Int) {
+        val isExclude = ProjectFileIndex.getInstance(project).isUnderIgnored(directory.virtualFile)
+        if (isExclude) {
+            return
+        }
+
         val files = directory.files
         val subdirectories = directory.subdirectories
 
@@ -62,7 +68,7 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
             } else {
                 output.appendLine("${"  ".repeat(depth)}├── ${subdirectory.name}/")
             }
-            listDirectory(subdirectory, depth + 1)
+            listDirectory(project, subdirectory, depth + 1)
         }
     }
 }

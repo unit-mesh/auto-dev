@@ -37,6 +37,9 @@ class FileReferenceLanguageProvider : CompletionProvider<CompletionParameters>()
             if (!it.canBeAdded()) return@iterateContent true
             if (!ProjectFileIndex.getInstance(project).isInContent(it)) return@iterateContent true
 
+            /// skip ignore
+            if (ProjectFileIndex.getInstance(project).isUnderIgnored(it)) return@iterateContent true
+
             result.addElement(buildElement(it, basePath, 1.0))
             true
         }

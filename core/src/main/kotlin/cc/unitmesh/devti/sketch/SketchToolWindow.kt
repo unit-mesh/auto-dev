@@ -266,6 +266,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
             val commands = setOf(
                 BuiltinCommand.DIR,
                 BuiltinCommand.LOCAL_SEARCH,
+                BuiltinCommand.FILE,
                 BuiltinCommand.REV,
                 BuiltinCommand.STRUCTURE,
                 BuiltinCommand.SYMBOL,

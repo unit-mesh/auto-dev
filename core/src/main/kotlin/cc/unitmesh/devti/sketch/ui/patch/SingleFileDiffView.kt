@@ -153,7 +153,6 @@ class SingleFileDiffView(
 
         val rollback = JButton("Rollback").apply {
             icon = AllIcons.Actions.Rollback
-            border = BorderFactory.createEmptyBorder()
             toolTipText = AutoDevBundle.message("sketch.patch.action.rollback.tooltip")
             isEnabled = undoManager.isUndoAvailable(fileEditor)
 
@@ -168,7 +167,6 @@ class SingleFileDiffView(
 
         val viewDiffButton = JButton("View").apply {
             icon = AllIcons.Actions.ListChanges
-            border = BorderFactory.createEmptyBorder()
             toolTipText = AutoDevBundle.message("sketch.patch.action.viewDiff.tooltip")
 
             addMouseListener(object : MouseAdapter() {
@@ -180,7 +178,6 @@ class SingleFileDiffView(
 
         val runStreamButton = JButton("Apply").apply {
             icon = AllIcons.Actions.RunAll
-            border = BorderFactory.createEmptyBorder()
             toolTipText = AutoDevBundle.message("sketch.patch.action.runDiff.tooltip")
             isEnabled = appliedPatch?.status == ApplyPatchStatus.SUCCESS
 
@@ -205,7 +202,6 @@ class SingleFileDiffView(
 
         val repairButton = JButton("Repair").apply {
             icon = AllIcons.Toolwindows.ToolWindowBuild
-            border = BorderFactory.createEmptyBorder()
             toolTipText = AutoDevBundle.message("sketch.patch.action.repairDiff.tooltip")
             isEnabled = appliedPatch?.status != ApplyPatchStatus.SUCCESS
             foreground = if (isEnabled) JBColor(0xFF0000, 0xFF0000) else JPanel().background

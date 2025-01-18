@@ -7,6 +7,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.lang.java.JavaLanguage
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.PackageIndex
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiPackageStatement
@@ -22,6 +23,16 @@ import com.intellij.util.SmartList
 class JavaCustomDevInsSymbolProvider : DevInsSymbolProvider {
     override val language: String = JavaLanguage.INSTANCE.displayName
 
+    /**
+     * Spike use `PackageIndex` to get all package name, maybe fast?
+     * 
+     * ```kotlin
+     * PackageIndex.getInstance(project).getDirectoriesByPackageName(text, true).forEach {
+     *     val element = LookupElementBuilder.create(it.name).withIcon(JavaFileType.INSTANCE.icon)
+     *     lookupElements.add(element)
+     * }
+     * ```
+     */
     override fun lookupSymbol(
         project: Project,
         parameters: CompletionParameters,
