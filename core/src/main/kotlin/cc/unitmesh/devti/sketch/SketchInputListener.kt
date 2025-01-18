@@ -61,7 +61,7 @@ class SketchInputListener(
             val flow = chatCodingService.request(systemPrompt, compiledInput)
             val suggestion = StringBuilder()
 
-            AutoDevCoroutineScope.scope(project).launch {
+            AutoDevCoroutineScope.workerThread().launch {
                 flow.cancellable().collect { char ->
                     suggestion.append(char)
 

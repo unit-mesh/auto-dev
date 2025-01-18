@@ -4,9 +4,13 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
+import com.intellij.util.concurrency.AppExecutorUtil
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.asCoroutineDispatcher
+
+public val workerThread = AppExecutorUtil.getAppExecutorService().asCoroutineDispatcher()
 
 @Service(Service.Level.PROJECT)
 class AutoDevCoroutineScope {
@@ -18,5 +22,7 @@ class AutoDevCoroutineScope {
 
     companion object {
         fun scope(project: Project): CoroutineScope = project.service<AutoDevCoroutineScope>().coroutineScope
+
+        fun workerThread(): CoroutineScope = CoroutineScope(SupervisorJob() + workerThread)
     }
 }

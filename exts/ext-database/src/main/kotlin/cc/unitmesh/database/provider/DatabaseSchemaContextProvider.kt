@@ -15,8 +15,7 @@ import com.intellij.sql.psi.impl.SqlImplUtil
 
 class DatabaseSchemaContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
-        val element = creationContext.element ?: return false
-        return element.language is SqlLanguageDialect || element.language is SqlLanguage
+        return DbUtil.getDataSources(project).isNotEmpty
     }
 
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
