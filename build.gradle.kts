@@ -131,7 +131,7 @@ configure(
         sourceSets {
             main {
                 java.srcDirs("src/gen")
-                if (platformVersion == 241) {
+                if (platformVersion == 241 || platformVersion == 243) {
                     resources.srcDirs("src/233/main/resources")
                 }
                 resources.srcDirs("src/$platformVersion/main/resources")
@@ -144,7 +144,7 @@ configure(
             sourceSets {
                 main {
                     // share 233 code to 241
-                    if (platformVersion == 241) {
+                    if (platformVersion == 241 || platformVersion == 243) {
                         kotlin.srcDirs("src/233/main/kotlin")
                     }
                     kotlin.srcDirs("src/$platformVersion/main/kotlin")
