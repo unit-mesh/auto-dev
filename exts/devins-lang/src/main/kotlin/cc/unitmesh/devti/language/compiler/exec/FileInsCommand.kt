@@ -6,6 +6,7 @@ import cc.unitmesh.devti.devin.InsCommandListener
 import cc.unitmesh.devti.devin.InsCommandStatus
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.compiler.model.LineInfo
+import cc.unitmesh.devti.language.utils.findFile
 import cc.unitmesh.devti.language.utils.lookupFile
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -31,7 +32,7 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
 
         if (virtualFile == null) {
             val filename = filepath.split("/").last()
-            virtualFile = myProject.lookupFile(filename)
+            virtualFile = myProject.findFile(filename)
         }
 
         val contentsToByteArray = virtualFile?.contentsToByteArray()
