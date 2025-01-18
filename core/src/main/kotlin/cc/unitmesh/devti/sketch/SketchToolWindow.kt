@@ -266,16 +266,18 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
 
         if (allCode.isEmpty()) return
 
-        val scratchFile = ScratchRootType.getInstance()
-            .createScratchFile(project, "sketch.devin", Language.findLanguageByID("DevIn"), text)
-            ?: return
-
-        val psiFile = runReadAction {
-            PsiManager.getInstance(project).findFile(scratchFile)
-        } ?: return
-
-        RunService.provider(project, scratchFile)
-            ?.runFile(project, scratchFile, psiFile, isFromToolAction = true)
+        listener.manualSend(text)
+//        val devinLanguage = Language.findLanguageByID("DevIn")
+//        val scratchFile = ScratchRootType.getInstance()
+//            .createScratchFile(project, "sketch.devin", devinLanguage, text)
+//            ?: return
+//
+//        val psiFile = runReadAction {
+//            PsiManager.getInstance(project).findFile(scratchFile)
+//        } ?: return
+//
+//        RunService.provider(project, scratchFile)
+//            ?.runFile(project, scratchFile, psiFile, isFromToolAction = true)
     }
 
     private fun scrollToBottom() {
@@ -295,9 +297,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
         }
     }
 
-    override fun isNull(): Boolean {
-        return !isVisible
-    }
+    override fun isNull(): Boolean = !isVisible
 
     fun cancel(s: String) = runCatching { handleCancel?.invoke(s) }
 
