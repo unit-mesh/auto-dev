@@ -33,8 +33,7 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
 
         val contentsToByteArray = virtualFile?.contentsToByteArray()
         if (contentsToByteArray == null) {
-            AutoDevNotifications.warn(myProject, "File not found: $virtualFile")
-            throw IllegalArgumentException("File not found: $virtualFile")
+            AutoDevNotifications.warn(myProject, "File not found: $prop")
             return null
         }
 
