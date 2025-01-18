@@ -17,6 +17,7 @@ class JavaScriptVersionProviderTest : LightPlatformTestCase() {
                 }
             }
         """.trimIndent()
+
     fun `testShould return true when isApplicable is called with supported creationContext`() {
         // given
         val file: PsiFile =
@@ -55,9 +56,6 @@ class JavaScriptVersionProviderTest : LightPlatformTestCase() {
         val result = runBlocking { provider.collect(project, creationContext) }
 
         // then
-        assertEquals(
-            "Prefer JavaScript language if the used language and toolset are not defined below or in the user messages",
-            result.first().text
-        )
+        assertEquals("Prefer JavaScript language if the used language and toolset.", result.first().text)
     }
 }

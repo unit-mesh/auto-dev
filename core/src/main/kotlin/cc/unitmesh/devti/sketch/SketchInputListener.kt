@@ -13,6 +13,7 @@ import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.invokeLater
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.launch
@@ -52,7 +53,7 @@ class SketchInputListener(
 
     override fun manualSend(userInput: String) {
         val postProcessors = LanguagePromptProcessor.instance("DevIn").firstOrNull()
-        val compiledInput = postProcessors?.compile(project, userInput) ?: userInput
+        val compiledInput = runReadAction { postProcessors?.compile(project, userInput) } ?: userInput
 
         toolWindow.addRequestPrompt(compiledInput)
 
