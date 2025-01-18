@@ -91,6 +91,7 @@ class DiffStreamHandler(
 
     private val curLineKey = createTextAttributesKey("CONTINUE_DIFF_CURRENT_LINE", 0x40888888, editor)
     private val unfinishedKey = createTextAttributesKey("CONTINUE_DIFF_UNFINISHED_LINE", 0x20888888, editor)
+    private var newCode: String = ""
 
     init {
         initUnfinishedRangeHighlights()
@@ -98,6 +99,7 @@ class DiffStreamHandler(
 
     fun acceptAll() {
         resetState()
+        editor.document.setText(newCode)
     }
 
     fun rejectAll() {
@@ -155,6 +157,7 @@ class DiffStreamHandler(
             }
 
             val code = CodeFence.parse(suggestion.toString())
+            newCode = code.text
             handleFinishedResponse(code.text)
         }
     }

@@ -8,6 +8,7 @@ import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
@@ -38,7 +39,9 @@ class SqlRunService : RunService {
         if (file.fileType != SqlFileType.INSTANCE) return null
         val psiFile = PsiManager.getInstance(project).findFile(file) ?: return null
         val dataSource = DatabaseSchemaAssistant.getDataSources(project).firstOrNull() ?: return null
-        val configurationsFromContext = ConfigurationContext(psiFile).configurationsFromContext.orEmpty()
+        val configurationsFromContext = runReadAction {
+            ConfigurationContext(psiFile).configurationsFromContext.orEmpty()
+        }
         // @formatter:off
         val configurationSettings = configurationsFromContext
             .firstOrNull { it.configuration is DatabaseScriptRunConfiguration }
