@@ -25,8 +25,13 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
         val range: LineInfo? = LineInfo.fromString(prop)
 
         // prop name can be src/file.name#L1-L2
-        val filename = prop.split("#")[0]
-        val virtualFile = myProject.lookupFile(filename)
+        val filepath = prop.split("#")[0]
+        var virtualFile = myProject.lookupFile(filepath)
+
+        if (virtualFile == null) {
+            val filename = filepath.split("/").last()
+            virtualFile = myProject.lookupFile(filename)
+        }
 
         val contentsToByteArray = virtualFile?.contentsToByteArray()
         if (contentsToByteArray == null) {
