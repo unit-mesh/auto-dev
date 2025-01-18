@@ -67,9 +67,8 @@ class DiffSimplifier(val project: Project) {
             val limitedChnages = filteredChanges.subList(0, min(filteredChanges.size, 500))
 
             val patches = IdeaTextPatchBuilder.buildPatch(
-                project, limitedChnages, Path.of(basePath), true, true
+                project, limitedChnages, Path.of(basePath), false, true
             )
-
 
             UnifiedDiffWriter.write(
                 project,
