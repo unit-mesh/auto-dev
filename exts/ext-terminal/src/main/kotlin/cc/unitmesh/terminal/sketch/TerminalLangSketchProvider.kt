@@ -99,8 +99,12 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
                             .setRequestFocus(true)
                             .createPopup()
 
-                        val editor = FileEditorManager.getInstance(project).selectedTextEditor!!
-                        popup.showInBestPositionFor(editor)
+                        val editor = FileEditorManager.getInstance(project).selectedTextEditor
+                        if (editor != null) {
+                            popup.showInBestPositionFor(editor)
+                        } else {
+                            popup.showInFocusCenter()
+                        }
                     }
                 }
 
