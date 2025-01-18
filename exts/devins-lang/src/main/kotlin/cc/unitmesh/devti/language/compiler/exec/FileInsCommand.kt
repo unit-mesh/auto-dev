@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.compiler.exec
 
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.devin.InsCommandListener
 import cc.unitmesh.devti.devin.InsCommandStatus
@@ -32,7 +33,8 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
 
         val contentsToByteArray = virtualFile?.contentsToByteArray()
         if (contentsToByteArray == null) {
-            logger.warn("File not found: $virtualFile")
+            AutoDevNotifications.warn(myProject, "File not found: $virtualFile")
+            throw IllegalArgumentException("File not found: $virtualFile")
             return null
         }
 
