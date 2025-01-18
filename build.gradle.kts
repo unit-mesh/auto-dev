@@ -45,7 +45,7 @@ val rustPlugins = listOf(
     "org.toml.lang"
 )
 
-val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
+val platformVersion = prop("platformVersion").toInt()
 val ideaPlugins =
     listOf(
         "com.intellij.java",
@@ -53,24 +53,9 @@ val ideaPlugins =
         "org.jetbrains.idea.maven",
         "org.jetbrains.kotlin",
         "JavaScript"
-    ) + prop("pythonPlugin") + prop("platformPlugins").split(",")
-
-var baseIDE = prop("baseIDE")
-val platformVersion = prop("platformVersion").toInt()
-val ideaVersion = prop("ideaVersion")
-val golandVersion = prop("golandVersion")
-val pycharmVersion = prop("pycharmVersion")
-val webstormVersion = prop("webstormVersion")
+    )
 
 var lang = extra.properties["lang"] ?: "java"
-
-val baseVersion = when (baseIDE) {
-    "idea" -> ideaVersion
-    "pycharm" -> pycharmVersion
-    "goland" -> golandVersion
-    "javascript" -> webstormVersion
-    else -> error("Unexpected IDE name: `$baseIDE`")
-}
 
 changelog {
     version.set(properties("pluginVersion"))
@@ -142,7 +127,7 @@ configure(
 
     val testOutput = configurations.create("testOutput")
 
-    if (this.name != "ext-terminal") {
+    if (this.name != "ext-terminal" && this.name != "ext-database") {
         sourceSets {
             main {
                 java.srcDirs("src/gen")
@@ -547,6 +532,25 @@ project(":exts:ext-database") {
             intellijPlugins(ideaPlugins + "com.intellij.database")
         }
         implementation(project(":core"))
+    }
+
+    sourceSets {
+        main {
+            resources.srcDirs("src/$platformVersion/main/resources")
+        }
+        test {
+            resources.srcDirs("src/$platformVersion/test/resources")
+        }
+    }
+    kotlin {
+        sourceSets {
+            main {
+                kotlin.srcDirs("src/$platformVersion/main/kotlin")
+            }
+            test {
+                kotlin.srcDirs("src/$platformVersion/test/kotlin")
+            }
+        }
     }
 }
 

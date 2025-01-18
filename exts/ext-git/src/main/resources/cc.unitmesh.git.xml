@@ -1,6 +1,7 @@
 <idea-plugin package="cc.unitmesh.git">
     <!--suppress PluginXmlValidity -->
     <dependencies>
+        <plugin id="com.intellij.modules.vcs"/>
         <plugin id="Git4Idea"/>
     </dependencies>
 
