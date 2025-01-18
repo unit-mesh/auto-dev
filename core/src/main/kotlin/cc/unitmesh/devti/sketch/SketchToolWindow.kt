@@ -17,6 +17,7 @@ import cc.unitmesh.devti.sketch.ui.highlight.CodeHighlightSketch
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.icons.AllIcons
 import com.intellij.ide.scratch.ScratchRootType
+import com.intellij.lang.Language
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runReadAction
@@ -258,7 +259,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
         val devinCodeFence = codeFenceList.filter { it.language.displayName == "DevIn" }
 
         val allCode = devinCodeFence.filter {
-            it.text.contains("<DevinsError>") || BuiltinCommand.READ_COMMANDS.any { command ->
+            !it.text.contains("<DevinsError>") && BuiltinCommand.READ_COMMANDS.any { command ->
                 it.text.contains("/" + command.commandName + ":")
             }
         }
@@ -266,7 +267,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
         if (allCode.isEmpty()) return
 
         val scratchFile = ScratchRootType.getInstance()
-            .createScratchFile(project, "sketch.shire", allCode.first().language, allCode.first().text)
+            .createScratchFile(project, "sketch.devin", Language.findLanguageByID("DevIn"), text)
             ?: return
 
         val psiFile = runReadAction {
