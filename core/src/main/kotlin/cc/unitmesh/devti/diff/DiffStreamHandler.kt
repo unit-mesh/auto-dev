@@ -154,7 +154,8 @@ class DiffStreamHandler(
                 }
             }
 
-            handleFinishedResponse(suggestion.toString())
+            val code = CodeFence.parse(suggestion.toString())
+            handleFinishedResponse(code.text)
         }
     }
 
