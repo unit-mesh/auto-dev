@@ -63,6 +63,10 @@ class LocalSearchInsCommand(val myProject: Project, private val scope: String, v
                 return@iterateContent true
             }
 
+            if (ProjectFileIndex.getInstance(project).isUnderIgnored(file)) return@iterateContent true
+            /// skip for .idea/
+            if (file.path.contains(".idea")) return@iterateContent true
+
             val content = file.contentsToByteArray().toString(Charsets.UTF_8).lines()
             val matchedIndices = content.withIndex()
                 .filter { (_, line) ->
