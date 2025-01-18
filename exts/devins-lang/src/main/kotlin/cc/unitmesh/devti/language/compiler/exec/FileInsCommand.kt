@@ -7,12 +7,11 @@ import cc.unitmesh.devti.devin.InsCommandStatus
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.compiler.model.LineInfo
 import cc.unitmesh.devti.language.utils.lookupFile
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager
 
 /**
- * FileAutoCommand is responsible for reading a file and returning its contents.
+ * FileInsCommand is responsible for reading a file and returning its contents.
  *
  * @param myProject the Project in which the file operations are performed
  * @param prop the property string containing the file name and optional line range
@@ -20,8 +19,6 @@ import com.intellij.psi.PsiManager
  */
 class FileInsCommand(private val myProject: Project, private val prop: String) : InsCommand {
     override val commandName: BuiltinCommand = BuiltinCommand.FILE
-
-    private val logger = logger<FileInsCommand>()
     private val output = StringBuilder()
 
     override suspend fun execute(): String? {
