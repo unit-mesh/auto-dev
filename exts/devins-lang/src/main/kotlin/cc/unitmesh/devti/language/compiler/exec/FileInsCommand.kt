@@ -8,6 +8,7 @@ import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.compiler.model.LineInfo
 import cc.unitmesh.devti.language.utils.lookupFile
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 
 /**
@@ -26,7 +27,7 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
 
         // prop name can be src/file.name#L1-L2
         val filepath = prop.split("#")[0]
-        var virtualFile = myProject.lookupFile(filepath)
+        var virtualFile: VirtualFile? = myProject.lookupFile(filepath)
 
         if (virtualFile == null) {
             val filename = filepath.split("/").last()
@@ -44,7 +45,7 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
 
         contentsToByteArray.let { bytes ->
             val lang = virtualFile.let {
-                PsiManager.getInstance(myProject).findFile(it)?.language?.displayName
+                PsiManager.getInstance(myProject).findFile(it!!)?.language?.displayName
             } ?: ""
 
             val content = bytes.toString(Charsets.UTF_8)
