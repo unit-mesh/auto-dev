@@ -269,6 +269,7 @@ project(":") {
             pluginModule(implementation(project(":exts:devins-lang")))
 
             testFramework(TestFrameworkType.Bundled)
+            testFramework(TestFrameworkType.Platform)
         }
 
         implementation(project(":core"))
@@ -401,6 +402,7 @@ project(":core") {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins)
             testFramework(TestFrameworkType.Bundled)
+            testFramework(TestFrameworkType.Platform)
         }
 
         implementation("io.reactivex.rxjava3:rxjava:3.1.10")
