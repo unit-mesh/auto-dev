@@ -13,7 +13,6 @@ import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditorManager
-import com.intellij.openapi.observable.util.onceWhenFocusGained
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.ui.popup.JBPopup
@@ -21,7 +20,6 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.util.MinimizeButton
 import com.intellij.terminal.JBTerminalWidget
 import com.intellij.util.ui.JBUI
-import com.jediterm.terminal.ui.TerminalWidgetListener
 import org.jetbrains.plugins.terminal.LocalTerminalDirectRunner
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -58,13 +56,17 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
                         add(terminalWidget!!.component, BorderLayout.CENTER)
 
                         val buttonPanel = JPanel(BorderLayout())
-                        buttonPanel.add(JButton(AllIcons.Toolwindows.ToolWindowRun).apply {
-                            addMouseListener(executeShellScriptOnClick(project, content))
-                        }, BorderLayout.WEST)
-                        buttonPanel.add(JButton("Pop up Terminal").apply {
-                            addMouseListener(executePopup(terminalWidget, project))
-                        }, BorderLayout.EAST)
+                        val runButton = JButton(AllIcons.Toolwindows.ToolWindowRun)
+                            .apply {
+                                addMouseListener(executeShellScriptOnClick(project, content, terminalWidget))
+                            }
 
+                        val popupButton = JButton("Pop up Terminal").apply {
+                            addMouseListener(executePopup(terminalWidget, project))
+                        }
+
+                        buttonPanel.add(runButton, BorderLayout.WEST)
+                        buttonPanel.add(popupButton, BorderLayout.EAST)
                         add(buttonPanel, BorderLayout.SOUTH)
                     }
                 }
@@ -131,7 +133,8 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
 
     fun executeShellScriptOnClick(
         project: Project,
-        content: String
+        content: String,
+        terminalWidget: JBTerminalWidget?
     ): MouseAdapter = object : MouseAdapter() {
         override fun mouseClicked(e: MouseEvent?) {
             val commandLine = createCommandLineForScript(project, content)
@@ -142,7 +145,10 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
 
             processHandler.addProcessListener(object : ProcessAdapter() {
                 override fun processTerminated(event: ProcessEvent) {
-                    AutoDevNotifications.notify(project, "Process terminated with exit code ${event.exitCode}, ${event.text}")
+                    AutoDevNotifications.notify(
+                        project,
+                        "Process terminated with exit code ${event.exitCode}, ${event.text}"
+                    )
                     processHandler.destroyProcess()
                 }
             })
