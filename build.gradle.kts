@@ -522,6 +522,8 @@ project(":goland") {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(prop("goPlugin").split(',').map(String::trim).filter(String::isNotEmpty))
+
+            testFramework(TestFrameworkType.Bundled)
         }
 
         implementation(project(":core"))
