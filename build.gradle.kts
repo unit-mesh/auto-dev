@@ -445,6 +445,7 @@ project(":core") {
         // junit
         testImplementation("io.kotest:kotest-assertions-core:5.7.2")
         testImplementation("junit:junit:4.13.2")
+        testImplementation("org.opentest4j:opentest4j:1.3.0")
         testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.9.3")
     }
 
