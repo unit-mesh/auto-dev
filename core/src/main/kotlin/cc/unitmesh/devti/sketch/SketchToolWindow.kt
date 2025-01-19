@@ -266,7 +266,8 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
 
         if (allCode.isEmpty()) return
 
-        listener.manualSend(text)
+        val allCodeText = allCode.joinToString("\n") { it.text }
+        listener.manualSend(allCodeText)
 //        val devinLanguage = Language.findLanguageByID("DevIn")
 //        val scratchFile = ScratchRootType.getInstance()
 //            .createScratchFile(project, "sketch.devin", devinLanguage, text)
