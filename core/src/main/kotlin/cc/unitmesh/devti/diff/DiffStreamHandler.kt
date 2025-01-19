@@ -32,6 +32,7 @@ import cc.unitmesh.devti.diff.model.streamDiff
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.util.parser.CodeFence
+import com.intellij.openapi.application.runWriteAction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.flowOf
@@ -99,7 +100,9 @@ class DiffStreamHandler(
 
     fun acceptAll() {
         resetState()
-        editor.document.setText(newCode)
+        runWriteAction {
+            editor.document.setText(newCode)
+        }
     }
 
     fun rejectAll() {
