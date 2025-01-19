@@ -1,12 +1,12 @@
 package cc.unitmesh.database.provider
 
-import cc.unitmesh.database.provider.DatabaseFunction.values
 import cc.unitmesh.database.util.DatabaseSchemaAssistant
 import cc.unitmesh.database.util.DatabaseSchemaAssistant.getTableColumn
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.database.model.DasTable
 import com.intellij.database.model.RawDataSource
 import com.intellij.database.util.DasUtil
+import com.intellij.database.util.DbUtil
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 
@@ -47,11 +47,19 @@ class DatabaseFunctionProvider : ToolchainFunctionProvider {
     }
 
     private fun listSchemas(args: List<Any>, project: Project): Any {
-        return DatabaseSchemaAssistant.allRawDatasource(project).map {
-            DasUtil.getTables(it).toList().map<DasTable, String> {
+        val dataSources = DbUtil.getDataSources(project)
+        if (dataSources.isEmpty) return ""
+
+        return dataSources.mapNotNull {
+            val tableSchema = DasUtil.getTables(it).toList().mapNotNull<DasTable, String> {
+                if (it.dasParent?.name == "information_schema") return@mapNotNull null
                 getTableColumn(it)
             }
-        }.flatten()
+
+            if (tableSchema.isEmpty()) return@mapNotNull null
+            val name = it.name.substringBeforeLast('@')
+            "DATABASE NAME: ${name};\n${tableSchema.joinToString("\n")}"
+        }.joinToString("\n")
     }
 
     private fun executeTableFunction(args: List<Any>, project: Project): Any {
@@ -98,6 +106,7 @@ class DatabaseFunctionProvider : ToolchainFunctionProvider {
         val sqlQuery = args.first()
         return DatabaseSchemaAssistant.executeSqlQuery(project, sqlQuery as String)
     }
+
     private fun executeColumnFunction(args: List<Any>, project: Project): Any {
         if (args.isEmpty()) {
             val allTables = DatabaseSchemaAssistant.getAllTables(project)

@@ -53,10 +53,10 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
 
         mainPanel.border = JBUI.Borders.compound(JBUI.Borders.empty(0, 10))
 
-        ApplicationManager.getApplication().invokeAndWait {
+        ApplicationManager.getApplication().invokeLater {
             if (filePatches.isEmpty()) {
                 AutoDevNotifications.error(myProject, "PatchProcessor: no patches found")
-                return@invokeAndWait
+                return@invokeLater
             }
 
             filePatches.forEachIndexed { _, patch ->
