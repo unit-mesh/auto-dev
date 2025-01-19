@@ -82,7 +82,8 @@ class SingleFileDiffView(
             })
         }
 
-        val actionPanel = JPanel(HorizontalLayout(UIUtil.DEFAULT_HGAP)).apply {
+        val actionPanel = JPanel(HorizontalLayout(4)).apply {
+            isOpaque = true
             actions.forEach { button ->
                 add(button)
             }
@@ -151,7 +152,7 @@ class SingleFileDiffView(
         val undoManager = UndoManager.getInstance(myProject)
         val fileEditor = FileEditorManager.getInstance(myProject).getSelectedEditor(currentFile)
 
-        val rollback = JButton("Rollback").apply {
+        val rollback = JButton("Undo").apply {
             icon = AllIcons.Actions.Rollback
             toolTipText = AutoDevBundle.message("sketch.patch.action.rollback.tooltip")
             isEnabled = undoManager.isUndoAvailable(fileEditor)
