@@ -1,5 +1,6 @@
 package cc.unitmesh.database.util
 
+import com.intellij.database.console.DatabaseRunners
 import com.intellij.database.console.JdbcConsole
 import com.intellij.database.console.JdbcConsoleProvider
 import com.intellij.database.console.evaluation.EvaluationRequest
@@ -17,7 +18,6 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.sql.psi.SqlPsiFacade
 import com.intellij.testFramework.LightVirtualFile
@@ -49,7 +49,7 @@ object SQLExecutor {
 
         val info = JdbcConsoleProvider.Info(psiFile, psiFile, editor as EditorEx, scriptModel, execOptions, null)
         val runners: MutableList<PersistenceConsoleProvider.Runner> = runReadAction {
-            getAttachDataSourceRunnersReflect(info)
+            getAttachDataSourceRunners(info)
         }
 
         if (runners.size == 1) {
@@ -78,74 +78,27 @@ object SQLExecutor {
         }
     }
 
-//    private fun getAttachDataSourceRunners(info: JdbcConsoleProvider.Info): MutableList<PersistenceConsoleProvider.Runner> {
-//        val virtualFile = info.editor!!.virtualFile
-//        val project = info.originalFile.project
-//        val title = getSessionTitle(virtualFile)
-//        val consumer: Consumer<in DatabaseSession> =
-//            Consumer<DatabaseSession> { newSession: DatabaseSession? ->
-//                val console = JdbcConsoleProvider.attachConsole(
-//                    project,
-//                    newSession!!, virtualFile
-//                )
-//                if (console != null) {
-//                    val runnable = Runnable { JdbcConsoleProvider.doRunQueryInConsole(console, info) }
-//                    if (DbVFSUtils.isAssociatedWithDataSourceAndSchema(virtualFile)) {
-//                        runnable.run()
-//                    } else {
-//                        DatabaseRunners.chooseSchemaAndRun(info.editor!!, runnable)
-//                    }
-//                }
-//            }
-//
-//        return DatabaseRunners.getAttachDataSourceRunners(info.file, title, consumer)
-//    }
-
-    private fun getAttachDataSourceRunnersReflect(info: JdbcConsoleProvider.Info): MutableList<PersistenceConsoleProvider.Runner> {
+    private fun getAttachDataSourceRunners(info: JdbcConsoleProvider.Info): MutableList<PersistenceConsoleProvider.Runner> {
         val virtualFile = info.editor!!.virtualFile
         val project = info.originalFile.project
         val title = getSessionTitle(virtualFile)
-        val consumer: Consumer<DatabaseSession> = Consumer<DatabaseSession> { newSession: DatabaseSession? ->
-            val console = JdbcConsoleProvider.attachConsole(project, newSession!!, virtualFile)
-            if (console != null) {
-                val runnable = Runnable { JdbcConsoleProvider.doRunQueryInConsole(console, info) }
-                try {
-                    // 使用反射调用 DbVFSUtils.isAssociatedWithDataSourceAndSchema
-                    val isAssociatedMethod = DbVFSUtils::class.java.getDeclaredMethod(
-                        "isAssociatedWithDataSourceAndSchema",
-                        virtualFile::class.java
-                    )
-                    val isAssociated = isAssociatedMethod.invoke(null, virtualFile) as Boolean
-
-                    if (isAssociated) {
+        val consumer: Consumer<in DatabaseSession> =
+            Consumer<DatabaseSession> { newSession: DatabaseSession? ->
+                val console = JdbcConsoleProvider.attachConsole(
+                    project,
+                    newSession!!, virtualFile
+                )
+                if (console != null) {
+                    val runnable = Runnable { JdbcConsoleProvider.doRunQueryInConsole(console, info) }
+                    if (DbVFSUtils.isAssociatedWithDataSourceAndSchema(virtualFile)) {
                         runnable.run()
                     } else {
-                        val chooseSchemaMethod = Class.forName("com.intellij.database.console.DatabaseRunners")
-                            .getDeclaredMethod("chooseSchemaAndRun", EditorEx::class.java, Runnable::class.java)
-                        chooseSchemaMethod.invoke(null, info.editor, runnable)
+                        DatabaseRunners.chooseSchemaAndRun(info.editor!!, runnable)
                     }
-                } catch (e: Exception) {
-                    println("ShireError[Database]: Failed to run query in console")
-                    throw e
                 }
             }
-        }
 
-        try {
-            // 使用反射调用 DatabaseRunners.getAttachDataSourceRunners
-            val getRunners = Class.forName("com.intellij.database.console.DatabaseRunners")
-                .getDeclaredMethod(
-                    "getAttachDataSourceRunners",
-                    PsiFile::class.java,
-                    String::class.java,
-                    Consumer::class.java
-                )
-            @Suppress("UNCHECKED_CAST")
-            return getRunners.invoke(null, info.file, title, consumer) as MutableList<PersistenceConsoleProvider.Runner>
-        } catch (e: Exception) {
-            println("ShireError[Database]: Failed to get runners")
-            throw e
-        }
+        return DatabaseRunners.getAttachDataSourceRunners(info.file, title, consumer)
     }
 
     private fun executeSqlInConsole(console: JdbcConsole, sql: String, dataSource: RawDataSource): String {
@@ -174,8 +127,8 @@ object SQLExecutor {
         val session = com.intellij.database.console.session.DatabaseSessionManager.getSession(project, localDs)
         val messageBus = session.messageBus
         messageBus.addConsumer(object : MyCompatDataConsumer() {
-            var result = mutableListOf<com.intellij.database.datagrid.GridRow>()
-            override fun addRows(context: com.intellij.database.datagrid.GridDataRequest.Context, rows: MutableList<out com.intellij.database.datagrid.GridRow>) {
+            var result = mutableListOf<GridRow>()
+            override fun addRows(context: GridDataRequest.Context, rows: MutableList<out GridRow>) {
                 result += rows
                 if (rows.size < 100) {
                     future.complete(result.toString())
@@ -190,14 +143,14 @@ object SQLExecutor {
         return future.get()
     }
 
-    private fun createConsole(project: com.intellij.openapi.project.Project, file: com.intellij.testFramework.LightVirtualFile): com.intellij.database.console.JdbcConsole? {
-        val attached = com.intellij.database.console.JdbcConsoleProvider.findOrCreateSession(project, file) ?: return null
-        return com.intellij.database.console.JdbcConsoleProvider.attachConsole(project, attached, file)
+    private fun createConsole(project: Project, file: LightVirtualFile): JdbcConsole? {
+        val attached = JdbcConsoleProvider.findOrCreateSession(project, file) ?: return null
+        return JdbcConsoleProvider.attachConsole(project, attached, file)
     }
 
     abstract class MyCompatDataConsumer : com.intellij.database.datagrid.DataConsumer {
         override fun setColumns(
-            context: com.intellij.database.datagrid.GridDataRequest.Context,
+            context: GridDataRequest.Context,
             subQueryIndex: Int,
             resultSetIndex: Int,
             columns: Array<out com.intellij.database.datagrid.GridColumn>,
@@ -205,17 +158,6 @@ object SQLExecutor {
         ) {
             // for Compatibility in IDEA 2023.2.8
         }
-
-        /// will remove in latest version, so we need to use reflection to call this method in future
-        override fun setColumns(
-            context: com.intellij.database.datagrid.GridDataRequest.Context,
-            resultSetIndex: Int,
-            columns: Array<out com.intellij.database.datagrid.GridColumn>,
-            firstRowNum: Int,
-        ) {
-            // for Compatibility in IDEA 2023.2.8
-        }
-
 
         override fun afterLastRowAdded(context: com.intellij.database.datagrid.GridDataRequest.Context, total: Int) {
             // for Compatibility in IDEA 2023.2.8
