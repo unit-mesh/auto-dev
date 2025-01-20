@@ -6,16 +6,11 @@ import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.template.GENIUS_CODE
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.template.context.TemplateContext
-import com.intellij.diff.DiffContentFactoryEx
-import com.intellij.diff.chains.SimpleDiffRequestChain
-import com.intellij.diff.chains.SimpleDiffRequestProducer
 import com.intellij.diff.editor.ChainDiffVirtualFile
 import com.intellij.diff.editor.DiffEditorTabFilesManager
 import com.intellij.diff.editor.DiffVirtualFileBase
-import com.intellij.diff.requests.SimpleDiffRequest
 import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
-import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.command.undo.UndoManager
@@ -34,9 +29,7 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.panels.HorizontalLayout
 import com.intellij.ui.components.panels.VerticalLayout
-import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
-import java.awt.Dimension
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.BorderFactory
@@ -54,7 +47,6 @@ class SingleFileDiffView(
     private val mainPanel: JPanel = JPanel(VerticalLayout(5))
     private val myHeaderPanel: JPanel = JPanel(BorderLayout())
     private var filePanel: JPanel? = null
-    var diffFile: ChainDiffVirtualFile? = null
     private val appliedPatch = GenericPatchApplier.apply(currentFile.readText(), patch.hunks)
     private val oldCode = currentFile.readText()
 

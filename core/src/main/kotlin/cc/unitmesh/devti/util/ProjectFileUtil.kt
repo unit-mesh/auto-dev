@@ -2,7 +2,6 @@
 package cc.unitmesh.devti.util
 
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
@@ -12,8 +11,7 @@ import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.openapi.vcs.changes.VcsIgnoreManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.psi.PsiManager
-import com.intellij.psi.search.FileTypeIndex
+import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.ProjectScope
 
 // https://github.com/JetBrains/intellij-community/blob/master/platform/projectModel-impl/src/com/intellij/openapi/roots/impl/ProjectFileIndexImpl.java#L32
@@ -23,33 +21,18 @@ fun isInProject(virtualFile: VirtualFile, project: Project): Boolean {
         return true
     }
 
-    PsiManager.getInstance(project).findFile(virtualFile)?.let {
+    if (ProjectFileIndex.getInstance(project).isInContent(virtualFile)) {
         return true
     }
-
     return false
 }
 
-fun Project.isInProject(virtualFile: VirtualFile): Boolean {
-    return isInProject(virtualFile, this) || ProjectFileIndex.getInstance(this).isInLibrary(virtualFile)
-}
-
-fun Project.findFile(path: String): VirtualFile? {
+fun Project.findFile(filename: String): VirtualFile? {
     ApplicationManager.getApplication().assertReadAccessAllowed()
-    val searchScope = ProjectScope.getProjectScope(this)
-    val fileType: FileType = FileTypeManager.getInstance().getFileTypeByFileName(path)
-    val allTypeFiles = FileTypeIndex.getFiles(fileType, searchScope)
-
-    for (file in allTypeFiles) {
-        if (file.name == path || file.path.endsWith(path)) {
-            return file
-        }
-    }
-
-    return null
+    return FilenameIndex.getVirtualFilesByName(filename, ProjectScope.getProjectScope(this)).firstOrNull()
 }
 
-fun Project.lookupFile(path: String): VirtualFile? {
+fun Project.findFileByPath(path: String): VirtualFile? {
     val projectPath = this.guessProjectDir()?.toNioPath()
     val realpath = projectPath?.resolve(path)
     return VirtualFileManager.getInstance().findFileByUrl("file://${realpath?.toAbsolutePath()}")

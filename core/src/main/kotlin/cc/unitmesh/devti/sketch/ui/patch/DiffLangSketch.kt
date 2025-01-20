@@ -116,7 +116,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
     }
 
     private fun handleAcceptAction() {
-        PsiDocumentManager.getInstance(myProject).commitAllDocuments();
+        PsiDocumentManager.getInstance(myProject).commitAllDocuments()
         val commandProcessor: CommandProcessor = CommandProcessor.getInstance()
 
         commandProcessor.executeCommand(myProject, {
@@ -138,7 +138,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
             val pathsFromGroups = ApplyPatchDefaultExecutor.pathsFromGroups(patchGroups)
             val additionalInfo = myReader.getAdditionalInfo(pathsFromGroups)
             shelfExecutor.apply(filePatches, patchGroups, null, "LlmGen.diff", additionalInfo)
-        }, "ApplyPatch", null, UndoConfirmationPolicy.REQUEST_CONFIRMATION, false);
+        }, "ApplyPatch", null, UndoConfirmationPolicy.REQUEST_CONFIRMATION, false)
     }
 
     private fun handleRejectAction() {
