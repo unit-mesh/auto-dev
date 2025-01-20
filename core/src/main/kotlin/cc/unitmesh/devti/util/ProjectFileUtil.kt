@@ -11,8 +11,9 @@ import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.openapi.vcs.changes.VcsIgnoreManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.psi.search.FilenameIndex
+import com.intellij.psi.PsiManager
 import com.intellij.psi.search.ProjectScope
+import com.intellij.psi.search.FilenameIndex
 
 // https://github.com/JetBrains/intellij-community/blob/master/platform/projectModel-impl/src/com/intellij/openapi/roots/impl/ProjectFileIndexImpl.java#L32
 fun isInProject(virtualFile: VirtualFile, project: Project): Boolean {
@@ -25,6 +26,10 @@ fun isInProject(virtualFile: VirtualFile, project: Project): Boolean {
         return true
     }
     return false
+}
+
+fun Project.isInProject(virtualFile: VirtualFile): Boolean {
+    return isInProject(virtualFile, this) || ProjectFileIndex.getInstance(this).isInContent(virtualFile)
 }
 
 fun Project.findFile(filename: String): VirtualFile? {
