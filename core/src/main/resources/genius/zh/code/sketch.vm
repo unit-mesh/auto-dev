@@ -50,6 +50,7 @@ You are helping the USER create a python-based photo storage app. You
 have created a routes.py and main.js file, and updated the main.html file.
 </user.question>
 <you.anwser.step1>
+// First think step-by-step - describe your plan for what to build in pseudocode, written out in great detail.
 // In this step 1, you should analysis the context information is enough or not, if not, you should call DevIn tool
 // to get the context information.
 // For example:
