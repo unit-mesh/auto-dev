@@ -35,10 +35,14 @@ import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.JComponent
 
 class CodeHighlightSketch(
-    val project: Project, val text: String, private var ideaLanguage: Language?,
+    val project: Project,
+    val text: String,
+    private var ideaLanguage: Language?,
     val editorLineThreshold: Int = 6
-) :
-    JBPanel<CodeHighlightSketch>(BorderLayout()), DataProvider, LangSketch {
+) : JBPanel<CodeHighlightSketch>(BorderLayout()), DataProvider, LangSketch {
+    private val devinLineThreshold = 1
+    private var isDevIns = false
+
     private var textLanguage: String? = null
 
     var editorFragment: EditorFragment? = null
@@ -63,7 +67,8 @@ class CodeHighlightSketch(
         editor.component.isOpaque = true
 
         if (ideaLanguage?.displayName == "DevIn") {
-            editorFragment = EditorFragment(editor, 1)
+            isDevIns = true
+            editorFragment = EditorFragment(editor, devinLineThreshold)
         } else {
             editorFragment = EditorFragment(editor, editorLineThreshold)
         }
@@ -102,7 +107,9 @@ class CodeHighlightSketch(
             document?.replaceString(0, document.textLength, normalizedText)
 
             document?.lineCount?.let {
-                if (it > editorLineThreshold) {
+                if (isDevIns && it > devinLineThreshold) {
+                    editorFragment?.updateExpandCollapseLabel()
+                } else if (it > editorLineThreshold) {
                     editorFragment?.updateExpandCollapseLabel()
                 }
             }

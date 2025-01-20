@@ -15,16 +15,15 @@ import com.jetbrains.python.run.PythonRunConfiguration
 import com.jetbrains.python.run.PythonRunConfigurationProducer
 
 class PythonRunService : RunService {
-    override fun isApplicable(project: Project, file: VirtualFile): Boolean {
-        return file.extension == "py"
-    }
+    override fun isApplicable(project: Project, file: VirtualFile): Boolean = file.extension == "py"
 
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = PythonRunConfiguration::class.java
 
     override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
         val psiFile: PyFile = runReadAction {
-            PsiManager.getInstance(project).findFile(virtualFile) as? PyFile
-        } ?: return null
+            PsiManager.getInstance(project).findFile(virtualFile)
+        } as? PyFile ?: return null
+
         val runManager = RunManager.getInstance(project)
 
         val context = runReadAction {

@@ -14,6 +14,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import com.intellij.sql.SqlFileType
+import com.intellij.sql.psi.SqlFile
 
 class SqlRunService : RunService {
     override fun isApplicable(project: Project, file: VirtualFile): Boolean {
@@ -24,7 +25,7 @@ class SqlRunService : RunService {
         DatabaseScriptRunConfiguration::class.java
 
     override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
-        return createDatabaseScriptConfiguration(project, virtualFile)?.configuration
+        return createRunnerConfig(project, virtualFile)?.configuration
     }
 
     override fun createRunSettings(
@@ -32,22 +33,21 @@ class SqlRunService : RunService {
         virtualFile: VirtualFile,
         testElement: PsiElement?
     ): RunnerAndConfigurationSettings? {
-        return createDatabaseScriptConfiguration(project, virtualFile)
+        return createRunnerConfig(project, virtualFile)
     }
 
-    private fun createDatabaseScriptConfiguration(project: Project, file: VirtualFile): RunnerAndConfigurationSettings? {
-        if (file.fileType != SqlFileType.INSTANCE) return null
-        val psiFile = PsiManager.getInstance(project).findFile(file) ?: return null
+    private fun createRunnerConfig(project: Project, file: VirtualFile): RunnerAndConfigurationSettings? {
+        val psiFile = runReadAction { PsiManager.getInstance(project).findFile(file) } as? SqlFile ?: return null
         val dataSource = DatabaseSchemaAssistant.getDataSources(project).firstOrNull() ?: return null
+
         val configurationsFromContext = runReadAction {
             ConfigurationContext(psiFile).configurationsFromContext.orEmpty()
         }
-        // @formatter:off
+
         val configurationSettings = configurationsFromContext
             .firstOrNull { it.configuration is DatabaseScriptRunConfiguration }
             ?.configurationSettings
             ?: return null
-        // @formatter:on
 
         val target = DatabaseScriptRunConfigurationOptions.Target(dataSource.uniqueId, null)
         // Safe cast because configuration was checked before
