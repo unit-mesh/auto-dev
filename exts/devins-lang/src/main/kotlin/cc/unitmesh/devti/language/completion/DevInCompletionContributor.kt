@@ -53,6 +53,11 @@ class DevInCompletionContributor : CompletionContributor() {
             valuePattern(BuiltinCommand.REFACTOR.commandName),
             RefactoringFuncProvider()
         )
+        extend(
+            CompletionType.BASIC,
+            valuePattern(BuiltinCommand.DATABASE.commandName),
+            DatabaseFuncProvider()
+        )
     }
 
     private inline fun <reified I : PsiElement> psiElement() = PlatformPatterns.psiElement(I::class.java)

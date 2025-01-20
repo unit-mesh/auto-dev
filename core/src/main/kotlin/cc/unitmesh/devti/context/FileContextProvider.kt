@@ -17,7 +17,7 @@ class FileContextProvider: LLMCodeContextProvider<PsiFile> {
         providers = registeredLanguages.mapNotNull { languageExtension.forLanguage(it) }
     }
 
-    override fun from(psiElement: PsiFile): FileContext {
+    override fun from(psiElement: PsiFile): FileContext? {
         for (provider in providers) {
             val fileContext = provider.getFileContext(psiElement)
             if (fileContext != null) {

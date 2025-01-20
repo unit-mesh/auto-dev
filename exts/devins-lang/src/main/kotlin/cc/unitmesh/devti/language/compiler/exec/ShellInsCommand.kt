@@ -16,15 +16,12 @@ import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.psi.PsiManager
 import com.intellij.sh.psi.ShFile
 import com.intellij.sh.run.ShRunner
 import java.awt.Toolkit.getDefaultToolkit
-import java.io.IOException
 
 /**
  * A class that implements the `InsCommand` interface to execute a shell command within the IntelliJ IDEA environment.
@@ -99,12 +96,6 @@ class ShellInsCommand(val myProject: Project, private val shellFile: String?, va
         }
 
         return "Running shell command: $shellFile"
-    }
-
-    @Throws(IOException::class)
-    fun createFile(filePath: String): VirtualFile {
-        val file = LocalFileSystem.getInstance().refreshAndFindFileByPath(filePath)
-        return file ?: VfsUtil.createDirectories(filePath)
     }
 
     fun createCommandLineForScript(project: Project, scriptText: String): GeneralCommandLine {
