@@ -21,6 +21,20 @@ class SqlRunService : RunService {
         return file.extension == "sql"
     }
 
+    override fun runFile(
+        project: Project,
+        virtualFile: VirtualFile,
+        psiElement: PsiElement?,
+        isFromToolAction: Boolean
+    ): String? {
+        val sql = runReadAction { PsiManager.getInstance(project).findFile(virtualFile) } as? SqlFile
+            ?: return null
+
+        if (sql.fileType !is SqlFileType) return null
+        val content = runReadAction { sql.text }
+        return DatabaseSchemaAssistant.executeSqlQuery(project, content)
+    }
+
     override fun runConfigurationClass(project: Project): Class<out RunProfile>? =
         DatabaseScriptRunConfiguration::class.java
 

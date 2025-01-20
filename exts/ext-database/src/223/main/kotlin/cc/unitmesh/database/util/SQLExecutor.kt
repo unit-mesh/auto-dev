@@ -5,6 +5,8 @@ import com.intellij.database.console.JdbcConsoleProvider
 import com.intellij.database.console.evaluation.EvaluationRequest
 import com.intellij.database.console.session.DatabaseSession
 import com.intellij.database.console.session.getSessionTitle
+import com.intellij.database.datagrid.DataRequest
+import com.intellij.database.datagrid.GridColumn
 import com.intellij.database.datagrid.GridDataRequest
 import com.intellij.database.datagrid.GridRow
 import com.intellij.database.model.RawDataSource
@@ -151,8 +153,8 @@ object SQLExecutor {
         val session = com.intellij.database.console.session.DatabaseSessionManager.getSession(project, localDs)
         val messageBus = session.messageBus
         messageBus.addConsumer(object : MyCompatDataConsumer() {
-            var result = mutableListOf<com.intellij.database.datagrid.GridRow>()
-            override fun addRows(context: com.intellij.database.datagrid.GridDataRequest.Context, rows: MutableList<out com.intellij.database.datagrid.GridRow>) {
+            var result = mutableListOf<GridRow>()
+            override fun addRows(context: GridDataRequest.Context, rows: MutableList<out GridRow>) {
                 result += rows
                 if (rows.size < 100) {
                     future.complete(result.toString())
@@ -160,31 +162,35 @@ object SQLExecutor {
             }
         })
 
-        val request =
-            object : com.intellij.database.datagrid.DataRequest.QueryRequest(session, query,
-                newConstraints(dataSource.dbms), null) {}
+        val request = object : DataRequest.QueryRequest(
+            session, query,
+            newConstraints(dataSource.dbms), null
+        ) {}
         messageBus.dataProducer.processRequest(request)
         return future.get()
     }
 
-    private fun createConsole(project: com.intellij.openapi.project.Project, file: com.intellij.testFramework.LightVirtualFile): com.intellij.database.console.JdbcConsole? {
-        val attached = com.intellij.database.console.JdbcConsoleProvider.findOrCreateSession(project, file) ?: return null
-        return com.intellij.database.console.JdbcConsoleProvider.attachConsole(project, attached, file)
+    private fun createConsole(
+        project: Project,
+        file: LightVirtualFile
+    ): JdbcConsole? {
+        val attached = JdbcConsoleProvider.findOrCreateSession(project, file) ?: return null
+        return JdbcConsoleProvider.attachConsole(project, attached, file)
     }
 
     abstract class MyCompatDataConsumer : com.intellij.database.datagrid.DataConsumer {
         /// will remove in latest version, so we need to use reflection to call this method in future
         override fun setColumns(
-            context: com.intellij.database.datagrid.GridDataRequest.Context,
+            context: GridDataRequest.Context,
             resultSetIndex: Int,
-            columns: Array<out com.intellij.database.datagrid.GridColumn>,
+            columns: Array<out GridColumn>,
             firstRowNum: Int,
         ) {
             // for Compatibility in IDEA 2023.2.8
         }
 
 
-        override fun afterLastRowAdded(context: com.intellij.database.datagrid.GridDataRequest.Context, total: Int) {
+        override fun afterLastRowAdded(context: GridDataRequest.Context, total: Int) {
             // for Compatibility in IDEA 2023.2.8
         }
     }
