@@ -7,7 +7,6 @@ import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
-import cc.unitmesh.devti.provider.devins.DevInsSymbolProvider
 import cc.unitmesh.devti.sketch.run.ShellUtil
 import cc.unitmesh.devti.template.context.TemplateContext
 import com.intellij.openapi.editor.Editor

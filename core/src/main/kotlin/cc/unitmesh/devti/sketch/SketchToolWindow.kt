@@ -9,25 +9,21 @@ import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
 import cc.unitmesh.devti.inline.AutoDevInlineChatService
 import cc.unitmesh.devti.inline.fullHeight
 import cc.unitmesh.devti.inline.fullWidth
-import cc.unitmesh.devti.provider.RunService
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import cc.unitmesh.devti.sketch.ui.highlight.CodeHighlightSketch
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.icons.AllIcons
-import com.intellij.ide.scratch.ScratchRootType
-import com.intellij.lang.Language
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.runInEdt
-import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileTypes.PlainTextLanguage
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.NullableComponent
 import com.intellij.openapi.ui.SimpleToolWindowPanel
-import com.intellij.psi.PsiManager
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
@@ -267,18 +263,12 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
         if (allCode.isEmpty()) return
 
         val allCodeText = allCode.joinToString("\n") { it.text }
+        if (allCodeText.trim().isEmpty()) {
+            logger<SketchToolWindow>().error("No code found")
+            return
+        }
+
         listener.manualSend(allCodeText)
-//        val devinLanguage = Language.findLanguageByID("DevIn")
-//        val scratchFile = ScratchRootType.getInstance()
-//            .createScratchFile(project, "sketch.devin", devinLanguage, text)
-//            ?: return
-//
-//        val psiFile = runReadAction {
-//            PsiManager.getInstance(project).findFile(scratchFile)
-//        } ?: return
-//
-//        RunService.provider(project, scratchFile)
-//            ?.runFile(project, scratchFile, psiFile, isFromToolAction = true)
     }
 
     private fun scrollToBottom() {
