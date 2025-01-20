@@ -31,7 +31,7 @@ class LocalSearchInsCommand(val myProject: Project, private val scope: String, v
     override suspend fun execute(): String {
         val text = (text ?: scope).trim()
         /// check text length if less then 3 return alert slowly
-        if (text.length < 3) {
+        if (text.length <= 3) {
             throw IllegalArgumentException("Text length should be more than 4")
         }
 

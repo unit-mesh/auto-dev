@@ -15,10 +15,12 @@ fun Project.lookupFile(path: String): VirtualFile? {
     return VirtualFileManager.getInstance().findFileByUrl("file://${realpath?.toAbsolutePath()}")
 }
 
-fun Project.findFile(filename: String): VirtualFile? {
+fun Project.findFile(filename: String, caseSensitively: Boolean = true): VirtualFile? {
     ApplicationManager.getApplication().assertReadAccessAllowed()
-    return FilenameIndex.getVirtualFilesByName(filename, ProjectScope.getProjectScope(this)).firstOrNull()
+    return FilenameIndex.getVirtualFilesByName(filename, caseSensitively, ProjectScope.getProjectScope(this)).firstOrNull()
 }
+
+// getVirtualFilesByNamesIgnoringCase
 
 fun VirtualFile.canBeAdded(): Boolean {
     if (!this.isValid || this.isDirectory) return false

@@ -32,7 +32,7 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
 
         if (virtualFile == null) {
             val filename = filepath.split("/").last()
-            virtualFile = myProject.findFile(filename)
+            virtualFile = myProject.findFile(filename, false)
         }
 
         val contentsToByteArray = virtualFile?.contentsToByteArray()
