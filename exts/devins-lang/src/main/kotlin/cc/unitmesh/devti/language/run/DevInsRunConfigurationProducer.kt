@@ -30,7 +30,6 @@ class DevInsRunConfigurationProducer : LazyRunConfigurationProducer<DevInsConfig
         val psiLocation = context.psiLocation ?: return false
         val psiFile = psiLocation.containingFile as? DevInFile ?: return false
         val virtualFile = psiFile.virtualFile ?: return false
-
         return virtualFile.path == configuration.getScriptPath()
     }
 

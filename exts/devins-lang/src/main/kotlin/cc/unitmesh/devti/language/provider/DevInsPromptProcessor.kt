@@ -78,7 +78,7 @@ class DevInsPromptProcessor : LanguagePromptProcessor {
         var element = psiFile.findElementAt(offset) ?: return null
 
         if (element is PsiWhiteSpace) {
-            element = element.getParent()
+            element = element.parent
         }
 
         return element
