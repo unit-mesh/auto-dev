@@ -21,7 +21,7 @@ VSCode Version: [https://github.com/unit-mesh/auto-dev-vscode](https://github.co
 
 [Quick Start →](https://ide.unitmesh.cc/quick-start)
 
-AutoDev Composer - the Cursor alternative:
+## AutoDev Composer - the Cursor Composer in Intellij IDEA
 
 Video demo (YouTube) — English
 
