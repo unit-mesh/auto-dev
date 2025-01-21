@@ -58,7 +58,7 @@ class DatabaseFunctionProvider : ToolchainFunctionProvider {
 
             if (tableSchema.isEmpty()) return@mapNotNull null
             val name = it.name.substringBeforeLast('@')
-            "DATABASE NAME: ${name};\n${tableSchema.joinToString("\n")}"
+            "Database Schema result:\n\n```sql\n# DATABASE NAME: ${name};\n${tableSchema.joinToString("\n")}\n```\n"
         }.joinToString("\n")
     }
 
