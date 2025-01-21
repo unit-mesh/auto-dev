@@ -17,7 +17,13 @@ fun Project.lookupFile(path: String): VirtualFile? {
 
 fun Project.findFile(filename: String, caseSensitively: Boolean = true): VirtualFile? {
     ApplicationManager.getApplication().assertReadAccessAllowed()
-    return FilenameIndex.getVirtualFilesByName(filename, caseSensitively, ProjectScope.getProjectScope(this)).firstOrNull()
+    val currentTask = ApplicationManager.getApplication().executeOnPooledThread<VirtualFile?> {
+        val searchedFiles =
+            FilenameIndex.getVirtualFilesByName(filename, caseSensitively, ProjectScope.getProjectScope(this))
+        return@executeOnPooledThread searchedFiles.firstOrNull()
+    }
+
+    return currentTask.get()
 }
 
 // getVirtualFilesByNamesIgnoringCase
