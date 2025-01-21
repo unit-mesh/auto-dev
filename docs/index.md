@@ -25,10 +25,8 @@ permalink: /
 > 🧙‍AutoDev: The AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, and a helpful
 > bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Dev/Testing/Document/Agent feature 🧪 included! 🚀
 
-support IntelliJ IDEA, Android Studio, PyCharm, WebStorm, CLion (TBC),
-GoLand, RubyMine, AppCode, DataGrip, Rider, MPS, and more.
-
-VSCode Version: [https://github.com/unit-mesh/auto-dev-vscode](https://github.com/unit-mesh/auto-dev-vscode)
+- IntelliJ IDEA version: Android Studio, PyCharm, WebStorm, GoLand, RubyMine, AppCode and more.
+- VSCode Version: [https://github.com/unit-mesh/auto-dev-vscode](https://github.com/unit-mesh/auto-dev-vscode)
 
 Regarding the matter discussed in the LICENSE issue at the project's outset, we want to address the complexity of JetBrain plugin development. In the process, we referenced certain code and API designs from the JetBrains Community version and the JetBrains AI Assistant plugin. JetBrains understandably reserves the right to view this as potential infringement on their intellectual property.
 

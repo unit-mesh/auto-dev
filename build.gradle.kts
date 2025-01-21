@@ -168,8 +168,14 @@ configure(
             implementation("org.jetbrains:annotations:26.0.1")
         }
 
+        testImplementation("io.kotest:kotest-assertions-core:5.7.2")
+        testImplementation("junit:junit:4.13.2")
+        testImplementation("org.opentest4j:opentest4j:1.3.0")
+        testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.9.3")
+
         intellijPlatform {
             testFramework(TestFrameworkType.Bundled)
+            testFramework(TestFrameworkType.Platform)
         }
     }
 }
@@ -442,11 +448,6 @@ project(":core") {
         implementation("com.knuddels:jtokkit:1.0.0")
 
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-        // junit
-        testImplementation("io.kotest:kotest-assertions-core:5.7.2")
-        testImplementation("junit:junit:4.13.2")
-        testImplementation("org.opentest4j:opentest4j:1.3.0")
-        testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.9.3")
     }
 
     task("resolveDependencies") {

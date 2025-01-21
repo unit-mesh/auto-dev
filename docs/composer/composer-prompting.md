@@ -1,6 +1,6 @@
 ---
 layout: default
-title: AutoDev Composer prompting
+title: AutoDev Composer Prompting
 parent: AutoDev Composer
 nav_order: 1
 ---

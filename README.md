@@ -29,7 +29,7 @@ Video demo (YouTube) — English
 
 Video demo (Bilibili) - 中文
 
-[![Watch the video](https://img.youtube.com/vi/gVBTBdFV5hA/sddefault.jpg)](https://www.bilibili.com/video/BV115c6eUEps/)
+[![Watch the video](https://img.youtube.com/vi/1m3HJzw0YhA/sddefault.jpg)](https://www.bilibili.com/video/BV115c6eUEps/)
 
 [DevIns — AI Agent language for AutoDevelopment →](https://ide.unitmesh.cc/devins) which you can use follow syntax as
 bridges for Human-AI-IDE:
