@@ -157,8 +157,8 @@ configure(
     }
 
     dependencies {
-        compileOnly(kotlin("stdlib-jdk8"))
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+//        compileOnly(kotlin("stdlib-jdk8"))
+//        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
         testOutput(sourceSets.test.get().output.classesDirs)
@@ -477,6 +477,7 @@ project(":java") {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins)
+            testFramework(TestFrameworkType.Plugin.Java)
         }
 
         implementation(project(":core"))
@@ -489,6 +490,7 @@ project(":javascript") {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins)
             intellijPlugins(javaScriptPlugins)
+            testFramework(TestFrameworkType.Plugin.JavaScript)
         }
 
         implementation(project(":core"))
@@ -500,6 +502,7 @@ project(":kotlin") {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins)
+            testFramework(TestFrameworkType.Plugin.Java)
         }
 
         implementation(project(":core"))
