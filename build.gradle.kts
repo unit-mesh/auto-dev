@@ -413,8 +413,12 @@ project(":core") {
 
         implementation("io.reactivex.rxjava3:rxjava:3.1.10")
 
-        implementation("com.squareup.okhttp3:okhttp:4.12.0")
-        implementation("com.squareup.okhttp3:okhttp-sse:4.12.0")
+        implementation("com.squareup.okhttp3:okhttp:4.12.0") {
+            excludeKotlinDeps()
+        }
+        implementation("com.squareup.okhttp3:okhttp-sse:4.12.0") {
+            excludeKotlinDeps()
+        }
 
         implementation("com.squareup.retrofit2:converter-jackson:2.11.0")
         implementation("com.squareup.retrofit2:converter-gson:2.11.0")
@@ -430,11 +434,14 @@ project(":core") {
 
         implementation("org.jetbrains:markdown:0.7.3")
 
-        // chocolate factory
+        // chocolate factorys
         // follow: https://onnxruntime.ai/docs/get-started/with-java.html
 //        implementation("com.microsoft.onnxruntime:onnxruntime:1.18.0")
 //        implementation("ai.djl.huggingface:tokenizers:0.29.0")
-        implementation("cc.unitmesh:cocoa-core:1.0.0")
+        implementation("cc.unitmesh:cocoa-core:1.0.0") {
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+            excludeKotlinDeps()
+        }
 //        implementation("cc.unitmesh:document:1.0.0")
 
         // kanban
