@@ -32,7 +32,6 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.ComponentValidator
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.ui.popup.Balloon.Position
-import com.intellij.openapi.util.NlsContexts
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.openapi.wm.impl.InternalDecorator
@@ -273,15 +272,15 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         stopButton.isEnabled = true
     }
 
-    fun showTooltip(text: @NlsContexts.Tooltip String) {
+    fun showTooltip(text: String) {
         showTooltip(input, Position.above, text)
     }
 
-    fun showTooltip(component: JComponent, position: Position, text: @NlsContexts.Tooltip String) {
+    fun showTooltip(component: JComponent, position: Position, text: String) {
         val point = Point(component.x, component.y)
-        val tipComponent = IdeTooltipManager.initPane(
-            text, HintHint(component, point).setAwtTooltip(true).setPreferredPosition(position), null
-        )
+        val hintHint = HintHint(component, point).setAwtTooltip(true).setPreferredPosition(position)
+        // Inspired by com.intellij.ide.IdeTooltipManager#showTooltipForEvent
+        val tipComponent = IdeTooltipManager.initPane(text, hintHint, null)
         val tooltip = IdeTooltip(component, point, tipComponent)
         IdeTooltipManager.getInstance().show(tooltip, true)
     }
