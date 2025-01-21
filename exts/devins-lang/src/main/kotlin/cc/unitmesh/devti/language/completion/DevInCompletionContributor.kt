@@ -22,7 +22,6 @@ class DevInCompletionContributor : CompletionContributor() {
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.COMMAND_ID), BuiltinCommandCompletion())
         extend(CompletionType.BASIC, PlatformPatterns.psiElement(DevInTypes.AGENT_ID), CustomAgentCompletion())
 
-        // command completion
         extend(
             CompletionType.BASIC,
             (valuePatterns(listOf(BuiltinCommand.FILE, BuiltinCommand.RUN, BuiltinCommand.WRITE))),
