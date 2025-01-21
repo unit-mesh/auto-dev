@@ -13,7 +13,7 @@ enum class BuiltinCommand(
     val requireProps: Boolean = false,
 ) {
     FILE("file", "Read the content of a file by project relative path", AllIcons.Actions.Copy, true, true),
-    REV("rev", "Read git changes by hash; for other git operations, it is recommended to use native git commands", AllIcons.Vcs.History, true, true),
+    REV("rev", "Read git changes by sha hash; For other git operations, it is recommended to use native git commands", AllIcons.Vcs.History, true, true),
     /**
      * Every language will have a symbol completion, which is the most basic completion, for example,
      * - Java: [com.intellij.codeInsight.completion.JavaKeywordCompletion]
