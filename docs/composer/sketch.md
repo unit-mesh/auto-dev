@@ -1,7 +1,7 @@
 ---
 layout: default
 title: AutoDev Composer - Sketch View
-parent: AutoDev Sketch
+parent: AutoDev Composer
 nav_order: 2
 ---
 
