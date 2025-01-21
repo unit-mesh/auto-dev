@@ -21,6 +21,16 @@ VSCode Version: [https://github.com/unit-mesh/auto-dev-vscode](https://github.co
 
 [Quick Start →](https://ide.unitmesh.cc/quick-start)
 
+AutoDev Composer - the Cursor alternative:
+
+Video demo (YouTube) — English
+
+[![Watch the video](https://img.youtube.com/vi/1m3HJzw0YhA/sddefault.jpg)](https://youtu.be/1m3HJzw0YhA)
+
+Video demo (Bilibili) - 中文
+
+[![Watch the video](https://img.youtube.com/vi/gVBTBdFV5hA/sddefault.jpg)](https://www.bilibili.com/video/BV115c6eUEps/)
+
 [DevIns — AI Agent language for AutoDevelopment →](https://ide.unitmesh.cc/devins) which you can use follow syntax as
 bridges for Human-AI-IDE:
 
