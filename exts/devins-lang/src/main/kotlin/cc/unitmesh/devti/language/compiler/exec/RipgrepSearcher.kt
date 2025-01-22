@@ -17,7 +17,6 @@ import java.nio.file.Paths
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
-import java.util.function.Consumer
 
 
 /**
@@ -26,7 +25,6 @@ import java.util.function.Consumer
  */
 object RipgrepSearcher {
     private val LOG = Logger.getInstance(RipgrepSearcher::class.java)
-    private const val MAX_RESULTS = 300
 
     fun searchFiles(
         project: Project,
@@ -132,17 +130,27 @@ object RipgrepSearcher {
         }
 
         for (entry in grouped.entries) {
-            output.append(entry.key).append("\n|----\n")
-            for (result in entry.value!!) {
-                val context: MutableList<String?> = ArrayList<String?>()
-                context.addAll(result!!.beforeContext)
-                context.add(result.match)
-                context.addAll(result.afterContext)
+            output.append("### filepath: ").append(entry.key).append("\n")
+            val filePath = Paths.get(basePath, entry.key)
+            val content = filePath.toFile().readLines()
 
-                context.forEach(Consumer { line: String? ->
-                    output.append("|").append(line!!.trim { it <= ' ' }).append("\n")
-                })
-                output.append("|----\n")
+            val lineNumbers = entry.value!!.map { it!!.line }
+
+            val displayLines = mutableSetOf<Int>()
+            for (lineNumber in lineNumbers) {
+                val start = 1.coerceAtLeast(lineNumber - 4)
+                val end = content.size.coerceAtMost(lineNumber + 4)
+                for (i in start..end) {
+                    displayLines.add(i)
+                }
+            }
+
+            val sortedDisplayLines = displayLines.sorted()
+            for (lineNumber in sortedDisplayLines) {
+                val line = content.getOrNull(lineNumber - 1)
+                if (line != null) {
+                    output.append(lineNumber).append(" ").append(line).append("\n")
+                }
             }
 
             output.append("\n")
