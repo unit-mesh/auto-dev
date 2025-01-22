@@ -57,7 +57,7 @@ have created a routes.py and main.js file, and updated the main.html file.
 为了帮助您创建基于 Python 的照片存储应用程序，我需要了解更多关于您的代码库的信息。请允许我调用工具来获取上下文信息。请执行以下 DevIn 代码：
 <devin>
 /dir:src
-/localSearch:photo
+/ripgrepSearch:.*photo.*
 </devin>
 // If the context information is still not enough, you should ask the user to provide more information
 </you.anwser.step1>

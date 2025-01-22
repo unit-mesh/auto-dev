@@ -57,7 +57,7 @@ To help you create a Python-based photo storage application, I need to know more
 tool call code for you to get the necessary context information, please execute it to get the context information.
 <devin>
 /dir:src
-/localSearch:photo
+/ripgrepSearch:.*photo.*
 </devin>
 // If the context information is still not enough, you should ask the user to provide more information
 </you.anwser.step1>
@@ -128,7 +128,7 @@ feat: add delete blog functionality
 <devin> // 请尽可能只用一个 DevIn 代码块来获取上下文信息
 /dir:src/main/java
 /file:SketchRunContext.java   // 使用绝对路径时，一定要从用户那里得到正确的路径
-/localSearch:SketchRunContext // 如果用户的问题是中文的，需要转换为英文的搜索关键词
+/ripgrepSearch:SketchRunContext // 如果用户的问题是中文的，需要转换为英文的搜索关键词
 </devin>
 </you.anwser.step1>
 <user.anwser.step1>
