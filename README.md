@@ -28,46 +28,18 @@ VSCode Version: [https://github.com/unit-mesh/auto-dev-vscode](https://github.co
 > Unite Your Dev Ecosystem, Create Your AI Copilot
 
 ![Ecology System](https://shire.run/images/shire-ecology-system.png)
+Here’s the condensed table in English, retaining key information while optimizing space:
 
-### Code Sketch
-
-The default code sketch view provides a real-time code editor with syntax highlighting.
-
-![](https://shire.run/images/shire-sketch-diff.png)
-
-### **Diff Sketch**
-
-Diff patch sketch provide a handle for diff content.
-
-![](https://shire.run/images/shire-sketch-diff-view.png)
-
-you can view source file, examine diff, or apply changes directly. Or use AI model to repair.
-
-### **Terminal Sketch**
-
-Terminal sketch view provide a editable and can be popup terminal.
-
-![](https://shire.run/images/shire-sketch-terminal.png)
-
-you can run interact with terminal, and popup terminal.
-
-### **Mermaid Sketch**
-
-Note: requires the Mermaid plugin to be installed.
-
-Mermaid Sketch provides real-time preview and editing capabilities for flowcharts, supporting bidirectional binding to
-make diagram creation simple and intuitive.
-
-![](https://shire.run/images/shire-sketch-mermaid.png)
-
-### **PlantUML Sketch**
-
-Note: requires the PlantUML Sketch plugin to be installed.
-
-PlantUML Sketch offers powerful support for UML diagrams, enabling seamless creation and modification of various UML
-diagrams with a bidirectionally bound code editor.
-
-![](https://shire.run/images/shire-sketch-plantuml.png)
+| Feature Name           | Description                                                        | Screenshots                                              |
+|------------------------|--------------------------------------------------------------------|----------------------------------------------------------|
+| **Code Sketch**        | Real-time code editor with syntax highlighting                     | ![](https://shire.run/images/shire-sketch-diff.png)      |
+| **Diff Sketch**        | Diff content comparison tool with patch handling                   | ![](https://shire.run/images/shire-sketch-diff-view.png) |
+| **Terminal Sketch**    | Editable pop-up terminal interface                                 | ![](https://shire.run/images/shire-sketch-terminal.png)  |
+| **Mermaid Sketch`*`**  | Real-time flowchart preview/edit with bidirectional binding        | ![](https://shire.run/images/shire-sketch-mermaid.png)   |
+| **PlantUML Sketch`*`** | UML diagram editor with bidirectional code-diagram synchronization | ![](https://shire.run/images/shire-sketch-plantuml.png)  |
+| **WebView Sketch**     | HTML/React/Ionic mockup generator with WebView display             | ![](https://shire.run/images/shire-sketch-webview.png)   |
+                    
+`*` means requires additional plugin installation.
 
 ### Demos
 
