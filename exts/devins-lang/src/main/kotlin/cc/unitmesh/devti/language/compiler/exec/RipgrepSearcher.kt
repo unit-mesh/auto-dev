@@ -5,6 +5,7 @@ import com.google.gson.JsonParser
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.*
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import kotlinx.serialization.Serializable
@@ -19,6 +20,94 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 
+@Serializable
+public data class SearchResult(
+    var filePath: String? = null,
+    var line: Int = 0,
+    var column: Int = 0,
+    var match: String? = null,
+    var beforeContext: MutableList<String?> = ArrayList<String?>(),
+    var afterContext: MutableList<String?> = ArrayList<String?>()
+)
+
+public class RipgrepOutputProcessor : ProcessAdapter() {
+    private val results: MutableList<SearchResult> = ArrayList<SearchResult>()
+    private var currentResult: SearchResult? = null
+
+    override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
+        if (outputType === ProcessOutputTypes.STDOUT) {
+            parseJsonLine(event.text)
+        }
+    }
+
+    fun parseJsonLine(line: String) {
+        if (line.isBlank()) {
+            return
+        }
+
+        // use JSON parser to parse the line
+        val json = try {
+            JsonParser.parseString(line)
+        } catch (e: Exception) {
+            logger<RipgrepSearcher>().error("Failed to parse JSON line", e)
+            return
+        }
+
+        if (json.isJsonObject) {
+            val jsonObject = json.asJsonObject
+            val type = jsonObject.get("type").asString
+
+            when (type) {
+                "match" -> {
+                    val data = jsonObject.getAsJsonObject("data")
+                    val path = data.getAsJsonObject("path").get("text").asString
+                    val lines = data.getAsJsonObject("lines").get("text").asString
+                    val lineNumber = data.get("line_number").asInt
+                    val absoluteOffset = data.get("absolute_offset").asInt
+                    val submatches = data.getAsJsonArray("submatches")
+
+                    currentResult = SearchResult(
+                        filePath = path,
+                        line = lineNumber,
+                        column = absoluteOffset,
+                        match = lines.trim()
+                    )
+
+                    submatches.forEach { submatch ->
+                        val submatchObj = submatch.asJsonObject
+                        val matchText = submatchObj.get("match").asJsonObject.get("text").asString
+                        currentResult?.match = matchText
+                    }
+
+                    results.add(currentResult!!)
+                }
+
+                "context" -> {
+                    val data = jsonObject.getAsJsonObject("data")
+                    val lines = data.getAsJsonObject("lines").get("text").asString
+                    val lineNumber = data.get("line_number").asInt
+
+                    if (currentResult != null) {
+                        if (lineNumber < currentResult!!.line) {
+                            currentResult!!.beforeContext.add(lines.trim())
+                        } else {
+                            currentResult!!.afterContext.add(lines.trim())
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun getResults(): MutableList<SearchResult> {
+        if (currentResult != null) {
+            results.add(currentResult!!)
+        }
+
+        return results
+    }
+}
+
 /**
  * 使用Ripgrep进行文件搜索
  * Inspired by: https://github.com/cline/cline/blob/main/src/services/ripgrep/index.ts Apache-2.0
@@ -32,7 +121,7 @@ object RipgrepSearcher {
         regexPattern: String,
         filePattern: String?
     ): CompletableFuture<String?> {
-        return CompletableFuture.supplyAsync<String?> {
+        return CompletableFuture.supplyAsync<String> {
             try {
                 val rgPath = findRipgrepBinary()
                 val results = executeRipgrep(
@@ -70,13 +159,8 @@ object RipgrepSearcher {
     }
 
     @Throws(IOException::class)
-    private fun executeRipgrep(
-        project: Project,
-        rgPath: Path,
-        directory: String,
-        regex: String,
-        filePattern: String?
-    ): MutableList<SearchResult> {
+    private fun executeRipgrep(project: Project, rgPath: Path, directory: String, regex: String, filePattern: String?):
+            MutableList<SearchResult> {
         val cmd = getCommandLine(rgPath, regex, filePattern, directory, project.basePath)
 
         val handler: OSProcessHandler = ColoredProcessHandler(cmd)
@@ -163,93 +247,5 @@ object RipgrepSearcher {
         val base = Paths.get(basePath)
         val target = Paths.get(absolutePath)
         return base.relativize(target).toString().replace('\\', '/')
-    }
-
-    @Serializable
-    data class SearchResult(
-        var filePath: String? = null,
-        var line: Int = 0,
-        var column: Int = 0,
-        var match: String? = null,
-        var beforeContext: MutableList<String?> = ArrayList<String?>(),
-        var afterContext: MutableList<String?> = ArrayList<String?>()
-    )
-
-    private class RipgrepOutputProcessor : ProcessAdapter() {
-        private val results: MutableList<SearchResult> = ArrayList<SearchResult>()
-        private var currentResult: SearchResult? = null
-
-        override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
-            if (outputType === ProcessOutputTypes.STDOUT) {
-                parseJsonLine(event.text)
-            }
-        }
-
-        fun parseJsonLine(line: String) {
-            if (line.isBlank()) {
-                return
-            }
-
-            // use JSON parser to parse the line
-            val json = try {
-                JsonParser.parseString(line)
-            } catch (e: Exception) {
-                LOG.error("Failed to parse JSON line", e)
-                return
-            }
-
-            if (json.isJsonObject) {
-                val jsonObject = json.asJsonObject
-                val type = jsonObject.get("type").asString
-
-                when (type) {
-                    "match" -> {
-                        val data = jsonObject.getAsJsonObject("data")
-                        val path = data.getAsJsonObject("path").get("text").asString
-                        val lines = data.getAsJsonObject("lines").get("text").asString
-                        val lineNumber = data.get("line_number").asInt
-                        val absoluteOffset = data.get("absolute_offset").asInt
-                        val submatches = data.getAsJsonArray("submatches")
-
-                        currentResult = SearchResult(
-                            filePath = path,
-                            line = lineNumber,
-                            column = absoluteOffset,
-                            match = lines.trim()
-                        )
-
-                        submatches.forEach { submatch ->
-                            val submatchObj = submatch.asJsonObject
-                            val matchText = submatchObj.get("match").asJsonObject.get("text").asString
-                            currentResult?.match = matchText
-                        }
-
-                        results.add(currentResult!!)
-                    }
-
-                    "context" -> {
-                        val data = jsonObject.getAsJsonObject("data")
-                        val lines = data.getAsJsonObject("lines").get("text").asString
-                        val lineNumber = data.get("line_number").asInt
-
-                        if (currentResult != null) {
-                            if (lineNumber < currentResult!!.line) {
-                                currentResult!!.beforeContext.add(lines.trim())
-                            } else {
-                                currentResult!!.afterContext.add(lines.trim())
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        fun getResults(): MutableList<SearchResult> {
-            if (currentResult != null) {
-                results.add(currentResult!!)
-            }
-
-            return results
-        }
     }
 }
