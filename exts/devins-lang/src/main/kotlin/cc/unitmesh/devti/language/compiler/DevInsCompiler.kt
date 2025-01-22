@@ -255,6 +255,12 @@ class DevInsCompiler(
                 LocalSearchInsCommand(myProject, prop, shireCode)
             }
 
+            BuiltinCommand.RIPGREP_SEARCH -> {
+                result.isLocalCommand = true
+                val shireCode: String? = lookupNextCode(used)?.text
+                RipgrepSearchInsCommand(myProject, prop, shireCode)
+            }
+
             BuiltinCommand.RELATED -> {
                 result.isLocalCommand = true
                 RelatedSymbolInsCommand(myProject, prop)

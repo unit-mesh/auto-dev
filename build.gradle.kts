@@ -663,6 +663,8 @@ project(":exts:devins-lang") {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins + "org.intellij.plugins.markdown" + "com.jetbrains.sh" + "Git4Idea")
+
+            testFramework(TestFrameworkType.Plugin.Java)
         }
 
         implementation(project(":core"))

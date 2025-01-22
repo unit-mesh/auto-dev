@@ -71,6 +71,7 @@ enum class BuiltinCommand(
         true
     ),
     OPEN("open", "Open a file in the editor", AllIcons.Actions.MenuOpen, false),
+    RIPGREP_SEARCH("ripgrepSearch", "Search text in the project with ripgrep", AllIcons.Actions.Regex, true, true),
     ;
 
     companion object {
