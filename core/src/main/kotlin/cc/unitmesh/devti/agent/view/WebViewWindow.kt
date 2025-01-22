@@ -9,16 +9,12 @@ import com.intellij.ui.jcef.JBCefJSQuery
 import org.cef.browser.CefBrowser
 import org.cef.browser.CefFrame
 import org.cef.handler.CefLoadHandlerAdapter
+import java.awt.BorderLayout
 import java.awt.Component
+import java.awt.FlowLayout
+import javax.swing.*
 
-/**
- * WebViewWindow is a class that provides a custom webview functionality. It allows developers to
- * create a custom webview within their IntelliJ-based applications. This class is designed to be
- * used in conjunction with the JCEF (JetBrains CEF) plugin, which is a wrapper around the Chromium Embedded Framework.
- *
- */
 class WebViewWindow {
-    // official doc: https://plugins.jetbrains.com/docs/intellij/jcef.html#executing-javascript
     private val ourCefClient = JBCefApp.getInstance().createClient()
     private val myBrowser: JBCefBrowser = try {
         JBCefBrowser.createBuilder()
@@ -31,6 +27,9 @@ class WebViewWindow {
     }
     private val myViewerStateJSQuery: JBCefJSQuery = JBCefJSQuery.create(myBrowser as JBCefBrowserBase)
 
+    private val urlField = JTextField()
+    private val refreshButton = JButton("Refresh")
+
     init {
         myBrowser.component.background = JBColor.WHITE
 
@@ -38,19 +37,50 @@ class WebViewWindow {
             JBCefJSQuery.Response(null)
         }
 
-        var myLoadHandler = object : CefLoadHandlerAdapter() {
+        val myLoadHandler = object : CefLoadHandlerAdapter() {
             override fun onLoadEnd(browser: CefBrowser, frame: CefFrame, httpStatusCode: Int) {
                 if (frame.isMain) {
-                    // todo add some event maybe ?
+                    // Update the URL field when the page finishes loading
+                    urlField.text = browser.url
                 }
             }
         }
         ourCefClient.addLoadHandler(myLoadHandler, myBrowser.cefBrowser)
+
+        // Set up the refresh button action
+        refreshButton.addActionListener {
+            myBrowser.cefBrowser.reload()
+        }
+
+        // Set up the URL field action
+        urlField.addActionListener {
+            val url = urlField.text
+            if (url.isNotEmpty()) {
+                myBrowser.loadURL(url)
+            }
+        }
     }
 
-    val component: Component = myBrowser.component
+    val component: Component
+        get() {
+            // Create a panel to hold the URL field and refresh button
+            val controlPanel = JPanel(FlowLayout(FlowLayout.LEFT))
+            controlPanel.add(urlField)
+            controlPanel.add(refreshButton)
+
+            // Create a main panel to hold the control panel and the browser component
+            val mainPanel = JPanel(BorderLayout())
+            mainPanel.add(controlPanel, BorderLayout.NORTH)
+            mainPanel.add(myBrowser.component, BorderLayout.CENTER)
+
+            return mainPanel
+        }
 
     fun loadHtml(html: String) {
         myBrowser.loadHTML(html)
+    }
+
+    fun loadURL(url: String) {
+        myBrowser.loadURL(url)
     }
 }
