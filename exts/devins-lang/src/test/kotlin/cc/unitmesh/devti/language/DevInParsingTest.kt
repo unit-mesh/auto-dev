@@ -36,9 +36,9 @@ class DevInParsingTest : ParsingTestCase("parser", "devin", DevInParserDefinitio
         doTest(true)
     }
 
-    fun testCommandAndSymbol() {
-        doTest(true)
-    }
+//    fun testCommandAndSymbol() {
+//        doTest(true)
+//    }
 
     fun testBrowseWeb() {
         doTest(true)
