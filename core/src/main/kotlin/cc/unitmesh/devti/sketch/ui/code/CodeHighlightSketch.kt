@@ -49,7 +49,7 @@ open class CodeHighlightSketch(
     private var hasSetupAction = false
 
     init {
-        if (text.isEmpty() && (ideaLanguage?.displayName != "Markdown" && ideaLanguage != PlainTextLanguage.INSTANCE)) {
+        if (text.isNullOrEmpty() && (ideaLanguage?.displayName != "Markdown" && ideaLanguage != PlainTextLanguage.INSTANCE)) {
             initEditor(text)
         }
     }

@@ -11,6 +11,7 @@ import org.cef.browser.CefFrame
 import org.cef.handler.CefLoadHandlerAdapter
 import java.awt.BorderLayout
 import java.awt.Component
+import java.awt.Dimension
 import java.awt.FlowLayout
 import javax.swing.*
 
@@ -59,17 +60,21 @@ class WebViewWindow {
                 myBrowser.loadURL(url)
             }
         }
+
+        // Set a minimum width for the URL field
+        urlField.preferredSize = Dimension(400, urlField.preferredSize.height)
     }
 
     val component: Component
         get() {
-            // Create a panel to hold the URL field and refresh button
             val controlPanel = JPanel(FlowLayout(FlowLayout.LEFT))
             controlPanel.add(urlField)
             controlPanel.add(refreshButton)
 
-            // Create a main panel to hold the control panel and the browser component
             val mainPanel = JPanel(BorderLayout())
+
+            mainPanel.border = BorderFactory.createTitledBorder("WebView Window")
+
             mainPanel.add(controlPanel, BorderLayout.NORTH)
             mainPanel.add(myBrowser.component, BorderLayout.CENTER)
 
