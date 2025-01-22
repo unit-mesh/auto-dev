@@ -46,14 +46,13 @@ val rustPlugins = listOf(
 )
 
 val platformVersion = prop("platformVersion").toInt()
-val ideaPlugins =
-    listOf(
-        "com.intellij.java",
-        "org.jetbrains.plugins.gradle",
-        "org.jetbrains.idea.maven",
-        "org.jetbrains.kotlin",
-        "JavaScript"
-    )
+val ideaPlugins = listOf(
+    "com.intellij.java",
+    "org.jetbrains.plugins.gradle",
+    "org.jetbrains.idea.maven",
+    "org.jetbrains.kotlin",
+    "JavaScript"
+)
 
 var lang = extra.properties["lang"] ?: "java"
 
@@ -73,10 +72,7 @@ repositories {
     }
 }
 
-configure(
-    subprojects
-            - project(":exts")
-) {
+configure(subprojects - project(":exts")) {
     apply {
         plugin("idea")
         plugin("kotlin")
@@ -112,16 +108,6 @@ configure(
     }
 
     tasks {
-        withType<KotlinCompile> {
-            kotlinOptions {
-                jvmTarget = VERSION_17.toString()
-                languageVersion = "1.8"
-                // see https://plugins.jetbrains.com/docs/intellij/using-kotlin.html#kotlin-standard-library
-                apiVersion = "1.7"
-                freeCompilerArgs = listOf("-Xjvm-default=all")
-            }
-        }
-
         prepareSandbox { enabled = false }
     }
 
