@@ -21,7 +21,55 @@ VSCode Version: [https://github.com/unit-mesh/auto-dev-vscode](https://github.co
 
 [Quick Start →](https://ide.unitmesh.cc/quick-start)
 
-## AutoDev Composer - the Cursor Composer in Intellij IDEA
+🆕🆕🆕: New AI agent language: [https://github.com/phodal/shire](https://github.com/phodal/shire)
+
+## AutoDev 2.0 Sketch - the Cursor Composer in Intellij IDEA
+
+> Unite Your Dev Ecosystem, Create Your AI Copilot
+
+![Ecology System](https://shire.run/images/shire-ecology-system.png)
+
+### Code Sketch
+
+The default code sketch view provides a real-time code editor with syntax highlighting.
+
+![](https://shire.run/images/shire-sketch-diff.png)
+
+### **Diff Sketch**
+
+Diff patch sketch provide a handle for diff content.
+
+![](https://shire.run/images/shire-sketch-diff-view.png)
+
+you can view source file, examine diff, or apply changes directly. Or use AI model to repair.
+
+### **Terminal Sketch**
+
+Terminal sketch view provide a editable and can be popup terminal.
+
+![](https://shire.run/images/shire-sketch-terminal.png)
+
+you can run interact with terminal, and popup terminal.
+
+### **Mermaid Sketch**
+
+Note: requires the Mermaid plugin to be installed.
+
+Mermaid Sketch provides real-time preview and editing capabilities for flowcharts, supporting bidirectional binding to
+make diagram creation simple and intuitive.
+
+![](https://shire.run/images/shire-sketch-mermaid.png)
+
+### **PlantUML Sketch**
+
+Note: requires the PlantUML Sketch plugin to be installed.
+
+PlantUML Sketch offers powerful support for UML diagrams, enabling seamless creation and modification of various UML
+diagrams with a bidirectionally bound code editor.
+
+![](https://shire.run/images/shire-sketch-plantuml.png)
+
+### Demos
 
 Video demo (YouTube) — English
 
@@ -31,30 +79,13 @@ Video demo (Bilibili) - 中文/Chinese
 
 [![Watch the video](https://img.youtube.com/vi/1m3HJzw0YhA/sddefault.jpg)](https://www.bilibili.com/video/BV115c6eUEps/)
 
-[DevIns — AI Agent language for AutoDevelopment →](https://ide.unitmesh.cc/devins) which you can use follow syntax as
-bridges for Human-AI-IDE:
-
-    /write:src/main/java/cc/unitmesh/Controller.java#L1-L12
-
-    ```java
-    public class Controller {
-        public void method() {
-            System.out.println("Hello, World!");
-        }
-    }
-    ```
-
-With built-in syntax highlighting and auto-completion, you can use DevIns as next-generation AI Agent language.
-
-🆕🆕🆕: New AI agent language: [https://github.com/phodal/shire](https://github.com/phodal/shire)
-
 ## AutoDev Architecture
 
 Here is the AutoDev architecture:
 
 ![](docs/autodev-arch.svg)
 
-## AutoDev Feature Overview
+## AutoDev 1.0~ Feature Overview
 
 <p align="center">
   <img src="docs/autodev-overview.svg" width="100%" height="100%"  alt="Overview" />
