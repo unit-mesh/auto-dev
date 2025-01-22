@@ -1,12 +1,13 @@
 // Copyright 2024 Cline Bot Inc. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package cc.unitmesh.devti.language.compiler.exec
 
+import com.google.gson.JsonParser
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.*
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
+import kotlinx.serialization.Serializable
 import org.jetbrains.annotations.NonNls
 import org.jetbrains.annotations.SystemIndependent
 import java.io.IOException
@@ -17,8 +18,6 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
-import java.util.function.Supplier
-import kotlin.math.min
 
 
 /**
@@ -43,7 +42,7 @@ object RipgrepSearcher {
                     rgPath,
                     searchDirectory,
                     regexPattern,
-                    filePattern ?: "*"
+                    filePattern
                 )
                 return@supplyAsync formatResults(results, project.basePath!!)
             } catch (e: Exception) {
@@ -58,7 +57,6 @@ object RipgrepSearcher {
         val osName = System.getProperty("os.name").lowercase(Locale.getDefault())
         val binName = if (osName.contains("win")) "rg.exe" else "rg"
 
-        // 尝试系统PATH查找
         val pb = ProcessBuilder("which", binName)
         val process = pb.start()
         try {
@@ -66,7 +64,7 @@ object RipgrepSearcher {
                 val path = String(process.inputStream.readAllBytes(), StandardCharsets.UTF_8).trim { it <= ' ' }
                 return Paths.get(path)
             }
-        } catch (ignored: InterruptedException) {
+        } catch (_: InterruptedException) {
             throw IOException("Ripgrep binary not found")
         }
 
@@ -79,7 +77,7 @@ object RipgrepSearcher {
         rgPath: Path,
         directory: String,
         regex: String,
-        filePattern: String
+        filePattern: String?
     ): MutableList<SearchResult> {
         val cmd = getCommandLine(rgPath, regex, filePattern, directory, project.basePath)
 
@@ -87,14 +85,8 @@ object RipgrepSearcher {
         val processor = RipgrepOutputProcessor()
         handler.addProcessListener(processor)
 
-        ProgressManager.getInstance().runProcessWithProgressSynchronously(Runnable {
-            try {
-                handler.startNotify()
-                handler.waitFor()
-            } catch (e: RuntimeException) {
-                throw IOException("Process execution failed", e)
-            }
-        }, "Searching with ripgrep...", false, project)
+        handler.startNotify()
+        handler.waitFor()
 
         return processor.getResults()
     }
@@ -134,15 +126,13 @@ object RipgrepSearcher {
         val grouped: MutableMap<String?, MutableList<SearchResult?>?> =
             LinkedHashMap<String?, MutableList<SearchResult?>?>()
 
-        // 分组结果
         for (result in results) {
             val relPath = getRelativePath(basePath, result.filePath!!)
             grouped.computeIfAbsent(relPath) { k: String? -> ArrayList<SearchResult?>() }!!.add(result)
         }
 
-        // 构建输出
         for (entry in grouped.entries) {
-            output.append(entry.key).append("\n│----\n")
+            output.append(entry.key).append("\n|----\n")
             for (result in entry.value!!) {
                 val context: MutableList<String?> = ArrayList<String?>()
                 context.addAll(result!!.beforeContext)
@@ -150,9 +140,9 @@ object RipgrepSearcher {
                 context.addAll(result.afterContext)
 
                 context.forEach(Consumer { line: String? ->
-                    output.append("│").append(line!!.trim { it <= ' ' }).append("\n")
+                    output.append("|").append(line!!.trim { it <= ' ' }).append("\n")
                 })
-                output.append("│----\n")
+                output.append("|----\n")
             }
 
             output.append("\n")
@@ -167,14 +157,15 @@ object RipgrepSearcher {
         return base.relativize(target).toString().replace('\\', '/')
     }
 
-    class SearchResult {
-        var filePath: String? = null
-        var line: Int = 0
-        var column: Int = 0
-        var match: String? = null
-        var beforeContext: MutableList<String?> = ArrayList<String?>()
+    @Serializable
+    data class SearchResult(
+        var filePath: String? = null,
+        var line: Int = 0,
+        var column: Int = 0,
+        var match: String? = null,
+        var beforeContext: MutableList<String?> = ArrayList<String?>(),
         var afterContext: MutableList<String?> = ArrayList<String?>()
-    }
+    )
 
     private class RipgrepOutputProcessor : ProcessAdapter() {
         private val results: MutableList<SearchResult> = ArrayList<SearchResult>()
@@ -182,46 +173,67 @@ object RipgrepSearcher {
 
         override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
             if (outputType === ProcessOutputTypes.STDOUT) {
-                parseLine(event.text)
+                parseJsonLine(event.text)
             }
         }
 
-        fun parseLine(line: String) {
-            try {
-                val data = parseJsonLine(line)
-                if (data == null) return
+        fun parseJsonLine(line: String) {
+            if (line.isBlank()) {
+                return
+            }
 
-                val type = data.get("type") as String?
-                if ("match" == type) {
-                    if (currentResult != null) {
+            // use JSON parser to parse the line
+            val json = try {
+                JsonParser.parseString(line)
+            } catch (e: Exception) {
+                LOG.error("Failed to parse JSON line", e)
+                return
+            }
+
+            if (json.isJsonObject) {
+                val jsonObject = json.asJsonObject
+                val type = jsonObject.get("type").asString
+
+                when (type) {
+                    "match" -> {
+                        val data = jsonObject.getAsJsonObject("data")
+                        val path = data.getAsJsonObject("path").get("text").asString
+                        val lines = data.getAsJsonObject("lines").get("text").asString
+                        val lineNumber = data.get("line_number").asInt
+                        val absoluteOffset = data.get("absolute_offset").asInt
+                        val submatches = data.getAsJsonArray("submatches")
+
+                        currentResult = SearchResult(
+                            filePath = path,
+                            line = lineNumber,
+                            column = absoluteOffset,
+                            match = lines.trim()
+                        )
+
+                        submatches.forEach { submatch ->
+                            val submatchObj = submatch.asJsonObject
+                            val matchText = submatchObj.get("match").asJsonObject.get("text").asString
+                            currentResult?.match = matchText
+                        }
+
                         results.add(currentResult!!)
                     }
-                    currentResult = SearchResult()
-                    val matchData = data["data"] as MutableMap<*, *>
-                    currentResult!!.filePath = (matchData["path"] as MutableMap<*, *>)["text"] as String
-                    currentResult!!.line = (matchData["line_number"] as Number).toInt()
-                    currentResult!!.match = (matchData["lines"] as MutableMap<*, *>)["text"].toString()
-                } else if ("context" == type && currentResult != null) {
-                    val ctxData = data["data"] as MutableMap<*, *>
-                    val lineNumber = (ctxData["line_number"] as Number).toInt()
-                    val text: String? = (ctxData["lines"] as MutableMap<*, *>)["text"].toString()
 
-                    if (lineNumber < currentResult!!.line) {
-                        currentResult!!.beforeContext.add(text)
-                    } else {
-                        currentResult!!.afterContext.add(text)
+                    "context" -> {
+                        val data = jsonObject.getAsJsonObject("data")
+                        val lines = data.getAsJsonObject("lines").get("text").asString
+                        val lineNumber = data.get("line_number").asInt
+
+                        if (currentResult != null) {
+                            if (lineNumber < currentResult!!.line) {
+                                currentResult!!.beforeContext.add(lines.trim())
+                            } else {
+                                currentResult!!.afterContext.add(lines.trim())
+                            }
+                        }
                     }
                 }
-            } catch (e: Exception) {
-                LOG.warn("Error parsing rg output: " + line, e)
             }
-        }
-
-        fun parseJsonLine(line: String): MutableMap<String?, Any?>? {
-            // 实现简化的JSON解析（实际应使用JSON库）
-            if (!line.startsWith("{") || !line.endsWith("}")) return null
-            // ... 解析逻辑 ...
-            return mutableMapOf<String?, Any?>()
         }
 
         fun getResults(): MutableList<SearchResult> {
@@ -229,7 +241,7 @@ object RipgrepSearcher {
                 results.add(currentResult!!)
             }
 
-            return results.subList(0, min(results.size.toDouble(), MAX_RESULTS.toDouble()).toInt())
+            return results
         }
     }
 }
