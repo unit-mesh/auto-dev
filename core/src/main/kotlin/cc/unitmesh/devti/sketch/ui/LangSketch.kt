@@ -19,7 +19,11 @@ interface LangSketch : Disposable {
     fun updateViewText(text: String)
     fun getComponent(): JComponent
     fun updateLanguage(language: Language?, originLanguage: String?)
-    fun doneUpdateText(text: String) {}
+
+    /**
+     * !important, the done update text will return all text in the editor
+     */
+    fun doneUpdateText(allText: String) {}
 
     fun setupActionBar(project: Project, editor: Editor) {
         val toolbar = actionToolbar() ?: return

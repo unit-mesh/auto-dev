@@ -120,10 +120,21 @@ open class CodeHighlightSketch(
         if (ideaLanguage?.displayName == "DevIn") {
             /// get the text from the editor
             val parse = CodeFence.parse(editorFragment!!.editor.document.text)
+            /// todo redesign for DevIn blocking
             if (parse.originLanguage == "diff" || parse.originLanguage == "patch") {
                 val langSketch = LanguageSketchProvider.provide("patch")?.create(project, parse.text) ?: return
-
                 val panel = langSketch.getComponent()
+                panel.border = JBEmptyBorder(8)
+                add(panel, BorderLayout.SOUTH)
+
+                editorFragment?.updateExpandCollapseLabel()
+
+                revalidate()
+                repaint()
+            } else if(parse.originLanguage == "html") {
+                val langSketch = LanguageSketchProvider.provide("html")?.create(project, parse.text) ?: return
+                val panel = langSketch.getComponent()
+                langSketch.doneUpdateText(text_)
                 panel.border = JBEmptyBorder(8)
                 add(panel, BorderLayout.SOUTH)
 

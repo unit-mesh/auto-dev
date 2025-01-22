@@ -25,12 +25,14 @@ VSCode Version: [https://github.com/unit-mesh/auto-dev-vscode](https://github.co
 
 ## AutoDev 2.0 Sketch - the Cursor Composer in Intellij IDEA
 
-> Unite Your Dev Ecosystem, Create Your AI Copilot
+Video demo (YouTube) — English
 
-![Ecology System](https://shire.run/images/shire-ecology-system.png)
-Here’s the condensed table in English, retaining key information while optimizing space:
+[![Watch the video](https://img.youtube.com/vi/b1pO641-A54/sddefault.jpg)](https://youtu.be/b1pO641-A54)
 
-| Feature Name           | Description                                                        | Screenshots                                              |
+**AutoDev Sketch** is an IDE canvas feature provided by Shire, designed to simplify interactions and enhance the developer
+experience within the IDE.
+
+| Sketch Name            | Description                                                        | Screenshots                                              |
 |------------------------|--------------------------------------------------------------------|----------------------------------------------------------|
 | **Code Sketch**        | Real-time code editor with syntax highlighting                     | ![](https://shire.run/images/shire-sketch-diff.png)      |
 | **Diff Sketch**        | Diff content comparison tool with patch handling                   | ![](https://shire.run/images/shire-sketch-diff-view.png) |
@@ -41,11 +43,11 @@ Here’s the condensed table in English, retaining key information while optimiz
                     
 `*` means requires additional plugin installation.
 
+### Unite Your Dev Ecosystem, Create Your AI Copilot
+
+![Inline Chat](https://shire.run/images/shire-ecology-system.png)
+
 ### Demos
-
-Video demo (YouTube) — English
-
-[![Watch the video](https://img.youtube.com/vi/b1pO641-A54/sddefault.jpg)](https://youtu.be/b1pO641-A54)
 
 Video demo (Bilibili) - 中文/Chinese
 

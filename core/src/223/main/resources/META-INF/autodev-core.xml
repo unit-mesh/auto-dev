@@ -244,6 +244,7 @@
         </autoDevIntention>
 
         <langSketchProvider implementation="cc.unitmesh.devti.sketch.ui.patch.DiffLangSketchProvider"/>
+        <langSketchProvider implementation="cc.unitmesh.devti.sketch.ui.webview.WebpageSketchProvider"/>
     </extensions>
 
     <actions>

@@ -116,7 +116,7 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
                 content = text
             }
 
-            override fun doneUpdateText(text: String) {
+            override fun doneUpdateText(allText: String) {
                 ApplicationManager.getApplication().invokeLater {
                     Thread.sleep(1000) // todo: change to when terminal ready
                     terminalWidget!!.terminalStarter?.sendString(content, false)
