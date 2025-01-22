@@ -1,5 +1,5 @@
 // Copyright 2024 Cline Bot Inc. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
-package cc.unitmesh.devti.language.compiler.exec
+package cc.unitmesh.devti.language.agenttool
 
 import com.google.gson.JsonParser
 import com.intellij.execution.configurations.GeneralCommandLine
@@ -123,7 +123,7 @@ object RipgrepSearcher {
     ): CompletableFuture<String?> {
         return CompletableFuture.supplyAsync<String> {
             try {
-                val rgPath = findRipgrepBinary()
+                val rgPath = findRipgrepBinary() ?: throw IOException("Ripgrep binary not found")
                 val results = executeRipgrep(
                     project,
                     rgPath,
@@ -140,7 +140,7 @@ object RipgrepSearcher {
     }
 
     @Throws(IOException::class)
-    fun findRipgrepBinary(): Path {
+    fun findRipgrepBinary(): Path? {
         val osName = System.getProperty("os.name").lowercase(Locale.getDefault())
         val binName = if (osName.contains("win")) "rg.exe" else "rg"
 
@@ -152,10 +152,10 @@ object RipgrepSearcher {
                 return Paths.get(path)
             }
         } catch (_: InterruptedException) {
-            throw IOException("Ripgrep binary not found")
+            return null
         }
 
-        throw IOException("Ripgrep binary not found")
+        return null
     }
 
     @Throws(IOException::class)

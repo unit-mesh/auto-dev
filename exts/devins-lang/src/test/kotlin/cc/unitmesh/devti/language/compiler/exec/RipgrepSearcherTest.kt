@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.compiler.exec
 
+import cc.unitmesh.devti.language.agenttool.RipgrepSearcher
 import org.junit.Test
 
 class RipgrepSearcherTest {

@@ -11,6 +11,10 @@ class DatabaseInsCommand(val myProject: Project, private val prop: String, priva
     InsCommand {
     override val commandName: BuiltinCommand = BuiltinCommand.DATABASE
 
+    override fun isApplicable(): Boolean {
+        return  ToolchainFunctionProvider.lookup("DatabaseFunctionProvider") != null
+    }
+
     override suspend fun execute(): String {
         val args = if (codeContent != null) {
             val code = CodeFence.parse(codeContent).text
