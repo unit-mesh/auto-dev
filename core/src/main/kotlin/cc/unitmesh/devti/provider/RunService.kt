@@ -184,6 +184,8 @@ interface RunService {
         }
 
         fun runInCli(project: Project, psiFile: PsiFile, args: List<String>? = null): String? {
+            logger<RunService>().info("Running file in CLI model: ${psiFile.virtualFile.name}")
+
             val commandLine = when (psiFile.language.displayName.lowercase()) {
                 "python" -> GeneralCommandLine("python3", psiFile.virtualFile.path)
                 "javascript" -> GeneralCommandLine("node", psiFile.virtualFile.path)
