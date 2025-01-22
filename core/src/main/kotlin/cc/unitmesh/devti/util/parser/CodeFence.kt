@@ -19,7 +19,7 @@ class CodeFence(
         fun parse(content: String): CodeFence {
             val markdownRegex = Regex("```([\\w#+\\s]*)")
 
-            val lines = content.replace("\\n", "\n").lines()
+            val lines = content.lines()
 
             // 检查是否存在 devin 开始标签
             val startMatch = devinStartRegex.find(content)
@@ -115,7 +115,7 @@ class CodeFence(
 
         private fun parseMarkdownContent(content: String, codeFences: MutableList<CodeFence>) {
             val regex = Regex("```([\\w#+\\s]*)")
-            val lines = content.replace("\\n", "\n").lines()
+            val lines = content.lines()
 
             var codeStarted = false
             var languageId: String? = null
