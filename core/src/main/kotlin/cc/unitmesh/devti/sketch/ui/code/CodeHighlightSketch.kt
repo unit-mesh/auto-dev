@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.sketch.ui.highlight
+package cc.unitmesh.devti.sketch.ui.code
 
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.lang.Language
@@ -34,9 +34,9 @@ import java.awt.BorderLayout
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.JComponent
 
-class CodeHighlightSketch(
-    val project: Project,
-    val text: String,
+open class CodeHighlightSketch(
+    open val project: Project,
+    open val text: String,
     private var ideaLanguage: Language?,
     val editorLineThreshold: Int = 6
 ) : JBPanel<CodeHighlightSketch>(BorderLayout()), DataProvider, LangSketch {

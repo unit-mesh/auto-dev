@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.sketch.ui.highlight
+package cc.unitmesh.devti.sketch.ui.code
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.editor.Editor

@@ -25,9 +25,9 @@ VSCode Version: [https://github.com/unit-mesh/auto-dev-vscode](https://github.co
 
 Video demo (YouTube) — English
 
-[![Watch the video](https://img.youtube.com/vi/1m3HJzw0YhA/sddefault.jpg)](https://youtu.be/1m3HJzw0YhA)
+[![Watch the video](https://img.youtube.com/vi/b1pO641-A54/sddefault.jpg)](https://youtu.be/b1pO641-A54)
 
-Video demo (Bilibili) - 中文
+Video demo (Bilibili) - 中文/Chinese
 
 [![Watch the video](https://img.youtube.com/vi/1m3HJzw0YhA/sddefault.jpg)](https://www.bilibili.com/video/BV115c6eUEps/)
 
