@@ -285,6 +285,10 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         IdeTooltipManager.getInstance().show(tooltip, true)
     }
 
+    fun send() {
+        editorListeners.multicaster.onSubmit(this, AutoDevInputTrigger.Button)
+    }
+
     fun showSendButton() {
         (buttonPanel.layout as? CardLayout)?.show(buttonPanel, "Send")
         buttonPanel.isEnabled = true

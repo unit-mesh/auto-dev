@@ -23,6 +23,7 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.util.MinimizeButton
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.terminal.JBTerminalWidget
+import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.ui.JBUI
 import org.jetbrains.plugins.terminal.LocalTerminalDirectRunner
 import java.awt.BorderLayout
@@ -51,12 +52,6 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
                     it.preferredSize = Dimension(it.preferredSize.width, 120)
                 }
 
-                val sb = StringBuilder()
-                terminalWidget?.addMessageFilter { line, _ ->
-                    sb.append(line)
-                    null
-                }
-
                 panelLayout = object : JPanel(BorderLayout()) {
                     init {
                         add(JLabel("Terminal").also {
@@ -65,7 +60,7 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
 
                         add(terminalWidget!!.component, BorderLayout.CENTER)
 
-                        val buttonPanel = JPanel(BorderLayout())
+                        val buttonPanel = JPanel(VerticalLayout(JBUI.scale(10)))
                         val runButton = JButton(AllIcons.Toolwindows.ToolWindowRun)
                             .apply {
                                 addMouseListener(executeShellScriptOnClick(project, content))
@@ -74,7 +69,7 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
                         val sendButton = JButton("Send to Sketch").apply {
                             addMouseListener(object : MouseAdapter() {
                                 override fun mouseClicked(e: MouseEvent?) {
-                                    val output = sb.toString()
+                                    val output = terminalWidget!!.text
                                     sendToSketch(project, output)
                                 }
                             })
@@ -84,9 +79,9 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
                             addMouseListener(executePopup(terminalWidget, project))
                         }
 
-                        buttonPanel.add(runButton, BorderLayout.WEST)
+                        buttonPanel.add(runButton)
                         buttonPanel.add(sendButton)
-                        buttonPanel.add(popupButton, BorderLayout.EAST)
+                        buttonPanel.add(popupButton)
                         add(buttonPanel, BorderLayout.SOUTH)
                     }
                 }

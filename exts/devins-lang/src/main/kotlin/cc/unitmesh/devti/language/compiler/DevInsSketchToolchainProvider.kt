@@ -9,7 +9,7 @@ class DevInsSketchToolchainProvider : SketchToolchainProvider {
         /// we need to ignore some bad case for llm
         return BuiltinCommand.all()
             .filter {
-                it != BuiltinCommand.REV
+                it.enableInSketch
             }
             .map {
             val example = BuiltinCommand.example(it)

@@ -280,6 +280,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
 
     fun sendInput(text: String) {
         shireInput.text += "\n" + text
+        shireInput.send()
     }
 
     private fun scrollToBottom() {
