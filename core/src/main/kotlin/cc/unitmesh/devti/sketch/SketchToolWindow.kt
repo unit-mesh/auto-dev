@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.sketch
 
+import java.awt.event.AdjustmentListener
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.alignRight
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
@@ -51,6 +52,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
     private var myList = JPanel(VerticalLayout(JBUI.scale(0))).apply {
         this.isOpaque = true
     }
+    private var isUserScrolling: Boolean = false
 
     private var userPrompt: JPanel = JPanel(BorderLayout()).apply {
         this.isOpaque = true
@@ -97,6 +99,11 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
     ).apply {
         this.verticalScrollBar.autoscrolls = true
+        this.verticalScrollBar.addAdjustmentListener { e ->
+            if (e.valueIsAdjusting) {
+                isUserScrolling = true
+            }
+        }
     }
 
     var handleCancel: ((String) -> Unit)? = null
@@ -272,9 +279,11 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
     }
 
     private fun scrollToBottom() {
-        SwingUtilities.invokeLater {
-            val verticalScrollBar = scrollPanel.verticalScrollBar
-            verticalScrollBar.value = verticalScrollBar.maximum
+        if (!isUserScrolling) {
+            SwingUtilities.invokeLater {
+                val verticalScrollBar = scrollPanel.verticalScrollBar
+                verticalScrollBar.value = verticalScrollBar.maximum
+            }
         }
     }
 

@@ -49,7 +49,7 @@ Here is an example output to the USER:
 You are helping the USER create a python-based photo storage app. You
 have created a routes.py and main.js file, and updated the main.html file.
 </user.question>
-<you.anwser.step1>
+<you.answer.step1>
 // First think step-by-step - describe your plan for what to build in pseudocode, written out in great detail.
 // In this step 1, you should analysis the context information is enough or not, if not, you should call DevIn tool
 // to get the context information.
@@ -60,11 +60,11 @@ have created a routes.py and main.js file, and updated the main.html file.
 /localSearch:.*photo.*
 </devin>
 // If the context information is still not enough, you should ask the user to provide more information
-</you.anwser.step1>
-<user.anwser.step1>
+</you.answer.step1>
+<user.answer.step1>
 // waiting for user send the tool execute result
-</user.anwser.step1>
-<you.anwser.step2>
+</user.answer.step1>
+<you.answer.step2>
 // In this step 2, You should first explain to the user how to solve the problem, and then use the DevIn language
 // to call the tool to help the user solve the problem
 # 第一步. 创建 routes.py
@@ -119,25 +119,25 @@ have created a routes.py and main.js file, and updated the main.html file.
 feat: add delete blog functionality
 ```
 </devin>
-</you.anwser.step2>
+</you.answer.step2>
 </example>
 <example id="lost-context">
 // 当用户没有给出足够的上下文信息时，需要先调用 DevIn 工具来获取所需的上下文信息
 <user.question>
 优化 SketchRunContext 代码结构
 </user.question>
-<you.anwser.step1>
-// 优化 SketchRunContext 代码结构需要根据具体的代码库进行分析，请直接调用工具获取代码库的上下文信息
+<you.answer.step1>
+为了帮助优化 SketchRunContext 代码结构需要根据具体的代码库进行分析，请帮助我调用工具获取代码库的上下文信息，以便于更好地理解代码结构。
 <devin> // 请尽可能只用一个 DevIn 代码块来获取上下文信息
 /dir:src/main/java
 /file:SketchRunContext.java   // 使用绝对路径时，一定要从用户那里得到正确的路径
 /localSearch:SketchRunContext // 如果用户的问题是中文的，需要转换为英文的搜索关键词
 </devin>
-</you.anwser.step1>
-<user.anwser.step1>
+</you.answer.step1>
+<user.answer.step1>
 // here the tools will be called and send to your result.
-</user.anwser.step1>
-<your.anwser.step2>
+</user.answer.step1>
+<your.answer.step2>
 # Step 1. 重命名函数以让代码更易于理解
 我建议将 `time` 函数重命名为 `currentTime`，以便更清晰地表达其功能。这样，其他开发人员在阅读代码时就能更快地理解其作用。
 
@@ -159,7 +159,7 @@ feat: add delete blog functionality
 ```bash
 ./gradlew :bootRun
 ```
-</your.anwser.step2>
+</your.answer.step2>
 </example>
 
 IF there are no relevant tools or there are missing values for required parameters, ask the user to supply these values;
