@@ -1,5 +1,5 @@
 执行 shell 脚本，要考虑生成的脚本是非阻塞的，即可以读取标准输入
 /shell:execute
-```
+```bash
 echo "Hello, World!"
 ```

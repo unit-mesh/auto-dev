@@ -1,7 +1,5 @@
 package cc.unitmesh.terminal.sketch
 
-import java.io.File
-import java.io.IOException
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.sketch.SketchToolWindow
 import cc.unitmesh.devti.sketch.run.ShellUtil
@@ -23,13 +21,16 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.util.MinimizeButton
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.terminal.JBTerminalWidget
-import com.intellij.ui.components.panels.VerticalLayout
+import com.intellij.ui.components.panels.HorizontalLayout
 import com.intellij.util.ui.JBUI
+import com.jediterm.terminal.ui.TerminalWidgetListener
 import org.jetbrains.plugins.terminal.LocalTerminalDirectRunner
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.io.File
+import java.io.IOException
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JLabel
@@ -37,7 +38,7 @@ import javax.swing.JPanel
 
 
 class TerminalLangSketchProvider : LanguageSketchProvider {
-    override fun isSupported(lang: String): Boolean = lang == "bash"
+    override fun isSupported(lang: String): Boolean = lang == "bash" || lang == "shell"
 
     override fun create(project: Project, content: String): ExtensionLangSketch {
         var content = content
@@ -60,7 +61,7 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
 
                         add(terminalWidget!!.component, BorderLayout.CENTER)
 
-                        val buttonPanel = JPanel(VerticalLayout(JBUI.scale(10)))
+                        val buttonPanel = JPanel(HorizontalLayout(JBUI.scale(10)))
                         val runButton = JButton(AllIcons.Toolwindows.ToolWindowRun)
                             .apply {
                                 addMouseListener(executeShellScriptOnClick(project, content))
@@ -133,7 +134,7 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
 
             override fun doneUpdateText(allText: String) {
                 ApplicationManager.getApplication().invokeLater {
-                    Thread.sleep(1000) // todo: change to when terminal ready
+                    Thread.sleep(2000) // todo: change to when terminal ready
                     terminalWidget!!.terminalStarter?.sendString(content, false)
                 }
             }

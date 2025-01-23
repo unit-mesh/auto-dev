@@ -121,28 +121,31 @@ open class CodeHighlightSketch(
             /// get the text from the editor
             val parse = CodeFence.parse(editorFragment!!.editor.document.text)
             /// todo redesign for DevIn blocking
+            var panel: JComponent? = null
             if (parse.originLanguage == "diff" || parse.originLanguage == "patch") {
                 val langSketch = LanguageSketchProvider.provide("patch")?.create(project, parse.text) ?: return
-                val panel = langSketch.getComponent()
-                panel.border = JBEmptyBorder(8)
-                add(panel, BorderLayout.SOUTH)
-
-                editorFragment?.updateExpandCollapseLabel()
-
-                revalidate()
-                repaint()
-            } else if(parse.originLanguage == "html") {
+                panel = langSketch.getComponent()
+            } else if (parse.originLanguage == "html") {
                 val langSketch = LanguageSketchProvider.provide("html")?.create(project, parse.text) ?: return
-                val panel = langSketch.getComponent()
+                panel = langSketch.getComponent()
                 langSketch.doneUpdateText(text_)
-                panel.border = JBEmptyBorder(8)
-                add(panel, BorderLayout.SOUTH)
-
-                editorFragment?.updateExpandCollapseLabel()
-
-                revalidate()
-                repaint()
+            } else if (parse.originLanguage == "bash") {
+                val langSketch = LanguageSketchProvider.provide("shell")?.create(project, parse.text) ?: return
+                panel = langSketch.getComponent()
+                langSketch.doneUpdateText(text_)
             }
+
+            if (panel == null) {
+                return
+            }
+
+            panel.border = JBEmptyBorder(8)
+            add(panel, BorderLayout.SOUTH)
+
+            editorFragment?.updateExpandCollapseLabel()
+
+            revalidate()
+            repaint()
         }
     }
 
