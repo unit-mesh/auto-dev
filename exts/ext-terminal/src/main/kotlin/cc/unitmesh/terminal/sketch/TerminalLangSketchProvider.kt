@@ -51,6 +51,12 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
                     it.preferredSize = Dimension(it.preferredSize.width, 120)
                 }
 
+                val sb = StringBuilder()
+                terminalWidget?.addMessageFilter { line, _ ->
+                    sb.append(line)
+                    null
+                }
+
                 panelLayout = object : JPanel(BorderLayout()) {
                     init {
                         add(JLabel("Terminal").also {
@@ -62,14 +68,24 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
                         val buttonPanel = JPanel(BorderLayout())
                         val runButton = JButton(AllIcons.Toolwindows.ToolWindowRun)
                             .apply {
-                                addMouseListener(executeShellScriptOnClick(project, content, terminalWidget))
+                                addMouseListener(executeShellScriptOnClick(project, content))
                             }
+
+                        val sendButton = JButton("Send to Sketch").apply {
+                            addMouseListener(object : MouseAdapter() {
+                                override fun mouseClicked(e: MouseEvent?) {
+                                    val output = sb.toString()
+                                    sendToSketch(project, output)
+                                }
+                            })
+                        }
 
                         val popupButton = JButton("Pop up Terminal").apply {
                             addMouseListener(executePopup(terminalWidget, project))
                         }
 
                         buttonPanel.add(runButton, BorderLayout.WEST)
+                        buttonPanel.add(sendButton)
                         buttonPanel.add(popupButton, BorderLayout.EAST)
                         add(buttonPanel, BorderLayout.SOUTH)
                     }
@@ -135,11 +151,14 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
         }
     }
 
-    fun executeShellScriptOnClick(
-        project: Project,
-        content: String,
-        terminalWidget: JBTerminalWidget?,
-    ): MouseAdapter = object : MouseAdapter() {
+    private fun sendToSketch(project: Project, output: String) {
+        val contentManager = ToolWindowManager.getInstance(project).getToolWindow("AutoDev")?.contentManager
+        contentManager?.component?.components?.filterIsInstance<SketchToolWindow>()?.firstOrNull().let {
+            it?.sendInput(output)
+        }
+    }
+
+    fun executeShellScriptOnClick(project: Project, content: String): MouseAdapter = object : MouseAdapter() {
         override fun mouseClicked(e: MouseEvent?) {
             val processBuilder = ProcessBuilder()
             processBuilder.command("bash", "-c", content)

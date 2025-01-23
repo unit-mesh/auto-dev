@@ -6,7 +6,12 @@ import cc.unitmesh.devti.sketch.Toolchain
 
 class DevInsSketchToolchainProvider : SketchToolchainProvider {
     override fun collect(): List<Toolchain> {
-        return BuiltinCommand.all().map {
+        /// we need to ignore some bad case for llm
+        return BuiltinCommand.all()
+            .filter {
+                it != BuiltinCommand.REV
+            }
+            .map {
             val example = BuiltinCommand.example(it)
             Toolchain(it.commandName, it.description, example)
         }
