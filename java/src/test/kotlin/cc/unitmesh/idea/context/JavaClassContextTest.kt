@@ -90,23 +90,23 @@ public class BlogService {
 }
 """
 
-//    fun testShould_convert_class_to_string() {
-//        val psiFile = fileFactory.createFileFromText(JavaLanguage.INSTANCE, controllerCode)
-//        val psiElement = (psiFile as PsiJavaFile).classes[0]
-//        val classContext: ClassContext = ClassContextProvider(false).from(psiElement)
-//
-//        assertEquals(
-//            classContext.format(),
-//            """'package: cc.unitmesh.untitled.demo.controller.BlogController
-//'@Controller
-//class BlogController {
-//  BlogService blogService;
-//  + public BlogController(BlogService blogService);
-//  + @PostMapping("/blog")     public BlogPost createBlog(CreateBlogDto blogDto);
-//  + @GetMapping("/blog")     public List<BlogPost> getBlog();
-//}"""
-//        )
-//    }
+    fun testShould_convert_class_to_string() {
+        val psiFile = fileFactory.createFileFromText(JavaLanguage.INSTANCE, controllerCode)
+        val psiElement = (psiFile as PsiJavaFile).classes[0]
+        val classContext: ClassContext = ClassContextProvider(false).from(psiElement)
+
+        assertEquals(
+            classContext.format(),
+            """'package: cc.unitmesh.untitled.demo.controller.BlogController
+'@Controller
+class BlogController {
+  BlogService blogService;
+  + public BlogController(BlogService blogService);
+  + @PostMapping("/blog")     public BlogPost createBlog(CreateBlogDto blogDto);
+  + @GetMapping("/blog")     public List<BlogPost> getBlog();
+}"""
+        )
+    }
 
     fun testShould_convert_function_to_string() {
 //        val serviceClass = myFixture.addClass(serviceCode)
