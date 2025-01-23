@@ -44,10 +44,11 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
 
         InsCommandListener.notify(this, InsCommandStatus.SUCCESS, virtualFile)
 
+        val lang = virtualFile.let {
+            PsiManager.getInstance(myProject).findFile(it!!)?.language?.displayName
+        } ?: ""
+
         contentsToByteArray.let { bytes ->
-            val lang = virtualFile.let {
-                PsiManager.getInstance(myProject).findFile(it!!)?.language?.displayName
-            } ?: ""
 
             val content = bytes.toString(Charsets.UTF_8)
             val fileContent = if (range != null) {
