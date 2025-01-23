@@ -14,6 +14,7 @@ import com.intellij.sh.psi.ShFile
 import com.intellij.sh.run.ShConfigurationType
 import com.intellij.sh.run.ShRunConfiguration
 import com.intellij.sh.run.ShRunner
+import com.intellij.testFramework.LightVirtualFile
 
 class ShellRunService : RunService {
     override fun isApplicable(project: Project, file: VirtualFile): Boolean {
@@ -21,7 +22,12 @@ class ShellRunService : RunService {
     }
 
     override fun runFile(project: Project, virtualFile: VirtualFile, psiElement: PsiElement?, isFromToolAction: Boolean): String? {
-        val workingDirectory = virtualFile.parent.path
+        val workingDirectory = if (virtualFile is LightVirtualFile) {
+            project.basePath!!
+        } else {
+            virtualFile.parent.path
+        }
+
         val shRunner = ApplicationManager.getApplication().getService(ShRunner::class.java)
             ?: return "Shell runner not found"
 
