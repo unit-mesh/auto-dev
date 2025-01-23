@@ -23,7 +23,10 @@ import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.terminal.JBTerminalWidget
 import com.intellij.ui.components.panels.HorizontalLayout
 import com.intellij.util.ui.JBUI
-import com.jediterm.terminal.ui.TerminalWidgetListener
+import com.jediterm.core.compatibility.Point
+import com.jediterm.terminal.model.SelectionUtil
+import com.jediterm.terminal.model.TerminalSelection
+import com.jediterm.terminal.ui.TerminalPanel
 import org.jetbrains.plugins.terminal.LocalTerminalDirectRunner
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -70,7 +73,7 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
                         val sendButton = JButton("Send to Sketch").apply {
                             addMouseListener(object : MouseAdapter() {
                                 override fun mouseClicked(e: MouseEvent?) {
-                                    val output = terminalWidget!!.text
+                                    val output = getText(terminalWidget!!.terminalPanel)
                                     sendToSketch(project, output)
                                 }
                             })
@@ -144,6 +147,22 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
             override fun updateLanguage(language: Language?, originLanguage: String?) {}
 
             override fun dispose() {}
+        }
+    }
+
+    /// in Intellij 223 this method is not exist, so we need to copy it.
+    fun getText(terminalPanel: TerminalPanel): String {
+        val buffer = terminalPanel.terminalTextBuffer
+        buffer.lock()
+        try {
+            val selection = TerminalSelection(
+                Point(0, -buffer.historyLinesCount),
+                Point(buffer.width, buffer.screenLinesCount - 1)
+            )
+            val points = selection.pointsForRun(buffer.width)
+            return SelectionUtil.getSelectionText(points.first!!, points.second!!, buffer)
+        } finally {
+            buffer.unlock()
         }
     }
 
