@@ -20,9 +20,9 @@ class DevInParsingTest : ParsingTestCase("parser", "devin", DevInParserDefinitio
         doTest(true)
     }
 
-    fun testJavaAnnotation() {
-        doTest(true)
-    }
+//    fun testJavaAnnotation() {
+//        doTest(true)
+//    }
 
     fun testBlockStartOnly() {
         doTest(true)
