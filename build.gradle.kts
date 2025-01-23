@@ -408,8 +408,8 @@ project(":core") {
 
         implementation("com.squareup.retrofit2:converter-jackson:2.11.0")
         implementation("com.squareup.retrofit2:converter-gson:2.11.0")
-        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
-        implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
+        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.2")
+        implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
 
         implementation("org.commonmark:commonmark:0.21.0")
         implementation("org.commonmark:commonmark-ext-gfm-tables:0.21.0")
@@ -418,7 +418,9 @@ project(":core") {
 
         implementation("com.nfeld.jsonpathkt:jsonpathkt:2.0.1")
 
-        implementation("org.jetbrains:markdown:0.7.3")
+        implementation("org.jetbrains:markdown:0.7.3") {
+            excludeKotlinDeps()
+        }
 
         // chocolate factorys
         // follow: https://onnxruntime.ai/docs/get-started/with-java.html
@@ -562,7 +564,9 @@ project(":exts:ext-git") {
         }
 
         implementation(project(":core"))
-        implementation("cc.unitmesh:git-commit-message:0.4.6")
+        implementation("cc.unitmesh:git-commit-message:0.4.6") {
+            excludeKotlinDeps()
+        }
     }
 }
 
