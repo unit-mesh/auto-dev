@@ -49,7 +49,8 @@ public class RipgrepOutputProcessor : ProcessAdapter() {
         val json = try {
             JsonParser.parseString(line)
         } catch (e: Exception) {
-            logger<RipgrepSearcher>().error("Failed to parse JSON line", e)
+            logger<RipgrepSearcher>().warn("Failed to parse JSON line", e)
+            logger<RipgrepSearcher>().warn("Line: $line")
             return
         }
 
