@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.psi.PsiManager
+import java.io.File
 
 class AutoDevRunAction : DumbAwareAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
@@ -39,6 +40,10 @@ class AutoDevRunAction : DumbAwareAction() {
         val scratchFile = ScratchRootType.getInstance()
             .createScratchFile(project, file.name, psiFile.language, document.text)
             ?: return
+
+        if (scratchFile.extension == "sh") {
+            File(scratchFile.path).setExecutable(true)
+        }
 
         try {
             RunService.provider(project, file)
