@@ -284,7 +284,8 @@ class DevInsCompiler(
                 BuiltinCommand.WRITE,
                 BuiltinCommand.PATCH,
                 BuiltinCommand.COMMIT,
-                BuiltinCommand.DATABASE
+                BuiltinCommand.DATABASE,
+                BuiltinCommand.SHELL,
             )
 
             if (hasReadCodeBlock) {

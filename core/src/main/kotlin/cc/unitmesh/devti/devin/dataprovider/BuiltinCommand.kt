@@ -39,7 +39,7 @@ enum class BuiltinCommand(
         true,
         true
     ),
-    BROWSE("browse", "Fetch the content of a given URL.", AllIcons.Toolwindows.WebToolWindow, true, true),
+    BROWSE("browse", "Fetch the content of a given URL.", AllIcons.Toolwindows.WebToolWindow, false, true),
     REFACTOR("refactor", "Refactor the content of a file, only support for rename, safeDelete and move.", AutoDevIcons.Idea, true, true),
     STRUCTURE(
         "structure",
@@ -60,18 +60,18 @@ enum class BuiltinCommand(
         "localSearch",
         "Search text in the scope (current only support project) will return 5 line before and after",
         AllIcons.Actions.Search,
-        true,
+        false,
         true
     ),
     RELATED(
         "related",
         "Get related code by AST (abstract syntax tree) for the current file",
         AllIcons.Actions.Find,
-        true,
+        false,
         true
     ),
-    OPEN("open", "Open a file in the editor", AllIcons.Actions.MenuOpen, false),
-    RIPGREP_SEARCH("ripgrepSearch", "Search text in the project with ripgrep", AllIcons.Actions.Regex, true, true),
+    OPEN("open", "Open a file in the editor", AllIcons.Actions.MenuOpen, false, true),
+    RIPGREP_SEARCH("ripgrepSearch", "Search text in the project with ripgrep", AllIcons.Actions.Regex, false, true),
     ;
 
     companion object {
