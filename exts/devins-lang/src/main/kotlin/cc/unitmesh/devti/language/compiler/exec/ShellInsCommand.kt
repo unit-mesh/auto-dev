@@ -23,6 +23,9 @@ import com.intellij.sh.ShLanguage
 import com.intellij.util.concurrency.Semaphore
 import com.intellij.util.io.BaseOutputReader
 import java.io.File
+import java.io.InputStreamReader
+import java.io.BufferedReader
+import java.util.concurrent.TimeUnit
 
 /**
  * A class that implements the `InsCommand` interface to execute a shell command within the IntelliJ IDEA environment.
@@ -55,9 +58,7 @@ class ShellInsCommand(val myProject: Project, private val shellFile: String?, va
 
         return ApplicationManager.getApplication().executeOnPooledThread<String?> {
             var output = ""
-            runInEdt {
-                output = doExecute(virtualFile)
-            }
+            output = doExecute(virtualFile)
             output
         }.get()
     }
@@ -77,23 +78,53 @@ class ShellInsCommand(val myProject: Project, private val shellFile: String?, va
      *                            permission issues or process creation failures.
      */
     private fun doExecute(virtualFile: VirtualFile): String {
-        /// fix devin-shell-ins_1.sh: Permission denied we need to set the file executable
+        // 设置文件可执行
         File(virtualFile.path).setExecutable(true)
 
         val command = virtualFile.path
         val commandLine = createCommandLineForScript(myProject, command)
-        val processHandler = createProcessHandler(commandLine)
-        ProcessTerminatedListener.attach(processHandler)
+
+        val processBuilder = commandLine.toProcessBuilder()
+        processBuilder.directory(commandLine.workDirectory)
+        processBuilder.environment().putAll(commandLine.environment)
+
+        // 重定向输出到标准输出
+        processBuilder.redirectOutput(ProcessBuilder.Redirect.PIPE)
+        processBuilder.redirectError(ProcessBuilder.Redirect.PIPE)
+
+        val process = processBuilder.start()
 
         val output = StringBuilder()
-        processHandler.addProcessListener(object : ProcessAdapter() {
-            override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
-                output.append(event.text)
+        val errorOutput = StringBuilder()
+
+        val outputReader = BufferedReader(InputStreamReader(process.inputStream))
+        val errorReader = BufferedReader(InputStreamReader(process.errorStream))
+
+        val outputThread = Thread {
+            outputReader.lines().forEach { line ->
+                output.append(line).append("\n")
             }
-        })
+        }
+
+        val errorThread = Thread {
+            errorReader.lines().forEach { line ->
+                errorOutput.append(line).append("\n")
+            }
+        }
+
+        outputThread.start()
+        errorThread.start()
 
         val mode = SameThreadMode(true, "ShellInsCommand", 30)
-        createTimeLimitedExecutionProcess(processHandler, mode, "ShellInsCommand").run()
+        val finished = process.waitFor(mode.timeout.toLong(), TimeUnit.SECONDS)
+
+        if (!finished) {
+            process.destroy()
+            throw ExecutionException("Process timed out")
+        }
+
+        outputThread.join()
+        errorThread.join()
 
         return output.toString()
     }
