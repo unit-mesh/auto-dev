@@ -7,18 +7,17 @@ import cc.unitmesh.devti.gui.chat.ui.AutoInputService
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.language.compiler.service.ShellRunService
 import cc.unitmesh.devti.language.utils.lookupFile
-import cc.unitmesh.devti.sketch.run.ShellUtil
 import com.intellij.execution.RunnerAndConfigurationSettings
-import com.intellij.execution.configurations.GeneralCommandLine
-import com.intellij.execution.configurations.PtyCommandLine
 import com.intellij.execution.process.KillableProcessHandler
 import com.intellij.execution.process.ProcessAdapter
 import com.intellij.execution.process.ProcessEvent
+import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.psi.PsiManager
+import com.intellij.sh.ShLanguage
 import com.intellij.sh.psi.ShFile
 import com.intellij.sh.run.ShRunner
 import java.awt.Toolkit.getDefaultToolkit
@@ -39,42 +38,12 @@ class ShellInsCommand(val myProject: Project, private val shellFile: String?, va
         val shRunner = ApplicationManager.getApplication().getService(ShRunner::class.java)
             ?: return "$DEVINS_ERROR: Shell runner not found"
 
-        if (shellContent != null) {
-            val commandLine = createCommandLineForScript(myProject, shellContent)
-            val processBuilder = commandLine.toProcessBuilder()
-            val process = processBuilder.start()
-            val processHandler = KillableProcessHandler(process, commandLine.commandLineString)
-            processHandler.startNotify()
-
-            processHandler.addProcessListener(object : ProcessAdapter() {
-                override fun processTerminated(event: ProcessEvent) {
-                    super.processTerminated(event)
-                    // get output from process
-                    val allOutput = process.inputStream.bufferedReader().use { it.readText() }
-                    val hasToolwindow = ToolWindowManager.getInstance(myProject).getToolWindow("AutoDev")
-                    if (hasToolwindow != null) {
-                        AutoInputService.getInstance(myProject).putText(allOutput.toString())
-                    }
-
-                    // copy to clipboard
-                    val selection = allOutput.toString()
-                    if (selection.isNotEmpty()) {
-                        val selectionTransferable = java.awt.datatransfer.StringSelection(selection)
-                        getDefaultToolkit().systemClipboard.setContents(selectionTransferable, null)
-                    }
-
-                    if (event.exitCode != 0) {
-                        AutoDevNotifications.notify(myProject, "Process terminated with exit code ${event.exitCode}")
-                    }
-
-                    processHandler.destroyProcess()
-                }
-            })
-
-            return ""
-        }
-
-        val virtualFile: VirtualFile = if (shellFile != null) {
+        // first use shell content if available, then use shell file if available
+        val virtualFile = if (shellContent != null) {
+            ScratchRootType.getInstance()
+                .createScratchFile(myProject, "devin-shell-ins.sh", ShLanguage.INSTANCE, shellContent)
+                ?: return "$DEVINS_ERROR: Failed to create scratch file for ShellInsCommand"
+        } else if (shellFile != null) {
             myProject.lookupFile(shellFile.trim()) ?: return "$DEVINS_ERROR: File not found: $shellFile"
         } else {
             null
@@ -96,18 +65,5 @@ class ShellInsCommand(val myProject: Project, private val shellFile: String?, va
         }
 
         return "Running shell command: $shellFile"
-    }
-
-    fun createCommandLineForScript(project: Project, scriptText: String): GeneralCommandLine {
-        val workingDirectory = project.basePath
-        val commandLine = PtyCommandLine()
-        commandLine.withConsoleMode(false)
-        commandLine.withInitialColumns(120)
-        commandLine.withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
-        commandLine.setWorkDirectory(workingDirectory!!)
-        commandLine.withExePath(ShellUtil.detectShells().first())
-        commandLine.withParameters("-c")
-        commandLine.withParameters(scriptText)
-        return commandLine
     }
 }
