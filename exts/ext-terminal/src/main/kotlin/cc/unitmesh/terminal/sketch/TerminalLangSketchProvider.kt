@@ -1,6 +1,9 @@
 package cc.unitmesh.terminal.sketch
 
+import java.io.File
+import java.io.IOException
 import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.sketch.SketchToolWindow
 import cc.unitmesh.devti.sketch.run.ShellUtil
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
@@ -18,6 +21,7 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.ui.popup.JBPopup
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.util.MinimizeButton
+import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.terminal.JBTerminalWidget
 import com.intellij.util.ui.JBUI
 import org.jetbrains.plugins.terminal.LocalTerminalDirectRunner
@@ -134,10 +138,30 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
     fun executeShellScriptOnClick(
         project: Project,
         content: String,
-        terminalWidget: JBTerminalWidget?
+        terminalWidget: JBTerminalWidget?,
     ): MouseAdapter = object : MouseAdapter() {
         override fun mouseClicked(e: MouseEvent?) {
-            terminalWidget?.terminalStarter?.sendString(content, true)
+            val processBuilder = ProcessBuilder()
+            processBuilder.command("bash", "-c", content)
+            processBuilder.directory(File(project.basePath!!))
+
+            try {
+                val process = processBuilder.start()
+                val output = process.inputStream.bufferedReader().use { it.readText() }
+                val error = process.errorStream.bufferedReader().use { it.readText() }
+
+                // try get SketchToolWindow to send
+                val contentManager = ToolWindowManager.getInstance(project).getToolWindow("AutoDev")?.contentManager
+                contentManager?.component?.components?.filterIsInstance<SketchToolWindow>()?.firstOrNull().let {
+                    it?.sendInput(output)
+                    if (error.isNotEmpty()) {
+                        it?.sendInput(error)
+                    }
+                }
+
+                process.waitFor()
+            } catch (e: IOException) {
+            }
         }
     }
 

@@ -278,6 +278,10 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
         listener.manualSend(allCodeText)
     }
 
+    fun sendInput(text: String) {
+        shireInput.text += "\n" + text
+    }
+
     private fun scrollToBottom() {
         if (!isUserScrolling) {
             SwingUtilities.invokeLater {
