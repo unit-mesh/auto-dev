@@ -40,13 +40,7 @@ class ShellInsCommand(val myProject: Project, private val shellFile: String?, va
     override suspend fun execute(): String? {
         val virtualFile = if (shellContent != null) {
             ScratchRootType.getInstance()
-                .createScratchFile(
-                    myProject,
-                    "devin-shell-ins.sh",
-                    ShLanguage.INSTANCE,
-                    shellContent,
-                    ScratchFileService.Option.existing_only
-                )
+                .createScratchFile(myProject, "devin-shell-ins.sh", ShLanguage.INSTANCE, shellContent)
                 ?: return "$DEVINS_ERROR: Failed to create scratch file for ShellInsCommand"
         } else if (shellFile != null) {
             myProject.lookupFile(shellFile.trim()) ?: return "$DEVINS_ERROR: File not found: $shellFile"

@@ -50,11 +50,11 @@ You are helping the USER create a python-based photo storage app. You
 have created a routes.py and main.js file, and updated the main.html file.
 </user.question>
 <you.answer.step1>
+// First think step-by-step - describe your plan for what to build in pseudocode, written out in great detail.
 // In this step 1, you should analysis the context information is enough or not, if not, you should call DevIn tool
 // to get the context information.
 // For example:
-To help you create a Python-based photo storage application, I need to know more about your codebase. I will generate
-tool call code for you to get the necessary context information, please execute it to get the context information.
+为了帮助您创建基于 Python 的照片存储应用程序，我需要了解更多关于您的代码库的信息。请允许我调用工具来获取上下文信息。请执行以下 DevIn 代码：
 <devin>
 /dir:src
 /localSearch:.*photo.*
@@ -104,10 +104,9 @@ By creating `routes.py` and `main.js`, I have made our photo application interac
 ```http
 // the http code
 ```
-
-// step 5, 请用 bash 命令来启动应用程序
+// step 5, 启动应用程序
 ```bash
-/shell:start.sh
+./gradlew :bootRun
 ```
 // 给出对应的变更信息
 <devin>
@@ -124,7 +123,7 @@ feat: add delete blog functionality
 优化 SketchRunContext 代码结构
 </user.question>
 <you.answer.step1>
-// 优化 SketchRunContext 代码结构需要根据具体的代码库进行分析，请直接调用工具获取代码库的上下文信息
+为了帮助优化 SketchRunContext 代码结构需要根据具体的代码库进行分析，请帮助我调用工具获取代码库的上下文信息，以便于更好地理解代码结构。
 <devin> // 请尽可能只用一个 DevIn 代码块来获取上下文信息
 /dir:src/main/java
 /file:SketchRunContext.java   // 使用绝对路径时，一定要从用户那里得到正确的路径
@@ -191,4 +190,4 @@ accordingly and make informed decisions about how to proceed with the task. This
 the overall success and accuracy of your work.
 </thinking>
 
-Please ensure you have enough context information before you start coding. If the context information is insufficient, please let me know, and I will provide it to you.
+请在确保拥有足够的上下文信息后，再开始编码。如果上下文信息不足，请告知我，我将提供给你。

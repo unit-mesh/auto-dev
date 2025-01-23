@@ -107,13 +107,10 @@ have created a routes.py and main.js file, and updated the main.html file.
 ```http
 // the http code
 ```
-// step 5, 请用 devin 或者纯 bash 命令来启动应用程序
-<devin>
-/shell:execute
+// step 5, 启动应用程序
 ```bash
 ./gradlew :bootRun
 ```
-</devin>
 // 给出对应的变更信息
 <devin>
 /commit
