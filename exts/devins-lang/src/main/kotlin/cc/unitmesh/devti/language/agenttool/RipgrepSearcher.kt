@@ -18,6 +18,8 @@ import java.nio.file.Paths
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
+import kotlin.text.compareTo
+import kotlin.text.get
 
 
 @Serializable
@@ -40,19 +42,26 @@ public class RipgrepOutputProcessor : ProcessAdapter() {
         }
     }
 
+    private val jsonBuffer = StringBuilder()
+
     fun parseJsonLine(line: String) {
         if (line.isBlank()) {
             return
         }
 
-        // use JSON parser to parse the line
+        jsonBuffer.append(line)
+
+        // Try to parse the buffer as JSON
         val json = try {
-            JsonParser.parseString(line)
+            JsonParser.parseString(jsonBuffer.toString())
         } catch (e: Exception) {
-            logger<RipgrepSearcher>().warn("Failed to parse JSON line", e)
-            logger<RipgrepSearcher>().warn("Line: $line")
+            // If parsing fails, it might be because the JSON is incomplete
+            // So we just return and wait for more lines
             return
         }
+
+        // If parsing succeeds, clear the buffer and process the JSON
+        jsonBuffer.clear()
 
         if (json.isJsonObject) {
             val jsonObject = json.asJsonObject
