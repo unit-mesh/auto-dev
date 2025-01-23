@@ -14,14 +14,12 @@ import com.intellij.execution.process.*
 import com.intellij.ide.scratch.ScratchFileService
 import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.sh.ShLanguage
 import com.intellij.util.concurrency.Semaphore
-import com.intellij.util.io.BaseOutputReader
 import java.io.File
 import java.io.InputStreamReader
 import java.io.BufferedReader
@@ -127,15 +125,6 @@ class ShellInsCommand(val myProject: Project, private val shellFile: String?, va
         errorThread.join()
 
         return output.toString()
-    }
-
-    @Throws(ExecutionException::class)
-    private fun createProcessHandler(commandLine: GeneralCommandLine): ProcessHandler {
-        return object : KillableProcessHandler(commandLine) {
-            override fun readerOptions(): BaseOutputReader.Options {
-                return BaseOutputReader.Options.forTerminalPtyProcess()
-            }
-        }
     }
 
     private fun createTimeLimitedExecutionProcess(
