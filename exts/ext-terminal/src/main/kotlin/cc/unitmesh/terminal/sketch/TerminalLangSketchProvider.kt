@@ -137,22 +137,26 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
         terminalWidget: JBTerminalWidget?
     ): MouseAdapter = object : MouseAdapter() {
         override fun mouseClicked(e: MouseEvent?) {
-            val commandLine = createCommandLineForScript(project, content)
-            val processBuilder = commandLine.toProcessBuilder()
-            val process = processBuilder.start()
-            val processHandler = KillableProcessHandler(process, commandLine.commandLineString)
-            processHandler.startNotify()
-
-            processHandler.addProcessListener(object : ProcessAdapter() {
-                override fun processTerminated(event: ProcessEvent) {
-                    AutoDevNotifications.notify(
-                        project,
-                        "Process terminated with exit code ${event.exitCode}, ${event.text}"
-                    )
-                    processHandler.destroyProcess()
-                }
-            })
+            terminalWidget?.terminalStarter?.sendString(content, true)
         }
+    }
+
+    private fun executeContent(project: Project, content: String) {
+        val commandLine = createCommandLineForScript(project, content)
+        val processBuilder = commandLine.toProcessBuilder()
+        val process = processBuilder.start()
+        val processHandler = KillableProcessHandler(process, commandLine.commandLineString)
+        processHandler.startNotify()
+
+        processHandler.addProcessListener(object : ProcessAdapter() {
+            override fun processTerminated(event: ProcessEvent) {
+                AutoDevNotifications.notify(
+                    project,
+                    "Process terminated with exit code ${event.exitCode}, ${event.text}"
+                )
+                processHandler.destroyProcess()
+            }
+        })
     }
 
     fun createCommandLineForScript(project: Project, scriptText: String): GeneralCommandLine {
