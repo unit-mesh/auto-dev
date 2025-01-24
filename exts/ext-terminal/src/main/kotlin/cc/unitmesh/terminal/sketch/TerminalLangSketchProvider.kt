@@ -70,8 +70,13 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
                         val sendButton = JButton("Send to Sketch").apply {
                             addMouseListener(object : MouseAdapter() {
                                 override fun mouseClicked(e: MouseEvent?) {
-                                    val output = terminalWidget!!.text
-                                    sendToSketch(project, output)
+                                    try {
+                                        val output = terminalWidget!!::class.java.getMethod("getText")
+                                            .invoke(terminalWidget) as String
+                                        sendToSketch(project, output)
+                                    } catch (e: Exception) {
+                                        AutoDevNotifications.notify(project, "Failed to send to Sketch")
+                                    }
                                 }
                             })
                         }
