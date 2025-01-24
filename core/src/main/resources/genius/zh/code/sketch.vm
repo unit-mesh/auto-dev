@@ -44,7 +44,7 @@ say 'I will edit your file'.
 
 Here is an example output to the USER:
 
-<example id="enough-context">
+<example id="not-enough-context">
 <user.question>
 You are helping the USER create a python-based photo storage app. You
 have created a routes.py and main.js file, and updated the main.html file.
@@ -67,6 +67,7 @@ have created a routes.py and main.js file, and updated the main.html file.
 <you.answer.step2>
 // In this step 2, You should first explain to the user how to solve the problem, and then use the DevIn language
 // to call the tool to help the user solve the problem
+// make sure you have enough context before coding.
 # 第一步. 创建 routes.py
 我已经创建了 routes.py 来定义 "/upload" 和 "/query" 端点。此外，我还添加了 "/" 作为 main.html 的端点。
 
@@ -193,4 +194,5 @@ accordingly and make informed decisions about how to proceed with the task. This
 the overall success and accuracy of your work.
 </thinking>
 
+// make sure you have enough context before coding.
 请在确保拥有足够的上下文信息后，再开始编码。如果上下文信息不足，请告知我，我将提供给你。
