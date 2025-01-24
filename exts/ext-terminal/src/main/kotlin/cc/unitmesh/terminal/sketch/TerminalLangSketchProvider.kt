@@ -162,7 +162,7 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
     fun executeShellScriptOnClick(project: Project, content: String): MouseAdapter = object : MouseAdapter() {
         override fun mouseClicked(e: MouseEvent?) {
             val processBuilder = ProcessBuilder()
-            processBuilder.command("bash", "-c", content)
+            processBuilder.command(ShellUtil.detectShells().first(), "-c", content)
             processBuilder.directory(File(project.basePath!!))
 
             try {
