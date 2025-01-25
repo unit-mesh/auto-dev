@@ -39,7 +39,11 @@ class AutoDevRunAction : DumbAwareAction() {
 
         val scratchFile = ScratchRootType.getInstance()
             .createScratchFile(project, file.name, psiFile.language, document.text)
-            ?: return
+
+        if (scratchFile == null) {
+            AutoDevNotifications.warn(project, "Cannot create scratch file")
+            return
+        }
 
         if (scratchFile.extension == "sh") {
             File(scratchFile.path).setExecutable(true)
