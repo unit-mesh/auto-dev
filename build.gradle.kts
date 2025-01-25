@@ -421,9 +421,7 @@ project(":core") {
 
         implementation("com.nfeld.jsonpathkt:jsonpathkt:2.0.1")
 
-        implementation("org.jetbrains:markdown:0.7.3") {
-            excludeKotlinDeps()
-        }
+        implementation("org.jetbrains:markdown:0.6.1")
 
         // chocolate factorys
         // follow: https://onnxruntime.ai/docs/get-started/with-java.html
