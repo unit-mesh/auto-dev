@@ -1,9 +1,7 @@
 package cc.unitmesh.devti.sketch
 
-import java.awt.event.AdjustmentListener
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.alignRight
-import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
@@ -18,7 +16,6 @@ import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.runInEdt
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileTypes.PlainTextLanguage
 import com.intellij.openapi.project.Project
@@ -253,29 +250,8 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
         scrollToBottom()
 
         if (AutoSketchMode.getInstance(project).isEnable) {
-            startAutoSketchMode(text)
+            AutoSketchMode.getInstance(project).start(text, this@SketchToolWindow.listener)
         }
-    }
-
-    fun startAutoSketchMode(text: String) {
-        val codeFenceList = CodeFence.parseAll(text)
-        val devinCodeFence = codeFenceList.filter { it.language.displayName == "DevIn" }
-
-        val allCode = devinCodeFence.filter {
-            !it.text.contains("<DevinsError>") && BuiltinCommand.READ_COMMANDS.any { command ->
-                it.text.contains("/" + command.commandName + ":")
-            }
-        }
-
-        if (allCode.isEmpty()) return
-
-        val allCodeText = allCode.joinToString("\n") { it.text }
-        if (allCodeText.trim().isEmpty()) {
-            logger<SketchToolWindow>().error("No code found")
-            return
-        }
-
-        listener.manualSend(allCodeText)
     }
 
     fun sendInput(text: String) {

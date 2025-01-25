@@ -124,15 +124,6 @@ enum class BuiltinCommand(
 
         fun fromString(agentName: String): BuiltinCommand? = values().find { it.commandName == agentName }
 
-        val READ_COMMANDS = setOf(
-            BuiltinCommand.DIR,
-            BuiltinCommand.LOCAL_SEARCH,
-            BuiltinCommand.FILE,
-            BuiltinCommand.REV,
-            BuiltinCommand.STRUCTURE,
-            BuiltinCommand.SYMBOL,
-            BuiltinCommand.DATABASE
-        )
-
+        val READ_COMMANDS = setOf(DIR, LOCAL_SEARCH, FILE, REV, STRUCTURE, SYMBOL, DATABASE, RELATED, RIPGREP_SEARCH)
     }
 }
