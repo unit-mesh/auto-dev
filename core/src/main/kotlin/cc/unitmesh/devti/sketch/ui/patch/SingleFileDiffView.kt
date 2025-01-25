@@ -16,6 +16,7 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.command.undo.UndoManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diff.impl.patch.ApplyPatchStatus
+import com.intellij.openapi.diff.impl.patch.PatchLine
 import com.intellij.openapi.diff.impl.patch.TextFilePatch
 import com.intellij.openapi.diff.impl.patch.apply.GenericPatchApplier
 import com.intellij.openapi.editor.Editor
@@ -29,6 +30,7 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.panels.HorizontalLayout
 import com.intellij.ui.components.panels.VerticalLayout
+import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -46,7 +48,7 @@ class SingleFileDiffView(
 ) : LangSketch {
     private val mainPanel: JPanel = JPanel(VerticalLayout(5))
     private val myHeaderPanel: JPanel = JPanel(BorderLayout())
-    private var filePanel: JPanel? = null
+    private var patchActionPanel: JPanel? = null
     private val appliedPatch = GenericPatchApplier.apply(currentFile.readText(), patch.hunks)
     private val oldCode = currentFile.readText()
 
@@ -64,14 +66,44 @@ class SingleFileDiffView(
 
                 override fun mouseEntered(e: MouseEvent) {
                     foreground = JBColor.WHITE
-                    filePanel?.background = JBColor(DarculaColors.BLUE, DarculaColors.BLUE)
+                    patchActionPanel?.background = JBColor(DarculaColors.BLUE, DarculaColors.BLUE)
                 }
 
                 override fun mouseExited(e: MouseEvent) {
                     foreground = JBColor.BLACK
-                    filePanel?.background = JBColor.PanelBackground
+                    patchActionPanel?.background = JBColor.PanelBackground
                 }
             })
+        }
+
+        // read content, count add and remove line by '+' and '-' in patch.hunks
+        val addLine = patch.hunks.sumOf {
+            it.lines.count { it.type == PatchLine.Type.ADD }
+        }
+        val addLabel = JBLabel("+$addLine").apply {
+            border = BorderFactory.createEmptyBorder(2, 2, 2, 2)
+            foreground = JBColor(0x00FF00, 0x00FF00)
+        }
+
+        val removeLine = patch.hunks.sumOf {
+            it.lines.count { it.type == PatchLine.Type.REMOVE }
+        }
+        val removeLabel = JBLabel("-$removeLine").apply {
+            border = BorderFactory.createEmptyBorder(2, 2, 2, 2)
+            foreground = JBColor(0xFF0000, 0xFF0000)
+        }
+
+        val filePanel: JPanel
+        if (patch.beforeFileName != null) {
+            filePanel = JPanel(BorderLayout()).apply {
+                add(filepathLabel, BorderLayout.WEST)
+                add(addLabel, BorderLayout.CENTER)
+                add(removeLabel, BorderLayout.EAST)
+            }
+        } else {
+            filePanel = JPanel(BorderLayout()).apply {
+                add(filepathLabel, BorderLayout.WEST)
+            }
         }
 
         val actionPanel = JPanel(HorizontalLayout(4)).apply {
@@ -81,14 +113,14 @@ class SingleFileDiffView(
             }
         }
 
-        filePanel = JPanel(BorderLayout()).apply {
-            add(filepathLabel, BorderLayout.WEST)
+        patchActionPanel = JPanel(BorderLayout()).apply {
+            add(filePanel, BorderLayout.WEST)
             add(actionPanel, BorderLayout.EAST)
             border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
         }
 
         val fileContainer = JPanel(BorderLayout(10, 10)).also {
-            it.add(filePanel)
+            it.add(patchActionPanel)
         }
         contentPanel.add(fileContainer, BorderLayout.CENTER)
 
