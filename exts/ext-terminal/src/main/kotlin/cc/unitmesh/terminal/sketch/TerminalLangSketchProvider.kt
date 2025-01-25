@@ -20,17 +20,15 @@ import com.intellij.openapi.ui.popup.JBPopup
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.util.MinimizeButton
 import com.intellij.openapi.wm.ToolWindowManager
+import com.intellij.sh.run.ShRunner
 import com.intellij.terminal.JBTerminalWidget
 import com.intellij.ui.components.panels.HorizontalLayout
 import com.intellij.util.ui.JBUI
-import com.jediterm.terminal.ui.TerminalWidgetListener
 import org.jetbrains.plugins.terminal.LocalTerminalDirectRunner
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import java.io.File
-import java.io.IOException
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JLabel
@@ -62,11 +60,6 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
                         add(terminalWidget!!.component, BorderLayout.CENTER)
 
                         val buttonPanel = JPanel(HorizontalLayout(JBUI.scale(10)))
-                        val runButton = JButton(AllIcons.Toolwindows.ToolWindowRun)
-                            .apply {
-                                addMouseListener(executeShellScriptOnClick(project, content))
-                            }
-
                         val sendButton = JButton("Send to Sketch").apply {
                             addMouseListener(object : MouseAdapter() {
                                 override fun mouseClicked(e: MouseEvent?) {
@@ -85,7 +78,6 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
                             addMouseListener(executePopup(terminalWidget, project))
                         }
 
-                        buttonPanel.add(runButton)
                         buttonPanel.add(sendButton)
                         buttonPanel.add(popupButton)
                         add(buttonPanel, BorderLayout.SOUTH)
@@ -157,62 +149,5 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
         contentManager?.component?.components?.filterIsInstance<SketchToolWindow>()?.firstOrNull().let {
             it?.sendInput(output)
         }
-    }
-
-    fun executeShellScriptOnClick(project: Project, content: String): MouseAdapter = object : MouseAdapter() {
-        override fun mouseClicked(e: MouseEvent?) {
-            val processBuilder = ProcessBuilder()
-            processBuilder.command(ShellUtil.detectShells().first(), "-c", content)
-            processBuilder.directory(File(project.basePath!!))
-
-            try {
-                val process = processBuilder.start()
-                val output = process.inputStream.bufferedReader().use { it.readText() }
-                val error = process.errorStream.bufferedReader().use { it.readText() }
-
-                // try get SketchToolWindow to send
-                val contentManager = ToolWindowManager.getInstance(project).getToolWindow("AutoDev")?.contentManager
-                contentManager?.component?.components?.filterIsInstance<SketchToolWindow>()?.firstOrNull().let {
-                    it?.sendInput(output)
-                    if (error.isNotEmpty()) {
-                        it?.sendInput(error)
-                    }
-                }
-
-                process.waitFor()
-            } catch (e: IOException) {
-            }
-        }
-    }
-
-    private fun executeContent(project: Project, content: String) {
-        val commandLine = createCommandLineForScript(project, content)
-        val processBuilder = commandLine.toProcessBuilder()
-        val process = processBuilder.start()
-        val processHandler = KillableProcessHandler(process, commandLine.commandLineString)
-        processHandler.startNotify()
-
-        processHandler.addProcessListener(object : ProcessAdapter() {
-            override fun processTerminated(event: ProcessEvent) {
-                AutoDevNotifications.notify(
-                    project,
-                    "Process terminated with exit code ${event.exitCode}, ${event.text}"
-                )
-                processHandler.destroyProcess()
-            }
-        })
-    }
-
-    fun createCommandLineForScript(project: Project, scriptText: String): GeneralCommandLine {
-        val workingDirectory = project.basePath
-        val commandLine = PtyCommandLine()
-        commandLine.withConsoleMode(false)
-        commandLine.withInitialColumns(120)
-        commandLine.withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
-        commandLine.setWorkDirectory(workingDirectory!!)
-        commandLine.withExePath(ShellUtil.detectShells().first())
-        commandLine.withParameters("-c")
-        commandLine.withParameters(scriptText)
-        return commandLine
     }
 }
