@@ -172,7 +172,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
 
 fun showSingleDiff(project: Project, patchContent: String, handleAccept: (() -> Unit)?) {
     val editorProvider = FileEditorProvider.EP_FILE_EDITOR_PROVIDER.extensionList.firstOrNull {
-        it.javaClass.simpleName == "DiffPatchFileEditorProvider"
+        it.javaClass.simpleName == "DiffPatchFileEditorProvider" || it.javaClass.simpleName == "DiffEditorProvider"
     }
 
     if (editorProvider != null) {

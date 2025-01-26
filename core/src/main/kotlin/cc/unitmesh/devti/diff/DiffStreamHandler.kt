@@ -195,6 +195,10 @@ class DiffStreamHandler(
 
     private fun initUnfinishedRangeHighlights() {
         for (i in startLine..endLine) {
+            if (i >= editor.document.lineCount) {
+                break
+            }
+
             val highlighter = editor.markupModel.addLineHighlighter(
                 unfinishedKey, min(
                     i, editor.document.lineCount - 1
