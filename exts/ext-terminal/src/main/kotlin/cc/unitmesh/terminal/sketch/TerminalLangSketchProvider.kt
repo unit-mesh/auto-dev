@@ -60,7 +60,7 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
                         add(terminalWidget!!.component, BorderLayout.CENTER)
 
                         val buttonPanel = JPanel(HorizontalLayout(JBUI.scale(10)))
-                        val sendButton = JButton("Send to Sketch").apply {
+                        val sendButton = JButton("Send").apply {
                             addMouseListener(object : MouseAdapter() {
                                 override fun mouseClicked(e: MouseEvent?) {
                                     try {
