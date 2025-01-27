@@ -62,12 +62,10 @@ class SingleFileDiffView(
                 }
 
                 override fun mouseEntered(e: MouseEvent) {
-                    foreground = JBColor.WHITE
                     patchActionPanel?.background = JBColor(DarculaColors.BLUE, DarculaColors.BLUE)
                 }
 
                 override fun mouseExited(e: MouseEvent) {
-                    foreground = JBColor.BLACK
                     patchActionPanel?.background = JBColor.PanelBackground
                 }
             })
