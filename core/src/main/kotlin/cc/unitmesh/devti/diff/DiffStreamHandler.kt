@@ -222,7 +222,6 @@ class DiffStreamHandler(
         }
     }
 
-
     private fun createDiffBlock(): VerticalDiffBlock {
         val diffBlock = VerticalDiffBlock(
             editor, project, curLine.index, ::handleDiffBlockAcceptOrReject, ::acceptAll
