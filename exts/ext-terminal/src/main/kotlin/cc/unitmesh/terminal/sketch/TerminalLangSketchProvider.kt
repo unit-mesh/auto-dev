@@ -44,6 +44,8 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
             var terminalWidget: JBTerminalWidget? = null
             var panelLayout: JPanel? = null
 
+            private var titleLabel = JLabel("Terminal")
+
             init {
                 val projectDir = project.guessProjectDir()?.path
                 val terminalRunner = LocalTerminalDirectRunner.createTerminalRunner(project)
@@ -53,7 +55,7 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
 
                 panelLayout = object : JPanel(BorderLayout()) {
                     init {
-                        add(JLabel("Terminal").also {
+                        add(titleLabel.also {
                             it.border = JBUI.Borders.empty(5, 0)
                         }, BorderLayout.NORTH)
 
@@ -130,6 +132,7 @@ class TerminalLangSketchProvider : LanguageSketchProvider {
             }
 
             override fun doneUpdateText(allText: String) {
+                titleLabel.text = "Terminal - " + allText.substring(0, 10)
                 ApplicationManager.getApplication().invokeLater {
                     Thread.sleep(2000) // todo: change to when terminal ready
                     terminalWidget!!.terminalStarter?.sendString(content, false)
