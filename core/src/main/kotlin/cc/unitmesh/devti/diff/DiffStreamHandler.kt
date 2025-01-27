@@ -130,8 +130,6 @@ class DiffStreamHandler(
                 suggestion.append(char)
                 val code = CodeFence.parse(suggestion.toString())
                 var value: List<String> = code.text.lines()
-                value = value.dropLast(1)
-
                 if (value.isEmpty()) return@collect
 
                 val newLines = if (lastLineNo < value.size) {
@@ -170,7 +168,7 @@ class DiffStreamHandler(
         val newLines = newContent.lines()
 
         isRunning = true
-        cc.unitmesh.devti.util.AutoDevCoroutineScope.scope(project).launch {
+        AutoDevCoroutineScope.scope(project).launch {
             streamDiff(lines, flowOf(*newLines.toTypedArray())).collect {
                 ApplicationManager.getApplication().invokeLater {
                     WriteCommandAction.runWriteCommandAction(project) {
