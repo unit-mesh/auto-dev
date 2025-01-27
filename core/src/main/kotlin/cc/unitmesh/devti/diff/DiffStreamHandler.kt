@@ -24,7 +24,6 @@ import com.intellij.openapi.editor.markup.RangeHighlighter
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.TextEditor
-import com.intellij.openapi.fileTypes.PlainTextLanguage
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import cc.unitmesh.devti.diff.model.DiffLine
@@ -42,33 +41,35 @@ import kotlin.math.min
 
 /**
  *
- *     JButton("Apply Patch").apply {
+ * ```kotlin
+ *  JButton("Apply Patch").apply {
  *
- *        addActionListener {
- *            val lookupFile =
- *                project.lookupFile("src/main/java/com/phodal/shire/demo/service/BlogService.java")!!
- *            val editor = FileEditorManager.getInstance(project).selectedTextEditor
- *            val code = lookupFile.inputStream.bufferedReader().use { it.readText() }
+ *     addActionListener {
+ *         val lookupFile =
+ *             project.lookupFile("src/main/java/com/phodal/shire/demo/service/BlogService.java")!!
+ *         val editor = FileEditorManager.getInstance(project).selectedTextEditor
+ *         val code = lookupFile.inputStream.bufferedReader().use { it.readText() }
  *
- *            val diffStreamHandler = DiffStreamHandler(
- *                project,
- *                editor = editor!!, 0, code.lines().size,
- *                onClose = {
- *                },
- *                onFinish = {
- *                    ShirelangNotifications.info(project, "Patch Applied")
- *                }
- *            )
+ *         val diffStreamHandler = DiffStreamHandler(
+ *             project,
+ *             editor = editor!!, 0, code.lines().size,
+ *             onClose = {
+ *             },
+ *             onFinish = {
+ *                 ShirelangNotifications.info(project, "Patch Applied")
+ *             }
+ *         )
  *
- *            runInEdt {
- *                diffStreamHandler
- *                    .streamDiffLinesToEditor(
- *                        code,
- *                        "使用为如下的代码添加删除功能，请使用 Markdown  code 返回完整代码块: $code"
- *                    )
- *            }
- *        }
- *      }
+ *         runInEdt {
+ *             diffStreamHandler
+ *                 .streamDiffLinesToEditor(
+ *                     code,
+ *                     "使用为如下的代码添加删除功能，请使用 Markdown  code 返回完整代码块: $code"
+ *                 )
+ *         }
+ *     }
+ *   }
+ * ```
  */
 class DiffStreamHandler(
     private val project: Project,
@@ -198,9 +199,7 @@ class DiffStreamHandler(
             }
 
             val highlighter = editor.markupModel.addLineHighlighter(
-                unfinishedKey, min(
-                    i, editor.document.lineCount - 1
-                ), HighlighterLayer.LAST
+                unfinishedKey, min(i, editor.document.lineCount - 1), HighlighterLayer.LAST
             )
             unfinishedHighlighters.add(highlighter)
         }

@@ -2,7 +2,7 @@ package cc.unitmesh.devti.sketch.ui.webview
 
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
-import cc.unitmesh.devti.sketch.ui.code.HtmlLangSketch
+import cc.unitmesh.devti.sketch.ui.code.HtmlHighlightSketch
 import com.intellij.openapi.project.Project
 
 class WebpageSketchProvider : LanguageSketchProvider {
@@ -15,7 +15,7 @@ class WebpageSketchProvider : LanguageSketchProvider {
             return WebpageLangSketch(project, content)
         }
 
-        return HtmlLangSketch(project, content)
+        return HtmlHighlightSketch(project, content)
     }
 }
 
