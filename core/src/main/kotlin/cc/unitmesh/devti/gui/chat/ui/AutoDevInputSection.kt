@@ -198,7 +198,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                 override fun selectionChanged(event: FileEditorManagerEvent) {
                     val file = event.newFile ?: return
                     ApplicationManager.getApplication().invokeLater {
-                        listModel.addIfAbsent(file)
+                        listModel.addIfAbsent(file, true)
                     }
                 }
             }
