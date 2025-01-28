@@ -8,6 +8,7 @@ import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.compiler.model.LineInfo
 import cc.unitmesh.devti.language.utils.findFile
 import cc.unitmesh.devti.language.utils.lookupFile
+import cc.unitmesh.devti.sketch.ui.patch.readText
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
@@ -35,8 +36,8 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
             virtualFile = myProject.findFile(filename, false)
         }
 
-        val contentsToByteArray = virtualFile?.contentsToByteArray()
-        if (contentsToByteArray == null) {
+        val content = virtualFile?.readText()
+        if (content == null) {
             AutoDevNotifications.warn(myProject, "File not found: $prop")
             /// not show error message to just notify
             return "File not found: $prop"
@@ -46,28 +47,24 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
 
         val lang = PsiManager.getInstance(myProject).findFile(virtualFile)?.language?.displayName ?: ""
 
-        contentsToByteArray.let { bytes ->
-
-            val content = bytes.toString(Charsets.UTF_8)
-            val fileContent = if (range != null) {
-                val subContent = try {
-                    content.split("\n").slice(range.startLine - 1 until range.endLine)
-                        .joinToString("\n")
-                } catch (e: StringIndexOutOfBoundsException) {
-                    content
-                }
-
-                subContent
-            } else {
+        val fileContent = if (range != null) {
+            val subContent = try {
+                content.split("\n").slice(range.startLine - 1 until range.endLine)
+                    .joinToString("\n")
+            } catch (e: StringIndexOutOfBoundsException) {
                 content
             }
 
-            // add file path
-            output.append("// File: $prop\n")
-            output.append("\n```$lang\n")
-            output.append(fileContent)
-            output.append("\n```\n")
+            subContent
+        } else {
+            content
         }
+
+        // add file path
+        output.append("// File: $prop\n")
+        output.append("\n```$lang\n")
+        output.append(fileContent)
+        output.append("\n```\n")
 
         return output.toString()
     }
