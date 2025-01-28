@@ -43,6 +43,7 @@ import com.intellij.ui.MutableCollectionComboBoxModel
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBList
+import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.EventDispatcher
 import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
@@ -166,7 +167,12 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         inputPanel.add(input, BorderLayout.CENTER)
         inputPanel.addToBottom(layoutPanel)
 
-        this.add(elementsList, BorderLayout.NORTH)
+        // 将 elementsList 放入 JScrollPane 中
+        val scrollPane = JBScrollPane(elementsList)
+        scrollPane.verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
+        scrollPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+        this.add(scrollPane, BorderLayout.NORTH)
+
         this.add(inputPanel, BorderLayout.CENTER)
 
         ComponentValidator(disposable!!).withValidator(Supplier<ValidationInfo?> {
@@ -221,6 +227,9 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         elementsList.visibleRowCount = 2
         elementsList.cellRenderer = RelatedFileListCellRenderer()
         elementsList.setEmptyText("")
+
+        // 假设 elementsList 是某个容器的子组件，你需要将 scrollPane 添加到该容器中
+        // 例如：parentContainer.add(scrollPane)
 
         elementsList.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
