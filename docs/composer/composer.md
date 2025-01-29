@@ -1,6 +1,6 @@
 ---
 layout: default
-title: AutoDev Composer
+title: AutoDev AI Composer
 nav_order: 5
 has_children: true
 ---
