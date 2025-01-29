@@ -22,7 +22,6 @@ import com.intellij.psi.PsiManager
  */
 class FileInsCommand(private val myProject: Project, private val prop: String) : InsCommand {
     override val commandName: BuiltinCommand = BuiltinCommand.FILE
-    private val output = StringBuilder()
 
     override suspend fun execute(): String? {
         val range: LineInfo? = LineInfo.fromString(prop)
@@ -47,25 +46,22 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
 
         val lang = PsiManager.getInstance(myProject).findFile(virtualFile)?.language?.displayName ?: ""
 
-        val fileContent = if (range != null) {
-            val subContent = try {
+        val fileContent = if (range == null) {
+            content
+        } else {
+            try {
                 content.split("\n").slice(range.startLine - 1 until range.endLine)
                     .joinToString("\n")
             } catch (e: StringIndexOutOfBoundsException) {
                 content
             }
-
-            subContent
-        } else {
-            content
         }
 
-        // add file path
+        val output = StringBuilder()
         output.append("// File: $prop\n")
         output.append("\n```$lang\n")
         output.append(fileContent)
         output.append("\n```\n")
-
         return output.toString()
     }
 }
