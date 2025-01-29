@@ -57,7 +57,7 @@
 
     <extensionPoints>
         <extensionPoint qualifiedName="devins.agentTool"
-                        interface="cc.unitmesh.devti.language.agenttool.AgentTool"
+                        interface="cc.unitmesh.devti.agenttool.AgentTool"
                         dynamic="true"/>
     </extensionPoints>
 

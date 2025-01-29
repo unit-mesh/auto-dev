@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.language.agenttool
+package cc.unitmesh.devti.agenttool
 
 import com.intellij.openapi.project.Project
 

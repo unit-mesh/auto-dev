@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.sketch
 
+import cc.unitmesh.devti.agenttool.search.RipgrepSearcher
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.ui.relativePath
 import cc.unitmesh.devti.provider.BuildSystemProvider
@@ -33,7 +34,8 @@ data class SketchRunContext(
     val toolList: String,
     val shell: String = System.getenv("SHELL") ?: "/bin/bash",
     val frameworkContext: String = "",
-    val buildTool: String = ""
+    val buildTool: String = "",
+    val searchTool: String = "localSearch",
 ) : TemplateContext {
     companion object {
         fun create(project: Project, myEditor: Editor?, input: String): SketchRunContext {
@@ -43,21 +45,8 @@ data class SketchRunContext(
             } else {
                 FileEditorManager.getInstance(project).selectedFiles.firstOrNull()
             }
-
-            val otherFiles = FileEditorManager.getInstance(project).openFiles.filter { it != currentFile }
-
-            val psi = if (currentFile != null) {
-                PsiManager.getInstance(project).findFile(currentFile)
-            } else {
-                null
-            }
-
-            val currentElement = if (editor != null) {
-                psi?.findElementAt(editor.caretModel.offset)
-            } else {
-                null
-            }
-
+            val psi = currentFile?.let { PsiManager.getInstance(project).findFile(it) }
+            val currentElement = editor?.let { psi?.findElementAt(it.caretModel.offset) }
             val creationContext =
                 ChatCreationContext(ChatOrigin.Intention, ChatActionType.CHAT, psi, listOf(), element = psi)
 
@@ -67,6 +56,8 @@ data class SketchRunContext(
             } else {
                 ""
             }
+
+            val otherFiles = FileEditorManager.getInstance(project).openFiles.filter { it != currentFile }
 
             return SketchRunContext(
                 currentFile = currentFile?.relativePath(project),
@@ -81,9 +72,20 @@ data class SketchRunContext(
                     return@runBlocking ChatContextProvider.collectChatContextList(project, creationContext)
                 }.joinToString(",", transform = ChatContextItem::text),
                 buildTool = buildTool,
+                searchTool = getSearchTool()
             )
         }
     }
+}
+
+fun getSearchTool(): String {
+    val findRipgrepBinary = try {
+        RipgrepSearcher.findRipgrepBinary()
+    } catch (e: Exception) {
+        null
+    }
+
+    return if (findRipgrepBinary != null) "ripgrepSearch" else "localSearch"
 }
 
 private fun osInfo() =

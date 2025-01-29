@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.agenttool.scrapy;
 
-import cc.unitmesh.devti.language.agenttool.browse.DocumentCleaner
+import cc.unitmesh.devti.agenttool.browse.DocumentCleaner
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNull
 import org.junit.Test

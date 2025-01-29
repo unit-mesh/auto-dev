@@ -2,7 +2,7 @@ package cc.unitmesh.devti.language.compiler.exec
 
 import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
-import cc.unitmesh.devti.language.agenttool.browse.BrowseTool
+import cc.unitmesh.devti.agenttool.browse.BrowseTool
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.project.Project
 

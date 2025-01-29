@@ -1,8 +1,8 @@
-package cc.unitmesh.devti.language.agenttool.browse
+package cc.unitmesh.devti.agenttool.browse
 
-import cc.unitmesh.devti.language.agenttool.AgentToolContext
-import cc.unitmesh.devti.language.agenttool.AgentTool
-import cc.unitmesh.devti.language.agenttool.AgentToolResult
+import cc.unitmesh.devti.agenttool.AgentToolContext
+import cc.unitmesh.devti.agenttool.AgentTool
+import cc.unitmesh.devti.agenttool.AgentToolResult
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 

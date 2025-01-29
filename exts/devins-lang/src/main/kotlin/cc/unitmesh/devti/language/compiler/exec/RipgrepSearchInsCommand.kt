@@ -2,7 +2,7 @@ package cc.unitmesh.devti.language.compiler.exec
 
 import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
-import cc.unitmesh.devti.language.agenttool.RipgrepSearcher
+import cc.unitmesh.devti.agenttool.search.RipgrepSearcher
 import com.intellij.openapi.project.Project
 
 /// https://github.com/MituuZ/fuzzier
