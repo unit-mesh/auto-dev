@@ -23,6 +23,10 @@ import com.intellij.psi.PsiManager
 import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
 
+/**
+ * provide context for [core/src/main/resources/genius/zh/code/sketch.vm]
+ * make sure the context is serializable and keep same with the template
+ */
 data class SketchRunContext(
     val currentFile: String?,
     val currentElement: PsiElement? = null,

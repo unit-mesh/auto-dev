@@ -32,7 +32,7 @@ abstract class SimpleDevinPrompter {
         }
 
         /// handle with DevIn language
-        val postProcessors = LanguagePromptProcessor.instance("DevIn").firstOrNull()
+        val postProcessors = LanguagePromptProcessor.devin()
         val compiledTemplate = postProcessors?.compile(project, template) ?: template
 
         variableCompile.set("input", userInput)

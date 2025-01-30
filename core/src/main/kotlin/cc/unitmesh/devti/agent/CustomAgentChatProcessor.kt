@@ -147,9 +147,8 @@ class CustomAgentChatProcessor(val project: Project) {
         }
 
         if (!devInCode.isNullOrEmpty()) {
-            LanguagePromptProcessor.instance("DevIn").forEach {
-                it.execute(project, CustomAgentContext(selectedAgent, devInCode!!))
-            }
+            val devin = LanguagePromptProcessor.devin()
+            devin?.execute(project, CustomAgentContext(selectedAgent, devInCode!!))
         }
 
         return llmResponse

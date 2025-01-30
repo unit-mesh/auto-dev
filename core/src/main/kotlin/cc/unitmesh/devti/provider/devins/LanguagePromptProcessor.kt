@@ -26,8 +26,12 @@ interface LanguagePromptProcessor {
     companion object {
         val EP_NAME = ExtensionPointName<LanguagePromptProcessor>("cc.unitmesh.languageProcessor")
 
-        fun instance(languageName: String): List<LanguagePromptProcessor> {
+        private fun instance(languageName: String): List<LanguagePromptProcessor> {
             return EP_NAME.extensionList.filter { it.name == languageName }
+        }
+
+        fun devin(): LanguagePromptProcessor? {
+            return instance("DevIn").firstOrNull()
         }
     }
 }

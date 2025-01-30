@@ -114,7 +114,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
 
                 val context = ChatContext(null, "", "")
 
-                val postProcessors = LanguagePromptProcessor.instance("DevIn").firstOrNull()
+                val postProcessors = LanguagePromptProcessor.devin()
                 if (postProcessors != null) {
                     prompt = postProcessors.compile(chatCodingService.project, prompt)
                 }
