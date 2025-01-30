@@ -10,6 +10,7 @@ import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
 import cc.unitmesh.devti.sketch.run.ShellUtil
 import cc.unitmesh.devti.template.context.TemplateContext
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -72,20 +73,25 @@ data class SketchRunContext(
                     return@runBlocking ChatContextProvider.collectChatContextList(project, creationContext)
                 }.joinToString(",", transform = ChatContextItem::text),
                 buildTool = buildTool,
-                searchTool = getSearchTool()
+                searchTool = lookupSearchTool()
             )
         }
     }
 }
 
-fun getSearchTool(): String {
+fun lookupSearchTool(): String {
     val findRipgrepBinary = try {
         RipgrepSearcher.findRipgrepBinary()
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         null
     }
 
-    return if (findRipgrepBinary != null) "ripgrepSearch" else "localSearch"
+    return if (findRipgrepBinary != null) {
+        "ripgrepSearch"
+    } else {
+        logger<SketchRunContext>().warn("Ripgrep binary not found, fallback to local search")
+        "localSearch"
+    }
 }
 
 private fun osInfo() =
