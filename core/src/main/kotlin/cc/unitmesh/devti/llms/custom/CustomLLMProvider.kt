@@ -16,7 +16,9 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import java.time.Duration
 
-@Service(Service.Level.PROJECT)
+/**
+ * LLMProvider 不应该是单例 Service，它有多个并发场景的可能性
+ */
 class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(project) {
     private val autoDevSettingsState = getSetting()
     private fun getSetting() = AutoDevSettingsState.getInstance()

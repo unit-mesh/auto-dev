@@ -34,7 +34,7 @@ class FileGenerateTask(
         val systemPrompt = messages.filter { it.role == LlmMsg.ChatRole.System }.joinToString("\n") { it.content }
 
         val stream =
-            LlmFactory().create(project).stream(requestPrompt, systemPrompt, false)
+            LlmFactory.create(project).stream(requestPrompt, systemPrompt, false)
 
         var result = ""
         runBlocking {

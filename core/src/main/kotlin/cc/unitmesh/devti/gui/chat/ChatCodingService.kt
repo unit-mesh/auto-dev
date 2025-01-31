@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 class ChatCodingService(var actionType: ChatActionType, val project: Project) {
-    private val llmProvider = LlmFactory().create(project)
+    private val llmProvider = LlmFactory.create(project)
     private val counitProcessor = project.service<CustomAgentChatProcessor>()
     private var currentJob: Job? = null
 

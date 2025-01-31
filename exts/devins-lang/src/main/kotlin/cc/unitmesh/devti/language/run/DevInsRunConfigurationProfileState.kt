@@ -45,7 +45,7 @@ open class DevInsRunConfigurationProfileState(
     private val myProject: Project,
     private val configuration: DevInsConfiguration,
 ) : RunProfileState {
-    private val llm: LLMProvider = LlmFactory.instance.create(myProject)
+    private val llm: LLMProvider = LlmFactory.create(myProject)
 
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult {
         val processHandler = DevInsProcessHandler(configuration.name)

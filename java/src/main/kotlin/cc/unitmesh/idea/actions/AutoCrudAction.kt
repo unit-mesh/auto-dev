@@ -41,7 +41,7 @@ class AutoCrudAction : ChatBaseIntention() {
         }
 
         sendToChatPanel(project) { contentPanel, _ ->
-            val openAIRunner = LlmFactory().create(project)
+            val openAIRunner = LlmFactory.create(project)
             val selectedText = editor.selectionModel.selectedText ?: throw IllegalStateException("no select text")
             flowProvider.initContext(null, openAIRunner, contentPanel, project)
             ProgressManager.getInstance().run(executeCrud(flowProvider, project, selectedText))

@@ -61,7 +61,7 @@ class AutoSqlAction : ChatBaseIntention() {
         val actions = DbContextActionProvider(dasTables)
 
         sendToChatPanel(project) { contentPanel, _ ->
-            val llmProvider = LlmFactory().create(project)
+            val llmProvider = LlmFactory.create(project)
             val prompter = AutoSqlFlow(genSqlContext, actions, contentPanel, llmProvider)
 
             val task = AutoSqlBackgroundTask(project, prompter, editor, file.language)
