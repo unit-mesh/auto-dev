@@ -99,10 +99,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             .addLLMParam(maxTokenLengthParam)
             .addLLMParam(delaySecondsParam)
             .addComponent(panel {
-                if (project != null) {
-                    testLLMConnection(project)
-                }
-
+                testLLMConnection()
                 row {
                     text(AutoDevBundle.message("settings.autodev.coder.testConnectionButton.tips")).apply {
                         this.component.foreground = JBColor.RED

@@ -1,31 +1,37 @@
 package cc.unitmesh.devti.settings
 
+import cc.unitmesh.cf.core.llms.LlmMsg
 import cc.unitmesh.devti.fullWidthCell
-import cc.unitmesh.devti.llms.LlmFactory
-import cc.unitmesh.devti.util.AutoDevCoroutineScope
-import com.intellij.openapi.project.Project
+import cc.unitmesh.devti.llm2.LLMProvider2
+import cc.unitmesh.devti.llms.custom.Message
 import com.intellij.ui.dsl.builder.Panel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.swing.JLabel
 
-fun Panel.testLLMConnection(project: Project?) {
+fun Panel.testLLMConnection() {
     row {
         // test result
         val result = JLabel("")
         button("Test LLM Connection") {
-            if (project == null) return@button
+            val scope = CoroutineScope(CoroutineName("testConnection"))
             result.text = ""
+            result.isEnabled = false
 
             // test custom engine
-            AutoDevCoroutineScope.scope(project).launch {
+            scope.launch {
                 try {
-                    val flowString: Flow<String> = LlmFactory.instance.create(project).stream("hi", "", false)
-                    flowString.collect {
-                        result.text += it
+                    val llmProvider2 = LLMProvider2()
+                    val response = llmProvider2.request(Message(LlmMsg.ChatRole.User.toString(),"hi!"))
+                    response.collectLatest {
+                        result.text = it.chatMessage.content
                     }
                 } catch (e: Exception) {
                     result.text = e.message ?: "Unknown error"
+                } finally {
+                    result.isEnabled = true
                 }
             }
         }

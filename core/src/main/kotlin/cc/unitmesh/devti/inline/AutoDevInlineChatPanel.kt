@@ -40,7 +40,7 @@ class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), Edit
         val project = editor.project!!
 
         val prompt = AutoDevInlineChatService.getInstance().prompting(project, input, editor)
-        val flow: Flow<String>? = LlmFactory.instance.create(project).stream(prompt, "", false)
+        val flow: Flow<String>? = LlmFactory.create(project).stream(prompt, "", false)
 
         val panelView = SketchToolWindow(project, editor)
         panelView.minimumSize = Dimension(800, 40)

@@ -141,7 +141,7 @@ class ShellCommandSuggestAction : DumbAwareAction() {
             )
             val promptText = templateRender.renderTemplate(template)
 
-            val llm = LlmFactory.instance.create(project)
+            val llm = LlmFactory.create(project)
             val stringFlow: Flow<String> = llm.stream(promptText, "", false)
 
             AutoDevCoroutineScope.scope(project).launch {

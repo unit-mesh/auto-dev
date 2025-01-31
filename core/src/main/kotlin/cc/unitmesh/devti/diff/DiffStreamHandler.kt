@@ -123,7 +123,7 @@ class DiffStreamHandler(
         val lines = originContent.lines()
 
         isRunning = true
-        val flow: Flow<String> = LlmFactory.instance.create(project).stream(prompt, "", false)
+        val flow: Flow<String> = LlmFactory.create(project).stream(prompt, "", false)
         var lastLineNo = 0
         AutoDevCoroutineScope.scope(project).launch {
             val suggestion = StringBuilder()

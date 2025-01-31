@@ -52,7 +52,7 @@ class AutoDevRunProfileState(
             logger.error("current Language don't implementation DevFlow")
             return null
         }
-        val openAIRunner = LlmFactory().create(project)
+        val openAIRunner = LlmFactory.create(project)
 
         sendToChatPanel(project) { contentPanel, _ ->
             flowProvider.initContext(kanban, openAIRunner, contentPanel, project)

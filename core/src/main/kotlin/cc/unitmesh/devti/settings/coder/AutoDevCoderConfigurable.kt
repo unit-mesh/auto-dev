@@ -164,12 +164,10 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        if (project != null) {
-            testLLMConnection(project)
-            row {
-                text(AutoDevBundle.message("settings.autodev.coder.testConnectionButton.tips")).apply {
-                    this.component.foreground = JBColor.RED
-                }
+        testLLMConnection()
+        row {
+            text(AutoDevBundle.message("settings.autodev.coder.testConnectionButton.tips")).apply {
+                this.component.foreground = JBColor.RED
             }
         }
 

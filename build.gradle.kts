@@ -402,6 +402,11 @@ project(":core") {
 
         implementation("io.reactivex.rxjava3:rxjava:3.1.10")
 
+        testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
+        testImplementation(kotlin("test"))
+        testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0") {
+            excludeKotlinDeps()
+        }
         implementation("com.squareup.okhttp3:okhttp:4.12.0") {
             excludeKotlinDeps()
         }
@@ -681,6 +686,10 @@ project(":exts:devins-lang") {
             dependsOn(generateLexer, generateParser)
         }
     }
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 fun File.isPluginJar(): Boolean {

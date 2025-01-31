@@ -41,7 +41,7 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
         val prompt = promptText()
 
         val keepHistory = keepHistory() && prompt.length < AutoDevSettingsState.maxTokenLength
-        val flow: Flow<String> = LlmFactory().create(request.project).stream(prompt, "", keepHistory)
+        val flow: Flow<String> = LlmFactory.create(request.project).stream(prompt, "", keepHistory)
         logger.info("Prompt: $prompt")
 
         DumbAwareAction.create {

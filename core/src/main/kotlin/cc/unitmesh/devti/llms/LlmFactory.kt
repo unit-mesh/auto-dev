@@ -8,22 +8,18 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 
-@Service
-class LlmFactory {
+object LlmFactory {
     fun create(project: Project): LLMProvider {
-        return project.getService(CustomLLMProvider::class.java)
+        return CustomLLMProvider(project)
     }
 
     fun createForInlayCodeComplete(project: Project): LLMProvider {
         if(project.service<AutoDevCoderSettingService>().state.useCustomAIEngineWhenInlayCodeComplete) {
             logger<LlmFactory>().info("useCustomAIEngineWhenInlayCodeComplete: ${project.service<AutoDevCoderSettingService>().state.useCustomAIEngineWhenInlayCodeComplete}")
-            return project.getService(InlayCustomLLMProvider::class.java)
+            return InlayCustomLLMProvider(project)
         }
 
         return create(project);
     }
 
-    companion object {
-        val instance: LlmFactory = LlmFactory()
-    }
 }

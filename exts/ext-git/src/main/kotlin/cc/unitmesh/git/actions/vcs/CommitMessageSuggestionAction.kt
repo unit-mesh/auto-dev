@@ -90,7 +90,7 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
 
             event.presentation.icon = AutoDevStatus.InProgress.icon
             try {
-                val stream = LlmFactory().create(project).stream(prompt, "", false)
+                val stream = LlmFactory.create(project).stream(prompt, "", false)
                 currentJob = AutoDevCoroutineScope.scope(project).launch {
                     runBlocking {
                         stream
