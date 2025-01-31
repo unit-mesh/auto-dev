@@ -56,9 +56,6 @@
                 language="JAVA"
                 implementationClass="cc.unitmesh.idea.provider.JavaCustomPromptProvider"/>
 
-        <layeredArchProvider
-                implementation="cc.unitmesh.idea.provider.JavaLayeredArchProvider"/>
-
         <relatedClassProvider
                 language="JAVA"
                 implementationClass="cc.unitmesh.idea.provider.JavaRelatedClassesProvider" />

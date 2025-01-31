@@ -8,9 +8,7 @@ import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
 import cc.unitmesh.devti.provider.devins.LanguagePromptProcessor
 import cc.unitmesh.devti.template.TemplateRender
-import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager

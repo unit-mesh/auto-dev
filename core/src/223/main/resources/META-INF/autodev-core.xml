@@ -151,10 +151,6 @@
                         interface="cc.unitmesh.devti.provider.DevFlowProvider"
                         dynamic="true"/>
 
-        <extensionPoint qualifiedName="cc.unitmesh.layeredArchProvider"
-                        interface="cc.unitmesh.devti.provider.architecture.LayeredArchProvider"
-                        dynamic="true"/>
-
         <!-- TODO: find better way to share context -->
         <extensionPoint qualifiedName="cc.unitmesh.contextPrompter"
                         interface="cc.unitmesh.devti.provider.ContextPrompter"
