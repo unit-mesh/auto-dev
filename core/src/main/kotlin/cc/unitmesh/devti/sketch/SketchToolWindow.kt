@@ -158,6 +158,9 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
         chatCodingService.clearSession()
     }
 
+    /**
+     * Todo: add to all component lsit
+     */
     fun addRequestPrompt(text: String) {
         runInEdt {
             val codeBlockViewer = CodeHighlightSketch(project, text, PlainTextLanguage.INSTANCE).apply {

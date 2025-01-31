@@ -22,7 +22,6 @@ abstract class SimpleDevinPrompter {
     abstract val template: String
 
     fun prompting(project: Project, userInput: String, editor: Editor?): String {
-        /// handle with Velocity
         val variableCompile = VariableTemplateCompiler.create(project, editor)
         if (variableCompile == null) {
             val frameworkContext = collectFrameworkContext(editor, project)
@@ -31,7 +30,6 @@ abstract class SimpleDevinPrompter {
             return templateRender.renderTemplate(template)
         }
 
-        /// handle with DevIn language
         val postProcessors = LanguagePromptProcessor.devin()
         val compiledTemplate = postProcessors?.compile(project, template) ?: template
 
@@ -41,12 +39,7 @@ abstract class SimpleDevinPrompter {
 
     fun collectFrameworkContext(myEditor: Editor?, project: Project): String {
         val editor = myEditor ?: FileEditorManager.getInstance(project).selectedTextEditor ?: return ""
-        val file = FileDocumentManager.getInstance().getFile(editor.document)
-        val psiFile = runReadAction {
-            return@runReadAction file?.let { _ ->
-                return@let PsiDocumentManager.getInstance(project).getPsiFile(editor.document)
-            }
-        }
+        val psiFile = PsiDocumentManager.getInstance(project).getPsiFile(editor.document)
 
         val element = getElementToAction(project, editor)
         val creationContext =

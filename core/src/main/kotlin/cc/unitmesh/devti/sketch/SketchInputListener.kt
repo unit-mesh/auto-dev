@@ -52,8 +52,8 @@ class SketchInputListener(
     }
 
     override fun manualSend(userInput: String) {
-        val postProcessors = LanguagePromptProcessor.devin()
-        val compiledInput = runReadAction { postProcessors?.compile(project, userInput) } ?: userInput
+        val devInProcessor = LanguagePromptProcessor.devin()
+        val compiledInput = runReadAction { devInProcessor?.compile(project, userInput) } ?: userInput
 
         toolWindow.addRequestPrompt(compiledInput)
 
