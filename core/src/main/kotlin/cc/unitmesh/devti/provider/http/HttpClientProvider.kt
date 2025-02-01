@@ -5,7 +5,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 
 interface HttpClientProvider {
-
     fun execute(project: Project, virtualFile: VirtualFile, text: String)
 
     companion object {
