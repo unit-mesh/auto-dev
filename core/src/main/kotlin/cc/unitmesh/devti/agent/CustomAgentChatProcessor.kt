@@ -9,7 +9,7 @@ import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.provider.devins.CustomAgentContext
-import cc.unitmesh.devti.provider.devins.LanguagePromptProcessor
+import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -147,7 +147,7 @@ class CustomAgentChatProcessor(val project: Project) {
         }
 
         if (!devInCode.isNullOrEmpty()) {
-            val devin = LanguagePromptProcessor.devin()
+            val devin = LanguageProcessor.devin()
             devin?.execute(project, CustomAgentContext(selectedAgent, devInCode!!))
         }
 

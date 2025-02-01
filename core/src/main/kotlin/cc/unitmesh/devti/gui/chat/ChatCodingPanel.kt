@@ -15,7 +15,7 @@ import cc.unitmesh.devti.gui.chat.view.FrontendCodeView
 import cc.unitmesh.devti.gui.chat.view.MessageView
 import cc.unitmesh.devti.gui.chat.welcome.WelcomePanel
 import cc.unitmesh.devti.provider.ContextPrompter
-import cc.unitmesh.devti.provider.devins.LanguagePromptProcessor
+import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.LanguageChangedCallback.componentStateChanged
 import com.intellij.lang.html.HTMLLanguage
@@ -114,7 +114,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
 
                 val context = ChatContext(null, "", "")
 
-                val postProcessors = LanguagePromptProcessor.devin()
+                val postProcessors = LanguageProcessor.devin()
                 if (postProcessors != null) {
                     prompt = postProcessors.compile(chatCodingService.project, prompt)
                 }

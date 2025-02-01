@@ -6,7 +6,7 @@ import cc.unitmesh.devti.gui.chat.ui.AutoDevInputListener
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputTrigger
 import cc.unitmesh.devti.prompting.SimpleDevinPrompter
-import cc.unitmesh.devti.provider.devins.LanguagePromptProcessor
+import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.template.GENIUS_CODE
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
@@ -52,7 +52,7 @@ class SketchInputListener(
     }
 
     override fun manualSend(userInput: String) {
-        val devInProcessor = LanguagePromptProcessor.devin()
+        val devInProcessor = LanguageProcessor.devin()
         val compiledInput = runReadAction { devInProcessor?.compile(project, userInput) } ?: userInput
 
         toolWindow.addRequestPrompt(compiledInput)

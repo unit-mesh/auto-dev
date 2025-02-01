@@ -175,7 +175,7 @@
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.languageProcessor"
-                        interface="cc.unitmesh.devti.provider.devins.LanguagePromptProcessor"
+                        interface="cc.unitmesh.devti.provider.devins.LanguageProcessor"
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.customDevInsCompletionProvider"

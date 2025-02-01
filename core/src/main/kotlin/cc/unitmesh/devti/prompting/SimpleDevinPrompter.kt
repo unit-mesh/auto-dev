@@ -6,7 +6,7 @@ import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
-import cc.unitmesh.devti.provider.devins.LanguagePromptProcessor
+import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.template.TemplateRender
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -28,7 +28,7 @@ abstract class SimpleDevinPrompter {
             return templateRender.renderTemplate(template)
         }
 
-        val postProcessors = LanguagePromptProcessor.devin()
+        val postProcessors = LanguageProcessor.devin()
         val compiledTemplate = postProcessors?.compile(project, template) ?: template
 
         variableCompile.set("input", userInput)

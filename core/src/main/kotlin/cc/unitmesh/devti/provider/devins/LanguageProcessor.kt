@@ -14,9 +14,12 @@ data class CustomAgentContext(
  * Handle the response of the custom agent, and return the result to the user.
  * Specify for [cc.unitmesh.devti.language.DevInLanguage]
  */
-interface LanguagePromptProcessor {
+interface LanguageProcessor {
     val name: String
 
+    /**
+     * For CustomAgentExecutor to execute the code
+     */
     @RequiresBackgroundThread
     fun execute(project: Project, context: CustomAgentContext): String
 
@@ -24,13 +27,13 @@ interface LanguagePromptProcessor {
     fun compile(project: Project, text: String): String
 
     companion object {
-        val EP_NAME = ExtensionPointName<LanguagePromptProcessor>("cc.unitmesh.languageProcessor")
+        val EP_NAME = ExtensionPointName<LanguageProcessor>("cc.unitmesh.languageProcessor")
 
-        private fun instance(languageName: String): List<LanguagePromptProcessor> {
+        private fun instance(languageName: String): List<LanguageProcessor> {
             return EP_NAME.extensionList.filter { it.name == languageName }
         }
 
-        fun devin(): LanguagePromptProcessor? {
+        fun devin(): LanguageProcessor? {
             return instance("DevIn").firstOrNull()
         }
     }
