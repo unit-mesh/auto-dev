@@ -51,19 +51,10 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
     }
     private var isUserScrolling: Boolean = false
 
-    private var userPrompt: JPanel = JPanel(BorderLayout()).apply {
-        this.isOpaque = true
-        this.border = JBUI.Borders.empty(10, 0)
-    }
-
-    private var contentPanel = JPanel(BorderLayout()).apply {
-        this.isOpaque = true
-    }
+    private var userPrompt: JPanel = JPanel(BorderLayout())
+    private var contentPanel = JPanel(BorderLayout())
 
     val header = JButton(AllIcons.Actions.Copy).apply {
-        this.border = JBUI.Borders.empty(10, 20)
-        this.isOpaque = true
-        this.preferredSize = Dimension(32, 32)
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
                 val selection = StringSelection(myText)

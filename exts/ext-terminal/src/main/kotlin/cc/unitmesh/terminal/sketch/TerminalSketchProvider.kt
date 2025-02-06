@@ -119,7 +119,6 @@ class TerminalSketchProvider : LanguageSketchProvider {
             fun createConsoleActions(): List<AnAction> {
                 val clearAction = object : AnAction("Clear", "Clear Terminal", null) {
                     override fun actionPerformed(p0: AnActionEvent) {
-                        // sleep for 2 second to wait for terminal ready
                         Thread.sleep(2000)
                         terminalWidget?.terminalStarter?.sendString("clear\n", false)
                     }
@@ -166,10 +165,19 @@ class TerminalSketchProvider : LanguageSketchProvider {
             }
 
             override fun doneUpdateText(allText: String) {
-                ApplicationManager.getApplication().invokeLater {
-                    Thread.sleep(2000) // todo: change to when terminal ready
-                    terminalWidget!!.terminalStarter?.sendString(content, false)
-                }
+                var isAlreadySent = false
+                terminalWidget?.addMessageFilter(object : Filter {
+                    override fun applyFilter(line: String, entireLength: Int): Filter.Result? {
+                        if (isAlreadySent) return null
+
+                        ApplicationManager.getApplication().invokeLater {
+                            terminalWidget!!.terminalStarter?.sendString(content, false)
+                        }
+
+                        isAlreadySent = true
+                        return null
+                    }
+                })
             }
 
             override fun getComponent(): JComponent = panelLayout!!
