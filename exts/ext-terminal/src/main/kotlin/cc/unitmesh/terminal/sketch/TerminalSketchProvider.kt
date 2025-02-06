@@ -189,25 +189,29 @@ class TerminalSketchProvider : LanguageSketchProvider {
 
 class FrontendWebViewServerFilter(val project: Project, val mainPanel: JPanel) : Filter {
     var isAlreadyStart = false
+    val regex = """Local:\s+(http://localhost:\d+)""".toRegex()
+
     override fun applyFilter(line: String, entireLength: Int): Filter.Result? {
         if (isAlreadyStart) return null
 
         if (line.contains("Local:")) {
-            val regex = """Local:\s+(http://localhost:\d+)""".toRegex()
             val matchResult = regex.find(line)
             if (matchResult != null) {
                 val url = matchResult.groupValues[1]
-                val webViewWindow = WebViewWindow().apply {
-                    loadURL(url)
-                }
 
-                var additionalPanel = JPanel(BorderLayout()).apply {
-                    add(webViewWindow.component, BorderLayout.CENTER)
-                }
+                ApplicationManager.getApplication().invokeLater {
+                    val webViewWindow = WebViewWindow().apply {
+                        loadURL(url)
+                    }
 
-                mainPanel.add(additionalPanel, BorderLayout.SOUTH)
-                mainPanel.revalidate()
-                mainPanel.repaint()
+                    var additionalPanel = JPanel(BorderLayout()).apply {
+                        add(webViewWindow.component, BorderLayout.CENTER)
+                    }
+
+                    mainPanel.add(additionalPanel)
+                    mainPanel.revalidate()
+                    mainPanel.repaint()
+                }
 
                 isAlreadyStart = true
             }

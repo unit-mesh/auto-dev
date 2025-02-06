@@ -33,7 +33,7 @@ class WebViewWindow {
 
     private val urlField = JTextField()
     private val refreshButton = JButton(AllIcons.Actions.Refresh)
-    private val openDefaultBrowserButton = JButton("Open in Default Browser")
+    private val openDefaultBrowserButton = JButton(AllIcons.Xml.Browsers.Chrome)
 
     init {
         myBrowser.component.background = JBColor.WHITE
@@ -45,18 +45,15 @@ class WebViewWindow {
         val myLoadHandler = object : CefLoadHandlerAdapter() {
             override fun onLoadEnd(browser: CefBrowser, frame: CefFrame, httpStatusCode: Int) {
                 if (frame.isMain) {
-                    // Update the URL field when the page finishes loading
                     urlField.text = browser.url
                 }
             }
         }
         ourCefClient.addLoadHandler(myLoadHandler, myBrowser.cefBrowser)
 
-        // Set up the refresh button action
         refreshButton.addActionListener {
             myBrowser.cefBrowser.reload()
         }
-
         openDefaultBrowserButton.addActionListener {
             openInBrowser(this@WebViewWindow.urlField.text)
         }
@@ -70,7 +67,7 @@ class WebViewWindow {
         }
 
         // Set a minimum width for the URL field
-        urlField.preferredSize = Dimension(400, urlField.preferredSize.height)
+        urlField.preferredSize = Dimension(240, urlField.preferredSize.height)
     }
 
     private fun openInBrowser(url: String) {
