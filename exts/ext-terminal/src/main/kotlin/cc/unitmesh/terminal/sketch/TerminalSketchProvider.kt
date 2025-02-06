@@ -45,8 +45,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
         return object : ExtensionLangSketch {
             var terminalWidget: JBTerminalWidget? = null
             var mainPanel: JPanel? = null
-
-            var additionalPanel: JPanel? = null
+            val buttonPanel = JPanel(HorizontalLayout(JBUI.scale(10)))
 
             val actionGroup = DefaultActionGroup(createConsoleActions())
             val toolbar = ActionManager.getInstance().createActionToolbar("TerminalSketch", actionGroup, false).apply {
@@ -73,40 +72,11 @@ class TerminalSketchProvider : LanguageSketchProvider {
                     it.preferredSize = Dimension(it.preferredSize.width, 120)
                 }
 
-                terminalWidget!!.addMessageFilter(object : Filter {
-                    var isAlreadyStart = false
-                    override fun applyFilter(line: String, entireLength: Int): Filter.Result? {
-                        if (isAlreadyStart) return null
-
-                        if (line.contains("Local:")) {
-                            val regex = """Local:\s+(http://localhost:\d+)""".toRegex()
-                            val matchResult = regex.find(line)
-                            if (matchResult != null) {
-                                val url = matchResult.groupValues[1]
-                                AutoDevNotifications.notify(project, "Local server started at $url")
-                                /// add webview to show the local server
-                                val webViewWindow = WebViewWindow().apply {
-                                    loadURL(url)
-                                }
-
-                                additionalPanel = JPanel(BorderLayout()).apply {
-                                    add(webViewWindow.component, BorderLayout.CENTER)
-                                }
-
-                                mainPanel!!.add(additionalPanel!!, BorderLayout.SOUTH)
-                            }
-                        }
-
-                        return null
-                    }
-                })
-
                 mainPanel = object : JPanel(BorderLayout()) {
                     init {
                         add(toolbarWrapper, BorderLayout.NORTH)
                         add(terminalWidget!!.component, BorderLayout.CENTER)
 
-                        val buttonPanel = JPanel(HorizontalLayout(JBUI.scale(10)))
                         val sendButton = JButton("Send").apply {
                             addMouseListener(object : MouseAdapter() {
                                 override fun mouseClicked(e: MouseEvent?) {
@@ -130,12 +100,13 @@ class TerminalSketchProvider : LanguageSketchProvider {
                         add(buttonPanel, BorderLayout.SOUTH)
                     }
                 }
+
+                terminalWidget!!.addMessageFilter(FrontendWebViewServerFilter(project, mainPanel!!))
             }
 
             fun createConsoleActions(): List<AnAction> {
                 val clearAction = object : AnAction("Clear", "Clear Terminal", null) {
                     override fun actionPerformed(p0: AnActionEvent) {
-                        Thread.sleep(2000)
                         terminalWidget?.terminalStarter?.sendString("clear\n", false)
                     }
                 }
@@ -188,6 +159,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
 
                         ApplicationManager.getApplication().invokeLater {
                             terminalWidget!!.terminalStarter?.sendString(content, false)
+                            terminalWidget!!.repaint()
                         }
 
                         isAlreadySent = true
@@ -209,5 +181,32 @@ class TerminalSketchProvider : LanguageSketchProvider {
         contentManager?.component?.components?.filterIsInstance<SketchToolWindow>()?.firstOrNull().let {
             it?.sendInput(output)
         }
+    }
+}
+
+class FrontendWebViewServerFilter(val project: Project, val mainPanel: JPanel) : Filter {
+    var isAlreadyStart = false
+    override fun applyFilter(line: String, entireLength: Int): Filter.Result? {
+        if (isAlreadyStart) return null
+
+        if (line.contains("Local:")) {
+            val regex = """Local:\s+(http://localhost:\d+)""".toRegex()
+            val matchResult = regex.find(line)
+            if (matchResult != null) {
+                val url = matchResult.groupValues[1]
+                AutoDevNotifications.notify(project, "Local server started at $url")
+                val webViewWindow = WebViewWindow().apply {
+                    loadURL(url)
+                }
+
+                var additionalPanel = JPanel(BorderLayout()).apply {
+                    add(webViewWindow.component, BorderLayout.CENTER)
+                }
+
+                mainPanel.add(additionalPanel, BorderLayout.SOUTH)
+            }
+        }
+
+        return null
     }
 }

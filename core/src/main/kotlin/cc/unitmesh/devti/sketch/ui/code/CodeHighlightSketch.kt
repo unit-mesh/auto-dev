@@ -140,6 +140,7 @@ open class CodeHighlightSketch(
 
             if (panel == null) return
 
+            panel.border = JBEmptyBorder(8)
             add(panel, BorderLayout.SOUTH)
 
             editorFragment?.updateExpandCollapseLabel()
