@@ -6,6 +6,7 @@ import com.intellij.openapi.editor.event.CaretEvent
 import com.intellij.openapi.editor.event.CaretListener
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.ui.components.JBLabel
+import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.components.BorderLayoutPanel
 import java.awt.Color
 import java.awt.Dimension
@@ -36,7 +37,10 @@ class EditorFragment(var editor: EditorEx, private val editorLineThreshold: Int 
         isVisible = false
     }
 
-    private val content: BorderLayoutPanel = createContentPanel()
+    private val content: BorderLayoutPanel = createContentPanel().also {
+        it.border = JBUI.Borders.empty()
+    }
+
     private var collapsed = false
 
     private fun createContentPanel(): BorderLayoutPanel {
@@ -60,9 +64,8 @@ class EditorFragment(var editor: EditorEx, private val editorLineThreshold: Int 
             }
         }.apply {
             isOpaque = true
-
-            addToLeft(EditorPadding(editor, 5))
-            addToRight(EditorPadding(editor, 5))
+//            addToLeft(EditorPadding(editor, 5))
+//            addToRight(EditorPadding(editor, 5))
             addToCenter(editor.component)
             addToBottom(expandCollapseTextLabel)
         }

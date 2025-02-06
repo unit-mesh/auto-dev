@@ -123,7 +123,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
 
         if (showInput) {
             shireInput.also {
-                border = JBUI.Borders.empty(8)
+                it.border = JBUI.Borders.empty(8)
             }
 
             shireInput.addListener(listener)
@@ -174,8 +174,6 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
                 row {
                     cell(codeBlockViewer).fullWidth()
                 }
-            }.also {
-                it.border = JBUI.Borders.empty(10, 0)
             }
 
             userPrompt.removeAll()

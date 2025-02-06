@@ -4,6 +4,7 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.sketch.SketchToolWindow
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
+import com.intellij.execution.filters.Filter
 import com.intellij.lang.Language
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
@@ -25,10 +26,12 @@ import com.intellij.util.ui.UIUtil
 import org.jetbrains.plugins.terminal.LocalTerminalDirectRunner
 import java.awt.BorderLayout
 import java.awt.Dimension
-import java.awt.FlowLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.*
+import javax.swing.JButton
+import javax.swing.JComponent
+import javax.swing.JLabel
+import javax.swing.JPanel
 
 /**
  * TerminalSketch provide a support for `bash` and `shell` language in terminal.
@@ -43,7 +46,9 @@ class TerminalSketchProvider : LanguageSketchProvider {
             var panelLayout: JPanel? = null
 
             val actionGroup = DefaultActionGroup(createConsoleActions())
-            val toolbar = ActionManager.getInstance().createActionToolbar("BuildConsole", actionGroup, false)
+            val toolbar = ActionManager.getInstance().createActionToolbar("TerminalSketch", actionGroup, false).apply {
+                targetComponent = panelLayout
+            }
 
             val titleLabel = JLabel("Terminal").apply {
                 border = JBUI.Borders.empty(0, 10)
@@ -54,7 +59,9 @@ class TerminalSketchProvider : LanguageSketchProvider {
                 add(toolbar.component, BorderLayout.EAST)
             }
 
-            private var toolbarWrapper = Wrapper(JBUI.Panels.simplePanel(toolbarPanel))
+            private var toolbarWrapper = Wrapper(JBUI.Panels.simplePanel(toolbarPanel)).also {
+                it.border = JBUI.Borders.customLine(UIUtil.getBoundsColor(), 1, 1, 1, 1)
+            }
 
             init {
                 val projectDir = project.guessProjectDir()?.path
@@ -63,10 +70,23 @@ class TerminalSketchProvider : LanguageSketchProvider {
                     it.preferredSize = Dimension(it.preferredSize.width, 120)
                 }
 
+                terminalWidget!!.addMessageFilter(object : Filter {
+                    override fun applyFilter(line: String, entireLength: Int): Filter.Result? {
+                        if (line.contains("Local:")) {
+                            val regex = """Local:\s+(http://localhost:\d+)""".toRegex()
+                            val matchResult = regex.find(line)
+                            if (matchResult != null) {
+                                val url = matchResult.groupValues[1]
+                                AutoDevNotifications.notify(project, "Local server started at $url")
+                            }
+                        }
+
+                        return null
+                    }
+                })
+
                 panelLayout = object : JPanel(BorderLayout()) {
                     init {
-                        border = JBUI.Borders.customLine(UIUtil.getFocusedBorderColor(), 0, 0, 1, 0)
-
                         add(toolbarWrapper, BorderLayout.NORTH)
                         add(terminalWidget!!.component, BorderLayout.CENTER)
 
@@ -94,15 +114,13 @@ class TerminalSketchProvider : LanguageSketchProvider {
                         add(buttonPanel, BorderLayout.SOUTH)
                     }
                 }
-
-                panelLayout!!.border = JBUI.Borders.compound(
-                    JBUI.Borders.empty(5, 10),
-                )
             }
 
             fun createConsoleActions(): List<AnAction> {
                 val clearAction = object : AnAction("Clear", "Clear Terminal", null) {
                     override fun actionPerformed(p0: AnActionEvent) {
+                        // sleep for 2 second to wait for terminal ready
+                        Thread.sleep(2000)
                         terminalWidget?.terminalStarter?.sendString("clear\n", false)
                     }
                 }

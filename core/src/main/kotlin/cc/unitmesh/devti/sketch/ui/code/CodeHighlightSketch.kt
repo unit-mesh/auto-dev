@@ -62,7 +62,7 @@ open class CodeHighlightSketch(
 
         border = JBEmptyBorder(8)
         layout = BorderLayout(JBUI.scale(8), 0)
-        background = JBColor(0xEAEEF7, 0x2d2f30)
+//        background = JBColor(0xEAEEF7, 0x2d2f30)
 
         editor.component.isOpaque = true
 
@@ -140,7 +140,6 @@ open class CodeHighlightSketch(
 
             if (panel == null) return
 
-            panel.border = JBEmptyBorder(8)
             add(panel, BorderLayout.SOUTH)
 
             editorFragment?.updateExpandCollapseLabel()
