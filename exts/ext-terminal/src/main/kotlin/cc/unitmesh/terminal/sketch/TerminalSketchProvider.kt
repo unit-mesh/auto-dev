@@ -16,11 +16,14 @@ import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.terminal.JBTerminalWidget
 import com.intellij.ui.components.panels.HorizontalLayout
 import com.intellij.util.ui.JBUI
+import com.intellij.util.ui.UIUtil
 import org.jetbrains.plugins.terminal.LocalTerminalDirectRunner
 import java.awt.BorderLayout
 import java.awt.Dimension
+import java.awt.FlowLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import javax.swing.Box
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JLabel
@@ -38,7 +41,9 @@ class TerminalSketchProvider : LanguageSketchProvider {
             var terminalWidget: JBTerminalWidget? = null
             var panelLayout: JPanel? = null
 
-            private var titleLabel = JLabel("Terminal")
+            private var titlePanel = JPanel(HorizontalLayout(JBUI.scale(10))).also {
+                it.background = UIUtil.getPanelBackground()
+            }
 
             init {
                 val projectDir = project.guessProjectDir()?.path
@@ -49,10 +54,29 @@ class TerminalSketchProvider : LanguageSketchProvider {
 
                 panelLayout = object : JPanel(BorderLayout()) {
                     init {
-                        add(titleLabel.also {
-                            it.border = JBUI.Borders.empty(5, 0)
-                        }, BorderLayout.NORTH)
+                        titlePanel.layout = FlowLayout(FlowLayout.LEFT)
 
+                        border = JBUI.Borders.customLine(UIUtil.getFocusedBorderColor(), 0, 0, 1, 0)
+
+                        val titleLabel = JLabel("Terminal").apply {
+                            border = JBUI.Borders.empty(5, 0)
+                        }
+
+                        val clearPanel = JPanel(FlowLayout(FlowLayout.RIGHT)).apply {
+                            add(JButton("Clear").apply {
+                                addMouseListener(object : MouseAdapter() {
+                                    override fun mouseClicked(e: MouseEvent?) {
+                                        terminalWidget?.terminalStarter?.sendString("clear\n", false)
+                                    }
+                                })
+                            })
+                        }
+
+                        titlePanel.add(titleLabel)
+                        titlePanel.add(Box.createHorizontalGlue()) // 推动按钮到右侧
+                        titlePanel.add(clearPanel)
+
+                        add(titlePanel, BorderLayout.NORTH)
                         add(terminalWidget!!.component, BorderLayout.CENTER)
 
                         val buttonPanel = JPanel(HorizontalLayout(JBUI.scale(10)))
@@ -126,7 +150,6 @@ class TerminalSketchProvider : LanguageSketchProvider {
             }
 
             override fun doneUpdateText(allText: String) {
-                titleLabel.text = "Terminal - " + allText.substring(0, 10)
                 ApplicationManager.getApplication().invokeLater {
                     Thread.sleep(2000) // todo: change to when terminal ready
                     terminalWidget!!.terminalStarter?.sendString(content, false)
