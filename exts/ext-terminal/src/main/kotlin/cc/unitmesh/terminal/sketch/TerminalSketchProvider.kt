@@ -5,6 +5,10 @@ import cc.unitmesh.devti.sketch.SketchToolWindow
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import com.intellij.lang.Language
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
@@ -15,6 +19,7 @@ import com.intellij.openapi.ui.popup.util.MinimizeButton
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.terminal.JBTerminalWidget
 import com.intellij.ui.components.panels.HorizontalLayout
+import com.intellij.ui.components.panels.Wrapper
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import org.jetbrains.plugins.terminal.LocalTerminalDirectRunner
@@ -23,11 +28,7 @@ import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.Box
-import javax.swing.JButton
-import javax.swing.JComponent
-import javax.swing.JLabel
-import javax.swing.JPanel
+import javax.swing.*
 
 /**
  * TerminalSketch provide a support for `bash` and `shell` language in terminal.
@@ -41,9 +42,19 @@ class TerminalSketchProvider : LanguageSketchProvider {
             var terminalWidget: JBTerminalWidget? = null
             var panelLayout: JPanel? = null
 
-            private var titlePanel = JPanel(HorizontalLayout(JBUI.scale(10))).also {
-                it.background = UIUtil.getPanelBackground()
+            val actionGroup = DefaultActionGroup(createConsoleActions())
+            val toolbar = ActionManager.getInstance().createActionToolbar("BuildConsole", actionGroup, false)
+
+            val titleLabel = JLabel("Terminal").apply {
+                border = JBUI.Borders.empty(0, 10)
             }
+
+            val toolbarPanel = JPanel(BorderLayout()).apply {
+                add(titleLabel, BorderLayout.WEST)
+                add(toolbar.component, BorderLayout.EAST)
+            }
+
+            private var toolbarWrapper = Wrapper(JBUI.Panels.simplePanel(toolbarPanel))
 
             init {
                 val projectDir = project.guessProjectDir()?.path
@@ -54,29 +65,9 @@ class TerminalSketchProvider : LanguageSketchProvider {
 
                 panelLayout = object : JPanel(BorderLayout()) {
                     init {
-                        titlePanel.layout = FlowLayout(FlowLayout.LEFT)
-
                         border = JBUI.Borders.customLine(UIUtil.getFocusedBorderColor(), 0, 0, 1, 0)
 
-                        val titleLabel = JLabel("Terminal").apply {
-                            border = JBUI.Borders.empty(5, 0)
-                        }
-
-                        val clearPanel = JPanel(FlowLayout(FlowLayout.RIGHT)).apply {
-                            add(JButton("Clear").apply {
-                                addMouseListener(object : MouseAdapter() {
-                                    override fun mouseClicked(e: MouseEvent?) {
-                                        terminalWidget?.terminalStarter?.sendString("clear\n", false)
-                                    }
-                                })
-                            })
-                        }
-
-                        titlePanel.add(titleLabel)
-                        titlePanel.add(Box.createHorizontalGlue()) // 推动按钮到右侧
-                        titlePanel.add(clearPanel)
-
-                        add(titlePanel, BorderLayout.NORTH)
+                        add(toolbarWrapper, BorderLayout.NORTH)
                         add(terminalWidget!!.component, BorderLayout.CENTER)
 
                         val buttonPanel = JPanel(HorizontalLayout(JBUI.scale(10)))
@@ -109,6 +100,14 @@ class TerminalSketchProvider : LanguageSketchProvider {
                 )
             }
 
+            fun createConsoleActions(): List<AnAction> {
+                val clearAction = object : AnAction("Clear", "Clear Terminal", null) {
+                    override fun actionPerformed(p0: AnActionEvent) {
+                        terminalWidget?.terminalStarter?.sendString("clear\n", false)
+                    }
+                }
+                return listOf(clearAction)
+            }
 
             private fun executePopup(terminalWidget: JBTerminalWidget?, project: Project): MouseAdapter =
                 object : MouseAdapter() {
@@ -125,7 +124,6 @@ class TerminalSketchProvider : LanguageSketchProvider {
                                 popup?.cancel()
                                 panelLayout!!.remove(terminalWidget.component)
                                 panelLayout!!.add(terminalWidget.component)
-
                                 panelLayout!!.revalidate()
                                 panelLayout!!.repaint()
                                 true
