@@ -345,7 +345,7 @@
 
         <group id="AutoDev.ToolWindow.Chat.TitleActions">
             <action id="AutoDev.ToolWindow.NewChatAction" class="cc.unitmesh.devti.gui.toolbar.NewChatAction"/>
-            <action id="AutoDev.ToolWindow.NewSketchAction" class="cc.unitmesh.devti.gui.toolbar.NewSketchAction"/>
+<!--            <action id="AutoDev.ToolWindow.NewSketchAction" class="cc.unitmesh.devti.gui.toolbar.NewSketchAction"/>-->
         </group>
 
         <group id="AutoDev.ToolWindow.Message.Toolbar.Assistant">

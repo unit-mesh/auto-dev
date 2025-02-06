@@ -2,9 +2,12 @@ package cc.unitmesh.devti.sketch
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.alignRight
+import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
+import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
+import cc.unitmesh.devti.gui.toolbar.NewSketchAction
 import cc.unitmesh.devti.inline.AutoDevInlineChatService
 import cc.unitmesh.devti.inline.fullHeight
 import cc.unitmesh.devti.inline.fullWidth
@@ -25,6 +28,7 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
+import com.intellij.ui.dsl.builder.actionButton
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
@@ -72,6 +76,8 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
                         AutoSketchMode.getInstance(project).isEnable = this.component.isSelected
                     }
                 }
+
+                actionButton(NewSketchAction()).alignRight()
             }
         }
         row { cell(userPrompt).fullWidth().fullHeight() }

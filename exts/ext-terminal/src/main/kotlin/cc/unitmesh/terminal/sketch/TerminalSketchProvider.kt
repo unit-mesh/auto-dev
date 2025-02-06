@@ -21,6 +21,7 @@ import com.intellij.openapi.ui.popup.util.MinimizeButton
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.terminal.JBTerminalWidget
 import com.intellij.ui.components.panels.HorizontalLayout
+import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.components.panels.Wrapper
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
@@ -72,10 +73,10 @@ class TerminalSketchProvider : LanguageSketchProvider {
                     it.preferredSize = Dimension(it.preferredSize.width, 120)
                 }
 
-                mainPanel = object : JPanel(BorderLayout()) {
+                mainPanel = object : JPanel(VerticalLayout(JBUI.scale(0))) {
                     init {
-                        add(toolbarWrapper, BorderLayout.NORTH)
-                        add(terminalWidget!!.component, BorderLayout.CENTER)
+                        add(toolbarWrapper)
+                        add(terminalWidget!!.component)
 
                         val sendButton = JButton("Send").apply {
                             addMouseListener(object : MouseAdapter() {
@@ -97,7 +98,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
 
                         buttonPanel.add(sendButton)
                         buttonPanel.add(popupButton)
-                        add(buttonPanel, BorderLayout.SOUTH)
+                        add(buttonPanel)
                     }
                 }
 
@@ -159,6 +160,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
 
                         ApplicationManager.getApplication().invokeLater {
                             terminalWidget!!.terminalStarter?.sendString(content, false)
+                            terminalWidget!!.revalidate()
                             terminalWidget!!.repaint()
                         }
 
@@ -194,7 +196,6 @@ class FrontendWebViewServerFilter(val project: Project, val mainPanel: JPanel) :
             val matchResult = regex.find(line)
             if (matchResult != null) {
                 val url = matchResult.groupValues[1]
-                AutoDevNotifications.notify(project, "Local server started at $url")
                 val webViewWindow = WebViewWindow().apply {
                     loadURL(url)
                 }
@@ -204,6 +205,8 @@ class FrontendWebViewServerFilter(val project: Project, val mainPanel: JPanel) :
                 }
 
                 mainPanel.add(additionalPanel, BorderLayout.SOUTH)
+                mainPanel.revalidate()
+                mainPanel.repaint()
             }
         }
 
