@@ -1,6 +1,5 @@
 package cc.unitmesh.python
 
-import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
