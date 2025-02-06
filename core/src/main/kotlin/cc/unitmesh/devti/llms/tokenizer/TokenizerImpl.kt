@@ -11,15 +11,20 @@ import com.knuddels.jtokkit.api.IntArrayList
 @Service(Service.Level.APP)
 class TokenizerImpl : Tokenizer {
     private val maxTokenLength: Int = 16384
-    private var registry: EncodingRegistry? = Encodings.newDefaultEncodingRegistry()
-    private var encoding: Encoding = registry?.getEncoding(EncodingType.CL100K_BASE)!!
+    private var registry: EncodingRegistry? = try {
+        Encodings.newDefaultEncodingRegistry()
+    } catch (e: Exception) {
+        null
+    }
+
+    private var encoding: Encoding? = registry?.getEncoding(EncodingType.CL100K_BASE)
 
     override fun getMaxLength(): Int = maxTokenLength
 
-    override fun count(string: String): Int = encoding.countTokens(string)
+    override fun count(string: String): Int = encoding?.countTokens(string) ?: 0
 
     override fun tokenize(chunk: String): IntArrayList? {
-        return encoding.encode(chunk, maxTokenLength).tokens
+        return encoding?.encode(chunk, maxTokenLength)?.tokens
     }
 }
 
