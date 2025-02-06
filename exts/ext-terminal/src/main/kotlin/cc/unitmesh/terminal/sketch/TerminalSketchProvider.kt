@@ -1,6 +1,7 @@
 package cc.unitmesh.terminal.sketch
 
 import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.agent.view.WebViewWindow
 import cc.unitmesh.devti.sketch.SketchToolWindow
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
@@ -43,11 +44,13 @@ class TerminalSketchProvider : LanguageSketchProvider {
         var content = content
         return object : ExtensionLangSketch {
             var terminalWidget: JBTerminalWidget? = null
-            var panelLayout: JPanel? = null
+            var mainPanel: JPanel? = null
+
+            var additionalPanel: JPanel? = null
 
             val actionGroup = DefaultActionGroup(createConsoleActions())
             val toolbar = ActionManager.getInstance().createActionToolbar("TerminalSketch", actionGroup, false).apply {
-                targetComponent = panelLayout
+                targetComponent = mainPanel
             }
 
             val titleLabel = JLabel("Terminal").apply {
@@ -71,13 +74,26 @@ class TerminalSketchProvider : LanguageSketchProvider {
                 }
 
                 terminalWidget!!.addMessageFilter(object : Filter {
+                    var isAlreadyStart = false
                     override fun applyFilter(line: String, entireLength: Int): Filter.Result? {
+                        if (isAlreadyStart) return null
+
                         if (line.contains("Local:")) {
                             val regex = """Local:\s+(http://localhost:\d+)""".toRegex()
                             val matchResult = regex.find(line)
                             if (matchResult != null) {
                                 val url = matchResult.groupValues[1]
                                 AutoDevNotifications.notify(project, "Local server started at $url")
+                                /// add webview to show the local server
+                                val webViewWindow = WebViewWindow().apply {
+                                    loadURL(url)
+                                }
+
+                                additionalPanel = JPanel(BorderLayout()).apply {
+                                    add(webViewWindow.component, BorderLayout.CENTER)
+                                }
+
+                                mainPanel!!.add(additionalPanel!!, BorderLayout.SOUTH)
                             }
                         }
 
@@ -85,7 +101,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
                     }
                 })
 
-                panelLayout = object : JPanel(BorderLayout()) {
+                mainPanel = object : JPanel(BorderLayout()) {
                     init {
                         add(toolbarWrapper, BorderLayout.NORTH)
                         add(terminalWidget!!.component, BorderLayout.CENTER)
@@ -139,10 +155,10 @@ class TerminalSketchProvider : LanguageSketchProvider {
                             .setCancelButton(MinimizeButton("Hide"))
                             .setCancelCallback {
                                 popup?.cancel()
-                                panelLayout!!.remove(terminalWidget.component)
-                                panelLayout!!.add(terminalWidget.component)
-                                panelLayout!!.revalidate()
-                                panelLayout!!.repaint()
+                                mainPanel!!.remove(terminalWidget.component)
+                                mainPanel!!.add(terminalWidget.component)
+                                mainPanel!!.revalidate()
+                                mainPanel!!.repaint()
                                 true
                             }
                             .setFocusable(true)
@@ -180,7 +196,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
                 })
             }
 
-            override fun getComponent(): JComponent = panelLayout!!
+            override fun getComponent(): JComponent = mainPanel!!
 
             override fun updateLanguage(language: Language?, originLanguage: String?) {}
 
