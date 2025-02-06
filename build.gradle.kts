@@ -446,7 +446,7 @@ project(":core") {
         implementation("org.apache.velocity:velocity-engine-core:2.4.1")
 
         // token count
-        implementation("com.knuddels:jtokkit:1.0.0")
+        implementation("com.knuddels:jtokkit:1.1.0")
 
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     }
