@@ -16,10 +16,7 @@ import com.intellij.psi.search.ProjectScope
 
 // https://github.com/JetBrains/intellij-community/blob/master/platform/projectModel-impl/src/com/intellij/openapi/roots/impl/ProjectFileIndexImpl.java#L32
 fun isInProject(virtualFile: VirtualFile, project: Project): Boolean {
-    if (ProjectFileIndex.getInstance(project).isInContent(virtualFile)) {
-        return true
-    }
-    return false
+    return ProjectFileIndex.getInstance(project).isInContent(virtualFile)
 }
 
 fun Project.isInProject(virtualFile: VirtualFile): Boolean {
