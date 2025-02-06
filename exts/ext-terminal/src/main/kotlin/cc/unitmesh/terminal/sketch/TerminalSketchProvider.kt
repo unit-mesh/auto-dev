@@ -13,6 +13,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.ui.popup.JBPopup
@@ -207,6 +208,8 @@ class FrontendWebViewServerFilter(val project: Project, val mainPanel: JPanel) :
                 mainPanel.add(additionalPanel, BorderLayout.SOUTH)
                 mainPanel.revalidate()
                 mainPanel.repaint()
+
+                isAlreadyStart = true
             }
         }
 

@@ -41,7 +41,7 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
 
             if (hasSketch == null) {
                 val sketchView = SketchToolWindow(project, null, true)
-                val sketchPanel = contentFactory.createContent(sketchView, "Sketch", false)
+                val sketchPanel = contentFactory.createContent(sketchView, "Sketch", true)
                 toolWindow.contentManager.addContent(sketchPanel)
             }
         }
@@ -49,7 +49,7 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
 
     fun createSketchToolWindow(project: Project, toolWindow: ToolWindow) {
         val sketchView = SketchToolWindow(project, null, true)
-        val sketchPanel = contentFactory.createContent(sketchView, "Sketch", false)
+        val sketchPanel = contentFactory.createContent(sketchView, "Sketch", true)
         toolWindow.contentManager.addContent(sketchPanel)
     }
 

@@ -18,6 +18,10 @@ import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.ActionToolbar
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileTypes.PlainTextLanguage
@@ -28,11 +32,12 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
-import com.intellij.ui.dsl.builder.actionButton
+import com.intellij.ui.dsl.builder.Cell
+import com.intellij.ui.dsl.builder.Row
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
+import org.jetbrains.annotations.NonNls
 import java.awt.BorderLayout
-import java.awt.Dimension
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 import java.awt.event.KeyAdapter
@@ -42,8 +47,7 @@ import java.awt.event.MouseEvent
 import javax.swing.*
 
 class SketchToolWindow(val project: Project, val editor: Editor?, private val showInput: Boolean = false) :
-    SimpleToolWindowPanel(true, true),
-    NullableComponent, Disposable {
+    SimpleToolWindowPanel(true, true), NullableComponent, Disposable {
     private val chatCodingService = ChatCodingService(ChatActionType.SKETCH, project)
     private var progressBar: CustomProgressBar = CustomProgressBar(this)
     private var shireInput: AutoDevInputSection = AutoDevInputSection(project, this, showAgent = false)
@@ -69,17 +73,6 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
     }
 
     private var panelContent: DialogPanel = panel {
-        if (showInput) {
-            row {
-                checkBox(AutoDevBundle.message("sketch.composer.mode")).apply {
-                    this.component.addActionListener {
-                        AutoSketchMode.getInstance(project).isEnable = this.component.isSelected
-                    }
-                }
-
-                actionButton(NewSketchAction()).alignRight()
-            }
-        }
         row { cell(userPrompt).fullWidth().fullHeight() }
         row {
             cell(header).alignRight()
@@ -105,6 +98,21 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
     private val listener = SketchInputListener(project, chatCodingService, this)
 
     init {
+        if (showInput) {
+            val header = panel {
+                row {
+                    checkBox(AutoDevBundle.message("sketch.composer.mode")).apply {
+                        this.component.addActionListener {
+                            AutoSketchMode.getInstance(project).isEnable = this.component.isSelected
+                        }
+                    }
+
+                    actionButton(NewSketchAction()).alignRight()
+                }
+            }
+
+            contentPanel.add(header, BorderLayout.NORTH)
+        }
         contentPanel.add(scrollPanel, BorderLayout.CENTER)
         contentPanel.addKeyListener(object : KeyAdapter() {
             override fun keyPressed(e: KeyEvent) {
@@ -318,4 +326,9 @@ class CustomProgressBar(private val view: SketchToolWindow) : JPanel(BorderLayou
         progressBar.isVisible = visible
         cancelLabel.isVisible = visible
     }
+}
+
+fun Row.actionButton(action: AnAction, @NonNls actionPlace: String = ActionPlaces.UNKNOWN): Cell<ActionButton> {
+    val component = ActionButton(action, action.templatePresentation.clone(), actionPlace, ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE)
+    return cell(component)
 }
