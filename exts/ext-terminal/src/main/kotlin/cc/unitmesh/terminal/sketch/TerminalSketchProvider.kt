@@ -2,15 +2,8 @@ package cc.unitmesh.terminal.sketch
 
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.sketch.SketchToolWindow
-import cc.unitmesh.devti.sketch.run.ShellUtil
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
-import com.intellij.execution.configurations.GeneralCommandLine
-import com.intellij.execution.configurations.PtyCommandLine
-import com.intellij.execution.process.KillableProcessHandler
-import com.intellij.execution.process.ProcessAdapter
-import com.intellij.execution.process.ProcessEvent
-import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -20,7 +13,6 @@ import com.intellij.openapi.ui.popup.JBPopup
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.util.MinimizeButton
 import com.intellij.openapi.wm.ToolWindowManager
-import com.intellij.sh.run.ShRunner
 import com.intellij.terminal.JBTerminalWidget
 import com.intellij.ui.components.panels.HorizontalLayout
 import com.intellij.util.ui.JBUI
@@ -34,8 +26,10 @@ import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 
-
-class TerminalLangSketchProvider : LanguageSketchProvider {
+/**
+ * TerminalSketch provide a support for `bash` and `shell` language in terminal.
+ */
+class TerminalSketchProvider : LanguageSketchProvider {
     override fun isSupported(lang: String): Boolean = lang == "bash" || lang == "shell"
 
     override fun create(project: Project, content: String): ExtensionLangSketch {

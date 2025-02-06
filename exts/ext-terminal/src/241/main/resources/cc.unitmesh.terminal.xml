@@ -25,6 +25,6 @@
     </actions>
 
     <extensions defaultExtensionNs="cc.unitmesh">
-        <langSketchProvider implementation="cc.unitmesh.terminal.sketch.TerminalLangSketchProvider"/>
+        <langSketchProvider implementation="cc.unitmesh.terminal.sketch.TerminalSketchProvider"/>
     </extensions>
 </idea-plugin>
