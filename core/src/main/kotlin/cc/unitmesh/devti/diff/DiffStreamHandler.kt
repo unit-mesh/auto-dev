@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import java.awt.EventQueue.invokeLater
 import kotlin.math.min
 
 
@@ -119,40 +120,18 @@ class DiffStreamHandler(
         resetState()
     }
 
-    fun streamDiffLinesToEditor(originContent: String, prompt: String) {
-        val lines = originContent.lines()
-
+    fun streamDiffLinesToEditor(originContent: String, prompt: String, editor: Editor) {
         isRunning = true
         val flow: Flow<String> = LlmFactory.create(project).stream(prompt, "", false)
-        var lastLineNo = 0
         AutoDevCoroutineScope.scope(project).launch {
             val suggestion = StringBuilder()
             flow.cancellable().collect { char ->
                 suggestion.append(char)
                 val code = CodeFence.parse(suggestion.toString())
-                var value: List<String> = code.text.lines()
-                if (value.isEmpty()) return@collect
-
-                val newLines = if (lastLineNo < value.size) {
-                    value.subList(lastLineNo, value.size)
-                } else {
-                    listOf()
-                }
-
-                if (newLines.isEmpty()) return@collect
-
-                val flowValue: Flow<String> = flowOf(*newLines.toTypedArray())
-                val oldLinesContent = if (lastLineNo + newLines.size <= lines.size) {
-                    lines.subList(lastLineNo, lastLineNo + newLines.size)
-                } else {
-                    listOf()
-                }
-                lastLineNo = value.size
-
-                streamDiff(oldLinesContent, flowValue).collect {
-                    ApplicationManager.getApplication().invokeLater {
-                        WriteCommandAction.runWriteCommandAction(project) {
-                            updateByDiffType(it)
+                if (code.text.isNotEmpty()) {
+                    invokeLater {
+                        runWriteAction {
+                            editor.document.setText(code.text)
                         }
                     }
                 }
@@ -160,6 +139,7 @@ class DiffStreamHandler(
 
             val code = CodeFence.parse(suggestion.toString())
             newCode = code.text
+            normalDiff(originContent, code.text)
             handleFinishedResponse(code.text)
         }
     }

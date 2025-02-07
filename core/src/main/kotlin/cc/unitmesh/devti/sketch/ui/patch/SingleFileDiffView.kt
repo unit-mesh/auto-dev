@@ -228,7 +228,7 @@ fun applyDiffRepairSuggestion(project: Project, editor: Editor, oldCode: String,
     templateRender.context = DiffRepairContext(oldCode, patchedCode)
     val prompt = templateRender.renderTemplate(template)
 
-    diffStreamHandler.streamDiffLinesToEditor(oldCode, prompt)
+    diffStreamHandler.streamDiffLinesToEditor(oldCode, prompt, editor)
 }
 
 data class DiffRepairContext(
