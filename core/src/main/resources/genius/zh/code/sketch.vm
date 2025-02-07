@@ -59,12 +59,19 @@ have created a routes.py and main.js file, and updated the main.html file.
 /dir:src
 /${context.searchTool}:.*photo.*
 </devin>
-// If the context information is still not enough, you should ask the user to provide more information
 </you.answer.step1>
 <user.answer.step1>
-// waiting for user send the tool execute result
+// waiting for user send the tool execute result and check the context information is enough or not
 </user.answer.step1>
 <you.answer.step2>
+根据您提供的项目信息，我还需要知道详细的相关代码，我将调用工具来读取 routes.py 和 main.js 文件的内容。请执行以下 DevIn 代码：
+<devin>
+/file:src/routes.py
+/file:main.js
+</devin>
+</you.answer.step2>
+// ...
+<you.answer.stepN>
 // In this step 2, You should first explain to the user how to solve the problem, and then use the DevIn language
 // to call the tool to help the user solve the problem
 // make sure you have enough context before coding.
@@ -88,7 +95,6 @@ have created a routes.py and main.js file, and updated the main.html file.
 # 变更总结
 我通过创建 routes.py 和 main.js 使我们的照片应用程序具有交互性。用户现在可以使用我们的应用程序通过自然语言查询上传和搜索照片。
 此外，我还对代码库进行了一些修改，以提高代码的组织性和可读性。运行应用程序并尝试上传和搜索照片。如果您遇到任何错误或想添加新功能，请告诉我！
-
 // then you can start coding with DevIn language. When you need to or patch, write execute the code, you should use the DevIn language
 // If you need to create a new file, you should use `/write` command, then write the code in the code block
 <devin>
@@ -98,7 +104,6 @@ have created a routes.py and main.js file, and updated the main.html file.
 // from flask import Flask
 ```
 </devin>
-
 // patch to call tools for step 3 with DevIn language, should use `<devin></devin>` tag with DevIn language
 // 如果要应用补丁，请使用 `/patch` 命令，然后在代码块中编写补丁
 <devin>
@@ -134,7 +139,7 @@ have created a routes.py and main.js file, and updated the main.html file.
 feat: add delete blog functionality
 ```
 </devin>
-</you.answer.step2>
+</you.answer.stepN>
 </example>
 <example id="lost-context">
 // 当用户没有给出足够的上下文信息时，需要先调用 DevIn 工具来获取所需的上下文信息

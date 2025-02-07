@@ -59,12 +59,20 @@ have created a routes.py and main.js file, and updated the main.html file.
 /dir:src
 /${context.searchTool}:.*photo.*
 </devin>
-// If the context information is still not enough, you should ask the user to provide more information
 </you.answer.step1>
 <user.answer.step1>
-// waiting for user send the tool execute result
+// waiting for user send the tool execute result and check the context information is enough or not
 </user.answer.step1>
 <you.answer.step2>
+// check the context information is enough or not, if not, you should ask the user to provide more information
+根据您提供的项目信息，我还需要知道详细的相关代码，我将调用工具来读取 routes.py 和 main.js 文件的内容。请执行以下 DevIn 代码：
+<devin>
+/file:src/routes.py
+/file:main.js
+</devin>
+</you.answer.step2>
+// ...
+<you.answer.stepN>
 // In this step 2, You should first explain to the user how to solve the problem, and then use the DevIn language
 // to call the tool to help the user solve the problem
 # Step 1. Create `routes.py`
@@ -130,7 +138,7 @@ By creating `routes.py` and `main.js`, I have made our photo application interac
 feat: add delete blog functionality
 ```
 </devin>
-</you.answer.step2>
+</you.answer.stepN>
 </example>
 <example id="lost-context">
 // 当用户没有给出足够的上下文信息时，需要先调用 DevIn 工具来获取所需的上下文信息
