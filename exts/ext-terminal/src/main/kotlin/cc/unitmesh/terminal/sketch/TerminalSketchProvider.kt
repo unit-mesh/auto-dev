@@ -1,5 +1,6 @@
 package cc.unitmesh.terminal.sketch
 
+import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.agent.view.WebViewWindow
 import cc.unitmesh.devti.sketch.SketchToolWindow
@@ -24,17 +25,21 @@ import com.intellij.terminal.JBTerminalWidget
 import com.intellij.ui.components.panels.HorizontalLayout
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.components.panels.Wrapper
+import com.intellij.ui.scale.JBUIScale.scale
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import org.jetbrains.plugins.terminal.LocalTerminalDirectRunner
 import java.awt.BorderLayout
 import java.awt.Dimension
+import java.awt.FlowLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import javax.swing.Icon
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
+import javax.swing.SwingConstants
 
 /**
  * TerminalSketch provide a support for `bash` and `shell` language in terminal.
@@ -79,7 +84,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
                         add(toolbarWrapper)
                         add(terminalWidget!!.component)
 
-                        val sendButton = JButton("Send").apply {
+                        val sendButton = JButton(AutoDevIcons.Send).apply {
                             addMouseListener(object : MouseAdapter() {
                                 override fun mouseClicked(e: MouseEvent?) {
                                     try {
@@ -93,16 +98,20 @@ class TerminalSketchProvider : LanguageSketchProvider {
                             })
                         }
 
-                        val popupButton = JButton("Pop up Terminal").apply {
+                        val popupButton = JButton("Popup").apply {
+                            icon = AllIcons.Ide.External_link_arrow
+                            iconTextGap = scale(1)
+                            horizontalTextPosition = SwingConstants.LEADING
                             addMouseListener(executePopup(terminalWidget, project))
                         }
 
+                        val buttonPanel = JPanel(FlowLayout(FlowLayout.RIGHT))
                         buttonPanel.add(sendButton)
                         buttonPanel.add(popupButton)
+
                         add(buttonPanel)
                     }
                 }
-
                 terminalWidget!!.addMessageFilter(FrontendWebViewServerFilter(project, mainPanel!!))
             }
 
