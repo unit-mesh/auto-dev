@@ -24,7 +24,7 @@ fun Panel.testLLMConnection() {
             scope.launch {
                 try {
                     val llmProvider2 = LLMProvider2()
-                    val response = llmProvider2.request(Message(LlmMsg.ChatRole.User.toString(),"hi."))
+                    val response = llmProvider2.request(Message("user","hi."))
                     response.collectLatest {
                         result.text = it.chatMessage.content
                     }
