@@ -27,12 +27,6 @@ import okhttp3.sse.EventSources
 import java.time.Duration
 
 /**
- * default session postfix
- * will be incremented for each new session
- */
-private var sessionId = 0;
-
-/**
  * LLMProvider provide only session-free interfaces
  *
  * It's LLMProvider's responsibility to maintain the network connection
@@ -88,7 +82,6 @@ abstract class LLMProvider2 protected constructor(
      *
      * return a job that can be used to cancel the request
      */
-    @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun request(
         text: Message,
         stream: Boolean = true,
@@ -128,7 +121,7 @@ abstract class LLMProvider2 protected constructor(
         operator fun invoke(autoDevSettingsState: AutoDevSettingsState = AutoDevSettingsState.getInstance()): LLMProvider2 =
             LLMProvider2(
                 requestUrl = autoDevSettingsState.customEngineServer,
-                authorizationKey = autoDevSettingsState.openAiKey,
+                authorizationKey = autoDevSettingsState.customEngineToken,
                 responseResolver = autoDevSettingsState.customEngineResponseFormat,
                 requestCostomize = autoDevSettingsState.customEngineRequestFormat,
             )
@@ -172,7 +165,6 @@ private class DefaultLLMTextProvider(
     project: Project? = null,
 ) : LLMProvider2(project) {
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     override fun textComplete(session: ChatSession<Message>, stream: Boolean): Flow<SessionMessageItem<Message>> {
         val client = httpClient.newBuilder().readTimeout(Duration.ofSeconds(30)).build()
         val requestBuilder = Request.Builder().apply {
@@ -220,7 +212,7 @@ private class DefaultLLMTextProvider(
         }
     }
 
-    private suspend fun sseStream(
+    private fun sseStream(
         client: OkHttpClient,
         request: Request,
         onEvent: (SessionMessageItem<Message>) -> Unit,
