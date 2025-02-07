@@ -12,6 +12,7 @@ import org.cef.browser.CefFrame
 import org.cef.handler.CefLoadHandlerAdapter
 import java.awt.BorderLayout
 import java.awt.Component
+import java.awt.Cursor
 import java.awt.Desktop
 import java.awt.Dimension
 import java.awt.FlowLayout
@@ -32,8 +33,18 @@ class WebViewWindow {
     private val myViewerStateJSQuery: JBCefJSQuery = JBCefJSQuery.create(myBrowser as JBCefBrowserBase)
 
     private val urlField = JTextField()
-    private val refreshButton = JButton(AllIcons.Actions.Refresh)
-    private val openDefaultBrowserButton = JButton(AllIcons.Xml.Browsers.Chrome)
+
+    private val refreshButton = JButton(AllIcons.Actions.Refresh).apply {
+        isBorderPainted = false
+        isContentAreaFilled = false
+        cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+    }
+
+    private val openDefaultBrowserButton = JButton(AllIcons.Xml.Browsers.Chrome).apply {
+        isBorderPainted = false
+        isContentAreaFilled = false
+        cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+    }
 
     init {
         myBrowser.component.background = JBColor.WHITE

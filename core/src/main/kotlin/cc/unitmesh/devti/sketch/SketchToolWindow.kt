@@ -113,6 +113,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
 
             contentPanel.add(header, BorderLayout.NORTH)
         }
+
         contentPanel.add(scrollPanel, BorderLayout.CENTER)
         contentPanel.addKeyListener(object : KeyAdapter() {
             override fun keyPressed(e: KeyEvent) {
