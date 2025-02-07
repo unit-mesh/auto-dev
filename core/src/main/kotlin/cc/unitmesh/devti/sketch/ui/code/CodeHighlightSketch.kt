@@ -19,7 +19,6 @@ import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileTypes.PlainTextLanguage
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.JBColor
@@ -31,7 +30,6 @@ import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.util.ui.JBEmptyBorder
 import java.awt.BorderLayout
-import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.JComponent
 
 open class CodeHighlightSketch(
@@ -62,7 +60,6 @@ open class CodeHighlightSketch(
 
         border = JBEmptyBorder(8)
         layout = BorderLayout(JBUI.scale(8), 0)
-//        background = JBColor(0xEAEEF7, 0x2d2f30)
 
         editor.component.isOpaque = true
 
@@ -201,10 +198,6 @@ open class CodeHighlightSketch(
                 EditorFactory.getInstance().createViewer(document, project, EditorKind.PREVIEW) as EditorEx
             }
 
-            disposable.whenDisposed(disposable) {
-                EditorFactory.getInstance().releaseEditor(editor)
-            }
-
             editor.setFile(file)
             editor.setCaretEnabled(true)
 
@@ -260,29 +253,4 @@ fun VirtualFile.findDocument(): Document? {
     return ReadAction.compute<Document, Throwable> {
         FileDocumentManager.getInstance().getDocument(this)
     }
-}
-
-fun Disposable.whenDisposed(listener: () -> Unit) {
-    Disposer.register(this) { listener() }
-}
-
-fun Disposable.whenDisposed(
-    parentDisposable: Disposable,
-    listener: () -> Unit,
-) {
-    val isDisposed = AtomicBoolean(false)
-
-    val disposable = Disposable {
-        if (isDisposed.compareAndSet(false, true)) {
-            listener()
-        }
-    }
-
-    Disposer.register(this, disposable)
-
-    Disposer.register(parentDisposable, Disposable {
-        if (isDisposed.compareAndSet(false, true)) {
-            Disposer.dispose(disposable)
-        }
-    })
 }

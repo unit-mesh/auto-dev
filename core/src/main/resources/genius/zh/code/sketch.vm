@@ -56,17 +56,18 @@ have created a routes.py and main.js file, and updated the main.html file.
 // For example:
 为了帮助您创建基于 Python 的照片存储应用程序，我需要了解更多关于您的代码库的信息。请允许我调用工具来获取上下文信息。请执行以下 DevIn 代码：
 <devin>
-/dir:src
+/dir:src // 获取项目文件夹信息和目录结构
 /${context.searchTool}:.*photo.*
+/database:schema // 当我们知道用户使用了数据库时
 </devin>
 </you.answer.step1>
 <user.answer.step1>
 // waiting for user send the tool execute result and check the context information is enough or not
 </user.answer.step1>
 <you.answer.step2>
-根据您提供的项目信息，我还需要知道详细的相关代码，我将调用工具来读取 routes.py 和 main.js 文件的内容。请执行以下 DevIn 代码：
+根据您提供的项目文件信息，我还需要知道详细的相关代码，我将调用工具来读取 routes.py 和 main.js 文件的内容。请执行以下 DevIn 代码：
 <devin>
-/file:src/routes.py
+/file:src/routes.py // 需要先通过 dir 命令获取到的目录结构，然后再获取文件内容
 /file:main.js
 </devin>
 </you.answer.step2>
