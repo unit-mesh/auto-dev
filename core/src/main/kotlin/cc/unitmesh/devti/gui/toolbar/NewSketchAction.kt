@@ -61,7 +61,7 @@ class NewSketchAction : AnAction("New Sketch", "Create new Sketch", AllIcons.Gen
             contentManager?.component?.components?.filterIsInstance<SketchToolWindow>()?.firstOrNull()
 
         if (sketchPanel == null) {
-            AutoDevToolWindowFactory().createSketchToolWindow(project, toolWindowManager!!)
+            AutoDevToolWindowFactory.createSketchToolWindow(project, toolWindowManager!!)
         }
 
         sketchPanel?.resetSketchSession()

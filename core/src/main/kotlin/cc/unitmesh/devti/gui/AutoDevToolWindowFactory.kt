@@ -21,8 +21,6 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
         const val id = "AutoDev"
     }
 
-    private val contentFactory = ContentFactory.getInstance()
-
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val chatCodingService = ChatCodingService(ChatActionType.CHAT, project)
         val contentPanel = ChatCodingPanel(chatCodingService, toolWindow.disposable)
@@ -40,17 +38,9 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
                 toolWindow.contentManager.component.components?.filterIsInstance<SketchToolWindow>()?.firstOrNull()
 
             if (hasSketch == null) {
-                val sketchView = SketchToolWindow(project, null, true)
-                val sketchPanel = contentFactory.createContent(sketchView, "Sketch", true)
-                toolWindow.contentManager.addContent(sketchPanel)
+                createSketchToolWindow(project, toolWindow)
             }
         }
-    }
-
-    fun createSketchToolWindow(project: Project, toolWindow: ToolWindow) {
-        val sketchView = SketchToolWindow(project, null, true)
-        val sketchPanel = contentFactory.createContent(sketchView, "Sketch", true)
-        toolWindow.contentManager.addContent(sketchPanel)
     }
 
     /**
@@ -66,12 +56,20 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
 
 
     companion object {
+        private val contentFactory = ContentFactory.getInstance()
+
         fun getToolWindow(project: Project): ToolWindow? {
             return ToolWindowManager.getInstance(project).getToolWindow(Util.id)
         }
 
         fun setInitialDisplayName(content: Content) {
             componentStateChanged("autodev.chat", content, 2) { c, d -> c.displayName = d }
+        }
+
+        fun createSketchToolWindow(project: Project, toolWindow: ToolWindow) {
+            val sketchView = SketchToolWindow(project, null, true)
+            val sketchPanel = contentFactory.createContent(sketchView, "Sketch", true)
+            toolWindow.contentManager.addContent(sketchPanel)
         }
     }
 }

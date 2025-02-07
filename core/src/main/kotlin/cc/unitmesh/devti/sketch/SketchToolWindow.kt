@@ -2,8 +2,6 @@ package cc.unitmesh.devti.sketch
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.alignRight
-import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
-import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
