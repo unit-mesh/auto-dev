@@ -109,8 +109,8 @@ have created a routes.py and main.js file, and updated the main.html file.
 </devin>
 // step 4.1, call tools to create test code and run test code
 <devin>
-/patch:src/test/test_routes.py
-```patch
+/write:src/test/test_routes.py
+```python
 // the test code
 ```
 </devin>

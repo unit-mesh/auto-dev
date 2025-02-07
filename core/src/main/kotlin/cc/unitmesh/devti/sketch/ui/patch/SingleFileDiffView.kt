@@ -2,13 +2,19 @@ package cc.unitmesh.devti.sketch.ui.patch
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.diff.DiffStreamHandler
+import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.template.GENIUS_CODE
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.template.context.TemplateContext
+import cc.unitmesh.devti.util.AutoDevCoroutineScope
+import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.diff.editor.DiffVirtualFileBase
 import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.command.undo.UndoManager
@@ -28,6 +34,9 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.panels.HorizontalLayout
 import com.intellij.ui.components.panels.VerticalLayout
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.launch
 import java.awt.BorderLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -228,7 +237,21 @@ fun applyDiffRepairSuggestion(project: Project, editor: Editor, oldCode: String,
     templateRender.context = DiffRepairContext(oldCode, patchedCode)
     val prompt = templateRender.renderTemplate(template)
 
-    diffStreamHandler.streamDiffLinesToEditor(oldCode, prompt, editor)
+    val flow: Flow<String> = LlmFactory.create(project).stream(prompt, "", false)
+    AutoDevCoroutineScope.scope(project).launch {
+        val suggestion = StringBuilder()
+        flow.cancellable().collect { char ->
+            suggestion.append(char)
+            val code = CodeFence.parse(suggestion.toString())
+            if (code.text.isNotEmpty()) {
+                ApplicationManager.getApplication().invokeLater({
+                    runWriteAction {
+                        editor.document.setText(code.text)
+                    }
+                }, ModalityState.defaultModalityState())
+            }
+        }
+    }
 }
 
 data class DiffRepairContext(
