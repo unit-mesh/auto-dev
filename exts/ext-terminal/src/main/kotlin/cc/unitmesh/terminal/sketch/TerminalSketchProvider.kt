@@ -52,10 +52,8 @@ class TerminalSketchProvider : LanguageSketchProvider {
         return object : ExtensionLangSketch {
             var terminalWidget: JBTerminalWidget? = null
             var mainPanel: JPanel? = null
-            val buttonPanel = JPanel(HorizontalLayout(JBUI.scale(10)))
-
             val actionGroup = DefaultActionGroup(createConsoleActions())
-            val toolbar = ActionManager.getInstance().createActionToolbar("TerminalSketch", actionGroup, false).apply {
+            val toolbar = ActionManager.getInstance().createActionToolbar("TerminalSketch", actionGroup, true).apply {
                 targetComponent = mainPanel
             }
 
@@ -75,6 +73,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
             init {
                 val projectDir = project.guessProjectDir()?.path
                 val terminalRunner = LocalTerminalDirectRunner.createTerminalRunner(project)
+
                 terminalWidget = terminalRunner.createTerminalWidget(this, projectDir, true).also {
                     it.preferredSize = Dimension(it.preferredSize.width, 120)
                 }
@@ -83,33 +82,6 @@ class TerminalSketchProvider : LanguageSketchProvider {
                     init {
                         add(toolbarWrapper)
                         add(terminalWidget!!.component)
-
-                        val sendButton = JButton(AutoDevIcons.Send).apply {
-                            addMouseListener(object : MouseAdapter() {
-                                override fun mouseClicked(e: MouseEvent?) {
-                                    try {
-                                        val output = terminalWidget!!::class.java.getMethod("getText")
-                                            .invoke(terminalWidget) as String
-                                        sendToSketch(project, output)
-                                    } catch (e: Exception) {
-                                        AutoDevNotifications.notify(project, "Failed to send to Sketch")
-                                    }
-                                }
-                            })
-                        }
-
-                        val popupButton = JButton("Popup").apply {
-                            icon = AllIcons.Ide.External_link_arrow
-                            iconTextGap = scale(1)
-                            horizontalTextPosition = SwingConstants.LEADING
-                            addMouseListener(executePopup(terminalWidget, project))
-                        }
-
-                        val buttonPanel = JPanel(FlowLayout(FlowLayout.RIGHT))
-                        buttonPanel.add(sendButton)
-                        buttonPanel.add(popupButton)
-
-                        add(buttonPanel)
                     }
                 }
                 terminalWidget!!.addMessageFilter(FrontendWebViewServerFilter(project, mainPanel!!))
@@ -117,11 +89,32 @@ class TerminalSketchProvider : LanguageSketchProvider {
 
             fun createConsoleActions(): List<AnAction> {
                 val clearAction = object : AnAction("Clear", "Clear Terminal", AllIcons.Actions.GC) {
-                    override fun actionPerformed(p0: AnActionEvent) {
+                    override fun actionPerformed(e: AnActionEvent) {
                         terminalWidget?.terminalStarter?.sendString("clear\n", false)
                     }
                 }
-                return listOf(clearAction)
+
+                val sendAction = object : AnAction("Send to Chat", "Send to Chat", AutoDevIcons.Send) {
+                    override fun actionPerformed(e: AnActionEvent) {
+                        try {
+                            val output = terminalWidget!!::class.java.getMethod("getText")
+                                .invoke(terminalWidget) as String
+                            sendToSketch(project, output)
+                        } catch (e: Exception) {
+                            AutoDevNotifications.notify(project, "Failed to send to Sketch")
+                        }
+                    }
+                }
+
+                val popupAction = object : AnAction("Popup", "Popup terminal", AllIcons.Ide.External_link_arrow) {
+                    override fun displayTextInToolbar(): Boolean = true
+
+                    override fun actionPerformed(e: AnActionEvent) {
+                        executePopup(terminalWidget, project).mouseClicked(null)
+                    }
+                }
+
+                return listOf(clearAction, sendAction, popupAction)
             }
 
             private fun executePopup(terminalWidget: JBTerminalWidget?, project: Project): MouseAdapter =
@@ -168,9 +161,9 @@ class TerminalSketchProvider : LanguageSketchProvider {
                     override fun applyFilter(line: String, entireLength: Int): Filter.Result? {
                         if (isAlreadySent) return null
 
-                        terminalWidget!!.terminalStarter?.sendString(content, false)
-
                         ApplicationManager.getApplication().invokeLater {
+                            Thread.sleep(1000)
+                            terminalWidget!!.terminalStarter?.sendString(content, false)
                             terminalWidget!!.revalidate()
                             terminalWidget!!.repaint()
                         }
