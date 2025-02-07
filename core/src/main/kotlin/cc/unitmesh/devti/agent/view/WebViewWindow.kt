@@ -12,7 +12,6 @@ import org.cef.browser.CefFrame
 import org.cef.handler.CefLoadHandlerAdapter
 import java.awt.BorderLayout
 import java.awt.Component
-import java.awt.Cursor
 import java.awt.Desktop
 import java.awt.Dimension
 import java.awt.FlowLayout
@@ -36,10 +35,16 @@ class WebViewWindow {
 
     private val refreshButton = JButton(AllIcons.Actions.Refresh).apply {
         preferredSize = Dimension(32, 32)
-    }
+        addActionListener {
+            myBrowser.cefBrowser.reload()
+        }
 
+    }
     private val openDefaultBrowserButton = JButton(AllIcons.Xml.Browsers.Chrome).apply {
         preferredSize = Dimension(32, 32)
+        addActionListener {
+            openInSystemBrowser(this@WebViewWindow.urlField.text)
+        }
     }
 
     init {
@@ -58,14 +63,6 @@ class WebViewWindow {
         }
         ourCefClient.addLoadHandler(myLoadHandler, myBrowser.cefBrowser)
 
-        refreshButton.addActionListener {
-            myBrowser.cefBrowser.reload()
-        }
-        openDefaultBrowserButton.addActionListener {
-            openInBrowser(this@WebViewWindow.urlField.text)
-        }
-
-        // Set up the URL field action
         urlField.addActionListener {
             val url = urlField.text
             if (url.isNotEmpty()) {
@@ -73,20 +70,7 @@ class WebViewWindow {
             }
         }
 
-        // Set a minimum width for the URL field
         urlField.preferredSize = Dimension(240, urlField.preferredSize.height)
-    }
-
-    private fun openInBrowser(url: String) {
-        val url = url
-        if (url.isNotEmpty()) {
-            try {
-                val uri = URI(url)
-                Desktop.getDesktop().browse(uri)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
     }
 
     val component: Component
@@ -112,5 +96,15 @@ class WebViewWindow {
 
     fun loadURL(url: String) {
         myBrowser.loadURL(url)
+    }
+
+    private fun openInSystemBrowser(url: String) {
+        if (url.isEmpty()) return
+
+        try {
+            Desktop.getDesktop().browse(URI(url))
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }
