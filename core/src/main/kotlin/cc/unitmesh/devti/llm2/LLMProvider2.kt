@@ -121,7 +121,7 @@ abstract class LLMProvider2 protected constructor(
         operator fun invoke(autoDevSettingsState: AutoDevSettingsState = AutoDevSettingsState.getInstance()): LLMProvider2 =
             LLMProvider2(
                 requestUrl = autoDevSettingsState.customEngineServer,
-                authorizationKey = autoDevSettingsState.openAiKey,
+                authorizationKey = autoDevSettingsState.customEngineToken,
                 responseResolver = autoDevSettingsState.customEngineResponseFormat,
                 requestCostomize = autoDevSettingsState.customEngineRequestFormat,
             )
