@@ -18,8 +18,8 @@ class JavaScriptBuildSystemProvider : BuildSystemProvider() {
         }
 
         var language = "JavaScript"
-        var languageVersion = "ES5"
-        var buildTool = "NPM"
+        var languageVersion = ""
+        var buildTool = "NPM" // default built tool
 
         val packageJson = snapshot.packages["typescript"]
         val tsVersion = packageJson?.parseVersion()
@@ -28,20 +28,35 @@ class JavaScriptBuildSystemProvider : BuildSystemProvider() {
             languageVersion = tsVersion.rawVersion
         }
 
-        // vite
-        if (snapshot.packages.containsKey("vite")) {
-            buildTool = "Vite"
+        // vite, webpack, parcel, rollup
+        when {
+            snapshot.packages.containsKey("vite") -> {
+                buildTool = "Vite"
+            }
+            snapshot.packages.containsKey("webpack") -> {
+                buildTool = "Webpack"
+            }
+            snapshot.packages.containsKey("parcel") -> {
+                buildTool = "Parcel"
+            }
+            snapshot.packages.containsKey("rollup") -> {
+                buildTool = "Rollup"
+            }
         }
 
-        // vue,react,angular,nextjs
-        if (snapshot.packages.containsKey("vue")) {
-            language = "Vue"
-        } else if (snapshot.packages.containsKey("react")) {
-            language = "React"
-        } else if (snapshot.packages.containsKey("angular")) {
-            language = "Angular"
-        } else if (snapshot.packages.containsKey("next")) {
-            language = "Next.js"
+        when {
+            snapshot.packages.containsKey("vue") -> {
+                language = "Vue"
+            }
+            snapshot.packages.containsKey("react") -> {
+                language = "React"
+            }
+            snapshot.packages.containsKey("angular") -> {
+                language = "Angular"
+            }
+            snapshot.packages.containsKey("next") -> {
+                language = "Next.js"
+            }
         }
 
         var taskString = ""
