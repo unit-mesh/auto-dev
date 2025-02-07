@@ -55,8 +55,9 @@ class SingleFileDiffView(
     private val mainPanel: JPanel = JPanel(VerticalLayout(5))
     private val myHeaderPanel: JPanel = JPanel(BorderLayout())
     private var patchActionPanel: JPanel? = null
-    private val appliedPatch = GenericPatchApplier.apply(currentFile.readText(), patch.hunks)
     private val oldCode = currentFile.readText()
+    private val appliedPatch = GenericPatchApplier.apply(oldCode, patch.hunks)
+    private val newCode = appliedPatch?.patchedText
 
     init {
         val contentPanel = JPanel(BorderLayout())
@@ -97,15 +98,14 @@ class SingleFileDiffView(
             foreground = JBColor(0xFF0000, 0xFF0000)
         }
 
-        val filePanel: JPanel
-        if (patch.beforeFileName != null) {
-            filePanel = JPanel(BorderLayout()).apply {
+        val filePanel: JPanel = if (patch.beforeFileName != null) {
+            JPanel(BorderLayout()).apply {
                 add(filepathLabel, BorderLayout.WEST)
                 add(addLabel, BorderLayout.CENTER)
                 add(removeLabel, BorderLayout.EAST)
             }
         } else {
-            filePanel = JPanel(BorderLayout()).apply {
+            JPanel(BorderLayout()).apply {
                 add(filepathLabel, BorderLayout.WEST)
             }
         }
