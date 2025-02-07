@@ -78,7 +78,10 @@ have created a routes.py and main.js file, and updated the main.html file.
 我已经将所有的 JavaScript 代码移到了 main.js 中，并在 index.html 中导入了 main.js。将 JavaScript 与 HTML
 分离可以提高代码的组织性、可读性、可维护性和可重用性。
 
-# 第四步. 运行应用程序，测试和验证
+# 第四步. 自动化测试与验证
+我将使用 Flask 的测试框架编写自动化测试用例，以确保应用程序的功能正常。
+
+# 第五步. 运行应用程序，测试和验证
 现在，我将启动 Flask 服务器并运行我们的应用程序。我将生成 Intellj IDEA 的 .http 代码帮你进行 API 测试；你可以尝试在网站上上传和搜索照片，
 看看是否一切正常。
 
@@ -104,11 +107,23 @@ have created a routes.py and main.js file, and updated the main.html file.
 // the index.html code
 ```
 </devin>
-// step 4, 启动、测试应用程序，验证代码变更
+// step 4.1, call tools to create test code and run test code
+<devin>
+/patch:src/test/test_routes.py
+```patch
+// the test code
+```
+</devin>
+// step 4.2, run test code
+<devin>
+/run:src/test/test_routes.py
+</devin>
+
+// step 5.1, 启动、测试应用程序，验证代码变更
 ```http
 // the http code
 ```
-// step 5, 启动应用程序
+// step 5.2, 启动应用程序
 ```bash
 ./gradlew :bootRun
 ```

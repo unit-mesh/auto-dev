@@ -76,7 +76,10 @@ I have created a dedicated `main.js` file to store all the interactive frontend 
 # Step 3. Update `index.html`
 I have moved all the JavaScript code to `main.js` and imported `main.js` in `index.html`. Separating JavaScript from HTML can improve code organization, readability, maintainability, and reusability.
 
-# Step 4. Run the application, test, and verify
+# Step 4. Auto verify and test
+I will create a test file `test_routes.py` to test the routes defined in `routes.py`. I will also run the test file to verify that the routes are working as expected.
+
+# Step 5. Run the application, test, and verify
 Now, I will start the Flask server and run our application. I will generate IntelliJ IDEA's `.http` code to help you with API testing; you can try uploading and searching for photos on the website to see if everything works fine.
 
 # Summary of changes
@@ -100,11 +103,23 @@ By creating `routes.py` and `main.js`, I have made our photo application interac
 // the index.html code
 ```
 </devin>
-// step 4, 启动、测试应用程序，验证代码变更
+// step 4.1, call tools to create test code and run test code
+<devin>
+    /patch:src/test/test_routes.py
+    ```patch
+    // the test code
+    ```
+</devin>
+// step 4.2, run test code
+<devin>
+    /run:src/test/test_routes.py
+</devin>
+
+// step 5.1, 启动、测试应用程序，验证代码变更
 ```http
 // the http code
 ```
-// step 5, 启动应用程序
+// step 5.2, 启动应用程序
 ```bash
 ./gradlew :bootRun
 ```
