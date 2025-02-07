@@ -2,6 +2,8 @@
     <resource-bundle>messages.AutoDevBundle</resource-bundle>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
+
     <depends optional="true" config-file="json-contrib.xml">com.intellij.modules.json</depends>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -38,7 +40,7 @@
                 serviceInterface="com.intellij.temporary.inlay.codecomplete.LLMInlayManager"
                 serviceImplementation="com.intellij.temporary.inlay.codecomplete.LLMInlayManagerImpl"/>
 
-<!--        <postStartupActivity implementation="cc.unitmesh.devti.update.AutoDevUpdateStartupActivity"/>-->
+        <postStartupActivity implementation="cc.unitmesh.devti.update.AutoDevUpdateStartupActivity"/>
 
         <typedHandler order="first, before completionAutoPopup"
                       implementation="cc.unitmesh.devti.inlay.TypeOverHandler"/>
@@ -173,7 +175,7 @@
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.languageProcessor"
-                        interface="cc.unitmesh.devti.provider.devins.LanguagePromptProcessor"
+                        interface="cc.unitmesh.devti.provider.devins.LanguageProcessor"
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.customDevInsCompletionProvider"
@@ -208,6 +210,11 @@
         <!-- Toolchain Function Provider -->
         <extensionPoint qualifiedName="cc.unitmesh.toolchainFunctionProvider"
                         interface="cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider"
+                        dynamic="true">
+        </extensionPoint>
+
+        <extensionPoint qualifiedName="cc.unitmesh.revisionProvider"
+                        interface="cc.unitmesh.devti.provider.RevisionProvider"
                         dynamic="true">
         </extensionPoint>
     </extensionPoints>
@@ -345,7 +352,7 @@
 
         <group id="AutoDev.ToolWindow.Chat.TitleActions">
             <action id="AutoDev.ToolWindow.NewChatAction" class="cc.unitmesh.devti.gui.toolbar.NewChatAction"/>
-<!--            <action id="AutoDev.ToolWindow.NewSketchAction" class="cc.unitmesh.devti.gui.toolbar.NewSketchAction"/>-->
+            <!--            <action id="AutoDev.ToolWindow.NewSketchAction" class="cc.unitmesh.devti.gui.toolbar.NewSketchAction"/>-->
         </group>
 
         <group id="AutoDev.ToolWindow.Message.Toolbar.Assistant">
