@@ -47,6 +47,7 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
 
     private fun listDirectory(project: Project, directory: PsiDirectory, depth: Int) {
         val isExclude = ProjectFileIndex.getInstance(project).isUnderIgnored(directory.virtualFile)
+                || ProjectFileIndex.getInstance(project).isExcluded(directory.virtualFile)
         if (isExclude) {
             return
         }

@@ -32,6 +32,8 @@ class DevInRunService : RunService {
 
         runConfiguration.showConsole = !isFromToolAction
 
+        runConfiguration.setScriptPath(virtualFile.path)
+
         val executorInstance = DefaultRunExecutor.getRunExecutorInstance()
         val builder = ExecutionEnvironmentBuilder.createOrNull(executorInstance, runConfiguration)
             ?: return null

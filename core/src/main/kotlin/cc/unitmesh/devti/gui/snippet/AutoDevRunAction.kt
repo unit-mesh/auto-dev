@@ -11,7 +11,7 @@ import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.psi.PsiManager
 import java.io.File
 
-class AutoDevRunAction : DumbAwareAction() {
+class AutoDevRunAction : DumbAwareAction("Run this file") {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
 
     override fun update(e: AnActionEvent) {
