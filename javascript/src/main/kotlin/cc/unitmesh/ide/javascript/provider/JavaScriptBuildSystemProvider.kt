@@ -19,13 +19,29 @@ class JavaScriptBuildSystemProvider : BuildSystemProvider() {
 
         var language = "JavaScript"
         var languageVersion = "ES5"
-        val buildTool = "NPM"
+        var buildTool = "NPM"
 
         val packageJson = snapshot.packages["typescript"]
         val tsVersion = packageJson?.parseVersion()
         if (tsVersion != null) {
             language = "TypeScript"
             languageVersion = tsVersion.rawVersion
+        }
+
+        // vite
+        if (snapshot.packages.containsKey("vite")) {
+            buildTool = "Vite"
+        }
+
+        // vue,react,angular,nextjs
+        if (snapshot.packages.containsKey("vue")) {
+            language = "Vue"
+        } else if (snapshot.packages.containsKey("react")) {
+            language = "React"
+        } else if (snapshot.packages.containsKey("angular")) {
+            language = "Angular"
+        } else if (snapshot.packages.containsKey("next")) {
+            language = "Next.js"
         }
 
         var taskString = ""
