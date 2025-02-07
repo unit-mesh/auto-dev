@@ -25,7 +25,7 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
         val chatCodingService = ChatCodingService(ChatActionType.CHAT, project)
         val contentPanel = ChatCodingPanel(chatCodingService, toolWindow.disposable)
 
-        val chatPanel = contentFactory.createContent(contentPanel, "AutoDev Chat", false).apply {
+        val chatPanel = ContentFactory.getInstance().createContent(contentPanel, "AutoDev Chat", false).apply {
             setInitialDisplayName(this)
         }
 
@@ -56,8 +56,6 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
 
 
     companion object {
-        private val contentFactory = ContentFactory.getInstance()
-
         fun getToolWindow(project: Project): ToolWindow? {
             return ToolWindowManager.getInstance(project).getToolWindow(Util.id)
         }
@@ -68,7 +66,7 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
 
         fun createSketchToolWindow(project: Project, toolWindow: ToolWindow) {
             val sketchView = SketchToolWindow(project, null, true)
-            val sketchPanel = contentFactory.createContent(sketchView, "Sketch", true)
+            val sketchPanel = ContentFactory.getInstance().createContent(sketchView, "Sketch", true)
             toolWindow.contentManager.addContent(sketchPanel)
         }
     }
