@@ -4,6 +4,7 @@ import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.settings.LanguageChangedCallback.componentStateChanged
 import cc.unitmesh.devti.sketch.SketchToolWindow
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction
 import com.intellij.openapi.diagnostic.logger
@@ -13,7 +14,7 @@ import com.intellij.util.ui.JBUI
 import javax.swing.JButton
 import javax.swing.JComponent
 
-class NewSketchAction : AnAction("New Sketch", "Create new Sketch", AutoDevIcons.COMMAND), CustomComponentAction {
+class NewSketchAction : AnAction("New Sketch", "Create new Sketch", AllIcons.General.Add), CustomComponentAction {
     private val logger = logger<NewChatAction>()
 
     override fun update(e: AnActionEvent) {

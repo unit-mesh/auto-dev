@@ -35,15 +35,11 @@ class WebViewWindow {
     private val urlField = JTextField()
 
     private val refreshButton = JButton(AllIcons.Actions.Refresh).apply {
-        isBorderPainted = false
-        isContentAreaFilled = false
-        cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+        preferredSize = Dimension(24, 24)
     }
 
     private val openDefaultBrowserButton = JButton(AllIcons.Xml.Browsers.Chrome).apply {
-        isBorderPainted = false
-        isContentAreaFilled = false
-        cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+        preferredSize = Dimension(24, 24)
     }
 
     init {

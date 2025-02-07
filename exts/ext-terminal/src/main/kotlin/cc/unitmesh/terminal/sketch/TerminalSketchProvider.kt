@@ -6,6 +6,7 @@ import cc.unitmesh.devti.sketch.SketchToolWindow
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import com.intellij.execution.filters.Filter
+import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
@@ -107,7 +108,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
             }
 
             fun createConsoleActions(): List<AnAction> {
-                val clearAction = object : AnAction("Clear", "Clear Terminal", null) {
+                val clearAction = object : AnAction("Clear", "Clear Terminal", AllIcons.Actions.GC) {
                     override fun actionPerformed(p0: AnActionEvent) {
                         terminalWidget?.terminalStarter?.sendString("clear\n", false)
                     }

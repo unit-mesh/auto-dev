@@ -36,6 +36,7 @@ import com.intellij.ui.dsl.builder.Cell
 import com.intellij.ui.dsl.builder.Row
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
+import com.intellij.util.ui.UIUtil
 import org.jetbrains.annotations.NonNls
 import java.awt.BorderLayout
 import java.awt.Toolkit
@@ -110,6 +111,11 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
                     actionButton(NewSketchAction()).alignRight()
                 }
             }
+
+            header.border = JBUI.Borders.compound(
+                JBUI.Borders.customLine(UIUtil.getBoundsColor(), 0, 0, 1, 0),
+                JBUI.Borders.empty(0, 4, 0, 4)
+            )
 
             contentPanel.add(header, BorderLayout.NORTH)
         }
