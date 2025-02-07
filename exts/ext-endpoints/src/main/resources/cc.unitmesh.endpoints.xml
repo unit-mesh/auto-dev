@@ -1,0 +1,10 @@
+<idea-plugin package="cc.unitmesh.endpoints">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+        <plugin id="com.intellij.microservices.ui"/>
+    </dependencies>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <chatContextProvider implementation="cc.unitmesh.endpoints.provider.EndpointsContextProvider"/>
+    </extensions>
+</idea-plugin>

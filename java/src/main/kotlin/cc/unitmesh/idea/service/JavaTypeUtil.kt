@@ -1,6 +1,7 @@
 package cc.unitmesh.idea.service
 
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiClassReferenceType
@@ -93,7 +94,11 @@ object JavaTypeUtil {
                     .filter { isProjectContent((it as PsiClassReferenceType).resolve() ?: return@filter false) }
                     .forEach { resolvedClasses.putAll(resolveByType(it)) }
 
-                resolvedClasses[parameter.name] = resolve
+                try {
+                    resolvedClasses[parameter.name] = resolve
+                } catch (e: Exception) {
+                    logger<JavaTypeUtil>().error("Failed to resolve class for parameter ${parameter.name}", e)
+                }
             }
 
             val outputType = element.returnTypeElement?.type

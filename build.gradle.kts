@@ -260,6 +260,7 @@ project(":") {
             pluginModule(implementation(project(":exts:ext-http-client")))
             pluginModule(implementation(project(":exts:ext-terminal")))
             pluginModule(implementation(project(":exts:ext-mermaid")))
+            pluginModule(implementation(project(":exts:ext-endpoints")))
             pluginModule(implementation(project(":exts:ext-plantuml")))
             pluginModule(implementation(project(":exts:devins-lang")))
 
@@ -603,6 +604,17 @@ project(":exts:ext-plantuml") {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins + prop("plantUmlPlugin"))
+        }
+
+        implementation(project(":core"))
+    }
+}
+
+project(":exts:ext-endpoints") {
+    dependencies {
+        intellijPlatform {
+            intellijIde(prop("ideaVersion"))
+            intellijPlugins(ideaPlugins + prop("endpointsPlugin"))
         }
 
         implementation(project(":core"))

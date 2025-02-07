@@ -8,6 +8,7 @@ import com.intellij.openapi.diff.impl.patch.PatchReader
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vcs.changes.patch.AbstractFilePatchInProgress
 import com.intellij.openapi.vcs.changes.patch.ApplyPatchDefaultExecutor
 import com.intellij.openapi.vcs.changes.patch.MatchPatchPaths
@@ -36,7 +37,7 @@ class PatchInsCommand(val myProject: Project, val prop: String, val codeContent:
             if (patchGroups.isEmpty) return@invokeAndWait
             /// open file in editor
             filePatches.firstOrNull()?.apply {
-                val file = myProject.baseDir.findFileByRelativePath(this.beforeFileName.toString())
+                val file = myProject.guessProjectDir()!!.findFileByRelativePath(this.beforeFileName.toString())
                 file?.let {
                     ApplicationManager.getApplication().invokeAndWait {
                         FileEditorManager.getInstance(myProject).openFile(it, true)

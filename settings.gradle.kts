@@ -24,6 +24,7 @@ include(
     "exts:ext-http-client",
     "exts:ext-plantuml",
     "exts:ext-mermaid",
+    "exts:ext-endpoints",
 
     // the Input Language support for AutoDev
     "exts:devins-lang"

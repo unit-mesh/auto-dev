@@ -39,5 +39,6 @@
         <module name="cc.unitmesh.git"/>
         <module name="cc.unitmesh.devti.language"/>
         <module name="cc.unitmesh.httpclient"/>
+        <module name="cc.unitmesh.endpoints"/>
     </content>
 </idea-plugin>
