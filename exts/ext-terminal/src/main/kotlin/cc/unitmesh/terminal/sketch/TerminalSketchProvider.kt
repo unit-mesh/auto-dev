@@ -14,7 +14,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditorManager
-import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.ui.popup.JBPopup
@@ -154,14 +153,15 @@ class TerminalSketchProvider : LanguageSketchProvider {
                 content = text
             }
 
-            override fun doneUpdateText(allText: String) {
+            override fun onDoneStream(allText: String) {
                 var isAlreadySent = false
                 terminalWidget?.addMessageFilter(object : Filter {
                     override fun applyFilter(line: String, entireLength: Int): Filter.Result? {
                         if (isAlreadySent) return null
 
+                        terminalWidget!!.terminalStarter?.sendString(content, false)
+
                         ApplicationManager.getApplication().invokeLater {
-                            terminalWidget!!.terminalStarter?.sendString(content, false)
                             terminalWidget!!.revalidate()
                             terminalWidget!!.repaint()
                         }

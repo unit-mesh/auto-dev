@@ -58,7 +58,7 @@ class PlantUmlSketch(private val project: Project, private val virtualFile: Virt
         PlantUmlSettings.getInstance().previewSettings.splitEditorLayout = SplitFileEditor.SplitEditorLayout.SECOND
     }
 
-    override fun doneUpdateText(allText: String) {
+    override fun onDoneStream(allText: String) {
         (umlPreviewEditor.component as PlantUmlPreviewPanel).processRequest(LazyApplicationPoolExecutor.Delay.NOW, RenderCommand.Reason.FILE_SWITCHED)
     }
 

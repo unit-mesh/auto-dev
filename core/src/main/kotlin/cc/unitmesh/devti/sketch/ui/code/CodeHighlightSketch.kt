@@ -116,7 +116,7 @@ open class CodeHighlightSketch(
         }
     }
 
-    override fun doneUpdateText(allText: String) {
+    override fun onDoneStream(allText: String) {
         if (ideaLanguage?.displayName == "DevIn") {
             val parse = CodeFence.parse(editorFragment!!.editor.document.text)
             var panel: JComponent? = null
@@ -124,17 +124,17 @@ open class CodeHighlightSketch(
                 "diff", "patch" -> {
                     val langSketch = LanguageSketchProvider.provide("patch")?.create(project, parse.text) ?: return
                     panel = langSketch.getComponent()
-                    langSketch.doneUpdateText(allText)
+                    langSketch.onDoneStream(allText)
                 }
                 "html" -> {
                     val langSketch = LanguageSketchProvider.provide("html")?.create(project, parse.text) ?: return
                     panel = langSketch.getComponent()
-                    langSketch.doneUpdateText(allText)
+                    langSketch.onDoneStream(allText)
                 }
                 "bash", "shell" -> {
                     val langSketch = LanguageSketchProvider.provide("shell")?.create(project, parse.text) ?: return
                     panel = langSketch.getComponent()
-                    langSketch.doneUpdateText(allText)
+                    langSketch.onDoneStream(allText)
                 }
             }
 

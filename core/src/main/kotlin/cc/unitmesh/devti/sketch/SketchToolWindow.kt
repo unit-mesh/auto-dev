@@ -37,6 +37,7 @@ import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import org.jetbrains.annotations.NonNls
 import java.awt.BorderLayout
+import java.awt.Dimension
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 import java.awt.event.KeyAdapter
@@ -62,6 +63,8 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
     private var contentPanel = JPanel(BorderLayout())
 
     val header = JButton(AllIcons.Actions.Copy).apply {
+        this@apply.preferredSize = Dimension(32, 32)
+
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
                 val selection = StringSelection(myText)
@@ -248,7 +251,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
         myText = text
         runInEdt {
             blockViews.filter { it.getViewText().isNotEmpty() }.forEach {
-                it.doneUpdateText(text)
+                it.onDoneStream(text)
             }
 
             blockViews.filter { it.getViewText().isEmpty() }.forEach {

@@ -51,7 +51,7 @@ class WebpageLangSketch(val project: Project, var htmlCode: String) : ExtensionL
         webViewWindow.loadHtml(loadingHtml)
     }
 
-    override fun doneUpdateText(allText: String) {
+    override fun onDoneStream(allText: String) {
         webViewWindow.loadHtml(htmlCode)
     }
 
