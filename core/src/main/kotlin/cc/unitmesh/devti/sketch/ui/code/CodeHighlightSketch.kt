@@ -39,7 +39,7 @@ open class CodeHighlightSketch(
     open val text: String,
     private var ideaLanguage: Language?,
     val editorLineThreshold: Int = 6
-) : JBPanel<CodeHighlightSketch>(BorderLayout()), DataProvider, LangSketch {
+) : JBPanel<CodeHighlightSketch>(BorderLayout()), DataProvider, LangSketch, Disposable {
     private val devinLineThreshold = 1
     private var isDevIns = false
 
@@ -247,7 +247,11 @@ open class CodeHighlightSketch(
     }
 
     override fun dispose() {
-        // do nothing
+        editorFragment?.editor?.let {
+            EditorFactory.getInstance().releaseEditor(it)
+        }
+
+        editorFragment = null
     }
 }
 

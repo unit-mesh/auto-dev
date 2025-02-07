@@ -22,24 +22,18 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.util.MinimizeButton
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.terminal.JBTerminalWidget
-import com.intellij.ui.components.panels.HorizontalLayout
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.components.panels.Wrapper
-import com.intellij.ui.scale.JBUIScale.scale
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import org.jetbrains.plugins.terminal.LocalTerminalDirectRunner
 import java.awt.BorderLayout
 import java.awt.Dimension
-import java.awt.FlowLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.Icon
-import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
-import javax.swing.SwingConstants
 
 /**
  * TerminalSketch provide a support for `bash` and `shell` language in terminal.
@@ -84,6 +78,8 @@ class TerminalSketchProvider : LanguageSketchProvider {
                         add(terminalWidget!!.component)
                     }
                 }
+
+                mainPanel!!.border = JBUI.Borders.empty(0, 8)
                 terminalWidget!!.addMessageFilter(FrontendWebViewServerFilter(project, mainPanel!!))
             }
 
@@ -161,9 +157,10 @@ class TerminalSketchProvider : LanguageSketchProvider {
                     override fun applyFilter(line: String, entireLength: Int): Filter.Result? {
                         if (isAlreadySent) return null
 
+                        Thread.sleep(1000)
+                        terminalWidget!!.terminalStarter?.sendString(content, false)
+
                         ApplicationManager.getApplication().invokeLater {
-                            Thread.sleep(1000)
-                            terminalWidget!!.terminalStarter?.sendString(content, false)
                             terminalWidget!!.revalidate()
                             terminalWidget!!.repaint()
                         }
