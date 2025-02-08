@@ -3,6 +3,7 @@ package cc.unitmesh.devti.sketch.ui.patch
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.diff.DiffStreamHandler
 import cc.unitmesh.devti.llms.LlmFactory
+import cc.unitmesh.devti.sketch.lint.PsiErrorCollector
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.template.GENIUS_CODE
 import cc.unitmesh.devti.template.TemplateRender
@@ -29,6 +30,8 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiManager
+import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.DarculaColors
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
@@ -57,7 +60,7 @@ class SingleFileDiffView(
     private var patchActionPanel: JPanel? = null
     private val oldCode = currentFile.readText()
     private val appliedPatch = GenericPatchApplier.apply(oldCode, patch.hunks)
-    private val newCode = appliedPatch?.patchedText
+    private val newCode = appliedPatch?.patchedText ?: ""
 
     init {
         val contentPanel = JPanel(BorderLayout())
@@ -130,6 +133,11 @@ class SingleFileDiffView(
 
         mainPanel.add(myHeaderPanel)
         mainPanel.add(contentPanel)
+
+        // runin thread
+        ApplicationManager.getApplication().executeOnPooledThread {
+            lintCheckForNewCode()
+        }
     }
 
     private fun createActionButtons(): List<JButton> {
@@ -210,11 +218,36 @@ class SingleFileDiffView(
 
     override fun getViewText(): String = currentFile.readText()
 
-    override fun updateViewText(text: String) {}
+    override fun updateViewText(text: String, complete: Boolean) {}
 
     override fun getComponent(): JComponent = mainPanel
 
     override fun updateLanguage(language: Language?, originLanguage: String?) {}
+
+    fun lintCheckForNewCode() {
+        if (newCode.isEmpty()) return
+
+        val newFile = LightVirtualFile(currentFile.name, newCode)
+        val psiFile = PsiManager.getInstance(myProject).findFile(newFile) ?: return
+        val errors = PsiErrorCollector.collectSyntaxError(psiFile, myProject)
+
+        // show error size and hover to show error message
+        val errorPanel = JPanel(VerticalLayout(5)).apply {
+            val errorLabel = JBLabel("Errors: ${errors.size}").apply {
+                border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
+            }
+            add(errorLabel)
+
+            errors.forEach { error ->
+                val errorLabel = JBLabel(error).apply {
+                    border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
+                }
+                add(errorLabel)
+            }
+        }
+
+        mainPanel.add(errorPanel)
+    }
 
     override fun dispose() {}
 }

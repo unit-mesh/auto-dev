@@ -57,7 +57,7 @@ class WebpageLangSketch(val project: Project, var htmlCode: String) : ExtensionL
 
     override fun getExtensionName(): String = "Webpage"
     override fun getViewText(): String = htmlCode
-    override fun updateViewText(text: String) {
+    override fun updateViewText(text: String, complete: Boolean) {
         this.htmlCode = text
     }
 

@@ -70,7 +70,7 @@ class PlantUmlSketch(private val project: Project, private val virtualFile: Virt
         return virtualFile.inputStream.bufferedReader().use { it.readText() }
     }
 
-    override fun updateViewText(text: String) {
+    override fun updateViewText(text: String, complete: Boolean) {
         virtualFile.setBinaryContent(text.toByteArray())
     }
 

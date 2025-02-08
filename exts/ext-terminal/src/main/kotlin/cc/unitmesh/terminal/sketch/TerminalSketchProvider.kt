@@ -147,7 +147,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
 
             override fun getExtensionName(): String = "Terminal"
             override fun getViewText(): String = content
-            override fun updateViewText(text: String) {
+            override fun updateViewText(text: String, complete: Boolean) {
                 content = text
             }
 

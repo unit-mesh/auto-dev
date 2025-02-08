@@ -16,7 +16,7 @@ import javax.swing.JComponent
 
 interface LangSketch : Disposable {
     fun getViewText(): String
-    fun updateViewText(text: String)
+    fun updateViewText(text: String, complete: Boolean)
     fun getComponent(): JComponent
     fun updateLanguage(language: Language?, originLanguage: String?)
 

@@ -50,7 +50,7 @@ class MermaidSketch(project: Project, private val virtualFile: VirtualFile) : Ex
 
     override fun getViewText(): String = virtualFile.readText()
 
-    override fun updateViewText(text: String) {}
+    override fun updateViewText(text: String, complete: Boolean) {}
 
     override fun getComponent(): JComponent = mainPanel
 

@@ -161,7 +161,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
 
     override fun getExtensionName(): String = "patch"
     override fun getViewText(): String = patchContent
-    override fun updateViewText(text: String) {
+    override fun updateViewText(text: String, complete: Boolean) {
         this.patchContent = text
     }
 

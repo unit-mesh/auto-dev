@@ -28,6 +28,7 @@ import com.intellij.util.ui.JBUI
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import com.intellij.openapi.util.text.StringUtil
+import com.intellij.temporary.gui.block.whenDisposed
 import com.intellij.util.ui.JBEmptyBorder
 import java.awt.BorderLayout
 import javax.swing.JComponent
@@ -74,9 +75,6 @@ open class CodeHighlightSketch(
 
         if (textLanguage != null && textLanguage?.lowercase() != "markdown" && ideaLanguage != PlainTextLanguage.INSTANCE) {
             setupActionBar(project, editor)
-            if (textLanguage?.lowercase() == "devin") {
-                editorFragment?.setCollapsed(true)
-            }
         } else {
             editor.backgroundColor = JBColor.PanelBackground
         }
@@ -93,7 +91,7 @@ open class CodeHighlightSketch(
         }
     }
 
-    override fun updateViewText(text: String) {
+    override fun updateViewText(text: String, complete: Boolean) {
         if (!hasSetupAction && text.isNotEmpty()) {
             initEditor(text)
         }
@@ -103,11 +101,14 @@ open class CodeHighlightSketch(
             val normalizedText = StringUtil.convertLineSeparators(text)
             document?.replaceString(0, document.textLength, normalizedText)
 
-            document?.lineCount?.let {
-                if (isDevIns && it > devinLineThreshold) {
-                    editorFragment?.updateExpandCollapseLabel()
-                } else if (it > editorLineThreshold) {
-                    editorFragment?.updateExpandCollapseLabel()
+            if (complete) {
+                document?.lineCount?.let {
+                    if (isDevIns && it > devinLineThreshold) {
+                        editorFragment?.setCollapsed(false)
+                        editorFragment?.updateExpandCollapseLabel()
+                    } else if (it > editorLineThreshold) {
+                        editorFragment?.updateExpandCollapseLabel()
+                    }
                 }
             }
         }
@@ -196,6 +197,10 @@ open class CodeHighlightSketch(
         ): EditorEx {
             val editor: EditorEx = ReadAction.compute<EditorEx, Throwable> {
                 EditorFactory.getInstance().createViewer(document, project, EditorKind.PREVIEW) as EditorEx
+            }
+
+            disposable.whenDisposed {
+                EditorFactory.getInstance().releaseEditor(editor)
             }
 
             editor.setFile(file)
