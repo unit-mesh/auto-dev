@@ -48,14 +48,7 @@ class CodeBlockElement(node: ASTNode) : ASTWrapperPsiElement(node), PsiLanguageI
 
     companion object {
         fun obtainFenceContent(element: CodeBlockElement): List<PsiElement>? {
-            return try {
-                CachedValuesManager.getCachedValue(element) {
-                    CachedValueProvider.Result.create(getContent(element), element)
-                }
-            } catch (e: Exception) {
-                logger<CodeBlockElement>().warn("Failed to obtain code block content", e)
-                null
-            }
+            return getContent(element)
         }
 
         private fun getContent(host: CodeBlockElement): List<PsiElement>? {
