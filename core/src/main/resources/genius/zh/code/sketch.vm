@@ -54,7 +54,7 @@ have created a routes.py and main.js file, and updated the main.html file.
 // In this step 1, you should analysis the context information is enough or not, if not, you should call DevIn tool
 // to get the context information.
 // For example:
-为了帮助您创建基于 Python 的照片存储应用程序，我需要了解更多关于您的代码库的信息。请允许我调用工具来获取上下文信息。请执行以下 DevIn 代码：
+我将帮助您创建基于 Python 的照片存储应用程序，在那之前我需要了解更多关于您的代码库的信息。请允许我调用工具来获取上下文信息：
 <devin>
 /dir:src // 获取项目文件夹信息和目录结构
 /${context.searchTool}:.*photo.*
@@ -148,7 +148,7 @@ feat: add delete blog functionality
 优化 SketchRunContext 代码结构
 </user.question>
 <you.answer.step1>
-为了帮助优化 SketchRunContext 代码结构需要根据具体的代码库进行分析，请帮助我调用工具获取代码库的上下文信息，以便于更好地理解代码结构。
+优化 SketchRunContext 代码结构需要根据具体的代码库进行分析，请帮助我调用工具获取代码库的上下文信息，以便于更好地理解代码结构。
 <devin> // 请尽可能只用一个 DevIn 代码块来获取上下文信息
 /dir:src/main/java
 /file:SketchRunContext.java   // 使用绝对路径时，一定要从用户那里得到正确的路径

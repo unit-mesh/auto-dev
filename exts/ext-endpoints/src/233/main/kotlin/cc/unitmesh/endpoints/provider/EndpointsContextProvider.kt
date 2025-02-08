@@ -28,7 +28,7 @@ class EndpointsContextProvider : ChatContextProvider {
             .filterIsInstance<EndpointsUrlTargetProvider<SpringBeanPointer<*>, UrlMappingElement>>()
 
         return availableProviders.map {
-            val text = "This project has http endpoints from ${it.presentation}"
+            val text = "\n- This project has http endpoints from ${it.presentation.title}"
             ChatContextItem(EndpointsContextProvider::class, text)
         }
     }
