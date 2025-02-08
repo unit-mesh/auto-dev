@@ -220,7 +220,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
                     } else {
                         blockViews[index].apply {
                             updateLanguage(codeFence.language, codeFence.originLanguage)
-                            updateViewText(codeFence.text)
+                            updateViewText(codeFence.text, codeFence.isComplete)
                         }
                     }
                 } else {
