@@ -3,6 +3,7 @@ package cc.unitmesh.ide.javascript.provider
 import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.template.context.DockerfileContext
 import cc.unitmesh.ide.javascript.JsDependenciesSnapshot
+import com.intellij.javascript.nodejs.PackageJsonData
 import com.intellij.lang.javascript.buildTools.npm.NpmScriptsUtil
 import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil
 import com.intellij.openapi.application.runReadAction
@@ -46,16 +47,16 @@ class JavaScriptBuildSystemProvider : BuildSystemProvider() {
 
         when {
             snapshot.packages.containsKey("vue") -> {
-                language = "Vue"
+                language = "Vue " + snapshot.packages["vue"]?.versionString()
             }
             snapshot.packages.containsKey("react") -> {
-                language = "React"
+                language = "React " + snapshot.packages["react"]?.versionString()
             }
             snapshot.packages.containsKey("angular") -> {
-                language = "Angular"
+                language = "Angular " + snapshot.packages["angular"]?.versionString()
             }
             snapshot.packages.containsKey("next") -> {
-                language = "Next.js"
+                language = "Next.js " + snapshot.packages["next"]?.versionString()
             }
         }
 
@@ -75,4 +76,9 @@ class JavaScriptBuildSystemProvider : BuildSystemProvider() {
             taskString = taskString
         )
     }
+}
+
+fun PackageJsonData.PackageJsonDependencyEntry.versionString(): String {
+    var version = this.parseVersion()
+    return if (version != null) " " + version.rawVersion else ""
 }
