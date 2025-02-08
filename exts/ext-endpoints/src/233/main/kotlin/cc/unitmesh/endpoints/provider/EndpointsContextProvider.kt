@@ -13,7 +13,7 @@ import com.intellij.spring.mvc.mapping.UrlMappingElement
 
 class EndpointsContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
-        return runReadAction { EndpointsProvider.getAvailableProviders(project).toList() }.isNotEmpty()
+        return EndpointsProvider.hasAnyProviders()
     }
 
     override suspend fun collect(
