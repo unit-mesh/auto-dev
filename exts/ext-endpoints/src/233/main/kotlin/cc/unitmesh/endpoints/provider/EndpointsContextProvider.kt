@@ -11,6 +11,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.spring.model.SpringBeanPointer
 import com.intellij.spring.mvc.mapping.UrlMappingElement
 
+/**
+ * Since it's very slow to load all endpoints, we don't want to show this context provider in the chat.
+ */
 class EndpointsContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
         return EndpointsProvider.hasAnyProviders()

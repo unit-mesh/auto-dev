@@ -7,6 +7,7 @@
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
-        <chatContextProvider implementation="cc.unitmesh.endpoints.provider.EndpointsContextProvider"/>
+<!--  Since it's very slow to load all the endpoints, we disable it by default. -->
+<!--        <chatContextProvider implementation="cc.unitmesh.endpoints.provider.EndpointsContextProvider"/>-->
     </extensions>
 </idea-plugin>
