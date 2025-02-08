@@ -144,19 +144,19 @@ class SingleFileDiffView(
         val undoManager = UndoManager.getInstance(myProject)
         val fileEditor = FileEditorManager.getInstance(myProject).getSelectedEditor(currentFile)
 
-        val rollback = JButton("Undo").apply {
-            icon = AllIcons.Actions.Rollback
-            toolTipText = AutoDevBundle.message("sketch.patch.action.rollback.tooltip")
-            isEnabled = undoManager.isUndoAvailable(fileEditor)
-
-            addMouseListener(object : MouseAdapter() {
-                override fun mouseClicked(e: MouseEvent?) {
-                    if (undoManager.isUndoAvailable(fileEditor)) {
-                        undoManager.undo(fileEditor)
-                    }
-                }
-            })
-        }
+//        val rollback = JButton("Undo").apply {
+//            icon = AllIcons.Actions.Rollback
+//            toolTipText = AutoDevBundle.message("sketch.patch.action.rollback.tooltip")
+//            isEnabled = undoManager.isUndoAvailable(fileEditor)
+//
+//            addMouseListener(object : MouseAdapter() {
+//                override fun mouseClicked(e: MouseEvent?) {
+//                    if (undoManager.isUndoAvailable(fileEditor)) {
+//                        undoManager.undo(fileEditor)
+//                    }
+//                }
+//            })
+//        }
 
         val viewDiffButton = JButton("View").apply {
             icon = AllIcons.Actions.ListChanges
@@ -213,7 +213,7 @@ class SingleFileDiffView(
             }
         }
 
-        return listOf(rollback, viewDiffButton, runStreamButton, repairButton)
+        return listOf(viewDiffButton, runStreamButton, repairButton)
     }
 
     override fun getViewText(): String = currentFile.readText()
@@ -231,9 +231,11 @@ class SingleFileDiffView(
         val psiFile = PsiManager.getInstance(myProject).findFile(newFile) ?: return
         val errors = PsiErrorCollector.collectSyntaxError(psiFile, myProject)
 
+        if (errors.isEmpty()) return
+
         // show error size and hover to show error message
         val errorPanel = JPanel(VerticalLayout(5)).apply {
-            val errorLabel = JBLabel("Errors: ${errors.size}").apply {
+            val errorLabel = JBLabel("Found Lint issue: ${errors.size}").apply {
                 border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
             }
             add(errorLabel)
