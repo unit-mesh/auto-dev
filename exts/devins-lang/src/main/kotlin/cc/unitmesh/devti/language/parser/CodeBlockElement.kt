@@ -5,6 +5,7 @@ import cc.unitmesh.devti.language.psi.DevInTypes
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.ElementManipulators
 import com.intellij.psi.LiteralTextEscaper
@@ -47,8 +48,13 @@ class CodeBlockElement(node: ASTNode) : ASTWrapperPsiElement(node), PsiLanguageI
 
     companion object {
         fun obtainFenceContent(element: CodeBlockElement): List<PsiElement>? {
-            return CachedValuesManager.getCachedValue(element) {
-                CachedValueProvider.Result.create(getContent(element), element)
+            return try {
+                CachedValuesManager.getCachedValue(element) {
+                    CachedValueProvider.Result.create(getContent(element), element)
+                }
+            } catch (e: Exception) {
+                logger<CodeBlockElement>().error("Failed to obtain code block content", e)
+                null
             }
         }
 
