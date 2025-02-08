@@ -53,7 +53,7 @@ class CodeBlockElement(node: ASTNode) : ASTWrapperPsiElement(node), PsiLanguageI
                     CachedValueProvider.Result.create(getContent(element), element)
                 }
             } catch (e: Exception) {
-                logger<CodeBlockElement>().error("Failed to obtain code block content", e)
+                logger<CodeBlockElement>().warn("Failed to obtain code block content", e)
                 null
             }
         }
