@@ -39,7 +39,7 @@ open class CodeHighlightSketch(
     private var ideaLanguage: Language?,
     val editorLineThreshold: Int = 6
 ) : JBPanel<CodeHighlightSketch>(BorderLayout()), DataProvider, LangSketch, Disposable {
-    private val devinLineThreshold = 1
+    private val devinLineThreshold = 10
     private var isDevIns = false
 
     private var textLanguage: String? = null
@@ -101,15 +101,15 @@ open class CodeHighlightSketch(
             val normalizedText = StringUtil.convertLineSeparators(text)
             document?.replaceString(0, document.textLength, normalizedText)
 
-            if (complete) {
-                document?.lineCount?.let {
-                    if (isDevIns && it > devinLineThreshold) {
-                        editorFragment?.setCollapsed(false)
-                        editorFragment?.updateExpandCollapseLabel()
-                    } else if (it > editorLineThreshold) {
-                        editorFragment?.updateExpandCollapseLabel()
-                    }
+            document?.lineCount?.let {
+                if (it > editorLineThreshold) {
+                    editorFragment?.updateExpandCollapseLabel()
                 }
+//                if (complete) {
+//                    if (isDevIns && it > devinLineThreshold) {
+//                        editorFragment?.updateExpandCollapseLabel()
+//                    }
+//                }
             }
         }
     }
@@ -124,11 +124,13 @@ open class CodeHighlightSketch(
                     panel = langSketch.getComponent()
                     langSketch.onDoneStream(allText)
                 }
+
                 "html" -> {
                     val langSketch = LanguageSketchProvider.provide("html")?.create(project, parse.text) ?: return
                     panel = langSketch.getComponent()
                     langSketch.onDoneStream(allText)
                 }
+
                 "bash", "shell" -> {
                     val langSketch = LanguageSketchProvider.provide("shell")?.create(project, parse.text) ?: return
                     panel = langSketch.getComponent()

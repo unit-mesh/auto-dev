@@ -2,15 +2,18 @@ package cc.unitmesh.devti.sketch.lint
 
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx
+import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerImpl
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiFile
@@ -56,19 +59,20 @@ object PsiErrorCollector {
         val range = TextRange(0, document.textLength)
         val errors = mutableListOf<String>()
 
-        DaemonCodeAnalyzerEx.getInstance(project).restart(sourceFile)
+        runReadAction {
+            DaemonCodeAnalyzerEx.getInstanceEx(project).restart(sourceFile)
+        }
 
         val hintDisposable = Disposer.newDisposable()
         val busConnection: MessageBusConnection = project.messageBus.connect(hintDisposable)
         val future: CompletableFuture<List<String>> = CompletableFuture()
-        busConnection.subscribe(
-            DaemonCodeAnalyzer.DAEMON_EVENT_TOPIC,
+        busConnection.subscribe(DaemonCodeAnalyzer.DAEMON_EVENT_TOPIC,
             SimpleCodeErrorListener(document, project, range, errors, busConnection, hintDisposable) {
                 future.complete(it)
             }
         )
 
-        future.get(10, TimeUnit.SECONDS)
+        future.get(30, TimeUnit.SECONDS)
     }
 
     class SimpleCodeErrorListener(
@@ -84,9 +88,9 @@ object PsiErrorCollector {
             DaemonCodeAnalyzerEx.processHighlights(
                 document,
                 project,
-                HighlightSeverity.ERROR,
+                HighlightSeverity.WARNING,
                 range.startOffset,
-                range.endOffset
+                range.endOffset // todo: modify to patch part only
             ) {
                 if (it.description != null) {
                     errors.add(it.description)

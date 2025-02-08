@@ -15,6 +15,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.WriteCommandAction
@@ -141,8 +142,8 @@ class SingleFileDiffView(
     }
 
     private fun createActionButtons(): List<JButton> {
-        val undoManager = UndoManager.getInstance(myProject)
-        val fileEditor = FileEditorManager.getInstance(myProject).getSelectedEditor(currentFile)
+//        val undoManager = UndoManager.getInstance(myProject)
+//        val fileEditor = FileEditorManager.getInstance(myProject).getSelectedEditor(currentFile)
 
 //        val rollback = JButton("Undo").apply {
 //            icon = AllIcons.Actions.Rollback
@@ -228,7 +229,7 @@ class SingleFileDiffView(
         if (newCode.isEmpty()) return
 
         val newFile = LightVirtualFile(currentFile.name, newCode)
-        val psiFile = PsiManager.getInstance(myProject).findFile(newFile) ?: return
+        val psiFile = runReadAction { PsiManager.getInstance(myProject).findFile(newFile) } ?: return
         val errors = PsiErrorCollector.collectSyntaxError(psiFile, myProject)
 
         if (errors.isEmpty()) return
