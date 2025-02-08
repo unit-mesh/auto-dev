@@ -51,6 +51,15 @@ object RipgrepSearcher {
         val osName = System.getProperty("os.name").lowercase(Locale.getDefault())
         val binName = if (osName.contains("win")) "rg.exe" else "rg"
 
+        // try get from /usr/local/bin/rg if macos
+        if (osName.contains("mac")) {
+            val path = Paths.get("/usr/local/bin/rg")
+            if (path.toFile().exists()) {
+                return path
+            }
+        }
+
+
         val pb = ProcessBuilder("which", binName)
         val process = pb.start()
         try {
