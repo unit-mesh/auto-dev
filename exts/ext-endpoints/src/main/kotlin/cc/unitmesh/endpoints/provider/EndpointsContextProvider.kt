@@ -4,8 +4,12 @@ import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import com.intellij.microservices.endpoints.EndpointsProvider
+import com.intellij.microservices.endpoints.EndpointsUrlTargetProvider
+import com.intellij.microservices.oas.serialization.getOpenApiSpecification
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
+import com.intellij.spring.model.SpringBeanPointer
+import com.intellij.spring.mvc.mapping.UrlMappingElement
 
 class EndpointsContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
@@ -19,17 +23,13 @@ class EndpointsContextProvider : ChatContextProvider {
         val model = runReadAction { EndpointsProvider.getAvailableProviders(project).toList() }
         if (model.isEmpty()) return emptyList()
 
-        val availableProviders = model.filter { it.getStatus(project) == EndpointsProvider.Status.HAS_ENDPOINTS }
+        val availableProviders = model
+            .filter { it.getStatus(project) == EndpointsProvider.Status.HAS_ENDPOINTS }
+            .filterIsInstance<EndpointsUrlTargetProvider<SpringBeanPointer<*>, UrlMappingElement>>()
 
-        if (availableProviders.isNotEmpty()) {
-            val infos = availableProviders.mapNotNull {
-                val text = "This project has endpoints from ${it.javaClass.simpleName}"
-                return@mapNotNull ChatContextItem(EndpointsContextProvider::class, text)
-            }.toList()
-
-            return infos
+        return availableProviders.map {
+            val text = "This project has http endpoints from ${it.presentation}"
+            ChatContextItem(EndpointsContextProvider::class, text)
         }
-
-        return emptyList()
     }
 }

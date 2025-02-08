@@ -283,6 +283,7 @@ project(":") {
         implementation(project(":exts:ext-terminal"))
         implementation(project(":exts:ext-mermaid"))
         implementation(project(":exts:ext-plantuml"))
+        implementation(project(":exts:ext-endpoints"))
         implementation(project(":exts:devins-lang"))
 
         kover(project(":core"))
@@ -615,6 +616,7 @@ project(":exts:ext-endpoints") {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins + prop("endpointsPlugin"))
+            intellijPlugins(listOf("com.intellij.spring", "com.intellij.spring.mvc"))
         }
 
         implementation(project(":core"))
