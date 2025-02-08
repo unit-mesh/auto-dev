@@ -19,7 +19,9 @@ So, since 2024.4, AutoDev was unavailable in the JetBrains Plugin Repository, yo
    - AutoDev-*-241.zip, for version 2024.1~
 2. Configure GitHub Token (optional) and OpenAI config in `Settings` -> `Tools` -> `AutoDev`
 
-## Config
+## AutoDev 2.0 Config
+
+<img src="https://unitmesh.cc/auto-dev/autodev-2-config.png" alt="AutoDev 2 Config" width="600px"/>
 
 ### Custom Config / OpenAI compatible
 
