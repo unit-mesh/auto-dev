@@ -63,19 +63,19 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
                 val diffPanel = when {
                     patch.beforeFileName != null -> {
                         val originFile = myProject.findFile(patch.beforeFileName!!) ?: return@forEachIndexed
-                        SingleFileDiffView(myProject, originFile, patch, ::handleViewDiffAction)
+                        SingleFileDiffSketch(myProject, originFile, patch, ::handleViewDiffAction)
                     }
 
                     patch.afterFileName != null -> {
                         val content = patch.singleHunkPatchText
                         val virtualFile = LightVirtualFile(patch.afterFileName!!, content)
-                        SingleFileDiffView(myProject, virtualFile, patch, ::handleViewDiffAction)
+                        SingleFileDiffSketch(myProject, virtualFile, patch, ::handleViewDiffAction)
                     }
 
                     else -> {
                         val content = patch.singleHunkPatchText
                         val virtualFile = LightVirtualFile("ErrorPatchFile", content)
-                        SingleFileDiffView(myProject, virtualFile, patch, ::handleViewDiffAction)
+                        SingleFileDiffSketch(myProject, virtualFile, patch, ::handleViewDiffAction)
                     }
                 }
 

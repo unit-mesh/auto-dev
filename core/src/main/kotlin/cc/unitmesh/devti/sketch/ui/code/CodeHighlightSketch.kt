@@ -36,7 +36,7 @@ import javax.swing.JComponent
 open class CodeHighlightSketch(
     open val project: Project,
     open val text: String,
-    private var ideaLanguage: Language?,
+    private var ideaLanguage: Language? = null,
     val editorLineThreshold: Int = 6
 ) : JBPanel<CodeHighlightSketch>(BorderLayout()), DataProvider, LangSketch, Disposable {
     private val devinLineThreshold = 10

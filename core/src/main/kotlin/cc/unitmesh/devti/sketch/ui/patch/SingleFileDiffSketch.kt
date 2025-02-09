@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.sketch.ui.patch
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.diff.DiffStreamHandler
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.sketch.lint.PsiErrorCollector
 import cc.unitmesh.devti.sketch.ui.LangSketch
@@ -19,7 +18,6 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.command.undo.UndoManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diff.impl.patch.ApplyPatchStatus
 import com.intellij.openapi.diff.impl.patch.PatchLine
@@ -50,7 +48,7 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 
 
-class SingleFileDiffView(
+class SingleFileDiffSketch(
     private val myProject: Project,
     private val currentFile: VirtualFile,
     val patch: TextFilePatch,
@@ -165,7 +163,7 @@ class SingleFileDiffView(
 
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent?) {
-                    this@SingleFileDiffView.viewDiffAction()
+                    this@SingleFileDiffSketch.viewDiffAction()
                 }
             })
         }
@@ -178,7 +176,7 @@ class SingleFileDiffView(
             addActionListener {
                 val document = FileDocumentManager.getInstance().getDocument(currentFile)
                 if (document == null) {
-                    logger<SingleFileDiffView>().error("Document is null for file: ${currentFile.path}")
+                    logger<SingleFileDiffSketch>().error("Document is null for file: ${currentFile.path}")
                     return@addActionListener
                 }
 
