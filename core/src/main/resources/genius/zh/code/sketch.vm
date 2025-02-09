@@ -52,13 +52,13 @@ have created a routes.py and main.js file, and updated the main.html file.
 <you.answer.step1>
 // First think step-by-step - describe your plan for what to build in pseudocode, written out in great detail.
 // In this step 1, you should analysis the context information is enough or not, if not, you should call DevIn tool
-// to get the context information.
+// to get the context information. 不要做任何假设，如果上下文信息不足，请告知我，我将提供给你。
 // For example:
 我将帮助您创建基于 Python 的照片存储应用程序，在那之前我需要了解更多关于您的代码库的信息。请允许我调用工具来获取上下文信息：
 <devin>
-/dir:src // 获取项目文件夹信息和目录结构
+/dir:src         [注释：获取项目文件夹信息和目录结构]
 /${context.searchTool}:.*photo.*
-/database:schema // 当我们知道用户使用了数据库时
+/database:schema [注释：当我们知道用户使用了数据库时]
 </devin>
 </you.answer.step1>
 <user.answer.step1>
@@ -67,7 +67,7 @@ have created a routes.py and main.js file, and updated the main.html file.
 <you.answer.step2>
 根据您提供的项目文件信息，我还需要知道详细的相关代码，我将调用工具来读取 routes.py 和 main.js 文件的内容。请执行以下 DevIn 代码：
 <devin>
-/file:src/routes.py // 需要先通过 dir 命令获取到的目录结构，然后再获取文件内容
+/file:src/routes.py [注释：需要先通过 dir 命令获取到的目录结构，然后再获取文件内容]
 /file:main.js
 </devin>
 </you.answer.step2>
@@ -99,7 +99,7 @@ have created a routes.py and main.js file, and updated the main.html file.
 // then you can start coding with DevIn language. When you need to or patch, write execute the code, you should use the DevIn language
 // If you need to create a new file, you should use `/write` command, then write the code in the code block
 <devin>
-/write:src/main/route.py // 当不存在文件是，才需要创建文件
+/write:src/main/route.py [注释：当确定文件不存在时，才能创建文件]
 ```python
 // the route code
 // from flask import Flask
@@ -149,10 +149,11 @@ feat: add delete blog functionality
 </user.question>
 <you.answer.step1>
 优化 SketchRunContext 代码结构需要根据具体的代码库进行分析，请帮助我调用工具获取代码库的上下文信息，以便于更好地理解代码结构。
-<devin> // 请尽可能只用一个 DevIn 代码块来获取上下文信息
+// 请尽可能只用一个 DevIn 代码块来获取上下文信息
+<devin>
 /dir:src/main/java
-/file:SketchRunContext.java   // 使用绝对路径时，一定要从用户那里得到正确的路径
-/${context.searchTool}:SketchRunContext // 如果用户的问题是中文的，需要转换为英文的搜索关键词
+/file:SketchRunContext.java             [使用绝对路径时，一定要从用户那里得到正确的路径]
+/${context.searchTool}:SketchRunContext [如果用户的问题是中文的，需要转换为英文的搜索关键词]
 </devin>
 </you.answer.step1>
 <user.answer.step1>
@@ -216,4 +217,4 @@ the overall success and accuracy of your work.
 </thinking>
 
 // make sure you have enough context before coding.
-请在确保拥有足够的上下文信息后，再开始编码。如果上下文信息不足，请告知我，我将提供给你。
+请在确保拥有足够的上下文信息后，再开始编码，不要做任何假设。如果上下文信息不足，请告知我，我将提供给你。

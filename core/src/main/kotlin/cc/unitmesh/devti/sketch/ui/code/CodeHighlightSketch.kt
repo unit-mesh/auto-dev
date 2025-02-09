@@ -40,6 +40,7 @@ open class CodeHighlightSketch(
     val editorLineThreshold: Int = 6
 ) : JBPanel<CodeHighlightSketch>(BorderLayout()), DataProvider, LangSketch, Disposable {
     private val devinLineThreshold = 10
+    private val minDevinLineThreshold = 1
     private var isDevIns = false
 
     private var textLanguage: String? = null
@@ -105,11 +106,11 @@ open class CodeHighlightSketch(
                 if (it > editorLineThreshold) {
                     editorFragment?.updateExpandCollapseLabel()
                 }
-//                if (complete) {
-//                    if (isDevIns && it > devinLineThreshold) {
-//                        editorFragment?.updateExpandCollapseLabel()
-//                    }
-//                }
+                if (complete) {
+                    if (isDevIns && it > minDevinLineThreshold) {
+                        editorFragment?.resizeForNewThreshold(minDevinLineThreshold)
+                    }
+                }
             }
         }
     }
