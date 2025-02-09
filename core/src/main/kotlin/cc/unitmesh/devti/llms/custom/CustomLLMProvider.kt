@@ -70,7 +70,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(
         val customRequest = CustomRequest(messages)
         val requestContent = customRequest.updateCustomFormat(requestFormat)
 
-        val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), requestContent)
+        val body = RequestBody.create("application/json;".toMediaTypeOrNull(), requestContent)
 
         val builder = Request.Builder()
         if (key.isNotEmpty()) {
@@ -96,7 +96,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(
         val customRequest = CustomRequest(messages)
         val requestContent = Json.encodeToString<CustomRequest>(customRequest)
 
-        val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), requestContent)
+        val body = RequestBody.create("application/json;".toMediaTypeOrNull(), requestContent)
 
         logger.info("Requesting form: $requestContent $body")
         val builder = Request.Builder()

@@ -96,7 +96,7 @@ interface RefactoringTool {
 
             if (!ProgressManager.getInstance().runProcessWithProgressSynchronously(
                     runnable, RefactoringBundle.message("searching.for.variables"), true, myProject
-                )
+            )
             ) {
                 return
             }
