@@ -154,20 +154,14 @@ class TerminalSketchProvider : LanguageSketchProvider {
             override fun onDoneStream(allText: String) {
                 var isAlreadySent = false
                 titleLabel.text = "Terminal - ($content)"
-                terminalWidget?.addMessageFilter(object : Filter {
-                    override fun applyFilter(line: String, entireLength: Int): Filter.Result? {
-                        if (isAlreadySent) return null
 
-                        ApplicationManager.getApplication().invokeLater {
-                            terminalWidget!!.terminalStarter?.sendString(content, true)
-                            terminalWidget!!.revalidate()
-                            terminalWidget!!.repaint()
-                        }
+                ApplicationManager.getApplication().invokeLater {
+                    terminalWidget!!.terminalStarter?.sendString(content, true)
+                    terminalWidget!!.revalidate()
+                    terminalWidget!!.repaint()
+                }
 
-                        isAlreadySent = true
-                        return null
-                    }
-                })
+                isAlreadySent = true
             }
 
             override fun getComponent(): JComponent = mainPanel!!

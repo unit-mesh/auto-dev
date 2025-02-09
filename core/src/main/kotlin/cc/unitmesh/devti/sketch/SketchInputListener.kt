@@ -52,12 +52,12 @@ class SketchInputListener(
     }
 
     override fun manualSend(userInput: String) {
-        val devInProcessor = LanguageProcessor.devin()
-        val compiledInput = runReadAction { devInProcessor?.compile(project, userInput) } ?: userInput
-
-        toolWindow.addRequestPrompt(compiledInput)
-
         ApplicationManager.getApplication().executeOnPooledThread {
+            val devInProcessor = LanguageProcessor.devin()
+            val compiledInput = runReadAction { devInProcessor?.compile(project, userInput) } ?: userInput
+
+            toolWindow.addRequestPrompt(compiledInput)
+
             val flow = chatCodingService.request(systemPrompt, compiledInput)
             val suggestion = StringBuilder()
 

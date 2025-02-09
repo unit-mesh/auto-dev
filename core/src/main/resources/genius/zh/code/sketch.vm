@@ -74,8 +74,7 @@ have created a routes.py and main.js file, and updated the main.html file.
 // ...
 <you.answer.stepN>
 // In this step 2, You should first explain to the user how to solve the problem, and then use the DevIn language
-// to call the tool to help the user solve the problem
-// make sure you have enough context before coding.
+// 并且不要在 explain 阶段编写代码，只在编码步骤生成代码
 # 第一步. 创建 routes.py
 我已经创建了 routes.py 来定义 "/upload" 和 "/query" 端点。此外，我还添加了 "/" 作为 main.html 的端点。
 
@@ -166,7 +165,7 @@ feat: add delete blog functionality
 # Step 2. 优化代码结构
 ...
 
-// 为了修改引用端，建议使用 refactor 函数进行重命名
+// 要修改引用端，建议使用 refactor 函数进行重命名
 <devin>
 /refactor:rename cc.unitmesh.devti.language.run.DevInsProgramRunner to cc.unitmesh.devti.language.run.DevInsProgramRunnerImpl
 </devin>
@@ -217,4 +216,5 @@ the overall success and accuracy of your work.
 </thinking>
 
 // make sure you have enough context before coding.
-请在确保拥有足够的上下文信息后，再开始编码，不要做任何假设。如果上下文信息不足，请告知我，我将提供给你。
+请在确保拥有足够的上下文信息后，再开始编码，不要做任何假设。如果上下文信息不足，请告知我，我将提供给你。请遵循 DevIn <devin /> 指令编写代码，
+以节省用户的时间。

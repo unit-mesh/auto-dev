@@ -1,5 +1,7 @@
 package cc.unitmesh.devti.sketch.ui.code
 
+import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.provider.RunService
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.lang.Language
 import com.intellij.openapi.Disposable
@@ -27,11 +29,16 @@ import com.intellij.util.concurrency.annotations.RequiresReadLock
 import com.intellij.util.ui.JBUI
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
+import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.openapi.util.text.StringUtil
+import com.intellij.psi.PsiManager
 import com.intellij.temporary.gui.block.whenDisposed
 import com.intellij.util.ui.JBEmptyBorder
 import java.awt.BorderLayout
+import javax.swing.BoxLayout
+import javax.swing.JButton
 import javax.swing.JComponent
+import javax.swing.JPanel
 
 open class CodeHighlightSketch(
     open val project: Project,
@@ -117,6 +124,13 @@ open class CodeHighlightSketch(
 
     override fun onDoneStream(allText: String) {
         if (ideaLanguage?.displayName == "DevIn") {
+            /// add write panel for /write command, get current text
+            val currentText = getViewText()
+            if (currentText.startsWith("/write:")) {
+                processWriteCommand(currentText)
+                return
+            }
+
             val parse = CodeFence.parse(editorFragment!!.editor.document.text)
             var panel: JComponent? = null
             when (parse.originLanguage) {
@@ -254,6 +268,38 @@ open class CodeHighlightSketch(
 
         editorFragment = null
     }
+}
+
+private fun CodeHighlightSketch.processWriteCommand(currentText: String) {
+    val button = JButton("Write to file").apply {
+        preferredSize = JBUI.size(100, 30)
+
+        addActionListener {
+            val file = ScratchRootType.getInstance().createScratchFile(
+                project,
+                "DevIn-${System.currentTimeMillis()}.devin",
+                Language.findLanguageByID("DevIn"),
+                currentText
+            )
+
+            if (file == null) {
+                return@addActionListener
+            }
+
+            val psiFile = PsiManager.getInstance(project).findFile(file)!!
+
+            RunService.provider(project, file)
+                ?.runFile(project, file, psiFile, isFromToolAction = true)
+                ?: RunService.runInCli(project, psiFile)
+                ?: AutoDevNotifications.notify(project, "No run service found for ${file.name}")
+        }
+    }
+
+    val panel = JPanel()
+    panel.layout = BoxLayout(panel, BoxLayout.X_AXIS)
+    panel.add(button)
+
+    add(panel, BorderLayout.SOUTH)
 }
 
 @RequiresReadLock
