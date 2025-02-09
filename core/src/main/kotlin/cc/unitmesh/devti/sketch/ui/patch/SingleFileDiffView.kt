@@ -256,17 +256,6 @@ class SingleFileDiffView(
 }
 
 fun applyDiffRepairSuggestion(project: Project, editor: Editor, oldCode: String, patchedCode: String) {
-    val diffStreamHandler = DiffStreamHandler(
-        project,
-        editor = editor,
-        0,
-        oldCode.lines().size,
-        onClose = {
-        },
-        onFinish = {
-
-        })
-
     val templateRender = TemplateRender(GENIUS_CODE)
     val template = templateRender.getTemplate("repair-diff.vm")
 
