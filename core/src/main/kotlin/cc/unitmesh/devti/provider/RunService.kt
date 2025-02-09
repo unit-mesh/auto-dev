@@ -61,13 +61,12 @@ interface RunService {
         virtualFile: VirtualFile,
         psiElement: PsiElement?,
     ): RunnerAndConfigurationSettings? {
-// disabled for now , since it's slowly and not necessary
-//        if (psiElement != null) {
-//            val settings = createDefaultConfigurations(project, psiElement)
-//            if (settings != null) {
-//                return settings
-//            }
-//        }
+        if (psiElement != null) {
+            val settings = createDefaultConfigurations(project, psiElement)
+            if (settings != null) {
+                return settings
+            }
+        }
 
         val runManager = RunManager.getInstance(project)
         var testConfig = runManager.allConfigurationsList.firstOrNull {
