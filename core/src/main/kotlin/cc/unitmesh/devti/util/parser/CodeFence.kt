@@ -18,6 +18,12 @@ class CodeFence(
 
         fun parse(content: String): CodeFence {
             val markdownRegex = Regex("```([\\w#+\\s]*)")
+            /// replace ```devin to <devin> for error case
+            var content = content
+            if (content.contains("\n```devin\n")) {
+                content = content.replace("\n```devin\n", "\n<devin>\n")
+                content = content.replace("```\n```\n", "```\n</devin>\n")
+            }
 
             val lines = content.lines()
 
