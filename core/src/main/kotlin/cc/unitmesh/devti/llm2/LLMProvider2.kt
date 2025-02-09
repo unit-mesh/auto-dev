@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okhttp3.sse.EventSource
@@ -178,7 +179,7 @@ private class DefaultLLMTextProvider(
             Message(cm.role, cm.content ?: "")
         })
         val requestBodyText = customRequest.updateCustomFormat(requestCustomize, stream)
-        val requestBody = requestBodyText.toRequestBody("application/json".toMediaTypeOrNull())
+        val requestBody = RequestBody.create("application/json".toMediaTypeOrNull(), requestBodyText.toByteArray())
         println("requestUrl: $requestUrl")
         val request: Request = requestBuilder.url(requestUrl).post(requestBody).build()
 
