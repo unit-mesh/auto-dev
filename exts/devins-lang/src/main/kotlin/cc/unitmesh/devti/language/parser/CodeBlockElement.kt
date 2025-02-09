@@ -57,10 +57,8 @@ class CodeBlockElement(node: ASTNode) : ASTWrapperPsiElement(node), PsiLanguageI
 
             val elements =
                 children.filter {
-                    it !is OuterLanguageElement
-                            && (it.node.elementType == DevInTypes.CODE_CONTENTS || it == DevInTypes.NEWLINE)
-                }
-                    .toList()
+                    it !is OuterLanguageElement && (it.node.elementType == DevInTypes.CODE_CONTENTS || it == DevInTypes.NEWLINE)
+                }.toList()
 
             if (elements.isNotEmpty() && elements.first() == DevInTypes.NEWLINE) {
                 elements.drop(1)
@@ -74,10 +72,16 @@ class CodeBlockElement(node: ASTNode) : ASTWrapperPsiElement(node), PsiLanguageI
 
         fun obtainRelevantTextRange(element: CodeBlockElement): TextRange {
             val elements = obtainFenceContent(element) ?: return getEmptyRange(element)
-            val first = elements.first()
-            val last = elements.last()
 
-            return TextRange.create(first.startOffsetInParent, last.startOffsetInParent + last.textLength)
+            try {
+                val first = elements.first()
+                val last = elements.last()
+
+                return TextRange.create(first.startOffsetInParent, last.startOffsetInParent + last.textLength)
+            } catch (e: Exception) {
+                logger<CodeBlockElement>().warn("Failed to obtain relevant text range", e)
+                return getEmptyRange(element)
+            }
         }
 
         private fun getEmptyRange(host: CodeBlockElement): TextRange {

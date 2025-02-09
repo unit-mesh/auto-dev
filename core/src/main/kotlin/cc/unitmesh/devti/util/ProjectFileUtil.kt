@@ -11,12 +11,13 @@ import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.openapi.vcs.changes.VcsIgnoreManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.ProjectScope
 
 // https://github.com/JetBrains/intellij-community/blob/master/platform/projectModel-impl/src/com/intellij/openapi/roots/impl/ProjectFileIndexImpl.java#L32
 fun isInProject(virtualFile: VirtualFile, project: Project): Boolean {
-    return ProjectFileIndex.getInstance(project).isInContent(virtualFile)
+    return PsiManager.getInstance(project).findFile(virtualFile) != null
 }
 
 fun Project.isInProject(virtualFile: VirtualFile): Boolean {

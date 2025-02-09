@@ -45,7 +45,7 @@ class SqlRunService : RunService {
     override fun createRunSettings(
         project: Project,
         virtualFile: VirtualFile,
-        testElement: PsiElement?
+        psiElement: PsiElement?
     ): RunnerAndConfigurationSettings? {
         return createRunnerConfig(project, virtualFile)
     }
