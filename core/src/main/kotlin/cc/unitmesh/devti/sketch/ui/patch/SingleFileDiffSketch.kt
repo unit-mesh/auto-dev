@@ -133,7 +133,6 @@ class SingleFileDiffSketch(
         mainPanel.add(myHeaderPanel)
         mainPanel.add(contentPanel)
 
-        // runin thread
         ApplicationManager.getApplication().executeOnPooledThread {
             lintCheckForNewCode()
         }
@@ -228,11 +227,14 @@ class SingleFileDiffSketch(
 
         val newFile = LightVirtualFile(currentFile.name, newCode)
         val psiFile = runReadAction { PsiManager.getInstance(myProject).findFile(newFile) } ?: return
-        val errors = PsiErrorCollector.collectSyntaxError(psiFile, myProject)
+        PsiErrorCollector.collectSyntaxError(psiFile, myProject) { errors ->
+            PsiErrorCollector.runInspections(myProject, psiFile)
+            if (errors.isEmpty()) return@collectSyntaxError
+            showErrors(errors)
+        }
+    }
 
-        if (errors.isEmpty()) return
-
-        // show error size and hover to show error message
+    private fun showErrors(errors: List<String>) {
         val errorPanel = JPanel(VerticalLayout(5)).apply {
             val errorLabel = JBLabel("Found Lint issue: ${errors.size}").apply {
                 border = BorderFactory.createEmptyBorder(5, 5, 5, 5)

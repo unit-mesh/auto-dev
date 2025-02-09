@@ -1,19 +1,19 @@
 package cc.unitmesh.devti.sketch.lint
 
+import com.intellij.analysis.AnalysisScope
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx
-import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerImpl
+import com.intellij.codeInspection.InspectionManager
+import com.intellij.codeInspection.ex.GlobalInspectionContextBase
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
-import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiFile
@@ -22,16 +22,12 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 object PsiErrorCollector {
-    fun collectSyntaxError(
-        psiFile: PsiFile,
-        project: Project,
-    ): List<String> {
-        var errors: List<String> = listOf()
-        collectSyntaxError(psiFile, psiFile.virtualFile, project) {
-            errors = it
-        }
+    fun runInspections(project: Project, psiFile: PsiFile) {
+        val scope = AnalysisScope(psiFile)
+        val globalContext = InspectionManager.getInstance(project).createNewGlobalContext() as? GlobalInspectionContextBase
 
-        return errors
+        globalContext?.currentScope = scope
+        globalContext?.doInspections(scope)
     }
 
     /**
@@ -40,12 +36,10 @@ object PsiErrorCollector {
      *
      * @param sourceFile The PSI file from which syntax errors need to be collected.
      * @param runAction A callback function that takes a list of errors as input and performs some action.
-     * @param outputFile The virtual file where the errors will be collected.
      * @param project The project to which the files belong.
      */
     fun collectSyntaxError(
         sourceFile: PsiFile,
-        outputFile: VirtualFile,
         project: Project,
         runAction: ((errors: List<String>) -> Unit)?,
     ) {
@@ -54,14 +48,10 @@ object PsiErrorCollector {
             return runAction?.invoke(collectPsiError) ?: Unit
         }
 
-        val document = runReadAction { FileDocumentManager.getInstance().getDocument(outputFile) } ?: return
+        val document = runReadAction { FileDocumentManager.getInstance().getDocument(sourceFile.virtualFile) } ?: return
 
         val range = TextRange(0, document.textLength)
         val errors = mutableListOf<String>()
-
-        runReadAction {
-            DaemonCodeAnalyzerEx.getInstanceEx(project).restart(sourceFile)
-        }
 
         val hintDisposable = Disposer.newDisposable()
         val busConnection: MessageBusConnection = project.messageBus.connect(hintDisposable)
@@ -71,6 +61,10 @@ object PsiErrorCollector {
                 future.complete(it)
             }
         )
+
+        runReadAction {
+            DaemonCodeAnalyzerEx.getInstanceEx(project).restart(sourceFile)
+        }
 
         future.get(30, TimeUnit.SECONDS)
     }
