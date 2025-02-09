@@ -29,7 +29,6 @@ import com.intellij.util.concurrency.annotations.RequiresReadLock
 import com.intellij.util.ui.JBUI
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
-import com.intellij.database.util.common.isNotNullOrEmpty
 import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiManager
@@ -57,9 +56,13 @@ open class CodeHighlightSketch(
     private var hasSetupAction = false
 
     init {
-        if (text.isNotNullOrEmpty && (ideaLanguage?.displayName != "Markdown" && ideaLanguage != PlainTextLanguage.INSTANCE)) {
+        if (text.isNotNullOrEmpty() && (ideaLanguage?.displayName != "Markdown" && ideaLanguage != PlainTextLanguage.INSTANCE)) {
             initEditor(text)
         }
+    }
+
+    private fun String?.isNotNullOrEmpty(): Boolean {
+        return this != null && this.isNotEmpty()
     }
 
     fun initEditor(text: String) {
