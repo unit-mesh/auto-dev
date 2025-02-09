@@ -394,6 +394,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     val focusableComponent: JComponent get() = input
 
     private fun DefaultListModel<ModelWrapper>.addIfAbsent(vfile: VirtualFile, first: Boolean = false) {
+        if (!vfile.isValid) return
         if (!isInProject(vfile, project)) return
         if (vfile is DiffVirtualFileBase) return
 
