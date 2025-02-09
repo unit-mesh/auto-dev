@@ -138,4 +138,37 @@ class CodeFenceTest  : BasePlatformTestCase() {
         )
         assertTrue(codeFences[2].isComplete)
     }
+
+
+    // parse for error devin block, like ```devin\n```java\n
+    fun testShouldParseErrorDevinBlock() {
+        val content = """
+            |```devin
+            |/write:HelloWorld.java
+            |```java
+            |public class HelloWorld {
+            |    public static void main(String[] args) {
+            |        System.out.println("Hello, World");
+            |    }
+            |}
+            |```
+            |
+        """.trimMargin()
+
+        val codeFences = CodeFence.parseAll(content)
+        assertEquals(codeFences.size, 2)
+        assertEquals(
+            codeFences[0].text, """
+            |/write:HelloWorld.java
+            |```java
+            |public class HelloWorld {
+            |    public static void main(String[] args) {
+            |        System.out.println("Hello, World");
+            |    }
+            |}
+            |```
+        """.trimMargin()
+        )
+        assertTrue(codeFences[0].isComplete)
+    }
 }

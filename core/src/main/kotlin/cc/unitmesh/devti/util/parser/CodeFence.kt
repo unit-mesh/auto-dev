@@ -18,16 +18,8 @@ class CodeFence(
 
         fun parse(content: String): CodeFence {
             val markdownRegex = Regex("```([\\w#+\\s]*)")
-            /// replace ```devin to <devin> for error case
-            var content = content
-            if (content.contains("\n```devin\n")) {
-                content = content.replace("\n```devin\n", "\n<devin>\n")
-                content = content.replace("```\n```\n", "```\n</devin>\n")
-            }
-
             val lines = content.lines()
 
-            // 检查是否存在 devin 开始标签
             val startMatch = devinStartRegex.find(content)
             if (startMatch != null) {
                 val endMatch = devinEndRegex.find(content)
@@ -80,6 +72,16 @@ class CodeFence(
         fun parseAll(content: String): List<CodeFence> {
             val codeFences = mutableListOf<CodeFence>()
             var currentIndex = 0
+            var content = content
+            var hasErrorDevin = false
+            if (content.contains("```devin\n")) {
+                val devinStart = content.indexOf("```devin\n")
+                content = content.replace("```devin\n", "<devin>\n")
+                hasErrorDevin = true
+
+                val devinEnd = content.indexOf("\n```\n", startIndex = devinStart + "<devin>".length)
+                content = content.replaceRange(devinEnd, devinEnd + 4, "\n```\n</devin>")
+            }
 
             val startMatches = devinStartRegex.findAll(content)
             for (startMatch in startMatches) {
