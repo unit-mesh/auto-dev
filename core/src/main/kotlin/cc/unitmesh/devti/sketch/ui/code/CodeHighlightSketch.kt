@@ -105,6 +105,8 @@ open class CodeHighlightSketch(
         }
 
         WriteCommandAction.runWriteCommandAction(project) {
+            if (editorFragment?.editor?.isDisposed == true) return@runWriteCommandAction
+
             val document = editorFragment?.editor?.document
             val normalizedText = StringUtil.convertLineSeparators(text)
             document?.replaceString(0, document.textLength, normalizedText)
@@ -252,6 +254,9 @@ open class CodeHighlightSketch(
                 }
 
                 override fun focusLost(focusEditor: Editor) {
+                    if (focusEditor.isDisposed) return
+                    if (editor.isDisposed) return
+
                     settings.isCaretRowShown = false
                     editor.markupModel.removeAllHighlighters()
                 }
