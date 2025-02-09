@@ -57,9 +57,6 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
             if (filePatches.isEmpty()) {
                 AutoDevNotifications.error(myProject, "PatchProcessor: no patches found")
                 /// add repair button
-                FileEditorManager.getInstance(myProject).openFile(currentFile, true)
-                val editor = FileEditorManager.getInstance(myProject).selectedTextEditor ?: return@addActionListener
-                applyDiffRepairSuggestion(myProject, editor, oldCode, failurePatch)
                 return@invokeLater
             }
 
