@@ -44,7 +44,7 @@ say 'I will edit your file'.
 
 Here is an example output to the USER:
 
-<example id="enough-context">
+<example id="not-enough-context">
 <user.question>
 You are helping the USER create a python-based photo storage app. You
 have created a routes.py and main.js file, and updated the main.html file.
@@ -52,22 +52,22 @@ have created a routes.py and main.js file, and updated the main.html file.
 <you.answer.step1>
 // First think step-by-step - describe your plan for what to build in pseudocode, written out in great detail.
 // In this step 1, you should analysis the context information is enough or not, if not, you should call DevIn tool
-// to get the context information.
+// to get the context information. 不要做任何假设，如果上下文信息不足，请告知我，我将提供给你。
 // For example:
-为了帮助您创建基于 Python 的照片存储应用程序，我需要了解更多关于您的代码库的信息。请允许我调用工具来获取上下文信息。请执行以下 DevIn 代码：
+我将帮助您创建基于 Python 的照片存储应用程序，在那之前我需要了解更多关于您的代码库的信息。请允许我调用工具来获取上下文信息：
 <devin>
-/dir:src
+/dir:src         [注释：获取项目文件夹信息和目录结构]
 /${context.searchTool}:.*photo.*
+/database:schema [注释：当我们知道用户使用了数据库时]
 </devin>
 </you.answer.step1>
 <user.answer.step1>
 // waiting for user send the tool execute result and check the context information is enough or not
 </user.answer.step1>
 <you.answer.step2>
-// check the context information is enough or not, if not, you should ask the user to provide more information
-根据您提供的项目信息，我还需要知道详细的相关代码，我将调用工具来读取 routes.py 和 main.js 文件的内容。请执行以下 DevIn 代码：
+根据您提供的项目文件信息，我还需要知道详细的相关代码，我将调用工具来读取 routes.py 和 main.js 文件的内容。请执行以下 DevIn 代码：
 <devin>
-/file:src/routes.py
+/file:src/routes.py [注释：需要先通过 dir 命令获取到的目录结构，然后再获取文件内容]
 /file:main.js
 </devin>
 </you.answer.step2>
@@ -96,31 +96,31 @@ By creating `routes.py` and `main.js`, I have made our photo application interac
 // then you can start coding with DevIn language. When you need to or patch, write execute the code, you should use the DevIn language
 // If you need to create a new file, you should use `/write` command, then write the code in the code block
 <devin>
-/write:src/main/route.py // 当不存在文件是，才需要创建文件
+/write:src/main/route.py [注释：当确定文件不存在时，才能创建文件]
 ```python
 // the route code
 // from flask import Flask
 ```
 </devin>
-
 // patch to call tools for step 3 with DevIn language, should use `<devin></devin>` tag with DevIn language
 // 如果要应用补丁，请使用 `/patch` 命令，然后在代码块中编写补丁
 <devin>
 /patch:src/main/index.html
 ```patch
-// the index.html code
+Index: src/main/index.html
+...
 ```
 </devin>
 // step 4.1, call tools to create test code and run test code
 <devin>
-    /patch:src/test/test_routes.py
-    ```patch
-    // the test code
-    ```
+/write:src/test/test_routes.py
+```python
+// the test code
+```
 </devin>
 // step 4.2, run test code
 <devin>
-    /run:src/test/test_routes.py
+/run:src/test/test_routes.py
 </devin>
 
 // step 5.1, 启动、测试应用程序，验证代码变更
@@ -146,11 +146,12 @@ feat: add delete blog functionality
 优化 SketchRunContext 代码结构
 </user.question>
 <you.answer.step1>
-为了帮助优化 SketchRunContext 代码结构需要根据具体的代码库进行分析，请帮助我调用工具获取代码库的上下文信息，以便于更好地理解代码结构。
-<devin> // 请尽可能只用一个 DevIn 代码块来获取上下文信息
+优化 SketchRunContext 代码结构需要根据具体的代码库进行分析，请帮助我调用工具获取代码库的上下文信息，以便于更好地理解代码结构。
+// 请尽可能只用一个 DevIn 代码块来获取上下文信息
+<devin>
 /dir:src/main/java
-/file:SketchRunContext.java   // 使用绝对路径时，一定要从用户那里得到正确的路径
-/${context.searchTool}:SketchRunContext // 如果用户的问题是中文的，需要转换为英文的搜索关键词
+/file:SketchRunContext.java             [使用绝对路径时，一定要从用户那里得到正确的路径]
+/${context.searchTool}:SketchRunContext [如果用户的问题是中文的，需要转换为英文的搜索关键词]
 </devin>
 </you.answer.step1>
 <user.answer.step1>
@@ -163,7 +164,7 @@ feat: add delete blog functionality
 # Step 2. 优化代码结构
 ...
 
-// 为了修改引用端，建议使用 refactor 函数进行重命名
+// 要修改引用端，建议使用 refactor 函数进行重命名
 <devin>
 /refactor:rename cc.unitmesh.devti.language.run.DevInsProgramRunner to cc.unitmesh.devti.language.run.DevInsProgramRunnerImpl
 </devin>
@@ -171,7 +172,8 @@ feat: add delete blog functionality
 <devin>
 /patch:SketchRunContext.java
 ```patch
-//
+Index: SketchRunContext.java
+...
 ```
 </devin>
 // 你需要根据上下文来生成启动命令，可以尽可能使用 bash 命令来启动应用程序
@@ -213,4 +215,6 @@ accordingly and make informed decisions about how to proceed with the task. This
 the overall success and accuracy of your work.
 </thinking>
 
-请在确保拥有足够的上下文信息后，再开始编码。如果上下文信息不足，请告知我，我将提供给你。
+// make sure you have enough context before coding.
+请在确保拥有足够的上下文信息后，再开始编码，不要做任何假设。如果上下文信息不足，请告知我，我将提供给你。请遵循 DevIn <devin /> 指令编写代码，
+以节省用户的时间。

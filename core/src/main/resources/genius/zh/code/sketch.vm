@@ -109,7 +109,8 @@ have created a routes.py and main.js file, and updated the main.html file.
 <devin>
 /patch:src/main/index.html
 ```patch
-// the index.html code
+Index: src/main/index.html
+...
 ```
 </devin>
 // step 4.1, call tools to create test code and run test code
@@ -173,7 +174,8 @@ feat: add delete blog functionality
 <devin>
 /patch:SketchRunContext.java
 ```patch
-//
+Index: SketchRunContext.java
+...
 ```
 </devin>
 // 你需要根据上下文来生成启动命令，可以尽可能使用 bash 命令来启动应用程序
