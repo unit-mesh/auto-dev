@@ -79,9 +79,17 @@ class CodeFence(
                 content = content.replace("```devin\n", "<devin>\n")
                 hasErrorDevin = true
 
-                val devinEnd = content.indexOf("\n```\n", startIndex = devinStart + "<devin>".length)
-                if (devinEnd != -1) {
-                    content = content.replaceRange(devinEnd, devinEnd + 4, "\n```\n</devin>")
+                // check \n```\n```, and replace second ``` to </devin>
+                if (content.contains("\n```\n```")) {
+                    val devinEnd = content.indexOf("\n```\n```", startIndex = devinStart + "<devin>\n".length)
+                    if (devinEnd != -1) {
+                        content = content.replaceRange(devinEnd, devinEnd + 4, "\n```\n</devin>")
+                    }
+                } else {
+                    val devinEnd = content.indexOf("\n```\n", startIndex = devinStart + "<devin>".length)
+                    if (devinEnd != -1) {
+                        content = content.replaceRange(devinEnd, devinEnd + 4, "\n```\n</devin>")
+                    }
                 }
             }
 
