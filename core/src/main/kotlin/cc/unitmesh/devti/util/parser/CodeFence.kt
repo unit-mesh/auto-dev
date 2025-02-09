@@ -80,7 +80,9 @@ class CodeFence(
                 hasErrorDevin = true
 
                 val devinEnd = content.indexOf("\n```\n", startIndex = devinStart + "<devin>".length)
-                content = content.replaceRange(devinEnd, devinEnd + 4, "\n```\n</devin>")
+                if (devinEnd != -1) {
+                    content = content.replaceRange(devinEnd, devinEnd + 4, "\n```\n</devin>")
+                }
             }
 
             val startMatches = devinStartRegex.findAll(content)
@@ -172,9 +174,9 @@ class CodeFence(
             // 处理最后的文本内容
             if (textBuilder.isNotEmpty()) {
                 val textBlock = CodeFence(
-                    findLanguage("markdown"), 
-                    textBuilder.trim().toString(), 
-                    true, 
+                    findLanguage("markdown"),
+                    textBuilder.trim().toString(),
+                    true,
                     "txt"
                 )
                 codeFences.add(textBlock)
