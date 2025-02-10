@@ -240,7 +240,7 @@ open class CodeHighlightSketch(
 
             val settings = editor.settings.also {
                 it.isDndEnabled = false
-                it.isLineNumbersShown = isShowLineNo ?: false
+                it.isLineNumbersShown = isShowLineNo == true
                 it.additionalLinesCount = 0
                 it.isLineMarkerAreaShown = false
                 it.isFoldingOutlineShown = false
