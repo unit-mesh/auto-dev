@@ -57,7 +57,7 @@ data class SketchRunContext(
 
             val buildInfo = BuildSystemProvider.guess(project).firstOrNull()
             val buildTool = if (buildInfo != null) {
-                "${buildInfo.buildToolName} ${buildInfo.buildToolVersion} ${buildInfo.languageName} ${buildInfo.languageVersion}"
+                "${buildInfo.buildToolName} + ${buildInfo.languageName} + ${buildInfo.languageVersion}"
             } else {
                 ""
             }
