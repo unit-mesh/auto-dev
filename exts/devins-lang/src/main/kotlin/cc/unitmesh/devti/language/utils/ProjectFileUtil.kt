@@ -21,15 +21,13 @@ fun Project.findFile(filename: String, caseSensitively: Boolean = true): Virtual
     ApplicationManager.getApplication().assertReadAccessAllowed()
     val currentTask = ApplicationManager.getApplication().executeOnPooledThread<VirtualFile?> {
         val searchedFiles = runReadAction {
-                FilenameIndex.getVirtualFilesByName(filename, caseSensitively, ProjectScope.getProjectScope(this))
+                FilenameIndex.getVirtualFilesByName(filename, caseSensitively, ProjectScope.getContentScope(this))
             }
         return@executeOnPooledThread searchedFiles.firstOrNull()
     }
 
-    return currentTask.get(10, TimeUnit.SECONDS)
+    return currentTask.get(5, TimeUnit.SECONDS)
 }
-
-// getVirtualFilesByNamesIgnoringCase
 
 fun VirtualFile.canBeAdded(): Boolean {
     if (!this.isValid || this.isDirectory) return false

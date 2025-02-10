@@ -104,7 +104,6 @@ class CodeFence(
                 }
             }
 
-            // 处理最后剩余的内容
             if (currentIndex < content.length) {
                 val remainingContent = content.substring(currentIndex)
                 parseMarkdownContent(remainingContent, codeFences)
@@ -113,55 +112,23 @@ class CodeFence(
             return codeFences.filter { it.text.isNotEmpty() }
         }
 
-        private fun processDevinBlock(content: String): String {
+        fun processDevinBlock(content: String): String {
             var currentContent = content
-            var startIndex = 0
 
-            /// check for normal devin block, like ```devin\n// code\n```\n
-            val normalRegex = Regex("(^|\\n)```devin\\n(.*?)\\n```\\n")
-            val normalMatches = normalRegex.findAll(currentContent)
-            for (match in normalMatches) {
-                val devinContent = match.groups[2]?.value ?: ""
-                currentContent = currentContent.replaceRange(match.range.first, match.range.last + 1, "\n<devin>\n$devinContent</devin>")
-            }
+            val devinRegexBlock = Regex("(?<=^|\\n)```devin\\n([\\s\\S]*?)\\n```\\n")
+            val devinMatches = devinRegexBlock.findAll(content).toList()
+            val normalCodeBlock = Regex("```([\\w#+\\s]*)\\n")
 
-            while (true) {
-                val devinStart = currentContent.indexOf("```devin\n", startIndex)
-                if (devinStart == -1) {
-                    break
+            for (match in devinMatches) {
+                var devinContent = match.groups[1]?.value ?: ""
+                if (normalCodeBlock.find(devinContent) != null) {
+                    if (!devinContent.trim().endsWith("```")) {
+                        devinContent += "\n```"
+                    }
                 }
 
-                currentContent = currentContent.replaceRange(devinStart, devinStart + "```devin\n".length, "<devin>\n")
-
-                var devinEnd: Int
-                val standardEndPattern = "\n```\n```\n"
-                val errorEndPattern = "\n```\n"
-
-                if (currentContent.substring(devinStart + "<devin>\n".length).contains(standardEndPattern)) {
-                    devinEnd = currentContent.indexOf(standardEndPattern, startIndex = devinStart + "<devin>\n".length)
-                    if (devinEnd != -1) {
-                        devinEnd += standardEndPattern.length - "\n```\n".length
-                        currentContent = currentContent.replaceRange(
-                            devinEnd,
-                            devinEnd + standardEndPattern.length - "\n```\n".length,
-                            "</devin>"
-                        )
-                        startIndex = devinEnd + "</devin>".length
-                    } else {
-                        break
-                    }
-                } else if (currentContent.substring(devinStart + "<devin>\n".length).contains(errorEndPattern)) {
-                    devinEnd = currentContent.indexOf(errorEndPattern, startIndex = devinStart + "<devin>\n".length)
-                    if (devinEnd != -1) {
-                        currentContent =
-                            currentContent.replaceRange(devinEnd, devinEnd + errorEndPattern.length, "\n```\n</devin>")
-                        startIndex = devinEnd + "</devin>".length
-                    } else {
-                        break
-                    }
-                } else {
-                    break
-                }
+                val replacement = "\n<devin>\n$devinContent\n</devin>"
+                currentContent = currentContent.replace(match.value, replacement)
             }
 
             return currentContent
