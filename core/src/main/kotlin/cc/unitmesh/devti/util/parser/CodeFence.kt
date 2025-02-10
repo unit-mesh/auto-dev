@@ -75,22 +75,44 @@ class CodeFence(
             var content = content
             var hasErrorDevin = false
             if (content.contains("```devin\n")) {
-                val devinStart = content.indexOf("```devin\n")
-                content = content.replace("```devin\n", "<devin>\n")
-                hasErrorDevin = true
+                var currentContent = content // 使用一个可变变量来操作
+                var startIndex = 0
 
-                // check \n```\n```, and replace second ``` to </devin>
-                if (content.contains("\n```\n```")) {
-                    val devinEnd = content.indexOf("\n```\n```", startIndex = devinStart + "<devin>\n".length)
-                    if (devinEnd != -1) {
-                        content = content.replaceRange(devinEnd, devinEnd + 4, "\n```\n</devin>")
+                while (true) {
+                    val devinStart = currentContent.indexOf("```devin\n", startIndex)
+                    if (devinStart == -1) {
+                        break // 找不到起始标签，退出循环
                     }
-                } else {
-                    val devinEnd = content.indexOf("\n```\n", startIndex = devinStart + "<devin>".length)
-                    if (devinEnd != -1) {
-                        content = content.replaceRange(devinEnd, devinEnd + 4, "\n```\n</devin>")
+
+                    currentContent = currentContent.replaceRange(devinStart, devinStart + "```devin\n".length, "<devin>\n")
+                    hasErrorDevin = true
+
+                    var devinEnd: Int
+                    val standardEndPattern = "\n```\n```\n"
+                    val errorEndPattern = "\n```\n"
+
+                    if (currentContent.substring(devinStart + "<devin>\n".length).contains(standardEndPattern)) {
+                        devinEnd = currentContent.indexOf(standardEndPattern, startIndex = devinStart + "<devin>\n".length)
+                        if (devinEnd != -1) {
+                            devinEnd += standardEndPattern.length - "\n```\n".length
+                            currentContent = currentContent.replaceRange(devinEnd, devinEnd + standardEndPattern.length - "\n```\n".length, "</devin>")
+                            startIndex = devinEnd + "</devin>".length
+                        } else {
+                            break // 找不到标准结束标签，可能格式错误，退出循环或根据需求处理错误
+                        }
+                    } else if (currentContent.substring(devinStart + "<devin>\n".length).contains(errorEndPattern)) {
+                        devinEnd = currentContent.indexOf(errorEndPattern, startIndex = devinStart + "<devin>\n".length)
+                        if (devinEnd != -1) {
+                            currentContent = currentContent.replaceRange(devinEnd, devinEnd + errorEndPattern.length, "\n```\n</devin>")
+                            startIndex = devinEnd + "</devin>".length
+                        } else {
+                            break
+                        }
+                    } else {
+                        break // 找不到结束标签，可能格式错误，退出循环或根据需求处理错误
                     }
                 }
+                content = currentContent // 更新 content 为修改后的内容
             }
 
             val startMatches = devinStartRegex.findAll(content)
