@@ -56,6 +56,7 @@ class SketchInputListener(
             val devInProcessor = LanguageProcessor.devin()
             val compiledInput = runReadAction { devInProcessor?.compile(project, userInput) } ?: userInput
 
+            toolWindow.updateHistoryPanel()
             toolWindow.addRequestPrompt(compiledInput)
 
             val flow = chatCodingService.request(systemPrompt, compiledInput)

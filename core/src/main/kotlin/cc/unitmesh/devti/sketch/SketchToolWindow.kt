@@ -57,6 +57,10 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
     private var myList = JPanel(VerticalLayout(JBUI.scale(0))).apply {
         this.isOpaque = true
     }
+    private var historyPanel = JPanel(VerticalLayout(JBUI.scale(0))).apply {
+        this.isOpaque = true
+    }
+
     private var isUserScrolling: Boolean = false
 
     private var systemPrompt: JPanel = JPanel(BorderLayout())
@@ -76,9 +80,8 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
 
     private var panelContent: DialogPanel = panel {
         row { cell(systemPrompt).fullWidth().fullHeight() }
-        row {
-            cell(header).alignRight()
-        }
+        row { cell(header).alignRight() }
+        row { cell(historyPanel).fullWidth().fullHeight() }
         row { cell(myList).fullWidth().fullHeight() }
     }
 
@@ -173,7 +176,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
 
     fun addRequestPrompt(text: String) {
         runInEdt {
-            myList.add(createSingleTextView(text))
+            historyPanel.add(createSingleTextView(text))
             this.revalidate()
             this.repaint()
         }
@@ -183,6 +186,18 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
     fun addSystemPrompt(text: String) {
         runInEdt {
             systemPrompt.add(createSingleTextView(text))
+            this.revalidate()
+            this.repaint()
+        }
+    }
+
+    fun updateHistoryPanel() {
+        runInEdt {
+            blockViews.filter { it.getViewText().isNotEmpty() }.forEach {
+                historyPanel.add(it.getComponent())
+            }
+
+            myList.removeAll()
             this.revalidate()
             this.repaint()
         }
