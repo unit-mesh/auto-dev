@@ -326,6 +326,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
         progressBar.isVisible = false
         systemPrompt.removeAll()
         myList.removeAll()
+        historyPanel.removeAll()
         initializePreAllocatedBlocks(project)
     }
 }
