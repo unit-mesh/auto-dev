@@ -367,4 +367,27 @@ export default {
         assertEquals(codeFences[11].text, """npm run dev""".trimMargin())
         assertTrue(codeFences[0].isComplete)
     }
+
+//    fun testShouldFixForNormalDevinLanguage() {
+//        val content = """
+//```devin
+///run:src/test/java/cc/unitmesh/untitled/demo/service/BlogServiceTest.java
+//```
+//
+//如果测试通过，您可以启动应用程序进行手动测试：
+//
+//```bash
+//./gradlew :bootRun
+//```
+//        """.trimMargin()
+//
+//        val codeFences = CodeFence.parseAll(content)
+//        assertEquals(codeFences.size, 3)
+//        assertEquals(
+//            codeFences[0].text, """
+//            |/run:src/test/java/cc/unitmesh/untitled/demo/service/BlogServiceTest.java
+//        """.trimMargin()
+//        )
+//        assertTrue(codeFences[0].isComplete)
+//    }
 }

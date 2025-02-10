@@ -73,51 +73,12 @@ class CodeFence(
             val codeFences = mutableListOf<CodeFence>()
             var currentIndex = 0
             var content = content
-            var hasErrorDevin = false
             if (content.contains("```devin\n")) {
-                var currentContent = content // 使用一个可变变量来操作
-                var startIndex = 0
-
-                while (true) {
-                    val devinStart = currentContent.indexOf("```devin\n", startIndex)
-                    if (devinStart == -1) {
-                        break // 找不到起始标签，退出循环
-                    }
-
-                    currentContent = currentContent.replaceRange(devinStart, devinStart + "```devin\n".length, "<devin>\n")
-                    hasErrorDevin = true
-
-                    var devinEnd: Int
-                    val standardEndPattern = "\n```\n```\n"
-                    val errorEndPattern = "\n```\n"
-
-                    if (currentContent.substring(devinStart + "<devin>\n".length).contains(standardEndPattern)) {
-                        devinEnd = currentContent.indexOf(standardEndPattern, startIndex = devinStart + "<devin>\n".length)
-                        if (devinEnd != -1) {
-                            devinEnd += standardEndPattern.length - "\n```\n".length
-                            currentContent = currentContent.replaceRange(devinEnd, devinEnd + standardEndPattern.length - "\n```\n".length, "</devin>")
-                            startIndex = devinEnd + "</devin>".length
-                        } else {
-                            break // 找不到标准结束标签，可能格式错误，退出循环或根据需求处理错误
-                        }
-                    } else if (currentContent.substring(devinStart + "<devin>\n".length).contains(errorEndPattern)) {
-                        devinEnd = currentContent.indexOf(errorEndPattern, startIndex = devinStart + "<devin>\n".length)
-                        if (devinEnd != -1) {
-                            currentContent = currentContent.replaceRange(devinEnd, devinEnd + errorEndPattern.length, "\n```\n</devin>")
-                            startIndex = devinEnd + "</devin>".length
-                        } else {
-                            break
-                        }
-                    } else {
-                        break // 找不到结束标签，可能格式错误，退出循环或根据需求处理错误
-                    }
-                }
-                content = currentContent // 更新 content 为修改后的内容
+                content = processDevinBlock(content)
             }
 
             val startMatches = devinStartRegex.findAll(content)
             for (startMatch in startMatches) {
-                // 处理标签前的文本
                 if (startMatch.range.first > currentIndex) {
                     val beforeText = content.substring(currentIndex, startMatch.range.first)
                     if (beforeText.isNotEmpty()) {
@@ -125,7 +86,6 @@ class CodeFence(
                     }
                 }
 
-                // 处理 devin 标签内容
                 val searchRegion = content.substring(startMatch.range.first)
                 val endMatch = devinEndRegex.find(searchRegion)
                 val isComplete = endMatch != null
@@ -151,6 +111,52 @@ class CodeFence(
             }
 
             return codeFences
+        }
+
+        private fun processDevinBlock(content: String): String {
+            var currentContent = content
+            var startIndex = 0
+
+            while (true) {
+                val devinStart = currentContent.indexOf("```devin\n", startIndex)
+                if (devinStart == -1) {
+                    break
+                }
+
+                currentContent = currentContent.replaceRange(devinStart, devinStart + "```devin\n".length, "<devin>\n")
+
+                var devinEnd: Int
+                val standardEndPattern = "\n```\n```\n"
+                val errorEndPattern = "\n```\n"
+
+                if (currentContent.substring(devinStart + "<devin>\n".length).contains(standardEndPattern)) {
+                    devinEnd = currentContent.indexOf(standardEndPattern, startIndex = devinStart + "<devin>\n".length)
+                    if (devinEnd != -1) {
+                        devinEnd += standardEndPattern.length - "\n```\n".length
+                        currentContent = currentContent.replaceRange(
+                            devinEnd,
+                            devinEnd + standardEndPattern.length - "\n```\n".length,
+                            "</devin>"
+                        )
+                        startIndex = devinEnd + "</devin>".length
+                    } else {
+                        break
+                    }
+                } else if (currentContent.substring(devinStart + "<devin>\n".length).contains(errorEndPattern)) {
+                    devinEnd = currentContent.indexOf(errorEndPattern, startIndex = devinStart + "<devin>\n".length)
+                    if (devinEnd != -1) {
+                        currentContent =
+                            currentContent.replaceRange(devinEnd, devinEnd + errorEndPattern.length, "\n```\n</devin>")
+                        startIndex = devinEnd + "</devin>".length
+                    } else {
+                        break
+                    }
+                } else {
+                    break
+                }
+            }
+
+            return currentContent
         }
 
         private fun parseMarkdownContent(content: String, codeFences: MutableList<CodeFence>) {
