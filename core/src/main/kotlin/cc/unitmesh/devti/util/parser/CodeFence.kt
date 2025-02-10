@@ -110,12 +110,20 @@ class CodeFence(
                 parseMarkdownContent(remainingContent, codeFences)
             }
 
-            return codeFences
+            return codeFences.filter { it.text.isNotEmpty() }
         }
 
         private fun processDevinBlock(content: String): String {
             var currentContent = content
             var startIndex = 0
+
+            /// check for normal devin block, like ```devin\n// code\n```\n
+            val normalRegex = Regex("(^|\\n)```devin\\n(.*?)\\n```\\n")
+            val normalMatches = normalRegex.findAll(currentContent)
+            for (match in normalMatches) {
+                val devinContent = match.groups[2]?.value ?: ""
+                currentContent = currentContent.replaceRange(match.range.first, match.range.last + 1, "\n<devin>\n$devinContent</devin>")
+            }
 
             while (true) {
                 val devinStart = currentContent.indexOf("```devin\n", startIndex)

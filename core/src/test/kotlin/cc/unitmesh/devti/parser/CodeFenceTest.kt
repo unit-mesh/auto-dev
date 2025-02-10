@@ -3,7 +3,7 @@ package cc.unitmesh.devti.parser
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 
-class CodeFenceTest  : BasePlatformTestCase() {
+class CodeFenceTest : BasePlatformTestCase() {
     fun testShould_parse_code_from_markdown_java_hello_world() {
         val markdown = """
             |```java
@@ -120,7 +120,7 @@ class CodeFenceTest  : BasePlatformTestCase() {
         """.trimMargin()
 
         val codeFences = CodeFence.parseAll(content)
-        assertEquals(codeFences.size, 3)
+        assertEquals(codeFences.size, 2)
         assertEquals(
             codeFences[0].text, """
             |// the index.html code
@@ -128,7 +128,7 @@ class CodeFenceTest  : BasePlatformTestCase() {
         )
         assertTrue(codeFences[0].isComplete)
         assertEquals(
-            codeFences[2].text, """
+            codeFences[1].text, """
             |public class HelloWorld {
             |    public static void main(String[] args) {
             |        System.out.println("Hello, World");
@@ -136,7 +136,7 @@ class CodeFenceTest  : BasePlatformTestCase() {
             |}
         """.trimMargin()
         )
-        assertTrue(codeFences[2].isComplete)
+        assertTrue(codeFences[1].isComplete)
     }
 
     // parse for error devin block, like ```devin\n```java\n
@@ -188,7 +188,7 @@ class CodeFenceTest  : BasePlatformTestCase() {
         """.trimMargin()
 
         val codeFences = CodeFence.parseAll(content)
-        assertEquals(codeFences.size, 2)
+        assertEquals(codeFences.size, 1)
         assertEquals(
             codeFences[0].text, """
             |/write:HelloWorld.java
@@ -297,38 +297,40 @@ npm run dev
 
         val codeFences = CodeFence.parseAll(content)
         assertEquals(codeFences.size, 13)
-        assertEquals(codeFences[9].text, """/patch:src/App.vue
+        assertEquals(
+            codeFences[9].text, """/patch:src/App.vue
 ```vue
 <template>
   <div id="app">
     <router-view />
   </div>
 </template>
-```""".trimMargin())
+```""".trimMargin()
+        )
         assertEquals(codeFences[11].text, """npm run dev""".trimMargin())
         assertTrue(codeFences[0].isComplete)
     }
 
-//    fun testShouldFixForNormalDevinLanguage() {
-//        val content = """
-//```devin
-///run:src/test/java/cc/unitmesh/untitled/demo/service/BlogServiceTest.java
-//```
-//
-//如果测试通过，您可以启动应用程序进行手动测试：
-//
-//```bash
-//./gradlew :bootRun
-//```
-//        """.trimMargin()
-//
-//        val codeFences = CodeFence.parseAll(content)
-//        assertEquals(codeFences.size, 3)
-//        assertEquals(
-//            codeFences[0].text, """
-//            |/run:src/test/java/cc/unitmesh/untitled/demo/service/BlogServiceTest.java
-//        """.trimMargin()
-//        )
-//        assertTrue(codeFences[0].isComplete)
-//    }
+    fun testShouldFixForNormalDevinLanguage() {
+        val content = """
+```devin
+/run:src/test/java/cc/unitmesh/untitled/demo/service/BlogServiceTest.java
+```
+
+如果测试通过，您可以启动应用程序进行手动测试：
+
+```bash
+./gradlew :bootRun
+```
+        """.trimMargin()
+
+        val codeFences = CodeFence.parseAll(content)
+        assertEquals(codeFences.size, 3)
+        assertEquals(
+            codeFences[0].text, """
+            |/run:src/test/java/cc/unitmesh/untitled/demo/service/BlogServiceTest.java
+        """.trimMargin()
+        )
+        assertTrue(codeFences[0].isComplete)
+    }
 }
