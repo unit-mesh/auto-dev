@@ -171,30 +171,18 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
         chatCodingService.clearSession()
     }
 
-    /**
-     * Todo: add to all component list
-     */
     fun addRequestPrompt(text: String) {
         runInEdt {
-            val panel = createSingleTextView(text)
-
-            myList.add(panel)
-
+            myList.add(createSingleTextView(text))
             this.revalidate()
             this.repaint()
         }
     }
 
-    /**
-     * Todo: add to all component list
-     */
+
     fun addSystemPrompt(text: String) {
         runInEdt {
-            val panel = createSingleTextView(text)
-
-            systemPrompt.removeAll()
-            systemPrompt.add(panel, BorderLayout.CENTER)
-
+            systemPrompt.add(createSingleTextView(text))
             this.revalidate()
             this.repaint()
         }
