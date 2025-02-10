@@ -36,11 +36,17 @@ class LocalSearchInsCommand(val myProject: Project, private val scope: String, v
         }
 
         val textSearch = runReadAction { search(myProject, text, OVERLAP) }
-        return textSearch.map { (file, lines) ->
+        val results = textSearch.map { (file, lines) ->
             val filePath = file.relativePath(myProject)
             val linesWithContext = lines.joinToString("\n")
             "file: $filePath\n$linesWithContext"
         }.joinToString("\n")
+
+        if (results.isEmpty()) {
+            return "No result found for /$commandName:$text"
+        }
+
+        return results
     }
 
     /**

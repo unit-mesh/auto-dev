@@ -17,6 +17,8 @@ class RipgrepSearchInsCommand(
 
     override suspend fun execute(): String? {
         val searchDirectory = myProject.baseDir!!.path
-        return RipgrepSearcher.searchFiles(myProject, searchDirectory, text ?: scope, null).get()
+        val searchContent = text ?: scope
+        val result = RipgrepSearcher.searchFiles(myProject, searchDirectory, searchContent, null).get()
+        return result ?: "No result found for /$commandName:$searchContent"
     }
 }
