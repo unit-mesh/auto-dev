@@ -197,7 +197,9 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
                 historyPanel.add(it.getComponent())
             }
 
+            blockViews.clear()
             myList.removeAll()
+
             this.revalidate()
             this.repaint()
         }
