@@ -324,6 +324,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
         chatCodingService.clearSession()
         progressBar.isIndeterminate = false
         progressBar.isVisible = false
+        blockViews.clear()
         systemPrompt.removeAll()
         myList.removeAll()
         historyPanel.removeAll()
