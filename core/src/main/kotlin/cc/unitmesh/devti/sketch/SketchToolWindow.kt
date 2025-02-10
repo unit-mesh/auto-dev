@@ -59,7 +59,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
     }
     private var isUserScrolling: Boolean = false
 
-    private var userPrompt: JPanel = JPanel(BorderLayout())
+    private var systemPrompt: JPanel = JPanel(BorderLayout())
     private var contentPanel = JPanel(BorderLayout())
 
     val header = JButton(AllIcons.Actions.Copy).apply {
@@ -75,7 +75,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
     }
 
     private var panelContent: DialogPanel = panel {
-        row { cell(userPrompt).fullWidth().fullHeight() }
+        row { cell(systemPrompt).fullWidth().fullHeight() }
         row {
             cell(header).alignRight()
         }
@@ -172,29 +172,48 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
     }
 
     /**
-     * Todo: add to all component lsit
+     * Todo: add to all component list
      */
     fun addRequestPrompt(text: String) {
         runInEdt {
-            val codeBlockViewer = CodeHighlightSketch(project, text, PlainTextLanguage.INSTANCE).apply {
-                initEditor(text)
-            }
+            val panel = createSingleTextView(text)
 
-            codeBlockViewer.editorFragment!!.setCollapsed(true)
-            codeBlockViewer.editorFragment!!.updateExpandCollapseLabel()
-
-            val panel = panel {
-                row {
-                    cell(codeBlockViewer).fullWidth()
-                }
-            }
-
-            userPrompt.removeAll()
-            userPrompt.add(panel, BorderLayout.CENTER)
+            myList.add(panel)
 
             this.revalidate()
             this.repaint()
         }
+    }
+
+    /**
+     * Todo: add to all component list
+     */
+    fun addSystemPrompt(text: String) {
+        runInEdt {
+            val panel = createSingleTextView(text)
+
+            systemPrompt.removeAll()
+            systemPrompt.add(panel, BorderLayout.CENTER)
+
+            this.revalidate()
+            this.repaint()
+        }
+    }
+
+    private fun createSingleTextView(text: String): DialogPanel {
+        val codeBlockViewer = CodeHighlightSketch(project, text, PlainTextLanguage.INSTANCE).apply {
+            initEditor(text)
+        }
+
+        codeBlockViewer.editorFragment!!.setCollapsed(true)
+        codeBlockViewer.editorFragment!!.updateExpandCollapseLabel()
+
+        val panel = panel {
+            row {
+                cell(codeBlockViewer).fullWidth()
+            }
+        }
+        return panel
     }
 
     fun onUpdate(text: String) {
@@ -300,7 +319,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
         chatCodingService.clearSession()
         progressBar.isIndeterminate = false
         progressBar.isVisible = false
-        userPrompt.removeAll()
+        systemPrompt.removeAll()
         myList.removeAll()
         initializePreAllocatedBlocks(project)
     }
@@ -337,6 +356,11 @@ class CustomProgressBar(private val view: SketchToolWindow) : JPanel(BorderLayou
 }
 
 fun Row.actionButton(action: AnAction, @NonNls actionPlace: String = ActionPlaces.UNKNOWN): Cell<ActionButton> {
-    val component = ActionButton(action, action.templatePresentation.clone(), actionPlace, ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE)
+    val component = ActionButton(
+        action,
+        action.templatePresentation.clone(),
+        actionPlace,
+        ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+    )
     return cell(component)
 }

@@ -29,6 +29,8 @@ import com.intellij.util.ui.UIUtil
 import org.jetbrains.plugins.terminal.LocalTerminalDirectRunner
 import java.awt.BorderLayout
 import java.awt.Dimension
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.JComponent
@@ -90,6 +92,14 @@ class TerminalSketchProvider : LanguageSketchProvider {
                     }
                 }
 
+                val copyAction = object : AnAction("Copy", "Copy text", AllIcons.Actions.Copy) {
+                    override fun actionPerformed(e: AnActionEvent) {
+                        val clipboard = Toolkit.getDefaultToolkit().systemClipboard
+                        val selection = StringSelection(getViewText())
+                        clipboard.setContents(selection, null)
+                    }
+                }
+
                 val sendAction = object : AnAction("Send to Chat", "Send to Chat", AutoDevIcons.Send) {
                     override fun actionPerformed(e: AnActionEvent) {
                         try {
@@ -110,7 +120,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
                     }
                 }
 
-                return listOf(clearAction, sendAction, popupAction)
+                return listOf(copyAction, clearAction, sendAction, popupAction)
             }
 
             private fun executePopup(terminalWidget: JBTerminalWidget?, project: Project): MouseAdapter =
