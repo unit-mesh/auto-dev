@@ -153,7 +153,7 @@ object PsiErrorCollector {
             .filter {
                 it.isApplicable(psiFile.language)
                         && it.displayKey?.id !in frontEndSkipError
-                        && it.defaultLevel.severity == HighlightSeverity.WARNING || it.defaultLevel.severity == HighlightSeverity.ERROR
+                        && it.defaultLevel.severity == HighlightSeverity.ERROR
             }
 
         toolWrappers.forEach {

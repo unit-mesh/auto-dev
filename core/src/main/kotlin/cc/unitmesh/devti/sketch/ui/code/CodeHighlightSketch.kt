@@ -219,7 +219,13 @@ open class CodeHighlightSketch(
             isShowLineNo: Boolean? = false,
         ): EditorEx {
             val editor: EditorEx = ReadAction.compute<EditorEx, Throwable> {
-                EditorFactory.getInstance().createViewer(document, project, EditorKind.PREVIEW) as EditorEx
+                if (project.isDisposed) return@compute throw IllegalStateException("Project is disposed")
+
+                try {
+                    EditorFactory.getInstance().createViewer(document, project, EditorKind.PREVIEW) as EditorEx
+                } catch (e: Throwable){
+                    throw e
+                }
             }
 
             disposable.whenDisposed {
