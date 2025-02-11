@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.sketch.ui.code
 
 import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.provider.RunService
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.lang.Language
@@ -130,9 +131,8 @@ open class CodeHighlightSketch(
 
     override fun onDoneStream(allText: String) {
         if (ideaLanguage?.displayName == "DevIn") {
-            /// add write panel for /write command, get current text
             val currentText = getViewText()
-            if (currentText.startsWith("/write:")) {
+            if (currentText.startsWith("/" + BuiltinCommand.WRITE.commandName + ":")) {
                 processWriteCommand(currentText)
                 return
             }
