@@ -6,7 +6,6 @@ import com.intellij.codeInsight.daemon.impl.DaemonProgressIndicator
 import com.intellij.codeInspection.InspectionEngine
 import com.intellij.codeInspection.InspectionManager
 import com.intellij.codeInspection.ProblemDescriptor
-import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ex.GlobalInspectionContextBase
 import com.intellij.codeInspection.ex.LocalInspectionToolWrapper
 import com.intellij.lang.annotation.HighlightSeverity
@@ -32,22 +31,6 @@ import javax.swing.JPanel
 import javax.swing.JTable
 import javax.swing.table.DefaultTableModel
 
-data class SketchInspectionError(
-    val lineNumber: Int,
-    val description: String,
-    val highlightType: ProblemHighlightType,
-) {
-    companion object {
-        fun from(problemDescriptor: ProblemDescriptor): SketchInspectionError {
-            return SketchInspectionError(
-                problemDescriptor.lineNumber,
-                problemDescriptor.descriptionTemplate,
-                problemDescriptor.highlightType
-            )
-        }
-    }
-}
-
 object SketchCodeInspection {
     fun showErrors(errors: List<SketchInspectionError>, panel: JPanel) {
         val columnNames = arrayOf("Line", "Description", "Highlight Type")
@@ -64,17 +47,19 @@ object SketchCodeInspection {
         val scrollPane = JBScrollPane(table).apply {
             preferredSize = Dimension(480, 400)
         }
+
         val errorLabel = JBLabel(AutoDevBundle.message("sketch.lint.error", errors.size)).apply {
             border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
+            addMouseListener(object : MouseAdapter() {
+                override fun mouseClicked(e: MouseEvent?) {
+                    createPopup(scrollPane, table, errors).showInCenterOf(panel)
+                }
+
+                override fun mouseEntered(e: MouseEvent) {
+                    toolTipText = AutoDevBundle.message("sketch.lint.error.tooltip")
+                }
+            })
         }
-        errorLabel.addMouseListener(object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent?) {
-                createPopup(scrollPane, table, errors).showInCenterOf(panel)
-            }
-            override fun mouseEntered(e: MouseEvent) {
-                errorLabel.toolTipText = AutoDevBundle.message("sketch.lint.error.tooltip")
-            }
-        })
 
         val errorPanel = JPanel().apply {
             background = JBColor.WHITE
@@ -142,7 +127,8 @@ object SketchCodeInspection {
             it.initialize(globalContext)
         }
 
-        val toolsCopy: MutableList<LocalInspectionToolWrapper> = ArrayList<LocalInspectionToolWrapper>(toolWrappers.size)
+        val toolsCopy: MutableList<LocalInspectionToolWrapper> =
+            ArrayList<LocalInspectionToolWrapper>(toolWrappers.size)
         for (tool in toolWrappers) {
             if (tool is LocalInspectionToolWrapper) {
                 toolsCopy.add(tool.createCopy())
