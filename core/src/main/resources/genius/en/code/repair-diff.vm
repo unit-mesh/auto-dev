@@ -1,16 +1,5 @@
 Please help me repair the diff, follow GNU unified diff format, and return all repaired code.
 
-GNU unified diff format example:
-
-```diff
-Index: src/main/java/com/example/MyClass.java
-===================================================================
---- src/main/java/com/example/MyClass.java
-+++ src/main/java/com/example/MyClass.java
-@@ -1,5 +1,5 @@
- package com.example;
-```
-
 Here is the original code: ${context.oldCode}
 
 Here is the patched code:
