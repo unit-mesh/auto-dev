@@ -15,6 +15,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.launch
 
@@ -67,6 +68,11 @@ class SketchInputListener(
                     suggestion.append(char)
 
                     invokeLater {
+                        if (project.isDisposed) {
+                            cancel()
+                            return@invokeLater
+                        }
+
                         toolWindow.onUpdate(suggestion.toString())
                     }
                 }
