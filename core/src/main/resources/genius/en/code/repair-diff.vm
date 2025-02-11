@@ -1,4 +1,4 @@
-Please help me repair the diff, follow GNU unified diff format, and return all repaired code.
+Please according the diff to repair the code, and return the repaired final code.
 
 Here is the original code: ${context.oldCode}
 
