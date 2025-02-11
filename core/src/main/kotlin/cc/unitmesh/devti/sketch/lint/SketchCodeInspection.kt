@@ -61,7 +61,7 @@ object SketchCodeInspection {
         }
 
         val scrollPane = JBScrollPane(table).apply {
-            preferredSize = Dimension(600, 300)
+            preferredSize = Dimension(480, 400)
         }
         val errorLabel = JBLabel("Found Lint issue: ${errors.size}").apply {
             border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
@@ -106,27 +106,28 @@ object SketchCodeInspection {
 
         globalContext.currentScope = AnalysisScope(originPsi)
 
-        val toolsCopy = localInspectionToolWrappers(project, psiFile, globalContext)
-
+        val toolsCopy = collectTools(project, psiFile, globalContext)
         if (toolsCopy.isEmpty()) {
             return emptyList()
         }
 
-        val indicator = DaemonProgressIndicator()
         return runReadAction {
+            val indicator = DaemonProgressIndicator()
             val result: Map<LocalInspectionToolWrapper, List<ProblemDescriptor>> = InspectionEngine.inspectEx(
                 toolsCopy, psiFile, psiFile.textRange, psiFile.textRange, false, false, true,
                 indicator, PairProcessor.alwaysTrue<LocalInspectionToolWrapper?, ProblemDescriptor?>()
             )
 
             val problems = result.values.flatten()
-            return@runReadAction problems.sortedBy { it.lineNumber }.distinctBy { it.lineNumber }.map {
-                SketchInspectionError.from(it)
-            }
+            return@runReadAction problems
+                .sortedBy { it.lineNumber }
+                .distinctBy { it.lineNumber }.map {
+                    SketchInspectionError.from(it)
+                }
         }
     }
 
-    private fun localInspectionToolWrappers(
+    private fun collectTools(
         project: Project,
         psiFile: PsiFile,
         globalContext: GlobalInspectionContextBase
@@ -141,13 +142,13 @@ object SketchCodeInspection {
             it.initialize(globalContext)
         }
 
-        val toolsCopy: MutableList<LocalInspectionToolWrapper> =
-            ArrayList<LocalInspectionToolWrapper>(toolWrappers.size)
+        val toolsCopy: MutableList<LocalInspectionToolWrapper> = ArrayList<LocalInspectionToolWrapper>(toolWrappers.size)
         for (tool in toolWrappers) {
             if (tool is LocalInspectionToolWrapper) {
                 toolsCopy.add(tool.createCopy())
             }
         }
+
         return toolsCopy
     }
 }
