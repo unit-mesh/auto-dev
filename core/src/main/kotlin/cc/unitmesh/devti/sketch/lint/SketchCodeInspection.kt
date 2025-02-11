@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.sketch.lint
 
+import cc.unitmesh.devti.AutoDevBundle
 import com.intellij.analysis.AnalysisScope
 import com.intellij.codeInsight.daemon.impl.DaemonProgressIndicator
 import com.intellij.codeInspection.InspectionEngine
@@ -63,16 +64,15 @@ object SketchCodeInspection {
         val scrollPane = JBScrollPane(table).apply {
             preferredSize = Dimension(480, 400)
         }
-        val errorLabel = JBLabel("Found Lint issue: ${errors.size}").apply {
+        val errorLabel = JBLabel(AutoDevBundle.message("sketch.lint.error", errors.size)).apply {
             border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
         }
         errorLabel.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
                 createPopup(scrollPane, table, errors).showInCenterOf(panel)
             }
-
             override fun mouseEntered(e: MouseEvent) {
-                errorLabel.toolTipText = "Click to view all errors"
+                errorLabel.toolTipText = AutoDevBundle.message("sketch.lint.error.tooltip")
             }
         })
 
