@@ -104,9 +104,9 @@ class EditorFragment(var editor: EditorEx, private val editorLineThreshold: Int 
     }
 
     fun resizeForNewThreshold(newThreshold: Int) {
-        content.preferredSize = calculatePreferredSize(content.preferredSize, newThreshold)
+        setCollapsed(false)
 
-        setCollapsed(true)
+        content.preferredSize = calculatePreferredSize(content.preferredSize, newThreshold)
 
         val linesCount = editor.document.lineCount
         expandCollapseTextLabel.isVisible = linesCount > editorLineThreshold
