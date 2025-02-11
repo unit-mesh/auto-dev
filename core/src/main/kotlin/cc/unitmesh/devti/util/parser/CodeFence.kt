@@ -74,7 +74,7 @@ class CodeFence(
             var currentIndex = 0
             var content = content
             if (content.contains("```devin\n")) {
-                content = processDevinBlock(content)
+                content = preProcessDevinBlock(content)
             }
 
             val startMatches = devinStartRegex.findAll(content)
@@ -112,12 +112,13 @@ class CodeFence(
             return codeFences.filter { it.text.isNotEmpty() }
         }
 
-        fun processDevinBlock(content: String): String {
+        val devinRegexBlock = Regex("(?<=^|\\n)```devin\\n([\\s\\S]*?)\\n```\\n")
+        val normalCodeBlock = Regex("```([\\w#+\\s]*)\\n")
+
+        fun preProcessDevinBlock(content: String): String {
             var currentContent = content
 
-            val devinRegexBlock = Regex("(?<=^|\\n)```devin\\n([\\s\\S]*?)\\n```\\n")
             val devinMatches = devinRegexBlock.findAll(content).toList()
-            val normalCodeBlock = Regex("```([\\w#+\\s]*)\\n")
 
             for (match in devinMatches) {
                 var devinContent = match.groups[1]?.value ?: ""
@@ -134,6 +135,7 @@ class CodeFence(
             return currentContent
         }
 
+        val markdownLanguage = findLanguage("markdown")
         private fun parseMarkdownContent(content: String, codeFences: MutableList<CodeFence>) {
             val regex = Regex("```([\\w#+\\s]*)")
             val lines = content.lines()
@@ -149,7 +151,7 @@ class CodeFence(
                     if (matchResult != null) {
                         if (textBuilder.isNotEmpty()) {
                             val textBlock = CodeFence(
-                                findLanguage("markdown"), textBuilder.trim().toString(), true, "txt"
+                                markdownLanguage, textBuilder.trim().toString(), true, "md"
                             )
                             lastTxtBlock = textBlock
                             codeFences.add(textBlock)
@@ -182,24 +184,18 @@ class CodeFence(
                 }
             }
 
-            // 处理最后的文本内容
             if (textBuilder.isNotEmpty()) {
-                val textBlock = CodeFence(
-                    findLanguage("markdown"),
-                    textBuilder.trim().toString(),
-                    true,
-                    "txt"
-                )
+                val textBlock = CodeFence(markdownLanguage, textBuilder.trim().toString(), true, "md")
                 codeFences.add(textBlock)
             }
 
-            // 处理未闭合的代码块
             if (codeStarted && codeBuilder.isNotEmpty()) {
+                val code = codeBuilder.trim().toString()
                 val codeFence = CodeFence(
                     findLanguage(languageId ?: ""),
-                    codeBuilder.trim().toString(),
+                    code,
                     false,
-                    lookupFileExt(languageId ?: "txt"),
+                    lookupFileExt(languageId ?: "md"),
                     languageId
                 )
                 codeFences.add(codeFence)

@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.parser
 
 import cc.unitmesh.devti.util.parser.CodeFence
-import cc.unitmesh.devti.util.parser.CodeFence.Companion.processDevinBlock
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 
 class CodeFenceTest : BasePlatformTestCase() {
