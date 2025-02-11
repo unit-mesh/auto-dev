@@ -67,7 +67,7 @@ open class RunServiceTask(
         val settings: RunnerAndConfigurationSettings? =
             fileRunService.createRunSettings(project, virtualFile, testElement)
         if (settings == null) {
-            logger<RunServiceTask>().warn("No run configuration found for file: ${virtualFile.path}")
+            AutoDevNotifications.warn(project, "No run configuration found for file: ${virtualFile.path}")
             return null
         }
 

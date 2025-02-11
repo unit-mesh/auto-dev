@@ -29,6 +29,7 @@ import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.containers.MultiMap
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
+import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JComponent
@@ -60,6 +61,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
             if (filePatches.isEmpty()) {
                 val msg = "PatchProcessor: no valid patches found, please check the patch content"
                 AutoDevNotifications.error(myProject, msg)
+
                 val repairButton = JButton("Repair").apply {
                     icon = AllIcons.Actions.IntentionBulb
                     toolTipText = "Try to repair the patch content"
@@ -75,13 +77,12 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
                     }
                 }
 
-                val actionPanel = JPanel(HorizontalLayout(4))
-                actionPanel.add(repairButton)
+                val actionPanel = Box.createHorizontalBox()
+                actionPanel.add(Box.createHorizontalGlue())
 
                 mainPanel.add(actionPanel)
 
-                return@invokeLater
-            }
+                return@invokeLater            }
 
             filePatches.forEachIndexed { _, patch ->
                 val diffPanel = when {
