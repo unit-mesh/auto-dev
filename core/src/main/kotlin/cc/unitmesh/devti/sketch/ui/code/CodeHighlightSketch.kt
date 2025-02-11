@@ -116,14 +116,14 @@ open class CodeHighlightSketch(
             val normalizedText = StringUtil.convertLineSeparators(text)
             document?.replaceString(0, document.textLength, normalizedText)
 
-            document?.lineCount?.let {
-                if (it > editorLineThreshold) {
-                    editorFragment?.updateExpandCollapseLabel()
-                }
-                if (complete) {
-                    if (isDevIns && it > minDevinLineThreshold) {
-                        editorFragment?.resizeForNewThreshold(minDevinLineThreshold)
-                    }
+            val lineCount = document?.lineCount ?: 0
+            if (lineCount > editorLineThreshold) {
+                editorFragment?.updateExpandCollapseLabel()
+            }
+
+            if (complete) {
+                if (isDevIns) {
+                    editorFragment?.resizeForNewThreshold(minDevinLineThreshold)
                 }
             }
         }
@@ -223,7 +223,7 @@ open class CodeHighlightSketch(
 
                 try {
                     EditorFactory.getInstance().createViewer(document, project, EditorKind.PREVIEW) as EditorEx
-                } catch (e: Throwable){
+                } catch (e: Throwable) {
                     throw e
                 }
             }
