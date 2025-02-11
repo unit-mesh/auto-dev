@@ -18,23 +18,28 @@ import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.TextRange
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.profile.codeInspection.InspectionProjectProfileManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiManager
 import com.intellij.util.PairProcessor
 import com.intellij.util.messages.MessageBusConnection
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 object PsiErrorCollector {
-    fun runInspections(project: Project, psiFile: PsiFile): List<@InspectionMessage String> {
-        val scope = AnalysisScope(psiFile)
+    fun runInspections(project: Project, psiFile: PsiFile, originFile: VirtualFile): List<@InspectionMessage String> {
         val globalContext = InspectionManager.getInstance(project).createNewGlobalContext()
                 as? GlobalInspectionContextBase ?: return emptyList()
-        globalContext.currentScope = scope
 
-        val toolsCopy: MutableList<LocalInspectionToolWrapper> = localInspectionToolWrappers(project, psiFile, globalContext)
+        val originPsi = runReadAction { PsiManager.getInstance(project).findFile(originFile) }
+            ?: return emptyList()
+
+        globalContext.currentScope = AnalysisScope(originPsi)
+
+        val toolsCopy = localInspectionToolWrappers(project, psiFile, globalContext)
 
         if (toolsCopy.isEmpty()) {
             return emptyList()
@@ -49,11 +54,20 @@ object PsiErrorCollector {
 
             val problems = result.values.flatten()
             return@runReadAction problems.sortedBy { it.lineNumber }.distinctBy { it.lineNumber }.map {
-                /// skip for Module not Installed, Incorrect whitespace, Cannot resolve file, Unterminated statement #loc
                 "Line ${it.lineNumber + 1}: ${it.descriptionTemplate}"
             }
         }
     }
+
+    //  skip NpmUsedModulesInstalled, ProblematicWhitespace, JSXUnresolvedComponent, UnterminatedStatement, UnterminatedStatementJS
+    private val frontEndSkipError =
+        setOf(
+            "NpmUsedModulesInstalled",
+            "ProblematicWhitespace",
+            "JSXUnresolvedComponent",
+            "UnterminatedStatement",
+            "UnterminatedStatementJS"
+        )
 
     private fun localInspectionToolWrappers(
         project: Project,
@@ -62,9 +76,14 @@ object PsiErrorCollector {
     ): MutableList<LocalInspectionToolWrapper> {
         val inspectionProfile = InspectionProjectProfileManager.getInstance(project).currentProfile
         val toolWrappers = inspectionProfile.getInspectionTools(psiFile)
+            .filter { it.isApplicable(psiFile.language) }
+            .filter { it.shortName !in frontEndSkipError }
+            .filter { it.defaultLevel.severity == HighlightSeverity.WARNING || it.defaultLevel.severity == HighlightSeverity.ERROR }
+
         toolWrappers.forEach {
             it.initialize(globalContext)
         }
+
         val toolsCopy: MutableList<LocalInspectionToolWrapper> =
             ArrayList<LocalInspectionToolWrapper>(toolWrappers.size)
         for (tool in toolWrappers) {
@@ -101,7 +120,8 @@ object PsiErrorCollector {
         val hintDisposable = Disposer.newDisposable()
         val busConnection: MessageBusConnection = project.messageBus.connect(hintDisposable)
         val future: CompletableFuture<List<String>> = CompletableFuture()
-        busConnection.subscribe(DaemonCodeAnalyzer.DAEMON_EVENT_TOPIC,
+        busConnection.subscribe(
+            DaemonCodeAnalyzer.DAEMON_EVENT_TOPIC,
             SimpleCodeErrorListener(document, project, range, errors, busConnection, hintDisposable) {
                 future.complete(it)
             }

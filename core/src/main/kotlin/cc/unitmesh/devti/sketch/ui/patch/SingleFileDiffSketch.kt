@@ -28,6 +28,7 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.panels.HorizontalLayout
 import com.intellij.ui.components.panels.VerticalLayout
+import com.intellij.util.LocalTimeCounter
 import java.awt.BorderLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -123,7 +124,7 @@ class SingleFileDiffSketch(
         mainPanel.add(contentPanel)
 
         ApplicationManager.getApplication().executeOnPooledThread {
-            lintCheckForNewCode()
+            lintCheckForNewCode(currentFile)
         }
     }
 
@@ -211,12 +212,12 @@ class SingleFileDiffSketch(
 
     override fun updateLanguage(language: Language?, originLanguage: String?) {}
 
-    fun lintCheckForNewCode() {
+    fun lintCheckForNewCode(currentFile: VirtualFile) {
         if (newCode.isEmpty()) return
 
-        val newFile = LightVirtualFile(currentFile.name, newCode)
+        val newFile = LightVirtualFile(currentFile, newCode, LocalTimeCounter.currentTime())
         val psiFile = runReadAction { PsiManager.getInstance(myProject).findFile(newFile) } ?: return
-        val runInspections = PsiErrorCollector.runInspections(myProject, psiFile)
+        val runInspections = PsiErrorCollector.runInspections(myProject, psiFile, currentFile)
         if (runInspections.isNotEmpty()) {
             showErrors(runInspections)
         }
