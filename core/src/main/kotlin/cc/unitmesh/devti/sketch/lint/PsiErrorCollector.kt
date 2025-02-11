@@ -3,8 +3,13 @@ package cc.unitmesh.devti.sketch.lint
 import com.intellij.analysis.AnalysisScope
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx
+import com.intellij.codeInsight.daemon.impl.DaemonProgressIndicator
+import com.intellij.codeInspection.InspectionEngine
 import com.intellij.codeInspection.InspectionManager
+import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ex.GlobalInspectionContextBase
+import com.intellij.codeInspection.ex.LocalInspectionToolWrapper
+import com.intellij.codeInspection.util.InspectionMessage
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.runReadAction
@@ -13,20 +18,51 @@ import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.TextRange
+import com.intellij.profile.codeInspection.InspectionProjectProfileManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiFile
+import com.intellij.util.PairProcessor
 import com.intellij.util.messages.MessageBusConnection
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 object PsiErrorCollector {
-    fun runInspections(project: Project, psiFile: PsiFile) {
+    fun runInspections(project: Project, psiFile: PsiFile): List<@InspectionMessage String> {
         val scope = AnalysisScope(psiFile)
-        val globalContext = InspectionManager.getInstance(project).createNewGlobalContext() as? GlobalInspectionContextBase
+        val globalContext = InspectionManager.getInstance(project).createNewGlobalContext()
+                as? GlobalInspectionContextBase ?: return emptyList()
 
-        globalContext?.currentScope = scope
-        globalContext?.doInspections(scope)
+        val inspectionProfile = InspectionProjectProfileManager.getInstance(project).currentProfile
+
+        val toolWrappers = inspectionProfile.getInspectionTools(psiFile)
+
+        globalContext.currentScope = scope
+        toolWrappers.forEach {
+            it.initialize(globalContext)
+        }
+
+        val toolsCopy: MutableList<LocalInspectionToolWrapper> = ArrayList<LocalInspectionToolWrapper>(toolWrappers.size)
+        for (tool in toolWrappers) {
+            if (tool is LocalInspectionToolWrapper) {
+                toolsCopy.add(tool.createCopy())
+            }
+        }
+
+        if (toolsCopy.isEmpty()) {
+            return emptyList()
+        }
+
+        val indicator = DaemonProgressIndicator()
+        return runReadAction {
+            val result: Map<LocalInspectionToolWrapper, List<ProblemDescriptor>> = InspectionEngine.inspectEx(
+                toolsCopy, psiFile, psiFile.textRange, psiFile.textRange, false, false, true,
+                indicator, PairProcessor.alwaysTrue<LocalInspectionToolWrapper?, ProblemDescriptor?>()
+            )
+
+            val problems = result.values.flatten()
+            return@runReadAction problems.map { it.descriptionTemplate }
+        }
     }
 
     /**

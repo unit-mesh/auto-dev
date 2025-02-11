@@ -216,8 +216,12 @@ class SingleFileDiffSketch(
 
         val newFile = LightVirtualFile(currentFile.name, newCode)
         val psiFile = runReadAction { PsiManager.getInstance(myProject).findFile(newFile) } ?: return
+        val runInspections = PsiErrorCollector.runInspections(myProject, psiFile)
+        if (runInspections.isNotEmpty()) {
+            showErrors(runInspections)
+        }
+
         PsiErrorCollector.collectSyntaxError(psiFile, myProject) { errors ->
-            PsiErrorCollector.runInspections(myProject, psiFile)
             if (errors.isEmpty()) return@collectSyntaxError
             showErrors(errors)
         }
