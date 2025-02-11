@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.gui.chat.ui
 
 import cc.unitmesh.devti.settings.LanguageChangedCallback.placeholder
+import cc.unitmesh.devti.util.InsertUtil
 import cc.unitmesh.devti.util.parser.CodeFence.Companion.findLanguage
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.*
@@ -22,8 +23,6 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.temporary.gui.block.findDocument
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.EditorTextField
@@ -165,29 +164,8 @@ class AutoDevInput(
             "intentions.write.action",
             {
                 val document = this.editor?.document ?: return@runWriteCommandAction
-                insertStringAndSaveChange(project, text, document, document.textLength, false)
+                InsertUtil.insertStringAndSaveChange(project, text, document, document.textLength, false)
             })
-    }
-}
-
-fun insertStringAndSaveChange(
-    project: Project,
-    content: String,
-    document: Document,
-    startOffset: Int,
-    withReformat: Boolean,
-) {
-    if (startOffset < 0 || startOffset > document.textLength) return
-
-    document.insertString(startOffset, content)
-    PsiDocumentManager.getInstance(project).commitDocument(document)
-
-    if (!withReformat) return
-
-    val psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document)
-    psiFile?.let { file ->
-        val reformatRange = TextRange(startOffset, startOffset + content.length)
-        CodeStyleManager.getInstance(project).reformatText(file, listOf(reformatRange))
     }
 }
 

@@ -4,7 +4,6 @@ package cc.unitmesh.devti.sketch.run
 import com.intellij.execution.configuration.EnvironmentVariablesData
 import com.intellij.execution.configurations.PathEnvironmentVariableUtil
 import com.intellij.execution.wsl.WSLDistribution
-import com.intellij.execution.wsl.WSLUtil
 import com.intellij.execution.wsl.WslDistributionManager
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.text.StringUtil
