@@ -220,11 +220,6 @@ class SingleFileDiffSketch(
         if (runInspections.isNotEmpty()) {
             showErrors(runInspections)
         }
-
-        PsiErrorCollector.collectSyntaxError(psiFile, myProject) { errors ->
-            if (errors.isEmpty()) return@collectSyntaxError
-            showErrors(errors)
-        }
     }
 
     private fun showErrors(errors: List<String>) {

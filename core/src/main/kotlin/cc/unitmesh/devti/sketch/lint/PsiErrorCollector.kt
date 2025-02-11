@@ -32,22 +32,9 @@ object PsiErrorCollector {
         val scope = AnalysisScope(psiFile)
         val globalContext = InspectionManager.getInstance(project).createNewGlobalContext()
                 as? GlobalInspectionContextBase ?: return emptyList()
-
-        val inspectionProfile = InspectionProjectProfileManager.getInstance(project).currentProfile
-
-        val toolWrappers = inspectionProfile.getInspectionTools(psiFile)
-
         globalContext.currentScope = scope
-        toolWrappers.forEach {
-            it.initialize(globalContext)
-        }
 
-        val toolsCopy: MutableList<LocalInspectionToolWrapper> = ArrayList<LocalInspectionToolWrapper>(toolWrappers.size)
-        for (tool in toolWrappers) {
-            if (tool is LocalInspectionToolWrapper) {
-                toolsCopy.add(tool.createCopy())
-            }
-        }
+        val toolsCopy: MutableList<LocalInspectionToolWrapper> = localInspectionToolWrappers(project, psiFile, globalContext)
 
         if (toolsCopy.isEmpty()) {
             return emptyList()
@@ -61,8 +48,31 @@ object PsiErrorCollector {
             )
 
             val problems = result.values.flatten()
-            return@runReadAction problems.map { it.descriptionTemplate }
+            return@runReadAction problems.sortedBy { it.lineNumber }.distinctBy { it.lineNumber }.map {
+                /// skip for Module not Installed, Incorrect whitespace, Cannot resolve file, Unterminated statement #loc
+                "Line ${it.lineNumber + 1}: ${it.descriptionTemplate}"
+            }
         }
+    }
+
+    private fun localInspectionToolWrappers(
+        project: Project,
+        psiFile: PsiFile,
+        globalContext: GlobalInspectionContextBase
+    ): MutableList<LocalInspectionToolWrapper> {
+        val inspectionProfile = InspectionProjectProfileManager.getInstance(project).currentProfile
+        val toolWrappers = inspectionProfile.getInspectionTools(psiFile)
+        toolWrappers.forEach {
+            it.initialize(globalContext)
+        }
+        val toolsCopy: MutableList<LocalInspectionToolWrapper> =
+            ArrayList<LocalInspectionToolWrapper>(toolWrappers.size)
+        for (tool in toolWrappers) {
+            if (tool is LocalInspectionToolWrapper) {
+                toolsCopy.add(tool.createCopy())
+            }
+        }
+        return toolsCopy
     }
 
     /**
