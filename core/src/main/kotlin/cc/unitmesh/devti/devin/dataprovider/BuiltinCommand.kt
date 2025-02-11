@@ -34,7 +34,8 @@ enum class BuiltinCommand(
         "Read content by Java/Kotlin canonical name, such as package name, class name.",
         AllIcons.Toolwindows.ToolWindowStructure,
         true,
-        true
+        true,
+        enableInSketch = false,
     ),
     WRITE(
         "write",
@@ -79,7 +80,8 @@ enum class BuiltinCommand(
         "Get the structure of a file with AST/PSI",
         AllIcons.Toolwindows.ToolWindowStructure,
         true,
-        true
+        true,
+        enableInSketch = false
     ),
     DIR("dir", "List files and directories in a tree-like structure", AllIcons.Actions.ProjectDirectory, true, true),
     DATABASE(
