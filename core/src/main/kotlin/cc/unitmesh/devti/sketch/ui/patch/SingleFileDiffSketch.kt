@@ -1,8 +1,7 @@
 package cc.unitmesh.devti.sketch.ui.patch
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.sketch.lint.PsiErrorCollector
-import cc.unitmesh.devti.sketch.lint.PsiErrorUI
+import cc.unitmesh.devti.sketch.lint.SketchCodeInspection
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.template.context.TemplateContext
 import com.intellij.diff.editor.DiffVirtualFileBase
@@ -217,9 +216,9 @@ class SingleFileDiffSketch(
         if (newCode.isEmpty()) return
         val newFile = LightVirtualFile(currentFile, newCode, LocalTimeCounter.currentTime())
         val psiFile = runReadAction { PsiManager.getInstance(myProject).findFile(newFile) } ?: return
-        val errors = PsiErrorCollector.runInspections(myProject, psiFile, currentFile)
+        val errors = SketchCodeInspection.runInspections(myProject, psiFile, currentFile)
         if (errors.isNotEmpty()) {
-            PsiErrorUI.showErrors(errors, this@SingleFileDiffSketch.mainPanel)
+            SketchCodeInspection.showErrors(errors, this@SingleFileDiffSketch.mainPanel)
         }
     }
 
