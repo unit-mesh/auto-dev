@@ -112,7 +112,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
                         }
                     }
 
-                    actionButton(NewSketchAction()).alignRight()
+                    createActionButton(NewSketchAction()).alignRight()
                 }
             }
 
@@ -362,7 +362,7 @@ class CustomProgressBar(private val view: SketchToolWindow) : JPanel(BorderLayou
     }
 }
 
-fun Row.actionButton(action: AnAction, @NonNls actionPlace: String = ActionPlaces.UNKNOWN): Cell<ActionButton> {
+fun Row.createActionButton(action: AnAction, @NonNls actionPlace: String = ActionPlaces.UNKNOWN): Cell<ActionButton> {
     val component = ActionButton(
         action,
         action.templatePresentation.clone(),
