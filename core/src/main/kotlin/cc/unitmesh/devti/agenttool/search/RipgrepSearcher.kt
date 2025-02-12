@@ -32,7 +32,7 @@ object RipgrepSearcher {
             try {
                 val rgPath = findRipgrepBinary()
                 if (rgPath == null) {
-                    return@supplyAsync "Ripgrep binary not found, try install it first: https://github.com/BurntSushi/ripgrep?tab=readme-ov-file#installation
+                    return@supplyAsync "Ripgrep binary not found, try install it first: https://github.com/BurntSushi/ripgrep?tab=readme-ov-file#installation"
                 }
 
                 val results = executeRipgrep(
