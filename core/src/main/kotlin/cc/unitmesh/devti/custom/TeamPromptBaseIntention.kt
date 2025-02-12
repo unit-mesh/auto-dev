@@ -64,7 +64,7 @@ class TeamPromptBaseIntention(val intentionConfig: TeamPromptAction, val trySele
                     }
 
                     // display progress like 1/2 in the title
-                    val taskName = "${intentionConfig.actionName} ${index + 1}/$length "
+                    val taskName = "${intentionConfig.actionName} ${index + 1}/$length - ${vfile.name}"
                     val task: Task.Backgroundable =
                         TeamPromptExecTask(project, msgs, editor, intentionConfig, element, vfile, taskName)
                     ProgressManager.getInstance()
