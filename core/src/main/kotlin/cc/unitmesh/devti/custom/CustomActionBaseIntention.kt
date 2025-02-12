@@ -99,7 +99,7 @@ class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConf
             ClassStructureVariableResolver(psiElement),
             MethodInputOutputVariableResolver(psiElement),
             SimilarChunkVariableResolver(psiElement),
-            SelectionVariableResolver(psiElement.language.displayName, selectedText),
+            SelectionVariableResolver(psiElement.containingFile.language.displayName, selectedText),
         ) + SpecResolverService.getInstance().resolvers()
 
         val resolverMap = LinkedHashMap<String, VariableResolver>(20)
