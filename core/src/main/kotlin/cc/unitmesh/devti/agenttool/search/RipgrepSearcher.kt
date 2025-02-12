@@ -30,7 +30,11 @@ object RipgrepSearcher {
     ): CompletableFuture<String?> {
         return CompletableFuture.supplyAsync<String> {
             try {
-                val rgPath = findRipgrepBinary() ?: throw IOException("Ripgrep binary not found")
+                val rgPath = findRipgrepBinary()
+                if (rgPath == null) {
+                    return@supplyAsync "Ripgrep binary not found, try install it first: https://github.com/BurntSushi/ripgrep?tab=readme-ov-file#installation
+                }
+
                 val results = executeRipgrep(
                     project,
                     rgPath,
@@ -58,7 +62,6 @@ object RipgrepSearcher {
                 return path
             }
         }
-
 
         val pb = ProcessBuilder("which", binName)
         val process = pb.start()

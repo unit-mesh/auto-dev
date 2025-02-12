@@ -12,7 +12,11 @@ class RipgrepSearchInsCommand(
     override val commandName: BuiltinCommand = BuiltinCommand.RIPGREP_SEARCH
 
     override fun isApplicable(): Boolean {
-        return RipgrepSearcher.findRipgrepBinary() != null
+        return try {
+            RipgrepSearcher.findRipgrepBinary() != null
+        } catch (e: Exception) {
+            false
+        }
     }
 
     override suspend fun execute(): String? {
