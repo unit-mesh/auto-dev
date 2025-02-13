@@ -29,10 +29,8 @@ class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConf
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         if (editor == null || file == null) return false
 
-        val regexString = intentionConfig.matchRegex
         return try {
-            val regex = Regex(regexString)
-            regex.matches(file.name)
+            Regex(intentionConfig.matchRegex).matches(file.name)
         } catch (e: Exception) {
             false
         }
@@ -53,13 +51,8 @@ class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConf
 
         if (intentionConfig.autoInvoke) {
             sendToChatPanel(project, getActionType(), object : ContextPrompter() {
-                override fun displayPrompt(): String {
-                    return prompt.displayPrompt
-                }
-
-                override fun requestPrompt(): String {
-                    return prompt.requestPrompt
-                }
+                override fun displayPrompt(): String = prompt.displayPrompt
+                override fun requestPrompt(): String = prompt.requestPrompt
             })
         } else {
             sendToChatPanel(project) { panel, _ ->
