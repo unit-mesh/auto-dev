@@ -6,6 +6,7 @@ import javax.accessibility.AccessibleContext
 import javax.swing.JEditorPane
 import org.apache.commons.text.StringEscapeUtils
 import org.jsoup.Jsoup
+import javax.swing.SwingUtilities
 
 class DisplayComponent(question: String) : JEditorPane() {
     init {

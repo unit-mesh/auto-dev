@@ -25,7 +25,7 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
         val content = ContentFactory.getInstance().createContent(contentPanel, "", false).apply {
             setInitialDisplayName(this)
         }
-
+        contentPanel.resetChatSession()
         ApplicationManager.getApplication().invokeLater {
             toolWindow.contentManager.addContent(content)
         }
