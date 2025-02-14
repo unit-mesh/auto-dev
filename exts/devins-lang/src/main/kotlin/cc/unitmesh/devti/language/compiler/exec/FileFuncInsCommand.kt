@@ -1,13 +1,17 @@
 package cc.unitmesh.devti.language.compiler.exec
 
+import cc.unitmesh.devti.devin.InsCommand
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
-import cc.unitmesh.devti.language.completion.dataprovider.FileFunc
+import cc.unitmesh.devti.devin.dataprovider.FileFunc
 import cc.unitmesh.devti.language.utils.canBeAdded
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
 
 class FileFuncInsCommand(val myProject: Project, val prop: String) : InsCommand {
+    override val commandName: BuiltinCommand = BuiltinCommand.FILE_FUNC
+
     override suspend fun execute(): String? {
         val (functionName, args) = parseRegex(prop)
             ?: return """$DEVINS_ERROR: file-func is not in the format @file-func:<functionName>(<arg1>, <arg2>, ...)

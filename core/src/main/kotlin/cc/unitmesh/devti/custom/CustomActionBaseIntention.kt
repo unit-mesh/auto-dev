@@ -4,7 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.action.CustomIntentionConfig
 import cc.unitmesh.devti.custom.action.CustomIntentionPrompt
 import cc.unitmesh.devti.custom.variable.*
-import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import cc.unitmesh.devti.provider.ContextPrompter
@@ -29,10 +29,8 @@ class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConf
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         if (editor == null || file == null) return false
 
-        val regexString = intentionConfig.matchRegex
         return try {
-            val regex = Regex(regexString)
-            regex.matches(file.name)
+            Regex(intentionConfig.matchRegex).matches(file.name)
         } catch (e: Exception) {
             false
         }
@@ -53,13 +51,8 @@ class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConf
 
         if (intentionConfig.autoInvoke) {
             sendToChatPanel(project, getActionType(), object : ContextPrompter() {
-                override fun displayPrompt(): String {
-                    return prompt.displayPrompt
-                }
-
-                override fun requestPrompt(): String {
-                    return prompt.requestPrompt
-                }
+                override fun displayPrompt(): String = prompt.displayPrompt
+                override fun requestPrompt(): String = prompt.requestPrompt
             })
         } else {
             sendToChatPanel(project) { panel, _ ->
@@ -99,7 +92,7 @@ class CustomActionBaseIntention(private val intentionConfig: CustomIntentionConf
             ClassStructureVariableResolver(psiElement),
             MethodInputOutputVariableResolver(psiElement),
             SimilarChunkVariableResolver(psiElement),
-            SelectionVariableResolver(psiElement.language.displayName, selectedText),
+            SelectionVariableResolver(psiElement.containingFile.language.displayName, selectedText),
         ) + SpecResolverService.getInstance().resolvers()
 
         val resolverMap = LinkedHashMap<String, VariableResolver>(20)

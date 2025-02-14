@@ -12,7 +12,7 @@ import org.jetbrains.plugins.gradle.util.GradleConstants
 
 
 open class JavaBuildSystemProvider : BuildSystemProvider() {
-    override fun collect(project: Project): DockerfileContext {
+    override fun collect(project: Project): DockerfileContext? {
         val projectDataManager = ProjectDataManager.getInstance()
         val buildToolName: String
         var taskString = ""
@@ -34,6 +34,9 @@ open class JavaBuildSystemProvider : BuildSystemProvider() {
         }
 
         val javaVersion = detectLanguageLevel(project, null)
+        if (javaVersion == null) {
+            return null
+        }
 
         return DockerfileContext(
             buildToolName = buildToolName,

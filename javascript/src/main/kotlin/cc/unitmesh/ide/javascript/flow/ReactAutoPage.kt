@@ -2,7 +2,6 @@ package cc.unitmesh.ide.javascript.flow
 
 import cc.unitmesh.ide.javascript.flow.model.DsComponent
 import cc.unitmesh.ide.javascript.util.ReactPsiUtil
-import com.intellij.lang.ecmascript6.JSXHarmonyFileType
 import com.intellij.lang.javascript.JavaScriptFileType
 import com.intellij.lang.javascript.TypeScriptJSXFileType
 import com.intellij.lang.javascript.dialects.ECMA6LanguageDialect
@@ -45,8 +44,7 @@ class ReactAutoPage(
 
         val virtualFiles =
             FileTypeIndex.getFiles(JavaScriptFileType.INSTANCE, searchScope) +
-                    FileTypeIndex.getFiles(TypeScriptJSXFileType.INSTANCE, searchScope) +
-                    FileTypeIndex.getFiles(JSXHarmonyFileType.INSTANCE, searchScope)
+                    FileTypeIndex.getFiles(TypeScriptJSXFileType.INSTANCE, searchScope)
 
         val root = project.guessProjectDir()!!
 

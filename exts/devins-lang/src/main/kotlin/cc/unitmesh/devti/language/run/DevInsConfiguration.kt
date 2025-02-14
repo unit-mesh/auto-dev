@@ -19,6 +19,7 @@ class DevInsConfiguration(project: Project, factory: ConfigurationFactory, name:
 
     private var myScriptPath = ""
     private val SCRIPT_PATH_TAG: String = "SCRIPT_PATH"
+    private val SHOW_CONSOLE_TAG: String = "SHOW_CONSOLE"
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
         return DevInsRunConfigurationProfileState(project, this)
@@ -33,11 +34,13 @@ class DevInsConfiguration(project: Project, factory: ConfigurationFactory, name:
     override fun writeExternal(element: Element) {
         super.writeExternal(element)
         element.writeString(SCRIPT_PATH_TAG, myScriptPath)
+        element.writeString(SHOW_CONSOLE_TAG, showConsole.toString())
     }
 
     override fun readExternal(element: Element) {
         super.readExternal(element)
         myScriptPath = element.readString(SCRIPT_PATH_TAG) ?: ""
+        showConsole = element.readString(SHOW_CONSOLE_TAG)?.toBoolean() != false
     }
 
     override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> = DevInsSettingsEditor(project)
@@ -47,4 +50,6 @@ class DevInsConfiguration(project: Project, factory: ConfigurationFactory, name:
     fun setScriptPath(scriptPath: String) {
         myScriptPath = scriptPath.trim { it <= ' ' }
     }
+
+    var showConsole: Boolean = true
 }

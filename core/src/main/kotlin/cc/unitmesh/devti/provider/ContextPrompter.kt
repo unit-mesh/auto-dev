@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.provider
 
 import cc.unitmesh.devti.custom.compile.VariableTemplateCompiler
-import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.provider.builtin.DefaultContextPrompter
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext

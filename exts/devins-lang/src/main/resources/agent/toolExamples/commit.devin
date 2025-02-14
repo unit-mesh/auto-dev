@@ -1,5 +1,5 @@
+Execute git commit with commit message
 /commit
-
 ```markdown
-[//]: # (follow Conventional Commits, like feat: add 'graphiteWidth' option)
+follow Conventional Commits, like feat: add 'graphiteWidth' option
 ```

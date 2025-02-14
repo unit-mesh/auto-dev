@@ -7,7 +7,7 @@ import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.devti.provider.AutoTestService
 import cc.unitmesh.idea.service.createConfigForJava
 import cc.unitmesh.kotlin.util.KotlinPsiUtil
-import cc.unitmesh.kotlin.util.getReturnTypeReferences
+import cc.unitmesh.kotlin.util.KotlinTypeResolver
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx
 import com.intellij.execution.configurations.RunConfiguration
@@ -43,6 +43,9 @@ class KotlinAutoTestService : AutoTestService() {
     private val log = logger<KotlinAutoTestService>()
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = GradleRunConfiguration::class.java
     override fun isApplicable(element: PsiElement): Boolean = element.language is KotlinLanguage
+    override fun isApplicable(project: Project, file: VirtualFile): Boolean {
+        return file.extension == "kt"
+    }
 
     override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
         return createConfigForJava(virtualFile, project)
@@ -131,19 +134,19 @@ class KotlinAutoTestService : AutoTestService() {
             val elements = mutableListOf<ClassContext>()
             val projectPath = project.guessProjectDir()?.path
 
-            val resolvedClasses = resolveByMethod(element)
+            val resolvedClasses = KotlinTypeResolver.resolveByMethod(element)
 
             if (element is KtClassOrObject) {
                 KotlinPsiUtil.getFunctions(element).forEach {
-                    resolvedClasses.putAll(resolveByMethod(it))
+                    resolvedClasses.putAll(KotlinTypeResolver.resolveByMethod(it))
                 }
 
-                resolvedClasses.putAll(resolveByFields(element))
+                resolvedClasses.putAll(KotlinTypeResolver.resolveByFields(element))
             }
 
             if (element is KtFile) {
                 KotlinPsiUtil.getClasses(element).forEach {
-                    resolvedClasses.putAll(resolveByFields(it))
+                    resolvedClasses.putAll(KotlinTypeResolver.resolveByFields(it))
                 }
             }
 
@@ -158,66 +161,6 @@ class KotlinAutoTestService : AutoTestService() {
 
             elements
         }
-    }
-
-    private fun resolveByFields(element: KtClassOrObject): Map<out String, KtClass?> {
-        val resolvedClasses = mutableMapOf<String, KtClass?>()
-        element.primaryConstructorParameters.forEach {
-            val typeReference = it.typeReference
-            val elements = resolveType(typeReference)
-            elements.forEach { element ->
-                if (element is KtClass) {
-                    resolvedClasses[element.name!!] = element
-                }
-            }
-        }
-
-        return resolvedClasses
-    }
-
-
-    private fun resolveByMethod(element: PsiElement): MutableMap<String, KtClass?> {
-        val resolvedClasses = mutableMapOf<String, KtClass?>()
-        when (element) {
-            is KtNamedDeclaration -> {
-                element.getValueParameters().map {
-                    val typeReference = it.typeReference
-                    resolveType(typeReference)
-                }.forEach {
-                    if (it is KtClass) {
-                        resolvedClasses[it.name!!] = it
-                    }
-                }
-
-                // with Generic returnType, like: ResponseEntity<List<Item>>
-                element.getReturnTypeReferences().forEach { returnType ->
-                    resolveType(returnType).filterIsInstance<KtClass>().forEach {
-                        resolvedClasses[it.name!!] = it
-                    }
-                }
-            }
-        }
-
-        return resolvedClasses
-    }
-
-    private fun resolveType(typeReference: KtTypeReference?): List<PsiElement> {
-        if (typeReference == null) return emptyList()
-        val result = mutableListOf<PsiElement>()
-        when (val ktTypeElement = typeReference.typeElement) {
-            is KtUserType -> {
-                ktTypeElement.typeArguments.forEach {
-                    result += resolveType(it.typeReference)
-                }
-
-                val typeElementReference = ktTypeElement.referenceExpression?.mainReference?.resolve()
-                if (typeElementReference is KtClass) {
-                    result += typeElementReference
-                }
-            }
-        }
-
-        return result
     }
 
     private fun createTestFile(

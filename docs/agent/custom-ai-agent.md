@@ -54,6 +54,68 @@ Demo:
     "url": "http://127.0.0.1:8765/api/agent/devins-sample",
     "responseAction": "DevIns",
     "defaultTimeout": 20
+  },
+  {
+    "name": "DifyAI",
+    "description": "Dify Example",
+    "url": "https://api.dify.ai/v1/completion-messages",
+    "auth": {
+      "type": "Bearer",
+      "token": "app-abcd"
+    },
+    "connector": {
+      "requestFormat": "{\"fields\": {\"inputs\": {\"feature\": \"$content\"}, \"response_mode\": \"streaming\", \"user\": \"phodal\" }}",
+      "responseFormat": "$.answer"
+    },
+    "responseAction": "Stream"
   }
 ]
+```
+
+Notes: Dify API support by [#251](https://github.com/unit-mesh/auto-dev/issues/251), since 1.8.18 version
+
+### responseAction
+
+```kotlin
+enum class CustomAgentResponseAction {
+    /**
+     * Direct display result
+     */
+    Direct,
+
+    /**
+     * Stream response
+     */
+    Stream,
+
+    /**
+     * Text splitting result
+     */
+    TextChunk,
+
+    /**
+     * Display result in WebView
+     */
+    WebView,
+
+    /**
+     * Handle by DevIns language compile and run in code block.
+     * @since: AutoDev@1.8.2
+     */
+    DevIns
+}
+```
+
+### interactive
+
+```kotlin
+enum class InteractionType {
+    ChatPanel,
+    AppendCursor,
+    AppendCursorStream,
+    OutputFile,
+    ReplaceSelection,
+    ReplaceCurrentFile,
+    ;
+}
 ```

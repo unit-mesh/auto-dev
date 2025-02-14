@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.actions.run
 
 import cc.unitmesh.devti.AutoDevNotifications
-import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.execution.ui.ConsoleView

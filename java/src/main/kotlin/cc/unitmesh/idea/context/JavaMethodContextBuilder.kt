@@ -56,7 +56,8 @@ class JavaMethodContextBuilder : MethodContextBuilder {
         return if (returnType == "void") null else returnType
     }
 
-    private fun getSignatureString(method: PsiMethod): String {
+    private fun getSignatureString(method: PsiMethod?): String {
+        if (method == null) return ""
         val text = runReadAction {
             cleanUp(method).text
         }

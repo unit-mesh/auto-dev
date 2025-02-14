@@ -1,0 +1,5 @@
+搜索关键字 in project
+/localSearch:project
+```
+select * from blog
+```

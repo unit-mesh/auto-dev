@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.agenttool.scrapy;
 
-import cc.unitmesh.devti.language.agenttool.browse.BrowseTool
+import cc.unitmesh.devti.agenttool.browse.BrowseTool
 import org.junit.Test
 
 

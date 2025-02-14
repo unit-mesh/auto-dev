@@ -57,7 +57,7 @@
 
     <extensionPoints>
         <extensionPoint qualifiedName="devins.agentTool"
-                        interface="cc.unitmesh.devti.language.agenttool.AgentTool"
+                        interface="cc.unitmesh.devti.agenttool.AgentTool"
                         dynamic="true"/>
     </extensionPoints>
 
@@ -69,5 +69,10 @@
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <languageProcessor implementation="cc.unitmesh.devti.language.provider.DevInsPromptProcessor"/>
+
+        <runService implementation="cc.unitmesh.devti.language.compiler.service.ShellRunService"/>
+        <runService implementation="cc.unitmesh.devti.language.compiler.service.DevInRunService"/>
+
+        <sketchToolchainProvider implementation="cc.unitmesh.devti.language.compiler.DevInsSketchToolchainProvider"/>
     </extensions>
 </idea-plugin>

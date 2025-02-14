@@ -8,11 +8,69 @@ permalink: /custom/llm-server
 
 # Custom LLM Server
 
+## Custom LLM Server Example
+
+### DeepSeek AI examples
+
+- Custom Response Type：SSE
+- Custom Engine Server：https://api.deepseek.com/v1/chat/completions
+- Request body format:
+```json
+{ "customFields": {"model": "deepseek-chat", "stream": true} }
+```
+- Response format: 
+```
+$.choices[0].delta.content 
+```
+
+### 零一万物 examples
+
+- Custom Response Type：SSE
+- Custom Engine Server：https://api.lingyiwangwu.com/v1/chat/completions
+- Request body format:
+```json
+{ "customFields": {"model": "yi-34b-chat", "stream": true} }
+```
+- Response format: 
+```
+$.choices[0].delta.content 
+```
+
+
+### ChatGLM examples
+
+more detail see in: [#90](https://github.com/unit-mesh/auto-dev/issues/90)
+
+- Custom Response Type：SSE
+- Custom Engine Server：https://open.bigmodel.cn/api/paas/v4/chat/completions
+- Request body format:
+```json
+{ "customFields": {"model": "glm-4", "stream": true} }
+```
+- Response format: 
+
+```
+$.choices[0].delta.content 
+```
+
+### Moonshot AI examples
+
+- Custom Response Type：SSE
+- Custom Engine Server：https://api.moonshot.cn/v1/chat/completions
+- Request body format
+```json
+{ "customFields": {"model": "moonshot-v1-8k", "stream": true } }
+```
+- Response format:
+```
+$.choices[0].delta.content
+```
+
 ## Custom response format
 
 We used [JsonPathKt](https://github.com/codeniko/JsonPathKt) to parse response,
 currently we only extract the first choice and only the response message.
-If your response is this format: 
+If your response is this format:
 
 ```json
 {
@@ -89,64 +147,5 @@ And the request body will be:
   ]
 }
 ```
-
-## Custom LLM Server Example
-
-### Moonshot AI examples
-
-- Custom Response Type：SSE
-- Custom Engine Server：https://api.moonshot.cn/v1/chat/completions 
-- Request body format
-```json
-{ "customFields": {"model": "moonshot-v1-8k", "stream": true } }
-```
-- Response format:
-```
-$.choices[0].delta.content
-```
-
-### DeepSeek AI examples
-
-- Custom Response Type：SSE
-- Custom Engine Server：https://api.deepseek.com/v1/chat/completions
-- Request body format:
-```json
-{ "customFields": {"model": "deepseek-chat", "stream": true} }
-```
-- Response format: 
-```
-$.choices[0].delta.content 
-```
-
-### 零一万物 examples
-
-- Custom Response Type：SSE
-- Custom Engine Server：https://api.lingyiwangwu.com/v1/chat/completions
-- Request body format:
-```json
-{ "customFields": {"model": "yi-34b-chat", "stream": true} }
-```
-- Response format: 
-```
-$.choices[0].delta.content 
-```
-
-
-### ChatGLM examples
-
-more detail see in: [#90](https://github.com/unit-mesh/auto-dev/issues/90)
-
-- Custom Response Type：SSE
-- Custom Engine Server：https://open.bigmodel.cn/api/paas/v4/chat/completions
-- Request body format:
-```json
-{ "customFields": {"model": "glm-4", "stream": true} }
-```
-- Response format: 
-
-```
-$.choices[0].delta.content 
-```
-
 
 

@@ -56,8 +56,9 @@
                 language="JAVA"
                 implementationClass="cc.unitmesh.idea.provider.JavaCustomPromptProvider"/>
 
-        <layeredArchProvider
-                implementation="cc.unitmesh.idea.provider.JavaLayeredArchProvider"/>
+        <relatedClassProvider
+                language="JAVA"
+                implementationClass="cc.unitmesh.idea.provider.JavaRelatedClassesProvider" />
 
         <autoDevIntention>
             <className>cc.unitmesh.idea.actions.AutoCrudAction</className>
@@ -67,6 +68,8 @@
 
         <customDevInsCompletionProvider
                 implementation="cc.unitmesh.idea.provider.JavaCustomDevInsSymbolProvider"/>
+
+        <runProjectService implementation="cc.unitmesh.idea.provider.JvmRunProjectService"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

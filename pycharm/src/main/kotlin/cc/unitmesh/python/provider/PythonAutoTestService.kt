@@ -10,6 +10,7 @@ import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.application.WriteAction
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
@@ -29,6 +30,8 @@ import com.jetbrains.python.run.PythonRunConfigurationProducer
 
 class PythonAutoTestService : AutoTestService() {
     override fun isApplicable(element: PsiElement): Boolean = element.language.displayName == "Python"
+    override fun isApplicable(project: Project, file: VirtualFile): Boolean = file.extension == "py"
+
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = PythonRunConfiguration::class.java
 
     override fun createConfiguration(project: Project, virtualFile: VirtualFile): RunConfiguration? {
@@ -36,9 +39,11 @@ class PythonAutoTestService : AutoTestService() {
         val runManager = RunManager.getInstance(project)
 
         val context = ConfigurationContext(psiFile)
-        val configProducer = RunConfigurationProducer.getInstance(
-            PythonRunConfigurationProducer::class.java
-        )
+        val configProducer = runReadAction {
+            RunConfigurationProducer.getInstance(
+                PythonRunConfigurationProducer::class.java
+            )
+        }
         var settings = configProducer.findExistingConfiguration(context)
 
         if (settings == null) {
@@ -92,7 +97,8 @@ class PythonAutoTestService : AutoTestService() {
     }
 
     private fun getTestsDirectory(file: VirtualFile, project: Project): VirtualFile {
-        val baseDirectory: VirtualFile? = ProjectFileIndex.getInstance(project).getContentRootForFile(file)
+        val baseDirectory: VirtualFile? =
+            runReadAction { ProjectFileIndex.getInstance(project).getContentRootForFile(file) }
         if (baseDirectory == null) {
             val parent = file.parent
             return parent

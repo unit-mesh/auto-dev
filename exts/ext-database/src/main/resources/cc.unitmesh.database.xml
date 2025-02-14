@@ -26,7 +26,11 @@
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
 
-        <chatContextProvider implementation="cc.unitmesh.database.provider.SqlChatContextProvider"/>
+        <chatContextProvider implementation="cc.unitmesh.database.provider.DatabaseSchemaContextProvider"/>
+
+        <toolchainFunctionProvider implementation="cc.unitmesh.database.provider.DatabaseFunctionProvider"/>
+
+        <runService implementation="cc.unitmesh.database.provider.SqlRunService"/>
 
         <livingDocumentation
                 language="SQL"

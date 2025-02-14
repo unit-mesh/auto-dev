@@ -7,6 +7,7 @@ import com.intellij.lang.LanguageExtension
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
@@ -60,6 +61,7 @@ interface RefactoringTool {
         try {
             delete.invoke(element.project, element.containingFile, element, element)
         } catch (e: Exception) {
+            logger<RefactoringTool>().error("Failed to delete element: ${e.message}")
             return false
         }
 
@@ -94,7 +96,7 @@ interface RefactoringTool {
 
             if (!ProgressManager.getInstance().runProcessWithProgressSynchronously(
                     runnable, RefactoringBundle.message("searching.for.variables"), true, myProject
-                )
+            )
             ) {
                 return
             }

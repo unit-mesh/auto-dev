@@ -22,7 +22,7 @@ ScreenShot
 
 ![AutoDev DevIns](https://unitmesh.cc/auto-dev/autodev-devins.png)
 
-## Basic Commands
+## Basic Commands (BuiltinCommand.kt)
 
 - `/file`: read file content, format: `/file:<file-path>`, example: `/file:src/main/java/com/example/Controller.java`.
 - `/write`: write file content, format: `file#L1-L12`, example: `src/main/java/com/example/Controller.java#L1-L12`
@@ -35,6 +35,14 @@ ScreenShot
 - `/shell`: run shell command or shell script, like `ls`, `pwd`, etc.
 - `/browse`: browse web page, like `https://ide.unitmesh.cc`
 - `/refactor`: refactor code, like `rename`, `delete`, `move` etc. (since @1.8.6) (Java only)
+- `/file-func`: read the name of a file, support for: regex, example: `/file-func:regex(".*\.txt")`
+- `/structure`: get the structure of a file with AST/PSI, example: `/structure:cc.unitmesh.devti.language.psi`
+- `/dir`: list files and directories in a tree-like structure, example: `/dir:src`
+- `/database`: read the content of a database, example: `/database:query\n```sql\nSELECT * FROM table\n````
+- `/localSearch`: search text in the scope (current only support project) will return 5 line before and after, example: `/localSearch:project\n```\nselect * from blog\n````
+- `/related`: get related code by AST (abstract syntax tree) for the current file, example: `/related:cc.unitmesh.devti.language.psi`
+- `/open`: open a file in the editor, example: `/open:.github/dependabot.yml`
+- `/ripgrepSearch`: search text in the project with ripgrep, example: `/ripgrepSearch:.*AutoDev.*`
 
 ### File Command
 

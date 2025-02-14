@@ -82,4 +82,26 @@ class CustomLLMProviderTest {
         """.trimIndent(), request)
     }
 
+    @Test
+    fun shouldReplaceUserInputToFieldWhenUserUseField() {
+        val customRequestFormat = """
+            {
+              "fields": {
+                "inputs": {
+                  "feature": "${'$'}content"
+                },
+                "response_mode": "streaming"
+              }
+            }
+        """.trimIndent()
+
+        val customRequest = CustomRequest(listOf(
+                Message("robot", "robot-hello")
+        ))
+
+        val request = customRequest.updateCustomFormat(customRequestFormat)
+        assertEquals("""
+            {"inputs":{"feature":"robot-hello"},"response_mode":"streaming"}
+        """.trimIndent(), request)
+    }
 }

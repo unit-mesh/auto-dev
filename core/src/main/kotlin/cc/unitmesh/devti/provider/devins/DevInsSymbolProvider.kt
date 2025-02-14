@@ -5,6 +5,7 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 
 /**
  * The symbol provider for DevIns completion and execution
@@ -23,6 +24,8 @@ interface DevInsSymbolProvider {
         parameters: CompletionParameters,
         result: CompletionResultSet
     ): List<LookupElement>
+
+    fun resolveElement(project: Project, symbol: String): List<PsiElement>
 
     /**
      * Resolves the symbol for different programming languages.

@@ -1,6 +1,7 @@
 package cc.unitmesh.idea.service
 
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiClassReferenceType
@@ -10,21 +11,30 @@ object JavaTypeUtil {
     fun resolveByType(outputType: PsiType?): Map<String, PsiClass> {
         val resolvedClasses = mutableMapOf<String, PsiClass>()
         if (outputType is PsiClassReferenceType) {
-            val resolveClz = outputType.resolve()
-            outputType.parameters.filterIsInstance<PsiClassReferenceType>().forEach {
-                if (resolveClz != null) {
-                    resolvedClasses[it.canonicalText] = resolveClz
-                }
-            }
-
-            val canonicalText = outputType.canonicalText
-            if (resolveClz != null) {
-                resolvedClasses[canonicalText] = resolveClz
-            }
+            resolvedClasses.putAll(resolveTypeReferences(outputType))
         }
 
         return resolvedClasses.filter { isProjectContent(it.value) }.toMap()
     }
+
+    private fun resolveTypeReferences(outputType: PsiClassReferenceType): MutableMap<String, PsiClass> {
+        val resolvedClasses = mutableMapOf<String, PsiClass>()
+
+        fun resolveRecursively(type: PsiClassReferenceType) {
+            val resolvedClass = type.resolve()
+            if (resolvedClass != null) {
+                resolvedClasses[type.canonicalText] = resolvedClass
+            }
+
+            type.parameters.filterIsInstance<PsiClassReferenceType>().forEach { childType ->
+                resolveRecursively(childType)
+            }
+        }
+
+        resolveRecursively(outputType)
+        return resolvedClasses
+    }
+
 
     fun resolveByField(element: PsiElement): Map<String, PsiClass> {
         val psiFile = element.containingFile as PsiJavaFile
@@ -84,7 +94,11 @@ object JavaTypeUtil {
                     .filter { isProjectContent((it as PsiClassReferenceType).resolve() ?: return@filter false) }
                     .forEach { resolvedClasses.putAll(resolveByType(it)) }
 
-                resolvedClasses[parameter.name] = resolve
+                try {
+                    resolvedClasses[parameter.name] = resolve
+                } catch (e: Exception) {
+                    logger<JavaTypeUtil>().error("Failed to resolve class for parameter ${parameter.name}", e)
+                }
             }
 
             val outputType = element.returnTypeElement?.type

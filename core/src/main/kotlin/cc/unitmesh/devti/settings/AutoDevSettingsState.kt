@@ -14,26 +14,16 @@ import java.time.format.DateTimeFormatter
 @Service(Service.Level.APP)
 @State(name = "cc.unitmesh.devti.settings.DevtiSettingsState", storages = [Storage("DevtiSettings.xml")])
 class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
-    var gitType = DEFAULT_GIT_TYPE
-    var githubToken = ""
-    var gitlabToken = ""
-    var gitlabUrl = ""
     var openAiKey = ""
-    var openAiModel = DEFAULT_AI_MODEL
     var delaySeconds = ""
 
-    var aiEngine = DEFAULT_AI_ENGINE
     var customOpenAiHost = ""
     var customEngineServer = ""
     var customEngineToken = ""
     var customPrompts = ""
     var customModel = ""
 
-    var customEngineResponseType = ResponseType.SSE.name
-    /**
-     * should be a json path
-     */
-    var customEngineResponseFormat = ""
+    var customEngineResponseFormat = "\$.choices[0].delta.content"
     /**
      * should be a json
      * {
@@ -44,11 +34,7 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
      *
      * @see docs/custom-llm-server.md
      */
-    var customEngineRequestFormat = ""
-
-    @OptionTag(value = "lastCheckTime", converter = ZonedDateTimeConverter::class)
-    var lastCheck: ZonedDateTime? = null
-
+    var customEngineRequestFormat = """{ "customFields": {"model": "deepseek-chat", "temperature": 0.0, "stream": true} }"""
 
     var language = DEFAULT_HUMAN_LANGUAGE
     var maxTokenLength = MAX_TOKEN_LENGTH.toString()

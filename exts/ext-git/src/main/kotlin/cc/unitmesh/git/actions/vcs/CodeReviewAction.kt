@@ -3,15 +3,15 @@ package cc.unitmesh.git.actions.vcs
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.flow.kanban.impl.GitHubIssue
-import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatPanel
 import cc.unitmesh.devti.vcs.VcsPrompting
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
-import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.LanguageChangedCallback.presentationText
+import cc.unitmesh.devti.settings.devops.devopsPromptsSettings
 import cc.unitmesh.devti.template.GENIUS_PRACTISES
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.template.context.TemplateContext
@@ -34,9 +34,10 @@ val githubUrlRegex: Regex = Regex("^(https?://|git://)?(www\\.)?github\\.com/[\\
 
 open class CodeReviewAction : ChatBaseAction() {
 
-    init{
+    init {
         presentationText("settings.autodev.others.codeReview", templatePresentation)
     }
+
     override fun getActionType(): ChatActionType = ChatActionType.CODE_REVIEW
 
     private val commitParser: CommitParser = CommitParser()
@@ -59,7 +60,7 @@ open class CodeReviewAction : ChatBaseAction() {
                 return@Runnable
             }
 
-            stories = fetchKanbanByCommits(repository, details)
+            stories = fetchKanbanByCommits(repository, details, project)
         }, "Prepare Repository", true, project)
 
         doReviewWithChanges(project, details, selectList, stories)
@@ -109,15 +110,21 @@ open class CodeReviewAction : ChatBaseAction() {
         }
     }
 
-    private fun fetchKanbanByCommits(repository: Repository, details: List<VcsFullCommitDetails>): List<String> {
+    private fun fetchKanbanByCommits(
+        repository: Repository,
+        details: List<VcsFullCommitDetails>,
+        project: Project
+    ): List<String> {
         val stories: MutableList<String> = mutableListOf()
+        val githubToken = project.devopsPromptsSettings.state.githubToken
+
         when (repository) {
             is GitRepository -> {
                 val remote = repository.info.remotes.firstOrNull() ?: return stories
                 val url = remote.firstUrl ?: return stories
                 if (!url.matches(githubUrlRegex)) return stories
 
-                val github = GitHubIssue(url, AutoDevSettingsState.getInstance().githubToken)
+                val github = GitHubIssue(url, githubToken)
                 details
                     .map {
                         commitParser.parse(it.subject).references

@@ -32,6 +32,10 @@ class JavaLivingDocumentation : LivingDocumentation {
         val project = target.project
         val codeStyleManager = CodeStyleManager.getInstance(project)
         val file = target.containingFile
+        if (newDoc.isEmpty()) {
+            return
+        }
+
         WriteCommandAction.runWriteCommandAction(project, "Living Document", "cc.unitmesh.livingDoc", {
             val startOffset = target.textRange.startOffset
             val newEndOffset = startOffset + newDoc.length
@@ -129,6 +133,9 @@ class JavaLivingDocumentation : LivingDocumentation {
 
             // 2. lookup for the first line of the newDoc
             val fromSuggestion = LivingDocumentation.buildDocFromSuggestion(newDocWithoutCodeBlock, "/**", "*/")
+            if (fromSuggestion.isEmpty()) {
+                return newDocWithoutCodeBlock
+            }
             return fromSuggestion
         }
     }

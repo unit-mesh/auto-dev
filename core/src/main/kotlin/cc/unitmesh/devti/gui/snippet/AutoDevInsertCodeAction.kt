@@ -1,13 +1,18 @@
 package cc.unitmesh.devti.gui.snippet
 
+import cc.unitmesh.devti.gui.chat.ui.AutoInputService
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.codeStyle.CodeStyleManager
+import com.intellij.testFramework.LightVirtualFile
 
 
 class AutoDevInsertCodeAction : DumbAwareAction() {
@@ -19,10 +24,22 @@ class AutoDevInsertCodeAction : DumbAwareAction() {
 
         val textEditor = FileEditorManager.getInstance(project).selectedTextEditor ?: return
         val currentSelection = textEditor.selectionModel
+        val document = textEditor.document
+
+        val psiFile = runReadAction {
+            PsiDocumentManager.getInstance(project).getPsiFile(document)
+        }
+
+        val file = FileDocumentManager.getInstance().getFile(editor.document) as? LightVirtualFile
+        if (file?.language?.displayName == "DevIn" &&
+            ToolWindowManager.getInstance(project).getToolWindow("AutoDev") != null
+        ) {
+            AutoInputService.getInstance(project).putText(newText)
+            return
+        }
 
         WriteCommandAction.writeCommandAction(project).compute<Any, RuntimeException> {
             val offset: Int
-            val document = textEditor.document
 
             if (currentSelection.hasSelection()) {
                 offset = currentSelection.selectionStart
@@ -32,9 +49,10 @@ class AutoDevInsertCodeAction : DumbAwareAction() {
                 document.insertString(offset, newText)
             }
 
-            val psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document) ?: return@compute
             PsiDocumentManager.getInstance(project).commitDocument(document)
-            CodeStyleManager.getInstance(project).reformatText(psiFile, offset, offset + newText.length)
+            if (psiFile != null) {
+                CodeStyleManager.getInstance(project).reformatText(psiFile, offset, offset + newText.length)
+            }
         }
     }
 

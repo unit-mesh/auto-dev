@@ -2,6 +2,7 @@ package cc.unitmesh.devti.agent.configurable
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.schema.CUSTOM_AGENT_FILE_NAME
+import cc.unitmesh.devti.fullHeight
 import cc.unitmesh.devti.fullWidthCell
 import cc.unitmesh.devti.gui.component.JsonLanguageField
 import cc.unitmesh.devti.settings.LanguageChangedCallback.componentStateChanged
@@ -22,6 +23,10 @@ class CoUnitToolConfigurable(val project: Project) : BoundConfigurable(AutoDevBu
             checkBox(AutoDevBundle.message("counit.agent.enable.label")).bindSelected(state::enableCustomRag)
                 .apply { componentStateChanged("counit.agent.enable.label", this.component){ c,k ->
                     c.text = k} }
+
+            link(AutoDevBundle.message("open documents"), {
+                com.intellij.ide.BrowserUtil.browse("https://ide.unitmesh.cc/agent/custom-ai-agent")
+            });
         }
 
         row {
@@ -35,6 +40,7 @@ class CoUnitToolConfigurable(val project: Project) : BoundConfigurable(AutoDevBu
                     placeholder("counit.agent.json.placeholder", this)
                 }
             fullWidthCell(languageField)
+                .fullHeight()
                 .bind(
                     componentGet = { it.text },
                     componentSet = { component, value -> component.text = value },

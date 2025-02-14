@@ -1,6 +1,8 @@
 package cc.unitmesh.devti.language.compiler.exec
 
-import cc.unitmesh.devti.language.completion.dataprovider.BuiltinRefactorCommand
+import cc.unitmesh.devti.devin.InsCommand
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.devin.dataprovider.BuiltinRefactorCommand
 import cc.unitmesh.devti.language.psi.DevInFile
 import com.intellij.lang.Language
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -46,6 +48,8 @@ import com.intellij.psi.PsiManager
  * It demonstrates how to handle different refactoring scenarios*/
 class RefactorInsCommand(val myProject: Project, private val argument: String, private val textSegment: String) :
     InsCommand {
+    override val commandName: BuiltinCommand = BuiltinCommand.REFACTOR
+
     override suspend fun execute(): String? {
         var currentEditFile: PsiFile? = null
         val editor = FileEditorManager.getInstance(myProject).selectedTextEditor

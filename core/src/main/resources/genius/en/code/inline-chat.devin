@@ -1,0 +1,15 @@
+According user's selection code and question to answer user's question.
+
+Project context:
+
+$frameworkContext
+
+User's selection code:
+
+```${language}
+${selection}
+```
+
+User's question:
+
+$input

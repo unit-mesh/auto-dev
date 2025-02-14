@@ -20,7 +20,7 @@ class JavaScriptVersionProvider : ChatContextProvider {
 
         return ChatContextItem(
             JavaScriptContextProvider::class,
-            "Prefer $preferType language if the used language and toolset are not defined below or in the user messages"
+            "Prefer $preferType language if the used language and toolset."
         ).let { listOf(it) }
     }
 }

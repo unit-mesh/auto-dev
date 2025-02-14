@@ -5,16 +5,13 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.Pair
-import io.opentelemetry.api.internal.GuardedBy
 
 @Service
 class AutoDevStatusService : AutoDevStatusListener, Disposable {
     private val lock = Any()
 
-    @GuardedBy("lock")
     private var status = AutoDevStatus.Ready
 
-    @GuardedBy("lock")
     private var message: String? = null
 
     init {
@@ -56,7 +53,6 @@ class AutoDevStatusService : AutoDevStatusListener, Disposable {
     }
 
     companion object {
-
         val currentStatus: Pair<AutoDevStatus, String?>
             get() = ApplicationManager.getApplication().getService(AutoDevStatusService::class.java).getStatus()
 

@@ -3,7 +3,7 @@ package cc.unitmesh.devti.intentions.action.task
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.util.InsertUtil
-import cc.unitmesh.devti.util.LLMCoroutineScope
+import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.intentions.action.CodeCompletionBaseIntention
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.settings.AutoDevSettingsState
@@ -41,7 +41,7 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
         val prompt = promptText()
 
         val keepHistory = keepHistory() && prompt.length < AutoDevSettingsState.maxTokenLength
-        val flow: Flow<String> = LlmFactory().create(request.project).stream(prompt, "", keepHistory)
+        val flow: Flow<String> = LlmFactory.create(request.project).stream(prompt, "", keepHistory)
         logger.info("Prompt: $prompt")
 
         DumbAwareAction.create {
@@ -61,7 +61,7 @@ abstract class BaseCompletionTask(private val request: CodeCompletionRequest) :
         indicator.fraction = 0.5
         indicator.text = AutoDevBundle.message("intentions.request.background.process.title")
 
-        LLMCoroutineScope.scope(request.project).launch {
+        AutoDevCoroutineScope.scope(request.project).launch {
             val suggestion = StringBuilder()
 
             flow.cancellable().collect { char ->

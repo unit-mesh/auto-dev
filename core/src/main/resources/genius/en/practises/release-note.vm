@@ -1,0 +1,3 @@
+Generate release note based on follow info:
+
+$context.commitMsgs

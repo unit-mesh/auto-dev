@@ -22,10 +22,7 @@
 package cc.unitmesh.devti.llms.custom
 
 import com.intellij.openapi.diagnostic.logger
-import com.theokanning.openai.service.OpenAiService
-import com.theokanning.openai.service.SSE
-import com.theokanning.openai.service.SSEFormatException
-import io.reactivex.FlowableEmitter
+import io.reactivex.rxjava3.core.FlowableEmitter
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
@@ -85,7 +82,7 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
                         val eventName = line!!.substring(6).trim { it <= ' ' }
                         if (eventName == "ping") {
                             // skip ping event and data
-                            emitter.onNext(sse)
+                            emitter.onNext(sse!!)
                             emitter.onNext(sse)
                         }
 
@@ -111,7 +108,7 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
                             }
 
                             else -> {
-                                throw SSEFormatException("Invalid sse format! '$line'")
+                                throw AutoDevHttpException("Invalid sse format! '$line'", response.code)
                             }
                         }
                     }
@@ -121,6 +118,7 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
             emitter.onComplete()
         } catch (t: Throwable) {
             logger<ResponseBodyCallback>().error("Error while reading SSE", t)
+            logger<ResponseBodyCallback>().error("Request: ${call.request()}")
             onFailure(call, IOException(t))
         } finally {
             if (reader != null) {
@@ -135,9 +133,5 @@ class ResponseBodyCallback(private val emitter: FlowableEmitter<SSE>, private va
 
     override fun onFailure(call: Call, e: IOException) {
         emitter.onError(e)
-    }
-
-    companion object {
-        private val mapper = OpenAiService.defaultObjectMapper()
     }
 }

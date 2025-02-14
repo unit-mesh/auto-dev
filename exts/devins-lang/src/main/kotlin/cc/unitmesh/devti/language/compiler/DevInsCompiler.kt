@@ -2,11 +2,12 @@ package cc.unitmesh.devti.language.compiler
 
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.custom.compile.VariableTemplateCompiler
+import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.language.compiler.exec.*
-import cc.unitmesh.devti.language.completion.dataprovider.BuiltinCommand
-import cc.unitmesh.devti.language.completion.dataprovider.CustomCommand
-import cc.unitmesh.devti.language.completion.dataprovider.ToolHubVariable
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.devin.dataprovider.CustomCommand
+import cc.unitmesh.devti.devin.dataprovider.ToolHubVariable
 import cc.unitmesh.devti.language.parser.CodeBlockElement
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.psi.DevInTypes
@@ -181,7 +182,7 @@ class DevInsCompiler(
                 if (devInCode == null) {
                     PrintInsCommand("/" + commandNode.commandName + ":" + prop)
                 } else {
-                    WriteInsCommand(myProject, prop, devInCode.text, used)
+                    WriteInsCommand(myProject, prop, devInCode.codeText(), used)
                 }
             }
 
@@ -191,7 +192,7 @@ class DevInsCompiler(
                 if (devInCode == null) {
                     PrintInsCommand("/" + commandNode.commandName + ":" + prop)
                 } else {
-                    PatchInsCommand(myProject, prop, devInCode.text)
+                    PatchInsCommand(myProject, prop, devInCode.codeText())
                 }
             }
 
@@ -201,7 +202,7 @@ class DevInsCompiler(
                 if (devInCode == null) {
                     PrintInsCommand("/" + commandNode.commandName + ":" + prop)
                 } else {
-                    CommitInsCommand(myProject, devInCode.text)
+                    CommitInsCommand(myProject, devInCode.codeText())
                 }
             }
 
@@ -217,7 +218,8 @@ class DevInsCompiler(
 
             BuiltinCommand.SHELL -> {
                 result.isLocalCommand = true
-                ShellInsCommand(myProject, prop)
+                val shireCode: String? = lookupNextCode(used)?.codeText()
+                ShellInsCommand(myProject, prop, shireCode)
             }
 
             BuiltinCommand.BROWSE -> {
@@ -225,10 +227,48 @@ class DevInsCompiler(
                 BrowseInsCommand(myProject, prop)
             }
 
-            BuiltinCommand.Refactor -> {
+            BuiltinCommand.REFACTOR -> {
                 result.isLocalCommand = true
                 val nextTextSegment = lookupNextTextSegment(used)
                 RefactorInsCommand(myProject, prop, nextTextSegment)
+            }
+
+            BuiltinCommand.DIR -> {
+                result.isLocalCommand = true
+                DirInsCommand(myProject, prop)
+            }
+
+            BuiltinCommand.DATABASE -> {
+                result.isLocalCommand = true
+                val shireCode: String? = lookupNextCode(used)?.text
+                DatabaseInsCommand(myProject, prop, shireCode)
+            }
+
+            BuiltinCommand.STRUCTURE -> {
+                result.isLocalCommand = true
+                StructureInCommand(myProject, prop)
+            }
+
+            BuiltinCommand.LOCAL_SEARCH -> {
+                result.isLocalCommand = true
+                val shireCode: String? = lookupNextCode(used)?.text
+                LocalSearchInsCommand(myProject, prop, shireCode)
+            }
+
+            BuiltinCommand.RIPGREP_SEARCH -> {
+                result.isLocalCommand = true
+                val shireCode: String? = lookupNextCode(used)?.text
+                RipgrepSearchInsCommand(myProject, prop, shireCode)
+            }
+
+            BuiltinCommand.RELATED -> {
+                result.isLocalCommand = true
+                RelatedSymbolInsCommand(myProject, prop)
+            }
+
+            BuiltinCommand.OPEN -> {
+                result.isLocalCommand = true
+                OpenInsCommand(myProject, prop)
             }
 
             else -> {
@@ -243,7 +283,9 @@ class DevInsCompiler(
             val hasReadCodeBlock = commandNode in listOf(
                 BuiltinCommand.WRITE,
                 BuiltinCommand.PATCH,
-                BuiltinCommand.COMMIT
+                BuiltinCommand.COMMIT,
+                BuiltinCommand.DATABASE,
+                BuiltinCommand.SHELL,
             )
 
             if (hasReadCodeBlock) {

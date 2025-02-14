@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.gui
 
-import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.provider.ContextPrompter
@@ -39,7 +39,7 @@ fun sendToChatPanel(project: Project, runnable: (ChatCodingPanel, ChatCodingServ
     sendToChatWindow(project, actionType, runnable)
 }
 
-fun sendToChatPanel(project: Project, actionType: ChatActionType,  runnable: (ChatCodingPanel, ChatCodingService) -> Unit) {
+fun sendToChatPanel(project: Project, actionType: ChatActionType, runnable: (ChatCodingPanel, ChatCodingService) -> Unit) {
     sendToChatWindow(project, actionType, runnable)
 }
 

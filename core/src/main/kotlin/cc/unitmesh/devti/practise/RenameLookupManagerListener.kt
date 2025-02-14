@@ -4,7 +4,7 @@ import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.statusbar.AutoDevStatusService
-import cc.unitmesh.devti.util.LLMCoroutineScope
+import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import com.intellij.codeInsight.completion.PrefixMatcher
 import com.intellij.codeInsight.lookup.*
 import com.intellij.codeInsight.lookup.impl.LookupImpl
@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.*
 
 // TODO: spike why TypeScript not trigger this listener when rename a class, function, but Java does
 class RenameLookupManagerListener(val project: Project) : LookupManagerListener {
-    private val llm = LlmFactory.instance.create(project)
+    private val llm = LlmFactory.create(project)
     private val logger = logger<RenameLookupManagerListener>()
 
     override fun activeLookupChanged(oldLookup: Lookup?, newLookup: Lookup?) {
@@ -53,7 +53,7 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
     }
 
     private fun doExecuteNameSuggest(promptText: String, lookupImpl: LookupImpl) {
-        val stringJob = LLMCoroutineScope.scope(project).launch {
+        val stringJob = AutoDevCoroutineScope.scope(project).launch {
             AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
 
             val runJob = currentCoroutineContext().job
@@ -75,7 +75,8 @@ class RenameLookupManagerListener(val project: Project) : LookupManagerListener 
                 }.map {
                     runReadAction {
                         if (!lookupImpl.isLookupDisposed && runJob.isActive && it.isNotBlank()) {
-                            lookupImpl.addItem(CustomRenameLookupElement(it), PrefixMatcher.ALWAYS_TRUE)
+                            val newSuggestion = it.removeSurrounding("`")
+                            lookupImpl.addItem(CustomRenameLookupElement(newSuggestion), PrefixMatcher.ALWAYS_TRUE)
                         }
                     }
                 }

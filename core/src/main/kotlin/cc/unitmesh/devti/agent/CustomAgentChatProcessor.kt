@@ -2,30 +2,29 @@ package cc.unitmesh.devti.agent
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
-import cc.unitmesh.devti.agent.model.CustomAgentState
 import cc.unitmesh.devti.agent.model.CustomAgentResponseAction
+import cc.unitmesh.devti.agent.model.CustomAgentState
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
-import cc.unitmesh.devti.gui.chat.ChatRole
+import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.provider.ContextPrompter
-import cc.unitmesh.devti.provider.devins.LanguagePromptProcessor
 import cc.unitmesh.devti.provider.devins.CustomAgentContext
-import cc.unitmesh.devti.util.LLMCoroutineScope
+import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
+import java.util.concurrent.CompletableFuture
 
 @Service(Service.Level.PROJECT)
 class CustomAgentChatProcessor(val project: Project) {
     private val customAgentExecutor = project.service<CustomAgentExecutor>()
     private val logger = logger<CustomAgentChatProcessor>()
 
-    fun handleChat(prompter: ContextPrompter, ui: ChatCodingPanel, llmProvider: LLMProvider) {
+    fun handleChat(prompter: ContextPrompter, ui: ChatCodingPanel, llmProvider: LLMProvider): String? {
         val originPrompt = prompter.requestPrompt()
         ui.addMessage(originPrompt, true, originPrompt)
 
@@ -37,9 +36,10 @@ class CustomAgentChatProcessor(val project: Project) {
         val response: Flow<String>? = customAgentExecutor.execute(request, selectedAgent)
         if (response == null) {
             logger.error("error for custom agent: $selectedAgent with request: $request")
-            return
+            return null
         }
 
+        var llmResponse = ""
         selectedAgent.state = CustomAgentState.FINISHED
 
         var devInCode: String? = ""
@@ -63,23 +63,32 @@ class CustomAgentChatProcessor(val project: Project) {
 
                 ui.hiddenProgressBar()
                 ui.updateUI()
+
+                llmResponse = content
             }
 
             CustomAgentResponseAction.Stream -> {
                 ui.addMessage(AutoDevBundle.message("autodev.loading"))
-                var msg = ""
-                LLMCoroutineScope.scope(project).launch {
-                    msg = ui.updateMessage(response)
+                val future: CompletableFuture<String> = CompletableFuture()
+                val sb = StringBuilder()
+                runBlocking {
+                    val result = ui.updateMessage(response)
+                    sb.append(result)
                 }
 
-                llmProvider.appendLocalMessage(msg, ChatRole.Assistant)
+                val content = sb.toString()
+                llmProvider.appendLocalMessage(content, ChatRole.Assistant)
                 ui.hiddenProgressBar()
                 ui.updateUI()
+                ui.moveCursorToStart()
 
-                val code = CodeFence.parse(msg)
+                val code = CodeFence.parse(content)
                 if (code.language.displayName == "DevIn") {
                     devInCode = code.text
                 }
+
+                future.complete(content)
+                llmResponse = future.get()
             }
 
             CustomAgentResponseAction.TextChunk -> {
@@ -96,6 +105,8 @@ class CustomAgentChatProcessor(val project: Project) {
                 ui.moveCursorToStart()
                 ui.setInput(content)
                 ui.hiddenProgressBar()
+
+                llmResponse = content
             }
 
             CustomAgentResponseAction.Flow -> {
@@ -115,6 +126,8 @@ class CustomAgentChatProcessor(val project: Project) {
 
                 ui.appendWebView(content, project)
                 ui.hiddenProgressBar()
+
+                llmResponse = content
             }
 
             CustomAgentResponseAction.DevIns -> {
@@ -128,13 +141,16 @@ class CustomAgentChatProcessor(val project: Project) {
                 ui.updateUI()
 
                 devInCode = msg
+
+                llmResponse = msg
             }
         }
 
         if (!devInCode.isNullOrEmpty()) {
-            LanguagePromptProcessor.instance("DevIn").forEach {
-                it.execute(project, CustomAgentContext(selectedAgent, devInCode))
-            }
+            val devin = LanguageProcessor.devin()
+            devin?.execute(project, CustomAgentContext(selectedAgent, devInCode!!))
         }
+
+        return llmResponse
     }
 }

@@ -1,13 +1,14 @@
 // Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.intellij.temporary.gui.block
 
-import cc.unitmesh.devti.gui.chat.ChatRole
+import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.lang.Language
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
@@ -21,8 +22,6 @@ import com.intellij.openapi.editor.ex.FocusChangeListener
 import com.intellij.openapi.editor.ex.MarkupModelEx
 import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory
 import com.intellij.openapi.fileEditor.FileDocumentManager
-import com.intellij.openapi.fileTypes.PlainTextFileType
-import com.intellij.openapi.fileTypes.UnknownFileType
 import com.intellij.openapi.observable.properties.GraphProperty
 import com.intellij.openapi.observable.properties.PropertyGraph
 import com.intellij.openapi.project.Project
@@ -82,7 +81,9 @@ class CodeBlockView(
             if (codePartEditorInfo!!.language == code.language) {
                 editorInfo!!.language = code.language
             }
-
+            ApplicationManager.getApplication().runWriteAction{
+                editorInfo!!.editor.document.setText(code.text)
+            }
             editorInfo!!.code.set(code.text)
         }
 
@@ -90,7 +91,6 @@ class CodeBlockView(
     }
 
     companion object {
-
         private fun createCodeViewerEditor(
             project: Project,
             file: LightVirtualFile,
@@ -151,10 +151,9 @@ class CodeBlockView(
             message: CompletableMessage,
         ): CodePartEditorInfo {
             val forceFoldEditorByDefault = message.getRole() === ChatRole.User
-            val file = LightVirtualFile(AUTODEV_SNIPPET_NAME, language, graphProperty.get())
-            if (file.fileType == UnknownFileType.INSTANCE) {
-                file.fileType = PlainTextFileType.INSTANCE
-            }
+
+            val ext = CodeFence.lookupFileExt(language.displayName)
+            val file = LightVirtualFile("shire.${ext}", language, graphProperty.get())
 
             val document: Document =
                 file.findDocument() ?: throw IllegalStateException("Document not found")

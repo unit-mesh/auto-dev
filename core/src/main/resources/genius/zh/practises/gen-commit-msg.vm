@@ -1,4 +1,4 @@
-为给定的变更（Diff）编写一个连贯但具有描述性的提交信息。
+根据针对如下的代码变更（Diff）编写提交信息。
 
 - 确保包含修改了什么以及为什么。
 - 以不超过 50 个字符的祈使句形式开头。
@@ -8,20 +8,22 @@
 遵循常规提交规范，例如：
 
 - fix(authentication): 修复密码正则表达式模式问题
-- feat(storage): 添加对S3存储的支持
+- feat(storage): 添加对 S3 存储的支持
 - test(java): 修复用户控制器的测试用例
 - docs(architecture): 在主页添加架构图
 
 #if( $context.historyExamples.length() > 0 )
 以下是用户的历史提交习惯：
+<history>
 $context.historyExamples
+</history>
 #end
 
 #if( $context.originText.length() > 0 )
-用户想表达的是: $context.originText
+用户先前的意图是: $context.originText
 #end
 
-Diff：
+代码变更（Diff）：
 
 ```diff
 ${context.diffContent}

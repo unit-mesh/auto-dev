@@ -1,0 +1,10 @@
+<idea-plugin package="cc.unitmesh.plantuml">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+        <plugin id="PlantUML integration"/>
+    </dependencies>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <langSketchProvider implementation="cc.unitmesh.plantuml.PlantUmlSketchProvider"/>
+    </extensions>
+</idea-plugin>

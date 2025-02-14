@@ -40,7 +40,7 @@ class CustomAgentExecutor(val project: Project) : CustomSSEProcessor(project) {
             Json.encodeToString<CustomRequest>(customRequest)
         }
 
-        val body = request.toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
+        val body = request.toRequestBody("application/json".toMediaTypeOrNull())
         val builder = Request.Builder()
 
         val auth = agent.auth

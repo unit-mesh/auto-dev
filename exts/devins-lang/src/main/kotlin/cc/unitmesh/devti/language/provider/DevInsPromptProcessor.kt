@@ -5,7 +5,7 @@ import cc.unitmesh.devti.language.DevInLanguage
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.provider.devins.CustomAgentContext
-import cc.unitmesh.devti.provider.devins.LanguagePromptProcessor
+import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
@@ -14,7 +14,7 @@ import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.util.PsiUtilBase
 
 
-class DevInsPromptProcessor : LanguagePromptProcessor {
+class DevInsPromptProcessor : LanguageProcessor {
     override val name: String = DevInLanguage.displayName
 
     override fun execute(project: Project, context: CustomAgentContext): String {
@@ -78,7 +78,7 @@ class DevInsPromptProcessor : LanguagePromptProcessor {
         var element = psiFile.findElementAt(offset) ?: return null
 
         if (element is PsiWhiteSpace) {
-            element = element.getParent()
+            element = element.parent
         }
 
         return element

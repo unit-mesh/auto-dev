@@ -7,7 +7,6 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import junit.framework.TestCase
 
 class GoMethodContextBuilderTest : BasePlatformTestCase() {
-
     fun testShouldHandleMethodSignature() {
         // given
         val file = myFixture.configureByText(

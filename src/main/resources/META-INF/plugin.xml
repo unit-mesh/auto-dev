@@ -28,18 +28,17 @@
         <module name="cc.unitmesh.javascript"/>
         <module name="cc.unitmesh.go"/>
         <module name="cc.unitmesh.rust"/>
-<!--        <module name="cc.unitmesh.cpp"/>-->
-        <module name="cc.unitmesh.scala"/>
 <!--        <module name="cc.unitmesh.csharp"/>-->
         <module name="cc.unitmesh.local"/>
 
         <!-- extension modules -->
         <module name="cc.unitmesh.database"/>
-        <module name="cc.unitmesh.android"/>
-        <module name="cc.unitmesh.harmonyos"/>
         <module name="cc.unitmesh.terminal"/>
+        <module name="cc.unitmesh.mermaid"/>
+        <module name="cc.unitmesh.plantuml"/>
         <module name="cc.unitmesh.git"/>
         <module name="cc.unitmesh.devti.language"/>
         <module name="cc.unitmesh.httpclient"/>
+        <module name="cc.unitmesh.endpoints"/>
     </content>
 </idea-plugin>

@@ -1,7 +1,7 @@
 package cc.unitmesh.idea.provider
 
-import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.prompting.code.TestStack
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
+import cc.unitmesh.devti.prompting.code.TechStack
 import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
@@ -71,19 +71,24 @@ open class SpringGradleContextProvider : ChatContextProvider {
     }
 }
 
-fun convertTechStack(project: Project): TestStack {
+fun convertTechStack(project: Project): TechStack {
     val libraryDataList = prepareLibraryData(project)
 
-    val testStack = TestStack()
+    val techStack = TechStack()
     var hasMatchSpringMvc = false
     var hasMatchSpringData = false
 
     libraryDataList?.forEach {
         val name = it.groupId + ":" + it.artifactId
+        // sprint boot start with version
+        if (name.startsWith("org.springframework.boot")) {
+            techStack.coreFrameworks.putIfAbsent("Spring Boot " + it.version, true)
+        }
+
         if (!hasMatchSpringMvc) {
             SpringLibrary.SPRING_MVC.forEach { entry: LibraryDescriptor ->
                 if (name.contains(entry.coords)) {
-                    testStack.coreFrameworks.putIfAbsent(entry.shortText, true)
+                    techStack.coreFrameworks.putIfAbsent(entry.shortText, true)
                     hasMatchSpringMvc = true
                 }
             }
@@ -93,7 +98,7 @@ fun convertTechStack(project: Project): TestStack {
             SpringLibrary.SPRING_DATA.forEach { entry ->
                 entry.coords.forEach { coord ->
                     if (name.contains(coord)) {
-                        testStack.coreFrameworks.putIfAbsent(entry.shortText, true)
+                        techStack.coreFrameworks.putIfAbsent(entry.shortText, true)
                         hasMatchSpringData = true
                     }
                 }
@@ -102,28 +107,28 @@ fun convertTechStack(project: Project): TestStack {
 
         when {
             name.contains("org.springframework.boot:spring-boot-test") -> {
-                testStack.testFrameworks.putIfAbsent("Spring Boot Test", true)
+                techStack.testFrameworks.putIfAbsent("Spring Boot Test", true)
             }
 
             name.contains("org.assertj:assertj-core") -> {
-                testStack.testFrameworks.putIfAbsent("AssertJ", true)
+                techStack.testFrameworks.putIfAbsent("AssertJ", true)
             }
 
             name.contains("org.junit.jupiter:junit-jupiter") -> {
-                testStack.testFrameworks.putIfAbsent("JUnit 5", true)
+                techStack.testFrameworks.putIfAbsent("JUnit 5", true)
             }
 
             name.contains("org.mockito:mockito-core") -> {
-                testStack.testFrameworks.putIfAbsent("Mockito", true)
+                techStack.testFrameworks.putIfAbsent("Mockito", true)
             }
 
             name.contains("com.h2database:h2") -> {
-                testStack.testFrameworks.putIfAbsent("H2", true)
+                techStack.testFrameworks.putIfAbsent("H2", true)
             }
         }
     }
 
-    return testStack
+    return techStack
 }
 
 data class SimpleLibraryData(val groupId: String?, val artifactId: String?, val version: String?)

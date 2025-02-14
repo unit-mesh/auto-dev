@@ -1,59 +1,70 @@
 package cc.unitmesh.devti.language.compiler.exec
 
+import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.devin.InsCommand
+import cc.unitmesh.devti.devin.InsCommandListener
+import cc.unitmesh.devti.devin.InsCommandStatus
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.compiler.model.LineInfo
+import cc.unitmesh.devti.language.utils.findFile
 import cc.unitmesh.devti.language.utils.lookupFile
-import com.intellij.openapi.diagnostic.logger
+import cc.unitmesh.devti.sketch.ui.patch.readText
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 
 /**
- * FileAutoCommand is responsible for reading a file and returning its contents.
+ * FileInsCommand is responsible for reading a file and returning its contents.
  *
  * @param myProject the Project in which the file operations are performed
  * @param prop the property string containing the file name and optional line range
  *
  */
 class FileInsCommand(private val myProject: Project, private val prop: String) : InsCommand {
-    private val logger = logger<FileInsCommand>()
-    private val output = StringBuilder()
+    override val commandName: BuiltinCommand = BuiltinCommand.FILE
 
     override suspend fun execute(): String? {
         val range: LineInfo? = LineInfo.fromString(prop)
 
         // prop name can be src/file.name#L1-L2
-        val filename = prop.split("#")[0]
-        val virtualFile = myProject.lookupFile(filename)
+        val filepath = prop.split("#")[0]
+        var virtualFile: VirtualFile? = myProject.lookupFile(filepath)
 
-        val contentsToByteArray = virtualFile?.contentsToByteArray()
-        if (contentsToByteArray == null) {
-            logger.warn("File not found: $virtualFile")
-            return null
+        if (virtualFile == null) {
+            val filename = filepath.split("/").last()
+            try {
+                virtualFile = myProject.findFile(filename, false)
+            } catch (e: Exception) {
+                return "File not found: $prop"
+            }
         }
 
-        contentsToByteArray.let { bytes ->
-            val lang = virtualFile.let {
-                PsiManager.getInstance(myProject).findFile(it)?.language?.displayName
-            } ?: ""
+        val content = virtualFile?.readText()
+        if (content == null) {
+            AutoDevNotifications.warn(myProject, "File not found: $prop")
+            return "File not found: $prop"
+        }
 
-            val content = bytes.toString(Charsets.UTF_8)
-            val fileContent = if (range != null) {
-                val subContent = try {
-                    content.split("\n").slice(range.startLine - 1 until range.endLine)
-                        .joinToString("\n")
-                } catch (e: StringIndexOutOfBoundsException) {
-                    content
-                }
+        InsCommandListener.notify(this, InsCommandStatus.SUCCESS, virtualFile)
 
-                subContent
-            } else {
+        val lang = PsiManager.getInstance(myProject).findFile(virtualFile)?.language?.displayName ?: ""
+
+        val fileContent = if (range == null) {
+            content
+        } else {
+            try {
+                content.split("\n").slice(range.startLine - 1 until range.endLine)
+                    .joinToString("\n")
+            } catch (e: StringIndexOutOfBoundsException) {
                 content
             }
-
-            output.append("\n```$lang\n")
-            output.append(fileContent)
-            output.append("\n```\n")
         }
 
+        val output = StringBuilder()
+        output.append("// File: $prop")
+        output.append("\n```$lang\n")
+        output.append(fileContent)
+        output.append("\n```\n")
         return output.toString()
     }
 }

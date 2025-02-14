@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.llms.custom
 
-import cc.unitmesh.devti.gui.chat.ChatRole
+import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.settings.ResponseType
 import cc.unitmesh.devti.settings.coder.AutoDevCoderSettingService
@@ -19,7 +19,6 @@ import okhttp3.RequestBody
 import java.time.Duration
 
 //TODO: refactor, this provider copy from CustomLLMProvider
-@Service(Service.Level.PROJECT)
 class InlayCustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(project) {
     private val autoDevSettingsState = project.service<AutoDevCoderSettingService>().state
     private val url get() = autoDevSettingsState.customEngineServerParam
@@ -51,7 +50,7 @@ class InlayCustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProce
         val customRequest = CustomRequest(messages)
         val requestContent = customRequest.updateCustomFormat(requestFormat)
 
-        val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), requestContent)
+        val body = RequestBody.create("application/json".toMediaTypeOrNull(), requestContent.toByteArray())
 
         val builder = Request.Builder()
         if (key.isNotEmpty()) {
@@ -77,7 +76,7 @@ class InlayCustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProce
         val customRequest = CustomRequest(messages)
         val requestContent = Json.encodeToString<CustomRequest>(customRequest)
 
-        val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), requestContent)
+        val body = RequestBody.create("application/json".toMediaTypeOrNull(), requestContent.toByteArray())
 
         logger.info("Requesting form: $requestContent $body")
         val builder = Request.Builder()

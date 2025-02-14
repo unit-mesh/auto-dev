@@ -19,32 +19,9 @@ So, since 2024.4, AutoDev was unavailable in the JetBrains Plugin Repository, yo
    - AutoDev-*-241.zip, for version 2024.1~
 2. Configure GitHub Token (optional) and OpenAI config in `Settings` -> `Tools` -> `AutoDev`
 
-## Config
+## AutoDev 2.0 Config
 
-### OpenAI Official config
-
-1. open AutoDev Config in `Settings` -> `Tools` -> `AutoDev`.
-2. select `AI Engine` -> `OpenAI`, select `Open AI Model` -> `gpt-3.5-turbo`
-3. fill `OpenAI API Key` with your OpenAI API Key.
-4. Apply and OK.
-
-### OpenAI Proxy
-
-1. open AutoDev Config in `Settings` -> `Tools` -> `AutoDev`.
-2. select `AI Engine` -> `OpenAI`, select `Open AI Model` -> `gpt-3.5-turbo`,
-3. fill `Custom OpenAI Host` with your OpenAI API Endpoint.
-4. fill `OpenAI API Key` with your Host OpenAI API Key.
-5. Apply and OK.
-
-ps: For OpenAI compatible, you can use `Open AI Model` to your custom OpenAI compatible model.
-
-### Azure OpenAI Config
-
-1. open AutoDev Config in `Settings` -> `Tools` -> `AutoDev`.
-2. ~~select `AI Engine` -> `Azure`, select `Open AI Model` -> `gpt-3.5-turbo`~~
-3. select `AI Engine` -> `Custom`
-4. fill `Custom Engine Server` and `Custom Engine Token` if needed.
-5. Apply and OK.
+<img src="https://unitmesh.cc/auto-dev/autodev-2-config.png" alt="AutoDev 2 Config" width="600px"/>
 
 ### Custom Config / OpenAI compatible
 
@@ -52,12 +29,14 @@ Tested: 零一万物（[#94](https://github.com/unit-mesh/auto-dev/issues/94)）
 AI）、深度求索（Deepseek [#96](https://github.com/unit-mesh/auto-dev/issues/96)），ChatGLM(#90)
 
 1. open AutoDev Config in `Settings` -> `Tools` -> `AutoDev`.
-2. select `AI Engine` -> `Custom`
-3. fill `Custom Engine Server`
-4. fill `Custom Engine Token` if needed.
-5. config `Custom Response Format` by [JsonPath](https://github.com/json-path/JsonPath) (for
-   example: `$.choices[0].content`), if not set, will use OpenAI's format as default.
-6. config `Custom Request Format` by Json if needed.
-7. Apply and OK.
+2. fill `LLM Server Address`, for example:
+   - Deepseek: `https://api.deepseek.com/chat/completions`
+   - OpenAI: `https://api.openai.com/v1/chat/completions`
+3. fill `LLM Key` if needed, aka `API Key`.
+4. config `Custom Response Format` by [JsonPath](https://github.com/json-path/JsonPath), for example
+   - `$.choices[0].delta.content`
+5. config `Custom Request Format`, for example:
+   - `{ "customFields": {"model": "deepseek-chat", "stream": true }}`
+6. Apply and OK.
 
 for more, see in [Customize LLM Server](/custom/llm-server)

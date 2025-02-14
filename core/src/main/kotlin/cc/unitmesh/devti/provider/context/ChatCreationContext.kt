@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.provider.context
 
-import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 

@@ -1,0 +1,11 @@
+请根据我的原始代码和失败的 patch，生成最终的完整代码。
+
+Here is the original code:
+
+${context.oldCode}
+
+Here is the patched code:
+
+${context.patchedCode}
+
+请返回应用 patch 后的最终代码。

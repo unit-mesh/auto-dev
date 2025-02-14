@@ -18,7 +18,6 @@ import javax.swing.JLabel
  * @author lk
  */
 object LanguageChangedCallback : SelectionChangedCallback {
-
     var language: String = AutoDevSettingsState.getInstance().language
         set(value) {
             if ((field != value).also { field = value }) {

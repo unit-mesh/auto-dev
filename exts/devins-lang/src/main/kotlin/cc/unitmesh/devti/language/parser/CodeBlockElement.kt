@@ -2,8 +2,10 @@
 package cc.unitmesh.devti.language.parser
 
 import cc.unitmesh.devti.language.psi.DevInTypes
+import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.ElementManipulators
 import com.intellij.psi.LiteralTextEscaper
@@ -40,11 +42,13 @@ class CodeBlockElement(node: ASTNode) : ASTWrapperPsiElement(node), PsiLanguageI
         return findChildByType(DevInTypes.LANGUAGE_ID)
     }
 
+    fun codeText(): String {
+        return CodeFence.parse(this.text).text
+    }
+
     companion object {
         fun obtainFenceContent(element: CodeBlockElement): List<PsiElement>? {
-            return CachedValuesManager.getCachedValue(element) {
-                CachedValueProvider.Result.create(getContent(element), element)
-            }
+            return getContent(element)
         }
 
         private fun getContent(host: CodeBlockElement): List<PsiElement>? {
@@ -53,10 +57,8 @@ class CodeBlockElement(node: ASTNode) : ASTWrapperPsiElement(node), PsiLanguageI
 
             val elements =
                 children.filter {
-                    it !is OuterLanguageElement
-                            && (it.node.elementType == DevInTypes.CODE_CONTENTS || it == DevInTypes.NEWLINE)
-                }
-                    .toList()
+                    it !is OuterLanguageElement && (it.node.elementType == DevInTypes.CODE_CONTENTS || it == DevInTypes.NEWLINE)
+                }.toList()
 
             if (elements.isNotEmpty() && elements.first() == DevInTypes.NEWLINE) {
                 elements.drop(1)
@@ -70,10 +72,16 @@ class CodeBlockElement(node: ASTNode) : ASTWrapperPsiElement(node), PsiLanguageI
 
         fun obtainRelevantTextRange(element: CodeBlockElement): TextRange {
             val elements = obtainFenceContent(element) ?: return getEmptyRange(element)
-            val first = elements.first()
-            val last = elements.last()
 
-            return TextRange.create(first.startOffsetInParent, last.startOffsetInParent + last.textLength)
+            try {
+                val first = elements.first()
+                val last = elements.last()
+
+                return TextRange.create(first.startOffsetInParent, last.startOffsetInParent + last.textLength)
+            } catch (e: Exception) {
+                logger<CodeBlockElement>().warn("Failed to obtain relevant text range", e)
+                return getEmptyRange(element)
+            }
         }
 
         private fun getEmptyRange(host: CodeBlockElement): TextRange {

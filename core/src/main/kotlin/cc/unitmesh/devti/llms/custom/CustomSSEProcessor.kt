@@ -4,7 +4,7 @@ import cc.unitmesh.devti.coder.recording.EmptyRecording
 import cc.unitmesh.devti.coder.recording.JsonlRecording
 import cc.unitmesh.devti.coder.recording.Recording
 import cc.unitmesh.devti.coder.recording.RecordingInstruction
-import cc.unitmesh.devti.gui.chat.ChatRole
+import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.settings.coder.coderSetting
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.components.service
@@ -12,11 +12,9 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.nfeld.jsonpathkt.JsonPath
 import com.nfeld.jsonpathkt.extension.read
-import com.theokanning.openai.completion.chat.ChatCompletionResult
-import com.theokanning.openai.service.SSE
-import io.reactivex.BackpressureStrategy
-import io.reactivex.Flowable
-import io.reactivex.FlowableEmitter
+import io.reactivex.rxjava3.core.BackpressureStrategy
+import io.reactivex.rxjava3.core.Flowable
+import io.reactivex.rxjava3.core.FlowableEmitter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -49,7 +47,7 @@ open class CustomSSEProcessor(private val project: Project) {
 
     private val recording: Recording
         get() {
-            if (project.coderSetting.state.recordingInLocal == true) {
+            if (project.coderSetting.state.recordingInLocal) {
                 return project.service<JsonlRecording>()
             }
 
@@ -63,7 +61,9 @@ open class CustomSSEProcessor(private val project: Project) {
                 send(it)
             }
 
-            messages += Message(ChatRole.Assistant.roleName(), it)
+            if (it.isNotEmpty()) {
+                messages += Message(ChatRole.Assistant.roleName(), it)
+            }
             recording.write(RecordingInstruction(promptText, it))
             close()
         })
@@ -98,7 +98,6 @@ open class CustomSSEProcessor(private val project: Project) {
                                 // {"id":"cmpl-ac26a17e","object":"chat.completion.chunk","created":1858403,"model":"yi-34b-chat","choices":[{"delta":{"role":"assistant"},"index":0}],"content":"","lastOne":false}
 
                                 val chunk: String? = JsonPath.parse(sse!!.data)?.read(responseFormat)
-
                                 // new JsonPath lib caught the exception, so we need to handle when it is null
                                 if (chunk == null) {
                                     parseFailedResponses.add(sse.data)
@@ -136,7 +135,10 @@ open class CustomSSEProcessor(private val project: Project) {
                         send(errorMsg)
                     }
 
-                    messages += Message(ChatRole.Assistant.roleName(), output)
+                    if (output.isNotEmpty()) {
+                        messages += Message(ChatRole.Assistant.roleName(), output)
+                    }
+
                     recording.write(RecordingInstruction(promptText, output))
                     close()
                 }
@@ -178,19 +180,53 @@ fun Request.Builder.appendCustomHeaders(customRequestHeader: String): Request.Bu
     }
 }
 
+
+/**
+ * [stream] 值优先于 [fields] 中的 customFileds.stream 字段
+ */
 @VisibleForTesting
-fun JsonObject.updateCustomBody(customRequest: String): JsonObject {
+fun JsonObject.updateCustomBody(customRequest: String, stream: Boolean? = null): JsonObject {
     return runCatching {
         buildJsonObject {
             // copy origin object
-            this@updateCustomBody.forEach { u, v -> put(u, v) }
-
             val customRequestJson = Json.parseToJsonElement(customRequest).jsonObject
+            customRequestJson["fields"]?.jsonObject?.let { fieldsObj ->
+                val messages: JsonArray = this@updateCustomBody["messages"]?.jsonArray ?: buildJsonArray {}
+                val contentOfFirstMessage = if (messages.isNotEmpty()) {
+                    messages.last().jsonObject["content"]?.jsonPrimitive?.content ?: ""
+                } else ""
+                fieldsObj.forEach { (fieldKey, fieldValue) ->
+                    if (fieldValue is JsonObject) {
+                        put(fieldKey, buildJsonObject {
+                            fieldValue.forEach { (subKey, subValue) ->
+                                if (subValue is JsonPrimitive && subValue.content == "\$content") {
+                                    put(subKey, JsonPrimitive(contentOfFirstMessage))
+                                } else {
+                                    put(subKey, subValue)
+                                }
+                            }
+                        })
+                    } else if (fieldValue is JsonPrimitive && fieldValue.content == "\$content") {
+                        put(fieldKey, JsonPrimitive(contentOfFirstMessage))
+                    } else {
+                        put(fieldKey, fieldValue)
+                    }
+                }
+
+                return@buildJsonObject
+            }
+
+            this@updateCustomBody.forEach { u, v -> put(u, v) }
             customRequestJson["customFields"]?.let { customFields ->
                 customFields.jsonObject.forEach { (key, value) ->
                     put(key, value)
                 }
-            }
+
+                // stream 参数优先级高于 customFields.stream
+                if (stream != null) {
+                    put("stream", stream)
+                }
+             }
 
             // TODO clean code with magic literals
             var roleKey = "role"
@@ -218,8 +254,24 @@ fun JsonObject.updateCustomBody(customRequest: String): JsonObject {
     }
 }
 
-fun CustomRequest.updateCustomFormat(format: String): String {
+fun CustomRequest.updateCustomFormat(format: String, stream: Boolean? = null): String {
     val requestContentOri = Json.encodeToString<CustomRequest>(this)
-    return Json.parseToJsonElement(requestContentOri)
-        .jsonObject.updateCustomBody(format).toString()
+    val updateCustomBody = kotlin.runCatching {
+        Json.parseToJsonElement(requestContentOri)
+            .jsonObject.updateCustomBody(format, stream)
+    }.getOrElse {
+        logger<CustomLLMProvider>().error("Failed to update custom request body: ${format}", it)
+        requestContentOri
+    }
+
+    return updateCustomBody.toString()
+}
+
+fun JsonObject.removeFields(vararg fields: String): JsonObject {
+    return JsonObject(
+        toMutableMap()
+            .apply {
+                fields.forEach { remove(it) }
+            }
+    )
 }

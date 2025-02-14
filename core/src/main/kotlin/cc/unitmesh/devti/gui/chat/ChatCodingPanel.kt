@@ -1,17 +1,25 @@
 package cc.unitmesh.devti.gui.chat
 
+import cc.unitmesh.cf.core.llms.LlmMsg
 import cc.unitmesh.devti.*
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.agent.view.WebBlock
 import cc.unitmesh.devti.agent.view.WebBlockView
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
+import cc.unitmesh.devti.gui.chat.message.ChatContext
+import cc.unitmesh.devti.gui.chat.message.ChatRole
+import cc.unitmesh.devti.gui.chat.ui.AutoDevInputListener
+import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
+import cc.unitmesh.devti.gui.chat.ui.AutoDevInputTrigger
+import cc.unitmesh.devti.gui.chat.view.FrontendCodeView
+import cc.unitmesh.devti.gui.chat.view.MessageView
 import cc.unitmesh.devti.gui.chat.welcome.WelcomePanel
 import cc.unitmesh.devti.provider.ContextPrompter
-import cc.unitmesh.devti.provider.devins.LanguagePromptProcessor
+import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.LanguageChangedCallback.componentStateChanged
 import com.intellij.lang.html.HTMLLanguage
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.NullableComponent
@@ -43,8 +51,6 @@ import javax.swing.*
 class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disposable: Disposable?) :
     SimpleToolWindowPanel(true, true),
     NullableComponent {
-    private val logger = logger<ChatCodingPanel>()
-
     private var progressBar: JProgressBar
     private val myTitle = JBLabel("Conversation")
     private val myList = JPanel(VerticalLayout(JBUI.scale(10)))
@@ -108,7 +114,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
 
                 val context = ChatContext(null, "", "")
 
-                val postProcessors = LanguagePromptProcessor.instance("DevIn").firstOrNull()
+                val postProcessors = LanguageProcessor.devin()
                 if (postProcessors != null) {
                     prompt = postProcessors.compile(chatCodingService.project, prompt)
                 }
@@ -171,6 +177,18 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         }
     }
 
+    fun getHistoryMessages(): List<LlmMsg.ChatMessage> {
+        val messages = mutableListOf<LlmMsg.ChatMessage>()
+        for (i in 0 until myList.componentCount) {
+            val component = myList.getComponent(i)
+            if (component is MessageView) {
+                val role = LlmMsg.ChatRole.valueOf(component.role.name)
+                messages.add(LlmMsg.ChatMessage(role, component.message, null))
+            }
+        }
+        return messages
+    }
+
     suspend fun updateMessage(content: Flow<String>): String {
         if (myList.componentCount > 0) {
             myList.remove(myList.componentCount - 1)
@@ -217,7 +235,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         postAction(text)
     }
 
-    private suspend fun updateMessageInUi(content: Flow<String>): String {
+    suspend fun updateMessageInUi(content: Flow<String>): String {
         val messageView = MessageView("", ChatRole.Assistant, "")
         myList.add(messageView)
         val startTime = System.currentTimeMillis()
@@ -301,6 +319,10 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
         }
 
         updateUI()
+    }
+
+    fun selectAgent(config: CustomAgentConfig) {
+        inputSection.selectAgent(config)
     }
 
     fun appendWebView(content: String, project: Project) {

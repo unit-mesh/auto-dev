@@ -1,11 +1,9 @@
 package cc.unitmesh.devti.llms.custom
 
-import cc.unitmesh.devti.gui.chat.ChatRole
+import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.settings.AutoDevSettingsState
-import cc.unitmesh.devti.settings.ResponseType
 import cc.unitmesh.devti.settings.coder.coderSetting
-import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.flow.Flow
@@ -17,15 +15,26 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import java.time.Duration
 
-@Service(Service.Level.PROJECT)
+/**
+ * LLMProvider 不应该是单例 Service，它有多个并发场景的可能性
+ */
 class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(project) {
     private val autoDevSettingsState = getSetting()
     private fun getSetting() = AutoDevSettingsState.getInstance()
     private val url get() = autoDevSettingsState.customEngineServer
     private val key get() = autoDevSettingsState.customEngineToken
 
-    override val requestFormat: String get() = autoDevSettingsState.customEngineRequestFormat
-    override val responseFormat get() = autoDevSettingsState.customEngineResponseFormat
+    private val modelName: String
+        get() = AutoDevSettingsState.getInstance().customModel
+
+    override val requestFormat: String
+        get() = autoDevSettingsState.customEngineRequestFormat.ifEmpty {
+            """{ "customFields": {"model": "$modelName", "temperature": 0.0, "stream": true} }"""
+        }
+    override val responseFormat
+        get() = autoDevSettingsState.customEngineResponseFormat.ifEmpty {
+            "\$.choices[0].delta.content"
+        }
 
     private var client = OkHttpClient()
     private val timeout = Duration.ofSeconds(defaultTimeout)
@@ -35,6 +44,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(
     override fun clearMessage() = messages.clear()
 
     override fun appendLocalMessage(msg: String, role: ChatRole) {
+        if (msg.isEmpty()) return
         messages += Message(role.roleName(), msg)
     }
 
@@ -45,12 +55,22 @@ class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(
             clearMessage()
         }
 
+        if (systemPrompt.isNotEmpty()) {
+            if (messages.isNotEmpty() && messages[0].role != "system") {
+                messages.add(0, Message("system", systemPrompt))
+            } else if (messages.isEmpty()) {
+                messages.add(Message("system", systemPrompt))
+            } else {
+                messages[0] = Message("system", systemPrompt)
+            }
+        }
+
         messages += Message("user", promptText)
 
         val customRequest = CustomRequest(messages)
         val requestContent = customRequest.updateCustomFormat(requestFormat)
 
-        val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), requestContent)
+        val body = RequestBody.create("application/json".toMediaTypeOrNull(), requestContent.toByteArray())
 
         val builder = Request.Builder()
         if (key.isNotEmpty()) {
@@ -68,11 +88,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(
             clearMessage()
         }
 
-        return if (autoDevSettingsState.customEngineResponseType == ResponseType.SSE.name) {
-            streamSSE(call, promptText, keepHistory, messages)
-        } else {
-            streamJson(call, promptText, messages)
-        }
+        return streamSSE(call, promptText, keepHistory, messages)
     }
 
     fun prompt(instruction: String, input: String): String {
@@ -80,7 +96,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(
         val customRequest = CustomRequest(messages)
         val requestContent = Json.encodeToString<CustomRequest>(customRequest)
 
-        val body = RequestBody.create("application/json; charset=utf-8".toMediaTypeOrNull(), requestContent)
+        val body = RequestBody.create("application/json".toMediaTypeOrNull(), requestContent.toByteArray())
 
         logger.info("Requesting form: $requestContent $body")
         val builder = Request.Builder()

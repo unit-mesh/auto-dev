@@ -29,7 +29,6 @@ object GoPsiUtil {
         }
     }
 
-
     fun findRelatedTypes(declaration: GoFunctionOrMethodDeclaration): List<GoTypeSpec> {
         val signature = declaration.signature ?: return emptyList()
 

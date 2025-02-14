@@ -2,10 +2,10 @@ package cc.unitmesh.devti.gui.component
 
 import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.UIUtil
-import javax.accessibility.AccessibleContext
-import javax.swing.JEditorPane
 import org.apache.commons.text.StringEscapeUtils
 import org.jsoup.Jsoup
+import javax.accessibility.AccessibleContext
+import javax.swing.JEditorPane
 import javax.swing.SwingUtilities
 
 class DisplayComponent(question: String) : JEditorPane() {
@@ -33,8 +33,8 @@ class DisplayComponent(question: String) : JEditorPane() {
         this.text = content
         if (selectionStart != selectionEnd) {
             SwingUtilities.invokeLater {
-                this.setSelectionStart(selectionStart)
-                this.setSelectionEnd(selectionEnd)
+                this.selectionStart = selectionStart
+                this.selectionEnd = selectionEnd
             }
         }
     }

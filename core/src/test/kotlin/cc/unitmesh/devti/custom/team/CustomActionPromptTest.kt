@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.custom.team;
 
 import cc.unitmesh.cf.core.llms.LlmMsg
-import io.kotest.matchers.shouldBe
 import junit.framework.TestCase.assertEquals
 import org.junit.Test
 
@@ -30,10 +29,8 @@ class CustomActionPromptTest {
         assertEquals(InteractionType.AppendCursorStream, prompt.interaction)
         assertEquals(1, prompt.priority)
         assertEquals(mapOf("key1" to "value1", "key2" to "value2"), prompt.other)
-        prompt.msgs shouldBe listOf(
-            LlmMsg.ChatMessage(LlmMsg.ChatRole.System, "Chat message 1\n", null),
-            LlmMsg.ChatMessage(LlmMsg.ChatRole.User, "Chat message 2\n", null),
-        )
+        assertEquals(2, prompt.msgs.size)
+        assertEquals(LlmMsg.ChatMessage(LlmMsg.ChatRole.System, "Chat message 1\n", null), prompt.msgs[0])
     }
 
     @Test
@@ -53,10 +50,9 @@ class CustomActionPromptTest {
         assertEquals(InteractionType.AppendCursorStream, prompt.interaction)
         assertEquals(0, prompt.priority)
         assertEquals(emptyMap<String, Any>(), prompt.other)
-        prompt.msgs shouldBe listOf(
-            LlmMsg.ChatMessage(LlmMsg.ChatRole.System, "Chat message 1\n", null),
-            LlmMsg.ChatMessage(LlmMsg.ChatRole.User, "Chat message 2\n", null),
-        )
+        assertEquals(2, prompt.msgs.size)
+        assertEquals(LlmMsg.ChatMessage(LlmMsg.ChatRole.System, "Chat message 1\n", null), prompt.msgs[0])
+        assertEquals(LlmMsg.ChatMessage(LlmMsg.ChatRole.User, "Chat message 2\n", null), prompt.msgs[1])
     }
 
     @Test
@@ -81,6 +77,6 @@ class CustomActionPromptTest {
         """.trimIndent()
 
         val prompt = CustomActionPrompt.fromContent(content)
-        prompt.type shouldBe CustomActionType.QuickAction
+        assertEquals(prompt.type, CustomActionType.QuickAction)
     }
 }

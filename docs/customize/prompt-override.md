@@ -34,9 +34,10 @@ For example, create a file named `prompts/sql/sql-gen-clarify.vm`, will override
 │   └── page-gen-design.vm
 ├── practises
 │   ├── code-review.vm
+│   ├── gen-commit-msg.vm
 │   ├── refactoring.vm
-│   ├── shell-suggest.vm
-│   └── gen-commit-msg.vm
+│   ├── release-note.vm
+│   └── shell-suggest.vm
 ├── quick
 │   └── quick-action.vm
 ├── sql
@@ -45,3 +46,7 @@ For example, create a file named `prompts/sql/sql-gen-clarify.vm`, will override
 └── sre
     └── generate-dockerfile.vm
 ```
+
+系统自带的 Prompt 文件在 `src/main/resources/genius/` 目录下，可以参考这些文件进行自定义（保持变量名一致）。
+
+详细见：https://github.com/unit-mesh/auto-dev/tree/master/core/src/main/resources/genius

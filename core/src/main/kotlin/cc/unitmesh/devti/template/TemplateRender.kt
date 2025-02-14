@@ -16,7 +16,6 @@ const val ROOT = "genius"
 const val GENIUS_SRE = "/sre"
 const val GENIUS_MIGRATION = "/migration"
 const val GENIUS_SQL = "/sql"
-const val GENIUS_HARMONYOS = "/harmonyos"
 const val GENIUS_PAGE = "/page"
 const val GENIUS_PRACTISES = "/practises"
 const val GENIUS_CODE = "/code"
@@ -101,11 +100,16 @@ class TemplateRender(private val pathPrefix: String) {
         return messages
     }
 
-    fun renderTemplate(template: String): String {
+    fun renderTemplate(template: String, customContext: Any? = null): String {
         val oldContextClassLoader = Thread.currentThread().getContextClassLoader()
         Thread.currentThread().setContextClassLoader(TemplateRender::class.java.getClassLoader())
 
-        velocityContext.put("context", context)
+        if (customContext != null) {
+            velocityContext.put("context", customContext)
+        } else {
+            velocityContext.put("context", this.context)
+        }
+
         val sw = StringWriter()
         Velocity.evaluate(velocityContext, sw, "#" + this.javaClass.name, template)
         val result = sw.toString()
@@ -113,6 +117,10 @@ class TemplateRender(private val pathPrefix: String) {
         Thread.currentThread().setContextClassLoader(oldContextClassLoader)
 
         return result
+    }
+
+    fun addVariable(key: String, value: String) {
+        velocityContext.put(key, value)
     }
 }
 

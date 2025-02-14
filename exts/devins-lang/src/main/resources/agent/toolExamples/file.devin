@@ -1,1 +1,4 @@
+找到指定文件（需要知道正确的文件路径，否则无法找到）
 /file:.github/dependabot.yml#L1C1-L2C12
+根据文件名全局搜索（大小写敏感，不带路径）
+/file:PythonFrameworkContextProvider.kt

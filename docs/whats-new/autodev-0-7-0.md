@@ -13,7 +13,7 @@ parent: What's New
 
 随着，我们对于 LLM 能力边界的探索，发现了一些更有意思的模式，这些探索的模式也融入了 AutoDev 中。
 
-PS：在 JetBrains 插件中搜索 `AutoDev` 并安装，配置上你的 LLM，如 OpenAI 及其代理、Azure OpenAI 代理、开源 LLM 等即可使用。
+PS：在 JetBrains 插件中搜索 `AutoDev` 并安装，配置上你的 LLM，如 OpenAI 及其代理、开源 LLM 等即可使用。
 
 ## WHY AutoDev？对于 GenAI + 软件研发结合的理解
 

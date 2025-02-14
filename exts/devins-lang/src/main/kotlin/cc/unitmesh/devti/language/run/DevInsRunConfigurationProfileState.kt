@@ -9,7 +9,7 @@ import cc.unitmesh.devti.language.run.flow.DevInsConversationService
 import cc.unitmesh.devti.language.status.DevInsRunListener
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.llms.LlmFactory
-import cc.unitmesh.devti.util.LLMCoroutineScope
+import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
@@ -22,12 +22,18 @@ import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessTerminatedListener
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.ui.ConsoleViewContentType
+import com.intellij.ide.scratch.ScratchFileService
+import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.runInEdt
+import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.ui.components.panels.NonOpaquePanel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -39,7 +45,7 @@ open class DevInsRunConfigurationProfileState(
     private val myProject: Project,
     private val configuration: DevInsConfiguration,
 ) : RunProfileState {
-    private val llm: LLMProvider = LlmFactory.instance.create(myProject)
+    private val llm: LLMProvider = LlmFactory.create(myProject)
 
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult {
         val processHandler = DevInsProcessHandler(configuration.name)
@@ -137,7 +143,7 @@ open class DevInsRunConfigurationProfileState(
         ApplicationManager.getApplication().invokeLater {
             val stringFlow: Flow<String>? = CustomAgentExecutor(project = myProject).execute(output, agent)
             if (stringFlow != null) {
-                LLMCoroutineScope.scope(myProject).launch {
+                AutoDevCoroutineScope.scope(myProject).launch {
                     val llmResult = StringBuilder()
                     runBlocking {
                         stringFlow.collect {
@@ -159,16 +165,21 @@ open class DevInsRunConfigurationProfileState(
         output: String,
         console: ConsoleViewWrapperBase,
         processHandler: ProcessHandler,
-        isLocalMode: Boolean
+        isLocalMode: Boolean,
     ) {
         ApplicationManager.getApplication().invokeLater {
             if (isLocalMode) {
                 console.print("Local command detected, running in local mode", ConsoleViewContentType.SYSTEM_OUTPUT)
                 processHandler.detachProcess()
+
+                if (!configuration.showConsole) {
+                    cleanup(configuration)
+                }
+
                 return@invokeLater
             }
 
-            LLMCoroutineScope.scope(myProject).launch {
+            AutoDevCoroutineScope.scope(myProject).launch {
                 val llmResult = StringBuilder()
                 runBlocking {
                     llm.stream(output, "", true).collect {
@@ -181,6 +192,32 @@ open class DevInsRunConfigurationProfileState(
                 myProject.service<DevInsConversationService>()
                     .updateLlmResponse(configuration.getScriptPath(), llmResult.toString())
                 processHandler.detachProcess()
+
+                if (!configuration.showConsole) {
+                    cleanup(configuration)
+                }
+            }
+        }
+    }
+
+    private fun cleanup(configuration: DevInsConfiguration) {
+        val virtualFile =
+            VirtualFileManager.getInstance().findFileByUrl("file://${configuration.getScriptPath()}")
+        val service: ScratchFileService = ScratchFileService.getInstance()
+        if (virtualFile != null) {
+            val scratchRootType = ScratchRootType.getInstance()
+            val foundFile = runReadAction {
+                service.findFile(scratchRootType, virtualFile.name, ScratchFileService.Option.existing_only)
+            }
+
+            if (foundFile != null) {
+                AutoDevCoroutineScope.scope(myProject).launch {
+                    runInEdt {
+                        runWriteAction {
+                            foundFile.delete(this)
+                        }
+                    }
+                }
             }
         }
     }

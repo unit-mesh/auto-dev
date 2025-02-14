@@ -145,3 +145,5 @@ src/main/gen
 .DS_Store
 **/.DS_Store
 .intellijPlatform
+**/bin/**
+.kotlin

@@ -1,16 +1,20 @@
 package cc.unitmesh.devti.custom.compile
 
 import cc.unitmesh.devti.custom.team.DefaultTeamContextProvider
-import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
 import com.intellij.lang.Language
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiNameIdentifierOwner
+import com.intellij.temporary.getElementToAction
 import kotlinx.coroutines.runBlocking
 import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.Velocity
@@ -99,5 +103,21 @@ class VariableTemplateCompiler(
                 else -> "-"
             }
         )
+    }
+
+    companion object {
+        fun create(project: Project, myEditor: Editor?): VariableTemplateCompiler? {
+            val editor = myEditor ?: FileEditorManager.getInstance(project).selectedTextEditor ?: return null
+            val file: PsiFile = PsiDocumentManager.getInstance(project).getPsiFile(editor.document) ?: return null
+            val selectedText = editor.selectionModel.selectedText ?: ""
+
+            return VariableTemplateCompiler(
+                language = file.language,
+                file = file,
+                element = getElementToAction(project, editor),
+                editor = editor,
+                selectedText = selectedText,
+            )
+        }
     }
 }

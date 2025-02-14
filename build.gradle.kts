@@ -11,6 +11,7 @@ import org.jetbrains.intellij.platform.gradle.tasks.RunIdeTask
 import org.jetbrains.intellij.platform.gradle.utils.extensionProvider
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
+import kotlin.collections.plus
 
 // The same as `--stacktrace` param
 gradle.startParameter.showStacktrace = ShowStacktrace.ALWAYS
@@ -38,64 +39,22 @@ val basePluginArchiveName = "autodev-jetbrains"
 val javaScriptPlugins = listOf("JavaScript")
 val pycharmPlugins = listOf(prop("pythonPlugin"))
 val javaPlugins = listOf("com.intellij.java", "org.jetbrains.kotlin")
-val clionVersion = prop("clionVersion")
-
-// https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html#modules-specific-to-functionality
-val clionPlugins = listOf(
-    "com.intellij.cidr.base",
-    "com.intellij.cidr.lang",
-    "com.intellij.clion",
-    prop("rustPlugin"),
-    "org.toml.lang"
-)
-var cppPlugins: List<String> = listOf(
-    "com.intellij.cidr.lang",
-    "com.intellij.clion",
-    "com.intellij.cidr.base",
-    "org.jetbrains.plugins.clion.test.google",
-    "org.jetbrains.plugins.clion.test.catch"
-)
 
 val rustPlugins = listOf(
     prop("rustPlugin"),
     "org.toml.lang"
 )
 
-val riderVersion = prop("riderVersion")
-val riderPlugins: List<String> = listOf(
-    "rider-plugins-appender",
-    "org.intellij.intelliLang",
-)
-val scalaPlugin = prop("scalaPlugin")
-
-val pluginProjects: List<Project> get() = rootProject.allprojects.toList()
-val ideaPlugins =
-    listOf(
-        "com.intellij.java",
-        "org.jetbrains.plugins.gradle",
-        "org.jetbrains.idea.maven",
-        "org.jetbrains.kotlin",
-        "JavaScript"
-    )
-
-var baseIDE = prop("baseIDE")
 val platformVersion = prop("platformVersion").toInt()
-val ideaVersion = prop("ideaVersion")
-val golandVersion = prop("golandVersion")
-val pycharmVersion = prop("pycharmVersion")
-val webstormVersion = prop("webstormVersion")
+val ideaPlugins = listOf(
+    "com.intellij.java",
+    "org.jetbrains.plugins.gradle",
+    "org.jetbrains.idea.maven",
+    "org.jetbrains.kotlin",
+    "JavaScript"
+)
 
 var lang = extra.properties["lang"] ?: "java"
-
-val baseVersion = when (baseIDE) {
-    "idea" -> ideaVersion
-    "pycharm" -> pycharmVersion
-    "goland" -> golandVersion
-    "clion" -> clionVersion
-    "rider" -> riderVersion
-    "javascript" -> webstormVersion
-    else -> error("Unexpected IDE name: `$baseIDE`")
-}
 
 changelog {
     version.set(properties("pluginVersion"))
@@ -113,10 +72,7 @@ repositories {
     }
 }
 
-configure(
-    subprojects
-            - project(":exts")
-) {
+configure(subprojects - project(":exts")) {
     apply {
         plugin("idea")
         plugin("kotlin")
@@ -152,26 +108,16 @@ configure(
     }
 
     tasks {
-        withType<KotlinCompile> {
-            kotlinOptions {
-                jvmTarget = VERSION_17.toString()
-                languageVersion = "1.8"
-                // see https://plugins.jetbrains.com/docs/intellij/using-kotlin.html#kotlin-standard-library
-                apiVersion = "1.7"
-                freeCompilerArgs = listOf("-Xjvm-default=all")
-            }
-        }
-
         prepareSandbox { enabled = false }
     }
 
     val testOutput = configurations.create("testOutput")
 
-    if (this.name != "ext-terminal") {
+    if (this.name != "ext-terminal" && this.name != "ext-database") {
         sourceSets {
             main {
                 java.srcDirs("src/gen")
-                if (platformVersion == 241) {
+                if (platformVersion == 241 || platformVersion == 243) {
                     resources.srcDirs("src/233/main/resources")
                 }
                 resources.srcDirs("src/$platformVersion/main/resources")
@@ -184,7 +130,7 @@ configure(
             sourceSets {
                 main {
                     // share 233 code to 241
-                    if (platformVersion == 241) {
+                    if (platformVersion == 241 || platformVersion == 243) {
                         kotlin.srcDirs("src/233/main/kotlin")
                     }
                     kotlin.srcDirs("src/$platformVersion/main/kotlin")
@@ -197,14 +143,28 @@ configure(
     }
 
     dependencies {
-        compileOnly(kotlin("stdlib-jdk8"))
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+//        compileOnly(kotlin("stdlib-jdk8"))
+//        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
         testOutput(sourceSets.test.get().output.classesDirs)
 
+        if (platformVersion == 223) {
+            // https://mvnrepository.com/artifact/org.jetbrains/annotations
+            implementation("org.jetbrains:annotations:26.0.1")
+        }
+
+        testImplementation("junit:junit:4.13.2")
+        testImplementation("org.opentest4j:opentest4j:1.3.0")
+        testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.9.3")
+        testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-debug:1.7.0") {
+            exclude(group = "net.java.dev.jna", module = "jna-platform")
+            exclude(group = "net.java.dev.jna", module = "jna")
+        }
+
         intellijPlatform {
             testFramework(TestFrameworkType.Bundled)
+            testFramework(TestFrameworkType.Platform)
         }
     }
 }
@@ -272,20 +232,12 @@ project(":") {
                     pluginList += javaPlugins
                 }
 
-                "scala" -> {
-                    pluginList += javaPlugins + scalaPlugin
-                }
-
                 "python" -> {
                     pluginList += pycharmPlugins
                 }
 
                 "go" -> {
                     pluginList += listOf("org.jetbrains.plugins.go")
-                }
-
-                "cpp" -> {
-                    pluginList += clionPlugins
                 }
 
                 "rust" -> {
@@ -301,18 +253,19 @@ project(":") {
             pluginModule(implementation(project(":javascript")))
             pluginModule(implementation(project(":goland")))
             pluginModule(implementation(project(":rust")))
-//            pluginModule(implementation(project(":cpp")))
-            pluginModule(implementation(project(":scala")))
+
             pluginModule(implementation(project(":local-bundle")))
             pluginModule(implementation(project(":exts:ext-database")))
-            pluginModule(implementation(project(":exts:ext-android")))
-            pluginModule(implementation(project(":exts:ext-harmonyos")))
             pluginModule(implementation(project(":exts:ext-git")))
             pluginModule(implementation(project(":exts:ext-http-client")))
             pluginModule(implementation(project(":exts:ext-terminal")))
+            pluginModule(implementation(project(":exts:ext-mermaid")))
+            pluginModule(implementation(project(":exts:ext-endpoints")))
+            pluginModule(implementation(project(":exts:ext-plantuml")))
             pluginModule(implementation(project(":exts:devins-lang")))
 
             testFramework(TestFrameworkType.Bundled)
+            testFramework(TestFrameworkType.Platform)
         }
 
         implementation(project(":core"))
@@ -322,18 +275,17 @@ project(":") {
         implementation(project(":javascript"))
         implementation(project(":goland"))
         implementation(project(":rust"))
-//        implementation(project(":cpp"))
-        implementation(project(":scala"))
+
         implementation(project(":local-bundle"))
         implementation(project(":exts:ext-database"))
-        implementation(project(":exts:ext-android"))
-        implementation(project(":exts:ext-harmonyos"))
         implementation(project(":exts:ext-git"))
         implementation(project(":exts:ext-http-client"))
         implementation(project(":exts:ext-terminal"))
+        implementation(project(":exts:ext-mermaid"))
+        implementation(project(":exts:ext-plantuml"))
+        implementation(project(":exts:ext-endpoints"))
         implementation(project(":exts:devins-lang"))
 
-//        kover(project(":cpp"))
         kover(project(":core"))
         kover(project(":goland"))
         kover(project(":java"))
@@ -341,10 +293,8 @@ project(":") {
         kover(project(":kotlin"))
         kover(project(":pycharm"))
         kover(project(":rust"))
-        kover(project(":scala"))
 
         kover(project(":exts:ext-database"))
-        kover(project(":exts:ext-android"))
         kover(project(":exts:devins-lang"))
     }
 
@@ -449,16 +399,27 @@ project(":core") {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins)
             testFramework(TestFrameworkType.Bundled)
+            testFramework(TestFrameworkType.Platform)
         }
 
-        implementation("com.theokanning.openai-gpt3-java:service:0.18.2")
-        implementation("com.squareup.okhttp3:okhttp:4.4.1")
-        implementation("com.squareup.okhttp3:okhttp-sse:4.4.1")
+        implementation("io.reactivex.rxjava3:rxjava:3.1.10")
 
-        implementation("com.squareup.retrofit2:converter-jackson:2.9.0")
-        implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
-        implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
+        testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
+        testImplementation(kotlin("test"))
+        testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0") {
+            excludeKotlinDeps()
+        }
+        implementation("com.squareup.okhttp3:okhttp:4.12.0") {
+            excludeKotlinDeps()
+        }
+        implementation("com.squareup.okhttp3:okhttp-sse:4.12.0") {
+            excludeKotlinDeps()
+        }
+
+        implementation("com.squareup.retrofit2:converter-jackson:2.11.0")
+        implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.2")
+        implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
 
         implementation("org.commonmark:commonmark:0.21.0")
         implementation("org.commonmark:commonmark-ext-gfm-tables:0.21.0")
@@ -469,34 +430,27 @@ project(":core") {
 
         implementation("org.jetbrains:markdown:0.6.1")
 
-        // chocolate factory
+        // chocolate factorys
         // follow: https://onnxruntime.ai/docs/get-started/with-java.html
 //        implementation("com.microsoft.onnxruntime:onnxruntime:1.18.0")
 //        implementation("ai.djl.huggingface:tokenizers:0.29.0")
-
-        implementation("cc.unitmesh:cocoa-core:1.0.0")
-        implementation("cc.unitmesh:document:1.0.0")
+        implementation("cc.unitmesh:cocoa-core:1.0.0") {
+            exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+            excludeKotlinDeps()
+        }
+//        implementation("cc.unitmesh:document:1.0.0")
 
         // kanban
-        implementation("org.kohsuke:github-api:1.314")
-        implementation("org.gitlab4j:gitlab4j-api:5.3.0")
+        implementation("org.kohsuke:github-api:1.326")
+        implementation("org.gitlab4j:gitlab4j-api:5.8.0")
 
         // template engine
-        implementation("org.apache.velocity:velocity-engine-core:2.3")
-
-        // http request/response
-        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
+        implementation("org.apache.velocity:velocity-engine-core:2.4.1")
 
         // token count
-        implementation("com.knuddels:jtokkit:1.0.0")
-
-        implementation("org.apache.commons:commons-text:1.12.0")
+        implementation("com.knuddels:jtokkit:1.1.0")
 
         implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-        // junit
-        testImplementation("io.kotest:kotest-assertions-core:5.7.2")
-        testImplementation("junit:junit:4.13.2")
-        testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.9.3")
     }
 
     task("resolveDependencies") {
@@ -526,6 +480,7 @@ project(":java") {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins)
+            testFramework(TestFrameworkType.Plugin.Java)
         }
 
         implementation(project(":core"))
@@ -538,6 +493,7 @@ project(":javascript") {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins)
             intellijPlugins(javaScriptPlugins)
+            testFramework(TestFrameworkType.Plugin.JavaScript)
         }
 
         implementation(project(":core"))
@@ -549,18 +505,7 @@ project(":kotlin") {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins)
-        }
-
-        implementation(project(":core"))
-        implementation(project(":java"))
-    }
-}
-
-project(":scala") {
-    dependencies {
-        intellijPlatform {
-            intellijIde(prop("ideaVersion"))
-            intellijPlugins(ideaPlugins + scalaPlugin)
+            testFramework(TestFrameworkType.Plugin.Java)
         }
 
         implementation(project(":core"))
@@ -578,32 +523,6 @@ project(":rust") {
         implementation(project(":core"))
     }
 }
-
-//project(":cpp") {
-//    if (platformVersion == 233 || platformVersion == 241) {
-//        cppPlugins += "com.intellij.nativeDebug"
-//    }
-//
-//    dependencies {
-//        intellijPlatform {
-//            intellijIde(clionVersion)
-//            intellijPlugins(cppPlugins)
-//        }
-//
-//        implementation(project(":core"))
-//    }
-//}
-
-//project(":csharp") {
-//    dependencies {
-//        intellijPlatform {
-//            intellijIde(riderVersion)
-//            intellijPlugins(riderPlugins)
-//        }
-//
-//        implementation(project(":core"))
-//    }
-//}
 
 project(":goland") {
     dependencies {
@@ -624,28 +543,24 @@ project(":exts:ext-database") {
         }
         implementation(project(":core"))
     }
-}
 
-project(":exts:ext-android") {
-    dependencies {
-        intellijPlatform {
-            intellijIde(prop("ideaVersion"))
-            intellijPlugins((ideaPlugins + prop("androidPlugin").ifBlank { "" }).filter(String::isNotEmpty))
+    sourceSets {
+        main {
+            resources.srcDirs("src/$platformVersion/main/resources")
         }
-
-        implementation(project(":core"))
+        test {
+            resources.srcDirs("src/$platformVersion/test/resources")
+        }
     }
-}
-
-project(":exts:ext-harmonyos") {
-    dependencies {
-        intellijPlatform {
-            intellijIde(prop("ideaVersion"))
-            intellijPlugins((ideaPlugins + prop("androidPlugin").ifBlank { "" }).filter(String::isNotEmpty))
+    kotlin {
+        sourceSets {
+            main {
+                kotlin.srcDirs("src/$platformVersion/main/kotlin")
+            }
+            test {
+                kotlin.srcDirs("src/$platformVersion/test/kotlin")
+            }
         }
-
-
-        implementation(project(":core"))
     }
 }
 
@@ -657,7 +572,9 @@ project(":exts:ext-git") {
         }
 
         implementation(project(":core"))
-        implementation("cc.unitmesh:git-commit-message:0.4.6")
+        implementation("cc.unitmesh:git-commit-message:0.4.6") {
+            excludeKotlinDeps()
+        }
     }
 }
 
@@ -671,6 +588,41 @@ project(":exts:ext-http-client") {
         implementation(project(":core"))
     }
 }
+
+project(":exts:ext-mermaid") {
+    dependencies {
+        intellijPlatform {
+            intellijIde(prop("ideaVersion"))
+            intellijPlugins(ideaPlugins + prop("mermaidPlugin"))
+        }
+
+        implementation(project(":core"))
+    }
+}
+
+project(":exts:ext-plantuml") {
+    dependencies {
+        intellijPlatform {
+            intellijIde(prop("ideaVersion"))
+            intellijPlugins(ideaPlugins + prop("plantUmlPlugin"))
+        }
+
+        implementation(project(":core"))
+    }
+}
+
+project(":exts:ext-endpoints") {
+    dependencies {
+        intellijPlatform {
+            intellijIde(prop("ideaVersion"))
+            intellijPlugins(ideaPlugins + prop("endpointsPlugin"))
+            intellijPlugins(listOf("com.intellij.spring", "com.intellij.spring.mvc"))
+        }
+
+        implementation(project(":core"))
+    }
+}
+
 
 project(":local-bundle") {
     dependencies {
@@ -721,6 +673,8 @@ project(":exts:devins-lang") {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins + "org.intellij.plugins.markdown" + "com.jetbrains.sh" + "Git4Idea")
+
+            testFramework(TestFrameworkType.Plugin.Java)
         }
 
         implementation(project(":core"))
@@ -746,6 +700,10 @@ project(":exts:devins-lang") {
             dependsOn(generateLexer, generateParser)
         }
     }
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 fun File.isPluginJar(): Boolean {

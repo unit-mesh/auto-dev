@@ -37,7 +37,7 @@ class AutoPageAction : ChatBaseIntention() {
         val reactAutoPage = ReactAutoPage(project, selectedText, editor)
 
         sendToChatPanel(project) { contentPanel, _ ->
-            val llmProvider = LlmFactory().create(project)
+            val llmProvider = LlmFactory.create(project)
             val context = AutoPageContext.build(reactAutoPage,  language, frameworks)
             val prompter = AutoPageFlow(context, contentPanel, llmProvider)
 

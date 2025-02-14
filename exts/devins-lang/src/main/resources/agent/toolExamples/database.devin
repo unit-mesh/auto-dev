@@ -1,0 +1,4 @@
+列出数据库的数据结构
+/database:schema
+列出数据库中的所有表
+/database:table

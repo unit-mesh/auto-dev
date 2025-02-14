@@ -112,7 +112,7 @@ object JavaContextCollection {
         "org.mockito"
     )
 
-    private fun isPopularFramework(qualifiedName: String?): Boolean {
+    fun isPopularFramework(qualifiedName: String?): Boolean {
         return popularFrameworks.any { qualifiedName?.startsWith(it) == true }
     }
 

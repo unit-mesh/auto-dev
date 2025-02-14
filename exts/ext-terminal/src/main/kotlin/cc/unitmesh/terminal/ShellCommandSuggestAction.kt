@@ -7,7 +7,7 @@ import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.statusbar.AutoDevStatusService
 import cc.unitmesh.devti.template.GENIUS_PRACTISES
 import cc.unitmesh.devti.template.TemplateRender
-import cc.unitmesh.devti.util.LLMCoroutineScope
+import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.AnActionHolder
 import com.intellij.openapi.actionSystem.PlatformCoreDataKeys
@@ -141,10 +141,10 @@ class ShellCommandSuggestAction : DumbAwareAction() {
             )
             val promptText = templateRender.renderTemplate(template)
 
-            val llm = LlmFactory.instance.create(project)
+            val llm = LlmFactory.create(project)
             val stringFlow: Flow<String> = llm.stream(promptText, "", false)
 
-            LLMCoroutineScope.scope(project).launch {
+            AutoDevCoroutineScope.scope(project).launch {
                 AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)
 
                 try {

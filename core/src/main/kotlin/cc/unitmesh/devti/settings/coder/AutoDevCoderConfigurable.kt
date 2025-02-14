@@ -14,6 +14,7 @@ import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
+import com.intellij.ui.JBColor
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.builder.toMutableProperty
 import com.intellij.util.containers.toArray
@@ -163,8 +164,11 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        if (project != null) {
-            testLLMConnection(project)
+        testLLMConnection()
+        row {
+            text(AutoDevBundle.message("settings.autodev.coder.testConnectionButton.tips")).apply {
+                this.component.foreground = JBColor.RED
+            }
         }
 
         row(jLabel("settings.autodev.coder.customEnginePrompt", 2)) {}

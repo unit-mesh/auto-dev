@@ -2,7 +2,6 @@ package cc.unitmesh.local.provider
 
 import cc.unitmesh.devti.custom.schema.CUSTOM_AGENT_FILE_NAME
 import cc.unitmesh.devti.provider.local.JsonTextProvider
-import com.intellij.json.JsonLanguage
 import com.intellij.lang.Language
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.colors.EditorColorsUtil
@@ -31,7 +30,7 @@ class JsonLanguageField(
     private val fileName: String
 ) :
     LanguageTextField(
-        JsonLanguage.INSTANCE, myProject, value,
+        Language.findLanguageByID("JSON"), myProject, value,
         object : SimpleDocumentCreator() {
             override fun createDocument(value: String?, language: Language?, project: Project?): Document {
                 return createDocument(value, language, project, this)

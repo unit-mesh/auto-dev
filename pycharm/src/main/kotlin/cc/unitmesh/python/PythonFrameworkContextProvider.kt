@@ -4,29 +4,32 @@ import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectRootManager
 import com.jetbrains.python.PythonLanguage
+import com.jetbrains.python.configuration.PyConfigurableInterpreterList
+import com.jetbrains.python.sdk.PythonSdkUtil
+import com.jetbrains.python.sdk.mostPreferred
 
 class PythonFrameworkContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
-        println(creationContext.element?.language)
         return creationContext.element?.language is PythonLanguage
     }
 
     override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
-//        val configures: List<PyPackage> = project.modules.asSequence()
-//            .mapNotNull {
-//                val pair = PyProjectSdkConfigurationExtension.findForModule(it)
-//                pair?.second?.createAndAddSdkForInspection(it)
-//            }
-//            .mapNotNull {
-//                tryCreateCustomPackageManager(it)?.packages
-//            }
-//            .flatten().toList()
-//
-//        configures.forEach {
-//            println(it)
-//        }
+        var items = mutableListOf<ChatContextItem>()
+        val allSdks = PythonSdkUtil.getAllSdks()
+        val preferred = mostPreferred(allSdks)
 
-        return listOf()
+        val myInterpreterList = PyConfigurableInterpreterList.getInstance(project)
+        val projectSdk = ProjectRootManager.getInstance(project).projectSdk
+            ?: preferred
+            ?: myInterpreterList.allPythonSdks.firstOrNull()
+
+        if (projectSdk != null) {
+            val context = "This project is using Python SDK ${projectSdk.name}"
+            items.add(ChatContextItem(PythonFrameworkContextProvider::class, context))
+        }
+
+        return items
     }
 }

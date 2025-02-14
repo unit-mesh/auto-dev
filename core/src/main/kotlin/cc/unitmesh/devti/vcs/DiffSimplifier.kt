@@ -8,6 +8,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.openapi.vcs.changes.*
 import com.intellij.project.stateStore
+import git4idea.config.GitExecutableManager
 import org.jetbrains.annotations.NotNull
 import java.io.StringWriter
 import java.nio.file.Path
@@ -62,14 +63,12 @@ class DiffSimplifier(val project: Project) {
                 return ""
             }
 
-            val patches = IdeaTextPatchBuilder.buildPatch(
-                project,
-                filteredChanges.subList(0, min(filteredChanges.size, 500)),
-                Path.of(basePath),
-                false,
-                true
-            )
 
+            val limitedChnages = filteredChanges.subList(0, min(filteredChanges.size, 500))
+
+            val patches = IdeaTextPatchBuilder.buildPatch(
+                project, limitedChnages, Path.of(basePath), false, true
+            )
 
             UnifiedDiffWriter.write(
                 project,

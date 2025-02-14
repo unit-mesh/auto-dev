@@ -2,7 +2,7 @@ package cc.unitmesh.git.actions.vcs
 
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
-import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.settings.LanguageChangedCallback.presentationText
 import cc.unitmesh.devti.template.GENIUS_PRACTISES
@@ -10,7 +10,7 @@ import cc.unitmesh.devti.vcs.VcsPrompting
 import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.template.context.TemplateContext
-import cc.unitmesh.devti.util.LLMCoroutineScope
+import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.util.parser.CodeFence
 import cc.unitmesh.devti.vcs.VcsUtil
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -90,8 +90,8 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
 
             event.presentation.icon = AutoDevStatus.InProgress.icon
             try {
-                val stream = LlmFactory().create(project).stream(prompt, "", false)
-                currentJob = LLMCoroutineScope.scope(project).launch {
+                val stream = LlmFactory.create(project).stream(prompt, "", false)
+                currentJob = AutoDevCoroutineScope.scope(project).launch {
                     runBlocking {
                         stream
                             .onCompletion {
@@ -108,6 +108,10 @@ class CommitMessageSuggestionAction : ChatBaseAction() {
                     if (isActive && text.startsWith("```") && text.endsWith("```")) {
                         invokeLater {
                             editorField.text = CodeFence.parse(text).text
+                        }
+                    } else {
+                        invokeLater {
+                            editorField.text = text.removePrefix("```\n").removeSuffix("```")
                         }
                     }
                 }

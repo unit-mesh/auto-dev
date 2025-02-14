@@ -21,22 +21,37 @@ VSCode Version: [https://github.com/unit-mesh/auto-dev-vscode](https://github.co
 
 [Quick Start →](https://ide.unitmesh.cc/quick-start)
 
-[DevIns — AI Agent language for AutoDevelopment →](https://ide.unitmesh.cc/devins) which you can use follow syntax as
-bridges for Human-AI-IDE:
-
-    /write:src/main/java/cc/unitmesh/Controller.java#L1-L12
-
-    ```java
-    public class Controller {
-        public void method() {
-            System.out.println("Hello, World!");
-        }
-    }
-    ```
-
-With built-in syntax highlighting and auto-completion, you can use DevIns as next-generation AI Agent language.
-
 🆕🆕🆕: New AI agent language: [https://github.com/phodal/shire](https://github.com/phodal/shire)
+
+## AutoDev 2.0 Sketch - the Cursor Composer in Intellij IDEA
+
+Video demo (YouTube) — English
+
+[![Watch the video](https://img.youtube.com/vi/b1pO641-A54/sddefault.jpg)](https://youtu.be/b1pO641-A54)
+
+**AutoDev Sketch** is an IDE canvas feature provided by Shire, designed to simplify interactions and enhance the developer
+experience within the IDE.
+
+| Sketch Name            | Description                                                        | Screenshots                                              |
+|------------------------|--------------------------------------------------------------------|----------------------------------------------------------|
+| **Code Sketch**        | Real-time code editor with syntax highlighting                     | ![](https://shire.run/images/shire-sketch-diff.png)      |
+| **Diff Sketch**        | Diff content comparison tool with patch handling                   | ![](https://shire.run/images/shire-sketch-diff-view.png) |
+| **Terminal Sketch**    | Editable pop-up terminal interface                                 | ![](https://shire.run/images/shire-sketch-terminal.png)  |
+| **Mermaid Sketch`*`**  | Real-time flowchart preview/edit with bidirectional binding        | ![](https://shire.run/images/shire-sketch-mermaid.png)   |
+| **PlantUML Sketch`*`** | UML diagram editor with bidirectional code-diagram synchronization | ![](https://shire.run/images/shire-sketch-plantuml.png)  |
+| **WebView Sketch**     | HTML/React/Ionic mockup generator with WebView display             | ![](https://shire.run/images/shire-sketch-webview.png)   |
+                    
+`*` means requires additional plugin installation.
+
+### Unite Your Dev Ecosystem, Create Your AI Copilot
+
+![Inline Chat](https://shire.run/images/shire-ecology-system.png)
+
+### Demos
+
+Video demo (Bilibili) - 中文/Chinese
+
+[![Watch the video](https://img.youtube.com/vi/1m3HJzw0YhA/sddefault.jpg)](https://www.bilibili.com/video/BV115c6eUEps/)
 
 ## AutoDev Architecture
 
@@ -44,7 +59,7 @@ Here is the AutoDev architecture:
 
 ![](docs/autodev-arch.svg)
 
-## AutoDev Feature Overview
+## AutoDev 1.0~ Feature Overview
 
 <p align="center">
   <img src="docs/autodev-overview.svg" width="100%" height="100%"  alt="Overview" />

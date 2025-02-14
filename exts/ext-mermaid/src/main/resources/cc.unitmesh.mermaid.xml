@@ -1,0 +1,10 @@
+<idea-plugin package="cc.unitmesh.mermaid">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+        <plugin id="com.intellij.mermaid"/>
+    </dependencies>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <langSketchProvider implementation="cc.unitmesh.mermaid.MermaidSketchProvider"/>
+    </extensions>
+</idea-plugin>

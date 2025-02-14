@@ -5,7 +5,7 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.custom.team.TeamPromptAction
 import cc.unitmesh.devti.custom.team.TeamPromptExecTask
 import cc.unitmesh.devti.custom.compile.VariableTemplateCompiler
-import cc.unitmesh.devti.gui.chat.ChatActionType
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressManager
@@ -52,29 +52,27 @@ class TeamPromptBaseIntention(val intentionConfig: TeamPromptAction, val trySele
         val actionPrompt = intentionConfig.actionPrompt
         val chatMessages = actionPrompt.msgs
 
-
         if (actionPrompt.batchFileRegex != "") {
             val files = actionPrompt.batchFiles(project)
             if (files.isNotEmpty()) {
                 val length = files.size
-                files.forEachIndexed { index, vfile ->
-                    compiler.set("all", VfsUtilCore.loadText(vfile))
+                files.forEachIndexed { index, file ->
+                    compiler.set("all", VfsUtilCore.loadText(file))
                     val msgs = chatMessages.map {
                         it.copy(content = compiler.compile(it.content))
                     }
 
                     // display progress like 1/2 in the title
-                    val taskName = "${intentionConfig.actionName} ${index + 1}/$length "
+                    val taskName = "${intentionConfig.actionName} ${index + 1}/$length - ${file.name}"
                     val task: Task.Backgroundable =
-                        TeamPromptExecTask(project, msgs, editor, intentionConfig, element, vfile, taskName)
+                        TeamPromptExecTask(project, msgs, editor, intentionConfig, element, file, taskName)
+
                     ProgressManager.getInstance()
                         .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
                 }
             } else {
-                AutoDevNotifications.error(
-                    project,
-                    "No files found for batch processing, please check the regex. " + "Regex: ${actionPrompt.batchFileRegex}"
-                )
+                val msg = "No files found for batch processing, please check the regex: ${actionPrompt.batchFileRegex}"
+                AutoDevNotifications.error(project, msg)
             }
         } else {
             val msgs = chatMessages.map {

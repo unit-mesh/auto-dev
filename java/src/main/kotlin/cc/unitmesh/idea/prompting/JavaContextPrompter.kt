@@ -1,8 +1,8 @@
 package cc.unitmesh.idea.prompting
 
 import cc.unitmesh.devti.custom.action.CustomPromptConfig
-import cc.unitmesh.devti.gui.chat.ChatActionType
-import cc.unitmesh.devti.gui.chat.GenApiTestContext
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
+import cc.unitmesh.devti.gui.chat.message.GenApiTestContext
 import cc.unitmesh.devti.prompting.TextTemplatePrompt
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.provider.PsiElementDataBuilder
