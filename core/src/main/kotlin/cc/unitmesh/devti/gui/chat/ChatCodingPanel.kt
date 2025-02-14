@@ -259,12 +259,13 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
             messageView.updateContent(text)
         }
 
-        if (delaySeconds.isNotEmpty()) {
+        if (delaySeconds.isNotBlank()) {
             val elapsedTime = System.currentTimeMillis() - startTime
             withContext(Dispatchers.IO) {
-                val delaySec = delaySeconds.toLong()
-                val remainingTime = maxOf(delaySec * 1000 - elapsedTime, 0)
-                delay(remainingTime)
+                delaySeconds.toLongOrNull()?.let {
+                    val remainingTime = maxOf(it * 1000 - elapsedTime, 0)
+                    delay(remainingTime)
+                }
             }
         }
 
