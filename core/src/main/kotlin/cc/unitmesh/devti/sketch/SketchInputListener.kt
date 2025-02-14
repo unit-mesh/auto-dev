@@ -5,6 +5,7 @@ import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputListener
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputTrigger
+import cc.unitmesh.devti.llms.cancelHandler
 import cc.unitmesh.devti.prompting.SimpleDevinPrompter
 import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.template.GENIUS_CODE
@@ -38,6 +39,7 @@ class SketchInputListener(
     override fun onStop(component: AutoDevInputSection) {
         chatCodingService.stop()
         toolWindow.hiddenProgressBar()
+        toolWindow.stop()
     }
 
     override fun onSubmit(component: AutoDevInputSection, trigger: AutoDevInputTrigger) {
@@ -57,6 +59,7 @@ class SketchInputListener(
             val devInProcessor = LanguageProcessor.devin()
             val compiledInput = runReadAction { devInProcessor?.compile(project, userInput) } ?: userInput
 
+            toolWindow.beforeRun()
             toolWindow.updateHistoryPanel()
             toolWindow.addRequestPrompt(compiledInput)
 
@@ -64,7 +67,7 @@ class SketchInputListener(
             val suggestion = StringBuilder()
 
             AutoDevCoroutineScope.workerThread().launch {
-                flow.cancellable().collect { char ->
+                flow.cancelHandler { toolWindow.handleCancel = it }.cancellable().collect { char ->
                     suggestion.append(char)
 
                     invokeLater {
