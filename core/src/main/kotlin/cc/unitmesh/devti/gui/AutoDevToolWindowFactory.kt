@@ -28,10 +28,11 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
         val chatPanel = ContentFactory.getInstance().createContent(contentPanel, "AutoDev Chat", false).apply {
             setInitialDisplayName(this)
         }
-
+      
+      contentPanel.resetChatSession()
         initInlineChatForIdea223(project)
 
-        ApplicationManager.getApplication().invokeLater {
+      ApplicationManager.getApplication().invokeLater {
             toolWindow.contentManager.addContent(chatPanel)
 
             val hasSketch =
