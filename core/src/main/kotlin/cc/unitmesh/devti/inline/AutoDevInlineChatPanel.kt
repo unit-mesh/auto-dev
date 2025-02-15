@@ -8,14 +8,21 @@ import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import com.intellij.icons.AllIcons
 import com.intellij.ide.KeyboardAwareFocusOwner
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.actionSystem.IdeActions
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runInEdt
+import com.intellij.openapi.editor.Caret
+import com.intellij.openapi.editor.CaretModel
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorCustomElementRenderer
 import com.intellij.openapi.editor.Inlay
+import com.intellij.openapi.editor.SelectionModel
+import com.intellij.openapi.editor.actionSystem.EditorActionHandler
+import com.intellij.openapi.editor.actionSystem.EditorActionManager
 import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.wm.IdeFocusManager
@@ -184,6 +191,8 @@ class AutoDevInlineChatInput(
 
     private var btnPresentation: Presentation? = null
 
+    private var escHandler: EscHandler? = null
+
     init {
         layout = BorderLayout()
         textArea = object : JBTextArea(), KeyboardAwareFocusOwner {
@@ -222,6 +231,11 @@ class AutoDevInlineChatInput(
             }
         })
         textArea.inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.SHIFT_DOWN_MASK), "newlineAction")
+        escHandler = EscHandler(autoDevInlineChatPanel.editor, {
+            cancel()
+            AutoDevInlineChatService.getInstance().closeInlineChat(autoDevInlineChatPanel.editor)
+            escHandler?.dispose()
+        })
 
         btnPresentation = Presentation()
         setPresentationTextAndIcon(false)
@@ -246,7 +260,7 @@ class AutoDevInlineChatInput(
         view = onSubmit(trimText) {
             it.addProcessListener(object : SketchProcessListener {
                 override fun onBefore() = setPresentationTextAndIcon(true)
-                override fun onAfter()  = setPresentationTextAndIcon(false)
+                override fun onAfter() = setPresentationTextAndIcon(false)
             })
         }
 
@@ -282,4 +296,42 @@ fun <T : JComponent> Cell<T>.fullWidth(): Cell<T> {
 
 fun <T : JComponent> Cell<T>.fullHeight(): Cell<T> {
     return this.align(AlignY.FILL)
+}
+
+
+/**
+ * 监听编辑器的 ESC 按键事件，并在非选中或多光标等需要取消前一状态的状态下执行 [action]
+ */
+class EscHandler(private val targetEditor: Editor, private val action: () -> Unit) : EditorActionHandler(), Disposable {
+
+    private var oldHandler: EditorActionHandler? = null
+
+    init {
+        val editorManager = EditorActionManager.getInstance()
+        oldHandler = editorManager.getActionHandler(IdeActions.ACTION_EDITOR_ESCAPE)
+        editorManager.setActionHandler(IdeActions.ACTION_EDITOR_ESCAPE, this)
+    }
+
+    override fun doExecute(
+        editor: Editor,
+        caret: Caret?,
+        context: DataContext,
+    ) {
+        if (editor == targetEditor) {
+            val caretModel: CaretModel = editor.caretModel
+            val hasMultiCaret = caretModel.caretCount > 1
+            val hasSelection = caretModel.allCarets.any { it.hasSelection() }
+            if (hasMultiCaret || hasSelection) {
+                oldHandler?.execute(editor, caret, context)
+            } else {
+                action()
+            }
+        }
+    }
+
+    override fun dispose() {
+        oldHandler?.let {
+            EditorActionManager.getInstance().setActionHandler(IdeActions.ACTION_EDITOR_ESCAPE, it)
+        }
+    }
 }
