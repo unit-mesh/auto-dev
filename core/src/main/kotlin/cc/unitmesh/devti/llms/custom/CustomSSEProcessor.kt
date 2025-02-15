@@ -5,6 +5,7 @@ import cc.unitmesh.devti.coder.recording.JsonlRecording
 import cc.unitmesh.devti.coder.recording.Recording
 import cc.unitmesh.devti.coder.recording.RecordingInstruction
 import cc.unitmesh.devti.gui.chat.message.ChatRole
+import cc.unitmesh.devti.llms.CustomFlowWrapper
 import cc.unitmesh.devti.settings.coder.coderSetting
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.openapi.components.service
@@ -72,14 +73,15 @@ open class CustomSSEProcessor(private val project: Project) {
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     fun streamSSE(call: Call, promptText: String, keepHistory: Boolean = false, messages: MutableList<Message>): Flow<String> {
+        var emit: FlowableEmitter<SSE>? = null
         val sseFlowable = Flowable
             .create({ emitter: FlowableEmitter<SSE> ->
-                call.enqueue(ResponseBodyCallback(emitter, true))
+                emit = emitter.apply { call.enqueue(ResponseBodyCallback(emitter, true)) }
             }, BackpressureStrategy.BUFFER)
 
         try {
             var output = ""
-            return callbackFlow {
+            return CustomFlowWrapper(callbackFlow {
                 withContext(Dispatchers.IO) {
                     sseFlowable
                         .doOnError {
@@ -143,7 +145,7 @@ open class CustomSSEProcessor(private val project: Project) {
                     close()
                 }
                 awaitClose()
-            }
+            }).also { it.cancelCallback { emit?.onComplete() } }
         } catch (e: Exception) {
             if (hasSuccessRequest) {
                 logger.info("Failed to stream", e)

@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.settings.devops
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.settings.custom.TeamPromptsProjectSettingsService
 import com.intellij.openapi.components.*
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.options.Configurable
@@ -51,9 +50,9 @@ class DevOpsConfigurable(project: Project) : BoundConfigurable(AutoDevBundle.mes
 
     override fun apply() {
         settings.modify { state ->
-            state.githubToken = githubTokenField.password.toString()
+            state.githubToken = githubTokenField.password.concatToString()
             state.gitlabUrl = gitlabUrlField.text
-            state.gitlabToken = gitlabTokenField.password.toString()
+            state.gitlabToken = gitlabTokenField.password.concatToString()
         }
     }
 
@@ -64,9 +63,9 @@ class DevOpsConfigurable(project: Project) : BoundConfigurable(AutoDevBundle.mes
     }
 
     override fun isModified(): Boolean {
-        return settings.state.githubToken != githubTokenField.password.toString() ||
+        return settings.state.githubToken != githubTokenField.password.concatToString() ||
                 settings.state.gitlabUrl != gitlabUrlField.text ||
-                settings.state.gitlabToken != gitlabTokenField.password.toString()
+                settings.state.gitlabToken != gitlabTokenField.password.concatToString()
     }
 }
 
