@@ -39,13 +39,12 @@ class NewChatAction : DumbAwareAction(), CustomComponentAction {
 
                     val codingPanel =
                         contentManager?.component?.components?.filterIsInstance<ChatCodingPanel>()?.firstOrNull()
-                    AutoDevToolWindowFactory().createToolWindowContent(project, toolWindowManager!!)
+
+                    AutoDevToolWindowFactory().createToolWindowContent(project, toolWindowManager)
                     if (codingPanel == null) {
-//                        AutoDevToolWindowFactory().createToolWindowContent(project, toolWindowManager)
                         return@addActionListener
                     }
 
-                    // change content displayName AutoDevBundle.message("autodev.chat")
                     contentManager.contents.filter { it.component is ChatCodingPanel }.forEach {
                         AutoDevToolWindowFactory.setInitialDisplayName(it)
                     }
