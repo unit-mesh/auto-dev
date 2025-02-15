@@ -25,8 +25,8 @@ fun sendToChatWindow(
     val content = contentManager.factory.createContent(contentPanel, chatCodingService.getLabel(), false)
 
     ApplicationManager.getApplication().invokeLater {
-        contentManager.removeAllContents(false)
         contentManager.addContent(content)
+        contentManager.setSelectedContent(content)
 
         toolWindowManager.activate {
             runnable(contentPanel, chatCodingService)

@@ -45,9 +45,9 @@ class NewChatAction : DumbAwareAction(), CustomComponentAction {
                         return@addActionListener
                     }
 
-                    contentManager.contents.filter { it.component is ChatCodingPanel }.forEach {
-                        AutoDevToolWindowFactory.setInitialDisplayName(it)
-                    }
+//                    contentManager.contents.filter { it.component is ChatCodingPanel }.forEach {
+//                        AutoDevToolWindowFactory.setInitialDisplayName(it)
+//                    }
 
                     codingPanel.resetChatSession()
                 }
