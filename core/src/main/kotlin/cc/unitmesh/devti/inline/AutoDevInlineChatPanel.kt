@@ -5,6 +5,7 @@ import cc.unitmesh.devti.llms.cancelHandler
 import cc.unitmesh.devti.sketch.SketchProcessListener
 import cc.unitmesh.devti.sketch.SketchToolWindow
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
+import com.intellij.database.util.common.doesntMeet
 import com.intellij.icons.AllIcons
 import com.intellij.ide.KeyboardAwareFocusOwner
 import com.intellij.openapi.Disposable
@@ -321,12 +322,12 @@ class EscHandler(private val targetEditor: Editor, private val action: () -> Uni
             val caretModel: CaretModel = editor.caretModel
             val hasMultiCaret = caretModel.caretCount > 1
             val hasSelection = caretModel.allCarets.any { it.hasSelection() }
-            if (hasMultiCaret || hasSelection) {
-                oldHandler?.execute(editor, caret, context)
-            } else {
+            if (!hasMultiCaret && !hasSelection) {
                 action()
+                return
             }
         }
+        oldHandler?.execute(editor, caret, context)
     }
 
     override fun dispose() {
