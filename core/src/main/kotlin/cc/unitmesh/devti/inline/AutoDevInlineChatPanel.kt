@@ -312,16 +312,12 @@ class EscHandler(private val targetEditor: Editor, private val action: () -> Uni
         caret: Caret?,
         context: DataContext,
     ) {
-        if (editor == targetEditor) {
-            val caretModel: CaretModel = editor.caretModel
-            val hasMultiCaret = caretModel.caretCount > 1
-            val hasSelection = caretModel.allCarets.any { it.hasSelection() }
-            if (!hasMultiCaret && !hasSelection) {
-                action()
-                return
-            }
+        val caretModel: CaretModel = editor.caretModel
+        if (editor == targetEditor || caretModel.caretCount > 1 || caretModel.allCarets.any { it.hasSelection() }) {
+            action()
+        } else {
+            oldHandler?.execute(editor, caret, context)
         }
-        oldHandler?.execute(editor, caret, context)
     }
 
     override fun dispose() {
