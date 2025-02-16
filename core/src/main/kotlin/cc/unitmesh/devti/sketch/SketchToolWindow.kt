@@ -217,7 +217,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
 
     fun addRequestPrompt(text: String) {
         runInEdt {
-            historyPanel.add(createSingleTextView(text, language = "Markdown"))
+            historyPanel.add(createSingleTextView(text, language = "DevIn"))
             this.revalidate()
             this.repaint()
         }

@@ -31,15 +31,13 @@ import com.intellij.util.ui.JBUI
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import com.intellij.ide.scratch.ScratchRootType
+import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorProvider
 import com.intellij.openapi.fileEditor.TextEditorWithPreview
-import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiManager
 import com.intellij.temporary.gui.block.whenDisposed
 import com.intellij.util.ui.JBEmptyBorder
-import org.intellij.plugins.markdown.lang.MarkdownLanguage
-import org.intellij.plugins.markdown.ui.preview.MarkdownEditorWithPreview
 import java.awt.BorderLayout
 import javax.swing.BoxLayout
 import javax.swing.JButton
@@ -59,6 +57,7 @@ open class CodeHighlightSketch(
     private var textLanguage: String? = null
 
     var editorFragment: EditorFragment? = null
+    var previewEditor: FileEditor? = null
     private var hasSetupAction = false
 
     init {
@@ -88,9 +87,9 @@ open class CodeHighlightSketch(
 
         if (ideaLanguage?.displayName == "DevIn") {
             isDevIns = true
-            editorFragment = EditorFragment(editor, devinLineThreshold)
+            editorFragment = EditorFragment(editor, devinLineThreshold, previewEditor)
         } else {
-            editorFragment = EditorFragment(editor, editorLineThreshold)
+            editorFragment = EditorFragment(editor, editorLineThreshold, previewEditor)
         }
 
         add(editorFragment!!.getContent(), BorderLayout.CENTER)
@@ -114,6 +113,9 @@ open class CodeHighlightSketch(
         val preview = createEditor as? TextEditorWithPreview ?: return null
         var editor = preview?.editor as? EditorEx ?: return null
         configEditor(editor, project, file, false)
+//        previewEditor = preview.previewEditor
+//        previewEditor?.component?.isOpaque = true
+//        previewEditor?.component?.minimumSize = JBUI.size(0, 0)
         return editor
     }
 

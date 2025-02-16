@@ -5,6 +5,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.event.CaretEvent
 import com.intellij.openapi.editor.event.CaretListener
 import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.components.BorderLayoutPanel
@@ -31,7 +32,11 @@ class EditorPadding(private val editor: Editor, pad: Int) :
 }
 
 
-class EditorFragment(var editor: EditorEx, private val editorLineThreshold: Int = EDITOR_LINE_THRESHOLD) {
+class EditorFragment(
+    var editor: EditorEx,
+    private val editorLineThreshold: Int = EDITOR_LINE_THRESHOLD,
+    private val previewEditor: FileEditor?
+) {
     private val expandCollapseTextLabel: JBLabel = JBLabel("", 0).apply {
         isOpaque = true
         isVisible = false
@@ -54,7 +59,11 @@ class EditorFragment(var editor: EditorEx, private val editorLineThreshold: Int 
             }
         }.apply {
             isOpaque = true
-            addToCenter(editor.component)
+            if (previewEditor != null) {
+                addToCenter(previewEditor.component)
+            } else {
+                addToCenter(editor.component)
+            }
             addToBottom(expandCollapseTextLabel)
         }
     }
