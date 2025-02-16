@@ -24,13 +24,6 @@ class MermaidSketchProvider : LanguageSketchProvider {
 
 class MermaidSketch(project: Project, myFile: VirtualFile) :
     FileEditorSketch(project, myFile, "MermaidEditorWithPreviewProvider") {
-    override var mainPanel: JPanel = panel {
-        row {
-            cell(editor.component).align(Align.FILL)
-        }
-    }.apply {
-        border = JBUI.Borders.empty(0, 10)
-    }
 
     override fun getExtensionName(): String = "mermaid"
 }

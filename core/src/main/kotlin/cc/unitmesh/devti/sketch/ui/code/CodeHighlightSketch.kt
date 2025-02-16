@@ -34,6 +34,7 @@ import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorProvider
 import com.intellij.openapi.fileEditor.TextEditorWithPreview
+import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiManager
 import com.intellij.temporary.gui.block.whenDisposed
