@@ -31,10 +31,15 @@ import com.intellij.util.ui.JBUI
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import com.intellij.ide.scratch.ScratchRootType
+import com.intellij.openapi.fileEditor.FileEditorProvider
+import com.intellij.openapi.fileEditor.TextEditorWithPreview
+import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiManager
 import com.intellij.temporary.gui.block.whenDisposed
 import com.intellij.util.ui.JBEmptyBorder
+import org.intellij.plugins.markdown.lang.MarkdownLanguage
+import org.intellij.plugins.markdown.ui.preview.MarkdownEditorWithPreview
 import java.awt.BorderLayout
 import javax.swing.BoxLayout
 import javax.swing.JButton
@@ -70,7 +75,11 @@ open class CodeHighlightSketch(
         if (hasSetupAction) return
         hasSetupAction = true
 
-        val editor = createCodeViewerEditor(project, text, ideaLanguage, this)
+        val editor = if (ideaLanguage?.displayName == "Markdown") {
+            createMarkdownPreviewEditor(text) ?: createCodeViewerEditor(project, text, ideaLanguage, this)
+        } else {
+            createCodeViewerEditor(project, text, ideaLanguage, this)
+        }
 
         border = JBEmptyBorder(8)
         layout = BorderLayout(JBUI.scale(8), 0)
@@ -91,6 +100,21 @@ open class CodeHighlightSketch(
         } else {
             editor.backgroundColor = JBColor.PanelBackground
         }
+    }
+
+    private fun createMarkdownPreviewEditor(text: String): EditorEx? {
+        val editorProvider =
+            FileEditorProvider.EP_FILE_EDITOR_PROVIDER.extensionList.firstOrNull {
+                it.javaClass.simpleName == "MarkdownSplitEditorProvider"
+            }
+
+        val file = LightVirtualFile("shire-${System.currentTimeMillis()}.md", text)
+        val createEditor = editorProvider?.createEditor(project, file)
+
+        val preview = createEditor as? TextEditorWithPreview ?: return null
+        var editor = preview?.editor as? EditorEx ?: return null
+        configEditor(editor, project, file, false)
+        return editor
     }
 
     override fun getViewText(): String {
@@ -233,6 +257,15 @@ open class CodeHighlightSketch(
             }
 
             editor.setFile(file)
+            return configEditor(editor, project, file, isShowLineNo)
+        }
+
+        fun configEditor(
+            editor: EditorEx,
+            project: Project,
+            file: LightVirtualFile,
+            isShowLineNo: Boolean?
+        ): EditorEx {
             editor.setCaretEnabled(true)
 
             val highlighter = ApplicationManager.getApplication()

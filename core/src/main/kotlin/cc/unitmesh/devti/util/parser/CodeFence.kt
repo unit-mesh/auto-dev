@@ -167,10 +167,10 @@ class CodeFence(
                     if (line.startsWith("```")) {
                         val codeContent = codeBuilder.trim().toString()
                         val codeFence = CodeFence(
-                            findLanguage(languageId ?: ""),
+                            findLanguage(languageId ?: "markdown"),
                             codeContent,
                             true,
-                            lookupFileExt(languageId ?: "txt"),
+                            lookupFileExt(languageId ?: "md"),
                             languageId
                         )
                         codeFences.add(codeFence)
@@ -192,7 +192,7 @@ class CodeFence(
             if (codeStarted && codeBuilder.isNotEmpty()) {
                 val code = codeBuilder.trim().toString()
                 val codeFence = CodeFence(
-                    findLanguage(languageId ?: ""), code, false, lookupFileExt(languageId ?: "md"), languageId
+                    findLanguage(languageId ?: "markdown"), code, false, lookupFileExt(languageId ?: "md"), languageId
                 )
                 codeFences.add(codeFence)
             }

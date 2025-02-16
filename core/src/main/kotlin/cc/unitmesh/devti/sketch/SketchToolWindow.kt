@@ -217,7 +217,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
 
     fun addRequestPrompt(text: String) {
         runInEdt {
-            historyPanel.add(createSingleTextView(text))
+            historyPanel.add(createSingleTextView(text, language = "Markdown"))
             this.revalidate()
             this.repaint()
         }
@@ -226,7 +226,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
 
     fun addSystemPrompt(text: String) {
         runInEdt {
-            systemPrompt.add(createSingleTextView(text))
+            systemPrompt.add(createSingleTextView(text, language = "VTL"))
             this.revalidate()
             this.repaint()
         }
@@ -246,8 +246,8 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
         }
     }
 
-    private fun createSingleTextView(text: String): DialogPanel {
-        val codeBlockViewer = CodeHighlightSketch(project, text, PlainTextLanguage.INSTANCE).apply {
+    private fun createSingleTextView(text: String, language: String = "markdown"): DialogPanel {
+        val codeBlockViewer = CodeHighlightSketch(project, text, CodeFence.findLanguage(language)).apply {
             initEditor(text)
         }
 
