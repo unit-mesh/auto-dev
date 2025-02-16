@@ -73,7 +73,6 @@ class SingleFileDiffSketch(
             })
         }
 
-        // read content, count add and remove line by '+' and '-' in patch.hunks
         val addLine = patch.hunks.sumOf {
             it.lines.count { it.type == PatchLine.Type.ADD }
         }
@@ -146,7 +145,7 @@ class SingleFileDiffSketch(
 //            })
 //        }
 
-        val viewDiffButton = JButton("View").apply {
+        val viewButton = JButton("View").apply {
             icon = AllIcons.Actions.ListChanges
             toolTipText = AutoDevBundle.message("sketch.patch.action.viewDiff.tooltip")
 
@@ -157,7 +156,7 @@ class SingleFileDiffSketch(
             })
         }
 
-        val runStreamButton = JButton("Apply").apply {
+        val applyButton = JButton("Apply").apply {
             icon = AllIcons.Actions.RunAll
             toolTipText = AutoDevBundle.message("sketch.patch.action.runDiff.tooltip")
             isEnabled = appliedPatch?.status == ApplyPatchStatus.SUCCESS
@@ -201,7 +200,7 @@ class SingleFileDiffSketch(
             }
         }
 
-        return listOf(viewDiffButton, runStreamButton, repairButton)
+        return listOf(viewButton, applyButton, repairButton)
     }
 
     override fun getViewText(): String = currentFile.readText()

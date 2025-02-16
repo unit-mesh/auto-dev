@@ -78,7 +78,10 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
 
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
-                val selection = StringSelection(myText)
+                var allText = historyPanel.components.filterIsInstance<LangSketch>().joinToString("\n") { it.getViewText() }
+                allText += myList.components.filterIsInstance<LangSketch>().joinToString("\n") { it.getViewText() }
+
+                val selection = StringSelection(allText)
                 val clipboard = Toolkit.getDefaultToolkit().systemClipboard
                 clipboard.setContents(selection, null)
             }
@@ -159,6 +162,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
                     isInterrupted = false
                     inputSection.showStopButton()
                 }
+
                 override fun onAfter() {
                     inputSection.showSendButton()
                 }
@@ -191,6 +195,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
     fun beforeRun() {
         processListeners.forEach { it.onBefore() }
     }
+
     fun AfterRun() {
         processListeners.forEach { it.onAfter() }
     }
@@ -212,7 +217,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
 
     fun addRequestPrompt(text: String) {
         runInEdt {
-            historyPanel.add(createSingleTextView(text))
+            historyPanel.add(createSingleTextView(text, language = "DevIn"))
             this.revalidate()
             this.repaint()
         }
@@ -221,7 +226,7 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
 
     fun addSystemPrompt(text: String) {
         runInEdt {
-            systemPrompt.add(createSingleTextView(text))
+            systemPrompt.add(createSingleTextView(text, language = "VTL"))
             this.revalidate()
             this.repaint()
         }
@@ -241,8 +246,8 @@ class SketchToolWindow(val project: Project, val editor: Editor?, private val sh
         }
     }
 
-    private fun createSingleTextView(text: String): DialogPanel {
-        val codeBlockViewer = CodeHighlightSketch(project, text, PlainTextLanguage.INSTANCE).apply {
+    private fun createSingleTextView(text: String, language: String = "markdown"): DialogPanel {
+        val codeBlockViewer = CodeHighlightSketch(project, text, CodeFence.findLanguage(language)).apply {
             initEditor(text)
         }
 

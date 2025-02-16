@@ -176,6 +176,8 @@ Additionally, we extend a warm invitation to participate in the development of t
 - DevIn Language refs
   on [JetBrains' Markdown Util](https://github.com/JetBrains/intellij-community/tree/master/platform/markdown-utils),
   which is licensed under the Apache 2.0 license.
+- Stream Diff based on [Continue Dev](https://github.com/continuedev/continue) under the Apache 2.0 license.
+- Ripgrep inspired by [Cline](https://github.com/cline/cline) under the Apache 2.0 license.
 
 **Known License issues**: JetBrain plugin development is no walk in the park! Oops, we cheekily borrowed some code from
 the JetBrains Community version and the super cool JetBrains AI Assistant plugin in our codebase.
