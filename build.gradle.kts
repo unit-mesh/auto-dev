@@ -615,7 +615,7 @@ project(":exts:ext-endpoints") {
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
-            intellijPlugins(ideaPlugins + prop("endpointsPlugin"))
+            intellijPlugins(ideaPlugins + prop("endpointsPlugin") + prop("swaggerPlugin"))
             intellijPlugins(listOf("com.intellij.spring", "com.intellij.spring.mvc"))
         }
 
