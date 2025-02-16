@@ -198,6 +198,9 @@ class CodeFence(
             }
         }
 
+        val languages = Language.getRegisteredLanguages()
+        val registeredLanguages = languages.filter { it.displayName.isNotEmpty() }
+
         /**
          * Searches for a language by its name and returns the corresponding [Language] object. If the language is not found,
          * [PlainTextLanguage.INSTANCE] is returned.
@@ -216,11 +219,18 @@ class CodeFence(
                 else -> languageName
             }
 
-            val languages = Language.getRegisteredLanguages()
-            val registeredLanguages = languages.filter { it.displayName.isNotEmpty() }
-
             return registeredLanguages.find { it.displayName.equals(fixedLanguage, ignoreCase = true) }
                 ?: PlainTextLanguage.INSTANCE
+        }
+
+        fun findLanguageByExt(extension: String): Language? {
+            languages.forEach {
+                if (it.associatedFileType?.defaultExtension == extension) {
+                    return it
+                }
+            }
+
+            return null
         }
 
         fun lookupFileExt(languageId: String): String {
