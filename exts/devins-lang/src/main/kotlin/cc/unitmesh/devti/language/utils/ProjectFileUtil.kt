@@ -19,14 +19,7 @@ fun Project.lookupFile(path: String): VirtualFile? {
 
 fun Project.findFile(filename: String, caseSensitively: Boolean = true): VirtualFile? {
     ApplicationManager.getApplication().assertReadAccessAllowed()
-    val currentTask = ApplicationManager.getApplication().executeOnPooledThread<VirtualFile?> {
-        val searchedFiles = runReadAction {
-                FilenameIndex.getVirtualFilesByName(filename, caseSensitively, ProjectScope.getContentScope(this))
-            }
-        return@executeOnPooledThread searchedFiles.firstOrNull()
-    }
-
-    return currentTask.get(5, TimeUnit.SECONDS)
+    return FilenameIndex.getVirtualFilesByName(filename, ProjectScope.getContentScope(this)).firstOrNull()
 }
 
 fun VirtualFile.canBeAdded(): Boolean {
