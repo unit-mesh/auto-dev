@@ -33,9 +33,9 @@ import javax.swing.table.DefaultTableModel
 
 object SketchCodeInspection {
     fun showErrors(errors: List<SketchInspectionError>, panel: JPanel) {
-        val columnNames = arrayOf("Line", "Description", "Highlight Type")
+        val columnNames = arrayOf("Line", "Description", "Highlight Type", "Name")
         val data = errors.map {
-            arrayOf(it.lineNumber, it.description, it.highlightType.toString())
+            arrayOf(it.lineNumber, it.description, it.highlightType.toString(), it.toolId)
         }.toTypedArray()
 
         val tableModel = DefaultTableModel(data, columnNames)
@@ -103,12 +103,14 @@ object SketchCodeInspection {
                 indicator, PairProcessor.alwaysTrue<LocalInspectionToolWrapper?, ProblemDescriptor?>()
             )
 
-            val problems = result.values.flatten()
-            return@runReadAction problems
-                .sortedBy { it.lineNumber }
-                .distinctBy { it.lineNumber }.map {
-                    SketchInspectionError.from(it)
+            val errors = mutableListOf<SketchInspectionError>()
+            for ((wrapper, problems) in result) {
+                problems.forEach {
+                    errors.add(SketchInspectionError.from(it, wrapper))
                 }
+            }
+
+            return@runReadAction errors.sortedBy { it.lineNumber }.distinctBy { it.lineNumber }
         }
     }
 
