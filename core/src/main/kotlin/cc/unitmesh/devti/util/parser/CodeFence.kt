@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.util.parser
 
-import ai.grazie.nlp.utils.length
 import com.intellij.lang.Language
 import com.intellij.openapi.fileTypes.PlainTextLanguage
 
@@ -91,9 +90,9 @@ class CodeFence(
                 val isComplete = endMatch != null
 
                 val devinContent = if (isComplete) {
-                    searchRegion.substring(startMatch.range.length, endMatch!!.range.first).trim()
+                    searchRegion.substring(startMatch.range.length(), endMatch!!.range.first).trim()
                 } else {
-                    searchRegion.substring(startMatch.range.length).trim()
+                    searchRegion.substring(startMatch.range.length()).trim()
                 }
 
                 codeFences.add(CodeFence(findLanguage("DevIn"), devinContent, isComplete, "devin", "DevIn"))
@@ -135,7 +134,6 @@ class CodeFence(
             return currentContent
         }
 
-        val markdownLanguage = findLanguage("markdown")
         private fun parseMarkdownContent(content: String, codeFences: MutableList<CodeFence>) {
             val languageRegex = Regex("```([\\w#+ ]*)")
             val lines = content.lines()
@@ -151,7 +149,7 @@ class CodeFence(
                     if (matchResult != null) {
                         if (textBuilder.isNotEmpty()) {
                             val textBlock = CodeFence(
-                                markdownLanguage, textBuilder.trim().toString(), true, "md"
+                                findLanguage("markdown"), textBuilder.trim().toString(), true, "md"
                             )
                             lastTxtBlock = textBlock
                             codeFences.add(textBlock)
@@ -185,7 +183,7 @@ class CodeFence(
             }
 
             if (textBuilder.isNotEmpty()) {
-                val textBlock = CodeFence(markdownLanguage, textBuilder.trim().toString(), true, "md")
+                val textBlock = CodeFence(findLanguage("markdown"), textBuilder.trim().toString(), true, "md")
                 codeFences.add(textBlock)
             }
 
@@ -294,4 +292,8 @@ class CodeFence(
             }
         }
     }
+}
+
+private fun IntRange.length(): Int {
+    return (this.endInclusive - this.start) + 1
 }
