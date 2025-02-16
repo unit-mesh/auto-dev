@@ -5,7 +5,6 @@ import cc.unitmesh.devti.llms.cancelHandler
 import cc.unitmesh.devti.sketch.SketchProcessListener
 import cc.unitmesh.devti.sketch.SketchToolWindow
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
-import com.intellij.database.util.common.doesntMeet
 import com.intellij.icons.AllIcons
 import com.intellij.ide.KeyboardAwareFocusOwner
 import com.intellij.openapi.Disposable
@@ -16,12 +15,7 @@ import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runInEdt
-import com.intellij.openapi.editor.Caret
-import com.intellij.openapi.editor.CaretModel
-import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.EditorCustomElementRenderer
-import com.intellij.openapi.editor.Inlay
-import com.intellij.openapi.editor.SelectionModel
+import com.intellij.openapi.editor.*
 import com.intellij.openapi.editor.actionSystem.EditorActionHandler
 import com.intellij.openapi.editor.actionSystem.EditorActionManager
 import com.intellij.openapi.editor.markup.TextAttributes
