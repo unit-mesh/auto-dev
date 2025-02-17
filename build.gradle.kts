@@ -607,6 +607,7 @@ project(":exts:ext-vue") {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins + prop("vuePlugin"))
+            bundledPlugin("org.jetbrains.plugins.vue")
         }
 
         implementation(project(":core"))
