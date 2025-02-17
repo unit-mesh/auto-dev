@@ -24,9 +24,8 @@ abstract class FileEditorPreviewSketch(
     val project: Project,
     val virtualFile: VirtualFile,
     val withPreviewEditorId: String
-) :
-    ExtensionLangSketch {
-    val editor: FileEditor = getEditorProvider().createEditor(project, virtualFile)
+) : ExtensionLangSketch {
+    open val editor: FileEditor = getEditorProvider().createEditor(project, virtualFile)
 
     open val mainPanel = editor.component
 
@@ -37,7 +36,7 @@ abstract class FileEditorPreviewSketch(
 
     override fun getComponent(): JComponent = mainPanel
 
-    override fun getViewText(): String = virtualFile.readText()
+    override fun getViewText(): String = editor.file.readText()
 
     override fun updateViewText(text: String, complete: Boolean) {}
 
