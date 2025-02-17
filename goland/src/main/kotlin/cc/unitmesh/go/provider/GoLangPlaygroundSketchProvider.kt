@@ -60,13 +60,13 @@ class GoLangPlaygroundSketch(val myProject: Project, val content: String, val fi
 
             return if (editor is TextEditor) {
                 val viewer = editorFactory.createViewer(
-                    editorFactory.createDocument("" as CharSequence),
+                    editorFactory.createDocument(""),
                     project,
                     EditorKind.PREVIEW
                 )
                 val previewEditor = textEditorProvider.getTextEditor(viewer)
 
-                Disposer.register(editor as Disposable, Disposable {
+                Disposer.register(editor, Disposable {
                     EditorFactory.getInstance().releaseEditor(viewer)
                 })
 

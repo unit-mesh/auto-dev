@@ -1,13 +1,15 @@
 package cc.unitmesh.devti.sketch.ui.openapi
 
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
-import cc.unitmesh.devti.sketch.ui.preview.FileEditorPreviewSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
+import cc.unitmesh.devti.sketch.ui.preview.FileEditorPreviewSketch
 import cc.unitmesh.devti.util.parser.CodeFence.Companion.findLanguage
+import cc.unitmesh.devti.util.parser.CodeFence.Companion.findLanguageByExt
+import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
-import javax.swing.JComponent
 
 class OpenAPISketchProvider : LanguageSketchProvider {
     override fun isSupported(lang: String) = lang == "yaml" || lang == "yml"
@@ -24,17 +26,21 @@ class OpenAPISketchProvider : LanguageSketchProvider {
             }
         }
 
-        return OpenAPISketch(project, content)
+        val language = findLanguageByExt("yaml")
+        val virtualFile = ScratchRootType.getInstance()
+            .createScratchFile(project, createFileNameWithTime(), language, content)
+            ?: LightVirtualFile(createFileNameWithTime(), content)
+
+        return OpenAPISketch(project, content, virtualFile)
     }
 }
 
-class OpenAPISketch(val myProject: Project, private val content: String) : FileEditorPreviewSketch(
-    myProject,
-    LightVirtualFile(createFileNameWithTime(), content),
-    "SwaggerEditorWithPreview"
-) {
-    override var mainPanel: JComponent = editor.component
-
+class OpenAPISketch(val myProject: Project, private val content: String, virtualFile: VirtualFile) :
+    FileEditorPreviewSketch(
+        myProject,
+        virtualFile,
+        "SwaggerUIEditorProvider"
+    ) {
     override fun getExtensionName(): String = "OpenAPI"
 }
 

@@ -22,9 +22,9 @@ class IntellijHttpClientExecutor : HttpClientProvider {
 
         // create temporary file for http request
         ScratchFileService.getInstance()
+
         val scratchFile = ScratchRootType.getInstance()
             .createScratchFile(project, "autodev-http-request.http", originFile.language, text) ?: return
-
         val psiFile = PsiManager.getInstance(project).findFile(scratchFile) ?: return
 
         val runner: RunnerAndConfigurationSettings = ConfigurationContext(psiFile)

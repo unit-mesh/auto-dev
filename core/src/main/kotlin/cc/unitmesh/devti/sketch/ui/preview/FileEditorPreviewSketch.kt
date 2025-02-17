@@ -5,18 +5,23 @@ import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.lang.Language
+import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorProvider
+import com.intellij.openapi.fileEditor.TextEditorWithPreview
+import com.intellij.openapi.fileEditor.TextEditorWithPreview.*
 import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.ui.dsl.builder.panel
 import javax.swing.JComponent
 
 val editorWithPreviews: List<FileEditorProvider> =
     FileEditorProvider.EP_FILE_EDITOR_PROVIDER.extensionList.filter {
         it.javaClass.simpleName.contains("Preview")
     }
+
 /**
  * @param withPreviewEditorId means a editor extends from [com.intellij.openapi.fileEditor.TextEditorWithPreview]
  */
@@ -25,11 +30,16 @@ abstract class FileEditorPreviewSketch(
     val virtualFile: VirtualFile,
     val withPreviewEditorId: String
 ) : ExtensionLangSketch {
-    open val editor: FileEditor = getEditorProvider().createEditor(project, virtualFile)
+    init {
+        virtualFile.putUserData(DEFAULT_LAYOUT_FOR_FILE, Layout.SHOW_EDITOR_AND_PREVIEW)
+    }
+
+    val editorProvider = buildEditorProvider()
+    open val editor: FileEditor = editorProvider.createEditor(project, virtualFile)
 
     open val mainPanel = editor.component
 
-    fun getEditorProvider(): FileEditorProvider =
+    fun buildEditorProvider(): FileEditorProvider =
         FileEditorProvider.EP_FILE_EDITOR_PROVIDER.extensionList.firstOrNull {
             it.javaClass.simpleName == withPreviewEditorId
         } ?: TextEditorProvider.getInstance()
@@ -43,6 +53,24 @@ abstract class FileEditorPreviewSketch(
     fun VirtualFile.readText(): String {
         return VfsUtilCore.loadText(this)
     }
+
+//    protected fun createRightToolbar(target: JComponent): ActionToolbar {
+//        val rightToolbar = ActionManager.getInstance()
+//            .createActionToolbar(ActionPlaces.TEXT_EDITOR_WITH_PREVIEW, createViewActionGroup(), true)
+//        rightToolbar.targetComponent = target
+//        rightToolbar.isReservePlaceAutoPopupIcon = false
+//
+//        return rightToolbar
+//    }
+//
+//    protected open fun createViewActionGroup(): ActionGroup {
+//        val actionManager = ActionManager.getInstance()
+//        return DefaultActionGroup(
+//            actionManager.getAction("TextEditorWithPreview.Layout.EditorOnly"),
+//            actionManager.getAction("TextEditorWithPreview.Layout.EditorAndPreview"),
+//            actionManager.getAction("TextEditorWithPreview.Layout.PreviewOnly")
+//        )
+//    }
 
     override fun updateLanguage(language: Language?, originLanguage: String?) {}
     override fun dispose() {}
