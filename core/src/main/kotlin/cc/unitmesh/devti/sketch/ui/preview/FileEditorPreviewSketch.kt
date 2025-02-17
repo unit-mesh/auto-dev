@@ -33,7 +33,7 @@ abstract class FileEditorPreviewSketch(
     fun getEditorProvider(): FileEditorProvider =
         FileEditorProvider.EP_FILE_EDITOR_PROVIDER.extensionList.firstOrNull {
             it.javaClass.simpleName == withPreviewEditorId
-        } ?: TextEditorProvider.Companion.getInstance()
+        } ?: TextEditorProvider.getInstance()
 
     override fun getComponent(): JComponent = mainPanel
 
@@ -61,8 +61,8 @@ abstract class FileEditorPreviewSketch(
                 }
             }
 
-            val language = CodeFence.Companion.findLanguageByExt(file.extension ?: "")
-                ?: CodeFence.Companion.findLanguage("txt")
+            val language = CodeFence.findLanguageByExt(file.extension ?: "")
+                ?: CodeFence.findLanguage("txt")
 
             return object : CodeHighlightSketch(project, content, language), ExtensionLangSketch {
                 override fun getExtensionName(): String = sketchName
