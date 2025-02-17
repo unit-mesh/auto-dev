@@ -25,6 +25,7 @@ import java.util.*
 
 /**
  * AutoDev Modular for Vue
+ * based on [org.jetbrains.vuejs.web.scopes.VueCodeModelSymbolsScope]
  */
 class VueRelatedClassProvider : RelatedClassesProvider {
     override fun lookup(element: PsiElement): List<PsiElement> {
@@ -37,9 +38,6 @@ class VueRelatedClassProvider : RelatedClassesProvider {
         if (psiFile !is VueFile) return emptyList()
 
         val scriptTag = findScriptTag(psiFile, true) ?: findScriptTag(psiFile, false) ?: return emptyList()
-//        val jsContent = PsiTreeUtil.getChildOfType(scriptTag, JSEmbeddedContent::class.java)
-//            ?: return mutableListOf<PsiElement>()
-        val kind = ""
         val localImports = sequenceOf(findModule(scriptTag, false), findModule(scriptTag, true))
             .flatMap {
                 JSResolveUtil.getStubbedChildren(it, ES6_IMPORT_DECLARATION).asSequence()
@@ -48,50 +46,50 @@ class VueRelatedClassProvider : RelatedClassesProvider {
             .map {
                 it.children.mapNotNull { source ->
                     when (source) {
-                        is ES6ImportSpecifierAlias -> symbolLocationsFromSpecifier(source.findSpecifierElement() as? ES6ImportSpecifier, kind)
-                        is ES6ImportSpecifier -> symbolLocationsFromSpecifier(source, kind)
-                        is ES6ImportedBinding -> symbolLocationsForModule(source, source.declaration?.fromClause?.referenceText, "default", kind)
-                        is TypeScriptPropertySignature -> symbolLocationFromPropertySignature(source, kind)?.let { listOf(it) }
+                        is ES6ImportSpecifierAlias -> symbolLocationsFromSpecifier(source.findSpecifierElement() as? ES6ImportSpecifier)
+                        is ES6ImportSpecifier -> symbolLocationsFromSpecifier(source)
+                        is ES6ImportedBinding -> symbolLocationsForModule(source, source.declaration?.fromClause?.referenceText, "default")
+                        is TypeScriptPropertySignature -> symbolLocationFromPropertySignature(source)?.let { listOf(it) }
                         is ES6ExportDefaultAssignment, is HtmlFileImpl -> source.containingFile.virtualFile?.url?.let {
-                            listOf(WebTypesSymbolLocation(it, "default", kind))
+                            listOf(WebTypesSymbolLocation(it, "default"))
                         }
                         else -> null
                     }
 
-                }
+                }.flatten()
             }.flatten()
-
+            .toList()
 
         logger<VueRelatedClassProvider>().info("imports: $localImports")
+        println("imports: $localImports")
         /// resolve file in local
         return emptyList()
     }
 
-    private fun symbolLocationsFromSpecifier(specifier: ES6ImportSpecifier?, symbolKind: String): List<WebTypesSymbolLocation> {
+    private fun symbolLocationsFromSpecifier(specifier: ES6ImportSpecifier?): List<WebTypesSymbolLocation> {
         if (specifier?.specifierKind == ES6ImportExportSpecifier.ImportExportSpecifierKind.IMPORT) {
             val symbolName = if (specifier.isDefault) "default" else specifier.referenceName
             val moduleName = specifier.declaration?.fromClause?.referenceText
-            return symbolLocationsForModule(specifier, moduleName, symbolName, symbolKind)
+            return symbolLocationsForModule(specifier, moduleName, symbolName)
         }
         return emptyList()
     }
 
     private fun symbolLocationsForModule(context: PsiElement,
                                          moduleName: String?,
-                                         symbolName: String?,
-                                         symbolKind: String): List<WebTypesSymbolLocation> =
+                                         symbolName: String?): List<WebTypesSymbolLocation> =
         if (symbolName != null && moduleName != null) {
             val result = mutableListOf<WebTypesSymbolLocation>()
             val unquotedModule = StringUtil.unquoteString(moduleName)
             if (!unquotedModule.startsWith(".")) {
-                result.add(WebTypesSymbolLocation(unquotedModule.lowercase(Locale.US), symbolName, symbolKind))
+                result.add(WebTypesSymbolLocation(unquotedModule.lowercase(Locale.US), symbolName))
             }
 
             if (unquotedModule.contains('/')) {
                 val modules = JSFileReferencesUtil.resolveModuleReference(context, unquotedModule)
                 modules.mapNotNullTo(result) {
                     it.containingFile?.originalFile?.virtualFile?.url?.let { url ->
-                        WebTypesSymbolLocation(url, symbolName, symbolKind)
+                        WebTypesSymbolLocation(url, symbolName)
                     }
                 }
                 // A workaround to avoid full resolution in case of components in subpackages
@@ -104,7 +102,7 @@ class VueRelatedClassProvider : RelatedClassesProvider {
                             ?.asSafely<ES6ExportDefaultAssignment>()
                             ?.initializerReference
                             ?.let { symbolName ->
-                                WebTypesSymbolLocation(unquotedModule.takeWhile { it != '/' }, symbolName, symbolKind)
+                                WebTypesSymbolLocation(unquotedModule.takeWhile { it != '/' }, symbolName)
                             }
                     }
                 }
@@ -113,7 +111,7 @@ class VueRelatedClassProvider : RelatedClassesProvider {
         }
         else emptyList()
 
-    private fun symbolLocationFromPropertySignature(property: TypeScriptPropertySignature, kind: SymbolKind): WebTypesSymbolLocation? {
+    private fun symbolLocationFromPropertySignature(property: TypeScriptPropertySignature): WebTypesSymbolLocation? {
         if (!property.isValid) return null
 
         // TypeScript GlobalComponents definition
@@ -126,12 +124,11 @@ class VueRelatedClassProvider : RelatedClassesProvider {
             ?.name
             ?: return null
 
-        return WebTypesSymbolLocation(packageName.lowercase(Locale.US), symbolName, kind)
+        return WebTypesSymbolLocation(packageName.lowercase(Locale.US), symbolName)
     }
 
     private data class WebTypesSymbolLocation(
         val moduleName: String,
         val symbolName: String,
-        val symbolKind: String,
     )
 }
