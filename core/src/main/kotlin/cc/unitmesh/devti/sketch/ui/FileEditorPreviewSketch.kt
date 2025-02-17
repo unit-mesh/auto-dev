@@ -32,7 +32,7 @@ abstract class FileEditorPreviewSketch(
     fun getEditorProvider(): FileEditorProvider =
         FileEditorProvider.EP_FILE_EDITOR_PROVIDER.extensionList.firstOrNull {
             it.javaClass.simpleName == withPreviewEditorId
-        } ?: TextEditorProvider.Companion.getInstance()
+        } ?: TextEditorProvider.getInstance()
 
     override fun getComponent(): JComponent = mainPanel
 
