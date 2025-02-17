@@ -16,7 +16,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.impl.source.html.HtmlFileImpl
 import com.intellij.util.asSafely
-import com.intellij.webSymbols.SymbolKind
 import org.jetbrains.vuejs.index.findModule
 import org.jetbrains.vuejs.index.findScriptTag
 import org.jetbrains.vuejs.lang.html.VueFile
@@ -62,7 +61,6 @@ class VueRelatedClassProvider : RelatedClassesProvider {
 
         logger<VueRelatedClassProvider>().info("imports: $localImports")
         println("imports: $localImports")
-        /// resolve file in local
         return emptyList()
     }
 
