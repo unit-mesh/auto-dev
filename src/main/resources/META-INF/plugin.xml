@@ -40,5 +40,6 @@
         <module name="cc.unitmesh.devti.language"/>
         <module name="cc.unitmesh.httpclient"/>
         <module name="cc.unitmesh.endpoints"/>
+        <module name="cc.unitmesh.vue"/>
     </content>
 </idea-plugin>

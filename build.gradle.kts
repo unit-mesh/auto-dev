@@ -260,6 +260,7 @@ project(":") {
             pluginModule(implementation(project(":exts:ext-http-client")))
             pluginModule(implementation(project(":exts:ext-terminal")))
             pluginModule(implementation(project(":exts:ext-mermaid")))
+            pluginModule(implementation(project(":exts:ext-vue")))
             pluginModule(implementation(project(":exts:ext-endpoints")))
             pluginModule(implementation(project(":exts:ext-plantuml")))
             pluginModule(implementation(project(":exts:devins-lang")))
@@ -282,6 +283,7 @@ project(":") {
         implementation(project(":exts:ext-http-client"))
         implementation(project(":exts:ext-terminal"))
         implementation(project(":exts:ext-mermaid"))
+        implementation(project(":exts:ext-vue"))
         implementation(project(":exts:ext-plantuml"))
         implementation(project(":exts:ext-endpoints"))
         implementation(project(":exts:devins-lang"))
@@ -594,6 +596,17 @@ project(":exts:ext-mermaid") {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins + prop("mermaidPlugin"))
+        }
+
+        implementation(project(":core"))
+    }
+}
+
+project(":exts:ext-vue") {
+    dependencies {
+        intellijPlatform {
+            intellijIde(prop("ideaVersion"))
+            intellijPlugins(ideaPlugins + prop("vuePlugin"))
         }
 
         implementation(project(":core"))

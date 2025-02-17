@@ -1,0 +1,10 @@
+<idea-plugin package="cc.unitmesh.vue">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+        <plugin id="org.jetbrains.plugins.vue"/>
+    </dependencies>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <relatedClassProvider language="Vue" implementationClass="cc.unitmesh.vue.provider.VueRelatedClassProvider"/>
+    </extensions>
+</idea-plugin>

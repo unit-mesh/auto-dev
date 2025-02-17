@@ -25,6 +25,7 @@ include(
     "exts:ext-plantuml",
     "exts:ext-mermaid",
     "exts:ext-endpoints",
+    "exts:ext-vue",
 
     // the Input Language support for AutoDev
     "exts:devins-lang"
