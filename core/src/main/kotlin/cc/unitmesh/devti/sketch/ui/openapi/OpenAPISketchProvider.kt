@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.sketch.ui.openapi
 
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
-import cc.unitmesh.devti.sketch.ui.FileEditorPreviewSketch
+import cc.unitmesh.devti.sketch.ui.preview.FileEditorPreviewSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
 import cc.unitmesh.devti.util.parser.CodeFence.Companion.findLanguage

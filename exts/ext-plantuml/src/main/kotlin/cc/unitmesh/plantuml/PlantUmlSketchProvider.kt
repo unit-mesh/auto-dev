@@ -62,25 +62,17 @@ class PlantUmlSketch(private val project: Project, private val virtualFile: Virt
         (umlPreviewEditor.component as PlantUmlPreviewPanel).processRequest(LazyApplicationPoolExecutor.Delay.NOW, RenderCommand.Reason.FILE_SWITCHED)
     }
 
-    override fun getExtensionName(): String {
-        return "plantuml"
-    }
+    override fun getExtensionName(): String = "plantuml"
 
-    override fun getViewText(): String {
-        return virtualFile.inputStream.bufferedReader().use { it.readText() }
-    }
+    override fun getViewText(): String = virtualFile.inputStream.bufferedReader().use { it.readText() }
 
     override fun updateViewText(text: String, complete: Boolean) {
         virtualFile.setBinaryContent(text.toByteArray())
     }
 
-    override fun getComponent(): JComponent {
-        return mainPanel
-    }
+    override fun getComponent(): JComponent = mainPanel
 
-    override fun updateLanguage(language: Language?, originLanguage: String?) {
-    }
+    override fun updateLanguage(language: Language?, originLanguage: String?) = Unit
 
-    override fun dispose() {
-    }
+    override fun dispose() = Unit
 }

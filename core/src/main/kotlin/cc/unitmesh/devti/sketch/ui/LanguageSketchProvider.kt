@@ -8,7 +8,6 @@ interface ExtensionLangSketch : LangSketch {
     fun getExtensionName(): String
 }
 
-
 interface LanguageSketchProvider {
     fun isSupported(lang: String): Boolean
 
