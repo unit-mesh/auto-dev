@@ -16,6 +16,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import com.intellij.psi.html.HtmlTag
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -69,7 +70,7 @@ class StructureInCommand(val myProject: Project, val prop: String) : InsCommand 
         /// todo: add element line
         var str = element.presentation.presentableText
         if (str.isNotNullOrEmpty && element.presentation.locationString.isNotNullOrEmpty) {
-            str = "$str (${element.presentation.locationString})"
+            str += " (${element.presentation.locationString})"
         }
 
         sb.append(indent).append(str).append("\n")
