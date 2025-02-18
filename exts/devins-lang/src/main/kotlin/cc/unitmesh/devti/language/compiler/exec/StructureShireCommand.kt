@@ -3,12 +3,14 @@ package cc.unitmesh.devti.language.compiler.exec
 import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.utils.lookupFile
+import com.intellij.database.util.common.isNotNullOrEmpty
 import com.intellij.ide.structureView.StructureView
 import com.intellij.ide.structureView.StructureViewTreeElement
 import com.intellij.lang.LanguageStructureViewBuilder
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -37,12 +39,16 @@ class StructureInCommand(val myProject: Project, val prop: String) : InsCommand 
             }.get()
         } ?: return null
 
-        return getFileStructure(myProject, virtualFile, psiFile)
+        return "```\n" + getFileStructure(myProject, virtualFile, psiFile) + "\n```"
     }
 
     fun getFileStructure(project: Project, file: VirtualFile, psiFile: PsiFile): String {
-        val openFile = FileEditorManager.getInstance(myProject).openFile(file, true)
-        val fileEditor = openFile.firstOrNull() ?: return "No FileEditor found."
+        var openFiles: Array<FileEditor> = arrayOf()
+        ApplicationManager.getApplication().invokeAndWait {
+            openFiles = FileEditorManager.getInstance(myProject).openFile(file, true)
+        }
+
+        val fileEditor = openFiles.firstOrNull() ?: return "No FileEditor found."
 
         val viewFactory = LanguageStructureViewBuilder.INSTANCE.forLanguage(psiFile.language)
 
@@ -61,7 +67,12 @@ class StructureInCommand(val myProject: Project, val prop: String) : InsCommand 
     private fun traverseStructure(element: StructureViewTreeElement, depth: Int, sb: StringBuilder): StringBuilder {
         val indent = "  ".repeat(depth)
         /// todo: add element line
-        sb.append(indent).append(element.presentation.presentableText).append("\n")
+        var str = element.presentation.presentableText
+        if (str.isNotNullOrEmpty && element.presentation.locationString.isNotNullOrEmpty) {
+            str = "$str (${element.presentation.locationString})"
+        }
+
+        sb.append(indent).append(str).append("\n")
 
         for (child in element.children) {
             if (child is StructureViewTreeElement) {
