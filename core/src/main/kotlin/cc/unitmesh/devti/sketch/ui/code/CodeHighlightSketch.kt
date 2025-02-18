@@ -48,13 +48,14 @@ open class CodeHighlightSketch(
     open val project: Project,
     open val text: String,
     private var ideaLanguage: Language? = null,
-    val editorLineThreshold: Int = 6
+    val editorLineThreshold: Int = 6,
+    val fileName: String? = null
 ) : JBPanel<CodeHighlightSketch>(BorderLayout()), DataProvider, LangSketch, Disposable {
     private val devinLineThreshold = 10
     private val minDevinLineThreshold = 1
     private var isDevIns = false
 
-    private var textLanguage: String? = null
+    private var textLanguage: String? = if (ideaLanguage != null) ideaLanguage?.displayName else null
 
     var editorFragment: EditorFragment? = null
     var previewEditor: FileEditor? = null
@@ -62,7 +63,7 @@ open class CodeHighlightSketch(
 
     init {
         if (text.isNotNullOrEmpty() && (ideaLanguage?.displayName != "Markdown" && ideaLanguage != PlainTextLanguage.INSTANCE)) {
-            initEditor(text)
+            initEditor(text, fileName)
         }
     }
 
@@ -70,14 +71,14 @@ open class CodeHighlightSketch(
         return this != null && this.isNotEmpty()
     }
 
-    fun initEditor(text: String) {
+    fun initEditor(text: String, fileName: String? = null) {
         if (hasSetupAction) return
         hasSetupAction = true
 
         val editor = if (ideaLanguage?.displayName == "Markdown") {
-            createMarkdownPreviewEditor(text) ?: createCodeViewerEditor(project, text, ideaLanguage, this)
+            createMarkdownPreviewEditor(text) ?: createCodeViewerEditor(project, text, ideaLanguage, fileName, this)
         } else {
-            createCodeViewerEditor(project, text, ideaLanguage, this)
+            createCodeViewerEditor(project, text, ideaLanguage, fileName, this)
         }
 
         border = JBEmptyBorder(8)
@@ -159,7 +160,14 @@ open class CodeHighlightSketch(
         if (ideaLanguage?.displayName == "DevIn") {
             val currentText = getViewText()
             if (currentText.startsWith("/" + BuiltinCommand.WRITE.commandName + ":")) {
+                /// get fileName after : and before \n
                 processWriteCommand(currentText)
+                val fileName = currentText.lines().firstOrNull()?.substringAfter(":")
+                val ext = fileName?.substringAfterLast(".")
+                val parse = CodeFence.parse(editorFragment!!.editor.document.text)
+                val language = if (ext != null) CodeFence.findLanguage(ext) else ideaLanguage
+                val sketch = CodeHighlightSketch(project, parse.text, language, editorLineThreshold, fileName)
+                add(sketch, BorderLayout.SOUTH)
                 return
             }
 
@@ -208,6 +216,7 @@ open class CodeHighlightSketch(
             project: Project,
             text: String,
             ideaLanguage: Language?,
+            fileName: String?,
             disposable: Disposable,
         ): EditorEx {
             var editorText = text
@@ -231,7 +240,11 @@ open class CodeHighlightSketch(
                 editorText = newLines.joinToString("\n")
             }
 
-            val file = LightVirtualFile("shire.${ext}", language, editorText)
+            val file = if (fileName != null) {
+                LightVirtualFile(fileName, language, editorText)
+            } else {
+                LightVirtualFile("shire.${ext}", language, editorText)
+            }
             val document: Document = file.findDocument() ?: throw IllegalStateException("Document not found")
 
             return createCodeViewerEditor(project, file, document, disposable, isShowLineNo)
@@ -320,6 +333,9 @@ open class CodeHighlightSketch(
     }
 }
 
+/**
+ * Add Write Command Action
+ */
 private fun CodeHighlightSketch.processWriteCommand(currentText: String) {
     val button = JButton("Write to file").apply {
         preferredSize = JBUI.size(100, 30)

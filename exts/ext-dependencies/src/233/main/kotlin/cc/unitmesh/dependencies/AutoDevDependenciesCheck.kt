@@ -18,6 +18,11 @@ class AutoDevDependenciesCheck : AnAction("Check dependencies has Issues") {
         val document = editor.document
         val file = FileDocumentManager.getInstance().getFile(document) ?: return
 
+        if (file.extension == "md" || file.extension == "txt" || file.extension == "devin") {
+            e.presentation.isEnabled = false
+            return
+        }
+
         val psiFile = PsiManager.getInstance(project).findFile(file) ?: return
         e.presentation.isEnabled = PackageService.getInstance(project).declaredDependencies(psiFile).isNotEmpty()
     }
