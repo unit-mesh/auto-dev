@@ -12,8 +12,10 @@ import com.intellij.lang.javascript.psi.ecma6.TypeScriptPropertySignature
 import com.intellij.lang.javascript.psi.resolve.JSResolveUtil
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.text.StringUtil
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiManager
 import com.intellij.psi.impl.source.html.HtmlFileImpl
 import com.intellij.psi.xml.XmlFile
 import com.intellij.util.asSafely
@@ -59,9 +61,12 @@ class VueRelatedClassProvider : RelatedClassesProvider {
             }.flatten()
             .toList()
 
-        logger<VueRelatedClassProvider>().info("imports: $localImports")
-        println("imports: $localImports")
-        return emptyList()
+        return localImports.mapNotNull {
+            it.virtualFile?.let { file ->
+                if (file.isValid || file.fileType.isBinary ) return@let null
+                PsiManager.getInstance(psiFile.project).findFile(file)
+            }
+        }
     }
 
     private fun symbolLocationsFromSpecifier(specifier: ES6ImportSpecifier?): List<WebTypesSymbolLocation> {
@@ -86,8 +91,9 @@ class VueRelatedClassProvider : RelatedClassesProvider {
             if (unquotedModule.contains('/')) {
                 val modules = JSFileReferencesUtil.resolveModuleReference(context, unquotedModule)
                 modules.mapNotNullTo(result) {
-                    it.containingFile?.originalFile?.virtualFile?.path?.let { url ->
-                        WebTypesSymbolLocation(url, symbolName)
+                    val virtualFile = it.containingFile?.originalFile?.virtualFile
+                    virtualFile?.path?.let { url ->
+                        WebTypesSymbolLocation(url, symbolName, virtualFile)
                     }
                 }
                 // A workaround to avoid full resolution in case of components in subpackages
@@ -117,10 +123,11 @@ class VueRelatedClassProvider : RelatedClassesProvider {
             ?: return null
 
         // Locate module
-        val packageName = property.containingFile?.originalFile?.virtualFile?.let { PackageJsonUtil.findUpPackageJson(it) }
-            ?.let { PackageJsonData.getOrCreate(it) }
-            ?.name
-            ?: return null
+        val packageName =
+            property.containingFile?.originalFile?.virtualFile?.let { PackageJsonUtil.findUpPackageJson(it) }
+                ?.let { PackageJsonData.getOrCreate(it) }
+                ?.name
+                ?: return null
 
         return WebTypesSymbolLocation(packageName.lowercase(Locale.US), symbolName)
     }
@@ -128,5 +135,6 @@ class VueRelatedClassProvider : RelatedClassesProvider {
     private data class WebTypesSymbolLocation(
         val moduleName: String,
         val symbolName: String,
+        val virtualFile: VirtualFile? = null
     )
 }
