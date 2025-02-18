@@ -19,6 +19,8 @@
 
         <chatContextProvider implementation="cc.unitmesh.python.PythonFrameworkContextProvider"/>
 
+        <buildSystemProvider implementation="cc.unitmesh.python.provider.PythonBuildSystemProvider"/>
+
 <!--        <devFlowProvider-->
 <!--                language="Python"-->
 <!--                implementation="cc.unitmesh.python.provider.PythonAutoDevFlow"/>-->
