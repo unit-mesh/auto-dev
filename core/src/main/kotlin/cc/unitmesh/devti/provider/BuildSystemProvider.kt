@@ -3,6 +3,7 @@ package cc.unitmesh.devti.provider
 import cc.unitmesh.devti.template.context.DockerfileContext
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiFile
 import com.intellij.serviceContainer.LazyExtensionInstance
 import com.intellij.util.xmlb.annotations.Attribute
 
@@ -15,6 +16,13 @@ import com.intellij.util.xmlb.annotations.Attribute
 abstract class BuildSystemProvider : LazyExtensionInstance<BuildSystemProvider>() {
     abstract fun collect(project: Project): DockerfileContext?
 
+    /**
+     * For PsiFile only for resolve in Sketch and Bridge mode
+     */
+    open fun collectDependencies(project: Project, psiFile: PsiFile): List<DevPackage> {
+        return emptyList()
+    }
+
     @Attribute("implementationClass")
     var implementationClass: String? = null
 
@@ -23,7 +31,7 @@ abstract class BuildSystemProvider : LazyExtensionInstance<BuildSystemProvider>(
     }
 
     companion object {
-        private val EP_NAME: ExtensionPointName<BuildSystemProvider> =
+        val EP_NAME: ExtensionPointName<BuildSystemProvider> =
             ExtensionPointName.create("cc.unitmesh.buildSystemProvider")
 
         fun guess(project: Project): List<DockerfileContext> {

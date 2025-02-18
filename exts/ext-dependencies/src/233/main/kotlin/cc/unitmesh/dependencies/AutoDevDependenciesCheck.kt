@@ -1,5 +1,6 @@
 package cc.unitmesh.dependencies
 
+import cc.unitmesh.devti.provider.BuildSystemProvider
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -9,6 +10,8 @@ import com.intellij.packageChecker.api.BuildFileProvider
 import com.intellij.packageChecker.service.PackageChecker
 import com.intellij.packageChecker.service.PackageService
 import com.intellij.psi.PsiManager
+import org.jetbrains.security.`package`.Package
+import org.jetbrains.security.`package`.PackageType
 
 class AutoDevDependenciesCheck : AnAction("Check dependencies has Issues") {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
@@ -37,10 +40,18 @@ class AutoDevDependenciesCheck : AnAction("Check dependencies has Issues") {
         val file = FileDocumentManager.getInstance().getFile(document) ?: return
         val psiFile = PsiManager.getInstance(project).findFile(file) ?: return
 
-        val dependencies = PackageService.getInstance(project).declaredDependencies(psiFile)
+        val dependencies: List<Package> = BuildSystemProvider.EP_NAME.extensionList.map {
+            it.collectDependencies(project, psiFile)
+        }.flatten()
+            .map {
+                Package(PackageType.fromString(it.type), it.namespace, it.name, it.version, it.qualifiers, it.subpath)
+            }
+
         val checker = PackageChecker.getInstance(project)
-        dependencies.forEach {
-            checker.packageStatus(it.pkg)
+        val statuses = dependencies.map {
+            checker.packageStatus(it)
         }
+
+        println(statuses)
     }
 }

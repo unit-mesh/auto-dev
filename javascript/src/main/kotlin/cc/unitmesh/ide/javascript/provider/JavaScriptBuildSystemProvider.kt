@@ -1,14 +1,19 @@
 package cc.unitmesh.ide.javascript.provider
 
 import cc.unitmesh.devti.provider.BuildSystemProvider
+import cc.unitmesh.devti.provider.DevPackage
 import cc.unitmesh.devti.template.context.DockerfileContext
 import cc.unitmesh.ide.javascript.JsDependenciesSnapshot
 import com.intellij.javascript.nodejs.PackageJsonData
+import com.intellij.javascript.nodejs.packageJson.NodeInstalledPackageFinder
+import com.intellij.json.psi.JsonFile
+import com.intellij.json.psi.JsonStringLiteral
 import com.intellij.lang.javascript.buildTools.npm.NpmScriptsUtil
 import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.psi.PsiFile
 
 
 class JavaScriptBuildSystemProvider : BuildSystemProvider() {
@@ -34,12 +39,15 @@ class JavaScriptBuildSystemProvider : BuildSystemProvider() {
             snapshot.packages.containsKey("vite") -> {
                 buildTool = "Vite"
             }
+
             snapshot.packages.containsKey("webpack") -> {
                 buildTool = "Webpack"
             }
+
             snapshot.packages.containsKey("parcel") -> {
                 buildTool = "Parcel"
             }
+
             snapshot.packages.containsKey("rollup") -> {
                 buildTool = "Rollup"
             }
@@ -49,12 +57,15 @@ class JavaScriptBuildSystemProvider : BuildSystemProvider() {
             snapshot.packages.containsKey("vue") -> {
                 language = "Vue " + snapshot.packages["vue"]?.versionString()
             }
+
             snapshot.packages.containsKey("react") -> {
                 language = "React " + snapshot.packages["react"]?.versionString()
             }
+
             snapshot.packages.containsKey("angular") -> {
                 language = "Angular " + snapshot.packages["angular"]?.versionString()
             }
+
             snapshot.packages.containsKey("next") -> {
                 language = "Next.js " + snapshot.packages["next"]?.versionString()
             }
@@ -76,6 +87,18 @@ class JavaScriptBuildSystemProvider : BuildSystemProvider() {
             taskString = taskString
         )
     }
+
+    override fun collectDependencies(project: Project, psiFile: PsiFile): List<DevPackage> {
+        val packageJson = psiFile as? JsonFile ?: return emptyList()
+        return PackageJsonUtil.getDependencies(packageJson, PackageJsonUtil.PROD_DEV_DEPENDENCIES)
+            .mapNotNull { jsonProperty ->
+                val packageName = jsonProperty.name
+                val version: String = (jsonProperty.value as? JsonStringLiteral)?.value ?: return@mapNotNull null
+
+                DevPackage("npm", name = packageName, version = version)
+            }.toList()
+    }
+
 }
 
 fun PackageJsonData.PackageJsonDependencyEntry.versionString(): String {
