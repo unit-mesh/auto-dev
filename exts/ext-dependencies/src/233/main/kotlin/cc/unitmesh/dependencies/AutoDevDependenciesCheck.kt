@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.packageChecker.api.BuildFileProvider
 import com.intellij.packageChecker.service.PackageChecker
 import com.intellij.packageChecker.service.PackageService
 import com.intellij.psi.PsiManager
@@ -18,13 +19,15 @@ class AutoDevDependenciesCheck : AnAction("Check dependencies has Issues") {
         val document = editor.document
         val file = FileDocumentManager.getInstance().getFile(document) ?: return
 
-        if (file.extension == "md" || file.extension == "txt" || file.extension == "devin") {
-            e.presentation.isEnabled = false
+        if (file.extension == "md" || file.extension == "txt" || file.extension == "devin" || file.extension == "vm") {
+            e.presentation.isVisible = false
             return
         }
 
         val psiFile = PsiManager.getInstance(project).findFile(file) ?: return
-        e.presentation.isEnabled = PackageService.getInstance(project).declaredDependencies(psiFile).isNotEmpty()
+        e.presentation.isVisible = BuildFileProvider.EP_NAME.getExtensions(project).any {
+            it.supports(psiFile)
+        }
     }
 
     override fun actionPerformed(event: AnActionEvent) {
