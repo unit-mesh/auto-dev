@@ -1,5 +1,5 @@
 // Copyright 2000-2022 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
-package cc.unitmesh.vue.provider
+package provider
 
 import cc.unitmesh.devti.provider.RelatedClassesProvider
 import com.intellij.javascript.nodejs.PackageJsonData
