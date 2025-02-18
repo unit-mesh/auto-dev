@@ -4,6 +4,15 @@
         <plugin id="org.jetbrains.security.package-checker"/>
     </dependencies>
 
+    <actions>
+        <action id="AutoDev.ToolWindow.Snippet.AutoDevDependenciesCheck"
+                icon="AllIcons.Actions.QuickfixBulb"
+                class="cc.unitmesh.dependencies.AutoDevDependenciesCheck">
+
+            <add-to-group group-id="AutoDev.ToolWindow.Snippet.Toolbar" />
+        </action>
+    </actions>
+
     <extensions defaultExtensionNs="cc.unitmesh">
         <toolchainFunctionProvider implementation="cc.unitmesh.dependencies.DependenciesFunctionProvider"/>
     </extensions>

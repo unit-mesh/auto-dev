@@ -3,7 +3,6 @@ package cc.unitmesh.dependencies
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
-import com.intellij.packageChecker.api.BuildFileProvider
 import com.intellij.packageChecker.api.PackageDeclaration
 import com.intellij.packageChecker.model.ProjectDependenciesModel
 
@@ -20,7 +19,6 @@ class DependenciesFunctionProvider : ToolchainFunctionProvider {
             }.flatten()
         }.flatten()
 
-//        BuildFileProvider.EP_NAME
         return flatten
     }
 
