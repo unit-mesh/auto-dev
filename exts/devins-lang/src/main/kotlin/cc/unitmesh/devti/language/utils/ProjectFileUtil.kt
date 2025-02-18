@@ -8,7 +8,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.ProjectScope
-import java.util.concurrent.TimeUnit
 
 fun Project.lookupFile(path: String): VirtualFile? {
     val projectPath = this.guessProjectDir()?.toNioPath()
