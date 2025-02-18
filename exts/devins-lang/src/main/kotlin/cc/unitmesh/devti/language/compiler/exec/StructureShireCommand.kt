@@ -13,6 +13,7 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
@@ -32,6 +33,7 @@ class StructureInCommand(val myProject: Project, val prop: String) : InsCommand 
      */
     private val maxLineWith = 11
     private val maxDepth = 5
+    private val maxLinesForShowLinNO = 150
 
     private val logger = logger<StructureInCommand>()
     override suspend fun execute(): String? {
@@ -49,7 +51,10 @@ class StructureInCommand(val myProject: Project, val prop: String) : InsCommand 
             }.get()
         } ?: return null
 
-        return "```\n" + getFileStructure(myProject, virtualFile, psiFile) + "\n```"
+        val structure = getFileStructure(myProject, virtualFile, psiFile)
+        val baseDir = myProject.guessProjectDir().toString()
+        val filepath = virtualFile.path.removePrefix(baseDir)
+        return "// $filepath\n```\n" + structure + "\n```"
     }
 
     fun getFileStructure(project: Project, file: VirtualFile, psiFile: PsiFile): String {
@@ -95,10 +100,6 @@ class StructureInCommand(val myProject: Project, val prop: String) : InsCommand 
     }
 
     private fun formatBeforeCode(element: StructureViewTreeElement, depth: Int): String {
-        if (depth > maxDepth) {
-            return " ".repeat(maxLineWith) + "  ".repeat(depth)
-        }
-
         return if (element.value is PsiElement) {
             val psiElement = element.value as PsiElement
             val line = formatLine(psiElement)
@@ -118,7 +119,11 @@ class StructureInCommand(val myProject: Project, val prop: String) : InsCommand 
         val start = document.getLineNumber(psiElement.textRange.startOffset)
         val end = document.getLineNumber(psiElement.textRange.endOffset)
 
-        return "(${start + 1}-${end + 1})"
+        if (end - start > maxLinesForShowLinNO) {
+            return "(${start + 1}-${end + 1})"
+        }
+
+        return " ".repeat(maxDepth)
     }
 
     fun file(project: Project, path: String): VirtualFile? {
