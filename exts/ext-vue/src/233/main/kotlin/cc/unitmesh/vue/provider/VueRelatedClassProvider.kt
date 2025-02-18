@@ -1,5 +1,5 @@
 // Copyright 2000-2022 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
-package provider
+package cc.unitmesh.vue.provider
 
 import cc.unitmesh.devti.provider.RelatedClassesProvider
 import com.intellij.javascript.nodejs.PackageJsonData
@@ -15,10 +15,10 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.impl.source.html.HtmlFileImpl
+import com.intellij.psi.xml.XmlFile
 import com.intellij.util.asSafely
 import org.jetbrains.vuejs.index.findModule
 import org.jetbrains.vuejs.index.findScriptTag
-import org.jetbrains.vuejs.lang.html.VueFile
 import java.util.*
 
 
@@ -28,13 +28,13 @@ import java.util.*
  */
 class VueRelatedClassProvider : RelatedClassesProvider {
     override fun lookup(element: PsiElement): List<PsiElement> {
-        if (element !is VueFile) return emptyList()
+        if (element !is XmlFile) return emptyList()
 
         return emptyList()
     }
 
     override fun lookup(psiFile: PsiFile): List<PsiElement> {
-        if (psiFile !is VueFile) return emptyList()
+        if (psiFile !is XmlFile) return emptyList()
 
         val scriptTag = findScriptTag(psiFile, true) ?: findScriptTag(psiFile, false) ?: return emptyList()
         val localImports = sequenceOf(findModule(scriptTag, false), findModule(scriptTag, true))
@@ -86,7 +86,7 @@ class VueRelatedClassProvider : RelatedClassesProvider {
             if (unquotedModule.contains('/')) {
                 val modules = JSFileReferencesUtil.resolveModuleReference(context, unquotedModule)
                 modules.mapNotNullTo(result) {
-                    it.containingFile?.originalFile?.virtualFile?.url?.let { url ->
+                    it.containingFile?.originalFile?.virtualFile?.path?.let { url ->
                         WebTypesSymbolLocation(url, symbolName)
                     }
                 }
