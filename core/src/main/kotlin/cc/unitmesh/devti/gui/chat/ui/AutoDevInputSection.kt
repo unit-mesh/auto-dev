@@ -226,11 +226,8 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         elementsList.selectionMode = ListSelectionModel.SINGLE_SELECTION
         elementsList.layoutOrientation = JList.HORIZONTAL_WRAP
         elementsList.visibleRowCount = 2
-        elementsList.cellRenderer = RelatedFileListCellRenderer()
+        elementsList.cellRenderer = RelatedFileListCellRenderer(project)
         elementsList.setEmptyText("")
-
-        // 假设 elementsList 是某个容器的子组件，你需要将 scrollPane 添加到该容器中
-        // 例如：parentContainer.add(scrollPane)
 
         elementsList.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
