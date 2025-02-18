@@ -24,7 +24,7 @@ class DevInCompletionContributor : CompletionContributor() {
 
         extend(
             CompletionType.BASIC,
-            (valuePatterns(listOf(BuiltinCommand.FILE, BuiltinCommand.RUN, BuiltinCommand.WRITE))),
+            (valuePatterns(listOf(BuiltinCommand.FILE, BuiltinCommand.RUN, BuiltinCommand.WRITE, BuiltinCommand.STRUCTURE))),
             FileReferenceLanguageProvider()
         )
         extend(
