@@ -33,3 +33,32 @@ abstract class BuildSystemProvider : LazyExtensionInstance<BuildSystemProvider>(
         }
     }
 }
+
+data class DevPackage(
+    val type: String,
+    val namespace: String? = null,
+    val name: String,
+    val version: String,
+    val qualifiers: String? = null,
+    val subpath: String? = null,
+    val releaseDate: java.util.Date? = null
+) {
+    val coordinates: String = "$type:$namespace:$name:$version:$qualifiers:$subpath"
+    val humanReadableCoordinates: String = buildString {
+        append(type)
+        namespace?.let { append(":$it") }
+        append(":$name:$version")
+        qualifiers?.let { append(":$it") }
+        subpath?.let { append(":$it") }
+    }
+    val searchCoordinates: String = "$namespace:$name:$version"
+    val searchKey: String = calculateContentsHashSha256("$type:$searchCoordinates")
+
+    fun calculateContentsHashSha256(vararg content: Any?): String {
+        val messageDigest = java.security.MessageDigest.getInstance("SHA-256")
+        val joinedString = content.joinToString(":") { it.toString() }
+        val bytes = joinedString.toByteArray()
+        val digest = messageDigest.digest(bytes)
+        return digest.joinToString("") { "%02x".format(it) }
+    }
+}

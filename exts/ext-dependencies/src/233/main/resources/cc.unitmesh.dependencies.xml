@@ -6,7 +6,7 @@
 
     <actions>
         <action id="AutoDev.ToolWindow.Snippet.AutoDevDependenciesCheck"
-                icon="AllIcons.Actions.QuickfixBulb"
+                icon="AllIcons.Actions.Refresh"
                 class="cc.unitmesh.dependencies.AutoDevDependenciesCheck">
 
             <add-to-group group-id="AutoDev.ToolWindow.Snippet.Toolbar" />

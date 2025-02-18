@@ -240,7 +240,9 @@ open class CodeHighlightSketch(
                 editorText = newLines.joinToString("\n")
             }
 
-            val file = if (fileName != null) {
+            val file: VirtualFile = if (fileName != null) {
+//                ScratchRootType.getInstance().createScratchFile(project, fileName, language, editorText)
+//                    ?:
                 LightVirtualFile(fileName, language, editorText)
             } else {
                 LightVirtualFile("shire.${ext}", language, editorText)
@@ -252,7 +254,7 @@ open class CodeHighlightSketch(
 
         private fun createCodeViewerEditor(
             project: Project,
-            file: LightVirtualFile,
+            file: VirtualFile,
             document: Document,
             disposable: Disposable,
             isShowLineNo: Boolean? = false,
@@ -278,7 +280,7 @@ open class CodeHighlightSketch(
         fun configEditor(
             editor: EditorEx,
             project: Project,
-            file: LightVirtualFile,
+            file: VirtualFile,
             isShowLineNo: Boolean?
         ): EditorEx {
             editor.setCaretEnabled(true)
