@@ -58,10 +58,14 @@ class AutoDevInlineChatService : Disposable, SimpleDevinPrompter() {
 
         chatPanel.dispose()
 
-        editor.contentComponent.remove(chatPanel)
-        editor.contentComponent.revalidate()
-        editor.contentComponent.repaint()
-        allChats.remove(editor.fileUrl())
+        try {
+            editor.contentComponent.remove(chatPanel)
+            editor.contentComponent.revalidate()
+            editor.contentComponent.repaint()
+            allChats.remove(editor.fileUrl())
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     companion object {
