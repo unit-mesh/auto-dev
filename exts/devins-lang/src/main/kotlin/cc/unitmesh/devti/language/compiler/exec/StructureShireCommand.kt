@@ -3,7 +3,6 @@ package cc.unitmesh.devti.language.compiler.exec
 import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.utils.lookupFile
-import com.intellij.database.util.common.isNotNullOrEmpty
 import com.intellij.ide.structureView.StructureView
 import com.intellij.ide.structureView.StructureViewTreeElement
 import com.intellij.lang.LanguageStructureViewBuilder
@@ -14,11 +13,13 @@ import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.html.HtmlTag
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.kotlin.idea.base.codeInsight.handlers.fixers.start
 
 
 class StructureInCommand(val myProject: Project, val prop: String) : InsCommand {
@@ -65,11 +66,31 @@ class StructureInCommand(val myProject: Project, val prop: String) : InsCommand 
         return "No StructureViewModel found."
     }
 
+    // (1000-9999)
+    private val maxLineWith = 11
+
+    /**
+     * Display format
+     * ```
+     * elementName (location) - line number or navigate to element ?
+     * ```
+     */
     private fun traverseStructure(element: StructureViewTreeElement, depth: Int, sb: StringBuilder): StringBuilder {
-        val indent = "  ".repeat(depth)
+        val indent = if (element.value is PsiElement) {
+            val psiElement = element.value as PsiElement
+            val line = "(" + psiElement.textRange.startOffset + "," + psiElement.textRange.endOffset + ")"
+             if (line.length < maxLineWith) {
+                line + " ".repeat(maxLineWith - line.length) + "  ".repeat(depth)
+             } else {
+                 line + "  ".repeat(depth)
+             }
+        } else {
+            "  ".repeat(depth)
+        }
+
         /// todo: add element line
         var str = element.presentation.presentableText
-        if (str.isNotNullOrEmpty && element.presentation.locationString.isNotNullOrEmpty) {
+        if (!str.isNullOrBlank() && !element.presentation.locationString.isNullOrBlank()) {
             str += " (${element.presentation.locationString})"
         }
 
