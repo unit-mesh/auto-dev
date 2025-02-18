@@ -63,7 +63,7 @@ class VueRelatedClassProvider : RelatedClassesProvider {
 
         return localImports.mapNotNull {
             it.virtualFile?.let { file ->
-                if (file.isValid || file.fileType.isBinary ) return@let null
+                if (!file.isValid || file.fileType.isBinary ) return@let null
                 PsiManager.getInstance(psiFile.project).findFile(file)
             }
         }
