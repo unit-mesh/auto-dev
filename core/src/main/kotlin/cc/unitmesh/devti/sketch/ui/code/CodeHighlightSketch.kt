@@ -157,52 +157,52 @@ open class CodeHighlightSketch(
     }
 
     override fun onDoneStream(allText: String) {
-        if (ideaLanguage?.displayName == "DevIn") {
-            val currentText = getViewText()
-            if (currentText.startsWith("/" + BuiltinCommand.WRITE.commandName + ":")) {
-                /// get fileName after : and before \n
-                processWriteCommand(currentText)
-                val fileName = currentText.lines().firstOrNull()?.substringAfter(":")
-                val ext = fileName?.substringAfterLast(".")
-                val parse = CodeFence.parse(editorFragment!!.editor.document.text)
-                val language = if (ext != null) CodeFence.findLanguage(ext) else ideaLanguage
-                val sketch = CodeHighlightSketch(project, parse.text, language, editorLineThreshold, fileName)
-                add(sketch, BorderLayout.SOUTH)
-                return
-            }
+        if (ideaLanguage?.displayName != "DevIn") return
 
+        val currentText = getViewText()
+        if (currentText.startsWith("/" + BuiltinCommand.WRITE.commandName + ":")) {
+            /// get fileName after : and before \n
+            processWriteCommand(currentText)
+            val fileName = currentText.lines().firstOrNull()?.substringAfter(":")
+            val ext = fileName?.substringAfterLast(".")
             val parse = CodeFence.parse(editorFragment!!.editor.document.text)
-            var panel: JComponent? = null
-            when (parse.originLanguage) {
-                "diff", "patch" -> {
-                    val langSketch = LanguageSketchProvider.provide("patch")?.create(project, parse.text) ?: return
-                    panel = langSketch.getComponent()
-                    langSketch.onDoneStream(allText)
-                }
+            val language = if (ext != null) CodeFence.findLanguage(ext) else ideaLanguage
+            val sketch = CodeHighlightSketch(project, parse.text, language, editorLineThreshold, fileName)
+            add(sketch, BorderLayout.SOUTH)
+            return
+        }
 
-                "html" -> {
-                    val langSketch = LanguageSketchProvider.provide("html")?.create(project, parse.text) ?: return
-                    panel = langSketch.getComponent()
-                    langSketch.onDoneStream(allText)
-                }
-
-                "bash", "shell" -> {
-                    val langSketch = LanguageSketchProvider.provide("shell")?.create(project, parse.text) ?: return
-                    panel = langSketch.getComponent()
-                    langSketch.onDoneStream(allText)
-                }
+        val parse = CodeFence.parse(editorFragment!!.editor.document.text)
+        var panel: JComponent? = null
+        when (parse.originLanguage) {
+            "diff", "patch" -> {
+                val langSketch = LanguageSketchProvider.provide("patch")?.create(project, parse.text) ?: return
+                panel = langSketch.getComponent()
+                langSketch.onDoneStream(allText)
             }
 
-            if (panel == null) return
+            "html" -> {
+                val langSketch = LanguageSketchProvider.provide("html")?.create(project, parse.text) ?: return
+                panel = langSketch.getComponent()
+                langSketch.onDoneStream(allText)
+            }
 
-            panel.border = JBEmptyBorder(4)
-            add(panel, BorderLayout.SOUTH)
-
-            editorFragment?.updateExpandCollapseLabel()
-
-            revalidate()
-            repaint()
+            "bash", "shell" -> {
+                val langSketch = LanguageSketchProvider.provide("shell")?.create(project, parse.text) ?: return
+                panel = langSketch.getComponent()
+                langSketch.onDoneStream(allText)
+            }
         }
+
+        if (panel == null) return
+
+        panel.border = JBEmptyBorder(4)
+        add(panel, BorderLayout.SOUTH)
+
+        editorFragment?.updateExpandCollapseLabel()
+
+        revalidate()
+        repaint()
     }
 
     override fun getComponent(): JComponent = this
