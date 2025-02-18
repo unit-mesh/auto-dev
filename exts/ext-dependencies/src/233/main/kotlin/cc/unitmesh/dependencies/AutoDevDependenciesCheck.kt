@@ -1,14 +1,15 @@
 package cc.unitmesh.dependencies
 
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.provider.BuildSystemProvider
+import cc.unitmesh.devti.sketch.lint.SketchCodeInspection
+import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.packageChecker.api.BuildFileProvider
-import com.intellij.packageChecker.service.PackageChecker
-import com.intellij.packageChecker.service.PackageService
 import com.intellij.psi.PsiManager
 import org.jetbrains.security.`package`.Package
 import org.jetbrains.security.`package`.PackageType
@@ -42,16 +43,17 @@ class AutoDevDependenciesCheck : AnAction("Check dependencies has Issues") {
 
         val dependencies: List<Package> = BuildSystemProvider.EP_NAME.extensionList.map {
             it.collectDependencies(project, psiFile)
-        }.flatten()
-            .map {
-                Package(PackageType.fromString(it.type), it.namespace, it.name, it.version, it.qualifiers, it.subpath)
-            }
-
-        val checker = PackageChecker.getInstance(project)
-        val statuses = dependencies.map {
-            checker.packageStatus(it)
+        }.flatten().map {
+            Package(PackageType.fromString(it.type), it.namespace, it.name, it.version, it.qualifiers, it.subpath)
         }
 
-        println(statuses)
+        val runInspections = SketchCodeInspection.runInspections(
+            project,
+            psiFile,
+            psiFile.virtualFile,
+            HighlightSeverity.WARNING
+        )
+
+        AutoDevNotifications.notify(project, "Dependencies check: ${runInspections.size} issues found")
     }
 }

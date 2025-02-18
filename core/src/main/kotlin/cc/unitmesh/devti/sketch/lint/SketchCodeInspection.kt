@@ -82,7 +82,9 @@ object SketchCodeInspection {
         .setRequestFocus(true)
         .createPopup()
 
-    fun runInspections(project: Project, psiFile: PsiFile, originFile: VirtualFile): List<SketchInspectionError> {
+    fun runInspections(
+        project: Project, psiFile: PsiFile, originFile: VirtualFile, severity: HighlightSeverity
+    ): List<SketchInspectionError> {
         val globalContext = InspectionManager.getInstance(project).createNewGlobalContext()
                 as? GlobalInspectionContextBase ?: return emptyList()
 
@@ -91,7 +93,7 @@ object SketchCodeInspection {
 
         globalContext.currentScope = AnalysisScope(originPsi)
 
-        val toolsCopy = collectTools(project, psiFile, globalContext)
+        val toolsCopy = collectTools(project, psiFile, globalContext, severity)
         if (toolsCopy.isEmpty()) {
             return emptyList()
         }
@@ -117,12 +119,13 @@ object SketchCodeInspection {
     private fun collectTools(
         project: Project,
         psiFile: PsiFile,
-        globalContext: GlobalInspectionContextBase
+        globalContext: GlobalInspectionContextBase,
+        severity: HighlightSeverity
     ): MutableList<LocalInspectionToolWrapper> {
         val inspectionProfile = InspectionProjectProfileManager.getInstance(project).currentProfile
         val toolWrappers = inspectionProfile.getInspectionTools(psiFile)
             .filter {
-                it.isApplicable(psiFile.language) && it.defaultLevel.severity == HighlightSeverity.ERROR
+                it.isApplicable(psiFile.language) && it.defaultLevel.severity == severity
             }
 
         toolWrappers.forEach {

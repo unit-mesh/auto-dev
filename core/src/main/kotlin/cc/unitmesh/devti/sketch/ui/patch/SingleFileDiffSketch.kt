@@ -7,6 +7,7 @@ import cc.unitmesh.devti.template.context.TemplateContext
 import com.intellij.diff.editor.DiffVirtualFileBase
 import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
+import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.CommandProcessor
@@ -215,7 +216,7 @@ class SingleFileDiffSketch(
         if (newCode.isEmpty()) return
         val newFile = LightVirtualFile(currentFile, newCode, LocalTimeCounter.currentTime())
         val psiFile = runReadAction { PsiManager.getInstance(myProject).findFile(newFile) } ?: return
-        val errors = SketchCodeInspection.runInspections(myProject, psiFile, currentFile)
+        val errors = SketchCodeInspection.runInspections(myProject, psiFile, currentFile, HighlightSeverity.ERROR)
         if (errors.isNotEmpty()) {
             SketchCodeInspection.showErrors(errors, this@SingleFileDiffSketch.mainPanel)
         }
