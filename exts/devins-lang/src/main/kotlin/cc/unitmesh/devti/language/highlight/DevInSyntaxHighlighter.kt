@@ -41,7 +41,6 @@ class DevInSyntaxHighlighter : SyntaxHighlighter {
 
             ATTRIBUTES[DevInTypes.SYSTEM_START] = DefaultLanguageHighlighterColors.KEYWORD
             ATTRIBUTES[DevInTypes.SYSTEM_ID] = DefaultLanguageHighlighterColors.CONSTANT
-            ATTRIBUTES[DevInTypes.NUMBER] = DefaultLanguageHighlighterColors.NUMBER
         }
     }
 

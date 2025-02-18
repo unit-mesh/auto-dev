@@ -3,6 +3,4 @@ DevInFile
     PsiElement(DevInTokenType.COMMAND_START)('/')
     PsiElement(DevInTokenType.COMMAND_ID)('write')
     PsiElement(DevInTokenType.COLON)(':')
-    PsiElement(DevInTokenType.COMMAND_PROP)('Sample.file')
-    PsiElement(DevInTokenType.SHARP)('#')
-    PsiElement(DevInTokenType.LINE_INFO)('L1-L12')
+    PsiElement(DevInTokenType.COMMAND_PROP)('Sample.file#L1-L12')

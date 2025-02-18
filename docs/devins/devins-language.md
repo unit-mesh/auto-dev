@@ -22,7 +22,7 @@ Based on: [JetBrains' Markdown Util](https://github.com/JetBrains/intellij-commu
 - `/` Builtin Command, natural language command with IDE/editor, like read file, write file, etc.
 - `@` Agent, natural language custom function / system function name, the handler or command, 
 - `$` Variable, natural language variable name, like file name, file content, etc.
-- `#` Third-party system API for traditional, like `#kanban:afd`, `#issue:233`, `#github:111`, etc. 
+- ~~`#` Third-party system API for traditional, like `#kanban:afd`, `#issue:233`, `#github:111`, etc.~~ (Removed in 2.0.0) 
 
 ## Language spec
 
@@ -33,7 +33,6 @@ used ::= (
     AGENT_START AGENT_ID
     | COMMAND_START COMMAND_ID (COLON COMMAND_PROP?)?
     | VARIABLE_START VARIABLE_ID
-    | SYSTEM_START SYSTEM_ID
 )
 
 code ::=  CODE_BLOCK_START LANGUAGE_ID? NEWLINE? code_contents? CODE_BLOCK_END?

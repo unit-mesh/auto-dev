@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
 %s COMMAND_BLOCK
 %s COMMAND_VALUE_BLOCK
 
-%s SYSTEM_BLOCK
+//%s SYSTEM_BLOCK
 
 %s CODE_BLOCK
 %s COMMENT_BLOCK
@@ -47,7 +47,7 @@ COMMAND_ID=[a-zA-Z0-9][_\-a-zA-Z0-9]*
 LANGUAGE_ID=[a-zA-Z][_\-a-zA-Z0-9 .]*
 SYSTEM_ID=[a-zA-Z][_\-a-zA-Z0-9]*
 NUMBER=[0-9]+
-TEXT_SEGMENT=[^$/@#\n]+
+TEXT_SEGMENT=[^$/@\n]+
 
 // READ LINE FORMAT: L2C2-L0C100 or L1-L1
 LINE_INFO=L[0-9]+(C[0-9]+)?(-L[0-9]+(C[0-9]+)?)?
@@ -125,32 +125,32 @@ SHARP=#
         }
     }
 
-    private IElementType command_value() {
-        String text = yytext().toString().trim();
-        String [] split = text.split("#");
-
-        if (split.length == 1) {
-            return COMMAND_PROP;
-        }
-
-        // split by # if it is a line info
-        String last = split[split.length - 1];
-        Pattern compile = Pattern.compile("L\\d+(C\\d+)?(-L\\d+(C\\d+)?)?");
-        Matcher matcher = compile.matcher(last);
-        if (matcher.matches()) {
-            // before # is command prop, after # is line info
-            int number = last.length() + "#".length();
-            if (number > 0) {
-                yypushback(number);
-                yybegin(LINE_BLOCK);
-                return COMMAND_PROP;
-            } else {
-                return COMMAND_PROP;
-            }
-        }
-
-        return COMMAND_PROP;
-    }
+//    private IElementType command_value() {
+//        String text = yytext().toString().trim();
+//        String [] split = text.split("#");
+//
+//        if (split.length == 1) {
+//            return TEXT_SEGMENT;
+//        }
+//
+//        // split by # if it is a line info
+//        String last = split[split.length - 1];
+//        Pattern compile = Pattern.compile("L\\d+(C\\d+)?(-L\\d+(C\\d+)?)?");
+//        Matcher matcher = compile.matcher(last);
+//        if (matcher.matches()) {
+//            // before # is command prop, after # is line info
+//            int number = last.length() + "#".length();
+//            if (number > 0) {
+//                yypushback(number);
+//                yybegin(LINE_BLOCK);
+//                return COMMAND_PROP;
+//            } else {
+//                return COMMAND_PROP;
+//            }
+//        }
+//
+//        return TEXT_SEGMENT;
+//    }
 %}
 
 %%
@@ -170,7 +170,7 @@ SHARP=#
   "@"                     { yybegin(AGENT_BLOCK);    return AGENT_START; }
   "/"                     { yybegin(COMMAND_BLOCK);  return COMMAND_START; }
   "$"                     { yybegin(VARIABLE_BLOCK); return VARIABLE_START; }
-  "#"                     { yybegin(SYSTEM_BLOCK);   return SYSTEM_START; }
+//  "#"                     { yybegin(SYSTEM_BLOCK);   return SYSTEM_START; }
 
   "```" {IDENTIFIER}?     { yybegin(LANG_ID); if (isCodeStart == true) { isCodeStart = false; return CODE_BLOCK_END; } else { isCodeStart = true; }; yypushback(yylength()); }
 
@@ -187,7 +187,7 @@ SHARP=#
 }
 
 <COMMAND_VALUE_BLOCK> {
-  {COMMAND_PROP}          { return command_value();  }
+  {COMMAND_PROP}          { return COMMAND_PROP;  }
   " "                     { yypushback(1); yybegin(YYINITIAL); }
   [^]                     { yypushback(1); yybegin(YYINITIAL); }
 }
@@ -208,12 +208,13 @@ SHARP=#
   [^]                  { return TokenType.BAD_CHARACTER; }
 }
 
-<SYSTEM_BLOCK> {
-  {SYSTEM_ID}          { return SYSTEM_ID; }
-  {COLON}              { return COLON; }
-  {NUMBER}             { return NUMBER; }
-  [^]                  { yybegin(YYINITIAL); yypushback(yylength()); }
-}
+//<SYSTEM_BLOCK> {
+//  " "                  { yypushback(2); return TEXT_SEGMENT; }
+//  {SYSTEM_ID}          { return SYSTEM_ID; }
+//  {COLON}              { return COLON; }
+//  {NUMBER}             { return NUMBER; }
+//  [^]                  { yybegin(YYINITIAL); yypushback(yylength()); }
+//}
 
 <CODE_BLOCK> {
   {CODE_CONTENT}       { if(isCodeStart) { return codeContent(); } else { yybegin(YYINITIAL); yypushback(yylength()); } }

@@ -32,8 +32,4 @@ DevInFile
     PsiElement(DevInTokenType.COMMAND_ID)('refactor')
     PsiElement(DevInTokenType.COLON)(':')
     PsiElement(DevInTokenType.COMMAND_PROP)('extractMethod')
-  PsiElement(DevInTokenType.TEXT_SEGMENT)(' cc.unitmesh.devti.language.run.DevInsProgramRunnerImpl.run')
-  PsiElement(DevInTokenType.SYSTEM_START)('#')
-  PsiElement(DevInTokenType.SYSTEM_ID)('L20-L30')
-  PsiErrorElement:DevInTokenType.COLON expected
-    <empty list>
+  PsiElement(DevInTokenType.TEXT_SEGMENT)(' cc.unitmesh.devti.language.run.DevInsProgramRunnerImpl.run#L20-L30')
