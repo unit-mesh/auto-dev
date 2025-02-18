@@ -19,6 +19,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
@@ -380,8 +381,10 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     }
 
     fun moveCursorToStart() {
-        input.requestFocus()
-        input.caretModel.moveToOffset(0)
+        runInEdt {
+            input.requestFocus()
+            input.caretModel.moveToOffset(0)
+        }
     }
 
     private val maxHeight: Int
