@@ -44,11 +44,12 @@ class StructureInCommand(val myProject: Project, val prop: String) : InsCommand 
         val openFile = FileEditorManager.getInstance(myProject).openFile(file, true)
         val fileEditor = openFile.firstOrNull() ?: return "No FileEditor found."
 
-        val factory = LanguageStructureViewBuilder.INSTANCE.forLanguage(psiFile.language)
+        val viewFactory = LanguageStructureViewBuilder.INSTANCE.forLanguage(psiFile.language)
 
-        if (factory != null) {
-            val view: StructureView = factory.getStructureViewBuilder(psiFile)!!
-                .createStructureView(fileEditor, project)
+        if (viewFactory != null) {
+            val view: StructureView = viewFactory.getStructureViewBuilder(psiFile)
+                ?.createStructureView(fileEditor, project)
+                ?: return "No StructureView found."
 
             val root: StructureViewTreeElement = view.treeModel.root
             return traverseStructure(root, 0, StringBuilder()).toString()
