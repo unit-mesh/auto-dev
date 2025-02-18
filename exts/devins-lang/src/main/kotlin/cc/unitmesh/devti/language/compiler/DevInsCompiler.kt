@@ -6,16 +6,20 @@ import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.language.compiler.exec.*
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.Companion.toolchainProviderName
 import cc.unitmesh.devti.devin.dataprovider.CustomCommand
 import cc.unitmesh.devti.devin.dataprovider.ToolHubVariable
 import cc.unitmesh.devti.language.parser.CodeBlockElement
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.psi.DevInTypes
 import cc.unitmesh.devti.language.psi.DevInUsed
+import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
+import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
 import kotlinx.coroutines.runBlocking
@@ -86,9 +90,10 @@ class DevInsCompiler(
 
         when (firstChild.elementType) {
             DevInTypes.COMMAND_START -> {
-                val command = BuiltinCommand.fromString(id?.text ?: "")
+                val originCmdName = id?.text ?: ""
+                val command = BuiltinCommand.fromString(originCmdName)
                 if (command == null) {
-                    CustomCommand.fromString(myProject, id?.text ?: "")?.let { cmd ->
+                    CustomCommand.fromString(myProject, originCmdName)?.let { cmd ->
                         DevInFile.fromString(myProject, cmd.content).let { file ->
                             DevInsCompiler(myProject, file).compile().let {
                                 output.append(it.output)
@@ -99,15 +104,14 @@ class DevInsCompiler(
                         return
                     }
 
-
                     output.append(used.text)
-                    logger.warn("Unknown command: ${id?.text}")
+                    logger.warn("Unknown command: $originCmdName")
                     result.hasError = true
                     return
                 }
 
                 if (!command.requireProps) {
-                    processingCommand(command, "", used, fallbackText = used.text)
+                    processingCommand(command, "", used, fallbackText = used.text, originCmdName)
                     return
                 }
 
@@ -120,7 +124,7 @@ class DevInsCompiler(
                     return
                 }
 
-                processingCommand(command, propElement!!.text, used, fallbackText = used.text)
+                processingCommand(command, propElement!!.text, used, fallbackText = used.text, originCmdName)
             }
 
             DevInTypes.AGENT_START -> {
@@ -161,7 +165,13 @@ class DevInsCompiler(
         }
     }
 
-    private fun processingCommand(commandNode: BuiltinCommand, prop: String, used: DevInUsed, fallbackText: String) {
+    private fun processingCommand(
+        commandNode: BuiltinCommand,
+        prop: String,
+        used: DevInUsed,
+        fallbackText: String,
+        originCmdName: @NlsSafe String
+    ) {
         val command: InsCommand = when (commandNode) {
             BuiltinCommand.FILE -> {
                 FileInsCommand(myProject, prop)
@@ -271,6 +281,21 @@ class DevInsCompiler(
                 OpenInsCommand(myProject, prop)
             }
 
+            BuiltinCommand.TOOLCHAIN_COMMAND -> {
+                result.isLocalCommand = true
+                try {
+                    val providerName = toolchainProviderName(originCmdName)
+                    val provider = ToolchainFunctionProvider.lookup(providerName)
+                    if (provider != null) {
+                        executeExtensionFunction(used, prop, provider)
+                    } else {
+                        PrintInsCommand("/" + commandNode.commandName + ":" + prop)
+                    }
+                } catch (e: Exception) {
+                    PrintInsCommand("/" + commandNode.commandName + ":" + prop)
+                }
+            }
+
             else -> {
                 PrintInsCommand("/" + commandNode.commandName + ":" + prop)
             }
@@ -298,6 +323,23 @@ class DevInsCompiler(
         }
 
         output.append(result)
+    }
+
+    private fun executeExtensionFunction(
+        used: DevInUsed,
+        prop: String,
+        provider: ToolchainFunctionProvider
+    ): PrintInsCommand {
+        val codeContent: String? = lookupNextCode(used)?.text
+        val args = if (codeContent != null) {
+            val code = CodeFence.parse(codeContent).text
+            listOf(code)
+        } else {
+            listOf()
+        }
+
+        val result = provider.execute(myProject, prop, args, emptyMap())
+        return PrintInsCommand(result.toString())
     }
 
     private fun lookupNextCode(used: DevInUsed): CodeBlockElement? {

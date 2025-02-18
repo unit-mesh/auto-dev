@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.devin.dataprovider
 
 import cc.unitmesh.devti.AutoDevIcons
+import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.icons.AllIcons
 import java.nio.charset.StandardCharsets
 import javax.swing.Icon
@@ -107,6 +108,14 @@ enum class BuiltinCommand(
     ),
     OPEN("open", "Open a file in the editor", AllIcons.Actions.MenuOpen, false, true),
     RIPGREP_SEARCH("ripgrepSearch", "Search text in the project with ripgrep", AllIcons.Actions.Regex, false, true),
+    TOOLCHAIN_COMMAND(
+        "x",
+        "Execute custom toolchain command",
+        AllIcons.Actions.Execute,
+        true,
+        false,
+        enableInSketch = false
+    ),
     ;
 
     companion object {
@@ -124,8 +133,28 @@ enum class BuiltinCommand(
             }
         }
 
-        fun fromString(agentName: String): BuiltinCommand? = values().find { it.commandName == agentName }
+        fun fromString(commandName: String): BuiltinCommand? {
+            val builtinCommand = entries.find { it.commandName == commandName }
+            if (builtinCommand == null) {
+                val providerName = toolchainProviderName(commandName)
+                val provider = ToolchainFunctionProvider.lookup(providerName)
+                if (provider != null) {
+                    return TOOLCHAIN_COMMAND
+                }
 
-        val READ_COMMANDS = setOf(DIR, LOCAL_SEARCH, FILE, REV, STRUCTURE, SYMBOL, DATABASE, RELATED, RIPGREP_SEARCH, BROWSE)
+                return null
+            }
+
+            return builtinCommand
+        }
+
+        fun toolchainProviderName(commandName: String): String {
+            val commandProviderName = commandName.substring(0, 1).uppercase() + commandName.substring(1)
+            val providerName = commandProviderName + "FunctionProvider"
+            return providerName
+        }
+
+        val READ_COMMANDS =
+            setOf(DIR, LOCAL_SEARCH, FILE, REV, STRUCTURE, SYMBOL, DATABASE, RELATED, RIPGREP_SEARCH, BROWSE)
     }
 }

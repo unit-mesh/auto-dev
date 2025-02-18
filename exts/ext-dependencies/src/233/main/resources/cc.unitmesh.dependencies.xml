@@ -1,0 +1,10 @@
+<idea-plugin package="cc.unitmesh.dependencies">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+        <plugin id="org.jetbrains.security.package-checker"/>
+    </dependencies>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <toolchainFunctionProvider implementation="cc.unitmesh.dependencies.DependenciesFunctionProvider"/>
+    </extensions>
+</idea-plugin>

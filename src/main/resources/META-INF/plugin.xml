@@ -41,5 +41,6 @@
         <module name="cc.unitmesh.httpclient"/>
         <module name="cc.unitmesh.endpoints"/>
         <module name="cc.unitmesh.vue"/>
+        <module name="cc.unitmesh.dependencies"/>
     </content>
 </idea-plugin>

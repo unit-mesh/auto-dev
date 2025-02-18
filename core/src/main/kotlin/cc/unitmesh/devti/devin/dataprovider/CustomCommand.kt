@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.devin.dataprovider
 
-import cc.unitmesh.devti.custom.team.TeamPromptsBuilder
 import cc.unitmesh.devti.AutoDevIcons
+import cc.unitmesh.devti.custom.team.TeamPromptsBuilder
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import javax.swing.Icon
@@ -26,8 +26,8 @@ data class CustomCommand(
             return CustomCommand(file.nameWithoutExtension, content)
         }
 
-        fun fromString(project: Project, agentName: String): CustomCommand? {
-            return all(project).find { it.commandName == agentName }
+        fun fromString(project: Project, commandName: String): CustomCommand? {
+            return all(project).find { it.commandName == commandName }
         }
     }
 }

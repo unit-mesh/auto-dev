@@ -261,6 +261,7 @@ project(":") {
             pluginModule(implementation(project(":exts:ext-terminal")))
             pluginModule(implementation(project(":exts:ext-mermaid")))
             pluginModule(implementation(project(":exts:ext-vue")))
+            pluginModule(implementation(project(":exts:ext-dependencies")))
             pluginModule(implementation(project(":exts:ext-endpoints")))
             pluginModule(implementation(project(":exts:ext-plantuml")))
             pluginModule(implementation(project(":exts:devins-lang")))
@@ -284,6 +285,7 @@ project(":") {
         implementation(project(":exts:ext-terminal"))
         implementation(project(":exts:ext-mermaid"))
         implementation(project(":exts:ext-vue"))
+        implementation(project(":exts:ext-dependencies"))
         implementation(project(":exts:ext-plantuml"))
         implementation(project(":exts:ext-endpoints"))
         implementation(project(":exts:devins-lang"))
@@ -608,6 +610,17 @@ project(":exts:ext-vue") {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins + prop("vuePlugin"))
             bundledPlugin("org.jetbrains.plugins.vue")
+        }
+
+        implementation(project(":core"))
+    }
+}
+project(":exts:ext-dependencies") {
+    dependencies {
+        intellijPlatform {
+            intellijIde(prop("ideaVersion"))
+            intellijPlugins(ideaPlugins)
+            bundledPlugin("org.jetbrains.security.package-checker")
         }
 
         implementation(project(":core"))
