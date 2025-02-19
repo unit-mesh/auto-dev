@@ -19,6 +19,8 @@ class DependenciesFunctionProvider : ToolchainFunctionProvider {
             modules.map { module ->
                 it.declaredDependencies(module)
             }.flatten()
-        }.flatten()
+        }.flatten().map {
+            it.pkg.toString()
+        }
     }
 }
