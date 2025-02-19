@@ -3,7 +3,6 @@ package cc.unitmesh.dependencies
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.sketch.lint.SketchCodeInspection
-import com.intellij.codeInspection.InspectionManager
 import com.intellij.javascript.nodejs.packageJson.NodeInstalledPackageFinder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -12,7 +11,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.packageChecker.api.BuildFileProvider
-import com.intellij.packageChecker.inspection.VulnerableLibrariesLocalInspection
 import com.intellij.packageChecker.model.impl.ProjectDependenciesModelImpl
 import com.intellij.psi.PsiManager
 import org.jetbrains.security.`package`.Package
@@ -51,12 +49,6 @@ class AutoDevDependenciesCheck : AnAction("Check dependencies has Issues") {
             Package(PackageType.fromString(it.type), it.namespace, it.name, it.version, it.qualifiers, it.subpath)
         }
 
-        val depModel = ProjectDependenciesModelImpl.getInstance(project)
-        val declaredDependencies = depModel.declaredDependencies(psiFile)
-        depModel.refresh(project)
-
-        val mgr = InspectionManager.getInstance(project)
-        val checkFile = VulnerableLibrariesLocalInspection().checkFile(psiFile, mgr, true)
         val runInspections = SketchCodeInspection.runInspections(
             project,
             psiFile,
@@ -64,6 +56,9 @@ class AutoDevDependenciesCheck : AnAction("Check dependencies has Issues") {
             HighlightSeverity.WARNING
         )
 
-        AutoDevNotifications.notify(project, "Dependencies check: ${runInspections.size} issues found")
+        AutoDevNotifications.notify(
+            project,
+            "Found ${dependencies.size} dependencies" + " Dependencies check: ${runInspections.size} issues found"
+        )
     }
 }
