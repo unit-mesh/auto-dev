@@ -2,8 +2,12 @@ package cc.unitmesh.devti.sketch.ui.code
 
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.provider.RunService
+import cc.unitmesh.devti.sketch.ui.LangSketch
+import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import cc.unitmesh.devti.util.parser.CodeFence
+import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.lang.Language
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.DataProvider
@@ -20,24 +24,21 @@ import com.intellij.openapi.editor.ex.FocusChangeListener
 import com.intellij.openapi.editor.ex.MarkupModelEx
 import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.fileEditor.FileEditor
+import com.intellij.openapi.fileEditor.FileEditorProvider
+import com.intellij.openapi.fileEditor.TextEditorWithPreview
 import com.intellij.openapi.fileTypes.PlainTextLanguage
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiManager
+import com.intellij.temporary.gui.block.whenDisposed
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.intellij.util.concurrency.annotations.RequiresReadLock
-import com.intellij.util.ui.JBUI
-import cc.unitmesh.devti.sketch.ui.LangSketch
-import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
-import com.intellij.ide.scratch.ScratchRootType
-import com.intellij.openapi.fileEditor.FileEditor
-import com.intellij.openapi.fileEditor.FileEditorProvider
-import com.intellij.openapi.fileEditor.TextEditorWithPreview
-import com.intellij.openapi.util.text.StringUtil
-import com.intellij.psi.PsiManager
-import com.intellij.temporary.gui.block.whenDisposed
 import com.intellij.util.ui.JBEmptyBorder
+import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
 import javax.swing.BoxLayout
 import javax.swing.JButton
@@ -95,8 +96,9 @@ open class CodeHighlightSketch(
 
         add(editorFragment!!.getContent(), BorderLayout.CENTER)
 
+        val isDeclarePackageFile = BuildSystemProvider.isDeclarePackageFile(fileName)
         if (textLanguage != null && textLanguage?.lowercase() != "markdown" && ideaLanguage != PlainTextLanguage.INSTANCE) {
-            setupActionBar(project, editor)
+            setupActionBar(project, editor, isDeclarePackageFile)
         } else {
             editor.backgroundColor = JBColor.PanelBackground
         }
@@ -161,15 +163,17 @@ open class CodeHighlightSketch(
 
         val currentText = getViewText()
         if (currentText.startsWith("/" + BuiltinCommand.WRITE.commandName + ":")) {
-            /// get fileName after : and before \n
             processWriteCommand(currentText)
+            /// get fileName after : and before \n
             val fileName = currentText.lines().firstOrNull()?.substringAfter(":")
-            val ext = fileName?.substringAfterLast(".")
-            val parse = CodeFence.parse(editorFragment!!.editor.document.text)
-            val language = if (ext != null) CodeFence.findLanguage(ext) else ideaLanguage
-            val sketch = CodeHighlightSketch(project, parse.text, language, editorLineThreshold, fileName)
-            add(sketch, BorderLayout.SOUTH)
-            return
+            if (BuildSystemProvider.isDeclarePackageFile(fileName)) {
+                val ext = fileName?.substringAfterLast(".")
+                val parse = CodeFence.parse(editorFragment!!.editor.document.text)
+                val language = if (ext != null) CodeFence.findLanguage(ext) else ideaLanguage
+                val sketch = CodeHighlightSketch(project, parse.text, language, editorLineThreshold, fileName)
+                add(sketch, BorderLayout.SOUTH)
+                return
+            }
         }
 
         val parse = CodeFence.parse(editorFragment!!.editor.document.text)

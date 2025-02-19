@@ -11,6 +11,10 @@ import com.jetbrains.python.packaging.PyRequirementParser
 class PythonBuildSystemProvider : BuildSystemProvider() {
     override fun collect(project: Project): DockerfileContext? = null
 
+    override fun isDeclarePackageFile(filename: String): Boolean {
+        return filename == "requirements.txt" || filename == "Pipfile" || filename == "pyproject.toml"
+    }
+
     override fun collectDependencies(project: Project, buildFilePsi: PsiFile): List<DevPackage> {
         val reqs: List<PyRequirement> = PyRequirementParser.fromFile(buildFilePsi.virtualFile)
 

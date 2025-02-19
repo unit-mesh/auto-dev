@@ -87,6 +87,10 @@ class JavaScriptBuildSystemProvider : BuildSystemProvider() {
         )
     }
 
+    override fun isDeclarePackageFile(filename: String): Boolean {
+        return filename == "package.json"
+    }
+
     override fun collectDependencies(project: Project, buildFilePsi: PsiFile): List<DevPackage> {
         val packageJson = buildFilePsi as? JsonFile ?: return emptyList()
         return PackageJsonUtil.getDependencies(packageJson, PackageJsonUtil.PROD_DEV_DEPENDENCIES)

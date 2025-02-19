@@ -55,6 +55,10 @@ open class JavaBuildSystemProvider : BuildSystemProvider() {
         )
     }
 
+    override fun isDeclarePackageFile(filename: String): Boolean {
+        return filename == "build.gradle" || filename == "pom.xml" || filename == "build.gradle.kts"
+    }
+
     override fun collectDependencies(
         project: Project,
         buildFilePsi: PsiFile

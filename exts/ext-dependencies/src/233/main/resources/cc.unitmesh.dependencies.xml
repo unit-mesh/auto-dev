@@ -9,7 +9,7 @@
                 icon="AllIcons.Actions.DependencyAnalyzer"
                 class="cc.unitmesh.dependencies.AutoDevDependenciesCheck">
 
-            <add-to-group group-id="AutoDev.ToolWindow.Snippet.Toolbar" />
+            <add-to-group group-id="AutoDev.ToolWindow.Snippet.DependenciesToolbar" />
         </action>
     </actions>
 

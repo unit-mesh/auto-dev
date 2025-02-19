@@ -17,6 +17,11 @@ abstract class BuildSystemProvider : LazyExtensionInstance<BuildSystemProvider>(
     abstract fun collect(project: Project): DockerfileContext?
 
     /**
+     * the DeclarePackageFile means `build.gradle`, `pom.xml`, `build.sbt`, `package.json` etc.
+     */
+    abstract fun isDeclarePackageFile(filename: String): Boolean
+
+    /**
      * For PsiFile only for resolve in Sketch and Bridge mode
      * the BuildFilePsiFile means `build.gradle`, `pom.xml`, `build.sbt`, `package.json` etc.
      */
@@ -38,6 +43,14 @@ abstract class BuildSystemProvider : LazyExtensionInstance<BuildSystemProvider>(
         fun guess(project: Project): List<DockerfileContext> {
             return EP_NAME.extensionList.mapNotNull {
                 it.collect(project)
+            }
+        }
+
+        fun isDeclarePackageFile(filename: String?): Boolean {
+            if (filename == null) return false
+
+            return EP_NAME.extensionList.any {
+                it.isDeclarePackageFile(filename)
             }
         }
     }

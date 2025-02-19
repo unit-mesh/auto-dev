@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ActionToolbar
+import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.colors.EditorColorsListener
 import com.intellij.openapi.editor.colors.EditorColorsManager
@@ -25,12 +26,13 @@ interface LangSketch : Disposable {
      */
     fun onDoneStream(allText: String) {}
 
-    fun setupActionBar(project: Project, editor: Editor) {
-        val toolbar = actionToolbar() ?: return
+    fun setupActionBar(project: Project, editor: Editor, isDeclarePackageFile: Boolean) {
+        val toolbar = collectActionBar(isDeclarePackageFile) ?: return
 
         if (editor is EditorEx) {
             toolbar.component.setBackground(editor.backgroundColor)
         }
+
         toolbar.component.setOpaque(true)
         toolbar.targetComponent = editor.contentComponent
         editor.headerComponent = toolbar.component
@@ -44,9 +46,14 @@ interface LangSketch : Disposable {
         })
     }
 
-    fun actionToolbar(): ActionToolbar? {
-        val toolbarActionGroup = ActionManager.getInstance().getAction("AutoDev.ToolWindow.Snippet.Toolbar") as? ActionGroup
-            ?: return null
+    fun collectActionBar(isDeclarePackageFile: Boolean): ActionToolbar? {
+        val toolbarActionGroup = if (isDeclarePackageFile) {
+            ActionManager.getInstance().getAction("AutoDev.ToolWindow.Snippet.DependenciesToolbar") as? ActionGroup
+                ?: return null
+        } else {
+            ActionManager.getInstance().getAction("AutoDev.ToolWindow.Snippet.Toolbar") as? ActionGroup
+                ?: return null
+        }
 
         val toolbar = ActionManager.getInstance()
             .createActionToolbar(ActionPlaces.MAIN_TOOLBAR, toolbarActionGroup, true)

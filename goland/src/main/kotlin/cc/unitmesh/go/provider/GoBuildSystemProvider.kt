@@ -20,6 +20,10 @@ class GoBuildSystemProvider : BuildSystemProvider() {
         return null
     }
 
+    override fun isDeclarePackageFile(filename: String): Boolean {
+        return filename == "go.mod"
+    }
+
     override fun collectDependencies(
         project: Project,
         buildFilePsi: PsiFile

@@ -336,6 +336,11 @@
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
 
+        <group id="AutoDev.ToolWindow.Snippet.DependenciesToolbar">
+            <action id="AutoDev.ToolWindow.Snippet.DependenciesLabelAction"
+                    class="cc.unitmesh.devti.gui.snippet.AutoDevDependenciesLabelAction"/>
+        </group>
+
         <group id="AutoDev.ToolWindow.Snippet.Toolbar">
             <action id="AutoDev.ToolWindow.Snippet.LanguageLabelAction"
                     class="cc.unitmesh.devti.gui.snippet.AutoDevLanguageLabelAction"/>
