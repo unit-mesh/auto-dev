@@ -77,22 +77,22 @@ open class JavaBuildSystemProvider : BuildSystemProvider() {
                 }
         }
 
-        ModuleUtilCore.findModuleForFile(psiFile)?.also {
-            val moduleData = CachedModuleDataFinder.findModuleData(it)
-            val libDepData = ExternalSystemApiUtil.findAllRecursively<LibraryDependencyData?>(
-                moduleData,
-                ProjectKeys.LIBRARY_DEPENDENCY
-            )
-
-            results += libDepData.mapNotNull { node ->
-                val target = node.data.target
-                val namespace = target.groupId ?: return@mapNotNull null
-                val name = target.artifactId ?: return@mapNotNull null
-                val version = target.version ?: return@mapNotNull null
-
-                DevPackage("maven", namespace, name, version)
-            }
-        }
+//        ModuleUtilCore.findModuleForFile(psiFile)?.also {
+//            val moduleData = CachedModuleDataFinder.findModuleData(it)
+//            val libDepData = ExternalSystemApiUtil.findAllRecursively<LibraryDependencyData?>(
+//                moduleData,
+//                ProjectKeys.LIBRARY_DEPENDENCY
+//            )
+//
+//            results += libDepData.mapNotNull { node ->
+//                val target = node.data.target
+//                val namespace = target.groupId ?: return@mapNotNull null
+//                val name = target.artifactId ?: return@mapNotNull null
+//                val version = target.version ?: return@mapNotNull null
+//
+//                DevPackage("maven", namespace, name, version)
+//            }
+//        }
 
 
         return results
