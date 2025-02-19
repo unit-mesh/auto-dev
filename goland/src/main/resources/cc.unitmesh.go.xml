@@ -18,6 +18,8 @@
 
         <livingDocumentation language="go" implementationClass="cc.unitmesh.go.provider.GoLivingDocumentationProvider"/>
 
+        <buildSystemProvider implementation="cc.unitmesh.go.provider.GoBuildSystemProvider"/>
+
         <langSketchProvider implementation="cc.unitmesh.go.provider.GoLangPlaygroundSketchProvider"/>
     </extensions>
 </idea-plugin>
