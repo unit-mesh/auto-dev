@@ -61,7 +61,7 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
         }
 
         val output = StringBuilder()
-        output.append("// File: $prop")
+        output.append("## file: $prop")
         output.append("\n```$lang\n")
         output.append(fileContent)
         output.append("\n```\n")

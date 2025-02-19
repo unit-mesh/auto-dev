@@ -133,7 +133,7 @@ object RipgrepSearcher {
         }
 
         for (entry in grouped.entries) {
-            output.append("### filepath: ").append(entry.key).append("\n")
+            output.append("## filepath: ").append(entry.key).append("\n")
             val filePath = Paths.get(basePath, entry.key)
             val content = filePath.toFile().readLines()
 
