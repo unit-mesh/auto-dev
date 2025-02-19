@@ -25,10 +25,8 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testIntegration.TestFinderHelper
 
 class GoAutoTestService : AutoTestService() {
-    override fun isApplicable(element: PsiElement): Boolean = element.containingFile?.language == GoLanguage.INSTANCE
-    override fun isApplicable(project: Project, file: VirtualFile): Boolean {
-        return file.extension == "go"
-    }
+    override fun isApplicable(element: PsiElement) = element.containingFile?.language == GoLanguage.INSTANCE
+    override fun isApplicable(project: Project, file: VirtualFile) = file.extension == "go"
 
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = GoTestRunConfiguration::class.java
     override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> = listOf()

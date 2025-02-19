@@ -29,10 +29,8 @@ class GoBuildSystemProvider : BuildSystemProvider() {
             .toList()
     }
 
-
     fun getAllModules(project: Project): Iterable<DevModuleModel> {
         val result = mutableListOf<DevModuleModel>()
-
         ModuleManager.getInstance(project).modules.forEach { module ->
             ProgressManager.checkCanceled()
             VgoModulesRegistry.getInstance(project).getModules(module).forEach { vgoModule ->

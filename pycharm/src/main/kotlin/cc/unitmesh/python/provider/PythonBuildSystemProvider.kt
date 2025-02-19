@@ -12,15 +12,13 @@ class PythonBuildSystemProvider : BuildSystemProvider() {
     override fun collect(project: Project): DockerfileContext? = null
 
     override fun collectDependencies(project: Project, psiFile: PsiFile): List<DevPackage> {
-        if (psiFile.language.id != "Python") {
-            return emptyList()
-        }
+        if (psiFile.language.id != "Python") return emptyList()
 
         val reqs: List<PyRequirement> = PyRequirementParser.fromFile(psiFile.virtualFile)
 
         return reqs.map {
             DevPackage(
-                type = "Python",
+                type = "pypi",
                 name = it.name,
                 version = it.versionSpecs.firstOrNull()?.version ?: ""
             )
