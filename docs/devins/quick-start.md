@@ -129,3 +129,31 @@ Refactor code:
     /refactor:rename /symbol:cc.unitmesh.untitled.demo.MathHelper.calculateInsurance to calculateInsuranceTax
 
 It will handle in local.
+
+### Structure Command
+
+Provide the structure of a file with AST/PSI:
+
+    /structure:root.go
+
+```
+// /Volumes/source/modernizing/coca/cmd/root.go
+           root.go
+             output: io.Writer
+             rootCmd
+             NewRootCmd(out io.Writer) *cobra.Command
+             BsCmdConfig
+               Path: string
+             bsCmdConfig: BsCmdConfig
+             badsmellCmd
+             isSmellHaveSize(key string) bool
+             init()
+             ApiCmdConfig
+               Path: string
+               DependencePath: string
+               ShowCount: bool
+               RemovePackageNames: string
+               AggregateApi: string
+               ForceUpdate: bool
+               Sort: bool
+```
