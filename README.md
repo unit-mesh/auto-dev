@@ -29,18 +29,19 @@ Video demo (YouTube) — English
 
 [![Watch the video](https://img.youtube.com/vi/b1pO641-A54/sddefault.jpg)](https://youtu.be/b1pO641-A54)
 
-**AutoDev Sketch** is an IDE canvas feature provided by Shire, designed to simplify interactions and enhance the developer
-experience within the IDE.
+**AutoDev Sketch** is an IDE canvas feature provided by Shire, designed to simplify interactions and enhance the
+developer experience within the IDE.
 
-| Sketch Name            | Description                                                        | Screenshots                                              |
-|------------------------|--------------------------------------------------------------------|----------------------------------------------------------|
-| **Code Sketch**        | Real-time code editor with syntax highlighting                     | ![](https://shire.run/images/shire-sketch-diff.png)      |
-| **Diff Sketch**        | Diff content comparison tool with patch handling                   | ![](https://shire.run/images/shire-sketch-diff-view.png) |
-| **Terminal Sketch**    | Editable pop-up terminal interface                                 | ![](https://shire.run/images/shire-sketch-terminal.png)  |
-| **Mermaid Sketch`*`**  | Real-time flowchart preview/edit with bidirectional binding        | ![](https://shire.run/images/shire-sketch-mermaid.png)   |
-| **PlantUML Sketch`*`** | UML diagram editor with bidirectional code-diagram synchronization | ![](https://shire.run/images/shire-sketch-plantuml.png)  |
-| **WebView Sketch**     | HTML/React/Ionic mockup generator with WebView display             | ![](https://shire.run/images/shire-sketch-webview.png)   |
-                    
+| Sketch Name              | Description                                                                                                  | Screenshots                                                      |
+|--------------------------|--------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------|
+| **Code Sketch**          | Real-time code editor with syntax highlighting                                                               | ![](https://shire.run/images/shire-sketch-diff.png)              |
+| **Diff Sketch**          | Diff content comparison tool with patch handling                                                             | ![](https://shire.run/images/shire-sketch-diff-view.png)         |
+| **Terminal Sketch**      | Editable pop-up terminal interface and integration with other sketch, like frontend dev localhost in WebView | ![](https://shire.run/images/shire-sketch-terminal.png)          |
+| **Mermaid Sketch`*`**    | Real-time flowchart preview/edit with bidirectional binding                                                  | ![](https://shire.run/images/shire-sketch-mermaid.png)           |
+| **PlantUML Sketch`*`**   | UML diagram editor with bidirectional code-diagram synchronization                                           | ![](https://shire.run/images/shire-sketch-plantuml.png)          |
+| **WebView Sketch**       | HTML/React/Ionic mockup generator with WebView display                                                       | ![](https://shire.run/images/shire-sketch-webview.png)           |
+| **Dependency Sketch`*`** | Security-builtin vulnerable dependency checker                                                               | ![](https://unitmesh.cc/auto-dev/sketch-security-dependency.png) | 
+
 `*` means requires additional plugin installation.
 
 ### Unite Your Dev Ecosystem, Create Your AI Copilot
@@ -108,11 +109,9 @@ AutoDev fine-tune models:
 
 download from [HuggingFace](https://huggingface.co/unit-mesh)
 
-
-| name          | model download (HuggingFace)                                    | model download (OpenBayes)                                                          |
-|---------------|-----------------------------------------------------------------|-------------------------------------------------------------------------------------|
+| name          | model download (HuggingFace)                                    | model download (OpenBayes)                                                         |
+|---------------|-----------------------------------------------------------------|------------------------------------------------------------------------------------|
 | DeepSeek 6.7B | [AutoDev Coder](https://huggingface.co/unit-mesh/autodev-coder) | AutoDev Coder](https://openbayes.com/console/phodal/models/rCmer1KQSgp/9/overview) |
-
 
 ## Language Features
 
@@ -162,11 +161,16 @@ Welcome to add your company here.
 
 ## License
 
-Regarding the matter discussed in the LICENSE issue at the project's outset, we want to address the complexity of JetBrain plugin development. In the process, we referenced certain code and API designs from the JetBrains Community version and the JetBrains AI Assistant plugin. JetBrains understandably reserves the right to view this as potential infringement on their intellectual property.
+Regarding the matter discussed in the LICENSE issue at the project's outset, we want to address the complexity of
+JetBrain plugin development. In the process, we referenced certain code and API designs from the JetBrains Community
+version and the JetBrains AI Assistant plugin. JetBrains understandably reserves the right to view this as potential
+infringement on their intellectual property.
 
-Therefore, as of April 2024, AutoDev is no longer available on the JetBrains Plugin Marketplace. However, for older versions' AutoDev, you can access downloads from our Releases page. 
+Therefore, as of April 2024, AutoDev is no longer available on the JetBrains Plugin Marketplace. However, for older
+versions' AutoDev, you can access downloads from our Releases page.
 
-Additionally, we extend a warm invitation to participate in the development of the VSCode version. Your contributions are greatly appreciated.
+Additionally, we extend a warm invitation to participate in the development of the VSCode version. Your contributions
+are greatly appreciated.
 
 - ChatUI based
   on: [https://github.com/Cspeisman/chatgpt-intellij-plugin](https://github.com/Cspeisman/chatgpt-intellij-plugin)
