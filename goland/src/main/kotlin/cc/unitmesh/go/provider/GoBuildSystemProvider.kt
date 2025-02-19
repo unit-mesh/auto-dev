@@ -22,9 +22,9 @@ class GoBuildSystemProvider : BuildSystemProvider() {
 
     override fun collectDependencies(
         project: Project,
-        psiFile: PsiFile
+        buildFilePsi: PsiFile
     ): List<DevPackage> {
-        return getDependencies(psiFile)
+        return getDependencies(buildFilePsi)
             .mapNotNull { vgoModuleSpec -> toPackage(vgoModuleSpec) }
             .toList()
     }

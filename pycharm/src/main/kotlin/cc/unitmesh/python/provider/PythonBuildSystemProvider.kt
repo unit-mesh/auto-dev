@@ -11,10 +11,8 @@ import com.jetbrains.python.packaging.PyRequirementParser
 class PythonBuildSystemProvider : BuildSystemProvider() {
     override fun collect(project: Project): DockerfileContext? = null
 
-    override fun collectDependencies(project: Project, psiFile: PsiFile): List<DevPackage> {
-        if (psiFile.language.id != "Python") return emptyList()
-
-        val reqs: List<PyRequirement> = PyRequirementParser.fromFile(psiFile.virtualFile)
+    override fun collectDependencies(project: Project, buildFilePsi: PsiFile): List<DevPackage> {
+        val reqs: List<PyRequirement> = PyRequirementParser.fromFile(buildFilePsi.virtualFile)
 
         return reqs.map {
             DevPackage(

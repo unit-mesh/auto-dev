@@ -5,7 +5,6 @@ import cc.unitmesh.devti.provider.DevPackage
 import cc.unitmesh.devti.template.context.DockerfileContext
 import cc.unitmesh.ide.javascript.JsDependenciesSnapshot
 import com.intellij.javascript.nodejs.PackageJsonData
-import com.intellij.javascript.nodejs.packageJson.NodeInstalledPackageFinder
 import com.intellij.json.psi.JsonFile
 import com.intellij.json.psi.JsonStringLiteral
 import com.intellij.lang.javascript.buildTools.npm.NpmScriptsUtil
@@ -88,8 +87,8 @@ class JavaScriptBuildSystemProvider : BuildSystemProvider() {
         )
     }
 
-    override fun collectDependencies(project: Project, psiFile: PsiFile): List<DevPackage> {
-        val packageJson = psiFile as? JsonFile ?: return emptyList()
+    override fun collectDependencies(project: Project, buildFilePsi: PsiFile): List<DevPackage> {
+        val packageJson = buildFilePsi as? JsonFile ?: return emptyList()
         return PackageJsonUtil.getDependencies(packageJson, PackageJsonUtil.PROD_DEV_DEPENDENCIES)
             .mapNotNull { jsonProperty ->
                 val packageName = jsonProperty.name

@@ -18,8 +18,9 @@ abstract class BuildSystemProvider : LazyExtensionInstance<BuildSystemProvider>(
 
     /**
      * For PsiFile only for resolve in Sketch and Bridge mode
+     * the BuildFilePsiFile means `build.gradle`, `pom.xml`, `build.sbt`, `package.json` etc.
      */
-    open fun collectDependencies(project: Project, psiFile: PsiFile): List<DevPackage> {
+    open fun collectDependencies(project: Project, buildFilePsi: PsiFile): List<DevPackage> {
         return emptyList()
     }
 

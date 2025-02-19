@@ -4,18 +4,13 @@ import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.provider.DevPackage
 import cc.unitmesh.devti.template.context.DockerfileContext
 import cc.unitmesh.idea.detectLanguageLevel
-import com.intellij.openapi.externalSystem.model.ProjectKeys
-import com.intellij.openapi.externalSystem.model.project.LibraryDependencyData
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.externalSystem.service.ui.completion.TextCompletionInfo
-import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil
-import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.psi.PsiFile
 import org.jetbrains.idea.maven.project.MavenProjectsManager
-import org.jetbrains.plugins.gradle.execution.build.CachedModuleDataFinder
 import org.jetbrains.plugins.gradle.service.project.GradleTasksIndices
 import org.jetbrains.plugins.gradle.util.GradleConstants
 
@@ -62,9 +57,9 @@ open class JavaBuildSystemProvider : BuildSystemProvider() {
 
     override fun collectDependencies(
         project: Project,
-        psiFile: PsiFile
+        buildFilePsi: PsiFile
     ): List<DevPackage> {
-        val mavenProject = MavenProjectsManager.getInstance(project).findProject(psiFile.virtualFile)
+        val mavenProject = MavenProjectsManager.getInstance(project).findProject(buildFilePsi.virtualFile)
         var results = mutableListOf<DevPackage>()
         if (mavenProject != null) {
             results += mavenProject.dependencies
