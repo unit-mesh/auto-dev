@@ -13,9 +13,8 @@ import com.intellij.psi.PsiFile
 import org.jetbrains.security.`package`.Package
 import org.jetbrains.security.`package`.PackageType
 
-class AutoDevProjectDependenciesModel(val project: Project) : ProjectDependenciesModelBase<MutableModuleModel>(
-    AutoDevCoroutineScope.scope(project).coroutineContext
-) {
+class AutoDevProjectDependenciesModel(val project: Project) :
+    ProjectDependenciesModelBase<MutableModuleModel>(AutoDevCoroutineScope.scope(project).coroutineContext) {
     override fun copyModule(
         module: MutableModuleModel,
         newDependencies: Iterable<Dependency>

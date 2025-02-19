@@ -3,7 +3,6 @@ package cc.unitmesh.dependencies
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.sketch.lint.SketchCodeInspection
-import com.intellij.javascript.nodejs.packageJson.NodeInstalledPackageFinder
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
@@ -11,7 +10,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.packageChecker.api.BuildFileProvider
-import com.intellij.packageChecker.model.impl.ProjectDependenciesModelImpl
 import com.intellij.psi.PsiManager
 import org.jetbrains.security.`package`.Package
 import org.jetbrains.security.`package`.PackageType
@@ -25,7 +23,7 @@ class AutoDevDependenciesCheck : AnAction("Check dependencies has Issues") {
         val document = editor.document
         val file = FileDocumentManager.getInstance().getFile(document) ?: return
 
-        if (file.extension == "md" || file.extension == "txt" || file.extension == "devin" || file.extension == "vm") {
+        if (BuildSystemProvider.isDeclarePackageFile(file.name)) {
             e.presentation.isVisible = false
             return
         }
