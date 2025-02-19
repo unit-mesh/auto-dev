@@ -28,8 +28,8 @@ class AutoDevProjectDependenciesModel(val project: Project) :
         return BuildSystemProvider.EP_NAME.extensionList.map {
             it.collectDependencies(project, psiFile)
         }.flatten().map {
-            val pkg =
-                Package(PackageType.fromString(it.type), it.namespace, it.name, it.version, it.qualifiers, it.subpath)
+            val type = PackageType.fromString(it.type)
+            val pkg = Package(type, it.namespace, it.name, it.version, it.qualifiers, it.subpath)
             PackageDeclaration(pkg)
         }
     }
