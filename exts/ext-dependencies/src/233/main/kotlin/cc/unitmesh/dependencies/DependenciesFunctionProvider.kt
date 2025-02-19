@@ -15,12 +15,17 @@ class DependenciesFunctionProvider : ToolchainFunctionProvider {
         allVariables: Map<String, Any?>
     ): Any {
         val modules = ModuleManager.getInstance(project).modules
-        return ProjectDependenciesModel.supportedModels(project).map {
+        val deps = ProjectDependenciesModel.supportedModels(project).map {
             modules.map { module ->
                 it.declaredDependencies(module)
             }.flatten()
         }.flatten().map {
-            it.pkg.toString()
+            it.pkg
         }
+
+        return "```dependencies\n" + deps.joinToString {
+            val namespace = it.namespace ?: ""
+            "$namespace ${it.name} ${it.version}" + "\n"
+        } + "\n```"
     }
 }
