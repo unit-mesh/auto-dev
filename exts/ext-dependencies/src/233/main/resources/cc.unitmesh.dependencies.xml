@@ -13,6 +13,10 @@
         </action>
     </actions>
 
+<!--    <extensions defaultExtensionNs="com.intellij.packageChecker">-->
+<!--        <dependencyModel implementation="cc.unitmesh.dependencies.AutoDevProjectDependenciesModel"/>-->
+<!--    </extensions>-->
+
     <extensions defaultExtensionNs="cc.unitmesh">
         <toolchainFunctionProvider implementation="cc.unitmesh.dependencies.DependenciesFunctionProvider"/>
     </extensions>
