@@ -79,7 +79,8 @@ open class JavaBuildSystemProvider : BuildSystemProvider() {
 
         /// collect Gradle dependencies
         ModuleUtilCore.findModuleForFile(psiFile)?.also {
-            val moduleData = CachedModuleDataFinder.findMainModuleData(it)
+//            val moduleData = CachedModuleDataFinder.findMainModuleData(it)
+            val moduleData = CachedModuleDataFinder.findMainModuleData(project, it.moduleFilePath)
             val libDepData = ExternalSystemApiUtil.findAllRecursively<LibraryDependencyData?>(
                 moduleData,
                 ProjectKeys.LIBRARY_DEPENDENCY
