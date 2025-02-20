@@ -37,18 +37,20 @@ Video demo (YouTube) — English
 
 [![Watch the video](https://img.youtube.com/vi/b1pO641-A54/sddefault.jpg)](https://youtu.be/b1pO641-A54)
 
-**AutoDev Sketch** is an IDE canvas feature provided by Shire, designed to simplify interactions and enhance the
+**AutoDev Sketch** is an IDE canvas feature provided by [Shire](https://github.com/phodal/shire), designed to simplify interactions and enhance the
 developer experience within the IDE.
 
-| Sketch Name              | Description                                                                                                  | Screenshots                                                      |
-|--------------------------|--------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------|
-| **Code Sketch**          | Real-time code editor with syntax highlighting                                                               | ![](https://shire.run/images/shire-sketch-diff.png)              |
-| **Diff Sketch**          | Diff content comparison tool with patch handling                                                             | ![](https://shire.run/images/shire-sketch-diff-view.png)         |
-| **Terminal Sketch**      | Editable pop-up terminal interface and integration with other sketch, like frontend dev localhost in WebView | ![](https://shire.run/images/shire-sketch-terminal.png)          |
-| **Mermaid Sketch`*`**    | Real-time flowchart preview/edit with bidirectional binding                                                  | ![](https://shire.run/images/shire-sketch-mermaid.png)           |
-| **PlantUML Sketch`*`**   | UML diagram editor with bidirectional code-diagram synchronization                                           | ![](https://shire.run/images/shire-sketch-plantuml.png)          |
-| **WebView Sketch**       | HTML/React/Ionic mockup generator with WebView display                                                       | ![](https://shire.run/images/shire-sketch-webview.png)           |
-| **Dependency Sketch`*`** | Security-builtin vulnerable dependency checker                                                               | ![](https://unitmesh.cc/auto-dev/sketch-security-dependency.png) | 
+| Sketch Name                 | Description                                                                                                  | Screenshots                                                      |
+|-----------------------------|--------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------|
+| **Code Sketch**             | Real-time code editor with syntax highlighting                                                               | ![](https://shire.run/images/shire-sketch-diff.png)              |
+| **Diff Sketch**             | Diff content comparison tool with patch handling                                                             | ![](https://shire.run/images/shire-sketch-diff-view.png)         |
+| **Terminal Sketch**         | Editable pop-up terminal interface and integration with other sketch, like frontend dev localhost in WebView | ![](https://shire.run/images/shire-sketch-terminal.png)          |
+| **WebView Sketch**          | HTML/React/Ionic mockup generator with WebView display                                                       | ![](https://shire.run/images/shire-sketch-webview.png)           |
+| **OpenAPI Sketch`*`**       | OpenAPI editor with bidirectional code-OpenAPI synchronization                                               | ![](https://unitmesh.cc/auto-dev/sketch-openapi.png)             |
+| **Dependency Sketch`*`**    | Security-builtin vulnerable dependency checker                                                               | ![](https://unitmesh.cc/auto-dev/sketch-security-dependency.png) |
+| **Go Playground Sketch`*`** | Go Playground with bidirectional code preview/edit                                                           | ![](https://unitmesh.cc/auto-dev/sketch-go-playground.png)       |
+| **Mermaid Sketch`*`**       | Real-time flowchart preview/edit with bidirectional binding                                                  | ![](https://shire.run/images/shire-sketch-mermaid.png)           |
+| **PlantUML Sketch`*`**      | UML diagram editor with bidirectional code-diagram synchronization                                           | ![](https://shire.run/images/shire-sketch-plantuml.png)          |
 
 `*` means requires additional plugin installation.
 
