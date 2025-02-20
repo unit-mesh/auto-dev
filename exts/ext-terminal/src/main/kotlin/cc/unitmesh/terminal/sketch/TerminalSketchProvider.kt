@@ -6,6 +6,8 @@ import cc.unitmesh.devti.agent.view.WebViewWindow
 import cc.unitmesh.devti.sketch.SketchToolWindow
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
+import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
+import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.execution.filters.Filter
 import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
@@ -57,6 +59,8 @@ class TerminalSketchProvider : LanguageSketchProvider {
                 border = JBUI.Borders.empty(0, 10)
             }
 
+            val codeSketch = CodeHighlightSketch(project, content, CodeFence.findLanguage("bash"))
+
             val toolbarPanel = JPanel(BorderLayout()).apply {
                 add(titleLabel, BorderLayout.WEST)
                 add(toolbar.component, BorderLayout.EAST)
@@ -77,6 +81,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
                 mainPanel = object : JPanel(VerticalLayout(JBUI.scale(0))) {
                     init {
                         add(toolbarWrapper)
+                        add(codeSketch.getComponent())
                         add(terminalWidget!!.component)
                     }
                 }
@@ -158,11 +163,14 @@ class TerminalSketchProvider : LanguageSketchProvider {
             override fun getExtensionName(): String = "Terminal"
             override fun getViewText(): String = content
             override fun updateViewText(text: String, complete: Boolean) {
+                codeSketch.updateViewText(text, complete)
                 content = text
             }
 
             override fun onDoneStream(allText: String) {
                 var isAlreadySent = false
+                if (content.lines().size > 1) return
+
                 titleLabel.text = "Terminal - ($content)"
 
                 ApplicationManager.getApplication().invokeLater {
@@ -178,7 +186,9 @@ class TerminalSketchProvider : LanguageSketchProvider {
 
             override fun updateLanguage(language: Language?, originLanguage: String?) {}
 
-            override fun dispose() {}
+            override fun dispose() {
+                codeSketch.dispose()
+            }
         }
     }
 
