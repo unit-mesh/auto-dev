@@ -1,0 +1,10 @@
+<idea-plugin package="cc.unitmesh.container">
+    <!--suppress PluginXmlValidity -->
+    <dependencies>
+        <plugin id="org.jetbrains.plugins.docker.gateway"/>
+    </dependencies>
+
+    <extensions defaultExtensionNs="cc.unitmesh">
+        <runService implementation="cc.unitmesh.container.RunContainerService"/>
+    </extensions>
+</idea-plugin>

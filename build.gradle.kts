@@ -264,6 +264,7 @@ project(":") {
             pluginModule(implementation(project(":exts:ext-dependencies")))
             pluginModule(implementation(project(":exts:ext-endpoints")))
             pluginModule(implementation(project(":exts:ext-plantuml")))
+            pluginModule(implementation(project(":exts:ext-container")))
             pluginModule(implementation(project(":exts:devins-lang")))
 
             testFramework(TestFrameworkType.Bundled)
@@ -288,6 +289,7 @@ project(":") {
         implementation(project(":exts:ext-dependencies"))
         implementation(project(":exts:ext-plantuml"))
         implementation(project(":exts:ext-endpoints"))
+        implementation(project(":exts:ext-container"))
         implementation(project(":exts:devins-lang"))
 
         kover(project(":core"))
@@ -632,6 +634,17 @@ project(":exts:ext-plantuml") {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins + prop("plantUmlPlugin"))
+        }
+
+        implementation(project(":core"))
+    }
+}
+
+project(":exts:ext-container") {
+    dependencies {
+        intellijPlatform {
+            intellijIde(prop("ideaVersion"))
+            intellijPlugins(ideaPlugins + prop("devContainerPlugin"))
         }
 
         implementation(project(":core"))

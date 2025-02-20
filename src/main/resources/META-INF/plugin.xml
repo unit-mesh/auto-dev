@@ -42,5 +42,6 @@
         <module name="cc.unitmesh.endpoints"/>
         <module name="cc.unitmesh.vue"/>
         <module name="cc.unitmesh.dependencies"/>
+        <module name="cc.unitmesh.container"/>
     </content>
 </idea-plugin>

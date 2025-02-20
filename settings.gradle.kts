@@ -27,6 +27,7 @@ include(
     "exts:ext-endpoints",
     "exts:ext-vue",
     "exts:ext-dependencies",
+    "exts:ext-container",
 
     // the Input Language support for AutoDev
     "exts:devins-lang"
