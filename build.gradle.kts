@@ -471,7 +471,7 @@ project(":pycharm") {
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
-            intellijPlugins(ideaPlugins + pycharmPlugins)
+            intellijPlugins(ideaPlugins + pycharmPlugins + prop("jupyterPlugin"))
         }
 
         implementation(project(":core"))
