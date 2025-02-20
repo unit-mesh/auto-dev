@@ -5,7 +5,6 @@ import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import com.intellij.microservices.endpoints.EndpointsProvider
 import com.intellij.microservices.endpoints.EndpointsUrlTargetProvider
-import com.intellij.microservices.oas.serialization.getOpenApiSpecification
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.spring.model.SpringBeanPointer

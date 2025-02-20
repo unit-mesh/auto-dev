@@ -33,7 +33,7 @@ class StructureInCommand(val myProject: Project, val prop: String) : InsCommand 
      */
     private val maxLineWith = 11
     private val maxDepth = 5
-    private val maxLinesForShowLinNO = 150
+    private val maxLinesForShowLinNO = 60
 
     private val logger = logger<StructureInCommand>()
     override suspend fun execute(): String? {
