@@ -2,6 +2,7 @@
     <!--suppress PluginXmlValidity -->
     <dependencies>
         <plugin id="org.jetbrains.plugins.docker.gateway"/>
+        <plugin id="Docker"/>
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
