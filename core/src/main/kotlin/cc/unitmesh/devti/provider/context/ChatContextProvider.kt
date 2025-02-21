@@ -4,8 +4,6 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import com.intellij.util.concurrency.annotations.RequiresReadLock
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 interface ChatContextProvider {
     @RequiresReadLock
