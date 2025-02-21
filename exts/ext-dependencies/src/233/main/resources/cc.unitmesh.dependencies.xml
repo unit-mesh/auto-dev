@@ -17,6 +17,8 @@
 <!--        <dependencyModel implementation="cc.unitmesh.dependencies.AutoDevProjectDependenciesModel"/>-->
 <!--    </extensions>-->
 
+<!--  a posiable refs : https://github.com/redhat-developer/intellij-dependency-analytics  -->
+
     <extensions defaultExtensionNs="cc.unitmesh">
         <toolchainFunctionProvider implementation="cc.unitmesh.dependencies.DependenciesFunctionProvider"/>
     </extensions>
