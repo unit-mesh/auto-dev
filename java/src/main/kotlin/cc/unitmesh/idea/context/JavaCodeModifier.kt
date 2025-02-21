@@ -77,8 +77,10 @@ open class JavaCodeModifier : CodeModifier {
         val classEndOffset = runReadAction { lastClass.textRange.endOffset }
 
         val psiFile = try {
-            PsiFileFactory.getInstance(project)
-                .createFileFromText("Test.java", JavaLanguage.INSTANCE, trimCode)
+            runReadAction {
+                PsiFileFactory.getInstance(project)
+                    .createFileFromText("Test.java", JavaLanguage.INSTANCE, trimCode)
+            }
         } catch (e: Throwable) {
             log.warn("Failed to create file from text: $trimCode", e)
             null

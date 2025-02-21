@@ -32,3 +32,20 @@ runBlockingCancellable {
     // do something
 }
 ```
+
+## API 兼容方案
+
+
+https://github.com/JetBrains/aws-toolkit-jetbrains/tree/ccee3307fe58ad48f93cd780d4378c336ee20548/jetbrains-core
+
+```kotlin
+// Copyright 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+package software.aws.toolkits.jetbrains.core.docker.compatability
+
+typealias DockerFileAddOrCopyCommand = com.intellij.docker.dockerFile.parser.psi.DockerFileAddOrCopyCommand
+typealias DockerFileCmdCommand = com.intellij.docker.dockerFile.parser.psi.DockerFileCmdCommand
+typealias DockerFileExposeCommand = com.intellij.docker.dockerFile.parser.psi.DockerFileExposeCommand
+typealias DockerFileFromCommand = com.intellij.docker.dockerFile.parser.psi.DockerFileFromCommand
+typealias DockerFileWorkdirCommand = com.intellij.docker.dockerFile.parser.psi.DockerFileWorkdirCommand
+```

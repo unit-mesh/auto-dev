@@ -23,7 +23,7 @@ class DockerContextProvider : ChatContextProvider {
         creationContext: ChatCreationContext
     ): List<ChatContextItem> {
         val dockerFiles = DockerFileSearch.getInstance().getDockerFiles(project).mapNotNull {
-            PsiManager.getInstance(project).findFile(it)
+            runReadAction { PsiManager.getInstance(project).findFile(it) }
         }
 
         if (dockerFiles.isEmpty()) return emptyList()
@@ -45,7 +45,7 @@ class DockerContextProvider : ChatContextProvider {
             additionalCtx = fromCommands.joinToString("\n") { it.text }
         } catch (e: Exception) {
             logger<DockerContextProvider>().warn("Failed to collect Docker context", e)
-            val fromMatch = fromRegex.find(virtualFile.readText() ?: "")
+            val fromMatch = fromRegex.find(virtualFile.readText())
 
             if (fromMatch != null) {
                 additionalCtx = fromMatch.groupValues[1]
