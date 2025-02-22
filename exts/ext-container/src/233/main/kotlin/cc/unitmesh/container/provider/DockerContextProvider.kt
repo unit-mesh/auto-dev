@@ -38,11 +38,15 @@ class DockerContextProvider : ChatContextProvider {
         var additionalCtx = ""
         try {
             val fromCommands = dockerFiles.mapNotNull {
-                PsiTreeUtil.getChildrenOfType(it, DockerFileFromCommand::class.java)?.toList()
+                runReadAction {
+                    PsiTreeUtil.getChildrenOfType(it, DockerFileFromCommand::class.java)?.toList()
+                }
             }.flatten()
 
             if (fromCommands.isEmpty()) return listOf(ChatContextItem(DockerContextProvider::class, context))
-            additionalCtx = fromCommands.joinToString("\n") { it.text }
+            additionalCtx = fromCommands.joinToString("\n") {
+                runReadAction { it.text }
+            }
         } catch (e: Exception) {
             logger<DockerContextProvider>().warn("Failed to collect Docker context", e)
             val fromMatch = fromRegex.find(virtualFile.readText())

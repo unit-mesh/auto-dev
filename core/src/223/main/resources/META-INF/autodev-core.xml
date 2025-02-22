@@ -5,6 +5,7 @@
     <depends>com.intellij.modules.lang</depends>
 
     <depends optional="true" config-file="json-contrib.xml">com.intellij.modules.json</depends>
+    <depends optional="true" config-file="docker.xml">Docker</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="AutoDev.notification.group" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
