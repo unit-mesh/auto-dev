@@ -13,7 +13,7 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiTreeUtil
 
 class DockerContextProvider : ChatContextProvider {
-    private val fromRegex = Regex("FROM\\s(.*)")
+    private val fromRegex = Regex("FROM\\s+((?:--platform=[^\\s]+\\s+)?[^\\s]+)(?:\\s+AS\\s+([^\\s]+))?")
 
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean =
         DockerFileSearch.getInstance().getDockerFiles(project).isNotEmpty()
