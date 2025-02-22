@@ -10,7 +10,7 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager
-import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.impl.source.PsiFileImpl
 
 class DockerContextProvider : ChatContextProvider {
     private val fromRegex = Regex("FROM\\s+((?:--platform=[^\\s]+\\s+)?[^\\s]+)(?:\\s+AS\\s+([^\\s]+))?")
@@ -37,8 +37,8 @@ class DockerContextProvider : ChatContextProvider {
 
         var additionalCtx = ""
         try {
-            val fromCommands = dockerFiles.mapNotNull {
-                PsiTreeUtil.getChildrenOfType(it, DockerFileFromCommand::class.java)?.toList()
+            val fromCommands = dockerFiles.map {
+                (it as PsiFileImpl).findChildrenByClass(DockerFileFromCommand::class.java).toList()
             }.flatten()
 
             if (fromCommands.isEmpty()) return listOf(ChatContextItem(DockerContextProvider::class, context))
