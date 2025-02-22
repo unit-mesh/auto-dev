@@ -15,7 +15,7 @@ class PythonFrameworkContextProvider : ChatContextProvider {
         return creationContext.element?.language is PythonLanguage
     }
 
-    override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
+    override fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         var items = mutableListOf<ChatContextItem>()
         val allSdks = PythonSdkUtil.getAllSdks()
         val preferred = mostPreferred(allSdks)

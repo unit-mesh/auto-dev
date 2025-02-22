@@ -11,7 +11,7 @@ class JavaScriptVersionProvider : ChatContextProvider {
         return LanguageApplicableUtil.isWebChatCreationContextSupported(creationContext.sourceFile)
     }
 
-    override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
+    override fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         val preferType = if (LanguageApplicableUtil.isPreferTypeScript(creationContext)) {
             "TypeScript"
         } else {

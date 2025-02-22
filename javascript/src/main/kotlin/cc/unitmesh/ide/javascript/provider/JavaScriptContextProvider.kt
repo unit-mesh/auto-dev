@@ -20,7 +20,7 @@ class JavaScriptContextProvider : ChatContextProvider {
         return LanguageApplicableUtil.isJavaScriptApplicable(sourceFile.language)
     }
 
-    override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
+    override fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         val results = mutableListOf<ChatContextItem>()
         val snapshot = JsDependenciesSnapshot.create(project, creationContext?.sourceFile)
         val typeScriptLanguageContext = getTypeScriptLanguageContext(snapshot)

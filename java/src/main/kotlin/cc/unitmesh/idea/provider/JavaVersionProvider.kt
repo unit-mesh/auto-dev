@@ -13,7 +13,7 @@ import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.roots.ProjectRootManager
 
 class JavaVersionProvider : ChatContextProvider {
-    override suspend fun collect(
+    override fun collect(
         project: Project,
         creationContext: ChatCreationContext
     ): List<ChatContextItem> {

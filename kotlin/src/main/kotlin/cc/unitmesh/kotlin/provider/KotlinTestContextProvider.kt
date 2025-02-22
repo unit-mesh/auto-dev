@@ -22,7 +22,7 @@ class KotlinTestContextProvider : JavaTestContextProvider() {
         return creationContext.action == ChatActionType.GENERATE_TEST && creationContext.sourceFile?.language is KotlinLanguage
     }
 
-    override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
+    override fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         val fileName = creationContext.sourceFile?.name
 
         val isSpringRelated = checkIsSpringRelated(creationContext)

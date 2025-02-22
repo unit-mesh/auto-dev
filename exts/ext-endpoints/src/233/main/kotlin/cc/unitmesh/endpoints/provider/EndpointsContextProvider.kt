@@ -18,7 +18,7 @@ class EndpointsContextProvider : ChatContextProvider {
         return EndpointsProvider.hasAnyProviders()
     }
 
-    override suspend fun collect(
+    override fun collect(
         project: Project,
         creationContext: ChatCreationContext
     ): List<ChatContextItem> {

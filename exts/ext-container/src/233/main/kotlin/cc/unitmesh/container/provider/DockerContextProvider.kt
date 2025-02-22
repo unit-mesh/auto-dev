@@ -18,7 +18,7 @@ class DockerContextProvider : ChatContextProvider {
     override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean =
         DockerFileSearch.getInstance().getDockerFiles(project).isNotEmpty()
 
-    override suspend fun collect(
+    override fun collect(
         project: Project,
         creationContext: ChatCreationContext
     ): List<ChatContextItem> {
@@ -38,9 +38,7 @@ class DockerContextProvider : ChatContextProvider {
         var additionalCtx = ""
         try {
             val fromCommands = dockerFiles.mapNotNull {
-                runReadAction {
-                    PsiTreeUtil.getChildrenOfType(it, DockerFileFromCommand::class.java)?.toList()
-                }
+                PsiTreeUtil.getChildrenOfType(it, DockerFileFromCommand::class.java)?.toList()
             }.flatten()
 
             if (fromCommands.isEmpty()) return listOf(ChatContextItem(DockerContextProvider::class, context))

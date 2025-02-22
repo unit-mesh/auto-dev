@@ -13,7 +13,7 @@ class KotlinVersionProvider : ChatContextProvider {
         return creationContext.sourceFile?.language is KotlinLanguage
     }
 
-    override suspend fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
+    override fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         val languageVersionSettings = runReadAction {
             project.languageVersionSettings
         }
