@@ -140,6 +140,11 @@ open class JavaCodeModifier : CodeModifier {
             try {
                 rootElement.add(newTestMethod)
             } catch (e: Throwable) {
+                if (newTestMethod == null) {
+                    log.error("Failed to create method from text: $code")
+                    return@runWriteCommandAction
+                }
+
                 val classEndOffset = rootElement.textRange.endOffset
                 val document = PsiDocumentManager.getInstance(project).getDocument(rootElement.containingFile)
                 document?.insertString(classEndOffset - 1, "\n    ")
