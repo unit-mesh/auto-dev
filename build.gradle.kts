@@ -136,6 +136,9 @@ configure(subprojects - project(":exts")) {
                     kotlin.srcDirs("src/$platformVersion/main/kotlin")
                 }
                 test {
+                    if (platformVersion == 241 || platformVersion == 243) {
+                        kotlin.srcDirs("src/233/test/kotlin")
+                    }
                     kotlin.srcDirs("src/$platformVersion/test/kotlin")
                 }
             }
