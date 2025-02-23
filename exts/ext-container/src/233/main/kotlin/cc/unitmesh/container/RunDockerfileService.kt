@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.docker
+package cc.unitmesh.container
 
 import cc.unitmesh.devti.provider.RunService
 import com.intellij.docker.DockerCloudConfiguration
@@ -23,14 +23,18 @@ class RunDockerfileService : RunService {
     override fun runConfigurationClass(project: Project): Class<out RunProfile>? = null
 
     fun defaultDockerConnection() =
-        RemoteServerImpl("DockerConnection", DockerCloudType.getInstance(), DockerCloudConfiguration.createDefault())
+        RemoteServerImpl(
+            "DockerConnection",
+            DockerCloudType.getInstance(),
+            DockerCloudConfiguration.Companion.createDefault()
+        )
 
     override fun runFile(project: Project, virtualFile: VirtualFile, psiElement: PsiElement?, isFromToolAction: Boolean)
             : String? {
 
         ApplicationManager.getApplication().invokeAndWait {
             runBlocking {
-                val runtime = DockerServerRuntimesManager.getInstance(project)
+                val runtime = DockerServerRuntimesManager.Companion.getInstance(project)
                     .getOrCreateConnection(defaultDockerConnection())
                     .await()
 
