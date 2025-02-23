@@ -29,6 +29,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
     }
     private val inEditorCompletionCheckBox = JCheckBox()
     private val noChatHistoryCheckBox = JCheckBox()
+    private val trimCodeBeforeSend = JCheckBox()
 
     private val useCustomAIEngineWhenInlayCodeComplete = JCheckBox()
         .apply {
@@ -72,6 +73,15 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                     componentGet = { it.isSelected },
                     componentSet = { component, value -> component.isSelected = value },
                     prop = state::noChatHistory.toMutableProperty()
+                )
+        }
+
+        row(jLabel("settings.autodev.coder.trimCodeBeforeSend")) {
+            fullWidthCell(trimCodeBeforeSend)
+                .bind(
+                    componentGet = { it.isSelected },
+                    componentSet = { component, value -> component.isSelected = value },
+                    prop = state::trimCodeBeforeSend.toMutableProperty()
                 )
         }
 

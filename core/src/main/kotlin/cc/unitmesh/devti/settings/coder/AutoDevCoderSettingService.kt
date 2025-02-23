@@ -26,6 +26,7 @@ class AutoDevCoderSettingService(
         var disableAdvanceContext by property(false)
         var inEditorCompletion by property(false)
         var noChatHistory by property(false)
+        var trimCodeBeforeSend by property(false)
         var enableRenameSuggestion by property(false)
 
         var useCustomAIEngineWhenInlayCodeComplete by property(false)
