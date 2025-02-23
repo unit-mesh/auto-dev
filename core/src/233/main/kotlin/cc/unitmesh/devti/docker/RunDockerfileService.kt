@@ -1,4 +1,4 @@
-package cc.unitmesh.container
+package cc.unitmesh.devti.docker
 
 import cc.unitmesh.devti.provider.RunService
 import com.intellij.docker.DockerCloudConfiguration
@@ -15,10 +15,8 @@ import com.intellij.psi.PsiManager
 import com.intellij.remoteServer.impl.configuration.RemoteServerImpl
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runBlocking
-import java.awt.EventQueue.invokeAndWait
 
 class RunDockerfileService : RunService {
-
     override fun isApplicable(project: Project, file: VirtualFile): Boolean = file.name == "Dockerfile" ||
             runReadAction { PsiManager.getInstance(project).findFile(file)?.language == DockerLanguage.INSTANCE }
 
@@ -36,7 +34,6 @@ class RunDockerfileService : RunService {
                     .getOrCreateConnection(defaultDockerConnection())
                     .await()
 
-//                runtime.runtimesManager
             }
         }
 

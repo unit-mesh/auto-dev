@@ -43,7 +43,7 @@ class DockerContextProvider : ChatContextProvider {
             runReadAction { it.text }
         }
 
-        val text = "This project use Docker to run in server. Here is related info:\n$additionalCtx"
+        val text = "This project use Docker，Here is related Docker info: $additionalCtx"
         return listOf(ChatContextItem(DockerContextProvider::class, text))
     }
 }
