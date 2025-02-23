@@ -140,8 +140,7 @@ impl Plot {
         val result = PromptOptimizer.trimCodeSpace(code)
 
         // then
-        val expected = """
-use crate::{find_target, Plot};
+        val expected = """use crate::{find_target, Plot};
 use anyhow::{Context, Result};
 use std::{env, process};
 impl Plot {
@@ -174,7 +173,32 @@ process::Command::new(cargo)
 .context("⚠️  couldn't wait for the afl plot")?;
 Ok(())
 }
-}
-"""
+}"""
+
+        assertThat(result).isEqualTo(expected)
+    }
+
+    @Test
+    fun should_handle_for_python_code_in_issue() {
+        @Language("Markdown")
+        val code = """
+Here is the code:       
+```python
+def foo():
+    print("Hello, World!")
+```
+        """.trimIndent()
+
+        // when
+        val result = PromptOptimizer.trimCodeSpace(code)
+
+        // then
+        val expected = """Here is the code:
+```python
+def foo():
+    print("Hello, World!")
+```"""
+
+        assertThat(result).isEqualTo(expected)
     }
 }
