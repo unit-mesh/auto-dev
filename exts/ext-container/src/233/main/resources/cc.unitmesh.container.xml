@@ -5,9 +5,5 @@
         <plugin id="Docker"/>
     </dependencies>
 
-    <extensions defaultExtensionNs="cc.unitmesh">
-        <!--        <runService implementation="cc.unitmesh.container.RunDockerfileService"/>-->
-
-        <chatContextProvider implementation="cc.unitmesh.container.provider.DockerContextProvider"/>
-    </extensions>
+    <!--  Since limit of Docker, we move implementation to docker-contrib.xml  -->
 </idea-plugin>

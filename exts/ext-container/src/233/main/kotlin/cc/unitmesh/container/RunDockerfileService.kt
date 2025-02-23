@@ -12,7 +12,10 @@ class RunDockerfileService : RunService {
 
     fun isApplicable(element: PsiElement) = element.containingFile?.language == DockerLanguage.INSTANCE
 
-    override fun runConfigurationClass(project: Project): Class<out RunProfile>? {
-        return null
+    override fun runConfigurationClass(project: Project): Class<out RunProfile>? = null
+
+    override fun runFile(project: Project, virtualFile: VirtualFile, psiElement: PsiElement?, isFromToolAction: Boolean)
+            : String? {
+        return super.runFile(project, virtualFile, psiElement, isFromToolAction)
     }
 }
