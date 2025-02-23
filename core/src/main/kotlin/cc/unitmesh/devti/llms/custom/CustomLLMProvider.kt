@@ -2,6 +2,7 @@ package cc.unitmesh.devti.llms.custom
 
 import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.llms.LLMProvider
+import cc.unitmesh.devti.prompting.optimizer.PromptOptimizer
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.coder.coderSetting
 import com.intellij.openapi.diagnostic.logger
@@ -92,7 +93,13 @@ class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(
     }
 
     fun prompt(instruction: String, input: String): String {
-        messages += Message("user", instruction)
+        val prompt = if (project.coderSetting.state.trimCodeBeforeSend) {
+            PromptOptimizer.trimCodeSpace(instruction)
+        } else {
+            instruction
+        }
+
+        messages += Message("user", prompt)
         val customRequest = CustomRequest(messages)
         val requestContent = Json.encodeToString<CustomRequest>(customRequest)
 
