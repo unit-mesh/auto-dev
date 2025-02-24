@@ -1,7 +1,7 @@
 package cc.unitmesh.devti
 
 import cc.unitmesh.devti.settings.AutoDevSettingsState
-import cc.unitmesh.devti.settings.LanguageChangedCallback
+import cc.unitmesh.devti.settings.locale.LanguageChangedCallback
 import com.intellij.BundleBase
 import com.intellij.DynamicBundle
 import com.intellij.util.ArrayUtilRt

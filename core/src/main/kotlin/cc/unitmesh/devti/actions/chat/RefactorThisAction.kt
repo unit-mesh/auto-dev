@@ -7,7 +7,7 @@ import cc.unitmesh.devti.actions.chat.base.commentPrefix
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.provider.RefactoringTool
-import cc.unitmesh.devti.settings.LanguageChangedCallback.presentationText
+import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.presentationText
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.editor.Editor

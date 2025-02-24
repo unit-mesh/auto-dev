@@ -1,7 +1,9 @@
 package cc.unitmesh.devti.settings
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.settings.LanguageChangedCallback.jBLabel
+import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.jBLabel
+import cc.unitmesh.devti.settings.locale.HUMAN_LANGUAGES
+import cc.unitmesh.devti.settings.locale.LanguageChangedCallback
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.ui.JBColor
 import com.intellij.ui.dsl.builder.panel

@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.actions.groups
 
-import cc.unitmesh.devti.settings.LanguageChangedCallback.presentationText
+import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.presentationText
 import com.intellij.openapi.actionSystem.ActionGroupUtil
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent

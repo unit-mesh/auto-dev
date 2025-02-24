@@ -10,7 +10,7 @@ import cc.unitmesh.devti.provider.context.ChatContextItem
 import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
-import cc.unitmesh.devti.settings.LanguageChangedCallback.presentationText
+import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.presentationText
 import cc.unitmesh.devti.settings.devops.devopsPromptsSettings
 import cc.unitmesh.devti.template.GENIUS_PRACTISES
 import cc.unitmesh.devti.template.TemplateRender

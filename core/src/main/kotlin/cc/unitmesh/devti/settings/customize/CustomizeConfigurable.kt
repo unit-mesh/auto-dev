@@ -5,9 +5,9 @@ import cc.unitmesh.devti.custom.schema.CUSTOM_AGENT_FILE_NAME
 import cc.unitmesh.devti.fullHeight
 import cc.unitmesh.devti.fullWidthCell
 import cc.unitmesh.devti.gui.component.JsonLanguageField
-import cc.unitmesh.devti.settings.LanguageChangedCallback.componentStateChanged
-import cc.unitmesh.devti.settings.LanguageChangedCallback.jBLabel
-import cc.unitmesh.devti.settings.LanguageChangedCallback.placeholder
+import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.componentStateChanged
+import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.jBLabel
+import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.placeholder
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.service

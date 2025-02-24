@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.gui.chat.ui
 
-import cc.unitmesh.devti.settings.LanguageChangedCallback.placeholder
+import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.placeholder
 import cc.unitmesh.devti.util.InsertUtil
 import cc.unitmesh.devti.util.parser.CodeFence.Companion.findLanguage
 import com.intellij.openapi.Disposable

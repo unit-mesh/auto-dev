@@ -1,8 +1,7 @@
 package cc.unitmesh.devti.gui.toolbar
 
-import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
-import cc.unitmesh.devti.settings.LanguageChangedCallback.componentStateChanged
+import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.componentStateChanged
 import cc.unitmesh.devti.sketch.SketchToolWindow
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*

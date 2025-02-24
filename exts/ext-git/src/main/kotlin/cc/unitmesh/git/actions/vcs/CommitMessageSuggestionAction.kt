@@ -4,7 +4,7 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.actions.chat.base.ChatBaseAction
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.llms.LlmFactory
-import cc.unitmesh.devti.settings.LanguageChangedCallback.presentationText
+import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.presentationText
 import cc.unitmesh.devti.template.GENIUS_PRACTISES
 import cc.unitmesh.devti.vcs.VcsPrompting
 import cc.unitmesh.devti.statusbar.AutoDevStatus

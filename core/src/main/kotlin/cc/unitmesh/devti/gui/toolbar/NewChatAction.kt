@@ -2,7 +2,7 @@ package cc.unitmesh.devti.gui.toolbar
 
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
-import cc.unitmesh.devti.settings.LanguageChangedCallback.componentStateChanged
+import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.componentStateChanged
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction
 import com.intellij.openapi.diagnostic.logger

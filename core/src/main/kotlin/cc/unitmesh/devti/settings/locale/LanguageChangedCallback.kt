@@ -1,6 +1,7 @@
-package cc.unitmesh.devti.settings
+package cc.unitmesh.devti.settings.locale
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.components.JBLabel
@@ -18,13 +19,13 @@ import javax.swing.JLabel
  * @author lk
  */
 object LanguageChangedCallback : SelectionChangedCallback {
-    var language: String = AutoDevSettingsState.getInstance().language
+    var language: String = AutoDevSettingsState.Companion.getInstance().language
         set(value) {
             if ((field != value).also { field = value }) {
                 call()
             }
         }
-        get() = AutoDevSettingsState.getInstance().fetchLocalLanguage(field)
+        get() = AutoDevSettingsState.Companion.getInstance().fetchLocalLanguage(field)
 
     private val callBacks = ConcurrentHashMap<String, LanguageChangedCallback.() -> Unit>()
 

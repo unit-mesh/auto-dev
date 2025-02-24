@@ -5,7 +5,7 @@ import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.inline.AutoDevInlineChatProvider
 import cc.unitmesh.devti.sketch.SketchToolWindow
-import cc.unitmesh.devti.settings.LanguageChangedCallback.componentStateChanged
+import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.componentStateChanged
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.DumbAware

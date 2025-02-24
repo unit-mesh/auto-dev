@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.gui.chat.welcome
 
 import cc.unitmesh.devti.AutoDevIcons
-import cc.unitmesh.devti.settings.LanguageChangedCallback.componentStateChanged
+import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.componentStateChanged
 import com.intellij.ui.dsl.builder.RightGap
 import com.intellij.ui.dsl.builder.panel
 import java.awt.BorderLayout

@@ -1,13 +1,10 @@
 package cc.unitmesh.devti.settings.coder
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.custom.schema.INLAY_PROMPTS_FILE_NAME
 import cc.unitmesh.devti.fullWidthCell
-import cc.unitmesh.devti.gui.component.JsonLanguageField
-import cc.unitmesh.devti.settings.LanguageChangedCallback.placeholder
-import cc.unitmesh.devti.settings.LanguageChangedCallback.jLabel
-import cc.unitmesh.devti.settings.LanguageChangedCallback.tips
-import cc.unitmesh.devti.settings.ResponseType
+import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.jLabel
+import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.tips
+import cc.unitmesh.devti.settings.miscs.ResponseType
 import cc.unitmesh.devti.settings.testLLMConnection
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.BoundConfigurable

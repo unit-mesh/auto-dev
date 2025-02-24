@@ -1,5 +1,8 @@
 package cc.unitmesh.devti.settings
 
+import cc.unitmesh.devti.settings.locale.DEFAULT_HUMAN_LANGUAGE
+import cc.unitmesh.devti.settings.locale.HUMAN_LANGUAGES
+import cc.unitmesh.devti.settings.miscs.MAX_TOKEN_LENGTH
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
