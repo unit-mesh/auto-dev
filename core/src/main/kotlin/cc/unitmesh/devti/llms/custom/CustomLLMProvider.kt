@@ -8,8 +8,6 @@ import cc.unitmesh.devti.settings.coder.coderSetting
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.flow.Flow
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -48,8 +46,6 @@ class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(
         if (msg.isEmpty()) return
         messages += Message(role.roleName(), msg)
     }
-
-    override fun prompt(promptText: String): String = this.prompt(promptText, "")
 
     override fun stream(originPrompt: String, systemPrompt: String, keepHistory: Boolean): Flow<String> {
         if (!keepHistory || project.coderSetting.state.noChatHistory) {
@@ -96,42 +92,5 @@ class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(
         }
 
         return streamSSE(call, prompt, keepHistory, messages)
-    }
-
-    fun prompt(instruction: String, input: String): String {
-        val prompt = if (project.coderSetting.state.trimCodeBeforeSend) {
-            PromptOptimizer.trimCodeSpace(instruction)
-        } else {
-            instruction
-        }
-
-        messages += Message("user", prompt)
-        val customRequest = CustomRequest(messages)
-        val requestContent = Json.encodeToString<CustomRequest>(customRequest)
-
-        val body = RequestBody.create("application/json".toMediaTypeOrNull(), requestContent.toByteArray())
-
-        logger.info("Requesting form: $requestContent $body")
-        val builder = Request.Builder()
-        if (key.isNotEmpty()) {
-            builder.addHeader("Authorization", "Bearer $key")
-        }
-
-        try {
-            client = client.newBuilder().readTimeout(timeout).build()
-
-            val request = builder.url(url).post(body).build()
-            val response = client.newCall(request).execute()
-
-            if (!response.isSuccessful) {
-                logger.error("$response")
-                return ""
-            }
-
-            return response.body?.string() ?: ""
-        } catch (e: IllegalArgumentException) {
-            logger.error("Failed to set timeout", e)
-            return ""
-        }
     }
 }
