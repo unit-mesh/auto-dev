@@ -3,22 +3,23 @@ package cc.unitmesh.devti.agent.configurable
 import com.intellij.openapi.components.*
 import com.intellij.openapi.project.Project
 
-val Project.customAgentSetting: CoUnitProjectSettingsService
-    get() = service<CoUnitProjectSettingsService>()
+val Project.customizeSetting: AutoDevCustomizeSettings
+    get() = service<AutoDevCustomizeSettings>()
 
 @Service(Service.Level.PROJECT)
-@State(name = "CoUnitProjectSettings", storages = [Storage(StoragePathMacros.WORKSPACE_FILE)])
-class CoUnitProjectSettingsService(
+@State(name = "AutoDevCustomizeSettings", storages = [Storage(StoragePathMacros.WORKSPACE_FILE)])
+class AutoDevCustomizeSettings(
     val project: Project,
-) : SimplePersistentStateComponent<CoUnitProjectSettingsService.CoUnitProjectSettings>(CoUnitProjectSettings()) {
+) : SimplePersistentStateComponent<AutoDevCustomizeSettings.CustomizeProjectSettings>(CustomizeProjectSettings()) {
     val enableCustomRag: Boolean get() = state.enableCustomRag
+    val customPrompts: String get() = state.customPrompts
 
     /**
      *  Use [cc.unitmesh.devti.agent.model.CustomAgentConfig.loadFromProject]
      */
     val ragsJsonConfig: String get() = state.agentJsonConfig
 
-    fun modify(action: (CoUnitProjectSettings) -> Unit) {
+    fun modify(action: (CustomizeProjectSettings) -> Unit) {
         action(state)
     }
 
@@ -26,12 +27,13 @@ class CoUnitProjectSettingsService(
         abstract fun copy(): T
     }
 
-    class CoUnitProjectSettings : AdProjectSettingsBase<CoUnitProjectSettings>() {
+    class CustomizeProjectSettings : AdProjectSettingsBase<CustomizeProjectSettings>() {
         var enableCustomRag by property(false)
         var agentJsonConfig by property("") { it.isEmpty() }
+        var customPrompts by property("") { it.isEmpty() }
 
-        override fun copy(): CoUnitProjectSettings {
-            val state = CoUnitProjectSettings()
+        override fun copy(): CustomizeProjectSettings {
+            val state = CustomizeProjectSettings()
             state.copyFrom(this)
             return state
         }

@@ -1,5 +1,6 @@
 package cc.unitmesh.idea.prompting
 
+import cc.unitmesh.devti.agent.configurable.customizeSetting
 import cc.unitmesh.devti.custom.action.CustomPromptConfig
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.message.GenApiTestContext
@@ -8,13 +9,13 @@ import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.provider.PsiElementDataBuilder
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
-import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.idea.MvcUtil
 import cc.unitmesh.idea.flow.MvcContextService
 import cc.unitmesh.idea.provider.JavaPsiElementDataBuilder
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -27,7 +28,6 @@ open class JavaContextPrompter : ContextPrompter() {
     private var additionContext: String = ""
     protected open val psiElementDataBuilder: PsiElementDataBuilder = JavaPsiElementDataBuilder()
 
-    private val autoDevSettingsState = AutoDevSettingsState.getInstance()
     private var customPromptConfig: CustomPromptConfig? = null
     private lateinit var mvcContextService: MvcContextService
     private var fileName = ""
@@ -54,8 +54,8 @@ open class JavaContextPrompter : ContextPrompter() {
     }
 
     init {
-        val prompts = autoDevSettingsState.customPrompts
-        customPromptConfig = CustomPromptConfig.tryParse(prompts)
+        val project = ProjectManager.getInstance().openProjects.first()
+        customPromptConfig = CustomPromptConfig.tryParse(project.customizeSetting.customPrompts)
     }
 
     override fun displayPrompt(): String {

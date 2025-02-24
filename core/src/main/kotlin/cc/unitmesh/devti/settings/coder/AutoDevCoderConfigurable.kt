@@ -42,8 +42,6 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
     private val customEngineRequestBodyFormatParam = JTextField()
     private val customEngineServerParam = JTextField()
     private val customEngineTokenParam = JPasswordField()
-    private val customEnginePrompt = JsonLanguageField(project, "", AutoDevBundle.messageWithLanguageFromLLMSetting("autodev.custom.prompt.placeholder"),  INLAY_PROMPTS_FILE_NAME)
-        .apply { placeholder("autodev.custom.prompt.placeholder", this, 2) }
 
     val settings = project.service<AutoDevCoderSettingService>()
     val state = settings.state.copy()
@@ -181,16 +179,6 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
             }
         }
 
-        row(jLabel("settings.autodev.coder.customEnginePrompt", 2)) {}
-        row {
-            fullWidthCell(customEnginePrompt)
-                .bind(
-                    componentGet = { it.text },
-                    componentSet = { component, value -> component.text = value },
-                    prop = state::customEnginePrompt.toMutableProperty()
-                )
-        }
-
         onApply {
             settings.modify {
                 it.recordingInLocal = state.recordingInLocal
@@ -204,7 +192,6 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 it.customEngineRequestBodyFormatParam = state.customEngineRequestBodyFormatParam
                 it.customEngineServerParam = state.customEngineServerParam
                 it.customEngineTokenParam = state.customEngineTokenParam
-                it.customEnginePrompt = state.customEnginePrompt
                 it.noChatHistory = state.noChatHistory
                 it.enableRenameSuggestion = state.enableRenameSuggestion
                 it.trimCodeBeforeSend = state.trimCodeBeforeSend

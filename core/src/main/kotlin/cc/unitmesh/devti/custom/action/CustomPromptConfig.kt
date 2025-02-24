@@ -1,8 +1,9 @@
 package cc.unitmesh.devti.custom.action
 
+import cc.unitmesh.devti.agent.configurable.customizeSetting
 import cc.unitmesh.devti.custom.document.CustomDocumentationConfig
-import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.ProjectManager
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -20,7 +21,8 @@ data class CustomPromptConfig(
         private val logger = logger<CustomPromptConfig>()
 
         fun load(): CustomPromptConfig {
-            return tryParse(AutoDevSettingsState.getInstance().customPrompts)
+            val project = ProjectManager.getInstance().openProjects.first()
+            return tryParse(project.customizeSetting.customPrompts)
         }
 
         fun default(): CustomPromptConfig = CustomPromptConfig(

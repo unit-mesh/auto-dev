@@ -7,20 +7,17 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.util.xmlb.Converter
 import com.intellij.util.xmlb.XmlSerializerUtil
-import com.intellij.util.xmlb.annotations.OptionTag
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 @Service(Service.Level.APP)
 @State(name = "cc.unitmesh.devti.settings.DevtiSettingsState", storages = [Storage("DevtiSettings.xml")])
 class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
-    var openAiKey = ""
     var delaySeconds = ""
 
     var customOpenAiHost = ""
     var customEngineServer = ""
     var customEngineToken = ""
-    var customPrompts = ""
     var customModel = ""
 
     var customEngineResponseFormat = "\$.choices[0].delta.content"

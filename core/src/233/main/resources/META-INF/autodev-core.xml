@@ -20,10 +20,10 @@
                              id="cc.unitmesh.autodevDevOps"
                              bundle="messages.AutoDevBundle" key="settings.autodev.devops"/>
 
-        <projectConfigurable provider="cc.unitmesh.devti.agent.configurable.CoUnitToolConfigurableProvider"
+        <projectConfigurable provider="cc.unitmesh.devti.agent.configurable.CustomizeConfigurableProvider"
                              parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                              id="cc.unitmesh.counit"
-                             bundle="messages.AutoDevBundle" key="counit.agent.name"/>
+                             bundle="messages.AutoDevBundle" key="customize.title"/>
 
         <projectConfigurable provider="cc.unitmesh.devti.settings.custom.TeamPromptsConfigurableProvider"
                              parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"

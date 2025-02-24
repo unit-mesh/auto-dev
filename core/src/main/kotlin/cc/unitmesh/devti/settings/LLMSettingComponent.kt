@@ -1,20 +1,14 @@
 package cc.unitmesh.devti.settings
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.custom.schema.CUSTOM_AGENT_FILE_NAME
-import cc.unitmesh.devti.gui.component.JsonLanguageField
 import cc.unitmesh.devti.settings.LanguageChangedCallback.jBLabel
-import com.intellij.ide.actions.RevealFileAction
-import com.intellij.idea.LoggerFactory
 import com.intellij.openapi.project.ProjectManager
-import com.intellij.ui.EditorTextField
 import com.intellij.ui.JBColor
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.FormBuilder
 import javax.swing.JPanel
 
 class LLMSettingComponent(private val settings: AutoDevSettingsState) {
-    // 以下 LLMParam 变量不要改名，因为这些变量名会被用作配置文件的 key
     private val languageParam by LLMParam.creating({ LanguageChangedCallback.language = it }) {
         ComboBox(settings.language, HUMAN_LANGUAGES.values().map { it.display })
     }
@@ -31,16 +25,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     private val customEngineRequestBodyFormatParam by LLMParam.creating { Editable(settings.customEngineRequestFormat) }
 
     val project = ProjectManager.getInstance().openProjects.firstOrNull()
-    private val customEnginePrompt: EditorTextField by lazy {
-        JsonLanguageField(
-            project,
-            settings.customPrompts,
-            AutoDevBundle.messageWithLanguageFromLLMSetting("autodev.custom.prompt.placeholder"),
-            CUSTOM_AGENT_FILE_NAME
-        ).apply {
-            LanguageChangedCallback.placeholder("autodev.custom.prompt.placeholder", this, 1)
-        }
-    }
 
     private val currentLLMParams: List<LLMParam>
         get() {
@@ -106,10 +90,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
                     }
                 }
             })
-            .addSeparator()
-            .addVerticalGap(2)
-            .addLabeledComponent(jBLabel("settings.autodev.coder.customEnginePrompt", 1), customEnginePrompt, 1, true)
-            .addComponentFillVertically(JPanel(), 0)
             .panel
 
         panel.invalidate()
@@ -124,7 +104,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             customEngineServerParam.value = customEngineServer
             customEngineTokenParam.value = customEngineToken
             languageParam.value = language
-            customEnginePrompt.text = customPrompts
             customEngineResponseFormatParam.value = customEngineResponseFormat
             customEngineRequestBodyFormatParam.value = customEngineRequestFormat
             delaySecondsParam.value = delaySeconds
@@ -139,7 +118,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             language = languageParam.value
             customEngineServer = customEngineServerParam.value
             customEngineToken = customEngineTokenParam.value
-            customPrompts = customEnginePrompt.text
             customEngineResponseFormat = customEngineResponseFormatParam.value
             customEngineRequestFormat = customEngineRequestBodyFormatParam.value
             delaySeconds = delaySecondsParam.value
@@ -152,7 +130,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
                 settings.language != languageParam.value ||
                 settings.customEngineServer != customEngineServerParam.value ||
                 settings.customEngineToken != customEngineTokenParam.value ||
-                settings.customPrompts != customEnginePrompt.text ||
                 settings.customOpenAiHost != customOpenAIHostParam.value ||
                 settings.customEngineResponseFormat != customEngineResponseFormatParam.value ||
                 settings.customEngineRequestFormat != customEngineRequestBodyFormatParam.value ||
