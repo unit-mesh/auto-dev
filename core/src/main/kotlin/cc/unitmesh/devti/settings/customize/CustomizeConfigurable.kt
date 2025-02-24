@@ -24,6 +24,13 @@ class CustomizeConfigurable(val project: Project) : BoundConfigurable(AutoDevBun
     override fun createPanel(): DialogPanel = panel {
         row {
             cell(jBLabel("settings.autodev.coder.customEnginePrompt", 1))
+
+            link(AutoDevBundle.message("custom.action"), {
+                BrowserUtil.browse("https://ide.unitmesh.cc/custom/action")
+            })
+            link(AutoDevBundle.message("custom.living.documentation"), {
+                BrowserUtil.browse("https://ide.unitmesh.cc/custom/living-documentation")
+            })
         }
         row {
             val customPrompt = JsonLanguageField(
@@ -54,7 +61,7 @@ class CustomizeConfigurable(val project: Project) : BoundConfigurable(AutoDevBun
 
             link(AutoDevBundle.message("open documents"), {
                 BrowserUtil.browse("https://ide.unitmesh.cc/agent/custom-ai-agent")
-            });
+            })
         }
 
         row {

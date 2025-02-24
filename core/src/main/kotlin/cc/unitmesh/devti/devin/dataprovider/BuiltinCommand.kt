@@ -156,5 +156,11 @@ enum class BuiltinCommand(
 
         val READ_COMMANDS =
             setOf(DIR, LOCAL_SEARCH, FILE, REV, STRUCTURE, SYMBOL, DATABASE, RELATED, RIPGREP_SEARCH, BROWSE)
+
+        /**
+         *
+         */
+        val REFACTORING_TOOLS =
+            setOf(RELATED, STRUCTURE, FILE, SYMBOL, LOCAL_SEARCH, RIPGREP_SEARCH, DATABASE, DIR, BROWSE, REV)
     }
 }
