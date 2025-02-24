@@ -8,8 +8,10 @@ object PromptOptimizer {
         return fences.joinToString("\n") {
             if (it.originLanguage == "python") {
                 "```${it.originLanguage}\n${it.text}\n```"
-            } else {
+            } else if (it.originLanguage == "txt" || it.originLanguage == "md" || it.originLanguage == "markdown") {
                 trim(it.text)
+            } else {
+                "```${it.originLanguage}\n${trim(it.text)}\n```"
             }
         }
     }

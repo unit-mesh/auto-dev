@@ -201,4 +201,38 @@ def foo():
 
         assertThat(result).isEqualTo(expected)
     }
+
+    @Test
+    fun should_handle_with_devin_block() {
+        val content = """
+            |```devin
+            |/write:HelloWorld.java
+            |```java
+            |public class HelloWorld {
+            |    public static void main(String[] args) {
+            |        System.out.println("Hello, World");
+            |    }
+            |}
+            |```
+            |```
+            |
+        """.trimMargin()
+
+        // when
+        val result = PromptOptimizer.trimCodeSpace(content)
+
+        // then
+        val expected = """```DevIn
+/write:HelloWorld.java
+```java
+public class HelloWorld {
+public static void main(String[] args) {
+System.out.println("Hello, World");
+}
+}
+```
+```"""
+
+        assertThat(result).isEqualTo(expected)
+    }
 }
