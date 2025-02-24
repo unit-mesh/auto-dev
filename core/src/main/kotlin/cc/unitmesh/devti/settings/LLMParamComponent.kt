@@ -86,7 +86,6 @@ class CustomDocumentListener(val onChange: () -> Unit) : DocumentAdapter() {
     }
 }
 
-
 /**
  *
  * A LLMParam is a setting for the LLMSettingsComponent.
@@ -120,7 +119,6 @@ class LLMParam(
     enum class ParamType {
         Text, Password, ComboBox, Separator
     }
-
 
     private var onChange: (LLMParam.(String) -> Unit)? = null
 

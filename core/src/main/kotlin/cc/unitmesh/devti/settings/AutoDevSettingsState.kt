@@ -8,10 +8,7 @@ import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
-import com.intellij.util.xmlb.Converter
 import com.intellij.util.xmlb.XmlSerializerUtil
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 
 @Service(Service.Level.APP)
 @State(name = "cc.unitmesh.devti.settings.DevtiSettingsState", storages = [Storage("DevtiSettings.xml")])
@@ -58,13 +55,5 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
         fun getInstance(): AutoDevSettingsState {
             return ApplicationManager.getApplication().getService(AutoDevSettingsState::class.java).state
         }
-    }
-}
-
-class ZonedDateTimeConverter : Converter<ZonedDateTime>() {
-    override fun toString(value: ZonedDateTime): String? = value.format(DateTimeFormatter.ISO_ZONED_DATE_TIME)
-
-    override fun fromString(value: String): ZonedDateTime? {
-        return ZonedDateTime.parse(value, DateTimeFormatter.ISO_ZONED_DATE_TIME)
     }
 }

@@ -90,7 +90,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
                     }
                 }
             })
-            .panel
 
         panel.invalidate()
         panel.repaint()
