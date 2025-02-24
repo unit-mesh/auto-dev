@@ -12,17 +12,16 @@ import javax.swing.JPanel
 
 class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     private val languageParam by LLMParam.creating({ LanguageChangedCallback.language = it }) {
-        ComboBox(settings.language, HUMAN_LANGUAGES.values().map { it.display })
+        ComboBox(settings.language, HUMAN_LANGUAGES.entries.map { it.display })
     }
 
     private val delaySecondsParam by LLMParam.creating { Editable(settings.delaySeconds) }
     private val maxTokenLengthParam by LLMParam.creating { Editable(settings.maxTokenLength) }
+
     private val customModelParam: LLMParam by LLMParam.creating { Editable(settings.customModel) }
     private val customOpenAIHostParam: LLMParam by LLMParam.creating { Editable(settings.customOpenAiHost) }
-
     private val customEngineServerParam by LLMParam.creating { Editable(settings.customEngineServer) }
     private val customEngineTokenParam by LLMParam.creating { Password(settings.customEngineToken) }
-
     private val customEngineResponseFormatParam by LLMParam.creating { Editable(settings.customEngineResponseFormat) }
     private val customEngineRequestBodyFormatParam by LLMParam.creating { Editable(settings.customEngineRequestFormat) }
 
@@ -74,7 +73,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     private val formBuilder: FormBuilder = FormBuilder.createFormBuilder()
     val panel: JPanel get() = formBuilder.panel
 
-
     fun applySettings(settings: AutoDevSettingsState, updateParams: Boolean = false) {
         panel.removeAll()
 
@@ -96,20 +94,6 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
 
         panel.invalidate()
         panel.repaint()
-    }
-
-    private fun updateParams(settings: AutoDevSettingsState) {
-        settings.apply {
-            maxTokenLengthParam.value = maxTokenLength
-            customModelParam.value = customModel
-            customOpenAIHostParam.value = customOpenAiHost
-            customEngineServerParam.value = customEngineServer
-            customEngineTokenParam.value = customEngineToken
-            languageParam.value = language
-            customEngineResponseFormatParam.value = customEngineResponseFormat
-            customEngineRequestBodyFormatParam.value = customEngineRequestFormat
-            delaySecondsParam.value = delaySeconds
-        }
     }
 
     fun exportSettings(destination: AutoDevSettingsState) {
