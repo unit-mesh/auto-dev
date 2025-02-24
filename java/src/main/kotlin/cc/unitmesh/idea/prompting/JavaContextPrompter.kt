@@ -1,6 +1,6 @@
 package cc.unitmesh.idea.prompting
 
-import cc.unitmesh.devti.agent.configurable.customizeSetting
+import cc.unitmesh.devti.settings.customize.customizeSetting
 import cc.unitmesh.devti.custom.action.CustomPromptConfig
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.message.GenApiTestContext

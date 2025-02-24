@@ -20,7 +20,7 @@
                              id="cc.unitmesh.autodevDevOps"
                              bundle="messages.AutoDevBundle" key="settings.autodev.devops"/>
 
-        <projectConfigurable provider="cc.unitmesh.devti.agent.configurable.CustomizeConfigurableProvider"
+        <projectConfigurable provider="cc.unitmesh.devti.settings.customize.CustomizeConfigurableProvider"
                              parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                              id="cc.unitmesh.counit"
                              bundle="messages.AutoDevBundle" key="customize.title"/>

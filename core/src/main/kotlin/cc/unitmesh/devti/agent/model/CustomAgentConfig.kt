@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.agent.model
 
-import cc.unitmesh.devti.agent.configurable.customizeSetting
+import cc.unitmesh.devti.settings.customize.customizeSetting
 import cc.unitmesh.devti.custom.team.InteractionType
 import com.intellij.openapi.project.Project
 import kotlinx.serialization.Serializable

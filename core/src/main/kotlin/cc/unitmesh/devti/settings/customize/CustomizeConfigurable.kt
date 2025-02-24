@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.agent.configurable
+package cc.unitmesh.devti.settings.customize
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.schema.CUSTOM_AGENT_FILE_NAME
@@ -8,6 +8,7 @@ import cc.unitmesh.devti.gui.component.JsonLanguageField
 import cc.unitmesh.devti.settings.LanguageChangedCallback.componentStateChanged
 import cc.unitmesh.devti.settings.LanguageChangedCallback.jBLabel
 import cc.unitmesh.devti.settings.LanguageChangedCallback.placeholder
+import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.BoundConfigurable
@@ -52,7 +53,7 @@ class CustomizeConfigurable(val project: Project) : BoundConfigurable(AutoDevBun
                 }
 
             link(AutoDevBundle.message("open documents"), {
-                com.intellij.ide.BrowserUtil.browse("https://ide.unitmesh.cc/agent/custom-ai-agent")
+                BrowserUtil.browse("https://ide.unitmesh.cc/agent/custom-ai-agent")
             });
         }
 

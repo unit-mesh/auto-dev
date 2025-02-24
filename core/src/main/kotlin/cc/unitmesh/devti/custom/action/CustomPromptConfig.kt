@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.custom.action
 
-import cc.unitmesh.devti.agent.configurable.customizeSetting
+import cc.unitmesh.devti.settings.customize.customizeSetting
 import cc.unitmesh.devti.custom.document.CustomDocumentationConfig
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.ProjectManager
