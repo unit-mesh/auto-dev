@@ -25,7 +25,7 @@
                              id="cc.unitmesh.counit"
                              bundle="messages.AutoDevBundle" key="customize.title"/>
 
-        <projectConfigurable provider="cc.unitmesh.devti.settings.custom.TeamPromptsConfigurableProvider"
+        <projectConfigurable provider="cc.unitmesh.devti.settings.team.TeamPromptsConfigurableProvider"
                              parentId="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                              id="cc.unitmesh.promptLibrary"
                              bundle="messages.AutoDevBundle" key="settings.external.team.prompts.name"/>

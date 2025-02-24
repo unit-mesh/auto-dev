@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.settings.custom
+package cc.unitmesh.devti.settings.team
 
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ConfigurableProvider

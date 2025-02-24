@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.custom.team
 
-import cc.unitmesh.devti.settings.custom.teamPromptsSettings
+import cc.unitmesh.devti.settings.team.teamPromptsSettings
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project

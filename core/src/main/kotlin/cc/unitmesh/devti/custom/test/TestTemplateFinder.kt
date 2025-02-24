@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.custom.test
 
-import cc.unitmesh.devti.settings.custom.teamPromptsSettings
+import cc.unitmesh.devti.settings.team.teamPromptsSettings
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
