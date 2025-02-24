@@ -6,12 +6,19 @@ object PromptOptimizer {
     fun trimCodeSpace(prompt: String): String {
         val fences = CodeFence.parseAll(prompt)
         return fences.joinToString("\n") {
-            if (it.originLanguage == "python") {
-                "```${it.originLanguage}\n${it.text}\n```"
-            } else if (it.originLanguage == "txt" || it.originLanguage == "md" || it.originLanguage == "markdown") {
-                trim(it.text)
-            } else {
-                "```${it.originLanguage}\n${trim(it.text)}\n```"
+            when (it.originLanguage) {
+                null -> {
+                    trim(it.text)
+                }
+                "python" -> {
+                    "```${it.originLanguage}\n${it.text}\n```"
+                }
+                "txt", "md", "markdown" -> {
+                    trim(it.text)
+                }
+                else -> {
+                    "```${it.originLanguage}\n${trim(it.text)}\n```"
+                }
             }
         }
     }

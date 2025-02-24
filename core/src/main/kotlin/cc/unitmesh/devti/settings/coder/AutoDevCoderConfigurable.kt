@@ -207,6 +207,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 it.customEnginePrompt = state.customEnginePrompt
                 it.noChatHistory = state.noChatHistory
                 it.enableRenameSuggestion = state.enableRenameSuggestion
+                it.trimCodeBeforeSend = state.trimCodeBeforeSend
             }
         }
     }

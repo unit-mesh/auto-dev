@@ -51,7 +51,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(
 
     override fun prompt(promptText: String): String = this.prompt(promptText, "")
 
-    override fun stream(promptText: String, systemPrompt: String, keepHistory: Boolean): Flow<String> {
+    override fun stream(originPrompt: String, systemPrompt: String, keepHistory: Boolean): Flow<String> {
         if (!keepHistory || project.coderSetting.state.noChatHistory) {
             clearMessage()
         }
@@ -66,7 +66,13 @@ class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(
             }
         }
 
-        messages += Message("user", promptText)
+        val prompt = if (project.coderSetting.state.trimCodeBeforeSend) {
+            PromptOptimizer.trimCodeSpace(originPrompt)
+        } else {
+            originPrompt
+        }
+
+        messages += Message("user", prompt)
 
         val customRequest = CustomRequest(messages)
         val requestContent = customRequest.updateCustomFormat(requestFormat)
@@ -89,7 +95,7 @@ class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(
             clearMessage()
         }
 
-        return streamSSE(call, promptText, keepHistory, messages)
+        return streamSSE(call, prompt, keepHistory, messages)
     }
 
     fun prompt(instruction: String, input: String): String {
