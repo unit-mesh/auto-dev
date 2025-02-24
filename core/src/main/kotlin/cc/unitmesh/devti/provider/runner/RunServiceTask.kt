@@ -1,5 +1,5 @@
 // Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
-package cc.unitmesh.devti.runner
+package cc.unitmesh.devti.provider.runner
 
 import cc.unitmesh.devti.provider.RunService
 import com.intellij.execution.*
@@ -15,7 +15,6 @@ import com.intellij.execution.testframework.sm.runner.SMTestProxy
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.application.runInEdt
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project

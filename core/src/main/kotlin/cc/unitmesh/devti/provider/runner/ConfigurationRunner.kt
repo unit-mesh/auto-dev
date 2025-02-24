@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.runner
+package cc.unitmesh.devti.provider.runner
 
 import com.intellij.execution.*
 import com.intellij.execution.configurations.RunConfiguration
