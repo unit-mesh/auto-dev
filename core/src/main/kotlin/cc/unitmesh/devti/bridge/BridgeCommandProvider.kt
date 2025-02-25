@@ -19,84 +19,129 @@ package cc.unitmesh.devti.bridge
  * 5. Convert the files from COBOL to Node.js
  * 6. Generate unit and integration tests
  */
-enum class BridgeCommandProvider(vararg tools: String) {
+sealed interface BridgeCommandProvider {
+    val tools: Array<out String>
+}
 
-    /**
-     * Always tell user, if you can try Microservices or Micro Frontend, will be lower cost and higher efficiency.
-     */
-    ASSESSMENT("SCC", "CLOC", "/dependencies"),
+/**
+ * Always tell user, if you can try Microservices or Micro Frontend, will be lower cost and higher efficiency.
+ */
+sealed class Assessment(override vararg val tools: String) : BridgeCommandProvider {
+    object SCC : Assessment("SCC")
+    object CLOC : Assessment("CLOC")
+    object Dependencies : Assessment("/dependencies")
+}
 
-    /**
-     * list all tools, and show in structures.
-     */
-    TARGET("Docker", "/buildTool", "/mermaid"),
+/**
+ * list all tools, and show in structures.
+ */
+sealed class Target(override vararg val tools: String) : BridgeCommandProvider {
+    object Docker : Target("Docker")
+    object BuildTool : Target("/buildTool")
+    object Mermaid : Target("/mermaid")
+}
 
-    /**
-     * Build Tool depends on the project, like Maven, Gradle, Ant, etc.
-     */
-    PACKAGE_CHECKER("/packageChecker"),
+/**
+ * Build Tool depends on the project, like Maven, Gradle, Ant, etc.
+ */
+sealed class Security(override vararg val tools: String) : BridgeCommandProvider {
+    object PackageChecker : Security("/packageChecker")
+}
 
-    /**
-     * - styling: Collect All CSS style files, try show in structures.
-     * - component: Collect All Component Name, try show as Structures.
-     * - webapi: Collect All Spring Web APIs, and show in structures.
-     *
-     * ```DevIn
-     * /styling:$dir
-     * ```
-     */
-    MODULAR_ANALYSIS("/styling", "/component", "/webapi", "/structure"),
+/**
+ * - styling: Collect All CSS style files, try show in structures.
+ * - component: Collect All Component Name, try show as Structures.
+ * - webapi: Collect All Spring Web APIs, and show in structures.
+ *
+ * ```DevIn
+ * /styling:$dir
+ * ```
+ */
+sealed class ModularAnalysis(override vararg val tools: String) : BridgeCommandProvider {
+    object Styling : ModularAnalysis("/styling")
+    object Component : ModularAnalysis("/component")
+    object WebApi : ModularAnalysis("/webapi")
+    object Structure : ModularAnalysis("/structure")
+}
 
-    /**
-     *
-     */
-    COMPONENT_ANALYSIS("/related", "/ripgrepSearch"),
+/**
+ * Component Analysis
+ */
+sealed class ComponentAnalysis(override vararg val tools: String) : BridgeCommandProvider {
+    object Related : ComponentAnalysis("/related")
+    object RipgrepSearch : ComponentAnalysis("/ripgrepSearch")
+}
 
-    /**
-     * - https://github.com/ast-grep/ast-grep
-     * - https://github.com/dsherret/ts-morph
-     * - https://github.com/facebook/jscodeshift
-     */
-    CODE_TRANSLATION("jscodeshift", "ReWrite", "VueMod", "JSShift"),
+/**
+ * - https://github.com/ast-grep/ast-grep
+ * - https://github.com/dsherret/ts-morph
+ * - https://github.com/facebook/jscodeshift
+ */
+sealed class CodeTranslation(override vararg val tools: String) : BridgeCommandProvider {
+    object JsCodeShift : CodeTranslation("jscodeshift")
+    object ReWrite : CodeTranslation("ReWrite")
+    object VueMod : CodeTranslation("VueMod")
+    object JSShift : CodeTranslation("JSShift")
+}
 
-    /**
-     * - https://github.com/ariga/atlas
-     * - https://github.com/amacneil/dbmate
-     * - https://github.com/golang-migrate/migrate
-     * - https://github.com/pressly/goose
-     * - https://github.com/rubenv/sql-migrate
-     */
-    DATABASE_MIGRATION("Flyway", "SQL"),
+/**
+ * - https://github.com/ariga/atlas
+ * - https://github.com/amacneil/dbmate
+ * - https://github.com/golang-migrate/migrate
+ * - https://github.com/pressly/goose
+ * - https://github.com/rubenv/sql-migrate
+ */
+sealed class DatabaseMigration(override vararg val tools: String) : BridgeCommandProvider {
+    object Flyway : DatabaseMigration("Flyway")
+    object SQL : DatabaseMigration("SQL")
+}
 
-    /**
-     * [Schemathesis](https://github.com/schemathesis/schemathesis): is a tool that levels-up your API testing by leveraging API specs as a blueprints for generating test cases.
-     */
-    API_TESTING("HttpClient", "Swagger", "JMeter", "Schemathesis"),
+/**
+ * [Schemathesis](https://github.com/schemathesis/schemathesis): is a tool that levels-up your API testing by leveraging API specs as a blueprints for generating test cases.
+ */
+sealed class ApiTesting(override vararg val tools: String) : BridgeCommandProvider {
+    object HttpClient : ApiTesting("HttpClient")
+    object Swagger : ApiTesting("Swagger")
+    object JMeter : ApiTesting("JMeter")
+    object Schemathesis : ApiTesting("Schemathesis")
+}
 
-    /**
-     * [BuildKit](https://github.com/moby/buildkit): concurrent, cache-efficient, and Dockerfile-agnostic builder toolkit
-     */
-    CONTINUES_DELIVERY("JenkinsFile", "BuildKit"),
+/**
+ * [BuildKit](https://github.com/moby/buildkit): concurrent, cache-efficient, and Dockerfile-agnostic builder toolkit
+ */
+sealed class ContinuousDelivery(override vararg val tools: String) : BridgeCommandProvider {
+    object JenkinsFile : ContinuousDelivery("JenkinsFile")
+    object BuildKit : ContinuousDelivery("BuildKit")
+}
 
-    /**
-     * 静态安全扫描工具：
-     * - https://github.com/returntocorp/semgrep
-     * - https://snyk.io/
-     * - https://bandit.readthedocs.io/， https://github.com/PyCQA/bandit
-     */
-    SECURITY_ANALYSIS("Semgrep", "Snyk", "Bandit"),
+/**
+ * 静态安全扫描工具：
+ * - https://github.com/returntocorp/semgrep
+ * - https://snyk.io/
+ * - https://bandit.readthedocs.io/， https://github.com/PyCQA/bandit
+ */
+sealed class SecurityAnalysis(override vararg val tools: String) : BridgeCommandProvider {
+    object Semgrep : SecurityAnalysis("Semgrep")
+    object Snyk : SecurityAnalysis("Snyk")
+    object Bandit : SecurityAnalysis("Bandit")
+}
 
-    /**
-     * Container: Docker, Podman, etc.
-     */
-    CONTAINERIZATION("Docker"),
+/**
+ * Container: Docker, Podman, etc.
+ */
+sealed class Containerization(override vararg val tools: String) : BridgeCommandProvider {
+    object Docker : Containerization("Docker")
+    object Podman : Containerization("Podman")
+    object Colima : Containerization("Colima")
+}
 
-    /**
-     * 日志关联分析：Haystack?
-     * 自动生成调用关系图:Graphite?
-     * - Knowledge API: `/knowledge:src/main/com/phodal/HelloWorld.java#L1`, APIs
-     * History: git history of file: `/history:src/main/com/phodal/HelloWorld.java`
-     */
-    KNOWLEDGE_TRANSFER("/knowledge", "/history")
-    ;
+/**
+ * 日志关联分析：Haystack?
+ * 自动生成调用关系图:Graphite?
+ * - Knowledge API: `/knowledge:src/main/com/phodal/HelloWorld.java#L1`, APIs
+ * History: git history of file: `/history:src/main/com/phodal/HelloWorld.java`
+ */
+sealed class KnowledgeTransfer(override vararg val tools: String) : BridgeCommandProvider {
+    object Knowledge : KnowledgeTransfer("/knowledge")
+    object History : KnowledgeTransfer("/history")
 }
