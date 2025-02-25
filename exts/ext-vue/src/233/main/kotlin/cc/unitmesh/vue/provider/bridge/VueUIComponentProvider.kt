@@ -2,6 +2,8 @@ package cc.unitmesh.vue.provider.bridge
 
 import cc.unitmesh.devti.bridge.provider.UiComponentProvider
 import cc.unitmesh.devti.bridge.tools.UiComponent
+import com.intellij.ide.highlighter.XmlFileType
+import com.intellij.javascript.web.html.WebFrameworkHtmlFileType
 import com.intellij.lang.javascript.psi.JSExecutionScope
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager
@@ -11,14 +13,13 @@ import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.xml.XmlFile
 import org.jetbrains.vuejs.index.findModule
 import org.jetbrains.vuejs.index.findScriptTag
-import org.jetbrains.vuejs.lang.html.VueFileType
 
 class VueUIComponentProvider : UiComponentProvider() {
     override fun collect(project: Project): List<UiComponent> {
         val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
         val psiManager = PsiManager.getInstance(project)
 
-        val virtualFiles = FileTypeIndex.getFiles(VueFileType, searchScope)
+        val virtualFiles = FileTypeIndex.getFiles(XmlFileType.INSTANCE, searchScope)
 
         val components = mutableListOf<UiComponent>()
         virtualFiles.forEach { file ->
