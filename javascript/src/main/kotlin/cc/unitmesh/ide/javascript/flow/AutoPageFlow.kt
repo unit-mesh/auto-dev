@@ -7,7 +7,7 @@ import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.template.GENIUS_PAGE
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.ide.javascript.flow.model.AutoPageContext
-import cc.unitmesh.ide.javascript.flow.model.DsComponent
+import cc.unitmesh.devti.bridge.tools.UiComponent
 import kotlinx.coroutines.runBlocking
 
 class AutoPageFlow(val context: AutoPageContext, val panel: ChatCodingPanel, val llm: LLMProvider) :
@@ -36,7 +36,7 @@ class AutoPageFlow(val context: AutoPageContext, val panel: ChatCodingPanel, val
 
 
     override fun design(context: Any): List<String> {
-        val componentList = context as List<DsComponent>
+        val componentList = context as List<UiComponent>
         val stepTwoPrompt = generateStepTwoPrompt(componentList)
 
         panel.addMessage(stepTwoPrompt, true, stepTwoPrompt)
@@ -48,7 +48,7 @@ class AutoPageFlow(val context: AutoPageContext, val panel: ChatCodingPanel, val
         }.let { listOf(it) }
     }
 
-    private fun generateStepTwoPrompt(selectedComponents: List<DsComponent>): String {
+    private fun generateStepTwoPrompt(selectedComponents: List<UiComponent>): String {
         val templateRender = TemplateRender(GENIUS_PAGE)
         val template = templateRender.getTemplate("page-gen-design.vm")
 

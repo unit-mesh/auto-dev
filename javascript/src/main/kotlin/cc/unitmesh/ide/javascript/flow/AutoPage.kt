@@ -1,7 +1,7 @@
 package cc.unitmesh.ide.javascript.flow
 
 import cc.unitmesh.devti.flow.TaskFlow
-import cc.unitmesh.ide.javascript.flow.model.DsComponent
+import cc.unitmesh.devti.bridge.tools.UiComponent
 
 /**
  * FrontendFlow is an interface that represents the flow of tasks in a frontend application.
@@ -28,20 +28,20 @@ interface AutoPage : TaskFlow<String> {
      * Get all pages in the project, based on the naming convention, like the PascalCase under `src/pages`
      * @return list of pages
      */
-    fun getPages(): List<DsComponent>
+    fun getPages(): List<UiComponent>
 
     /**
      * Get all components in the project, based on the naming convention, like the PascalCase under `src/components`
      * @return list of components
      */
-    fun getComponents(): List<DsComponent>
+    fun getComponents(): List<UiComponent>
 
     /**
      * Get the design system components, like the Ant Design in React.
      * Which will load the design system components from the remote
      * @return list of design system components
      */
-    fun getDesignSystemComponents(): List<DsComponent>
+    fun getDesignSystemComponents(): List<UiComponent>
 
     /**
      * Get remote call as a sample, like the axios in Vue, the fetch in React

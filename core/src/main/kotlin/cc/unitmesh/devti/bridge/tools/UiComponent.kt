@@ -1,12 +1,9 @@
-package cc.unitmesh.ide.javascript.flow.model
+package cc.unitmesh.devti.bridge.tools
 
 import kotlinx.serialization.Serializable
 
-/**
- * the Design System Component
- */
 @Serializable
-data class DsComponent(
+data class UiComponent(
     val name: String,
     val path: String,
     val signature: String = "",

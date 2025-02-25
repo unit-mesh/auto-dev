@@ -1,6 +1,6 @@
 package cc.unitmesh.ide.javascript.flow
 
-import cc.unitmesh.ide.javascript.flow.model.DsComponent
+import cc.unitmesh.devti.bridge.tools.UiComponent
 import cc.unitmesh.ide.javascript.util.ReactPsiUtil
 import com.intellij.lang.javascript.JavaScriptFileType
 import com.intellij.lang.javascript.TypeScriptJSXFileType
@@ -32,10 +32,8 @@ class ReactAutoPage(
 ) : AutoPage {
     // todo: add post routes design
     private val routes: MutableMap<RouterFile, JSFile> = mutableMapOf()
-    private val pages: MutableList<DsComponent> = mutableListOf()
-    private val components: MutableList<DsComponent> = mutableListOf()
-
-    // config files
+    private val pages: MutableList<UiComponent> = mutableListOf()
+    private val components: MutableList<UiComponent> = mutableListOf()
     private val configs: MutableList<JSFile> = mutableListOf()
 
     init {
@@ -55,6 +53,10 @@ class ReactAutoPage(
             if (jsFile.isTestFile) return@forEach
 
             when {
+                path.contains("views") -> buildComponent(jsFile)?.let {
+                    pages += it
+                }
+
                 path.contains("pages") -> buildComponent(jsFile)?.let {
                     pages += it
                 }
@@ -65,7 +67,7 @@ class ReactAutoPage(
 
                 else -> {
                     if (root.findChild(file.name) != null) {
-                        RouterFile.values().filter { it.filename == file.name }.map {
+                        RouterFile.entries.filter { it.filename == file.name }.map {
                             routes += it to jsFile
                         }
 
@@ -76,11 +78,11 @@ class ReactAutoPage(
         }
     }
 
-    override fun getPages(): List<DsComponent> = pages
+    override fun getPages(): List<UiComponent> = pages
 
-    override fun getComponents(): List<DsComponent> = components
+    override fun getComponents(): List<UiComponent> = components
 
-    private fun buildComponent(jsFile: JSFile): List<DsComponent>? {
+    private fun buildComponent(jsFile: JSFile): List<UiComponent>? {
         return when (jsFile.language) {
             is TypeScriptJSXLanguageDialect,
             is ECMA6LanguageDialect
@@ -116,7 +118,7 @@ class ReactAutoPage(
     }
 
     // load prompts/context/ds.json from project root
-    override fun getDesignSystemComponents(): List<DsComponent> {
+    override fun getDesignSystemComponents(): List<UiComponent> {
         val rootConfig = project.guessProjectDir()
             ?.findChild("prompts")
             ?.findChild("context")
@@ -124,7 +126,7 @@ class ReactAutoPage(
 
         val json = rootConfig.inputStream.reader().readText()
         return try {
-            val result: List<DsComponent> = Json.decodeFromString(json)
+            val result: List<UiComponent> = Json.decodeFromString(json)
             result
         } catch (e: Exception) {
             emptyList()
@@ -132,10 +134,12 @@ class ReactAutoPage(
     }
 
     override fun sampleRemoteCall(): String {
+        // search for axios usage if exist package.json in code
         TODO("Not yet implemented")
     }
 
     override fun sampleStateManagement(): String? {
+        // lookup for redux usage if exist package.json in code
         TODO("Not yet implemented")
     }
 
@@ -143,7 +147,7 @@ class ReactAutoPage(
         TODO("Not yet implemented")
     }
 
-    fun filterComponents(components: List<String>): List<DsComponent> {
+    fun filterComponents(components: List<String>): List<UiComponent> {
         val comps = this.pages + this.components
         return components.mapNotNull { component ->
             comps.find { it.name == component }

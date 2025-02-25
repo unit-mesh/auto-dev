@@ -1,6 +1,6 @@
 package cc.unitmesh.ide.javascript.util
 
-import cc.unitmesh.ide.javascript.flow.model.DsComponent
+import cc.unitmesh.devti.bridge.tools.UiComponent
 import com.intellij.lang.ecmascript6.psi.ES6ExportDeclaration
 import com.intellij.lang.ecmascript6.psi.ES6ExportDefaultAssignment
 import com.intellij.lang.javascript.presentable.JSFormatUtil
@@ -36,7 +36,7 @@ object ReactPsiUtil {
         return map + defaultAssignment
     }
 
-    fun tsxComponentToComponent(jsFile: JSFile): List<DsComponent> = getExportElements(jsFile).map { psiElement ->
+    fun tsxComponentToComponent(jsFile: JSFile): List<UiComponent> = getExportElements(jsFile).map { psiElement ->
         val name = psiElement.name
         if (name == null) {
             logger<ReactPsiUtil>().warn("name is null")
@@ -50,11 +50,11 @@ object ReactPsiUtil {
 
         return@map when (psiElement) {
             is TypeScriptFunction -> {
-                DsComponent(name = name, path)
+                UiComponent(name = name, path)
             }
 
             is TypeScriptClass -> {
-                DsComponent(name = name, path)
+                UiComponent(name = name, path)
             }
 
             is TypeScriptVariable, is JSVariable -> {
@@ -77,11 +77,11 @@ object ReactPsiUtil {
                     }
                 } ?: emptyList()
 
-                DsComponent(name = name, path, props = props, signature = signature)
+                UiComponent(name = name, path, props = props, signature = signature)
             }
 
             else -> {
-                println("unknown type: ${psiElement::class.java}")
+                logger<ReactPsiUtil>().warn("unknown type: ${psiElement::class.java}")
                 null
             }
         }
