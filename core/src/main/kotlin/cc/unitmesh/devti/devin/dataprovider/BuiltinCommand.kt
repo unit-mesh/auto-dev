@@ -116,14 +116,6 @@ enum class BuiltinCommand(
         false,
         enableInSketch = false
     ),
-//    COMPONENTS(
-//        "components",
-//        "Get all frontend components (React, Vue) in the project",
-//        AllIcons.Toolwindows.ToolWindowTodo,
-//        true,
-//        true,
-//        enableInSketch = false
-//    ),
     ;
 
     companion object {

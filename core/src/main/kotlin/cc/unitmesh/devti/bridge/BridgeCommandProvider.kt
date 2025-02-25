@@ -43,9 +43,16 @@ sealed class Target(override vararg val tools: String) : BridgeCommandProvider {
 
 /**
  * Build Tool depends on the project, like Maven, Gradle, Ant, etc.
+ * 静态安全扫描工具：
+ * - https://github.com/returntocorp/semgrep
+ * - https://snyk.io/
+ * - https://bandit.readthedocs.io/， https://github.com/PyCQA/bandit
  */
 sealed class Security(override vararg val tools: String) : BridgeCommandProvider {
     object PackageChecker : Security("/packageChecker")
+    object Semgrep : Security("Semgrep")
+    object Snyk : Security("Snyk")
+    object Bandit : Security("Bandit")
 }
 
 /**
@@ -57,28 +64,35 @@ sealed class Security(override vararg val tools: String) : BridgeCommandProvider
  * /styling:$dir
  * ```
  */
-sealed class ModularAnalysis(override vararg val tools: String) : BridgeCommandProvider {
-    object Styling : ModularAnalysis("/styling")
-    object Component : ModularAnalysis("/component")
-    object WebApi : ModularAnalysis("/webapi")
-    object Structure : ModularAnalysis("/structure")
+sealed class ArchViewCommand(override vararg val tools: String) : BridgeCommandProvider {
+    object Styling : ArchViewCommand("/styling")
+    object Component : ArchViewCommand("/component")
+    object WebApi : ArchViewCommand("/webapi")
+    object Structure : ArchViewCommand("/structure")
 }
 
 /**
- * Component Analysis
+ * Component Relation Analysis
  */
-sealed class ComponentAnalysis(override vararg val tools: String) : BridgeCommandProvider {
-    object Related : ComponentAnalysis("/related")
-    object RipgrepSearch : ComponentAnalysis("/ripgrepSearch")
+sealed class ComponentRelationCommand(override vararg val tools: String) : BridgeCommandProvider {
+    object Related : ComponentRelationCommand("/related")
+    object RipgrepSearch : ComponentRelationCommand("/ripgrepSearch")
 }
 
 /**
+ * Related:
  * - https://github.com/ast-grep/ast-grep
  * - https://github.com/dsherret/ts-morph
  * - https://github.com/facebook/jscodeshift
  */
 sealed class CodeTranslation(override vararg val tools: String) : BridgeCommandProvider {
     object JsCodeShift : CodeTranslation("jscodeshift")
+
+    /**
+     * Research on
+     * - Digital Transformation Object
+     * - Service
+     */
     object ReWrite : CodeTranslation("ReWrite")
     object VueMod : CodeTranslation("VueMod")
     object JSShift : CodeTranslation("JSShift")
@@ -112,18 +126,6 @@ sealed class ApiTesting(override vararg val tools: String) : BridgeCommandProvid
 sealed class ContinuousDelivery(override vararg val tools: String) : BridgeCommandProvider {
     object JenkinsFile : ContinuousDelivery("JenkinsFile")
     object BuildKit : ContinuousDelivery("BuildKit")
-}
-
-/**
- * 静态安全扫描工具：
- * - https://github.com/returntocorp/semgrep
- * - https://snyk.io/
- * - https://bandit.readthedocs.io/， https://github.com/PyCQA/bandit
- */
-sealed class SecurityAnalysis(override vararg val tools: String) : BridgeCommandProvider {
-    object Semgrep : SecurityAnalysis("Semgrep")
-    object Snyk : SecurityAnalysis("Snyk")
-    object Bandit : SecurityAnalysis("Bandit")
 }
 
 /**
