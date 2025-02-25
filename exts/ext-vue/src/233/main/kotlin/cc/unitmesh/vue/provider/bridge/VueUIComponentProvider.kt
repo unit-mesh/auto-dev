@@ -4,7 +4,6 @@ import cc.unitmesh.devti.bridge.provider.UiComponentProvider
 import cc.unitmesh.devti.bridge.tools.UiComponent
 import cc.unitmesh.devti.util.relativePath
 import com.intellij.javascript.web.html.WebFrameworkHtmlFileType
-import com.intellij.lang.javascript.psi.JSExecutionScope
 import com.intellij.openapi.fileTypes.ex.FileTypeManagerEx
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager
@@ -12,9 +11,10 @@ import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.xml.XmlFile
-import com.intellij.psi.xml.XmlTag
-import org.jetbrains.vuejs.index.findModule
 import org.jetbrains.vuejs.index.findScriptTag
+import org.jetbrains.vuejs.model.VueInputProperty
+import org.jetbrains.vuejs.model.VueModelManager
+import org.jetbrains.vuejs.model.VueRegularComponent
 
 class VueUIComponentProvider : UiComponentProvider() {
     override fun collect(project: Project): List<UiComponent> {
@@ -31,29 +31,33 @@ class VueUIComponentProvider : UiComponentProvider() {
 
         virtualFiles.forEach { file ->
             val xmlFile = psiManager.findFile(file) as? XmlFile ?: return@forEach
-            val scriptTag = findScriptTag(xmlFile, false) ?: return@forEach
-            components += buildComponent(scriptTag, xmlFile)
+            components += buildComponent(xmlFile)
         }
 
         return components
     }
 
     companion object {
-        fun buildComponent(scriptTag: XmlTag, xmlFile: XmlFile): List<UiComponent> {
-            val module: JSExecutionScope =
-                findModule(scriptTag, false) ?: findModule(scriptTag, true) ?: return emptyList()
-
-            val path = module.containingFile.virtualFile
+        /**
+         * It's very slow ly
+         */
+        fun buildComponent(xmlFile: XmlFile): List<UiComponent> {
+            val component = VueModelManager.findEnclosingContainer(xmlFile) as? VueRegularComponent ?: return listOf()
+            val path = xmlFile.virtualFile
             var componentName = path.name
             if (componentName == "index.vue") {
                 componentName = path.parent.url
             }
+            if (component.props.isEmpty()) {
+                return emptyList()
+            }
 
             return listOf(
                 UiComponent(
-                    componentName,
+                    component.element ?: componentName,
                     path.relativePath(project = xmlFile.project),
-                    componentName
+                    "",
+                    component.props.map(VueInputProperty::name)
                 )
             )
         }
