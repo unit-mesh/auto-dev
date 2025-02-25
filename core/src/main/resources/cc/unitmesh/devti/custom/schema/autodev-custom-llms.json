@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "name": { "type": "string" },
+      "description": { "type": "string" },
+      "url": { "type": "string", "format": "uri" },
+      "auth": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string" },
+          "token": { "type": "string" }
+        },
+        "required": ["type", "token"]
+      },
+      "requestFormat": { "type": "string" },
+      "responseFormat": { "type": "string" }
+    },
+    "required": ["name", "description", "url", "auth", "requestFormat", "responseFormat"]
+  }
+}

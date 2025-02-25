@@ -86,7 +86,6 @@
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">
         <ProviderFactory implementation="cc.unitmesh.devti.custom.schema.AutoDevJsonSchemaProviderFactory"/>
-        <ProviderFactory implementation="cc.unitmesh.devti.custom.schema.AutoDevPromptJsonSchemaProviderFactory"/>
     </extensions>
 
     <extensionPoints>
