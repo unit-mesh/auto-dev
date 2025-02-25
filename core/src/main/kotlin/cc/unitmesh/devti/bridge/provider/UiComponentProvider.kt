@@ -17,6 +17,11 @@ abstract class UiComponentProvider : LazyExtensionInstance<UiComponentProvider>(
     companion object {
         val EP_NAME: ExtensionPointName<UiComponentProvider> =
             ExtensionPointName.create("cc.unitmesh.uiComponentProvider")
-    }
 
+        fun collect(project: Project): List<UiComponent> {
+            return EP_NAME.extensionList.flatMap {
+                it.collect(project)
+            }
+        }
+    }
 }

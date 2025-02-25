@@ -20,13 +20,13 @@ package cc.unitmesh.devti.bridge
  * 6. Generate unit and integration tests
  */
 sealed interface BridgeCommandProvider {
-    val tools: Array<out String>
+    val name: String
 }
 
 /**
  * Always tell user, if you can try Microservices or Micro Frontend, will be lower cost and higher efficiency.
  */
-sealed class Assessment(override vararg val tools: String) : BridgeCommandProvider {
+sealed class Assessment(override val name: String) : BridgeCommandProvider {
     object SCC : Assessment("SCC")
     object CLOC : Assessment("CLOC")
     object Dependencies : Assessment("/dependencies")
@@ -35,7 +35,7 @@ sealed class Assessment(override vararg val tools: String) : BridgeCommandProvid
 /**
  * list all tools, and show in structures.
  */
-sealed class Target(override vararg val tools: String) : BridgeCommandProvider {
+sealed class Target(override val name: String) : BridgeCommandProvider {
     object Docker : Target("Docker")
     object BuildTool : Target("/buildTool")
     object Mermaid : Target("/mermaid")
@@ -48,7 +48,7 @@ sealed class Target(override vararg val tools: String) : BridgeCommandProvider {
  * - https://snyk.io/
  * - https://bandit.readthedocs.io/， https://github.com/PyCQA/bandit
  */
-sealed class Security(override vararg val tools: String) : BridgeCommandProvider {
+sealed class Security(override val name: String) : BridgeCommandProvider {
     object PackageChecker : Security("/packageChecker")
     object Semgrep : Security("Semgrep")
     object Snyk : Security("Snyk")
@@ -64,17 +64,18 @@ sealed class Security(override vararg val tools: String) : BridgeCommandProvider
  * /styling:$dir
  * ```
  */
-sealed class ArchViewCommand(override vararg val tools: String) : BridgeCommandProvider {
-    object Styling : ArchViewCommand("/styling")
-    object Component : ArchViewCommand("/component")
+sealed class ArchViewCommand(override val name: String) : BridgeCommandProvider {
     object WebApi : ArchViewCommand("/webapi")
+    object ModuleView : ArchViewCommand("/moduleView")
+    object ComponentView : ArchViewCommand("/componentView")
     object Structure : ArchViewCommand("/structure")
+    object Styling : ArchViewCommand("/styling")
 }
 
 /**
  * Component Relation Analysis
  */
-sealed class ComponentRelationCommand(override vararg val tools: String) : BridgeCommandProvider {
+sealed class ComponentRelationCommand(override val name: String) : BridgeCommandProvider {
     object Related : ComponentRelationCommand("/related")
     object RipgrepSearch : ComponentRelationCommand("/ripgrepSearch")
 }
@@ -85,7 +86,7 @@ sealed class ComponentRelationCommand(override vararg val tools: String) : Bridg
  * - https://github.com/dsherret/ts-morph
  * - https://github.com/facebook/jscodeshift
  */
-sealed class CodeTranslation(override vararg val tools: String) : BridgeCommandProvider {
+sealed class CodeTranslation(override val name: String) : BridgeCommandProvider {
     object JsCodeShift : CodeTranslation("jscodeshift")
 
     /**
@@ -105,7 +106,7 @@ sealed class CodeTranslation(override vararg val tools: String) : BridgeCommandP
  * - https://github.com/pressly/goose
  * - https://github.com/rubenv/sql-migrate
  */
-sealed class DatabaseMigration(override vararg val tools: String) : BridgeCommandProvider {
+sealed class DatabaseMigration(override val name: String) : BridgeCommandProvider {
     object Flyway : DatabaseMigration("Flyway")
     object SQL : DatabaseMigration("SQL")
 }
@@ -113,7 +114,7 @@ sealed class DatabaseMigration(override vararg val tools: String) : BridgeComman
 /**
  * [Schemathesis](https://github.com/schemathesis/schemathesis): is a tool that levels-up your API testing by leveraging API specs as a blueprints for generating test cases.
  */
-sealed class ApiTesting(override vararg val tools: String) : BridgeCommandProvider {
+sealed class ApiTesting(override val name: String) : BridgeCommandProvider {
     object HttpClient : ApiTesting("HttpClient")
     object Swagger : ApiTesting("Swagger")
     object JMeter : ApiTesting("JMeter")
@@ -123,7 +124,7 @@ sealed class ApiTesting(override vararg val tools: String) : BridgeCommandProvid
 /**
  * [BuildKit](https://github.com/moby/buildkit): concurrent, cache-efficient, and Dockerfile-agnostic builder toolkit
  */
-sealed class ContinuousDelivery(override vararg val tools: String) : BridgeCommandProvider {
+sealed class ContinuousDelivery(override val name: String) : BridgeCommandProvider {
     object JenkinsFile : ContinuousDelivery("JenkinsFile")
     object BuildKit : ContinuousDelivery("BuildKit")
 }
@@ -131,7 +132,7 @@ sealed class ContinuousDelivery(override vararg val tools: String) : BridgeComma
 /**
  * Container: Docker, Podman, etc.
  */
-sealed class Containerization(override vararg val tools: String) : BridgeCommandProvider {
+sealed class Containerization(override val name: String) : BridgeCommandProvider {
     object Docker : Containerization("Docker")
     object Podman : Containerization("Podman")
     object Colima : Containerization("Colima")
@@ -143,7 +144,7 @@ sealed class Containerization(override vararg val tools: String) : BridgeCommand
  * - Knowledge API: `/knowledge:src/main/com/phodal/HelloWorld.java#L1`, APIs
  * History: git history of file: `/history:src/main/com/phodal/HelloWorld.java`
  */
-sealed class KnowledgeTransfer(override vararg val tools: String) : BridgeCommandProvider {
+sealed class KnowledgeTransfer(override val name: String) : BridgeCommandProvider {
     object Knowledge : KnowledgeTransfer("/knowledge")
     object History : KnowledgeTransfer("/history")
 }
