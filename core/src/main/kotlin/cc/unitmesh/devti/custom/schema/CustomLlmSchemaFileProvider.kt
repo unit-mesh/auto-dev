@@ -24,6 +24,6 @@ class CustomLlmSchemaFileProvider(val project: Project) : JsonSchemaFileProvider
     override fun getSchemaType(): SchemaType = SchemaType.embeddedSchema
 
     companion object {
-        private const val CUSTOM_LLM_SCHEMA_FILE = "autodev-custom-llm.json"
+        private const val CUSTOM_LLM_SCHEMA_FILE = "autodev-custom-llms.json"
     }
 }
