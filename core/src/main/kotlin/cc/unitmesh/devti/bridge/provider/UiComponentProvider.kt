@@ -12,9 +12,7 @@ abstract class UiComponentProvider : LazyExtensionInstance<UiComponentProvider>(
 
     override fun getImplementationClassName(): String? = implementationClass
 
-    open fun collect(project: Project): List<UiComponent> {
-        return emptyList()
-    }
+    abstract fun collect(project: Project): List<UiComponent>
 
     companion object {
         val EP_NAME: ExtensionPointName<UiComponentProvider> =

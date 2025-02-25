@@ -6,5 +6,7 @@
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <relatedClassProvider language="Vue" implementationClass="cc.unitmesh.vue.provider.VueRelatedClassProvider"/>
+
+        <uiComponentProvider implementation="cc.unitmesh.vue.provider.bridge.VueUIComponentProvider"/>
     </extensions>
 </idea-plugin>
