@@ -26,6 +26,7 @@ include(
     "exts:ext-vue",
     "exts:ext-dependencies",
     "exts:ext-container",
+    "exts:ext-openrewrite",
 
     // the Input Language support for AutoDev
     "exts:devins-lang"

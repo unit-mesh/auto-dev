@@ -663,11 +663,42 @@ project(":exts:ext-endpoints") {
         implementation(project(":core"))
     }
 }
+
 project(":exts:ext-terminal") {
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins + "org.jetbrains.plugins.terminal")
+        }
+
+        implementation(project(":core"))
+    }
+
+    sourceSets {
+        main {
+            resources.srcDirs("src/$platformVersion/main/resources")
+        }
+        test {
+            resources.srcDirs("src/$platformVersion/test/resources")
+        }
+    }
+    kotlin {
+        sourceSets {
+            main {
+                kotlin.srcDirs("src/$platformVersion/main/kotlin")
+            }
+            test {
+                kotlin.srcDirs("src/$platformVersion/test/kotlin")
+            }
+        }
+    }
+}
+
+project(":exts:ext-openrewrite") {
+    dependencies {
+        intellijPlatform {
+            intellijIde(prop("ideaVersion"))
+            intellijPlugins(ideaPlugins + prop("openWritePlugin"))
         }
 
         implementation(project(":core"))
