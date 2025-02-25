@@ -4,9 +4,11 @@ import com.intellij.lang.javascript.JavascriptLanguage
 import com.intellij.lang.javascript.psi.JSFile
 import com.intellij.psi.PsiFileFactory
 import com.intellij.testFramework.LightPlatformTestCase
+import org.intellij.lang.annotations.Language
 
 class ReactPsiUtilTest : LightPlatformTestCase() {
     fun testShouldHandleExportReactComponent() {
+        @Language("TypeScript JSX")
         val code = """
             interface AppProps {
               Component: any;

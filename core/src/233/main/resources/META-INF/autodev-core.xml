@@ -193,10 +193,10 @@
         <!-- Lang Sketch Provider -->
         <extensionPoint qualifiedName="cc.unitmesh.langSketchProvider"
                         interface="cc.unitmesh.devti.sketch.ui.LanguageSketchProvider"
-                        dynamic="true" />
+                        dynamic="true"/>
         <extensionPoint qualifiedName="cc.unitmesh.sketchToolchainProvider"
                         interface="cc.unitmesh.devti.sketch.SketchToolchainProvider"
-                        dynamic="true" />
+                        dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.relatedClassProvider"
                         beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
@@ -217,6 +217,11 @@
                         interface="cc.unitmesh.devti.provider.RevisionProvider"
                         dynamic="true">
         </extensionPoint>
+
+        <!--  Bridge -->
+        <extensionPoint qualifiedName="cc.unitmesh.uiComponentProvider"
+                        interface="cc.unitmesh.devti.bridge.provider.UiComponentProvider"
+                        dynamic="true"/>
     </extensionPoints>
 
     <applicationListeners>
@@ -262,14 +267,14 @@
         <action id="cc.unitmesh.devti.inlayCompleteCode"
                 class="cc.unitmesh.devti.actions.completion.InlayCompleteCodeAction"
                 text="Inlay Complete Code (AutoDev)"
-                description="Inlay complete code!" >
+                description="Inlay complete code!">
             <keyboard-shortcut keymap="$default" first-keystroke="alt PERIOD"/>
             <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
         </action>
         <action id="cc.unitmesh.devti.disposeInlayCompleteCode"
                 class="cc.unitmesh.devti.actions.completion.InlayCompleteCodeDisposedAction"
                 text="Disposed Inlay Complete Code"
-                description="Disposed Inlay complete code!" >
+                description="Disposed Inlay complete code!">
             <keyboard-shortcut keymap="$default" first-keystroke="ESCAPE"/>
         </action>
 
@@ -358,7 +363,7 @@
 
         <group id="AutoDev.ToolWindow.Chat.TitleActions">
             <action id="AutoDev.ToolWindow.NewChatAction" class="cc.unitmesh.devti.gui.toolbar.NewChatAction"/>
-<!--            <action id="AutoDev.ToolWindow.NewSketchAction" class="cc.unitmesh.devti.gui.toolbar.NewSketchAction"/>-->
+            <!--            <action id="AutoDev.ToolWindow.NewSketchAction" class="cc.unitmesh.devti.gui.toolbar.NewSketchAction"/>-->
         </group>
 
         <group id="AutoDev.ToolWindow.Message.Toolbar.Assistant">
@@ -388,7 +393,8 @@
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                 class="cc.unitmesh.devti.actions.chat.AutoTestInMenuAction">
 
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="ProjectViewPopupMenuRefactoringGroup" />
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="after"
+                          relative-to-action="ProjectViewPopupMenuRefactoringGroup"/>
             <add-to-group group-id="RefactoringMenu" anchor="last"/>
             <add-to-group group-id="EditorTabPopupMenu" anchor="last"/>
         </action>

@@ -1,6 +1,7 @@
 package cc.unitmesh.ide.javascript.flow
 
 import cc.unitmesh.devti.bridge.tools.UiComponent
+import cc.unitmesh.ide.javascript.bridge.ReactUIComponentProvider
 import cc.unitmesh.ide.javascript.util.ReactPsiUtil
 import com.intellij.lang.javascript.JavaScriptFileType
 import com.intellij.lang.javascript.TypeScriptJSXFileType
@@ -53,15 +54,15 @@ class ReactAutoPage(
             if (jsFile.isTestFile) return@forEach
 
             when {
-                path.contains("views") -> buildComponent(jsFile)?.let {
+                path.contains("views") -> ReactUIComponentProvider.buildComponent(jsFile)?.let {
                     pages += it
                 }
 
-                path.contains("pages") -> buildComponent(jsFile)?.let {
+                path.contains("pages") -> ReactUIComponentProvider.buildComponent(jsFile)?.let {
                     pages += it
                 }
 
-                path.contains("components") -> buildComponent(jsFile)?.let {
+                path.contains("components") -> ReactUIComponentProvider.buildComponent(jsFile)?.let {
                     components += it
                 }
 
@@ -81,25 +82,6 @@ class ReactAutoPage(
     override fun getPages(): List<UiComponent> = pages
 
     override fun getComponents(): List<UiComponent> = components
-
-    private fun buildComponent(jsFile: JSFile): List<UiComponent>? {
-        return when (jsFile.language) {
-            is TypeScriptJSXLanguageDialect,
-            is ECMA6LanguageDialect
-            -> {
-                val dsComponents = ReactPsiUtil.tsxComponentToComponent(jsFile)
-                if (dsComponents.isEmpty()) {
-                    logger<ReactAutoPage>().warn("no component found in ${jsFile.name}")
-                }
-                dsComponents
-            }
-
-            else -> {
-                logger<ReactAutoPage>().warn("unknown language: ${jsFile.language}")
-                null
-            }
-        }
-    }
 
     override fun getRoutes(): Map<String, String> {
         return this.routes.map {

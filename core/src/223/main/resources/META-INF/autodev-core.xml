@@ -217,6 +217,11 @@
                         interface="cc.unitmesh.devti.provider.RevisionProvider"
                         dynamic="true">
         </extensionPoint>
+
+        <!--  Bridge -->
+        <extensionPoint qualifiedName="cc.unitmesh.uiComponentProvider"
+                        interface="cc.unitmesh.devti.bridge.provider.UiComponentProvider"
+                        dynamic="true"/>
     </extensionPoints>
 
     <applicationListeners>
