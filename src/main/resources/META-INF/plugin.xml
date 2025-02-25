@@ -29,7 +29,6 @@
         <module name="cc.unitmesh.go"/>
         <module name="cc.unitmesh.rust"/>
 <!--        <module name="cc.unitmesh.csharp"/>-->
-        <module name="cc.unitmesh.local"/>
 
         <!-- extension modules -->
         <module name="cc.unitmesh.database"/>

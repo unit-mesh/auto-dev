@@ -257,7 +257,6 @@ project(":") {
             pluginModule(implementation(project(":goland")))
             pluginModule(implementation(project(":rust")))
 
-            pluginModule(implementation(project(":local-bundle")))
             pluginModule(implementation(project(":exts:ext-database")))
             pluginModule(implementation(project(":exts:ext-git")))
             pluginModule(implementation(project(":exts:ext-http-client")))
@@ -282,7 +281,6 @@ project(":") {
         implementation(project(":goland"))
         implementation(project(":rust"))
 
-        implementation(project(":local-bundle"))
         implementation(project(":exts:ext-database"))
         implementation(project(":exts:ext-git"))
         implementation(project(":exts:ext-http-client"))
@@ -665,18 +663,6 @@ project(":exts:ext-endpoints") {
         implementation(project(":core"))
     }
 }
-
-
-project(":local-bundle") {
-    dependencies {
-        intellijPlatform {
-            intellijIde(prop("ideaVersion"))
-        }
-
-        implementation(project(":core"))
-    }
-}
-
 project(":exts:ext-terminal") {
     dependencies {
         intellijPlatform {

@@ -1,7 +1,6 @@
-package cc.unitmesh.local.provider
+package cc.unitmesh.devti.provider.local
 
 import cc.unitmesh.devti.custom.schema.CUSTOM_AGENT_FILE_NAME
-import cc.unitmesh.devti.provider.local.JsonTextProvider
 import com.intellij.lang.Language
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.colors.EditorColorsUtil
