@@ -1,5 +1,6 @@
 package cc.unitmesh.dependencies
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.sketch.lint.SketchCodeInspection
@@ -14,7 +15,7 @@ import com.intellij.psi.PsiManager
 import org.jetbrains.security.`package`.Package
 import org.jetbrains.security.`package`.PackageType
 
-class AutoDevDependenciesCheck : AnAction("Check dependencies has Issues") {
+class AutoDevDependenciesCheck : AnAction(AutoDevBundle.message("sketch.dependencies.check")) {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
 
     override fun update(e: AnActionEvent) {
