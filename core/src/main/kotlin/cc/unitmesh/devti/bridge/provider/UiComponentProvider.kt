@@ -12,6 +12,8 @@ abstract class UiComponentProvider : LazyExtensionInstance<UiComponentProvider>(
 
     override fun getImplementationClassName(): String? = implementationClass
 
+    abstract fun isApplicable(project: Project): Boolean
+
     abstract fun collect(project: Project): List<UiComponent>
 
     companion object {
@@ -19,9 +21,11 @@ abstract class UiComponentProvider : LazyExtensionInstance<UiComponentProvider>(
             ExtensionPointName.create("cc.unitmesh.uiComponentProvider")
 
         fun collect(project: Project): List<UiComponent> {
-            return EP_NAME.extensionList.flatMap {
-                it.collect(project)
-            }
+            return EP_NAME.extensionList
+                .filter { it.isApplicable(project) }
+                .flatMap {
+                    it.collect(project)
+                }
         }
     }
 }

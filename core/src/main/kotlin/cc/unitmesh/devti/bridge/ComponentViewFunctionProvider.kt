@@ -15,6 +15,8 @@ class ComponentViewFunctionProvider : ToolchainFunctionProvider {
         args: List<Any>,
         allVariables: Map<String, Any?>
     ): Any {
-        return UiComponentProvider.collect(project)
+        return UiComponentProvider.collect(project).joinToString("\n") {
+            it.format()
+        }
     }
 }

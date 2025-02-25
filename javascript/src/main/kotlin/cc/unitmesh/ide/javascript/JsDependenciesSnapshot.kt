@@ -76,7 +76,7 @@ class JsDependenciesSnapshot(
             return JsDependenciesSnapshot(packageJsonFiles, resolvedPackageJson, tsConfigs, packages)
         }
 
-        private fun enumerateAllPackages(set: Set<VirtualFile>): Map<String, PackageJsonData.PackageJsonDependencyEntry> {
+        fun enumerateAllPackages(set: Set<VirtualFile>): Map<String, PackageJsonData.PackageJsonDependencyEntry> {
             return set.asSequence()
                 .map { PackageJsonData.getOrCreate(it) }
                 .flatMap { it.allDependencyEntries.entries }

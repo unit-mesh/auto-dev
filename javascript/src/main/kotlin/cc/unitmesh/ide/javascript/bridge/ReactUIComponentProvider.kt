@@ -1,6 +1,5 @@
 package cc.unitmesh.ide.javascript.bridge
 
-import cc.unitmesh.devti.bridge.provider.UiComponentProvider
 import cc.unitmesh.devti.bridge.tools.UiComponent
 import cc.unitmesh.ide.javascript.flow.ReactAutoPage
 import cc.unitmesh.ide.javascript.util.ReactPsiUtil
@@ -17,7 +16,7 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
 import kotlin.collections.plusAssign
 
-class ReactUIComponentProvider : UiComponentProvider() {
+class ReactUIComponentProvider : FrameworkComponentProvider("React") {
     override fun collect(project: Project): List<UiComponent> {
         val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
         val psiManager = PsiManager.getInstance(project)
