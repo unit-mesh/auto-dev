@@ -19,6 +19,7 @@ class AutoDevSettingsState : PersistentStateComponent<AutoDevSettingsState> {
     var customEngineServer = ""
     var customEngineToken = ""
     var customModel = ""
+    var customLlms = ""
 
     var customEngineResponseFormat = "\$.choices[0].delta.content"
     /**
