@@ -16,7 +16,12 @@
         "required": ["type", "token"]
       },
       "requestFormat": { "type": "string" },
-      "responseFormat": { "type": "string" }
+      "responseFormat": { "type": "string" },
+      "modelType": {
+        "type": "string",
+        "enum": ["Default", "Plan", "Act", "Completion", "Embedding", "FastApply"],
+        "default": "Default"
+      }
     },
     "required": ["name", "description", "url", "auth", "requestFormat", "responseFormat"]
   }
