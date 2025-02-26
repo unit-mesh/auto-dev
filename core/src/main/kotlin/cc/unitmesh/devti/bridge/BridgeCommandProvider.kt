@@ -66,22 +66,26 @@ sealed class Security(override val name: String) : BridgeCommandProvider {
  */
 sealed class ArchViewCommand(override val name: String) : BridgeCommandProvider {
     object WebApi : ArchViewCommand("/webapi")
-    object ModuleView : ArchViewCommand("/moduleView")
+
+    /**
+     * Aka Module View
+     */
+    object ContainerView : ArchViewCommand("containerView")
 
     /**
      * /componentView
      */
     object ComponentView : ArchViewCommand("componentView")
-    object Structure : ArchViewCommand("/structure")
     object StylingView : ArchViewCommand("stylingView")
+    object CodeView : ArchViewCommand("codeView")
 }
 
 /**
  * Component Relation Analysis
  */
 sealed class ComponentRelationCommand(override val name: String) : BridgeCommandProvider {
-    object Related : ComponentRelationCommand("/related")
-    object RipgrepSearch : ComponentRelationCommand("/ripgrepSearch")
+    object Related : ComponentRelationCommand("related")
+    object RipgrepSearch : ComponentRelationCommand("ripgrepSearch")
 }
 
 /**

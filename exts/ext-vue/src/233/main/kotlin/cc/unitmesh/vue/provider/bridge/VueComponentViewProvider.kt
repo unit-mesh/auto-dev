@@ -1,6 +1,6 @@
 package cc.unitmesh.vue.provider.bridge
 
-import cc.unitmesh.devti.bridge.provider.UiComponentProvider
+import cc.unitmesh.devti.bridge.provider.ComponentViewProvider
 import cc.unitmesh.devti.bridge.tools.UiComponent
 import cc.unitmesh.devti.util.relativePath
 import com.intellij.javascript.nodejs.PackageJsonData
@@ -20,7 +20,7 @@ import org.jetbrains.vuejs.model.VueModelManager
 import org.jetbrains.vuejs.model.VueRegularComponent
 import java.io.IOException
 
-class VueUIComponentProvider : UiComponentProvider() {
+class VueComponentViewProvider : ComponentViewProvider() {
     override fun isApplicable(project: Project): Boolean {
         val jsonFiles = PackageJsonFileManager.getInstance(project).validPackageJsonFiles
         if (jsonFiles.isEmpty()) {

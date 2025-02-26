@@ -1,14 +1,10 @@
 package cc.unitmesh.ide.javascript.flow
 
 import cc.unitmesh.devti.bridge.tools.UiComponent
-import cc.unitmesh.ide.javascript.bridge.ReactUIComponentProvider
-import cc.unitmesh.ide.javascript.util.ReactPsiUtil
+import cc.unitmesh.ide.javascript.bridge.ReactComponentViewProvider
 import com.intellij.lang.javascript.JavaScriptFileType
 import com.intellij.lang.javascript.TypeScriptJSXFileType
-import com.intellij.lang.javascript.dialects.ECMA6LanguageDialect
-import com.intellij.lang.javascript.dialects.TypeScriptJSXLanguageDialect
 import com.intellij.lang.javascript.psi.JSFile
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
@@ -17,7 +13,6 @@ import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
 // keep this import
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 enum class RouterFile(val filename: String) {
@@ -54,15 +49,15 @@ class ReactAutoPage(
             if (jsFile.isTestFile) return@forEach
 
             when {
-                path.contains("views") -> ReactUIComponentProvider.buildComponent(jsFile)?.let {
+                path.contains("views") -> ReactComponentViewProvider.buildComponent(jsFile)?.let {
                     pages += it
                 }
 
-                path.contains("pages") -> ReactUIComponentProvider.buildComponent(jsFile)?.let {
+                path.contains("pages") -> ReactComponentViewProvider.buildComponent(jsFile)?.let {
                     pages += it
                 }
 
-                path.contains("components") -> ReactUIComponentProvider.buildComponent(jsFile)?.let {
+                path.contains("components") -> ReactComponentViewProvider.buildComponent(jsFile)?.let {
                     components += it
                 }
 

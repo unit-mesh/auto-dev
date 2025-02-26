@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.serviceContainer.LazyExtensionInstance
 import com.intellij.util.xmlb.annotations.Attribute
 
-abstract class UiComponentProvider : LazyExtensionInstance<UiComponentProvider>() {
+abstract class ComponentViewProvider : LazyExtensionInstance<ComponentViewProvider>() {
     @Attribute("implementationClass")
     var implementationClass: String? = null
 
@@ -17,8 +17,8 @@ abstract class UiComponentProvider : LazyExtensionInstance<UiComponentProvider>(
     abstract fun collect(project: Project): List<UiComponent>
 
     companion object {
-        val EP_NAME: ExtensionPointName<UiComponentProvider> =
-            ExtensionPointName.create("cc.unitmesh.uiComponentProvider")
+        val EP_NAME: ExtensionPointName<ComponentViewProvider> =
+            ExtensionPointName.create("cc.unitmesh.componentProvider")
 
         fun collect(project: Project): List<UiComponent> {
             return EP_NAME.extensionList

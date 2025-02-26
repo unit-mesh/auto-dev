@@ -16,7 +16,7 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.ProjectScope
 import kotlin.collections.plusAssign
 
-class ReactUIComponentProvider : FrameworkComponentProvider("React") {
+class ReactComponentViewProvider : FrameworkComponentViewProvider("React") {
     override fun collect(project: Project): List<UiComponent> {
         val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
         val psiManager = PsiManager.getInstance(project)

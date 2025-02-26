@@ -219,8 +219,8 @@
         </extensionPoint>
 
         <!--  Bridge -->
-        <extensionPoint qualifiedName="cc.unitmesh.uiComponentProvider"
-                        interface="cc.unitmesh.devti.bridge.provider.UiComponentProvider"
+        <extensionPoint qualifiedName="cc.unitmesh.componentProvider"
+                        interface="cc.unitmesh.devti.bridge.provider.ComponentViewProvider"
                         dynamic="true"/>
     </extensionPoints>
 
@@ -256,6 +256,7 @@
         <langSketchProvider implementation="cc.unitmesh.devti.sketch.ui.openapi.OpenAPISketchProvider"/>
 
         <toolchainFunctionProvider implementation="cc.unitmesh.devti.bridge.function.ComponentViewFunctionProvider"/>
+        <toolchainFunctionProvider implementation="cc.unitmesh.devti.bridge.function.ContainerViewFunctionProvider"/>
     </extensions>
 
     <actions>
