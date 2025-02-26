@@ -1,9 +1,7 @@
 package cc.unitmesh.devti.bridge.command
 
-import com.intellij.util.io.awaitExit
-import kotlinx.coroutines.*
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 @Serializable
@@ -59,32 +57,6 @@ class SccWrapper(
 
         return parseResult(output)
     }
-
-    /**
-     * 异步执行 scc 命令（使用协程）
-     * @param arguments scc 命令行参数
-     */
-    suspend fun runSccAsync(vararg arguments: String): List<SccResult> =
-        withContext(Dispatchers.IO) {
-            val command = buildCommand(arguments)
-            val process = ProcessBuilder(command)
-                .redirectErrorStream(true)
-                .start()
-
-            val output = process.inputStream.reader().use { reader ->
-                reader.readText()
-            }
-
-            val exitCode = withTimeoutOrNull(timeoutSeconds * 1000) {
-                process.awaitExit()
-            } ?: throw SccException("scc execution timed out after $timeoutSeconds seconds")
-
-            if (exitCode != 0) {
-                throw SccException("scc exited with code $exitCode. Output: $output")
-            }
-
-            parseResult(output)
-        }
 
     private fun buildCommand(arguments: Array<out String>): List<String> {
         val baseCommand = if (sccPath.contains(" ")) {

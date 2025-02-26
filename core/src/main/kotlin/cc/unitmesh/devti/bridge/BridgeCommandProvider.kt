@@ -68,19 +68,26 @@ sealed class Security(override val name: String) : BridgeCommandProvider {
  * ```
  */
 sealed class ArchViewCommand(override val name: String) : BridgeCommandProvider {
-    object WebApi : ArchViewCommand("/webapi")
+    object WebApi : ArchViewCommand("webapi")
 
     /**
      * Aka Module View
      */
     object ContainerView : ArchViewCommand("containerView")
-
     /**
      * /componentView
      */
     object ComponentView : ArchViewCommand("componentView")
-    object StylingView : ArchViewCommand("stylingView")
+
+    /**
+     * For show code dependency, like UML Class Diagram in Graph.
+     */
     object CodeView : ArchViewCommand("codeView")
+
+    /**
+     * For frontend Style, like CSS, SCSS, etc.
+     */
+    object StylingView : ArchViewCommand("stylingView")
 }
 
 /**
