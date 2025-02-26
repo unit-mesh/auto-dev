@@ -2,6 +2,7 @@ package cc.unitmesh.devti.settings.customize
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.schema.CUSTOM_AGENT_FILE_NAME
+import cc.unitmesh.devti.custom.schema.CUSTOM_PROMPTS_FILE_NAME
 import cc.unitmesh.devti.fullHeight
 import cc.unitmesh.devti.fullWidthCell
 import cc.unitmesh.devti.gui.component.JsonLanguageField
@@ -37,7 +38,7 @@ class CustomizeConfigurable(val project: Project) : BoundConfigurable(AutoDevBun
                 project,
                 state::customPrompts.toString(),
                 AutoDevBundle.messageWithLanguageFromLLMSetting("autodev.custom.prompt.placeholder"),
-                CUSTOM_AGENT_FILE_NAME
+                CUSTOM_PROMPTS_FILE_NAME
             ).apply {
                 placeholder("autodev.custom.prompt.placeholder", this, 1)
             }

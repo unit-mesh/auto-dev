@@ -13,7 +13,7 @@
           "type": { "type": "string" },
           "token": { "type": "string" }
         },
-        "required": ["type", "token"]
+        "required": ["token"]
       },
       "requestFormat": { "type": "string" },
       "responseFormat": { "type": "string" },
@@ -23,6 +23,6 @@
         "default": "Default"
       }
     },
-    "required": ["name", "description", "url", "auth", "requestFormat", "responseFormat"]
+    "required": ["name", "url", "auth", "requestFormat", "responseFormat"]
   }
 }

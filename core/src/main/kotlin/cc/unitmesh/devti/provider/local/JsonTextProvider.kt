@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.provider.local
 
-import cc.unitmesh.devti.custom.schema.CUSTOM_AGENT_FILE_NAME
 import com.intellij.lang.Language
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.colors.EditorColorsUtil
@@ -41,7 +40,7 @@ class DefaultLanguageField(
             }
 
             override fun customizePsiFile(file: PsiFile?) {
-                file?.name = CUSTOM_AGENT_FILE_NAME
+                file?.name = fileName
             }
         }
     ) {

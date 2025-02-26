@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.provider.local
 
-import cc.unitmesh.devti.custom.schema.CUSTOM_AGENT_FILE_NAME
 import com.intellij.lang.Language
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.colors.EditorColorsUtil
@@ -36,7 +35,7 @@ class JsonLanguageField(
             }
 
             override fun customizePsiFile(file: PsiFile?) {
-                file?.name = CUSTOM_AGENT_FILE_NAME
+                file?.name = fileName
             }
         }
     ) {
@@ -53,6 +52,11 @@ class JsonLanguageField(
 
             val metrics: FontMetrics = getFontMetrics(font)
             val columnWidth = metrics.charWidth('m')
+
+            this.settings.isUseSoftWraps = true
+            this.settings.isAdditionalPageAtBottom = false
+            this.settings.isCaretRowShown = false
+
             isOneLineMode = false
             preferredSize = Dimension(25 * columnWidth, 25 * metrics.height)
         }
