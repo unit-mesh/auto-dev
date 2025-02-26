@@ -501,7 +501,7 @@ val cssPlugins = listOf(
     "org.jetbrains.plugins.less",
     // Needed for tests-only
     //"org.jetbrains.plugins.stylus:233.11799.172",
-    "org.intellij.plugins.postcss",
+//    "org.intellij.plugins.postcss",
     // Needed for tests-only
     //"com.jetbrains.plugins.Jade:$targetVersion",
 )
