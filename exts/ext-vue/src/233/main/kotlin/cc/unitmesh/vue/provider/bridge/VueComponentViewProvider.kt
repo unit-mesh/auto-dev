@@ -78,7 +78,7 @@ class VueComponentViewProvider : ComponentViewProvider() {
             val path = xmlFile.virtualFile
             var componentName = path.name
             if (componentName == "index.vue") {
-                componentName = path.parent.url
+                componentName = path.parent.url.substringAfterLast("/")
             }
             if (!isPublicComponent(path)) {
                 return emptyList()

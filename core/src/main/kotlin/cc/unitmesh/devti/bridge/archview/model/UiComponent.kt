@@ -11,10 +11,9 @@ data class UiComponent(
 ) {
     fun format(): String {
         return """
-            |component name: $name
             |path: $path
-            |input signature: $signature
-            |component props: $props
+            |component: <$name >
+            |props: $props
         """.trimMargin()
     }
 }
