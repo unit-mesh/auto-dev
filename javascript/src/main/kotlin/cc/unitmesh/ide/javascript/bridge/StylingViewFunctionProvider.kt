@@ -25,22 +25,26 @@ class StylingViewFunctionProvider : ToolchainFunctionProvider {
         val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
         val scssType = FileTypeManagerEx.getInstanceEx().getFileTypeByExtension("scss")
         var files = FileTypeIndex.getFiles(scssType, searchScope)
-        if (files.isNotEmpty()) {
+        if (files.isEmpty()) {
             files = FileTypeIndex.getFiles(CssFileType.INSTANCE, searchScope)
-
         }
 
         val result = files
-            .filter(::skipVendorCss)
+            .filter { !isVendorOrIgnoreStyle(it) }
             .mapNotNull { virtualFile ->
-                val psiFile = runReadAction { PsiManager.getInstance(project).findFile(virtualFile) } ?: return@mapNotNull null
+                val psiFile =
+                    runReadAction { PsiManager.getInstance(project).findFile(virtualFile) } ?: return@mapNotNull null
                 StructureCommandUtil.getFileStructure(project, virtualFile, psiFile)
             }
 
-        return result
+        return result.joinToString("\n")
     }
 
     /// skip all .module.css files and min,css files and under vendors
-    private fun skipVendorCss(file: VirtualFile): Boolean =
-        file.name.contains(".module.css") || file.name.contains(".min.css") || file.path.contains("vendors")
+    private fun isVendorOrIgnoreStyle(file: VirtualFile): Boolean =
+        file.name.contains(".module.css")
+                || file.name.contains(".min.css")
+                || file.path.contains("vendors")
+                || file.path.contains("dist")
+                || file.path.contains("assets")
 }
