@@ -51,7 +51,7 @@ interface SketchProcessListener {
     fun onAfter() {}
 }
 
-class SketchToolWindow(val project: Project, val editor: Editor?, private val showInput: Boolean = false) :
+open class SketchToolWindow(val project: Project, val editor: Editor?, private val showInput: Boolean = false) :
     SimpleToolWindowPanel(true, true), NullableComponent, Disposable {
     private val chatCodingService = ChatCodingService(ChatActionType.SKETCH, project)
     private var progressBar: CustomProgressBar = CustomProgressBar(this)

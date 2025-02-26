@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.bridge
+package cc.unitmesh.devti.bridge.provider
 
 enum class DatabaseFunction(val funName: String) {
     Schema("schema"),
@@ -9,9 +9,9 @@ enum class DatabaseFunction(val funName: String) {
 
     companion object {
         fun fromString(value: String): DatabaseFunction? {
-            return values().firstOrNull { it.funName == value }
+            return entries.firstOrNull { it.funName == value }
         }
 
-        fun allFuncNames(): List<String> = values().map { it.funName }
+        fun allFuncNames(): List<String> = entries.map { it.funName }
     }
 }

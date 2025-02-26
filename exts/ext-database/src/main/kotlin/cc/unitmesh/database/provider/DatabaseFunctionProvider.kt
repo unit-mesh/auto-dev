@@ -2,7 +2,7 @@ package cc.unitmesh.database.provider
 
 import cc.unitmesh.database.util.DatabaseSchemaAssistant
 import cc.unitmesh.database.util.DatabaseSchemaAssistant.getTableColumn
-import cc.unitmesh.devti.bridge.DatabaseFunction
+import cc.unitmesh.devti.bridge.provider.DatabaseFunction
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.database.model.DasTable
 import com.intellij.database.model.RawDataSource
