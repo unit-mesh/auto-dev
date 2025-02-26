@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.bridge.tools
+package cc.unitmesh.devti.bridge.archview.model
 
 import kotlinx.serialization.Serializable
 

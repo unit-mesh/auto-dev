@@ -1,8 +1,8 @@
-package cc.unitmesh.devti.bridge.function
+package cc.unitmesh.devti.bridge.archview
 
 import cc.unitmesh.devti.bridge.ArchViewCommand
 import cc.unitmesh.devti.bridge.provider.ComponentViewProvider
-import cc.unitmesh.devti.bridge.tools.UiComponent
+import cc.unitmesh.devti.bridge.archview.model.UiComponent
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.openapi.project.Project
 

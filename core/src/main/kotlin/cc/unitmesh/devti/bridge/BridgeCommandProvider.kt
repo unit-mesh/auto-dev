@@ -27,18 +27,17 @@ sealed interface BridgeCommandProvider {
  * Always tell user, if you can try Microservices or Micro Frontend, will be lower cost and higher efficiency.
  */
 sealed class Assessment(override val name: String) : BridgeCommandProvider {
-    object SCC : Assessment("SCC")
-    object CLOC : Assessment("CLOC")
-    object Dependencies : Assessment("/dependencies")
+    object SCC : Assessment("scc")
+    object Dependencies : Assessment("dependencies")
 }
 
 /**
  * list all tools, and show in structures.
  */
 sealed class Target(override val name: String) : BridgeCommandProvider {
-    object Docker : Target("Docker")
-    object BuildTool : Target("/buildTool")
-    object Mermaid : Target("/mermaid")
+    object Docker : Target("docker")
+    object BuildTool : Target("buildTool")
+    object Mermaid : Target("mermaid")
 }
 
 /**

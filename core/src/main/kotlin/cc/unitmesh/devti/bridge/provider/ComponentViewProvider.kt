@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.bridge.provider
 
-import cc.unitmesh.devti.bridge.tools.UiComponent
+import cc.unitmesh.devti.bridge.archview.model.UiComponent
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.serviceContainer.LazyExtensionInstance

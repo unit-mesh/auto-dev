@@ -1,7 +1,7 @@
 package cc.unitmesh.ide.javascript.flow
 
 import cc.unitmesh.devti.flow.TaskFlow
-import cc.unitmesh.devti.bridge.tools.UiComponent
+import cc.unitmesh.devti.bridge.archview.model.UiComponent
 
 /**
  * FrontendFlow is an interface that represents the flow of tasks in a frontend application.

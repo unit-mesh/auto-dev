@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.bridge.function
+package cc.unitmesh.devti.bridge.archview
 
 import cc.unitmesh.devti.bridge.ArchViewCommand
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider

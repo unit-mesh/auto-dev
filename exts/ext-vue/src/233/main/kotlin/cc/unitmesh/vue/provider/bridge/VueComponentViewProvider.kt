@@ -1,7 +1,7 @@
 package cc.unitmesh.vue.provider.bridge
 
 import cc.unitmesh.devti.bridge.provider.ComponentViewProvider
-import cc.unitmesh.devti.bridge.tools.UiComponent
+import cc.unitmesh.devti.bridge.archview.model.UiComponent
 import cc.unitmesh.devti.util.relativePath
 import com.intellij.javascript.nodejs.PackageJsonData
 import com.intellij.javascript.nodejs.packageJson.PackageJsonFileManager

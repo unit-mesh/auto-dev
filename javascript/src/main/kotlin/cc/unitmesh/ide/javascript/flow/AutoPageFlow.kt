@@ -7,7 +7,7 @@ import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.template.GENIUS_PAGE
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.ide.javascript.flow.model.AutoPageContext
-import cc.unitmesh.devti.bridge.tools.UiComponent
+import cc.unitmesh.devti.bridge.archview.model.UiComponent
 import kotlinx.coroutines.runBlocking
 
 class AutoPageFlow(val context: AutoPageContext, val panel: ChatCodingPanel, val llm: LLMProvider) :
