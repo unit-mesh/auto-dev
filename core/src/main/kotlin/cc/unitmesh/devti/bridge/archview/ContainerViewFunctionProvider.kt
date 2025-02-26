@@ -8,6 +8,8 @@ import com.intellij.openapi.project.Project
 class ContainerViewFunctionProvider : ToolchainFunctionProvider {
     override fun isApplicable(project: Project, funcName: String) = funcName == ArchViewCommand.ContainerView.name
 
+    override fun funcNames(): List<String> = listOf(ArchViewCommand.ContainerView.name)
+
     override fun execute(
         project: Project,
         prop: String,

@@ -16,6 +16,8 @@ import com.intellij.psi.search.ProjectScope
 class StylingViewFunctionProvider : ToolchainFunctionProvider {
     override fun isApplicable(project: Project, funcName: String) = funcName == ArchViewCommand.StylingView.name
 
+    override fun funcNames(): List<String> = listOf(ArchViewCommand.StylingView.name)
+
     override fun execute(
         project: Project,
         prop: String,

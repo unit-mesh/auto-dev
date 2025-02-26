@@ -2,6 +2,7 @@ package cc.unitmesh.database.provider
 
 import cc.unitmesh.database.util.DatabaseSchemaAssistant
 import cc.unitmesh.database.util.DatabaseSchemaAssistant.getTableColumn
+import cc.unitmesh.devti.bridge.DatabaseFunction
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.database.model.DasTable
 import com.intellij.database.model.RawDataSource
@@ -10,24 +11,12 @@ import com.intellij.database.util.DbUtil
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 
-enum class DatabaseFunction(val funName: String) {
-    Schema("schema"),
-    Table("table"),
-    Column("column"),
-    Query("query")
-    ;
-
-    companion object {
-        fun fromString(value: String): DatabaseFunction? {
-            return values().firstOrNull { it.funName == value }
-        }
-    }
-}
-
 class DatabaseFunctionProvider : ToolchainFunctionProvider {
     override fun isApplicable(project: Project, funcName: String): Boolean {
         return DatabaseFunction.values().any { it.funName == funcName }
     }
+
+    override fun funcNames(): List<String> = DatabaseFunction.allFuncNames()
 
     override fun execute(
         project: Project,
@@ -130,7 +119,7 @@ class DatabaseFunctionProvider : ToolchainFunctionProvider {
             }
 
             is DasTable -> {
-                return DatabaseSchemaAssistant.getTableColumn(first)
+                return getTableColumn(first)
             }
 
             is List<*> -> {
@@ -143,7 +132,7 @@ class DatabaseFunctionProvider : ToolchainFunctionProvider {
 
                     is DasTable -> {
                         return first.map {
-                            DatabaseSchemaAssistant.getTableColumn(it as DasTable)
+                            getTableColumn(it as DasTable)
                         }
                     }
 
@@ -163,7 +152,7 @@ class DatabaseFunctionProvider : ToolchainFunctionProvider {
                         }
 
                         dasTable?.let {
-                            DatabaseSchemaAssistant.getTableColumn(it)
+                            getTableColumn(it)
                         }
                     }
                 } else {
@@ -172,7 +161,7 @@ class DatabaseFunctionProvider : ToolchainFunctionProvider {
                     }
 
                     return dasTable?.let {
-                        DatabaseSchemaAssistant.getTableColumn(it)
+                        getTableColumn(it)
                     } ?: "ShireError[DBTool]: Table not found"
                 }
             }

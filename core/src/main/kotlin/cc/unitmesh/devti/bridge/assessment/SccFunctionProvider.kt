@@ -10,6 +10,8 @@ import com.intellij.openapi.project.guessProjectDir
 class SccFunctionProvider : ToolchainFunctionProvider {
     override fun isApplicable(project: Project, funcName: String): Boolean = funcName == Assessment.SCC.name
 
+    override fun funcNames(): List<String> = listOf(Assessment.SCC.name)
+
     override fun execute(
         project: Project,
         prop: String,

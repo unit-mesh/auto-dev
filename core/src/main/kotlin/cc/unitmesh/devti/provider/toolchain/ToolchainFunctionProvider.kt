@@ -4,6 +4,8 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 
 interface ToolchainFunctionProvider {
+    fun funcNames(): List<String>
+
     fun isApplicable(project: Project, funcName: String): Boolean
 
     fun execute(project: Project, prop: String, args: List<Any>, allVariables: Map<String, Any?>): Any

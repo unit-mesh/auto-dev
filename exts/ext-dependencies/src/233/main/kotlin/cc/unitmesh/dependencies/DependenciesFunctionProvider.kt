@@ -1,12 +1,15 @@
 package cc.unitmesh.dependencies
 
+import cc.unitmesh.devti.bridge.Assessment
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
 import com.intellij.packageChecker.model.ProjectDependenciesModel
 
 class DependenciesFunctionProvider : ToolchainFunctionProvider {
-    override fun isApplicable(project: Project, funcName: String) = funcName == "dependencies"
+    override fun isApplicable(project: Project, funcName: String) = funcName == Assessment.Dependencies.name
+
+    override fun funcNames(): List<String> = listOf(Assessment.Dependencies.name)
 
     override fun execute(
         project: Project,

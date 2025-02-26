@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.bridge.knowledge
 
-import cc.unitmesh.devti.bridge.Assessment
 import cc.unitmesh.devti.bridge.KnowledgeTransfer
 import cc.unitmesh.devti.provider.RevisionProvider
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
@@ -11,6 +10,8 @@ import com.intellij.openapi.vfs.VirtualFileManager
 
 class HistoryFunctionProvider : ToolchainFunctionProvider {
     override fun isApplicable(project: Project, funcName: String): Boolean = funcName == KnowledgeTransfer.History.name
+
+    override fun funcNames(): List<String> = listOf(KnowledgeTransfer.History.name)
 
     override fun execute(
         project: Project,

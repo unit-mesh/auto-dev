@@ -7,6 +7,8 @@ import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.openapi.project.Project
 
 class ComponentViewFunctionProvider : ToolchainFunctionProvider {
+    override fun funcNames(): List<String> = listOf(ArchViewCommand.ComponentView.name)
+
     override fun isApplicable(project: Project, funcName: String) = funcName == ArchViewCommand.ComponentView.name
 
     override fun execute(
