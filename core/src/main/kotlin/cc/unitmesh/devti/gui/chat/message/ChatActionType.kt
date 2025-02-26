@@ -36,7 +36,8 @@ enum class ChatActionType(var context: ChatTemplateContext) {
     CUSTOM_AGENT(ChatTemplateContext()),
     CODE_REVIEW(ChatTemplateContext()),
     INLINE_CHAT(ChatTemplateContext()),
-    SKETCH(ChatTemplateContext())
+    SKETCH(ChatTemplateContext()),
+    BRIDGE(ChatTemplateContext())
     ;
 
     fun instruction(lang: String = "", project: Project?): TextTemplatePrompt {
@@ -101,6 +102,14 @@ enum class ChatActionType(var context: ChatTemplateContext) {
                 val displayText = AutoDevBundle.message("prompts.autodev.sketch", lang)
                 val templateRender = TemplateRender(GENIUS_CODE)
                 val template = templateRender.getTemplate("sketch.vm")
+
+                TextTemplatePrompt(displayText, template, templateRender, this.context)
+            }
+
+            BRIDGE -> {
+                val displayText = AutoDevBundle.message("prompts.autodev.bridge", lang)
+                val templateRender = TemplateRender(GENIUS_CODE)
+                val template = templateRender.getTemplate("bridge.vm")
 
                 TextTemplatePrompt(displayText, template, templateRender, this.context)
             }
