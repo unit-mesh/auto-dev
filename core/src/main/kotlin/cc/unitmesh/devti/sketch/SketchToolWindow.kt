@@ -20,6 +20,8 @@ import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.impl.ActionButton
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileTypes.PlainTextLanguage
@@ -51,9 +53,15 @@ interface SketchProcessListener {
     fun onAfter() {}
 }
 
-open class SketchToolWindow(val project: Project, val editor: Editor?, private val showInput: Boolean = false) :
+open class SketchToolWindow(
+    val project: Project,
+    val editor: Editor?,
+    private val showInput: Boolean = false,
+    chatActionType: ChatActionType = ChatActionType.SKETCH
+) :
     SimpleToolWindowPanel(true, true), NullableComponent, Disposable {
-    private val chatCodingService = ChatCodingService(ChatActionType.SKETCH, project)
+    open val chatCodingService = ChatCodingService(chatActionType, project)
+    open val inputListener = SketchInputListener(project, chatCodingService, this)
     private var progressBar: CustomProgressBar = CustomProgressBar(this)
     private var inputSection: AutoDevInputSection = AutoDevInputSection(project, this, showAgent = false)
 
@@ -66,19 +74,19 @@ open class SketchToolWindow(val project: Project, val editor: Editor?, private v
         this.isOpaque = true
     }
 
-    private var isUserScrolling: Boolean = false
+    protected var isUserScrolling: Boolean = false
+    protected var isInterrupted: Boolean = false
 
-    private var isInterrupted: Boolean = false
-
-    private var systemPrompt: JPanel = JPanel(BorderLayout())
-    private var contentPanel = JPanel(BorderLayout())
+    protected var systemPromptPanel: JPanel = JPanel(BorderLayout())
+    protected var contentPanel = JPanel(BorderLayout())
 
     val header = JButton(AllIcons.Actions.Copy).apply {
         this@apply.preferredSize = Dimension(32, 32)
 
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
-                var allText = historyPanel.components.filterIsInstance<LangSketch>().joinToString("\n") { it.getViewText() }
+                var allText =
+                    historyPanel.components.filterIsInstance<LangSketch>().joinToString("\n") { it.getViewText() }
                 allText += myList.components.filterIsInstance<LangSketch>().joinToString("\n") { it.getViewText() }
 
                 val selection = StringSelection(allText)
@@ -88,8 +96,8 @@ open class SketchToolWindow(val project: Project, val editor: Editor?, private v
         })
     }
 
-    private var panelContent: DialogPanel = panel {
-        row { cell(systemPrompt).fullWidth().fullHeight() }
+    protected var panelContent: DialogPanel = panel {
+        row { cell(systemPromptPanel).fullWidth().fullHeight() }
         row { cell(header).alignRight() }
         row { cell(historyPanel).fullWidth().fullHeight() }
         row { cell(myList).fullWidth().fullHeight() }
@@ -109,8 +117,6 @@ open class SketchToolWindow(val project: Project, val editor: Editor?, private v
     }
 
     var handleCancel: ((String) -> Unit)? = null
-
-    private val listener = SketchInputListener(project, chatCodingService, this)
 
     private val processListeners = mutableListOf<SketchProcessListener>()
 
@@ -150,26 +156,33 @@ open class SketchToolWindow(val project: Project, val editor: Editor?, private v
         contentPanel.add(progressBar, BorderLayout.SOUTH)
 
         if (showInput) {
-            inputSection.also {
-                it.border = JBUI.Borders.empty(8)
-            }
-
-            inputSection.addListener(listener)
-            contentPanel.add(inputSection, BorderLayout.SOUTH)
-
-            addProcessListener(object : SketchProcessListener {
-                override fun onBefore() {
-                    isInterrupted = false
-                    inputSection.showStopButton()
-                }
-
-                override fun onAfter() {
-                    inputSection.showSendButton()
-                }
-            })
+            ApplicationManager.getApplication().invokeLater({
+                setupListener()
+            }, ModalityState.nonModal())
         }
 
         setContent(contentPanel)
+    }
+
+    private fun setupListener() {
+        inputSection.also {
+            it.border = JBUI.Borders.empty(8)
+        }
+
+        inputListener.setup()
+        inputSection.addListener(inputListener)
+        contentPanel.add(inputSection, BorderLayout.SOUTH)
+
+        addProcessListener(object : SketchProcessListener {
+            override fun onBefore() {
+                isInterrupted = false
+                inputSection.showStopButton()
+            }
+
+            override fun onAfter() {
+                inputSection.showSendButton()
+            }
+        })
     }
 
     fun onStart() {
@@ -226,7 +239,7 @@ open class SketchToolWindow(val project: Project, val editor: Editor?, private v
 
     fun addSystemPrompt(text: String) {
         runInEdt {
-            systemPrompt.add(createSingleTextView(text, language = "VTL"))
+            systemPromptPanel.add(createSingleTextView(text, language = "VTL"))
             this.revalidate()
             this.repaint()
         }
@@ -331,7 +344,7 @@ open class SketchToolWindow(val project: Project, val editor: Editor?, private v
         AfterRun()
 
         if (AutoSketchMode.getInstance(project).isEnable && !isInterrupted) {
-            AutoSketchMode.getInstance(project).start(text, this@SketchToolWindow.listener)
+            AutoSketchMode.getInstance(project).start(text, this@SketchToolWindow.inputListener)
         }
     }
 
@@ -371,7 +384,7 @@ open class SketchToolWindow(val project: Project, val editor: Editor?, private v
         progressBar.isIndeterminate = false
         progressBar.isVisible = false
         blockViews.clear()
-        systemPrompt.removeAll()
+        systemPromptPanel.removeAll()
         myList.removeAll()
         historyPanel.removeAll()
         initializePreAllocatedBlocks(project)

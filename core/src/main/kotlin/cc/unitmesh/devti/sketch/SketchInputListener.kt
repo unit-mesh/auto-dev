@@ -15,15 +15,16 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.launch
 
-class SketchInputListener(
+open class SketchInputListener(
     private val project: Project,
     private val chatCodingService: ChatCodingService,
-    private val toolWindow: SketchToolWindow
+    open val toolWindow: SketchToolWindow
 ) : AutoDevInputListener, SimpleDevinPrompter(), Disposable {
     private val connection = ApplicationManager.getApplication().messageBus.connect(this)
 
@@ -31,7 +32,7 @@ class SketchInputListener(
     override val templateRender: TemplateRender get() = TemplateRender(GENIUS_CODE)
     var systemPrompt = ""
 
-    init {
+    fun setup() {
         systemPrompt = templateRender.renderTemplate(template, SketchRunContext.create(project, null, ""))
         toolWindow.addSystemPrompt(systemPrompt)
     }

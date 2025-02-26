@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.gui
 
+import cc.unitmesh.devti.bridge.BridgeToolWindow
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
@@ -41,6 +42,13 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
             if (hasSketch == null) {
                 createSketchToolWindow(project, toolWindow)
             }
+
+            val hasBridge =
+                toolWindow.contentManager.component.components?.filterIsInstance<BridgeToolWindow>()?.firstOrNull()
+
+            if (hasBridge == null) {
+                createBridgeToolWindow(project, toolWindow)
+            }
         }
     }
 
@@ -66,8 +74,14 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
         }
 
         fun createSketchToolWindow(project: Project, toolWindow: ToolWindow) {
-            val sketchView = SketchToolWindow(project, null, true)
+            val sketchView = SketchToolWindow(project, null, true, ChatActionType.SKETCH)
             val sketchPanel = ContentFactory.getInstance().createContent(sketchView, "Sketch", true)
+            toolWindow.contentManager.addContent(sketchPanel)
+        }
+
+        fun createBridgeToolWindow(project: Project, toolWindow: ToolWindow) {
+            val sketchView = BridgeToolWindow(project, null, true)
+            val sketchPanel = ContentFactory.getInstance().createContent(sketchView, "Bridge", true)
             toolWindow.contentManager.addContent(sketchPanel)
         }
     }
