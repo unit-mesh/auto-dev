@@ -8,6 +8,7 @@ import com.intellij.openapi.project.ProjectManager
 import com.intellij.ui.JBColor
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.FormBuilder
+import java.awt.BorderLayout
 import javax.swing.JPanel
 
 class LLMSettingComponent(private val settings: AutoDevSettingsState) {
@@ -71,7 +72,12 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     }
 
     private val formBuilder: FormBuilder = FormBuilder.createFormBuilder()
-    val panel: JPanel get() = formBuilder.panel
+    val panel: JPanel
+        get() {
+            val wrapper = JPanel(BorderLayout())
+            wrapper.add(formBuilder.panel, BorderLayout.NORTH)
+            return wrapper
+        }
 
     fun applySettings(settings: AutoDevSettingsState, updateParams: Boolean = false) {
         panel.removeAll()
