@@ -3,6 +3,7 @@ package cc.unitmesh.devti.provider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 
 interface RevisionProvider {
@@ -21,6 +22,11 @@ interface RevisionProvider {
     fun commitCode(project: Project, commitMessage: String): String
 
     fun countHistoryChange(project: Project, element: PsiElement): Int
+
+    /**
+     * Summary changes of one file
+     */
+    fun history(project: Project, file: VirtualFile): String
 
     companion object {
         private val EP_NAME: ExtensionPointName<RevisionProvider> =

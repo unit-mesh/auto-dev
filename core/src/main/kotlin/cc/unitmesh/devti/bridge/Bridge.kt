@@ -164,5 +164,5 @@ sealed class Containerization(override val name: String) : BridgeCommandProvider
  */
 sealed class KnowledgeTransfer(override val name: String) : BridgeCommandProvider {
     object Knowledge : KnowledgeTransfer("/knowledge")
-    object History : KnowledgeTransfer("/history")
+    object History : KnowledgeTransfer("history")
 }

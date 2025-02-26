@@ -17,6 +17,7 @@ import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.changes.ChangeListManager
 import com.intellij.openapi.vcs.changes.CommitContext
 import com.intellij.openapi.vcs.changes.LocalChangeList
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.vcs.commit.ChangeListCommitState
 import com.intellij.vcs.commit.LocalChangesCommitter
@@ -121,5 +122,25 @@ class GitRevisionProvider : RevisionProvider {
             logger.error("Failed to count history changes for file: ${file.path}", e)
             0
         }
+    }
+
+    /**
+     * Summary changes of one file, output format:
+     * ```
+     * filename: xxx
+     * changes: $changeout
+     * historyCommits: $historyCommitMessages
+     * ```
+     */
+    override fun history(project: Project, file: VirtualFile): String {
+        val filePath: FilePath = VcsUtil.getFilePath(file)
+        val history = GitFileHistory.collectHistory(project, filePath)
+        val historyCommitMessages = history.joinToString("\n") { it.commitMessage.toString() }
+
+        return """
+            |filename: ${file.name}
+            |changes: ${history.size}
+            |historyCommits: $historyCommitMessages
+        """.trimMargin()
     }
 }
