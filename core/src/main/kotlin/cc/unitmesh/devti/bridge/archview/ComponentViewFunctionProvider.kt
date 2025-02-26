@@ -11,7 +11,7 @@ class ComponentViewFunctionProvider : ToolchainFunctionProvider {
 
     override fun execute(
         project: Project,
-        funcName: String,
+        prop: String,
         args: List<Any>,
         allVariables: Map<String, Any?>
     ): String = ComponentViewProvider.collect(project).joinToString("\n", transform = UiComponent::format)

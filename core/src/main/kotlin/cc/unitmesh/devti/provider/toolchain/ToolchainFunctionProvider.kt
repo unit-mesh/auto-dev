@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 interface ToolchainFunctionProvider {
     fun isApplicable(project: Project, funcName: String): Boolean
 
-    fun execute(project: Project, funcName: String, args: List<Any>, allVariables: Map<String, Any?>): Any
+    fun execute(project: Project, prop: String, args: List<Any>, allVariables: Map<String, Any?>): Any
 
     companion object {
         private val EP_NAME: ExtensionPointName<ToolchainFunctionProvider> =

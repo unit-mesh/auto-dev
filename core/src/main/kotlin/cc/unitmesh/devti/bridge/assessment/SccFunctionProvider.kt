@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.bridge.assessment
 
 import cc.unitmesh.devti.bridge.Assessment
+import cc.unitmesh.devti.bridge.command.SccResult
 import cc.unitmesh.devti.bridge.command.SccWrapper
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.openapi.project.Project
@@ -11,11 +12,29 @@ class SccFunctionProvider : ToolchainFunctionProvider {
 
     override fun execute(
         project: Project,
-        funcName: String,
+        prop: String,
         args: List<Any>,
         allVariables: Map<String, Any?>
     ): Any {
-        val path = if (args.isEmpty()) project.guessProjectDir()!!.path else args[0].toString()
-        return SccWrapper().runSccSync(path)
+        val baseDir = project.guessProjectDir()!!.path
+        val path = if (prop.isEmpty()) { baseDir } else "$baseDir/$prop"
+        val items = SccWrapper().runSccSync(path)
+
+        if (items.isEmpty()) {
+            return "No files found"
+        }
+
+        return format(items)
+    }
+
+    private fun format(items: List<SccResult>): String {
+        val table = StringBuilder()
+        table.append("| Name | Lines | Code |Complexity |\n")
+        table.append("|------|--------|-------|------|\n")
+        items.forEach {
+            table.append("| ${it.name} | ${it.lines} | ${it.code} | ${it.complexity}  |\n")
+        }
+
+        return table.toString()
     }
 }

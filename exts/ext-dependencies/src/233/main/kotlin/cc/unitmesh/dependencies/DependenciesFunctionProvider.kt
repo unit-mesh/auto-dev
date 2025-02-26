@@ -10,7 +10,7 @@ class DependenciesFunctionProvider : ToolchainFunctionProvider {
 
     override fun execute(
         project: Project,
-        funcName: String,
+        prop: String,
         args: List<Any>,
         allVariables: Map<String, Any?>
     ): Any {

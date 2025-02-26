@@ -31,11 +31,11 @@ class DatabaseFunctionProvider : ToolchainFunctionProvider {
 
     override fun execute(
         project: Project,
-        funcName: String,
+        prop: String,
         args: List<Any>,
         allVariables: Map<String, Any?>,
     ): Any {
-        val databaseFunction = DatabaseFunction.fromString(funcName)
+        val databaseFunction = DatabaseFunction.fromString(prop)
             ?: throw IllegalArgumentException("Shire[Database]: Invalid Database function name")
 
         return when (databaseFunction) {

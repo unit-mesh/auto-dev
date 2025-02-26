@@ -110,7 +110,7 @@ class DevInsCompiler(
                     return
                 }
 
-                if (!command.requireProps) {
+                if (command != BuiltinCommand. TOOLCHAIN_COMMAND && !command.requireProps) {
                     processingCommand(command, "", used, fallbackText = used.text, originCmdName)
                     return
                 }
