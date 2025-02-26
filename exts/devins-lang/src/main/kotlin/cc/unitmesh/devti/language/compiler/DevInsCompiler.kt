@@ -110,21 +110,21 @@ class DevInsCompiler(
                     return
                 }
 
-                if (command != BuiltinCommand. TOOLCHAIN_COMMAND && !command.requireProps) {
+                if (command != BuiltinCommand.TOOLCHAIN_COMMAND && !command.requireProps) {
                     processingCommand(command, "", used, fallbackText = used.text, originCmdName)
                     return
                 }
 
                 val propElement = id.nextSibling?.nextSibling
                 val isProp = (propElement.elementType == DevInTypes.COMMAND_PROP)
-                if (!isProp) {
+                if (!isProp && command != BuiltinCommand.TOOLCHAIN_COMMAND) {
                     output.append(used.text)
                     logger.warn("No command prop found: ${used.text}")
                     result.hasError = true
                     return
                 }
 
-                processingCommand(command, propElement!!.text, used, fallbackText = used.text, originCmdName)
+                processingCommand(command, propElement?.text ?: "", used, fallbackText = used.text, originCmdName)
             }
 
             DevInTypes.AGENT_START -> {
