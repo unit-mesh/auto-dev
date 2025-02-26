@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.llms.custom
 
 import cc.unitmesh.devti.gui.chat.message.ChatRole
+import cc.unitmesh.devti.llm2.model.LlmConfig
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.prompting.optimizer.PromptOptimizer
 import cc.unitmesh.devti.settings.AutoDevSettingsState
@@ -18,22 +19,11 @@ import java.time.Duration
  * LLMProvider 不应该是单例 Service，它有多个并发场景的可能性
  */
 class CustomLLMProvider(val project: Project) : LLMProvider, CustomSSEProcessor(project) {
-    private val autoDevSettingsState = getSetting()
-    private fun getSetting() = AutoDevSettingsState.getInstance()
-    private val url get() = autoDevSettingsState.customEngineServer
-    private val key get() = autoDevSettingsState.customEngineToken
-
-    private val modelName: String
-        get() = AutoDevSettingsState.getInstance().customModel
-
-    override val requestFormat: String
-        get() = autoDevSettingsState.customEngineRequestFormat.ifEmpty {
-            """{ "customFields": {"model": "$modelName", "temperature": 0.0, "stream": true} }"""
-        }
-    override val responseFormat
-        get() = autoDevSettingsState.customEngineResponseFormat.ifEmpty {
-            "\$.choices[0].delta.content"
-        }
+    private val config = LlmConfig.default()
+    private val url get() = config.url
+    private val key get() = config.auth.token
+    override val requestFormat: String get() = config.requestFormat
+    override val responseFormat: String get() = config.responseFormat
 
     private var client = OkHttpClient()
     private val timeout = Duration.ofSeconds(defaultTimeout)
