@@ -156,9 +156,9 @@ open class SketchToolWindow(
         contentPanel.add(progressBar, BorderLayout.SOUTH)
 
         if (showInput) {
-            ApplicationManager.getApplication().invokeLater({
+            ApplicationManager.getApplication().invokeLater {
                 setupListener()
-            }, ModalityState.nonModal())
+            }
         }
 
         setContent(contentPanel)
