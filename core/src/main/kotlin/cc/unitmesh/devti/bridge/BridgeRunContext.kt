@@ -73,7 +73,7 @@ data class BridgeRunContext(
                 relatedFiles = emptyList(),
                 userInput = input,
                 workspace = workspace(project),
-                toolList = BridgeToolProvider.collect(project),
+                toolList = BridgeToolProvider.collect(project).joinToString("\n"),
                 shell = ShellUtil.detectShells().firstOrNull() ?: "/bin/bash",
                 frameworkContext = runBlocking {
                     return@runBlocking ChatContextProvider.collectChatContextList(project, creationContext)
