@@ -25,7 +25,7 @@ object StructureCommandUtil {
     fun getFileStructure(project: Project, file: VirtualFile, psiFile: PsiFile): String {
         val viewFactory = LanguageStructureViewBuilder.INSTANCE.forLanguage(psiFile.language)
         val fileEditor: FileEditor = FileEditorManager.getInstance(project).getEditors(file).firstOrNull()
-            ?: FileEditorManager.getInstance(project).openFile(file, true).firstOrNull()
+            ?: FileEditorManager.getInstance(project).openFile(file, false, false).firstOrNull()
             ?: return "No FileEditor found."
 
         if (viewFactory != null) {
