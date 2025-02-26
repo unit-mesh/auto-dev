@@ -2,10 +2,10 @@ package cc.unitmesh.devti.language.compiler
 
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.sketch.SketchToolchainProvider
-import cc.unitmesh.devti.sketch.Toolchain
+import cc.unitmesh.devti.agenttool.AgentTool
 
 class DevInsSketchToolchainProvider : SketchToolchainProvider {
-    override fun collect(): List<Toolchain> {
+    override fun collect(): List<AgentTool> {
         /// we need to ignore some bad case for llm
         return BuiltinCommand.all()
             .filter {
@@ -13,7 +13,7 @@ class DevInsSketchToolchainProvider : SketchToolchainProvider {
             }
             .map {
             val example = BuiltinCommand.example(it)
-            Toolchain(it.commandName, it.description, example)
+            AgentTool(it.commandName, it.description, example)
         }
     }
 }

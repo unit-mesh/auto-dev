@@ -1,18 +1,10 @@
 package cc.unitmesh.devti.agenttool
 
-import com.intellij.openapi.extensions.ExtensionPointName
-
-interface AgentTool {
-    val name: String
-    val description: String
-    fun execute(context: AgentToolContext): AgentToolResult
-
-    // extension point
-    companion object {
-        val EP_NAME = ExtensionPointName<AgentTool>("devins.agentTool")
-
-        fun allTools(): List<AgentTool> {
-            return EP_NAME.extensionList
-        }
-    }
+data class AgentTool(val commandName: String, val description: String, val example: String) {
+    override fun toString(): String =
+        """<tool>name: ${commandName}, desc: $description, example:
+<devin>
+$example
+</devin>
+</tool>"""
 }
