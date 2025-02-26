@@ -257,6 +257,7 @@
 
         <toolchainFunctionProvider implementation="cc.unitmesh.devti.bridge.archview.ComponentViewFunctionProvider"/>
         <toolchainFunctionProvider implementation="cc.unitmesh.devti.bridge.archview.ContainerViewFunctionProvider"/>
+        <toolchainFunctionProvider implementation="cc.unitmesh.devti.bridge.assessment.SccFunctionProvider"/>
     </extensions>
 
     <actions>

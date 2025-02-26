@@ -28,6 +28,10 @@ sealed interface BridgeCommandProvider {
  */
 sealed class Assessment(override val name: String) : BridgeCommandProvider {
     object SCC : Assessment("scc")
+
+    /**
+     * Use [cc.unitmesh.dependencies.DependenciesFunctionProvider]
+     */
     object Dependencies : Assessment("dependencies")
 }
 

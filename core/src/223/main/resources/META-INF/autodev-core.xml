@@ -254,6 +254,10 @@
         <langSketchProvider implementation="cc.unitmesh.devti.sketch.ui.patch.DiffLangSketchProvider"/>
         <langSketchProvider implementation="cc.unitmesh.devti.sketch.ui.webview.WebpageSketchProvider"/>
         <langSketchProvider implementation="cc.unitmesh.devti.sketch.ui.openapi.OpenAPISketchProvider"/>
+
+        <toolchainFunctionProvider implementation="cc.unitmesh.devti.bridge.archview.ComponentViewFunctionProvider"/>
+        <toolchainFunctionProvider implementation="cc.unitmesh.devti.bridge.archview.ContainerViewFunctionProvider"/>
+        <toolchainFunctionProvider implementation="cc.unitmesh.devti.bridge.assessment.SccFunctionProvider"/>
     </extensions>
 
     <actions>
