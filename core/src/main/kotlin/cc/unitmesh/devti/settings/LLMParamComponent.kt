@@ -117,7 +117,7 @@ class LLMParam(
     var items: List<String> = emptyList(),
 ) {
     enum class ParamType {
-        Text, Password, ComboBox, Separator
+        Text, Password, ComboBox, Separator, JsonText, JsonPath
     }
 
     private var onChange: (LLMParam.(String) -> Unit)? = null
@@ -158,6 +158,9 @@ class LLMParam(
 
         // factory functions to create LLMParam
         fun Editable(value: String = "") = LLMParam(value = value)
+        fun JsonEditable(value: String = "") = LLMParam(value = value, type = ParamType.JsonText)
+        fun JsonPathEditable(value: String = "") = LLMParam(value = value, type = ParamType.JsonPath)
+
         fun Password(password: String = "") = LLMParam(value = password, type = ParamType.Password)
 
         fun ComboBox(value: String, items: List<String>) =

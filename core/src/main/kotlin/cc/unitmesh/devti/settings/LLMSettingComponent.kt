@@ -6,9 +6,15 @@ import cc.unitmesh.devti.gui.component.JsonLanguageField
 import cc.unitmesh.devti.settings.locale.HUMAN_LANGUAGES
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.jBLabel
+import com.intellij.lang.Language
+import com.intellij.openapi.editor.Document
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
+import com.intellij.psi.PsiFile
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.JBColor
+import com.intellij.ui.LanguageTextField
+import com.intellij.ui.LanguageTextField.SimpleDocumentCreator
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.FormBuilder
 import javax.swing.JPanel
@@ -27,8 +33,8 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     private val customEngineServerParam by LLMParam.creating { Editable(settings.customEngineServer) }
     private val customEngineTokenParam by LLMParam.creating { Password(settings.customEngineToken) }
 
-    private val customEngineResponseFormatParam by LLMParam.creating { Editable(settings.customEngineResponseFormat) }
-    private val customEngineRequestBodyFormatParam by LLMParam.creating { Editable(settings.customEngineRequestFormat) }
+    private val customEngineResponseFormatParam by LLMParam.creating { JsonPathEditable(settings.customEngineResponseFormat) }
+    private val customEngineRequestBodyFormatParam by LLMParam.creating { JsonEditable(settings.customEngineRequestFormat) }
 
     val project = ProjectManager.getInstance().openProjects.firstOrNull()
     private val customLlmParam: EditorTextField by lazy {
@@ -73,6 +79,23 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
                 formBuilder.addLabeledComponent(jBLabel(this.label), ReactiveTextField(this) {
                     this.isEnabled = it.isEditable
                 }, 1, false)
+            }
+
+            LLMParam.ParamType.JsonText -> {
+                formBuilder.addLabeledComponent(jBLabel(this.label), cc.unitmesh.devti.provider.local.JsonLanguageField(
+                    project, this.value, AutoDevBundle.messageWithLanguageFromLLMSetting(this.label), null, true
+                ), 1, false)
+            }
+
+            LLMParam.ParamType.JsonPath -> {
+                formBuilder.addLabeledComponent(jBLabel(this.label),     LanguageTextField(
+                    Language.findLanguageByID("JSONPath"), project, value,
+                    object : SimpleDocumentCreator() {
+                        override fun createDocument(value: String?, language: Language?, project: Project?): Document {
+                            return LanguageTextField.createDocument(value, language, project, this)
+                        }
+                    }
+                ), 1, false)
             }
 
             LLMParam.ParamType.ComboBox -> {

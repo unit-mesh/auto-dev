@@ -25,7 +25,8 @@ class JsonLanguageField(
     private val myProject: Project?,
     val value: String,
     private val placeholder: String,
-    private val fileName: String
+    private val fileName: String? = null,
+    private val oneLineMode: Boolean = false
 ) :
     LanguageTextField(
         Language.findLanguageByID("JSON"), myProject, value,
@@ -35,7 +36,9 @@ class JsonLanguageField(
             }
 
             override fun customizePsiFile(file: PsiFile?) {
-                file?.name = fileName
+                if (fileName != null) {
+                    file?.name = fileName
+                }
             }
         }
     ) {
@@ -50,15 +53,17 @@ class JsonLanguageField(
             val scheme = EditorColorsUtil.getColorSchemeForBackground(this.colorsScheme.defaultBackground)
             this.colorsScheme = this.createBoundColorSchemeDelegate(scheme)
 
-            val metrics: FontMetrics = getFontMetrics(font)
-            val columnWidth = metrics.charWidth('m')
-
             this.settings.isUseSoftWraps = true
             this.settings.isAdditionalPageAtBottom = false
             this.settings.isCaretRowShown = false
 
-            isOneLineMode = false
-            preferredSize = Dimension(25 * columnWidth, 25 * metrics.height)
+            isOneLineMode = oneLineMode
+
+            if (!oneLineMode) {
+                val metrics: FontMetrics = getFontMetrics(font)
+                val columnWidth = metrics.charWidth('m')
+                preferredSize = Dimension(25 * columnWidth, 25 * metrics.height)
+            }
         }
     }
 }
