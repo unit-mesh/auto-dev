@@ -61,7 +61,7 @@ open class SketchToolWindow(
 ) :
     SimpleToolWindowPanel(true, true), NullableComponent, Disposable {
     open val chatCodingService = ChatCodingService(chatActionType, project)
-    open val inputListener = SketchInputListener(project, chatCodingService, this)
+    open val inputListener get() = SketchInputListener(project, chatCodingService, this)
     private var progressBar: CustomProgressBar = CustomProgressBar(this)
     private var inputSection: AutoDevInputSection = AutoDevInputSection(project, this, showAgent = false)
 

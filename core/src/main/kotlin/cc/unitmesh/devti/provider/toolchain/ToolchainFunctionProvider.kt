@@ -1,9 +1,12 @@
 package cc.unitmesh.devti.provider.toolchain
 
+import cc.unitmesh.devti.agenttool.AgentTool
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 
 interface ToolchainFunctionProvider {
+    fun toolInfo(): AgentTool? = null
+
     fun funcNames(): List<String>
 
     fun isApplicable(project: Project, funcName: String): Boolean

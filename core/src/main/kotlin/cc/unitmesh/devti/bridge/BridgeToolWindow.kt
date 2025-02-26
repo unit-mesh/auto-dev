@@ -9,18 +9,18 @@ import com.intellij.openapi.project.Project
 
 class BridgeToolWindow(val myProject: Project, val myEditor: Editor?, private val showInput: Boolean = false) :
     SketchToolWindow(myProject, myEditor, showInput, ChatActionType.BRIDGE) {
-    override val inputListener = object : SketchInputListener(project, chatCodingService, this) {
+    override val inputListener
+        get() = object : SketchInputListener(project, chatCodingService, this) {
+            init {
+                // no super
+                val template = templateRender.getTemplate("bridge.vm")
+                var systemPrompt = ""
+                val customContext = BridgeRunContext.create(project, null, "")
 
-        init {
-            // no super
-            val template = templateRender.getTemplate("bridge.vm")
-            var systemPrompt = ""
-            val customContext = BridgeRunContext.create(project, null, "")
-
-            systemPrompt = templateRender.renderTemplate(template, customContext)
-            invokeLater {
-                toolWindow.addSystemPrompt(systemPrompt)
+                systemPrompt = templateRender.renderTemplate(template, customContext)
+                invokeLater {
+                    toolWindow.addSystemPrompt(systemPrompt)
+                }
             }
         }
-    }
 }

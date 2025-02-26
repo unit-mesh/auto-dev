@@ -2,7 +2,9 @@ package cc.unitmesh.database.provider
 
 import cc.unitmesh.database.util.DatabaseSchemaAssistant
 import cc.unitmesh.database.util.DatabaseSchemaAssistant.getTableColumn
+import cc.unitmesh.devti.agenttool.AgentTool
 import cc.unitmesh.devti.bridge.provider.DatabaseFunction
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.database.model.DasTable
 import com.intellij.database.model.RawDataSource
@@ -12,9 +14,12 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 
 class DatabaseFunctionProvider : ToolchainFunctionProvider {
-    override fun isApplicable(project: Project, funcName: String): Boolean {
-        return DatabaseFunction.values().any { it.funName == funcName }
+    override fun toolInfo(): AgentTool? {
+        val example = BuiltinCommand.example("database")
+        return AgentTool("database", "Database schema and query tool", example)
     }
+
+    override fun isApplicable(project: Project, funcName: String): Boolean = DatabaseFunction.entries.any { it.funName == funcName }
 
     override fun funcNames(): List<String> = DatabaseFunction.allFuncNames()
 

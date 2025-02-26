@@ -1,0 +1,2 @@
+Get all dependencies (Gradle, Maven, package.json) of current project
+/dependencies
