@@ -255,7 +255,7 @@
         <langSketchProvider implementation="cc.unitmesh.devti.sketch.ui.webview.WebpageSketchProvider"/>
         <langSketchProvider implementation="cc.unitmesh.devti.sketch.ui.openapi.OpenAPISketchProvider"/>
 
-        <toolchainFunctionProvider implementation="cc.unitmesh.devti.bridge.ComponentViewFunctionProvider"/>
+        <toolchainFunctionProvider implementation="cc.unitmesh.devti.bridge.function.ComponentViewFunctionProvider"/>
     </extensions>
 
     <actions>
