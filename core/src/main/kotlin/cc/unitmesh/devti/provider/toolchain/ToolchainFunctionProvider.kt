@@ -21,11 +21,5 @@ interface ToolchainFunctionProvider {
                 it.javaClass.simpleName == providerName
             }
         }
-
-        fun provide(project: Project, funcName: String): ToolchainFunctionProvider? {
-            return EP_NAME.extensionList.firstOrNull {
-                it.isApplicable(project, funcName)
-            }
-        }
     }
 }

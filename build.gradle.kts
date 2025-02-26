@@ -494,12 +494,26 @@ project(":java") {
     }
 }
 
+
+val cssPlugins = listOf(
+    "com.intellij.css",
+    "org.jetbrains.plugins.sass",
+    "org.jetbrains.plugins.less",
+    // Needed for tests-only
+    //"org.jetbrains.plugins.stylus:233.11799.172",
+    "org.intellij.plugins.postcss",
+    // Needed for tests-only
+    //"com.jetbrains.plugins.Jade:$targetVersion",
+)
+
 project(":javascript") {
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins)
             intellijPlugins(javaScriptPlugins)
+            intellijPlugins(cssPlugins)
+//            intellijPlugins("intellij.webpack")
             testFramework(TestFrameworkType.Plugin.JavaScript)
         }
 
@@ -618,6 +632,7 @@ project(":exts:ext-vue") {
         implementation(project(":core"))
     }
 }
+
 project(":exts:ext-dependencies") {
     dependencies {
         intellijPlatform {

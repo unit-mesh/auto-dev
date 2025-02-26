@@ -67,9 +67,13 @@ sealed class Security(override val name: String) : BridgeCommandProvider {
 sealed class ArchViewCommand(override val name: String) : BridgeCommandProvider {
     object WebApi : ArchViewCommand("/webapi")
     object ModuleView : ArchViewCommand("/moduleView")
-    object ComponentView : ArchViewCommand("/componentView")
+
+    /**
+     * /componentView
+     */
+    object ComponentView : ArchViewCommand("componentView")
     object Structure : ArchViewCommand("/structure")
-    object Styling : ArchViewCommand("/styling")
+    object StylingView : ArchViewCommand("stylingView")
 }
 
 /**
