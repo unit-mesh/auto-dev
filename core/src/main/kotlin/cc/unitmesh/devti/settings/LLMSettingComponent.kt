@@ -72,12 +72,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
     }
 
     private val formBuilder: FormBuilder = FormBuilder.createFormBuilder()
-    val panel: JPanel
-        get() {
-            val wrapper = JPanel(BorderLayout())
-            wrapper.add(formBuilder.panel, BorderLayout.NORTH)
-            return wrapper
-        }
+    val panel: JPanel = formBuilder.panel
 
     fun applySettings(settings: AutoDevSettingsState, updateParams: Boolean = false) {
         panel.removeAll()
