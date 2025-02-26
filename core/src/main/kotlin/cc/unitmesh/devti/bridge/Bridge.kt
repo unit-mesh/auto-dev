@@ -106,13 +106,12 @@ sealed class ComponentRelationCommand(override val name: String) : BridgeCommand
  */
 sealed class CodeTranslation(override val name: String) : BridgeCommandProvider {
     object JsCodeShift : CodeTranslation("jscodeshift")
-
     /**
      * Research on
      * - Digital Transformation Object
      * - Service
      */
-    object ReWrite : CodeTranslation("ReWrite")
+    object OpenRewrite : CodeTranslation("openRewrite")
     object VueMod : CodeTranslation("VueMod")
     object JSShift : CodeTranslation("JSShift")
 }
@@ -163,6 +162,9 @@ sealed class Containerization(override val name: String) : BridgeCommandProvider
  * History: git history of file: `/history:src/main/com/phodal/HelloWorld.java`
  */
 sealed class KnowledgeTransfer(override val name: String) : BridgeCommandProvider {
-    object Knowledge : KnowledgeTransfer("/knowledge")
+    /**
+     * Access for API Endpoint only?
+     */
+    object Knowledge : KnowledgeTransfer("knowledge")
     object History : KnowledgeTransfer("history")
 }

@@ -7,7 +7,7 @@ has_children: true
 
 # AutoDev Bridge - Legacy Code Migration
 
-Tools prepare
+Tools prepare:
 
 ### [SCC](https://github.com/boyter/scc)
 
@@ -19,3 +19,8 @@ Tools prepare
 - Linux: `snap install scc`
 
 see in [https://github.com/boyter/scc](https://github.com/boyter/scc)
+
+
+### OpenRewrite plugin
+
+When you try to use OpenRewrite plugin, you need to install the plugin in your IDE.
