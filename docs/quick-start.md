@@ -23,7 +23,7 @@ So, since 2024.4, AutoDev was unavailable in the JetBrains Plugin Repository, yo
 
 <img src="https://unitmesh.cc/auto-dev/autodev-2-config.png" alt="AutoDev 2 Config" width="600px"/>
 
-### Custom Config / OpenAI compatible (Old)
+### Custom Config / OpenAI compatible (Old before 2.0.0-beta.4)
 
 Tested: 零一万物（[#94](https://github.com/unit-mesh/auto-dev/issues/94)）, 月之暗面（Moonshot
 AI）、深度求索（Deepseek [#96](https://github.com/unit-mesh/auto-dev/issues/96)），ChatGLM(#90)
@@ -41,7 +41,7 @@ AI）、深度求索（Deepseek [#96](https://github.com/unit-mesh/auto-dev/issu
 
 for more, see in [Customize LLM Server](/custom/llm-server)
 
-### New Config
+### New Config (2.0.0-beta.4+)
 
 modelType: `["Default", "Plan", "Act", "Completion", "Embedding", "FastApply", "Others"]`
 
@@ -52,6 +52,8 @@ modelType: `["Default", "Plan", "Act", "Completion", "Embedding", "FastApply", "
 - Embedding: for embedding, like: `sentence-transformers/all-MiniLM-L6-v2`
 - FastApply: for fix patch generate issue, like: `Kortix/FastApply-1.5B-v1.0`
 - Others: just a placeholder, no special treatment
+
+Examples:
 
 ```json
 [
@@ -76,6 +78,24 @@ modelType: `["Default", "Plan", "Act", "Completion", "Embedding", "FastApply", "
     "requestFormat": "{ \"customFields\": {\"model\": \"deepseek-reasoner\", \"stream\": true}}",
     "responseFormat": "$.choices[0].delta.content",
     "modelType": "Plan"
+  },
+  {
+     "name": "DifyAI",
+     "description": "Dify Example",
+     "url": "https://api.dify.ai/v1/completion-messages",
+     "auth": {
+        "type": "Bearer",
+        "token": "app-abcd"
+     },
+     "requestFormat": "{\"fields\": {\"inputs\": {\"feature\": \"$content\"}, \"response_mode\": \"streaming\", \"user\": \"phodal\" }}",
+     "responseFormat": "$.answer",
+     "modelType": "Others"
   }
 ]
 ```
+
+- URL: the LLM Server Address with `/chat/completions`
+- Auth: the auth info, `Bearer` only, `token` is the API Key
+- RequestFormat: the request format, like: `{"customFields": {"model": "deepseek-chat", "stream": true }}`
+- ResponseFormat: the response format, like: `$.choices[0].delta.content`
+- ModelType: the model type, see above
