@@ -147,7 +147,9 @@ open class CustomSSEProcessor(private val project: Project) {
 
                     if (output.isNotEmpty()) {
                         messages += Message(ChatRole.Assistant.roleName(), output)
-                        AutoDevNotifications.notify(project, reasonerOutput)
+                        if (reasonerOutput.isNotEmpty()) {
+                            AutoDevNotifications.notify(project, reasonerOutput)
+                        }
                     }
 
                     recording.write(RecordingInstruction(promptText, output))
