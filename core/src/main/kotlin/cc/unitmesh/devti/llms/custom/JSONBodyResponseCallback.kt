@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.llms.custom
 
-import com.jayway.jsonpath.JsonPath
+import com.nfeld.jsonpathkt.JsonPath
+import com.nfeld.jsonpathkt.extension.read
 import kotlinx.coroutines.runBlocking
 import okhttp3.Call
 import okhttp3.Callback
