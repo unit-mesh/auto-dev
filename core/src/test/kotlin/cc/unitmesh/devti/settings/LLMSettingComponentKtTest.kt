@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.settings
 
-import com.nfeld.jsonpathkt.JsonPath
-import com.nfeld.jsonpathkt.extension.read
+import com.jayway.jsonpath.JsonPath
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

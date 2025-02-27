@@ -8,7 +8,7 @@ interface LLMProvider {
     val defaultTimeout: Long get() = 600
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun stream(promptText: String, systemPrompt: String, keepHistory: Boolean = true): Flow<String>
+    fun stream(promptText: String, systemPrompt: String, keepHistory: Boolean = true, usePlanForFirst: Boolean = false): Flow<String>
 
     /**
      * Clear all messages

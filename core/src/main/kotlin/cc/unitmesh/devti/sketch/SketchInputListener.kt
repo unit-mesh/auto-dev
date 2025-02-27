@@ -65,7 +65,7 @@ open class SketchInputListener(
             toolWindow.updateHistoryPanel()
             toolWindow.addRequestPrompt(compiledInput)
 
-            val flow = chatCodingService.request(getInitPrompt(), compiledInput)
+            val flow = chatCodingService.request(getInitPrompt(), compiledInput, isFromSketch = true)
             val suggestion = StringBuilder()
 
             AutoDevCoroutineScope.workerThread().launch {

@@ -2,6 +2,7 @@ package cc.unitmesh.devti.llms.custom
 
 import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.llm2.model.LlmConfig
+import cc.unitmesh.devti.llm2.model.ModelType
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.prompting.optimizer.PromptOptimizer
 import cc.unitmesh.devti.settings.coder.coderSetting
@@ -17,7 +18,8 @@ import java.time.Duration
 /**
  * LLMProvider 不应该是单例 Service，它有多个并发场景的可能性
  */
-class CustomLLMProvider(val project: Project, val llmConfig: LlmConfig = LlmConfig.default()) : LLMProvider, CustomSSEProcessor(project) {
+class CustomLLMProvider(val project: Project, var llmConfig: LlmConfig = LlmConfig.default()) : LLMProvider,
+    CustomSSEProcessor(project) {
     private val url get() = llmConfig.url
     private val key get() = llmConfig.auth.token
     override val requestFormat: String get() = llmConfig.requestFormat
@@ -35,7 +37,16 @@ class CustomLLMProvider(val project: Project, val llmConfig: LlmConfig = LlmConf
         messages += Message(role.roleName(), msg)
     }
 
-    override fun stream(originPrompt: String, systemPrompt: String, keepHistory: Boolean): Flow<String> {
+    override fun stream(
+        originPrompt: String,
+        systemPrompt: String,
+        keepHistory: Boolean,
+        usePlanForFirst: Boolean
+    ): Flow<String> {
+        if (usePlanForFirst && systemPrompt.length == 1 && LlmConfig.load(ModelType.Plan).isNotEmpty()) {
+            llmConfig = LlmConfig.load(ModelType.Plan).first()
+        }
+
         logger.info("Requesting to model: ${llmConfig.name}, $url")
         if (!keepHistory || project.coderSetting.state.noChatHistory) {
             clearMessage()

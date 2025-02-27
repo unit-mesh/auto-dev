@@ -134,7 +134,8 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         llmProvider.clearMessage()
     }
 
-    fun request(systemPrompt: String, userPrompt: String): Flow<String> {
-        return llmProvider.stream(userPrompt, systemPrompt, keepHistory = true)
+    fun request(systemPrompt: String, userPrompt: String, isFromSketch: Boolean = true): Flow<String> {
+        /// is from sketch the first model should use Plan then use Act
+        return llmProvider.stream(userPrompt, systemPrompt, keepHistory = true, isFromSketch)
     }
 }
