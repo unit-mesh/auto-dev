@@ -61,6 +61,7 @@ changelog {
     groups.empty()
     path.set(rootProject.file("CHANGELOG.md").toString())
     repositoryUrl.set(properties("pluginRepositoryUrl"))
+    itemPrefix.set("*")
 }
 
 repositories {
