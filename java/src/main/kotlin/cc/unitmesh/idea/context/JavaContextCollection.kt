@@ -89,6 +89,10 @@ object JavaContextCollection {
                     classStructure
                 }
 
+                field.type is PsiArrayType ->{
+                    SimpleClassStructure(field.name, field.type.presentableText, emptyList(), builtIn = true)
+                }
+
                 else -> {
                     logger.warn("Unknown supported type: ${field.type}")
                     return@mapNotNull null
