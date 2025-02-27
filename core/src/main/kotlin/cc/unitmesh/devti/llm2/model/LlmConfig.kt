@@ -33,7 +33,7 @@ data class LlmConfig(
             return configs
         }
 
-        fun load(modelType: ModelType) = load().filter { it.modelType == modelType }
+        fun load(modelType: ModelType): List<LlmConfig> = load().filter { it.modelType == modelType }
 
         fun default(): LlmConfig {
             val state = AutoDevSettingsState.getInstance()
