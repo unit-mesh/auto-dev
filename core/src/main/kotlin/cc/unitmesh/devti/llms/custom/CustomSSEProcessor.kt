@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.llms.custom
 
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.coder.recording.EmptyRecording
 import cc.unitmesh.devti.coder.recording.JsonlRecording
 import cc.unitmesh.devti.coder.recording.Recording
@@ -145,6 +146,7 @@ open class CustomSSEProcessor(private val project: Project) {
 
                     if (output.isNotEmpty()) {
                         messages += Message(ChatRole.Assistant.roleName(), output)
+                        AutoDevNotifications.notify(project, reasonerOutput)
                     }
 
                     recording.write(RecordingInstruction(promptText, output))
