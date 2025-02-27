@@ -80,6 +80,7 @@ open class CustomSSEProcessor(private val project: Project) {
 
         try {
             var output = ""
+            var reasonerOutput = ""
             return CustomFlowWrapper(callbackFlow {
                 withContext(Dispatchers.IO) {
                     sseFlowable
@@ -101,8 +102,14 @@ open class CustomSSEProcessor(private val project: Project) {
                                 val chunk: String? = JsonPath.parse(sse!!.data)?.read(responseFormat)
                                 // new JsonPath lib caught the exception, so we need to handle when it is null
                                 if (chunk == null) {
-                                    parseFailedResponses.add(sse.data)
-                                    logger.warn("Failed to parse response.origin response is: ${sse.data}, response format: $responseFormat")
+                                    // try handle it's thinking model: $.choices[0].delta.reasoning_content
+                                    val reasoningContent: String? = JsonPath.parse(sse.data)?.read("\$.choices[0].delta.reasoning_content")
+                                    if (reasoningContent != null) {
+                                        reasonerOutput += reasoningContent
+                                    } else {
+                                        parseFailedResponses.add(sse.data)
+                                        logger.warn("Failed to parse response.origin response is: ${sse.data}, response format: $responseFormat")
+                                    }
                                 } else {
                                     hasSuccessRequest = true
                                     output += chunk

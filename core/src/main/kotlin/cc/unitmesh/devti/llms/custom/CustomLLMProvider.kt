@@ -37,6 +37,8 @@ class CustomLLMProvider(val project: Project, var llmConfig: LlmConfig = LlmConf
         messages += Message(role.roleName(), msg)
     }
 
+    var backupForReasonConfig: LlmConfig = llmConfig
+
     override fun stream(
         originPrompt: String,
         systemPrompt: String,
@@ -44,7 +46,10 @@ class CustomLLMProvider(val project: Project, var llmConfig: LlmConfig = LlmConf
         usePlanForFirst: Boolean
     ): Flow<String> {
         if (usePlanForFirst && messages.isEmpty() && LlmConfig.load(ModelType.Plan).isNotEmpty()) {
+            backupForReasonConfig = llmConfig
             llmConfig = LlmConfig.load(ModelType.Plan).first()
+        } else {
+            llmConfig = backupForReasonConfig
         }
 
         logger.info("Requesting to model: ${llmConfig.name}, $url")
