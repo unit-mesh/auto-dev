@@ -36,6 +36,7 @@ class CustomLLMProvider(val project: Project, val llmConfig: LlmConfig = LlmConf
     }
 
     override fun stream(originPrompt: String, systemPrompt: String, keepHistory: Boolean): Flow<String> {
+        logger.info("Requesting to model: ${llmConfig.name}, $url")
         if (!keepHistory || project.coderSetting.state.noChatHistory) {
             clearMessage()
         }

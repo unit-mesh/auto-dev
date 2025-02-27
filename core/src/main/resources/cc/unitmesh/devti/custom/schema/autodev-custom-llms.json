@@ -19,8 +19,8 @@
       "responseFormat": { "type": "string" },
       "modelType": {
         "type": "string",
-        "enum": ["Default", "Plan", "Act", "Completion", "Embedding", "FastApply"],
-        "default": "Default"
+        "enum": ["Default", "Plan", "Act", "Completion", "Embedding", "FastApply", "Others"],
+        "default": "Others"
       }
     },
     "required": ["name", "url", "auth", "requestFormat", "responseFormat"]
