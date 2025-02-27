@@ -86,7 +86,7 @@ class CodeCompletionTask(private val request: CodeCompletionRequest) :
         logger.warn("Prompt: $prompt")
         AutoDevCoroutineScope.scope(project).launch {
             try {
-                val flow: Flow<String> = LlmFactory.createForInlayCodeComplete(project).stream(prompt, "", false)
+                val flow: Flow<String> = LlmFactory.createCompletion(project).stream(prompt, "", false)
                 val suggestion = StringBuilder()
                 flow.collect {
                     AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress)

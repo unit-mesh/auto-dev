@@ -1,13 +1,13 @@
 package cc.unitmesh.devti.custom.test
 
-import cc.unitmesh.devti.settings.team.teamPromptsSettings
+import cc.unitmesh.devti.settings.coder.coderSetting
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 
 @Service(Service.Level.PROJECT)
 class TestTemplateFinder(private val project: Project) {
-    val settings = project.teamPromptsSettings
+    val settings = project.coderSetting
 
     /**
      * Looks up a template file by its name and returns its content as a string.

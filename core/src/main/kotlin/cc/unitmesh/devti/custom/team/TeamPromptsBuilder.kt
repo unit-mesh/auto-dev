@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.custom.team
 
-import cc.unitmesh.devti.settings.team.teamPromptsSettings
+import cc.unitmesh.devti.settings.coder.coderSetting
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
@@ -9,7 +9,7 @@ import com.intellij.openapi.vfs.VirtualFile
 
 @Service(Service.Level.PROJECT)
 class TeamPromptsBuilder(private val project: Project) {
-    private val baseDir get() = project.teamPromptsSettings.state.teamPromptsDir
+    private val baseDir get() = project.coderSetting.state.teamPromptsDir
     private val basePromptDir get() = project.guessProjectDir()?.findChild(baseDir)
 
     fun default(): List<TeamPromptAction> {

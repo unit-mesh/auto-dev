@@ -1,7 +1,5 @@
 package cc.unitmesh.devti.settings.coder
 
-import cc.unitmesh.devti.settings.miscs.MAX_TOKEN_LENGTH
-import cc.unitmesh.devti.settings.miscs.ResponseType
 import com.intellij.openapi.components.*
 import com.intellij.openapi.project.Project
 
@@ -28,15 +26,7 @@ class AutoDevCoderSettingService(
         var noChatHistory by property(false)
         var trimCodeBeforeSend by property(false)
         var enableRenameSuggestion by property(false)
-
-        var useCustomAIEngineWhenInlayCodeComplete by property(false)
-        var maxTokenLengthParam: String by property(MAX_TOKEN_LENGTH.toString()) { it.isEmpty() }
-        var delaySecondsParam: String by property("") { it.isEmpty() }
-        var customEngineResponseTypeParam by property(ResponseType.SSE.name) { it.isEmpty() }
-        var customEngineResponseFormatParam by property("") { it.isEmpty() }
-        var customEngineRequestBodyFormatParam by property("") { it.isEmpty() }
-        var customEngineServerParam by property("") { it.isEmpty() }
-        var customEngineTokenParam by property("") { it.isEmpty() }
+        var teamPromptsDir by property("prompts") { it.isEmpty() }
 
         override fun copy(): AutoDevCoderSettings {
             val state = AutoDevCoderSettings()
