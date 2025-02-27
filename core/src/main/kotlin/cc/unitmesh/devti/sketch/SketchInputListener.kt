@@ -57,6 +57,8 @@ open class SketchInputListener(
     open fun getInitPrompt(): String = systemPrompt
 
     override fun manualSend(userInput: String) {
+        if (userInput.trim().isEmpty() || userInput.trim().isBlank()) return
+
         ApplicationManager.getApplication().executeOnPooledThread {
             val devInProcessor = LanguageProcessor.devin()
             val compiledInput = runReadAction { devInProcessor?.compile(project, userInput) } ?: userInput
