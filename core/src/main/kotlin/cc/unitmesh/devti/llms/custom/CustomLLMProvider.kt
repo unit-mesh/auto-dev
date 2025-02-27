@@ -43,7 +43,7 @@ class CustomLLMProvider(val project: Project, var llmConfig: LlmConfig = LlmConf
         keepHistory: Boolean,
         usePlanForFirst: Boolean
     ): Flow<String> {
-        if (usePlanForFirst && systemPrompt.length == 1 && LlmConfig.load(ModelType.Plan).isNotEmpty()) {
+        if (usePlanForFirst && messages.isEmpty() && LlmConfig.load(ModelType.Plan).isNotEmpty()) {
             llmConfig = LlmConfig.load(ModelType.Plan).first()
         }
 

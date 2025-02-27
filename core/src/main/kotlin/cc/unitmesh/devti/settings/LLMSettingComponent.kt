@@ -8,6 +8,8 @@ import cc.unitmesh.devti.settings.locale.LanguageChangedCallback
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.jBLabel
 import com.intellij.lang.Language
 import com.intellij.openapi.editor.Document
+import com.intellij.openapi.editor.event.DocumentEvent
+import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.psi.PsiFile
@@ -84,18 +86,25 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
             LLMParam.ParamType.JsonText -> {
                 formBuilder.addLabeledComponent(jBLabel(this.label), cc.unitmesh.devti.provider.local.JsonLanguageField(
                     project, this.value, AutoDevBundle.messageWithLanguageFromLLMSetting(this.label), null, true
-                ), 1, false)
+                ).apply {
+                    addDocumentListener(object: DocumentListener {
+                        override fun documentChanged(event: DocumentEvent) {
+                            this@addToFormBuilder.value = this@apply.document.text
+                        }
+                    })
+                }, 1, false)
             }
 
             LLMParam.ParamType.JsonPath -> {
-                formBuilder.addLabeledComponent(jBLabel(this.label),     LanguageTextField(
-                    Language.findLanguageByID("JSONPath"), project, value,
-                    object : SimpleDocumentCreator() {
-                        override fun createDocument(value: String?, language: Language?, project: Project?): Document {
-                            return LanguageTextField.createDocument(value, language, project, this)
+                formBuilder.addLabeledComponent(jBLabel(this.label), LanguageTextField(
+                    Language.findLanguageByID("JSONPath"), project, value
+                ).apply {
+                    addDocumentListener(object: DocumentListener {
+                        override fun documentChanged(event: DocumentEvent) {
+                            this@addToFormBuilder.value = this@apply.document.text
                         }
-                    }
-                ), 1, false)
+                    })
+                }, 1, false)
             }
 
             LLMParam.ParamType.ComboBox -> {
