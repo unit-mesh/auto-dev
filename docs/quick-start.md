@@ -23,7 +23,7 @@ So, since 2024.4, AutoDev was unavailable in the JetBrains Plugin Repository, yo
 
 <img src="https://unitmesh.cc/auto-dev/autodev-2-config.png" alt="AutoDev 2 Config" width="600px"/>
 
-### Custom Config / OpenAI compatible
+### Custom Config / OpenAI compatible (Old)
 
 Tested: 零一万物（[#94](https://github.com/unit-mesh/auto-dev/issues/94)）, 月之暗面（Moonshot
 AI）、深度求索（Deepseek [#96](https://github.com/unit-mesh/auto-dev/issues/96)），ChatGLM(#90)
@@ -40,3 +40,42 @@ AI）、深度求索（Deepseek [#96](https://github.com/unit-mesh/auto-dev/issu
 6. Apply and OK.
 
 for more, see in [Customize LLM Server](/custom/llm-server)
+
+### New Config
+
+modelType: `["Default", "Plan", "Act", "Completion", "Embedding", "FastApply", "Others"]`
+
+- Default: the default model for all cases if not specified
+- Plan: for reasoning, planning, etc, like: `DeepSeek R1`, recommend to use Best Model
+- Act: for action, like: `DeepSeek V3`, `Qwen 72B` etc
+- Completion: for code completion, not support FIM yet.
+- Embedding: for embedding, like: `sentence-transformers/all-MiniLM-L6-v2`
+- FastApply: for fix patch generate issue, like: `Kortix/FastApply-1.5B-v1.0`
+- Others: just a placeholder, no special treatment
+
+```json
+[
+  {
+    "name": "GLM4-Plus",
+    "url": "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+    "auth": {
+      "type": "Bearer",
+      "token": "sk-ii"
+    },
+    "requestFormat": "{ \"customFields\": {\"model\": \"glm-4-plus\", \"stream\": true}}",
+    "responseFormat": "$.choices[0].delta.content",
+    "modelType": "FastApply"
+  },
+  {
+    "name": "DeepSeek R1",
+    "url": "https://api.deepseek.com/chat/completions",
+    "auth": {
+      "type": "Bearer",
+      "token": "sk-ii"
+    },
+    "requestFormat": "{ \"customFields\": {\"model\": \"deepseek-reasoner\", \"stream\": true}}",
+    "responseFormat": "$.choices[0].delta.content",
+    "modelType": "Plan"
+  }
+]
+```
