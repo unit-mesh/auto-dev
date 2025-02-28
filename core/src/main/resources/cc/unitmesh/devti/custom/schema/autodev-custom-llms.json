@@ -11,12 +11,21 @@
         "type": "object",
         "properties": {
           "type": { "type": "string" },
-          "token": { "type": "string", "x-intellij-field": "password" }
+          "token": {
+            "type": "string",
+            "format": "password"
+          }
         },
         "required": ["token"]
       },
-      "requestFormat": { "type": "string" },
-      "responseFormat": { "type": "string" },
+      "requestFormat": {
+        "type": "string",
+        "x-intellij-language-injection": "JSON"
+      },
+      "responseFormat": {
+        "type": "string",
+        "x-intellij-language-injection": "JSONPath"
+      },
       "modelType": {
         "type": "string",
         "enum": ["Default", "Plan", "Act", "Completion", "Embedding", "FastApply", "Others"],
