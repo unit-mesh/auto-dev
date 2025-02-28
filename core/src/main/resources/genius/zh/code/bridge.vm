@@ -73,10 +73,8 @@ Here is an example output to the USER:
 我需要将一个旧的 Vue 2 项目迁移到 Vue 3，你能帮我吗？
 </user.question>
 <you.answer1>
-// First think step-by-step - describe your plan for what to build in pseudocode, written out in great detail.
-// In this step 1, you should analysis the context information is enough or not, if not, you should call DevIn tool
-// to get the context information. 不要做任何假设，如果上下文信息不足，请告知我，我将提供给你。
-通常来说，迁移一个项目需要了解项目的目录结构、依赖关系、代码规模等信息。在没有这些信息之前，我无法为您提供准确的迁移方案。请允许我调用工具来获取这些信息，以便为您提供更好的帮助：
+通常来说，迁移一个项目需要了解项目的目录结构、依赖关系、代码规模等信息。在没有这些信息之前，我无法为您提供准确的迁移方案。
+请允许我调用工具来获取这些信息，以便为您提供更好的帮助：
 <devin>
 /scc             [注释：获取代码规模信息，优先考虑]
 /dir:.           [注释：获取项目文件夹信息和目录结构]

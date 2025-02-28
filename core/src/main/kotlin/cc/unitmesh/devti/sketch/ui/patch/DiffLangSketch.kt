@@ -39,14 +39,15 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
     private val mainPanel: JPanel = JPanel(VerticalLayout(5))
     private val myHeaderPanel: JPanel = JPanel(BorderLayout())
     private val shelfExecutor = ApplyPatchDefaultExecutor(myProject)
-    private val myReader = PatchReader(patchContent).also {
+    private val myReader: PatchReader? = PatchReader(patchContent).also {
         try {
             it.parseAllPatches()
         } catch (e: Exception) {
             AutoDevNotifications.error(myProject, "Failed to parse patch: ${e.message}")
+            null
         }
     }
-    private val filePatches: MutableList<TextFilePatch> = myReader.textPatches
+    private val filePatches: MutableList<TextFilePatch> = myReader?.textPatches ?: mutableListOf()
 
     init {
         if (filePatches.size > 1 || filePatches.any { it.beforeFileName == null }) {
@@ -173,7 +174,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
             }
 
             val pathsFromGroups = ApplyPatchDefaultExecutor.pathsFromGroups(patchGroups)
-            val additionalInfo = myReader.getAdditionalInfo(pathsFromGroups)
+            val additionalInfo = myReader?.getAdditionalInfo(pathsFromGroups)
             shelfExecutor.apply(filePatches, patchGroups, null, "LlmGen.diff", additionalInfo)
         }, "ApplyPatch", null, UndoConfirmationPolicy.REQUEST_CONFIRMATION, false)
     }
