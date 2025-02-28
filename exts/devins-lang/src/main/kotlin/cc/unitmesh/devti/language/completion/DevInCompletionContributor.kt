@@ -55,7 +55,7 @@ class DevInCompletionContributor : CompletionContributor() {
         extend(
             CompletionType.BASIC,
             valuePattern(BuiltinCommand.DATABASE.commandName),
-            DatabaseFuncProvider()
+            DatabaseFuncCompletionProvider()
         )
     }
 
