@@ -3,6 +3,7 @@ package cc.unitmesh.devti.language.compiler.exec
 import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.diff.impl.patch.FilePatch
 import com.intellij.openapi.diff.impl.patch.PatchReader
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -19,7 +20,9 @@ class PatchInsCommand(val myProject: Project, val prop: String, val codeContent:
     override val commandName: BuiltinCommand = BuiltinCommand.PATCH
 
     override suspend fun execute(): String? {
-        FileDocumentManager.getInstance().saveAllDocuments()
+        runInEdt {
+            FileDocumentManager.getInstance().saveAllDocuments()
+        }
 
         val myReader = PatchReader(codeContent)
         myReader.parseAllPatches()
