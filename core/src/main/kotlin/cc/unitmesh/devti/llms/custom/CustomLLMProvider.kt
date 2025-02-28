@@ -43,9 +43,10 @@ class CustomLLMProvider(val project: Project, var llmConfig: LlmConfig = LlmConf
         originPrompt: String,
         systemPrompt: String,
         keepHistory: Boolean,
-        usePlanForFirst: Boolean
+        usePlanForSecondRound: Boolean
     ): Flow<String> {
-        if (usePlanForFirst && messages.isEmpty() && LlmConfig.load(ModelType.Plan).isNotEmpty()) {
+        /// 如果第二轮使用 plan，且 plan 不为空，则使用 plan, 3 = System + User + Assistant
+        if (usePlanForSecondRound && messages.size == 3 && LlmConfig.load(ModelType.Plan).isNotEmpty()) {
             backupForReasonConfig = llmConfig
             llmConfig = LlmConfig.load(ModelType.Plan).first()
         } else {

@@ -82,6 +82,7 @@ Here is an example output to the USER:
 /dir:.           [注释：获取项目文件夹信息和目录结构]
 /dependencies    [注释：获取项目依赖信息]
 /containerView   [注释：获取项目模块信息，如果是多模块项目]
+/file:build.gradle  [注释：获取项目构建文件信息，如果当前项目使用的是 build.gradle ]
 </devin>
 </you.answer1>
 // 等待用户/工具回复
@@ -108,7 +109,12 @@ Here is an example output to the USER:
 ```mermaid
 //
 ```
-根据您的项目结构，我建议您先使用  gogocode 迁移工具进行迁移，这是一个非常好的选择。先提供 gogocode 迁移方案，然后等待用户的回复。
+根据您的项目结构，我建议您先使用  gogocode 迁移工具进行迁移，这是一个非常好的选择。先提供 gogocode 迁移方案，然后等待用户的回复。与此同时，
+我将更新项目的依赖信息：
+<devin>
+/run:build --refresh-dependencies  [注释：需要，用户先打 patch，再刷新项目依赖]
+</devin>
+
 </you.answer3>
 <user.answer3>
 //xxx
