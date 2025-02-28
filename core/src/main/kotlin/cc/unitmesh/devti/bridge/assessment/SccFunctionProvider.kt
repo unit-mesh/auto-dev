@@ -4,6 +4,7 @@ import cc.unitmesh.devti.bridge.Assessment
 import cc.unitmesh.devti.bridge.command.SccResult
 import cc.unitmesh.devti.bridge.command.SccWrapper
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 
@@ -20,13 +21,19 @@ class SccFunctionProvider : ToolchainFunctionProvider {
     ): Any {
         val baseDir = project.guessProjectDir()!!.path
         val path = if (prop.isEmpty()) { baseDir } else "$baseDir/$prop"
-        val items = SccWrapper().runSccSync(path)
+
+        var items = emptyList<SccResult>()
+        val thread = ApplicationManager.getApplication().executeOnPooledThread {
+            items = SccWrapper().runSccSync(path)
+        }
+
+        thread.get(30000, java.util.concurrent.TimeUnit.MILLISECONDS)
 
         if (items.isEmpty()) {
             return "No files found"
         }
 
-        return format(items)
+        return "Here is project's code summary:\n" + format(items)
     }
 
     private fun format(items: List<SccResult>): String {

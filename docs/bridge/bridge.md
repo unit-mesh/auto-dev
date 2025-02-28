@@ -3,6 +3,7 @@ layout: default
 title: AutoDev Bridge - Legacy Code Migration
 nav_order: 5
 has_children: true
+permalink: /bridge
 ---
 
 # AutoDev Bridge - Legacy Code Migration
