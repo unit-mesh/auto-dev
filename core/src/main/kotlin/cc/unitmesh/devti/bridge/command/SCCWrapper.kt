@@ -2,7 +2,6 @@ package cc.unitmesh.devti.bridge.command
 
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.*
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.Key
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -12,7 +11,6 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
-import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 @Serializable
@@ -42,7 +40,7 @@ data class FileInfo(
     @SerialName("Complexity") val complexity: Long
 )
 
-class SccWrapper(private val timeoutSeconds: Long = 60) {
+class SccWrapper(private val timeoutMs: Long = 30000) {
     private val jsonParser = Json { ignoreUnknownKeys = true }
 
     /**
@@ -67,7 +65,7 @@ class SccWrapper(private val timeoutSeconds: Long = 60) {
             }
         })
 
-        if (!handler.waitFor(timeoutSeconds)) {
+        if (!handler.waitFor(timeoutMs)) {
             throw IOException("SCC command timed out")
         }
 
