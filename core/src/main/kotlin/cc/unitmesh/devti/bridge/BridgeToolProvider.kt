@@ -8,7 +8,7 @@ import com.intellij.openapi.project.Project
 
 object BridgeToolProvider {
     val Tools =
-        setOf(RELATED, STRUCTURE, LOCAL_SEARCH, RIPGREP_SEARCH, DATABASE, DIR, REV)
+        setOf(RELATED, STRUCTURE, LOCAL_SEARCH, RIPGREP_SEARCH, DATABASE, DIR, REV, PATCH, FILE, RUN)
 
     fun collect(project: Project): List<AgentTool> {
         val commonTools = Tools

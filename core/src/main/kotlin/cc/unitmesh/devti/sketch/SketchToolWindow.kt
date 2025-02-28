@@ -68,6 +68,8 @@ open class SketchToolWindow(
         this.border = null
         this.lineWrap = true
         this.wrapStyleWord = true
+        /// limit size
+        this.maximumSize = Dimension(Short.MAX_VALUE.toInt(), 100)
     }
 
     private var thinkingPanel = panel {
