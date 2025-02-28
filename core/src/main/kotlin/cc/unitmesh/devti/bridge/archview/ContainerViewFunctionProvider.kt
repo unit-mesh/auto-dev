@@ -17,7 +17,7 @@ class ContainerViewFunctionProvider : ToolchainFunctionProvider {
         allVariables: Map<String, Any?>
     ): String {
         val modules = ModuleManager.getInstance(project).modules
-        return modules.joinToString("\n") {
+        return "Here is current project modules:" + modules.joinToString {
             "module: ${it.name}" + "\n" + "module file: ${it.moduleFilePath}" + "\n"
         }
     }
