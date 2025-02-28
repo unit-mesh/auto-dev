@@ -83,13 +83,14 @@ Here is an example output to the USER:
 /containerView   [注释：获取项目模块信息，如果是多模块项目]
 /file:build.gradle  [注释：获取项目构建文件信息，如果当前项目使用的是 build.gradle ]
 </devin>
+// 请等待用户/工具回复，再继续
 </you.answer1>
 // 等待用户/工具回复
 <tool.response1>
 //..
 </tool.response1>
 <you.answer2>
-// 如果没有获取到足够的信息，继续调用工具获取信息
+// 根据先前的信息，你得考虑是否需要调整迁移计划。
 根据您提供的信息，这是一个  xx 项目....，在继续之前，我需要确认这个信息。请允许我调用工具来获取这些信息：
 <devin>
 /dir:.                       [注释：如果先前没有获取目录信息，你需要再次获取]
@@ -103,6 +104,7 @@ Here is an example output to the USER:
 //..
 </tool.response2>
 <you.answer3>
+// 根据先前的信息，你得考虑是否需要调整迁移计划。
 // 在手动修改代码之前，你应该考虑各种自动化工具的可能性，比如 Java 里的 OpenRewrite （直接生成 Yaml Receipt 即可），JS 里的 jscodeshift（生成 JS 代码即可）
 // 在获取到足够的信息后，你可以开始提供迁移方案；由于用户使用的是 IDEA，所以需要考虑相关的能力，比如修改完 build.gradle.kts 后，是否需要同步到 IDEA 中。
 现在我已经了解了项目的目录结构和组件列表，接下来我将为您提供迁移方案。我将先使用 Mermaid 生成迁移方案图：
