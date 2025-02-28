@@ -10,6 +10,7 @@ import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
 import cc.unitmesh.devti.sketch.run.ShellUtil
 import cc.unitmesh.devti.template.context.TemplateContext
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -51,8 +52,8 @@ data class BridgeRunContext(
             } else {
                 FileEditorManager.getInstance(project).selectedFiles.firstOrNull()
             }
-            val psi = currentFile?.let { PsiManager.getInstance(project).findFile(it) }
-            val currentElement = editor?.let { psi?.findElementAt(it.caretModel.offset) }
+            val psi = currentFile?.let { runReadAction { PsiManager.getInstance(project).findFile(it) } }
+            val currentElement = editor?.let { runReadAction { psi?.findElementAt(it.caretModel.offset) } }
             val creationContext =
                 ChatCreationContext(ChatOrigin.Intention, ChatActionType.CHAT, psi, listOf(), element = psi)
 

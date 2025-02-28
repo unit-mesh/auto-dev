@@ -10,6 +10,7 @@ import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
 import cc.unitmesh.devti.sketch.run.ShellUtil
 import cc.unitmesh.devti.template.context.TemplateContext
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -43,15 +44,15 @@ data class SketchRunContext(
     val searchTool: String = "localSearch",
 ) : TemplateContext {
     companion object {
-        fun create(project: Project, myEditor: Editor?, input: String): SketchRunContext {
+        suspend fun create(project: Project, myEditor: Editor?, input: String): SketchRunContext {
             val editor = myEditor ?: FileEditorManager.getInstance(project).selectedTextEditor
             val currentFile: VirtualFile? = if (editor != null) {
                 FileDocumentManager.getInstance().getFile(editor.document)!!
             } else {
                 FileEditorManager.getInstance(project).selectedFiles.firstOrNull()
             }
-            val psi = currentFile?.let { PsiManager.getInstance(project).findFile(it) }
-            val currentElement = editor?.let { psi?.findElementAt(it.caretModel.offset) }
+            val psi = currentFile?.let { runReadAction { PsiManager.getInstance(project).findFile(it) } }
+            val currentElement = editor?.let { runReadAction { psi?.findElementAt(it.caretModel.offset) }  }
             val creationContext =
                 ChatCreationContext(ChatOrigin.Intention, ChatActionType.CHAT, psi, listOf(), element = psi)
 
@@ -73,9 +74,8 @@ data class SketchRunContext(
                 workspace = workspace(project),
                 toolList = SketchToolchainProvider.collect(project).joinToString("\n"),
                 shell = ShellUtil.detectShells().firstOrNull() ?: "/bin/bash",
-                frameworkContext = runBlocking {
-                    return@runBlocking ChatContextProvider.collectChatContextList(project, creationContext)
-                }.joinToString(",", transform = ChatContextItem::text),
+                frameworkContext = ChatContextProvider.collectChatContextList(project, creationContext)
+                    .joinToString(",", transform = ChatContextItem::text),
                 buildTool = buildTool,
                 searchTool = lookupSearchTool()
             )

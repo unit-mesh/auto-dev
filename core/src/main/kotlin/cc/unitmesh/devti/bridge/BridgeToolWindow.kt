@@ -15,7 +15,7 @@ class BridgeToolWindow(val myProject: Project, val myEditor: Editor?, private va
 
         override fun getInitPrompt(): String = systemPrompt
 
-        override fun setup() {
+        override suspend fun setup() {
             val customContext = BridgeRunContext.create(project, null, "")
             systemPrompt = templateRender.renderTemplate(template, customContext)
             invokeLater {
