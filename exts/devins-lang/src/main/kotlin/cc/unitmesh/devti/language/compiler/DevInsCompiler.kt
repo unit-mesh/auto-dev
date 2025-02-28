@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.compiler
 
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.custom.compile.VariableTemplateCompiler
 import cc.unitmesh.devti.devin.InsCommand
@@ -93,6 +94,7 @@ class DevInsCompiler(
                 val originCmdName = id?.text ?: ""
                 val command = BuiltinCommand.fromString(originCmdName)
                 if (command == null) {
+                    AutoDevNotifications.notify(myProject, "Cannot find command: $originCmdName")
                     CustomCommand.fromString(myProject, originCmdName)?.let { cmd ->
                         DevInFile.fromString(myProject, cmd.content).let { file ->
                             DevInsCompiler(myProject, file).compile().let {
