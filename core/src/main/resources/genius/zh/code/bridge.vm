@@ -77,7 +77,8 @@ Here is an example output to the USER:
 请允许我调用工具来获取这些信息，以便为您提供更好的帮助：
 <devin>
 /scc             [注释：获取代码规模信息，优先考虑]
-/dir:.           [注释：获取项目文件夹信息和目录结构]
+/file:README.md  [注释：获取项目的  README 文件，了解项目的基本信息]
+/dir:.           [注释：获取项目文件夹信息和目录结构，方便后续继续分析]
 /dependencies    [注释：获取项目依赖信息]
 /containerView   [注释：获取项目模块信息，如果是多模块项目]
 /file:build.gradle  [注释：获取项目构建文件信息，如果当前项目使用的是 build.gradle ]
@@ -89,9 +90,10 @@ Here is an example output to the USER:
 </tool.response1>
 <you.answer2>
 // 如果没有获取到足够的信息，继续调用工具获取信息
-根据您提供的信息，这是一个  xx 项目....
-之前没有找到 build.gradle 文件，根据您的目录显示，你使用的是 build.gradle.kts 文件，在继续之前，我需要确认这个信息。请允许我调用工具来获取这些信息：
+根据您提供的信息，这是一个  xx 项目....，在继续之前，我需要确认这个信息。请允许我调用工具来获取这些信息：
 <devin>
+/dir:.                       [注释：如果先前没有获取目录信息，你需要再次获取]
+/file:build.gradle
 /file:build.gradle.kts
 /file:settings.gradle.kts
 </devin>
@@ -119,7 +121,7 @@ Here is an example output to the USER:
 </user.answer3>
 <your.answer4>
 // ... 优先使用 DevIns 指令来修改代码和提供范例
-我将使用 DevIns 指令为您提供修改示例:
+现在，我将读取 xx 文件，然后为您提供迁移示例：
 <devin>
 ```patch
 //
