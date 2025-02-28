@@ -73,6 +73,10 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
             componentStateChanged("autodev.chat", content, 2) { c, d -> c.displayName = d }
         }
 
+        fun getSketchWindow(project: Project): SketchToolWindow? {
+            return getToolWindow(project)?.contentManager?.component?.components?.filterIsInstance<SketchToolWindow>()?.firstOrNull()
+        }
+
         fun createSketchToolWindow(project: Project, toolWindow: ToolWindow) {
             val sketchView = SketchToolWindow(project, null, true, ChatActionType.SKETCH)
             val sketchPanel = ContentFactory.getInstance().createContent(sketchView, "Sketch", true)

@@ -62,6 +62,20 @@ open class SketchToolWindow(
     open val chatCodingService = ChatCodingService(chatActionType, project)
     open val inputListener: SketchInputListener = SketchInputListener(project, chatCodingService, this)
     private var progressBar: CustomProgressBar = CustomProgressBar(this)
+    private var thinkingTextField: JTextArea = JTextArea().apply {
+        this.isEditable = false
+        this.isOpaque = false
+        this.border = null
+        this.lineWrap = true
+        this.wrapStyleWord = true
+    }
+
+    private var thinkingPanel = panel {
+        row {
+            cell(thinkingTextField).fullWidth()
+        }
+    }
+
     private var inputSection: AutoDevInputSection = AutoDevInputSection(project, this, showAgent = false)
 
     private var myText: String = ""
@@ -152,8 +166,6 @@ open class SketchToolWindow(
             }
         })
 
-        contentPanel.add(progressBar, BorderLayout.SOUTH)
-
         if (showInput) {
             ApplicationManager.getApplication().invokeLater {
                 setupListener()
@@ -170,7 +182,18 @@ open class SketchToolWindow(
 
         inputListener.setup()
         inputSection.addListener(inputListener)
-        contentPanel.add(inputSection, BorderLayout.SOUTH)
+
+        contentPanel.add(panel {
+            row {
+                cell(progressBar).fullWidth()
+            }
+            row {
+                cell(thinkingPanel).fullWidth()
+            }
+            row {
+                cell(inputSection).fullWidth()
+            }
+        }, BorderLayout.SOUTH)
 
         addProcessListener(object : SketchProcessListener {
             override fun onBefore() {
@@ -387,6 +410,16 @@ open class SketchToolWindow(
         myList.removeAll()
         historyPanel.removeAll()
         initializePreAllocatedBlocks(project)
+    }
+
+    fun printThinking(string: String) {
+        thinkingPanel.isVisible = true
+        thinkingTextField.text = string
+    }
+
+    fun hiddenThinking() {
+        thinkingPanel.isVisible = false
+        thinkingTextField.text = ""
     }
 }
 
