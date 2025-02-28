@@ -62,19 +62,10 @@ open class SketchToolWindow(
     open val chatCodingService = ChatCodingService(chatActionType, project)
     open val inputListener: SketchInputListener = SketchInputListener(project, chatCodingService, this)
     private var progressBar: CustomProgressBar = CustomProgressBar(this)
-    private var thinkingTextField: JTextArea = JTextArea().apply {
-        this.isEditable = false
-        this.isOpaque = false
-        this.border = null
-        this.lineWrap = true
-        this.wrapStyleWord = true
-        /// limit size
-        this.maximumSize = Dimension(Short.MAX_VALUE.toInt(), 100)
-    }
-
+    private var thinkingHighlight: CodeHighlightSketch = CodeHighlightSketch(project, "<Thinking />", PlainTextLanguage.INSTANCE)
     private var thinkingPanel = panel {
         row {
-            cell(thinkingTextField).fullWidth()
+            cell(thinkingHighlight).fullWidth()
         }
     }
 
@@ -415,13 +406,16 @@ open class SketchToolWindow(
     }
 
     fun printThinking(string: String) {
-        thinkingPanel.isVisible = true
-        thinkingTextField.text = string
+        runInEdt {
+            thinkingPanel.isVisible = true
+            thinkingHighlight.updateViewText(string, false)
+        }
     }
 
     fun hiddenThinking() {
-        thinkingPanel.isVisible = false
-        thinkingTextField.text = ""
+        runInEdt {
+            thinkingPanel.isVisible = false
+        }
     }
 }
 
