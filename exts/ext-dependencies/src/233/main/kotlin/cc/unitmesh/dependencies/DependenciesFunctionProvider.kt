@@ -26,7 +26,7 @@ class DependenciesFunctionProvider : ToolchainFunctionProvider {
             it.pkg
         }
 
-        return "Here is the project dependencies:```\n" + deps.joinToString {
+        return "Here is the project dependencies:\n```\n" + deps.joinToString("") {
             val namespace = it.namespace ?: ""
             "$namespace ${it.name} ${it.version}" + "\n"
         } + "\n```"

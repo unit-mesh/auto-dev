@@ -12,6 +12,7 @@ import cc.unitmesh.devti.llms.CustomFlowWrapper
 import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.sketch.SketchToolWindow
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -111,7 +112,9 @@ open class CustomSSEProcessor(private val project: Project) {
                                     val reasoningContent: String? = JsonPath.parse(sse.data)?.read("\$.choices[0].delta.reasoning_content")
                                     if (reasoningContent != null) {
                                         reasonerOutput += reasoningContent
-                                        AutoDevToolWindowFactory.getSketchWindow(project)?.printThinking(reasonerOutput)
+                                        ApplicationManager.getApplication().invokeLater {
+                                            AutoDevToolWindowFactory.getSketchWindow(project)?.printThinking(reasonerOutput)
+                                        }
                                     } else {
                                         parseFailedResponses.add(sse.data)
                                         logger.warn("Failed to parse response.origin response is: ${sse.data}, response format: $responseFormat")
@@ -153,6 +156,7 @@ open class CustomSSEProcessor(private val project: Project) {
                         messages += Message(ChatRole.Assistant.roleName(), output)
                         if (reasonerOutput.isNotEmpty()) {
                             AutoDevToolWindowFactory.getSketchWindow(project)?.hiddenThinking()
+                            recording.write(RecordingInstruction(promptText, output))
                             AutoDevNotifications.notify(project, reasonerOutput)
                         }
                     }
