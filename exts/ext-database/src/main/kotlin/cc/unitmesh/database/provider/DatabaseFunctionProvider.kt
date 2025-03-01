@@ -40,7 +40,7 @@ class DatabaseFunctionProvider : ToolchainFunctionProvider {
         }
     }
 
-    private fun listSchemas(args: List<Any>, project: Project): Any {
+    private fun listSchemas(args: List<Any>, project: Project): String {
         val dataSources = DbUtil.getDataSources(project)
         if (dataSources.isEmpty) return "[Database]: No database found"
 
@@ -60,11 +60,13 @@ class DatabaseFunctionProvider : ToolchainFunctionProvider {
         return dataItems.joinToString("\n")
     }
 
-    private fun executeTableFunction(args: List<Any>, project: Project): Any {
+    private fun executeTableFunction(args: List<Any>, project: Project): String {
         if (args.isEmpty()) {
             val dataSource = DatabaseSchemaAssistant.allRawDatasource(project).firstOrNull()
                 ?: return "[Database]: No database found"
-            return DatabaseSchemaAssistant.getTableByDataSource(dataSource)
+            return DatabaseSchemaAssistant.getTableByDataSource(dataSource).joinToString("\n") {
+                it.toString()
+            }
         }
 
         val dbName = args.first()
@@ -97,7 +99,9 @@ class DatabaseFunctionProvider : ToolchainFunctionProvider {
             return "[Database]: Table not found"
         }
 
-        return result
+        return result.joinToString("\n") {
+            it.toString()
+        }
     }
 
     private fun executeSqlFunction(args: List<Any>, project: Project): Any {
