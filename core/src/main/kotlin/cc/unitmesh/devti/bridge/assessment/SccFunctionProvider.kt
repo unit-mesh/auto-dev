@@ -1,8 +1,8 @@
 package cc.unitmesh.devti.bridge.assessment
 
 import cc.unitmesh.devti.bridge.Assessment
-import cc.unitmesh.devti.bridge.command.SccResult
-import cc.unitmesh.devti.bridge.command.SccWrapper
+import cc.unitmesh.devti.agenttool.linecount.SccResult
+import cc.unitmesh.devti.agenttool.linecount.SccWrapper
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project

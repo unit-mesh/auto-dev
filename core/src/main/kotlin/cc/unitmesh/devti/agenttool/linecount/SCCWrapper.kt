@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.bridge.command
+package cc.unitmesh.devti.agenttool.linecount
 
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.*

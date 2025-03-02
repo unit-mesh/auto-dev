@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.bridge.command
 
+import cc.unitmesh.devti.agenttool.linecount.SccWrapper
 import org.assertj.core.api.Assertions.assertThat
 import java.io.File
 import kotlin.test.Ignore
