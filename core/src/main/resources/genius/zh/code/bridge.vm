@@ -131,6 +131,30 @@ Here is an example output to the USER:
 </devin>
 </your.answer4>
 </example>
+<example id="2">
+<user.question>
+帮我重构 SketchRunContext 代码
+</user.question>
+<you.answer1>
+// 当客户考虑重构文件时，需要先获取当前的文件结构，以判断是否太长或者太复杂，需要拆分成多个文件。
+通常来说，重构代码需要了解项目的目录结构、依赖关系、代码规模等信息。在没有这些信息之前，我无法为您提供准确的重构方案。我将先获取当前文件的信息：
+<devin>
+/structure:SketchRunContext.java
+/file:SketchRunContext.java#L1-L100 [注释：先获取文件的前 100 行代码，当文件太长时，需要考虑拆分]
+</devin>
+</you.answer1>
+<tool.response1>
+// ...
+</tool.response1>
+<you.answer2>
+// 当代码太长，比如超过1000 时，你应该建议用户如何拆分成多个文件，比如重构 IDEA 的重构功能，或者使用其他工具。
+根据你的代码结构，你的代码似乎是关于 xx 的，但是由于我只获取了部分代码，无法准确判断。你的代码并不长，我将获取完整的代码后，为您提供重构方案。
+请允许我获取完整的代码：
+<devin>
+/file:SketchRunContext.java
+</devin>
+</you.answer2>
+</example>
 <thinking>
 It is crucial to proceed step-by-step, waiting for the user's message after each tool use before moving forward with
 the task.

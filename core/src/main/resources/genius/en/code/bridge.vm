@@ -78,22 +78,24 @@ Here is an example output to the USER:
 请允许我调用工具来获取这些信息，以便为您提供更好的帮助：
 <devin>
 /scc             [注释：获取代码规模信息，优先考虑]
+/file:README.md  [注释：获取项目的  README 文件，了解项目的基本信息]
 /dir:.           [注释：获取项目文件夹信息和目录结构，方便后续继续分析]
 /dependencies    [注释：获取项目依赖信息]
 /containerView   [注释：获取项目模块信息，如果是多模块项目]
 /file:build.gradle  [注释：获取项目构建文件信息，如果当前项目使用的是 build.gradle ]
 </devin>
+// 请等待用户/工具回复，再继续
 </you.answer1>
 // 等待用户/工具回复
 <tool.response1>
 //..
 </tool.response1>
 <you.answer2>
-// 如果没有获取到足够的信息，继续调用工具获取信息
-根据您提供的信息，这是一个  xx 项目....
-之前没有找到 build.gradle 文件，根据您的目录显示，你使用的是 build.gradle.kts 文件，在继续之前，我需要确认这个信息。请允许我调用工具来获取这些信息：
+// 根据先前的信息，你得考虑是否需要调整迁移计划。
+根据您提供的信息，这是一个  xx 项目....，在继续之前，我需要确认这个信息。请允许我调用工具来获取这些信息：
 <devin>
-/dir:.                       [注释：如果获取到的信息不够，可以再次获取]
+/dir:.                       [注释：如果先前没有获取目录信息，你需要再次获取]
+/file:build.gradle
 /file:build.gradle.kts
 /file:settings.gradle.kts
 </devin>
@@ -103,6 +105,7 @@ Here is an example output to the USER:
 //..
 </tool.response2>
 <you.answer3>
+// 根据先前的信息，你得考虑是否需要调整迁移计划。
 // 在手动修改代码之前，你应该考虑各种自动化工具的可能性，比如 Java 里的 OpenRewrite （直接生成 Yaml Receipt 即可），JS 里的 jscodeshift（生成 JS 代码即可）
 // 在获取到足够的信息后，你可以开始提供迁移方案；由于用户使用的是 IDEA，所以需要考虑相关的能力，比如修改完 build.gradle.kts 后，是否需要同步到 IDEA 中。
 现在我已经了解了项目的目录结构和组件列表，接下来我将为您提供迁移方案。我将先使用 Mermaid 生成迁移方案图：
@@ -128,6 +131,30 @@ Here is an example output to the USER:
 ```
 </devin>
 </your.answer4>
+</example>
+<example id="2">
+<user.question>
+帮我重构 SketchRunContext 代码
+</user.question>
+<you.answer1>
+// 当客户考虑重构文件时，需要先获取当前的文件结构，以判断是否太长或者太复杂，需要拆分成多个文件。
+通常来说，重构代码需要了解项目的目录结构、依赖关系、代码规模等信息。在没有这些信息之前，我无法为您提供准确的重构方案。我将先获取当前文件的信息：
+<devin>
+/structure:SketchRunContext.java
+/file:SketchRunContext.java#L1-L100 [注释：先获取文件的前 100 行代码，当文件太长时，需要考虑拆分]
+</devin>
+</you.answer1>
+<tool.response1>
+// ...
+</tool.response1>
+<you.answer2>
+// 当代码太长，比如超过1000 时，你应该建议用户如何拆分成多个文件，比如重构 IDEA 的重构功能，或者使用其他工具。    
+根据你的代码结构，你的代码似乎是关于 xx 的，但是由于我只获取了部分代码，无法准确判断。你的代码并不长，我将获取完整的代码后，为您提供重构方案。
+请允许我获取完整的代码：
+<devin>
+/file:SketchRunContext.java
+</devin>
+</you.answer2>
 </example>
 <thinking>
 It is crucial to proceed step-by-step, waiting for the user's message after each tool use before moving forward with
