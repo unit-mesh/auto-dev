@@ -24,7 +24,7 @@ class SccFunctionProvider : ToolchainFunctionProvider {
 
         var items = emptyList<SccResult>()
         val thread = ApplicationManager.getApplication().executeOnPooledThread {
-            items = SccWrapper().runSccSync(path)
+            items = SccWrapper().runSync(path)
         }
 
         thread.get(30000, java.util.concurrent.TimeUnit.MILLISECONDS)
