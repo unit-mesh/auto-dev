@@ -31,14 +31,28 @@ class EndpointKnowledgeWebApiProvider : KnowledgeWebApiProvider() {
                 val decls = collectApiDeclElements(project, endpointsProviderList, httpMethod, httpUrl)
 
                 val relatedCode = decls.mapNotNull {
-                    RelatedClassesProvider.provide(it.language)?.lookupIO(it)
+                    runReadAction {
+                        RelatedClassesProvider.provide(it.language)?.lookupIO(it)
+                    }
                 }.flatten()
 
                 val callees = decls.mapNotNull {
-                    RelatedClassesProvider.provide(it.language)?.lookupCallee(project, it)
+                    val classesProvider = runReadAction { RelatedClassesProvider.provide(it.language) }
+                    classesProvider?.lookupCallee(project, it)
                 }.flatten()
 
-                val allElements = decls + relatedCode + callees
+                var allElements = (decls + relatedCode + callees).distinct().toMutableList()
+                /// find better number then 10, and keep 10 as a default
+                if (allElements.size <= 10) {
+                    val secondLevels =
+                        callees.mapNotNull {
+                            runReadAction {
+                                RelatedClassesProvider.provide(it.language)?.lookupCallee(project, it)
+                            }
+                        }.flatten().take(10)
+                    allElements.addAll(secondLevels)
+                }
+
                 future.complete(allElements)
             }
         }

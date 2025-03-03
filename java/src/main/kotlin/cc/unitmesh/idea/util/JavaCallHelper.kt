@@ -1,5 +1,6 @@
 package cc.unitmesh.idea.util
 
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.util.ProgressIndicatorBase
 import com.intellij.openapi.project.Project
@@ -26,8 +27,7 @@ object JavaCallHelper {
             }
         })
 
-        return calledMethods
-            .filter {
+        return calledMethods.filter {
                 val containingClass = it.containingClass ?: return@filter false
                 if (!ProjectScope.getProjectScope(project).contains(containingClass.containingFile.virtualFile)) {
                     return@filter false
