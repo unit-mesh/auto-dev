@@ -8,12 +8,14 @@ data class UiComponent(
     val path: String,
     val signature: String = "",
     val props: List<String> = emptyList(),
+    val methods: List<String> = emptyList(),
+    val slots: List<String> = emptyList(),
 ) {
     fun format(): String {
         return """
-            |path: $path
-            |component: <$name >
+            |<$name />, path: $path
             |props: $props
+            |methods: $methods
         """.trimMargin()
     }
 }

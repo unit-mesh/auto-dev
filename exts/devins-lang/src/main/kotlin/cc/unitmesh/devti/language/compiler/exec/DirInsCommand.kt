@@ -30,6 +30,10 @@ import java.util.regex.Pattern
  *           └── file4.txt
  * ```
  *
+ * About depth design:
+ * In Java Langauge, the depth of dir are very long
+ * In JavaScript Langauge, the dirs files are too many
+ *
  * @param myProject The project instance in which the directory resides.
  * @param dir The path of the directory to list.
  */

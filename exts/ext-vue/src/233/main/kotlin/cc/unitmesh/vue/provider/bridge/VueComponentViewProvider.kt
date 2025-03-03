@@ -80,16 +80,16 @@ class VueComponentViewProvider : ComponentViewProvider() {
             if (componentName == "index.vue") {
                 componentName = path.parent.url.substringAfterLast("/")
             }
-            if (!isPublicComponent(path)) {
-                return emptyList()
-            }
+            if (!isPublicComponent(path)) return emptyList()
 
             return listOf(
                 UiComponent(
-                    component.element ?: componentName,
+                    component.defaultName ?: componentName,
                     path.relativePath(project = xmlFile.project),
                     "",
-                    component.props.map(VueInputProperty::name)
+                    component.props.map(VueInputProperty::name),
+                    component.methods.map { it.name },
+                    component.slots.map { it.name }
                 )
             )
         }
