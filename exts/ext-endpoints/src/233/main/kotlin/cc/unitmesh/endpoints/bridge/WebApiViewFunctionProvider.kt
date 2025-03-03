@@ -31,7 +31,7 @@ class WebApiViewFunctionProvider : ToolchainFunctionProvider {
         if (endpointsProviderList.isEmpty()) return "Cannot find any endpoints"
 
         val future = CompletableFuture<String>()
-        val task = object : Task.Backgroundable(project, "Loading", false) {
+        val task = object : Task.Backgroundable(project, "Processing context", false) {
             override fun run(indicator: ProgressIndicator) {
                 future.complete(this@WebApiViewFunctionProvider.collectApis(project, endpointsProviderList))
             }

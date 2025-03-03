@@ -22,7 +22,11 @@ class HistoryFunctionProvider : ToolchainFunctionProvider {
         val path = project.lookupFile(prop) ?: return "File not found"
         return RevisionProvider.provide()?.let {
             val changes = it.history(project, path)
-            return changes ?: "No changes found for history provider"
+            if (changes.isEmpty()) {
+                "No changes found for $path"
+            } else {
+                changes
+            }
         } ?: "No history provider found"
     }
 }
