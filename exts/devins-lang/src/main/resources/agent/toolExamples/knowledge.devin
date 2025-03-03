@@ -1,0 +1,4 @@
+从 Controller 到 Repository 的调用链
+/knowledge:BlogController#getBlogBySlug
+从 API 调用链来进行分析
+/knowledge:GET#/api/blog
