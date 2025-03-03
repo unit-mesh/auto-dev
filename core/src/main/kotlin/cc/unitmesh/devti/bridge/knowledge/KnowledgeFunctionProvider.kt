@@ -1,14 +1,26 @@
 package cc.unitmesh.devti.bridge.knowledge
 
 import cc.unitmesh.devti.bridge.KnowledgeTransfer
+import cc.unitmesh.devti.bridge.provider.KnowledgeWebApiProvider
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.openapi.project.Project
 
+val API_METHODS: List<String> = listOf("GET", "POST", "PUT", "DELETE", "PATCH")
+
+/**
+ * ```devin
+ * 从 API 调用链来进行分析
+ * /knowledge:GET#/api/blog
+ * 从 Controller 到 Repository 的调用链
+ * /knowledge:BlogController#getBlogBySlug
+ * ```
+ */
 class KnowledgeFunctionProvider : ToolchainFunctionProvider {
     override fun funcNames(): List<String> = listOf(KnowledgeTransfer.Knowledge.name)
 
     override fun isApplicable(project: Project, funcName: String): Boolean =
         funcName == KnowledgeTransfer.Knowledge.name
+
 
     /**
      * 1. try use KnowledgeWebApiProvider
@@ -22,6 +34,23 @@ class KnowledgeFunctionProvider : ToolchainFunctionProvider {
         args: List<Any>,
         allVariables: Map<String, Any?>
     ): Any {
+        // split prop to method and path
+        val split = prop.split("#")
+        if (split.size != 2) {
+            return "Invalid API format"
+        }
+
+        val method = split[0]
+        if (!API_METHODS.contains(method)) {
+            return "Invalid API method"
+        }
+
+        val path = split[1]
+
+        val elements = KnowledgeWebApiProvider.available(project).map {
+            it.lookupApiCallTree(project, method, path)
+        }.flatten()
+
         return ""
     }
 }

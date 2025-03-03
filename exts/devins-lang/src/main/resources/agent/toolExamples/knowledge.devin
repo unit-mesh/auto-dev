@@ -1,4 +1,4 @@
 从 API 调用链来进行分析
-/knowledge:GET#/api/blog
+/knowledge:GET#/api/blog/* [注:这里 * 代表 blog slug，等同于 SpringMVC 的 @PathVariable]
 从 Controller 到 Repository 的调用链
 /knowledge:BlogController#getBlogBySlug

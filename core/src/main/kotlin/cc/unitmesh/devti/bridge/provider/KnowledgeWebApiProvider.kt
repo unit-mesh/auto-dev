@@ -14,7 +14,7 @@ abstract class KnowledgeWebApiProvider : LazyExtensionInstance<KnowledgeWebApiPr
 
     abstract fun isApplicable(project: Project): Boolean
 
-    abstract fun lookupKnowledgeTree(project: Project, httpMethod: String, httpUrl: String): List<PsiElement>
+    abstract fun lookupApiCallTree(project: Project, httpMethod: String, httpUrl: String): List<PsiElement>
 
     companion object {
         val EP_NAME: ExtensionPointName<KnowledgeWebApiProvider> =
