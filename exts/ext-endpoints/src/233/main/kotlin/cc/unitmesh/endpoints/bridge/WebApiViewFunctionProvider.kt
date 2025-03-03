@@ -64,7 +64,7 @@ class WebApiViewFunctionProvider : ToolchainFunctionProvider {
 
         """Here is current project web api endpoints, ${map.size}:""" + map.joinToString("\n") { url ->
             url.method.joinToString("\n") {
-                "$it - ${url.urlPath.toStringWithStars()}"
+                "$it - ${url.urlPath.toStringWithStars()}" + " (${UrlMappingElement.getContainingFileName(url)})"
             }
         }
     }
