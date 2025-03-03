@@ -1,0 +1,3 @@
+List all web apis of current project
+/webApiView
+If return no endpoints, we need to check Endpoint plugin installed.

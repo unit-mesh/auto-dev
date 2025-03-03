@@ -41,7 +41,6 @@ sealed class Assessment(override val name: String) : BridgeCommandProvider {
 sealed class Target(override val name: String) : BridgeCommandProvider {
     object Docker : Target("docker")
     object BuildTool : Target("buildTool")
-    object Mermaid : Target("mermaid")
 }
 
 /**
@@ -68,7 +67,7 @@ sealed class Security(override val name: String) : BridgeCommandProvider {
  * ```
  */
 sealed class ArchViewCommand(override val name: String) : BridgeCommandProvider {
-    object WebApi : ArchViewCommand("webapi")
+    object WebApiView : ArchViewCommand("webApiView")
 
     /**
      * Aka Module View

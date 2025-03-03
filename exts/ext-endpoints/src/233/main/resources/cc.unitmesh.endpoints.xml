@@ -9,5 +9,6 @@
     <extensions defaultExtensionNs="cc.unitmesh">
 <!--  Since it's very slow to load all the endpoints, we disable it by default. -->
 <!--        <chatContextProvider implementation="cc.unitmesh.endpoints.provider.EndpointsContextProvider"/>-->
+        <toolchainFunctionProvider implementation="cc.unitmesh.endpoints.bridge.WebApiViewFunctionProvider"/>
     </extensions>
 </idea-plugin>
