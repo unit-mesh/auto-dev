@@ -16,5 +16,9 @@ class ComponentViewFunctionProvider : ToolchainFunctionProvider {
         prop: String,
         args: List<Any>,
         allVariables: Map<String, Any?>
-    ): String = ComponentViewProvider.collect(project).joinToString("\n", transform = UiComponent::format)
+    ): String {
+        val uiComponents = ComponentViewProvider.collect(project)
+        val components = uiComponents.joinToString("\n", transform = UiComponent::format)
+        return "Here is current project components, ${uiComponents.size}:\n$components"
+    }
 }
