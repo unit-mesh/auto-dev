@@ -9,11 +9,12 @@ import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testFramework.LightPlatformTestCase
 import junit.framework.TestCase
+import org.intellij.lang.annotations.Language
 import java.io.File
 
 class JSWriteTestServiceTest : LightPlatformTestCase() {
     fun testShouldReturnNullWhenFilePathEmpty() {
-        // given
+        @Language("JavaScript")
         val code = """
             export class Foo {
                 constructor() {
