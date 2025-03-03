@@ -23,13 +23,11 @@ import com.intellij.psi.PsiFile
  */
 interface RelatedClassesProvider {
     /**
-     * Lookup related classes for the given method.
-     *
-     * todo: spike is need for field or class
+     * Lookup input and output class/type/interface for the given element.
      */
-    fun lookup(element: PsiElement): List<PsiElement>
+    fun lookupIO(element: PsiElement): List<PsiElement>
 
-    fun lookup(element: PsiFile): List<PsiElement>
+    fun lookupIO(element: PsiFile): List<PsiElement>
 
     companion object {
         private val languageExtension: LanguageExtension<RelatedClassesProvider> =

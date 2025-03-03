@@ -31,7 +31,7 @@ class EndpointKnowledgeWebApiProvider : KnowledgeWebApiProvider() {
                 val decls = collectApiDeclElements(project, endpointsProviderList, httpMethod, httpUrl)
 
                 val relatedCode = decls.mapNotNull {
-                    RelatedClassesProvider.provide(it.language)?.lookup(it)
+                    RelatedClassesProvider.provide(it.language)?.lookupIO(it)
                 }.flatten()
 
                 val allElements = decls + relatedCode

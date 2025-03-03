@@ -6,11 +6,11 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 
 class KotlinRelatedClassProvider : RelatedClassesProvider {
-    override fun lookup(element: PsiElement): List<PsiElement> {
+    override fun lookupIO(element: PsiElement): List<PsiElement> {
         return KotlinTypeResolver.resolveByElement(element).values.filterNotNull().toList()
     }
 
-    override fun lookup(element: PsiFile): List<PsiElement> {
+    override fun lookupIO(element: PsiFile): List<PsiElement> {
         return KotlinTypeResolver.resolveByElement(element).values.filterNotNull().toList()
     }
 }

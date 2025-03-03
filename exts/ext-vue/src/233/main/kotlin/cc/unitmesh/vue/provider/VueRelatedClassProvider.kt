@@ -28,13 +28,13 @@ import java.util.*
  * based on [org.jetbrains.vuejs.web.scopes.VueCodeModelSymbolsScope]
  */
 class VueRelatedClassProvider : RelatedClassesProvider {
-    override fun lookup(element: PsiElement): List<PsiElement> {
+    override fun lookupIO(element: PsiElement): List<PsiElement> {
         if (element !is XmlFile) return emptyList()
 
         return emptyList()
     }
 
-    override fun lookup(psiFile: PsiFile): List<PsiElement> {
+    override fun lookupIO(psiFile: PsiFile): List<PsiElement> {
         if (psiFile !is XmlFile) return emptyList()
 
         val scriptTag = findScriptTag(psiFile, true) ?: findScriptTag(psiFile, false) ?: return emptyList()

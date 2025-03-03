@@ -17,7 +17,7 @@ class RelatedSymbolInsCommand(val myProject: Project, private val symbol: String
         if (elements.isEmpty()) return null
 
         val psiElements = elements.mapNotNull {
-            RelatedClassesProvider.provide(it.language)?.lookup(it)
+            RelatedClassesProvider.provide(it.language)?.lookupIO(it)
         }.flatten()
 
         if (psiElements.isEmpty()) return null

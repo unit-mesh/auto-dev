@@ -11,7 +11,7 @@ import com.intellij.psi.util.*
 import com.intellij.testIntegration.TestFinderHelper
 
 class JavaRelatedClassesProvider : RelatedClassesProvider {
-    override fun lookup(element: PsiElement): List<PsiClass> {
+    override fun lookupIO(element: PsiElement): List<PsiClass> {
         return when (element) {
             is PsiMethod -> findRelatedClasses(element)
                 .flatMap { findSuperClasses(it) }
@@ -24,7 +24,7 @@ class JavaRelatedClassesProvider : RelatedClassesProvider {
         }
     }
 
-    override fun lookup(element: PsiFile): List<PsiElement> {
+    override fun lookupIO(element: PsiFile): List<PsiElement> {
         return when (element) {
             is PsiJavaFile -> findRelatedClasses(element.classes.first()) + lookupTestFile(element.classes.first())
             else -> emptyList()

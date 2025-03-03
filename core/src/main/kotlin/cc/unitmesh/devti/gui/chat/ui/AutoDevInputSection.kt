@@ -216,7 +216,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
         project.messageBus.connect(disposable!!)
             .subscribe(LookupManagerListener.TOPIC, AutoDevInputLookupManagerListener(project) {
                 ApplicationManager.getApplication().invokeLater {
-                    val relatedElements = RelatedClassesProvider.provide(it.language)?.lookup(it)
+                    val relatedElements = RelatedClassesProvider.provide(it.language)?.lookupIO(it)
                     updateElements(relatedElements)
                 }
             })
@@ -254,7 +254,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
                                 ApplicationManager.getApplication().invokeLater {
                                     val psiFile = PsiManager.getInstance(project).findFile(vfile) ?: return@invokeLater
                                     val relatedElements =
-                                        RelatedClassesProvider.provide(psiFile.language)?.lookup(psiFile)
+                                        RelatedClassesProvider.provide(psiFile.language)?.lookupIO(psiFile)
                                     updateElements(relatedElements)
                                 }
                             }
