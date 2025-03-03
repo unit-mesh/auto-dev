@@ -43,6 +43,8 @@ class WebApiViewFunctionProvider : ToolchainFunctionProvider {
             }.flatten()
         }.flatten()
 
-        return map.joinToString("\n")
+        return """Here is current project web api endpoints, ${map.size}:""" + map.joinToString("\n") {
+            "endpoint: ${it.method} - ${it.urlPath}"
+        }
     }
 }

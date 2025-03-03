@@ -27,6 +27,7 @@ import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.application.runWriteAction
@@ -101,34 +102,35 @@ open class DevInsRunConfigurationProfileState(
         }
 
         // save the run result
-        val compiler = DevInsCompiler(myProject, file)
-        val compileResult = compiler.compile()
+        invokeLater {
+            val compiler = DevInsCompiler(myProject, file)
+            val compileResult = compiler.compile()
 
-        myProject.service<DevInsConversationService>().createConversation(configuration.getScriptPath(), compileResult)
+            myProject.service<DevInsConversationService>().createConversation(configuration.getScriptPath(), compileResult)
 
-        val output = compileResult.output
-        val agent = compileResult.executeAgent
+            val output = compileResult.output
+            val agent = compileResult.executeAgent
 
-        output.split("\n").forEach {
-            if (it.contains(DEVINS_ERROR)) {
-                console.print(it, ConsoleViewContentType.LOG_ERROR_OUTPUT)
-            } else {
-                console.print(it, ConsoleViewContentType.USER_INPUT)
+            output.split("\n").forEach {
+                if (it.contains(DEVINS_ERROR)) {
+                    console.print(it, ConsoleViewContentType.LOG_ERROR_OUTPUT)
+                } else {
+                    console.print(it, ConsoleViewContentType.USER_INPUT)
+                }
+                console.print("\n", ConsoleViewContentType.NORMAL_OUTPUT)
             }
-            console.print("\n", ConsoleViewContentType.NORMAL_OUTPUT)
-        }
 
-        console.print("\n--------------------\n", ConsoleViewContentType.NORMAL_OUTPUT)
+            console.print("\n--------------------\n", ConsoleViewContentType.NORMAL_OUTPUT)
 
-        if (output.contains(DEVINS_ERROR)) {
-            processHandler.exitWithError()
-            return DefaultExecutionResult(console, processHandler)
-        }
-
-        if (agent != null) {
-            agentRun(output, console, processHandler, agent)
-        } else {
-            defaultRun(output, console, processHandler, compileResult.isLocalCommand)
+            if (output.contains(DEVINS_ERROR)) {
+                processHandler.exitWithError()
+            } else {
+                if (agent != null) {
+                    agentRun(output, console, processHandler, agent)
+                } else {
+                    defaultRun(output, console, processHandler, compileResult.isLocalCommand)
+                }
+            }
         }
 
         return DefaultExecutionResult(console, processHandler)
