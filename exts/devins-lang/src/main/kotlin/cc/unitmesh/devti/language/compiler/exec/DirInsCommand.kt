@@ -6,8 +6,11 @@ import cc.unitmesh.devti.language.utils.lookupFile
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiManager
+import java.util.regex.Pattern
+
 
 /**
  * The `DirInsCommand` class is responsible for listing files and directories in a tree-like structure for a given directory path within a project.
@@ -32,6 +35,14 @@ import com.intellij.psi.PsiManager
  */
 class DirInsCommand(private val myProject: Project, private val dir: String) : InsCommand {
     override val commandName: BuiltinCommand = BuiltinCommand.DIR
+    private val HASH_FILE_PATTERN: Pattern = Pattern.compile(
+        "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?:\\.json|@[0-9a-f]+\\.json)$",
+        Pattern.CASE_INSENSITIVE
+    )
+
+    fun isHashJson(file: VirtualFile?): Boolean {
+        return file != null && HASH_FILE_PATTERN.matcher(file.name).matches()
+    }
 
     private val output = StringBuilder()
 
@@ -48,14 +59,17 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
     private fun listDirectory(project: Project, directory: PsiDirectory, depth: Int) {
         val isExclude = ProjectFileIndex.getInstance(project).isUnderIgnored(directory.virtualFile)
                 || ProjectFileIndex.getInstance(project).isExcluded(directory.virtualFile)
-        if (isExclude) {
-            return
-        }
+
+        if (isExclude) return
 
         val files = directory.files
         val subdirectories = directory.subdirectories
 
         for ((index, file) in files.withIndex()) {
+            /// skip binary files? ignore hashed file names, like `f5086740-a1a1-491b-82c9-ab065a9d1754.json`
+            if (file.fileType.isBinary) continue
+            if (isHashJson(file.virtualFile)) continue
+
             if (index == files.size - 1) {
                 output.appendLine("${"  ".repeat(depth)}└── ${file.name}")
             } else {
