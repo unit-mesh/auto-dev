@@ -2,6 +2,7 @@ package cc.unitmesh.devti.provider
 
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageExtension
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 
@@ -26,6 +27,8 @@ interface RelatedClassesProvider {
      * Lookup input and output class/type/interface for the given element.
      */
     fun lookupIO(element: PsiElement): List<PsiElement>
+
+    fun lookupCallee(project: Project, element: PsiElement): List<PsiElement> = emptyList()
 
     fun lookupIO(element: PsiFile): List<PsiElement>
 

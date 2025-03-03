@@ -34,7 +34,11 @@ class EndpointKnowledgeWebApiProvider : KnowledgeWebApiProvider() {
                     RelatedClassesProvider.provide(it.language)?.lookupIO(it)
                 }.flatten()
 
-                val allElements = decls + relatedCode
+                val callees = decls.mapNotNull {
+                    RelatedClassesProvider.provide(it.language)?.lookupCallee(project, it)
+                }.flatten()
+
+                val allElements = decls + relatedCode + callees
                 future.complete(allElements)
             }
         }
