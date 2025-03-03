@@ -217,6 +217,9 @@
         <extensionPoint qualifiedName="cc.unitmesh.componentProvider"
                         interface="cc.unitmesh.devti.bridge.provider.ComponentViewProvider"
                         dynamic="true"/>
+        <extensionPoint qualifiedName="cc.unitmesh.knowledgeWebApiProvide"
+                        interface="cc.unitmesh.devti.bridge.provider.KnowledgeWebApiProvider"
+                        dynamic="true"/>
     </extensionPoints>
 
     <applicationListeners>

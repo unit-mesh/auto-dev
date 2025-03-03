@@ -10,6 +10,12 @@ class KnowledgeFunctionProvider : ToolchainFunctionProvider {
     override fun isApplicable(project: Project, funcName: String): Boolean =
         funcName == KnowledgeTransfer.Knowledge.name
 
+    /**
+     * 1. try use KnowledgeWebApiProvider
+     *
+     * 2. try use RipGrep Search by APIs
+     *
+     */
     override fun execute(
         project: Project,
         prop: String,
