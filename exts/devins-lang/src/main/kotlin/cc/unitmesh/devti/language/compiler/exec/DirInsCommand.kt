@@ -95,14 +95,8 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
     private fun isExclude(project: Project, directory: PsiDirectory): Boolean {
         if (directory.name == ".idea") return true
 
-        val isExclude = ProjectFileIndex.getInstance(project).isUnderIgnored(directory.virtualFile)
-                || ProjectFileIndex.getInstance(project).isExcluded(directory.virtualFile)
-                || ProjectFileIndex.getInstance(project).isInGeneratedSources(directory.virtualFile)
-
         val status = FileStatusManager.getInstance(project).getStatus(directory.virtualFile)
-        if (status == FileStatus.IGNORED) return true
-
-        return isExclude
+        return status == FileStatus.IGNORED
     }
 }
 
