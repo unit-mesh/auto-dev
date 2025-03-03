@@ -24,7 +24,7 @@ class RipgrepSearchInsCommand(
         val searchContent = text ?: scope
         val result = RipgrepSearcher.searchFiles(myProject, searchDirectory, searchContent, null).get()
         return if (result?.isNotEmpty() == true) {
-            "RipGrep Search Result: \n===============================$result\n===============================\n"
+            "RipGrep Search Result ($searchContent): \n===============================$result\n===============================\n"
         } else {
             "No result found for /$commandName:$searchContent"
         }
