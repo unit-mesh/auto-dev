@@ -4,15 +4,21 @@ import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.provider.DevPackage
 import cc.unitmesh.devti.template.context.DockerfileContext
 import cc.unitmesh.idea.detectLanguageLevel
+import com.intellij.openapi.externalSystem.model.ProjectKeys
 import com.intellij.openapi.externalSystem.service.project.ProjectDataManager
 import com.intellij.openapi.externalSystem.service.ui.completion.TextCompletionInfo
+import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.psi.PsiFile
 import org.jetbrains.idea.maven.project.MavenProjectsManager
+import org.jetbrains.plugins.gradle.GradleManager
 import org.jetbrains.plugins.gradle.service.project.GradleTasksIndices
+import org.jetbrains.plugins.gradle.settings.GradleSettings
+import org.jetbrains.plugins.gradle.settings.GradleSystemSettings
 import org.jetbrains.plugins.gradle.util.GradleConstants
+import org.jetbrains.plugins.gradle.util.GradleModuleData
 
 
 open class JavaBuildSystemProvider : BuildSystemProvider() {
@@ -21,11 +27,12 @@ open class JavaBuildSystemProvider : BuildSystemProvider() {
         val buildToolName: String
         var taskString = ""
 
-        val gradleInfo = projectDataManager.getExternalProjectsData(project, GradleConstants.SYSTEM_ID)
+        val gradleInfos = projectDataManager.getExternalProjectsData(project, GradleConstants.SYSTEM_ID)
         val mavenProjects = MavenProjectsManager.getInstance(project).projects
 
-        if (gradleInfo.isNotEmpty()) {
-            buildToolName = "Gradle"
+        if (gradleInfos.isNotEmpty()) {
+            buildToolName = determineGradleDslType(project)
+
             val indices = GradleTasksIndices.getInstance(project)
 
             val tasks = indices.findTasks(project.guessProjectDir()!!.path)
@@ -53,6 +60,19 @@ open class JavaBuildSystemProvider : BuildSystemProvider() {
             languageVersion = "$javaVersion",
             taskString = taskString
         )
+    }
+
+    fun determineGradleDslType(project: Project): String {
+        val projectDir = project.guessProjectDir() ?: return "Gradle"
+        val hasKotlinDsl = projectDir.findChild("build.gradle.kts") != null
+        val hasGroovyDsl = projectDir.findChild("build.gradle") != null
+
+        return when {
+            hasKotlinDsl && hasGroovyDsl -> "Gradle (Mixed DSL)"
+            hasKotlinDsl -> "Gradle Kotlin DSL (build.gradle.kts)"
+            hasGroovyDsl -> "Gradle (build.gradle)"
+            else -> "Gradle"
+        }
     }
 
     override fun isDeclarePackageFile(filename: String): Boolean {
