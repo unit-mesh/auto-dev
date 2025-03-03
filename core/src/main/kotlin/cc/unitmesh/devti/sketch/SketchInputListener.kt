@@ -59,7 +59,7 @@ open class SketchInputListener(
     override fun manualSend(userInput: String) {
         if (userInput.trim().isEmpty() || userInput.trim().isBlank()) return
 
-        ApplicationManager.getApplication().executeOnPooledThread {
+        ApplicationManager.getApplication().invokeLater {
             val devInProcessor = LanguageProcessor.devin()
             val compiledInput = runReadAction { devInProcessor?.compile(project, userInput) } ?: userInput
 
@@ -70,7 +70,7 @@ open class SketchInputListener(
             val flow = chatCodingService.request(getInitPrompt(), compiledInput, isFromSketch = true)
             val suggestion = StringBuilder()
 
-            AutoDevCoroutineScope.workerThread().launch {
+            AutoDevCoroutineScope.scope(project).launch {
                 flow.cancelHandler { toolWindow.handleCancel = it }.cancellable().collect { char ->
                     suggestion.append(char)
 
