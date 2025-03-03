@@ -121,7 +121,7 @@ object SQLExecutor {
     }
 
     private fun executeSql(project: Project, dataSource: RawDataSource, query: String): String? {
-        val future: java.util.concurrent.CompletableFuture<String> = java.util.concurrent.CompletableFuture()
+        val future: CompletableFuture<String> = CompletableFuture()
         val localDs = com.intellij.database.util.DbImplUtilCore.getLocalDataSource(dataSource)
 
         val session = com.intellij.database.console.session.DatabaseSessionManager.getSession(project, localDs)
@@ -140,7 +140,7 @@ object SQLExecutor {
             object : com.intellij.database.datagrid.DataRequest.QueryRequest(session, query,
                 newConstraints(dataSource.dbms), null) {}
         messageBus.dataProducer.processRequest(request)
-        return future.get()
+        return future.get(5, java.util.concurrent.TimeUnit.SECONDS)
     }
 
     private fun createConsole(project: Project, file: LightVirtualFile): JdbcConsole? {
