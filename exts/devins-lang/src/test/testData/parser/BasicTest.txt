@@ -1,9 +1,5 @@
 DevInFile
-  PsiElement(DevInTokenType.TEXT_SEGMENT)('你好 ')
-  DevInUsedImpl(USED)
-    PsiElement(DevInTokenType.AGENT_START)('@')
-    PsiElement(DevInTokenType.AGENT_ID)('hello-world')
-  PsiElement(DevInTokenType.TEXT_SEGMENT)(' sm')
+  PsiElement(DevInTokenType.TEXT_SEGMENT)('你好 @hello-world sm')
   PsiElement(DevInTokenType.NEWLINE)('\n')
   PsiElement(DevInTokenType.TEXT_SEGMENT)('解释一下代码')
   PsiElement(DevInTokenType.NEWLINE)('\n')

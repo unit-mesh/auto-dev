@@ -109,8 +109,21 @@ SHARP=#
                 return comment();
             }
 
-            yypushback(yylength());
-            yybegin(YYUSED);
+            // get first char, if $, @, /, #, should be a YYUSED
+            char first  = text.charAt(0);
+            if (first == '@') {
+                yypushback(yylength() - 1);
+                yybegin(AGENT_BLOCK);
+                return AGENT_START;
+            } else if (first == '/') {
+                yypushback(yylength() - 1);
+                yybegin(COMMAND_BLOCK);
+                return COMMAND_START;
+            } else if (first == '$') {
+                yypushback(yylength() - 1);
+                yybegin(VARIABLE_BLOCK);
+                return VARIABLE_START;
+            }
 
             return TEXT_SEGMENT;
         }
