@@ -7,7 +7,7 @@ import com.intellij.lang.LanguageExtension
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.psi.PsiElement
 
-class ClassContextProvider(private val gatherUsages: Boolean) : LLMCodeContextProvider<PsiElement> {
+class ClassContextProvider(private val gatherUsages: Boolean = false) : LLMCodeContextProvider<PsiElement> {
     private val languageExtension = LanguageExtension<ClassContextBuilder>("cc.unitmesh.classContextBuilder")
     private val providers: List<ClassContextBuilder>
 

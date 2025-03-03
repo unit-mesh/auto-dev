@@ -47,5 +47,10 @@
 
         <componentProvider implementation="cc.unitmesh.ide.javascript.bridge.ReactComponentViewProvider"/>
         <toolchainFunctionProvider implementation="cc.unitmesh.ide.javascript.bridge.StylingViewFunctionProvider"/>
+
+        <relatedClassProvider language="JavaScript"
+                              implementationClass="cc.unitmesh.ide.javascript.provider.JavaScriptRelatedClassProvider"/>
+        <relatedClassProvider language="TypeScript"
+                             implementationClass="cc.unitmesh.ide.javascript.provider.JavaScriptRelatedClassProvider"/>
     </extensions>
 </idea-plugin>

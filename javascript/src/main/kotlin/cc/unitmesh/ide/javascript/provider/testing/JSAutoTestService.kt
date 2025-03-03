@@ -1,22 +1,21 @@
 package cc.unitmesh.ide.javascript.provider.testing
 
 import cc.unitmesh.devti.context.ClassContext
+import cc.unitmesh.devti.context.ClassContextProvider
 import cc.unitmesh.devti.provider.AutoTestService
 import cc.unitmesh.devti.provider.context.TestFileContext
 import cc.unitmesh.ide.javascript.context.JavaScriptClassContextBuilder
 import cc.unitmesh.ide.javascript.context.JavaScriptMethodContextBuilder
 import cc.unitmesh.ide.javascript.util.JSPsiUtil
+import cc.unitmesh.ide.javascript.util.JSTypeResolver
 import cc.unitmesh.ide.javascript.util.LanguageApplicableUtil
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.lang.javascript.buildTools.npm.rc.NpmRunConfiguration
 import com.intellij.lang.javascript.psi.JSFile
 import com.intellij.lang.javascript.psi.JSFunction
 import com.intellij.lang.javascript.psi.JSVarStatement
-import com.intellij.lang.javascript.psi.ecma6.TypeScriptInterface
-import com.intellij.lang.javascript.psi.ecma6.TypeScriptSingleType
 import com.intellij.lang.javascript.psi.ecmal4.JSClass
 import com.intellij.lang.javascript.psi.ecmal4.JSImportStatement
-import com.intellij.lang.javascript.psi.util.JSStubBasedPsiTreeUtil
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
@@ -103,72 +102,7 @@ class JSAutoTestService : AutoTestService() {
     }
 
     override fun lookupRelevantClass(project: Project, element: PsiElement): List<ClassContext> {
-        return ReadAction.compute<List<ClassContext>, Throwable> {
-            val elements = mutableListOf<ClassContext>()
-            when (element) {
-                is JSClass -> {
-                    element.functions.map {
-                        elements += resolveByFunction(it).values
-                    }
-                }
-
-                is JSFunction -> {
-                    elements += resolveByFunction(element).values
-                }
-
-                else -> {}
-            }
-
-            return@compute elements
-        }
-    }
-
-    private fun resolveByFunction(jsFunction: JSFunction): Map<String, ClassContext> {
-        val result = mutableMapOf<String, ClassContext>()
-        jsFunction.parameterList?.parameters?.map {
-            it.typeElement?.let { typeElement ->
-                result += resolveByType(typeElement, it.typeElement!!.text)
-            }
-        }
-
-        result += jsFunction.returnTypeElement?.let {
-            resolveByType(it, jsFunction.returnType!!.resolvedTypeText)
-        } ?: emptyMap()
-
-        return result
-    }
-
-    private fun resolveByType(
-        returnType: PsiElement?,
-        typeName: String
-    ): MutableMap<String, ClassContext> {
-        val result = mutableMapOf<String, ClassContext>()
-        when (returnType) {
-            is TypeScriptSingleType -> {
-                val resolveReferenceLocally = JSStubBasedPsiTreeUtil.resolveLocally(
-                    typeName,
-                    returnType
-                )
-
-                when (resolveReferenceLocally) {
-                    is TypeScriptInterface -> {
-                        JavaScriptClassContextBuilder().getClassContext(resolveReferenceLocally, false)?.let {
-                            result += mapOf(typeName to it)
-                        }
-                    }
-
-                    else -> {
-                        log.warn("resolveReferenceLocally is not TypeScriptInterface: $resolveReferenceLocally")
-                    }
-                }
-            }
-
-            else -> {
-                log.warn("returnType is not TypeScriptSingleType: $returnType")
-            }
-        }
-
-        return result
+        return JSTypeResolver.resolveByElement(element).map(ClassContextProvider(false)::from)
     }
 
     object Util {
