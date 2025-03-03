@@ -23,12 +23,15 @@ class WebApiViewFunctionProvider : ToolchainFunctionProvider {
         args: List<Any>,
         allVariables: Map<String, Any?>
     ): Any {
-        val endpointsProviderList = runReadAction { EndpointsProvider.getAvailableProviders(project).toList() }
-        if (endpointsProviderList.isEmpty()) return "Cannot find any endpoints"
-
         val future = CompletableFuture<String>()
         val task = object : Task.Backgroundable(project, "Processing context", false) {
             override fun run(indicator: ProgressIndicator) {
+                val endpointsProviderList = runReadAction { EndpointsProvider.getAvailableProviders(project).toList() }
+                if (endpointsProviderList.isEmpty()) {
+                    future.complete("Cannot find any endpoints")
+                    return
+                }
+
                 val map = collectUrls(project, endpointsProviderList)
                 val result =
                     """Here is current project web api endpoints, ${map.size}:""" + map.joinToString("\n") { url ->

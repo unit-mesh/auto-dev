@@ -6,6 +6,8 @@ import cc.unitmesh.devti.language.utils.lookupFile
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
+import com.intellij.openapi.vcs.FileStatus
+import com.intellij.openapi.vcs.FileStatusManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiManager
@@ -61,10 +63,7 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
     }
 
     private fun listDirectory(project: Project, directory: PsiDirectory, depth: Int) {
-        val isExclude = ProjectFileIndex.getInstance(project).isUnderIgnored(directory.virtualFile)
-                || ProjectFileIndex.getInstance(project).isExcluded(directory.virtualFile)
-
-        if (isExclude) return
+        if(isExclude(project, directory)) return
 
         val files = directory.files
         val subdirectories = directory.subdirectories
@@ -82,6 +81,8 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
         }
 
         for ((index, subdirectory) in subdirectories.withIndex()) {
+            if(isExclude(project, directory)) continue
+
             if (index == subdirectories.size - 1) {
                 output.appendLine("${"  ".repeat(depth)}└── ${subdirectory.name}/")
             } else {
@@ -89,6 +90,19 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
             }
             listDirectory(project, subdirectory, depth + 1)
         }
+    }
+
+    private fun isExclude(project: Project, directory: PsiDirectory): Boolean {
+        if (directory.name == ".idea") return true
+
+        val isExclude = ProjectFileIndex.getInstance(project).isUnderIgnored(directory.virtualFile)
+                || ProjectFileIndex.getInstance(project).isExcluded(directory.virtualFile)
+                || ProjectFileIndex.getInstance(project).isInGeneratedSources(directory.virtualFile)
+
+        val status = FileStatusManager.getInstance(project).getStatus(directory.virtualFile)
+        if (status == FileStatus.IGNORED) return true
+
+        return isExclude
     }
 }
 
