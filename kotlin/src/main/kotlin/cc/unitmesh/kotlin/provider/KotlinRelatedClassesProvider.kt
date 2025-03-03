@@ -5,6 +5,7 @@ import cc.unitmesh.kotlin.util.KotlinTypeResolver
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiNamedElement
 import org.jetbrains.kotlin.idea.structuralsearch.visitor.KotlinRecursiveElementWalkingVisitor
 import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtNamedFunction
@@ -18,7 +19,7 @@ class KotlinRelatedClassProvider : RelatedClassesProvider {
         return KotlinTypeResolver.resolveByElement(element).values.filterNotNull().toList()
     }
 
-    override fun lookupCallee(project: Project, element: PsiElement): List<PsiElement> {
+    override fun lookupCallee(project: Project, element: PsiElement): List<PsiNamedElement> {
         return when (element) {
             is KtNamedFunction -> findCallees(project, element)
             else -> emptyList()

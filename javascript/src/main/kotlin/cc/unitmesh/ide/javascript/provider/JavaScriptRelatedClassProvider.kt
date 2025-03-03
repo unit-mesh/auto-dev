@@ -8,6 +8,7 @@ import com.intellij.lang.javascript.psi.JSRecursiveWalkingElementVisitor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiNamedElement
 
 class JavaScriptRelatedClassProvider : RelatedClassesProvider {
     override fun lookupIO(element: PsiElement): List<PsiElement> = JSTypeResolver.resolveByElement(element)
@@ -16,7 +17,7 @@ class JavaScriptRelatedClassProvider : RelatedClassesProvider {
     override fun lookupCallee(
         project: Project,
         element: PsiElement
-    ): List<PsiElement> {
+    ): List<PsiNamedElement> {
         return when (element) {
             is JSFunction -> findCallees(project, element)
             else -> emptyList()
