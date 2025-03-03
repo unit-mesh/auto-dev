@@ -1,6 +1,7 @@
 package cc.unitmesh.endpoints.bridge
 
 import cc.unitmesh.devti.bridge.provider.KnowledgeWebApiProvider
+import cc.unitmesh.devti.provider.RelatedClassesProvider
 import com.intellij.microservices.endpoints.EndpointsProvider
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.progress.ProgressIndicator
@@ -27,14 +28,14 @@ class EndpointKnowledgeWebApiProvider : KnowledgeWebApiProvider() {
         val future = CompletableFuture<List<PsiElement>>()
         val task = object : Task.Backgroundable(project, "Processing context", false) {
             override fun run(indicator: ProgressIndicator) {
-                future.complete(
-                    this@EndpointKnowledgeWebApiProvider.collectElements(
-                        project,
-                        endpointsProviderList,
-                        httpMethod,
-                        httpUrl
-                    )
-                )
+                val decls = collectApiDeclElements(project, endpointsProviderList, httpMethod, httpUrl)
+
+                val relatedCode = decls.mapNotNull {
+                    RelatedClassesProvider.provide(it.language)?.lookup(it)
+                }.flatten()
+
+                val allElements = decls + relatedCode
+                future.complete(allElements)
             }
         }
 
@@ -44,7 +45,7 @@ class EndpointKnowledgeWebApiProvider : KnowledgeWebApiProvider() {
         return future.get()
     }
 
-    private fun collectElements(
+    private fun collectApiDeclElements(
         project: Project,
         model: List<EndpointsProvider<*, *>>,
         httpMethod: String,

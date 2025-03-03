@@ -47,10 +47,12 @@ class KnowledgeFunctionProvider : ToolchainFunctionProvider {
 
         val path = split[1]
 
-        val elements = KnowledgeWebApiProvider.available(project).map {
+        val elementText = KnowledgeWebApiProvider.available(project).map {
             it.lookupApiCallTree(project, method, path)
-        }.flatten()
+        }.flatten().joinToString("\n") {
+            it.text
+        }
 
-        return ""
+        return elementText
     }
 }
