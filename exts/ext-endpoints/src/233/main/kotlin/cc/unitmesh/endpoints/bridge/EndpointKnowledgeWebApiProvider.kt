@@ -22,12 +22,10 @@ class EndpointKnowledgeWebApiProvider : KnowledgeWebApiProvider() {
         httpMethod: String,
         httpUrl: String
     ): List<PsiElement> {
-        val endpointsProviderList = runReadAction { EndpointsProvider.getAvailableProviders(project).toList() }
-        if (endpointsProviderList.isEmpty()) return emptyList()
-
         val future = CompletableFuture<List<PsiElement>>()
         val task = object : Task.Backgroundable(project, "Processing context", false) {
             override fun run(indicator: ProgressIndicator) {
+                val endpointsProviderList = runReadAction { EndpointsProvider.getAvailableProviders(project).toList() }
                 val decls = collectApiDeclElements(project, endpointsProviderList, httpMethod, httpUrl)
 
                 val relatedCode = decls.mapNotNull {

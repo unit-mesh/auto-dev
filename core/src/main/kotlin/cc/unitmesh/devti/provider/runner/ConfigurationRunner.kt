@@ -76,7 +76,7 @@ interface ConfigurationRunner {
             try {
                 configurations.startRunConfigurationExecution(runContext)
                 val handler = CheckExecutionListener(runnerId(), runContext)
-                connection?.subscribe(ExecutionManager.EXECUTION_TOPIC, handler)
+                    connection?.subscribe(ExecutionManager.EXECUTION_TOPIC, handler)
             } catch (e: ExecutionException) {
                 logger<ConfigurationRunner>().warn("Failed to start run configuration: ${configurations.name}")
                 runContext.latch.countDown()
