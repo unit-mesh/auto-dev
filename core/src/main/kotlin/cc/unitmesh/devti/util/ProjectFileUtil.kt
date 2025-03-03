@@ -2,6 +2,7 @@
 package cc.unitmesh.devti.util
 
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -35,7 +36,9 @@ fun Project.findFile(filename: String): VirtualFile? {
 
     val task = object : Task.Backgroundable(this, "Searching for file", false) {
         override fun run(indicator: com.intellij.openapi.progress.ProgressIndicator) {
-            val file  = FilenameIndex.getVirtualFilesByName(filename, ProjectScope.getProjectScope(this@findFile)).firstOrNull()
+            val file  = runReadAction {
+                FilenameIndex.getVirtualFilesByName(filename, ProjectScope.getProjectScope(this@findFile)).firstOrNull()
+            }
             future.complete(file)
         }
     }

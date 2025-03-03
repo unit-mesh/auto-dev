@@ -50,6 +50,6 @@ class DependenciesFunctionProvider : ToolchainFunctionProvider {
         ProgressManager.getInstance()
             .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
 
-        return future.get()
+        return future.get(30, java.util.concurrent.TimeUnit.SECONDS)
     }
 }

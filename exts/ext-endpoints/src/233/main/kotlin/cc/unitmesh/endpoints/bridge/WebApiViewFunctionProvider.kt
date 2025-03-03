@@ -34,14 +34,14 @@ class WebApiViewFunctionProvider : ToolchainFunctionProvider {
 
                 val map = collectUrls(project, endpointsProviderList)
                 val result =
-                    """Here is current project web api endpoints, ${map.size}:""" + map.joinToString("\n") { url ->
+                    """Here is current project web ${map.size} api endpoints: ```\n""" + map.joinToString("\n") { url ->
                         url.method.joinToString("\n") {
                             "$it - ${url.urlPath.toStringWithStars()}" + " (${
                                 UrlMappingElement.getContainingFileName(
                                     url
                                 )
                             })"
-                        }
+                        } + "\n```"
                     }
 
                 future.complete(result)
