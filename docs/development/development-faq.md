@@ -49,3 +49,20 @@ typealias DockerFileExposeCommand = com.intellij.docker.dockerFile.parser.psi.Do
 typealias DockerFileFromCommand = com.intellij.docker.dockerFile.parser.psi.DockerFileFromCommand
 typealias DockerFileWorkdirCommand = com.intellij.docker.dockerFile.parser.psi.DockerFileWorkdirCommand
 ```
+
+## java.lang.Throwable: Must be executed under progress indicator: com.intellij.openapi.progress.EmptyProgressIndicator@6c3fd0d8 but the process is running under null indicator instead. Please see e.g. ProgressManager.runProcess()
+
+```kotlin
+ val future = CompletableFuture<String>()
+val task = object : Task.Backgroundable(project, "Loading", false) {
+    override fun run(indicator: ProgressIndicator) {
+        // collectApis point to your long time operation
+        future.complete(this.collectApis(project, endpointsProviderList))
+    }
+}
+
+ProgressManager.getInstance()
+    .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+
+return future.get()
+```

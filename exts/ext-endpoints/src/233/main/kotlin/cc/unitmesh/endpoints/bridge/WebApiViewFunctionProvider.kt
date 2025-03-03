@@ -6,10 +6,15 @@ import com.intellij.microservices.endpoints.EndpointsProvider
 import com.intellij.microservices.endpoints.EndpointsUrlTargetProvider
 import com.intellij.microservices.endpoints.ModuleEndpointsFilter
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.modules
 import com.intellij.spring.model.SpringBeanPointer
 import com.intellij.spring.mvc.mapping.UrlMappingElement
+import java.util.concurrent.CompletableFuture
 
 class WebApiViewFunctionProvider : ToolchainFunctionProvider {
     override fun funcNames(): List<String> = listOf(ArchViewCommand.WebApiView.name)
@@ -22,9 +27,23 @@ class WebApiViewFunctionProvider : ToolchainFunctionProvider {
         args: List<Any>,
         allVariables: Map<String, Any?>
     ): Any {
-        val model = runReadAction { EndpointsProvider.getAvailableProviders(project).toList() }
-        if (model.isEmpty()) return "Cannot find any endpoints"
+        val endpointsProviderList = runReadAction { EndpointsProvider.getAvailableProviders(project).toList() }
+        if (endpointsProviderList.isEmpty()) return "Cannot find any endpoints"
 
+        val future = CompletableFuture<String>()
+        val task = object : Task.Backgroundable(project, "Loading", false) {
+            override fun run(indicator: ProgressIndicator) {
+                future.complete(this@WebApiViewFunctionProvider.collectApis(project, endpointsProviderList))
+            }
+        }
+
+        ProgressManager.getInstance()
+            .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+
+        return future.get()
+    }
+
+    private fun collectApis(project: Project, model: List<EndpointsProvider<*, *>>): String = runReadAction {
         val availableProviders = model
             .filter { it.getStatus(project) == EndpointsProvider.Status.HAS_ENDPOINTS }
             .filterIsInstance<EndpointsUrlTargetProvider<SpringBeanPointer<*>, UrlMappingElement>>()
@@ -43,8 +62,10 @@ class WebApiViewFunctionProvider : ToolchainFunctionProvider {
             }.flatten()
         }.flatten()
 
-        return """Here is current project web api endpoints, ${map.size}:""" + map.joinToString("\n") {
-            "endpoint: ${it.method} - ${it.urlPath}"
+        """Here is current project web api endpoints, ${map.size}:""" + map.joinToString("\n") { url ->
+            url.method.joinToString("\n") {
+                "$it - ${url.urlPath.toStringWithStars()}"
+            }
         }
     }
 }
