@@ -23,7 +23,8 @@ object JavaCallHelper {
         method.accept(object : JavaRecursiveElementVisitor() {
             override fun visitMethodCallExpression(expression: PsiMethodCallExpression) {
                 super.visitMethodCallExpression(expression)
-                calledMethods.add(expression.resolveMethod() ?: return)
+                val resolveMethod = runReadAction { expression.resolveMethod() }
+                calledMethods.add(resolveMethod ?: return)
             }
         })
 

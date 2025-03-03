@@ -105,10 +105,19 @@ Here is an example output to the USER:
 //..
 </tool.response2>
 <you.answer3>
+// 当你获取到了足够的上下文信息后，你应该对系统的现状做一个总结，然后提供迁移方案。
+现在我已经了解了项目的目录结构和组件列表，您当前使用的是 xx 框架，项目的规模适中，依赖关系较为简单。如下是使用 C4 架构模型（Context-Container-Component-Code）
+生成的项目架构图：
+
+```mermaid
+// xxx
+```
+</you.answer3>
+<you.answer4>
 // 根据先前的信息，你得考虑是否需要调整迁移计划。
 // 在手动修改代码之前，你应该考虑各种自动化工具的可能性，比如 Java 里的 OpenRewrite （直接生成 Yaml Receipt 即可），JS 里的 jscodeshift（生成 JS 代码即可）
 // 在获取到足够的信息后，你可以开始提供迁移方案；由于用户使用的是 IDEA，所以需要考虑相关的能力，比如修改完 build.gradle.kts 后，是否需要同步到 IDEA 中。
-现在我已经了解了项目的目录结构和组件列表，接下来我将为您提供迁移方案。我将先使用 Mermaid 生成迁移方案图：
+接下来我将为您提供迁移方案。我将先使用 Mermaid 生成迁移方案图：
 ```mermaid
 //
 ```
@@ -118,11 +127,11 @@ Here is an example output to the USER:
 /run:build --refresh-dependencies  [注释：需要，用户先打 patch，再刷新项目依赖]
 </devin>
 
-</you.answer3>
-<user.answer3>
+</you.answer4>
+<user.answer4>
 //xxx
-</user.answer3>
-<your.answer4>
+</user.answer4>
+<your.answer5>
 // ... 优先使用 DevIns 指令来修改代码和提供范例
 现在，我将读取 xx 文件，然后为您提供迁移示例：
 <devin>
@@ -130,7 +139,7 @@ Here is an example output to the USER:
 //
 ```
 </devin>
-</your.answer4>
+</your.answer5>
 </example>
 <example id="2">
 <user.question>
