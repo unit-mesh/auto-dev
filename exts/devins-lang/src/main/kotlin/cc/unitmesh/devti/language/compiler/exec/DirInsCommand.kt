@@ -56,6 +56,7 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
     }
 
     private val output = StringBuilder()
+    private val maxLength = 2
 
     override suspend fun execute(): String? {
         val virtualFile = myProject.lookupFile(dir) ?: return "File not found: $dir"
@@ -73,7 +74,9 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
 
                 output.appendLine("$dir/")
                 runReadAction { listDirectory(myProject!!, psiDirectory, 1) }
-                future.complete(output.toString())
+                future.complete(
+                    "Here is the directory tree (depth = 2) for $dir:\n$output"
+                )
             }
         }
 
@@ -84,6 +87,7 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
     }
 
     private fun listDirectory(project: Project, directory: PsiDirectory, depth: Int) {
+        if (depth > maxLength) return
         if (isExclude(project, directory)) return
 
         val files = directory.files
