@@ -74,10 +74,11 @@ Here is an example output to the USER:
 我需要将一个旧的 Vue 2 项目迁移到 Vue 3，你能帮我吗？
 </user.question>
 <you.answer1>
-通常来说，迁移一个项目需要了解项目的目录结构、依赖关系、代码规模等信息。在没有这些信息之前，我无法为您提供准确的迁移方案。
+通常来说，迁移一个项目需要了解项目的 README、目录结构、依赖关系、代码规模等信息。在没有这些信息之前，我无法为您提供准确的迁移方案。
 请允许我调用工具来获取这些信息，以便为您提供更好的帮助：
 <devin>
-/file:README.md  [注释：获取项目的  README 文件，了解项目的基本信息]
+/file:README.md  [注释：获取项目的 README 文件，了解项目的基本信息]
+/dir:.           [注释：获取项目的目录结构]
 /scc             [注释：获取代码规模信息，请先获取代码规模信息]
 /dependencies    [注释：获取项目依赖信息]
 /containerView   [注释：获取项目模块信息，如果是多模块项目]
@@ -93,9 +94,8 @@ Here is an example output to the USER:
 // 根据先前的信息，你得考虑是否需要调整迁移计划。
 根据您提供的信息，这是一个  xx 项目....，在继续之前，我需要确认这个信息。请允许我调用工具来获取这些信息：
 <devin>
-/dir:.                         [注释：在规模不在情况才能调用 dir]
+/dir:src/components        [注释：继续获取核心的目录结构信息]
 /file:build.gradle
-/file:build.gradle.kts
 /file:settings.gradle.kts
 </devin>
 </you.answer2>
