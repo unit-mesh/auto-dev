@@ -6,7 +6,12 @@ import cc.unitmesh.devti.util.relativePath
 import com.intellij.javascript.nodejs.PackageJsonData
 import com.intellij.javascript.nodejs.packageJson.PackageJsonFileManager
 import com.intellij.javascript.web.html.WebFrameworkHtmlFileType
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.fileTypes.ex.FileTypeManagerEx
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
@@ -19,6 +24,7 @@ import org.jetbrains.vuejs.model.VueInputProperty
 import org.jetbrains.vuejs.model.VueModelManager
 import org.jetbrains.vuejs.model.VueRegularComponent
 import java.io.IOException
+import java.util.concurrent.CompletableFuture
 
 class VueComponentViewProvider : ComponentViewProvider() {
     override fun isApplicable(project: Project): Boolean {
@@ -46,17 +52,28 @@ class VueComponentViewProvider : ComponentViewProvider() {
                 as? WebFrameworkHtmlFileType
             ?: return emptyList()
 
-        val virtualFiles = FileTypeIndex.getFiles(fileType, searchScope)
+        val future = CompletableFuture<List<UiComponent>>()
+        val task = object : Task.Backgroundable(project, "Processing context", false) {
+            override fun run(indicator: ProgressIndicator) {
+                runReadAction {
+                    val virtualFiles = FileTypeIndex.getFiles(fileType, searchScope)
+                    val components = mutableListOf<UiComponent>()
 
-        val components = mutableListOf<UiComponent>()
-        val psiManager = PsiManager.getInstance(project)
+                    val psiManager = PsiManager.getInstance(project)
+                    virtualFiles.forEach { file ->
+                        val xmlFile = psiManager.findFile(file) ?: return@forEach
+                        components += slowlyBuildComponents(xmlFile)
+                    }
 
-        virtualFiles.forEach { file ->
-            val xmlFile = psiManager.findFile(file)  ?: return@forEach
-            components += slowlyBuildComponents(xmlFile)
+                    future.complete(components)
+                }
+            }
         }
 
-        return components
+        ProgressManager.getInstance()
+            .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+
+        return future.get()
     }
 
     companion object {
