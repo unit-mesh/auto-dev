@@ -1,2 +1,4 @@
-List the contents of a directory in 2 depth
-/dir:src
+List the contents of a directory up to a depth of 2 (the default depth)
+/dir:.
+If navigating deeper, list contents up to a depth of 2 for each selected directory:
+/dir:src/components

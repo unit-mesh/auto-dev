@@ -10,6 +10,7 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
+import com.intellij.openapi.util.text.StringUtilRt
 import com.intellij.openapi.vcs.FileStatus
 import com.intellij.openapi.vcs.FileStatusManager
 import com.intellij.openapi.vfs.VirtualFile
@@ -87,33 +88,18 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
     }
 
     private fun listDirectory(project: Project, directory: PsiDirectory, depth: Int) {
-        if (depth > maxLength) return
-        if (isExclude(project, directory)) return
+        if (depth > maxLength || isExclude(project, directory)) return
 
-        val files = directory.files
+        val files = directory.files.filter { !it.fileType.isBinary && !isHashJson(it.virtualFile) }
         val subdirectories = directory.subdirectories
 
-        for ((index, file) in files.withIndex()) {
-            /// skip binary files? ignore hashed file names, like `f5086740-a1a1-491b-82c9-ab065a9d1754.json`
-            if (file.fileType.isBinary) continue
-            if (isHashJson(file.virtualFile)) continue
+        val items = files.map { it.name to StringUtilRt.formatFileSize(it.virtualFile.length) } +
+                subdirectories.map { it.name + "/" to null }
 
-            if (index == files.size - 1) {
-                output.appendLine("${"  ".repeat(depth)}└── ${file.name}")
-            } else {
-                output.appendLine("${"  ".repeat(depth)}├── ${file.name}")
-            }
-        }
-
-        for ((index, subdirectory) in subdirectories.withIndex()) {
-            if (isExclude(project, directory)) continue
-
-            if (index == subdirectories.size - 1) {
-                output.appendLine("${"  ".repeat(depth)}└── ${subdirectory.name}/")
-            } else {
-                output.appendLine("${"  ".repeat(depth)}├── ${subdirectory.name}/")
-            }
-            listDirectory(project, subdirectory, depth + 1)
+        items.forEachIndexed { index, (name, size) ->
+            val prefix = if (index == items.lastIndex) "└" else "├"
+            output.appendLine("${" ".repeat(depth)}$prefix $name${size?.let { " ($it)" } ?: ""}")
+            if (size == null) listDirectory(project, subdirectories[index - files.size], depth + 1)
         }
     }
 
