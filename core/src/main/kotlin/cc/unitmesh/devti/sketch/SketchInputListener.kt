@@ -15,6 +15,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.cancellable
@@ -60,6 +61,11 @@ open class SketchInputListener(
         val input = userInput.trim()
         if (input.isEmpty() || input.isBlank()) return
         if (input == "\n") return
+
+        // if length < 10, logger for debug
+        if (input.length < 10) {
+            logger<SketchInputListener>().debug("Input.length < 10: $input")
+        }
 
         ApplicationManager.getApplication().invokeLater {
             val devInProcessor = LanguageProcessor.devin()
