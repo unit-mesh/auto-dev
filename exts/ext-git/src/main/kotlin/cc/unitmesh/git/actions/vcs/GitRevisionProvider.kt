@@ -135,12 +135,13 @@ class GitRevisionProvider : RevisionProvider {
     override fun history(project: Project, file: VirtualFile): String {
         val filePath: FilePath = VcsUtil.getFilePath(file)
         val history = GitFileHistory.collectHistory(project, filePath)
-        val historyCommitMessages = history.joinToString("\n") { it.commitMessage.toString() }
+        val historyCommitMessages = history.withIndex().joinToString("\n") { "${it.index + 1}. ${it.value.commitMessage}" }
 
         return """
             |filename: ${file.name}
             |changes: ${history.size}
-            |historyCommits: $historyCommitMessages
+            |historyCommits: 
+            |$historyCommitMessages
         """.trimMargin()
     }
 }
