@@ -60,7 +60,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
         ApplicationManager.getApplication().invokeLater {
             if (filePatches.isEmpty()) {
                 val msg = "PatchProcessor: no valid patches found, please check the patch content"
-                AutoDevNotifications.error(myProject, msg)
+                AutoDevNotifications.warn(myProject, msg)
 
                 val repairButton = JButton("Repair").apply {
                     icon = AllIcons.Actions.IntentionBulb
@@ -82,7 +82,8 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
 
                 mainPanel.add(actionPanel)
 
-                return@invokeLater            }
+                return@invokeLater
+            }
 
             filePatches.forEachIndexed { _, patch ->
                 val diffPanel = when {

@@ -1,4 +1,4 @@
-List the contents of a directory up to a depth of 2 (the default depth)
+列出目录内容，默认深度为2，支持智能深度处理（单路径结构自动深入遍历，适合Java等层级深的结构，自动排除二进制文件、.idea目录和被版本控制系统忽略的文件）。
 /dir:.
-If navigating deeper, list contents up to a depth of 2 for each selected directory:
+列出特定目录：
 /dir:src/components

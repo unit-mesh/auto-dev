@@ -4,20 +4,12 @@ import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.utils.lookupFile
 import com.intellij.openapi.application.runReadAction
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.Task
-import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.text.StringUtilRt
 import com.intellij.openapi.vcs.FileStatus
 import com.intellij.openapi.vcs.FileStatusManager
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiManager
-import java.util.concurrent.CompletableFuture
-import java.util.regex.Pattern
 
 
 /**
@@ -47,50 +39,25 @@ import java.util.regex.Pattern
  */
 class DirInsCommand(private val myProject: Project, private val dir: String) : InsCommand {
     override val commandName: BuiltinCommand = BuiltinCommand.DIR
-    private val HASH_FILE_PATTERN: Pattern = Pattern.compile(
-        "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?:\\.json|@[0-9a-f]+\\.json)$",
-        Pattern.CASE_INSENSITIVE
-    )
-
-    fun isHashJson(file: VirtualFile?): Boolean {
-        return file != null && HASH_FILE_PATTERN.matcher(file.name).matches()
-    }
+    private val defaultMaxDepth = 2
 
     private val output = StringBuilder()
-    private val maxLength = 2
 
     override suspend fun execute(): String? {
         val virtualFile = myProject.lookupFile(dir) ?: return "File not found: $dir"
-        val future = CompletableFuture<String>()
-        val task = object : Task.Backgroundable(myProject, "Processing context", false) {
-            override fun run(indicator: ProgressIndicator) {
-                val psiDirectory = runReadAction {
-                    PsiManager.getInstance(myProject!!).findDirectory(virtualFile)
-                }
+        val psiDirectory = PsiManager.getInstance(myProject).findDirectory(virtualFile) ?: return null
 
-                if (psiDirectory == null) {
-                    future.complete("Directory not found: $dir")
-                    return
-                }
+        output.appendLine("$dir/")
+        runReadAction { listDirectory(myProject, psiDirectory, 1) }
 
-                output.appendLine("$dir/")
-                runReadAction { listDirectory(myProject!!, psiDirectory, 1) }
-                future.complete(
-                    "Here is the directory tree (depth = 2) for $dir:\n$output"
-                )
-            }
-        }
-
-        ProgressManager.getInstance()
-            .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
-
-        return future.get()
+        return output.toString()
     }
 
     private fun listDirectory(project: Project, directory: PsiDirectory, depth: Int) {
-        if (depth > maxLength || isExclude(project, directory)) return
+        if(isExclude(project, directory)) return
+        if (depth > defaultMaxDepth && !shouldContinueForPath(directory)) return
 
-        val files = directory.files.filter { !it.fileType.isBinary && !isHashJson(it.virtualFile) }
+        val files = directory.files
         val subdirectories = directory.subdirectories
 
         val items = files.map { it.name to StringUtilRt.formatFileSize(it.virtualFile.length) } +
@@ -103,11 +70,24 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
         }
     }
 
+    /// todo: replace to intellij source content dir
+    private fun shouldContinueForPath(directory: PsiDirectory): Boolean {
+        // 如果是 src 目录，检查是否是单路径结构
+        if (directory.name == "src" || directory.parent?.name == "src") {
+            val subdirs = directory.subdirectories
+            // 对于只有一个子目录的情况，继续遍历
+            return subdirs.size == 1
+        }
+        return false
+    }
+
     private fun isExclude(project: Project, directory: PsiDirectory): Boolean {
-        if (directory.name == ".idea") return true
+        if (directory.name == ".idea" ||
+            directory.name == "build" ||
+            directory.name == "target" ||
+            directory.name == "node_modules") return true
 
         val status = FileStatusManager.getInstance(project).getStatus(directory.virtualFile)
         return status == FileStatus.IGNORED
     }
 }
-
