@@ -158,6 +158,18 @@ enum class BuiltinCommand(
             return providerName
         }
 
+        fun allToolchains(): List<String> {
+            return ToolchainFunctionProvider.all().map {
+                val toolInfo = it.toolInfo()
+                if (toolInfo != null) {
+                    val base = toolInfo.commandName
+                    return@map it.funcNames().map { "$base:$it" }
+                }
+
+                it.funcNames()
+            }.flatten()
+        }
+
         val READ_COMMANDS =
             setOf(DIR, LOCAL_SEARCH, FILE, REV, STRUCTURE, SYMBOL, DATABASE, RELATED, RIPGREP_SEARCH, BROWSE)
     }
