@@ -64,22 +64,27 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
 
     private fun listDirectory(project: Project, directory: PsiDirectory, depth: Int) {
         if(isExclude(project, directory)) return
-        if (depth > defaultMaxDepth) return
-
+        
         val files = directory.files
         val subdirectories = directory.subdirectories
 
-        files.forEachIndexed { index, file ->
-            val isLast = index == files.lastIndex && subdirectories.isEmpty()
-            val prefix = if (isLast) "└" else "├"
-            val size = StringUtilRt.formatFileSize(file.virtualFile.length)
-            output.appendLine("${" ".repeat(depth)}$prefix── ${file.name}${size?.let { " ($it)" } ?: ""}")
+        // 只在深度不超过默认最大深度时显示文件
+        if (depth <= defaultMaxDepth) {
+            files.forEachIndexed { index, file ->
+                val isLast = index == files.lastIndex && subdirectories.isEmpty()
+                val prefix = if (isLast) "└" else "├"
+                val size = StringUtilRt.formatFileSize(file.virtualFile.length)
+                output.appendLine("${" ".repeat(depth)}$prefix── ${file.name}${size?.let { " ($it)" } ?: ""}")
+            }
         }
 
+        // 无论深度如何，始终显示子目录
         subdirectories.forEachIndexed { index, subdir ->
             if (isExclude(project, subdir)) return@forEachIndexed
             val prefix = if (index == subdirectories.lastIndex) "└" else "├"
             output.appendLine("${" ".repeat(depth)}$prefix── ${subdir.name}/")
+            
+            // 继续递归，文件显示将受深度限制
             listDirectory(project, subdir, depth + 1)
         }
     }
