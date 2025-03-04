@@ -4,6 +4,10 @@ import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.utils.lookupFile
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vcs.FileStatus
@@ -11,6 +15,7 @@ import com.intellij.openapi.vcs.FileStatusManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiManager
+import java.util.concurrent.CompletableFuture
 import java.util.regex.Pattern
 
 
@@ -54,16 +59,32 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
 
     override suspend fun execute(): String? {
         val virtualFile = myProject.lookupFile(dir) ?: return "File not found: $dir"
-        val psiDirectory = PsiManager.getInstance(myProject).findDirectory(virtualFile) ?: return null
+        val future = CompletableFuture<String>()
+        val task = object : Task.Backgroundable(myProject, "Processing context", false) {
+            override fun run(indicator: ProgressIndicator) {
+                val psiDirectory = runReadAction {
+                    PsiManager.getInstance(myProject!!).findDirectory(virtualFile)
+                }
 
-        output.appendLine("$dir/")
-        runReadAction { listDirectory(myProject, psiDirectory, 1) }
+                if (psiDirectory == null) {
+                    future.complete("Directory not found: $dir")
+                    return
+                }
 
-        return output.toString()
+                output.appendLine("$dir/")
+                runReadAction { listDirectory(myProject!!, psiDirectory, 1) }
+                future.complete(output.toString())
+            }
+        }
+
+        ProgressManager.getInstance()
+            .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+
+        return future.get()
     }
 
     private fun listDirectory(project: Project, directory: PsiDirectory, depth: Int) {
-        if(isExclude(project, directory)) return
+        if (isExclude(project, directory)) return
 
         val files = directory.files
         val subdirectories = directory.subdirectories
@@ -81,7 +102,7 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
         }
 
         for ((index, subdirectory) in subdirectories.withIndex()) {
-            if(isExclude(project, directory)) continue
+            if (isExclude(project, directory)) continue
 
             if (index == subdirectories.size - 1) {
                 output.appendLine("${"  ".repeat(depth)}└── ${subdirectory.name}/")
