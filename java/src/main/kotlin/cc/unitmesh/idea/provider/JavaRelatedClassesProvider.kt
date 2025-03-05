@@ -29,7 +29,7 @@ class JavaRelatedClassesProvider : RelatedClassesProvider {
 
     override fun lookupCallee(project: Project, element: PsiElement): List<PsiNamedElement> {
         return when (element) {
-            is PsiMethod -> findCallees(project, element)
+            is PsiMethod -> runReadAction { findCallees(project, element) }
             else -> emptyList()
         }
     }

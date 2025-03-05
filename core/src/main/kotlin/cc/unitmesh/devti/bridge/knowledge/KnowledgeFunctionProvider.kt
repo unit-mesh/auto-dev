@@ -46,7 +46,9 @@ class KnowledgeFunctionProvider : ToolchainFunctionProvider {
                 /// since VueFile can only find by File Usage
                 val psiFile = runReadAction { PsiManager.getInstance(project).findFile(lookupFile) }
                     ?: return "Invalid API format or File not found or PsiFile not found"
-                return RelatedClassesProvider.provide(psiFile.language)?.lookupIO(psiFile)?.joinToString("\n") {
+
+                val elements = RelatedClassesProvider.provide(psiFile.language)?.lookupIO(psiFile)
+                return elements?.joinToString("\n") {
                     StructureCommandUtil.getFileStructure(project, lookupFile, psiFile)
                 } ?: "No related classes found"
             }
