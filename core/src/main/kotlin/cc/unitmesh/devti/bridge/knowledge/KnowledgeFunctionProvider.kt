@@ -2,8 +2,11 @@ package cc.unitmesh.devti.bridge.knowledge
 
 import cc.unitmesh.devti.bridge.KnowledgeTransfer
 import cc.unitmesh.devti.bridge.provider.KnowledgeWebApiProvider
+import cc.unitmesh.devti.provider.RelatedClassesProvider
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiManager
 
 val API_METHODS: List<String> = listOf("GET", "POST", "PUT", "DELETE", "PATCH")
 
@@ -37,6 +40,15 @@ class KnowledgeFunctionProvider : ToolchainFunctionProvider {
         // split prop to method and path
         val split = prop.split("#")
         if (split.size != 2) {
+            val lookupFile = project.lookupFile(prop) ?: return "Invalid API format or File not found"
+            if (lookupFile.isValid) {
+                /// since VueFile can only find by File Usage
+                val psiFile = runReadAction { PsiManager.getInstance(project).findFile(lookupFile) }
+                    ?: return "Invalid API format or File not found or PsiFile not found"
+                return RelatedClassesProvider.provide(psiFile.language)?.lookupIO(psiFile)
+                    ?: "No related classes found"
+            }
+
             return "Invalid API format"
         }
 
