@@ -35,9 +35,9 @@ class WebApiViewFunctionProvider : ToolchainFunctionProvider {
                         return
                     }
 
-                    val map = collectUrls(project, endpointsProviderList as List<EndpointsProvider<Any, Any>>)
+                    val urls = collectUrls(project, endpointsProviderList as List<EndpointsProvider<Any, Any>>)
                     val result =
-                        "Here is current project web ${map.size} api endpoints: \n```\n" + map.joinToString("\n") { url ->
+                        "Here is current project web ${urls.size} api endpoints: \n```\n" + urls.map { url ->
                             when (url) {
                                 is UrlMappingElement -> url.method.joinToString("\n") {
                                     "$it - ${url.urlPath.toStringWithStars()}" +
