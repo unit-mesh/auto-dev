@@ -110,6 +110,10 @@ SHARP=#
             }
 
             // get first char, if $, @, /, #, should be a YYUSED
+            if (text.length() == 0) {
+                return TEXT_SEGMENT;
+            }
+
             char first  = text.charAt(0);
             if (first == '@') {
                 yypushback(yylength() - 1);
