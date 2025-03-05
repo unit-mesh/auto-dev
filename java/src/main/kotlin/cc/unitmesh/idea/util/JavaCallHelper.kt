@@ -8,8 +8,10 @@ import com.intellij.psi.JavaRecursiveElementVisitor
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiMethodCallExpression
 import com.intellij.psi.search.ProjectScope
+import com.intellij.psi.search.searches.ClassInheritorsSearch
 import com.intellij.psi.search.searches.MethodReferencesSearch
 import com.intellij.psi.util.*
+import kotlin.collections.flatten
 
 object JavaCallHelper {
     /**
@@ -28,14 +30,23 @@ object JavaCallHelper {
             }
         })
 
-        return calledMethods.filter {
-                val containingClass = it.containingClass ?: return@filter false
-                if (!ProjectScope.getProjectScope(project).contains(containingClass.containingFile.virtualFile)) {
-                    return@filter false
-                }
-
-                true
+        var resolvedMethods: List<PsiMethod> = calledMethods.mapNotNull { psiMethod ->
+            val containingClass = psiMethod.containingClass ?: return@mapNotNull null
+            if (!ProjectScope.getProjectScope(project).contains(containingClass.containingFile.virtualFile)) {
+                return@mapNotNull null
             }
+
+            if (psiMethod.containingClass?.isInterface == true) {
+                val implementations = ClassInheritorsSearch.search(containingClass).findAll()
+                return implementations.map { implementation ->
+                    implementation.findMethodsBySignature(psiMethod, true).toList()
+                }.flatten()
+            }
+
+            return@mapNotNull listOf<PsiMethod>(psiMethod)
+        }.flatten()
+
+        return resolvedMethods
     }
 
     /**

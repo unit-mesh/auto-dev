@@ -26,7 +26,6 @@ class EndpointKnowledgeWebApiProvider : KnowledgeWebApiProvider() {
         val task = object : Task.Backgroundable(project, "Processing context", false) {
             override fun run(indicator: ProgressIndicator) {
                 var allElements = collectWebApiDecl(project, httpMethod, httpUrl)
-
                 future.complete(allElements)
             }
         }
@@ -53,19 +52,73 @@ class EndpointKnowledgeWebApiProvider : KnowledgeWebApiProvider() {
             }
         }.flatten()
 
-        var allElements = (decls + relatedCode + callees).distinct().toMutableList()
-        /// find better number then 10, and keep 10 as a default
-        if (allElements.size <= 15) {
-            val secondLevels =
-                callees.mapNotNull {
-                    runReadAction {
-                        RelatedClassesProvider.provide(it.language)?.lookupCallee(project, it)
-                    }
-                }.flatten().take(15)
-            allElements.addAll(secondLevels)
-        }
-
+        val initialElements = (decls + relatedCode + callees).distinct().toMutableList()
+        
+        // 定义最大元素数量和最大递归深度
+        val maxElements = 15
+        val maxDepth = 3
+        
+        // 使用递归方式收集元素
+        val allElements = collectElementsRecursively(
+            project = project,
+            elements = initialElements,
+            collected = mutableSetOf<PsiElement>().apply { addAll(initialElements) },
+            maxElements = maxElements,
+            currentDepth = 1,
+            maxDepth = maxDepth
+        )
+        
         return allElements
+    }
+    
+    /**
+     * 递归收集元素，直到达到指定数量或最大深度
+     */
+    private fun collectElementsRecursively(
+        project: Project,
+        elements: List<PsiElement>,
+        collected: MutableSet<PsiElement>,
+        maxElements: Int,
+        currentDepth: Int,
+        maxDepth: Int
+    ): MutableList<PsiElement> {
+        // 如果已经达到目标数量或最大深度，返回当前收集的元素
+        if (collected.size >= maxElements || currentDepth > maxDepth) {
+            return collected.toMutableList()
+        }
+        
+        // 寻找下一层的调用关系
+        val nextLevelElements = elements.mapNotNull {
+            runReadAction {
+                RelatedClassesProvider.provide(it.language)?.lookupCallee(project, it)
+            }
+        }.flatten()
+            .filter { it !in collected }
+            .distinct()
+            
+        // 如果没有新的元素，返回当前收集的元素
+        if (nextLevelElements.isEmpty()) {
+            return collected.toMutableList()
+        }
+        
+        // 添加新的元素，不超过最大数量
+        val elementsToAdd = nextLevelElements.take(maxElements - collected.size)
+        collected.addAll(elementsToAdd)
+        
+        // 如果达到目标数量，返回当前收集的元素
+        if (collected.size >= maxElements) {
+            return collected.toMutableList()
+        }
+        
+        // 递归收集下一层元素
+        return collectElementsRecursively(
+            project = project,
+            elements = elementsToAdd,
+            collected = collected,
+            maxElements = maxElements,
+            currentDepth = currentDepth + 1,
+            maxDepth = maxDepth
+        )
     }
 
     private fun collectApiDeclElements(
