@@ -71,6 +71,13 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
 
         // 压缩目录节点，用于显示多个同层次目录
         data class CompressedNode(override val name: String, val subdirNames: List<String>) : TreeNode()
+        
+        // 并列简单目录节点，用于像 component/{col,row,tag}/src 这样的结构
+        data class ParallelDirsNode(
+            override val name: String, 
+            val dirNames: List<String>, 
+            val commonChildName: String
+        ) : TreeNode()
     }
 
     override suspend fun execute(): String? {
@@ -110,6 +117,17 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
         // 添加目录节点
         val subdirectories = directory.subdirectories.filter { !isExcluded(project, it) }
 
+        // 检查是否可以应用并列简单目录压缩模式
+        val parallelDirsNode = detectParallelSimpleDirs(project, subdirectories)
+        if (parallelDirsNode != null) {
+            dirNode.addChild(parallelDirsNode)
+            
+            // 添加那些不符合并列模式的其他子目录
+            processRemainingDirs(project, subdirectories, parallelDirsNode.dirNames, dirNode, depth)
+            
+            return dirNode
+        }
+
         // 检查是否应该压缩显示子目录
         if (shouldCompressSubdirectories(project, directory, subdirectories, depth)) {
             // 获取可以压缩的子目录列表
@@ -127,6 +145,56 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
         }
 
         return dirNode
+    }
+    
+    /**
+     * 处理剩余的不符合并列目录模式的子目录
+     */
+    private fun processRemainingDirs(
+        project: Project,
+        allDirs: List<PsiDirectory>,
+        parallelDirNames: List<String>,
+        parentNode: TreeNode.DirectoryNode,
+        depth: Int
+    ) {
+        val remainingDirs = allDirs.filter { dir -> dir.name !in parallelDirNames }
+        remainingDirs.forEach { dir ->
+            buildDirectoryTree(project, dir, depth + 1)?.let { subdirNode ->
+                parentNode.addChild(subdirNode)
+            }
+        }
+    }
+
+    /**
+     * 检测并列的简单目录模式，如多个组件目录下都只有一个相同名称的子目录
+     */
+    private fun detectParallelSimpleDirs(project: Project, subdirs: List<PsiDirectory>): TreeNode.ParallelDirsNode? {
+        if (subdirs.size < 2) return null
+        
+        // 收集有相同子目录结构的目录组
+        val dirGroups = mutableMapOf<String, MutableList<PsiDirectory>>()
+        
+        // 对每个目录，检查它是否有单一子目录，如果有，记录子目录名
+        subdirs.forEach { dir ->
+            val nonExcludedChildren = dir.subdirectories.filter { !isExcluded(project, it) }
+            if (nonExcludedChildren.size == 1) {
+                val childName = nonExcludedChildren.first().name
+                dirGroups.getOrPut(childName) { mutableListOf() }.add(dir)
+            }
+        }
+        
+        // 找出最大的组（具有相同子目录名的父目录组）
+        val largestGroup = dirGroups.maxByOrNull { it.value.size }
+        
+        // 如果最大组至少有2个目录且子目录名不为空，则创建并列目录节点
+        if (largestGroup != null && largestGroup.value.size >= 2 && largestGroup.key.isNotEmpty()) {
+            val commonChildName = largestGroup.key
+            val parentDirNames = largestGroup.value.map { it.name }
+            
+            return TreeNode.ParallelDirsNode("parallelDirs", parentDirNames, commonChildName)
+        }
+        
+        return null
     }
 
     /**
@@ -177,6 +245,12 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
 
                         is TreeNode.CompressedNode -> {
                             output.appendLine("$indent$prefix── {${child.subdirNames.joinToString(",")}}/")
+                        }
+                        
+                        is TreeNode.ParallelDirsNode -> {
+                            // 以更紧凑的格式显示并列目录结构
+                            val dirs = child.dirNames.sorted().joinToString(",")
+                            output.appendLine("$indent$prefix── {$dirs}/${child.commonChildName}/")
                         }
                     }
                 }
