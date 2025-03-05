@@ -14,13 +14,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 
 object StructureCommandUtil {
-    /**
-     * ```
-     * (1000-9999)
-     * ```
-     */
-    private const val MAX_LINE_WIDTH = 11
-    private const val MAX_DEPTH = 5
     private const val MAX_LINES_FOR_SHOW_LINENO = 60
 
     fun getFileStructure(project: Project, file: VirtualFile, psiFile: PsiFile): String {
@@ -72,13 +65,9 @@ object StructureCommandUtil {
         return if (element.value is PsiElement) {
             val psiElement = element.value as PsiElement
             val line = formatLine(psiElement)
-            if (line.length < MAX_LINE_WIDTH) {
-                line + " ".repeat(MAX_LINE_WIDTH - line.length) + "  ".repeat(depth)
-            } else {
-                line + "  ".repeat(depth)
-            }
+            line + "  ".repeat(depth)
         } else {
-            " ".repeat(MAX_LINE_WIDTH) + "  ".repeat(depth)
+            "  ".repeat(depth)
         }
     }
 
@@ -89,9 +78,9 @@ object StructureCommandUtil {
         val end = document.getLineNumber(psiElement.textRange.endOffset)
 
         if (end - start > MAX_LINES_FOR_SHOW_LINENO) {
-            return "(${start + 1}-${end + 1})"
+            return "(${start + 1}-${end + 1}) "
         }
 
-        return " ".repeat(MAX_DEPTH)
+        return ""
     }
 }
