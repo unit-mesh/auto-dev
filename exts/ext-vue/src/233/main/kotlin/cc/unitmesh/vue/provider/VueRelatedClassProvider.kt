@@ -10,6 +10,7 @@ import com.intellij.lang.ecmascript6.resolve.JSFileReferencesUtil
 import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil
 import com.intellij.lang.javascript.psi.ecma6.TypeScriptPropertySignature
 import com.intellij.lang.javascript.psi.resolve.JSResolveUtil
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
@@ -61,7 +62,15 @@ class VueRelatedClassProvider : RelatedClassesProvider {
                         is ES6ExportDefaultAssignment, is HtmlFileImpl -> source.containingFile.virtualFile?.url?.let {
                             listOf(WebTypesSymbolLocation(it, "default"))
                         }
-                        else -> null
+                        is ES6NamedImports -> {
+                            source.specifiers.mapNotNull { specifier ->
+                                symbolLocationsFromSpecifier(specifier)
+                            }.flatten()
+                        }
+                        else -> {
+                            logger<VueRelatedClassProvider>().warn("Unsupported import source: $source")
+                            null
+                        }
                     }
 
                 }.flatten()

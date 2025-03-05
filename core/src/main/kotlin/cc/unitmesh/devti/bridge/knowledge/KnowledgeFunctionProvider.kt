@@ -2,6 +2,7 @@ package cc.unitmesh.devti.bridge.knowledge
 
 import cc.unitmesh.devti.bridge.KnowledgeTransfer
 import cc.unitmesh.devti.bridge.provider.KnowledgeWebApiProvider
+import cc.unitmesh.devti.bridge.utils.StructureCommandUtil
 import cc.unitmesh.devti.provider.RelatedClassesProvider
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.openapi.application.runReadAction
@@ -45,8 +46,9 @@ class KnowledgeFunctionProvider : ToolchainFunctionProvider {
                 /// since VueFile can only find by File Usage
                 val psiFile = runReadAction { PsiManager.getInstance(project).findFile(lookupFile) }
                     ?: return "Invalid API format or File not found or PsiFile not found"
-                return RelatedClassesProvider.provide(psiFile.language)?.lookupIO(psiFile)
-                    ?: "No related classes found"
+                return RelatedClassesProvider.provide(psiFile.language)?.lookupIO(psiFile)?.joinToString("\n") {
+                    StructureCommandUtil.getFileStructure(project, lookupFile, psiFile)
+                } ?: "No related classes found"
             }
 
             return "Invalid API format"
