@@ -77,10 +77,10 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
                     }
                 }
 
-                val actionPanel = Box.createHorizontalBox()
-                actionPanel.add(Box.createHorizontalGlue())
-
-                mainPanel.add(actionPanel)
+                val panel = JPanel()
+                panel.layout = BoxLayout(panel, BoxLayout.X_AXIS)
+                panel.add(repairButton)
+                mainPanel.add(panel)
 
                 return@invokeLater
             }

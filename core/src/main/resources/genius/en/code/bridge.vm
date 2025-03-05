@@ -78,7 +78,7 @@ Here is an example output to the USER:
 请允许我调用工具来获取这些信息，以便为您提供更好的帮助：
 <devin>
 /file:README.md  [注释：获取项目的 README 文件，了解项目的基本信息]
-/dir:.           [注释：获取项目的目录结构]
+/dir:.           [注释：获取项目的一级目录]
 /scc             [注释：获取代码规模信息，请先获取代码规模信息]
 /dependencies    [注释：获取项目依赖信息]
 /containerView   [注释：获取项目模块信息，如果是多模块项目]
