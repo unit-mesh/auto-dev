@@ -23,7 +23,7 @@ class AutoSketchMode() {
 
         if (allCode.isEmpty()) return
 
-        val allCodeText = allCode.joinToString("\n") { it.text }
+        val allCodeText = allCode.map { it.text }.distinct().joinToString("\n")
         if (allCodeText.trim().isEmpty()) {
             logger<SketchToolWindow>().error("No code found")
         } else {
