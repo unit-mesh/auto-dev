@@ -183,4 +183,4 @@ accordingly and make informed decisions about how to proceed with the task. This
 the overall success and accuracy of your work.
 </thinking>
 
-请严格使用 markdown 语法（配合 CodeFence Block） + DevIns 指令输出：
+请严格使用 markdown 语法（配合 CodeFence Block，代码块前不能有缩进） + DevIns 指令输出：
