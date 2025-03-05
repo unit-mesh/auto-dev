@@ -55,8 +55,10 @@ class EndpointKnowledgeWebApiProvider : KnowledgeWebApiProvider() {
         val initialElements = (decls + relatedCode + callees).distinct().toMutableList()
         
         // 定义最大元素数量和最大递归深度
-        val maxElements = 15
-        val maxDepth = 3
+        val maxElements = 20
+        /// Controller-Application-Service-Repository
+        /// Controller-Service-Repository/Controller-Service-Service-Repository
+        val maxDepth = 4
         
         // 使用递归方式收集元素
         val allElements = collectElementsRecursively(
