@@ -7,9 +7,10 @@ import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.lang.Language
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorProvider
-import com.intellij.openapi.fileEditor.TextEditorWithPreview.*
+import com.intellij.openapi.fileEditor.TextEditorWithPreview.Layout
 import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import javax.swing.JComponent
@@ -28,7 +29,7 @@ abstract class FileEditorPreviewSketch(
     val withPreviewEditorId: String
 ) : ExtensionLangSketch {
     init {
-        virtualFile.putUserData(DEFAULT_LAYOUT_FOR_FILE, Layout.SHOW_EDITOR_AND_PREVIEW)
+        virtualFile.putUserData(Key.create<Layout>("TextEditorWithPreview.DefaultLayout"), Layout.SHOW_EDITOR_AND_PREVIEW)
     }
 
     val editorProvider = buildEditorProvider()

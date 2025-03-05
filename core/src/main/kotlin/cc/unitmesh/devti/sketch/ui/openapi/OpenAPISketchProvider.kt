@@ -7,11 +7,9 @@ import cc.unitmesh.devti.sketch.ui.preview.FileEditorPreviewSketch
 import cc.unitmesh.devti.util.parser.CodeFence.Companion.findLanguage
 import cc.unitmesh.devti.util.parser.CodeFence.Companion.findLanguageByExt
 import com.intellij.ide.scratch.ScratchRootType
-import com.intellij.openapi.fileEditor.FileEditorManager
-import com.intellij.openapi.fileEditor.TextEditorWithPreview
-import com.intellij.openapi.fileEditor.TextEditorWithPreview.DEFAULT_LAYOUT_FOR_FILE
 import com.intellij.openapi.fileEditor.TextEditorWithPreview.Layout
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.LightVirtualFile
 import javax.swing.JComponent
@@ -47,7 +45,7 @@ class OpenAPISketch(val myProject: Project, private val content: String, virtual
         "SwaggerUIEditorProvider"
     ) {
     init {
-        virtualFile.putUserData(DEFAULT_LAYOUT_FOR_FILE, Layout.SHOW_PREVIEW)
+        virtualFile.putUserData(Key.create<Layout>("TextEditorWithPreview.DefaultLayout"), Layout.SHOW_PREVIEW)
     }
 
     override val mainPanel: JComponent get() = editor.component

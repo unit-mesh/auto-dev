@@ -5,12 +5,12 @@ import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
 import cc.unitmesh.devti.sketch.ui.preview.FileEditorPreviewSketch
 import com.goide.GoLanguage
-import com.goide.playground.ui.GoPlaygroundFileEditorWithPreview
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.EditorKind
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.TextEditor
+import com.intellij.openapi.fileEditor.TextEditorWithPreview
 import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
@@ -37,7 +37,7 @@ class GoLangPlaygroundSketch(val myProject: Project, val content: String, val fi
     FileEditorPreviewSketch(myProject, file, "GoPlaygroundFileEditorWithPreview") {
     override fun getExtensionName(): String = "GoMain"
 
-    val editorWithPreview = createEditorWithPreview(myProject, file) as? GoPlaygroundFileEditorWithPreview
+    val editorWithPreview = createEditorWithPreview(myProject, file) as? TextEditorWithPreview
 
     override val mainPanel: JComponent
         get() {
@@ -70,7 +70,12 @@ class GoLangPlaygroundSketch(val myProject: Project, val content: String, val fi
                     EditorFactory.getInstance().releaseEditor(viewer)
                 })
 
-                GoPlaygroundFileEditorWithPreview(editor, previewEditor)
+                val clazz = Class.forName("com.goide.playground.ui.GoPlaygroundFileEditorWithPreview")
+                val constructor = clazz.getDeclaredConstructor(TextEditor::class.java, TextEditor::class.java)
+                constructor.isAccessible = true // 允许访问私有构造函数
+                val goPlaygroundFileEditorWithPreview = constructor.newInstance(editor, previewEditor)
+
+                goPlaygroundFileEditorWithPreview as FileEditor
             } else {
                 editor
             }
