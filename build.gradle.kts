@@ -673,7 +673,11 @@ project(":exts:ext-endpoints") {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
             intellijPlugins(ideaPlugins + prop("endpointsPlugin") + prop("swaggerPlugin"))
-            intellijPlugins(listOf("com.intellij.spring", "com.intellij.spring.mvc"))
+            intellijPlugins(
+                listOf("com.intellij.spring", "com.intellij.spring.mvc",
+//                    "com.intellij.micronaut"
+                )
+            )
         }
 
         implementation(project(":core"))
