@@ -65,7 +65,14 @@ class KnowledgeFunctionProvider : ToolchainFunctionProvider {
         val elementText = KnowledgeWebApiProvider.available(project).map {
             it.lookupApiCallTree(project, method, path)
         }.flatten().joinToString("\n") {
-            "## " + it.containingFile.virtualFile.path + "\n" + it.text
+            runReadAction {
+                val path = it.containingFile.virtualFile?.path
+                if (path != null) {
+                    "## " + path + "\n" + it.text
+                } else {
+                    it.text
+                }
+            }
         }
 
         return elementText
