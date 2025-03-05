@@ -48,19 +48,20 @@ class EndpointKnowledgeWebApiProvider : KnowledgeWebApiProvider() {
         }.flatten()
 
         val callees = decls.mapNotNull {
-            val classesProvider = runReadAction { RelatedClassesProvider.provide(it.language) }
-            classesProvider?.lookupCallee(project, it)
+            runReadAction {
+                RelatedClassesProvider.provide(it.language)?.lookupCallee(project, it)
+            }
         }.flatten()
 
         var allElements = (decls + relatedCode + callees).distinct().toMutableList()
         /// find better number then 10, and keep 10 as a default
-        if (allElements.size <= 10) {
+        if (allElements.size <= 15) {
             val secondLevels =
                 callees.mapNotNull {
                     runReadAction {
                         RelatedClassesProvider.provide(it.language)?.lookupCallee(project, it)
                     }
-                }.flatten().take(10)
+                }.flatten().take(15)
             allElements.addAll(secondLevels)
         }
 
