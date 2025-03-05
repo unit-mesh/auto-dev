@@ -255,7 +255,6 @@ open class SketchToolWindow(
         }
     }
 
-
     fun addSystemPrompt(text: String) {
         runInEdt {
             systemPromptPanel.add(createSingleTextView(text, language = "VTL"))
