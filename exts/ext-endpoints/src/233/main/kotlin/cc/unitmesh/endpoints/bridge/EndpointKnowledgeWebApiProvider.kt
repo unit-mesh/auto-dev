@@ -10,7 +10,6 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-import com.intellij.spring.mvc.jam.RequestMethod
 import com.intellij.spring.mvc.mapping.UrlMappingElement
 import java.util.concurrent.CompletableFuture
 
@@ -130,11 +129,10 @@ class EndpointKnowledgeWebApiProvider : KnowledgeWebApiProvider() {
         httpUrl: String
     ): List<PsiElement> = runReadAction {
         val collectUrls = collectUrls(project, model as List<EndpointsProvider<Any, Any>>)
-        val requestMethod: RequestMethod = httpMethod.toRequestMethod()
         val navElement = collectUrls
             .filterIsInstance<UrlMappingElement>()
             .filter {
-                it.method.contains(requestMethod) && compareUrl(it, httpUrl)
+                it.method.any { it.toString() == httpMethod } && compareUrl(it, httpUrl)
             }
             .mapNotNull { it.navigationTarget }
             .distinct()
@@ -146,18 +144,5 @@ class EndpointKnowledgeWebApiProvider : KnowledgeWebApiProvider() {
         val queriedRequestUrl = httpUrl.trimStart('/')
         val projectUrls = element.urlPath.toStringWithStars().trimStart('/')
         return projectUrls == queriedRequestUrl
-    }
-}
-
-private fun String.toRequestMethod(): RequestMethod {
-    return when (this) {
-        "GET" -> RequestMethod.GET
-        "POST" -> RequestMethod.POST
-        "PUT" -> RequestMethod.PUT
-        "DELETE" -> RequestMethod.DELETE
-        "PATCH" -> RequestMethod.PATCH
-        "HEAD" -> RequestMethod.HEAD
-        "OPTIONS" -> RequestMethod.OPTIONS
-        else -> RequestMethod.GET
     }
 }
