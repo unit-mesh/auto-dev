@@ -352,6 +352,7 @@ class DevInsCompiler(
                 val result = try {
                     provider.execute(myProject!!, prop, args, emptyMap())
                 } catch (e: Exception) {
+                    logger<DevInsCompiler>().warn(e)
                     AutoDevNotifications.notify(myProject!!, "Error executing toolchain function: ${e.message}")
                 }
 
