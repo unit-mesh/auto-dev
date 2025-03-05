@@ -9,6 +9,7 @@ import com.intellij.openapi.util.text.StringUtilRt
 import com.intellij.openapi.vcs.FileStatus
 import com.intellij.openapi.vcs.FileStatusManager
 import com.intellij.psi.PsiDirectory
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 
 
@@ -50,101 +51,147 @@ import com.intellij.psi.PsiManager
 class DirInsCommand(private val myProject: Project, private val dir: String) : InsCommand {
     override val commandName: BuiltinCommand = BuiltinCommand.DIR
     private val defaultMaxDepth = 2
-    private val output = StringBuilder()
+
+    // 定义表示目录树节点的数据模型
+    private sealed class TreeNode {
+        abstract val name: String
+
+        // 文件节点，包含文件大小信息
+        data class FileNode(override val name: String, val size: String?) : TreeNode()
+
+        // 目录节点，包含子节点列表
+        data class DirectoryNode(
+            override val name: String, val children: MutableList<TreeNode> = mutableListOf()
+        ) : TreeNode() {
+            // 添加子节点的便捷方法
+            fun addChild(child: TreeNode) {
+                children.add(child)
+            }
+        }
+
+        // 压缩目录节点，用于显示多个同层次目录
+        data class CompressedNode(override val name: String, val subdirNames: List<String>) : TreeNode()
+    }
 
     override suspend fun execute(): String? {
         val virtualFile = myProject.lookupFile(dir) ?: return "File not found: $dir"
         val psiDirectory = PsiManager.getInstance(myProject).findDirectory(virtualFile) ?: return null
 
-        output.appendLine("$dir/")
-        runReadAction { listDirectory(myProject, psiDirectory, 1) }
+        // 第一步：构建目录树模型
+        val rootNode = runReadAction {
+            buildDirectoryTree(myProject, psiDirectory, 1)
+        } ?: return null
+
+        // 第二步：将树模型转换为文本表示
+        val output = StringBuilder().apply {
+            appendLine("$dir/")
+            renderTree(rootNode, 1, this)
+        }
 
         return output.toString()
     }
 
-    private fun listDirectory(project: Project, directory: PsiDirectory, depth: Int) {
-        if(isExclude(project, directory)) return
-        
-        val files = directory.files
-        val subdirectories = directory.subdirectories.filter { !isExclude(project, it) }.toList()
+    /**
+     * 构建目录树的数据模型
+     */
+    private fun buildDirectoryTree(project: Project, directory: PsiDirectory, depth: Int): TreeNode.DirectoryNode? {
+        if (isExcluded(project, directory)) return null
 
-        // 只在深度不超过默认最大深度时显示文件
+        val dirNode = TreeNode.DirectoryNode(directory.name)
+
+        // 添加文件节点（受深度限制）
         if (depth <= defaultMaxDepth) {
-            files.forEachIndexed { index, file ->
-                val isLast = index == files.lastIndex && subdirectories.isEmpty()
-                val prefix = if (isLast) "└" else "├"
-                val size = StringUtilRt.formatFileSize(file.virtualFile.length)
-                output.appendLine("${" ".repeat(depth)}$prefix── ${file.name}${size?.let { " ($it)" } ?: ""}")
+            directory.files.forEach { file ->
+                val fileSize = StringUtilRt.formatFileSize(file.virtualFile.length)
+                dirNode.addChild(TreeNode.FileNode(file.name, fileSize))
             }
         }
 
-        // 如果子目录深度超过一定值，考虑压缩显示
-        if (depth > defaultMaxDepth + 1) {
-            // 检查是否所有子目录都已经达到最大深度可压缩显示
-            val canCompressAllSubdirs = subdirectories.all { 
-                it.subdirectories.isNotEmpty() && 
-                it.subdirectories.all { subdir -> 
-                    !isExclude(project, subdir) && subdir.subdirectories.isEmpty() 
+        // 添加目录节点
+        val subdirectories = directory.subdirectories.filter { !isExcluded(project, it) }
+
+        // 检查是否应该压缩显示子目录
+        if (shouldCompressSubdirectories(project, directory, subdirectories, depth)) {
+            // 获取可以压缩的子目录列表
+            val compressableSubdirs = getCompressableSubdirectories(subdirectories)
+            if (compressableSubdirs.isNotEmpty()) {
+                dirNode.addChild(TreeNode.CompressedNode("compressed", compressableSubdirs.map { it.name }))
+            }
+        } else {
+            // 常规递归处理子目录
+            subdirectories.forEach { subdir ->
+                buildDirectoryTree(project, subdir, depth + 1)?.let { subdirNode ->
+                    dirNode.addChild(subdirNode)
                 }
             }
-            
-            if (canCompressAllSubdirs && subdirectories.isNotEmpty()) {
-                // 收集所有叶节点目录名
-                val compressedNames = mutableListOf<String>()
-                subdirectories.forEach { subdir ->
-                    val leafDirs = subdir.subdirectories.filter { !isExclude(project, it) }
-                    if (leafDirs.isNotEmpty()) {
-                        compressedNames.add(subdir.name)
+        }
+
+        return dirNode
+    }
+
+    /**
+     * 判断是否应该压缩显示子目录
+     */
+    private fun shouldCompressSubdirectories(
+        project: Project, directory: PsiDirectory, subdirectories: List<PsiDirectory>, depth: Int): Boolean {
+        // 深度超过阈值且有多个子目录时考虑压缩
+        return depth > defaultMaxDepth + 1 && subdirectories.size > 1 &&
+                // 确保这些子目录大多是叶子节点或近似叶子节点
+                subdirectories.all { subdir ->
+                    val childDirs = subdir.subdirectories.filter { !isExcluded(project, it) }
+                    childDirs.isEmpty() || childDirs.all { it.subdirectories.isEmpty() }
+                }
+    }
+
+    /**
+     * 获取可以压缩显示的子目录
+     */
+    private fun getCompressableSubdirectories(subdirectories: List<PsiDirectory>): List<PsiDirectory> {
+        // 这里可以添加更复杂的逻辑来决定哪些目录可以压缩
+        return subdirectories
+    }
+
+    /**
+     * 将目录树渲染为文本输出
+     */
+    private fun renderTree(node: TreeNode, depth: Int, output: StringBuilder) {
+        val indent = " ".repeat(depth)
+
+        when (node) {
+            is TreeNode.DirectoryNode -> {
+                // 目录节点的子节点渲染
+                node.children.forEachIndexed { index, child ->
+                    val isLast = index == node.children.lastIndex
+                    val prefix = if (isLast) "└" else "├"
+
+                    when (child) {
+                        is TreeNode.FileNode -> {
+                            val sizeInfo = child.size?.let { " ($it)" } ?: ""
+                            output.appendLine("$indent$prefix── ${child.name}$sizeInfo")
+                        }
+
+                        is TreeNode.DirectoryNode -> {
+                            output.appendLine("$indent$prefix── ${child.name}/")
+                            renderTree(child, depth + 1, output)
+                        }
+
+                        is TreeNode.CompressedNode -> {
+                            output.appendLine("$indent$prefix── {${child.subdirNames.joinToString(",")}}/")
+                        }
                     }
                 }
-                
-                if (compressedNames.isNotEmpty()) {
-                    val prefix = "├"  // 这里可以根据实际情况决定是否是最后一项
-                    output.appendLine("${" ".repeat(depth)}$prefix── {${compressedNames.joinToString(",")}}/")
-                    return  // 不再递归显示更深层次
-                }
             }
-        }
 
-        // 常规目录显示逻辑
-        subdirectories.forEachIndexed { index, subdir ->
-            val prefix = if (index == subdirectories.lastIndex) "└" else "├"
-            output.appendLine("${" ".repeat(depth)}$prefix── ${subdir.name}/")
-            
-            // 判断是否需要压缩显示子目录
-            if (shouldCompressChildren(project, subdir, depth + 1)) {
-                compressAndDisplayChildren(project, subdir, depth + 1)
-            } else {
-                // 继续递归，文件显示将受深度限制
-                listDirectory(project, subdir, depth + 1)
-            }
+            else -> {} // 其他类型节点在这里不需要单独处理
         }
     }
 
-    private fun shouldCompressChildren(project: Project, directory: PsiDirectory, depth: Int): Boolean {
-        // 当深度超过阈值且子目录结构符合压缩条件时
-        if (depth > defaultMaxDepth + 1) {
-            val subdirs = directory.subdirectories.filter { !isExclude(project, it) }
-            return subdirs.size > 1 && subdirs.all { it.subdirectories.isEmpty() }
-        }
-        return false
-    }
-
-    private fun compressAndDisplayChildren(project: Project, directory: PsiDirectory, depth: Int) {
-        val subdirs = directory.subdirectories.filter { !isExclude(project, it) }
-        if (subdirs.isEmpty()) return
-        
-        val subdirNames = subdirs.map { it.name }
-        val prefix = "├"
-        output.appendLine("${" ".repeat(depth)}$prefix── {${subdirNames.joinToString(",")}}/")
-    }
-
-    private fun isExclude(project: Project, directory: PsiDirectory): Boolean {
-        if (directory.name == ".idea" ||
-            directory.name == "build" ||
-            directory.name == "target" ||
-            directory.name == ".gradle" ||
-            directory.name == "node_modules") return true
+    /**
+     * 判断目录是否应被排除
+     */
+    private fun isExcluded(project: Project, directory: PsiDirectory): Boolean {
+        val excludedDirs = setOf(".idea", "build", "target", ".gradle", "node_modules")
+        if (directory.name in excludedDirs) return true
 
         val status = FileStatusManager.getInstance(project).getStatus(directory.virtualFile)
         return status == FileStatus.IGNORED
