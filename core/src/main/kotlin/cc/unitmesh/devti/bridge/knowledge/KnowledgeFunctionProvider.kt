@@ -38,7 +38,6 @@ class KnowledgeFunctionProvider : ToolchainFunctionProvider {
         args: List<Any>,
         allVariables: Map<String, Any?>
     ): Any {
-        // split prop to method and path
         val split = prop.split("#")
         if (split.size != 2) {
             val lookupFile = project.lookupFile(prop) ?: return "Invalid API format or File not found"

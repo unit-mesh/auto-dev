@@ -18,12 +18,18 @@ import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
 import kotlinx.coroutines.runBlocking
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
 val CACHED_COMPILE_RESULT = mutableMapOf<String, DevInsCompiledResult>()
 
@@ -340,8 +346,23 @@ class DevInsCompiler(
             listOf()
         }
 
-        val result = provider.execute(myProject, prop, args, emptyMap())
-        return PrintInsCommand(result.toString())
+        val future = CompletableFuture<String>()
+        val task = object : Task.Backgroundable(myProject, "Processing context", false) {
+            override fun run(indicator: ProgressIndicator) {
+                val result = try {
+                    provider.execute(myProject!!, prop, args, emptyMap())
+                } catch (e: Exception) {
+                    AutoDevNotifications.notify(myProject!!, "Error executing toolchain function: ${e.message}")
+                }
+
+                future.complete(result.toString())
+            }
+        }
+
+        ProgressManager.getInstance()
+            .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+
+        return PrintInsCommand(future.get(30, TimeUnit.SECONDS))
     }
 
     private fun lookupNextCode(used: DevInUsed): CodeBlockElement? {

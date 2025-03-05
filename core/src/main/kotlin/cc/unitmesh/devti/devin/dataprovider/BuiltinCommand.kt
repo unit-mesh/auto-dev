@@ -1,8 +1,10 @@
 package cc.unitmesh.devti.devin.dataprovider
 
 import cc.unitmesh.devti.AutoDevIcons
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.project.ProjectManager
 import java.nio.charset.StandardCharsets
 import javax.swing.Icon
 
@@ -146,6 +148,8 @@ enum class BuiltinCommand(
                     return TOOLCHAIN_COMMAND
                 }
 
+                val project = ProjectManager.getInstance().openProjects.first()
+                AutoDevNotifications.warn(project, "Command not found: $commandName")
                 return null
             }
 

@@ -2,8 +2,8 @@
     <!--suppress PluginXmlValidity -->
     <dependencies>
         <plugin id="com.intellij.microservices.ui"/>
-        <plugin id="com.intellij.spring"/>
-        <plugin id="com.intellij.spring.mvc"/>
+<!--        <plugin id="com.intellij.spring"/>-->
+<!--        <plugin id="com.intellij.spring.mvc"/>-->
     </dependencies>
 
     <extensions defaultExtensionNs="cc.unitmesh">
