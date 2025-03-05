@@ -25,31 +25,7 @@ class EndpointKnowledgeWebApiProvider : KnowledgeWebApiProvider() {
         val future = CompletableFuture<List<PsiElement>>()
         val task = object : Task.Backgroundable(project, "Processing context", false) {
             override fun run(indicator: ProgressIndicator) {
-                val endpointsProviderList = runReadAction { EndpointsProvider.getAvailableProviders(project).toList() }
-                val decls = collectApiDeclElements(project, endpointsProviderList, httpMethod, httpUrl)
-
-                val relatedCode = decls.mapNotNull {
-                    runReadAction {
-                        RelatedClassesProvider.provide(it.language)?.lookupIO(it)
-                    }
-                }.flatten()
-
-                val callees = decls.mapNotNull {
-                    val classesProvider = runReadAction { RelatedClassesProvider.provide(it.language) }
-                    classesProvider?.lookupCallee(project, it)
-                }.flatten()
-
-                var allElements = (decls + relatedCode + callees).distinct().toMutableList()
-                /// find better number then 10, and keep 10 as a default
-                if (allElements.size <= 10) {
-                    val secondLevels =
-                        callees.mapNotNull {
-                            runReadAction {
-                                RelatedClassesProvider.provide(it.language)?.lookupCallee(project, it)
-                            }
-                        }.flatten().take(10)
-                    allElements.addAll(secondLevels)
-                }
+                var allElements = collectWebApiDecl(project, httpMethod, httpUrl)
 
                 future.complete(allElements)
             }
@@ -59,6 +35,36 @@ class EndpointKnowledgeWebApiProvider : KnowledgeWebApiProvider() {
             .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
 
         return future.get()
+    }
+
+    private fun collectWebApiDecl(project: Project, httpMethod: String, httpUrl: String): MutableList<PsiElement> {
+        val endpointsProviderList = runReadAction { EndpointsProvider.getAvailableProviders(project).toList() }
+        val decls = collectApiDeclElements(project, endpointsProviderList, httpMethod, httpUrl)
+
+        val relatedCode = decls.mapNotNull {
+            runReadAction {
+                RelatedClassesProvider.provide(it.language)?.lookupIO(it)
+            }
+        }.flatten()
+
+        val callees = decls.mapNotNull {
+            val classesProvider = runReadAction { RelatedClassesProvider.provide(it.language) }
+            classesProvider?.lookupCallee(project, it)
+        }.flatten()
+
+        var allElements = (decls + relatedCode + callees).distinct().toMutableList()
+        /// find better number then 10, and keep 10 as a default
+        if (allElements.size <= 10) {
+            val secondLevels =
+                callees.mapNotNull {
+                    runReadAction {
+                        RelatedClassesProvider.provide(it.language)?.lookupCallee(project, it)
+                    }
+                }.flatten().take(10)
+            allElements.addAll(secondLevels)
+        }
+
+        return allElements
     }
 
     private fun collectApiDeclElements(

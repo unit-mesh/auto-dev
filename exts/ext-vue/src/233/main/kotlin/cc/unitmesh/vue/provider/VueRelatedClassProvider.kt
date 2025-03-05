@@ -10,11 +10,13 @@ import com.intellij.lang.ecmascript6.resolve.JSFileReferencesUtil
 import com.intellij.lang.javascript.buildTools.npm.PackageJsonUtil
 import com.intellij.lang.javascript.psi.ecma6.TypeScriptPropertySignature
 import com.intellij.lang.javascript.psi.resolve.JSResolveUtil
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.impl.source.html.HtmlFileImpl
 import com.intellij.psi.xml.XmlFile
 import com.intellij.util.asSafely
@@ -30,8 +32,14 @@ import java.util.*
 class VueRelatedClassProvider : RelatedClassesProvider {
     override fun lookupIO(element: PsiElement): List<PsiElement> {
         if (element !is XmlFile) return emptyList()
-
         return emptyList()
+    }
+
+    /**
+     * Only support for
+     */
+    override fun lookupCallee(project: Project, element: PsiElement): List<PsiNamedElement> {
+        return super.lookupCallee(project, element)
     }
 
     override fun lookupIO(psiFile: PsiFile): List<PsiElement> {
