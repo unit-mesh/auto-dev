@@ -126,10 +126,8 @@ class GitRevisionProvider : RevisionProvider {
 
     /**
      * Summary changes of one file, output format:
-     * ```
-     * filename: xxx
-     * changes: $changeout
-     * historyCommits: $historyCommitMessages
+     * ```change
+     * filename: xxx, changes: $changeSize, history commit messages: $historyCommitMessages
      * ```
      */
     override fun history(project: Project, file: VirtualFile): String {
@@ -138,9 +136,7 @@ class GitRevisionProvider : RevisionProvider {
         val historyCommitMessages = history.withIndex().joinToString("\n") { "${it.index + 1}. ${it.value.commitMessage}" }
 
         return """
-            |filename: ${file.name}
-            |changes: ${history.size}
-            |historyCommits: 
+            |filename: ${file.name}, changes: ${history.size}, history commit messages: 
             |$historyCommitMessages
         """.trimMargin()
     }
