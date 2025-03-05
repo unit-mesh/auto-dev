@@ -53,13 +53,13 @@ class EndpointKnowledgeWebApiProvider : KnowledgeWebApiProvider() {
         }.flatten()
 
         val initialElements = (decls + relatedCode + callees).distinct().toMutableList()
-        
+
         // 定义最大元素数量和最大递归深度
         val maxElements = 20
         /// Controller-Application-Service-Repository
         /// Controller-Service-Repository/Controller-Service-Service-Repository
         val maxDepth = 4
-        
+
         // 使用递归方式收集元素
         val allElements = collectElementsRecursively(
             project = project,
@@ -69,10 +69,10 @@ class EndpointKnowledgeWebApiProvider : KnowledgeWebApiProvider() {
             currentDepth = 1,
             maxDepth = maxDepth
         )
-        
+
         return allElements
     }
-    
+
     /**
      * 递归收集元素，直到达到指定数量或最大深度
      */
@@ -88,7 +88,7 @@ class EndpointKnowledgeWebApiProvider : KnowledgeWebApiProvider() {
         if (collected.size >= maxElements || currentDepth > maxDepth) {
             return collected.toMutableList()
         }
-        
+
         // 寻找下一层的调用关系
         val nextLevelElements = elements.mapNotNull {
             runReadAction {
@@ -97,21 +97,21 @@ class EndpointKnowledgeWebApiProvider : KnowledgeWebApiProvider() {
         }.flatten()
             .filter { it !in collected }
             .distinct()
-            
+
         // 如果没有新的元素，返回当前收集的元素
         if (nextLevelElements.isEmpty()) {
             return collected.toMutableList()
         }
-        
+
         // 添加新的元素，不超过最大数量
         val elementsToAdd = nextLevelElements.take(maxElements - collected.size)
         collected.addAll(elementsToAdd)
-        
+
         // 如果达到目标数量，返回当前收集的元素
         if (collected.size >= maxElements) {
             return collected.toMutableList()
         }
-        
+
         // 递归收集下一层元素
         return collectElementsRecursively(
             project = project,
@@ -129,9 +129,10 @@ class EndpointKnowledgeWebApiProvider : KnowledgeWebApiProvider() {
         httpMethod: String,
         httpUrl: String
     ): List<PsiElement> = runReadAction {
-        val collectUrls = collectUrls(project, model)
+        val collectUrls = collectUrls(project, model as List<EndpointsProvider<Any, Any>>)
         val requestMethod: RequestMethod = httpMethod.toRequestMethod()
         val navElement = collectUrls
+            .filterIsInstance<UrlMappingElement>()
             .filter {
                 it.method.contains(requestMethod) && compareUrl(it, httpUrl)
             }
