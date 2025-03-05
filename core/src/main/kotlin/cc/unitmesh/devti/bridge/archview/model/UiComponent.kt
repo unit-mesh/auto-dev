@@ -13,9 +13,11 @@ data class UiComponent(
 ) {
     fun format(): String {
         return """
-            |<$name />, path: $path
+            |<$name/>, path: $path
             |props: $props
             |methods: $methods
         """.trimMargin()
     }
+
+    fun simple(): String = "<$name/>, $path"
 }

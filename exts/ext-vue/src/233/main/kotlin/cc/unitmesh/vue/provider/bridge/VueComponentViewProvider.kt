@@ -2,6 +2,7 @@ package cc.unitmesh.vue.provider.bridge
 
 import cc.unitmesh.devti.bridge.provider.ComponentViewProvider
 import cc.unitmesh.devti.bridge.archview.model.UiComponent
+import cc.unitmesh.devti.bridge.provider.ComponentViewMode
 import cc.unitmesh.devti.util.relativePath
 import com.intellij.javascript.nodejs.PackageJsonData
 import com.intellij.javascript.nodejs.packageJson.PackageJsonFileManager
@@ -45,7 +46,7 @@ class VueComponentViewProvider : ComponentViewProvider() {
             .associateBy({ it.key }, { it.value })
     }
 
-    override fun collect(project: Project): List<UiComponent> {
+    override fun collect(project: Project, mode: ComponentViewMode): List<UiComponent> {
         val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
 
         val fileType = FileTypeManagerEx.getInstanceEx().getFileTypeByExtension("vue")

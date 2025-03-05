@@ -6,6 +6,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.serviceContainer.LazyExtensionInstance
 import com.intellij.util.xmlb.annotations.Attribute
 
+enum class ComponentViewMode {
+    FULL,
+    DEFAULT,
+}
+
 abstract class ComponentViewProvider : LazyExtensionInstance<ComponentViewProvider>() {
     @Attribute("implementationClass")
     var implementationClass: String? = null
@@ -14,17 +19,17 @@ abstract class ComponentViewProvider : LazyExtensionInstance<ComponentViewProvid
 
     abstract fun isApplicable(project: Project): Boolean
 
-    abstract fun collect(project: Project): List<UiComponent>
+    abstract fun collect(project: Project, mode: ComponentViewMode): List<UiComponent>
 
     companion object {
         val EP_NAME: ExtensionPointName<ComponentViewProvider> =
             ExtensionPointName.create("cc.unitmesh.componentProvider")
 
-        fun collect(project: Project): List<UiComponent> {
+        fun collect(project: Project, mode: ComponentViewMode): List<UiComponent> {
             return EP_NAME.extensionList
                 .filter { it.isApplicable(project) }
                 .flatMap {
-                    it.collect(project)
+                    it.collect(project, mode)
                 }
         }
     }
