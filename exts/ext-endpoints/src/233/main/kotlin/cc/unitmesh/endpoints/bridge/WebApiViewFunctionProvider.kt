@@ -11,6 +11,7 @@ import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.spring.mvc.mapping.UrlMappingElement
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
 class WebApiViewFunctionProvider : ToolchainFunctionProvider {
     override fun funcNames(): List<String> = listOf(ArchViewCommand.WebApiView.name)
@@ -26,25 +27,30 @@ class WebApiViewFunctionProvider : ToolchainFunctionProvider {
         val future = CompletableFuture<String>()
         val task = object : Task.Backgroundable(project, "Processing context", false) {
             override fun run(indicator: ProgressIndicator) {
-                val endpointsProviderList = runReadAction { EndpointsProvider.getAvailableProviders(project).toList() }
-                if (endpointsProviderList.isEmpty()) {
-                    future.complete("Cannot find any endpoints")
-                    return
+                try {
+                    val endpointsProviderList = runReadAction {
+                        EndpointsProvider.getAvailableProviders(project).toList()
+                    }
+                    if (endpointsProviderList.isEmpty()) {
+                        future.complete("Cannot find any endpoints")
+                        return
+                    }
+
+                    /// java.lang.ClassCastException: class com.intellij.micronaut.jam.http.MnController cannot be cast to class
+                    // com.intellij.spring.model.SpringBeanPointer (com.intellij.micronaut.jam.http.MnController is in unnamed module of loader com.intellij.ide.plugins.cl.PluginClassLoader @5d6888bf; com.intellij.spring.model.SpringBeanPointer is in unnamed module of loader com.intellij.ide.plugins.cl.PluginClassLoader @775c694b)
+                    val map = collectUrls(project, endpointsProviderList)
+                    val result =
+                        "Here is current project web ${map.size} api endpoints: \n```\n" + map.joinToString("\n") { url ->
+                            url.method.joinToString("\n") {
+                                "$it - ${url.urlPath.toStringWithStars()}" +
+                                        " (${UrlMappingElement.getContainingFileName(url)})"
+                            }
+                        } + "\n```"
+
+                    future.complete(result)
+                } catch (e: Exception) {
+                    future.completeExceptionally(e)
                 }
-
-                val map = collectUrls(project, endpointsProviderList)
-                val result =
-                    "Here is current project web ${map.size} api endpoints: \n```\n" + map.joinToString("\n") { url ->
-                        url.method.joinToString("\n") {
-                            "$it - ${url.urlPath.toStringWithStars()}" + " (${
-                                UrlMappingElement.getContainingFileName(
-                                    url
-                                )
-                            })"
-                        }
-                    } + "\n```"
-
-                future.complete(result)
             }
         }
 
