@@ -5,8 +5,11 @@ import cc.unitmesh.devti.bridge.provider.KnowledgeWebApiProvider
 import cc.unitmesh.devti.bridge.utils.StructureCommandUtil
 import cc.unitmesh.devti.provider.RelatedClassesProvider
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
+import cc.unitmesh.devti.util.relativePath
+import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 
 val API_METHODS: List<String> = listOf("GET", "POST", "PUT", "DELETE", "PATCH")
@@ -62,19 +65,26 @@ class KnowledgeFunctionProvider : ToolchainFunctionProvider {
 
         val path = split[1]
 
-        val elementText = KnowledgeWebApiProvider.available(project).map {
+        val psiElements = KnowledgeWebApiProvider.available(project).map {
             it.lookupApiCallTree(project, method, path)
-        }.flatten().joinToString("\n") {
+        }.flatten()
+
+        val elementText = psiElements.joinToString("\n") {
             runReadAction {
-                val path = it.containingFile.virtualFile?.path
+                val path = it.containingFile.virtualFile?.relativePath(project)
                 if (path != null) {
-                    "## " + path + "\n" + it.text
+                    "${commentSymbol(it)} " + path + "\n" + it.text
                 } else {
                     it.text
                 }
             }
         }
 
-        return elementText
+        val lang = psiElements.firstOrNull()?.language?.displayName ?: ""
+        return "Here is $prop related code: ```$lang\n$elementText\n```"
+    }
+
+    fun commentSymbol(element: PsiElement): String {
+        return LanguageCommenters.INSTANCE.forLanguage(element.language)?.lineCommentPrefix ?: "//"
     }
 }
