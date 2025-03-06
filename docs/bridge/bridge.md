@@ -6,6 +6,8 @@ has_children: true
 permalink: /bridge
 ---
 
+Video demo (Bilibili) - 中文：[Watch the video](https://www.bilibili.com/video/BV1RwRNYEE1A/)
+
 # AutoDev Bridge - Legacy Code Migration
 
 Required tool:
