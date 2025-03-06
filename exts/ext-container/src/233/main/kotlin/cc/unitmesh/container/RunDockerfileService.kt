@@ -18,7 +18,7 @@ import kotlinx.coroutines.runBlocking
 
 class RunDockerfileService : RunService {
     override fun isApplicable(project: Project, file: VirtualFile): Boolean = file.name == "Dockerfile" ||
-            runReadAction { PsiManager.getInstance(project).findFile(file)?.language == DockerLanguage.INSTANCE }
+            file.isValid && runReadAction { PsiManager.getInstance(project).findFile(file)?.language == DockerLanguage.INSTANCE }
 
     override fun runConfigurationClass(project: Project): Class<out RunProfile>? = null
 

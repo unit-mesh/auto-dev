@@ -95,7 +95,7 @@ class KnowledgeFunctionProvider : ToolchainFunctionProvider {
         }
 
         val lang = psiElements.firstOrNull()?.language?.displayName ?: ""
-        return "Here is $prop related code: ```$lang\n$elementText\n```"
+        return "Here is $prop related code:\n```$lang\n$elementText\n```"
     }
 
     fun commentSymbol(element: PsiElement): String {
