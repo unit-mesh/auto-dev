@@ -31,14 +31,16 @@ val API_METHODS: List<String> = listOf("GET", "POST", "PUT", "DELETE", "PATCH", 
  *
  * ### Example Output:
  * The output of the `execute` method is a string that includes the related code snippets, their paths, and the language of the code. For example:
- * ```
- * Here is /knowledge:GET#/api/blog related code: ```Kotlin
+ * <devin>
+ * Here is /knowledge:GET#/api/blog related code:
+ * ```Kotlin
  * // src/main/kotlin/com/example/BlogController.kt
  * @GetMapping("/api/blog")
  * fun getBlogBySlug(@PathVariable slug: String): Blog {
  *     return blogService.getBlogBySlug(slug)
  * }
  * ```
+ * </devin>
  *
  */
 class KnowledgeFunctionProvider : ToolchainFunctionProvider {
