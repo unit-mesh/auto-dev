@@ -28,6 +28,7 @@ class AutoDevAppScope: Disposable {
         fun workerScope(): CoroutineScope = service<AutoDevAppScope>().workerScope
     }
 }
+
 @Service(Service.Level.PROJECT)
 class AutoDevCoroutineScope : Disposable {
     private val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->

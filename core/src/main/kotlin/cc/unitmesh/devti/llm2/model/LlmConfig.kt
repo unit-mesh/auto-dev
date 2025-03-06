@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.llm2.model
 
 import cc.unitmesh.devti.settings.AutoDevSettingsState
-import com.intellij.openapi.diagnostic.logger
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.text.ifEmpty

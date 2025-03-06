@@ -3,8 +3,11 @@ package cc.unitmesh.container
 import cc.unitmesh.devti.provider.RunService
 import com.intellij.docker.DockerCloudConfiguration
 import com.intellij.docker.DockerCloudType
+import com.intellij.docker.DockerRunConfigurationCreator
 import com.intellij.docker.DockerServerRuntimesManager
-import com.intellij.docker.dockerFile.DockerLanguage
+import com.intellij.docker.deploymentSource.DockerImageDeploymentSourceType
+import com.intellij.docker.runtimes.DockerServerRuntime
+import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
@@ -14,23 +17,50 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import com.intellij.remoteServer.ServerType
 import com.intellij.remoteServer.configuration.RemoteServer
+import com.intellij.remoteServer.configuration.RemoteServersManager
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runBlocking
 
 class RunDockerfileService : RunService {
-    override fun isApplicable(project: Project, file: VirtualFile): Boolean = file.name == "Dockerfile" ||
-            file.isValid && runReadAction {
-        PsiManager.getInstance(project).findFile(file)?.language == DockerLanguage.INSTANCE
+    override fun isApplicable(project: Project, file: VirtualFile): Boolean {
+        if (file.name == "Dockerfile") {
+            return true
+        }
+
+        return runReadAction {
+            PsiManager.getInstance(project).findFile(file)?.language?.displayName == "Dockerfile"
+        }
     }
 
     override fun runConfigurationClass(project: Project): Class<out RunProfile>? = null
 
-    fun defaultDockerConnection() = object : RemoteServer<DockerCloudConfiguration> {
+    fun remoteServerConfig() = object : RemoteServer<DockerCloudConfiguration> {
         override fun getName(): String = "DockerConnection"
-        override fun getType(): ServerType<DockerCloudConfiguration?> = DockerCloudType.getInstance()
+        override fun getType(): ServerType<DockerCloudConfiguration> = DockerCloudType.getInstance()
         override fun getConfiguration(): DockerCloudConfiguration = DockerCloudConfiguration.createDefault()
 
         override fun setName(name: String?) {}
+    }
+
+    fun listAllDockerAccounts(): MutableList<RemoteServer<DockerCloudConfiguration>> {
+        return RemoteServersManager.getInstance().getServers<DockerCloudConfiguration>(DockerCloudType.getInstance())
+    }
+
+    override fun createConfiguration(
+        project: Project,
+        virtualFile: VirtualFile
+    ): RunConfiguration? {
+        val imageType = DockerImageDeploymentSourceType.getInstance()
+        val imageSource = imageType.singletonSource
+        val creator = DockerRunConfigurationCreator(project)
+        val cloudType = DockerCloudType.getInstance()
+        val deploymentConfiguration = creator.createDeploymentConfigurationFromTemplate(imageType)
+            ?: cloudType.createDeploymentConfigurator(project)
+                .createDefaultConfiguration(imageSource)
+
+        val server: RemoteServer<*> = remoteServerConfig()
+        val createConfiguration = creator.createConfiguration(imageSource, deploymentConfiguration, server)
+        return createConfiguration.configuration
     }
 
     override fun runFile(project: Project, virtualFile: VirtualFile, psiElement: PsiElement?, isFromToolAction: Boolean)
@@ -38,15 +68,21 @@ class RunDockerfileService : RunService {
 
         ApplicationManager.getApplication().invokeAndWait {
             runBlocking {
-                val instance = DockerServerRuntimesManager.getInstance(project)
-                val dockerConnection = defaultDockerConnection()
-                val runtime = instance
-                    .getOrCreateConnection(dockerConnection)
-                    .await()
+                createRuntime(project)
+
             }
         }
 
-
         return null
+    }
+
+    private suspend fun createRuntime(project: Project): DockerServerRuntime {
+        val instance = DockerServerRuntimesManager.getInstance(project)
+        val dockerConnection = remoteServerConfig()
+        val runtime: DockerServerRuntime = instance
+            .getOrCreateConnection(dockerConnection)
+            .await()
+
+        return runtime
     }
 }
