@@ -12,6 +12,8 @@ enum class DatabaseFunction(val funName: String) {
             return entries.firstOrNull { it.funName == value }
         }
 
-        fun allFuncNames(): List<String> = entries.map { it.funName }
+        fun allFuncNames(): List<String> = entries.map {
+            "database:" + it.funName
+        }
     }
 }

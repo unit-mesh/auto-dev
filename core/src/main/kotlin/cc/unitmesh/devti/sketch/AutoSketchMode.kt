@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.sketch
 
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -16,7 +17,7 @@ class AutoSketchMode() {
         val devinCodeFence = codeFenceList.filter { it.language.displayName == "DevIn" }
 
         val allCode = devinCodeFence.filter {
-            !it.text.contains("<DevinsError>") && (hasReadCommand(it))
+            !it.text.contains("<DevinsError>") && (hasReadCommand(it) || hasToolchainFunctionCommand(it))
         }
 
         if (allCode.isEmpty()) return
@@ -33,6 +34,12 @@ class AutoSketchMode() {
         fence.text.contains("/" + command.commandName + ":")
     }
 
+    private fun hasToolchainFunctionCommand(fence: CodeFence): Boolean {
+        val toolchainCmds = ToolchainFunctionProvider.all().map { it.funcNames() }.flatten()
+        return toolchainCmds.any {
+            fence.text.contains("/$it:")
+        }
+    }
 
     companion object {
         fun getInstance(project: Project): AutoSketchMode {

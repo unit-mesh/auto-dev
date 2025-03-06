@@ -101,7 +101,7 @@ open class SketchInputListener(
 
                 toolWindow.onFinish(suggestion.toString())
             }
-        }, "Compile DevIns", false, project);
+        }, AutoDevBundle.message("sketch.compile.devins"), false, project);
     }
 
     override fun dispose() {
