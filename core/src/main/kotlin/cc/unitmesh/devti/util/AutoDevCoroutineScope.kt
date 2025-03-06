@@ -45,7 +45,6 @@ class AutoDevCoroutineScope : Disposable {
     companion object {
         fun scope(project: Project): CoroutineScope = project.service<AutoDevCoroutineScope>().coroutineScope
 
-
         @Deprecated(
             message = "using this may cause memory leak after project close",
             replaceWith = ReplaceWith("AutoDevCoroutineScope.workScope(project)", imports = ["cc.unitmesh.devti.util.AutoDevCoroutineScope"])

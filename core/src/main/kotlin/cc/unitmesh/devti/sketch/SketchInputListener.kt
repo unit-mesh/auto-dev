@@ -71,7 +71,7 @@ open class SketchInputListener(
             logger<SketchInputListener>().debug("Input.length < 10: $input")
         }
 
-        val task = object : Task.Backgroundable(project, "Processing Context", false) {
+        val task = object : Task.Backgroundable(project, "Processing context", true) {
             override fun run(indicator: ProgressIndicator) {
                 val devInProcessor = LanguageProcessor.devin()
                 val compiledInput = runReadAction { devInProcessor?.compile(project, input) } ?: input
@@ -83,7 +83,7 @@ open class SketchInputListener(
                 val flow = chatCodingService.request(getInitPrompt(), compiledInput, isFromSketch = true)
                 val suggestion = StringBuilder()
 
-                AutoDevCoroutineScope.scope(project).launch {
+                AutoDevCoroutineScope.workerScope(project).launch {
                     flow.cancelHandler { toolWindow.handleCancel = it }.cancellable().collect { char ->
                         suggestion.append(char)
 

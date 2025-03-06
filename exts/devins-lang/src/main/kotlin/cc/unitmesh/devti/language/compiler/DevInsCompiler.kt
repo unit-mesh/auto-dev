@@ -16,6 +16,7 @@ import cc.unitmesh.devti.language.psi.DevInTypes
 import cc.unitmesh.devti.language.psi.DevInUsed
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import cc.unitmesh.devti.util.parser.CodeFence
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
@@ -353,7 +354,8 @@ class DevInsCompiler(
                     provider.execute(myProject!!, prop, args, emptyMap())
                 } catch (e: Exception) {
                     logger<DevInsCompiler>().warn(e)
-                    AutoDevNotifications.notify(myProject!!, "Error executing toolchain function: ${e.message}")
+                    val text = runReadAction { used.text }
+                    AutoDevNotifications.notify(myProject!!, "Error executing toolchain function: $text + $prop")
                 }
 
                 future.complete(result.toString())
