@@ -12,15 +12,34 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 
-val API_METHODS: List<String> = listOf("GET", "POST", "PUT", "DELETE", "PATCH")
+val API_METHODS: List<String> = listOf("GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS", "TRACE")
 
 /**
- * ```devin
- * 从 API 调用链来进行分析
- * /knowledge:GET#/api/blog
- * 从 Controller 到 Repository 的调用链
- * /knowledge:BlogController#getBlogBySlug
+ * The `KnowledgeFunctionProvider` class is a specialized toolchain function provider designed to analyze API call chains and code structure relationships within a project.
+ * It supports two primary modes of analysis:
+ *
+ * 1. **API Endpoint Analysis**: This mode tracks the call chain by HTTP method and path, allowing for the identification of how API endpoints are processed through the system.
+ * 2. **Code Structure Analysis**: This mode tracks relationships between classes and methods, enabling the exploration of how different parts of the codebase interact.
+ *
+ * The class is particularly useful for understanding the flow of data and control within a project, especially in scenarios where API calls traverse multiple layers of the application, such as from a Controller to a Repository.
+ *
+ * ### Usage Examples:
+ * - **API Endpoint Analysis**: `/knowledge:GET#/api/blog`
+ *   This example traces the call chain for a GET request to the `/api/blog` endpoint.
+ * - **Code Structure Analysis**: `/knowledge:BlogController#getBlogBySlug`
+ *   This example traces the call chain from the `getBlogBySlug` method in the `BlogController` class.
+ *
+ * ### Example Output:
+ * The output of the `execute` method is a string that includes the related code snippets, their paths, and the language of the code. For example:
  * ```
+ * Here is /knowledge:GET#/api/blog related code: ```Kotlin
+ * // src/main/kotlin/com/example/BlogController.kt
+ * @GetMapping("/api/blog")
+ * fun getBlogBySlug(@PathVariable slug: String): Blog {
+ *     return blogService.getBlogBySlug(slug)
+ * }
+ * ```
+ *
  */
 class KnowledgeFunctionProvider : ToolchainFunctionProvider {
     override fun funcNames(): List<String> = listOf(KnowledgeTransfer.Knowledge.name)
@@ -28,13 +47,6 @@ class KnowledgeFunctionProvider : ToolchainFunctionProvider {
     override fun isApplicable(project: Project, funcName: String): Boolean =
         funcName == KnowledgeTransfer.Knowledge.name
 
-
-    /**
-     * 1. try use KnowledgeWebApiProvider
-     *
-     * 2. try use RipGrep Search by APIs
-     *
-     */
     override fun execute(
         project: Project,
         prop: String,
