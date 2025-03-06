@@ -48,10 +48,10 @@ data class SketchRunContext(
         suspend fun create(project: Project, myEditor: Editor?, input: String): SketchRunContext {
             var editor: Editor? = null
             runInEdt {
-                editor = (myEditor ?: FileEditorManager.getInstance(project).selectedTextEditor)!!
+                editor = (myEditor ?: FileEditorManager.getInstance(project).selectedTextEditor)
             }
             val currentFile: VirtualFile? = if (editor != null) {
-                FileDocumentManager.getInstance().getFile(editor.document)!!
+                FileDocumentManager.getInstance().getFile(editor!!.document)
             } else {
                 FileEditorManager.getInstance(project).selectedFiles.firstOrNull()
             }

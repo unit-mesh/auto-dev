@@ -49,17 +49,17 @@ data class BridgeRunContext(
         fun create(project: Project, myEditor: Editor?, input: String): BridgeRunContext {
             var editor: Editor? = null
             runInEdt {
-                editor = (myEditor ?: FileEditorManager.getInstance(project).selectedTextEditor)!!
+                editor = (myEditor ?: FileEditorManager.getInstance(project).selectedTextEditor)
             }
             val currentFile: VirtualFile? = if (editor != null) {
-                FileDocumentManager.getInstance().getFile(editor.document)!!
+                FileDocumentManager.getInstance().getFile(editor!!.document)
             } else {
                 FileEditorManager.getInstance(project).selectedFiles.firstOrNull()
             }
             val psi = currentFile?.let { runReadAction { PsiManager.getInstance(project).findFile(it) } }
             val currentElement = editor?.let { runReadAction { psi?.findElementAt(it.caretModel.offset) } }
             val creationContext =
-                ChatCreationContext(ChatOrigin.Intention, ChatActionType.CHAT, psi, listOf(), element = psi)
+                ChatCreationContext(ChatOrigin.Intention, ChatActionType.CHAT, psi, listOf(), psi)
 
             val buildInfo = BuildSystemProvider.guess(project).firstOrNull()
             val buildTool = if (buildInfo != null) {
