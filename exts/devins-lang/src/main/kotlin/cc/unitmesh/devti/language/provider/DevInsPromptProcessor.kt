@@ -7,6 +7,8 @@ import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.provider.devins.CustomAgentContext
 import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.util.parser.CodeFence
+import com.intellij.openapi.application.runInEdt
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
@@ -65,9 +67,13 @@ class DevInsPromptProcessor : LanguageProcessor {
         project: Project,
         devInFile: DevInFile
     ): DevInsCompiler {
-        val editor = FileEditorManager.getInstance(project).selectedTextEditor
+        var editor: Editor? = null
+        runInEdt {
+            editor = FileEditorManager.getInstance(project).selectedTextEditor
+        }
+
         val element: PsiElement? = editor?.caretModel?.currentCaret?.offset?.let {
-            val psiFile = PsiUtilBase.getPsiFileInEditor(editor, project) ?: return@let null
+            val psiFile = PsiUtilBase.getPsiFileInEditor(editor!!, project) ?: return@let null
             getElementAtOffset(psiFile, it)
         }
 
