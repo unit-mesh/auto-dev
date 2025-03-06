@@ -10,6 +10,7 @@ import cc.unitmesh.devti.provider.context.ChatCreationContext
 import cc.unitmesh.devti.provider.context.ChatOrigin
 import cc.unitmesh.devti.sketch.run.ShellUtil
 import cc.unitmesh.devti.template.context.TemplateContext
+import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
@@ -45,7 +46,10 @@ data class SketchRunContext(
 ) : TemplateContext {
     companion object {
         suspend fun create(project: Project, myEditor: Editor?, input: String): SketchRunContext {
-            val editor = myEditor ?: FileEditorManager.getInstance(project).selectedTextEditor
+            var editor: Editor? = null
+            runInEdt {
+                editor = (myEditor ?: FileEditorManager.getInstance(project).selectedTextEditor)!!
+            }
             val currentFile: VirtualFile? = if (editor != null) {
                 FileDocumentManager.getInstance().getFile(editor.document)!!
             } else {
