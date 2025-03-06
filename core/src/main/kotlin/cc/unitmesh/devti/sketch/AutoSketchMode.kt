@@ -16,9 +16,7 @@ class AutoSketchMode() {
         val devinCodeFence = codeFenceList.filter { it.language.displayName == "DevIn" }
 
         val allCode = devinCodeFence.filter {
-            !it.text.contains("<DevinsError>") && BuiltinCommand.READ_COMMANDS.any { command ->
-                it.text.contains("/" + command.commandName + ":")
-            }
+            !it.text.contains("<DevinsError>") && (hasReadCommand(it))
         }
 
         if (allCode.isEmpty()) return
@@ -29,6 +27,10 @@ class AutoSketchMode() {
         } else {
             listener.manualSend(allCodeText)
         }
+    }
+
+    private fun hasReadCommand(fence: CodeFence): Boolean = BuiltinCommand.READ_COMMANDS.any { command ->
+        fence.text.contains("/" + command.commandName + ":")
     }
 
 

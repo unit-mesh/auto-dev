@@ -56,7 +56,9 @@ open class SketchInputListener(
             return
         }
 
-        manualSend(userInput)
+        ApplicationManager.getApplication().invokeLater {
+            manualSend(userInput)
+        }
     }
 
     open fun getInitPrompt(): String = systemPrompt
@@ -71,39 +73,35 @@ open class SketchInputListener(
             logger<SketchInputListener>().debug("Input.length < 10: $input")
         }
 
-        val task = object : Task.Backgroundable(project, "Processing context", true) {
-            override fun run(indicator: ProgressIndicator) {
-                val devInProcessor = LanguageProcessor.devin()
-                val compiledInput = runReadAction { devInProcessor?.compile(project, input) } ?: input
+        logger<SketchInputListener>().debug("Start compiling: $input")
+        ProgressManager.getInstance().runProcessWithProgressSynchronously({
+            val devInProcessor = LanguageProcessor.devin()
+            val compiledInput = runReadAction { devInProcessor?.compile(project, input) } ?: input
 
-                toolWindow.beforeRun()
-                toolWindow.updateHistoryPanel()
-                toolWindow.addRequestPrompt(compiledInput)
+            toolWindow.beforeRun()
+            toolWindow.updateHistoryPanel()
+            toolWindow.addRequestPrompt(compiledInput)
 
-                val flow = chatCodingService.request(getInitPrompt(), compiledInput, isFromSketch = true)
-                val suggestion = StringBuilder()
+            val flow = chatCodingService.request(getInitPrompt(), compiledInput, isFromSketch = true)
+            val suggestion = StringBuilder()
 
-                AutoDevCoroutineScope.workerScope(project).launch {
-                    flow.cancelHandler { toolWindow.handleCancel = it }.cancellable().collect { char ->
-                        suggestion.append(char)
+            AutoDevCoroutineScope.workerScope(project).launch {
+                flow.cancelHandler { toolWindow.handleCancel = it }.cancellable().collect { char ->
+                    suggestion.append(char)
 
-                        invokeLater {
-                            if (project.isDisposed) {
-                                cancel()
-                                return@invokeLater
-                            }
-
-                            toolWindow.onUpdate(suggestion.toString())
+                    invokeLater {
+                        if (project.isDisposed) {
+                            cancel()
+                            return@invokeLater
                         }
+
+                        toolWindow.onUpdate(suggestion.toString())
                     }
-
-                    toolWindow.onFinish(suggestion.toString())
                 }
-            }
-        }
 
-        ProgressManager.getInstance()
-            .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+                toolWindow.onFinish(suggestion.toString())
+            }
+        }, "Compile DevIns", false, project);
     }
 
     override fun dispose() {
