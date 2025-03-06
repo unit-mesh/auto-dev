@@ -28,22 +28,26 @@ class DependenciesFunctionProvider : ToolchainFunctionProvider {
         val future = CompletableFuture<String>()
         val task = object : Task.Backgroundable(project, "Processing context", false) {
             override fun run(indicator: ProgressIndicator) {
-                val deps: List<Package> = runReadAction {
-                    ProjectDependenciesModel.supportedModels(project).map {
-                        modules.map { module ->
-                            it.declaredDependencies(module)
-                        }.flatten()
-                    }.flatten().map {
-                        it.pkg
-                    }
-                }
+               try {
+                   val deps: List<Package> = runReadAction {
+                       ProjectDependenciesModel.supportedModels(project).map {
+                           modules.map { module ->
+                               it.declaredDependencies(module)
+                           }.flatten()
+                       }.flatten().map {
+                           it.pkg
+                       }
+                   }
 
-                val result = "Here is the project dependencies:\n```\n" + deps.joinToString("") {
-                    val namespace = it.namespace ?: ""
-                    "$namespace ${it.name} ${it.version}" + "\n"
-                } + "```"
+                   val result = "Here is the project dependencies:\n```\n" + deps.joinToString("") {
+                       val namespace = it.namespace ?: ""
+                       "$namespace ${it.name} ${it.version}" + "\n"
+                   } + "```"
 
-                future.complete(result)
+                   future.complete(result)
+               } catch (e: Exception) {
+                   future.completeExceptionally(e)
+               }
             }
         }
 
