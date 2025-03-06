@@ -1,6 +1,6 @@
 ---
 layout: default
-title: AutoDev Bridge - Legacy Code Migration
+title: AutoDev Bridge - Legacy Migration
 nav_order: 5
 has_children: true
 permalink: /bridge
@@ -8,20 +8,21 @@ permalink: /bridge
 
 # AutoDev Bridge - Legacy Code Migration
 
-Tools prepare:
+Required tool:
 
-### [SCC](https://github.com/boyter/scc)
+- [SCC](https://github.com/boyter/scc)
 
-> A tool similar to cloc, sloccount and tokei. For counting the lines of code, blank lines, comment lines, and physical
-> lines of source code in many programming languages.
+Required plugin:
 
-- macOS: `brew install scc`
-- Windows: `choco install scc`
-- Linux: `snap install scc`
+- [OpenRewrite](https://plugins.jetbrains.com/plugin/23814-openrewrite) (Intellij IDEA Ultimate)
+- [Endpoints](https://plugins.jetbrains.com/plugin/16890-endpoints) (Intellij IDEA Ultimate)
 
-see in [https://github.com/boyter/scc](https://github.com/boyter/scc)
+### Custom Bridge
 
+follow [Prompt Override](/customize/prompt-override), the AI Composer can be customized. in the `prompt/code` folder,
+you can create a file named `bridge.vm` to override the composer prompt.
 
-### OpenRewrite plugin
+### Custom Reasoner model
 
-When you try to use OpenRewrite plugin, you need to install the plugin in your IDE.
+Refs to [New Config (2.0.0-beta.4+)](/quick-start#new-config-200-beta4)
+
