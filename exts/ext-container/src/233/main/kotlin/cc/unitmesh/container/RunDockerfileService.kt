@@ -9,17 +9,14 @@ import com.intellij.docker.deploymentSource.DockerImageDeploymentSourceType
 import com.intellij.docker.runtimes.DockerServerRuntime
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import com.intellij.remoteServer.ServerType
 import com.intellij.remoteServer.configuration.RemoteServer
 import com.intellij.remoteServer.configuration.RemoteServersManager
 import kotlinx.coroutines.future.await
-import kotlinx.coroutines.runBlocking
 
 class RunDockerfileService : RunService {
     override fun isApplicable(project: Project, file: VirtualFile): Boolean {
@@ -61,19 +58,6 @@ class RunDockerfileService : RunService {
         val server: RemoteServer<*> = remoteServerConfig()
         val createConfiguration = creator.createConfiguration(imageSource, deploymentConfiguration, server)
         return createConfiguration.configuration
-    }
-
-    override fun runFile(project: Project, virtualFile: VirtualFile, psiElement: PsiElement?, isFromToolAction: Boolean)
-            : String? {
-
-        ApplicationManager.getApplication().invokeAndWait {
-            runBlocking {
-                createRuntime(project)
-
-            }
-        }
-
-        return null
     }
 
     private suspend fun createRuntime(project: Project): DockerServerRuntime {

@@ -28,3 +28,35 @@ you can create a file named `bridge.vm` to override the composer prompt.
 
 Refs to [New Config (2.0.0-beta.4+)](/quick-start#new-config-200-beta4)
 
+### Docker 
+
+#### Colima 
+
+[Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?](https://github.com/abiosoft/colima/blob/main/docs/FAQ.md#cannot-connect-to-the-docker-daemon-at-unixvarrundockersock-is-the-docker-daemon-running)
+
+```bash
+export COLIMA_HOME=$HOME/.colima
+export DOCKER_HOST="unix://${COLIMA_HOME}/default/docker.sock"
+sudo ln -sf $COLIMA_HOME/default/docker.sock /var/run/docker.sock
+```
+
+##### FAQ
+
+```
+Deploying '<unknown> Dockerfile: ../../../../shire.Dockerfile'…
+ERROR: BuildKit is enabled but the buildx component is missing or broken.
+Install the buildx component to build images with BuildKit:
+https://docs.docker.com/go/buildx/
+Failed to deploy '<unknown> Dockerfile: ../../../../shire.Dockerfile': Image build failed with exit code 1.
+```
+
+Refs: https://github.com/abiosoft/colima/discussions/273
+
+```bash
+brew install docker-buildx
+docker buildx install
+```
+
+
+
+
