@@ -11,14 +11,18 @@ import com.intellij.docker.connection.sshId
 import com.intellij.docker.utils.createDefaultDockerServer
 import com.intellij.docker.utils.getDockerServers
 import com.intellij.execution.configurations.RunProfile
+import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
+import com.intellij.remoteDev.hostStatus.UnattendedHostStatus
 import com.intellij.remoteServer.configuration.RemoteServer
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.components.BorderLayoutPanel
+import com.jetbrains.gateway.api.GatewayConnectionHandle
+import com.jetbrains.gateway.api.GatewayConnector
 import com.jetbrains.rd.util.lifetime.Lifetime
 import java.io.File
 import javax.swing.JComponent
@@ -47,6 +51,7 @@ class RunDevContainerService : RunService {
         val context = try {
             createContext(containerFile, projectDir, server)
         } catch (e: Exception) {
+            logger<RunDevContainerService>().warn(project, "Cannot create context: $e")
             DockerDevcontainerDeployContext()
         }
 
@@ -56,17 +61,24 @@ class RunDevContainerService : RunService {
                 val panel = contentPanel
                 val lifetime = Lifetime.Companion.Eternal
 
-                try {
-                    val component = createDeployViewComponent(project, lifetime, context)
-                    component.setBorder(JBUI.Borders.empty())
-
-                    panel.add(component)
-                    panel.revalidate()
-                    panel.repaint()
+                val baseLine = ApplicationInfo.getInstance().build.baselineVersion
+                val component = try {
+                    if (baseLine >= 242) {
+                        createDeployViewComponentFor242(project, lifetime, context)
+                    } else {
+                        createDeployViewComponentFor241(project, lifetime, context)
+                    }
                 } catch (e: Exception) {
-                    AutoDevNotifications.error(project, "Cannot create DockerDeployView: ${e.message}")
-                    e.printStackTrace()
+                    logger<RunDevContainerService>().warn(project, "Cannot create DockerDeployView: $e")
+                    createByLifetime(lifetime) ?: throw e
                 }
+
+                component.setBorder(JBUI.Borders.empty())
+
+                panel.add(component)
+                panel.revalidate()
+                panel.repaint()
+
             }
         }
 
@@ -74,7 +86,7 @@ class RunDevContainerService : RunService {
         return "Running devcontainer.json"
     }
 
-    private fun createDeployViewComponent(
+    private fun createDeployViewComponentFor241(
         project: Project,
         lifetime: Lifetime,
         context: DockerDevcontainerDeployContext
@@ -95,6 +107,37 @@ class RunDevContainerService : RunService {
         val componentMethod = dockerDeployViewClass.getMethod("getComponent")
         val component = componentMethod.invoke(dockerDeployViewInstance) as JComponent
         return component
+    }
+
+    private fun createDeployViewComponentFor242(
+        project: Project,
+        lifetime: Lifetime,
+        context: DockerDevcontainerDeployContext
+    ): JComponent {
+        val dockerDeployViewClass = Class.forName("com.intellij.clouds.docker.gateway.ui.DockerDeployView")
+        val constructor = dockerDeployViewClass.getDeclaredConstructor(
+            Project::class.java,
+            Lifetime::class.java,
+            DockerDevcontainerDeployContext::class.java,
+            Function2::class.java
+        )
+
+        val function2 = { _: GatewayConnectionHandle, _: UnattendedHostStatus -> Unit }
+
+        val instance = constructor.newInstance(project, lifetime, context, function2)
+        val componentMethod = dockerDeployViewClass.getMethod("getComponent")
+        val component = componentMethod.invoke(instance) as JComponent
+        return component
+    }
+
+    fun createByLifetime(lifetime: Lifetime): JComponent? {
+        val view = GatewayConnector.getConnectors()
+            .firstOrNull { it.isAvailable() && it.javaClass.name == "com.intellij.clouds.docker.gateway.DockerGatewayConnector" }
+            ?: return null
+
+        val connectorView = view.createView(lifetime)
+
+        return connectorView.component
     }
 
     private fun dockerServers(): List<RemoteServer<DockerCloudConfiguration>> {
