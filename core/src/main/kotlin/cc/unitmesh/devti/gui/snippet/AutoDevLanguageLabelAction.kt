@@ -19,13 +19,13 @@ import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
-import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.UIUtil
 import com.jetbrains.jsonSchema.extension.JsonSchemaProviderFactory
+import com.jetbrains.jsonSchema.ide.JsonSchemaService
 import javax.swing.JComponent
 
 class AutoDevLanguageLabelAction : DumbAwareAction(), CustomComponentAction {
@@ -57,14 +57,28 @@ class AutoDevLanguageLabelAction : DumbAwareAction(), CustomComponentAction {
         var lightVirtualFile = FileDocumentManager.getInstance().getFile(editor.document) as? LightVirtualFile ?: return
 
         val project = e.project ?: return
+        var displayName =
+            lightVirtualFile.language?.displayName ?: CodeFence.displayNameByExt(lightVirtualFile.extension ?: "txt")
+
         if (lightVirtualFile.language == JsonLanguage.INSTANCE) {
             val content = editor.document.text
-            lightVirtualFile = updateForDevContainer(project, lightVirtualFile, content) ?: lightVirtualFile
+            val possibleDevContainer = updateForDevContainer(project, lightVirtualFile, content)
+            if (possibleDevContainer != null) {
+                displayName = "DevContainer"
+            }
+
+            lightVirtualFile = possibleDevContainer ?: lightVirtualFile
         }
 
-        val displayName =
-            lightVirtualFile.language?.displayName ?: CodeFence.displayNameByExt(lightVirtualFile.extension ?: "txt")
         e.presentation.putClientProperty(LANGUAGE_PRESENTATION_KEY, displayName)
+    }
+
+
+    val DEV_CONTAINER_PROPS =
+        setOf("image", "dockerFile", "containerEnv", "remoteUser", "customizations", "features")
+
+    fun isDevContainerProperty(propName: String): Boolean {
+        return propName in DEV_CONTAINER_PROPS
     }
 
     private fun updateForDevContainer(
@@ -72,7 +86,6 @@ class AutoDevLanguageLabelAction : DumbAwareAction(), CustomComponentAction {
         lightVirtualFile: LightVirtualFile,
         content: String
     ): LightVirtualFile? {
-        // 判断文件名是否已经是 devcontainer 相关
         val fileName = lightVirtualFile.name.lowercase()
         if ((!content.startsWith("{") && !content.endsWith("}"))) return null
 
@@ -83,11 +96,7 @@ class AutoDevLanguageLabelAction : DumbAwareAction(), CustomComponentAction {
         val psiFile = runReadAction { PsiManager.getInstance(project).findFile(lightVirtualFile) } ?: return null
         val rootObject = (psiFile as? JsonFile)?.topLevelValue as? JsonObject ?: return null
 
-        val hasDevContainerProps = rootObject.propertyList.any {
-            val propName = it.name
-            propName == "image" || propName == "dockerFile" || propName == "containerEnv" ||
-                    propName == "remoteUser" || propName == "customizations" || propName == "features"
-        }
+        val hasDevContainerProps = rootObject.propertyList.any { isDevContainerProperty(it.name) }
 
         if (!hasDevContainerProps) return null
 
@@ -107,10 +116,6 @@ class AutoDevLanguageLabelAction : DumbAwareAction(), CustomComponentAction {
         val newFile = LightVirtualFile("devcontainer.json", JsonLanguage.INSTANCE, content)
 
         try {
-            // follow: https://containers.dev/guide/dockerfile
-            // check image, exist, {
-            //    "image": "mcr.microsoft.com/devcontainers/base:ubuntu"
-
             val providers = JsonSchemaProviderFactory.EP_NAME.extensions.map { it.getProviders(project) }.flatten()
                 .filter { it.isAvailable(newFile) }
 

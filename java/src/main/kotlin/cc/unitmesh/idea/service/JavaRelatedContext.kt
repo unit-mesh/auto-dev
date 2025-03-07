@@ -60,7 +60,7 @@ object JavaRelatedContext {
         return psiElement
     }
 
-    fun cleanUp(psiMethod: PsiMethod): PsiMethod {
+    fun cleanUp(psiMethod: PsiMethod): PsiMethod? {
         val psiElement = psiMethod.copy() as PsiMethod
         psiElement.body?.delete()
         psiElement.docComment?.delete()
