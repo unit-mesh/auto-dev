@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.gui.snippet
 
 import cc.unitmesh.devti.util.parser.CodeFence
-import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.json.JsonLanguage
 import com.intellij.json.psi.JsonFile
 import com.intellij.json.psi.JsonLiteral
@@ -20,7 +19,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
-import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.testFramework.LightVirtualFile
@@ -59,7 +58,8 @@ class AutoDevLanguageLabelAction : DumbAwareAction(), CustomComponentAction {
 
         val project = e.project ?: return
         if (lightVirtualFile.language == JsonLanguage.INSTANCE) {
-            lightVirtualFile = updateForDevContainer(project, lightVirtualFile) ?: lightVirtualFile
+            val content = editor.document.text
+            lightVirtualFile = updateForDevContainer(project, lightVirtualFile, content) ?: lightVirtualFile
         }
 
         val displayName =
@@ -69,23 +69,42 @@ class AutoDevLanguageLabelAction : DumbAwareAction(), CustomComponentAction {
 
     private fun updateForDevContainer(
         project: Project,
-        lightVirtualFile: LightVirtualFile
+        lightVirtualFile: LightVirtualFile,
+        content: String
     ): LightVirtualFile? {
+        // 判断文件名是否已经是 devcontainer 相关
+        val fileName = lightVirtualFile.name.lowercase()
+        if ((!content.startsWith("{") && !content.endsWith("}"))) return null
+
+        if (fileName == "devcontainer.json" || fileName.contains("devcontainer")) {
+            return lightVirtualFile
+        }
+
         val psiFile = runReadAction { PsiManager.getInstance(project).findFile(lightVirtualFile) } ?: return null
-        val image = getEnvObject("image", psiFile) ?: return null
+        val rootObject = (psiFile as? JsonFile)?.topLevelValue as? JsonObject ?: return null
 
-        val literal = image as? JsonStringLiteral ?: return null
-        val imageValue = literal.value
+        val hasDevContainerProps = rootObject.propertyList.any {
+            val propName = it.name
+            propName == "image" || propName == "dockerFile" || propName == "containerEnv" ||
+                    propName == "remoteUser" || propName == "customizations" || propName == "features"
+        }
 
-        if (!imageValue.contains("mcr.microsoft.com/devcontainers")) return null
+        if (!hasDevContainerProps) return null
 
-        /// create new file with name devcontainer.json
-        val content = lightVirtualFile.inputStream.readBytes().toString(Charsets.UTF_8)
-        val newFile = LightVirtualFile(
-            "devcontainer.json",
-            JsonLanguage.INSTANCE,
-            content
-        )
+        val image = getEnvObject("image", psiFile) as? JsonStringLiteral
+        val dockerfile = getEnvObject("dockerFile", psiFile) as? JsonStringLiteral
+        val remoteUser = getEnvObject("remoteUser", psiFile) as? JsonStringLiteral
+
+        val isDevContainer = when {
+            image != null && image.value.contains("mcr.microsoft.com/devcontainers") -> true
+            dockerfile != null -> true
+            remoteUser != null -> true
+            rootObject.propertyList.size >= 3 && hasDevContainerProps -> true
+            else -> false
+        }
+
+        if (!isDevContainer) return null
+        val newFile = LightVirtualFile("devcontainer.json", JsonLanguage.INSTANCE, content)
 
         try {
             // follow: https://containers.dev/guide/dockerfile
@@ -93,9 +112,8 @@ class AutoDevLanguageLabelAction : DumbAwareAction(), CustomComponentAction {
             //    "image": "mcr.microsoft.com/devcontainers/base:ubuntu"
 
             val providers = JsonSchemaProviderFactory.EP_NAME.extensions.map { it.getProviders(project) }.flatten()
-                .filter { it.isAvailable(lightVirtualFile) }
+                .filter { it.isAvailable(newFile) }
 
-            // devcontainer.json
             providers.map {
                 it.name
             }
