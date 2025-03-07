@@ -5,10 +5,15 @@ import com.intellij.docker.DockerCloudConfiguration
 import com.intellij.docker.DockerCloudType
 import com.intellij.docker.DockerRunConfigurationCreator
 import com.intellij.docker.DockerServerRuntimesManager
+import com.intellij.docker.agent.util.nullize
+import com.intellij.docker.connection.sshId
 import com.intellij.docker.deploymentSource.DockerImageDeploymentSourceType
 import com.intellij.docker.runtimes.DockerServerRuntime
+import com.intellij.docker.utils.createDefaultDockerServer
+import com.intellij.docker.utils.getDockerServers
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
+import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -68,5 +73,28 @@ class RunDockerfileService : RunService {
             .await()
 
         return runtime
+    }
+
+
+    fun createActions(project: Project): List<AnAction> {
+        val filteredServers =
+            getDockerServers().filter {
+                it.sshId == null
+            }.nullize()
+                ?: listOf(createDefaultDockerServer("Local"))
+
+        return filteredServers.map {
+            createDevcontainerCreateWithMountedSources(it)
+        }
+    }
+
+    fun createDevcontainerCreateWithMountedSources(server: RemoteServer<*>): AnAction {
+        val clazz = Class.forName("com.intellij.clouds.docker.gateway.actions.DevcontainerCreateWithMountedSources")
+        val constructor = clazz.declaredConstructors.firstOrNull {
+            it.parameterCount == 1 && it.parameterTypes[0] == RemoteServer::class.java
+        } ?: throw IllegalStateException("Constructor not found")
+
+        constructor.isAccessible = true
+        return constructor.newInstance(server) as AnAction
     }
 }
