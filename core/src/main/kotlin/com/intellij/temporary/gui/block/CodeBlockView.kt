@@ -153,7 +153,8 @@ class CodeBlockView(
             val forceFoldEditorByDefault = message.getRole() === ChatRole.User
 
             val ext = CodeFence.lookupFileExt(language.displayName)
-            val file = LightVirtualFile("shire.${ext}", language, graphProperty.get())
+            val fileTimeSuffix = System.currentTimeMillis()
+            val file = LightVirtualFile("autodev-${fileTimeSuffix}.${ext}", language, graphProperty.get())
 
             val document: Document =
                 file.findDocument() ?: throw IllegalStateException("Document not found")

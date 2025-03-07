@@ -250,11 +250,10 @@ open class CodeHighlightSketch(
             }
 
             val file: VirtualFile = if (fileName != null) {
-//                ScratchRootType.getInstance().createScratchFile(project, fileName, language, editorText)
-//                    ?:
                 LightVirtualFile(fileName, language, editorText)
             } else {
-                LightVirtualFile("shire.${ext}", language, editorText)
+                val fileTimeSuffix = System.currentTimeMillis()
+                LightVirtualFile("autodev-${fileTimeSuffix}.${ext}", language, editorText)
             }
             val document: Document = file.findDocument() ?: throw IllegalStateException("Document not found")
 
