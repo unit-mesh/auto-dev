@@ -114,7 +114,7 @@ configure(subprojects - project(":exts")) {
 
     val testOutput = configurations.create("testOutput")
 
-    if (this.name != "ext-terminal" && this.name != "ext-database") {
+    if (this.name != "ext-terminal" && this.name != "ext-database" && this.name != "ext-container") {
         sourceSets {
             main {
                 java.srcDirs("src/gen")
@@ -665,6 +665,25 @@ project(":exts:ext-container") {
         }
 
         implementation(project(":core"))
+    }
+
+    sourceSets {
+        main {
+            resources.srcDirs("src/$platformVersion/main/resources")
+        }
+        test {
+            resources.srcDirs("src/$platformVersion/test/resources")
+        }
+    }
+    kotlin {
+        sourceSets {
+            main {
+                kotlin.srcDirs("src/$platformVersion/main/kotlin")
+            }
+            test {
+                kotlin.srcDirs("src/$platformVersion/test/kotlin")
+            }
+        }
     }
 }
 
