@@ -11,7 +11,6 @@ import com.intellij.docker.connection.sshId
 import com.intellij.docker.utils.createDefaultDockerServer
 import com.intellij.docker.utils.getDockerServers
 import com.intellij.execution.configurations.RunProfile
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.ui.DialogWrapper
@@ -35,11 +34,6 @@ class RunDevContainerService : RunService {
         psiElement: PsiElement?,
         isFromToolAction: Boolean
     ): String? {
-        val createActions = createActions(project)
-        if (createActions.isEmpty()) {
-            return null
-        }
-
         val server = dockerServers().firstOrNull() ?: return null
         val projectDir = project.guessProjectDir()!!.toNioPath().toFile()
 
@@ -66,16 +60,7 @@ class RunDevContainerService : RunService {
         }
 
         wrapper.show()
-        return createActions.first().templatePresentation.text
-    }
-
-    fun createActions(project: Project): List<AnAction> {
-        val filteredServers =
-            dockerServers()
-
-        return filteredServers.map {
-            createDevcontainerCreateWithMountedSources(it)
-        }
+        return "Running devcontainer.json"
     }
 
     private fun dockerServers(): List<RemoteServer<DockerCloudConfiguration>> {
@@ -125,15 +110,5 @@ class RunDevContainerService : RunService {
             )
             oldConstructor.newInstance(workingDir, modelFile, sources, true)
         }
-    }
-
-    fun createDevcontainerCreateWithMountedSources(server: RemoteServer<*>): AnAction {
-        val clazz = Class.forName("com.intellij.clouds.docker.gateway.actions.DevcontainerCreateWithMountedSources")
-        val constructor = clazz.declaredConstructors.firstOrNull {
-            it.parameterCount == 1 && it.parameterTypes[0] == RemoteServer::class.java
-        } ?: throw IllegalStateException("Constructor not found")
-
-        constructor.isAccessible = true
-        return constructor.newInstance(server) as AnAction
     }
 }
