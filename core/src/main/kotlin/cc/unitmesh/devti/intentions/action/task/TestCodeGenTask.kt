@@ -172,9 +172,6 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
         var editors: Array<FileEditor> = emptyArray()
         ApplicationManager.getApplication().invokeAndWait {
             editors = fileEditorManager.openFile(context.outputFile, true)
-        }
-
-        if (editors.isNotEmpty()) {
             fileEditorManager.setSelectedEditor(context.outputFile, "text-editor")
         }
 
