@@ -24,8 +24,6 @@ import com.intellij.psi.PsiManager
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.UIUtil
-import com.jetbrains.jsonSchema.extension.JsonSchemaProviderFactory
-import com.jetbrains.jsonSchema.ide.JsonSchemaService
 import javax.swing.JComponent
 
 class AutoDevLanguageLabelAction : DumbAwareAction(), CustomComponentAction {
@@ -74,7 +72,7 @@ class AutoDevLanguageLabelAction : DumbAwareAction(), CustomComponentAction {
     }
 
 
-    val DEV_CONTAINER_PROPS =
+    private val DEV_CONTAINER_PROPS =
         setOf("image", "dockerFile", "containerEnv", "remoteUser", "customizations", "features")
 
     fun isDevContainerProperty(propName: String): Boolean {
@@ -115,16 +113,16 @@ class AutoDevLanguageLabelAction : DumbAwareAction(), CustomComponentAction {
         if (!isDevContainer) return null
         val newFile = LightVirtualFile("devcontainer.json", JsonLanguage.INSTANCE, content)
 
-        try {
-            val providers = JsonSchemaProviderFactory.EP_NAME.extensions.map { it.getProviders(project) }.flatten()
-                .filter { it.isAvailable(newFile) }
-
-            providers.map {
-                it.name
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+//        try {
+//            val providers = JsonSchemaProviderFactory.EP_NAME.extensions.map { it.getProviders(project) }.flatten()
+//                .filter { it.isAvailable(newFile) }
+//
+//            providers.map {
+//                it.name
+//            }
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//        }
 
         return newFile
     }
@@ -140,11 +138,6 @@ class AutoDevLanguageLabelAction : DumbAwareAction(), CustomComponentAction {
             is JsonStringLiteral -> value.value
             else -> value?.text
         }
-    }
-
-    fun JsonObject.findString(name: String): String? {
-        val property = findProperty(name) ?: return null
-        return property.valueAsString(this)
     }
 
     companion object {
