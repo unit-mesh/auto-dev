@@ -9,10 +9,8 @@ import com.intellij.docker.deploymentSource.DockerImageDeploymentSourceType
 import com.intellij.docker.runtimes.DockerServerRuntime
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfile
-import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiManager
 import com.intellij.remoteServer.ServerType
 import com.intellij.remoteServer.configuration.RemoteServer
 import com.intellij.remoteServer.configuration.RemoteServersManager
@@ -20,13 +18,8 @@ import kotlinx.coroutines.future.await
 
 class RunDockerfileService : RunService {
     override fun isApplicable(project: Project, file: VirtualFile): Boolean {
-        if (file.name == "Dockerfile") {
-            return true
-        }
-
-        return runReadAction {
-            PsiManager.getInstance(project).findFile(file)?.language?.displayName == "Dockerfile"
-        }
+        if (file.name == "Dockerfile") return true
+        return file.extension == "Dockerfile"
     }
 
     override fun runConfigurationClass(project: Project): Class<out RunProfile>? = null
