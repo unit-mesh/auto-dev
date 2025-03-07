@@ -22,7 +22,11 @@ class ClassContext(
     }
 
     private fun getMethodSignatures(): List<String> = methods.mapNotNull {
-        MethodContextProvider(false, gatherUsages = false).from(it).signature
+        try {
+            MethodContextProvider(false, gatherUsages = false).from(it).signature
+        } catch (e: Exception) {
+            null
+        }
     }
 
     override fun format(): String {
