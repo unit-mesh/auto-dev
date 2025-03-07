@@ -248,6 +248,8 @@
             <bundleName>messages.AutoDevBundle</bundleName>
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
+        
+        <chatContextProvider implementation="cc.unitmesh.devti.provider.context.IdeVersionChatContextProvider"/>
 
         <langSketchProvider implementation="cc.unitmesh.devti.sketch.ui.patch.DiffLangSketchProvider"/>
         <langSketchProvider implementation="cc.unitmesh.devti.sketch.ui.webview.WebpageSketchProvider"/>
