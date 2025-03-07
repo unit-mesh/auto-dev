@@ -4,7 +4,6 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.provider.RunService
 import com.intellij.clouds.docker.gateway.DockerDevcontainerDeployContext
 import com.intellij.docker.DockerCloudConfiguration
-import com.intellij.docker.agent.devcontainers.DevcontainerPaths
 import com.intellij.docker.agent.devcontainers.buildStrategy.DevcontainerBuildStrategy.LocalBuildData
 import com.intellij.docker.agent.util.nullize
 import com.intellij.docker.connection.sshId
@@ -12,6 +11,7 @@ import com.intellij.docker.utils.createDefaultDockerServer
 import com.intellij.docker.utils.getDockerServers
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.openapi.application.ApplicationInfo
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.ui.DialogWrapper
@@ -51,7 +51,7 @@ class RunDevContainerService : RunService {
         val context = try {
             createContext(containerFile, projectDir, server)
         } catch (e: Exception) {
-            logger<RunDevContainerService>().warn(project, "Cannot create context: $e")
+            logger<RunDevContainerService>().warn("Cannot create context: $e")
             DockerDevcontainerDeployContext()
         }
 
@@ -69,7 +69,7 @@ class RunDevContainerService : RunService {
                         createDeployViewComponentFor241(project, lifetime, context)
                     }
                 } catch (e: Exception) {
-                    logger<RunDevContainerService>().warn(project, "Cannot create DockerDeployView: $e")
+                    logger<RunDevContainerService>().warn("Cannot create component: $e")
                     createByLifetime(lifetime) ?: throw e
                 }
 
@@ -153,14 +153,11 @@ class RunDevContainerService : RunService {
         workingDir: File,
         dockerServer: RemoteServer<DockerCloudConfiguration>
     ): DockerDevcontainerDeployContext {
-        val path = modelFile.toPath()
-        val computeSourcesMountPath = DevcontainerPaths.computeSourcesMountPath(path)
-        val sources = (computeSourcesMountPath?.toFile())
+        val sourceDir = workingDir
 
         val deployContext = DockerDevcontainerDeployContext()
         deployContext.config = dockerServer
-        val buildData = createBuildData(workingDir, modelFile, sources)
-        deployContext.buildFromLocalSources = buildData
+        deployContext.buildFromLocalSources = createBuildData(workingDir, modelFile, sourceDir)
         return deployContext
     }
 
@@ -179,6 +176,7 @@ class RunDevContainerService : RunService {
                 )
             oldConstructor.newInstance(workingDir, modelFile, sources, true)
         } catch (e: NoSuchMethodException) {
+            logger<RunDevContainerService>().warn("Cannot create LocalBuildData: $e")
             val newConstructor: java.lang.reflect.Constructor<LocalBuildData> =
                 LocalBuildData::class.java.getConstructor(
                     File::class.java,
