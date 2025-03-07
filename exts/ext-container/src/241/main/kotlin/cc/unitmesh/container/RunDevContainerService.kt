@@ -66,7 +66,7 @@ class RunDevContainerService : RunService {
                 val baseLine = ApplicationInfo.getInstance().build.baselineVersion
                 val component = try {
                     if (baseLine >= 242) {
-                        createDeployViewComponentFor242(project, lifetime, context)
+                        createByLifetime(lifetime) ?: createDeployViewComponentFor242(project, lifetime, context)
                     } else {
                         createDeployViewComponentFor241(project, lifetime, context)
                     }
