@@ -1,5 +1,6 @@
 package cc.unitmesh.container
 
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.provider.RunService
 import com.intellij.clouds.docker.gateway.DockerDevcontainerDeployContext
 import com.intellij.clouds.docker.gateway.ui.DockerDeployView
@@ -34,17 +35,25 @@ class RunDevContainerService : RunService {
         psiElement: PsiElement?,
         isFromToolAction: Boolean
     ): String? {
-        val server = dockerServers().firstOrNull() ?: return null
+        val server = dockerServers().firstOrNull()
+        if (server == null) {
+            AutoDevNotifications.warn(project, "Cannot create DockerCloud server")
+            return null
+        }
         val projectDir = project.guessProjectDir()!!.toNioPath().toFile()
 
-        val devcontainerFile = File(projectDir, "devcontainer.json")
-        devcontainerFile.writeText(virtualFile.contentsToByteArray().toString(Charsets.UTF_8))
+        val containerFile = File(projectDir, "devcontainer.json")
+        containerFile.writeText(virtualFile.contentsToByteArray().toString(Charsets.UTF_8))
 
-        val content = createContext(devcontainerFile, projectDir, server)
+        val content = try {
+            createContext(containerFile, projectDir, server)
+        } catch (e: Exception) {
+            AutoDevNotifications.error(project, "Cannot create DockerDevcontainerDeployContext")
+            return null
+        }
+
         val wrapper = object : DialogWrapper(project) {
             override fun createCenterPanel(): JComponent? = BorderLayoutPanel()
-
-
             override fun beforeShowCallback() {
                 val panel = contentPanel
                 val lifetime = Lifetime.Companion.Eternal
@@ -67,8 +76,7 @@ class RunDevContainerService : RunService {
         val filteredServers =
             getDockerServers().filter {
                 it.sshId == null
-            }.nullize()
-                ?: listOf(createDefaultDockerServer("Local"))
+            }.nullize() ?: listOf(createDefaultDockerServer("Local"))
         return filteredServers
     }
 
@@ -88,27 +96,28 @@ class RunDevContainerService : RunService {
         return deployContext
     }
 
-
     private fun createBuildData(
         workingDir: File,
         modelFile: File,
         sources: File?
     ): LocalBuildData {
         return try {
-            val newConstructor: java.lang.reflect.Constructor<LocalBuildData> = LocalBuildData::class.java.getConstructor(
-                File::class.java,
-                File::class.java,
-                Boolean::class.javaPrimitiveType
-            )
-            newConstructor.newInstance(modelFile, sources ?: workingDir, true)
-        } catch (e: NoSuchMethodException) {
-            val oldConstructor: java.lang.reflect.Constructor<LocalBuildData> = LocalBuildData::class.java.getConstructor(
-                File::class.java,
-                File::class.java,
-                File::class.java,
-                Boolean::class.javaPrimitiveType
-            )
+            val oldConstructor: java.lang.reflect.Constructor<LocalBuildData> =
+                LocalBuildData::class.java.getConstructor(
+                    File::class.java,
+                    File::class.java,
+                    File::class.java,
+                    Boolean::class.javaPrimitiveType
+                )
             oldConstructor.newInstance(workingDir, modelFile, sources, true)
+        } catch (e: NoSuchMethodException) {
+            val newConstructor: java.lang.reflect.Constructor<LocalBuildData> =
+                LocalBuildData::class.java.getConstructor(
+                    File::class.java,
+                    File::class.java,
+                    Boolean::class.javaPrimitiveType
+                )
+            newConstructor.newInstance(modelFile, sources ?: workingDir, true)
         }
     }
 }
