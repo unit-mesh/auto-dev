@@ -661,7 +661,7 @@ project(":exts:ext-container") {
     dependencies {
         intellijPlatform {
             intellijIde(prop("ideaVersion"))
-            intellijPlugins(ideaPlugins + prop("devContainerPlugin") + "Docker")
+            intellijPlugins(ideaPlugins + prop("devContainerPlugin") + "Docker" + "com.jetbrains.gateway")
         }
 
         implementation(project(":core"))
