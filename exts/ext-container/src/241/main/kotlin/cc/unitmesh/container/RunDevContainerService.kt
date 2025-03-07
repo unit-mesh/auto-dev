@@ -4,6 +4,7 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.provider.RunService
 import com.intellij.clouds.docker.gateway.DockerDevcontainerDeployContext
 import com.intellij.docker.DockerCloudConfiguration
+import com.intellij.docker.agent.devcontainers.DevcontainerPaths
 import com.intellij.docker.agent.devcontainers.buildStrategy.DevcontainerBuildStrategy.LocalBuildData
 import com.intellij.docker.agent.util.nullize
 import com.intellij.docker.connection.sshId
@@ -25,6 +26,7 @@ import com.jetbrains.gateway.api.GatewayConnectionHandle
 import com.jetbrains.gateway.api.GatewayConnector
 import com.jetbrains.rd.util.lifetime.Lifetime
 import java.io.File
+import java.nio.file.Path
 import javax.swing.JComponent
 
 class RunDevContainerService : RunService {
@@ -153,11 +155,14 @@ class RunDevContainerService : RunService {
         workingDir: File,
         dockerServer: RemoteServer<DockerCloudConfiguration>
     ): DockerDevcontainerDeployContext {
-        val sourceDir = workingDir
+        val path = modelFile.toPath()
+        val sources = DevcontainerPaths.computeSourcesMountPath(path)?.toFile()
+
+        logger<RunDevContainerService>().info("Creating context for $modelFile, $workingDir, $sources")
 
         val deployContext = DockerDevcontainerDeployContext()
         deployContext.config = dockerServer
-        deployContext.buildFromLocalSources = createBuildData(workingDir, modelFile, sourceDir)
+        deployContext.buildFromLocalSources = createBuildData(workingDir, modelFile, sources)
         return deployContext
     }
 
@@ -176,14 +181,13 @@ class RunDevContainerService : RunService {
                 )
             oldConstructor.newInstance(workingDir, modelFile, sources, true)
         } catch (e: NoSuchMethodException) {
-            logger<RunDevContainerService>().warn("Cannot create LocalBuildData: $e")
             val newConstructor: java.lang.reflect.Constructor<LocalBuildData> =
                 LocalBuildData::class.java.getConstructor(
-                    File::class.java,
-                    File::class.java,
+                    Path::class.java,
+                    Path::class.java,
                     Boolean::class.javaPrimitiveType
                 )
-            newConstructor.newInstance(modelFile, sources ?: workingDir, true)
+            newConstructor.newInstance(modelFile.toPath(), (sources ?: workingDir).toPath(), true)
         }
     }
 }
