@@ -1,23 +1,15 @@
 package cc.unitmesh.devti.gui.snippet.container
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.intellij.json.JsonLanguage
-import com.intellij.json.psi.JsonFile
-import com.intellij.json.psi.JsonObject
-import com.intellij.json.psi.JsonStringLiteral
-import com.intellij.json.psi.JsonValue
-import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiManager
 import com.intellij.testFramework.LightVirtualFile
 
 object AutoDevContainer {
     private val DEV_CONTAINER_PROPS =
         setOf("image", "dockerFile", "containerEnv", "remoteUser", "customizations", "features")
-
-    fun isDevContainerProperty(propName: String): Boolean {
-        return propName in DEV_CONTAINER_PROPS
-    }
 
     fun updateForDevContainer(
         project: Project,
@@ -31,22 +23,31 @@ object AutoDevContainer {
             return lightVirtualFile
         }
 
-        val psiFile = runReadAction { PsiManager.getInstance(project).findFile(lightVirtualFile) } ?: return null
-        val rootObject = (psiFile as? JsonFile)?.topLevelValue as? JsonObject ?: return null
+        val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
+        val jsonNode: JsonNode
+        try {
+            jsonNode = objectMapper.readTree(content)
+        } catch (e: Exception) {
+            return null
+        }
 
-        val hasDevContainerProps = rootObject.propertyList.any { isDevContainerProperty(it.name) }
+        if (!jsonNode.isObject) return null
 
+        // Check if any dev container property exists
+        val hasDevContainerProps = DEV_CONTAINER_PROPS.any { jsonNode.has(it) }
         if (!hasDevContainerProps) return null
 
-        val image = getPropValue("image", psiFile) as? JsonStringLiteral
-        val dockerfile = getPropValue("dockerFile", psiFile) as? JsonStringLiteral
-        val remoteUser = getPropValue("remoteUser", psiFile) as? JsonStringLiteral
+        val image = jsonNode.path("image")
+        val dockerfile = jsonNode.path("dockerFile")
+        val remoteUser = jsonNode.path("remoteUser")
 
         val isDevContainer = when {
-            image != null && image.value.contains("mcr.microsoft.com/devcontainers") -> true
-            dockerfile != null -> true
-            remoteUser != null -> true
-            rootObject.propertyList.size >= 3 && hasDevContainerProps -> true
+            !image.isMissingNode && image.isTextual && image.asText()
+                .contains("mcr.microsoft.com/devcontainers") -> true
+
+            !dockerfile.isMissingNode && dockerfile.isTextual -> true
+            !remoteUser.isMissingNode && remoteUser.isTextual -> true
+            jsonNode.size() >= 3 -> true
             else -> false
         }
 
@@ -54,10 +55,5 @@ object AutoDevContainer {
         val newFile = LightVirtualFile("devcontainer.json", JsonLanguage.INSTANCE, content)
 
         return newFile
-    }
-
-    fun getPropValue(propName: String, psiFile: PsiFile): JsonValue? {
-        val rootObject = (psiFile as? JsonFile)?.topLevelValue as? JsonObject ?: return null
-        return rootObject.propertyList.firstOrNull { it.name == propName }?.value
     }
 }
