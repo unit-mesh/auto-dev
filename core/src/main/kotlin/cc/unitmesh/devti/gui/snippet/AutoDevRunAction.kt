@@ -2,8 +2,10 @@ package cc.unitmesh.devti.gui.snippet
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.gui.snippet.container.AutoDevContainer
 import cc.unitmesh.devti.provider.RunService
 import com.intellij.ide.scratch.ScratchRootType
+import com.intellij.json.JsonLanguage
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
@@ -15,6 +17,7 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
+import com.intellij.testFramework.LightVirtualFile
 import java.io.File
 import java.io.IOException
 
@@ -29,6 +32,14 @@ class AutoDevRunAction : DumbAwareAction(AutoDevBundle.message("autodev.run.acti
         val file = FileDocumentManager.getInstance().getFile(document)
 
         if (file != null) {
+            val lightFile = file as? LightVirtualFile
+            if (lightFile?.language == JsonLanguage.INSTANCE) {
+                val virtualFile = AutoDevContainer.updateForDevContainer(project, file, document.text)
+                    ?: lightFile
+                e.presentation.isEnabled = RunService.provider(project, virtualFile) != null
+                return
+            }
+
             e.presentation.isEnabled = RunService.provider(project, file) != null
             return
         }
@@ -50,6 +61,8 @@ class AutoDevRunAction : DumbAwareAction(AutoDevBundle.message("autodev.run.acti
 
         if (scratchFile?.extension == "Dockerfile") {
             scratchFile = createDockerFile(project, document.text) ?: scratchFile
+        } else if (scratchFile?.extension?.lowercase() == "json") {
+            scratchFile = AutoDevContainer.updateForDevContainer(project, file as LightVirtualFile, document.text) ?: scratchFile
         }
 
         if (scratchFile == null) {
@@ -65,7 +78,7 @@ class AutoDevRunAction : DumbAwareAction(AutoDevBundle.message("autodev.run.acti
             ?: return
 
         try {
-            RunService.provider(project, file)
+            RunService.provider(project, scratchFile)
                 ?.runFile(project, scratchFile, psiFile, isFromToolAction = true)
                 ?: RunService.runInCli(project, psiFile)
                 ?: AutoDevNotifications.notify(project, "No run service found for ${file.name}")
