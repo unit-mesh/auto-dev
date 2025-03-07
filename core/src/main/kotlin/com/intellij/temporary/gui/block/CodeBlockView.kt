@@ -22,6 +22,8 @@ import com.intellij.openapi.editor.ex.FocusChangeListener
 import com.intellij.openapi.editor.ex.MarkupModelEx
 import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.observable.properties.GraphProperty
+import com.intellij.openapi.observable.properties.PropertyGraph
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
@@ -69,8 +71,9 @@ class CodeBlockView(
     private fun updateOrCreateCodeView(): CodePartEditorInfo? {
         val code: CodeFence = getBlock().code
         if (editorInfo == null) {
+            val graphProperty = PropertyGraph(null, false).property(code.text)
             val editorInfo: CodePartEditorInfo = createCodeViewer(
-                project, code.text, disposable, code.language, getBlock().getMessage()
+                project, graphProperty, disposable, code.language, getBlock().getMessage()
             )
             this.editorInfo = editorInfo
         } else {
@@ -142,7 +145,7 @@ class CodeBlockView(
 
         fun createCodeViewer(
             project: Project,
-            content: String,
+            graphProperty: GraphProperty<String>,
             disposable: Disposable,
             language: Language,
             message: CompletableMessage,
@@ -151,7 +154,7 @@ class CodeBlockView(
 
             val ext = CodeFence.lookupFileExt(language.displayName)
             val fileTimeSuffix = System.currentTimeMillis()
-            val file = LightVirtualFile("autodev-${fileTimeSuffix}.${ext}", language, content)
+            val file = LightVirtualFile("autodev-${fileTimeSuffix}.${ext}", language, graphProperty.get())
 
             val document: Document =
                 file.findDocument() ?: throw IllegalStateException("Document not found")
