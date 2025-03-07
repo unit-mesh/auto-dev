@@ -98,8 +98,33 @@ class RunDevContainerService : RunService {
 
         val deployContext = DockerDevcontainerDeployContext()
         deployContext.config = dockerServer
-        deployContext.buildFromLocalSources = LocalBuildData(workingDir, modelFile, sources, true)
+        val buildData = createBuildData(workingDir, modelFile, sources)
+        deployContext.buildFromLocalSources = buildData
         return deployContext
+    }
+
+
+    private fun createBuildData(
+        workingDir: File,
+        modelFile: File,
+        sources: File?
+    ): LocalBuildData {
+        return try {
+            val newConstructor: java.lang.reflect.Constructor<LocalBuildData> = LocalBuildData::class.java.getConstructor(
+                File::class.java,
+                File::class.java,
+                Boolean::class.javaPrimitiveType
+            )
+            newConstructor.newInstance(modelFile, sources ?: workingDir, true)
+        } catch (e: NoSuchMethodException) {
+            val oldConstructor: java.lang.reflect.Constructor<LocalBuildData> = LocalBuildData::class.java.getConstructor(
+                File::class.java,
+                File::class.java,
+                File::class.java,
+                Boolean::class.javaPrimitiveType
+            )
+            oldConstructor.newInstance(workingDir, modelFile, sources, true)
+        }
     }
 
     fun createDevcontainerCreateWithMountedSources(server: RemoteServer<*>): AnAction {
