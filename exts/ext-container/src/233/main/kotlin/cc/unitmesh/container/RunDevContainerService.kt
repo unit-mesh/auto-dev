@@ -42,22 +42,26 @@ class RunDevContainerService : RunService {
 
         val server = dockerServers().firstOrNull() ?: return null
         val projectDir = project.guessProjectDir()!!.toNioPath().toFile()
-        /// write virtualFile to projectDir/devcontainer.json
+
         val devcontainerFile = File(projectDir, "devcontainer.json")
         devcontainerFile.writeText(virtualFile.contentsToByteArray().toString(Charsets.UTF_8))
 
         val content = createContext(devcontainerFile, projectDir, server)
         val wrapper = object : DialogWrapper(project) {
-            override fun createCenterPanel(): JComponent? {
-                val lifetime = Lifetime.Companion.Eternal
-                val component = DockerDeployView(project, lifetime, content).component
+            override fun createCenterPanel(): JComponent? = BorderLayoutPanel()
 
-                val contentPlanel = BorderLayoutPanel()
+
+            override fun beforeShowCallback() {
+                val panel = contentPanel
+                val lifetime = Lifetime.Companion.Eternal
+
+                val dockerDeployView = DockerDeployView(project, lifetime, content)
+                val component = dockerDeployView.component
                 component.setBorder(JBUI.Borders.empty())
-                contentPlanel.add(component)
-                contentPlanel.revalidate()
-                contentPlanel.repaint()
-                return contentPlanel
+
+                panel.add(component)
+                panel.revalidate()
+                panel.repaint()
             }
         }
 
