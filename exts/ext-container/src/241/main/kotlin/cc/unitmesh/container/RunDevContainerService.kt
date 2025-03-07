@@ -3,7 +3,6 @@ package cc.unitmesh.container
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.provider.RunService
 import com.intellij.clouds.docker.gateway.DockerDevcontainerDeployContext
-import com.intellij.clouds.docker.gateway.ui.DockerDeployView
 import com.intellij.docker.DockerCloudConfiguration
 import com.intellij.docker.agent.devcontainers.DevcontainerPaths
 import com.intellij.docker.agent.devcontainers.buildStrategy.DevcontainerBuildStrategy.LocalBuildData
@@ -45,11 +44,10 @@ class RunDevContainerService : RunService {
         val containerFile = File(projectDir, "devcontainer.json")
         containerFile.writeText(virtualFile.contentsToByteArray().toString(Charsets.UTF_8))
 
-        val content = try {
+        val context = try {
             createContext(containerFile, projectDir, server)
         } catch (e: Exception) {
-            AutoDevNotifications.error(project, "Cannot create DockerDevcontainerDeployContext")
-            return null
+            DockerDevcontainerDeployContext()
         }
 
         val wrapper = object : DialogWrapper(project) {
@@ -58,18 +56,45 @@ class RunDevContainerService : RunService {
                 val panel = contentPanel
                 val lifetime = Lifetime.Companion.Eternal
 
-                val dockerDeployView = DockerDeployView(project, lifetime, content)
-                val component = dockerDeployView.component
-                component.setBorder(JBUI.Borders.empty())
+                try {
+                    val component = createDeployViewComponent(project, lifetime, context)
+                    component.setBorder(JBUI.Borders.empty())
 
-                panel.add(component)
-                panel.revalidate()
-                panel.repaint()
+                    panel.add(component)
+                    panel.revalidate()
+                    panel.repaint()
+                } catch (e: Exception) {
+                    AutoDevNotifications.error(project, "Cannot create DockerDeployView: ${e.message}")
+                    e.printStackTrace()
+                }
             }
         }
 
         wrapper.show()
         return "Running devcontainer.json"
+    }
+
+    private fun createDeployViewComponent(
+        project: Project,
+        lifetime: Lifetime,
+        context: DockerDevcontainerDeployContext
+    ): JComponent {
+        val dockerDeployViewClass = Class.forName("com.intellij.clouds.docker.gateway.ui.DockerDeployView")
+        val constructor = dockerDeployViewClass.getDeclaredConstructor(
+            Project::class.java,
+            Lifetime::class.java,
+            DockerDevcontainerDeployContext::class.java,
+            Function0::class.java,
+            Function0::class.java
+        )
+        constructor.isAccessible = true
+
+        val emptyAction = { }
+        val dockerDeployViewInstance = constructor.newInstance(project, lifetime, context, emptyAction, emptyAction)
+
+        val componentMethod = dockerDeployViewClass.getMethod("getComponent")
+        val component = componentMethod.invoke(dockerDeployViewInstance) as JComponent
+        return component
     }
 
     private fun dockerServers(): List<RemoteServer<DockerCloudConfiguration>> {
