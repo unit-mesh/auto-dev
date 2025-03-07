@@ -59,9 +59,10 @@ class JavaMethodContextBuilder : MethodContextBuilder {
     private fun getSignatureString(method: PsiMethod?): String {
         if (method == null) return ""
         val text = runReadAction {
-            cleanUp(method).text
+            cleanUp(method)?.text
         }
-        val trimmed = text.replace('\n', ' ').trim()
-        return trimmed
+
+        val trimmed = text?.replace('\n', ' ')?.trim()
+        return trimmed ?: ""
     }
 }
