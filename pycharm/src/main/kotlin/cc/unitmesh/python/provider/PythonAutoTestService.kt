@@ -3,6 +3,7 @@ package cc.unitmesh.python.provider
 import cc.unitmesh.devti.context.ClassContext
 import cc.unitmesh.devti.provider.AutoTestService
 import cc.unitmesh.devti.provider.context.TestFileContext
+import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.execution.RunManager
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.RunConfigurationProducer
@@ -21,7 +22,6 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilBase
-import com.jetbrains.python.PythonLanguage
 import com.jetbrains.python.psi.PyClass
 import com.jetbrains.python.psi.PyFile
 import com.jetbrains.python.psi.PyFunction
@@ -81,7 +81,7 @@ class PythonAutoTestService : AutoTestService() {
             testDir.findOrCreateChildData(this, toTestFileName(testFileName, sourceFile.name))
         } ?: return null
 
-        return TestFileContext(true, testFile, listOf(), "", PythonLanguage.INSTANCE)
+        return TestFileContext(true, testFile, listOf(), "", CodeFence.findLanguage("Python"))
     }
 
     private fun getTestNameExample(file: VirtualFile): String {

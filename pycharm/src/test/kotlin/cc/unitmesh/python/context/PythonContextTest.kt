@@ -1,11 +1,7 @@
 package cc.unitmesh.python.context
 
-import cc.unitmesh.devti.context.ClassContext
-import cc.unitmesh.devti.context.ClassContextProvider
 import com.intellij.psi.PsiFileFactory
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import com.jetbrains.python.PythonLanguage
-import com.jetbrains.python.psi.PyFile
 import org.intellij.lang.annotations.Language
 
 class PythonContextTest  : BasePlatformTestCase() {

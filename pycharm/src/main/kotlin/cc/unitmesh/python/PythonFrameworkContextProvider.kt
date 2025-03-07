@@ -5,15 +5,12 @@ import cc.unitmesh.devti.provider.context.ChatContextProvider
 import cc.unitmesh.devti.provider.context.ChatCreationContext
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
-import com.jetbrains.python.PythonLanguage
 import com.jetbrains.python.configuration.PyConfigurableInterpreterList
 import com.jetbrains.python.sdk.PythonSdkUtil
 import com.jetbrains.python.sdk.mostPreferred
 
 class PythonFrameworkContextProvider : ChatContextProvider {
-    override fun isApplicable(project: Project, creationContext: ChatCreationContext): Boolean {
-        return creationContext.element?.language is PythonLanguage
-    }
+    override fun isApplicable(project: Project, creationContext: ChatCreationContext) = creationContext.element?.language?.displayName == "Python"
 
     override fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         var items = mutableListOf<ChatContextItem>()
