@@ -56,13 +56,10 @@ class LLMApplyInlaysAction : EditorAction(ApplyInlaysHandler()), DumbAware {
 
 
     private class ApplyInlaysHandler : EditorActionHandler() {
-        override fun isEnabledForCaret(editor: Editor, caret: Caret, dataContext: DataContext): Boolean {
-            return isSupported(editor)
-        }
+        override fun isEnabledForCaret(editor: Editor, caret: Caret, dataContext: DataContext): Boolean =
+            isSupported(editor)
 
-        override fun executeInCommand(editor: Editor, dataContext: DataContext): Boolean {
-            return false
-        }
+        override fun executeInCommand(editor: Editor, dataContext: DataContext): Boolean = false
 
         override fun doExecute(editor: Editor, caret: Caret?, dataContext: DataContext) {
             if (editor.isDisposed) return
@@ -94,22 +91,12 @@ class LLMApplyInlaysAction : EditorAction(ApplyInlaysHandler()), DumbAware {
             return true
         }
 
-        private fun isNonEmptyLinePrefix(document: Document, lineNumber: Int, caretOffset: Int): Boolean {
-            val lineStartOffset = document.getLineStartOffset(lineNumber)
-            if (lineStartOffset == caretOffset) {
-                return false
-            }
-            val linePrefix = document.getText(TextRange.create(lineStartOffset, caretOffset))
-            return !isSpacesOrTabs(linePrefix, false)
-        }
-
         fun isSupported(editor: Editor): Boolean {
             val project = editor.project
             return project != null && editor
                 .caretModel.caretCount == 1 && (LookupManager.getActiveLookup(editor) == null) && TemplateManager.getInstance(
                 project
-            )
-                .getActiveTemplate(editor) == null
+            ).getActiveTemplate(editor) == null
         }
     }
 }
