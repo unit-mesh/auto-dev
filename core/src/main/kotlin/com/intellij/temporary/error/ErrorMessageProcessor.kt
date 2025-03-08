@@ -8,9 +8,7 @@ import cc.unitmesh.devti.settings.AutoDevSettingsState
 import com.intellij.execution.filters.FileHyperlinkInfo
 import com.intellij.execution.impl.ConsoleViewImpl
 import com.intellij.execution.impl.EditorHyperlinkSupport
-import com.intellij.execution.ui.ExecutionConsole
-import com.intellij.execution.ui.RunContentDescriptor
-import com.intellij.execution.ui.RunContentManager
+import com.intellij.execution.ui.RunContentManager.getInstance
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.editor.Editor
@@ -60,7 +58,7 @@ object ErrorMessageProcessor {
     }
 
     private fun getConsoleEditor(project: Project): Editor? {
-        val executionConsole = getExecutionConsole(project) ?: return null
+        val executionConsole = getInstance(project).selectedContent?.executionConsole ?: return null
         val consoleViewImpl: ConsoleViewImpl = executionConsole as? ConsoleViewImpl ?: return null
         return consoleViewImpl.editor
     }
@@ -68,7 +66,6 @@ object ErrorMessageProcessor {
     fun extracted(
         project: Project, description: ErrorDescription,
     ): TextTemplatePrompt? {
-//    ): RuntimeErrorExplanationPrompt? {
         val consoleLineFrom = description.consoleLineFrom
         val consoleLineTo = description.consoleLineTo
         val consoleEditor = description.editor
@@ -131,10 +128,5 @@ object ErrorMessageProcessor {
         }
 
         return result
-    }
-
-    private fun getExecutionConsole(project: Project): ExecutionConsole? {
-        val selectedContent: RunContentDescriptor? = RunContentManager.getInstance(project).selectedContent
-        return selectedContent?.executionConsole
     }
 }

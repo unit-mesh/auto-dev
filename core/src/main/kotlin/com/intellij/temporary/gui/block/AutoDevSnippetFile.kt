@@ -8,10 +8,7 @@ const val AUTODEV_SNIPPET_NAME = "AutoDevSnippet"
 
 object AutoDevSnippetFile {
     fun isSnippet(file: VirtualFile): Boolean {
-        if (file is LightVirtualFile) {
-            return file.getName() == AUTODEV_SNIPPET_NAME
-        }
-
-        return false
+        if (file !is LightVirtualFile) return false
+        return file.name == AUTODEV_SNIPPET_NAME
     }
 }
