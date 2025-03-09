@@ -1,7 +1,7 @@
 // Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.intellij.temporary.error
 
-import com.intellij.temporary.AutoPsiUtils
+import com.intellij.temporary.error.ErrorPlacePsiUtils
 import cc.unitmesh.devti.llms.tokenizer.Tokenizer
 import cc.unitmesh.devti.prompting.TextTemplatePrompt
 import cc.unitmesh.devti.template.GENIUS_ERROR
@@ -95,8 +95,8 @@ class ErrorPromptBuilder(private val maxLength: Int, private val tokenizer: Toke
         language: String,
         virtualFile: VirtualFile
     ): ErrorScope? {
-        val lineNumberStart = AutoPsiUtils.getLineNumber(currentContainingElement, true)
-        val lineNumberFinish = AutoPsiUtils.getLineNumber(currentContainingElement, false)
+        val lineNumberStart = ErrorPlacePsiUtils.getLineNumber(currentContainingElement, true)
+        val lineNumberFinish = ErrorPlacePsiUtils.getLineNumber(currentContainingElement, false)
 
         val prefix = "filename: $filename\n line: $lineNumberStart\n\n"
         val candidate = """

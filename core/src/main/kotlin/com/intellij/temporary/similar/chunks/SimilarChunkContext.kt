@@ -25,15 +25,15 @@ class SimilarChunkContext(val language: Language, val paths: List<String>?, val 
         return queryBuilder.toString().trim()
     }
 
-    private fun commentCode(code: String, commentSymbol: String?): String {
-        if (commentSymbol == null) return code
-
-        return code.split("\n").joinToString("\n") {
-            "$commentSymbol $it"
-        }
-    }
-
     companion object {
+        fun commentCode(code: String, commentSymbol: String?): String {
+            if (commentSymbol == null) return code
+
+            return code.split("\n").joinToString("\n") {
+                "$commentSymbol $it"
+            }
+        }
+        
         fun commentPrefix(language: Language): String? {
             val commenter = LanguageCommenters.INSTANCE.forLanguage(language)
             val commentPrefix = commenter.lineCommentPrefix

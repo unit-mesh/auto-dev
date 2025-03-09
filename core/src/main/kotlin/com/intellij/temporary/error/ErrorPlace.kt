@@ -1,7 +1,7 @@
 // Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.intellij.temporary.error
 
-import com.intellij.temporary.AutoPsiUtils
+import com.intellij.temporary.error.ErrorPlacePsiUtils
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
@@ -24,7 +24,7 @@ data class ErrorPlace(
 
     fun findContainingElement(): PsiElement? {
         val psiFile = psiFile ?: return null
-        val lineStartOffset = AutoPsiUtils.getLineStartOffset(psiFile, lineNumber) ?: return null
+        val lineStartOffset = ErrorPlacePsiUtils.getLineStartOffset(psiFile, lineNumber) ?: return null
         val errorPlaceOffset: Int = lineStartOffset
         return this.psiFile?.findElementAt(errorPlaceOffset)
     }
