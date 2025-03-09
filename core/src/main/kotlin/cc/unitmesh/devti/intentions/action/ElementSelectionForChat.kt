@@ -1,5 +1,4 @@
-// Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
-package com.intellij.temporary
+package cc.unitmesh.devti.intentions.action
 
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.editor.Editor
@@ -9,6 +8,19 @@ import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtilBase
 
+object ElementSelectionForChat  {
+    fun selectElement(elementToExplain: PsiElement, editor: Editor) {
+        val startOffset = elementToExplain.textRange.startOffset
+        val endOffset = elementToExplain.textRange.endOffset
+
+        editor.selectionModel.setSelection(startOffset, endOffset)
+    }
+
+    fun getCurrentSelectionAsRange(editor: Editor): TextRange {
+        val currentCaret = editor.caretModel.currentCaret
+        return TextRange(currentCaret.selectionStart, currentCaret.selectionEnd)
+    }
+}
 
 /**
  * Returns the PsiElement to explain in the given project and editor.

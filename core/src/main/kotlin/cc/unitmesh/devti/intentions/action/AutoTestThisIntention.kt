@@ -2,7 +2,6 @@ package cc.unitmesh.devti.intentions.action
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
-import com.intellij.temporary.getElementToAction
 import cc.unitmesh.devti.intentions.action.test.TestCodeGenRequest
 import cc.unitmesh.devti.intentions.action.task.TestCodeGenTask
 import cc.unitmesh.devti.provider.AutoTestService
@@ -27,7 +26,7 @@ class AutoTestThisIntention : ChatBaseIntention() {
         if (editor == null || file == null) return
 
         val element = getElementToAction(project, editor) ?: return
-        selectElement(element, editor)
+        ElementSelectionForChat.selectElement(element, editor)
 
         val task = TestCodeGenTask(
             TestCodeGenRequest(file, element, project, editor),

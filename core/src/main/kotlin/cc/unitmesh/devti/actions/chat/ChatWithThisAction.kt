@@ -3,13 +3,13 @@ package cc.unitmesh.devti.actions.chat
 import cc.unitmesh.devti.actions.chat.base.ChatCheckForUpdateAction
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatWindow
+import cc.unitmesh.devti.intentions.action.ElementSelectionForChat
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.presentationText
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.temporary.getElementToAction
+import cc.unitmesh.devti.intentions.action.getElementToAction
 
 class ChatWithThisAction : ChatCheckForUpdateAction() {
-
     init{
         presentationText("settings.autodev.rightClick.chat", templatePresentation)
     }
@@ -25,7 +25,7 @@ class ChatWithThisAction : ChatCheckForUpdateAction() {
         if (prefixText.isEmpty()) {
             val element = getElementToAction(project, editor)
             if (element != null) {
-                selectElement(element, editor)
+                ElementSelectionForChat.selectElement(element, editor)
                 prefixText = element.text
             }
         }

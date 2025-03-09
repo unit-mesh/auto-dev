@@ -5,6 +5,7 @@ import cc.unitmesh.devti.gui.chat.ChatCodingPanel
 import cc.unitmesh.devti.gui.chat.message.ChatContext
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.gui.sendToChatPanel
+import cc.unitmesh.devti.intentions.action.ElementSelectionForChat
 import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
@@ -16,7 +17,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiElement
-import com.intellij.temporary.getElementToAction
+import cc.unitmesh.devti.intentions.action.getElementToAction
 
 abstract class ChatBaseAction : AnAction() {
     companion object {
@@ -75,20 +76,6 @@ abstract class ChatBaseAction : AnAction() {
     }
 
     /**
-     * After chat completion, we can provide some suggestions to the user.
-     * For example, In issue: [#129](https://github.com/unit-mesh/auto-dev/issues/129), If our user doesn't provide any
-     * refactor intention, we can provide some suggestions to the user.
-     *
-     * @param project The current project.
-     * @param editor The editor that is currently in use.
-     * @param element The PsiElement that is being completed.
-     * @return A string representing the completion suggestion, or `null` if no suggestion is available.
-     */
-    open fun chatCompletionSuggestion(project: Project, editor: Editor, element: PsiElement): String? {
-        return null
-    }
-
-    /**
      * Add additional prompt to the chat context.
      * Sample case:
      *
@@ -96,13 +83,6 @@ abstract class ChatBaseAction : AnAction() {
      *
      */
     open fun addAdditionPrompt(project: Project, editor: Editor, element: PsiElement): String = ""
-
-    fun selectElement(elementToExplain: PsiElement, editor: Editor) {
-        val startOffset = elementToExplain.textRange.startOffset
-        val endOffset = elementToExplain.textRange.endOffset
-
-        editor.selectionModel.setSelection(startOffset, endOffset)
-    }
 }
 
 fun commentPrefix(element: PsiElement): String {

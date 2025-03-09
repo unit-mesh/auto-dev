@@ -12,7 +12,7 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
-import com.intellij.temporary.getElementToAction
+import cc.unitmesh.devti.intentions.action.getElementToAction
 import kotlinx.coroutines.runBlocking
 
 abstract class SimpleDevinPrompter {

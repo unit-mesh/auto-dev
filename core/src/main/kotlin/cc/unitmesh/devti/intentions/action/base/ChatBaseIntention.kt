@@ -1,11 +1,12 @@
 package cc.unitmesh.devti.intentions.action.base
 
 import cc.unitmesh.devti.AutoDevBundle
-import com.intellij.temporary.calculateFrontendElementToExplain
-import com.intellij.temporary.getElementToAction
+import cc.unitmesh.devti.intentions.action.calculateFrontendElementToExplain
+import cc.unitmesh.devti.intentions.action.getElementToAction
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.gui.sendToChatPanel
+import cc.unitmesh.devti.intentions.action.ElementSelectionForChat
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.editor.Editor
@@ -54,7 +55,7 @@ abstract class ChatBaseIntention : IntentionAction {
         editor: Editor,
         file: PsiFile,
         project: Project,
-    ): Pair<@NlsSafe String, PsiElement?>? {
+    ): Pair<String, PsiElement?>? {
         var selectedText = editor.selectionModel.selectedText
         val psiElement = getElementToAction(project, editor)
 
@@ -62,7 +63,7 @@ abstract class ChatBaseIntention : IntentionAction {
             if (psiElement == null) {
                 return null
             }
-            selectElement(psiElement, editor)
+            ElementSelectionForChat.selectElement(psiElement, editor)
             selectedText = editor.selectionModel.selectedText
         }
 
@@ -71,18 +72,6 @@ abstract class ChatBaseIntention : IntentionAction {
         }
 
         return Pair(selectedText, psiElement)
-    }
-
-    protected fun selectElement(elementToExplain: PsiElement, editor: Editor) {
-        val startOffset = elementToExplain.textRange.startOffset
-        val endOffset = elementToExplain.textRange.endOffset
-
-        editor.selectionModel.setSelection(startOffset, endOffset)
-    }
-
-    fun getCurrentSelectionAsRange(editor: Editor): TextRange {
-        val currentCaret = editor.caretModel.currentCaret
-        return TextRange(currentCaret.selectionStart, currentCaret.selectionEnd)
     }
 
     fun computeTitle(project: Project, psiFile: PsiFile, range: TextRange): String {

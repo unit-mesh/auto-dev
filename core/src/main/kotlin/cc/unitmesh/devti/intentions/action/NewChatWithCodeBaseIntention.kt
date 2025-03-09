@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.intentions.action
 
 import cc.unitmesh.devti.AutoDevBundle
-import com.intellij.temporary.getElementToAction
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
@@ -18,8 +17,7 @@ class NewChatWithCodeBaseIntention : ChatBaseIntention() {
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         if (editor == null || file == null || getElementToAction(project, editor)?.text?.isBlank() ?: true) return false
-
-        this.title = computeTitle(project, file, getCurrentSelectionAsRange(editor))
+        this.title = computeTitle(project, file, ElementSelectionForChat.getCurrentSelectionAsRange(editor))
         return true
     }
 
@@ -32,7 +30,7 @@ class NewChatWithCodeBaseIntention : ChatBaseIntention() {
         if (selectedText == null) {
             if (elementToExplain == null) return
 
-            selectElement(elementToExplain, editor)
+            ElementSelectionForChat.selectElement(elementToExplain, editor)
             selectedText = editor.selectionModel.selectedText
         }
 

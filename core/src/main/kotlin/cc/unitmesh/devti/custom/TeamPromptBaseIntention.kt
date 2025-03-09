@@ -6,6 +6,7 @@ import cc.unitmesh.devti.custom.team.TeamPromptAction
 import cc.unitmesh.devti.custom.team.TeamPromptExecTask
 import cc.unitmesh.devti.custom.compile.VariableTemplateCompiler
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
+import cc.unitmesh.devti.intentions.action.ElementSelectionForChat
 import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressManager
@@ -15,7 +16,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.temporary.calculateFrontendElementToExplain
+import cc.unitmesh.devti.intentions.action.calculateFrontendElementToExplain
 
 /**
  * The `TeamPromptIntention` class represents an intention for team prompts in a chat application.
@@ -38,7 +39,7 @@ class TeamPromptBaseIntention(val intentionConfig: TeamPromptAction, val trySele
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (editor == null || file == null) return
         val elementPair = elementWithRange(editor, file, project)
-        val textRange = getCurrentSelectionAsRange(editor)
+        val textRange = ElementSelectionForChat.getCurrentSelectionAsRange(editor)
 
         val language = file.language
         val element = if (trySelectElement) {
