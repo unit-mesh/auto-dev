@@ -2,29 +2,36 @@ package cc.unitmesh.devti.gui.toolbar
 
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.ChatCodingPanel
-import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.componentStateChanged
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.openapi.util.Key
 import com.intellij.ui.components.panels.Wrapper
-import com.intellij.util.ui.JBInsets
+import com.intellij.util.ui.JBDimension
 import com.intellij.util.ui.JBUI
 import javax.swing.JButton
 import javax.swing.JComponent
 
 class NewChatAction : DumbAwareAction(), CustomComponentAction {
     private val logger = logger<NewChatAction>()
+    val AVOID_EXTENDING_BORDER_GRAPHICS = Key.create<Boolean>("JButton.avoidExtendingBorderGraphics")
 
     override fun actionPerformed(e: AnActionEvent) = Unit
 
     override fun createCustomComponent(presentation: Presentation, place: String): JComponent {
-        val button: JButton = object : JButton() {
+        val button: JButton = object : JButton(AllIcons.General.Add) {
             init {
                 putClientProperty("ActionToolbar.smallVariant", true)
-                putClientProperty("customButtonInsets", JBInsets(1, 1, 1, 1).asUIResource())
+                putClientProperty(AVOID_EXTENDING_BORDER_GRAPHICS, true)
+                setHorizontalTextPosition(LEFT)
+                setContentAreaFilled(false)
+                setForeground(JBUI.CurrentTheme.Link.Foreground.ENABLED)
+                isBorderPainted = false
+                iconTextGap = 0
+                preferredSize = JBDimension(32, 32)
 
-                setOpaque(false)
                 addActionListener {
                     val dataContext: DataContext = ActionToolbar.getDataContextFor(this)
                     val project = dataContext.getData(CommonDataKeys.PROJECT)
@@ -44,15 +51,9 @@ class NewChatAction : DumbAwareAction(), CustomComponentAction {
                         return@addActionListener
                     }
 
-//                    contentManager.contents.filter { it.component is ChatCodingPanel }.forEach {
-//                        AutoDevToolWindowFactory.setInitialDisplayName(it)
-//                    }
-
                     codingPanel.resetChatSession()
                 }
             }
-        }.apply {
-            componentStateChanged("chat.panel.new", this) { b, d -> b.text = d }
         }
 
         return Wrapper(button).also {

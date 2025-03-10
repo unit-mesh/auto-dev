@@ -60,7 +60,7 @@
                     doNotActivateOnStart="true"
                     anchor="right"
                     secondary="false"
-                    canCloseContents="true"
+                    canCloseContents="false"
                     icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                     factoryClass="cc.unitmesh.devti.gui.AutoDevToolWindowFactory"/>
 
@@ -368,7 +368,6 @@
 
         <group id="AutoDev.ToolWindow.Chat.TitleActions">
             <action id="AutoDev.ToolWindow.NewChatAction" class="cc.unitmesh.devti.gui.toolbar.NewChatAction"/>
-            <!--            <action id="AutoDev.ToolWindow.NewSketchAction" class="cc.unitmesh.devti.gui.toolbar.NewSketchAction"/>-->
         </group>
 
         <group id="AutoDev.ToolWindow.Message.Toolbar.Assistant">
