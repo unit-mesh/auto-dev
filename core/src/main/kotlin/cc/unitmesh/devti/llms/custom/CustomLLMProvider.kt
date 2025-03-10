@@ -1,5 +1,7 @@
 package cc.unitmesh.devti.llms.custom
 
+import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.llm2.model.LlmConfig
 import cc.unitmesh.devti.llm2.model.ModelType
@@ -91,7 +93,15 @@ class CustomLLMProvider(val project: Project, var llmConfig: LlmConfig = LlmConf
         logger.info("Requesting form: $requestContent $body")
 
         client = client.newBuilder().readTimeout(timeout).build()
-        val call = client.newCall(builder.url(url).post(body).build())
+        val call = try {
+            client.newCall(builder.url(url).post(body).build())
+        } catch (e: IllegalArgumentException) {
+            if (e.message?.contains("Expected URL scheme") == true) {
+                AutoDevNotifications.error(project, AutoDevBundle.message("llm.error.url.scheme"))
+            }
+
+            throw e
+        }
 
         if (!keepHistory || project.coderSetting.state.noChatHistory) {
             clearMessage()

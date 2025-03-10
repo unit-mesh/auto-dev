@@ -317,7 +317,7 @@ class AutoDevInputSection(private val project: Project, val disposable: Disposab
     }
 
     override fun getPreferredSize(): Dimension {
-        val result = super.getPreferredSize()
+        val result = com.intellij.openapi.application.runReadAction { super.getPreferredSize() }
         result.height = max(min(result.height, maxHeight), minimumSize.height)
         return result
     }
