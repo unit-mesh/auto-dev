@@ -24,7 +24,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.IdeFocusManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.temporary.inlay.InlayPanel
+import cc.unitmesh.devti.inlay.InlayPanel
 import java.awt.event.ActionEvent
 import javax.swing.AbstractAction
 

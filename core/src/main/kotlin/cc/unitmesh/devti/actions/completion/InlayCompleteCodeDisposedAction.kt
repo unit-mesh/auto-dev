@@ -4,8 +4,8 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.command.CommandProcessor
-import com.intellij.temporary.inlay.codecomplete.InlayDisposeContext
-import com.intellij.temporary.inlay.codecomplete.LLMInlayManager
+import cc.unitmesh.devti.inlay.codecomplete.InlayDisposeContext
+import cc.unitmesh.devti.inlay.codecomplete.LLMInlayManager
 
 /**
  * A quick insight action is an action that can be triggered by a user,

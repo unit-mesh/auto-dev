@@ -1,4 +1,4 @@
-package com.intellij.temporary.inlay.codecomplete.presentation
+package cc.unitmesh.devti.inlay.codecomplete.presentation
 
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.actions.EditorActionUtil

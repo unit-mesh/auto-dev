@@ -1,4 +1,4 @@
-package com.intellij.temporary.inlay.codecomplete
+package cc.unitmesh.devti.inlay.codecomplete
 
 import cc.unitmesh.devti.inlay.TypeOverHandler
 import com.intellij.openapi.command.CommandProcessor

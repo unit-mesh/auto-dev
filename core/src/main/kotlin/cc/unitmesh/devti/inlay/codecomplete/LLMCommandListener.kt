@@ -1,4 +1,4 @@
-package com.intellij.temporary.inlay.codecomplete
+package cc.unitmesh.devti.inlay.codecomplete
 
 import com.intellij.openapi.command.CommandEvent
 import com.intellij.openapi.command.CommandListener

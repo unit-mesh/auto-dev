@@ -1,4 +1,4 @@
-package com.intellij.temporary.inlay.codecomplete
+package cc.unitmesh.devti.inlay.codecomplete
 
 enum class InlayDisposeContext {
     UserAction,

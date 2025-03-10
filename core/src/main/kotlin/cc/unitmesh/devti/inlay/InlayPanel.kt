@@ -1,4 +1,4 @@
-package com.intellij.temporary.inlay
+package cc.unitmesh.devti.inlay
 
 import cc.unitmesh.devti.gui.quick.QuickPromptField
 import com.intellij.openapi.Disposable
@@ -7,7 +7,7 @@ import com.intellij.openapi.editor.InlayProperties
 import com.intellij.openapi.editor.event.VisibleAreaListener
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.rd.paint2DLine
-import com.intellij.temporary.inlay.InlayLayoutManager.Companion.getXOffsetPosition
+import cc.unitmesh.devti.inlay.InlayLayoutManager.Companion.getXOffsetPosition
 import com.intellij.ui.JBColor
 import com.intellij.ui.paint.LinePainter2D
 import com.intellij.util.ui.JBPoint
@@ -71,7 +71,7 @@ open class InlayPanel<T : JComponent?>(var component: T) : JPanel() {
                 val xOffsetPosition = dimension.width + getXOffsetPosition(inlay)
                 val insets = component!!.getInsets()
 
-                return Dimension(xOffsetPosition, dimension.height + insets.height)
+                return Dimension(xOffsetPosition, dimension.height + (insets.top + insets.bottom))
             }
 
             override fun minimumLayoutSize(parent: Container?): Dimension {
@@ -81,7 +81,7 @@ open class InlayPanel<T : JComponent?>(var component: T) : JPanel() {
                 val xOffsetPosition = size.width + getXOffsetPosition(inlay)
                 val insets = component!!.getInsets()
 
-                return Dimension(xOffsetPosition, size.height + insets.height)
+                return Dimension(xOffsetPosition, size.height + (insets.top + insets.bottom))
             }
 
             override fun layoutContainer(parent: Container?) {

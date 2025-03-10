@@ -1,4 +1,4 @@
-package com.intellij.temporary.inlay
+package cc.unitmesh.devti.inlay
 
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.Inlay

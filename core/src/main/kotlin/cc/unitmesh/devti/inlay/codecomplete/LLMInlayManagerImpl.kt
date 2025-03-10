@@ -1,4 +1,4 @@
-package com.intellij.temporary.inlay.codecomplete
+package cc.unitmesh.devti.inlay.codecomplete
 
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionRequest
 import cc.unitmesh.devti.intentions.action.task.CodeCompletionTask
@@ -21,7 +21,7 @@ import com.intellij.openapi.util.KeyWithDefaultValue
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiUtilBase
-import com.intellij.temporary.inlay.codecomplete.presentation.LLMInlayRenderer
+import cc.unitmesh.devti.inlay.codecomplete.presentation.LLMInlayRenderer
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import com.intellij.util.concurrency.annotations.RequiresEdt
 
