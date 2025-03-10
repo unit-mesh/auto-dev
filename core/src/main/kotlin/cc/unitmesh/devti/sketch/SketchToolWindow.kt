@@ -228,7 +228,7 @@ open class SketchToolWindow(
         processListeners.forEach { it.onBefore() }
     }
 
-    fun AfterRun() {
+    fun afterRun() {
         processListeners.forEach { it.onAfter() }
     }
 
@@ -359,7 +359,7 @@ open class SketchToolWindow(
         progressBar.isVisible = false
         scrollToBottom()
 
-        AfterRun()
+        afterRun()
 
         if (AutoSketchMode.getInstance(project).isEnable && !isInterrupted) {
             AutoSketchMode.getInstance(project).start(text, this@SketchToolWindow.inputListener)
