@@ -13,7 +13,6 @@ import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputTrigger
 import cc.unitmesh.devti.gui.chat.view.FrontendCodeView
 import cc.unitmesh.devti.gui.chat.view.MessageView
-import cc.unitmesh.devti.gui.chat.welcome.WelcomePanel
 import cc.unitmesh.devti.gui.toolbar.NewChatAction
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.provider.devins.LanguageProcessor
@@ -71,21 +70,12 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
             }
         }
 
-        myList.add(WelcomePanel())
-
-        myTitle.foreground = JBColor.namedColor("Label.infoForeground", JBColor(Gray.x80, Gray.x8C))
-        myTitle.font = JBFont.label()
-
-        myList.isOpaque = true
-        myList.background = UIUtil.getListBackground()
-
         myScrollPane = JBScrollPane(
             myList,
             ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
             ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
         )
         myScrollPane.verticalScrollBar.autoscrolls = true
-        myScrollPane.background = UIUtil.getListBackground()
 
         progressBar = JProgressBar()
 
@@ -148,9 +138,9 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
             row { cell(progressBar).fullWidth() }
             row { cell(actionLink).alignRight() }
             row {
-                border = JBUI.Borders.empty(8)
                 cell(inputSection).fullWidth()
             }
+
         }.also {
             it.border = JBUI.Borders.empty()
             it.background = PanelBackground
@@ -304,7 +294,6 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
         suggestionPanel.removeAll()
         chatCodingService.clearSession()
         myList.removeAll()
-        myList.add(WelcomePanel())
         this.hiddenProgressBar()
         this.resetAgent()
         updateUI()
