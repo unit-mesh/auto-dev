@@ -9,13 +9,11 @@ import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.presentationTex
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.temporary.error.ErrorDescription
-import com.intellij.temporary.error.ErrorMessageProcessor
 import com.intellij.temporary.error.ErrorPromptBuilder
 
 
 class FixThisAction : ChatBaseAction() {
-    init{
+    init {
         presentationText("settings.autodev.others.fixThis", templatePresentation)
     }
 
@@ -26,22 +24,14 @@ class FixThisAction : ChatBaseAction() {
         val project = event.project ?: return
         val prompt: TextTemplatePrompt?
 
-        val description: ErrorDescription? = ErrorMessageProcessor.getErrorDescription(event)
-        if (description == null) {
-            val editor = event.getData(CommonDataKeys.EDITOR) ?: return
-            val text = editor.selectionModel.selectedText ?: return
+        val editor = event.getData(CommonDataKeys.EDITOR) ?: return
+        val selectionModel = editor.selectionModel
+        val text = selectionModel.selectedText ?: return
 
-            prompt = ErrorPromptBuilder.buildDisplayPrompt(text, text, "Fix this")
-        } else {
-            prompt = ErrorMessageProcessor.extracted(project, description)
-            if (prompt == null) {
-                logger.error("Prompt is null, description: $description")
-                return
-            }
-        }
+        prompt = ErrorPromptBuilder.buildDisplayPrompt(text, text, "Fix this")
 
         if (prompt.displayText.isBlank() || prompt.requestText.isBlank()) {
-            logger.error("Prompt is null, description: $description")
+            logger.error("Prompt is null, description: $text")
             return
         }
 

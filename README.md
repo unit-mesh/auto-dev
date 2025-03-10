@@ -163,34 +163,15 @@ Welcome to add your company here.
 
 ## License
 
-Regarding the matter discussed in the LICENSE issue at the project's outset, we want to address the complexity of
-JetBrain plugin development. In the process, we referenced certain code and API designs from the JetBrains Community
-version and the JetBrains AI Assistant plugin. JetBrains understandably reserves the right to view this as potential
-infringement on their intellectual property.
+Inspired by:
 
-Therefore, as of April 2024, AutoDev is no longer available on the JetBrains Plugin Marketplace. However, for older
-versions' AutoDev, you can access downloads from our Releases page.
-
-Additionally, we extend a warm invitation to participate in the development of the VSCode version. Your contributions
-are greatly appreciated.
-
-- ChatUI based
-  on: [https://github.com/Cspeisman/chatgpt-intellij-plugin](https://github.com/Cspeisman/chatgpt-intellij-plugin)
 - Multiple target inspired
   by: [https://github.com/intellij-rust/intellij-rust](https://github.com/intellij-rust/intellij-rust)
-- SimilarFile inspired by: JetBrains and GitHub Copilot
+- SimilarFile inspired by: GitHub Copilot
 - DevIn Language refs
   on [JetBrains' Markdown Util](https://github.com/JetBrains/intellij-community/tree/master/platform/markdown-utils),
   which is licensed under the Apache 2.0 license.
 - Stream Diff based on [Continue Dev](https://github.com/continuedev/continue) under the Apache 2.0 license.
 - Ripgrep inspired by [Cline](https://github.com/cline/cline) under the Apache 2.0 license.
-
-**Known License issues**: JetBrain plugin development is no walk in the park! Oops, we cheekily borrowed some code from
-the JetBrains Community version and the super cool JetBrains AI Assistant plugin in our codebase.
-But fret not, we are working our magic to clean it up diligently! 🧙‍♂️✨.
-
-Those codes will be removed in the future, you
-can check it in `src/main/kotlin/com/intellij/temporary`, if you want to use this plugin in your company,
-please remove those codes to avoid any legal issues.
 
 This code is distributed under the MPL 2.0 license. See `LICENSE` in this directory.
