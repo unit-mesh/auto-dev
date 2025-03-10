@@ -29,7 +29,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.NullableComponent
 import com.intellij.openapi.ui.SimpleToolWindowPanel
-import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.dsl.builder.Cell
@@ -41,6 +40,9 @@ import kotlinx.coroutines.launch
 import org.jetbrains.annotations.NonNls
 import java.awt.BorderLayout
 import java.awt.Dimension
+import java.awt.GradientPaint
+import java.awt.Graphics
+import java.awt.Graphics2D
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 import java.awt.event.KeyAdapter
@@ -62,7 +64,8 @@ open class SketchToolWindow(
 ) : SimpleToolWindowPanel(true, true), NullableComponent, Disposable {
     open val chatCodingService = ChatCodingService(chatActionType, project)
     open val inputListener: SketchInputListener = SketchInputListener(project, chatCodingService, this)
-    private var progressBar: CustomProgressBar = CustomProgressBar(this)
+    private var progressBar: JProgressBar = JProgressBar()
+
     private var thinkingHighlight: CodeHighlightSketch =
         CodeHighlightSketch(project, "<Thinking />", PlainTextLanguage.INSTANCE)
     private var thinkingPanel = panel {
@@ -207,8 +210,7 @@ open class SketchToolWindow(
     fun onStart() {
         beforeRun()
         initializePreAllocatedBlocks(project)
-        progressBar.isIndeterminate = true
-        progressBar.isVisible = !showInput
+        progressBar.isVisible = true
     }
 
     fun hiddenProgressBar() {
@@ -248,6 +250,8 @@ open class SketchToolWindow(
     }
 
     fun addRequestPrompt(text: String) {
+        progressBar.isIndeterminate = true
+
         runInEdt {
             historyPanel.add(createSingleTextView(text, language = "DevIn"))
             this.revalidate()
@@ -419,36 +423,6 @@ open class SketchToolWindow(
         runInEdt {
             thinkingPanel.isVisible = false
         }
-    }
-}
-
-class CustomProgressBar(private val view: SketchToolWindow) : JPanel(BorderLayout()) {
-    private val progressBar: JProgressBar = JProgressBar()
-
-    var isIndeterminate = progressBar.isIndeterminate
-        set(value) {
-            progressBar.isIndeterminate = value
-            field = value
-        }
-
-    private val cancelLabel = JBLabel(AllIcons.Actions.CloseHovered)
-
-    init {
-        cancelLabel.setBorder(JBUI.Borders.empty(0, 5))
-        cancelLabel.addMouseListener(object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent?) {
-                view.cancel("This progressBar is canceled")
-            }
-        })
-
-        add(progressBar, BorderLayout.CENTER)
-        add(cancelLabel, BorderLayout.EAST)
-    }
-
-    override fun setVisible(visible: Boolean) {
-        super.setVisible(visible)
-        progressBar.isVisible = visible
-        cancelLabel.isVisible = visible
     }
 }
 

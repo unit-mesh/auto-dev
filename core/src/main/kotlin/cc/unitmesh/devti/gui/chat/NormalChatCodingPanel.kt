@@ -53,7 +53,6 @@ import javax.swing.*
 class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, val disposable: Disposable?) :
     SimpleToolWindowPanel(true, true), NullableComponent {
     private var progressBar: JProgressBar
-    private val myTitle = JBLabel("Conversation")
     private val myList = JPanel(VerticalLayout(JBUI.scale(10)))
     private var inputSection: AutoDevInputSection
     private val focusMouseListener: MouseAdapter
@@ -87,7 +86,9 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
             }
         }
 
-        inputSection = AutoDevInputSection(chatCodingService.project, disposable)
+        inputSection = AutoDevInputSection(chatCodingService.project, disposable).apply {
+            border = JBUI.Borders.empty(8)
+        }
         inputSection.addListener(object : AutoDevInputListener {
             override fun onStop(component: AutoDevInputSection) {
                 chatCodingService.stop()
