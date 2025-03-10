@@ -22,7 +22,6 @@ class AutoSqlFlow(
         val stepOnePrompt = generateStepOnePrompt(genSqlContext, actions)
 
         panel.addMessage(stepOnePrompt, true, stepOnePrompt)
-        panel.addMessage(AutoDevBundle.message("autodev.loading"))
 
         return runBlocking {
             val prompt = llm.stream(stepOnePrompt, "")
@@ -35,7 +34,6 @@ class AutoSqlFlow(
         val stepTwoPrompt = generateStepTwoPrompt(genSqlContext, actions, tableNames)
 
         panel.addMessage(stepTwoPrompt, true, stepTwoPrompt)
-        panel.addMessage(AutoDevBundle.message("autodev.loading"))
 
         return runBlocking {
             val prompt = llm.stream(stepTwoPrompt, "")
@@ -77,7 +75,6 @@ class AutoSqlFlow(
 
     override fun fix(errors: String): String {
         panel.addMessage(errors, true, errors)
-        panel.addMessage(AutoDevBundle.message("autodev.loading"))
 
         return runBlocking {
             val prompt = llm.stream(errors, "")

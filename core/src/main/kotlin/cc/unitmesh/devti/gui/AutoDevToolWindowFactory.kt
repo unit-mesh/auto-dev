@@ -85,6 +85,7 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
             val content =
                 contentManager.factory.createContent(contentPanel, label, false)
             contentManager.addContent(content)
+
             contentManager.setSelectedContent(content)
 
             return contentPanel

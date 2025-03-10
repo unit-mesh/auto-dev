@@ -82,7 +82,6 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         }
 
         ui.addMessage(requestPrompt, true, displayPrompt)
-        ui.addMessage(AutoDevBundle.message("autodev.loading"))
 
         ApplicationManager.getApplication().executeOnPooledThread {
             val response = this.makeChatBotRequest(requestPrompt, keepHistory, chatHistory)
@@ -106,7 +105,6 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         val systemPrompt = messages.filter { it.role == LlmMsg.ChatRole.System }.joinToString("\n") { it.content }
 
         ui.addMessage(requestPrompt, true, requestPrompt)
-        ui.addMessage(AutoDevBundle.message("autodev.loading"))
 
         ApplicationManager.getApplication().executeOnPooledThread {
             val response = llmProvider.stream(requestPrompt, systemPrompt)

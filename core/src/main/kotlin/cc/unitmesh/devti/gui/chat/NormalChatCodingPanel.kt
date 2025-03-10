@@ -3,8 +3,6 @@ package cc.unitmesh.devti.gui.chat
 import cc.unitmesh.cf.core.llms.LlmMsg
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
-import cc.unitmesh.devti.agent.view.WebBlock
-import cc.unitmesh.devti.agent.view.WebBlockView
 import cc.unitmesh.devti.alignRight
 import cc.unitmesh.devti.fullHeight
 import cc.unitmesh.devti.fullWidth
@@ -14,7 +12,6 @@ import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputListener
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputTrigger
-import cc.unitmesh.devti.gui.chat.view.FrontendCodeView
 import cc.unitmesh.devti.gui.chat.view.MessageView
 import cc.unitmesh.devti.gui.toolbar.NewChatAction
 import cc.unitmesh.devti.provider.TextContextPrompter
@@ -22,16 +19,13 @@ import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.componentStateChanged
 import cc.unitmesh.devti.sketch.createActionButton
-import com.intellij.lang.html.HTMLLanguage
+import cc.unitmesh.devti.sketch.ui.code.HtmlHighlightSketch
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.NullableComponent
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.IdeFocusManager
-import com.intellij.temporary.gui.block.CodeBlock
-import com.intellij.temporary.gui.block.CodeBlockView
-import com.intellij.temporary.gui.block.SimpleMessage
 import com.intellij.temporary.gui.block.whenDisposed
 import com.intellij.ui.JBColor.PanelBackground
 import com.intellij.ui.components.JBScrollPane
@@ -187,22 +181,12 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
         val role = if (isMe) ChatRole.User else ChatRole.Assistant
         val displayText = displayPrompt.ifEmpty { message }
 
-        val messageView = MessageView(message, role, displayText)
-
+        val messageView = MessageView(chatCodingService.project, message, role, displayText)
         myList.add(messageView)
-        updateLayout()
         scrollToBottom()
         progressBar.isIndeterminate = true
         updateUI()
         return messageView
-    }
-
-    private fun updateLayout() {
-        val layout = myList.layout
-        for (i in 0 until myList.componentCount) {
-            layout.removeLayoutComponent(myList.getComponent(i))
-            layout.addLayoutComponent(null, myList.getComponent(i))
-        }
     }
 
     fun getHistoryMessages(): List<LlmMsg.ChatMessage> {
@@ -214,22 +198,16 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
                 messages.add(LlmMsg.ChatMessage(role, component.message, null))
             }
         }
+
         return messages
     }
 
     suspend fun updateMessage(content: Flow<String>): String {
-        if (myList.componentCount > 0) {
-            myList.remove(myList.componentCount - 1)
-        }
-
         showProgressBar()
-
         val result = updateMessageInUi(content)
-
         progressBar.isIndeterminate = false
         hiddenProgressBar()
         updateUI()
-
         return result
     }
 
@@ -263,8 +241,8 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
         postAction(text)
     }
 
-    suspend fun updateMessageInUi(content: Flow<String>): String {
-        val messageView = MessageView("", ChatRole.Assistant, "")
+    private suspend fun updateMessageInUi(content: Flow<String>): String {
+        val messageView = MessageView(chatCodingService.project, "", ChatRole.Assistant, "")
         myList.add(messageView)
         val startTime = System.currentTimeMillis()
         var text = ""
@@ -281,7 +259,7 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
                     messageView.updateContent(text)
                 }
             }
-        // 处理剩余的缓冲内容
+
         if (buffer.isNotEmpty()) {
             text += buffer.joinToString("")
             messageView.updateContent(text)
@@ -352,13 +330,7 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
     }
 
     override fun appendWebView(content: String, project: Project) {
-        val msg = SimpleMessage(content, content, ChatRole.System)
-        val webBlock = WebBlock(msg)
-        val blockView = WebBlockView(webBlock, project)
-        val codeView = CodeBlockView(CodeBlock(msg, language = HTMLLanguage.INSTANCE), project, {})
-
-        myList.add(FrontendCodeView(blockView, codeView))
-
+        myList.add(HtmlHighlightSketch(project, content).getComponent())
         updateUI()
     }
 

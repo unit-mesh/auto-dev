@@ -16,7 +16,6 @@ class AutoPageFlow(val context: AutoPageContext, val panel: NormalChatCodingPane
         val stepOnePrompt = generateStepOnePrompt(context)
 
         panel.addMessage(stepOnePrompt, true, stepOnePrompt)
-        panel.addMessage(AutoDevBundle.message("autodev.loading"))
 
         return runBlocking {
             val prompt = llm.stream(stepOnePrompt, "")
@@ -40,7 +39,6 @@ class AutoPageFlow(val context: AutoPageContext, val panel: NormalChatCodingPane
         val stepTwoPrompt = generateStepTwoPrompt(componentList)
 
         panel.addMessage(stepTwoPrompt, true, stepTwoPrompt)
-        panel.addMessage(AutoDevBundle.message("autodev.loading"))
 
         return runBlocking {
             val prompt = llm.stream(stepTwoPrompt, "")

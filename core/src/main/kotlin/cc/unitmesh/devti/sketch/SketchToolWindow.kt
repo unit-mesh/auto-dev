@@ -5,6 +5,7 @@ import cc.unitmesh.devti.alignRight
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
+import cc.unitmesh.devti.gui.chat.view.MessageView
 import cc.unitmesh.devti.gui.toolbar.NewSketchAction
 import cc.unitmesh.devti.inline.AutoDevInlineChatService
 import cc.unitmesh.devti.inline.fullHeight
@@ -153,7 +154,7 @@ open class SketchToolWindow(
             override fun keyPressed(e: KeyEvent) {
                 if (e.keyCode == KeyEvent.VK_ESCAPE) {
                     if (editor != null) {
-                        AutoDevInlineChatService.getInstance().closeInlineChat(editor)
+                        AutoDevInlineChatService.getInstance().closeInlineChat(editor!!)
                     }
                 }
             }
@@ -276,20 +277,8 @@ open class SketchToolWindow(
         }
     }
 
-    private fun createSingleTextView(text: String, language: String = "markdown"): DialogPanel {
-        val codeBlockViewer = CodeHighlightSketch(project, text, CodeFence.findLanguage(language)).apply {
-            initEditor(text)
-        }
-
-        codeBlockViewer.editorFragment!!.setCollapsed(true)
-        codeBlockViewer.editorFragment!!.updateExpandCollapseLabel()
-
-        val panel = panel {
-            row {
-                cell(codeBlockViewer).fullWidth()
-            }
-        }
-        return panel
+    fun createSingleTextView(text: String, language: String = "markdown"): DialogPanel {
+        return MessageView.createSingleTextView(project, text, language)
     }
 
     fun onUpdate(text: String) {
