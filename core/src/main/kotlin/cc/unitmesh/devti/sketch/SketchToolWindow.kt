@@ -59,12 +59,12 @@ open class SketchToolWindow(
     val editor: Editor?,
     private val showInput: Boolean = false,
     chatActionType: ChatActionType = ChatActionType.SKETCH
-) :
-    SimpleToolWindowPanel(true, true), NullableComponent, Disposable {
+) : SimpleToolWindowPanel(true, true), NullableComponent, Disposable {
     open val chatCodingService = ChatCodingService(chatActionType, project)
     open val inputListener: SketchInputListener = SketchInputListener(project, chatCodingService, this)
     private var progressBar: CustomProgressBar = CustomProgressBar(this)
-    private var thinkingHighlight: CodeHighlightSketch = CodeHighlightSketch(project, "<Thinking />", PlainTextLanguage.INSTANCE)
+    private var thinkingHighlight: CodeHighlightSketch =
+        CodeHighlightSketch(project, "<Thinking />", PlainTextLanguage.INSTANCE)
     private var thinkingPanel = panel {
         row {
             cell(thinkingHighlight).fullWidth()

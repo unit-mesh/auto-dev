@@ -33,6 +33,7 @@ import com.intellij.temporary.gui.block.SimpleMessage
 import com.intellij.temporary.gui.block.whenDisposed
 import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
+import com.intellij.ui.JBColor.PanelBackground
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
@@ -152,6 +153,7 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
             }
         }.also {
             it.border = JBUI.Borders.empty()
+            it.background = PanelBackground
         }
 
         setContent(panelContent)
