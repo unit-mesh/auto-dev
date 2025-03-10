@@ -1,8 +1,8 @@
 package cc.unitmesh.devti.gui.quick
 
 import com.intellij.ide.KeyboardAwareFocusOwner
-import com.intellij.temporary.inlay.minimumWidth
 import com.intellij.ui.scale.JBUIScale
+import com.intellij.ui.util.minimumWidth
 import java.awt.event.KeyEvent
 import javax.swing.JTextField
 import javax.swing.KeyStroke
