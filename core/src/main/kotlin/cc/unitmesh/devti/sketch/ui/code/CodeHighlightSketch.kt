@@ -9,6 +9,7 @@ import cc.unitmesh.devti.provider.RunService
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import cc.unitmesh.devti.util.parser.CodeFence
+import com.intellij.icons.AllIcons
 import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.lang.Language
 import com.intellij.openapi.Disposable
@@ -348,16 +349,14 @@ open class CodeHighlightSketch(
  * Add Write Command Action
  */
 private fun CodeHighlightSketch.processWriteCommand(currentText: String) {
-    val button = JButton("Write to file").apply {
-        preferredSize = JBUI.size(100, 30)
+    val button = JButton("Write to file", AllIcons.Actions.MenuSaveall).apply {
+        preferredSize = JBUI.size(120, 30)
 
         addActionListener {
-            val file = ScratchRootType.getInstance().createScratchFile(
-                project,
-                "DevIn-${System.currentTimeMillis()}.devin",
-                Language.findLanguageByID("DevIn"),
-                currentText
-            )
+            val newFileName = "DevIn-${System.currentTimeMillis()}.devin"
+            val language = Language.findLanguageByID("DevIn")
+            val file = ScratchRootType.getInstance()
+                .createScratchFile(project, newFileName, language, currentText)
 
             if (file == null) {
                 return@addActionListener
