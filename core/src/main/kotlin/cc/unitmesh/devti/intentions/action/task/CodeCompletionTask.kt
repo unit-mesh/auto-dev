@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.intentions.action.task
 
 import cc.unitmesh.devti.AutoDevBundle
-import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
+import cc.unitmesh.devti.inlay.chunks.SimilarChunksWithPaths
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.intentions.action.CodeCompletionBaseIntention

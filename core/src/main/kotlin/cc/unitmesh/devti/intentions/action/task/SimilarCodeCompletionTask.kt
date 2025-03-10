@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.intentions.action.task
 
 import cc.unitmesh.devti.settings.AutoDevSettingsState
-import com.intellij.temporary.similar.chunks.SimilarChunksWithPaths
+import cc.unitmesh.devti.inlay.chunks.SimilarChunksWithPaths
 import com.intellij.lang.LanguageCommenters
 
 /**

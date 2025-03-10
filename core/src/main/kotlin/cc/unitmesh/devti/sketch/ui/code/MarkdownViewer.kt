@@ -2,7 +2,6 @@ package cc.unitmesh.devti.sketch.ui.code
 
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.util.text.StringUtil
-import com.intellij.temporary.gui.block.LineSpacingExtension
 import com.intellij.ui.BrowserHyperlinkListener
 import com.intellij.ui.ColorUtil
 import com.intellij.util.ui.HTMLEditorKitBuilder
@@ -14,10 +13,7 @@ object MarkdownViewer {
     fun createBaseComponent(): JEditorPane {
         val jEditorPane = JEditorPane()
         jEditorPane.setContentType("text/html")
-        val htmlEditorKit = HTMLEditorKitBuilder()
-            .withViewFactoryExtensions(
-                LineSpacingExtension(0.2f)
-            ).build()
+        val htmlEditorKit = HTMLEditorKitBuilder().build()
 
         val backgroundColor = UIUtil.getPanelBackground()
         val schemeForCurrentUITheme = EditorColorsManager.getInstance().schemeForCurrentUITheme
