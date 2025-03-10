@@ -2,6 +2,7 @@
 package com.intellij.temporary.gui.block
 
 import cc.unitmesh.devti.gui.chat.message.ChatRole
+import cc.unitmesh.devti.sketch.ui.code.MarkdownViewer
 import cc.unitmesh.devti.util.parser.convertMarkdownToHtml
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.util.text.StringUtil
@@ -64,33 +65,7 @@ class TextBlockView(private val block: MessageBlock) : MessageBlockView {
     }
 
     companion object {
-        fun createBaseComponent(): JEditorPane {
-            val jEditorPane = JEditorPane()
-            jEditorPane.setContentType("text/html")
-            val htmlEditorKit = HTMLEditorKitBuilder().withViewFactoryExtensions(
-                LineSpacingExtension(0.2f)
-            ).build()
-            htmlEditorKit.getStyleSheet().addRule("p {margin-top: 1px}")
-
-            jEditorPane.also {
-                it.editorKit = htmlEditorKit
-                it.isEditable = false
-                it.putClientProperty("JEditorPane.honorDisplayProperties", true)
-                it.isOpaque = false
-                it.border = null
-                it.putClientProperty(
-                    "AccessibleName",
-                    StringUtil.unescapeXmlEntities(StringUtil.stripHtml("", " "))
-                )
-                it.text = ""
-            }
-
-            if (jEditorPane.caret != null) {
-                jEditorPane.setCaretPosition(0)
-                (jEditorPane.caret as? DefaultCaret)?.updatePolicy = 1
-            }
-            return jEditorPane
-        }
+        fun createBaseComponent(): JEditorPane = MarkdownViewer.createBaseComponent()
     }
 }
 

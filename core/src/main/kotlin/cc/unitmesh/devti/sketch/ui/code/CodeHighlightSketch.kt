@@ -38,7 +38,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.intellij.temporary.gui.block.whenDisposed
 import com.intellij.testFramework.LightVirtualFile
-import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.intellij.util.concurrency.annotations.RequiresReadLock
 import com.intellij.util.ui.JBEmptyBorder
