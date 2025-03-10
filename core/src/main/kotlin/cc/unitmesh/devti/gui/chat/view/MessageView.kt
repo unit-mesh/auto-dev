@@ -25,10 +25,7 @@ import javax.swing.JPanel
 
 class MessageView(val project: Project, val message: String, val role: ChatRole, private var displayText: String) :
     JBPanel<MessageView>() {
-    private var myList = JPanel(VerticalLayout(JBUI.scale(0))).apply {
-//        this.isOpaque = true
-    }
-
+    private var myList = JPanel(VerticalLayout(JBUI.scale(0)))
     private val blockViews: MutableList<LangSketch> = mutableListOf()
     private fun initializePreAllocatedBlocks(project: Project) {
         repeat(32) {
@@ -61,10 +58,7 @@ class MessageView(val project: Project, val message: String, val role: ChatRole,
         val centerPanel = JPanel(VerticalLayout(JBUI.scale(8)))
         centerPanel.add(authorLabel)
 
-        if (role == ChatRole.System) {
-            updateContent(displayText)
-            onFinish(displayText)
-        } else {
+        if (role == ChatRole.User) {
             runInEdt {
                 myList.add(createSingleTextView(project, message))
             }
