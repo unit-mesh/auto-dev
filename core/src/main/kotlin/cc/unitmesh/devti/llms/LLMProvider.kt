@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.llms
 
 import cc.unitmesh.devti.gui.chat.message.ChatRole
+import cc.unitmesh.devti.llms.custom.Message
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 
@@ -14,6 +15,8 @@ interface LLMProvider {
      * Clear all messages
      */
     fun clearMessage() {}
+
+    fun getAllMessages() = emptyList<Message>()
 
     fun appendLocalMessage(msg: String, role: ChatRole) {}
 }

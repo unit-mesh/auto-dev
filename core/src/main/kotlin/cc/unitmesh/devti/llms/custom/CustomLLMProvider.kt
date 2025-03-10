@@ -34,6 +34,10 @@ class CustomLLMProvider(val project: Project, var llmConfig: LlmConfig = LlmConf
 
     override fun clearMessage() = messages.clear()
 
+    override fun getAllMessages(): List<Message> {
+        return messages
+    }
+
     override fun appendLocalMessage(msg: String, role: ChatRole) {
         if (msg.isEmpty()) return
         messages += Message(role.roleName(), msg)

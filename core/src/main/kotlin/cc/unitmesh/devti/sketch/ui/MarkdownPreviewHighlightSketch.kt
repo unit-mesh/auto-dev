@@ -12,9 +12,11 @@ import java.awt.event.MouseEvent
 import javax.swing.JComponent
 import javax.swing.event.HyperlinkEvent
 
-class MarkdownPreviewHighlightSketch(val project: Project, var text: String) : ExtensionLangSketch {
+class MarkdownPreviewHighlightSketch(val project: Project, val text: String) : ExtensionLangSketch {
     override fun getExtensionName(): String = "Markdown Highlight"
-    override fun getViewText(): String = text
+    override fun getViewText(): String = context
+
+    private var context = text
 
     private val editorPane = MarkdownViewer.createBaseComponent().apply {
         addHyperlinkListener {
@@ -42,7 +44,7 @@ class MarkdownPreviewHighlightSketch(val project: Project, var text: String) : E
         editorPane.text = convertMarkdownToHtml(text)
         editorPane.invalidate()
         editorPane.repaint()
-        this.text = text
+        this.context = text
     }
 
     override fun getComponent(): JComponent {

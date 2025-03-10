@@ -94,10 +94,7 @@ open class SketchToolWindow(
 
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent?) {
-                var allText =
-                    historyPanel.components.filterIsInstance<LangSketch>().joinToString("\n") { it.getViewText() }
-                allText += myList.components.filterIsInstance<LangSketch>().joinToString("\n") { it.getViewText() }
-
+                var allText = chatCodingService.getAllMessages().joinToString("\n") { it.content }
                 val selection = StringSelection(allText)
                 val clipboard = Toolkit.getDefaultToolkit().systemClipboard
                 clipboard.setContents(selection, null)
@@ -308,8 +305,7 @@ open class SketchToolWindow(
                             ?.create(project, codeFence.text)
                     }
 
-                    val isCanHtml =
-                        codeFence.language == PlainTextLanguage.INSTANCE || codeFence.language.displayName.lowercase() == "markdown"
+                    val isCanHtml = codeFence.language.displayName.lowercase() == "markdown"
                     if (isCanHtml && codeFence.isComplete && blockViews[index] !is ExtensionLangSketch) {
                         langSketch = MarkdownPreviewHighlightSketch(project, codeFence.text)
                     }

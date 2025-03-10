@@ -11,6 +11,7 @@ import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.message.ChatContext
 import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.llms.LlmFactory
+import cc.unitmesh.devti.llms.custom.Message
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runInEdt
@@ -21,7 +22,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 class ChatCodingService(var actionType: ChatActionType, val project: Project) {
-    private val llmProvider = LlmFactory.create(project)
+    private var llmProvider = LlmFactory.create(project)
     private val counitProcessor = project.service<CustomAgentChatProcessor>()
     private var currentJob: Job? = null
 
@@ -131,11 +132,16 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
     }
 
     fun clearSession() {
-        llmProvider.clearMessage()
+        // recreate session to make sure the history is cleared
+        llmProvider = LlmFactory.create(project)
     }
 
     fun request(systemPrompt: String, userPrompt: String, isFromSketch: Boolean = true): Flow<String> {
         /// is from sketch the first model should use Plan then use Act
         return llmProvider.stream(userPrompt, systemPrompt, keepHistory = true, isFromSketch)
+    }
+
+    fun getAllMessages(): List<Message> {
+        return llmProvider.getAllMessages()
     }
 }
