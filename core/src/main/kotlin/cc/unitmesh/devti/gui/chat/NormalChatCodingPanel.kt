@@ -15,6 +15,7 @@ import cc.unitmesh.devti.gui.chat.view.FrontendCodeView
 import cc.unitmesh.devti.gui.chat.view.MessageView
 import cc.unitmesh.devti.gui.toolbar.NewChatAction
 import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.provider.TextContextPrompter
 import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.componentStateChanged
@@ -33,12 +34,10 @@ import com.intellij.temporary.gui.block.whenDisposed
 import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
 import com.intellij.ui.JBColor.PanelBackground
-import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.dsl.builder.RightGap
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import kotlinx.coroutines.Dispatchers
@@ -105,18 +104,18 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
                     return
                 }
 
-                val context = ChatContext(null, "", "")
-
                 val postProcessors = LanguageProcessor.devin()
                 if (postProcessors != null) {
                     prompt = postProcessors.compile(chatCodingService.project, prompt)
                 }
 
                 chatCodingService.actionType = ChatActionType.CHAT
-                chatCodingService.handlePromptAndResponse(this@NormalChatCodingPanel, object : ContextPrompter() {
-                    override fun displayPrompt() = prompt
-                    override fun requestPrompt() = prompt
-                }, context, false)
+                chatCodingService.handlePromptAndResponse(
+                    this@NormalChatCodingPanel,
+                    TextContextPrompter(prompt),
+                    ChatContext(),
+                    false
+                )
             }
         })
 

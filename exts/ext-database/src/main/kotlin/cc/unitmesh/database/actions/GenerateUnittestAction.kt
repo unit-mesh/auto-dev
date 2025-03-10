@@ -4,7 +4,7 @@ import cc.unitmesh.database.actions.base.SqlMigrationContext
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
-import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.provider.TextContextPrompter
 import cc.unitmesh.devti.template.GENIUS_MIGRATION
 import cc.unitmesh.devti.template.TemplateRender
 import com.intellij.openapi.diagnostic.logger
@@ -37,15 +37,12 @@ class GenerateUnittestAction : ChatBaseIntention() {
             lang = file.language.displayName,
             sql = selectedText,
         )
-        val prompter = templateRender.renderTemplate(template)
+        val prompt = templateRender.renderTemplate(template)
 
-        logger.info("Prompt: $prompter")
+        logger.info("Prompt: $prompt")
 
         sendToChatWindow(project, getActionType()) { panel, service ->
-            service.handlePromptAndResponse(panel, object : ContextPrompter() {
-                override fun displayPrompt(): String = prompter
-                override fun requestPrompt(): String = prompter
-            }, null, true)
+            service.handlePromptAndResponse(panel, TextContextPrompter(prompt), null, true)
         }
     }
 }

@@ -6,13 +6,9 @@ import cc.unitmesh.devti.provider.context.ChatOrigin
 import kotlinx.coroutines.runBlocking
 
 class DefaultContextPrompter : ContextPrompter() {
-    override fun displayPrompt(): String {
-        return getPrompt()
-    }
+    override fun displayPrompt(): String = getPrompt()
 
-    override fun requestPrompt(): String {
-        return getPrompt()
-    }
+    override fun requestPrompt(): String = getPrompt()
 
     private fun getPrompt(): String {
         var additionContext: String

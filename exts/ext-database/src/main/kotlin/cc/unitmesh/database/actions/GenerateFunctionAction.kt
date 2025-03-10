@@ -4,7 +4,7 @@ import cc.unitmesh.database.actions.base.SqlMigrationContext
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.intentions.action.base.ChatBaseIntention
-import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.provider.TextContextPrompter
 import cc.unitmesh.devti.template.GENIUS_MIGRATION
 import cc.unitmesh.devti.template.TemplateRender
 import com.intellij.openapi.diagnostic.logger
@@ -25,9 +25,6 @@ class GenerateFunctionAction : ChatBaseIntention() {
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
         if (editor == null || file == null) return false
         val isOracle = file.language is OraDialect
-//        val selectedText = editor.selectionModel
-//        val element = file.findElementAt(selectedText.selectionStart)
-
         return isOracle
     }
 
@@ -42,15 +39,12 @@ class GenerateFunctionAction : ChatBaseIntention() {
             sql = selectedText,
         )
 
-        val prompter = templateRender.renderTemplate(template)
+        val prompt = templateRender.renderTemplate(template)
 
-        logger.info("Prompt: $prompter")
+        logger.info("Prompt: $prompt")
 
         sendToChatWindow(project, getActionType()) { panel, service ->
-            service.handlePromptAndResponse(panel, object : ContextPrompter() {
-                override fun displayPrompt(): String = prompter
-                override fun requestPrompt(): String = prompter
-            }, null, true)
+            service.handlePromptAndResponse(panel, TextContextPrompter(prompt), null, true)
         }
     }
 

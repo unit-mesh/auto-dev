@@ -3,7 +3,7 @@ package cc.unitmesh.devti.actions.run
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatWindow
-import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.provider.TextContextPrompter
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.execution.ui.RunContentManager
@@ -28,10 +28,7 @@ class RunPanelFixAction : AnAction() {
         val content = sb.toString()
         if (content.isNotEmpty()) {
             sendToChatWindow(project, getActionType()) { panel, service ->
-                service.handlePromptAndResponse(panel, object : ContextPrompter() {
-                    override fun displayPrompt(): String = content
-                    override fun requestPrompt(): String = content
-                }, null, true)
+                service.handlePromptAndResponse(panel, TextContextPrompter(content), null, true)
             }
         } else {
             AutoDevNotifications.error(project, "Cannot extract text from run panel.");

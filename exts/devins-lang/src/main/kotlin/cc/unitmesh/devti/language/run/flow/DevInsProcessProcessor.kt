@@ -7,20 +7,20 @@ import cc.unitmesh.devti.language.DevInLanguage
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.psi.DevInVisitor
-import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.provider.TextContextPrompter
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.psi.psiUtil.startOffset
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.util.PsiUtilBase
-import com.intellij.openapi.fileEditor.FileEditorManager
+import org.jetbrains.kotlin.psi.psiUtil.startOffset
 
 
 @Service(Service.Level.PROJECT)
@@ -101,10 +101,7 @@ class DevInsProcessProcessor(val project: Project) {
 
         if (result.hasError) {
             sendToChatWindow(project, ChatActionType.CHAT) { panel, service ->
-                service.handlePromptAndResponse(panel, object : ContextPrompter() {
-                    override fun displayPrompt(): String = result.output
-                    override fun requestPrompt(): String = result.output
-                }, null, true)
+                service.handlePromptAndResponse(panel, TextContextPrompter(result.output), null, true)
             }
         }
         else {

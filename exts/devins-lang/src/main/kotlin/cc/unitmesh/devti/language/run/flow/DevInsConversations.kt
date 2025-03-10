@@ -4,6 +4,7 @@ import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.language.compiler.DevInsCompiledResult
 import cc.unitmesh.devti.provider.ContextPrompter
+import cc.unitmesh.devti.provider.TextContextPrompter
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 
@@ -101,10 +102,7 @@ class DevInsConversationService(val project: Project) {
 
         val finalPrompt = prompt.toString()
         sendToChatWindow(project, ChatActionType.CHAT) { panel, service ->
-            service.handlePromptAndResponse(panel, object : ContextPrompter() {
-                override fun displayPrompt(): String = finalPrompt
-                override fun requestPrompt(): String = finalPrompt
-            }, null, true)
+            service.handlePromptAndResponse(panel, TextContextPrompter(finalPrompt), null, true)
         }
     }
 
