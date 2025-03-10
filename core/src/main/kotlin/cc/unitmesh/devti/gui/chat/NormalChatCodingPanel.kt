@@ -14,10 +14,12 @@ import cc.unitmesh.devti.gui.chat.ui.AutoDevInputTrigger
 import cc.unitmesh.devti.gui.chat.view.FrontendCodeView
 import cc.unitmesh.devti.gui.chat.view.MessageView
 import cc.unitmesh.devti.gui.chat.welcome.WelcomePanel
+import cc.unitmesh.devti.gui.toolbar.NewChatAction
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.componentStateChanged
+import cc.unitmesh.devti.sketch.createActionButton
 import com.intellij.lang.html.HTMLLanguage
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
@@ -49,8 +51,7 @@ import java.awt.event.MouseEvent
 import javax.swing.*
 
 class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, val disposable: Disposable?) :
-    SimpleToolWindowPanel(true, true),
-    NullableComponent {
+    SimpleToolWindowPanel(true, true), NullableComponent {
     private var progressBar: JProgressBar
     private val myTitle = JBLabel("Conversation")
     private val myList = JPanel(VerticalLayout(JBUI.scale(10)))
@@ -127,7 +128,20 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
             }
         })
 
+
+        val header = panel {
+            row {
+                createActionButton(NewChatAction()).alignRight()
+            }
+        }
+
+        header.border = JBUI.Borders.compound(
+            JBUI.Borders.customLine(UIUtil.getBoundsColor(), 0, 0, 1, 0),
+            JBUI.Borders.empty(0, 4)
+        )
+
         panelContent = panel {
+            row { cell(header).fullWidth() }
             row { cell(myScrollPane).fullWidth().fullHeight() }.resizableRow()
             row { cell(suggestionPanel).fullWidth() }
             row { cell(progressBar).fullWidth() }
@@ -136,6 +150,8 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
                 border = JBUI.Borders.empty(8)
                 cell(inputSection).fullWidth()
             }
+        }.also {
+            it.border = JBUI.Borders.empty()
         }
 
         setContent(panelContent)

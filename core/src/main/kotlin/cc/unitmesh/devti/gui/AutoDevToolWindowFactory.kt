@@ -1,12 +1,12 @@
 package cc.unitmesh.devti.gui
 
 import cc.unitmesh.devti.bridge.BridgeToolWindow
-import cc.unitmesh.devti.gui.chat.message.ChatActionType
-import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
+import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.inline.AutoDevInlineChatProvider
-import cc.unitmesh.devti.sketch.SketchToolWindow
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.componentStateChanged
+import cc.unitmesh.devti.sketch.SketchToolWindow
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
@@ -78,7 +78,6 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
             return getToolWindow(project)?.contentManager?.component?.components?.filterIsInstance<SketchToolWindow>()
                 ?.firstOrNull()
         }
-
 
         fun createNormalChatWindow(project: Project, toolWindow: ToolWindow) {
             val chatCodingService = ChatCodingService(ChatActionType.CHAT, project)

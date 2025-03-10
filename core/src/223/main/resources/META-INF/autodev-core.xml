@@ -60,7 +60,7 @@
                     doNotActivateOnStart="true"
                     anchor="right"
                     secondary="false"
-                    canCloseContents="false"
+                    canCloseContents="true"
                     icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                     factoryClass="cc.unitmesh.devti.gui.AutoDevToolWindowFactory"/>
 
