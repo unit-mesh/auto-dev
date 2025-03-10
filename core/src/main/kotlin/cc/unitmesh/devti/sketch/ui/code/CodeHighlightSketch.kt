@@ -79,7 +79,9 @@ open class CodeHighlightSketch(
         if (hasSetupAction) return
         hasSetupAction = true
 
-        val editor = if (ideaLanguage?.displayName == "Markdown") {
+        val shouldBeMarkdownView =
+            (ideaLanguage == null) || ideaLanguage == PlainTextLanguage.INSTANCE || ideaLanguage?.displayName == "Markdown"
+        val editor = if (shouldBeMarkdownView) {
             createMarkdownPreviewEditor(text) ?: createCodeViewerEditor(project, text, ideaLanguage, fileName, this)
         } else {
             createCodeViewerEditor(project, text, ideaLanguage, fileName, this)
@@ -102,8 +104,6 @@ open class CodeHighlightSketch(
         val isDeclarePackageFile = BuildSystemProvider.isDeclarePackageFile(fileName)
         if (textLanguage != null && textLanguage?.lowercase() != "markdown" && ideaLanguage != PlainTextLanguage.INSTANCE) {
             setupActionBar(project, editor, isDeclarePackageFile)
-        } else {
-            editor.backgroundColor = JBColor.PanelBackground
         }
     }
 
@@ -256,8 +256,8 @@ open class CodeHighlightSketch(
             } else {
                 LightVirtualFile(AutoDevSnippetFile.naming(ext), language, editorText)
             }
-            val document: Document = file.findDocument() ?: throw IllegalStateException("Document not found")
 
+            val document: Document = file.findDocument() ?: throw IllegalStateException("Document not found")
             return createCodeViewerEditor(project, file, document, disposable, isShowLineNo)
         }
 
