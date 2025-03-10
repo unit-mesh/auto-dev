@@ -1,8 +1,7 @@
 package cc.unitmesh.devti.gui.quick
 
 import com.intellij.ide.KeyboardAwareFocusOwner
-import com.intellij.ui.scale.JBUIScale
-import com.intellij.ui.util.minimumWidth
+import java.awt.Dimension
 import java.awt.event.KeyEvent
 import javax.swing.JTextField
 import javax.swing.KeyStroke
@@ -11,8 +10,7 @@ class QuickPromptField : JTextField(), KeyboardAwareFocusOwner {
     override fun skipKeyEventDispatcher(event: KeyEvent): Boolean = true
 
     init {
-        this.minimumWidth = JBUIScale.scale(480)
-        this.preferredSize = this.minimumSize
+        this.preferredSize = Dimension(480, minimumSize.height)
 
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), QUICK_ASSISTANT_CANCEL_ACTION)
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), QUICK_ASSISTANT_SUBMIT_ACTION)
