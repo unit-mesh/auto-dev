@@ -230,7 +230,6 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
      *                            passing the current text to be replaced in the editor.
      */
     suspend fun updateReplaceableContent(content: Flow<String>, postAction: (text: String) -> Unit) {
-        myList.remove(myList.componentCount - 1)
         showProgressBar()
         val text = updateMessageInUi(content)
 

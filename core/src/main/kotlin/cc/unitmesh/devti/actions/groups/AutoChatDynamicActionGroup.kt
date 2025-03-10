@@ -16,7 +16,6 @@ import com.intellij.openapi.project.DumbAware
  * @author lk
  */
 class AutoChatDynamicActionGroup : DefaultActionGroup(), DumbAware {
-
     init {
         presentationText("autodev.chat", templatePresentation.also { it.isHideGroupIfEmpty = true }, 1)
     }
