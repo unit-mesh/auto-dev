@@ -274,6 +274,7 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
             }
         }
 
+        messageView.onFinish(text)
         return text
     }
 
