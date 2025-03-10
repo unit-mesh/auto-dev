@@ -57,7 +57,7 @@ abstract class ChatBaseAction : AnAction() {
 
         sendToChatPanel(project, getActionType()) { panel: NormalChatCodingPanel, service ->
             val chatContext = ChatContext(
-                chatCompletedPostAction(event, panel),
+                null,
                 prefixText,
                 suffixText
             )

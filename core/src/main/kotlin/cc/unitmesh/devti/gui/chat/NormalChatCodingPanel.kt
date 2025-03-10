@@ -1,10 +1,13 @@
 package cc.unitmesh.devti.gui.chat
 
 import cc.unitmesh.cf.core.llms.LlmMsg
-import cc.unitmesh.devti.*
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.agent.view.WebBlock
 import cc.unitmesh.devti.agent.view.WebBlockView
+import cc.unitmesh.devti.alignRight
+import cc.unitmesh.devti.fullHeight
+import cc.unitmesh.devti.fullWidth
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.message.ChatContext
 import cc.unitmesh.devti.gui.chat.message.ChatRole
@@ -30,23 +33,23 @@ import com.intellij.temporary.gui.block.CodeBlock
 import com.intellij.temporary.gui.block.CodeBlockView
 import com.intellij.temporary.gui.block.SimpleMessage
 import com.intellij.temporary.gui.block.whenDisposed
-import com.intellij.ui.Gray
-import com.intellij.ui.JBColor
 import com.intellij.ui.JBColor.PanelBackground
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
-import com.intellij.ui.dsl.builder.RightGap
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.withContext
-import java.awt.BorderLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.*
+import javax.swing.JPanel
+import javax.swing.JProgressBar
+import javax.swing.ScrollPaneConstants
+import javax.swing.SwingUtilities
 
 interface AutoDevChatPanel {
     val progressBar: JProgressBar get() = JProgressBar()
@@ -80,8 +83,6 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
     private var panelContent: DialogPanel
     private val myScrollPane: JBScrollPane
     private val delaySeconds: String get() = AutoDevSettingsState.getInstance().delaySeconds
-
-    private var suggestionPanel: JPanel = JPanel(BorderLayout())
 
     init {
         focusMouseListener = object : MouseAdapter() {
@@ -154,7 +155,6 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
         panelContent = panel {
             row { cell(header).fullWidth() }
             row { cell(myScrollPane).fullWidth().fullHeight() }.resizableRow()
-            row { cell(suggestionPanel).fullWidth() }
             row { cell(progressBar).fullWidth() }
             row { cell(actionLink).alignRight() }
             row {
@@ -310,7 +310,6 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
      */
     override fun resetChatSession() {
         chatCodingService.stop()
-        suggestionPanel.removeAll()
         chatCodingService.clearSession()
         myList.removeAll()
         this.hiddenProgressBar()
@@ -365,26 +364,6 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
 
     fun moveCursorToStart() {
         inputSection.moveCursorToStart()
-    }
-
-    fun showRefactorSuggestion(msg: String) {
-        val label = panel {
-            row {
-                icon(AutoDevIcons.Idea).gap(RightGap.SMALL)
-                link(msg) {
-                    inputSection.text = msg
-                    inputSection.requestFocus()
-
-                    suggestionPanel.removeAll()
-                    updateUI()
-                }.also {
-                    it.component.foreground = JBColor.namedColor("Link.activeForeground", JBColor(Gray.x80, Gray.x8C))
-                }
-            }
-        }
-
-        suggestionPanel.add(label)
-        updateUI()
     }
 }
 
