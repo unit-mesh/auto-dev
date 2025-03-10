@@ -1,11 +1,10 @@
 package cc.unitmesh.devti.actions.chat.base
 
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
-import cc.unitmesh.devti.gui.chat.ChatCodingPanel
+import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
 import cc.unitmesh.devti.gui.chat.message.ChatContext
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.gui.sendToChatPanel
-import cc.unitmesh.devti.intentions.action.ElementSelectionForChat
 import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
@@ -26,7 +25,7 @@ abstract class ChatBaseAction : AnAction() {
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
 
-    open fun chatCompletedPostAction(event: AnActionEvent, panel: ChatCodingPanel): ((response: String) -> Unit)? = null
+    open fun chatCompletedPostAction(event: AnActionEvent, panel: NormalChatCodingPanel): ((response: String) -> Unit)? = null
 
     abstract fun getActionType(): ChatActionType
 
@@ -56,7 +55,7 @@ abstract class ChatBaseAction : AnAction() {
         prompt += addAdditionPrompt(project, editor, element)
         prompter.initContext(getActionType(), prompt, file, project, caretModel?.offset ?: 0, element)
 
-        sendToChatPanel(project, getActionType()) { panel: ChatCodingPanel, service ->
+        sendToChatPanel(project, getActionType()) { panel: NormalChatCodingPanel, service ->
             val chatContext = ChatContext(
                 chatCompletedPostAction(event, panel),
                 prefixText,

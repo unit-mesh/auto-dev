@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.gui.toolbar
 
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
-import cc.unitmesh.devti.gui.chat.ChatCodingPanel
+import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction
@@ -44,7 +44,7 @@ class NewChatAction : DumbAwareAction(), CustomComponentAction {
                     val contentManager = toolWindowManager.contentManager
 
                     val codingPanel =
-                        contentManager?.component?.components?.filterIsInstance<ChatCodingPanel>()?.firstOrNull()
+                        contentManager?.component?.components?.filterIsInstance<NormalChatCodingPanel>()?.firstOrNull()
 
                     AutoDevToolWindowFactory().createToolWindowContent(project, toolWindowManager)
                     if (codingPanel == null) {

@@ -2,7 +2,7 @@ package cc.unitmesh.git.actions.vcs
 
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
-import cc.unitmesh.devti.gui.chat.ChatCodingPanel
+import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.presentationText
@@ -30,7 +30,7 @@ class ReleaseNoteSuggestionAction : AnAction() {
         val toolWindowManager = AutoDevToolWindowFactory.getToolWindow(project)
         val contentManager = toolWindowManager?.contentManager
         val chatCodingService = ChatCodingService(actionType, project)
-        val contentPanel = ChatCodingPanel(chatCodingService, toolWindowManager?.disposable)
+        val contentPanel = NormalChatCodingPanel(chatCodingService, toolWindowManager?.disposable)
         val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
 
         contentManager?.removeAllContents(true)

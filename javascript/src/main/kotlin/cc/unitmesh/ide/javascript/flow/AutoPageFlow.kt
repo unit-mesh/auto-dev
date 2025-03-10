@@ -2,7 +2,7 @@ package cc.unitmesh.ide.javascript.flow
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.flow.TaskFlow
-import cc.unitmesh.devti.gui.chat.ChatCodingPanel
+import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.template.GENIUS_PAGE
 import cc.unitmesh.devti.template.TemplateRender
@@ -10,7 +10,7 @@ import cc.unitmesh.ide.javascript.flow.model.AutoPageContext
 import cc.unitmesh.devti.bridge.archview.model.UiComponent
 import kotlinx.coroutines.runBlocking
 
-class AutoPageFlow(val context: AutoPageContext, val panel: ChatCodingPanel, val llm: LLMProvider) :
+class AutoPageFlow(val context: AutoPageContext, val panel: NormalChatCodingPanel, val llm: LLMProvider) :
     TaskFlow<String> {
     override fun clarify(): String {
         val stepOnePrompt = generateStepOnePrompt(context)

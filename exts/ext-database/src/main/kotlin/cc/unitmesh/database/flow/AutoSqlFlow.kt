@@ -3,7 +3,7 @@ package cc.unitmesh.database.flow
 import cc.unitmesh.database.DbContextActionProvider
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.flow.TaskFlow
-import cc.unitmesh.devti.gui.chat.ChatCodingPanel
+import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.template.GENIUS_SQL
 import cc.unitmesh.devti.template.TemplateRender
@@ -13,7 +13,7 @@ import kotlinx.coroutines.runBlocking
 class AutoSqlFlow(
     private val genSqlContext: AutoSqlContext,
     private val actions: DbContextActionProvider,
-    private val panel: ChatCodingPanel,
+    private val panel: NormalChatCodingPanel,
     private val llm: LLMProvider
 ) : TaskFlow<String> {
     private val logger = logger<AutoSqlFlow>()

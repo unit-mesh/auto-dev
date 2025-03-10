@@ -48,7 +48,7 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
 
-class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disposable: Disposable?) :
+class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, val disposable: Disposable?) :
     SimpleToolWindowPanel(true, true),
     NullableComponent {
     private var progressBar: JProgressBar
@@ -120,7 +120,7 @@ class ChatCodingPanel(private val chatCodingService: ChatCodingService, val disp
                 }
 
                 chatCodingService.actionType = ChatActionType.CHAT
-                chatCodingService.handlePromptAndResponse(this@ChatCodingPanel, object : ContextPrompter() {
+                chatCodingService.handlePromptAndResponse(this@NormalChatCodingPanel, object : ContextPrompter() {
                     override fun displayPrompt() = prompt
                     override fun requestPrompt() = prompt
                 }, context, false)

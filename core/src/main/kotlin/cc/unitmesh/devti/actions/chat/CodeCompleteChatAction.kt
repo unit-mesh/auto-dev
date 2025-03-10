@@ -2,7 +2,7 @@ package cc.unitmesh.devti.actions.chat
 
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
-import cc.unitmesh.devti.gui.chat.ChatCodingPanel
+import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.message.ChatContext
 import cc.unitmesh.devti.provider.ContextPrompter
@@ -63,7 +63,7 @@ class CodeCompleteChatAction : AnAction() {
                     }
 
                 val contentManager = toolWindowManager.contentManager
-                val contentPanel = ChatCodingPanel(chatCodingService, toolWindowManager.disposable)
+                val contentPanel = NormalChatCodingPanel(chatCodingService, toolWindowManager.disposable)
 
                 val content =
                     contentManager.factory.createContent(contentPanel, chatCodingService.getLabel(), false)

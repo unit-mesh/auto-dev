@@ -2,12 +2,11 @@ package cc.unitmesh.devti.gui
 
 import cc.unitmesh.devti.bridge.BridgeToolWindow
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
-import cc.unitmesh.devti.gui.chat.ChatCodingPanel
+import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.inline.AutoDevInlineChatProvider
 import cc.unitmesh.devti.sketch.SketchToolWindow
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.componentStateChanged
-import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
@@ -23,31 +22,34 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
     }
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        val chatCodingService = ChatCodingService(ChatActionType.CHAT, project)
-        val contentPanel = ChatCodingPanel(chatCodingService, toolWindow.disposable)
-
-        val chatPanel = ContentFactory.getInstance().createContent(contentPanel, "AutoDev Chat", false).apply {
-            setInitialDisplayName(this)
-        }
-
-        contentPanel.resetChatSession()
         initInlineChatForIdea223(project)
-
         ApplicationManager.getApplication().invokeLater {
-            toolWindow.contentManager.addContent(chatPanel)
+            val normalChatPanel =
+                toolWindow.contentManager.component.components?.filterIsInstance<NormalChatCodingPanel>()?.firstOrNull()
 
-            val hasSketch =
-                toolWindow.contentManager.component.components?.filterIsInstance<SketchToolWindow>()?.firstOrNull()
-
-            if (hasSketch == null) {
-                createSketchToolWindow(project, toolWindow)
+            if (normalChatPanel == null) {
+                createNormalChatWindow(project, toolWindow)
+            } else {
+                normalChatPanel.resetChatSession()
             }
 
-            val hasBridge =
+
+            val sketchWindow =
+                toolWindow.contentManager.component.components?.filterIsInstance<SketchToolWindow>()?.firstOrNull()
+
+            if (sketchWindow == null) {
+                createSketchToolWindow(project, toolWindow)
+            } else {
+                sketchWindow.resetSketchSession()
+            }
+
+            val bridgeWindow =
                 toolWindow.contentManager.component.components?.filterIsInstance<BridgeToolWindow>()?.firstOrNull()
 
-            if (hasBridge == null) {
+            if (bridgeWindow == null) {
                 createBridgeToolWindow(project, toolWindow)
+            } else {
+                bridgeWindow.resetSketchSession()
             }
         }
     }
@@ -60,9 +62,8 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
     }
 
     override fun init(toolWindow: ToolWindow) {
-        toolWindow.setTitleActions(listOfNotNull(ActionUtil.getActionGroup("AutoDev.ToolWindow.Chat.TitleActions")))
+//        toolWindow.setTitleActions(listOfNotNull(ActionUtil.getActionGroup("AutoDev.ToolWindow.Chat.TitleActions")))
     }
-
 
     companion object {
         fun getToolWindow(project: Project): ToolWindow? {
@@ -74,7 +75,20 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
         }
 
         fun getSketchWindow(project: Project): SketchToolWindow? {
-            return getToolWindow(project)?.contentManager?.component?.components?.filterIsInstance<SketchToolWindow>()?.firstOrNull()
+            return getToolWindow(project)?.contentManager?.component?.components?.filterIsInstance<SketchToolWindow>()
+                ?.firstOrNull()
+        }
+
+
+        fun createNormalChatWindow(project: Project, toolWindow: ToolWindow) {
+            val chatCodingService = ChatCodingService(ChatActionType.CHAT, project)
+            val contentPanel = NormalChatCodingPanel(chatCodingService, toolWindow.disposable)
+
+            val chatPanel = ContentFactory.getInstance().createContent(contentPanel, "AutoDev Chat", false).apply {
+                setInitialDisplayName(this)
+            }
+
+            toolWindow.contentManager.addContent(chatPanel)
         }
 
         fun createSketchToolWindow(project: Project, toolWindow: ToolWindow) {

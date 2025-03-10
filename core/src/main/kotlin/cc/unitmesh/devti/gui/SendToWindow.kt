@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.gui
 
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
-import cc.unitmesh.devti.gui.chat.ChatCodingPanel
+import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.application.ApplicationManager
@@ -11,7 +11,7 @@ import com.intellij.openapi.project.Project
 fun sendToChatWindow(
     project: Project,
     actionType: ChatActionType,
-    runnable: (ChatCodingPanel, ChatCodingService) -> Unit,
+    runnable: (NormalChatCodingPanel, ChatCodingService) -> Unit,
 ) {
     val chatCodingService = ChatCodingService(actionType, project)
 
@@ -21,7 +21,7 @@ fun sendToChatWindow(
         }
 
     val contentManager = toolWindowManager.contentManager
-    val contentPanel = ChatCodingPanel(chatCodingService, toolWindowManager.disposable)
+    val contentPanel = NormalChatCodingPanel(chatCodingService, toolWindowManager.disposable)
     val content = contentManager.factory.createContent(contentPanel, chatCodingService.getLabel(), false)
 
     ApplicationManager.getApplication().invokeLater {
@@ -34,12 +34,12 @@ fun sendToChatWindow(
     }
 }
 
-fun sendToChatPanel(project: Project, runnable: (ChatCodingPanel, ChatCodingService) -> Unit) {
+fun sendToChatPanel(project: Project, runnable: (NormalChatCodingPanel, ChatCodingService) -> Unit) {
     val actionType = ChatActionType.CHAT
     sendToChatWindow(project, actionType, runnable)
 }
 
-fun sendToChatPanel(project: Project, actionType: ChatActionType, runnable: (ChatCodingPanel, ChatCodingService) -> Unit) {
+fun sendToChatPanel(project: Project, actionType: ChatActionType, runnable: (NormalChatCodingPanel, ChatCodingService) -> Unit) {
     sendToChatWindow(project, actionType, runnable)
 }
 

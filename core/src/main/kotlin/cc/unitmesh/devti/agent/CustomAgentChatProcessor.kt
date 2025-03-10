@@ -4,7 +4,7 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.agent.model.CustomAgentResponseAction
 import cc.unitmesh.devti.agent.model.CustomAgentState
-import cc.unitmesh.devti.gui.chat.ChatCodingPanel
+import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
 import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.llms.LLMProvider
 import cc.unitmesh.devti.provider.ContextPrompter
@@ -24,7 +24,7 @@ class CustomAgentChatProcessor(val project: Project) {
     private val customAgentExecutor = project.service<CustomAgentExecutor>()
     private val logger = logger<CustomAgentChatProcessor>()
 
-    fun handleChat(prompter: ContextPrompter, ui: ChatCodingPanel, llmProvider: LLMProvider): String? {
+    fun handleChat(prompter: ContextPrompter, ui: NormalChatCodingPanel, llmProvider: LLMProvider): String? {
         val originPrompt = prompter.requestPrompt()
         ui.addMessage(originPrompt, true, originPrompt)
 

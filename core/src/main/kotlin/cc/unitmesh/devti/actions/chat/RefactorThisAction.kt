@@ -5,7 +5,7 @@ import cc.unitmesh.devti.actions.chat.base.ChatCheckForUpdateAction
 import cc.unitmesh.devti.actions.chat.base.collectProblems
 import cc.unitmesh.devti.actions.chat.base.commentPrefix
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
-import cc.unitmesh.devti.gui.chat.ChatCodingPanel
+import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
 import cc.unitmesh.devti.provider.RefactoringTool
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.presentationText
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -62,7 +62,7 @@ open class RefactorThisAction : ChatCheckForUpdateAction() {
         "intentions.refactor.accessibility"
     )
 
-    override fun chatCompletedPostAction(event: AnActionEvent, panel: ChatCodingPanel): (response: String) -> Unit {
+    override fun chatCompletedPostAction(event: AnActionEvent, panel: NormalChatCodingPanel): (response: String) -> Unit {
         val key = refactorIntentionsKeys.random()
         val msg = AutoDevBundle.message(key)
 

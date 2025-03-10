@@ -34,7 +34,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
     private var isLastAgent: Boolean = false
 
     fun handlePromptAndResponse(
-        ui: ChatCodingPanel,
+        ui: NormalChatCodingPanel,
         prompter: ContextPrompter,
         context: ChatContext? = null,
         keepHistory: Boolean
@@ -98,7 +98,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
     }
 
     fun handleMsgsAndResponse(
-        ui: ChatCodingPanel,
+        ui: NormalChatCodingPanel,
         messages: List<LlmMsg.ChatMessage>,
     ) {
         val requestPrompt = messages.filter { it.role == LlmMsg.ChatRole.User }.joinToString("\n") { it.content }

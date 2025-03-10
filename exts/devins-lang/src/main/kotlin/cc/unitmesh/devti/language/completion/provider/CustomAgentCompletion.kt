@@ -2,13 +2,12 @@ package cc.unitmesh.devti.language.completion.provider
 
 import cc.unitmesh.devti.agent.model.CustomAgentConfig
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
-import cc.unitmesh.devti.gui.chat.ChatCodingPanel
+import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.util.ProcessingContext
-import kotlinx.html.dom.document
 
 class CustomAgentCompletion : CompletionProvider<CompletionParameters>() {
     override fun addCompletions(
@@ -26,7 +25,7 @@ class CustomAgentCompletion : CompletionProvider<CompletionParameters>() {
 
                     val toolWindow = AutoDevToolWindowFactory.getToolWindow(context.project)
                     toolWindow?.contentManager?.contents?.map { it.component }?.forEach {
-                        if (it is ChatCodingPanel) {
+                        if (it is NormalChatCodingPanel) {
                             it.selectAgent(config)
                         }
                     }
