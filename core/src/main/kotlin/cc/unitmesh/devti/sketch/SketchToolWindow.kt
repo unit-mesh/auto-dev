@@ -12,6 +12,7 @@ import cc.unitmesh.devti.inline.fullWidth
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
+import cc.unitmesh.devti.sketch.ui.MarkdownPreviewHighlightSketch
 import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.util.parser.CodeFence
@@ -40,9 +41,6 @@ import kotlinx.coroutines.launch
 import org.jetbrains.annotations.NonNls
 import java.awt.BorderLayout
 import java.awt.Dimension
-import java.awt.GradientPaint
-import java.awt.Graphics
-import java.awt.Graphics2D
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 import java.awt.event.KeyAdapter
@@ -308,6 +306,12 @@ open class SketchToolWindow(
                     if (codeFence.originLanguage != null && codeFence.isComplete && blockViews[index] !is ExtensionLangSketch) {
                         langSketch = LanguageSketchProvider.provide(codeFence.originLanguage)
                             ?.create(project, codeFence.text)
+                    }
+
+                    val isCanHtml =
+                        codeFence.language == PlainTextLanguage.INSTANCE || codeFence.language.displayName.lowercase() == "markdown"
+                    if (isCanHtml && codeFence.isComplete && blockViews[index] !is ExtensionLangSketch) {
+                        langSketch = MarkdownPreviewHighlightSketch(project, codeFence.text)
                     }
 
                     if (langSketch != null) {

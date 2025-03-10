@@ -79,13 +79,7 @@ open class CodeHighlightSketch(
         if (hasSetupAction) return
         hasSetupAction = true
 
-        val shouldBeMarkdownView =
-            (ideaLanguage == null) || ideaLanguage == PlainTextLanguage.INSTANCE || ideaLanguage?.displayName == "Markdown"
-        val editor = if (shouldBeMarkdownView) {
-            createMarkdownPreviewEditor(text) ?: createCodeViewerEditor(project, text, ideaLanguage, fileName, this)
-        } else {
-            createCodeViewerEditor(project, text, ideaLanguage, fileName, this)
-        }
+        val editor = createCodeViewerEditor(project, text, ideaLanguage, fileName, this)
 
         border = JBEmptyBorder(8)
         layout = BorderLayout(JBUI.scale(8), 0)
@@ -105,24 +99,6 @@ open class CodeHighlightSketch(
         if (textLanguage != null && textLanguage?.lowercase() != "markdown" && ideaLanguage != PlainTextLanguage.INSTANCE) {
             setupActionBar(project, editor, isDeclarePackageFile)
         }
-    }
-
-    private fun createMarkdownPreviewEditor(text: String): EditorEx? {
-        val editorProvider =
-            FileEditorProvider.EP_FILE_EDITOR_PROVIDER.extensionList.firstOrNull {
-                it.javaClass.simpleName == "MarkdownSplitEditorProvider"
-            }
-
-        val file = LightVirtualFile(AutoDevSnippetFile.naming("md"), text)
-        val createEditor = editorProvider?.createEditor(project, file)
-
-        val preview = createEditor as? TextEditorWithPreview ?: return null
-        var editor = preview?.editor as? EditorEx ?: return null
-        configEditor(editor, project, file, false)
-//        previewEditor = preview.previewEditor
-//        previewEditor?.component?.isOpaque = true
-//        previewEditor?.component?.minimumSize = JBUI.size(0, 0)
-        return editor
     }
 
     override fun getViewText(): String {

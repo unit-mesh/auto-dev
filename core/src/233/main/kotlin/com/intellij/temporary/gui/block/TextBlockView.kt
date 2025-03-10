@@ -5,9 +5,7 @@ import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.sketch.ui.code.MarkdownViewer
 import cc.unitmesh.devti.util.parser.convertMarkdownToHtml
 import com.intellij.ide.BrowserUtil
-import com.intellij.openapi.util.text.StringUtil
 import com.intellij.util.ui.ExtendableHTMLViewFactory
-import com.intellij.util.ui.HTMLEditorKitBuilder
 import com.intellij.xml.util.XmlStringUtil
 import java.awt.Component
 import java.awt.event.MouseAdapter
@@ -15,7 +13,6 @@ import java.awt.event.MouseEvent
 import javax.swing.JEditorPane
 import javax.swing.SizeRequirements
 import javax.swing.event.HyperlinkEvent
-import javax.swing.text.DefaultCaret
 import javax.swing.text.Element
 import javax.swing.text.View
 import javax.swing.text.html.ParagraphView
@@ -41,7 +38,7 @@ class TextBlockView(private val block: MessageBlock) : MessageBlockView {
     override fun getComponent(): Component = component
 
     private fun createComponent(): JEditorPane {
-        val jEditorPane = createBaseComponent()
+        val jEditorPane = MarkdownViewer.createBaseComponent()
         jEditorPane.addHyperlinkListener {
             if (it.eventType == HyperlinkEvent.EventType.ACTIVATED) {
                 BrowserUtil.browse(it.url)
@@ -62,10 +59,6 @@ class TextBlockView(private val block: MessageBlock) : MessageBlockView {
         }
 
         return XmlStringUtil.escapeString(txt)
-    }
-
-    companion object {
-        fun createBaseComponent(): JEditorPane = MarkdownViewer.createBaseComponent()
     }
 }
 
