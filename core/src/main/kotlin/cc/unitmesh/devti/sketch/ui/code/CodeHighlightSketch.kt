@@ -33,7 +33,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
-import com.intellij.temporary.gui.block.whenDisposed
+import cc.unitmesh.devti.util.whenDisposed
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.components.JBPanel
 import com.intellij.util.concurrency.annotations.RequiresReadLock

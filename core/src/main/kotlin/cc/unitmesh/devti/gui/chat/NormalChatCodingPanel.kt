@@ -26,7 +26,7 @@ import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.NullableComponent
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.IdeFocusManager
-import com.intellij.temporary.gui.block.whenDisposed
+import cc.unitmesh.devti.util.whenDisposed
 import com.intellij.ui.JBColor.PanelBackground
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout

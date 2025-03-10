@@ -372,13 +372,6 @@
             <action id="AutoDev.ToolWindow.NewChatAction" class="cc.unitmesh.devti.gui.toolbar.NewChatAction"/>
         </group>
 
-        <group id="AutoDev.ToolWindow.Message.Toolbar.Assistant">
-            <action id="AutoDev.ToolWindow.Message.Like"
-                    class="cc.unitmesh.devti.gui.chat.message.AutoDevRateMessageAction$Like"/>
-            <action id="AutoDev.ToolWindow.Message.Copy"
-                    class="cc.unitmesh.devti.gui.chat.message.AutoDevRateMessageAction$Copy"/>
-        </group>
-
         <action id="AutoDev.NewPromptTemplate" class="cc.unitmesh.devti.actions.template.NewPromptTemplateAction"
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT">
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFromTemplate"/>

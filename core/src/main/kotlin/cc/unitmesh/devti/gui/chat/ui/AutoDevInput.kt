@@ -6,6 +6,7 @@ import cc.unitmesh.devti.util.parser.CodeFence.Companion.findLanguage
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ex.AnActionListener
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
@@ -15,6 +16,7 @@ import com.intellij.openapi.editor.actions.EnterAction
 import com.intellij.openapi.editor.actions.IncrementalFindAction
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider
 import com.intellij.openapi.fileTypes.FileTypes
 import com.intellij.openapi.project.DumbAwareAction
@@ -23,10 +25,10 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.temporary.gui.block.findDocument
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.EditorTextField
 import com.intellij.util.EventDispatcher
+import com.intellij.util.concurrency.annotations.RequiresReadLock
 import com.intellij.util.messages.MessageBusConnection
 import com.intellij.util.ui.JBUI
 import java.awt.Color
@@ -177,5 +179,12 @@ fun VirtualFile.relativePath(project: Project): String {
         return relativePath ?: this.path
     } catch (e: Exception) {
         return this.path
+    }
+}
+
+@RequiresReadLock
+fun VirtualFile.findDocument(): Document? {
+    return ReadAction.compute<Document, Throwable> {
+        FileDocumentManager.getInstance().getDocument(this)
     }
 }

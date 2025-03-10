@@ -4,7 +4,7 @@ import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.Inlay
 import com.intellij.openapi.util.Key
-import com.intellij.temporary.gui.block.whenDisposed
+import cc.unitmesh.devti.util.whenDisposed
 import java.awt.Rectangle
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
