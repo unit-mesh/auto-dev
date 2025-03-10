@@ -1,6 +1,8 @@
 package cc.unitmesh.devti.sketch.ui.code
 
+import cc.unitmesh.devti.AUTODEV_SNIPPET_NAME
 import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.AutoDevSnippetFile
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.provider.RunService
@@ -111,7 +113,7 @@ open class CodeHighlightSketch(
                 it.javaClass.simpleName == "MarkdownSplitEditorProvider"
             }
 
-        val file = LightVirtualFile("shire-${System.currentTimeMillis()}.md", text)
+        val file = LightVirtualFile(AutoDevSnippetFile.naming("md"), text)
         val createEditor = editorProvider?.createEditor(project, file)
 
         val preview = createEditor as? TextEditorWithPreview ?: return null
@@ -252,8 +254,7 @@ open class CodeHighlightSketch(
             val file: VirtualFile = if (fileName != null) {
                 LightVirtualFile(fileName, language, editorText)
             } else {
-                val fileTimeSuffix = System.currentTimeMillis()
-                LightVirtualFile("autodev-${fileTimeSuffix}.${ext}", language, editorText)
+                LightVirtualFile(AutoDevSnippetFile.naming(ext), language, editorText)
             }
             val document: Document = file.findDocument() ?: throw IllegalStateException("Document not found")
 

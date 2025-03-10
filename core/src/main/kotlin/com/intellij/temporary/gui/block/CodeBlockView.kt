@@ -1,6 +1,7 @@
 // Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package com.intellij.temporary.gui.block
 
+import cc.unitmesh.devti.AutoDevSnippetFile
 import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.lang.Language
@@ -153,8 +154,7 @@ class CodeBlockView(
             val forceFoldEditorByDefault = message.getRole() === ChatRole.User
 
             val ext = CodeFence.lookupFileExt(language.displayName)
-            val fileTimeSuffix = System.currentTimeMillis()
-            val file = LightVirtualFile("autodev-${fileTimeSuffix}.${ext}", language, graphProperty.get())
+            val file = LightVirtualFile(AutoDevSnippetFile.naming(ext), language, graphProperty.get())
 
             val document: Document =
                 file.findDocument() ?: throw IllegalStateException("Document not found")
