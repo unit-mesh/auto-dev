@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.actions.chat
 
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
@@ -75,6 +76,7 @@ class CodeCompleteChatAction : AnAction() {
                     chatCodingService.handlePromptAndResponse(contentPanel, prompter, chatContext, true)
                 }
             } catch (ignore: IndexNotReadyException) {
+                AutoDevNotifications.warn(project, "Index not ready")
                 return@runReadAction
             }
         }
