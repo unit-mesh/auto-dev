@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.sketch.ui.code
 
-import cc.unitmesh.devti.AUTODEV_SNIPPET_NAME
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.AutoDevSnippetFile
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
@@ -29,8 +28,6 @@ import com.intellij.openapi.editor.ex.MarkupModelEx
 import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditor
-import com.intellij.openapi.fileEditor.FileEditorProvider
-import com.intellij.openapi.fileEditor.TextEditorWithPreview
 import com.intellij.openapi.fileTypes.PlainTextLanguage
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil

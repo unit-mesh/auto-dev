@@ -14,7 +14,6 @@ import cc.unitmesh.devti.gui.chat.ui.AutoDevInputTrigger
 import cc.unitmesh.devti.gui.chat.view.FrontendCodeView
 import cc.unitmesh.devti.gui.chat.view.MessageView
 import cc.unitmesh.devti.gui.toolbar.NewChatAction
-import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.provider.TextContextPrompter
 import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.settings.AutoDevSettingsState
@@ -49,9 +48,32 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
 
+interface AutoDevChatPanel {
+    val progressBar: JProgressBar get() = JProgressBar()
+    fun resetChatSession()
+
+    /**
+     * Custom Agent Event
+     */
+    fun resetAgent()
+    fun hasSelectedCustomAgent(): Boolean
+    fun getSelectedCustomAgent(): CustomAgentConfig
+    fun selectAgent(config: CustomAgentConfig)
+
+    /**
+     * Progress Bar
+     */
+    fun hiddenProgressBar()
+    fun showProgressBar()
+
+    /**
+     * append custom view
+     */
+    fun appendWebView(content: String, project: Project)
+}
+
 class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, val disposable: Disposable?) :
-    SimpleToolWindowPanel(true, true), NullableComponent {
-    private var progressBar: JProgressBar
+    SimpleToolWindowPanel(true, true), NullableComponent, AutoDevChatPanel {
     private val myList = JPanel(VerticalLayout(JBUI.scale(10)))
     private var inputSection: AutoDevInputSection
     private val focusMouseListener: MouseAdapter
@@ -74,8 +96,6 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
             ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
         )
         myScrollPane.verticalScrollBar.autoscrolls = true
-
-        progressBar = JProgressBar()
 
         val actionLink = panel {
             row {
@@ -277,7 +297,6 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
             }
         }
 
-//        messageView.reRenderAssistantOutput()
         return text
     }
 
@@ -289,7 +308,7 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
     /**
      * Resets the chat session by clearing the current session and updating the UI.
      */
-    fun resetChatSession() {
+    override fun resetChatSession() {
         chatCodingService.stop()
         suggestionPanel.removeAll()
         chatCodingService.clearSession()
@@ -299,24 +318,28 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
         updateUI()
     }
 
-    fun resetAgent() {
+    override fun resetAgent() {
         inputSection.resetAgent()
     }
 
-    fun hasSelectedCustomAgent(): Boolean {
+    override fun hasSelectedCustomAgent(): Boolean {
         return inputSection.hasSelectedAgent()
     }
 
-    fun getSelectedCustomAgent(): CustomAgentConfig {
+    override fun getSelectedCustomAgent(): CustomAgentConfig {
         return inputSection.getSelectedAgent()
     }
 
-    fun hiddenProgressBar() {
+    override fun selectAgent(config: CustomAgentConfig) {
+        inputSection.selectAgent(config)
+    }
+
+    override fun hiddenProgressBar() {
         progressBar.isVisible = false
         inputSection.showSendButton()
     }
 
-    fun showProgressBar() {
+    override fun showProgressBar() {
         progressBar.isVisible = true
         inputSection.showStopButton()
     }
@@ -329,11 +352,7 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
         updateUI()
     }
 
-    fun selectAgent(config: CustomAgentConfig) {
-        inputSection.selectAgent(config)
-    }
-
-    fun appendWebView(content: String, project: Project) {
+    override fun appendWebView(content: String, project: Project) {
         val msg = SimpleMessage(content, content, ChatRole.System)
         val webBlock = WebBlock(msg)
         val blockView = WebBlockView(webBlock, project)
@@ -348,7 +367,7 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
         inputSection.moveCursorToStart()
     }
 
-    fun showSuggestion(msg: String) {
+    fun showRefactorSuggestion(msg: String) {
         val label = panel {
             row {
                 icon(AutoDevIcons.Idea).gap(RightGap.SMALL)

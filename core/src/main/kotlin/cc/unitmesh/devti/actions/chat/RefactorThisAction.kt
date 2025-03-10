@@ -67,7 +67,7 @@ open class RefactorThisAction : ChatCheckForUpdateAction() {
         val msg = AutoDevBundle.message(key)
 
         return {
-            panel.showSuggestion(msg)
+            panel.showRefactorSuggestion(msg)
         }
     }
 }

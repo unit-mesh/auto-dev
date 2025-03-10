@@ -56,7 +56,7 @@ interface SketchProcessListener {
 
 open class SketchToolWindow(
     val project: Project,
-    val editor: Editor?,
+    open val editor: Editor?,
     private val showInput: Boolean = false,
     chatActionType: ChatActionType = ChatActionType.SKETCH
 ) : SimpleToolWindowPanel(true, true), NullableComponent, Disposable {
