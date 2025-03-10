@@ -1,10 +1,9 @@
 package cc.unitmesh.devti.gui
 
-import cc.unitmesh.devti.gui.chat.message.ChatActionType
-import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
+import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.provider.ContextPrompter
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 
@@ -16,21 +15,17 @@ fun sendToChatWindow(
     val chatCodingService = ChatCodingService(actionType, project)
 
     val toolWindowManager = AutoDevToolWindowFactory.getToolWindow(project) ?: run {
-            logger<ChatCodingService>().warn("Tool window not found")
-            return
-        }
+        logger<ChatCodingService>().warn("Tool window not found")
+        return
+    }
 
-    val contentManager = toolWindowManager.contentManager
-    val contentPanel = NormalChatCodingPanel(chatCodingService, toolWindowManager.disposable)
-    val content = contentManager.factory.createContent(contentPanel, chatCodingService.getLabel(), false)
+    val contentPanel = AutoDevToolWindowFactory.labelNormalChat(chatCodingService) ?: run {
+        logger<ChatCodingService>().warn("Content panel not found")
+        return
+    }
 
-    ApplicationManager.getApplication().invokeLater {
-        contentManager.addContent(content)
-        contentManager.setSelectedContent(content)
-
-        toolWindowManager.activate {
-            runnable(contentPanel, chatCodingService)
-        }
+    toolWindowManager.activate {
+        runnable(contentPanel, chatCodingService)
     }
 }
 

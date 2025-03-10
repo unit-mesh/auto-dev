@@ -33,7 +33,8 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
         initInlineChatForIdea223(project)
         ApplicationManager.getApplication().invokeLater {
             val normalChatTitle = AutoDevBundle.messageWithLanguage(CHAT_KEY, LanguageChangedCallback.language)
-            val normalChatPanel = toolWindow.contentManager.findContent(normalChatTitle)?.component as? NormalChatCodingPanel
+            val normalChatPanel =
+                toolWindow.contentManager.findContent(normalChatTitle)?.component as? NormalChatCodingPanel
 
             if (normalChatPanel == null) {
                 createNormalChatWindow(project, toolWindow)
@@ -67,6 +68,31 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
     companion object {
         fun getToolWindow(project: Project): ToolWindow? {
             return ToolWindowManager.getInstance(project).getToolWindow(Util.id)
+        }
+
+        fun labelNormalChat(
+            toolWindowManager: ToolWindow,
+            chatCodingService: ChatCodingService
+        ): NormalChatCodingPanel {
+            val contentManager = toolWindowManager.contentManager
+            val contentPanel = NormalChatCodingPanel(chatCodingService, toolWindowManager.disposable)
+            val label = chatCodingService.getLabel()
+
+            contentManager.findContent(label)?.let {
+                contentManager.removeContent(it, true)
+            }
+
+            val content =
+                contentManager.factory.createContent(contentPanel, label, false)
+            contentManager.removeAllContents(true)
+            contentManager.addContent(content)
+
+            return contentPanel
+        }
+
+        fun labelNormalChat(chatCodingService: ChatCodingService): NormalChatCodingPanel? {
+            val toolWindow = getToolWindow(chatCodingService.project) ?: return null
+            return labelNormalChat(toolWindow, chatCodingService)
         }
 
         fun setInitialDisplayName(content: Content) {

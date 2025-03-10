@@ -19,7 +19,7 @@ import cc.unitmesh.devti.intentions.action.getElementToAction
 
 class CodeCompleteChatAction : AnAction() {
 
-    init{
+    init {
         presentationText("settings.autodev.others.codeComplete", templatePresentation)
     }
 
@@ -59,17 +59,11 @@ class CodeCompleteChatAction : AnAction() {
                 val actionType = ChatActionType.CODE_COMPLETE
                 val chatCodingService = ChatCodingService(actionType, project)
                 val toolWindowManager = AutoDevToolWindowFactory.getToolWindow(project) ?: run {
-                        logger.warn("Tool window not found")
-                        return@runReadAction
-                    }
+                    logger.warn("Tool window not found")
+                    return@runReadAction
+                }
 
-                val contentManager = toolWindowManager.contentManager
-                val contentPanel = NormalChatCodingPanel(chatCodingService, toolWindowManager.disposable)
-
-                val content =
-                    contentManager.factory.createContent(contentPanel, chatCodingService.getLabel(), false)
-                contentManager.removeAllContents(true)
-                contentManager.addContent(content)
+                val contentPanel = AutoDevToolWindowFactory.labelNormalChat(toolWindowManager, chatCodingService)
 
                 toolWindowManager.activate {
                     val chatContext = ChatContext(null, prefixText, suffixText)

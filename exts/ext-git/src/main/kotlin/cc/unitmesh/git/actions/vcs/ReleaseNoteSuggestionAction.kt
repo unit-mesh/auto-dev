@@ -11,13 +11,15 @@ import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.template.context.TemplateContext
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.vcs.log.VcsLogDataKeys
 
 
 class ReleaseNoteSuggestionAction : AnAction() {
-    init{
+    init {
         presentationText("settings.autodev.others.generateReleaseNote", templatePresentation)
     }
+
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val vcsLog = e.getData(VcsLogDataKeys.VCS_LOG)
@@ -27,14 +29,16 @@ class ReleaseNoteSuggestionAction : AnAction() {
 
         val actionType = ChatActionType.CREATE_CHANGELOG
 
-        val toolWindowManager = AutoDevToolWindowFactory.getToolWindow(project)
-        val contentManager = toolWindowManager?.contentManager
-        val chatCodingService = ChatCodingService(actionType, project)
-        val contentPanel = NormalChatCodingPanel(chatCodingService, toolWindowManager?.disposable)
-        val content = contentManager?.factory?.createContent(contentPanel, chatCodingService.getLabel(), false)
+        val toolWindowManager = AutoDevToolWindowFactory.getToolWindow(project) ?: run {
+            logger<ReleaseNoteSuggestionAction>().error("toolWindowManager is null")
+            return
+        }
 
-        contentManager?.removeAllContents(true)
-        contentManager?.addContent(content!!)
+        val chatCodingService = ChatCodingService(actionType, project)
+        val contentPanel = AutoDevToolWindowFactory.labelNormalChat(chatCodingService) ?: run {
+            logger<ReleaseNoteSuggestionAction>().error("contentPanel is null")
+            return
+        }
 
         val templateRender = TemplateRender(GENIUS_PRACTISES)
         val template = templateRender.getTemplate("release-note.vm")
@@ -46,7 +50,7 @@ class ReleaseNoteSuggestionAction : AnAction() {
 
         val prompt = templateRender.renderTemplate(template)
 
-        toolWindowManager?.activate {
+        toolWindowManager.activate {
             chatCodingService.handlePromptAndResponse(contentPanel, object : ContextPrompter() {
                 override fun displayPrompt(): String = prompt
                 override fun requestPrompt(): String = prompt
