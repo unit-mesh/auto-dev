@@ -8,18 +8,25 @@ import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import cc.unitmesh.devti.sketch.ui.MarkdownPreviewHighlightSketch
 import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
 import cc.unitmesh.devti.util.parser.CodeFence
+import com.intellij.icons.AllIcons
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionToolbar
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.fileTypes.PlainTextLanguage
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
-import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBFont
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
 import javax.swing.JLabel
 import javax.swing.JPanel
 
@@ -58,8 +65,10 @@ class MessageView(val project: Project, val message: String, val role: ChatRole,
         val centerPanel = JPanel(VerticalLayout(JBUI.scale(8)))
         centerPanel.add(authorLabel)
 
-        if (role == ChatRole.User) {
-            runInEdt {
+        val toolbar = createViewActionGroup().component
+        runInEdt {
+            centerPanel.add(toolbar)
+            if (role == ChatRole.User) {
                 myList.add(createSingleTextView(project, message))
             }
         }
@@ -137,6 +146,25 @@ class MessageView(val project: Project, val message: String, val role: ChatRole,
             myList.revalidate()
             myList.repaint()
         }
+    }
+
+
+    fun createViewActionGroup(): ActionToolbar {
+        val copyAction = object : AnAction("Copy", "Copy text", AllIcons.Actions.Copy) {
+            override fun actionPerformed(e: AnActionEvent) {
+                val clipboard = Toolkit.getDefaultToolkit().systemClipboard
+                val selection = StringSelection(displayText)
+                clipboard.setContents(selection, null)
+            }
+        }
+
+        val actionGroup = DefaultActionGroup(listOf(copyAction))
+        val rightToolbar = ActionManager.getInstance()
+            .createActionToolbar("AutoDevCopyView", actionGroup, true)
+
+        rightToolbar.setTargetComponent(this)
+
+        return rightToolbar
     }
 
     companion object {

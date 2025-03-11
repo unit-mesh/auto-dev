@@ -26,7 +26,7 @@ class StylingViewFunctionProvider : ToolchainFunctionProvider {
     ): Any {
         val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
         val scssType = FileTypeManagerEx.getInstanceEx().getFileTypeByExtension("scss")
-        var files = FileTypeIndex.getFiles(scssType, searchScope)
+        var files = runReadAction { FileTypeIndex.getFiles(scssType, searchScope) }
         if (files.isEmpty()) {
             files = FileTypeIndex.getFiles(CssFileType.INSTANCE, searchScope)
         }
