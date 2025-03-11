@@ -1,9 +1,9 @@
 ---
 layout: default
-title: MCP - AutoDev as MCP Service
+title: MCP
 nav_order: 6
 has_children: true
-permalink: /bridge
+permalink: /mcp
 ---
 
 In issue [#330](https://github.com/unit-mesh/auto-dev/issues/330), we discussed the possibility of using AutoDev as a MCP server.
