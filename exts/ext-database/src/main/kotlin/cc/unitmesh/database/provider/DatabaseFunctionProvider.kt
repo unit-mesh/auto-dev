@@ -8,8 +8,6 @@ import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.database.model.DasTable
 import com.intellij.database.model.RawDataSource
-import com.intellij.database.util.DasUtil
-import com.intellij.database.util.DbUtil
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 
@@ -33,31 +31,11 @@ class DatabaseFunctionProvider : ToolchainFunctionProvider {
             ?: throw IllegalArgumentException("[Database]: Invalid Database function name")
 
         return when (databaseFunction) {
-            DatabaseFunction.Schema -> listSchemas(args, project)
+            DatabaseFunction.Schema -> DatabaseSchemaAssistant.listSchemas(project)
             DatabaseFunction.Table -> executeTableFunction(args, project)
             DatabaseFunction.Column -> executeColumnFunction(args, project)
             DatabaseFunction.Query -> executeSqlFunction(args, project)
         }
-    }
-
-    private fun listSchemas(args: List<Any>, project: Project): String {
-        val dataSources = DbUtil.getDataSources(project)
-        if (dataSources.isEmpty) return "[Database]: No database found"
-
-        val dataItems = dataSources.mapNotNull {
-            val tableSchema = DasUtil.getTables(it).toList().mapNotNull<DasTable, String> {
-                if (it.dasParent?.name == "information_schema") return@mapNotNull null
-                getTableColumn(it)
-            }
-
-            if (tableSchema.isEmpty()) return@mapNotNull null
-            val name = it.name.substringBeforeLast('@')
-            "Database Schema result:\n\n```sql\n-- DATABASE NAME: ${name};\n${tableSchema.joinToString("\n")}\n```\n"
-        }
-
-        if (dataItems.isEmpty()) return "[Database]: No table found"
-
-        return dataItems.joinToString("\n")
     }
 
     private fun executeTableFunction(args: List<Any>, project: Project): String {

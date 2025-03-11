@@ -38,5 +38,7 @@
         <livingDocumentation
                 language="Oracle"
                 implementationClass="cc.unitmesh.database.provider.SqlLivingDocumentationProvider"/>
+
+        <mcpTool implementation="cc.unitmesh.database.provider.DatabaseMcpToolProvider"/>
     </extensions>
 </idea-plugin>
