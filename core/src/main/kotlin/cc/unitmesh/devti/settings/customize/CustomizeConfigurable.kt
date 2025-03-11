@@ -90,7 +90,7 @@ class CustomizeConfigurable(val project: Project) : BoundConfigurable(AutoDevBun
         row {
             val mcpServices = JsonLanguageField(
                 project,
-                state::mcpServices.toString(),
+                state::mcpServerConfig.toString(),
                 AutoDevBundle.messageWithLanguageFromLLMSetting("counit.mcp.services.placeholder"),
                 MCP_SERVERS_FILE_NAME
             ).apply {
@@ -101,7 +101,7 @@ class CustomizeConfigurable(val project: Project) : BoundConfigurable(AutoDevBun
                 .bind(
                     componentGet = { it.text },
                     componentSet = { component, value -> component.text = value },
-                    prop = state::mcpServices.toMutableProperty()
+                    prop = state::mcpServerConfig.toMutableProperty()
                 )
         }
 
@@ -110,7 +110,7 @@ class CustomizeConfigurable(val project: Project) : BoundConfigurable(AutoDevBun
                 it.enableCustomRag = state.enableCustomRag
                 it.agentJsonConfig = state.agentJsonConfig
                 it.customPrompts = state.customPrompts
-                it.mcpServices = state.mcpServices
+                it.mcpServerConfig = state.mcpServerConfig
             }
         }
     }

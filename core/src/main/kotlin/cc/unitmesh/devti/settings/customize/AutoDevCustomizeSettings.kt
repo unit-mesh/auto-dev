@@ -13,7 +13,7 @@ class AutoDevCustomizeSettings(
 ) : SimplePersistentStateComponent<AutoDevCustomizeSettings.CustomizeProjectSettings>(CustomizeProjectSettings()) {
     val enableCustomRag: Boolean get() = state.enableCustomRag
     val customPrompts: String get() = state.customPrompts
-    val mcpServer: String get() = state.mcpServices
+    val mcpServerConfig: String get() = state.mcpServerConfig
 
     /**
      *  Use [cc.unitmesh.devti.agent.model.CustomAgentConfig.loadFromProject]
@@ -32,7 +32,7 @@ class AutoDevCustomizeSettings(
         var enableCustomRag by property(false)
         var agentJsonConfig by property("") { it.isEmpty() }
         var customPrompts by property("") { it.isEmpty() }
-        var mcpServices by property("") { it.isEmpty() }
+        var mcpServerConfig by property("") { it.isEmpty() }
 
         override fun copy(): CustomizeProjectSettings {
             val state = CustomizeProjectSettings()

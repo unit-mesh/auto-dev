@@ -134,7 +134,7 @@ internal class MCPServerStartupValidator : ProjectActivity {
 
     override suspend fun execute(project: Project) {
         val notificationGroup = NotificationGroupManager.getInstance().getNotificationGroup(GROUP_ID)
-        if (!project.coderSetting.state.enableMcpServer) {
+        if (!project.coderSetting.state.enableExportAsMcpServer) {
             logger.info("MCP Server is disabled, skipping validation")
             return
         }

@@ -40,7 +40,7 @@ class MCPService : RestService() {
 
     override fun execute(urlDecoder: QueryStringDecoder, request: FullHttpRequest, context: ChannelHandlerContext): String? {
         val project = getLastFocusedOrOpenedProject() ?: return null
-        if (!project.coderSetting.state.enableMcpServer) {
+        if (!project.coderSetting.state.enableExportAsMcpServer) {
             logger<MCPService>().info("MCP Server is disabled, skipping validation")
             return null
         }

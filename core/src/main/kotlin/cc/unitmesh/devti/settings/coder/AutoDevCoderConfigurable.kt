@@ -61,7 +61,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 .bind(
                     componentGet = { it.isSelected },
                     componentSet = { component, value -> component.isSelected = value },
-                    prop = state::enableMcpServer.toMutableProperty()
+                    prop = state::enableExportAsMcpServer.toMutableProperty()
                 )
         }
 
@@ -110,7 +110,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 it.enableRenameSuggestion = state.enableRenameSuggestion
                 it.trimCodeBeforeSend = state.trimCodeBeforeSend
                 it.teamPromptsDir = state.teamPromptsDir
-                it.enableMcpServer = state.enableMcpServer
+                it.enableExportAsMcpServer = state.enableExportAsMcpServer
             }
         }
     }
