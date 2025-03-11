@@ -29,7 +29,7 @@ class MCPUsageCollector(private val scope: CoroutineScope) {
 }
 
 class MCPService : RestService() {
-    private val serviceName = "AutoDevMCP"
+    private val serviceName = "mcp"
     private val json = Json {
         prettyPrint = true
         ignoreUnknownKeys = true
