@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.vcs
 
+import cc.unitmesh.devti.AutoDevNotifications
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diff.impl.patch.IdeaTextPatchBuilder
@@ -8,7 +9,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.openapi.vcs.changes.*
 import com.intellij.project.stateStore
-import git4idea.config.GitExecutableManager
 import org.jetbrains.annotations.NotNull
 import java.io.StringWriter
 import java.nio.file.Path
@@ -63,11 +63,10 @@ class DiffSimplifier(val project: Project) {
                 return ""
             }
 
-
-            val limitedChnages = filteredChanges.subList(0, min(filteredChanges.size, 500))
+            val limitedChanges = filteredChanges.subList(0, min(filteredChanges.size, 100))
 
             val patches = IdeaTextPatchBuilder.buildPatch(
-                project, limitedChnages, Path.of(basePath), false, true
+                project, limitedChanges, Path.of(basePath), false, true
             )
 
             UnifiedDiffWriter.write(
@@ -85,10 +84,11 @@ class DiffSimplifier(val project: Project) {
             return postProcess(originChanges)
         } catch (e: Exception) {
             if (originChanges.isNotEmpty()) {
-                logger.info("Error calculating diff: $originChanges", e)
+                logger.warn("Error calculating diff: $originChanges", e)
             }
 
-            throw RuntimeException("Error calculating diff: ${e.message}", e)
+            AutoDevNotifications.error(project, "Error calculating diff: ${e.message}")
+            return originChanges
         }
     }
 
@@ -224,8 +224,8 @@ class DiffSimplifier(val project: Project) {
 
                 // handle for delete
                 if (line.startsWith("deleted file mode")) {
-                    val nextLine = lines[index + 1]
-                    if (nextLine.startsWith("--- a/")) {
+                    val nextLine = lines.getOrNull(index + 1)
+                    if (nextLine?.startsWith("--- a/") == true) {
                         val withoutHead = nextLine.substring("--- a/".length)
                         // footer: 	(date 1704768267000)
                         val withoutFooter = withoutHead.substring(0, withoutHead.indexOf("\t"))
@@ -250,8 +250,8 @@ class DiffSimplifier(val project: Project) {
 
                 if (line.startsWith("---") || line.startsWith("+++")) {
                     // next line
-                    val nextLine = lines[index + 1]
-                    if (nextLine.startsWith("+++")) {
+                    val nextLine = lines.getOrNull(index + 1)
+                    if (nextLine?.startsWith("+++") == true) {
                         // remove end date
                         val substringBefore = line.substringBefore("(revision")
 

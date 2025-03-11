@@ -68,7 +68,11 @@ class VcsPrompting(private val project: Project) {
             return null
         }
 
-        val processedText = DiffSimplifier.postProcess(changeText)
+        val processedText = try {
+            DiffSimplifier.postProcess(changeText)
+        } catch (e: Exception) {
+            changeText
+        }
 
         val writer = StringWriter()
         if (details.isNotEmpty()) {
