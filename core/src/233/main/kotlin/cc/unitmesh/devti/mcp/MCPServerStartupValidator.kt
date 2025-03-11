@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.mcp
 
-import cc.unitmesh.devti.mcp.claude.ClaudeConfigManager
 import cc.unitmesh.devti.settings.coder.coderSetting
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.OSProcessHandler
@@ -140,22 +139,6 @@ internal class MCPServerStartupValidator : ProjectActivity {
             return
         }
 
-        if (SystemInfo.isLinux) {
-            logger.info("No Claude Client on Linux, skipping validation")
-            return
-        }
-
-        if (!ClaudeConfigManager.isClaudeClientInstalled()) {
-            val notification = notificationGroup.createNotification(
-                "Claude Client is not installed",
-                NotificationType.INFORMATION
-            )
-            notification.addAction(NotificationAction.createSimpleExpiring("Open Installation Instruction") {
-                BrowserUtil.open("https://claude.ai/download")
-            })
-            notification.notify(project)
-        }
-
         val npxInstalled = isNpxInstalled()
         if (!npxInstalled) {
             val notification = notificationGroup.createNotification(
@@ -167,17 +150,6 @@ internal class MCPServerStartupValidator : ProjectActivity {
                 BrowserUtil.open("https://nodejs.org/en/download/package-manager")
             })
 
-            notification.notify(project)
-        }
-
-        if (ClaudeConfigManager.isClaudeClientInstalled() && npxInstalled && !ClaudeConfigManager.isProxyConfigured()) {
-            val notification = notificationGroup.createNotification(
-                "MCP Server Proxy is not configured",
-                NotificationType.INFORMATION
-            )
-            notification.addAction(NotificationAction.createSimpleExpiring("Install MCP Server Proxy") {
-                ClaudeConfigManager.modifyClaudeSettings()
-            })
             notification.notify(project)
         }
     }
