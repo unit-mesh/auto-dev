@@ -220,6 +220,11 @@
         <extensionPoint qualifiedName="cc.unitmesh.knowledgeWebApiProvide"
                         interface="cc.unitmesh.devti.bridge.provider.KnowledgeWebApiProvider"
                         dynamic="true"/>
+
+        <!-- mcp -->
+        <extensionPoint qualifiedName="cc.unitmesh.mcpTool"
+                        interface="cc.unitmesh.devti.mcp.McpTool"
+                        dynamic="true"/>
     </extensionPoints>
 
     <applicationListeners>
