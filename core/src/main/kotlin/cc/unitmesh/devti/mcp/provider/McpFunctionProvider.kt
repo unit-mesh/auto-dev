@@ -5,6 +5,9 @@ import cc.unitmesh.devti.mcp.CustomMcpServerManager
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
+import io.modelcontextprotocol.kotlin.sdk.Tool.Input
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
 
 class McpFunctionProvider : ToolchainFunctionProvider {
     override fun funcNames(): List<String> {
@@ -17,7 +20,12 @@ class McpFunctionProvider : ToolchainFunctionProvider {
             ProjectManager.getInstance().openProjects.firstOrNull() ?: return emptyList()
         )
         return manager.collectServerInfos().map {
-            AgentTool(it.name, it.description ?: "", "")
+            val encodeToString = Json.encodeToString<Input>(it.inputSchema)
+            AgentTool(
+                it.name,
+                it.description ?: "",
+                "Here is command and JSON schema\n/${it.name}\n```json\n$encodeToString\n```"
+            )
         }
     }
 
@@ -36,6 +44,6 @@ class McpFunctionProvider : ToolchainFunctionProvider {
             return "No such tool: $prop"
         }
 
-        return CustomMcpServerManager.instance(project).execute(project, tool, args.map { it.toString() })
+        return CustomMcpServerManager.instance(project).execute(project, tool, args.firstOrNull().toString())
     }
 }

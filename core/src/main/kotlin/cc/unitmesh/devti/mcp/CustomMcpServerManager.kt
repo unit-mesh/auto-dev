@@ -13,7 +13,11 @@ import io.modelcontextprotocol.kotlin.sdk.client.StdioClientTransport
 import kotlinx.io.asSink
 import kotlinx.io.asSource
 import kotlinx.io.buffered
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
 import java.util.concurrent.CompletableFuture
+import kotlin.text.get
 
 @Serializable
 data class McpConfig(
@@ -119,14 +123,21 @@ class CustomMcpServerManager(val project: Project) {
         return tools
     }
 
-    fun execute(project: Project, tool: Tool, map: List<String>): Any {
+    fun execute(project: Project, tool: Tool, map: String): Any {
         toolClientMap[tool]?.let {
             val future = CompletableFuture<Any>()
             kotlinx.coroutines.runBlocking {
                 try {
-                    val result = it.callTool(tool.name, mapOf<String, Any?>(), true, null)
+                    val arguments = try {
+                        Json.decodeFromString<JsonObject>(map).jsonObject.mapValues { it.value }
+                    } catch (e: Exception) {
+                        logger<CustomMcpServerManager>().warn("Failed to parse arguments: $e")
+                        return@runBlocking future.complete("Invalid arguments: $e")
+                    }
+
+                    val result = it.callTool(tool.name, arguments, true, null)
                     future.complete(result)
-                } catch (e: java.lang.Error) {
+                } catch (e: Error) {
                     logger<CustomMcpServerManager>().warn("Failed to execute tool ${tool.name}: $e")
                     future.complete("Failed to execute tool ${tool.name}: $e")
                 }
