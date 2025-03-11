@@ -1,4 +1,3 @@
-// Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package cc.unitmesh.devti.mcp
 
 import cc.unitmesh.devti.mcp.claude.ClaudeConfigManager
@@ -96,7 +95,7 @@ internal class MCPServerStartupValidator : ProjectActivity {
         // Fallback to which command with extended PATH
         logger.info("Unix - No npx found in known locations, trying which command")
         val commandLine = GeneralCommandLine("which", "npx")
-        
+
         // Add all potential paths to PATH
         val currentPath = System.getenv("PATH") ?: ""
         val additionalPaths = listOf(
@@ -138,10 +137,6 @@ internal class MCPServerStartupValidator : ProjectActivity {
         val notificationGroup = NotificationGroupManager.getInstance().getNotificationGroup(GROUP_ID)
         if (SystemInfo.isLinux) {
             logger.info("No Claude Client on Linux, skipping validation")
-            return
-        }
-        if (!project.coderSetting.state.enableMcpServer) {
-            logger.info("MCP Server is disabled, skipping validation")
             return
         }
 

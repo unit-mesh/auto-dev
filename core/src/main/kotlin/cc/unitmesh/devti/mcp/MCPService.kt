@@ -1,6 +1,7 @@
 // Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 package cc.unitmesh.devti.mcp
 
+import cc.unitmesh.devti.settings.coder.coderSetting
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
@@ -28,7 +29,7 @@ class MCPUsageCollector(private val scope: CoroutineScope) {
 }
 
 class MCPService : RestService() {
-    private val serviceName = "mcp"
+    private val serviceName = "AutoDevMCP"
     private val json = Json {
         prettyPrint = true
         ignoreUnknownKeys = true
@@ -38,8 +39,13 @@ class MCPService : RestService() {
     override fun getServiceName(): String = serviceName
 
     override fun execute(urlDecoder: QueryStringDecoder, request: FullHttpRequest, context: ChannelHandlerContext): String? {
-        val path = urlDecoder.path().split(serviceName).last().trimStart('/')
         val project = getLastFocusedOrOpenedProject() ?: return null
+        if (!project.coderSetting.state.enableMcpServer) {
+            logger<MCPService>().info("MCP Server is disabled, skipping validation")
+            return null
+        }
+
+        val path = urlDecoder.path().split(serviceName).last().trimStart('/')
         val tools = McpToolManager.Companion.getAllTools()
 
         when (path) {

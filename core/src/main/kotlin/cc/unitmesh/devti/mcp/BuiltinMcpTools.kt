@@ -36,11 +36,12 @@ import com.intellij.usages.FindUsagesProcessPresentation
 import com.intellij.usages.UsageViewPresentation
 import com.intellij.util.Processor
 import com.intellij.util.application
-import com.intellij.util.io.createParentDirectories
 import kotlinx.serialization.Serializable
+import java.nio.file.FileAlreadyExistsException
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.nio.file.attribute.FileAttribute
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.*
 
@@ -80,7 +81,8 @@ class GetCurrentFilePathTool : AbstractMcpTool<NoArgs>() {
 
     override fun handle(project: Project, args: NoArgs): Response {
         val path = runReadAction<String?> {
-            getInstance(project).selectedTextEditor?.virtualFile?.path
+            val document = getInstance(project).selectedTextEditor?.document ?: return@runReadAction null
+            FileDocumentManager.getInstance().getFile(document)?.path
         }
         return Response(path ?: "")
     }
@@ -656,10 +658,10 @@ class ExecuteActionByIdTool : AbstractMcpTool<ExecuteActionArgs>() {
                 action,
                 null,
                 "",
-                DataManager.getInstance().getDataContext()
+                DataManager.getInstance().dataContext
             )
             action.actionPerformed(event)
-        }, ModalityState.nonModal())
+        }, ModalityState.NON_MODAL)
 
         return Response("ok")
     }
@@ -732,4 +734,15 @@ fun String.toNioPathOrNull(): Path? {
 
 fun VirtualFile.readText(): String {
     return VfsUtilCore.loadText(this)
+}
+
+public fun Path.createParentDirectories(vararg attributes: FileAttribute<*>): Path = also {
+    val parent = it.parent
+    if (parent != null && !parent.isDirectory()) {
+        try {
+            parent.createDirectories(*attributes)
+        } catch (e: FileAlreadyExistsException) {
+            if (!parent.isDirectory()) throw e
+        }
+    }
 }
