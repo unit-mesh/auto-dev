@@ -56,7 +56,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
-        row(jLabel("settings.autodev.coder.enableMcpServer")) {
+        row(jLabel("settings.autodev.coder.enableExportAsMcpServer")) {
             fullWidthCell(enableMcpServerCheckBox)
                 .bind(
                     componentGet = { it.isSelected },
