@@ -20,6 +20,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
     }
     private val inEditorCompletionCheckBox = JCheckBox()
     private val noChatHistoryCheckBox = JCheckBox()
+    private val enableMcpServerCheckBox = JCheckBox()
     private val teamPromptsField = JTextField()
     private val trimCodeBeforeSend = JCheckBox()
 
@@ -52,6 +53,15 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                     componentGet = { it.isSelected },
                     componentSet = { component, value -> component.isSelected = value },
                     prop = state::noChatHistory.toMutableProperty()
+                )
+        }
+
+        row(jLabel("settings.autodev.coder.enableMcpServer")) {
+            fullWidthCell(enableMcpServerCheckBox)
+                .bind(
+                    componentGet = { it.isSelected },
+                    componentSet = { component, value -> component.isSelected = value },
+                    prop = state::enableMcpServer.toMutableProperty()
                 )
         }
 
@@ -100,6 +110,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 it.enableRenameSuggestion = state.enableRenameSuggestion
                 it.trimCodeBeforeSend = state.trimCodeBeforeSend
                 it.teamPromptsDir = state.teamPromptsDir
+                it.enableMcpServer = state.enableMcpServer
             }
         }
     }

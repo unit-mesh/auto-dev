@@ -80,6 +80,7 @@
                 implementation="cc.unitmesh.devti.gui.snippet.error.CodeBlockIntentionActionFilter"/>
 
         <httpRequestHandler implementation="cc.unitmesh.devti.mcp.MCPService"/>
+        <notificationGroup id="UnitMesh.MCPServer" displayType="BALLOON"/>
     </extensions>
 
     <extensions defaultExtensionNs="JavaScript.JsonSchema">

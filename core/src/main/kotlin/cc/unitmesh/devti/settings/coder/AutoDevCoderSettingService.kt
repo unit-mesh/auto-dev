@@ -22,6 +22,7 @@ class AutoDevCoderSettingService(
     class AutoDevCoderSettings : AdProjectSettingsBase<AutoDevCoderSettings>() {
         var recordingInLocal by property(false)
         var disableAdvanceContext by property(false)
+        var enableMcpServer by property(false)
         var inEditorCompletion by property(false)
         var noChatHistory by property(false)
         var trimCodeBeforeSend by property(false)

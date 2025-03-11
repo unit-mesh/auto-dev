@@ -173,5 +173,6 @@ Inspired by:
   which is licensed under the Apache 2.0 license.
 - Stream Diff based on [Continue Dev](https://github.com/continuedev/continue) under the Apache 2.0 license.
 - Ripgrep inspired by [Cline](https://github.com/cline/cline) under the Apache 2.0 license.
+- MCP based on [JetBrains' MCP](https://plugins.jetbrains.com/plugin/26071-mcp-server)
 
 This code is distributed under the MPL 2.0 license. See `LICENSE` in this directory.

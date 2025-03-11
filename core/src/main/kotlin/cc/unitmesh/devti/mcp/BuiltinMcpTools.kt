@@ -24,10 +24,10 @@ import com.intellij.openapi.progress.impl.CoreProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.roots.OrderEnumerator
+import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.readText
-import com.intellij.openapi.vfs.toNioPathOrNull
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
@@ -38,7 +38,9 @@ import com.intellij.util.Processor
 import com.intellij.util.application
 import com.intellij.util.io.createParentDirectories
 import kotlinx.serialization.Serializable
+import java.nio.file.InvalidPathException
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.*
 
@@ -713,4 +715,21 @@ class WaitTool : AbstractMcpTool<WaitArgs>() {
 
         return Response("ok")
     }
+}
+
+fun VirtualFile.toNioPathOrNull(): Path? {
+    return runCatching { toNioPath() }.getOrNull()
+}
+
+fun String.toNioPathOrNull(): Path? {
+    return try {
+        Paths.get(FileUtilRt.toSystemDependentName(this))
+    }
+    catch (ex: InvalidPathException) {
+        null
+    }
+}
+
+fun VirtualFile.readText(): String {
+    return VfsUtilCore.loadText(this)
 }
