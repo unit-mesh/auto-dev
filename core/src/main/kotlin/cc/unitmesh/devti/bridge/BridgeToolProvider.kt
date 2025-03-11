@@ -18,9 +18,9 @@ object BridgeToolProvider {
 
         val functions = ToolchainFunctionProvider.all()
 
-        commonTools += functions.map {
-            if (it.toolInfo() != null) {
-                return@map listOf(it.toolInfo()!!)
+        commonTools += functions.flatMap {
+            if (it.toolInfos().isNotEmpty()) {
+                return@flatMap it.toolInfos()
             }
 
             val funcNames = it.funcNames()
@@ -28,7 +28,7 @@ object BridgeToolProvider {
                 val example = BuiltinCommand.example(name)
                 AgentTool(name, "", example)
             }
-        }.flatten()
+        }
 
         return commonTools
     }

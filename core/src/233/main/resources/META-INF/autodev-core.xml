@@ -270,6 +270,7 @@
         <toolchainFunctionProvider implementation="cc.unitmesh.devti.bridge.assessment.SccFunctionProvider"/>
         <toolchainFunctionProvider implementation="cc.unitmesh.devti.bridge.knowledge.HistoryFunctionProvider"/>
         <toolchainFunctionProvider implementation="cc.unitmesh.devti.bridge.knowledge.KnowledgeFunctionProvider"/>
+        <toolchainFunctionProvider implementation="cc.unitmesh.devti.mcp.provider.McpFunctionProvider"/>
     </extensions>
 
     <actions>

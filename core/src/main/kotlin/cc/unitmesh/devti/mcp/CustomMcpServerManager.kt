@@ -1,11 +1,9 @@
 package cc.unitmesh.devti.mcp
 
 import cc.unitmesh.devti.settings.customize.customizeSetting
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.ProjectManager
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import io.modelcontextprotocol.kotlin.sdk.client.Client
@@ -33,9 +31,8 @@ data class McpServer(
 ) {
 
     companion object {
-        fun load(): McpConfig? {
-            val project = ProjectManager.getInstance().openProjects.first()
-            return tryParse(project.customizeSetting.mcpServerConfig)
+        fun load(mcpServerConfig: String): McpConfig? {
+            return tryParse(mcpServerConfig)
         }
 
         fun tryParse(configs: String?): McpConfig? {
@@ -56,8 +53,20 @@ data class McpServer(
 
 @Service(Service.Level.PROJECT)
 class CustomMcpServerManager(val project: Project) {
-    fun collectServerInfos(): List<Any> {
-        val mcpConfig = McpServer.load()
+    val cached = mutableMapOf<String, List<Tool>>()
+    val toolClientMap = mutableMapOf<Tool, Client>()
+
+    fun collectServerInfos(): List<Tool> {
+        val mcpServerConfig = project.customizeSetting.mcpServerConfig
+        if (mcpServerConfig.isEmpty()) {
+            return emptyList()
+        }
+
+        if (cached.containsKey(mcpServerConfig)) {
+            return cached[mcpServerConfig]!!
+        }
+
+        val mcpConfig = McpServer.load(mcpServerConfig)
         if (mcpConfig == null) {
             return emptyList()
         }
@@ -92,6 +101,10 @@ class CustomMcpServerManager(val project: Project) {
                         future.complete(listTools.tools)
                     }
 
+                    listTools?.tools?.map {
+                        toolClientMap[it] = client
+                    }
+
                     listTools
                 } catch (e: java.lang.Error) {
                     logger<CustomMcpServerManager>().warn("Failed to list tools from ${it.key}: $e")
@@ -102,8 +115,27 @@ class CustomMcpServerManager(val project: Project) {
             future.get(30, java.util.concurrent.TimeUnit.SECONDS)
         }.flatten()
 
-
+        cached[mcpServerConfig] = tools
         return tools
+    }
+
+    fun execute(project: Project, tool: Tool, map: List<String>): Any {
+        toolClientMap[tool]?.let {
+            val future = CompletableFuture<Any>()
+            kotlinx.coroutines.runBlocking {
+                try {
+                    val result = it.callTool(tool.name, mapOf<String, Any?>(), true, null)
+                    future.complete(result)
+                } catch (e: java.lang.Error) {
+                    logger<CustomMcpServerManager>().warn("Failed to execute tool ${tool.name}: $e")
+                    future.complete("Failed to execute tool ${tool.name}: $e")
+                }
+            }
+
+            return future.get(30, java.util.concurrent.TimeUnit.SECONDS)
+        }
+
+        return "No such tool: ${tool.name} or failed to execute"
     }
 
     companion object {
@@ -114,3 +146,4 @@ class CustomMcpServerManager(val project: Project) {
         }
     }
 }
+

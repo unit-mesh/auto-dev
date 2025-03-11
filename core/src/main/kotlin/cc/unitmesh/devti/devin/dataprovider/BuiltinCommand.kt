@@ -2,6 +2,7 @@ package cc.unitmesh.devti.devin.dataprovider
 
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.agenttool.AgentTool
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.project.ProjectManager
@@ -164,10 +165,9 @@ enum class BuiltinCommand(
 
         fun allToolchains(): List<String> {
             return ToolchainFunctionProvider.all().map {
-                val toolInfo = it.toolInfo()
-                if (toolInfo != null) {
-                    val base = toolInfo.commandName
-                    return@map it.funcNames().map { "$base:$it" }
+                val toolInfo: List<AgentTool> = it.toolInfos()
+                if (toolInfo.isNotEmpty()) {
+                    return@map toolInfo.map { it.commandName }
                 }
 
                 it.funcNames()

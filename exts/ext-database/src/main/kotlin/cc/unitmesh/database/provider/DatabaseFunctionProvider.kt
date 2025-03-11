@@ -12,9 +12,9 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 
 class DatabaseFunctionProvider : ToolchainFunctionProvider {
-    override fun toolInfo(): AgentTool? {
+    override fun toolInfos(): List<AgentTool> {
         val example = BuiltinCommand.example("database")
-        return AgentTool("database", "Database schema and query tool", example)
+        return listOf(AgentTool("database", "Database schema and query tool", example))
     }
 
     override fun isApplicable(project: Project, funcName: String): Boolean = DatabaseFunction.entries.any { it.funName == funcName }
