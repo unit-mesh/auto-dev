@@ -4,8 +4,8 @@
     <title>autodev-overview</title>
     <desc>Created with Sketch.</desc>
     <defs>
-        <rect id="path-1" x="0" y="0" width="121" height="142" rx="16"></rect>
-        <mask id="mask-2" maskContentUnits="userSpaceOnUse" maskUnits="objectBoundingBox" x="0" y="0" width="121" height="142" fill="white">
+        <rect id="path-1" x="9" y="86" width="121" height="175" rx="16"></rect>
+        <mask id="mask-2" maskContentUnits="userSpaceOnUse" maskUnits="objectBoundingBox" x="0" y="0" width="121" height="175" fill="white">
             <use xlink:href="#path-1"></use>
         </mask>
         <rect id="path-3" x="0" y="0" width="121" height="241" rx="16"></rect>
@@ -16,7 +16,7 @@
         <mask id="mask-6" maskContentUnits="userSpaceOnUse" maskUnits="objectBoundingBox" x="0" y="0" width="120" height="186" fill="white">
             <use xlink:href="#path-5"></use>
         </mask>
-        <rect id="path-7" x="0" y="0" width="121" height="241" rx="16"></rect>
+        <rect id="path-7" x="548" y="20" width="121" height="241" rx="16"></rect>
         <mask id="mask-8" maskContentUnits="userSpaceOnUse" maskUnits="objectBoundingBox" x="0" y="0" width="121" height="241" fill="white">
             <use xlink:href="#path-7"></use>
         </mask>
@@ -31,27 +31,31 @@
             <rect id="Rectangle" fill-opacity="0.255652794" fill="#011C32" x="405" y="0" width="270" height="270"></rect>
             <rect id="Rectangle" fill-opacity="0.313312664" fill="#011C32" x="0" y="271" width="675" height="47"></rect>
             <line x1="0.5" y1="270.5" x2="674.5" y2="270.5" id="Line" stroke-opacity="0.5" stroke="#000000" stroke-linecap="square" stroke-linejoin="round" stroke-dasharray="5,5"></line>
-            <g id="Group" transform="translate(9.000000, 119.000000)">
-                <text id="Chat" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
-                    <tspan x="47.8261719" y="21">Chat</tspan>
+            <text id="Chat" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
+                <tspan x="57.3261719" y="104">Chat</tspan>
+            </text>
+            <rect id="Rectangle" stroke="#011C32" fill-opacity="0.9" fill="#011C32" x="20.5" y="220.5" width="98" height="29" rx="8"></rect>
+            <text id="Custom-Prompts" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                <tspan x="24.8222656" y="239">Custom Prompts</tspan>
+            </text>
+            <use id="Rectangle" stroke="#011C32" mask="url(#mask-2)" stroke-width="2" stroke-dasharray="5,5" xlink:href="#path-1"></use>
+            <g id="chat-by-selection" transform="translate(21.000000, 117.000000)">
+                <rect id="Rectangle" fill="#48A178" x="0" y="0" width="99" height="30" rx="8"></rect>
+                <text id="Chat" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                    <tspan x="36.8261719" y="19">Chat</tspan>
                 </text>
-                <rect id="Rectangle" stroke="#011C32" fill-opacity="0.9" fill="#011C32" x="11.5" y="101.5" width="98" height="29" rx="8"></rect>
-                <text id="Custom-Prompts" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
-                    <tspan x="15.8222656" y="120">Custom Prompts</tspan>
+            </g>
+            <g id="chat-by-selection" transform="translate(20.000000, 152.000000)">
+                <rect id="Rectangle" fill="#48A178" x="0" y="0" width="99" height="30" rx="8"></rect>
+                <text id="Inline-Chat" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                    <tspan x="20.8154297" y="19">Inline Chat</tspan>
                 </text>
-                <use id="Rectangle" stroke="#011C32" mask="url(#mask-2)" stroke-width="2" stroke-dasharray="5,5" xlink:href="#path-1"></use>
-                <g id="chat-by-selection" transform="translate(11.000000, 34.000000)">
-                    <rect id="Rectangle" fill="#48A178" x="0" y="0" width="99" height="30" rx="8"></rect>
-                    <text id="Chat" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
-                        <tspan x="36.8261719" y="19">Chat</tspan>
-                    </text>
-                </g>
-                <g id="chat" transform="translate(11.000000, 68.000000)">
-                    <rect id="Rectangle" fill="#48A178" x="0" y="0" width="99" height="30" rx="8"></rect>
-                    <text id="Chat-By-Scene" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
-                        <tspan x="9.97753906" y="19">Chat By Scene</tspan>
-                    </text>
-                </g>
+            </g>
+            <g id="chat" transform="translate(20.000000, 187.000000)">
+                <rect id="Rectangle" fill="#48A178" x="0" y="0" width="99" height="30" rx="8"></rect>
+                <text id="Chat-By-Scene" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                    <tspan x="9.97753906" y="19">Chat By Scene</tspan>
+                </text>
             </g>
             <g id="Group-2" transform="translate(144.000000, 20.000000)">
                 <text id="Coding" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
@@ -62,13 +66,13 @@
                     <g id="commit-gen" transform="translate(0.000000, 170.000000)">
                         <rect id="Rectangle" fill="#48A178" x="0" y="0" width="99" height="30" rx="8"></rect>
                         <text id="Comment-Gen" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
-                            <tspan x="10.9853516" y="19">Document Gen</tspan>
+                            <tspan x="10.9853516" y="19">Comment Gen</tspan>
                         </text>
                     </g>
                     <g id="refactor" transform="translate(0.000000, 136.000000)">
                         <rect id="Rectangle" fill="#48A178" x="0" y="0" width="99" height="30" rx="8"></rect>
-                        <text id="Refactor" font-family="Helvetica" font-size="10" font-weight="normal" fill="#FFFFFF">
-                            <tspan x="10.32" y="18">Smart Refactoring</tspan>
+                        <text id="Smart-Refactor" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                            <tspan x="9.65527344" y="19">Smart Refactor</tspan>
                         </text>
                     </g>
                     <g id="bug-fix" transform="translate(0.000000, 102.000000)">
@@ -132,50 +136,48 @@
             <text id="DevOps" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
                 <tspan x="451.326172" y="137">DevOps</tspan>
             </text>
-            <g id="Group-4" transform="translate(548.000000, 20.000000)">
-                <text id="AI-Agent" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
-                    <tspan x="37.3125" y="22">AI Agent</tspan>
-                </text>
-                <g id="agent" transform="translate(11.000000, 31.000000)">
-                    <g id="custom-rag" transform="translate(0.000000, 171.000000)">
-                        <rect id="Rectangle" fill="#000000" x="0" y="0" width="99" height="30" rx="8"></rect>
-                        <text id="Custom-Agent" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
-                            <tspan x="12.3095703" y="19">Custom Agent</tspan>
-                        </text>
-                    </g>
-                    <g id="crud">
-                        <rect id="Rectangle" fill="#000000" x="0" y="0" width="99" height="30" rx="8"></rect>
-                        <text id="AutoCRUD" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
-                            <tspan x="20.3251953" y="19">AutoCRUD</tspan>
-                        </text>
-                    </g>
-                    <g id="arkui" transform="translate(0.000000, 34.000000)">
-                        <rect id="Rectangle" fill="#000000" x="0" y="0" width="99" height="30" rx="8"></rect>
-                        <text id="Auto-ArkUI" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
-                            <tspan x="21.3183594" y="19">Auto ArkUI</tspan>
-                        </text>
-                    </g>
-                    <g id="counit" transform="translate(0.000000, 137.000000)">
-                        <rect id="Rectangle" fill="#CC850A" x="0" y="0" width="99" height="30" rx="8"></rect>
-                        <text id="CoUnit" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
-                            <tspan x="31.6601562" y="19">CoUnit</tspan>
-                        </text>
-                    </g>
-                    <g id="autopage" transform="translate(0.000000, 103.000000)">
-                        <rect id="Rectangle" fill="#000000" x="0" y="0" width="99" height="30" rx="8"></rect>
-                        <text id="AutoPage" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
-                            <tspan x="23.6445312" y="19">AutoPage</tspan>
-                        </text>
-                    </g>
-                    <g id="autosql" transform="translate(0.000000, 68.000000)">
-                        <rect id="Rectangle" fill="#000000" x="0" y="0" width="99" height="30" rx="8"></rect>
-                        <text id="AutoSQL" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
-                            <tspan x="25.6513672" y="19">AutoSQL</tspan>
-                        </text>
-                    </g>
+            <text id="AI-Agent" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
+                <tspan x="585.3125" y="42">AI Agent</tspan>
+            </text>
+            <g id="agent" transform="translate(559.000000, 51.000000)">
+                <g id="custom-rag" transform="translate(0.000000, 171.000000)">
+                    <rect id="Rectangle" fill="#000000" x="0" y="0" width="99" height="30" rx="8"></rect>
+                    <text id="Custom-Agent" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                        <tspan x="12.3095703" y="19">Custom Agent</tspan>
+                    </text>
                 </g>
-                <use id="Rectangle" stroke="#011C32" mask="url(#mask-8)" stroke-width="2" stroke-dasharray="5,5" xlink:href="#path-7"></use>
+                <g id="crud">
+                    <rect id="Rectangle" fill="#000000" x="0" y="0" width="99" height="30" rx="8"></rect>
+                    <text id="AutoCRUD" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                        <tspan x="20.3251953" y="19">AutoCRUD</tspan>
+                    </text>
+                </g>
+                <g id="counit" transform="translate(0.000000, 137.000000)">
+                    <rect id="Rectangle" fill="#CC850A" x="0" y="0" width="99" height="30" rx="8"></rect>
+                    <text id="Bridge" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                        <tspan x="32.65625" y="19">Bridge</tspan>
+                    </text>
+                </g>
+                <g id="autopage" transform="translate(-0.000000, 68.000000)">
+                    <rect id="Rectangle" fill="#000000" x="0" y="0" width="99" height="30" rx="8"></rect>
+                    <text id="AutoPage" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                        <tspan x="23.6445312" y="19">AutoPage</tspan>
+                    </text>
+                </g>
+                <g id="autopage" transform="translate(-0.000000, 102.000000)">
+                    <rect id="Rectangle" fill="#48A178" x="0" y="0" width="99" height="30" rx="8"></rect>
+                    <text id="Sketch" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                        <tspan x="31.6572266" y="19">Sketch</tspan>
+                    </text>
+                </g>
+                <g id="autosql" transform="translate(-0.000000, 34.000000)">
+                    <rect id="Rectangle" fill="#000000" x="0" y="0" width="99" height="30" rx="8"></rect>
+                    <text id="AutoSQL" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                        <tspan x="25.6513672" y="19">AutoSQL</tspan>
+                    </text>
+                </g>
             </g>
+            <use id="Rectangle" stroke="#011C32" mask="url(#mask-8)" stroke-width="2" stroke-dasharray="5,5" xlink:href="#path-7"></use>
             <g id="custom-llm" transform="translate(40.000000, 280.000000)">
                 <g id="model" transform="translate(8.000000, 8.000000)"></g>
                 <rect id="Rectangle" fill="#DA4167" x="0" y="0" width="99" height="30" rx="8"></rect>
@@ -212,8 +214,8 @@
                 <g id="online-bug" transform="translate(0.000000, 69.000000)">
                     <rect id="Rectangle" fill="#CCCCCC" x="0" y="0" width="99" height="30" rx="8"></rect>
                     <rect id="Rectangle" fill="#CCCCCC" x="0" y="0" width="99" height="30" rx="8"></rect>
-                    <text id="Online-Bug-fix" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
-                        <tspan x="12.6464844" y="19">Online Bug fix</tspan>
+                    <text id="DevContainer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#FFFFFF">
+                        <tspan x="13.3144531" y="19">DevContainer</tspan>
                     </text>
                 </g>
                 <g id="dockerfile" transform="translate(0.000000, 35.000000)">
@@ -230,7 +232,7 @@
                 </g>
             </g>
             <text id="Individual-Copilot" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
-                <tspan x="9.13769531" y="20">Individual Copilot</tspan>
+                <tspan x="9.30566406" y="20">Individual Copilot</tspan>
             </text>
             <text id="R&amp;D-GPTs-(organizati" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
                 <tspan x="413.496094" y="20">R&amp;D GPTs</tspan>

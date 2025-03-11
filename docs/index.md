@@ -7,7 +7,7 @@ permalink: /
 ---
 
 <p align="center">
-  <img src="https://plugins.jetbrains.com/files/21520/412905/icon/pluginIcon.svg" width="160px" height="160px" />
+  <img src="https://raw.githubusercontent.com/unit-mesh/auto-dev/refs/heads/master/src/main/resources/META-INF/pluginIcon.svg" width="160px" height="160px" />
 </p>
 <h1 align="center">AutoDev for Intellij Platform</h1>
 <p align="center">
@@ -63,20 +63,6 @@ developer experience within the IDE.
 Video demo (Bilibili) - 中文/Chinese
 
 [![Watch the video](https://img.youtube.com/vi/1m3HJzw0YhA/sddefault.jpg)](https://www.bilibili.com/video/BV115c6eUEps/)
-
-## AutoDev Architecture
-
-Here is the AutoDev architecture:
-
-![](docs/autodev-arch.svg)
-
-## AutoDev 1.0~ Feature Overview
-
-Regarding the matter discussed in the LICENSE issue at the project's outset, we want to address the complexity of JetBrain plugin development. In the process, we referenced certain code and API designs from the JetBrains Community version and the JetBrains AI Assistant plugin. JetBrains understandably reserves the right to view this as potential infringement on their intellectual property.
-
-Therefore, as of April 2024, AutoDev is no longer available on the JetBrains Plugin Marketplace. However, for older versions' AutoDev, you can access downloads from our Releases page. 
-
-Additionally, we extend a warm invitation to participate in the development of the VSCode version. Your contributions are greatly appreciated.
 
 ## AutoDev Architecture
 
