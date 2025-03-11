@@ -1,5 +1,6 @@
 package cc.unitmesh.idea.provider
 
+import cc.unitmesh.devti.mcp.Query
 import cc.unitmesh.devti.provider.RelatedClassesProvider
 import cc.unitmesh.idea.context.JavaContextCollection
 import cc.unitmesh.idea.service.JavaTypeUtil.resolveByType
@@ -9,9 +10,12 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.psi.*
+import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.searches.ClassInheritorsSearch
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.PsiUtil
 import com.intellij.testIntegration.TestFinderHelper
+
 
 class JavaRelatedClassesProvider : RelatedClassesProvider {
     override fun lookupIO(element: PsiElement): List<PsiClass> {
@@ -80,7 +84,12 @@ class JavaRelatedClassesProvider : RelatedClassesProvider {
                         else -> null
                     }
                 }
-                return@runReadAction (fieldsTypes + methods).distinct()
+                val inheritors: Collection<PsiClass> =
+                    ClassInheritorsSearch.search(clazz, GlobalSearchScope.allScope(clazz.project), true)
+                        .findAll()
+                        .toList()
+
+                return@runReadAction (fieldsTypes + methods + inheritors).distinct()
             }
         }?.get() ?: emptyList()
     }
