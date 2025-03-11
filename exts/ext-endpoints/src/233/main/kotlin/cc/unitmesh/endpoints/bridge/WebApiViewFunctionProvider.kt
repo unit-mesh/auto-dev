@@ -9,6 +9,7 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.NlsSafe
 import com.intellij.spring.mvc.mapping.UrlMappingElement
 import java.util.concurrent.CompletableFuture
 
@@ -21,7 +22,8 @@ class WebApiViewFunctionProvider : ToolchainFunctionProvider {
         project: Project,
         prop: String,
         args: List<Any>,
-        allVariables: Map<String, Any?>
+        allVariables: Map<String, Any?>,
+        commandName: @NlsSafe String
     ): Any {
         val future = CompletableFuture<String>()
         val task = object : Task.Backgroundable(project, "Processing context", false) {

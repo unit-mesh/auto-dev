@@ -7,6 +7,7 @@ import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.util.NlsSafe
 
 class SccFunctionProvider : ToolchainFunctionProvider {
     override fun isApplicable(project: Project, funcName: String): Boolean = funcName == Assessment.SCC.name
@@ -17,7 +18,8 @@ class SccFunctionProvider : ToolchainFunctionProvider {
         project: Project,
         prop: String,
         args: List<Any>,
-        allVariables: Map<String, Any?>
+        allVariables: Map<String, Any?>,
+        commandName: @NlsSafe String
     ): Any {
         val baseDir = project.guessProjectDir()!!.path
         val path = if (prop.isEmpty()) { baseDir } else "$baseDir/$prop"

@@ -5,6 +5,7 @@ import cc.unitmesh.devti.provider.RevisionProvider
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 
@@ -17,7 +18,8 @@ class HistoryFunctionProvider : ToolchainFunctionProvider {
         project: Project,
         prop: String,
         args: List<Any>,
-        allVariables: Map<String, Any?>
+        allVariables: Map<String, Any?>,
+        commandName: @NlsSafe String
     ): Any {
         val path = project.lookupFile(prop) ?: return "File not found"
         return RevisionProvider.provide()?.let {

@@ -10,6 +10,7 @@ import com.intellij.database.model.DasTable
 import com.intellij.database.model.RawDataSource
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.NlsSafe
 
 class DatabaseFunctionProvider : ToolchainFunctionProvider {
     override fun toolInfos(): List<AgentTool> {
@@ -26,6 +27,7 @@ class DatabaseFunctionProvider : ToolchainFunctionProvider {
         prop: String,
         args: List<Any>,
         allVariables: Map<String, Any?>,
+        commandName: @NlsSafe String,
     ): Any {
         val databaseFunction = DatabaseFunction.fromString(prop)
             ?: throw IllegalArgumentException("[Database]: Invalid Database function name")

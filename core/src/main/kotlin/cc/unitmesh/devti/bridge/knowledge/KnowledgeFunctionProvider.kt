@@ -9,6 +9,7 @@ import cc.unitmesh.devti.util.relativePath
 import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 
@@ -53,7 +54,8 @@ class KnowledgeFunctionProvider : ToolchainFunctionProvider {
         project: Project,
         prop: String,
         args: List<Any>,
-        allVariables: Map<String, Any?>
+        allVariables: Map<String, Any?>,
+        commandName: @NlsSafe String
     ): Any {
         val split = prop.split("#")
         if (split.size != 2) {

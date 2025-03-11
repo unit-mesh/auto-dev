@@ -149,6 +149,12 @@ enum class BuiltinCommand(
                     return TOOLCHAIN_COMMAND
                 }
 
+                ToolchainFunctionProvider.all().forEach {
+                    if (it.funcNames().contains(commandName)) {
+                        return TOOLCHAIN_COMMAND
+                    }
+                }
+
                 val project = ProjectManager.getInstance().openProjects.first()
                 AutoDevNotifications.warn(project, "Command not found: $commandName")
                 return null

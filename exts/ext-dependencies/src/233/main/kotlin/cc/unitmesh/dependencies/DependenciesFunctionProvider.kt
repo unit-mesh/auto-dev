@@ -9,6 +9,7 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.NlsSafe
 import com.intellij.packageChecker.model.ProjectDependenciesModel
 import org.jetbrains.security.`package`.Package
 import java.util.concurrent.CompletableFuture
@@ -22,7 +23,8 @@ class DependenciesFunctionProvider : ToolchainFunctionProvider {
         project: Project,
         prop: String,
         args: List<Any>,
-        allVariables: Map<String, Any?>
+        allVariables: Map<String, Any?>,
+        commandName: @NlsSafe String
     ): Any {
         val modules = ModuleManager.getInstance(project).modules
         val future = CompletableFuture<String>()

@@ -25,7 +25,7 @@ class DatabaseInsCommand(val myProject: Project, private val prop: String, priva
 
         val result = try {
             ToolchainFunctionProvider.lookup("DatabaseFunctionProvider")
-                ?.execute(myProject, prop, args, emptyMap())
+                ?.execute(myProject, prop, args, emptyMap(), "")
         } catch (e: Exception) {
             AutoDevNotifications.notify(myProject, "Error: ${e.message}")
             return "Error: ${e.message}"

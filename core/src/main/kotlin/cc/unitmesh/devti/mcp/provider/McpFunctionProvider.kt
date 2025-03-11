@@ -5,6 +5,7 @@ import cc.unitmesh.devti.mcp.CustomMcpServerManager
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.util.NlsSafe
 import io.modelcontextprotocol.kotlin.sdk.Tool.Input
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
@@ -37,11 +38,12 @@ class McpFunctionProvider : ToolchainFunctionProvider {
         project: Project,
         prop: String,
         args: List<Any>,
-        allVariables: Map<String, Any?>
+        allVariables: Map<String, Any?>,
+        commandName: @NlsSafe String
     ): Any {
-        val tool = CustomMcpServerManager.instance(project).collectServerInfos().firstOrNull { it.name == prop }
+        val tool = CustomMcpServerManager.instance(project).collectServerInfos().firstOrNull { it.name == commandName }
         if (tool == null) {
-            return "No such tool: $prop"
+            return "No MCP such tool: $prop"
         }
 
         return CustomMcpServerManager.instance(project).execute(project, tool, args.firstOrNull().toString())

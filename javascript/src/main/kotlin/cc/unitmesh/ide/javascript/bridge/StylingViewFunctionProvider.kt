@@ -6,6 +6,7 @@ import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.fileTypes.ex.FileTypeManagerEx
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.css.CssFileType
@@ -22,7 +23,8 @@ class StylingViewFunctionProvider : ToolchainFunctionProvider {
         project: Project,
         prop: String,
         args: List<Any>,
-        allVariables: Map<String, Any?>
+        allVariables: Map<String, Any?>,
+        commandName: @NlsSafe String
     ): Any {
         val searchScope: GlobalSearchScope = ProjectScope.getContentScope(project)
         val scssType = FileTypeManagerEx.getInstanceEx().getFileTypeByExtension("scss")

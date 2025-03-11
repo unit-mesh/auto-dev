@@ -3,6 +3,7 @@ package cc.unitmesh.devti.provider.toolchain
 import cc.unitmesh.devti.agenttool.AgentTool
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.NlsSafe
 
 interface ToolchainFunctionProvider {
     fun toolInfos(): List<AgentTool> = emptyList()
@@ -11,7 +12,7 @@ interface ToolchainFunctionProvider {
 
     fun isApplicable(project: Project, funcName: String): Boolean
 
-    fun execute(project: Project, prop: String, args: List<Any>, allVariables: Map<String, Any?>): Any
+    fun execute(project: Project, prop: String, args: List<Any>, allVariables: Map<String, Any?>, commandName: String): Any
 
     companion object {
         private val EP_NAME: ExtensionPointName<ToolchainFunctionProvider> =

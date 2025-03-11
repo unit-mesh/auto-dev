@@ -4,20 +4,19 @@ import cc.unitmesh.devti.settings.customize.customizeSetting
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-import io.modelcontextprotocol.kotlin.sdk.client.Client
 import io.modelcontextprotocol.kotlin.sdk.Implementation
 import io.modelcontextprotocol.kotlin.sdk.Tool
+import io.modelcontextprotocol.kotlin.sdk.client.Client
 import io.modelcontextprotocol.kotlin.sdk.client.StdioClientTransport
 import kotlinx.io.asSink
 import kotlinx.io.asSource
 import kotlinx.io.buffered
-import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.jsonObject
 import java.util.concurrent.CompletableFuture
-import kotlin.text.get
 
 @Serializable
 data class McpConfig(
@@ -123,9 +122,9 @@ class CustomMcpServerManager(val project: Project) {
         return tools
     }
 
-    fun execute(project: Project, tool: Tool, map: String): Any {
+    fun execute(project: Project, tool: Tool, map: String): String {
         toolClientMap[tool]?.let {
-            val future = CompletableFuture<Any>()
+            val future = CompletableFuture<String>()
             kotlinx.coroutines.runBlocking {
                 try {
                     val arguments = try {
@@ -136,7 +135,11 @@ class CustomMcpServerManager(val project: Project) {
                     }
 
                     val result = it.callTool(tool.name, arguments, true, null)
-                    future.complete(result)
+                        if (result?.content.isNullOrEmpty()) {
+                            future.complete("No result from tool ${tool.name}")
+                        } else {
+                            future.complete(Json.encodeToString(result.content))
+                        }
                 } catch (e: Error) {
                     logger<CustomMcpServerManager>().warn("Failed to execute tool ${tool.name}: $e")
                     future.complete("Failed to execute tool ${tool.name}: $e")

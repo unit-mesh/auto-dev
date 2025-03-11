@@ -298,7 +298,14 @@ class DevInsCompiler(
                     if (provider != null) {
                         executeExtensionFunction(used, prop, provider)
                     } else {
-                        PrintInsCommand("/" + commandNode.commandName + ":" + prop)
+                        var cmd = PrintInsCommand("/" + commandNode.commandName + ":" + prop)
+                        ToolchainFunctionProvider.all().forEach {
+                            if (it.funcNames().contains(originCmdName)) {
+                                cmd = executeExtensionFunction(used, prop, it)
+                            }
+                        }
+
+                        cmd
                     }
                 } catch (e: Exception) {
                     PrintInsCommand("/" + commandNode.commandName + ":" + prop)
@@ -351,7 +358,8 @@ class DevInsCompiler(
         val task = object : Task.Backgroundable(myProject, "Processing context", false) {
             override fun run(indicator: ProgressIndicator) {
                 val result = try {
-                    provider.execute(myProject!!, prop, args, emptyMap())
+                    val cmd = runReadAction { used.text.removePrefix("/") }
+                    provider.execute(myProject!!, prop, args, emptyMap(), cmd)
                 } catch (e: Exception) {
                     logger<DevInsCompiler>().warn(e)
                     val text = runReadAction { used.text }
