@@ -9,7 +9,8 @@ class AutoDevJsonSchemaProviderFactory : JsonSchemaProviderFactory {
         return mutableListOf(
             CustomAgentSchemaFileProvider(project),
             CustomLlmSchemaFileProvider(project),
-            CustomPromptsSchemaFileProvider(project)
+            CustomPromptsSchemaFileProvider(project),
+            CustomMCPServersSchemaFileProvider(project)
         )
     }
 }
