@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Custom Language
-parent: Customize Features
+parent: Development
 nav_order: 11
 permalink: /custom/language
 ---
