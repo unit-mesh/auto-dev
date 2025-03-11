@@ -410,6 +410,10 @@ project(":core") {
             testFramework(TestFrameworkType.Platform)
         }
 
+        implementation("io.modelcontextprotocol:kotlin-sdk:0.3.0") {
+            excludeKotlinDeps()
+        }
+
         implementation("io.reactivex.rxjava3:rxjava:3.1.10")
 
         testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
