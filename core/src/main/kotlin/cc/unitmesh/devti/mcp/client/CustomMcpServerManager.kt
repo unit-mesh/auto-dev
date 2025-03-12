@@ -103,7 +103,9 @@ class CustomMcpServerManager(val project: Project) {
                         if (result?.content.isNullOrEmpty()) {
                             future.complete("No result from tool ${tool.name}")
                         } else {
-                            future.complete(Json.encodeToString(result.content))
+                            val result = Json { prettyPrint = true } .encodeToString(result.content)
+                            val text = "Execute ${tool.name} tool's result\n"
+                            future.complete(text + result)
                         }
                 } catch (e: Error) {
                     logger<CustomMcpServerManager>().warn("Failed to execute tool ${tool.name}: $e")

@@ -38,13 +38,14 @@ class McpFunctionProvider : ToolchainFunctionProvider {
         prop: String,
         args: List<Any>,
         allVariables: Map<String, Any?>,
-        commandName: @NlsSafe String
+        commandName: String
     ): Any {
         val tool = CustomMcpServerManager.instance(project).collectServerInfos().firstOrNull { it.name == commandName }
         if (tool == null) {
             return "No MCP such tool: $prop"
         }
 
-        return CustomMcpServerManager.instance(project).execute(project, tool, args.firstOrNull().toString())
+        val arg = args.firstOrNull().toString()
+        return CustomMcpServerManager.instance(project).execute(project, tool, arg)
     }
 }

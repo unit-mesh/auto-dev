@@ -5,12 +5,25 @@ nav_order: 3
 parent: MCP
 ---
 
+## How to use
 
-The MCP will be convert to DevIns instruction like
+1. Enable the MCP server in AutoDev settings
+2. Use the MCP client to connect to the AutoDev server (We use JetBrains MCP Proxy Server to keep same protocol)
 
-    /list_directory
-    ```json
-    {
-     "path": "/Users/phodal/Downloads"
+```json
+{
+  "mcpServers": {
+    "AutoDev": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@jetbrains/mcp-proxy"
+      ],
+      "disabled": false,
+      "autoApprove": []
     }
-    ```
+  }
+}
+```
+
+
