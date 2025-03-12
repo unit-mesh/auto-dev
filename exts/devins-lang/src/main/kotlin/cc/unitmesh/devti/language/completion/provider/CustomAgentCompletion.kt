@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.completion.provider
 
-import cc.unitmesh.devti.agent.model.CustomAgentConfig
+import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
 import com.intellij.codeInsight.completion.CompletionParameters

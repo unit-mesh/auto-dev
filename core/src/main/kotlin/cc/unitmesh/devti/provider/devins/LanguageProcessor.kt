@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.provider.devins
 
-import cc.unitmesh.devti.agent.model.CustomAgentConfig
+import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread

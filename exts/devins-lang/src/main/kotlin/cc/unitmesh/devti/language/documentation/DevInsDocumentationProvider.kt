@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.documentation
 
-import cc.unitmesh.devti.agent.model.CustomAgentConfig
+import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import cc.unitmesh.devti.custom.compile.CustomVariable
 import cc.unitmesh.devti.language.DevInLanguage
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand

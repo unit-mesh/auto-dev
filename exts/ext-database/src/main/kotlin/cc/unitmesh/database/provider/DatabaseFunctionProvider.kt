@@ -2,7 +2,7 @@ package cc.unitmesh.database.provider
 
 import cc.unitmesh.database.util.DatabaseSchemaAssistant
 import cc.unitmesh.database.util.DatabaseSchemaAssistant.getTableColumn
-import cc.unitmesh.devti.agenttool.AgentTool
+import cc.unitmesh.devti.agent.tool.AgentTool
 import cc.unitmesh.devti.bridge.provider.DatabaseFunction
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider

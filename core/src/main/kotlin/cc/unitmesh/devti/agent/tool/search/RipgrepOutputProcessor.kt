@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.agenttool.search
+package cc.unitmesh.devti.agent.tool.search
 
 import com.google.gson.JsonParser
 import com.intellij.execution.process.ProcessAdapter

@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.sketch.ui.webview
 
-import cc.unitmesh.devti.agent.view.WebViewWindow
+import cc.unitmesh.devti.sketch.ui.WebViewWindow
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import com.intellij.lang.Language
 import com.intellij.openapi.project.Project

@@ -1,5 +1,5 @@
 // Copyright 2024 Cline Bot Inc. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
-package cc.unitmesh.devti.agenttool.search
+package cc.unitmesh.devti.agent.tool.search
 
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.*

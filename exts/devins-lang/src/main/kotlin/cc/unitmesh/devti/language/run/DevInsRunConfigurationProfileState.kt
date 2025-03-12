@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.language.run
 
-import cc.unitmesh.devti.agent.CustomAgentExecutor
-import cc.unitmesh.devti.agent.model.CustomAgentConfig
+import cc.unitmesh.devti.agent.custom.CustomAgentExecutor
+import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
 import cc.unitmesh.devti.language.psi.DevInFile
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR

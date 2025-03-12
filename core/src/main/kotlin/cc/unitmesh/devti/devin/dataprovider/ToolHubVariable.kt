@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.devin.dataprovider
 
-import cc.unitmesh.devti.agent.model.CustomAgentConfig
+import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import com.intellij.openapi.project.Project
 
 /**

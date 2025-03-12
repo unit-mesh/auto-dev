@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.compiler.exec
 
-import cc.unitmesh.devti.agenttool.browse.Browse
+import cc.unitmesh.devti.agent.tool.browse.Browse
 import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import com.intellij.openapi.project.Project

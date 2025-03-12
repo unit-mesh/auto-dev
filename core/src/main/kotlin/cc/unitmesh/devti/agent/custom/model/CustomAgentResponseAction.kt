@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.agent.model
+package cc.unitmesh.devti.agent.custom.model
 
 /**
  * CustomAgentResponseAction is an enumeration of possible response actions that can be taken by the

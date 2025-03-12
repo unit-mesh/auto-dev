@@ -1,8 +1,8 @@
-package cc.unitmesh.devti.agent
+package cc.unitmesh.devti.agent.custom
 
-import cc.unitmesh.devti.agent.model.AuthType
-import cc.unitmesh.devti.agent.model.CustomAgentConfig
-import cc.unitmesh.devti.agent.model.CustomAgentResponseAction
+import cc.unitmesh.devti.agent.custom.model.AuthType
+import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
+import cc.unitmesh.devti.agent.custom.model.CustomAgentResponseAction
 import cc.unitmesh.devti.llms.custom.CustomRequest
 import cc.unitmesh.devti.llms.custom.CustomSSEProcessor
 import cc.unitmesh.devti.llms.custom.Message

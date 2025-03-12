@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.language.compiler
 
 import cc.unitmesh.devti.AutoDevNotifications
-import cc.unitmesh.devti.agent.model.CustomAgentConfig
+import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import cc.unitmesh.devti.custom.compile.VariableTemplateCompiler
 import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR

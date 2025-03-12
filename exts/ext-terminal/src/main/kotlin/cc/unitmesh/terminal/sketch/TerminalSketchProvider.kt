@@ -2,7 +2,7 @@ package cc.unitmesh.terminal.sketch
 
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
-import cc.unitmesh.devti.agent.view.WebViewWindow
+import cc.unitmesh.devti.sketch.ui.WebViewWindow
 import cc.unitmesh.devti.sketch.SketchToolWindow
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider

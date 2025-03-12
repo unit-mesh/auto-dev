@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.agenttool
+package cc.unitmesh.devti.agent.tool
 
 data class AgentTool(val commandName: String, val description: String, val example: String) {
     override fun toString(): String {

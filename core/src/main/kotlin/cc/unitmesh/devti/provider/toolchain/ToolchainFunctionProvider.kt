@@ -1,9 +1,8 @@
 package cc.unitmesh.devti.provider.toolchain
 
-import cc.unitmesh.devti.agenttool.AgentTool
+import cc.unitmesh.devti.agent.tool.AgentTool
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.NlsSafe
 
 interface ToolchainFunctionProvider {
     fun toolInfos(): List<AgentTool> = emptyList()

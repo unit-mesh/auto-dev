@@ -2,7 +2,7 @@ package cc.unitmesh.devti.language.compiler
 
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.sketch.SketchToolchainProvider
-import cc.unitmesh.devti.agenttool.AgentTool
+import cc.unitmesh.devti.agent.tool.AgentTool
 
 class DevInsSketchToolchainProvider : SketchToolchainProvider {
     override fun collect(): List<AgentTool> {

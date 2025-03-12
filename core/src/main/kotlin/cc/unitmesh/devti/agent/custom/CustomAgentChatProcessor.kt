@@ -1,9 +1,8 @@
-package cc.unitmesh.devti.agent
+package cc.unitmesh.devti.agent.custom
 
-import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.agent.model.CustomAgentConfig
-import cc.unitmesh.devti.agent.model.CustomAgentResponseAction
-import cc.unitmesh.devti.agent.model.CustomAgentState
+import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
+import cc.unitmesh.devti.agent.custom.model.CustomAgentResponseAction
+import cc.unitmesh.devti.agent.custom.model.CustomAgentState
 import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
 import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.llms.LLMProvider

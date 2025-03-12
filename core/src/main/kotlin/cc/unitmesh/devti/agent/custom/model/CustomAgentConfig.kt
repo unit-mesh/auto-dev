@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.agent.model
+package cc.unitmesh.devti.agent.custom.model
 
 import cc.unitmesh.devti.settings.customize.customizeSetting
 import cc.unitmesh.devti.custom.team.InteractionType

@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.bridge
 
-import cc.unitmesh.devti.agenttool.search.RipgrepSearcher
+import cc.unitmesh.devti.agent.tool.search.RipgrepSearcher
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.ui.relativePath
 import cc.unitmesh.devti.provider.BuildSystemProvider

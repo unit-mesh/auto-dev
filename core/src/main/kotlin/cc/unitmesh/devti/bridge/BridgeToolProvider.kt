@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.bridge
 
-import cc.unitmesh.devti.agenttool.AgentTool
+import cc.unitmesh.devti.agent.tool.AgentTool
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand.*
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider

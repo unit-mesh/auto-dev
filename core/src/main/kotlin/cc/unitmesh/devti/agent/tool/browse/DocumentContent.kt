@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.agenttool.browse
+package cc.unitmesh.devti.agent.tool.browse
 
 data class DocumentContent(
     val title: String?,

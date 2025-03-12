@@ -16,7 +16,7 @@ class AutoDevCustomizeSettings(
     val mcpServerConfig: String get() = state.mcpServerConfig
 
     /**
-     *  Use [cc.unitmesh.devti.agent.model.CustomAgentConfig.loadFromProject]
+     *  Use [cc.unitmesh.devti.agent.custom.model.CustomAgentConfig.loadFromProject]
      */
     val ragsJsonConfig: String get() = state.agentJsonConfig
 

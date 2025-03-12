@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.agenttool.linecount
+package cc.unitmesh.devti.agent.tool.linecount
 
 import com.intellij.execution.configurations.GeneralCommandLine
 import kotlinx.serialization.SerialName

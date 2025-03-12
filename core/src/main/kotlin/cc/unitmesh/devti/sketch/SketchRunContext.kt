@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.sketch
 
-import cc.unitmesh.devti.agenttool.search.RipgrepSearcher
+import cc.unitmesh.devti.agent.tool.search.RipgrepSearcher
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.ui.relativePath
 import cc.unitmesh.devti.provider.BuildSystemProvider
@@ -22,7 +22,6 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
-import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
 
 /**

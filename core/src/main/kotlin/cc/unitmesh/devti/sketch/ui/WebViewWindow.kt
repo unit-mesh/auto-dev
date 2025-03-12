@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.agent.view
+package cc.unitmesh.devti.sketch.ui
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.util.SystemInfo
@@ -16,7 +16,10 @@ import java.awt.Desktop
 import java.awt.Dimension
 import java.awt.FlowLayout
 import java.net.URI
-import javax.swing.*
+import javax.swing.BorderFactory
+import javax.swing.JButton
+import javax.swing.JPanel
+import javax.swing.JTextField
 
 class WebViewWindow {
     private val ourCefClient = JBCefApp.getInstance().createClient()

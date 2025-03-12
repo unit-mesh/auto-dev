@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.language.compiler
 
-import cc.unitmesh.devti.agent.model.CustomAgentConfig
+import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
 import cc.unitmesh.devti.language.psi.DevInFile
 
 data class DevInsCompiledResult(

@@ -1,8 +1,10 @@
 package cc.unitmesh.devti.agent.model
 
+import cc.unitmesh.devti.agent.custom.model.AuthType
+import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
+import cc.unitmesh.devti.agent.custom.model.CustomAgentResponseAction
 import cc.unitmesh.devti.custom.team.InteractionType
 import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertTrue
 import kotlinx.serialization.json.Json
 import org.junit.Test
 
