@@ -327,6 +327,8 @@ class DevInsCompiler(
                 BuiltinCommand.COMMIT,
                 BuiltinCommand.DATABASE,
                 BuiltinCommand.SHELL,
+                /// since we cannot control toolchain function's output, we should not skip next code block
+                BuiltinCommand.TOOLCHAIN_COMMAND,
             )
 
             if (hasReadCodeBlock) {
