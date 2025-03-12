@@ -29,13 +29,11 @@ class TestAgentObserver : AgentObserver, Disposable {
     private fun sendResult(test: SMTestProxy, project: Project, searchScope: GlobalSearchScope) {
         val sourceCode = test.getLocation(project, searchScope)
         runInEdt {
-            sendToChatWindow(project, ChatActionType.CHAT) { contentPanel, _ ->
-                val psiElement = sourceCode?.psiElement
-                val language = psiElement?.language?.displayName ?: ""
-                val filepath = psiElement?.containingFile?.virtualFile?.relativePath(project) ?: ""
-                val code = runReadAction<String> { psiElement?.text ?: "" }
-                contentPanel.setInput(
-                    """Help me fix follow test issue:
+            val psiElement = sourceCode?.psiElement
+            val language = psiElement?.language?.displayName ?: ""
+            val filepath = psiElement?.containingFile?.virtualFile?.relativePath(project) ?: ""
+            val code = runReadAction<String> { psiElement?.text ?: "" }
+            val prompt = """Help me fix follow test issue:
                                | ErrorMessage:
                                |```
                                |${test.errorMessage}
@@ -49,8 +47,9 @@ class TestAgentObserver : AgentObserver, Disposable {
                                |$code
                                |```
                                |""".trimMargin()
-                )
-            }
+
+
+            sendErrorNotification(project, prompt)
         }
     }
 

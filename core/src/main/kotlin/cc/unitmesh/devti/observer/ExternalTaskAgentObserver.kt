@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.observer
 
 import cc.unitmesh.devti.provider.observer.AgentObserver
-import com.intellij.application.subscribe
 import com.intellij.execution.ExecutionListener
 import com.intellij.execution.ExecutionManager
 import com.intellij.execution.process.CapturingProcessHandler
@@ -20,28 +19,37 @@ class ExternalTaskAgentObserver : AgentObserver, Disposable {
     private var connection: MessageBusConnection? = null
 
     override fun onRegister(project: Project) {
-        ExecutionManager.EXECUTION_TOPIC.subscribe(this, object : ExecutionListener {
+        connection = project.messageBus.connect()
+        connection?.subscribe(ExecutionManager.EXECUTION_TOPIC, object : ExecutionListener {
+            private var globalBuffer = StringBuilder()
+
             override fun processStarted(executorId: String, env: ExecutionEnvironment, handler: ProcessHandler) {
                 if (handler is ExternalSystemProcessHandler) {
                     handler.addProcessListener(object : ProcessListener {
                         private val outputBuffer = StringBuilder()
-
-                        override fun onTextAvailable(event: ProcessEvent,
+                        override fun onTextAvailable(
+                            event: ProcessEvent,
                             outputType: Key<*>
                         ) {
                             outputBuffer.append(event.text)
                         }
 
                         override fun processTerminated(event: ProcessEvent) {
-                            println("Process Output:\n$outputBuffer")
+                            globalBuffer = outputBuffer
                         }
                     })
                 }
             }
 
-            override fun processTerminated(executorId: String, env: ExecutionEnvironment, handler: ProcessHandler, exitCode: Int) {
-                if (handler is ExternalSystemProcessHandler) {
-                    println("Process terminated with exit code $exitCode")
+            override fun processTerminated(
+                executorId: String,
+                env: ExecutionEnvironment,
+                handler: ProcessHandler,
+                exitCode: Int
+            ) {
+                if (handler is ExternalSystemProcessHandler && exitCode != 0) {
+                    val prompt = "Help Me fix follow build issue:\n$globalBuffer"
+                    sendErrorNotification(project, prompt)
                 }
             }
         })
