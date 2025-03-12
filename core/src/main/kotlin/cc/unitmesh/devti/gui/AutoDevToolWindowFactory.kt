@@ -9,28 +9,41 @@ import cc.unitmesh.devti.inline.AutoDevInlineChatProvider
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.componentStateChanged
 import cc.unitmesh.devti.sketch.SketchToolWindow
+import cc.unitmesh.devti.util.relativePath
+import com.intellij.execution.testframework.sm.runner.SMTRunnerEventsAdapter
+import com.intellij.execution.testframework.sm.runner.SMTRunnerEventsListener
+import com.intellij.execution.testframework.sm.runner.SMTestProxy
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.runInEdt
+import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.openapi.wm.ToolWindowManager
+import com.intellij.psi.search.ProjectScope
 import com.intellij.ui.content.Content
 import com.intellij.ui.content.ContentFactory
+import com.intellij.util.messages.MessageBusConnection
 
 private const val NORMAL_CHAT = "AutoDev Chat"
 private const val SKETCH_TITLE = "Sketch"
 private const val BRIDGE_TITLE = "Bridge"
 private const val CHAT_KEY = "autodev.chat"
 
-class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
+class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware, Disposable {
     object Util {
         const val id = "AutoDev"
     }
 
+    private var connection: MessageBusConnection? = null
+
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         initInlineChatForIdea223(project)
+        initObservers(project)
         ApplicationManager.getApplication().invokeLater {
             val normalChatTitle = AutoDevBundle.messageWithLanguage(CHAT_KEY, LanguageChangedCallback.language)
             val normalChatPanel =
@@ -52,6 +65,52 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
                 createBridgeToolWindow(project, toolWindow)
             }
         }
+    }
+
+    private fun initObservers(project: Project) {
+        connection = project.messageBus.connect()
+        val searchScope = ProjectScope.getProjectScope(project)
+        connection?.subscribe(SMTRunnerEventsListener.TEST_STATUS, object : SMTRunnerEventsAdapter() {
+            override fun onSuiteFinished(suite: SMTestProxy, nodeId: String?) {
+                logger<AutoDevToolWindowFactory>().info(suite.toString())
+            }
+
+            override fun onTestFailed(test: SMTestProxy) {
+                val sourceCode = test.getLocation(project, searchScope)
+                runInEdt {
+                    sendToChatWindow(project, ChatActionType.CHAT) { contentPanel, _ ->
+                        val psiElement = sourceCode?.psiElement
+                        val language = psiElement?.language?.displayName ?: ""
+                        val filepath = psiElement?.containingFile?.virtualFile?.relativePath(project) ?: ""
+                        val code = runReadAction { psiElement?.text ?: "" }
+                        contentPanel.setInput(
+                            """Help me fix follow test issue:
+                           | ErrorMessage:
+                           |```
+                           |${test.errorMessage}
+                           |```
+                           |stacktrace details: 
+                           |${test.stacktrace}
+                           |
+                           |// filepath: $filepath
+                           |origin code:
+                           |```$language
+                           |$code
+                           |```
+                           |""".trimMargin()
+                        )
+                    }
+                }
+            }
+
+            override fun onTestFinished(test: SMTestProxy, nodeId: String?) {
+                logger<AutoDevToolWindowFactory>().info(nodeId)
+            }
+        })
+    }
+
+    override fun dispose() {
+        connection?.disconnect()
     }
 
     /**
