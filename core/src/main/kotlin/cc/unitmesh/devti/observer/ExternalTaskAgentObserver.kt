@@ -57,7 +57,7 @@ class ExternalTaskAgentObserver : AgentObserver, Disposable {
                     sendErrorNotification(project, prompt)
                 } else {
                     val isSpringFailureToStart =
-                        globalBuffer.contains("Web server failed to start.") && globalBuffer.contains("APPLICATION FAILED TO START")
+                        globalBuffer.contains("***************************") && globalBuffer.contains("APPLICATION FAILED TO START")
                     if (isSpringFailureToStart) {
                         val prompt = "Help Me fix follow build issue:\n```bash\n$globalBuffer\n```\n"
                         sendErrorNotification(project, prompt)

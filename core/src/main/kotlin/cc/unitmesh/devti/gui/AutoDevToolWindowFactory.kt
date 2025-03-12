@@ -12,6 +12,8 @@ import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.componentStateC
 import cc.unitmesh.devti.sketch.SketchToolWindow
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.invokeLater
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
@@ -84,10 +86,8 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
                 contentManager.removeContent(it, true)
             }
 
-            val content =
-                contentManager.factory.createContent(contentPanel, label, false)
+            val content = contentManager.factory.createContent(contentPanel, label, false)
             contentManager.addContent(content)
-
             contentManager.setSelectedContent(content)
 
             return contentPanel
@@ -118,16 +118,46 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
             toolWindow.contentManager.addContent(chatPanel)
         }
 
-        fun createSketchToolWindow(project: Project, toolWindow: ToolWindow) {
+        fun createSketchToolWindow(project: Project, toolWindow: ToolWindow): SketchToolWindow {
             val sketchView = SketchToolWindow(project, null, true, ChatActionType.SKETCH)
             val sketchPanel = ContentFactory.getInstance().createContent(sketchView, SKETCH_TITLE, true)
             toolWindow.contentManager.addContent(sketchPanel)
+            return sketchView
         }
 
         fun createBridgeToolWindow(project: Project, toolWindow: ToolWindow) {
             val sketchView = BridgeToolWindow(project, null, true)
             val sketchPanel = ContentFactory.getInstance().createContent(sketchView, BRIDGE_TITLE, true)
             toolWindow.contentManager.addContent(sketchPanel)
+        }
+
+        fun sendToSketchToolWindow(
+            project: Project,
+            actionType: ChatActionType,
+            runnable: (SketchToolWindow, ChatCodingService) -> Unit,
+        ) {
+            val chatCodingService = ChatCodingService(actionType, project)
+
+            val toolWindowManager = getToolWindow(project) ?: run {
+                logger<ChatCodingService>().warn("Tool window not found")
+                return
+            }
+
+            var sketchWindow = toolWindowManager.contentManager.findContent(SKETCH_TITLE)
+                ?.component as? SketchToolWindow
+
+            if (sketchWindow == null) {
+                sketchWindow = createSketchToolWindow(project, toolWindowManager)
+            }
+
+            val content = toolWindowManager.contentManager.getContent(sketchWindow)
+            toolWindowManager.contentManager.setSelectedContent(content)
+
+            toolWindowManager.activate {
+                invokeLater {
+                    runnable(sketchWindow, chatCodingService)
+                }
+            }
         }
     }
 }

@@ -277,6 +277,10 @@ open class SketchToolWindow(
         }
     }
 
+    fun setInput(text: String) {
+        inputSection.text = text
+    }
+
     fun createSingleTextView(text: String, language: String = "markdown"): DialogPanel {
         return MessageView.createSingleTextView(project, text, language)
     }
