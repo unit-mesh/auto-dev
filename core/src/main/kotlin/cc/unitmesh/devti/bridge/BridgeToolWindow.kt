@@ -21,7 +21,7 @@ class BridgeToolWindow(val myProject: Project, val myEditor: Editor?, private va
 
         override suspend fun setup() {
             invokeLater {
-                val task = object : Task.Backgroundable(project, "Processing context", false) {
+                val task = object : Task.Backgroundable(project, "Processing agent tools", false) {
                     override fun run(indicator: ProgressIndicator) {
                         val customContext = BridgeRunContext.create(project, null, "")
                         systemPrompt = templateRender.renderTemplate(template, customContext)
