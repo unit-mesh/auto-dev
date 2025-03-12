@@ -32,6 +32,10 @@ import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.components.service
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -101,37 +105,42 @@ open class DevInsRunConfigurationProfileState(
             return DefaultExecutionResult(console, processHandler)
         }
 
-        // save the run result
-        invokeLater {
-            val compiler = DevInsCompiler(myProject, file)
-            val compileResult = compiler.compile()
+        val task = object : Task.Backgroundable(myProject, "Compile context", false) {
+            override fun run(indicator: ProgressIndicator) {
+                val compiler = DevInsCompiler(myProject!!, file)
+                val compileResult = runReadAction { compiler.compile() }
 
-            myProject.service<DevInsConversationService>().createConversation(configuration.getScriptPath(), compileResult)
+                myProject!!.service<DevInsConversationService>().createConversation(configuration.getScriptPath(), compileResult)
 
-            val output = compileResult.output
-            val agent = compileResult.executeAgent
+                val output = compileResult.output
+                val agent = compileResult.executeAgent
 
-            output.split("\n").forEach {
-                if (it.contains(DEVINS_ERROR)) {
-                    console.print(it, ConsoleViewContentType.LOG_ERROR_OUTPUT)
-                } else {
-                    console.print(it, ConsoleViewContentType.USER_INPUT)
+                output.split("\n").forEach {
+                    if (it.contains(DEVINS_ERROR)) {
+                        console.print(it, ConsoleViewContentType.LOG_ERROR_OUTPUT)
+                    } else {
+                        console.print(it, ConsoleViewContentType.USER_INPUT)
+                    }
+                    console.print("\n", ConsoleViewContentType.NORMAL_OUTPUT)
                 }
-                console.print("\n", ConsoleViewContentType.NORMAL_OUTPUT)
-            }
 
-            console.print("\n--------------------\n", ConsoleViewContentType.NORMAL_OUTPUT)
+                console.print("\n--------------------\n", ConsoleViewContentType.NORMAL_OUTPUT)
 
-            if (output.contains(DEVINS_ERROR)) {
-                processHandler.exitWithError()
-            } else {
-                if (agent != null) {
-                    agentRun(output, console, processHandler, agent)
+                if (output.contains(DEVINS_ERROR)) {
+                    processHandler.exitWithError()
                 } else {
-                    defaultRun(output, console, processHandler, compileResult.isLocalCommand)
+                    if (agent != null) {
+                        agentRun(output, console, processHandler, agent)
+                    } else {
+                        defaultRun(output, console, processHandler, compileResult.isLocalCommand)
+                    }
                 }
             }
         }
+
+        ProgressManager.getInstance()
+            .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+
 
         return DefaultExecutionResult(console, processHandler)
     }

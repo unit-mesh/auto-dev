@@ -356,26 +356,18 @@ class DevInsCompiler(
             listOf()
         }
 
-        val future = CompletableFuture<String>()
-        val task = object : Task.Backgroundable(myProject, "Processing context", false) {
-            override fun run(indicator: ProgressIndicator) {
-                val result = try {
-                    val cmd = runReadAction { used.text.removePrefix("/") }
-                    provider.execute(myProject!!, prop, args, emptyMap(), cmd)
-                } catch (e: Exception) {
-                    logger<DevInsCompiler>().warn(e)
-                    val text = runReadAction { used.text }
-                    AutoDevNotifications.notify(myProject!!, "Error executing toolchain function: $text + $prop")
-                }
-
-                future.complete(result.toString())
-            }
+        val result = try {
+            val cmd = runReadAction { used.text.removePrefix("/") }
+            provider.execute(myProject!!, prop, args, emptyMap(), cmd).toString()
+        } catch (e: Exception) {
+            logger<DevInsCompiler>().warn(e)
+            val text = runReadAction { used.text }
+            val error = "Error executing toolchain function: $text + $prop"
+            AutoDevNotifications.notify(myProject!!, error)
+            error
         }
 
-        ProgressManager.getInstance()
-            .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
-
-        return PrintInsCommand(future.get(30, TimeUnit.SECONDS))
+        return PrintInsCommand(result)
     }
 
     private fun lookupNextCode(used: DevInUsed): CodeBlockElement? {
