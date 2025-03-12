@@ -70,6 +70,7 @@
                 implementation="cc.unitmesh.idea.provider.JavaCustomDevInsSymbolProvider"/>
 
         <runProjectService implementation="cc.unitmesh.idea.provider.JvmRunProjectService"/>
+<!--        <agentObserver implementation="cc.unitmesh.idea.observer.GradleTaskAgentObserver" />-->
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

@@ -5,7 +5,7 @@ import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.provider.observer.AgentObserver
 import cc.unitmesh.devti.util.relativePath
 import com.intellij.execution.testframework.sm.runner.SMTRunnerEventsAdapter
-import com.intellij.execution.testframework.sm.runner.SMTRunnerEventsListener.TEST_STATUS
+import com.intellij.execution.testframework.sm.runner.SMTRunnerEventsListener
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.runInEdt
@@ -19,7 +19,7 @@ class TestAgentObserver : AgentObserver, Disposable {
     private var connection: MessageBusConnection? = null
     override fun onRegister(project: Project) {
         connection = project.messageBus.connect()
-        connection?.subscribe(TEST_STATUS, object : SMTRunnerEventsAdapter() {
+        connection?.subscribe(SMTRunnerEventsListener.TEST_STATUS, object : SMTRunnerEventsAdapter() {
             override fun onTestFailed(test: SMTestProxy) {
                 sendResult(test, project, ProjectScope.getProjectScope(project))
             }
