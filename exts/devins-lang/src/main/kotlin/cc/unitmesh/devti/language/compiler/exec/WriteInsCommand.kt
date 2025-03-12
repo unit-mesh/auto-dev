@@ -39,8 +39,12 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
         val psiFile = PsiManager.getInstance(myProject).findFile(virtualFile)
             ?: return "$DEVINS_ERROR: File not found: $argument"
 
-        FileEditorManager.getInstance(myProject).openFile(virtualFile, true)
-        return executeInsert(psiFile, range, content)
+        var output: String? = null
+        runInEdt {
+            FileEditorManager.getInstance(myProject).openFile(virtualFile, true)
+            output = executeInsert(psiFile, range, content)
+        }
+        return output
     }
 
     private fun writeToFile(filepath: String, projectDir: VirtualFile): String {
