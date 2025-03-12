@@ -46,5 +46,8 @@
 
     <extensions defaultExtensionNs="cc.unitmesh">
         <revisionProvider implementation="cc.unitmesh.git.actions.vcs.GitRevisionProvider"/>
+
+        <mcpTool implementation="cc.unitmesh.git.mcp.FindCommitByTextTool"/>
+        <mcpTool implementation="cc.unitmesh.git.mcp.GetVcsStatusTool"/>
     </extensions>
 </idea-plugin>
