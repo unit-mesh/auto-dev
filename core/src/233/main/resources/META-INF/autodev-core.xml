@@ -42,7 +42,7 @@
                       implementation="cc.unitmesh.devti.inlay.TypeOverHandler"/>
 
 
-        <statusBarWidgetFactory id="AIAssistant"
+        <statusBarWidgetFactory id="AutoDevAIAssistant"
                                 implementation="cc.unitmesh.devti.statusbar.AutoDevStatusBarWidgetFactory"/>
 
         <runConfigurationProducer
