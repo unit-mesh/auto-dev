@@ -8,14 +8,10 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import java.util.UUID
 
-@Serializable
 data class AgentState(
     val conversationId: String = UUID.randomUUID().toString(),
-    @Contextual
     val changeList: List<Change> = emptyList(),
-
     val messages: List<Message> = emptyList(),
-
     val usedTools: List<AgentTool> = emptyList(),
 )
 
@@ -36,7 +32,7 @@ interface AgentProcessor {
     fun process()
 }
 
-class HistoryMessageProcessor: AgentProcessor {
+class HistoryMessageProcessor : AgentProcessor {
     override fun process() {
         TODO("Not yet implemented")
     }
