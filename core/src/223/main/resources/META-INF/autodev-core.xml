@@ -227,9 +227,12 @@
 
         <!-- mcp -->
         <extensionPoint qualifiedName="cc.unitmesh.mcpTool"
-                        interface="cc.unitmesh.devti.mcp.McpTool"
+                        interface="cc.unitmesh.devti.mcp.host.McpTool"
                         dynamic="true"/>
 
+        <extensionPoint qualifiedName="cc.unitmesh.agentObserver"
+                        interface="cc.unitmesh.devti.provider.observer.AgentObserver"
+                        dynamic="true"/>
     </extensionPoints>
 
     <applicationListeners>

@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.update
 
 import cc.unitmesh.devti.inline.AutoDevInlineChatProvider
+import cc.unitmesh.devti.provider.observer.AgentObserver
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
@@ -12,5 +13,6 @@ class AutoDevUpdateStartupActivity : ProjectActivity {
         if (ApplicationManager.getApplication().isUnitTestMode) return
 
         AutoDevInlineChatProvider.addListener(project)
+        AgentObserver.register(project)
     }
 }

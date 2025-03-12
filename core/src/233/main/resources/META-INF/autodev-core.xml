@@ -229,6 +229,10 @@
         <extensionPoint qualifiedName="cc.unitmesh.mcpTool"
                         interface="cc.unitmesh.devti.mcp.host.McpTool"
                         dynamic="true"/>
+
+        <extensionPoint qualifiedName="cc.unitmesh.agentObserver"
+                        interface="cc.unitmesh.devti.provider.observer.AgentObserver"
+                        dynamic="true"/>
     </extensionPoints>
 
     <applicationListeners>
@@ -271,6 +275,8 @@
         <toolchainFunctionProvider implementation="cc.unitmesh.devti.bridge.knowledge.HistoryFunctionProvider"/>
         <toolchainFunctionProvider implementation="cc.unitmesh.devti.bridge.knowledge.KnowledgeFunctionProvider"/>
         <toolchainFunctionProvider implementation="cc.unitmesh.devti.mcp.client.McpFunctionProvider"/>
+
+        <agentObserver implementation="cc.unitmesh.devti.observer.TestAgentObserver" />
     </extensions>
 
     <actions>
