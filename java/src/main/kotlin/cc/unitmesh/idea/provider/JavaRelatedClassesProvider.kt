@@ -1,6 +1,5 @@
 package cc.unitmesh.idea.provider
 
-import cc.unitmesh.devti.mcp.Query
 import cc.unitmesh.devti.provider.RelatedClassesProvider
 import cc.unitmesh.idea.context.JavaContextCollection
 import cc.unitmesh.idea.service.JavaTypeUtil.resolveByType

@@ -1,5 +1,5 @@
 // Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
-package cc.unitmesh.devti.mcp
+package cc.unitmesh.devti.mcp.host
 
 import com.intellij.execution.ProgramRunnerUtil.executeConfiguration
 import com.intellij.execution.RunManager
@@ -18,8 +18,8 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
-import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.FileEditorManager.getInstance
+import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.progress.impl.CoreProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
@@ -103,7 +103,7 @@ class GetAllOpenFileTextsTool : AbstractMcpTool<NoArgs>() {
     override fun handle(project: Project, args: NoArgs): Response {
         val projectDir = project.guessProjectDir()?.toNioPathOrNull()
 
-        val fileEditorManager = FileEditorManager.getInstance(project)
+        val fileEditorManager = getInstance(project)
         val openFiles = fileEditorManager.openFiles
         val filePaths = openFiles.mapNotNull { """{"path": "${it.toNioPath().relativizeByProjectDir(projectDir)}", "text": "${it.readText()}", """ }
         return Response(filePaths.joinToString(",\n", prefix = "[", postfix = "]"))
@@ -124,7 +124,7 @@ class GetAllOpenFilePathsTool : AbstractMcpTool<NoArgs>() {
     override fun handle(project: Project, args: NoArgs): Response {
         val projectDir = project.guessProjectDir()?.toNioPathOrNull()
 
-        val fileEditorManager = FileEditorManager.getInstance(project)
+        val fileEditorManager = getInstance(project)
         val openFiles = fileEditorManager.openFiles
         val filePaths = openFiles.mapNotNull { it.toNioPath().relativizeByProjectDir(projectDir) }
         return Response(filePaths.joinToString("\n"))
@@ -156,7 +156,7 @@ class OpenFileInEditorTool : AbstractMcpTool<OpenFileInEditorArgs>() {
 
         return if (file != null && file.exists()) {
             invokeLater {
-                FileEditorManager.getInstance(project).openFile(file, true)
+                getInstance(project).openFile(file, true)
             }
             Response("file is opened")
         } else {
@@ -570,7 +570,7 @@ class GetProjectModulesTool : AbstractMcpTool<NoArgs>() {
     override val description: String = "Get list of all modules in the project with their dependencies. Returns JSON list of module names."
 
     override fun handle(project: Project, args: NoArgs): Response {
-        val moduleManager = com.intellij.openapi.module.ModuleManager.getInstance(project)
+        val moduleManager = ModuleManager.getInstance(project)
         val modules = moduleManager.modules.map { it.name }
         return Response(modules.joinToString(",\n", prefix = "[", postfix = "]"))
     }
@@ -581,7 +581,7 @@ class GetProjectDependenciesTool : AbstractMcpTool<NoArgs>() {
     override val description: String = "Get list of all dependencies defined in the project. Returns JSON list of dependency names."
 
     override fun handle(project: Project, args: NoArgs): Response {
-        val moduleManager = com.intellij.openapi.module.ModuleManager.getInstance(project)
+        val moduleManager = ModuleManager.getInstance(project)
         val dependencies = moduleManager.modules.flatMap { module ->
             OrderEnumerator.orderEntries(module).librariesOnly().classes().roots.map { root ->
                 """{"name": "${root.name}", "type": "library"}"""

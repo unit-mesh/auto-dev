@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.mcp
+package cc.unitmesh.devti.mcp.provider
 
 import cc.unitmesh.devti.settings.customize.customizeSetting
 import com.intellij.openapi.components.Service
@@ -8,51 +8,16 @@ import io.modelcontextprotocol.kotlin.sdk.Implementation
 import io.modelcontextprotocol.kotlin.sdk.Tool
 import io.modelcontextprotocol.kotlin.sdk.client.Client
 import io.modelcontextprotocol.kotlin.sdk.client.StdioClientTransport
+import kotlinx.coroutines.runBlocking
 import kotlinx.io.asSink
 import kotlinx.io.asSource
 import kotlinx.io.buffered
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.jsonObject
 import java.util.concurrent.CompletableFuture
-
-@Serializable
-data class McpConfig(
-    val mcpServers: Map<String, McpServer>
-)
-
-@Serializable
-data class McpServer(
-    val command: String,
-    val args: List<String>,
-    val disabled: Boolean? = null,
-    val autoApprove: List<String>? = null,
-    val env: Map<String, String>? = null,
-    val requiresConfirmation: List<String>? = null
-) {
-
-    companion object {
-        fun load(mcpServerConfig: String): McpConfig? {
-            return tryParse(mcpServerConfig)
-        }
-
-        fun tryParse(configs: String?): McpConfig? {
-            if (configs.isNullOrEmpty()) {
-                return null
-            }
-
-            try {
-                return Json.decodeFromString(configs)
-            } catch (e: Exception) {
-                logger<McpServer>().warn("Not found mcp config: $e")
-            }
-
-            return null
-        }
-    }
-}
+import java.util.concurrent.TimeUnit
 
 @Service(Service.Level.PROJECT)
 class CustomMcpServerManager(val project: Project) {
@@ -96,7 +61,7 @@ class CustomMcpServerManager(val project: Project) {
 
             val future = CompletableFuture<List<Tool>>()
 
-            kotlinx.coroutines.runBlocking {
+            runBlocking {
                 try {
                     client.connect(transport)
                     val listTools = client.listTools()
@@ -115,7 +80,7 @@ class CustomMcpServerManager(val project: Project) {
                 }
             }?.tools
 
-            future.get(30, java.util.concurrent.TimeUnit.SECONDS)
+            future.get(30, TimeUnit.SECONDS)
         }.flatten()
 
         cached[mcpServerConfig] = tools
@@ -125,7 +90,7 @@ class CustomMcpServerManager(val project: Project) {
     fun execute(project: Project, tool: Tool, map: String): String {
         toolClientMap[tool]?.let {
             val future = CompletableFuture<String>()
-            kotlinx.coroutines.runBlocking {
+            runBlocking {
                 try {
                     val arguments = try {
                         Json.decodeFromString<JsonObject>(map).jsonObject.mapValues { it.value }
@@ -146,15 +111,13 @@ class CustomMcpServerManager(val project: Project) {
                 }
             }
 
-            return future.get(30, java.util.concurrent.TimeUnit.SECONDS)
+            return future.get(30, TimeUnit.SECONDS)
         }
 
         return "No such tool: ${tool.name} or failed to execute"
     }
 
     companion object {
-        private val logger = logger<CustomMcpServerManager>()
-
         fun instance(project: Project): CustomMcpServerManager {
             return project.getService(CustomMcpServerManager::class.java)
         }

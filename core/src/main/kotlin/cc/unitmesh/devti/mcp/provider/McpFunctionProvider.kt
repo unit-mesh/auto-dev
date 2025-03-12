@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.mcp.provider
 
 import cc.unitmesh.devti.agenttool.AgentTool
-import cc.unitmesh.devti.mcp.CustomMcpServerManager
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager

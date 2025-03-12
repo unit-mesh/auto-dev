@@ -78,7 +78,7 @@
         <daemon.intentionActionFilter
                 implementation="cc.unitmesh.devti.gui.snippet.error.CodeBlockIntentionActionFilter"/>
 
-        <httpRequestHandler implementation="cc.unitmesh.devti.mcp.MCPService"/>
+        <httpRequestHandler implementation="cc.unitmesh.devti.mcp.host.MCPService"/>
         <postStartupActivity implementation="cc.unitmesh.devti.mcp.MCPServerStartupValidator"/>
         <notificationGroup id="UnitMesh.MCPServer" displayType="BALLOON"/>
     </extensions>
@@ -227,7 +227,7 @@
 
         <!-- mcp -->
         <extensionPoint qualifiedName="cc.unitmesh.mcpTool"
-                        interface="cc.unitmesh.devti.mcp.McpTool"
+                        interface="cc.unitmesh.devti.mcp.host.McpTool"
                         dynamic="true"/>
     </extensionPoints>
 

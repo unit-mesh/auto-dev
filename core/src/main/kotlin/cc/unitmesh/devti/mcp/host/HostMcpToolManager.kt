@@ -1,8 +1,8 @@
-package cc.unitmesh.devti.mcp
+package cc.unitmesh.devti.mcp.host
 
 import com.intellij.openapi.extensions.ExtensionPointName
 
-class McpToolManager {
+class HostMcpToolManager {
     companion object {
         private val EP_NAME = ExtensionPointName<AbstractMcpTool<*>>("cc.unitmesh.mcpTool")
 

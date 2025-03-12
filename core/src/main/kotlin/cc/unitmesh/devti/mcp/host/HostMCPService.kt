@@ -1,9 +1,7 @@
 // Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
-package cc.unitmesh.devti.mcp
+package cc.unitmesh.devti.mcp.host
 
 import cc.unitmesh.devti.settings.coder.coderSetting
-import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.BufferExposingByteArrayOutputStream
@@ -11,7 +9,6 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.http.FullHttpRequest
 import io.netty.handler.codec.http.HttpMethod
 import io.netty.handler.codec.http.QueryStringDecoder
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
@@ -20,13 +17,6 @@ import java.nio.charset.StandardCharsets
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.full.starProjectedType
-
-@Service
-class MCPUsageCollector(private val scope: CoroutineScope) {
-    fun sendUsage(toolKey: String) {
-        // todo
-    }
-}
 
 class MCPService : RestService() {
     private val serviceName = "mcp"
@@ -46,7 +36,7 @@ class MCPService : RestService() {
         }
 
         val path = urlDecoder.path().split(serviceName).last().trimStart('/')
-        val tools = McpToolManager.Companion.getAllTools()
+        val tools = HostMcpToolManager.Companion.getAllTools()
 
         when (path) {
             "list_tools" -> handleListTools(tools, request, context)
@@ -82,7 +72,6 @@ class MCPService : RestService() {
             return
         }
 
-        service<MCPUsageCollector>().sendUsage(tool.name)
         val args = try {
             parseArgs(request, tool.argKlass)
         } catch (e: Throwable) {
