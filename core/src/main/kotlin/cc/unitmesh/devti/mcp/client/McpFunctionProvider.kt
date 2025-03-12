@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.mcp.provider
+package cc.unitmesh.devti.mcp.client
 
 import cc.unitmesh.devti.agenttool.AgentTool
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider

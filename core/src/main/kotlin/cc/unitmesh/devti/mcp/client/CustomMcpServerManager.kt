@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.mcp.provider
+package cc.unitmesh.devti.mcp.client
 
 import cc.unitmesh.devti.settings.customize.customizeSetting
 import com.intellij.openapi.components.Service

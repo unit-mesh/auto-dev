@@ -1,4 +1,4 @@
-package cc.unitmesh.devti.mcp.provider
+package cc.unitmesh.devti.mcp.client
 
 import com.intellij.openapi.diagnostic.logger
 import kotlinx.serialization.Serializable
