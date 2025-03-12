@@ -48,23 +48,11 @@ class ExternalTaskAgentObserver : AgentObserver, Disposable {
                 exitCode: Int
             ) {
                 if (handler is ExternalSystemProcessHandler && exitCode != 0) {
-                    val prompt = "Help Me fix follow build issue:\n$globalBuffer"
+                    val prompt = "Help Me fix follow build issue:\n```bash\n$globalBuffer\n```\n"
                     sendErrorNotification(project, prompt)
                 }
             }
         })
-    }
-
-    private fun getThreadTrace(thread: Thread, depth: Int): String { // debugging
-        val buf = StringBuilder()
-        val trace = thread.getStackTrace()
-        var i = 0
-        while (i < depth && i < trace.size) {
-            val element = trace[i]
-            buf.append("\tat ").append(element).append("\n")
-            i++
-        }
-        return buf.toString()
     }
 
     override fun dispose() {
