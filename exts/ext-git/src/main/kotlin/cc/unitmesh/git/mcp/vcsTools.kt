@@ -3,15 +3,15 @@ package cc.unitmesh.git.mcp
 import cc.unitmesh.devti.mcp.host.AbstractMcpTool
 import cc.unitmesh.devti.mcp.host.NoArgs
 import cc.unitmesh.devti.mcp.host.Response
-import com.intellij.compiler.cache.git.GitCommitsIterator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vcs.ProjectLevelVcsManager
 import com.intellij.openapi.vcs.changes.ChangeListManager
-import com.intellij.openapi.vfs.toNioPathOrNull
+import com.intellij.openapi.vfs.VirtualFile
 import git4idea.history.GitHistoryUtils
 import git4idea.repo.GitRepositoryManager
 import kotlinx.serialization.Serializable
+import java.nio.file.Path
 import kotlin.io.path.Path
 
 @Serializable
@@ -105,4 +105,8 @@ class GetVcsStatusTool : AbstractMcpTool<NoArgs>() {
             """{"path": "${it.first}", "type": "${it.second}"}"""
         })
     }
+}
+
+fun VirtualFile.toNioPathOrNull(): Path? {
+    return runCatching { toNioPath() }.getOrNull()
 }
