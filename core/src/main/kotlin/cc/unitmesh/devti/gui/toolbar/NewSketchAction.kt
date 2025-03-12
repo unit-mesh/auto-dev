@@ -64,10 +64,5 @@ class NewSketchAction : AnAction("New Sketch", "Create new Sketch", AllIcons.Gen
         }
 
         sketchPanel?.resetSketchSession()
-
-        // focus on sketch panel
-        contentManager?.contents?.filter { it.component is SketchToolWindow }?.forEach {
-            contentManager.setSelectedContent(it)
-        }
     }
 }
