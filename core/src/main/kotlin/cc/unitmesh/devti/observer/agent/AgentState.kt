@@ -4,6 +4,7 @@ import cc.unitmesh.devti.agent.tool.AgentTool
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.llms.custom.Message
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.util.diff.Diff.Change
 import java.util.UUID
 
@@ -26,6 +27,8 @@ class AgentStateService {
         state.usedTools = tools.map {
             AgentTool(it.commandName, it.description, "")
         }
+
+        logger<AgentStateService>().info("Called agent tools:\n ${state.usedTools.joinToString("\n")}")
     }
 
     fun addChanges(fileName: String) {

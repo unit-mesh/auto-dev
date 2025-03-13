@@ -312,8 +312,6 @@ open class CodeHighlightSketch(
         editorFragment?.editor?.let {
             EditorFactory.getInstance().releaseEditor(it)
         }
-
-        editorFragment = null
     }
 }
 
