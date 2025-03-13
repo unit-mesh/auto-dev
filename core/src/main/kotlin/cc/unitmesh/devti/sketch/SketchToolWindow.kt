@@ -10,6 +10,7 @@ import cc.unitmesh.devti.gui.toolbar.NewSketchAction
 import cc.unitmesh.devti.inline.AutoDevInlineChatService
 import cc.unitmesh.devti.inline.fullHeight
 import cc.unitmesh.devti.inline.fullWidth
+import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
@@ -403,6 +404,8 @@ open class SketchToolWindow(
         myList.removeAll()
         historyPanel.removeAll()
         initializePreAllocatedBlocks(project)
+
+        project.getService(AgentStateService::class.java).resetState()
     }
 
     fun printThinking(string: String) {

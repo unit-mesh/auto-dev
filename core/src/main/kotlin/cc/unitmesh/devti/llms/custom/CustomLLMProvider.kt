@@ -6,6 +6,7 @@ import cc.unitmesh.devti.gui.chat.message.ChatRole
 import cc.unitmesh.devti.llm2.model.LlmConfig
 import cc.unitmesh.devti.llm2.model.ModelType
 import cc.unitmesh.devti.llms.LLMProvider
+import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.prompting.optimizer.PromptOptimizer
 import cc.unitmesh.devti.settings.coder.coderSetting
 import com.intellij.openapi.diagnostic.logger
@@ -31,6 +32,8 @@ class CustomLLMProvider(val project: Project, var llmConfig: LlmConfig = LlmConf
     private val timeout = Duration.ofSeconds(defaultTimeout)
     private val messages: MutableList<Message> = mutableListOf()
     private val logger = logger<CustomLLMProvider>()
+
+    private val agentService = project.getService(AgentStateService::class.java)
 
     override fun clearMessage() = messages.clear()
 
@@ -81,8 +84,9 @@ class CustomLLMProvider(val project: Project, var llmConfig: LlmConfig = LlmConf
         }
 
         messages += Message("user", prompt)
+        val finalMsgs = agentService.preprocessMessages(messages)
 
-        val customRequest = CustomRequest(messages)
+        val customRequest = CustomRequest(finalMsgs)
         val requestContent = customRequest.updateCustomFormat(requestFormat)
 
         val body = RequestBody.create("application/json".toMediaTypeOrNull(), requestContent.toByteArray())

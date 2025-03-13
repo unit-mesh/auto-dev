@@ -4,26 +4,36 @@ import cc.unitmesh.devti.agent.tool.AgentTool
 import cc.unitmesh.devti.llms.custom.Message
 import com.intellij.openapi.components.Service
 import com.intellij.util.diff.Diff.Change
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
 import java.util.UUID
 
 data class AgentState(
-    val conversationId: String = UUID.randomUUID().toString(),
-    val changeList: List<Change> = emptyList(),
-    val messages: List<Message> = emptyList(),
-    val usedTools: List<AgentTool> = emptyList(),
+    var conversationId: String = UUID.randomUUID().toString(),
+    var changeList: List<Change> = emptyList(),
+    var messages: List<Message> = emptyList(),
+    var usedTools: List<AgentTool> = emptyList(),
 )
 
-
-@Service
+@Service(Service.Level.PROJECT)
 class AgentStateService {
     var state: AgentState = AgentState()
+
+    fun resetState() {
+        state = AgentState()
+    }
+
+    fun addTools(tools: List<AgentTool>) {
+
+    }
+
+    fun addChanges(val fileName: String) {
+        // todo changeList.add()
+    }
 
     /**
      * Call some LLM to compress it or use some other method to compress the history
      */
-    fun compressHistory(messages: List<Message>): List<Message> {
+    fun preprocessMessages(messages: List<Message>): List<Message> {
+        state.messages = messages
         return messages
     }
 }

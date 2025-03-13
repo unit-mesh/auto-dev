@@ -76,7 +76,9 @@ open class SketchInputListener(
         logger<SketchInputListener>().debug("Start compiling: $input")
         ProgressManager.getInstance().runProcessWithProgressSynchronously({
             val devInProcessor = LanguageProcessor.devin()
-            val compiledInput = runReadAction { devInProcessor?.compile(project, input) } ?: input
+            val compiledInput = runReadAction {
+                devInProcessor?.compile(project, input)
+            } ?: input
 
             toolWindow.beforeRun()
             toolWindow.updateHistoryPanel()

@@ -62,7 +62,6 @@ class DevInsCompiler(
 
                     output.append(it.text)
                 }
-
                 DevInTypes.USED -> processUsed(it as DevInUsed)
                 DevInTypes.COMMENTS -> {
                     if (it.text.startsWith("[flow]:")) {
@@ -78,7 +77,6 @@ class DevInsCompiler(
                         }
                     }
                 }
-
                 else -> {
                     output.append(it.text)
                     logger.warn("Unknown element type: ${it.elementType}")
