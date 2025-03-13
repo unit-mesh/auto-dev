@@ -49,17 +49,12 @@ class ExternalTaskAgentObserver : AgentObserver, Disposable {
                     return
                 }
 
-//                if (exitCode != 0 && exitCode != IDEA_INTERRUPTED_CODE) {
-//                    val prompt = "Help Me fix follow build issue:\n```bash\n$globalBuffer\n```\n"
-//                    sendErrorNotification(project, prompt)
-//                } else {
                 val isSpringFailureToStart =
                     globalBuffer.contains("***************************") && globalBuffer.contains("APPLICATION FAILED TO START")
                 if (isSpringFailureToStart) {
                     val prompt = "Help Me fix follow build issue:\n```bash\n$globalBuffer\n```\n"
                     sendErrorNotification(project, prompt)
                 }
-//                }
             }
         })
     }
