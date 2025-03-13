@@ -105,42 +105,37 @@ open class DevInsRunConfigurationProfileState(
             return DefaultExecutionResult(console, processHandler)
         }
 
-        val task = object : Task.Backgroundable(myProject, "Compile context", false) {
-            override fun run(indicator: ProgressIndicator) {
-                val compiler = DevInsCompiler(myProject!!, file)
-                val compileResult = runReadAction { compiler.compile() }
+        invokeLater {
+            val compiler = DevInsCompiler(myProject, file)
+            val compileResult = runReadAction { compiler.compile() }
 
-                myProject!!.service<DevInsConversationService>().createConversation(configuration.getScriptPath(), compileResult)
+            myProject.service<DevInsConversationService>()
+                .createConversation(configuration.getScriptPath(), compileResult)
 
-                val output = compileResult.output
-                val agent = compileResult.executeAgent
+            val output = compileResult.output
+            val agent = compileResult.executeAgent
 
-                output.split("\n").forEach {
-                    if (it.contains(DEVINS_ERROR)) {
-                        console.print(it, ConsoleViewContentType.LOG_ERROR_OUTPUT)
-                    } else {
-                        console.print(it, ConsoleViewContentType.USER_INPUT)
-                    }
-                    console.print("\n", ConsoleViewContentType.NORMAL_OUTPUT)
-                }
-
-                console.print("\n--------------------\n", ConsoleViewContentType.NORMAL_OUTPUT)
-
-                if (output.contains(DEVINS_ERROR)) {
-                    processHandler.exitWithError()
+            output.split("\n").forEach {
+                if (it.contains(DEVINS_ERROR)) {
+                    console.print(it, ConsoleViewContentType.LOG_ERROR_OUTPUT)
                 } else {
-                    if (agent != null) {
-                        agentRun(output, console, processHandler, agent)
-                    } else {
-                        defaultRun(output, console, processHandler, compileResult.isLocalCommand)
-                    }
+                    console.print(it, ConsoleViewContentType.USER_INPUT)
+                }
+                console.print("\n", ConsoleViewContentType.NORMAL_OUTPUT)
+            }
+
+            console.print("\n--------------------\n", ConsoleViewContentType.NORMAL_OUTPUT)
+
+            if (output.contains(DEVINS_ERROR)) {
+                processHandler.exitWithError()
+            } else {
+                if (agent != null) {
+                    agentRun(output, console, processHandler, agent)
+                } else {
+                    defaultRun(output, console, processHandler, compileResult.isLocalCommand)
                 }
             }
         }
-
-        ProgressManager.getInstance()
-            .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
-
 
         return DefaultExecutionResult(console, processHandler)
     }
