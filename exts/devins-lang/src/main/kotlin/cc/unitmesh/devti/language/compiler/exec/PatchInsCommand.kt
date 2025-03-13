@@ -2,6 +2,7 @@ package cc.unitmesh.devti.language.compiler.exec
 
 import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
+import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.diff.impl.patch.FilePatch
@@ -24,34 +25,38 @@ class PatchInsCommand(val myProject: Project, val prop: String, val codeContent:
             FileDocumentManager.getInstance().saveAllDocuments()
         }
 
-        val myReader = PatchReader(codeContent)
-        myReader.parseAllPatches()
+        try {
+            val myReader = PatchReader(codeContent)
+            myReader.parseAllPatches()
 
-        val filePatches: MutableList<FilePatch> = myReader.allPatches
+            val filePatches: MutableList<FilePatch> = myReader.allPatches
 
-        ApplicationManager.getApplication().invokeAndWait {
-            val matchedPatches = MatchPatchPaths(myProject).execute(filePatches, true)
+            ApplicationManager.getApplication().invokeAndWait {
+                val matchedPatches = MatchPatchPaths(myProject).execute(filePatches, true)
 
-            val patchGroups = MultiMap<VirtualFile, AbstractFilePatchInProgress<*>>()
-            for (patchInProgress in matchedPatches) {
-                patchGroups.putValue(patchInProgress.base, patchInProgress)
-            }
+                val patchGroups = MultiMap<VirtualFile, AbstractFilePatchInProgress<*>>()
+                for (patchInProgress in matchedPatches) {
+                    patchGroups.putValue(patchInProgress.base, patchInProgress)
+                }
 
-            if (patchGroups.isEmpty) return@invokeAndWait
-            /// open file in editor
-            filePatches.firstOrNull()?.apply {
-                val file = myProject.guessProjectDir()!!.findFileByRelativePath(this.beforeFileName.toString())
-                file?.let {
-                    ApplicationManager.getApplication().invokeAndWait {
-                        FileEditorManager.getInstance(myProject).openFile(it, true)
+                if (patchGroups.isEmpty) return@invokeAndWait
+                /// open file in editor
+                filePatches.firstOrNull()?.apply {
+                    val file = myProject.guessProjectDir()!!.findFileByRelativePath(this.beforeFileName.toString())
+                    file?.let {
+                        ApplicationManager.getApplication().invokeAndWait {
+                            FileEditorManager.getInstance(myProject).openFile(it, true)
+                        }
                     }
                 }
+
+                val additionalInfo = myReader.getAdditionalInfo(ApplyPatchDefaultExecutor.pathsFromGroups(patchGroups))
+                ApplyPatchDefaultExecutor(myProject).apply(filePatches, patchGroups, null, prop, additionalInfo)
             }
 
-            val additionalInfo = myReader.getAdditionalInfo(ApplyPatchDefaultExecutor.pathsFromGroups(patchGroups))
-            ApplyPatchDefaultExecutor(myProject).apply(filePatches, patchGroups, null, prop, additionalInfo)
+            return "Applied ${filePatches.size} patches."
+        } catch (e: Exception) {
+            return "$DEVINS_ERROR message: " + e.message
         }
-
-        return "Applied ${filePatches.size} patches."
     }
 }
