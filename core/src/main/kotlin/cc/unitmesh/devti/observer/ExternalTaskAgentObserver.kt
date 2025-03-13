@@ -43,7 +43,11 @@ class ExternalTaskAgentObserver : AgentObserver, Disposable {
                 handler: ProcessHandler,
                 exitCode: Int
             ) {
-                val globalBuffer = globalBuffer.toString()
+                val globalBuffer = globalBuffer.toString().trim()
+                if (globalBuffer.isEmpty()) {
+                    return
+                }
+
                 if (exitCode != 0) {
                     val prompt = "Help Me fix follow build issue:\n```bash\n$globalBuffer\n```\n"
                     sendErrorNotification(project, prompt)
