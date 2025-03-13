@@ -85,7 +85,7 @@ open class SketchToolWindow(
         this.isOpaque = true
     }
 
-    protected var isUserScrolling: Boolean = false
+    var isUserScrolling: Boolean = false
     protected var isInterrupted: Boolean = false
 
     protected var systemPromptPanel: JPanel = JPanel(BorderLayout())
@@ -369,7 +369,7 @@ open class SketchToolWindow(
         inputSection.send()
     }
 
-    private fun scrollToBottom() {
+    fun scrollToBottom() {
         if (!isUserScrolling) {
             SwingUtilities.invokeLater {
                 val verticalScrollBar = scrollPanel.verticalScrollBar

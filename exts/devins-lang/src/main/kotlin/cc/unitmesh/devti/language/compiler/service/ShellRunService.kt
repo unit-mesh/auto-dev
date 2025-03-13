@@ -49,6 +49,7 @@ class ShellRunService : RunService {
 
         val configuration = configurationSetting.configuration as ShRunConfiguration
         configuration.scriptPath = virtualFile.path
+        configuration.scriptWorkingDirectory = project.basePath!!
         return configurationSetting.configuration
     }
 }

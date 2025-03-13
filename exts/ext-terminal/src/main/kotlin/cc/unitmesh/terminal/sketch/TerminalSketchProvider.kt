@@ -195,6 +195,8 @@ class TerminalSketchProvider : LanguageSketchProvider {
     private fun sendToSketch(project: Project, output: String) {
         val contentManager = ToolWindowManager.getInstance(project).getToolWindow("AutoDev")?.contentManager
         contentManager?.component?.components?.filterIsInstance<SketchToolWindow>()?.firstOrNull().let {
+            it?.isUserScrolling = false
+            it?.scrollToBottom()
             it?.sendInput(output)
         }
     }
