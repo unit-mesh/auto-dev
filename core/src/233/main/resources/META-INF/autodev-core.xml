@@ -277,7 +277,7 @@
         <toolchainFunctionProvider implementation="cc.unitmesh.devti.mcp.client.McpFunctionProvider"/>
 
         <agentObserver implementation="cc.unitmesh.devti.observer.TestAgentObserver" />
-        <agentObserver implementation="cc.unitmesh.devti.observer.ExternalTaskAgentObserver" />
+        <agentObserver implementation="cc.unitmesh.devti.observer.BuiltTaskAgentObserver" />
     </extensions>
 
     <actions>

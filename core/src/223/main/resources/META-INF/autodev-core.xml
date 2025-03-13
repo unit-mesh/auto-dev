@@ -273,6 +273,9 @@
         <toolchainFunctionProvider implementation="cc.unitmesh.devti.bridge.knowledge.HistoryFunctionProvider"/>
         <toolchainFunctionProvider implementation="cc.unitmesh.devti.bridge.knowledge.KnowledgeFunctionProvider"/>
         <toolchainFunctionProvider implementation="cc.unitmesh.devti.mcp.client.McpFunctionProvider"/>
+
+        <agentObserver implementation="cc.unitmesh.devti.observer.TestAgentObserver" />
+        <agentObserver implementation="cc.unitmesh.devti.observer.BuiltTaskAgentObserver" />
     </extensions>
 
     <actions>

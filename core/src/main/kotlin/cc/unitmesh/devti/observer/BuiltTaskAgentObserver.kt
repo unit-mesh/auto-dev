@@ -13,9 +13,8 @@ import com.intellij.openapi.util.Key
 import com.intellij.util.messages.MessageBusConnection
 
 
-class ExternalTaskAgentObserver : AgentObserver, Disposable {
+class BuiltTaskAgentObserver : AgentObserver, Disposable {
     private var connection: MessageBusConnection? = null
-    private val IDEA_INTERRUPTED_CODE = 255
 
     override fun onRegister(project: Project) {
         connection = project.messageBus.connect()
