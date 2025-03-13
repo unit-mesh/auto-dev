@@ -19,18 +19,12 @@ import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.Task
-import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
 import kotlinx.coroutines.runBlocking
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
 
 val CACHED_COMPILE_RESULT = mutableMapOf<String, DevInsCompiledResult>()
 
@@ -179,141 +173,7 @@ class DevInsCompiler(
         fallbackText: String,
         originCmdName: @NlsSafe String
     ) {
-        val command: InsCommand = when (commandNode) {
-            BuiltinCommand.FILE -> {
-                FileInsCommand(myProject, prop)
-            }
-
-            BuiltinCommand.REV -> {
-                RevInsCommand(myProject, prop)
-            }
-
-            BuiltinCommand.SYMBOL -> {
-                result.isLocalCommand = true
-                SymbolInsCommand(myProject, prop)
-            }
-
-            BuiltinCommand.WRITE -> {
-                result.isLocalCommand = true
-                val devInCode: CodeBlockElement? = lookupNextCode(used)
-                if (devInCode == null) {
-                    PrintInsCommand("/" + commandNode.commandName + ":" + prop)
-                } else {
-                    WriteInsCommand(myProject, prop, devInCode.codeText(), used)
-                }
-            }
-
-            BuiltinCommand.PATCH -> {
-                result.isLocalCommand = true
-                val devInCode: CodeBlockElement? = lookupNextCode(used)
-                if (devInCode == null) {
-                    PrintInsCommand("/" + commandNode.commandName + ":" + prop)
-                } else {
-                    PatchInsCommand(myProject, prop, devInCode.codeText())
-                }
-            }
-
-            BuiltinCommand.COMMIT -> {
-                result.isLocalCommand = true
-                val devInCode: CodeBlockElement? = lookupNextCode(used)
-                if (devInCode == null) {
-                    PrintInsCommand("/" + commandNode.commandName + ":" + prop)
-                } else {
-                    CommitInsCommand(myProject, devInCode.codeText())
-                }
-            }
-
-            BuiltinCommand.RUN -> {
-                result.isLocalCommand = true
-                RunInsCommand(myProject, prop)
-            }
-
-            BuiltinCommand.FILE_FUNC -> {
-                result.isLocalCommand = true
-                FileFuncInsCommand(myProject, prop)
-            }
-
-            BuiltinCommand.SHELL -> {
-                result.isLocalCommand = true
-                val shireCode: String? = lookupNextCode(used)?.codeText()
-                ShellInsCommand(myProject, prop, shireCode)
-            }
-
-            BuiltinCommand.BROWSE -> {
-                result.isLocalCommand = true
-                BrowseInsCommand(myProject, prop)
-            }
-
-            BuiltinCommand.REFACTOR -> {
-                result.isLocalCommand = true
-                val nextTextSegment = lookupNextTextSegment(used)
-                RefactorInsCommand(myProject, prop, nextTextSegment)
-            }
-
-            BuiltinCommand.DIR -> {
-                result.isLocalCommand = true
-                DirInsCommand(myProject, prop)
-            }
-
-            BuiltinCommand.DATABASE -> {
-                result.isLocalCommand = true
-                val shireCode: String? = lookupNextCode(used)?.text
-                DatabaseInsCommand(myProject, prop, shireCode)
-            }
-
-            BuiltinCommand.STRUCTURE -> {
-                result.isLocalCommand = true
-                StructureInCommand(myProject, prop)
-            }
-
-            BuiltinCommand.LOCAL_SEARCH -> {
-                result.isLocalCommand = true
-                val shireCode: String? = lookupNextCode(used)?.text
-                LocalSearchInsCommand(myProject, prop, shireCode)
-            }
-
-            BuiltinCommand.RIPGREP_SEARCH -> {
-                result.isLocalCommand = true
-                val shireCode: String? = lookupNextCode(used)?.text
-                RipgrepSearchInsCommand(myProject, prop, shireCode)
-            }
-
-            BuiltinCommand.RELATED -> {
-                result.isLocalCommand = true
-                RelatedSymbolInsCommand(myProject, prop)
-            }
-
-            BuiltinCommand.OPEN -> {
-                result.isLocalCommand = true
-                OpenInsCommand(myProject, prop)
-            }
-
-            BuiltinCommand.TOOLCHAIN_COMMAND -> {
-                result.isLocalCommand = true
-                try {
-                    val providerName = toolchainProviderName(originCmdName)
-                    val provider = ToolchainFunctionProvider.lookup(providerName)
-                    if (provider != null) {
-                        executeExtensionFunction(used, prop, provider)
-                    } else {
-                        var cmd = PrintInsCommand("/" + commandNode.commandName + ":" + prop)
-                        ToolchainFunctionProvider.all().forEach {
-                            if (it.funcNames().contains(originCmdName)) {
-                                cmd = executeExtensionFunction(used, prop, it)
-                            }
-                        }
-
-                        cmd
-                    }
-                } catch (e: Exception) {
-                    PrintInsCommand("/" + commandNode.commandName + ":" + prop)
-                }
-            }
-
-            else -> {
-                PrintInsCommand("/" + commandNode.commandName + ":" + prop)
-            }
-        }
+        val command: InsCommand = toInsCommand(commandNode, prop, used, originCmdName)
 
         val execResult = runBlocking { command.execute() }
 
@@ -339,6 +199,142 @@ class DevInsCompiler(
         }
 
         output.append(result)
+    }
+
+    fun toInsCommand(commandNode: BuiltinCommand, prop: String, used: DevInUsed, originCmdName: String): InsCommand = when (commandNode) {
+        BuiltinCommand.FILE -> {
+            FileInsCommand(myProject, prop)
+        }
+
+        BuiltinCommand.REV -> {
+            RevInsCommand(myProject, prop)
+        }
+
+        BuiltinCommand.SYMBOL -> {
+            result.isLocalCommand = true
+            SymbolInsCommand(myProject, prop)
+        }
+
+        BuiltinCommand.WRITE -> {
+            result.isLocalCommand = true
+            val devInCode: CodeBlockElement? = lookupNextCode(used)
+            if (devInCode == null) {
+                PrintInsCommand("/" + commandNode.commandName + ":" + prop)
+            } else {
+                WriteInsCommand(myProject, prop, devInCode.codeText(), used)
+            }
+        }
+
+        BuiltinCommand.PATCH -> {
+            result.isLocalCommand = true
+            val devInCode: CodeBlockElement? = lookupNextCode(used)
+            if (devInCode == null) {
+                PrintInsCommand("/" + commandNode.commandName + ":" + prop)
+            } else {
+                PatchInsCommand(myProject, prop, devInCode.codeText())
+            }
+        }
+
+        BuiltinCommand.COMMIT -> {
+            result.isLocalCommand = true
+            val devInCode: CodeBlockElement? = lookupNextCode(used)
+            if (devInCode == null) {
+                PrintInsCommand("/" + commandNode.commandName + ":" + prop)
+            } else {
+                CommitInsCommand(myProject, devInCode.codeText())
+            }
+        }
+
+        BuiltinCommand.RUN -> {
+            result.isLocalCommand = true
+            RunInsCommand(myProject, prop)
+        }
+
+        BuiltinCommand.FILE_FUNC -> {
+            result.isLocalCommand = true
+            FileFuncInsCommand(myProject, prop)
+        }
+
+        BuiltinCommand.SHELL -> {
+            result.isLocalCommand = true
+            val shireCode: String? = lookupNextCode(used)?.codeText()
+            ShellInsCommand(myProject, prop, shireCode)
+        }
+
+        BuiltinCommand.BROWSE -> {
+            result.isLocalCommand = true
+            BrowseInsCommand(myProject, prop)
+        }
+
+        BuiltinCommand.REFACTOR -> {
+            result.isLocalCommand = true
+            val nextTextSegment = lookupNextTextSegment(used)
+            RefactorInsCommand(myProject, prop, nextTextSegment)
+        }
+
+        BuiltinCommand.DIR -> {
+            result.isLocalCommand = true
+            DirInsCommand(myProject, prop)
+        }
+
+        BuiltinCommand.DATABASE -> {
+            result.isLocalCommand = true
+            val shireCode: String? = lookupNextCode(used)?.text
+            DatabaseInsCommand(myProject, prop, shireCode)
+        }
+
+        BuiltinCommand.STRUCTURE -> {
+            result.isLocalCommand = true
+            StructureInCommand(myProject, prop)
+        }
+
+        BuiltinCommand.LOCAL_SEARCH -> {
+            result.isLocalCommand = true
+            val shireCode: String? = lookupNextCode(used)?.text
+            LocalSearchInsCommand(myProject, prop, shireCode)
+        }
+
+        BuiltinCommand.RIPGREP_SEARCH -> {
+            result.isLocalCommand = true
+            val shireCode: String? = lookupNextCode(used)?.text
+            RipgrepSearchInsCommand(myProject, prop, shireCode)
+        }
+
+        BuiltinCommand.RELATED -> {
+            result.isLocalCommand = true
+            RelatedSymbolInsCommand(myProject, prop)
+        }
+
+        BuiltinCommand.OPEN -> {
+            result.isLocalCommand = true
+            OpenInsCommand(myProject, prop)
+        }
+
+        BuiltinCommand.TOOLCHAIN_COMMAND -> {
+            result.isLocalCommand = true
+            try {
+                val providerName = toolchainProviderName(originCmdName)
+                val provider = ToolchainFunctionProvider.lookup(providerName)
+                if (provider != null) {
+                    executeExtensionFunction(used, prop, provider)
+                } else {
+                    var cmd = PrintInsCommand("/" + commandNode.commandName + ":" + prop)
+                    ToolchainFunctionProvider.all().forEach {
+                        if (it.funcNames().contains(originCmdName)) {
+                            cmd = executeExtensionFunction(used, prop, it)
+                        }
+                    }
+
+                    cmd
+                }
+            } catch (e: Exception) {
+                PrintInsCommand("/" + commandNode.commandName + ":" + prop)
+            }
+        }
+
+        else -> {
+            PrintInsCommand("/" + commandNode.commandName + ":" + prop)
+        }
     }
 
     private fun executeExtensionFunction(
