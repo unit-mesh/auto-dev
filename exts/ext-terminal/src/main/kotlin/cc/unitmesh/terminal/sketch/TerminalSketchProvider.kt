@@ -2,10 +2,10 @@ package cc.unitmesh.terminal.sketch
 
 import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
-import cc.unitmesh.devti.sketch.ui.WebViewWindow
 import cc.unitmesh.devti.sketch.SketchToolWindow
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
+import cc.unitmesh.devti.sketch.ui.WebViewWindow
 import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.execution.filters.Filter
@@ -18,17 +18,16 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.ui.popup.JBPopup
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.util.MinimizeButton
 import com.intellij.openapi.wm.ToolWindowManager
+import com.intellij.terminal.JBTerminalSystemSettingsProviderBase
 import com.intellij.terminal.JBTerminalWidget
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.components.panels.Wrapper
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
-import org.jetbrains.plugins.terminal.LocalTerminalDirectRunner
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.Toolkit
@@ -71,10 +70,8 @@ class TerminalSketchProvider : LanguageSketchProvider {
             }
 
             init {
-                val projectDir = project.guessProjectDir()?.path
-                val terminalRunner = LocalTerminalDirectRunner.createTerminalRunner(project)
-
-                terminalWidget = terminalRunner.createTerminalWidget(this, projectDir, true).also {
+                val provider = JBTerminalSystemSettingsProviderBase()
+                terminalWidget = JBTerminalWidget(project, 80, 24, provider, null, this).also {
                     it.preferredSize = Dimension(it.preferredSize.width, 120)
                 }
 
