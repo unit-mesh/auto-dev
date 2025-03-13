@@ -25,8 +25,12 @@ class AgentStateService {
 
     }
 
-    fun addChanges(val fileName: String) {
+    fun addChanges(fileName: String) {
         // todo changeList.add()
+    }
+
+    fun resetMessages() {
+        state.messages = emptyList()
     }
 
     /**
