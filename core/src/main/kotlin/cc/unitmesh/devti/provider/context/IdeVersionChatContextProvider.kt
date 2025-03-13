@@ -5,7 +5,7 @@ import com.intellij.openapi.application.ApplicationNamesInfo
 import com.intellij.openapi.project.Project
 
 class IdeVersionChatContextProvider : ChatContextProvider {
-    override fun isApplicable(project: Project, creationContext: ChatCreationContext) = true
+    override fun isApplicable(project: Project, creationContext: ChatCreationContext) = false
 
     override fun collect(project: Project, creationContext: ChatCreationContext): List<ChatContextItem> {
         val productName = ApplicationNamesInfo.getInstance().fullProductName
