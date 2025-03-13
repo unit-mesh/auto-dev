@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.language.provider
 
 import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.DevInLanguage
 import cc.unitmesh.devti.language.compiler.DevInsCompiler
 import cc.unitmesh.devti.language.psi.DevInFile
@@ -8,10 +9,12 @@ import cc.unitmesh.devti.provider.devins.CustomAgentContext
 import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.application.runInEdt
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.util.PsiUtilBase
 
@@ -46,6 +49,15 @@ class DevInsPromptProcessor : LanguageProcessor {
         val devInsCompiler = createCompiler(project, text)
         val result = devInsCompiler.compile()
         return result.output
+    }
+
+    override fun transpileCommand(project: Project, psiFile: PsiFile): List<BuiltinCommand> {
+        if (psiFile !is DevInFile) {
+            return emptyList()
+        }
+
+        val result = DevInsCompiler.transpileCommand(psiFile)
+        return result
     }
 
     /**

@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.observer.agent
 
 import cc.unitmesh.devti.agent.tool.AgentTool
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.llms.custom.Message
 import com.intellij.openapi.components.Service
 import com.intellij.util.diff.Diff.Change
@@ -21,8 +22,10 @@ class AgentStateService {
         state = AgentState()
     }
 
-    fun addTools(tools: List<AgentTool>) {
-
+    fun addTools(tools: List<BuiltinCommand>) {
+        state.usedTools = tools.map {
+            AgentTool(it.commandName, it.description, "")
+        }
     }
 
     fun addChanges(fileName: String) {

@@ -400,6 +400,36 @@ class DevInsCompiler(
 
         return textSegment.toString()
     }
+
+    companion object {
+        fun transpileCommand(file: DevInFile): List<BuiltinCommand> {
+            val result = file.children.mapNotNull { it ->
+                when (it.elementType) {
+                    DevInTypes.USED -> {
+                        val used = it as DevInUsed
+                        val firstChild = used.firstChild
+                        val id = firstChild.nextSibling
+
+                        return@mapNotNull when (firstChild.elementType) {
+                            DevInTypes.COMMAND_START -> {
+                                val originCmdName = id?.text ?: ""
+                                val command = BuiltinCommand.fromString(originCmdName)
+                                if (command == null) {
+                                    CustomCommand.fromString(file.project, originCmdName) ?: return@mapNotNull null
+                                }
+
+                                command
+                            }
+                            else -> null
+                        }
+                    }
+                    else -> null
+                }
+            }
+
+            return result
+        }
+    }
 }
 
 

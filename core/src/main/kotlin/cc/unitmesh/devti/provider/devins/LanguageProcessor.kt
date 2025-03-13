@@ -1,8 +1,10 @@
 package cc.unitmesh.devti.provider.devins
 
 import cc.unitmesh.devti.agent.custom.model.CustomAgentConfig
+import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiFile
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 
 data class CustomAgentContext(
@@ -25,6 +27,9 @@ interface LanguageProcessor {
 
     @RequiresBackgroundThread
     fun compile(project: Project, text: String): String
+
+    @RequiresBackgroundThread
+    fun transpileCommand(project: Project, psiFile: PsiFile): List<BuiltinCommand>
 
     companion object {
         val EP_NAME = ExtensionPointName<LanguageProcessor>("cc.unitmesh.languageProcessor")
