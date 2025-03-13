@@ -26,15 +26,16 @@ class AgentStateService {
         // todo changeList.add()
     }
 
-    fun resetMessages() {
-        state.messages = emptyList()
-    }
-
     /**
      * Call some LLM to compress it or use some other method to compress the history
      */
-    fun preprocessMessages(messages: List<Message>): List<Message> {
+    fun processMessages(messages: List<Message>): List<Message> {
         state.messages = messages
+        /// todo compress message in here
         return messages
+    }
+
+    fun resolveIssue() {
+        // todo resolve issue
     }
 }

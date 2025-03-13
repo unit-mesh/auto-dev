@@ -135,7 +135,6 @@ class TestAgentObserver : AgentObserver, Disposable {
         }
     }
 
-
     private fun getConsoleView(executionConsole: ExecutionConsole): ConsoleViewImpl? {
         when (executionConsole) {
             is ConsoleViewImpl -> {
@@ -169,8 +168,6 @@ class TestAgentObserver : AgentObserver, Disposable {
             return null
         }
     }
-
-// ToolWindowManager.getInstance(project).getToolWindow(ToolWindowId.DEBUG)
 
     override fun dispose() {
         connection?.disconnect()

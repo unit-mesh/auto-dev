@@ -84,7 +84,7 @@ class CustomLLMProvider(val project: Project, var llmConfig: LlmConfig = LlmConf
         }
 
         messages += Message("user", prompt)
-        val finalMsgs = agentService.preprocessMessages(messages)
+        val finalMsgs = agentService.processMessages(messages)
 
         val customRequest = CustomRequest(finalMsgs)
         val requestContent = customRequest.updateCustomFormat(requestFormat)
