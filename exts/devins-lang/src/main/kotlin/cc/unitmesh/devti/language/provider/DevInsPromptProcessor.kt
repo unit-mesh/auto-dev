@@ -9,7 +9,6 @@ import cc.unitmesh.devti.provider.devins.CustomAgentContext
 import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.application.runInEdt
-import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
@@ -52,12 +51,8 @@ class DevInsPromptProcessor : LanguageProcessor {
     }
 
     override fun transpileCommand(project: Project, psiFile: PsiFile): List<BuiltinCommand> {
-        if (psiFile !is DevInFile) {
-            return emptyList()
-        }
-
-        val result = DevInsCompiler.transpileCommand(psiFile)
-        return result
+        if (psiFile !is DevInFile) return emptyList()
+        return DevInsCompiler.transpileCommand(psiFile)
     }
 
     /**

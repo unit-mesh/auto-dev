@@ -11,7 +11,6 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFileFactory
-import com.intellij.sql.psi.SqlFile
 
 @Service(Service.Level.PROJECT)
 class AutoSketchMode(val project: Project) {
