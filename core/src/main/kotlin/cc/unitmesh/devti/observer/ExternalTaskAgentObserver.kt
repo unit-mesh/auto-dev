@@ -15,6 +15,7 @@ import com.intellij.util.messages.MessageBusConnection
 
 class ExternalTaskAgentObserver : AgentObserver, Disposable {
     private var connection: MessageBusConnection? = null
+    private val IDEA_INTERRUPTED_CODE = 255
 
     override fun onRegister(project: Project) {
         connection = project.messageBus.connect()
@@ -48,7 +49,7 @@ class ExternalTaskAgentObserver : AgentObserver, Disposable {
                     return
                 }
 
-                if (exitCode != 0) {
+                if (exitCode != 0 && exitCode != IDEA_INTERRUPTED_CODE) {
                     val prompt = "Help Me fix follow build issue:\n```bash\n$globalBuffer\n```\n"
                     sendErrorNotification(project, prompt)
                 } else {
