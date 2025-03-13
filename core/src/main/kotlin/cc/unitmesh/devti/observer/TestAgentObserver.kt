@@ -16,7 +16,6 @@ import com.intellij.execution.ui.ExecutionConsole
 import com.intellij.execution.ui.RunContentManager
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.runReadAction
-import com.intellij.openapi.editor.markup.RangeHighlighter
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -59,7 +58,11 @@ class TestAgentObserver : AgentObserver, Disposable {
                 val language = psiElement?.language?.displayName ?: ""
                 val filepath = psiElement?.containingFile?.virtualFile?.relativePath(project) ?: ""
                 val code = runReadAction<String> { psiElement?.text ?: "" }
-                val formatedRelatedCode = "\n## related code:\n```$language\n${relatedCode.joinToString("\n")}\n```"
+                val formatedRelatedCode = if (relatedCode.isNotEmpty()) {
+                    "\n## Related Code:\n${relatedCode.joinToString("\n\n")}"
+                } else {
+                    ""
+                }
                 val prompt = """Help me fix follow test issue:
                                |## ErrorMessage:
                                |```
@@ -73,7 +76,7 @@ class TestAgentObserver : AgentObserver, Disposable {
                                |```$language
                                |$code
                                |```
-                               |${formatedRelatedCode}
+                               |$formatedRelatedCode
                                |""".trimMargin()
 
                 sendErrorNotification(project, prompt)
@@ -95,45 +98,41 @@ class TestAgentObserver : AgentObserver, Disposable {
         val consoleViewImpl: ConsoleViewImpl = getConsoleView(executionConsole) ?: return null
         val editor = consoleViewImpl.editor ?: return null
 
-        val startOffset = 0
-        val endOffset = editor.document.textLength
-        val textRange = TextRange(startOffset, endOffset)
-        val highlighters: Array<RangeHighlighter> = editor.markupModel.allHighlighters
+        val textRange = TextRange(0, editor.document.textLength)
+        val highlighters = editor.markupModel.allHighlighters
 
-        /// todo: first collect file path and line number, then build by range
-        val relatedCode = highlighters.mapNotNull { highlighter ->
-            if (textRange.contains(highlighter.range!!)) {
-                // call be .DiffHyperlink
-                val hyperlinkInfo: FileHyperlinkInfo? = EditorHyperlinkSupport.getHyperlinkInfo(highlighter) as? FileHyperlinkInfo
-                val descriptor = hyperlinkInfo?.descriptor ?: return@mapNotNull null
-                val virtualFile: VirtualFile = descriptor.file
-
-                val isProjectFile = runReadAction { project.isInProject(virtualFile) }
-                if (isProjectFile) {
-                    val lineNumber = descriptor.line
-                    val allText = virtualFile.readText()
-                    val startLine = if (lineNumber - 10 < 0) {
-                        0
-                    } else {
-                        lineNumber - 10
-                    }
-                    //  endLine should be less than allText.lines().size
-                    val endLine = if (lineNumber + 10 > allText.lines().size) {
-                        allText.lines().size
-                    } else {
-                        lineNumber + 10
-                    }
-
-                    return@mapNotNull allText.lines().subList(startLine, endLine).joinToString("\n")
-                } else {
-                    return@mapNotNull null
-                }
-            } else {
-                return@mapNotNull null
+        val fileLineMap = mutableMapOf<VirtualFile, MutableSet<Int>>()
+        highlighters.forEach { highlighter ->
+            if (!textRange.contains(highlighter.range!!)) return@forEach
+            
+            val hyperlinkInfo = EditorHyperlinkSupport.getHyperlinkInfo(highlighter) as? FileHyperlinkInfo ?: return@forEach
+            val descriptor = hyperlinkInfo.descriptor ?: return@forEach
+            val virtualFile = descriptor.file
+            
+            if (runReadAction { project.isInProject(virtualFile) }) {
+                fileLineMap.computeIfAbsent(virtualFile) { mutableSetOf() }.add(descriptor.line)
             }
         }
 
-        return relatedCode.distinct()
+        return fileLineMap.map { (virtualFile, lineNumbers) ->
+            val contentLines = virtualFile.readText().lines()
+            val context = buildString {
+                append("## File: ${runReadAction { virtualFile.relativePath(project) }}\n")
+                val displayLines = mutableSetOf<Int>()
+                lineNumbers.forEach { lineNum ->
+                    val range = (maxOf(0, lineNum - 10) until minOf(contentLines.size, lineNum + 10))
+                    displayLines.addAll(range)
+                }
+                
+                displayLines.sorted().forEach { lineIdx ->
+                    contentLines.getOrNull(lineIdx)?.let { line ->
+                        append("${lineIdx + 1}: $line\n")
+                    }
+                }
+            }
+            
+            context
+        }
     }
 
 
