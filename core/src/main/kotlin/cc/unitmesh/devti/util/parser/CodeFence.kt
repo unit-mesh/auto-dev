@@ -16,7 +16,7 @@ class CodeFence(
         val devinEndRegex = Regex("</devin>")
 
         fun parse(content: String): CodeFence {
-            val languageRegex = Regex("```([\\w#+ ]*)")
+            val languageRegex = Regex("\\s*```([\\w#+ ]*)")
             val lines = content.lines()
 
             val startMatch = devinStartRegex.find(content)
@@ -38,21 +38,28 @@ class CodeFence(
             var codeStarted = false
             var codeClosed = false
             var languageId: String? = null
+            var codeIndentation = ""
             val codeBuilder = StringBuilder()
 
             for (line in lines) {
                 if (!codeStarted) {
-                    val matchResult: MatchResult? = languageRegex.find(line.trimStart())
+                    val trimmedLine = line.trimStart()
+                    val matchResult: MatchResult? = languageRegex.find(trimmedLine)
                     if (matchResult != null) {
-                        val substring = matchResult.groups[1]?.value
+                        // Store the indentation to match it when looking for the closing fence
+                        codeIndentation = line.substring(0, line.length - trimmedLine.length)
+                        val substring = matchResult.groups[1]?.value?.trim()
                         languageId = substring
                         codeStarted = true
                     }
-                } else if (line.startsWith("```")) {
-                    codeClosed = true
-                    break
                 } else {
-                    codeBuilder.append(line).append("\n")
+                    val trimmedLine = line.trimStart()
+                    if (trimmedLine == "```") {
+                        codeClosed = true
+                        break
+                    } else {
+                        codeBuilder.append(line).append("\n")
+                    }
                 }
             }
 
@@ -112,7 +119,7 @@ class CodeFence(
         }
 
         val devinRegexBlock = Regex("(?<=^|\\n)```devin\\n([\\s\\S]*?)\\n```\\n")
-        val normalCodeBlock = Regex("```([\\w#+ ]*)\\n")
+        val normalCodeBlock = Regex("\\s*```([\\w#+ ]*)\\n")
 
         fun preProcessDevinBlock(content: String): String {
             var currentContent = content
@@ -135,17 +142,21 @@ class CodeFence(
         }
 
         private fun parseMarkdownContent(content: String, codeFences: MutableList<CodeFence>) {
-            val languageRegex = Regex("```([\\w#+ ]*)")
+            val languageRegex = Regex("\\s*```([\\w#+ ]*)")
             val lines = content.lines()
 
             var codeStarted = false
             var languageId: String? = null
             val codeBuilder = StringBuilder()
             val textBuilder = StringBuilder()
+            var codeIndentation = ""
 
-            for (line in lines) {
+            for (i in lines.indices) {
+                val line = lines[i]
                 if (!codeStarted) {
-                    val matchResult = languageRegex.find(line.trimStart())
+                    // Check for code block start with any indentation
+                    val trimmedLine = line.trimStart()
+                    val matchResult = languageRegex.find(trimmedLine)
                     if (matchResult != null) {
                         if (textBuilder.isNotEmpty()) {
                             val textBlock = CodeFence(
@@ -156,13 +167,20 @@ class CodeFence(
                             textBuilder.clear()
                         }
 
-                        languageId = matchResult.groups[1]?.value
+                        // Store the indentation to match it when looking for the closing fence
+                        codeIndentation = line.substring(0, line.length - trimmedLine.length)
+                        languageId = matchResult.groups[1]?.value?.trim()
                         codeStarted = true
                     } else {
                         textBuilder.append(line).append("\n")
                     }
                 } else {
-                    if (line.startsWith("```")) {
+                    // Check if this line contains the closing fence with the same or similar indentation
+                    val trimmedLine = line.trimStart()
+                    
+                    // Allow for some flexibility in indentation for the closing fence
+                    // This helps with numbered lists where indentation might vary slightly
+                    if (trimmedLine == "```") {
                         val codeContent = codeBuilder.trim().toString()
                         val codeFence = CodeFence(
                             findLanguage(languageId ?: "markdown"),
@@ -176,6 +194,7 @@ class CodeFence(
                         codeBuilder.clear()
                         codeStarted = false
                         languageId = null
+                        codeIndentation = ""
                     } else {
                         codeBuilder.append(line).append("\n")
                     }

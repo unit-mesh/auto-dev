@@ -333,4 +333,47 @@ npm run dev
         )
         assertTrue(codeFences[0].isComplete)
     }
+
+    fun testShouldHandleCodeUnderListWithErrorIndent() {
+        val content = """
+1. **通过代码设置属性**：
+   你可以在你的插件代码或项目中的某个地方直接使用这段代码来设置属性。例如：
+
+   ```java
+   PropertiesComponent.getInstance().setValue("matterhorn.junie.untestedIdeAccepted", "true");
+   ```
+
+   这会将 `matterhorn.junie.untestedIdeAccepted` 的值设置为 `"true"`。
+
+2. **通过 IDEA 的配置文件手动设置**：
+   如果你不想通过代码来设置这个属性，你可以手动编辑 IDEA 的配置文件。IDEA 的全局属性通常存储在 `idea.properties` 文件中，或者在某些情况下存储在 `options` 目录下的 XML 文件中。
+```
+        """.trimMargin()
+
+        val codeFences = CodeFence.parseAll(content)
+        assertEquals(codeFences.size, 3)
+        assertEquals(
+            codeFences[0].text, """
+            |1. **通过代码设置属性**：
+            |   你可以在你的插件代码或项目中的某个地方直接使用这段代码来设置属性。例如：
+        """.trimMargin()
+        )
+        assertTrue(codeFences[0].isComplete)
+
+        assertEquals(
+            codeFences[1].text, """
+            |PropertiesComponent.getInstance().setValue("matterhorn.junie.untestedIdeAccepted", "true");
+        """.trimMargin()
+        )
+        assertEquals(codeFences[1].originLanguage, "java")
+
+        assertEquals(
+            codeFences[2].text, """
+            |这会将 `matterhorn.junie.untestedIdeAccepted` 的值设置为 `"true"`。
+            |
+            |2. **通过 IDEA 的配置文件手动设置**：
+            |   如果你不想通过代码来设置这个属性，你可以手动编辑 IDEA 的配置文件。IDEA 的全局属性通常存储在 `idea.properties` 文件中，或者在某些情况下存储在 `options` 目录下的 XML 文件中。
+        """.trimMargin()
+        )
+    }
 }

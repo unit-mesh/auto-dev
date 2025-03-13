@@ -1,7 +1,5 @@
 package cc.unitmesh.devti.observer
 
-import cc.unitmesh.devti.gui.chat.message.ChatActionType
-import cc.unitmesh.devti.gui.sendToChatWindow
 import cc.unitmesh.devti.provider.observer.AgentObserver
 import cc.unitmesh.devti.util.relativePath
 import com.intellij.execution.testframework.sm.runner.SMTRunnerEventsAdapter
@@ -27,8 +25,8 @@ class TestAgentObserver : AgentObserver, Disposable {
     }
 
     private fun sendResult(test: SMTestProxy, project: Project, searchScope: GlobalSearchScope) {
-        val sourceCode = test.getLocation(project, searchScope)
         runInEdt {
+            val sourceCode = test.getLocation(project, searchScope)
             val psiElement = sourceCode?.psiElement
             val language = psiElement?.language?.displayName ?: ""
             val filepath = psiElement?.containingFile?.virtualFile?.relativePath(project) ?: ""
