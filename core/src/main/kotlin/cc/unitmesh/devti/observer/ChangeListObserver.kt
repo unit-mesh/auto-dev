@@ -23,7 +23,6 @@ class ChangeListObserver : AgentObserver, Disposable {
         }, this)
     }
 
-
     override fun dispose() {
         connection?.disconnect()
     }

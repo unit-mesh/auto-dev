@@ -14,15 +14,21 @@ class AddDependencyAgentObserver : AgentObserver, Disposable {
     override fun onRegister(project: Project) {
         connection = project.messageBus.connect()
         connection?.subscribe(ProjectDataImportListener.TOPIC, object : ProjectDataImportListener {
-            override fun onImportFailed(projectPath: String?, t: Throwable) {
-                val prompt = """Help me fix follow dependency issue:
-                               |## ErrorMessage:
-                               |```
-                               |${t.message}
-                               |""".trimMargin()
+//            for 223 version
+//            override fun onImportFailed(projectPath: String?) {
+//
+//            }
 
-                sendErrorNotification(project, prompt)
-            }
+            // after 233
+//            override fun onImportFailed(projectPath: String?, t: Throwable) {
+//                val prompt = """Help me fix follow dependency issue:
+//                               |## ErrorMessage:
+//                               |```
+//                               |${t.message}
+//                               |""".trimMargin()
+//
+//                sendErrorNotification(project, prompt)
+//            }
         })
     }
 
