@@ -68,11 +68,8 @@ open class SketchToolWindow(
 
     private var thinkingHighlight: CodeHighlightSketch =
         CodeHighlightSketch(project, "<Thinking />", PlainTextLanguage.INSTANCE)
-    private var thinkingPanel = panel {
-        row {
-            cell(thinkingHighlight).fullWidth()
-        }
-    }
+
+    private var thinkingPanel = thinkingHighlight
 
     private var inputSection: AutoDevInputSection = AutoDevInputSection(project, this, showAgent = false)
 

@@ -121,11 +121,11 @@ class CustomLLMProvider(val project: Project, var llmConfig: LlmConfig = LlmConf
      */
     private fun CustomLLMProvider.tryUpdateModelForPlan(systemPrompt: String): LlmConfig {
         val canBePlanLength = 3
-        if (messages.size == canBePlanLength) {
-            messages[0] = Message("system", systemPrompt)
-        }
-
         return if (messages.size == canBePlanLength && LlmConfig.hasPlanModel()) {
+            if (messages.size == canBePlanLength) {
+                messages[0] = Message("system", systemPrompt)
+            }
+
             backupLlmConfigForPlan = llmConfig
             LlmConfig.load(ModelType.Plan).first()
         } else {
