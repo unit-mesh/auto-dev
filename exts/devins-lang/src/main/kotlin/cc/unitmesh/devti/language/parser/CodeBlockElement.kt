@@ -5,6 +5,7 @@ import cc.unitmesh.devti.language.psi.DevInTypes
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.ElementManipulators
@@ -43,7 +44,7 @@ class CodeBlockElement(node: ASTNode) : ASTWrapperPsiElement(node), PsiLanguageI
     }
 
     fun codeText(): String {
-        return CodeFence.parse(this.text).text
+        return runReadAction { CodeFence.parse(this.text).text }
     }
 
     companion object {

@@ -162,12 +162,14 @@ open class CodeHighlightSketch(
             "diff", "patch" -> {
                 val langSketch = LanguageSketchProvider.provide("patch")?.create(project, parse.text) ?: return
                 panel = langSketch.getComponent()
+                panel.border = JBEmptyBorder(4)
                 langSketch.onDoneStream(allText)
             }
 
             "html" -> {
                 val langSketch = LanguageSketchProvider.provide("html")?.create(project, parse.text) ?: return
                 panel = langSketch.getComponent()
+                panel.border = JBEmptyBorder(4)
                 langSketch.onDoneStream(allText)
             }
 
@@ -180,7 +182,6 @@ open class CodeHighlightSketch(
 
         if (panel == null) return
 
-        panel.border = JBEmptyBorder(4)
         add(panel, BorderLayout.SOUTH)
 
         editorFragment?.updateExpandCollapseLabel()
