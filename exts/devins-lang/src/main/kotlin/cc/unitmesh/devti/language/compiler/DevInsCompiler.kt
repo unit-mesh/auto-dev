@@ -42,7 +42,7 @@ class DevInsCompiler(
      * Todo: build AST tree, then compile
      */
     suspend fun compile(): DevInsCompiledResult {
-        result.input = file.text
+        result.input = runReadAction { file.text }
         val children = runReadAction { file.children }
         children.forEach {
             val text = runReadAction { it.text }

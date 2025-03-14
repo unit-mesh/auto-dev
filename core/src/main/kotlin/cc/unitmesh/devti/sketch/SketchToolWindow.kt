@@ -6,6 +6,7 @@ import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
 import cc.unitmesh.devti.gui.chat.view.MessageView
+import cc.unitmesh.devti.gui.toolbar.CopyAllMessagesAction
 import cc.unitmesh.devti.gui.toolbar.NewSketchAction
 import cc.unitmesh.devti.inline.AutoDevInlineChatService
 import cc.unitmesh.devti.inline.fullHeight
@@ -18,7 +19,6 @@ import cc.unitmesh.devti.sketch.ui.MarkdownPreviewHighlightSketch
 import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.util.parser.CodeFence
-import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ActionToolbar
@@ -42,14 +42,12 @@ import com.intellij.util.ui.UIUtil
 import kotlinx.coroutines.launch
 import org.jetbrains.annotations.NonNls
 import java.awt.BorderLayout
-import java.awt.Dimension
-import java.awt.Toolkit
-import java.awt.datatransfer.StringSelection
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
-import javax.swing.*
+import javax.swing.JPanel
+import javax.swing.JProgressBar
+import javax.swing.ScrollPaneConstants
+import javax.swing.SwingUtilities
 
 interface SketchProcessListener {
     fun onBefore() {}
@@ -69,7 +67,9 @@ open class SketchToolWindow(
     private var thinkingHighlight: CodeHighlightSketch =
         CodeHighlightSketch(project, "<Thinking />", PlainTextLanguage.INSTANCE)
 
-    private var thinkingPanel = thinkingHighlight
+    private var thinkingPanel = thinkingHighlight.apply {
+        this.border = JBUI.Borders.empty()
+    }
 
     private var inputSection: AutoDevInputSection = AutoDevInputSection(project, this, showAgent = false)
 
@@ -88,22 +88,8 @@ open class SketchToolWindow(
     protected var systemPromptPanel: JPanel = JPanel(BorderLayout())
     protected var contentPanel = JPanel(BorderLayout())
 
-    val header = JButton(AllIcons.Actions.Copy).apply {
-        this@apply.preferredSize = Dimension(32, 32)
-
-        addMouseListener(object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent?) {
-                var allText = chatCodingService.getAllMessages().joinToString("\n") { it.content }
-                val selection = StringSelection(allText)
-                val clipboard = Toolkit.getDefaultToolkit().systemClipboard
-                clipboard.setContents(selection, null)
-            }
-        })
-    }
-
     protected var panelContent: DialogPanel = panel {
         row { cell(systemPromptPanel).fullWidth().fullHeight() }
-        row { cell(header).alignRight() }
         row { cell(historyPanel).fullWidth().fullHeight() }
         row { cell(myList).fullWidth().fullHeight() }
     }
@@ -136,6 +122,7 @@ open class SketchToolWindow(
                     }
 
                     createActionButton(NewSketchAction()).alignRight()
+                    createActionButton(CopyAllMessagesAction()).alignRight()
                 }
             }
 

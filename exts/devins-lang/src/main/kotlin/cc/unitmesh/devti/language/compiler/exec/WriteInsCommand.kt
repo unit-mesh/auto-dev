@@ -92,7 +92,7 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
             return "$DEVINS_ERROR: Create File failed: $argument"
         }
 
-        val document = FileDocumentManager.getInstance().getDocument(newFile)
+        val document = runReadAction { FileDocumentManager.getInstance().getDocument(newFile) }
             ?: return "$DEVINS_ERROR: File not found: $argument"
 
         runInEdt {

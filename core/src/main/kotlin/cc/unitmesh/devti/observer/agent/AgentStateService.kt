@@ -47,6 +47,10 @@ class AgentStateService {
         return intention
     }
 
+    fun allMessages(): List<Message> {
+        return state.messages
+    }
+
     fun resolveIssue() {
         // todo resolve issue
     }

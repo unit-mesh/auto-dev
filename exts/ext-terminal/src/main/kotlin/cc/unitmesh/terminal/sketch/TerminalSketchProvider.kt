@@ -78,6 +78,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
                     it.preferredSize = Dimension(it.preferredSize.width, 120)
                 }
 
+                codeSketch.getComponent().border = JBUI.Borders.empty()
                 mainPanel = object : JPanel(VerticalLayout(JBUI.scale(0))) {
                     init {
                         add(toolbarWrapper)
