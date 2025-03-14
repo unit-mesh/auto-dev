@@ -104,8 +104,8 @@ have created a routes.py and main.js file, and updated the main.html file.
 // from flask import Flask
 ```
 </devin>
-// patch to call tools for step 3 with DevIn language, should use `<devin></devin>` tag with DevIn language
-// 如果要应用补丁，请使用 `/patch` 命令，然后在代码块中编写补丁
+// patch to call tools for step 3 with DevIn language, should use `<devin />` tag with DevIn language
+// 如果要应用补丁，请使用 `/patch` 命令，然后在代码块中编写补丁，每个 patch 只能修改一个文件，并且使用独立的 `<devin />` 标签
 <devin>
 /patch:src/main/index.html
 ```patch
