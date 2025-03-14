@@ -48,6 +48,12 @@ class BuiltTaskAgentObserver : AgentObserver, Disposable {
                     return
                 }
 
+                if (exitCode == 1 && globalBuffer.contains("BUILD FAILED")) {
+                    val prompt = "Help Me fix follow build issue:\n```bash\n$globalBuffer\n```\n"
+                    sendErrorNotification(project, prompt)
+                    return
+                }
+
                 val isSpringFailureToStart =
                     globalBuffer.contains("***************************") && globalBuffer.contains("APPLICATION FAILED TO START")
                 if (isSpringFailureToStart) {
