@@ -1,10 +1,12 @@
 请根据我的原始代码和失败的 patch，生成最终的完整代码。
 
+用户的原始意图是: ${context.intention}
+
 Here is the original code:
 
 ${context.oldCode}
 
-Here is the patched code:
+Here is the failed patched context:
 
 ${context.patchedCode}
 

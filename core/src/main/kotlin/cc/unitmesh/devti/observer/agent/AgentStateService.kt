@@ -35,6 +35,18 @@ class AgentStateService {
         return messages
     }
 
+    fun buildOriginIntention(): String? {
+        val intention = state.messages
+            .firstOrNull { it.role.lowercase() == "user" }
+            ?.content
+
+        if (intention != null) {
+            state.originIntention = intention
+        }
+
+        return intention
+    }
+
     fun resolveIssue() {
         // todo resolve issue
     }

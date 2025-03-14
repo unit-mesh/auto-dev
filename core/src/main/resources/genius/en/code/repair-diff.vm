@@ -1,7 +1,9 @@
 Please according the diff to repair the code, and return the repaired final code.
 
+User origin intention: ${context.intention}
+
 Here is the original code: ${context.oldCode}
 
-Here is the patched code:
+Here is the failed patched context:
 
 ${context.patchedCode}

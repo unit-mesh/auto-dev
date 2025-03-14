@@ -2,6 +2,7 @@ package cc.unitmesh.devti.sketch.ui.patch
 
 import cc.unitmesh.devti.llm2.model.ModelType
 import cc.unitmesh.devti.llms.LlmFactory
+import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.template.GENIUS_CODE
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
@@ -19,7 +20,9 @@ fun applyDiffRepairSuggestion(project: Project, editor: Editor, oldCode: String,
     val templateRender = TemplateRender(GENIUS_CODE)
     val template = templateRender.getTemplate("repair-diff.vm")
 
-    templateRender.context = DiffRepairContext(oldCode, patchedCode)
+    val intention = project.getService(AgentStateService::class.java).buildOriginIntention()
+
+    templateRender.context = DiffRepairContext(intention, patchedCode, oldCode)
     val prompt = templateRender.renderTemplate(template)
 
     val flow: Flow<String> = LlmFactory.create(project, ModelType.FastApply).stream(prompt, "", false)

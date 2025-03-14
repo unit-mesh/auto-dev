@@ -226,8 +226,9 @@ class SingleFileDiffSketch(
 }
 
 data class DiffRepairContext(
-    val oldCode: String,
+    val intention: String?,
     val patchedCode: String,
+    val oldCode: String,
 ) : TemplateContext
 
 fun VirtualFile.readText(): String {
