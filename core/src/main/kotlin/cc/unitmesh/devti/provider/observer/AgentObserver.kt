@@ -1,7 +1,8 @@
 package cc.unitmesh.devti.provider.observer
 
+import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
-import cc.unitmesh.devti.gui.sendToChatWindow
+import cc.unitmesh.devti.settings.coder.coderSetting
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
@@ -10,9 +11,13 @@ interface AgentObserver {
     fun onRegister(project: Project)
 
     fun sendErrorNotification(project: Project, prompt: String) {
+        if (prompt.isBlank()) return
+        if (project.coderSetting.state.enableObserver == false) return
+
         runInEdt {
-            sendToChatWindow(project, ChatActionType.CHAT) { contentPanel, _ ->
-                contentPanel.setInput(prompt)
+            // or sendToChatWindow ?
+            AutoDevToolWindowFactory.sendToSketchToolWindow(project, ChatActionType.CHAT) { ui, _ ->
+                ui.setInput(prompt)
             }
         }
     }

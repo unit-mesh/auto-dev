@@ -23,6 +23,7 @@ class AutoDevCoderSettingService(
         var recordingInLocal by property(false)
         var disableAdvanceContext by property(false)
         var enableExportAsMcpServer by property(false)
+        var enableObserver by property(true)
         var inEditorCompletion by property(false)
         var noChatHistory by property(false)
         var trimCodeBeforeSend by property(false)
