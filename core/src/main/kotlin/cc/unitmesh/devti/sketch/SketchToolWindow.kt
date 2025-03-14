@@ -34,7 +34,6 @@ import com.intellij.openapi.ui.NullableComponent
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
-import com.intellij.ui.dsl.builder.Cell
 import com.intellij.ui.dsl.builder.Row
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
@@ -44,10 +43,7 @@ import org.jetbrains.annotations.NonNls
 import java.awt.BorderLayout
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
-import javax.swing.JPanel
-import javax.swing.JProgressBar
-import javax.swing.ScrollPaneConstants
-import javax.swing.SwingUtilities
+import javax.swing.*
 
 interface SketchProcessListener {
     fun onBefore() {}
@@ -121,8 +117,11 @@ open class SketchToolWindow(
                         }
                     }
 
-                    createActionButton(NewSketchAction()).alignRight()
-                    createActionButton(CopyAllMessagesAction()).alignRight()
+                    val buttonBox = Box.createHorizontalBox()
+                    buttonBox.add(Box.createHorizontalGlue())
+                    buttonBox.add(createActionButton(NewSketchAction()))
+                    buttonBox.add(createActionButton(CopyAllMessagesAction()))
+                    cell(buttonBox).alignRight()
                 }
             }
 
@@ -406,12 +405,12 @@ open class SketchToolWindow(
     }
 }
 
-fun Row.createActionButton(action: AnAction, @NonNls actionPlace: String = ActionPlaces.UNKNOWN): Cell<ActionButton> {
+fun Row.createActionButton(action: AnAction, @NonNls actionPlace: String = ActionPlaces.UNKNOWN): ActionButton {
     val component = ActionButton(
         action,
         action.templatePresentation.clone(),
         actionPlace,
         ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
     )
-    return cell(component)
+    return component
 }

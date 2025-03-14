@@ -13,25 +13,25 @@ import cc.unitmesh.devti.gui.chat.ui.AutoDevInputListener
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputTrigger
 import cc.unitmesh.devti.gui.chat.view.MessageView
-import cc.unitmesh.devti.gui.toolbar.NewChatAction
+import cc.unitmesh.devti.gui.toolbar.CopyAllMessagesAction
+import cc.unitmesh.devti.gui.toolbar.NewSketchAction
 import cc.unitmesh.devti.provider.TextContextPrompter
-import cc.unitmesh.devti.provider.devins.CustomAgentContext
 import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.componentStateChanged
 import cc.unitmesh.devti.sketch.createActionButton
 import cc.unitmesh.devti.sketch.ui.code.HtmlHighlightSketch
+import cc.unitmesh.devti.util.whenDisposed
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.NullableComponent
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.IdeFocusManager
-import cc.unitmesh.devti.util.whenDisposed
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.Task
-import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.ui.JBColor.PanelBackground
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
@@ -46,10 +46,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.JPanel
-import javax.swing.JProgressBar
-import javax.swing.ScrollPaneConstants
-import javax.swing.SwingUtilities
+import javax.swing.*
 
 interface AutoDevChatPanel {
     val progressBar: JProgressBar get() = JProgressBar()
@@ -151,7 +148,11 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
 
         val header = panel {
             row {
-                createActionButton(NewChatAction()).alignRight()
+                val buttonBox = Box.createHorizontalBox()
+                buttonBox.add(Box.createHorizontalGlue())
+                buttonBox.add(createActionButton(NewSketchAction()))
+                buttonBox.add(createActionButton(CopyAllMessagesAction()))
+                cell(buttonBox).alignRight()
             }
         }
 
