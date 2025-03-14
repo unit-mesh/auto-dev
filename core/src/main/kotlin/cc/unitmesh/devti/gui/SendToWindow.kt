@@ -4,6 +4,7 @@ import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.provider.ContextPrompter
+import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 
@@ -25,7 +26,9 @@ fun sendToChatWindow(
     }
 
     toolWindowManager.activate {
-        runnable(contentPanel, chatCodingService)
+        runInEdt {
+            runnable(contentPanel, chatCodingService)
+        }
     }
 }
 

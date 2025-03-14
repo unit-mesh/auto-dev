@@ -23,7 +23,7 @@ import java.util.concurrent.CompletableFuture
 
 // https://github.com/JetBrains/intellij-community/blob/master/platform/projectModel-impl/src/com/intellij/openapi/roots/impl/ProjectFileIndexImpl.java#L32
 fun isInProject(virtualFile: VirtualFile, project: Project): Boolean {
-    return PsiManager.getInstance(project).findFile(virtualFile) != null
+    return runReadAction { PsiManager.getInstance(project).findFile(virtualFile) } != null
 }
 
 fun Project.isInProject(virtualFile: VirtualFile): Boolean {
@@ -36,7 +36,7 @@ fun Project.findFile(filename: String): VirtualFile? {
 
     val task = object : Task.Backgroundable(this, "Searching for file", false) {
         override fun run(indicator: com.intellij.openapi.progress.ProgressIndicator) {
-            val file  = runReadAction {
+            val file = runReadAction {
                 FilenameIndex.getVirtualFilesByName(filename, ProjectScope.getProjectScope(this@findFile)).firstOrNull()
             }
             future.complete(file)

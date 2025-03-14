@@ -13,6 +13,7 @@ import cc.unitmesh.devti.sketch.SketchToolWindow
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.invokeLater
+import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
@@ -87,8 +88,10 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
             }
 
             val content = contentManager.factory.createContent(contentPanel, label, false)
-            contentManager.addContent(content)
-            contentManager.setSelectedContent(content)
+            runInEdt {
+                contentManager.addContent(content)
+                contentManager.setSelectedContent(content)
+            }
 
             return contentPanel
         }

@@ -26,6 +26,8 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.text.nullize
 import java.util.concurrent.CompletableFuture
 import cc.unitmesh.devti.AutoDevNotifications
+import com.intellij.execution.testframework.sm.runner.SMTRunnerEventsListener
+import java.io.OutputStream
 
 open class RunServiceTask(
     private val project: Project,
@@ -48,9 +50,13 @@ open class RunServiceTask(
     }
 
     private fun runInBackgroundAndCollectToFuture() {
-        val settings: RunnerAndConfigurationSettings =
+        val settings =
             fileRunService.createRunSettings(project, virtualFile, testElement)
-                ?: throw IllegalStateException("No run configuration found for file: ${virtualFile.path}")
+        if (settings == null) {
+            AutoDevNotifications.warn(project, "No run configuration found for file: ${virtualFile.path}")
+            future!!.completeExceptionally(IllegalStateException("No run configuration found for file: ${virtualFile.path}"))
+            return
+        }
 
         runAnCollectStdOutput(settings, project, future!!)
     }
@@ -157,7 +163,12 @@ open class RunServiceTask(
             val executorInstance = DefaultRunExecutor.getRunExecutorInstance()
             val env = ExecutionEnvironmentBuilder
                 .createOrNull(executorInstance, settings.configuration)
-                ?.build() ?: throw IllegalStateException("Failed to create execution environment")
+                ?.build()
+
+            if (env == null) {
+                completableFuture.completeExceptionally(IllegalStateException("Failed to create execution environment"))
+                return
+            }
 
             val runContentManager = ExecutionManager.getInstance(project).getContentManager()
 
@@ -186,12 +197,23 @@ open class RunServiceTask(
 
             settings.isActivateToolWindowBeforeRun = false
             settings.isTemporary = true
-//            settings.isFocusToolWindowBeforeRun = false
 
             val disposable = Disposer.newDisposable()
             val connection = ApplicationManager.getApplication().messageBus.connect(disposable)
-            connection.subscribe(EXECUTION_TOPIC, object : ExecutionListener {
-                override fun processStarting(executorId: String, env: ExecutionEnvironment, handler: ProcessHandler) {
+            connection?.subscribe(SMTRunnerEventsListener.TEST_STATUS, object : SMTRunnerEventsAdapter() {
+                override fun onTestFailed(test: SMTestProxy) {
+                    connection.disconnect()
+                    completableFuture.completeExceptionally(IllegalStateException("Test failed: ${test.name}"))
+                }
+
+                override fun onTestFinished(test: SMTestProxy) {
+                    connection.disconnect()
+                    completableFuture.complete(processAdapter.stdout.toString())
+                }
+            })
+
+            connection.subscribe(ExecutionManager.EXECUTION_TOPIC, object : ExecutionListener {
+                override fun processStarted(executorId: String, env: ExecutionEnvironment, handler: ProcessHandler) {
                     handler.addProcessListener(processAdapter)
                 }
 
@@ -201,12 +223,11 @@ open class RunServiceTask(
                     handler: ProcessHandler,
                     exitCode: Int,
                 ) {
-                    super.processTerminated(executorId, env, handler, exitCode)
                     connection.disconnect()
-
                     if (exitCode != 0) {
                         completableFuture.completeExceptionally(IllegalStateException("Process terminated with non-zero exit code: $exitCode"))
                     } else {
+                        completableFuture.complete(processAdapter.stdout.toString())
                         val content = runContentManager.getReuseContent(env) ?: return
                         runInEdt {
                             runContentManager.removeRunContent(executorInstance, content)
@@ -215,12 +236,29 @@ open class RunServiceTask(
                 }
             })
 
+            val processHandler = object : ProcessHandler() {
+                override fun destroyProcessImpl() {
+                    completableFuture.complete(processAdapter.stdout.toString())
+                }
+
+                override fun detachProcessImpl() {
+                    completableFuture.complete(processAdapter.stdout.toString())
+                }
+
+                override fun detachIsDefault(): Boolean = true
+
+                override fun getProcessInput(): OutputStream? = null
+            }
+
+            processHandler.addProcessListener(processAdapter)
+
+
             ExecutionManager.getInstance(project).restartRunProfile(
                 project,
                 executorInstance,
                 env.executionTarget,
                 settings,
-                null
+                processHandler
             )
         }
     }
