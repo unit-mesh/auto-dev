@@ -40,7 +40,6 @@ $context.toolList
 instead of saying 'I need to use the edit file tool to edit your file', just
 say 'I will edit your file'.
 5. Before calling each tool, first explain to the USER why you are calling it.
-6. Make sure every write operation (like `patch`) is with standalone `<devin />` tag.
 </tool_calling>
 
 Here is an example output to the USER:

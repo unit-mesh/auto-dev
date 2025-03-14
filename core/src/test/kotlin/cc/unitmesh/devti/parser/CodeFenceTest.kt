@@ -335,6 +335,85 @@ npm run dev
         assertTrue(codeFences[0].isComplete)
     }
 
+    fun testShouldHandleForContinueDevinBlock() {
+        val content = """
+
+现在，我将生成相应的代码变更：
+
+<devin>
+/write:src/main/java/cc/unitmesh/untitled/demo/application/BlogApplicationService.java
+```java
+package cc.unitmesh.untitled.demo.application;
+
+import cc.unitmesh.untitled.demo.entity.BlogPost;
+import cc.unitmesh.untitled.demo.repository.BlogRepository;
+import cc.unitmesh.untitled.demo.service.BlogDomainService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class BlogApplicationService {
+    @Autowired
+    private BlogRepository blogRepository;
+
+    @Autowired
+    private BlogDomainService blogDomainService;
+
+    public BlogPost createBlog(BlogPost blogDto) {
+        blogDomainService.validateBlog(blogDto);
+        return blogRepository.save(blogDto);
+    }
+
+    public BlogPost getBlogById(Long id) {
+        return blogRepository.findById(id).orElse(null);
+    }
+
+    public BlogPost updateBlog(Long id, BlogPost blogDto) {
+        return blogRepository.findById(id).map(blog -> {
+            blog.setTitle(blogDto.getTitle());
+            blog.setContent(blogDto.getContent());
+            blogDomainService.validateBlog(blog);
+            return blogRepository.save(blog);
+        }).orElse(null);
+    }
+
+    public void deleteBlog(Long id) {
+        blogRepository.deleteById(id);
+    }
+}
+```
+</devin>
+
+<devin>
+/write:src/main/java/cc/unitmesh/untitled/demo/service/BlogDomainService.java
+```java
+package cc.unitmesh.untitled.demo.service;
+
+import cc.unitmesh.untitled.demo.entity.BlogPost;
+import org.springframework.stereotype.Service;
+
+@Service
+public class BlogDomainService {
+    public void validateBlog(BlogPost blog) {
+        if (blog.getTitle() == null || blog.getTitle().isEmpty()) {
+            throw new IllegalArgumentException("Blog title cannot be empty");
+        }
+        if (blog.getContent() == null || blog.getContent().isEmpty()) {
+            throw new IllegalArgumentException("Blog content cannot be empty");
+        }
+    }
+}
+```
+</devin>
+
+<devin>
+/write:src/main/java/cc/unitmesh/untitled/demo/service/BlogDomainService.java
+        """.trimMargin()
+
+        val codeFences = CodeFence.parseAll(content)
+        assertEquals(codeFences.size, 4)
+    }
+
     fun testShouldHandleCodeUnderListWithErrorIndent() {
         val content = """
 1. **通过代码设置属性**：

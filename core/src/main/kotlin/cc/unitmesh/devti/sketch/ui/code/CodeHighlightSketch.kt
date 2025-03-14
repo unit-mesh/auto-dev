@@ -176,6 +176,7 @@ open class CodeHighlightSketch(
             "bash", "shell" -> {
                 val langSketch = LanguageSketchProvider.provide("shell")?.create(project, parse.text) ?: return
                 panel = langSketch.getComponent()
+                panel.border = JBEmptyBorder(0)
                 langSketch.onDoneStream(allText)
             }
         }
