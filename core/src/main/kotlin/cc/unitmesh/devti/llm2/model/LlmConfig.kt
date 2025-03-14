@@ -39,6 +39,8 @@ data class LlmConfig(
 
         fun load(modelType: ModelType): List<LlmConfig> = load().filter { it.modelType == modelType }
 
+        fun hasPlanModel(): Boolean = load(ModelType.Plan).isNotEmpty()
+
         fun default(): LlmConfig {
             val state = AutoDevSettingsState.getInstance()
             val modelName = state.customModel

@@ -5,7 +5,9 @@ import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputListener
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputSection
 import cc.unitmesh.devti.gui.chat.ui.AutoDevInputTrigger
+import cc.unitmesh.devti.llm2.model.LlmConfig
 import cc.unitmesh.devti.llms.cancelHandler
+import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.prompting.SimpleDevinPrompter
 import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.template.GENIUS_CODE
@@ -32,9 +34,12 @@ open class SketchInputListener(
     override val template = templateRender.getTemplate("sketch.vm")
     override val templateRender: TemplateRender get() = TemplateRender(GENIUS_CODE)
     open var systemPrompt = ""
+    open var planPrompt = ""
+    val planTemplate = templateRender.getTemplate("plan.devin")
 
     open suspend fun setup() {
         systemPrompt = templateRender.renderTemplate(template, SketchRunContext.create(project, null, ""))
+        planPrompt = templateRender.renderTemplate(planTemplate, SketchRunContext.create(project, null, ""))
         toolWindow.addSystemPrompt(systemPrompt)
     }
 
@@ -58,7 +63,17 @@ open class SketchInputListener(
         }
     }
 
-    open fun getSystemPrompt(): String = systemPrompt
+    open fun collectSystemPrompt(): String {
+        return when {
+            chatCodingService.getAllMessages().size == 3 && LlmConfig.hasPlanModel() -> {
+                val intention = project.getService(AgentStateService::class.java).buildOriginIntention() ?: ""
+                planPrompt.replace("<user.question>issue_description</user.question>", intention)
+            }
+            else -> {
+                systemPrompt
+            }
+        }
+    }
 
     override fun manualSend(userInput: String) {
         val input = userInput.trim()
@@ -81,7 +96,7 @@ open class SketchInputListener(
             toolWindow.updateHistoryPanel()
             toolWindow.addRequestPrompt(compiledInput)
 
-            val flow = chatCodingService.sketchRequest(getSystemPrompt(), compiledInput, isFromSketch = true)
+            val flow = chatCodingService.sketchRequest(collectSystemPrompt(), compiledInput, isFromSketch = true)
             val suggestion = StringBuilder()
 
             AutoDevCoroutineScope.workerScope(project).launch {

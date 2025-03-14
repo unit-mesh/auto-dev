@@ -55,7 +55,7 @@ class CustomLLMProvider(val project: Project, var llmConfig: LlmConfig = LlmConf
         canUsePlanModel: Boolean
     ): Flow<String> {
         llmConfig = if (canUsePlanModel) {
-            tryUpdateModelForPlan()
+            tryUpdateModelForPlan(systemPrompt)
         } else {
             backupLlmConfigForPlan
         }
@@ -119,9 +119,13 @@ class CustomLLMProvider(val project: Project, var llmConfig: LlmConfig = LlmConf
     /**
      * If the second round uses plan and plan is not empty, use plan, 3 = System + User + Assistant
      */
-    private fun CustomLLMProvider.tryUpdateModelForPlan(): LlmConfig {
+    private fun CustomLLMProvider.tryUpdateModelForPlan(systemPrompt: String): LlmConfig {
         val canBePlanLength = 3
-        return if (messages.size == canBePlanLength && LlmConfig.load(ModelType.Plan).isNotEmpty()) {
+        return if (messages.size == canBePlanLength && LlmConfig.hasPlanModel()) {
+            if (messages.size == canBePlanLength) {
+                messages[0] = Message("system", systemPrompt)
+            }
+
             backupLlmConfigForPlan = llmConfig
             LlmConfig.load(ModelType.Plan).first()
         } else {
