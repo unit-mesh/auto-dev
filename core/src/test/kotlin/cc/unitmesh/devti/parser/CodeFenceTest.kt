@@ -2,6 +2,7 @@ package cc.unitmesh.devti.parser
 
 import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import org.intellij.lang.annotations.Language
 
 class CodeFenceTest : BasePlatformTestCase() {
     fun testShould_parse_code_from_markdown_java_hello_world() {
@@ -375,5 +376,105 @@ npm run dev
             |   如果你不想通过代码来设置这个属性，你可以手动编辑 IDEA 的配置文件。IDEA 的全局属性通常存储在 `idea.properties` 文件中，或者在某些情况下存储在 `options` 目录下的 XML 文件中。
         """.trimMargin()
         )
+    }
+
+    fun testShouldIdentifyForMultiplePatch() {
+        @Language("DevIn")
+        val content = """
+<devin>            
+```patch
+Index: src/main/java/cc/unitmesh/untitled/demo/controller/BlogController.java
+--- src/main/java/cc/unitmesh/untitled/demo/controller/BlogController.java
++++ src/main/java/cc/unitmesh/untitled/demo/interfaces/rest/BlogController.java
+@@ -3,39 +3,40 @@
+ import cc.unitmesh.untitled.demo.dto.CreateBlogRequest;
+ import cc.unitmesh.untitled.demo.dto.CreateBlogResponse;
+-import cc.unitmesh.untitled.demo.entity.BlogPost;
+-import cc.unitmesh.untitled.demo.service.BlogService;
++import cc.unitmesh.untitled.demo.application.BlogCommandService;
++import cc.unitmesh.untitled.demo.application.BlogQueryService;
++import cc.unitmesh.untitled.demo.domain.model.Blog;
++import cc.unitmesh.untitled.demo.domain.model.BlogAssembler;
+ import io.swagger.annotations.ApiOperation;
+-import org.springframework.beans.BeanUtils;
++import org.springframework.hateoas.EntityModel;
+ import org.springframework.web.bind.annotation.*;
+ 
+-import java.util.List;
+-
+ @RestController
+ @RequestMapping("/blog")
+ public class BlogController {
+-    BlogService blogService;
++    private final BlogCommandService blogCommandService;
++    private final BlogQueryService blogQueryService;
++    private final BlogAssembler blogAssembler;
+ 
+-    public BlogController(BlogService blogService) {
+-        this.blogService = blogService;
++    public BlogController(BlogCommandService blogCommandService, 
++                          BlogQueryService blogQueryService,
++                          BlogAssembler blogAssembler) {
++        this.blogCommandService = blogCommandService;
++        this.blogQueryService = blogQueryService;
++        this.blogAssembler = blogAssembler;
+     }
+ 
+     @ApiOperation(value = "Get Blog by id")
+     @GetMapping("/{id}")
+-    public BlogPost getBlog(@PathVariable Long id) {
+-        return blogService.getBlogById(id);
++    public EntityModel<BlogResponse> getBlog(@PathVariable Long id) {
++        Blog blog = blogQueryService.getBlog(id);
++        return blogAssembler.toModel(blog);
+     }
+ 
+     @ApiOperation(value = "Create a new blog")
+     @PostMapping("/")
+-    public BlogPost createBlog(@RequestBody CreateBlogRequest request) {
+-        CreateBlogResponse response = new CreateBlogResponse();
+-        BlogPost blogPost = new BlogPost();
+-        BeanUtils.copyProperties(request, blogPost);
+-        BlogPost createdBlog = blogService.createBlog(blogPost);
+-        BeanUtils.copyProperties(createdBlog, response);
+-        return createdBlog;
++    public Long createBlog(@RequestBody CreateBlogRequest request) {
++        Blog blog = blogAssembler.toDomain(request);
++        return blogCommandService.createBlog(blog);
+     }
+ }
+```
+
+```patch
+Index: src/main/java/cc/unitmesh/untitled/demo/repository/BlogRepository.java
+--- src/main/java/cc/unitmesh/untitled/demo/repository/BlogRepository.java
++++ src/main/java/cc/unitmesh/untitled/demo/infrastructure/persistence/JpaBlogRepository.java
+@@ -1,10 +1,17 @@
+-package cc.unitmesh.untitled.demo.repository;
++package cc.unitmesh.untitled.demo.infrastructure.persistence;
+ 
+-import cc.unitmesh.untitled.demo.entity.BlogPost;
++import cc.unitmesh.untitled.demo.domain.model.Blog;
++import cc.unitmesh.untitled.demo.domain.repository.BlogRepository;
+ import org.springframework.data.repository.CrudRepository;
+ import org.springframework.stereotype.Repository;
+ 
+ @Repository
+-public interface BlogRepository extends CrudRepository<BlogPost, Long> {
++public interface JpaBlogRepository extends CrudRepository<BlogJpaEntity, Long> {
++}
++
++@Repository
++public class BlogRepositoryImpl implements BlogRepository {
++    private final JpaBlogRepository jpaBlogRepository;
+ 
++    // 实现领域仓库接口，处理领域对象与JPA实体的转换
+ }
+```
+</devin> 
+""".trimIndent()
+
+        val codeFences = CodeFence.parseAll(content)
+        assertEquals(codeFences.size, 1)
     }
 }
