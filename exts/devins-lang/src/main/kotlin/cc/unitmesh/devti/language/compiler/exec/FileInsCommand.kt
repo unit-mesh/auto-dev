@@ -9,6 +9,7 @@ import cc.unitmesh.devti.language.compiler.model.LineInfo
 import cc.unitmesh.devti.language.utils.findFile
 import cc.unitmesh.devti.language.utils.lookupFile
 import cc.unitmesh.devti.sketch.ui.patch.readText
+import cc.unitmesh.devti.util.relativePath
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
@@ -60,8 +61,10 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
             }
         }
 
+        val realPath = virtualFile.relativePath(myProject)
+
         val output = StringBuilder()
-        output.append("## file: $prop")
+        output.append("## file: $realPath")
         output.append("\n```$lang\n")
         output.append(fileContent)
         output.append("\n```\n")
