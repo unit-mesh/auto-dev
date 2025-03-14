@@ -46,20 +46,18 @@ class CustomLLMProvider(val project: Project, var llmConfig: LlmConfig = LlmConf
         messages += Message(role.roleName(), msg)
     }
 
-    var backupForReasonConfig: LlmConfig = llmConfig
+    var backupLlmConfigForPlan: LlmConfig = llmConfig
 
     override fun stream(
         originPrompt: String,
         systemPrompt: String,
         keepHistory: Boolean,
-        usePlanForSecondRound: Boolean
+        canUsePlanModel: Boolean
     ): Flow<String> {
-        /// 如果第二轮使用 plan，且 plan 不为空，则使用 plan, 3 = System + User + Assistant
-        if (usePlanForSecondRound && messages.size == 3 && LlmConfig.load(ModelType.Plan).isNotEmpty()) {
-            backupForReasonConfig = llmConfig
-            llmConfig = LlmConfig.load(ModelType.Plan).first()
+        llmConfig = if (canUsePlanModel) {
+            tryUpdateModelForPlan()
         } else {
-            llmConfig = backupForReasonConfig
+            backupLlmConfigForPlan
         }
 
         logger.info("Requesting to model: ${llmConfig.name}, $url")
@@ -116,5 +114,18 @@ class CustomLLMProvider(val project: Project, var llmConfig: LlmConfig = LlmConf
         }
 
         return streamSSE(call, prompt, keepHistory, messages)
+    }
+
+    /**
+     * If the second round uses plan and plan is not empty, use plan, 3 = System + User + Assistant
+     */
+    private fun CustomLLMProvider.tryUpdateModelForPlan(): LlmConfig {
+        val canBePlanLength = 3
+        return if (messages.size == canBePlanLength && LlmConfig.load(ModelType.Plan).isNotEmpty()) {
+            backupLlmConfigForPlan = llmConfig
+            LlmConfig.load(ModelType.Plan).first()
+        } else {
+            backupLlmConfigForPlan
+        }
     }
 }

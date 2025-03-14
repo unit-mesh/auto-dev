@@ -133,8 +133,7 @@ class ChatCodingService(var actionType: ChatActionType, val project: Project) {
         llmProvider = LlmFactory.create(project)
     }
 
-    fun request(systemPrompt: String, userPrompt: String, isFromSketch: Boolean = true): Flow<String> {
-        /// is from sketch the first model should use Plan then use Act
+    fun sketchRequest(systemPrompt: String, userPrompt: String, isFromSketch: Boolean = true): Flow<String> {
         return llmProvider.stream(userPrompt, systemPrompt, keepHistory = true, isFromSketch)
     }
 

@@ -16,10 +16,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.Task
-import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.cancellable
@@ -61,7 +58,7 @@ open class SketchInputListener(
         }
     }
 
-    open fun getInitPrompt(): String = systemPrompt
+    open fun getSystemPrompt(): String = systemPrompt
 
     override fun manualSend(userInput: String) {
         val input = userInput.trim()
@@ -84,7 +81,7 @@ open class SketchInputListener(
             toolWindow.updateHistoryPanel()
             toolWindow.addRequestPrompt(compiledInput)
 
-            val flow = chatCodingService.request(getInitPrompt(), compiledInput, isFromSketch = true)
+            val flow = chatCodingService.sketchRequest(getSystemPrompt(), compiledInput, isFromSketch = true)
             val suggestion = StringBuilder()
 
             AutoDevCoroutineScope.workerScope(project).launch {
