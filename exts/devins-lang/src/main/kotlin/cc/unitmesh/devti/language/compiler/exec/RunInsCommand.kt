@@ -6,6 +6,7 @@ import cc.unitmesh.devti.language.compiler.error.DEVINS_ERROR
 import cc.unitmesh.devti.language.utils.lookupFile
 import cc.unitmesh.devti.provider.AutoTestService
 import cc.unitmesh.devti.provider.ProjectRunService
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
@@ -33,13 +34,13 @@ class RunInsCommand(val myProject: Project, private val argument: String) : InsC
 
         val virtualFile = myProject.lookupFile(argument.trim()) ?: return "$DEVINS_ERROR: File not found: $argument"
         try {
-            val psiFile: PsiFile =
-                PsiManager.getInstance(myProject).findFile(virtualFile) ?: return "$DEVINS_ERROR: File not found: $argument"
+            val psiFile: PsiFile = runReadAction { PsiManager.getInstance(myProject).findFile(virtualFile) }
+                    ?: return "$DEVINS_ERROR: File not found: $argument"
+
             val testService =
                 AutoTestService.context(psiFile) ?: return "$DEVINS_ERROR: No test service found for file: $argument"
-            testService.runFile(myProject, virtualFile, null, true)
 
-            return "Running tests for file: $argument"
+            return testService.runFileAsync(myProject, virtualFile, null)
         } catch (e: Exception) {
             return "$DEVINS_ERROR: ${e.message}"
         }

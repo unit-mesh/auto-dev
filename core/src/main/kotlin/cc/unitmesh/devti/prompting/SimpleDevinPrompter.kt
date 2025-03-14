@@ -19,7 +19,7 @@ abstract class SimpleDevinPrompter {
     abstract val templateRender: TemplateRender
     abstract val template: String
 
-    fun prompting(project: Project, userInput: String, editor: Editor?): String {
+    suspend fun prompting(project: Project, userInput: String, editor: Editor?): String {
         val variableCompile = VariableTemplateCompiler.create(project, editor)
         if (variableCompile == null) {
             val frameworkContext = collectFrameworkContext(editor, project)

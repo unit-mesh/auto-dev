@@ -169,7 +169,7 @@ interface RunService {
             return e.message
         }
 
-        return future.get(30, java.util.concurrent.TimeUnit.SECONDS)
+        return future.get()
     }
 
     companion object {

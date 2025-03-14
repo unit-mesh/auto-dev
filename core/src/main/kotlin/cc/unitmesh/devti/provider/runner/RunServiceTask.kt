@@ -179,9 +179,7 @@ open class RunServiceTask(
                     when (outputType) {
                         ProcessOutputTypes.STDOUT -> stdout.append(event.text)
                         ProcessOutputTypes.STDERR -> stderr.append(event.text)
-                        ProcessOutputTypes.SYSTEM -> {
-                            // ignore system output
-                        }
+                        ProcessOutputTypes.SYSTEM -> { stdout.append(event.text) }
 
                         else -> {}
                     }
@@ -189,7 +187,13 @@ open class RunServiceTask(
 
                 override fun processTerminated(event: ProcessEvent) {
                     when (event.exitCode) {
-                        0 -> completableFuture.complete(stdout.toString())
+                        0 -> {
+                            var value = stdout.toString()
+                            if (value.isBlank()) {
+                                value = "Run test completed successfully"
+                            }
+                            completableFuture.complete(value)
+                        }
                         else -> completableFuture.completeExceptionally(IllegalStateException("$stderr\nProcess terminated with non-zero exit code: ${event.exitCode}"))
                     }
                 }

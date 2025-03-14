@@ -105,9 +105,10 @@ open class DevInsRunConfigurationProfileState(
             return DefaultExecutionResult(console, processHandler)
         }
 
-        invokeLater {
+
+        AutoDevCoroutineScope.scope(myProject).launch {
             val compiler = DevInsCompiler(myProject, file)
-            val compileResult = runReadAction { compiler.compile() }
+            val compileResult = compiler.compile()
 
             myProject.service<DevInsConversationService>()
                 .createConversation(configuration.getScriptPath(), compileResult)

@@ -21,7 +21,7 @@ import com.intellij.psi.util.PsiUtilBase
 class DevInsPromptProcessor : LanguageProcessor {
     override val name: String = DevInLanguage.displayName
 
-    override fun execute(project: Project, context: CustomAgentContext): String {
+    override suspend fun execute(project: Project, context: CustomAgentContext): String {
         var text = context.response
         // re-check the language of the code
         CodeFence.parse(text).let {
@@ -44,7 +44,7 @@ class DevInsPromptProcessor : LanguageProcessor {
         return result.output
     }
 
-    override fun compile(project: Project, text: String): String {
+    override suspend fun compile(project: Project, text: String): String {
         val devInsCompiler = createCompiler(project, text)
         val result = devInsCompiler.compile()
         return result.output

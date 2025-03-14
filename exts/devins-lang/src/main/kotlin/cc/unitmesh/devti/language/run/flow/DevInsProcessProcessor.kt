@@ -58,15 +58,13 @@ class DevInsProcessProcessor(val project: Project) {
      * @param event The process event containing the exit code
      * @param scriptPath The path of the script file
      */
-    fun process(output: String, event: ProcessEvent, scriptPath: String) {
+    suspend fun process(output: String, event: ProcessEvent, scriptPath: String) {
         conversationService.updateIdeOutput(scriptPath, output)
 
         val code = CodeFence.parse(conversationService.getLlmResponse(scriptPath))
         val isDevInCode = code.language == DevInLanguage.INSTANCE
         if (isDevInCode) {
-            runInEdt {
-                executeTask(DevInFile.fromString(project, code.text))
-            }
+            executeTask(DevInFile.fromString(project, code.text))
         }
 
         when {
@@ -92,7 +90,7 @@ class DevInsProcessProcessor(val project: Project) {
      * This function is responsible for running a task with a new script.
      * @param newScript The new script to be run.
      */
-    fun executeTask(newScript: DevInFile) {
+    suspend fun executeTask(newScript: DevInFile) {
         val devInsCompiler = createCompiler(project, newScript)
         val result = devInsCompiler.compile()
         if(result.output != "") {

@@ -15,6 +15,7 @@ import cc.unitmesh.devti.gui.chat.ui.AutoDevInputTrigger
 import cc.unitmesh.devti.gui.chat.view.MessageView
 import cc.unitmesh.devti.gui.toolbar.NewChatAction
 import cc.unitmesh.devti.provider.TextContextPrompter
+import cc.unitmesh.devti.provider.devins.CustomAgentContext
 import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.settings.AutoDevSettingsState
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.componentStateChanged
@@ -27,6 +28,10 @@ import com.intellij.openapi.ui.NullableComponent
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.IdeFocusManager
 import cc.unitmesh.devti.util.whenDisposed
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.ui.JBColor.PanelBackground
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
@@ -37,6 +42,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -119,18 +125,26 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
                     return
                 }
 
-                val postProcessors = LanguageProcessor.devin()
-                if (postProcessors != null) {
-                    prompt = postProcessors.compile(chatCodingService.project, prompt)
-                }
+                val task = object : Task.Backgroundable(chatCodingService.project, "Compile context", false) {
+                    override fun run(indicator: ProgressIndicator) {
+                        runBlocking {
+                            val postProcessors = LanguageProcessor.devin()
+                            if (postProcessors != null) {
+                                prompt = postProcessors.compile(chatCodingService.project, prompt)
+                            }
 
-                chatCodingService.actionType = ChatActionType.CHAT
-                chatCodingService.handlePromptAndResponse(
-                    this@NormalChatCodingPanel,
-                    TextContextPrompter(prompt),
-                    ChatContext(),
-                    false
-                )
+                            chatCodingService.actionType = ChatActionType.CHAT
+                            chatCodingService.handlePromptAndResponse(
+                                this@NormalChatCodingPanel,
+                                TextContextPrompter(prompt),
+                                ChatContext(),
+                                false
+                            )
+                        }
+                    }
+                }
+                ProgressManager.getInstance()
+                    .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
             }
         })
 

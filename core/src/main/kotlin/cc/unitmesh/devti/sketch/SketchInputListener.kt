@@ -23,6 +23,7 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 open class SketchInputListener(
     private val project: Project,
@@ -88,8 +89,9 @@ open class SketchInputListener(
         logger<SketchInputListener>().debug("Start compiling: $input")
         ProgressManager.getInstance().runProcessWithProgressSynchronously({
             val devInProcessor = LanguageProcessor.devin()
-            val compiledInput = runReadAction {
-                devInProcessor?.compile(project, input)
+            val compiledInput = runReadAction { runBlocking {
+                    devInProcessor?.compile(project, input)
+                }
             } ?: input
 
             toolWindow.beforeRun()

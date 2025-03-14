@@ -13,6 +13,10 @@ import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
@@ -142,8 +146,16 @@ class CustomAgentChatProcessor(val project: Project) {
         }
 
         if (!devInCode.isNullOrEmpty()) {
-            val devin = LanguageProcessor.devin()
-            devin?.execute(project, CustomAgentContext(selectedAgent, devInCode!!))
+            val task = object : Task.Backgroundable(project, "Compile context", false) {
+                override fun run(indicator: ProgressIndicator) {
+                    val devin = LanguageProcessor.devin()
+                    runBlocking {
+                        devin?.execute(project, CustomAgentContext(selectedAgent, devInCode!!))
+                    }
+                }
+            }
+            ProgressManager.getInstance()
+                .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
         }
 
         return llmResponse

@@ -43,8 +43,6 @@ class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), Edit
         this.centerPanel.isVisible = true
         val project = editor.project!!
 
-        val prompt = AutoDevInlineChatService.getInstance().prompting(project, input, editor)
-        val flow: Flow<String>? = LlmFactory.create(project).stream(prompt, "", false)
 
         val panelView = SketchToolWindow(project, editor)
         panelView.minimumSize = Dimension(800, 40)
@@ -52,6 +50,9 @@ class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), Edit
         onCreated(panelView) // Add process listener before onStart
 
         AutoDevCoroutineScope.scope(project).launch {
+            val prompt = AutoDevInlineChatService.getInstance().prompting(project, input, editor)
+            val flow: Flow<String>? = LlmFactory.create(project).stream(prompt, "", false)
+
             val suggestion = StringBuilder()
             panelView.onStart()
 
@@ -67,6 +68,7 @@ class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), Edit
             panelView.resize()
             panelView.onFinish(suggestion.toString())
         }
+
         panelView
     })
     private var centerPanel: JPanel = JPanel(BorderLayout())

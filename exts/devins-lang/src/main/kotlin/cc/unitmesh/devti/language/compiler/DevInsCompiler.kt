@@ -24,7 +24,6 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
-import kotlinx.coroutines.runBlocking
 
 val CACHED_COMPILE_RESULT = mutableMapOf<String, DevInsCompiledResult>()
 
@@ -42,11 +41,13 @@ class DevInsCompiler(
     /**
      * Todo: build AST tree, then compile
      */
-    fun compile(): DevInsCompiledResult {
+    suspend fun compile(): DevInsCompiledResult {
         result.input = file.text
-        file.children.forEach {
+        val children = runReadAction { file.children }
+        children.forEach {
+            val text = runReadAction { it.text }
             when (it.elementType) {
-                DevInTypes.TEXT_SEGMENT -> output.append(it.text)
+                DevInTypes.TEXT_SEGMENT -> output.append(text)
                 DevInTypes.NEWLINE -> output.append("\n")
                 DevInTypes.CODE -> {
                     if (skipNextCode) {
@@ -54,12 +55,12 @@ class DevInsCompiler(
                         return@forEach
                     }
 
-                    output.append(it.text)
+                    output.append(text)
                 }
                 DevInTypes.USED -> processUsed(it as DevInUsed)
                 DevInTypes.COMMENTS -> {
-                    if (it.text.startsWith("[flow]:")) {
-                        val fileName = it.text.substringAfter("[flow]:").trim()
+                    if (text.startsWith("[flow]:")) {
+                        val fileName = text.substringAfter("[flow]:").trim()
                         val content =
                             myProject.guessProjectDir()?.findFileByRelativePath(fileName)?.let { virtualFile ->
                                 virtualFile.inputStream.bufferedReader().use { reader -> reader.readText() }
@@ -72,7 +73,7 @@ class DevInsCompiler(
                     }
                 }
                 else -> {
-                    output.append(it.text)
+                    output.append(text)
                     logger.warn("Unknown element type: ${it.elementType}")
                 }
             }
@@ -84,10 +85,11 @@ class DevInsCompiler(
         return result
     }
 
-    private fun processUsed(used: DevInUsed) {
+    suspend fun processUsed(used: DevInUsed) {
         val firstChild = used.firstChild
         val id = firstChild.nextSibling
 
+        val usedText = runReadAction { used.text }
         when (firstChild.elementType) {
             DevInTypes.COMMAND_START -> {
                 val originCmdName = id?.text ?: ""
@@ -105,27 +107,28 @@ class DevInsCompiler(
                         return
                     }
 
-                    output.append(used.text)
+                    output.append(usedText)
                     logger.warn("Unknown command: $originCmdName")
                     result.hasError = true
                     return
                 }
 
                 if (command != BuiltinCommand.TOOLCHAIN_COMMAND && !command.requireProps) {
-                    processingCommand(command, "", used, fallbackText = used.text, originCmdName)
+                    processingCommand(command, "", used, fallbackText = usedText, originCmdName)
                     return
                 }
 
                 val propElement = id.nextSibling?.nextSibling
                 val isProp = (propElement.elementType == DevInTypes.COMMAND_PROP)
                 if (!isProp && command != BuiltinCommand.TOOLCHAIN_COMMAND) {
-                    output.append(used.text)
-                    logger.warn("No command prop found: ${used.text}")
+                    output.append(usedText)
+                    logger.warn("No command prop found: $usedText")
                     result.hasError = true
                     return
                 }
 
-                processingCommand(command, propElement?.text ?: "", used, fallbackText = used.text, originCmdName)
+                val propText = runReadAction { propElement?.text }  ?: ""
+                processingCommand(command, propText, used, fallbackText = usedText, originCmdName)
             }
 
             DevInTypes.AGENT_START -> {
@@ -148,25 +151,25 @@ class DevInsCompiler(
                 }
 
                 if (editor == null || element == null) {
-                    output.append("$DEVINS_ERROR No context editor found for variable: ${used.text}")
+                    output.append("$DEVINS_ERROR No context editor found for variable: $usedText")
                     result.hasError = true
                     return
                 }
 
                 val file = element.containingFile
-                VariableTemplateCompiler(file.language, file, element, editor).compile(used.text).let {
+                VariableTemplateCompiler(file.language, file, element, editor).compile(usedText).let {
                     output.append(it)
                 }
             }
 
             else -> {
                 logger.warn("Unknown [cc.unitmesh.devti.language.psi.DevInUsed] type: ${firstChild.elementType}")
-                output.append(used.text)
+                output.append(usedText)
             }
         }
     }
 
-    private fun processingCommand(
+    private suspend fun processingCommand(
         commandNode: BuiltinCommand,
         prop: String,
         used: DevInUsed,
@@ -175,7 +178,7 @@ class DevInsCompiler(
     ) {
         val command: InsCommand = toInsCommand(commandNode, prop, used, originCmdName)
 
-        val execResult = runBlocking { command.execute() }
+        val execResult = command.execute()
 
         val isSucceed = execResult?.contains("$DEVINS_ERROR") == false
         val result = if (isSucceed) {

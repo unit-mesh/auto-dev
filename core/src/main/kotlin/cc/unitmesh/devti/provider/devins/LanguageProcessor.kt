@@ -23,10 +23,10 @@ interface LanguageProcessor {
      * For CustomAgentExecutor to execute the code
      */
     @RequiresBackgroundThread
-    fun execute(project: Project, context: CustomAgentContext): String
+    suspend fun execute(project: Project, context: CustomAgentContext): String
 
     @RequiresBackgroundThread
-    fun compile(project: Project, text: String): String
+    suspend fun compile(project: Project, text: String): String
 
     @RequiresBackgroundThread
     fun transpileCommand(project: Project, psiFile: PsiFile): List<BuiltinCommand>
