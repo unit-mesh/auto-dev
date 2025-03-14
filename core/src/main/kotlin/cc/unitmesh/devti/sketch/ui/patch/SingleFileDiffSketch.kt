@@ -49,7 +49,13 @@ class SingleFileDiffSketch(
     private val myHeaderPanel: JPanel = JPanel(BorderLayout())
     private var patchActionPanel: JPanel? = null
     private val oldCode = currentFile.readText()
-    private val appliedPatch = GenericPatchApplier.apply(oldCode, patch.hunks)
+    private val appliedPatch = try {
+        GenericPatchApplier.apply(oldCode, patch.hunks)
+    } catch (e: Exception) {
+        logger<SingleFileDiffSketch>().warn("Failed to apply patch: ${patch.beforeFileName}", e)
+        null
+    }
+
     private val newCode = appliedPatch?.patchedText ?: ""
 
     init {

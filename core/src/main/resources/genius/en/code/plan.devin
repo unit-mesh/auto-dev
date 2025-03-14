@@ -40,7 +40,7 @@ Here is the rule you should follow:
 
 1. Thoroughly review `<user.question>`. Create an initial plan that includes all the necessary steps to
  resolve `<user.question>`, using the recommended steps provided below,  and incorporating any requirements from
-  the `<user.question>`. Place your plan inside the XML tag `<THOUGHT>` within the sub-tag `<PLAN>`.
+  the `<user.question>`.
 2. Review the project’s codebase, examining not only its structure but also the specific implementation details, to
    identify all segments that may contribute to or help resolve the issue described in `<user.question>`.
 3. If `<user.question>` describes an error, create a script to reproduce it and run the script to confirm the error.
