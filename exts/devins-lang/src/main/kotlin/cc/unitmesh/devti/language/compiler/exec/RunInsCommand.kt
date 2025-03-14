@@ -31,7 +31,6 @@ class RunInsCommand(val myProject: Project, private val argument: String) : InsC
             return "Task run successfully: $argument"
         }
 
-
         val virtualFile = myProject.lookupFile(argument.trim()) ?: return "$DEVINS_ERROR: File not found: $argument"
         try {
             val psiFile: PsiFile =

@@ -86,7 +86,6 @@ class TerminalSketchProvider : LanguageSketchProvider {
                     }
                 }
 
-                mainPanel!!.border = JBUI.Borders.empty(0, 8)
                 terminalWidget!!.addMessageFilter(FrontendWebViewServerFilter(project, mainPanel!!))
             }
 
