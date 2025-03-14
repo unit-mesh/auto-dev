@@ -4,13 +4,20 @@ import cc.unitmesh.devti.devin.InsCommand
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.language.utils.lookupFile
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtilRt
 import com.intellij.openapi.vcs.FileStatus
 import com.intellij.openapi.vcs.FileStatusManager
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import java.util.concurrent.CompletableFuture
+import java.util.regex.Pattern
 
 
 /**
@@ -50,6 +57,80 @@ import com.intellij.psi.PsiManager
  */
 class DirInsCommand(private val myProject: Project, private val dir: String) : InsCommand {
     override val commandName: BuiltinCommand = BuiltinCommand.DIR
+    private val HASH_FILE_PATTERN: Pattern = Pattern.compile(
+        "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?:\\.json|@[0-9a-f]+\\.json)$",
+        Pattern.CASE_INSENSITIVE
+    )
+
+    fun isHashJson(file: VirtualFile?): Boolean {
+        return file != null && HASH_FILE_PATTERN.matcher(file.name).matches()
+    }
+
+    private val output = StringBuilder()
+
+    override suspend fun execute(): String? {
+        val virtualFile = myProject.lookupFile(dir) ?: return "File not found: $dir"
+        val future = CompletableFuture<String>()
+        val task = object : Task.Backgroundable(myProject, "Processing context", false) {
+            override fun run(indicator: ProgressIndicator) {
+                val psiDirectory = runReadAction {
+                    PsiManager.getInstance(myProject!!).findDirectory(virtualFile)
+                }
+
+                if (psiDirectory == null) {
+                    future.complete("Directory not found: $dir")
+                    return
+                }
+
+                output.appendLine("$dir/")
+                runReadAction { listDirectory(myProject!!, psiDirectory, 1) }
+                future.complete(output.toString())
+            }
+        }
+
+        ProgressManager.getInstance()
+            .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+
+        return future.get()
+    }
+
+    private fun listDirectory(project: Project, directory: PsiDirectory, depth: Int) {
+        if (isExclude(project, directory)) return
+
+        val files = directory.files
+        val subdirectories = directory.subdirectories
+
+        for ((index, file) in files.withIndex()) {
+            /// skip binary files? ignore hashed file names, like `f5086740-a1a1-491b-82c9-ab065a9d1754.json`
+            if (file.fileType.isBinary) continue
+            if (isHashJson(file.virtualFile)) continue
+
+            if (index == files.size - 1) {
+                output.appendLine("${"  ".repeat(depth)}└── ${file.name}")
+            } else {
+                output.appendLine("${"  ".repeat(depth)}├── ${file.name}")
+            }
+        }
+
+        for ((index, subdirectory) in subdirectories.withIndex()) {
+            if (isExclude(project, directory)) continue
+
+            if (index == subdirectories.size - 1) {
+                output.appendLine("${"  ".repeat(depth)}└── ${subdirectory.name}/")
+            } else {
+                output.appendLine("${"  ".repeat(depth)}├── ${subdirectory.name}/")
+            }
+            listDirectory(project, subdirectory, depth + 1)
+        }
+    }
+
+    private fun isExclude(project: Project, directory: PsiDirectory): Boolean {
+        if (directory.name == ".idea") return true
+
+        val status = FileStatusManager.getInstance(project).getStatus(directory.virtualFile)
+        return status == FileStatus.IGNORED
+    }
+
     private val defaultMaxDepth = 2
 
     // 定义表示目录树节点的数据模型
@@ -71,16 +152,16 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
 
         // 压缩目录节点，用于显示多个同层次目录
         data class CompressedNode(override val name: String, val subdirNames: List<String>) : TreeNode()
-        
+
         // 并列简单目录节点，用于像 component/{col,row,tag}/src 这样的结构
         data class ParallelDirsNode(
-            override val name: String, 
-            val dirNames: List<String>, 
+            override val name: String,
+            val dirNames: List<String>,
             val commonChildName: String
         ) : TreeNode()
     }
 
-    override suspend fun execute(): String? {
+    suspend fun executeDepth(): String? {
         val virtualFile = myProject.lookupFile(dir) ?: return "File not found: $dir"
         val psiDirectory = PsiManager.getInstance(myProject).findDirectory(virtualFile) ?: return null
 
@@ -121,10 +202,10 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
         val parallelDirsNode = detectParallelSimpleDirs(project, subdirectories)
         if (parallelDirsNode != null) {
             dirNode.addChild(parallelDirsNode)
-            
+
             // 添加那些不符合并列模式的其他子目录
             processRemainingDirs(project, subdirectories, parallelDirsNode.dirNames, dirNode, depth)
-            
+
             return dirNode
         }
 
@@ -146,7 +227,7 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
 
         return dirNode
     }
-    
+
     /**
      * 处理剩余的不符合并列目录模式的子目录
      */
@@ -170,10 +251,10 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
      */
     private fun detectParallelSimpleDirs(project: Project, subdirs: List<PsiDirectory>): TreeNode.ParallelDirsNode? {
         if (subdirs.size < 2) return null
-        
+
         // 收集有相同子目录结构的目录组
         val dirGroups = mutableMapOf<String, MutableList<PsiDirectory>>()
-        
+
         // 对每个目录，检查它是否有单一子目录，如果有，记录子目录名
         subdirs.forEach { dir ->
             val nonExcludedChildren = dir.subdirectories.filter { !isExcluded(project, it) }
@@ -182,18 +263,18 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
                 dirGroups.getOrPut(childName) { mutableListOf() }.add(dir)
             }
         }
-        
+
         // 找出最大的组（具有相同子目录名的父目录组）
         val largestGroup = dirGroups.maxByOrNull { it.value.size }
-        
+
         // 如果最大组至少有2个目录且子目录名不为空，则创建并列目录节点
         if (largestGroup != null && largestGroup.value.size >= 2 && largestGroup.key.isNotEmpty()) {
             val commonChildName = largestGroup.key
             val parentDirNames = largestGroup.value.map { it.name }
-            
+
             return TreeNode.ParallelDirsNode("parallelDirs", parentDirNames, commonChildName)
         }
-        
+
         return null
     }
 
@@ -201,7 +282,8 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
      * 判断是否应该压缩显示子目录
      */
     private fun shouldCompressSubdirectories(
-        project: Project, directory: PsiDirectory, subdirectories: List<PsiDirectory>, depth: Int): Boolean {
+        project: Project, directory: PsiDirectory, subdirectories: List<PsiDirectory>, depth: Int
+    ): Boolean {
         // 深度超过阈值且有多个子目录时考虑压缩
         return depth > defaultMaxDepth + 1 && subdirectories.size > 1 &&
                 // 确保这些子目录大多是叶子节点或近似叶子节点
@@ -246,7 +328,7 @@ class DirInsCommand(private val myProject: Project, private val dir: String) : I
                         is TreeNode.CompressedNode -> {
                             output.appendLine("$indent$prefix── {${child.subdirNames.joinToString(",")}}/")
                         }
-                        
+
                         is TreeNode.ParallelDirsNode -> {
                             // 以更紧凑的格式显示并列目录结构
                             val dirs = child.dirNames.sorted().joinToString(",")
