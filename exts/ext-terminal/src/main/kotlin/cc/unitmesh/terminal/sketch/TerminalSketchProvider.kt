@@ -174,10 +174,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
                 titleLabel.text = "Terminal - ($content)"
 
                 ApplicationManager.getApplication().invokeLater {
-//                    terminalWidget!!.terminalStarter?.sendString(content, true)
-                    terminalWidget!!.writePlainMessage(content)
-                    terminalWidget!!.revalidate()
-                    terminalWidget!!.repaint()
+                    terminalWidget!!.terminalStarter?.sendString(content, false)
                 }
 
                 isAlreadySent = true
