@@ -129,23 +129,6 @@ class SingleFileDiffSketch(
     }
 
     private fun createActionButtons(): List<JButton> {
-//        val undoManager = UndoManager.getInstance(myProject)
-//        val fileEditor = FileEditorManager.getInstance(myProject).getSelectedEditor(currentFile)
-
-//        val rollback = JButton("Undo").apply {
-//            icon = AllIcons.Actions.Rollback
-//            toolTipText = AutoDevBundle.message("sketch.patch.action.rollback.tooltip")
-//            isEnabled = undoManager.isUndoAvailable(fileEditor)
-//
-//            addMouseListener(object : MouseAdapter() {
-//                override fun mouseClicked(e: MouseEvent?) {
-//                    if (undoManager.isUndoAvailable(fileEditor)) {
-//                        undoManager.undo(fileEditor)
-//                    }
-//                }
-//            })
-//        }
-
         val viewButton = JButton("View").apply {
             icon = AllIcons.Actions.ListChanges
             toolTipText = AutoDevBundle.message("sketch.patch.action.viewDiff.tooltip")
