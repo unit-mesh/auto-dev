@@ -61,7 +61,7 @@ open class SketchToolWindow(
     private var progressBar: JProgressBar = JProgressBar()
 
     private var thinkingHighlight: CodeHighlightSketch =
-        CodeHighlightSketch(project, "<Thinking />", PlainTextLanguage.INSTANCE, withBorder = false)
+        CodeHighlightSketch(project, "<Thinking />", PlainTextLanguage.INSTANCE, withLeftRightBorder = false)
 
     private var thinkingPanel = thinkingHighlight
 
