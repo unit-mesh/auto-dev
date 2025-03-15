@@ -14,6 +14,10 @@ class CodeFence(
         private var lastTxtBlock: CodeFence? = null
         val devinStartRegex = Regex("<devin>")
         val devinEndRegex = Regex("</devin>")
+        val thoughtStartRegex = Regex("<THOUGHT>")
+        val thoughtEndRegex = Regex("</THOUGHT>")
+        val planStartRegex = Regex("<PLAN>")
+        val planEndRegex = Regex("</PLAN>")
 
         fun parse(content: String): CodeFence {
             val languageRegex = Regex("\\s*```([\\w#+ ]*)")
@@ -82,6 +86,8 @@ class CodeFence(
             if (content.contains("```devin\n")) {
                 content = preProcessDevinBlock(content)
             }
+            
+            content = preProcessXmlBlocks(content)
 
             val startMatches = devinStartRegex.findAll(content)
             for (startMatch in startMatches) {
@@ -116,6 +122,38 @@ class CodeFence(
             }
 
             return codeFences.filter { it.text.isNotEmpty() }
+        }
+        
+        private fun preProcessXmlBlocks(content: String): String {
+            var currentContent = content
+            
+            // 处理<THOUGHT>标签
+            val thoughtMatches = Regex("(?<=^|\\n)<THOUGHT>([\\s\\S]*?)</THOUGHT>\\n?").findAll(content).toList()
+            for (match in thoughtMatches) {
+                val thoughtContent = match.groups[1]?.value ?: ""
+                // 检查是否有内部的<PLAN>标签
+                val planMatch = Regex("<PLAN>([\\s\\S]*?)</PLAN>").find(thoughtContent)
+                
+                if (planMatch != null) {
+                    val planContent = planMatch.groups[1]?.value?.trim() ?: ""
+                    // 将<PLAN>内容替换为Markdown代码块格式
+                    val processedContent = thoughtContent.replace(planMatch.value, "\n```plan\n$planContent\n```\n")
+                    currentContent = currentContent.replace(match.value, processedContent)
+                } else {
+                    // 如果没有内部PLAN标签，保持原样
+                    currentContent = currentContent
+                }
+            }
+            
+            // 直接处理独立的<PLAN>标签
+            val planMatches = Regex("(?<=^|\\n)<PLAN>([\\s\\S]*?)</PLAN>\\n?").findAll(currentContent).toList()
+            for (match in planMatches) {
+                val planContent = match.groups[1]?.value?.trim() ?: ""
+                val replacement = "\n```plan\n$planContent\n```\n"
+                currentContent = currentContent.replace(match.value, replacement)
+            }
+            
+            return currentContent
         }
 
         val devinRegexBlock = Regex("(?<=^|\\n)```devin\\n([\\s\\S]*?)\\n```\\n")
@@ -233,6 +271,8 @@ class CodeFence(
                 "sh" -> "Shell Script"
                 "bash" -> "Shell Script"
                 "http" -> "HTTP Request"
+                "plan" -> "Plain Text"
+                "thought" -> "Plain Text"
                 else -> languageName
             }
 
@@ -278,6 +318,8 @@ class CodeFence(
                 "shell script" -> "sh"
                 "bash" -> "sh"
                 "devin" -> "devin"
+                "plan" -> "plan"
+                "thought" -> "thought"
                 else -> languageId
             }
         }
@@ -307,6 +349,8 @@ class CodeFence(
                 "scala" -> "Scala"
                 "rs" -> "Rust"
                 "http" -> "HTTP Request"
+                "plan" -> "PLAN"
+                "thought" -> "THOUGHT"
                 else -> extension
             }
         }
