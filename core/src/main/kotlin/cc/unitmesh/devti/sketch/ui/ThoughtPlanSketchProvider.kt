@@ -4,17 +4,14 @@ import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
 import cc.unitmesh.devti.sketch.ui.plan.MarkdownPlanParser
 import cc.unitmesh.devti.observer.agent.PlanList
+import cc.unitmesh.devti.observer.plan.PlanBoard
 import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
-import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.popup.JBPopup
-import com.intellij.openapi.ui.popup.JBPopupFactory
-import com.intellij.openapi.ui.popup.util.MinimizeButton
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
@@ -24,8 +21,6 @@ import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
 import java.awt.FlowLayout
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
 import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JComponent
@@ -50,9 +45,9 @@ class ThoughtPlanSketchProvider : LanguageSketchProvider {
 class PlanSketch(
     private val project: Project,
     private var content: String,
-    private val planLists: MutableList<PlanList>
+    private val planLists: MutableList<PlanList>,
+    private val isInPopup: Boolean = false
 ) : JBPanel<PlanSketch>(BorderLayout()), ExtensionLangSketch {
-
     private val panel = JBPanel<PlanSketch>(BorderLayout())
     private val contentPanel = JBPanel<PlanSketch>().apply {
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
@@ -70,7 +65,9 @@ class PlanSketch(
 
     private val toolbarPanel = JPanel(BorderLayout()).apply {
         add(titleLabel, BorderLayout.WEST)
-        add(toolbar.component, BorderLayout.EAST)
+        if (!isInPopup) {
+            add(toolbar.component, BorderLayout.EAST)
+        }
     }
 
     private val toolbarWrapper = Wrapper(JBUI.Panels.simplePanel(toolbarPanel)).also {
@@ -92,44 +89,13 @@ class PlanSketch(
             override fun displayTextInToolbar(): Boolean = true
 
             override fun actionPerformed(e: AnActionEvent) {
-                executePopup().mouseClicked(null)
+                PlanBoard(project, content, planLists).show()
             }
         }
 
         return listOf(popupAction)
     }
 
-    private fun executePopup(): MouseAdapter = object : MouseAdapter() {
-        override fun mouseClicked(e: MouseEvent?) {
-            var popup: JBPopup? = null
-            popup = JBPopupFactory.getInstance()
-                .createComponentPopupBuilder(panel, null)
-                .setProject(project)
-                .setResizable(true)
-                .setMovable(true)
-                .setTitle("Thought Plan")
-                .setCancelButton(MinimizeButton("Hide"))
-                .setCancelCallback {
-                    popup?.cancel()
-                    // Return the panel to its original location
-                    remove(panel)
-                    add(panel, BorderLayout.CENTER)
-                    revalidate()
-                    repaint()
-                    true
-                }
-                .setFocusable(true)
-                .setRequestFocus(true)
-                .createPopup()
-
-            val editor = FileEditorManager.getInstance(project).selectedTextEditor
-            if (editor != null) {
-                popup.showInBestPositionFor(editor)
-            } else {
-                popup.showInFocusCenter()
-            }
-        }
-    }
 
     private fun createPlanUI() {
         planLists.forEachIndexed { index, planItem ->
