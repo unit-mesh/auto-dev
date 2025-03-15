@@ -22,11 +22,7 @@ class ShellRunService : RunService {
     }
 
     override fun runFile(project: Project, virtualFile: VirtualFile, psiElement: PsiElement?, isFromToolAction: Boolean): String? {
-        val workingDirectory = if (virtualFile is LightVirtualFile) {
-            project.basePath!!
-        } else {
-            virtualFile.parent.path
-        }
+        val workingDirectory = project.basePath ?: return "Project base path not found"
 
         val shRunner = ApplicationManager.getApplication().getService(ShRunner::class.java)
             ?: return "Shell runner not found"
@@ -48,8 +44,8 @@ class ShellRunService : RunService {
             .createConfiguration(psiFile.name, ShConfigurationType.getInstance())
 
         val configuration = configurationSetting.configuration as ShRunConfiguration
-        configuration.scriptPath = virtualFile.path
         configuration.scriptWorkingDirectory = project.basePath!!
+        configuration.scriptPath = virtualFile.path
         return configurationSetting.configuration
     }
 }
