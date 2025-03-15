@@ -16,14 +16,15 @@ object MarkdownViewer {
         val htmlEditorKit = HTMLEditorKitBuilder().build()
 
         val backgroundColor = UIUtil.getPanelBackground()
-        val schemeForCurrentUITheme = EditorColorsManager.getInstance().schemeForCurrentUITheme
-        val editorFontName = schemeForCurrentUITheme.editorFontName
-        val editorFontSize = schemeForCurrentUITheme.editorFontSize
-        val fontFamilyAndSize =
-            "font-family:'" + editorFontName + "'; font-size:" + editorFontSize + "pt;"
+
+        val editorFontName = EditorColorsManager.getInstance().schemeForCurrentUITheme.editorFontName
+        val editorFontSize = EditorColorsManager.getInstance().schemeForCurrentUITheme.editorFontSize
+
+        val fontFamilyAndSize = "font-family:'" + editorFontName + "'; font-size:" + editorFontSize + "pt;"
         val backgroundColorCss = "background-color: #" + ColorUtil.toHex(backgroundColor) + ";"
         htmlEditorKit.getStyleSheet().addRule("code { $backgroundColorCss$fontFamilyAndSize}")
-        htmlEditorKit.getStyleSheet().addRule("p {margin-top: 1px}")
+        htmlEditorKit.getStyleSheet().addRule("code.language-markdown { background-color: #ffffff; $fontFamilyAndSize}")
+        htmlEditorKit.getStyleSheet().addRule("p { margin-top: 1px }")
 
         jEditorPane.also {
             it.editorKit = htmlEditorKit

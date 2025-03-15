@@ -18,7 +18,9 @@ class MarkdownPreviewHighlightSketch(val project: Project, val text: String) : E
 
     private var context = text
 
-    private val editorPane = MarkdownViewer.createBaseComponent().apply {
+    val webviewPanel = MarkdownViewer.createBaseComponent()
+
+    private val editorPane = webviewPanel.apply {
         addHyperlinkListener {
             if (it.eventType == HyperlinkEvent.EventType.ACTIVATED) {
                 BrowserUtil.browse(it.url)

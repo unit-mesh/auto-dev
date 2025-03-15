@@ -61,11 +61,9 @@ open class SketchToolWindow(
     private var progressBar: JProgressBar = JProgressBar()
 
     private var thinkingHighlight: CodeHighlightSketch =
-        CodeHighlightSketch(project, "<Thinking />", PlainTextLanguage.INSTANCE)
+        CodeHighlightSketch(project, "<Thinking />", PlainTextLanguage.INSTANCE, withBorder = false)
 
-    private var thinkingPanel = thinkingHighlight.apply {
-        this.border = JBUI.Borders.empty()
-    }
+    private var thinkingPanel = thinkingHighlight
 
     private var inputSection: AutoDevInputSection = AutoDevInputSection(project, this, showAgent = false)
 
