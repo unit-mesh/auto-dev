@@ -17,9 +17,18 @@ import com.intellij.openapi.ui.popup.util.MinimizeButton
 class PlanBoard(private val project: Project) : Disposable {
     var popup: JBPopup? = null
     var connection = ApplicationManager.getApplication().messageBus.connect(this)
-    var planSketch: PlanSketch = PlanSketch(project, "", mutableListOf())
+    var planSketch: PlanSketch = PlanSketch(project, "", mutableListOf(), true)
 
     init {
+        createPopup()
+        connection.subscribe(PlanUpdateListener.TOPIC, object : PlanUpdateListener {
+            override fun onPlanUpdate(items: MutableList<PlanList>) {
+                planSketch.updatePlan(items)
+            }
+        })
+    }
+
+    private fun createPopup(): JBPopup? {
         popup = JBPopupFactory.getInstance()
             .createComponentPopupBuilder(planSketch, null)
             .setProject(project)
@@ -35,13 +44,10 @@ class PlanBoard(private val project: Project) : Disposable {
             .setRequestFocus(true)
             .setCancelOnClickOutside(false)
             .setCancelOnOtherWindowOpen(false)
+            .setCancelOnWindowDeactivation(false)
             .createPopup()
 
-        connection.subscribe(PlanUpdateListener.TOPIC, object : PlanUpdateListener {
-            override fun onPlanUpdate(items: MutableList<PlanList>) {
-                planSketch.updatePlan(items)
-            }
-        })
+        return popup
     }
 
     fun show(content: String, planLists: MutableList<PlanList>) {
@@ -49,6 +55,10 @@ class PlanBoard(private val project: Project) : Disposable {
         if (popup?.isVisible == true) return
 
         try {
+            if (popup?.isDisposed == true) {
+                createPopup()
+            }
+
             popup?.showInFocusCenter()
         } catch (e: Exception) {
             logger<PlanBoard>().error("Failed to show popup", e)
