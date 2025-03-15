@@ -28,11 +28,15 @@ class SqlRunService : RunService {
         isFromToolAction: Boolean
     ): String? {
         val sql = runReadAction { PsiManager.getInstance(project).findFile(virtualFile) } as? SqlFile
-            ?: return null
+            ?: return "<DevInsError> SQL: cannot find PSI file"
 
-        if (sql.fileType !is SqlFileType) return null
+        if (sql.fileType !is SqlFileType) return "<DevInsError> SQL: not a SQL file"
         val content = runReadAction { sql.text }
-        return DatabaseSchemaAssistant.executeSqlQuery(project, content)
+        try {
+            return DatabaseSchemaAssistant.executeSqlQuery(project, content)
+        } catch (e: Exception) {
+            return "<DevInsError> SQL: ${e.message}"
+        }
     }
 
     override fun runConfigurationClass(project: Project): Class<out RunProfile>? =
