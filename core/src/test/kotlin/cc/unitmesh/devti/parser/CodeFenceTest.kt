@@ -557,109 +557,18 @@ Index: src/main/java/cc/unitmesh/untitled/demo/repository/BlogRepository.java
         assertEquals(codeFences.size, 1)
     }
 
-    fun testShouldParsePlanTag() {
-        val content = """
-            <PLAN>
-            1. 领域模型重构：
-            - 将BlogPost实体合并到Blog聚合根，建立完整的领域对象
-            - 添加领域行为方法（发布、审核、评论等）
-            - 引入值对象（BlogId、Content等）
-            </PLAN>
-        """.trimIndent()
-
-        val code = CodeFence.parse(content)
-        assertEquals(
-            code.text,
-            """
-            1. 领域模型重构：
-            - 将BlogPost实体合并到Blog聚合根，建立完整的领域对象
-            - 添加领域行为方法（发布、审核、评论等）
-            - 引入值对象（BlogId、Content等）
-            """.trimIndent()
-        )
-        assertTrue(code.isComplete)
-        assertEquals("plan", code.extension)
-        assertEquals("plan", code.originLanguage)
-    }
-
-    fun testShouldParseThoughtTag() {
-        val content = """
-            <THOUGHT>
-            我需要实现博客系统的领域模型重构，主要包括以下步骤：
-            1. 将BlogPost合并到Blog聚合根
-            2. 添加领域行为
-            </THOUGHT>
-        """.trimIndent()
-
-        val code = CodeFence.parse(content)
-        assertEquals(
-            code.text,
-            """
-            我需要实现博客系统的领域模型重构，主要包括以下步骤：
-            1. 将BlogPost合并到Blog聚合根
-            2. 添加领域行为
-            """.trimIndent()
-        )
-        assertTrue(code.isComplete)
-        assertEquals("thought", code.extension)
-        assertEquals("thought", code.originLanguage)
-    }
-
-    fun testShouldParseNestedPlanInThought() {
-        val content = """
-            <THOUGHT>
-            我需要对系统进行重构，首先列出计划：
-            
-            <PLAN>
-            1. 领域模型重构：
-            - 将BlogPost实体合并到Blog聚合根，建立完整的领域对象
-            - 添加领域行为方法（发布、审核、评论等）
-            
-            2. 分层结构调整：
-            - 清理entity层冗余对象，建立清晰的domain层
-            - 实现领域服务与基础设施层分离
-            </PLAN>
-            
-            然后按照计划实施重构。
-            </THOUGHT>
-        """.trimIndent()
-
-        val code = CodeFence.parse(content)
-        assertEquals(
-            code.text,
-            """
-            1. 领域模型重构：
-            - 将BlogPost实体合并到Blog聚合根，建立完整的领域对象
-            - 添加领域行为方法（发布、审核、评论等）
-            
-            2. 分层结构调整：
-            - 清理entity层冗余对象，建立清晰的domain层
-            - 实现领域服务与基础设施层分离
-            """.trimIndent()
-        )
-        assertTrue(code.isComplete)
-        assertEquals("plan", code.extension)
-        assertEquals("plan", code.originLanguage)
-    }
-
     fun testShouldParseAllWithXmlTags() {
         val content = """
             首先，我需要思考重构的步骤：
             
-            <THOUGHT>
-            系统重构需要考虑领域驱动设计原则，确保聚合根的完整性。
-            
-            <PLAN>
+            ```plan
             1. 领域模型重构：
             - 将BlogPost实体合并到Blog聚合根，建立完整的领域对象
             - 添加领域行为方法（发布、审核、评论等）
             
             2. 分层结构调整：
             - 清理entity层冗余对象
-            </PLAN>
-            
-            这样的重构可以提高系统的内聚性。
-            </THOUGHT>
+            ```
             
             然后，我们可以开始代码实现：
             
@@ -678,29 +587,13 @@ Index: src/main/java/cc/unitmesh/untitled/demo/repository/BlogRepository.java
             <devin>
             /patch
             ```patch
-            Index: src/main/java/cc/unitmesh/untitled/demo/repository/BlogRepository.java
-            --- src/main/java/cc/unitmesh/untitled/demo/repository/BlogRepository.java	(revision 1)
-            +++ src/main/java/cc/unitmesh/untitled/demo/repository/BlogRepository.java	(revision 2)
-            ```
-            </devin>
-            
-            <PLAN>
-            3. 战术模式实现：
-            - 使用工厂模式处理复杂对象创建
-            - 实现仓储接口与领域层的依赖倒置
-            </PLAN>
         """.trimIndent()
 
         val codeFences = CodeFence.parseAll(content)
-        assertEquals(6, codeFences.size)
+        assertEquals(5, codeFences.size)
         
-        // 检查第一个代码段是Markdown内容
-        assertEquals("首先，我需要思考重构的步骤：\n" +
-                "\n" +
-                "\n" +
-                "系统重构需要考虑领域驱动设计原则，确保聚合根的完整性。", codeFences[0].text)
+        assertEquals("首先，我需要思考重构的步骤：", codeFences[0].text)
         
-        // 检查第二个代码段是plan内容（嵌套在THOUGHT中的PLAN）
         assertEquals(
             """
             1. 领域模型重构：
@@ -714,18 +607,22 @@ Index: src/main/java/cc/unitmesh/untitled/demo/repository/BlogRepository.java
         )
         assertEquals("plan", codeFences[1].extension)
         
-        // 检查第三个代码段是Java代码
-        assertEquals("这样的重构可以提高系统的内聚性。\n\n然后，我们可以开始代码实现：", codeFences[2].text)
-
-        // 检查第四个代码段是单独的PLAN标签内容
+        assertEquals("然后，我们可以开始代码实现：", codeFences[2].text)
         assertEquals(
             """
-            3. 战术模式实现：
-            - 使用工厂模式处理复杂对象创建
-            - 实现仓储接口与领域层的依赖倒置
-            """.trimIndent(),
+            public class Blog {
+                private BlogId id;
+                private String title;
+                private String content;
+                
+                public void publish() {
+                    // 实现发布逻辑
+                }
+            }""".trimIndent(),
             codeFences[3].text
         )
-        assertEquals("plan", codeFences[3].extension)
+        assertEquals("java", codeFences[3].extension)
+
+        assertEquals("DevIn", codeFences[4].originLanguage)
     }
 }
