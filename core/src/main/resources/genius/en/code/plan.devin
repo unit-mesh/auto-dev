@@ -58,6 +58,14 @@ Here is the rule you should follow:
 If `<user.question>` directly contradicts any of these steps, follow the instructions from `<user.question>`
 first. Be thorough in your thinking process, so it's okay if it is lengthy.
 
+For example:
+
+<THOUGHT>
+<PLAN>
+Some plan
+</PLAN>
+</THOUGHT>
+
 Here is user.question:
 
 <user.question>user.question</user.question>

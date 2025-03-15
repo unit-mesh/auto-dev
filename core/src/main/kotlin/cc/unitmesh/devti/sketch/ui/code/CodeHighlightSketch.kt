@@ -34,8 +34,10 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import cc.unitmesh.devti.util.whenDisposed
+import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.components.JBPanel
+import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.concurrency.annotations.RequiresReadLock
 import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
@@ -162,32 +164,38 @@ open class CodeHighlightSketch(
             }
         }
 
-        val parse = CodeFence.parse(editorFragment!!.editor.document.text)
-        var panel: JComponent? = null
-        when (parse.originLanguage) {
-            "diff", "patch" -> {
-                val langSketch = LanguageSketchProvider.provide("patch")?.create(project, parse.text) ?: return
-                panel = langSketch.getComponent()
-                langSketch.onDoneStream(allText)
+        val codes = CodeFence.parseAll(editorFragment!!.editor.document.text)
+        val blockedPanel = JPanel(VerticalLayout(JBUI.scale(0)))
+
+        codes.forEach { code ->
+            var panel: JComponent? = null
+            when (code.originLanguage) {
+                "diff", "patch" -> {
+                    val langSketch = LanguageSketchProvider.provide("patch")?.create(project, code.text) ?: return
+                    panel = langSketch.getComponent()
+                    langSketch.onDoneStream(allText)
+                }
+
+                "html" -> {
+                    val langSketch = LanguageSketchProvider.provide("html")?.create(project, code.text) ?: return
+                    panel = langSketch.getComponent()
+                    langSketch.onDoneStream(allText)
+                }
+
+                "bash", "shell" -> {
+                    val langSketch = LanguageSketchProvider.provide("shell")?.create(project, code.text) ?: return
+                    panel = langSketch.getComponent()
+                    langSketch.onDoneStream(allText)
+                }
             }
 
-            "html" -> {
-                val langSketch = LanguageSketchProvider.provide("html")?.create(project, parse.text) ?: return
-                panel = langSketch.getComponent()
-                langSketch.onDoneStream(allText)
-            }
+            if (panel == null) return@forEach
 
-            "bash", "shell" -> {
-                val langSketch = LanguageSketchProvider.provide("shell")?.create(project, parse.text) ?: return
-                panel = langSketch.getComponent()
-                langSketch.onDoneStream(allText)
-            }
+            panel.border = JBEmptyBorder(4)
+            blockedPanel.add(panel)
         }
 
-        if (panel == null) return
-
-        panel.border = JBEmptyBorder(4)
-        add(panel, BorderLayout.SOUTH)
+        add(blockedPanel, BorderLayout.SOUTH)
 
         editorFragment?.updateExpandCollapseLabel()
 

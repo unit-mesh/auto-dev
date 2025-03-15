@@ -33,7 +33,6 @@ class AgentStateService {
      */
     fun processMessages(messages: List<Message>): List<Message> {
         state.messages = messages
-        /// todo compress message in here
         return messages
     }
 
