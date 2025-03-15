@@ -46,10 +46,48 @@ object MarkdownPlanParser {
 
     private fun parsePlanItems(node: ASTNode, content: String): List<PlanItem> {
         val planItems = mutableListOf<PlanItem>()
+        val topLevelOrderedLists = findTopLevelOrderedLists(node)
+        if (topLevelOrderedLists.isNotEmpty() && isFlatOrderedList(topLevelOrderedLists.first(), content)) {
+            processFlatOrderedList(topLevelOrderedLists.first(), content, planItems)
+        } else {
+            processSectionedList(node, content, planItems)
+        }
+        
+        return planItems
+    }
+    
+    private fun findTopLevelOrderedLists(node: ASTNode): List<ASTNode> {
+        val orderedLists = mutableListOf<ASTNode>()
+        
+        node.children.forEach { child ->
+            if (child.type == MarkdownElementTypes.ORDERED_LIST) {
+                orderedLists.add(child)
+            }
+        }
+        
+        return orderedLists
+    }
+    
+    private fun processFlatOrderedList(node: ASTNode, content: String, planItems: MutableList<PlanItem>) {
+        node.children.forEach { listItemNode ->
+            if (listItemNode.type == MarkdownElementTypes.LIST_ITEM) {
+                val listItemText = listItemNode.getTextInNode(content).toString().trim()
+                val titleMatch = "^(\\d+)\\.\\s*(.+?)(?:\\s*$CHECKMARK)?$".toRegex().find(listItemText)
+                
+                if (titleMatch != null) {
+                    val title = titleMatch.groupValues[2].trim()
+                    val completed = listItemText.contains(CHECKMARK)
+                    planItems.add(PlanItem(title, emptyList(), completed))
+                }
+            }
+        }
+    }
+    
+    private fun processSectionedList(node: ASTNode, content: String, planItems: MutableList<PlanItem>) {
         var currentSectionTitle = ""
         var currentSectionItems = mutableListOf<String>()
         var currentSectionCompleted = false
-
+        
         node.accept(object : RecursiveVisitor() {
             override fun visitNode(node: ASTNode) {
                 when (node.type) {
@@ -70,7 +108,7 @@ object MarkdownPlanParser {
 
                                 if (titleMatch != null) {
                                     // Save previous section if exists
-                                    if (currentSectionTitle.isNotEmpty() && currentSectionItems.isNotEmpty()) {
+                                    if (currentSectionTitle.isNotEmpty()) {
                                         planItems.add(PlanItem(
                                             currentSectionTitle, 
                                             currentSectionItems.toList(),
@@ -101,39 +139,53 @@ object MarkdownPlanParser {
 
                 super.visitNode(node)
             }
-
-            private fun processTaskItems(listNode: ASTNode, content: String, itemsList: MutableList<String>) {
-                listNode.children.forEach { taskItemNode ->
-                    if (taskItemNode.type == MarkdownElementTypes.LIST_ITEM) {
-                        val taskText = taskItemNode.getTextInNode(content).toString().trim()
-                        // Extract just the first line for the task
-                        val firstLineEnd = taskText.indexOf('\n')
-                        val taskFirstLine = if (firstLineEnd > 0) {
-                            taskText.substring(0, firstLineEnd).trim()
-                        } else {
-                            taskText
-                        }
-                        
-                        // Process task text and retain the checkmark in the text
-                        val cleanTaskText = taskFirstLine.replace(Regex("^[\\-\\*]\\s+"), "").trim()
-                        if (cleanTaskText.isNotEmpty()) {
-                            itemsList.add(cleanTaskText)
-                        }
-                    }
-                }
-            }
         })
 
         // 添加最后一个章节（如果有）
-        if (currentSectionTitle.isNotEmpty() && currentSectionItems.isNotEmpty()) {
+        if (currentSectionTitle.isNotEmpty()) {
             planItems.add(PlanItem(
                 currentSectionTitle, 
                 currentSectionItems.toList(),
                 currentSectionCompleted
             ))
         }
+    }
 
-        return planItems
+    private fun isFlatOrderedList(node: ASTNode, content: String): Boolean {
+        var hasNestedLists = false
+        
+        node.children.forEach { listItemNode ->
+            if (listItemNode.type == MarkdownElementTypes.LIST_ITEM) {
+                listItemNode.children.forEach { childNode ->
+                    if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
+                        hasNestedLists = true
+                    }
+                }
+            }
+        }
+        
+        return !hasNestedLists
+    }
+
+    private fun processTaskItems(listNode: ASTNode, content: String, itemsList: MutableList<String>) {
+        listNode.children.forEach { taskItemNode ->
+            if (taskItemNode.type == MarkdownElementTypes.LIST_ITEM) {
+                val taskText = taskItemNode.getTextInNode(content).toString().trim()
+                // Extract just the first line for the task
+                val firstLineEnd = taskText.indexOf('\n')
+                val taskFirstLine = if (firstLineEnd > 0) {
+                    taskText.substring(0, firstLineEnd).trim()
+                } else {
+                    taskText
+                }
+                
+                // Process task text and retain the checkmark in the text
+                val cleanTaskText = taskFirstLine.replace(Regex("^[\\-\\*]\\s+"), "").trim()
+                if (cleanTaskText.isNotEmpty()) {
+                    itemsList.add(cleanTaskText)
+                }
+            }
+        }
     }
     
     // For debugging purposes

@@ -27,6 +27,31 @@ class MarkdownPlanParserTest {
     }
 
     @Test
+    fun should_parse_markdown_with_single_section_and_tasks_no_subitem() {
+        // Given
+        val markdownContent = """
+            1. 在 BlogRepository 中添加基于作者的删除方法
+            2. 在 BlogService 中实现批量删除逻辑
+            3. 在 BlogController 中添加 DELETE 端点
+            4. 确保数据库表结构与实体类映射正确
+        """.trimIndent()
+
+        // When
+        val planItems = MarkdownPlanParser.parse(markdownContent)
+
+        // Then
+        assertThat(planItems).hasSize(4)
+        assertThat(planItems[0].title).isEqualTo("在 BlogRepository 中添加基于作者的删除方法")
+        assertThat(planItems[0].tasks).isEmpty()
+        assertThat(planItems[1].title).isEqualTo("在 BlogService 中实现批量删除逻辑")
+        assertThat(planItems[1].tasks).isEmpty()
+        assertThat(planItems[2].title).isEqualTo("在 BlogController 中添加 DELETE 端点")
+        assertThat(planItems[2].tasks).isEmpty()
+        assertThat(planItems[3].title).isEqualTo("确保数据库表结构与实体类映射正确")
+        assertThat(planItems[3].tasks).isEmpty()
+    }
+
+    @Test
     fun should_parse_markdown_with_multiple_sections_and_tasks() {
         // Given
         val markdownContent = """

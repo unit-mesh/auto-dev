@@ -55,7 +55,7 @@ class PlanSketch(
     private fun createPlanUI() {
         planItems.forEachIndexed { index, planItem ->
             val titlePanel = JBPanel<JBPanel<*>>(FlowLayout(FlowLayout.LEFT)).apply {
-                border = JBEmptyBorder(JBUI.insets(4, 0))
+                border = JBUI.Borders.empty()
             }
 
             val titleText = if (planItem.completed) 
@@ -64,13 +64,13 @@ class PlanSketch(
                 "<html><b>${index + 1}. ${planItem.title}</b></html>"
                 
             val sectionLabel = JLabel(titleText)
-            sectionLabel.border = JBUI.Borders.empty(4, 0)
+            sectionLabel.border = JBUI.Borders.empty()
             titlePanel.add(sectionLabel)
             contentPanel.add(titlePanel)
 
             planItem.tasks.forEachIndexed { taskIndex, task ->
                 val taskPanel = JBPanel<JBPanel<*>>(FlowLayout(FlowLayout.LEFT)).apply {
-                    border = JBEmptyBorder(JBUI.insets(2, 20, 2, 0))
+                    border = JBUI.Borders.empty()
                 }
 
                 val checkbox = JBCheckBox(task).apply {
