@@ -66,16 +66,16 @@ object MarkdownPlanParser {
                 orderedLists.add(child)
             }
         }
-        
+
         return orderedLists
     }
-    
+
     private fun processFlatOrderedList(node: ASTNode, content: String, planItems: MutableList<PlanItem>) {
         node.children.forEach { listItemNode ->
             if (listItemNode.type == MarkdownElementTypes.LIST_ITEM) {
                 val listItemText = listItemNode.getTextInNode(content).toString().trim()
                 val titleMatch = "^(\\d+)\\.\\s*(.+?)(?:\\s*$CHECKMARK)?$".toRegex().find(listItemText)
-                
+
                 if (titleMatch != null) {
                     val title = titleMatch.groupValues[2].trim()
                     val completed = listItemText.contains(CHECKMARK)
@@ -84,12 +84,12 @@ object MarkdownPlanParser {
             }
         }
     }
-    
+
     private fun processSectionedList(node: ASTNode, content: String, planItems: MutableList<PlanItem>) {
         var currentSectionTitle = ""
-        var currentSectionItems = mutableListOf<String>()
+        var currentSectionItems = mutableListOf<Task>()
         var currentSectionCompleted = false
-        
+
         node.accept(object : RecursiveVisitor() {
             override fun visitNode(node: ASTNode) {
                 when (node.type) {
@@ -104,7 +104,7 @@ object MarkdownPlanParser {
                                 } else {
                                     listItemFullText
                                 }
-                                
+
                                 // Extract the title and completion status
                                 val titleMatch = "^(\\d+)\\.\\s*(.+?)(?:\\s*$CHECKMARK)?$".toRegex().find(listItemFirstLine)
 
@@ -112,7 +112,7 @@ object MarkdownPlanParser {
                                     // Save previous section if exists
                                     if (currentSectionTitle.isNotEmpty()) {
                                         planItems.add(PlanItem(
-                                            currentSectionTitle, 
+                                            currentSectionTitle,
                                             currentSectionItems.toList(),
                                             currentSectionCompleted
                                         ))
@@ -138,7 +138,7 @@ object MarkdownPlanParser {
                     }
                     MarkdownElementTypes.UNORDERED_LIST -> {
                         processTaskItems(node, content, currentSectionItems)
-                        // Skip recursive processing for UNORDERED_LIST nodes 
+                        // Skip recursive processing for UNORDERED_LIST nodes
                         // Don't call super.visitNode for this type to avoid double-processing
                     }
                     else -> {
@@ -152,7 +152,7 @@ object MarkdownPlanParser {
         // 添加最后一个章节（如果有）
         if (currentSectionTitle.isNotEmpty()) {
             planItems.add(PlanItem(
-                currentSectionTitle, 
+                currentSectionTitle,
                 currentSectionItems.toList(),
                 currentSectionCompleted
             ))
@@ -175,7 +175,7 @@ object MarkdownPlanParser {
         return !hasNestedLists
     }
 
-    private fun processTaskItems(listNode: ASTNode, content: String, itemsList: MutableList<String>) {
+    private fun processTaskItems(listNode: ASTNode, content: String, itemsList: MutableList<Task>) {
         listNode.children.forEach { taskItemNode ->
             if (taskItemNode.type == MarkdownElementTypes.LIST_ITEM) {
                 val taskText = taskItemNode.getTextInNode(content).toString().trim()
@@ -202,12 +202,12 @@ object MarkdownPlanParser {
                         "[ ] $todoText"
                     }
                     
-                    itemsList.add(formattedTask)
+                    itemsList.add(Task.fromText(formattedTask))
                 } else {
                     // Process task text and retain the checkmark in the text (original behavior)
                     val cleanTaskText = taskFirstLine.replace(Regex("^[\\-\\*]\\s+"), "").trim()
                     if (cleanTaskText.isNotEmpty()) {
-                        itemsList.add(cleanTaskText)
+                        itemsList.add(Task.fromText(cleanTaskText))
                     }
                 }
             }
@@ -225,14 +225,39 @@ object MarkdownPlanParser {
 
 data class PlanItem(
     val title: String,
-    val tasks: List<String>,
-    val completed: Boolean = false,
-    val taskCompleted: MutableList<Boolean> = MutableList(tasks.size) { false }
+    val tasks: List<Task>,
+    val completed: Boolean = false
+)
+
+/**
+ * 表示计划项中的单个任务
+ *
+ * @property description 任务描述文本
+ * @property completed 任务是否已完成
+ */
+data class Task(
+    val description: String,
+    var completed: Boolean = false
 ) {
-    init {
-        // Parse task completion status for each task
-        tasks.forEachIndexed { index, task ->
-            taskCompleted[index] = task.contains("✓") || Regex("\\[\\s*([xX])\\s*\\]").containsMatchIn(task)
+    companion object {
+        /**
+         * 从任务文本创建Task对象
+         *
+         * @param taskText 任务文本，可能包含完成标记
+         * @return 封装了任务描述和状态的Task对象
+         */
+        fun fromText(taskText: String): Task {
+            val isCompleted = taskText.contains("✓") || 
+                             Regex("\\[\\s*([xX])\\s*\\]").containsMatchIn(taskText)
+                
+            // 清理描述文本，移除完成标记
+            val cleanedDescription = taskText
+                .replace("✓", "")
+                .replace(Regex("\\[\\s*[xX]\\s*\\]"), "[ ]")
+                .replace(Regex("\\[\\s*\\]"), "")
+                .trim()
+                
+            return Task(cleanedDescription, isCompleted)
         }
     }
 }

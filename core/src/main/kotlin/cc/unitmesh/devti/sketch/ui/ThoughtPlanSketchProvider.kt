@@ -151,10 +151,10 @@ class PlanSketch(
                     border = JBUI.Borders.empty()
                 }
 
-                val checkbox = JBCheckBox(task).apply {
-                    isSelected = planItem.taskCompleted[taskIndex]
+                val checkbox = JBCheckBox(task.description).apply {
+                    isSelected = task.completed
                     addActionListener {
-                        planItem.taskCompleted[taskIndex] = isSelected
+                        task.completed = isSelected
                     }
                 }
 
@@ -181,28 +181,28 @@ class PlanSketch(
         val newPlanItems = MarkdownPlanParser.parse(text)
         if (newPlanItems.isNotEmpty()) {
             val completionState = mutableMapOf<String, Boolean>()
+            
+            // 保存当前完成状态
             planItems.forEach { planItem ->
-                planItem.tasks.forEachIndexed { index, task ->
-                    val taskKey = task.replace("✓", "").trim()
-                    completionState[taskKey] = planItem.taskCompleted[index]
+                planItem.tasks.forEach { task ->
+                    completionState[task.description] = task.completed
                 }
             }
 
             contentPanel.removeAll()
             planItems.clear()
 
+            // 应用新规划项，保留任务完成状态
             newPlanItems.forEach { newItem ->
-                val taskCompletedList = MutableList(newItem.tasks.size) { index ->
-                    val taskKey = newItem.tasks[index].replace("✓", "").trim()
-                    completionState[taskKey] ?: newItem.taskCompleted[index]
-                }
+                planItems.add(newItem)
                 
-                planItems.add(PlanItem(
-                    newItem.title,
-                    newItem.tasks,
-                    newItem.completed,
-                    taskCompletedList
-                ))
+                // 恢复任务完成状态
+                newItem.tasks.forEach { task ->
+                    val savedCompletionState = completionState[task.description]
+                    if (savedCompletionState != null) {
+                        task.completed = savedCompletionState
+                    }
+                }
             }
 
             createPlanUI()
