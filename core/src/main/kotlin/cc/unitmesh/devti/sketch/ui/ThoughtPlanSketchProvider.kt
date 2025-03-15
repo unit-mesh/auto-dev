@@ -64,8 +64,8 @@ class PlanSketch(
     }
 
     private val toolbarPanel = JPanel(BorderLayout()).apply {
-        add(titleLabel, BorderLayout.WEST)
         if (!isInPopup) {
+            add(titleLabel, BorderLayout.WEST)
             add(toolbar.component, BorderLayout.EAST)
         }
     }
@@ -141,15 +141,17 @@ class PlanSketch(
 
     override fun updateViewText(text: String, complete: Boolean) {
         this.content = text
-        updateUi(text)
+        updatePlan(text)
     }
 
-    private fun updateUi(text: String) {
-        val newPlanItems = MarkdownPlanParser.parse(text)
+    fun updatePlan(text: String) {
+        updatePlan(MarkdownPlanParser.parse(text))
+    }
+
+    fun updatePlan(newPlanItems: List<PlanList>) {
         if (newPlanItems.isNotEmpty()) {
             val completionState = mutableMapOf<String, Boolean>()
 
-            // 保存当前完成状态
             planLists.forEach { planItem ->
                 planItem.planTasks.forEach { task ->
                     completionState[task.description] = task.completed
@@ -159,11 +161,9 @@ class PlanSketch(
             contentPanel.removeAll()
             planLists.clear()
 
-            // 应用新规划项，保留任务完成状态
             newPlanItems.forEach { newItem ->
                 planLists.add(newItem)
 
-                // 恢复任务完成状态
                 newItem.planTasks.forEach { task ->
                     val savedCompletionState = completionState[task.description]
                     if (savedCompletionState != null) {
@@ -182,9 +182,10 @@ class PlanSketch(
     override fun getComponent(): JComponent = this
 
     override fun onDoneStream(allText: String) {
-        updateUi(this.content)
-
-        project.getService(AgentStateService::class.java).updatePlan(planLists)
+        if (!isInPopup) {
+            updatePlan(this.content)
+            project.getService(AgentStateService::class.java).updatePlan(planLists)
+        }
     }
 
     override fun updateLanguage(language: Language?, originLanguage: String?) {}

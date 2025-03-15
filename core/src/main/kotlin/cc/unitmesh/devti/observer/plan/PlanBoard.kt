@@ -1,7 +1,11 @@
 package cc.unitmesh.devti.observer.plan
 
 import cc.unitmesh.devti.observer.agent.PlanList
+import cc.unitmesh.devti.observer.agent.PlanUpdateListener
 import cc.unitmesh.devti.sketch.ui.PlanSketch
+import com.intellij.execution.process.ProcessEvent
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopup
@@ -12,8 +16,9 @@ class PlanBoard(
     private val project: Project,
     private var content: String,
     private val planLists: MutableList<PlanList>
-) {
+) : Disposable {
     var popup: JBPopup? = null
+    var connection = ApplicationManager.getApplication().messageBus.connect(this)
 
     init {
         val planSketch = PlanSketch(project, content, planLists, isInPopup = true)
@@ -33,8 +38,13 @@ class PlanBoard(
             .setCancelOnClickOutside(false)
             .setCancelOnOtherWindowOpen(false)
             .createPopup()
-    }
 
+        connection.subscribe(PlanUpdateListener.TOPIC, object : PlanUpdateListener {
+            override fun onPlanUpdate(items: MutableList<PlanList>) {
+                planSketch.updatePlan(items)
+            }
+        })
+    }
 
     fun show() {
         val editor = FileEditorManager.getInstance(project).selectedTextEditor
@@ -45,4 +55,7 @@ class PlanBoard(
         }
     }
 
+    override fun dispose() {
+        connection.disconnect()
+    }
 }
