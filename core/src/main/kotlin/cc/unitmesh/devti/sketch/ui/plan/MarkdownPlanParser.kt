@@ -19,7 +19,6 @@ import org.intellij.markdown.parser.MarkdownParser
  * 1. 领域模型重构：
  *   - 将BlogPost实体合并到Blog聚合根，建立完整的领域对象
  *   - 添加领域行为方法（发布、审核、评论等）
- *
  * 2. 分层结构调整：
  *   - 清理entity层冗余对象
  * ```
@@ -27,6 +26,7 @@ import org.intellij.markdown.parser.MarkdownParser
 object MarkdownPlanParser {
     private val LOG = logger<MarkdownPlanParser>()
     private val ROOT_ELEMENT_TYPE = IElementType("ROOT")
+    private val CHECKMARK = "✓"
 
     /**
      * 解析markdown文本为计划项列表
@@ -48,6 +48,7 @@ object MarkdownPlanParser {
         val planItems = mutableListOf<PlanItem>()
         var currentSectionTitle = ""
         var currentSectionItems = mutableListOf<String>()
+        var currentSectionCompleted = false
 
         node.accept(object : RecursiveVisitor() {
             override fun visitNode(node: ASTNode) {
@@ -55,17 +56,35 @@ object MarkdownPlanParser {
                     MarkdownElementTypes.ORDERED_LIST -> {
                         node.children.forEach { listItemNode ->
                             if (listItemNode.type == MarkdownElementTypes.LIST_ITEM) {
-                                val listItemText = listItemNode.getTextInNode(content).toString().trim()
-                                val titleMatch = "^(\\d+)\\.(.*)$".toRegex().find(listItemText)
+                                // Extract just the first line for the section title
+                                val listItemFullText = listItemNode.getTextInNode(content).toString().trim()
+                                val firstLineEnd = listItemFullText.indexOf('\n')
+                                val listItemFirstLine = if (firstLineEnd > 0) {
+                                    listItemFullText.substring(0, firstLineEnd).trim()
+                                } else {
+                                    listItemFullText
+                                }
+                                
+                                // Extract the title and completion status
+                                val titleMatch = "^(\\d+)\\.\\s*(.+?)(?:\\s*$CHECKMARK)?$".toRegex().find(listItemFirstLine)
 
                                 if (titleMatch != null) {
+                                    // Save previous section if exists
                                     if (currentSectionTitle.isNotEmpty() && currentSectionItems.isNotEmpty()) {
-                                        planItems.add(PlanItem(currentSectionTitle, currentSectionItems.toList()))
+                                        planItems.add(PlanItem(
+                                            currentSectionTitle, 
+                                            currentSectionItems.toList(),
+                                            currentSectionCompleted
+                                        ))
                                         currentSectionItems = mutableListOf()
                                     }
 
+                                    // Extract the title without the checkmark
                                     currentSectionTitle = titleMatch.groupValues[2].trim()
+                                    // Check if section is marked as completed
+                                    currentSectionCompleted = listItemFirstLine.contains(CHECKMARK)
 
+                                    // Process child nodes for tasks
                                     listItemNode.children.forEach { childNode ->
                                         if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
                                             processTaskItems(childNode, content, currentSectionItems)
@@ -87,8 +106,16 @@ object MarkdownPlanParser {
                 listNode.children.forEach { taskItemNode ->
                     if (taskItemNode.type == MarkdownElementTypes.LIST_ITEM) {
                         val taskText = taskItemNode.getTextInNode(content).toString().trim()
-                        // 去除任务项前缀（- 或 *）
-                        val cleanTaskText = taskText.replace(Regex("^[\\-\\*]\\s+"), "").trim()
+                        // Extract just the first line for the task
+                        val firstLineEnd = taskText.indexOf('\n')
+                        val taskFirstLine = if (firstLineEnd > 0) {
+                            taskText.substring(0, firstLineEnd).trim()
+                        } else {
+                            taskText
+                        }
+                        
+                        // Process task text and retain the checkmark in the text
+                        val cleanTaskText = taskFirstLine.replace(Regex("^[\\-\\*]\\s+"), "").trim()
                         if (cleanTaskText.isNotEmpty()) {
                             itemsList.add(cleanTaskText)
                         }
@@ -99,15 +126,35 @@ object MarkdownPlanParser {
 
         // 添加最后一个章节（如果有）
         if (currentSectionTitle.isNotEmpty() && currentSectionItems.isNotEmpty()) {
-            planItems.add(PlanItem(currentSectionTitle, currentSectionItems.toList()))
+            planItems.add(PlanItem(
+                currentSectionTitle, 
+                currentSectionItems.toList(),
+                currentSectionCompleted
+            ))
         }
 
         return planItems
+    }
+    
+    // For debugging purposes
+    private fun printNodeStructure(node: ASTNode, content: String, indent: String = "") {
+        println("$indent${node.type}: ${node.getTextInNode(content)}")
+        node.children.forEach { child ->
+            printNodeStructure(child, content, "$indent  ")
+        }
     }
 }
 
 data class PlanItem(
     val title: String,
     val tasks: List<String>,
-    val completed: MutableList<Boolean> = MutableList(tasks.size) { false }
-)
+    val completed: Boolean = false,
+    val taskCompleted: MutableList<Boolean> = MutableList(tasks.size) { false }
+) {
+    init {
+        // Parse task completion status for each task
+        tasks.forEachIndexed { index, task ->
+            taskCompleted[index] = task.contains("✓")
+        }
+    }
+}

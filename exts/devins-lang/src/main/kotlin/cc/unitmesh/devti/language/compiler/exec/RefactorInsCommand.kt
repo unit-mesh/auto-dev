@@ -5,6 +5,7 @@ import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.devin.dataprovider.BuiltinRefactorCommand
 import cc.unitmesh.devti.language.psi.DevInFile
 import com.intellij.lang.Language
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
@@ -55,7 +56,7 @@ class RefactorInsCommand(val myProject: Project, private val argument: String, p
         val editor = FileEditorManager.getInstance(myProject).selectedTextEditor
         if (editor != null) {
             val currentFile = FileDocumentManager.getInstance().getFile(editor.document) ?: return "File not found"
-            val currentPsiFile = PsiManager.getInstance(myProject).findFile(currentFile)
+            val currentPsiFile = runReadAction { PsiManager.getInstance(myProject).findFile(currentFile) }
 
             // will not handle the case where the current file is not a DevInFile
             currentEditFile = if (currentPsiFile is DevInFile) {

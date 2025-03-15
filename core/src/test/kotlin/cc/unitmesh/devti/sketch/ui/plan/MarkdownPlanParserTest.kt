@@ -79,4 +79,43 @@ class MarkdownPlanParserTest {
         // Then
         assertThat(planItems).isEmpty()
     }
+
+    @Test
+    fun should_return_current_list_when_markdown_content_is_correnct() {
+        // Given
+        val markdownContent = """
+            1. 分析现有代码结构 ✓
+               - 确认Blog相关实体、控制器、服务层结构 ✓
+            2. 确定功能实现路径
+               - 数据库层：BlogRepository添加根据作者删除方法 ✓
+               - 服务层：BlogService添加删除逻辑 ✓
+               - 控制层：BlogController添加新端点 ✓
+            3. 实现数据库操作
+               - 在BlogRepository添加deleteByAuthor方法 ✓
+            4. 完善服务层逻辑
+               - 处理删除结果和异常情况 ✓
+            5. 添加API端点
+               - 创建DELETE方法接收author参数 ✓
+            6. 验证数据库表结构
+               - 确保blog_post表存在author字段 ✓
+            7. 测试功能
+               - 使用curl或Postman验证接口 ✓    
+        """.trimIndent()
+
+        // When
+        val planItems = MarkdownPlanParser.parse(markdownContent)
+
+        // Then
+        assertThat(planItems).hasSize(7)
+        assertThat(planItems[0].title).isEqualTo("分析现有代码结构")
+        assertThat(planItems[0].tasks).containsExactly(
+            "确认Blog相关实体、控制器、服务层结构 ✓"
+        )
+        assertThat(planItems[1].title).isEqualTo("确定功能实现路径")
+        assertThat(planItems[1].tasks).containsExactly(
+            "数据库层：BlogRepository添加根据作者删除方法 ✓",
+            "服务层：BlogService添加删除逻辑 ✓",
+            "控制层：BlogController添加新端点 ✓"
+        )
+    }
 }

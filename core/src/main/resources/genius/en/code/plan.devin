@@ -40,7 +40,7 @@ Here is the rule you should follow:
 
 1. Thoroughly review `<user.question>`. Create an initial plan that includes all the necessary steps to
  resolve `<user.question>`, using the recommended steps provided below,  and incorporating any requirements from
-  the `<user.question>`. Place your plan inside code-fence block which language is `plan`.
+  the `<user.question>`. Place your plan inside the XML tag `<THOUGHT>` within the code language `plan`.
 2. Review the project’s codebase, examining not only its structure but also the specific implementation details, to
    identify all segments that may contribute to or help resolve the issue described in `<user.question>`.
 3. If `<user.question>` describes an error, create a script to reproduce it and run the script to confirm the error.
@@ -56,6 +56,18 @@ Here is the rule you should follow:
 
 If `<user.question>` directly contradicts any of these steps, follow the instructions from `<user.question>`
 first. Be thorough in your thinking process, so it's okay if it is lengthy.
+
+For each step, document your reasoning process inside `<THOUGHT>` tags. Include the following information, enclosed within XML tags:
+
+1. `plan`: An updated plan incorporating the outcomes from the previous step. Mark progress by adding `✓` after each task in the plan that was fully completed before this step during the **current session**. Use the symbol `!` for tasks that have a latest status as failed, and use `*` for tasks that are currently in progress. If there are sub-tasks, mark their progress statuses as well. Ensure all progress statuses are marked accurately and appropriately reflect the hierarchical relationships of statuses between tasks and sub-tasks. For example, if all sub-tasks are completed, the parent task should also be marked as completed.
+
+For example:
+
+<THOUGHT>
+```plan
+Some plan
+```plan
+</THOUGHT>
 
 Here is user.question:
 

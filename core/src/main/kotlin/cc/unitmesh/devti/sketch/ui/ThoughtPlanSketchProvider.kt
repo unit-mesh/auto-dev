@@ -58,7 +58,12 @@ class PlanSketch(
                 border = JBEmptyBorder(JBUI.insets(4, 0))
             }
 
-            val sectionLabel = JLabel("<html><b>${index + 1}. ${planItem.title}</b></html>")
+            val titleText = if (planItem.completed) 
+                "<html><b>${index + 1}. ${planItem.title} ✓</b></html>" 
+            else 
+                "<html><b>${index + 1}. ${planItem.title}</b></html>"
+                
+            val sectionLabel = JLabel(titleText)
             sectionLabel.border = JBUI.Borders.empty(4, 0)
             titlePanel.add(sectionLabel)
             contentPanel.add(titlePanel)
@@ -69,9 +74,9 @@ class PlanSketch(
                 }
 
                 val checkbox = JBCheckBox(task).apply {
-                    isSelected = planItem.completed[taskIndex]
+                    isSelected = planItem.taskCompleted[taskIndex]
                     addActionListener {
-                        planItem.completed[taskIndex] = isSelected
+                        planItem.taskCompleted[taskIndex] = isSelected
                     }
                 }
 
@@ -100,7 +105,8 @@ class PlanSketch(
             val completionState = mutableMapOf<String, Boolean>()
             planItems.forEach { planItem ->
                 planItem.tasks.forEachIndexed { index, task ->
-                    completionState[task] = planItem.completed[index]
+                    val taskKey = task.replace("✓", "").trim()
+                    completionState[taskKey] = planItem.taskCompleted[index]
                 }
             }
 
@@ -108,10 +114,17 @@ class PlanSketch(
             planItems.clear()
 
             newPlanItems.forEach { newItem ->
-                val completedList = MutableList(newItem.tasks.size) { index ->
-                    completionState[newItem.tasks[index]] ?: false
+                val taskCompletedList = MutableList(newItem.tasks.size) { index ->
+                    val taskKey = newItem.tasks[index].replace("✓", "").trim()
+                    completionState[taskKey] ?: newItem.taskCompleted[index]
                 }
-                planItems.add(PlanItem(newItem.title, newItem.tasks, completedList))
+                
+                planItems.add(PlanItem(
+                    newItem.title,
+                    newItem.tasks,
+                    newItem.completed,
+                    taskCompletedList
+                ))
             }
 
             createPlanUI()

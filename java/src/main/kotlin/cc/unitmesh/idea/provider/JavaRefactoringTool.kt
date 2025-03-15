@@ -17,10 +17,10 @@ class JavaRefactoringTool : RefactoringTool {
     override fun lookupFile(path: String): PsiFile? {
         if (project == null) return null
 
-        val elementInfo = getElementInfo(path, null) ?: return null
+        val elementInfo = runReadAction { getElementInfo(path, null) } ?: return null
         val searchScope = ProjectScope.getProjectScope(project)
         val javaFiles: List<PsiJavaFile> = FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
-            .mapNotNull { PsiManager.getInstance(project).findFile(it) as? PsiJavaFile }
+            .mapNotNull { runReadAction { PsiManager.getInstance(project).findFile(it) as? PsiJavaFile } }
 
         val className = elementInfo.className
         val packageName = elementInfo.pkgName
@@ -34,7 +34,7 @@ class JavaRefactoringTool : RefactoringTool {
 
     override fun rename(sourceName: String, targetName: String, psiFile: PsiFile?): Boolean {
         if (project == null) return false
-        val elementInfo = getElementInfo(sourceName, psiFile) ?: return false
+        val elementInfo = runReadAction { getElementInfo(sourceName, psiFile) } ?: return false
 
         val element: PsiNamedElement =
             if (psiFile != null) {
