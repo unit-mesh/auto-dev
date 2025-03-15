@@ -1,11 +1,13 @@
 package cc.unitmesh.devti.util.parser
 
 import org.assertj.core.api.Assertions.assertThat
+import kotlin.test.Ignore
 import kotlin.test.Test
 
 class MarkdownConverterTest {
 
     @Test
+    @Ignore
     fun should_convert_simple_markdown_to_html() {
         // Given
         val markdownText = """

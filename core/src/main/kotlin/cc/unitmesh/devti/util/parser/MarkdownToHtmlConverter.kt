@@ -11,10 +11,6 @@ private val embeddedHtmlType = IElementType("ROOT")
 
 fun convertMarkdownToHtml(markdownText: String): String {
     val flavour = GFMFlavourDescriptor()
-    val markdownText = markdownText
-        .replace("<THOUGHT>\n<PLAN>", "```markdown\n")
-        .replace("</PLAN>\n</THOUGHT>", "```\n")
-
     val parsedTree = MarkdownParser(flavour).parse(embeddedHtmlType, markdownText)
     return HtmlGenerator(markdownText, parsedTree, flavour, false).generateHtml()
 }
