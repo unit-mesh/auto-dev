@@ -2,6 +2,7 @@ package cc.unitmesh.devti.language.compiler
 
 import cc.unitmesh.devti.language.psi.DevInFile
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase
+import kotlinx.coroutines.runBlocking
 import org.intellij.lang.annotations.Language
 import org.jetbrains.kotlin.konan.file.File
 
@@ -11,7 +12,7 @@ class DevInCompilerTest : LightJavaCodeInsightFixtureTestCase() {
         val code = "Normal String"
         val file = myFixture.configureByText("test.devin", code)
 
-        val compile = DevInsCompiler(project, file as DevInFile, myFixture.editor).compile()
+        val compile = runBlocking { DevInsCompiler(project, file as DevInFile, myFixture.editor).compile() }
         assertEquals("Normal String", compile.output)
     }
 
@@ -24,7 +25,7 @@ class DevInCompilerTest : LightJavaCodeInsightFixtureTestCase() {
         val file = myFixture.configureByText("test.devin", code)
 
         try {
-            val compile = DevInsCompiler(project, file as DevInFile, myFixture.editor).compile()
+            val compile = runBlocking { DevInsCompiler(project, file as DevInFile, myFixture.editor).compile() }
             println(compile.output)
         } catch (e: Exception) {
 //            fail(e.message)
@@ -37,7 +38,7 @@ class DevInCompilerTest : LightJavaCodeInsightFixtureTestCase() {
         val file = myFixture.configureByText("test.devin", code)
 
         try {
-            val compile = DevInsCompiler(project, file as DevInFile, myFixture.editor).compile()
+            val compile = runBlocking { DevInsCompiler(project, file as DevInFile, myFixture.editor).compile() }
             println(compile.output)
         } catch (e: Exception) {
 //            fail(e.message)
