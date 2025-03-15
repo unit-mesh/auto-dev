@@ -47,12 +47,6 @@ Here is the rule you should follow:
 4. Propose and explain the necessary code modifications to resolve `<user.question>`, ensuring that edge cases are
    properly handled. Analyze these modifications before implementing them.
 5. Edit the source code in the repo to resolve `<user.question>`.
-6. If a script to reproduce the issue has been created, execute it again on the updated repository to confirm that
-   `<user.question>` is resolved.
-7. It is best practice to find and run tests related to the modified files to ensure no new issues have been introduced
-   and to confirm that these tests still pass.
-8. Once you have verified the solution, provide a summary of the changes made and the final status of the issue. Then
-   use the `submit` command to provide the complete response back to the user.
 
 If `<user.question>` directly contradicts any of these steps, follow the instructions from `<user.question>`
 first. Be thorough in your thinking process, so it's okay if it is lengthy.
