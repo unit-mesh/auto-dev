@@ -27,6 +27,8 @@ object MarkdownPlanParser {
     private val LOG = logger<MarkdownPlanParser>()
     private val ROOT_ELEMENT_TYPE = IElementType("ROOT")
     private val CHECKMARK = "✓"
+    private val GITHUB_TODO_PATTERN = Regex("^\\s*-\\s*\\[\\s*([xX]?)\\s*\\]\\s*(.*)")
+    private val GITHUB_TODO_CHECKED = listOf("x", "X")
 
     /**
      * 解析markdown文本为计划项列表
@@ -131,13 +133,19 @@ object MarkdownPlanParser {
                                 }
                             }
                         }
+                        // Skip recursive processing for ORDERED_LIST nodes since we've already processed them
+                        // Don't call super.visitNode for this type to avoid double-processing
                     }
                     MarkdownElementTypes.UNORDERED_LIST -> {
                         processTaskItems(node, content, currentSectionItems)
+                        // Skip recursive processing for UNORDERED_LIST nodes 
+                        // Don't call super.visitNode for this type to avoid double-processing
+                    }
+                    else -> {
+                        // Only continue recursion for other node types
+                        super.visitNode(node)
                     }
                 }
-
-                super.visitNode(node)
             }
         })
 
@@ -179,10 +187,28 @@ object MarkdownPlanParser {
                     taskText
                 }
                 
-                // Process task text and retain the checkmark in the text
-                val cleanTaskText = taskFirstLine.replace(Regex("^[\\-\\*]\\s+"), "").trim()
-                if (cleanTaskText.isNotEmpty()) {
-                    itemsList.add(cleanTaskText)
+                // Check for GitHub style TODO
+                val githubTodoMatch = GITHUB_TODO_PATTERN.find(taskFirstLine)
+                if (githubTodoMatch != null) {
+                    // Extract the task text and preserve the checkbox status
+                    val checkState = githubTodoMatch.groupValues[1]
+                    val todoText = githubTodoMatch.groupValues[2].trim()
+                    val isCompleted = checkState in GITHUB_TODO_CHECKED
+                    
+                    // Add the task with the proper completion marker
+                    val formattedTask = if (isCompleted) {
+                        "[$CHECKMARK] $todoText"
+                    } else {
+                        "[ ] $todoText"
+                    }
+                    
+                    itemsList.add(formattedTask)
+                } else {
+                    // Process task text and retain the checkmark in the text (original behavior)
+                    val cleanTaskText = taskFirstLine.replace(Regex("^[\\-\\*]\\s+"), "").trim()
+                    if (cleanTaskText.isNotEmpty()) {
+                        itemsList.add(cleanTaskText)
+                    }
                 }
             }
         }
@@ -206,7 +232,7 @@ data class PlanItem(
     init {
         // Parse task completion status for each task
         tasks.forEachIndexed { index, task ->
-            taskCompleted[index] = task.contains("✓")
+            taskCompleted[index] = task.contains("✓") || Regex("\\[\\s*([xX])\\s*\\]").containsMatchIn(task)
         }
     }
 }

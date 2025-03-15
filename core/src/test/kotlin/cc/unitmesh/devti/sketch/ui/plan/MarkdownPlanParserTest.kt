@@ -143,4 +143,47 @@ class MarkdownPlanParserTest {
             "控制层：BlogController添加新端点 ✓"
         )
     }
+
+    @Test
+    fun should_return_correct_items() {
+        // Given
+        val markdownContent = """
+1. **分析现有代码结构**：
+   - BlogService 中的 `deleteBlog` 方法目前只支持按 ID 删除
+   - BlogPost 实体类中的 author 字段类型为 String，但 DTO 中的 author 是 Author 对象类型，存在映射不一致
+   - Repository 层使用 CrudRepository 需要扩展自定义删除方法
+
+2. **数据库字段确认**：
+   - 需要确认 BlogPost 表实际存储的 author 字段类型（当前代码显示为 String 类型）
+
+3. **功能实现步骤**：
+   - [ ] 在 BlogRepository 添加按作者删除的方法
+   - [ ] 扩展 BlogService 添加 deleteByAuthor 方法
+   - [ ] 在 BlogController 添加新的 DELETE 端点
+   - [ ] 修复 DTO 与实体类的 author 字段类型一致性
+   - [ ] 添加 Swagger 接口文档注解
+   - [ ] 补充单元测试
+
+4. **异常处理**：
+   - 处理不存在的作者删除请求
+   - 添加事务管理注解
+   - 统一返回结果格式
+        """.trimIndent()
+
+        // When
+        val planItems = MarkdownPlanParser.parse(markdownContent)
+
+        // Then
+        assertThat(planItems).hasSize(4)
+        assertThat(planItems[0].title).isEqualTo("**分析现有代码结构**：")
+        // test markdown
+        assertThat(planItems[2].tasks).containsExactly(
+            "[ ] 在 BlogRepository 添加按作者删除的方法",
+            "[ ] 扩展 BlogService 添加 deleteByAuthor 方法",
+            "[ ] 在 BlogController 添加新的 DELETE 端点",
+            "[ ] 修复 DTO 与实体类的 author 字段类型一致性",
+            "[ ] 添加 Swagger 接口文档注解",
+            "[ ] 补充单元测试"
+        )
+    }
 }
