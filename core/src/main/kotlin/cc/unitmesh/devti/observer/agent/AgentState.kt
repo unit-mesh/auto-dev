@@ -2,7 +2,7 @@ package cc.unitmesh.devti.observer.agent
 
 import cc.unitmesh.devti.agent.tool.AgentTool
 import cc.unitmesh.devti.llms.custom.Message
-import com.intellij.util.diff.Diff.Change
+import com.intellij.openapi.vcs.changes.Change
 import java.util.UUID
 
 data class AgentState(
@@ -13,7 +13,7 @@ data class AgentState(
 
     var conversationId: String = UUID.randomUUID().toString(),
 
-    var changeList: List<Change> = emptyList(),
+    var changes: MutableList<Change> = mutableListOf(),
 
     var messages: List<Message> = emptyList(),
 

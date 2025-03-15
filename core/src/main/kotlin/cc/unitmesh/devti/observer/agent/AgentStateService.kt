@@ -5,6 +5,7 @@ import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.llms.custom.Message
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.vcs.changes.Change
 
 @Service(Service.Level.PROJECT)
 class AgentStateService {
@@ -22,8 +23,9 @@ class AgentStateService {
         logger<AgentStateService>().info("Called agent tools:\n ${state.usedTools.joinToString("\n")}")
     }
 
-    fun addChanges(fileName: String) {
-        // todo changeList.add()
+    fun updateChanges(changes: Collection<Change?>?) {
+        val allChanges = changes?.filterNotNull()?.map { it } ?: emptyList()
+        state.changes = allChanges.toMutableList()
     }
 
     /**
