@@ -21,9 +21,9 @@ class MarkdownPlanParserTest {
         // then
         assertEquals(1, planItems.size)
         assertEquals("领域模型重构：", planItems[0].title)
-        assertEquals(2, planItems[0].tasks.size)
-        assertEquals("将BlogPost实体合并到Blog聚合根，建立完整的领域对象", planItems[0].tasks[0])
-        assertEquals("添加领域行为方法（发布、审核、评论等）", planItems[0].tasks[1])
+        assertEquals(2, planItems[0].planTasks.size)
+        assertEquals("将BlogPost实体合并到Blog聚合根，建立完整的领域对象", planItems[0].planTasks[0])
+        assertEquals("添加领域行为方法（发布、审核、评论等）", planItems[0].planTasks[1])
     }
     
     @Test
@@ -47,15 +47,15 @@ class MarkdownPlanParserTest {
         
         // 第一个章节
         assertEquals("领域模型重构：", planItems[0].title)
-        assertEquals(2, planItems[0].tasks.size)
-        assertEquals("将BlogPost实体合并到Blog聚合根，建立完整的领域对象", planItems[0].tasks[0])
-        assertEquals("添加领域行为方法（发布、审核、评论等）", planItems[0].tasks[1])
+        assertEquals(2, planItems[0].planTasks.size)
+        assertEquals("将BlogPost实体合并到Blog聚合根，建立完整的领域对象", planItems[0].planTasks[0])
+        assertEquals("添加领域行为方法（发布、审核、评论等）", planItems[0].planTasks[1])
         
         // 第二个章节
         assertEquals("分层结构调整：", planItems[1].title)
-        assertEquals(2, planItems[1].tasks.size)
-        assertEquals("清理entity层冗余对象", planItems[1].tasks[0])
-        assertEquals("优化repository实现", planItems[1].tasks[1])
+        assertEquals(2, planItems[1].planTasks.size)
+        assertEquals("清理entity层冗余对象", planItems[1].planTasks[0])
+        assertEquals("优化repository实现", planItems[1].planTasks[1])
     }
     
     @Test
@@ -73,9 +73,9 @@ class MarkdownPlanParserTest {
         // then
         assertEquals(1, planItems.size)
         assertEquals("测试章节：", planItems[0].title)
-        assertEquals(2, planItems[0].tasks.size)
-        assertEquals("使用星号的任务", planItems[0].tasks[0])
-        assertEquals("使用减号的任务", planItems[0].tasks[1])
+        assertEquals(2, planItems[0].planTasks.size)
+        assertEquals("使用星号的任务", planItems[0].planTasks[0])
+        assertEquals("使用减号的任务", planItems[0].planTasks[1])
     }
     
     @Test
@@ -109,8 +109,8 @@ class MarkdownPlanParserTest {
         assertEquals("主要功能：", planItems[0].title)
         
         // 目前的实现可能不支持嵌套，所以需要根据实际结果调整测试
-        assertEquals(2, planItems[0].tasks.size)
-        assertEquals("任务1", planItems[0].tasks[0])
-        assertEquals("任务2", planItems[0].tasks[1])
+        assertEquals(2, planItems[0].planTasks.size)
+        assertEquals("任务1", planItems[0].planTasks[0])
+        assertEquals("任务2", planItems[0].planTasks[1])
     }
 } 

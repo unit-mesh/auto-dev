@@ -1,5 +1,7 @@
 package cc.unitmesh.devti.sketch.ui.plan
 
+import cc.unitmesh.devti.observer.agent.PlanList
+import cc.unitmesh.devti.observer.agent.PlanTask
 import com.intellij.openapi.diagnostic.logger
 import org.intellij.markdown.IElementType
 import org.intellij.markdown.MarkdownElementTypes
@@ -35,7 +37,7 @@ object MarkdownPlanParser {
      * @param content markdown格式的计划文本
      * @return 解析得到的计划项列表，若解析失败则返回空列表
      */
-    fun parse(content: String): List<PlanItem> {
+    fun parse(content: String): List<PlanList> {
         try {
             val flavour = GFMFlavourDescriptor()
             val parsedTree = MarkdownParser(flavour).parse(ROOT_ELEMENT_TYPE, content)
@@ -46,16 +48,16 @@ object MarkdownPlanParser {
         }
     }
 
-    private fun parsePlanItems(node: ASTNode, content: String): List<PlanItem> {
-        val planItems = mutableListOf<PlanItem>()
+    private fun parsePlanItems(node: ASTNode, content: String): List<PlanList> {
+        val planLists = mutableListOf<PlanList>()
         val topLevelOrderedLists = findTopLevelOrderedLists(node)
         if (topLevelOrderedLists.isNotEmpty() && isFlatOrderedList(topLevelOrderedLists.first(), content)) {
-            processFlatOrderedList(topLevelOrderedLists.first(), content, planItems)
+            processFlatOrderedList(topLevelOrderedLists.first(), content, planLists)
         } else {
-            processSectionedList(node, content, planItems)
+            processSectionedList(node, content, planLists)
         }
         
-        return planItems
+        return planLists
     }
     
     private fun findTopLevelOrderedLists(node: ASTNode): List<ASTNode> {
@@ -70,7 +72,7 @@ object MarkdownPlanParser {
         return orderedLists
     }
 
-    private fun processFlatOrderedList(node: ASTNode, content: String, planItems: MutableList<PlanItem>) {
+    private fun processFlatOrderedList(node: ASTNode, content: String, planLists: MutableList<PlanList>) {
         node.children.forEach { listItemNode ->
             if (listItemNode.type == MarkdownElementTypes.LIST_ITEM) {
                 val listItemText = listItemNode.getTextInNode(content).toString().trim()
@@ -79,15 +81,15 @@ object MarkdownPlanParser {
                 if (titleMatch != null) {
                     val title = titleMatch.groupValues[2].trim()
                     val completed = listItemText.contains(CHECKMARK)
-                    planItems.add(PlanItem(title, emptyList(), completed))
+                    planLists.add(PlanList(title, emptyList(), completed))
                 }
             }
         }
     }
 
-    private fun processSectionedList(node: ASTNode, content: String, planItems: MutableList<PlanItem>) {
+    private fun processSectionedList(node: ASTNode, content: String, planLists: MutableList<PlanList>) {
         var currentSectionTitle = ""
-        var currentSectionItems = mutableListOf<Task>()
+        var currentSectionItems = mutableListOf<PlanTask>()
         var currentSectionCompleted = false
 
         node.accept(object : RecursiveVisitor() {
@@ -111,11 +113,13 @@ object MarkdownPlanParser {
                                 if (titleMatch != null) {
                                     // Save previous section if exists
                                     if (currentSectionTitle.isNotEmpty()) {
-                                        planItems.add(PlanItem(
-                                            currentSectionTitle,
-                                            currentSectionItems.toList(),
-                                            currentSectionCompleted
-                                        ))
+                                        planLists.add(
+                                            PlanList(
+                                                currentSectionTitle,
+                                                currentSectionItems.toList(),
+                                                currentSectionCompleted
+                                            )
+                                        )
                                         currentSectionItems = mutableListOf()
                                     }
 
@@ -151,11 +155,13 @@ object MarkdownPlanParser {
 
         // 添加最后一个章节（如果有）
         if (currentSectionTitle.isNotEmpty()) {
-            planItems.add(PlanItem(
-                currentSectionTitle,
-                currentSectionItems.toList(),
-                currentSectionCompleted
-            ))
+            planLists.add(
+                PlanList(
+                    currentSectionTitle,
+                    currentSectionItems.toList(),
+                    currentSectionCompleted
+                )
+            )
         }
     }
 
@@ -175,7 +181,7 @@ object MarkdownPlanParser {
         return !hasNestedLists
     }
 
-    private fun processTaskItems(listNode: ASTNode, content: String, itemsList: MutableList<Task>) {
+    private fun processTaskItems(listNode: ASTNode, content: String, itemsList: MutableList<PlanTask>) {
         listNode.children.forEach { taskItemNode ->
             if (taskItemNode.type == MarkdownElementTypes.LIST_ITEM) {
                 val taskText = taskItemNode.getTextInNode(content).toString().trim()
@@ -202,12 +208,12 @@ object MarkdownPlanParser {
                         "[ ] $todoText"
                     }
                     
-                    itemsList.add(Task.fromText(formattedTask))
+                    itemsList.add(PlanTask.fromText(formattedTask))
                 } else {
                     // Process task text and retain the checkmark in the text (original behavior)
                     val cleanTaskText = taskFirstLine.replace(Regex("^[\\-\\*]\\s+"), "").trim()
                     if (cleanTaskText.isNotEmpty()) {
-                        itemsList.add(Task.fromText(cleanTaskText))
+                        itemsList.add(PlanTask.fromText(cleanTaskText))
                     }
                 }
             }
@@ -223,41 +229,3 @@ object MarkdownPlanParser {
     }
 }
 
-data class PlanItem(
-    val title: String,
-    val tasks: List<Task>,
-    val completed: Boolean = false
-)
-
-/**
- * 表示计划项中的单个任务
- *
- * @property description 任务描述文本
- * @property completed 任务是否已完成
- */
-data class Task(
-    val description: String,
-    var completed: Boolean = false
-) {
-    companion object {
-        /**
-         * 从任务文本创建Task对象
-         *
-         * @param taskText 任务文本，可能包含完成标记
-         * @return 封装了任务描述和状态的Task对象
-         */
-        fun fromText(taskText: String): Task {
-            val isCompleted = taskText.contains("✓") || 
-                             Regex("\\[\\s*([xX])\\s*\\]").containsMatchIn(taskText)
-                
-            // 清理描述文本，移除完成标记
-            val cleanedDescription = taskText
-                .replace("✓", "")
-                .replace(Regex("\\[\\s*[xX]\\s*\\]"), "[ ]")
-                .replace(Regex("\\[\\s*\\]"), "")
-                .trim()
-                
-            return Task(cleanedDescription, isCompleted)
-        }
-    }
-}

@@ -1,8 +1,9 @@
 package cc.unitmesh.devti.sketch.ui
 
+import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
 import cc.unitmesh.devti.sketch.ui.plan.MarkdownPlanParser
-import cc.unitmesh.devti.sketch.ui.plan.PlanItem
+import cc.unitmesh.devti.observer.agent.PlanList
 import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
 import com.intellij.openapi.actionSystem.ActionManager
@@ -49,7 +50,7 @@ class ThoughtPlanSketchProvider : LanguageSketchProvider {
 class PlanSketch(
     private val project: Project,
     private var content: String,
-    private val planItems: MutableList<PlanItem>
+    private val planLists: MutableList<PlanList>
 ) : JBPanel<PlanSketch>(BorderLayout()), ExtensionLangSketch {
 
     private val panel = JBPanel<PlanSketch>(BorderLayout())
@@ -57,21 +58,21 @@ class PlanSketch(
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
         border = JBEmptyBorder(JBUI.insets(8))
     }
-    
+
     private val actionGroup = DefaultActionGroup(createConsoleActions())
     private val toolbar = ActionManager.getInstance().createActionToolbar("PlanSketch", actionGroup, true).apply {
         targetComponent = panel
     }
-    
+
     private val titleLabel = JLabel("Thought Plan").apply {
         border = JBUI.Borders.empty(0, 10)
     }
-    
+
     private val toolbarPanel = JPanel(BorderLayout()).apply {
         add(titleLabel, BorderLayout.WEST)
         add(toolbar.component, BorderLayout.EAST)
     }
-    
+
     private val toolbarWrapper = Wrapper(JBUI.Panels.simplePanel(toolbarPanel)).also {
         it.border = JBUI.Borders.customLine(UIUtil.getBoundsColor(), 1, 1, 1, 1)
     }
@@ -82,10 +83,10 @@ class PlanSketch(
         val scrollPane = JBScrollPane(contentPanel)
         panel.add(scrollPane, BorderLayout.CENTER)
         panel.add(toolbarWrapper, BorderLayout.NORTH)
-        
+
         add(panel, BorderLayout.CENTER)
     }
-    
+
     private fun createConsoleActions(): List<AnAction> {
         val popupAction = object : AnAction("Popup", "Show in popup window", AllIcons.Ide.External_link_arrow) {
             override fun displayTextInToolbar(): Boolean = true
@@ -97,7 +98,7 @@ class PlanSketch(
 
         return listOf(popupAction)
     }
-    
+
     private fun executePopup(): MouseAdapter = object : MouseAdapter() {
         override fun mouseClicked(e: MouseEvent?) {
             var popup: JBPopup? = null
@@ -131,7 +132,7 @@ class PlanSketch(
     }
 
     private fun createPlanUI() {
-        planItems.forEachIndexed { index, planItem ->
+        planLists.forEachIndexed { index, planItem ->
             val titlePanel = JBPanel<JBPanel<*>>(FlowLayout(FlowLayout.LEFT)).apply {
                 border = JBUI.Borders.empty()
             }
@@ -146,7 +147,7 @@ class PlanSketch(
             titlePanel.add(sectionLabel)
             contentPanel.add(titlePanel)
 
-            planItem.tasks.forEachIndexed { taskIndex, task ->
+            planItem.planTasks.forEachIndexed { taskIndex, task ->
                 val taskPanel = JBPanel<JBPanel<*>>(FlowLayout(FlowLayout.LEFT)).apply {
                     border = JBUI.Borders.empty()
                 }
@@ -162,7 +163,7 @@ class PlanSketch(
                 contentPanel.add(taskPanel)
             }
 
-            if (index < planItems.size - 1) {
+            if (index < planLists.size - 1) {
                 contentPanel.add(Box.createVerticalStrut(8))
             }
         }
@@ -181,23 +182,23 @@ class PlanSketch(
         val newPlanItems = MarkdownPlanParser.parse(text)
         if (newPlanItems.isNotEmpty()) {
             val completionState = mutableMapOf<String, Boolean>()
-            
+
             // 保存当前完成状态
-            planItems.forEach { planItem ->
-                planItem.tasks.forEach { task ->
+            planLists.forEach { planItem ->
+                planItem.planTasks.forEach { task ->
                     completionState[task.description] = task.completed
                 }
             }
 
             contentPanel.removeAll()
-            planItems.clear()
+            planLists.clear()
 
             // 应用新规划项，保留任务完成状态
             newPlanItems.forEach { newItem ->
-                planItems.add(newItem)
-                
+                planLists.add(newItem)
+
                 // 恢复任务完成状态
-                newItem.tasks.forEach { task ->
+                newItem.planTasks.forEach { task ->
                     val savedCompletionState = completionState[task.description]
                     if (savedCompletionState != null) {
                         task.completed = savedCompletionState
@@ -216,6 +217,8 @@ class PlanSketch(
 
     override fun onDoneStream(allText: String) {
         updateUi(this.content)
+
+        project.getService(AgentStateService::class.java).updatePlan(planLists)
     }
 
     override fun updateLanguage(language: Language?, originLanguage: String?) {}

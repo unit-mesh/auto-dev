@@ -52,6 +52,10 @@ class AgentStateService {
         return state.messages
     }
 
+    fun updatePlan(items: MutableList<PlanList>) {
+        this.state.planLists = items
+    }
+
     fun resolveIssue() {
         // todo resolve issue
     }

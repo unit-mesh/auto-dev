@@ -22,6 +22,8 @@ data class AgentState(
     /**
      * Logging environment variables, maybe related to  [cc.unitmesh.devti.provider.context.ChatContextProvider]
      */
-    var environment: Map<String, String> = emptyMap()
+    var environment: Map<String, String> = emptyMap(),
+
+    var planLists: MutableList<PlanList> = mutableListOf()
 )
 
