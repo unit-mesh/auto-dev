@@ -1,13 +1,11 @@
 package cc.unitmesh.devti.sketch.ui.plan
 
 import org.assertj.core.api.Assertions.assertThat
-import kotlin.test.Ignore
 import kotlin.test.Test
 
 class MarkdownPlanParserTest {
 
     @Test
-    @Ignore
     fun should_parse_markdown_with_single_section_and_tasks() {
         // Given
         val markdownContent = """
@@ -60,7 +58,6 @@ class MarkdownPlanParserTest {
     }
 
     @Test
-    @Ignore
     fun should_parse_markdown_with_multiple_sections_and_tasks() {
         // Given - 尝试不同格式的 Markdown，确保列表项有明确的前导数字
         val markdownContent = """
@@ -120,7 +117,6 @@ class MarkdownPlanParserTest {
 
     // 添加一个更简单的多节点测试
     @Test
-    @Ignore
     fun should_parse_simple_numbered_list() {
         // Given - 极简格式，纯数字列表
         val markdownContent = """
