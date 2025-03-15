@@ -37,7 +37,7 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
             return writeToFile(filepath, projectDir)
         }
 
-        val psiFile = PsiManager.getInstance(myProject).findFile(virtualFile)
+        val psiFile = runReadAction { PsiManager.getInstance(myProject).findFile(virtualFile) }
             ?: return "$DEVINS_ERROR: File not found: $argument"
 
         var output: String? = null

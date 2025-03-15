@@ -58,11 +58,16 @@ Here is the rule you should follow:
 If `<user.question>` directly contradicts any of these steps, follow the instructions from `<user.question>`
 first. Be thorough in your thinking process, so it's okay if it is lengthy.
 
+For each step, document your reasoning process inside `<THOUGHT>` tags. Include the following information, enclosed within XML tags:
+
+1. `<PLAN>`: An updated plan incorporating the outcomes from the previous step. Mark progress by adding `✓` after each task in the plan that was fully completed before this step during the **current session**. Use the symbol `!` for tasks that have a latest status as failed, and use `*` for tasks that are currently in progress. If there are sub-tasks, mark their progress statuses as well. Ensure all progress statuses are marked accurately and appropriately reflect the hierarchical relationships of statuses between tasks and sub-tasks. For example, if all sub-tasks are completed, the parent task should also be marked as completed.
+
+
 For example:
 
 <THOUGHT>
 <PLAN>
-Some plan
+1.
 </PLAN>
 </THOUGHT>
 

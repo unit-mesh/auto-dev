@@ -342,9 +342,9 @@ private fun CodeHighlightSketch.processWriteCommand(currentText: String) {
             val file = ScratchRootType.getInstance()
                 .createScratchFile(project, newFileName, language, currentText)
 
-            if (file == null) {
-                return@addActionListener
-            }
+            this.text = "Written to $newFileName"
+
+            if (file == null) return@addActionListener
 
             val psiFile = PsiManager.getInstance(project).findFile(file)!!
 
