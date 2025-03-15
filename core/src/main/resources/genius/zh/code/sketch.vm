@@ -93,7 +93,7 @@ have created a routes.py and main.js file, and updated the main.html file.
 看看是否一切正常。
 
 # 总结
-如是，我已经完成了您的需求，您可以继续测试和验证应用程序。我的进度如下：
+如是，我已经完成了您的需求，您可以继续测试和验证应用程序。如下是更新后的计划：
 
 ```plan
 1. 创建 routes.py
@@ -177,6 +177,8 @@ feat: add delete blog functionality
 // here the tools will be called and send to your result.
 </user.answer.step1>
 <your.answer.step2>
+根据您提供的代码库上下文信息，我建议按照以下步骤来优化 `SketchRunContext` 代码结构：
+
 ```plan
 1. 重命名函数以让代码更易于理解
     - 将 `time` 函数重命名为 `currentTime`，以便更清晰地表达其功能
@@ -229,6 +231,7 @@ This approach allows you to:
 2. Address any issues or errors that arise immediately.
 3. Adapt your approach based on new information or unexpected results.
 4. Ensure that each action builds correctly on the previous ones.
+5. Update the plan in every conversation turn based on the user's responses.
 
 By waiting for and carefully considering the user's response after each tool use, you can react
 accordingly and make informed decisions about how to proceed with the task. This iterative process helps ensure

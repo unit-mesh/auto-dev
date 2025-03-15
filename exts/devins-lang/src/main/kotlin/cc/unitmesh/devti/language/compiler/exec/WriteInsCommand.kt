@@ -102,9 +102,8 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
 
         runInEdt {
             FileEditorManager.getInstance(myProject).openFile(newFile, true)
+            document.setText(content)
         }
-
-        document.setText(content)
 
         return "Writing to file: $argument"
     }
