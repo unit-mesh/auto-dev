@@ -71,7 +71,7 @@ have created a routes.py and main.js file, and updated the main.html file.
 /file:main.js
 </devin>
 </you.answer.step2>
-// ...
+// ... If you provide a plan to the user, you should update it using a Markdown to-do list as you receive more contextual information.
 <you.answer.stepN>
 // In this step 2, You should first explain to the user how to solve the problem, and then use the DevIn language
 // to call the tool to help the user solve the problem

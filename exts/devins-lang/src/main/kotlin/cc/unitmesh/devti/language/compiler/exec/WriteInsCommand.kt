@@ -63,7 +63,12 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
 
                     //check child folder if exist? if not, create it
                     if (parentDir?.findChild(dir) == null) {
-                        parentDir = runWriteAction { parentDir?.createChildDirectory(this, dir) }
+                        var parentDir: VirtualFile? = null
+                        ApplicationManager.getApplication().invokeAndWait {
+                            runWriteAction {
+                                parentDir = parentDir?.createChildDirectory(this, dir)
+                            }
+                        }
                     } else {
                         parentDir = parentDir?.findChild(dir)
                     }

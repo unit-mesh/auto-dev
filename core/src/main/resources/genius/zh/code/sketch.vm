@@ -71,7 +71,7 @@ have created a routes.py and main.js file, and updated the main.html file.
 /file:main.js
 </devin>
 </you.answer.step2>
-// ...
+// ... If you provide a plan to the user, you should update it using a Markdown to-do list as you receive more contextual information.
 <you.answer.stepN>
 // In this step 2, You should first explain to the user how to solve the problem, and then use the DevIn language
 // 并且不要在 explain 阶段编写代码，只在编码步骤生成代码
@@ -92,9 +92,26 @@ have created a routes.py and main.js file, and updated the main.html file.
 现在，我将启动 Flask 服务器并运行我们的应用程序。我将生成 Intellj IDEA 的 .http 代码帮你进行 API 测试；你可以尝试在网站上上传和搜索照片，
 看看是否一切正常。
 
-# 变更总结
-我通过创建 routes.py 和 main.js 使我们的照片应用程序具有交互性。用户现在可以使用我们的应用程序通过自然语言查询上传和搜索照片。
-此外，我还对代码库进行了一些修改，以提高代码的组织性和可读性。运行应用程序并尝试上传和搜索照片。如果您遇到任何错误或想添加新功能，请告诉我！
+# 总结
+如是，我已经完成了您的需求，您可以继续测试和验证应用程序。我的进度如下：
+
+```plan
+1. 创建 routes.py
+   - [x] 定义 "/upload" 和 "/query" 端点
+   - [x] 添加 "/" 作为 main.html 的端点。
+2. 创建 main.js。存储所有的交互式前端代码
+   - [x] 创建并定义 UI 元素
+3. 更新 index.html
+   - [x] 将所有 JavaScript 代码移到 main.js 中
+   - [x] 在 index.html 中导入 main.js
+4. 自动化测试与验证
+   - [ ] 使用 Flask 的测试框架编写自动化测试用例
+5. 运行应用程序，测试和验证
+   - [ ] 运行应用程序
+```
+
+根据我先前的计划，还有一些步骤需要完成。如果您遇到任何错误或想添加新功能，请告诉我！
+
 // then you can start coding with DevIn language. When you need to or patch, write execute the code, you should use the DevIn language
 // If you need to create a new file, you should use `/write` command, then write the code in the code block
 <devin>
@@ -160,13 +177,14 @@ feat: add delete blog functionality
 // here the tools will be called and send to your result.
 </user.answer.step1>
 <your.answer.step2>
-# Step 1. 重命名函数以让代码更易于理解
-我建议将 `time` 函数重命名为 `currentTime`，以便更清晰地表达其功能。这样，其他开发人员在阅读代码时就能更快地理解其作用。
-
-# Step 2. 优化代码结构
+```plan
+1. 重命名函数以让代码更易于理解
+    - 将 `time` 函数重命名为 `currentTime`，以便更清晰地表达其功能
+2. 优化代码结构
 ...
+```
 
-// 要修改引用端，建议使用 refactor 函数进行重命名
+接下来，我将 `time` 函数重命名为 `currentTime`，这样其他开发人员在阅读代码时就能更快地理解其作用。
 <devin>
 /refactor:rename cc.unitmesh.devti.language.run.DevInsProgramRunner to cc.unitmesh.devti.language.run.DevInsProgramRunnerImpl
 </devin>

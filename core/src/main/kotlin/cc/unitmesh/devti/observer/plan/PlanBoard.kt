@@ -3,15 +3,15 @@ package cc.unitmesh.devti.observer.plan
 import cc.unitmesh.devti.observer.agent.PlanList
 import cc.unitmesh.devti.observer.agent.PlanUpdateListener
 import cc.unitmesh.devti.sketch.ui.PlanSketch
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.popup.IconButton
 import com.intellij.openapi.ui.popup.JBPopup
 import com.intellij.openapi.ui.popup.JBPopupFactory
-import com.intellij.openapi.ui.popup.util.MinimizeButton
 
 @Service(Service.Level.PROJECT)
 class PlanBoard(private val project: Project) : Disposable {
@@ -35,7 +35,7 @@ class PlanBoard(private val project: Project) : Disposable {
             .setResizable(true)
             .setMovable(true)
             .setTitle("Thought Plan")
-            .setCancelButton(MinimizeButton("Hide"))
+            .setCancelButton(object: IconButton("Close", AllIcons.Actions.Cancel){})
             .setCancelCallback {
                 popup?.cancel()
                 true
