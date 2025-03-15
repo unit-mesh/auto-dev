@@ -89,7 +89,7 @@ class PlanSketch(
             override fun displayTextInToolbar(): Boolean = true
 
             override fun actionPerformed(e: AnActionEvent) {
-                PlanBoard(project, content, planLists).show()
+                project.getService(PlanBoard::class.java).show(content, planLists)
             }
         }
 

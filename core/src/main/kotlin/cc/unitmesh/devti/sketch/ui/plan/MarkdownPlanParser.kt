@@ -219,13 +219,4 @@ object MarkdownPlanParser {
             }
         }
     }
-    
-    // For debugging purposes
-    private fun printNodeStructure(node: ASTNode, content: String, indent: String = "") {
-        println("$indent${node.type}: ${node.getTextInNode(content)}")
-        node.children.forEach { child ->
-            printNodeStructure(child, content, "$indent  ")
-        }
-    }
 }
-
