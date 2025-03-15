@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.observer.plan
 
+import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.observer.agent.PlanList
 import cc.unitmesh.devti.observer.agent.PlanUpdateListener
 import cc.unitmesh.devti.sketch.ui.PlanSketch
@@ -50,8 +51,10 @@ class PlanBoard(private val project: Project) : Disposable {
         return popup
     }
 
-    fun show(content: String, planLists: MutableList<PlanList>) {
+    fun updateShow() {
+        val planLists = project.getService(AgentStateService::class.java).getPlan()
         planSketch.updatePlan(planLists)
+
         if (popup?.isVisible == true) return
 
         try {
@@ -59,6 +62,7 @@ class PlanBoard(private val project: Project) : Disposable {
                 createPopup()
             }
 
+            popup?.content?.updateUI()
             popup?.showInFocusCenter()
         } catch (e: Exception) {
             logger<PlanBoard>().error("Failed to show popup", e)

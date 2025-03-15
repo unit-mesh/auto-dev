@@ -1,10 +1,13 @@
 package cc.unitmesh.devti.sketch.ui
 
+import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.observer.agent.AgentStateService
-import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
-import cc.unitmesh.devti.sketch.ui.plan.MarkdownPlanParser
 import cc.unitmesh.devti.observer.agent.PlanList
 import cc.unitmesh.devti.observer.plan.PlanBoard
+import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
+import cc.unitmesh.devti.sketch.ui.plan.MarkdownPlanParser
 import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
 import com.intellij.openapi.actionSystem.ActionManager
@@ -20,12 +23,9 @@ import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
+import java.awt.Dimension
 import java.awt.FlowLayout
-import javax.swing.Box
-import javax.swing.BoxLayout
-import javax.swing.JComponent
-import javax.swing.JLabel
-import javax.swing.JPanel
+import javax.swing.*
 
 class ThoughtPlanSketchProvider : LanguageSketchProvider {
     override fun isSupported(lang: String): Boolean = lang == "plan"
@@ -89,7 +89,8 @@ class PlanSketch(
             override fun displayTextInToolbar(): Boolean = true
 
             override fun actionPerformed(e: AnActionEvent) {
-                project.getService(PlanBoard::class.java).show(content, planLists)
+                project.getService(AgentStateService::class.java).updatePlan(planLists)
+                project.getService(PlanBoard::class.java).updateShow()
             }
         }
 
@@ -126,6 +127,23 @@ class PlanSketch(
                 }
 
                 taskPanel.add(checkbox)
+
+                if (!task.completed) {
+                    val executeButton = JButton(AllIcons.Actions.Execute).apply {
+                        border = BorderFactory.createEmptyBorder()
+                        preferredSize = Dimension(32, 32)
+                        toolTipText = "Execute"
+
+                        addActionListener {
+                            AutoDevToolWindowFactory.sendToSketchToolWindow(project, ChatActionType.SKETCH) { ui, _ ->
+                                ui.sendInput(AutoDevBundle.message("sketch.plan.finish.task") + task.description)
+                            }
+                        }
+                    }
+
+                    taskPanel.add(executeButton)
+                }
+
                 contentPanel.add(taskPanel)
             }
 

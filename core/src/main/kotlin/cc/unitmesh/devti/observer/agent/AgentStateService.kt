@@ -59,4 +59,8 @@ class AgentStateService {
             .syncPublisher(PlanUpdateListener.TOPIC)
             .onPlanUpdate(items)
     }
+
+    fun getPlan(): MutableList<PlanList> {
+        return state.planLists
+    }
 }

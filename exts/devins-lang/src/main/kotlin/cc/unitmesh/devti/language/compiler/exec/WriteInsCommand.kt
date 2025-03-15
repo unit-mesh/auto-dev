@@ -102,6 +102,9 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
 
         runInEdt {
             FileEditorManager.getInstance(myProject).openFile(newFile, true)
+        }
+
+        ApplicationManager.getApplication().invokeLater {
             document.setText(content)
         }
 
