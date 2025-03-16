@@ -106,10 +106,22 @@ class PlanSketch(
                 border = JBUI.Borders.empty()
             }
 
-            val titleText = if (planItem.completed)
-                "<html><b>${index + 1}. ${planItem.title} ✓</b></html>"
-            else
+            // Check if all tasks in the section are completed
+            updateSectionCompletionStatus(planItem)
+
+            // Create a formatted title with the appropriate status marker
+            val statusIndicator = when (planItem.status) {
+                TaskStatus.COMPLETED -> "✓"
+                TaskStatus.FAILED -> "!"
+                TaskStatus.IN_PROGRESS -> "*"
+                TaskStatus.TODO -> ""
+            }
+            
+            val titleText = if (statusIndicator.isNotEmpty()) {
+                "<html><b>${index + 1}. ${planItem.title} [$statusIndicator]</b></html>"
+            } else {
                 "<html><b>${index + 1}. ${planItem.title}</b></html>"
+            }
 
             val sectionLabel = JLabel(titleText)
             sectionLabel.border = JBUI.Borders.empty()
@@ -138,7 +150,14 @@ class PlanSketch(
                             } else {
                                 task.updateStatus(TaskStatus.TODO)
                             }
+                            
+                            // Update section status when task status changes
+                            val currentSection = planLists.find { it.planTasks.contains(task) }
+                            currentSection?.let { updateSectionCompletionStatus(it) }
+                            
                             updateTaskLabel(taskLabel, task)
+                            contentPanel.revalidate()
+                            contentPanel.repaint()
                         }
                         isBorderPainted = false
                         isContentAreaFilled = false
@@ -176,6 +195,11 @@ class PlanSketch(
                 markCompletedItem.addActionListener {
                     task.updateStatus(TaskStatus.COMPLETED)
                     updateTaskLabel(taskLabel, task)
+                    
+                    // Update section status after changing task status
+                    val currentSection = planLists.find { it.planTasks.contains(task) }
+                    currentSection?.let { updateSectionCompletionStatus(it) }
+                    
                     contentPanel.revalidate()
                     contentPanel.repaint()
                 }
@@ -183,6 +207,10 @@ class PlanSketch(
                 markInProgressItem.addActionListener {
                     task.updateStatus(TaskStatus.IN_PROGRESS)
                     updateTaskLabel(taskLabel, task)
+                    
+                    val currentSection = planLists.find { it.planTasks.contains(task) }
+                    currentSection?.let { updateSectionCompletionStatus(it) }
+                    
                     contentPanel.revalidate()
                     contentPanel.repaint()
                 }
@@ -190,6 +218,10 @@ class PlanSketch(
                 markFailedItem.addActionListener {
                     task.updateStatus(TaskStatus.FAILED)
                     updateTaskLabel(taskLabel, task)
+                    
+                    val currentSection = planLists.find { it.planTasks.contains(task) }
+                    currentSection?.let { updateSectionCompletionStatus(it) }
+                    
                     contentPanel.revalidate()
                     contentPanel.repaint()
                 }
@@ -197,6 +229,10 @@ class PlanSketch(
                 markTodoItem.addActionListener {
                     task.updateStatus(TaskStatus.TODO)
                     updateTaskLabel(taskLabel, task)
+                    
+                    val currentSection = planLists.find { it.planTasks.contains(task) }
+                    currentSection?.let { updateSectionCompletionStatus(it) }
+                    
                     contentPanel.revalidate()
                     contentPanel.repaint()
                 }
@@ -239,6 +275,16 @@ class PlanSketch(
             TaskStatus.IN_PROGRESS -> "<html><span style='color:blue;font-style:italic'>${task.description}</span></html>"
             TaskStatus.TODO -> task.description
         }
+    }
+
+    // Helper method to update section completion status based on tasks
+    private fun updateSectionCompletionStatus(planItem: PlanList) {
+        // Use the new method instead of reflection
+        planItem.updateCompletionStatus()
+        
+        // Update the UI to reflect the new status
+        contentPanel.revalidate()
+        contentPanel.repaint()
     }
 
     override fun getExtensionName(): String = "ThoughtPlan"

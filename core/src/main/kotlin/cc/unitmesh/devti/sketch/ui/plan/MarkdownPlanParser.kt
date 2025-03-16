@@ -2,6 +2,7 @@ package cc.unitmesh.devti.sketch.ui.plan
 
 import cc.unitmesh.devti.observer.agent.PlanList
 import cc.unitmesh.devti.observer.agent.PlanTask
+import cc.unitmesh.devti.observer.agent.TaskStatus
 import com.intellij.openapi.diagnostic.logger
 import org.intellij.markdown.IElementType
 import org.intellij.markdown.MarkdownElementTypes
@@ -95,6 +96,7 @@ object MarkdownPlanParser {
         var currentSectionTitle = ""
         var currentSectionItems = mutableListOf<PlanTask>()
         var currentSectionCompleted = false
+        var currentSectionStatus = TaskStatus.TODO
 
         node.accept(object : RecursiveVisitor() {
             override fun visitNode(node: ASTNode) {
@@ -111,26 +113,39 @@ object MarkdownPlanParser {
                                     listItemFullText
                                 }
 
-                                // Extract the title and completion status
-                                val titleMatch = "^(\\d+)\\.\\s*(.+?)(?:\\s*$CHECKMARK)?$".toRegex().find(listItemFirstLine)
-
-                                if (titleMatch != null) {
+                                // Check for section status marker like "1. Section Title [✓]"
+                                val sectionStatusMatch = "^(\\d+)\\.\\s*(.+?)(?:\\s*\\[(.)\\])?$".toRegex().find(listItemFirstLine)
+                                
+                                if (sectionStatusMatch != null) {
                                     // Save previous section if exists
                                     if (currentSectionTitle.isNotEmpty()) {
-                                        planLists.add(
-                                            PlanList(
-                                                currentSectionTitle,
-                                                currentSectionItems.toList(),
-                                                currentSectionCompleted
-                                            )
+                                        // Create new PlanList with stored data
+                                        val newPlanList = PlanList(
+                                            currentSectionTitle,
+                                            currentSectionItems.toList(),
+                                            currentSectionCompleted,
+                                            currentSectionStatus
                                         )
+                                        
+                                        // Update section completion status based on tasks
+                                        newPlanList.updateCompletionStatus()
+                                        
+                                        planLists.add(newPlanList)
                                         currentSectionItems = mutableListOf()
                                     }
 
-                                    // Extract the title without the checkmark
-                                    currentSectionTitle = titleMatch.groupValues[2].trim()
-                                    // Check if section is marked as completed
-                                    currentSectionCompleted = listItemFirstLine.contains(CHECKMARK)
+                                    // Extract the title without any status marker
+                                    currentSectionTitle = sectionStatusMatch.groupValues[2].trim()
+                                    
+                                    // Check for section status marker
+                                    val statusMarker = sectionStatusMatch.groupValues.getOrNull(3)
+                                    currentSectionCompleted = statusMarker == "✓" || statusMarker == "x" || statusMarker == "X"
+                                    currentSectionStatus = when (statusMarker) {
+                                        "✓", "x", "X" -> TaskStatus.COMPLETED
+                                        "!" -> TaskStatus.FAILED
+                                        "*" -> TaskStatus.IN_PROGRESS
+                                        else -> TaskStatus.TODO
+                                    }
 
                                     // Process child nodes for tasks
                                     listItemNode.children.forEach { childNode ->
@@ -159,13 +174,18 @@ object MarkdownPlanParser {
 
         // 添加最后一个章节（如果有）
         if (currentSectionTitle.isNotEmpty()) {
-            planLists.add(
-                PlanList(
-                    currentSectionTitle,
-                    currentSectionItems.toList(),
-                    currentSectionCompleted
-                )
+            // Create new PlanList with stored data
+            val newPlanList = PlanList(
+                currentSectionTitle,
+                currentSectionItems.toList(),
+                currentSectionCompleted,
+                currentSectionStatus
             )
+            
+            // Update section completion status based on tasks
+            newPlanList.updateCompletionStatus()
+            
+            planLists.add(newPlanList)
         }
     }
 
@@ -217,7 +237,8 @@ object MarkdownPlanParser {
                     // Process task text and retain the checkmark in the text (original behavior)
                     val cleanTaskText = taskFirstLine.replace(Regex("^[\\-\\*]\\s+"), "").trim()
                     if (cleanTaskText.isNotEmpty()) {
-                        itemsList.add(PlanTask.fromText(cleanTaskText))
+                        // If there's no explicit checkbox, treat as completed
+                        itemsList.add(PlanTask(cleanTaskText, true, TaskStatus.COMPLETED))
                     }
                 }
             }
