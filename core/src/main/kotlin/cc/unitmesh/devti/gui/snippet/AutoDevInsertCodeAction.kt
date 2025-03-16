@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.gui.snippet
 
 import cc.unitmesh.devti.gui.chat.ui.AutoInputService
+import cc.unitmesh.devti.sketch.AutoSketchMode
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
@@ -34,7 +35,13 @@ class AutoDevInsertCodeAction : DumbAwareAction() {
         if (file?.language?.displayName == "DevIn" &&
             ToolWindowManager.getInstance(project).getToolWindow("AutoDev") != null
         ) {
-            AutoInputService.getInstance(project).putText(newText)
+            val sketchService = project.getService(AutoSketchMode::class.java)
+            if (sketchService.listener == null) {
+                AutoInputService.getInstance(project).putText(newText)
+            } else {
+                sketchService.send(newText)
+            }
+
             return
         }
 

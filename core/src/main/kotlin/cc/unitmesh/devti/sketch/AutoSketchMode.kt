@@ -16,7 +16,10 @@ import com.intellij.psi.PsiFileFactory
 class AutoSketchMode(val project: Project) {
     var isEnable: Boolean = false
 
-    fun start(text: String, listener: SketchInputListener) {
+    var listener: SketchInputListener? = null
+
+    fun start(text: String, inputListener: SketchInputListener) {
+        listener = inputListener
         val codeFenceList = CodeFence.parseAll(text)
         val devinCodeFence = codeFenceList.filter {
             it.language.displayName == "DevIn"
@@ -46,8 +49,12 @@ class AutoSketchMode(val project: Project) {
         if (allCodeText.trim().isEmpty()) {
             logger<SketchToolWindow>().error("No code found")
         } else {
-            listener.manualSend(allCodeText)
+            inputListener.manualSend(allCodeText)
         }
+    }
+
+    fun send(text: String) {
+        listener?.manualSend(text)
     }
 
     private fun hasReadCommand(fence: CodeFence): Boolean = BuiltinCommand.READ_COMMANDS.any { command ->
