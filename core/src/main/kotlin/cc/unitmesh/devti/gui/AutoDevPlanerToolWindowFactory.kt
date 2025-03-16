@@ -2,7 +2,7 @@ package cc.unitmesh.devti.gui
 
 import cc.unitmesh.devti.observer.plan.AgentTaskEntry
 import cc.unitmesh.devti.observer.plan.PlanUpdateListener
-import cc.unitmesh.devti.sketch.ui.PlanSketch
+import cc.unitmesh.devti.sketch.ui.plan.PlanSketch
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.DumbAware
