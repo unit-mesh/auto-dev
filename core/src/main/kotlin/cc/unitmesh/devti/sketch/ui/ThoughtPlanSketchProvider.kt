@@ -47,7 +47,7 @@ class ThoughtPlanSketchProvider : LanguageSketchProvider {
 class PlanSketch(
     private val project: Project,
     private var content: String,
-    private val agentPlans: MutableList<AgentPlan>,
+    private var agentPlans: MutableList<AgentPlan>,
     private val isInPopup: Boolean = false
 ) : JBPanel<PlanSketch>(BorderLayout()), ExtensionLangSketch {
     private val panel = JBPanel<PlanSketch>(BorderLayout())
@@ -56,7 +56,7 @@ class PlanSketch(
         border = JBEmptyBorder(JBUI.insets(8))
     }
 
-    private val actionGroup = DefaultActionGroup(createConsoleActions())
+    private val actionGroup = DefaultActionGroup(createConsoleActions(project))
     private val toolbar = ActionManager.getInstance().createActionToolbar("PlanSketch", actionGroup, true).apply {
         targetComponent = panel
     }
@@ -86,13 +86,13 @@ class PlanSketch(
         add(panel, BorderLayout.CENTER)
     }
 
-    private fun createConsoleActions(): List<AnAction> {
+    private fun createConsoleActions(project: Project): List<AnAction> {
         val popupAction = object : AnAction("Popup", "Show in popup window", AllIcons.Ide.External_link_arrow) {
             override fun displayTextInToolbar(): Boolean = true
 
             override fun actionPerformed(e: AnActionEvent) {
-                project.getService(AgentStateService::class.java).updatePlan(agentPlans)
-                project.getService(PlanBoard::class.java).updateShow()
+                project.getService(AgentStateService::class.java)?.updatePlan(agentPlans)
+                project.getService(PlanBoard::class.java)?.updateShow()
             }
         }
 
@@ -277,12 +277,9 @@ class PlanSketch(
         }
     }
 
-    // Helper method to update section completion status based on tasks
     private fun updateSectionCompletionStatus(planItem: AgentPlan) {
-        // Use the new method instead of reflection
         planItem.updateCompletionStatus()
-        
-        // Update the UI to reflect the new status
+
         contentPanel.revalidate()
         contentPanel.repaint()
     }
@@ -293,11 +290,16 @@ class PlanSketch(
 
     override fun updateViewText(text: String, complete: Boolean) {
         this.content = text
-        updatePlan(text)
+        val agentPlans = MarkdownPlanParser.parse(text)
+        updatePlan(agentPlans)
     }
 
-    fun updatePlan(text: String) {
-        updatePlan(MarkdownPlanParser.parse(text))
+    override fun onComplete(context: String) {
+        if (!isInPopup) {
+            val agentPlans = MarkdownPlanParser.parse(content).toMutableList()
+            updatePlan(agentPlans)
+            project.getService(AgentStateService::class.java).updatePlan(agentPlans)
+        }
     }
 
     fun updatePlan(newPlanItems: List<AgentPlan>) {
@@ -334,13 +336,6 @@ class PlanSketch(
     }
 
     override fun getComponent(): JComponent = this
-
-    override fun onComplete(allText: String) {
-        if (!isInPopup) {
-            updatePlan(this.content)
-            project.getService(AgentStateService::class.java).updatePlan(agentPlans)
-        }
-    }
 
     override fun updateLanguage(language: Language?, originLanguage: String?) {}
 

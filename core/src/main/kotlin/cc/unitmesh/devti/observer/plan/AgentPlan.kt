@@ -21,16 +21,11 @@ data class AgentPlan(
     var status: TaskStatus = TaskStatus.TODO,
     var phase: PlanPhase = PlanPhase.PLAN
 ) {
-    /**
-     * Updates the completion status based on the tasks' statuses
-     */
     fun updateCompletionStatus() {
         if (tasks.isEmpty()) return
         
-        // Check if all tasks are completed
         completed = tasks.all { it.status == TaskStatus.COMPLETED }
         
-        // Determine section status based on tasks
         status = when {
             tasks.all { it.status == TaskStatus.COMPLETED } -> TaskStatus.COMPLETED
             tasks.any { it.status == TaskStatus.FAILED } -> TaskStatus.FAILED
