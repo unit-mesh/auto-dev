@@ -24,7 +24,7 @@ import org.intellij.markdown.parser.MarkdownParser
  * 2. 分层结构调整：
  *   - [ ] 清理entity层冗余对象
  * ```
-*/
+ */
 object MarkdownPlanParser {
     private val LOG = logger<MarkdownPlanParser>()
     private val ROOT_ELEMENT_TYPE = IElementType("ROOT")
@@ -111,7 +111,8 @@ object MarkdownPlanParser {
                                 }
 
                                 // Check for section status marker like "1. Section Title [✓]"
-                                val sectionStatusMatch = "^(\\d+)\\.\\s*(.+?)(?:\\s*\\[(.)\\])?$".toRegex().find(listItemFirstLine)
+                                val sectionStatusMatch =
+                                    "^(\\d+)\\.\\s*(.+?)(?:\\s*\\[(.)\\])?$".toRegex().find(listItemFirstLine)
 
                                 if (sectionStatusMatch != null) {
                                     // Save previous section if exists
@@ -136,7 +137,8 @@ object MarkdownPlanParser {
 
                                     // Check for section status marker
                                     val statusMarker = sectionStatusMatch.groupValues.getOrNull(3)
-                                    currentSectionCompleted = statusMarker == "✓" || statusMarker == "x" || statusMarker == "X"
+                                    currentSectionCompleted =
+                                        statusMarker == "✓" || statusMarker == "x" || statusMarker == "X"
                                     currentSectionStatus = when (statusMarker) {
                                         "✓", "x", "X" -> TaskStatus.COMPLETED
                                         "!" -> TaskStatus.FAILED
@@ -156,11 +158,13 @@ object MarkdownPlanParser {
                         // Skip recursive processing for ORDERED_LIST nodes since we've already processed them
                         // Don't call super.visitNode for this type to avoid double-processing
                     }
+
                     MarkdownElementTypes.UNORDERED_LIST -> {
                         processTaskItems(node, content, currentSectionItems)
                         // Skip recursive processing for UNORDERED_LIST nodes
                         // Don't call super.visitNode for this type to avoid double-processing
                     }
+
                     else -> {
                         // Only continue recursion for other node types
                         super.visitNode(node)
@@ -226,7 +230,7 @@ object MarkdownPlanParser {
                         checkState in GITHUB_TODO_COMPLETED -> PlanTask(todoText, true, TaskStatus.COMPLETED)
                         checkState in GITHUB_TODO_FAILED -> PlanTask(todoText, false, TaskStatus.FAILED)
                         checkState in GITHUB_TODO_IN_PROGRESS -> PlanTask(todoText, false, TaskStatus.IN_PROGRESS)
-                        else -> PlanTask(todoText, false, TaskStatus.TODO)
+                        else -> PlanTask(todoText, false, TaskStatus.COMPLETED)
                     }
 
                     itemsList.add(task)
@@ -236,16 +240,13 @@ object MarkdownPlanParser {
                         if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
                             val nestedTasks = mutableListOf<PlanTask>()
                             processTaskItems(childNode, content, nestedTasks)
-                            // Add nested tasks to the list
                             itemsList.addAll(nestedTasks)
                         }
                     }
                 } else {
-                    // Process task text without checkbox
                     val cleanTaskText = taskFirstLine.replace(Regex("^[\\-\\*]\\s+"), "").trim()
                     if (cleanTaskText.isNotEmpty()) {
-                        itemsList.add(PlanTask(cleanTaskText, false, TaskStatus.TODO))
-
+                        itemsList.add(PlanTask(cleanTaskText, false, TaskStatus.COMPLETED))
                         // Process nested tasks if any
                         taskItemNode.children.forEach { childNode ->
                             if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {

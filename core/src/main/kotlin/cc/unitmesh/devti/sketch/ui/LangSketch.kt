@@ -25,6 +25,7 @@ interface LangSketch : Disposable {
      * !important, the done update text will return all text in the editor
      */
     fun onDoneStream(allText: String) {}
+    fun onComplete(context: String) {}
 
     fun setupActionBar(project: Project, editor: Editor, isDeclarePackageFile: Boolean) {
         val toolbar = collectActionBar(isDeclarePackageFile) ?: return

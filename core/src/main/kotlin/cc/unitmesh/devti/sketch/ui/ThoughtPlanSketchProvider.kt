@@ -335,7 +335,7 @@ class PlanSketch(
 
     override fun getComponent(): JComponent = this
 
-    override fun onDoneStream(allText: String) {
+    override fun onComplete(allText: String) {
         if (!isInPopup) {
             updatePlan(this.content)
             project.getService(AgentStateService::class.java).updatePlan(agentPlans)

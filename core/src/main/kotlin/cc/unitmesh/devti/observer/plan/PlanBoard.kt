@@ -23,6 +23,7 @@ class PlanBoard(private val project: Project) : Disposable {
         connection.subscribe(PlanUpdateListener.TOPIC, object : PlanUpdateListener {
             override fun onPlanUpdate(items: MutableList<AgentPlan>) {
                 planSketch.updatePlan(items)
+                popup?.content?.updateUI()
             }
         })
     }

@@ -144,10 +144,8 @@ open class SketchToolWindow(
 
         if (showInput) {
             ApplicationManager.getApplication().invokeLater {
-                runInEdt {
-                    AutoDevCoroutineScope.scope(project).launch {
-                        setupListener()
-                    }
+                AutoDevCoroutineScope.workerScope(project).launch {
+                    setupListener()
                 }
             }
         }
@@ -163,17 +161,19 @@ open class SketchToolWindow(
         inputListener.setup()
         inputSection.addListener(inputListener)
 
-        contentPanel.add(panel {
-            row {
-                cell(progressBar).fullWidth()
-            }
-            row {
-                cell(thinkingPanel).fullWidth()
-            }
-            row {
-                cell(inputSection).fullWidth()
-            }
-        }, BorderLayout.SOUTH)
+        runInEdt {
+            contentPanel.add(panel {
+                row {
+                    cell(progressBar).fullWidth()
+                }
+                row {
+                    cell(thinkingPanel).fullWidth()
+                }
+                row {
+                    cell(inputSection).fullWidth()
+                }
+            }, BorderLayout.SOUTH)
+        }
 
         addProcessListener(object : SketchProcessListener {
             override fun onBefore() {
@@ -280,6 +280,8 @@ open class SketchToolWindow(
                     if (codeFence.originLanguage != null && codeFence.isComplete && blockViews[index] !is ExtensionLangSketch) {
                         langSketch = LanguageSketchProvider.provide(codeFence.originLanguage)
                             ?.create(project, codeFence.text)
+
+                        langSketch?.onComplete(codeFence.text)
                     }
 
                     val isCanHtml = codeFence.language.displayName.lowercase() == "markdown"
