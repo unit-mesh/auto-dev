@@ -6,6 +6,7 @@ import cc.unitmesh.devti.custom.schema.CUSTOM_PROMPTS_FILE_NAME
 import cc.unitmesh.devti.custom.schema.MCP_SERVERS_FILE_NAME
 import cc.unitmesh.devti.fullHeight
 import cc.unitmesh.devti.fullWidthCell
+import cc.unitmesh.devti.provider.local.JsonTextProvider
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.componentStateChanged
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.jBLabel
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.placeholder

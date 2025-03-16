@@ -2,6 +2,7 @@ package cc.unitmesh.devti.settings
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.schema.AUTODEV_CUSTOM_LLM_FILE
+import cc.unitmesh.devti.provider.local.JsonTextProvider
 import cc.unitmesh.devti.settings.locale.HUMAN_LANGUAGES
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.jBLabel
@@ -17,7 +18,6 @@ import com.intellij.util.ui.FormBuilder
 import javax.swing.JPanel
 
 class LLMSettingComponent(private val settings: AutoDevSettingsState) {
-    // 以下 LLMParam 变量不要改名，因为这些变量名会被用作配置文件的 key
     private val languageParam by LLMParam.creating({ LanguageChangedCallback.language = it }) {
         ComboBox(settings.language, HUMAN_LANGUAGES.entries.map { it.display })
     }
