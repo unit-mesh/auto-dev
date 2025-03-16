@@ -11,7 +11,7 @@ import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
 import org.intellij.markdown.parser.MarkdownParser
 
 /**
- * Markdown计划解析器，负责将markdown格式的计划文本解析为PlanItem对象列表
+ * Markdown计划解析器，负责将markdown格式的计划文本解析为结构化的执行计划
  *
  * 示例：
  *
@@ -26,286 +26,335 @@ import org.intellij.markdown.parser.MarkdownParser
  * ```
  */
 object MarkdownPlanParser {
-    private val LOG = logger<MarkdownPlanParser>()
-    private val ROOT_ELEMENT_TYPE = IElementType("ROOT")
-    private val CHECKMARK = "✓"
-    private val GITHUB_TODO_PATTERN = Regex("^\\s*-\\s*\\[\\s*([xX!*✓]?)\\s*\\]\\s*(.*)")
-    private val GITHUB_TODO_COMPLETED = listOf("x", "X", "✓")
-    private val GITHUB_TODO_FAILED = listOf("!")
-    private val GITHUB_TODO_IN_PROGRESS = listOf("*")
-    
-    // 提取为常量并添加注释，增强语义性
-    /** 匹配有序列表项的标题和状态标记，例如 "1. [x] 标题" 或 "1. 标题 [x]" */
-    private val SECTION_HEADER_PATTERN = Regex("^(\\d+)\\.\\s*(?:\\[([xX!*✓]?)\\]\\s*)?(.+?)(?:\\s*\\[([xX!*✓]?)\\])?$")
+    private val logger = logger<MarkdownPlanParser>()
+
+    // 文档解析相关
+    private val markdownRootType = IElementType("ROOT")
+    private val markdownFlavor = GFMFlavourDescriptor()
+
+    // 任务状态标记
+    private object TaskMarkers {
+        val CHECKMARK = "✓"
+        val COMPLETED = listOf("x", "X", "✓")
+        val FAILED = listOf("!")
+        val IN_PROGRESS = listOf("*")
+
+        fun determineStatus(marker: String): TaskStatus = when (marker) {
+            in COMPLETED -> TaskStatus.COMPLETED
+            in FAILED -> TaskStatus.FAILED
+            in IN_PROGRESS -> TaskStatus.IN_PROGRESS
+            else -> TaskStatus.TODO
+        }
+
+        fun isCompleted(marker: String): Boolean = marker in COMPLETED
+    }
+
+    // 领域特定的模式匹配器
+    private object PatternMatcher {
+        /** 匹配任务项，例如 "- [x] 任务描述" */
+        val TASK_PATTERN = Regex("^\\s*-\\s*\\[\\s*([xX!*✓]?)\\s*\\]\\s*(.*)")
+
+        /** 匹配计划章节，例如 "1. [x] 章节标题" 或 "1. 章节标题 [x]" */
+        val SECTION_PATTERN = Regex("^(\\d+)\\.\\s*(?:\\[([xX!*✓]?)\\]\\s*)?(.+?)(?:\\s*\\[([xX!*✓]?)\\])?$")
+
+        /** 提取无序列表项的内容，去掉前缀 */
+        val UNORDERED_ITEM_CLEANER = Regex("^[\\-\\*]\\s+")
+    }
 
     /**
-     * 解析markdown文本为计划项列表
+     * 解析markdown文本为结构化执行计划
      * @param content markdown格式的计划文本
-     * @return 解析得到的计划项列表，若解析失败则返回空列表
+     * @return 解析得到的执行计划列表
      */
-    fun parse(content: String): List<AgentPlan> {
+    fun interpretPlan(content: String): List<AgentPlan> {
         try {
-            val flavour = GFMFlavourDescriptor()
-            val parsedTree = MarkdownParser(flavour).parse(ROOT_ELEMENT_TYPE, content)
-            return parsePlanItems(parsedTree, content)
+            val documentTree = parseMarkdownDocument(content)
+            return extractPlanStructure(documentTree, content)
         } catch (e: Exception) {
-            LOG.warn("Failed to parse markdown plan content", e)
+            logger.warn("无法解析markdown计划内容", e)
             return emptyList()
         }
     }
 
-    private fun parsePlanItems(node: ASTNode, content: String): List<AgentPlan> {
-        val agentPlans = mutableListOf<AgentPlan>()
-        val topLevelOrderedLists = findTopLevelOrderedLists(node)
-        if (topLevelOrderedLists.isNotEmpty() && isFlatOrderedList(topLevelOrderedLists.first(), content)) {
-            processFlatOrderedList(topLevelOrderedLists.first(), content, agentPlans)
-        } else {
-            processSectionedList(node, content, agentPlans)
-        }
-
-        return agentPlans
+    /**
+     * 解析Markdown文档结构
+     */
+    private fun parseMarkdownDocument(content: String): ASTNode {
+        return MarkdownParser(markdownFlavor).parse(markdownRootType, content)
     }
 
-    private fun findTopLevelOrderedLists(node: ASTNode): List<ASTNode> {
-        val orderedLists = mutableListOf<ASTNode>()
+    /**
+     * 从文档结构中提取计划
+     */
+    private fun extractPlanStructure(documentNode: ASTNode, content: String): List<AgentPlan> {
+        val planSections = mutableListOf<AgentPlan>()
+        val topLevelSections = findTopLevelSections(documentNode)
 
-        node.children.forEach { child ->
-            if (child.type == MarkdownElementTypes.ORDERED_LIST) {
-                orderedLists.add(child)
+        if (topLevelSections.isNotEmpty()) {
+            if (isSimplePlanStructure(topLevelSections.first(), content)) {
+                interpretSimplePlanStructure(topLevelSections.first(), content, planSections)
+            } else {
+                interpretDetailedPlanStructure(documentNode, content, planSections)
             }
         }
 
-        return orderedLists
+        return planSections
     }
 
-    private fun processFlatOrderedList(node: ASTNode, content: String, agentPlans: MutableList<AgentPlan>) {
-        node.children.forEach { listItemNode ->
-            if (listItemNode.type == MarkdownElementTypes.LIST_ITEM) {
-                val listItemText = listItemNode.getTextInNode(content).toString().trim()
-                val titleMatch = "^(\\d+)\\.\\s*(.+?)(?:\\s*$CHECKMARK)?$".toRegex().find(listItemText)
-
-                if (titleMatch != null) {
-                    val title = titleMatch.groupValues[2].trim()
-                    val completed = listItemText.contains(CHECKMARK)
-                    agentPlans.add(AgentPlan(title, emptyList(), completed))
-                }
-            }
-        }
+    /**
+     * 查找文档中的顶级章节列表
+     */
+    private fun findTopLevelSections(documentNode: ASTNode): List<ASTNode> {
+        return documentNode.children.filter { it.type == MarkdownElementTypes.ORDERED_LIST }
     }
 
-    private fun processSectionedList(node: ASTNode, content: String, agentPlans: MutableList<AgentPlan>) {
-        var currentSectionTitle = ""
-        var currentSectionItems = mutableListOf<PlanTask>()
-        var currentSectionCompleted = false
-        var currentSectionStatus = TaskStatus.TODO
-
-        node.accept(object : RecursiveVisitor() {
-            override fun visitNode(node: ASTNode) {
-                when (node.type) {
-                    MarkdownElementTypes.ORDERED_LIST -> {
-                        node.children.forEach { listItemNode ->
-                            if (listItemNode.type == MarkdownElementTypes.LIST_ITEM) {
-                                // 处理计划项的标题行
-                                val sectionHeaderInfo = extractSectionHeaderInfo(listItemNode, content)
-                                
-                                if (sectionHeaderInfo != null) {
-                                    // 保存之前的计划章节（如果存在）
-                                    if (currentSectionTitle.isNotEmpty()) {
-                                        finalizeSectionAndAddToPlan(
-                                            agentPlans,
-                                            currentSectionTitle,
-                                            currentSectionItems,
-                                            currentSectionCompleted,
-                                            currentSectionStatus
-                                        )
-                                        currentSectionItems = mutableListOf()
-                                    }
-
-                                    // 设置当前章节的标题和状态
-                                    currentSectionTitle = sectionHeaderInfo.title
-                                    currentSectionCompleted = sectionHeaderInfo.completed
-                                    currentSectionStatus = sectionHeaderInfo.status
-
-                                    // 处理子任务列表
-                                    processNestedTaskLists(listItemNode, content, currentSectionItems)
-                                }
-                            }
-                        }
-                        // 跳过递归处理以避免重复
-                    }
-
-                    MarkdownElementTypes.UNORDERED_LIST -> {
-                        processTaskItems(node, content, currentSectionItems)
-                        // 跳过递归处理以避免重复
-                    }
-
-                    else -> {
-                        // 仅对其他节点类型继续递归
-                        super.visitNode(node)
-                    }
-                }
-            }
-        })
-
-        // 添加最后一个章节（如果有）
-        if (currentSectionTitle.isNotEmpty()) {
-            finalizeSectionAndAddToPlan(
-                agentPlans,
-                currentSectionTitle,
-                currentSectionItems,
-                currentSectionCompleted,
-                currentSectionStatus
-            )
+    /**
+     * 判断是否为简单计划结构（无子任务的简单列表）
+     */
+    private fun isSimplePlanStructure(sectionNode: ASTNode, content: String): Boolean {
+        return sectionNode.children.none { listItem ->
+            listItem.type == MarkdownElementTypes.LIST_ITEM &&
+                    listItem.children.any { it.type == MarkdownElementTypes.UNORDERED_LIST }
         }
     }
 
     /**
-     * 从列表项节点中提取章节标题和状态信息
-     * @return 包含标题、完成状态和任务状态的数据类，如果不匹配则返回null
+     * 解析简单计划结构（仅包含章节标题的列表）
      */
-    private fun extractSectionHeaderInfo(listItemNode: ASTNode, content: String): SectionHeaderInfo? {
-        val listItemFullText = listItemNode.getTextInNode(content).toString().trim()
-        val firstLineEnd = listItemFullText.indexOf('\n')
-        val headerLine = if (firstLineEnd > 0) {
-            listItemFullText.substring(0, firstLineEnd).trim()
-        } else {
-            listItemFullText
-        }
-
-        val headerMatch = SECTION_HEADER_PATTERN.find(headerLine)
-        
-        return headerMatch?.let {
-            // 提取不带状态标记的标题
-            val title = it.groupValues[3].trim()
-            
-            // 获取状态标记（可能在开头或结尾）
-            val startStatusMarker = it.groupValues[2]
-            val endStatusMarker = it.groupValues[4]
-            val statusMarker = if (startStatusMarker.isNotEmpty()) startStatusMarker else endStatusMarker
-            
-            val completed = statusMarker in GITHUB_TODO_COMPLETED
-            val status = determineTaskStatus(statusMarker)
-            
-            SectionHeaderInfo(title, completed, status)
-        }
-    }
-    
-    /**
-     * 根据状态标记确定任务状态
-     */
-    private fun determineTaskStatus(statusMarker: String): TaskStatus {
-        return when (statusMarker) {
-            in GITHUB_TODO_COMPLETED -> TaskStatus.COMPLETED
-            in GITHUB_TODO_FAILED -> TaskStatus.FAILED
-            in GITHUB_TODO_IN_PROGRESS -> TaskStatus.IN_PROGRESS
-            else -> TaskStatus.TODO
-        }
-    }
-    
-    /**
-     * 处理列表项中的嵌套任务列表
-     */
-    private fun processNestedTaskLists(listItemNode: ASTNode, content: String, tasks: MutableList<PlanTask>) {
-        listItemNode.children.forEach { childNode ->
-            if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
-                processTaskItems(childNode, content, tasks)
-            }
-        }
-    }
-    
-    /**
-     * 完成章节处理并添加到计划列表中
-     */
-    private fun finalizeSectionAndAddToPlan(
-        plans: MutableList<AgentPlan>,
-        title: String,
-        tasks: List<PlanTask>,
-        completed: Boolean,
-        status: TaskStatus
+    private fun interpretSimplePlanStructure(
+        sectionListNode: ASTNode,
+        content: String,
+        planSections: MutableList<AgentPlan>
     ) {
-        val plan = AgentPlan(title, tasks.toList(), completed, status)
-        plan.updateCompletionStatus()
-        plans.add(plan)
-    }
-
-    private fun isFlatOrderedList(node: ASTNode, content: String): Boolean {
-        var hasNestedLists = false
-
-        node.children.forEach { listItemNode ->
-            if (listItemNode.type == MarkdownElementTypes.LIST_ITEM) {
-                listItemNode.children.forEach { childNode ->
-                    if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
-                        hasNestedLists = true
-                    }
-                }
-            }
-        }
-
-        return !hasNestedLists
-    }
-
-    private fun processTaskItems(listNode: ASTNode, content: String, itemsList: MutableList<PlanTask>) {
-        listNode.children.forEach { taskItemNode ->
-            if (taskItemNode.type == MarkdownElementTypes.LIST_ITEM) {
-                val taskText = taskItemNode.getTextInNode(content).toString().trim()
-                // Extract just the first line for the task
-                val firstLineEnd = taskText.indexOf('\n')
-                val taskFirstLine = if (firstLineEnd > 0) {
-                    taskText.substring(0, firstLineEnd).trim()
-                } else {
-                    taskText
-                }
-
-                // Check for GitHub style TODO
-                val githubTodoMatch = GITHUB_TODO_PATTERN.find(taskFirstLine)
-                if (githubTodoMatch != null) {
-                    // Extract the task text and preserve the checkbox status
-                    val checkState = githubTodoMatch.groupValues[1]
-                    val todoText = githubTodoMatch.groupValues[2].trim()
-
-                    // Determine task status based on marker
-                    val task = when (checkState) {
-                        in GITHUB_TODO_COMPLETED -> PlanTask(todoText, true, TaskStatus.COMPLETED)
-                        in GITHUB_TODO_FAILED -> PlanTask(todoText, false, TaskStatus.FAILED)
-                        in GITHUB_TODO_IN_PROGRESS -> PlanTask(todoText, false, TaskStatus.IN_PROGRESS)
-                        else -> PlanTask(todoText, false, TaskStatus.TODO)
-                    }
-
-                    itemsList.add(task)
-
-                    // Process nested tasks if any
-                    taskItemNode.children.forEach { childNode ->
-                        if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
-                            val nestedTasks = mutableListOf<PlanTask>()
-                            processTaskItems(childNode, content, nestedTasks)
-                            itemsList.addAll(nestedTasks)
-                        }
-                    }
-                } else {
-                    val cleanTaskText = taskFirstLine.replace(Regex("^[\\-\\*]\\s+"), "").trim()
-                    if (cleanTaskText.isNotEmpty()) {
-                        itemsList.add(PlanTask(cleanTaskText, false, TaskStatus.TODO))
-                        // Process nested tasks if any
-                        taskItemNode.children.forEach { childNode ->
-                            if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
-                                val nestedTasks = mutableListOf<PlanTask>()
-                                processTaskItems(childNode, content, nestedTasks)
-                                // Add nested tasks to the list
-                                itemsList.addAll(nestedTasks)
-                            }
-                        }
-                    }
+        val sectionVisitor = PlanSectionVisitor(content)
+        sectionListNode.children.forEach { item ->
+            if (item.type == MarkdownElementTypes.LIST_ITEM) {
+                val sectionInfo = sectionVisitor.extractBasicSectionInfo(item)
+                if (sectionInfo != null) {
+                    planSections.add(AgentPlan(sectionInfo.title, emptyList(), sectionInfo.completed))
                 }
             }
         }
     }
 
     /**
-     * 用于存储章节标题和状态信息的数据类
+     * 解析详细计划结构（包含子任务的复杂结构）
      */
-    private data class SectionHeaderInfo(
+    private fun interpretDetailedPlanStructure(
+        documentNode: ASTNode,
+        content: String,
+        planSections: MutableList<AgentPlan>
+    ) {
+        val planStructureInterpreter = DetailedPlanStructureInterpreter(content)
+        planStructureInterpreter.interpretDocument(documentNode, planSections)
+    }
+
+    /**
+     * 访问者类，用于解析计划章节信息
+     */
+    private class PlanSectionVisitor(private val documentContent: String) {
+        /**
+         * 提取基础章节信息（无任务）
+         */
+        fun extractBasicSectionInfo(sectionNode: ASTNode): BasicSectionInfo? {
+            val sectionText = sectionNode.getTextInNode(documentContent).toString().trim()
+            val titleMatch = "^(\\d+)\\.\\s*(.+?)(?:\\s*${TaskMarkers.CHECKMARK})?$".toRegex().find(sectionText)
+
+            return titleMatch?.let {
+                val title = it.groupValues[2].trim()
+                val completed = sectionText.contains(TaskMarkers.CHECKMARK)
+                BasicSectionInfo(title, completed)
+            }
+        }
+
+        /**
+         * 从列表项节点中提取完整章节信息
+         */
+        fun extractDetailedSectionInfo(listItemNode: ASTNode): DetailedSectionInfo? {
+            val fullText = listItemNode.getTextInNode(documentContent).toString().trim()
+            val firstLineEnd = fullText.indexOf('\n')
+            val headerLine = if (firstLineEnd > 0) fullText.substring(0, firstLineEnd).trim() else fullText
+
+            val headerMatch = PatternMatcher.SECTION_PATTERN.find(headerLine) ?: return null
+
+            // 提取章节标题和状态
+            val title = headerMatch.groupValues[3].trim()
+
+            // 获取状态标记（可能在开头或结尾）
+            val startMarker = headerMatch.groupValues[2]
+            val endMarker = headerMatch.groupValues[4]
+            val statusMarker = if (startMarker.isNotEmpty()) startMarker else endMarker
+
+            val completed = TaskMarkers.isCompleted(statusMarker)
+            val status = TaskMarkers.determineStatus(statusMarker)
+
+            return DetailedSectionInfo(title, completed, status)
+        }
+    }
+
+    /**
+     * 详细计划结构解析器
+     */
+    private class DetailedPlanStructureInterpreter(private val documentContent: String) {
+        private val sectionVisitor = PlanSectionVisitor(documentContent)
+        private val taskExtractor = TaskExtractor(documentContent)
+
+        // 当前正在处理的章节信息
+        private var currentSection: MutableSectionContext? = null
+
+        /**
+         * 解析整个文档结构，提取计划章节
+         */
+        fun interpretDocument(documentNode: ASTNode, planSections: MutableList<AgentPlan>) {
+            documentNode.accept(object : RecursiveVisitor() {
+                override fun visitNode(node: ASTNode) {
+                    when (node.type) {
+                        MarkdownElementTypes.ORDERED_LIST -> {
+                            processOrderedList(node, planSections)
+                            // 跳过递归以避免重复处理
+                        }
+
+                        MarkdownElementTypes.UNORDERED_LIST -> {
+                            processUnorderedList(node)
+                            // 跳过递归以避免重复处理
+                        }
+
+                        else -> super.visitNode(node)
+                    }
+                }
+            })
+
+            // 处理最后一个章节（如果存在）
+            finalizeCurrentSection(planSections)
+        }
+
+        /**
+         * 处理有序列表（章节列表）
+         */
+        private fun processOrderedList(listNode: ASTNode, planSections: MutableList<AgentPlan>) {
+            listNode.children.forEach { item ->
+                if (item.type == MarkdownElementTypes.LIST_ITEM) {
+                    val sectionInfo = sectionVisitor.extractDetailedSectionInfo(item)
+
+                    if (sectionInfo != null) {
+                        // 完成前一章节的处理
+                        finalizeCurrentSection(planSections)
+
+                        // 创建新的章节上下文
+                        currentSection = MutableSectionContext(
+                            title = sectionInfo.title,
+                            completed = sectionInfo.completed,
+                            status = sectionInfo.status
+                        )
+
+                        // 处理子任务列表
+                        item.children.forEach { childNode ->
+                            if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
+                                processUnorderedList(childNode)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * 处理无序列表（任务列表）
+         */
+        private fun processUnorderedList(listNode: ASTNode) {
+            currentSection?.let { section ->
+                taskExtractor.extractTasks(listNode, section.tasks)
+            }
+        }
+
+        /**
+         * 完成当前章节处理并添加到计划列表
+         */
+        private fun finalizeCurrentSection(planSections: MutableList<AgentPlan>) {
+            currentSection?.let { section ->
+                val plan = AgentPlan(
+                    section.title,
+                    section.tasks,
+                    section.completed,
+                    section.status
+                )
+                plan.updateCompletionStatus()
+                planSections.add(plan)
+                currentSection = null
+            }
+        }
+    }
+
+    /**
+     * 任务提取器
+     */
+    private class TaskExtractor(private val documentContent: String) {
+        /**
+         * 从无序列表中提取任务项
+         */
+        fun extractTasks(listNode: ASTNode, taskList: MutableList<PlanTask>) {
+            listNode.children.forEach { item ->
+                if (item.type != MarkdownElementTypes.LIST_ITEM) return@forEach
+
+                val taskText = item.getTextInNode(documentContent).toString().trim()
+                val firstLineEnd = taskText.indexOf('\n')
+                val taskLine = if (firstLineEnd > 0) taskText.substring(0, firstLineEnd).trim() else taskText
+
+                // 尝试匹配GitHub风格的任务项
+                val taskMatch = PatternMatcher.TASK_PATTERN.find(taskLine)
+
+                if (taskMatch != null) {
+                    // 提取任务描述和状态
+                    val statusMarker = taskMatch.groupValues[1]
+                    val description = taskMatch.groupValues[2].trim()
+
+                    // 创建任务对象
+                    val task = PlanTask(
+                        description,
+                        TaskMarkers.isCompleted(statusMarker),
+                        TaskMarkers.determineStatus(statusMarker)
+                    )
+
+                    taskList.add(task)
+                } else {
+                    // 处理普通列表项作为任务
+                    val cleanDescription = taskLine.replace(PatternMatcher.UNORDERED_ITEM_CLEANER, "").trim()
+                    if (cleanDescription.isNotEmpty()) {
+                        taskList.add(PlanTask(cleanDescription, false, TaskStatus.TODO))
+                    }
+                }
+
+                // 处理嵌套任务
+                item.children.forEach { childNode ->
+                    if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
+                        extractTasks(childNode, taskList)
+                    }
+                }
+            }
+        }
+    }
+
+    // 领域模型 - 表示章节上下文的可变数据结构
+    private data class MutableSectionContext(
+        val title: String,
+        var completed: Boolean,
+        var status: TaskStatus,
+        val tasks: MutableList<PlanTask> = mutableListOf()
+    )
+
+    // 领域模型 - 基本章节信息
+    private data class BasicSectionInfo(
+        val title: String,
+        val completed: Boolean
+    )
+
+    // 领域模型 - 详细章节信息
+    private data class DetailedSectionInfo(
         val title: String,
         val completed: Boolean,
         val status: TaskStatus
     )
+
+    // 为保持向后兼容性，提供parse方法的别名
+    fun parse(content: String): List<AgentPlan> = interpretPlan(content)
 }
