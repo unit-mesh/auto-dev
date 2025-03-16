@@ -54,7 +54,7 @@ enum class BuiltinCommand(
         AllIcons.Vcs.Patch_file,
         false
     ),
-    RUN("run", "Run the IDE's built-in command, like build tool, test.", AllIcons.Actions.Execute, true, true),
+    RUN("run", "Run the IDE's built-in command, like build tool, test.", AllIcons.Actions.Execute, true, true, enableInSketch = false),
     SHELL(
         "shell",
         "Execute a shell command and collect (ProcessBuild) the result",
