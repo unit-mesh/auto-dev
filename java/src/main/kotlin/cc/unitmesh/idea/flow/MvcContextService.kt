@@ -1,8 +1,6 @@
 package cc.unitmesh.idea.flow
 
-import cc.unitmesh.devti.context.model.DtClass
-import cc.unitmesh.idea.formatPsi
-import cc.unitmesh.idea.fromJavaFile
+import cc.unitmesh.idea.context.JavaClassContextBuilder
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.JavaPsiFacade
@@ -64,19 +62,17 @@ class MvcContextService(private val project: Project) {
     }
 
     fun controllerPrompt(psiFile: PsiFile?): String {
-        val file = psiFile as? PsiJavaFileImpl
+        val file = psiFile as? PsiJavaFileImpl ?: return ""
         val context = prepareControllerContext(file)
         val services = context?.services?.distinctBy { it.qualifiedName }
         val models = context?.models?.distinctBy { it.qualifiedName }
 
         val relevantModel = (services ?: emptyList()) + (models ?: emptyList())
 
-        val clazz = fromJavaFile(file)
-
         val classList = relevantModel.map {
-            DtClass.Companion.formatPsi(it, clazz.packageName ?: "")
+            JavaClassContextBuilder().getClassContext(file, false)?.format() ?: return@map ""
         }
 
-        return "\n${classList.joinToString("\n")}\n//current path: ${clazz.path}\n"
+        return "\n${classList.joinToString("\n")}\n//current path: ${file.virtualFile.path}\n"
     }
 }

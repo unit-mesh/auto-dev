@@ -2,8 +2,6 @@ package cc.unitmesh.devti.language.run
 
 import cc.unitmesh.devti.language.DevInBundle
 import cc.unitmesh.devti.language.DevInIcons
-import cc.unitmesh.devti.runconfig.config.readString
-import cc.unitmesh.devti.runconfig.config.writeString
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.*
 import com.intellij.execution.runners.ExecutionEnvironment
@@ -53,3 +51,15 @@ class DevInsConfiguration(project: Project, factory: ConfigurationFactory, name:
 
     var showConsole: Boolean = true
 }
+
+fun Element.writeString(name: String, value: String) {
+    val opt = Element("option")
+    opt.setAttribute("name", name)
+    opt.setAttribute("value", value)
+    addContent(opt)
+}
+
+fun Element.readString(name: String): String? =
+    children
+        .find { it.name == "option" && it.getAttributeValue("name") == name }
+        ?.getAttributeValue("value")

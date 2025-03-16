@@ -144,3 +144,7 @@ abstract class ContextPrompter : LazyExtensionInstance<ContextPrompter>() {
     }
 }
 
+class TextContextPrompter(val prompt: String) : ContextPrompter() {
+    override fun displayPrompt(): String = prompt
+    override fun requestPrompt(): String = prompt
+}
