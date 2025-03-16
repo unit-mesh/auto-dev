@@ -1,7 +1,6 @@
 package cc.unitmesh.devti.flow.kanban.impl
 
 import cc.unitmesh.devti.flow.kanban.Kanban
-import cc.unitmesh.devti.flow.model.SimpleProjectInfo
 import cc.unitmesh.devti.flow.model.SimpleStory
 import org.kohsuke.github.GitHub
 import org.kohsuke.github.GitHubBuilder
@@ -29,13 +28,6 @@ class GitHubIssue(var repoUrl: String, val token: String) : Kanban {
         return url
     }
 
-    override fun getProjectInfo(): SimpleProjectInfo {
-        val repo = gitHub.getRepository(repoUrl)
-        return SimpleProjectInfo(repo.fullName, repo.name, repo.description ?: "")
-    }
-
-    override fun getStories(): List<SimpleStory> = listOf()
-
     override fun getStoryById(storyId: String): SimpleStory {
         val issue = gitHub.getRepository(repoUrl).getIssue(Integer.parseInt(storyId))
         if (issue.comments.size == 0) {
@@ -50,11 +42,5 @@ class GitHubIssue(var repoUrl: String, val token: String) : Kanban {
         }
 
         return SimpleStory(issue.number.toString(), issue.title, issue.body)
-    }
-
-    override fun updateStoryDetail(simpleStory: SimpleStory) {
-        // add comments to issues
-        val issue = gitHub.getRepository(repoUrl).getIssue(Integer.parseInt(simpleStory.id))
-        issue.comment(simpleStory.description)
     }
 }

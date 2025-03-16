@@ -253,11 +253,6 @@ class DevInsCompiler(
             RunInsCommand(myProject, prop)
         }
 
-        BuiltinCommand.FILE_FUNC -> {
-            result.isLocalCommand = true
-            FileFuncInsCommand(myProject, prop)
-        }
-
         BuiltinCommand.SHELL -> {
             result.isLocalCommand = true
             val shireCode: String? = lookupNextCode(used)?.codeText()

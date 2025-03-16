@@ -45,11 +45,6 @@ class DevInCompletionContributor : CompletionContributor() {
         )
         extend(
             CompletionType.BASIC,
-            valuePattern(BuiltinCommand.FILE_FUNC.commandName),
-            FileFunctionProvider()
-        )
-        extend(
-            CompletionType.BASIC,
             valuePattern(BuiltinCommand.REFACTOR.commandName),
             RefactoringFuncProvider()
         )

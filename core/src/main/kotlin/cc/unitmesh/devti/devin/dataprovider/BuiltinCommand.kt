@@ -63,14 +63,6 @@ enum class BuiltinCommand(
         true
     ),
     COMMIT("commit", "Do commit with current workspace with some messages.", AllIcons.Vcs.CommitNode, false),
-    FILE_FUNC(
-        "file-func",
-        "Read the name of a file, support for: " + FileFunc.values().joinToString(",") { it.funcName },
-        AllIcons.Actions.GroupByFile,
-        true,
-        true,
-        enableInSketch = false,
-    ),
     BROWSE("browse", "Fetch the content of a given URL.", AllIcons.Toolwindows.WebToolWindow, false, true),
     REFACTOR(
         "refactor",
