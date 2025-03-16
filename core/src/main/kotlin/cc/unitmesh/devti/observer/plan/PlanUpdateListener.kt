@@ -1,11 +1,11 @@
-package cc.unitmesh.devti.observer.agent
+package cc.unitmesh.devti.observer.plan
 
 import com.intellij.util.messages.Topic
 import java.util.*
 
 @FunctionalInterface
 interface PlanUpdateListener: EventListener {
-    fun onPlanUpdate(items: MutableList<PlanList>)
+    fun onPlanUpdate(items: MutableList<AgentPlan>)
 
     companion object {
         @Topic.AppLevel

@@ -2,6 +2,7 @@ package cc.unitmesh.devti.observer.agent
 
 import cc.unitmesh.devti.agent.tool.AgentTool
 import cc.unitmesh.devti.llms.custom.Message
+import cc.unitmesh.devti.observer.plan.AgentPlan
 import com.intellij.openapi.vcs.changes.Change
 import java.util.UUID
 
@@ -24,6 +25,6 @@ data class AgentState(
      */
     var environment: Map<String, String> = emptyMap(),
 
-    var planLists: MutableList<PlanList> = mutableListOf()
+    var plan: MutableList<AgentPlan> = mutableListOf()
 )
 

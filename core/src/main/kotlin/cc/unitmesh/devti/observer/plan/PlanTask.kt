@@ -1,16 +1,16 @@
-package cc.unitmesh.devti.observer.agent
+package cc.unitmesh.devti.observer.plan
 
 import kotlinx.serialization.Serializable
 
 /**
  * 计划任务，描述了一个具体任务的细节和状态
- * @property description 任务描述
+ * @property step 任务描述
  * @property completed 任务是否已完成
  * @property status 任务状态（COMPLETED, FAILED, IN_PROGRESS, TODO）
  */
 @Serializable
 class PlanTask(
-    val description: String,
+    val step: String,
     var completed: Boolean = false,
     var status: TaskStatus = TaskStatus.TODO
 ) {
@@ -59,7 +59,7 @@ class PlanTask(
             TaskStatus.IN_PROGRESS -> "[*]"
             TaskStatus.TODO -> "[ ]"
         }
-        return "$statusMarker $description"
+        return "$statusMarker $step"
     }
     
     /**

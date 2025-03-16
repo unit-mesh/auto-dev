@@ -4,9 +4,9 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.observer.agent.AgentStateService
-import cc.unitmesh.devti.observer.agent.PlanList
-import cc.unitmesh.devti.observer.agent.PlanTask
-import cc.unitmesh.devti.observer.agent.TaskStatus
+import cc.unitmesh.devti.observer.plan.AgentPlan
+import cc.unitmesh.devti.observer.plan.PlanTask
+import cc.unitmesh.devti.observer.plan.TaskStatus
 import cc.unitmesh.devti.observer.plan.PlanBoard
 import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
 import cc.unitmesh.devti.sketch.ui.plan.MarkdownPlanParser
@@ -47,7 +47,7 @@ class ThoughtPlanSketchProvider : LanguageSketchProvider {
 class PlanSketch(
     private val project: Project,
     private var content: String,
-    private val planLists: MutableList<PlanList>,
+    private val agentPlans: MutableList<AgentPlan>,
     private val isInPopup: Boolean = false
 ) : JBPanel<PlanSketch>(BorderLayout()), ExtensionLangSketch {
     private val panel = JBPanel<PlanSketch>(BorderLayout())
@@ -91,7 +91,7 @@ class PlanSketch(
             override fun displayTextInToolbar(): Boolean = true
 
             override fun actionPerformed(e: AnActionEvent) {
-                project.getService(AgentStateService::class.java).updatePlan(planLists)
+                project.getService(AgentStateService::class.java).updatePlan(agentPlans)
                 project.getService(PlanBoard::class.java).updateShow()
             }
         }
@@ -101,7 +101,7 @@ class PlanSketch(
 
 
     private fun createPlanUI() {
-        planLists.forEachIndexed { index, planItem ->
+        agentPlans.forEachIndexed { index, planItem ->
             val titlePanel = JBPanel<JBPanel<*>>(FlowLayout(FlowLayout.LEFT)).apply {
                 border = JBUI.Borders.empty()
             }
@@ -128,7 +128,7 @@ class PlanSketch(
             titlePanel.add(sectionLabel)
             contentPanel.add(titlePanel)
 
-            planItem.planTasks.forEachIndexed { taskIndex, task ->
+            planItem.tasks.forEachIndexed { taskIndex, task ->
                 val taskPanel = JBPanel<JBPanel<*>>(FlowLayout(FlowLayout.LEFT)).apply {
                     border = JBUI.Borders.empty()
                 }
@@ -152,7 +152,7 @@ class PlanSketch(
                             }
                             
                             // Update section status when task status changes
-                            val currentSection = planLists.find { it.planTasks.contains(task) }
+                            val currentSection = agentPlans.find { it.tasks.contains(task) }
                             currentSection?.let { updateSectionCompletionStatus(it) }
                             
                             updateTaskLabel(taskLabel, task)
@@ -175,7 +175,7 @@ class PlanSketch(
 
                         addActionListener {
                             AutoDevToolWindowFactory.sendToSketchToolWindow(project, ChatActionType.SKETCH) { ui, _ ->
-                                ui.sendInput(AutoDevBundle.message("sketch.plan.finish.task") + task.description)
+                                ui.sendInput(AutoDevBundle.message("sketch.plan.finish.task") + task.step)
                             }
                         }
                     }
@@ -197,7 +197,7 @@ class PlanSketch(
                     updateTaskLabel(taskLabel, task)
                     
                     // Update section status after changing task status
-                    val currentSection = planLists.find { it.planTasks.contains(task) }
+                    val currentSection = agentPlans.find { it.tasks.contains(task) }
                     currentSection?.let { updateSectionCompletionStatus(it) }
                     
                     contentPanel.revalidate()
@@ -208,7 +208,7 @@ class PlanSketch(
                     task.updateStatus(TaskStatus.IN_PROGRESS)
                     updateTaskLabel(taskLabel, task)
                     
-                    val currentSection = planLists.find { it.planTasks.contains(task) }
+                    val currentSection = agentPlans.find { it.tasks.contains(task) }
                     currentSection?.let { updateSectionCompletionStatus(it) }
                     
                     contentPanel.revalidate()
@@ -219,7 +219,7 @@ class PlanSketch(
                     task.updateStatus(TaskStatus.FAILED)
                     updateTaskLabel(taskLabel, task)
                     
-                    val currentSection = planLists.find { it.planTasks.contains(task) }
+                    val currentSection = agentPlans.find { it.tasks.contains(task) }
                     currentSection?.let { updateSectionCompletionStatus(it) }
                     
                     contentPanel.revalidate()
@@ -230,7 +230,7 @@ class PlanSketch(
                     task.updateStatus(TaskStatus.TODO)
                     updateTaskLabel(taskLabel, task)
                     
-                    val currentSection = planLists.find { it.planTasks.contains(task) }
+                    val currentSection = agentPlans.find { it.tasks.contains(task) }
                     currentSection?.let { updateSectionCompletionStatus(it) }
                     
                     contentPanel.revalidate()
@@ -247,7 +247,7 @@ class PlanSketch(
                 contentPanel.add(taskPanel)
             }
 
-            if (index < planLists.size - 1) {
+            if (index < agentPlans.size - 1) {
                 contentPanel.add(Box.createVerticalStrut(8))
             }
         }
@@ -256,10 +256,10 @@ class PlanSketch(
     // Helper method to create a styled task label based on status
     private fun createStyledTaskLabel(task: PlanTask): JLabel {
         val labelText = when (task.status) {
-            TaskStatus.COMPLETED -> "<html><strike>${task.description}</strike></html>"
-            TaskStatus.FAILED -> "<html><span style='color:red'>${task.description}</span></html>"
-            TaskStatus.IN_PROGRESS -> "<html><span style='color:blue;font-style:italic'>${task.description}</span></html>"
-            TaskStatus.TODO -> task.description
+            TaskStatus.COMPLETED -> "<html><strike>${task.step}</strike></html>"
+            TaskStatus.FAILED -> "<html><span style='color:red'>${task.step}</span></html>"
+            TaskStatus.IN_PROGRESS -> "<html><span style='color:blue;font-style:italic'>${task.step}</span></html>"
+            TaskStatus.TODO -> task.step
         }
         
         return JLabel(labelText).apply {
@@ -270,15 +270,15 @@ class PlanSketch(
     // Helper method to update the task label based on current status
     private fun updateTaskLabel(label: JLabel, task: PlanTask) {
         label.text = when (task.status) {
-            TaskStatus.COMPLETED -> "<html><strike>${task.description}</strike></html>"
-            TaskStatus.FAILED -> "<html><span style='color:red'>${task.description}</span></html>"
-            TaskStatus.IN_PROGRESS -> "<html><span style='color:blue;font-style:italic'>${task.description}</span></html>"
-            TaskStatus.TODO -> task.description
+            TaskStatus.COMPLETED -> "<html><strike>${task.step}</strike></html>"
+            TaskStatus.FAILED -> "<html><span style='color:red'>${task.step}</span></html>"
+            TaskStatus.IN_PROGRESS -> "<html><span style='color:blue;font-style:italic'>${task.step}</span></html>"
+            TaskStatus.TODO -> task.step
         }
     }
 
     // Helper method to update section completion status based on tasks
-    private fun updateSectionCompletionStatus(planItem: PlanList) {
+    private fun updateSectionCompletionStatus(planItem: AgentPlan) {
         // Use the new method instead of reflection
         planItem.updateCompletionStatus()
         
@@ -300,26 +300,26 @@ class PlanSketch(
         updatePlan(MarkdownPlanParser.parse(text))
     }
 
-    fun updatePlan(newPlanItems: List<PlanList>) {
+    fun updatePlan(newPlanItems: List<AgentPlan>) {
         if (newPlanItems.isNotEmpty()) {
             // Save current states of all tasks
             val taskStateMap = mutableMapOf<String, Pair<Boolean, TaskStatus>>()
 
-            planLists.forEach { planItem ->
-                planItem.planTasks.forEach { task ->
-                    taskStateMap[task.description] = Pair(task.completed, task.status)
+            agentPlans.forEach { planItem ->
+                planItem.tasks.forEach { task ->
+                    taskStateMap[task.step] = Pair(task.completed, task.status)
                 }
             }
 
             contentPanel.removeAll()
-            planLists.clear()
+            agentPlans.clear()
 
             newPlanItems.forEach { newItem ->
-                planLists.add(newItem)
+                agentPlans.add(newItem)
 
-                newItem.planTasks.forEach { task ->
+                newItem.tasks.forEach { task ->
                     // Restore saved states if available
-                    taskStateMap[task.description]?.let { (completed, status) ->
+                    taskStateMap[task.step]?.let { (completed, status) ->
                         task.completed = completed
                         task.status = status
                     }
@@ -338,7 +338,7 @@ class PlanSketch(
     override fun onDoneStream(allText: String) {
         if (!isInPopup) {
             updatePlan(this.content)
-            project.getService(AgentStateService::class.java).updatePlan(planLists)
+            project.getService(AgentStateService::class.java).updatePlan(agentPlans)
         }
     }
 

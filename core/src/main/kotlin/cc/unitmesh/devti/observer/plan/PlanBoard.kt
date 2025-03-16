@@ -1,8 +1,6 @@
 package cc.unitmesh.devti.observer.plan
 
 import cc.unitmesh.devti.observer.agent.AgentStateService
-import cc.unitmesh.devti.observer.agent.PlanList
-import cc.unitmesh.devti.observer.agent.PlanUpdateListener
 import cc.unitmesh.devti.sketch.ui.PlanSketch
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
@@ -23,7 +21,7 @@ class PlanBoard(private val project: Project) : Disposable {
     init {
         createPopup()
         connection.subscribe(PlanUpdateListener.TOPIC, object : PlanUpdateListener {
-            override fun onPlanUpdate(items: MutableList<PlanList>) {
+            override fun onPlanUpdate(items: MutableList<AgentPlan>) {
                 planSketch.updatePlan(items)
             }
         })

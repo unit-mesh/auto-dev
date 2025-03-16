@@ -1,8 +1,8 @@
 package cc.unitmesh.devti.sketch.ui.plan
 
-import cc.unitmesh.devti.observer.agent.PlanList
-import cc.unitmesh.devti.observer.agent.PlanTask
-import cc.unitmesh.devti.observer.agent.TaskStatus
+import cc.unitmesh.devti.observer.plan.AgentPlan
+import cc.unitmesh.devti.observer.plan.PlanTask
+import cc.unitmesh.devti.observer.plan.TaskStatus
 import com.intellij.openapi.diagnostic.logger
 import org.intellij.markdown.IElementType
 import org.intellij.markdown.MarkdownElementTypes
@@ -42,7 +42,7 @@ object MarkdownPlanParser {
      * @param content markdown格式的计划文本
      * @return 解析得到的计划项列表，若解析失败则返回空列表
      */
-    fun parse(content: String): List<PlanList> {
+    fun parse(content: String): List<AgentPlan> {
         try {
             val flavour = GFMFlavourDescriptor()
             val parsedTree = MarkdownParser(flavour).parse(ROOT_ELEMENT_TYPE, content)
@@ -53,16 +53,16 @@ object MarkdownPlanParser {
         }
     }
 
-    private fun parsePlanItems(node: ASTNode, content: String): List<PlanList> {
-        val planLists = mutableListOf<PlanList>()
+    private fun parsePlanItems(node: ASTNode, content: String): List<AgentPlan> {
+        val agentPlans = mutableListOf<AgentPlan>()
         val topLevelOrderedLists = findTopLevelOrderedLists(node)
         if (topLevelOrderedLists.isNotEmpty() && isFlatOrderedList(topLevelOrderedLists.first(), content)) {
-            processFlatOrderedList(topLevelOrderedLists.first(), content, planLists)
+            processFlatOrderedList(topLevelOrderedLists.first(), content, agentPlans)
         } else {
-            processSectionedList(node, content, planLists)
+            processSectionedList(node, content, agentPlans)
         }
         
-        return planLists
+        return agentPlans
     }
     
     private fun findTopLevelOrderedLists(node: ASTNode): List<ASTNode> {
@@ -77,7 +77,7 @@ object MarkdownPlanParser {
         return orderedLists
     }
 
-    private fun processFlatOrderedList(node: ASTNode, content: String, planLists: MutableList<PlanList>) {
+    private fun processFlatOrderedList(node: ASTNode, content: String, agentPlans: MutableList<AgentPlan>) {
         node.children.forEach { listItemNode ->
             if (listItemNode.type == MarkdownElementTypes.LIST_ITEM) {
                 val listItemText = listItemNode.getTextInNode(content).toString().trim()
@@ -86,13 +86,13 @@ object MarkdownPlanParser {
                 if (titleMatch != null) {
                     val title = titleMatch.groupValues[2].trim()
                     val completed = listItemText.contains(CHECKMARK)
-                    planLists.add(PlanList(title, emptyList(), completed))
+                    agentPlans.add(AgentPlan(title, emptyList(), completed))
                 }
             }
         }
     }
 
-    private fun processSectionedList(node: ASTNode, content: String, planLists: MutableList<PlanList>) {
+    private fun processSectionedList(node: ASTNode, content: String, agentPlans: MutableList<AgentPlan>) {
         var currentSectionTitle = ""
         var currentSectionItems = mutableListOf<PlanTask>()
         var currentSectionCompleted = false
@@ -120,7 +120,7 @@ object MarkdownPlanParser {
                                     // Save previous section if exists
                                     if (currentSectionTitle.isNotEmpty()) {
                                         // Create new PlanList with stored data
-                                        val newPlanList = PlanList(
+                                        val newAgentPlan = AgentPlan(
                                             currentSectionTitle,
                                             currentSectionItems.toList(),
                                             currentSectionCompleted,
@@ -128,9 +128,9 @@ object MarkdownPlanParser {
                                         )
                                         
                                         // Update section completion status based on tasks
-                                        newPlanList.updateCompletionStatus()
+                                        newAgentPlan.updateCompletionStatus()
                                         
-                                        planLists.add(newPlanList)
+                                        agentPlans.add(newAgentPlan)
                                         currentSectionItems = mutableListOf()
                                     }
 
@@ -175,7 +175,7 @@ object MarkdownPlanParser {
         // 添加最后一个章节（如果有）
         if (currentSectionTitle.isNotEmpty()) {
             // Create new PlanList with stored data
-            val newPlanList = PlanList(
+            val newAgentPlan = AgentPlan(
                 currentSectionTitle,
                 currentSectionItems.toList(),
                 currentSectionCompleted,
@@ -183,9 +183,9 @@ object MarkdownPlanParser {
             )
             
             // Update section completion status based on tasks
-            newPlanList.updateCompletionStatus()
+            newAgentPlan.updateCompletionStatus()
             
-            planLists.add(newPlanList)
+            agentPlans.add(newAgentPlan)
         }
     }
 
