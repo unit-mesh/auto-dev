@@ -119,11 +119,13 @@ class PlanSketch(
                     border = JBUI.Borders.empty()
                 }
 
-                val checkbox = JBCheckBox(task.description).apply {
+                val checkbox = JBCheckBox().apply {
                     isSelected = task.completed
                     addActionListener {
                         task.completed = isSelected
                     }
+                    isBorderPainted = false
+                    isContentAreaFilled = false
                 }
 
                 taskPanel.add(checkbox)
@@ -131,7 +133,7 @@ class PlanSketch(
                 if (!task.completed) {
                     val executeButton = JButton(AllIcons.Actions.Execute).apply {
                         border = BorderFactory.createEmptyBorder()
-                        preferredSize = Dimension(32, 32)
+                        preferredSize = Dimension(24, 24)
                         toolTipText = "Execute"
 
                         addActionListener {
@@ -143,6 +145,22 @@ class PlanSketch(
 
                     taskPanel.add(executeButton)
                 }
+
+                val taskLabel = JLabel(if (task.completed) 
+                    "<html><strike>${task.description}</strike></html>" 
+                    else task.description
+                ).apply {
+                    border = JBUI.Borders.emptyLeft(5)
+                }
+                
+                checkbox.addActionListener {
+                    taskLabel.text = if (checkbox.isSelected)
+                        "<html><strike>${task.description}</strike></html>"
+                    else
+                        task.description
+                }
+                
+                taskPanel.add(taskLabel)
 
                 contentPanel.add(taskPanel)
             }
