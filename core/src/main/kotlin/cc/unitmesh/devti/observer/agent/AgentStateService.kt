@@ -14,10 +14,6 @@ import com.intellij.openapi.vcs.changes.Change
 class AgentStateService {
     var state: AgentState = AgentState()
 
-    fun resetState() {
-        state = AgentState()
-    }
-
     fun addTools(tools: List<BuiltinCommand>) {
         state.usedTools = tools.map {
             AgentTool(it.commandName, it.description, "")
@@ -60,6 +56,13 @@ class AgentStateService {
         ApplicationManager.getApplication().messageBus
             .syncPublisher(PlanUpdateListener.TOPIC)
             .onPlanUpdate(items)
+    }
+
+    fun resetState() {
+        state = AgentState()
+        ApplicationManager.getApplication().messageBus
+            .syncPublisher(PlanUpdateListener.TOPIC)
+            .onPlanUpdate(mutableListOf())
     }
 
     fun getPlan(): MutableList<AgentPlan> {

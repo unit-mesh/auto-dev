@@ -36,6 +36,8 @@ say 'I will edit your file'.
 5. Before calling each tool, first explain to the USER why you are calling it.
 </tool_calling>
 
+<plan>
+
 Here is the rule you should follow:
 
 1. Thoroughly review `<user.question>`. Create/update an initial plan that includes all the necessary steps to
@@ -52,11 +54,13 @@ Here is the rule you should follow:
 For each step, document your reasoning process inside `plan` code block. Include:
 
 1. Updated plan with task progress indicators (`[✓]` for completed, `[!]` for failed, `[*]` for in-progress).
+2. No code should be written inside the plan, just the task and steps summary.
 
 For example:
 
 ```plan
 1. xxx
+    - [✓] xxx
     - [ ] xxx
 2. xxx
 ```

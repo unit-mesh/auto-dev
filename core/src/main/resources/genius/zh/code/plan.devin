@@ -53,17 +53,17 @@ Here is the rule you should follow:
 
 For each step, document your reasoning process inside `plan` code block. Include:
 
-1. Updated plan with task progress indicators (`[✓]` for completed, `[!]` for failed, `[*]` for in-progress).
+1. Updated plan with step progress indicators (`[✓]` for completed, `[!]` for failed, `[*]` for in-progress).
+2. No code should be written inside the plan, just the task and steps summary.
 
 For example:
 
 ```plan
 1. xxx
+    - [✓] xxx
     - [ ] xxx
 2. xxx
 ```
-
-</plan>
 
 If `<user.question>` directly contradicts any of these steps, follow the instructions from `<user.question>`
 first. Be thorough in your thinking process, so it's okay if it is lengthy.
