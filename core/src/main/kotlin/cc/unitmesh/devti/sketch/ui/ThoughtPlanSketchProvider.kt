@@ -167,7 +167,7 @@ class PlanSketch(
                 taskPanel.add(statusIcon)
 
                 // Add execute button for incomplete tasks
-                if (task.status == TaskStatus.TODO || task.status == TaskStatus.IN_PROGRESS) {
+                if (task.status == TaskStatus.TODO) {
                     val executeButton = JButton(AllIcons.Actions.Execute).apply {
                         border = BorderFactory.createEmptyBorder()
                         preferredSize = Dimension(24, 24)

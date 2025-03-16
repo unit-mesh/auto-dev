@@ -230,7 +230,7 @@ object MarkdownPlanParser {
                         checkState in GITHUB_TODO_COMPLETED -> PlanTask(todoText, true, TaskStatus.COMPLETED)
                         checkState in GITHUB_TODO_FAILED -> PlanTask(todoText, false, TaskStatus.FAILED)
                         checkState in GITHUB_TODO_IN_PROGRESS -> PlanTask(todoText, false, TaskStatus.IN_PROGRESS)
-                        else -> PlanTask(todoText, false, TaskStatus.COMPLETED)
+                        else -> PlanTask(todoText, false, TaskStatus.TODO)
                     }
 
                     itemsList.add(task)
@@ -246,7 +246,7 @@ object MarkdownPlanParser {
                 } else {
                     val cleanTaskText = taskFirstLine.replace(Regex("^[\\-\\*]\\s+"), "").trim()
                     if (cleanTaskText.isNotEmpty()) {
-                        itemsList.add(PlanTask(cleanTaskText, false, TaskStatus.COMPLETED))
+                        itemsList.add(PlanTask(cleanTaskText, false, TaskStatus.TODO))
                         // Process nested tasks if any
                         taskItemNode.children.forEach { childNode ->
                             if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
