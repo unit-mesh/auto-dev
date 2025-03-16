@@ -6,7 +6,6 @@ import cc.unitmesh.devti.custom.schema.CUSTOM_PROMPTS_FILE_NAME
 import cc.unitmesh.devti.custom.schema.MCP_SERVERS_FILE_NAME
 import cc.unitmesh.devti.fullHeight
 import cc.unitmesh.devti.fullWidthCell
-import cc.unitmesh.devti.gui.component.JsonLanguageField
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.componentStateChanged
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.jBLabel
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.placeholder
@@ -35,7 +34,7 @@ class CustomizeConfigurable(val project: Project) : BoundConfigurable(AutoDevBun
             })
         }
         row {
-            val customPrompt = JsonLanguageField(
+            val customPrompt = JsonTextProvider.create(
                 project,
                 state::customPrompts.toString(),
                 AutoDevBundle.messageWithLanguageFromLLMSetting("autodev.custom.prompt.placeholder"),
@@ -67,7 +66,7 @@ class CustomizeConfigurable(val project: Project) : BoundConfigurable(AutoDevBun
         }
 
         row {
-            val languageField = JsonLanguageField(
+            val languageField = JsonTextProvider.create(
                 project,
                 state::agentJsonConfig.toString(),
                 AutoDevBundle.messageWithLanguageFromLLMSetting("counit.agent.json.placeholder"),
@@ -88,7 +87,7 @@ class CustomizeConfigurable(val project: Project) : BoundConfigurable(AutoDevBun
         }
 
         row {
-            val mcpServices = JsonLanguageField(
+            val mcpServices = JsonTextProvider.create(
                 project,
                 state::mcpServerConfig.toString(),
                 AutoDevBundle.messageWithLanguageFromLLMSetting("counit.mcp.services.placeholder"),

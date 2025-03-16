@@ -2,21 +2,16 @@ package cc.unitmesh.devti.settings
 
 import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.custom.schema.AUTODEV_CUSTOM_LLM_FILE
-import cc.unitmesh.devti.gui.component.JsonLanguageField
 import cc.unitmesh.devti.settings.locale.HUMAN_LANGUAGES
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.jBLabel
 import com.intellij.lang.Language
-import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
-import com.intellij.psi.PsiFile
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.JBColor
 import com.intellij.ui.LanguageTextField
-import com.intellij.ui.LanguageTextField.SimpleDocumentCreator
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.FormBuilder
 import javax.swing.JPanel
@@ -40,7 +35,7 @@ class LLMSettingComponent(private val settings: AutoDevSettingsState) {
 
     val project = ProjectManager.getInstance().openProjects.firstOrNull()
     private val customLlmParam: EditorTextField by lazy {
-        JsonLanguageField(
+        JsonTextProvider.create(
             project,
             settings.customLlms,
             AutoDevBundle.messageWithLanguageFromLLMSetting("autodev.custom.llms.placeholder"),
