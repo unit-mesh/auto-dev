@@ -1,7 +1,10 @@
 package cc.unitmesh.devti.gui
 
-import cc.unitmesh.devti.observer.plan.PlanBoard
+import cc.unitmesh.devti.observer.plan.AgentPlan
+import cc.unitmesh.devti.observer.plan.PlanUpdateListener
+import cc.unitmesh.devti.sketch.ui.PlanSketch
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
@@ -45,10 +48,18 @@ class AutoDevPlanerToolWindowFactory : ToolWindowFactory, ToolWindowManagerListe
 
 class AutoDevPlanerTooWindow(val project: Project) : SimpleToolWindowPanel(true, true), Disposable {
     override fun getName(): @NlsActions.ActionText String? = "AutoDev Planer"
-    val planBoard: PlanBoard = project.getService(PlanBoard::class.java)
+    var connection = ApplicationManager.getApplication().messageBus.connect(this)
+
+    var planSketch: PlanSketch = PlanSketch(project, "", mutableListOf(), true)
 
     init {
-        add(planBoard.planSketch)
+        add(planSketch)
+
+        connection.subscribe(PlanUpdateListener.TOPIC, object : PlanUpdateListener {
+            override fun onPlanUpdate(items: MutableList<AgentPlan>) {
+                planSketch.updatePlan(items)
+            }
+        })
     }
 
     override fun dispose() {

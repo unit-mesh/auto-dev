@@ -5,16 +5,13 @@ import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.observer.plan.AgentPlan
+import cc.unitmesh.devti.observer.plan.MarkdownPlanParser
 import cc.unitmesh.devti.observer.plan.PlanTask
 import cc.unitmesh.devti.observer.plan.TaskStatus
-import cc.unitmesh.devti.observer.plan.PlanBoard
 import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
-import cc.unitmesh.devti.observer.plan.MarkdownPlanParser
 import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
 import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBCheckBox
@@ -56,7 +53,7 @@ class PlanSketch(
         border = JBEmptyBorder(JBUI.insets(8))
     }
 
-    private val actionGroup = DefaultActionGroup(createConsoleActions(project))
+    private val actionGroup = DefaultActionGroup()
     private val toolbar = ActionManager.getInstance().createActionToolbar("PlanSketch", actionGroup, true).apply {
         targetComponent = panel
     }
@@ -85,20 +82,6 @@ class PlanSketch(
 
         add(panel, BorderLayout.CENTER)
     }
-
-    private fun createConsoleActions(project: Project): List<AnAction> {
-        val popupAction = object : AnAction("Popup", "Show in popup window", AllIcons.Ide.External_link_arrow) {
-            override fun displayTextInToolbar(): Boolean = true
-
-            override fun actionPerformed(e: AnActionEvent) {
-                project.getService(AgentStateService::class.java)?.updatePlan(agentPlans)
-                project.getService(PlanBoard::class.java)?.updateShow()
-            }
-        }
-
-        return listOf(popupAction)
-    }
-
 
     private fun createPlanUI() {
         agentPlans.forEachIndexed { index, planItem ->
