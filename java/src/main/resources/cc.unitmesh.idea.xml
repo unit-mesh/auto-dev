@@ -38,12 +38,6 @@
         <contextPrompter
                 language="JAVA"
                 implementation="cc.unitmesh.idea.prompting.JavaContextPrompter"/>
-        <devFlowProvider
-                language="JAVA"
-                implementation="cc.unitmesh.idea.flow.JvmAutoDevFlow"/>
-        <promptStrategy
-                language="JAVA"
-                implementation="cc.unitmesh.idea.prompting.JvmPromptStrategy"/>
 
         <testContextProvider
                 language="JAVA"
@@ -60,22 +54,10 @@
                 language="JAVA"
                 implementationClass="cc.unitmesh.idea.provider.JavaRelatedClassesProvider" />
 
-        <autoDevIntention>
-            <className>cc.unitmesh.idea.actions.AutoCrudAction</className>
-            <bundleName>messages.AutoDevBundle</bundleName>
-            <categoryKey>intention.category.llm</categoryKey>
-        </autoDevIntention>
-
         <customDevInsCompletionProvider
                 implementation="cc.unitmesh.idea.provider.JavaCustomDevInsSymbolProvider"/>
 
         <runProjectService implementation="cc.unitmesh.idea.provider.JvmRunProjectService"/>
 <!--        <agentObserver implementation="cc.unitmesh.idea.observer.GradleTaskAgentObserver" />-->
-    </extensions>
-
-    <extensions defaultExtensionNs="com.intellij">
-        <runLineMarkerContributor language="JAVA"
-                                  implementationClass="cc.unitmesh.idea.contributor.AutoDevFeatureMarkerContributor"/>
-
     </extensions>
 </idea-plugin>

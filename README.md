@@ -72,8 +72,8 @@ Features:
 
 - Languages support: Java, Kotlin, JavaScript/TypeScript, Rust, Python, Golang, C/C++/OC (TBC), or others...
 - Auto development mode
-    - AutoCRUD (Spring framework）. With DevTi Protocol (like `devti://story/github/1102`) will auto
-      generate Model-Controller-Service-Repository code.
+    - ~~AutoCRUD (Spring framework）. With DevTi Protocol (like `devti://story/github/1102`) will auto
+      generate Model-Controller-Service-Repository code.~~
     - AutoSQL (required Database plugin). Context-aware SQL generation.
     - AutoPage (React). Context-aware Web Page generation.
     - AutoArkUI (HarmonyOS). Auto generate HarmonyOS ArkUI code.
@@ -128,7 +128,6 @@ We follow [Chapi](https://github.com/phodal/chapi) AST analysis engine for langu
 | Doc Generation            | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    | ✅     | 
 | Precision Test Generation | ✅    | ✅      | ✅  | ✅      | ✅     |       |    |       | ✅    |       | 
 | Precision Code Generation | ✅    |        |    | ✅      |       |       |    |       |      |       | 
-| AutoCRUD                  | ✅    |        |    | ✅      |       |       |    |       |      |       | 
 
 ### Extensions
 

@@ -73,19 +73,8 @@ AutoDev Extension Points:
 ```xml
 
 <extensionPoints>
-    <!-- AutoCRUD flow -->
-    <extensionPoint qualifiedName="cc.unitmesh.devFlowProvider"
-                    interface="cc.unitmesh.devti.provider.DevFlowProvider"
-                    dynamic="true"/>
-
-    <!-- custom context strategy for Auto CRUD -->
     <extensionPoint qualifiedName="cc.unitmesh.contextPrompter"
                     interface="cc.unitmesh.devti.provider.ContextPrompter"
-                    dynamic="true"/>
-
-    <!-- Others strategy, like token count -->
-    <extensionPoint qualifiedName="cc.unitmesh.promptStrategy"
-                    interface="cc.unitmesh.devti.provider.PromptStrategy"
                     dynamic="true"/>
 </extensionPoints>
 ```
@@ -110,10 +99,6 @@ AutoDev Extension Points:
     <!-- TechStack Binding -->
     <extensionPoint qualifiedName="cc.unitmesh.contextPrompter"
                     interface="cc.unitmesh.devti.provider.ContextPrompter"
-                    dynamic="true"/>
-  
-    <extensionPoint qualifiedName="cc.unitmesh.promptStrategy"
-                    interface="cc.unitmesh.devti.provider.PromptStrategy"
                     dynamic="true"/>
   
     <extensionPoint qualifiedName="cc.unitmesh.testContextProvider"

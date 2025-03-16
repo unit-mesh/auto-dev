@@ -29,9 +29,6 @@
         <codeModifier language="JavaScript" implementationClass="cc.unitmesh.ide.javascript.provider.testing.JestCodeModifier"/>
         <codeModifier language="TypeScript" implementationClass="cc.unitmesh.ide.javascript.provider.testing.JestCodeModifier"/>
 
-        <promptStrategy language="JavaScript" implementation="cc.unitmesh.ide.javascript.provider.JavaScriptPromptStrategyAdvisor"/>
-        <promptStrategy language="TypeScript" implementation="cc.unitmesh.ide.javascript.provider.JavaScriptPromptStrategyAdvisor"/>
-
         <testContextProvider language="JavaScript" implementation="cc.unitmesh.ide.javascript.provider.testing.JSAutoTestService"/>
         <testContextProvider language="TypeScript" implementation="cc.unitmesh.ide.javascript.provider.testing.JSAutoTestService"/>
 

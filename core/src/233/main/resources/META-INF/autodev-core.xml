@@ -45,16 +45,6 @@
         <statusBarWidgetFactory id="AutoDevAIAssistant"
                                 implementation="cc.unitmesh.devti.statusbar.AutoDevStatusBarWidgetFactory"/>
 
-        <runConfigurationProducer
-                implementation="cc.unitmesh.devti.runconfig.command.AutoDevFeatureConfigurationProducer"/>
-        <runConfigurationProducer
-                implementation="cc.unitmesh.devti.runconfig.command.CompositeAutoBaseRunConfigurationProducer"/>
-
-        <configurationType implementation="cc.unitmesh.devti.runconfig.AutoCRUDConfigurationType"/>
-
-        <!-- Run Configurations -->
-        <programRunner implementation="cc.unitmesh.devti.runconfig.AutoDevCommandRunner"/>
-
         <toolWindow id="AutoDev"
                     doNotActivateOnStart="true"
                     anchor="right"
@@ -155,17 +145,9 @@
             <with attribute="implementationClass" implements="cc.unitmesh.devti.provider.CustomPromptProvider"/>
         </extensionPoint>
 
-        <extensionPoint qualifiedName="cc.unitmesh.devFlowProvider"
-                        interface="cc.unitmesh.devti.provider.DevFlowProvider"
-                        dynamic="true"/>
-
         <!-- TODO: find better way to share context -->
         <extensionPoint qualifiedName="cc.unitmesh.contextPrompter"
                         interface="cc.unitmesh.devti.provider.ContextPrompter"
-                        dynamic="true"/>
-
-        <extensionPoint qualifiedName="cc.unitmesh.promptStrategy"
-                        interface="cc.unitmesh.devti.provider.PromptStrategy"
                         dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.testContextProvider"
