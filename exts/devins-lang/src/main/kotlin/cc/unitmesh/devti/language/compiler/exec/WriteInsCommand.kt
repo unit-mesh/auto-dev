@@ -105,7 +105,9 @@ class WriteInsCommand(val myProject: Project, val argument: String, val content:
         }
 
         ApplicationManager.getApplication().invokeLater {
-            document.setText(content)
+            runWriteAction {
+                document.setText(content)
+            }
         }
 
         return "Writing to file: $argument"

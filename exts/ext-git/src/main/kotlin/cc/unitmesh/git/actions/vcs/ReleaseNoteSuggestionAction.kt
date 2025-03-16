@@ -1,8 +1,8 @@
 package cc.unitmesh.git.actions.vcs
 
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
+import cc.unitmesh.devti.gui.AutoDevToolWindowFactory.AutoDevToolUtil
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
-import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.presentationText
@@ -12,6 +12,7 @@ import cc.unitmesh.devti.template.context.TemplateContext
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.vcs.log.VcsLogDataKeys
 
 
@@ -29,7 +30,7 @@ class ReleaseNoteSuggestionAction : AnAction() {
 
         val actionType = ChatActionType.CREATE_CHANGELOG
 
-        val toolWindowManager = AutoDevToolWindowFactory.getToolWindow(project) ?: run {
+        val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolUtil.ID) ?: run {
             logger<ReleaseNoteSuggestionAction>().error("toolWindowManager is null")
             return
         }

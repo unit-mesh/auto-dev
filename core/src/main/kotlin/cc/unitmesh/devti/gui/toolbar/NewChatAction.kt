@@ -1,12 +1,14 @@
 package cc.unitmesh.devti.gui.toolbar
 
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
+import cc.unitmesh.devti.gui.AutoDevToolWindowFactory.AutoDevToolUtil
 import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.components.panels.Wrapper
 import com.intellij.util.ui.JBDimension
 import com.intellij.util.ui.JBUI
@@ -25,7 +27,7 @@ class NewChatAction : AnAction("New Chat", "Create new Chat", AllIcons.General.A
             return
         }
 
-        val toolWindowManager = AutoDevToolWindowFactory.getToolWindow(project)
+        val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolUtil.ID)
         val contentManager = toolWindowManager?.contentManager
 
         val codingPanel =
@@ -54,7 +56,8 @@ class NewChatAction : AnAction("New Chat", "Create new Chat", AllIcons.General.A
                         return@addActionListener
                     }
 
-                    val toolWindowManager = AutoDevToolWindowFactory.getToolWindow(project) ?: return@addActionListener
+                    val toolWindowManager =
+                        ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolUtil.ID) ?: return@addActionListener
                     val contentManager = toolWindowManager.contentManager
 
                     val codingPanel =

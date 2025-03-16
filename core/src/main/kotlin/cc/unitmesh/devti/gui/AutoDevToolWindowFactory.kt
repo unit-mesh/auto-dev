@@ -29,8 +29,8 @@ private const val BRIDGE_TITLE = "Bridge"
 private const val CHAT_KEY = "autodev.chat"
 
 class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
-    object Util {
-        const val id = "AutoDev"
+    object AutoDevToolUtil {
+        const val ID = "AutoDev"
     }
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
@@ -71,9 +71,6 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
     }
 
     companion object {
-        fun getToolWindow(project: Project): ToolWindow? {
-            return ToolWindowManager.getInstance(project).getToolWindow(Util.id)
-        }
 
         fun labelNormalChat(
             toolWindowManager: ToolWindow,
@@ -97,7 +94,8 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
         }
 
         fun labelNormalChat(chatCodingService: ChatCodingService): NormalChatCodingPanel? {
-            val toolWindow = getToolWindow(chatCodingService.project) ?: return null
+            val toolWindow =
+                ToolWindowManager.getInstance(chatCodingService.project).getToolWindow(AutoDevToolUtil.ID) ?: return null
             return labelNormalChat(toolWindow, chatCodingService)
         }
 
@@ -106,7 +104,7 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
         }
 
         fun getSketchWindow(project: Project): SketchToolWindow? {
-            return getToolWindow(project)?.contentManager?.component?.components?.filterIsInstance<SketchToolWindow>()
+            return ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolUtil.ID)?.contentManager?.component?.components?.filterIsInstance<SketchToolWindow>()
                 ?.firstOrNull()
         }
 
@@ -141,7 +139,7 @@ class AutoDevToolWindowFactory : ToolWindowFactory, DumbAware {
         ) {
             val chatCodingService = ChatCodingService(actionType, project)
 
-            val toolWindowManager = getToolWindow(project) ?: run {
+            val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolUtil.ID) ?: run {
                 logger<ChatCodingService>().warn("Tool window not found")
                 return
             }

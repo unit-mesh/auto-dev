@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.gui
 
+import cc.unitmesh.devti.gui.AutoDevToolWindowFactory.AutoDevToolUtil
 import cc.unitmesh.devti.gui.chat.ChatCodingService
 import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
@@ -7,6 +8,7 @@ import cc.unitmesh.devti.provider.ContextPrompter
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.wm.ToolWindowManager
 
 fun sendToChatWindow(
     project: Project,
@@ -15,7 +17,7 @@ fun sendToChatWindow(
 ) {
     val chatCodingService = ChatCodingService(actionType, project)
 
-    val toolWindowManager = AutoDevToolWindowFactory.getToolWindow(project) ?: run {
+    val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolUtil.ID) ?: run {
         logger<ChatCodingService>().warn("Tool window not found")
         return
     }

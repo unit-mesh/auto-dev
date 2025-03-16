@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.sketch.ui
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.gui.AutoDevPlanerToolWindowFactory
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.observer.agent.AgentStateService
@@ -12,8 +13,11 @@ import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
 import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
 import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
@@ -53,10 +57,29 @@ class PlanSketch(
         border = JBEmptyBorder(JBUI.insets(8))
     }
 
-    private val actionGroup = DefaultActionGroup()
-    private val toolbar = ActionManager.getInstance().createActionToolbar("PlanSketch", actionGroup, true).apply {
-        targetComponent = panel
+    private val actionGroup = DefaultActionGroup(createToolbar(project))
+    private fun createToolbar(project: Project): List<AnAction> {
+        val popupAction = object : AnAction("Pin", "Show in popup window", AllIcons.Toolbar.Pin) {
+            override fun displayTextInToolbar(): Boolean = true
+
+            override fun actionPerformed(e: AnActionEvent) {
+                val toolWindow =
+                    ToolWindowManager.getInstance(project).getToolWindow(AutoDevPlanerToolWindowFactory.PlANNER_ID)
+                        ?: return
+
+                toolWindow.activate {
+                    // todo
+                }
+            }
+        }
+
+        return listOf(popupAction)
     }
+
+    private val toolbar = ActionManager.getInstance()
+        .createActionToolbar("PlanSketch", actionGroup, true).apply {
+            targetComponent = panel
+        }
 
     private val titleLabel = JLabel("Thought Plan").apply {
         border = JBUI.Borders.empty(0, 10)
@@ -99,7 +122,7 @@ class PlanSketch(
                 TaskStatus.IN_PROGRESS -> "*"
                 TaskStatus.TODO -> ""
             }
-            
+
             val titleText = if (statusIndicator.isNotEmpty()) {
                 "<html><b>${index + 1}. ${planItem.title} [$statusIndicator]</b></html>"
             } else {
@@ -123,7 +146,7 @@ class PlanSketch(
                 val statusIcon = when (task.status) {
                     TaskStatus.COMPLETED -> JLabel(AllIcons.Actions.Checked)
                     TaskStatus.FAILED -> JLabel(AllIcons.General.Error)
-                    TaskStatus.IN_PROGRESS -> JLabel(AllIcons.Actions.Execute) 
+                    TaskStatus.IN_PROGRESS -> JLabel(AllIcons.Actions.Execute)
                     TaskStatus.TODO -> JBCheckBox().apply {
                         isSelected = task.completed
                         addActionListener {
@@ -133,11 +156,11 @@ class PlanSketch(
                             } else {
                                 task.updateStatus(TaskStatus.TODO)
                             }
-                            
+
                             // Update section status when task status changes
                             val currentSection = agentPlans.find { it.tasks.contains(task) }
                             currentSection?.let { updateSectionCompletionStatus(it) }
-                            
+
                             updateTaskLabel(taskLabel, task)
                             contentPanel.revalidate()
                             contentPanel.repaint()
@@ -146,13 +169,14 @@ class PlanSketch(
                         isContentAreaFilled = false
                     }
                 }
-                
+
                 taskPanel.add(statusIcon)
 
                 // Add execute button for incomplete tasks
                 if (task.status == TaskStatus.TODO) {
                     val executeButton = JButton(AllIcons.Actions.Execute).apply {
                         border = BorderFactory.createEmptyBorder()
+                        isOpaque = true
                         preferredSize = Dimension(24, 24)
                         toolTipText = "Execute"
 
@@ -165,68 +189,68 @@ class PlanSketch(
 
                     taskPanel.add(executeButton)
                 }
-                
+
                 taskPanel.add(taskLabel)
-                
+
                 // Add context menu for changing task status
                 val taskPopupMenu = JPopupMenu()
                 val markCompletedItem = JMenuItem("Mark as Completed [✓]")
                 val markInProgressItem = JMenuItem("Mark as In Progress [*]")
                 val markFailedItem = JMenuItem("Mark as Failed [!]")
                 val markTodoItem = JMenuItem("Mark as Todo [ ]")
-                
+
                 markCompletedItem.addActionListener {
                     task.updateStatus(TaskStatus.COMPLETED)
                     updateTaskLabel(taskLabel, task)
-                    
+
                     // Update section status after changing task status
                     val currentSection = agentPlans.find { it.tasks.contains(task) }
                     currentSection?.let { updateSectionCompletionStatus(it) }
-                    
+
                     contentPanel.revalidate()
                     contentPanel.repaint()
                 }
-                
+
                 markInProgressItem.addActionListener {
                     task.updateStatus(TaskStatus.IN_PROGRESS)
                     updateTaskLabel(taskLabel, task)
-                    
+
                     val currentSection = agentPlans.find { it.tasks.contains(task) }
                     currentSection?.let { updateSectionCompletionStatus(it) }
-                    
+
                     contentPanel.revalidate()
                     contentPanel.repaint()
                 }
-                
+
                 markFailedItem.addActionListener {
                     task.updateStatus(TaskStatus.FAILED)
                     updateTaskLabel(taskLabel, task)
-                    
+
                     val currentSection = agentPlans.find { it.tasks.contains(task) }
                     currentSection?.let { updateSectionCompletionStatus(it) }
-                    
+
                     contentPanel.revalidate()
                     contentPanel.repaint()
                 }
-                
+
                 markTodoItem.addActionListener {
                     task.updateStatus(TaskStatus.TODO)
                     updateTaskLabel(taskLabel, task)
-                    
+
                     val currentSection = agentPlans.find { it.tasks.contains(task) }
                     currentSection?.let { updateSectionCompletionStatus(it) }
-                    
+
                     contentPanel.revalidate()
                     contentPanel.repaint()
                 }
-                
+
                 taskPopupMenu.add(markCompletedItem)
                 taskPopupMenu.add(markInProgressItem)
                 taskPopupMenu.add(markFailedItem)
                 taskPopupMenu.add(markTodoItem)
-                
+
                 taskLabel.componentPopupMenu = taskPopupMenu
-                
+
                 contentPanel.add(taskPanel)
             }
 
@@ -244,12 +268,12 @@ class PlanSketch(
             TaskStatus.IN_PROGRESS -> "<html><span style='color:blue;font-style:italic'>${task.step}</span></html>"
             TaskStatus.TODO -> task.step
         }
-        
+
         return JLabel(labelText).apply {
             border = JBUI.Borders.emptyLeft(5)
         }
     }
-    
+
     // Helper method to update the task label based on current status
     private fun updateTaskLabel(label: JLabel, task: PlanTask) {
         label.text = when (task.status) {

@@ -1,12 +1,14 @@
 package cc.unitmesh.devti.gui.toolbar
 
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
+import cc.unitmesh.devti.gui.AutoDevToolWindowFactory.AutoDevToolUtil
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.componentStateChanged
 import cc.unitmesh.devti.sketch.SketchToolWindow
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.components.panels.Wrapper
 import com.intellij.util.ui.JBInsets
 import com.intellij.util.ui.JBUI
@@ -53,7 +55,7 @@ class NewSketchAction : AnAction("New Sketch", "Create new Sketch", AllIcons.Gen
             return
         }
 
-        val toolWindowManager = AutoDevToolWindowFactory.getToolWindow(project)
+        val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolUtil.ID)
         val contentManager = toolWindowManager?.contentManager
 
         val sketchPanel =

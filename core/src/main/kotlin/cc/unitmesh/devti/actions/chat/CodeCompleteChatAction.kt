@@ -2,10 +2,11 @@ package cc.unitmesh.devti.actions.chat
 
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
-import cc.unitmesh.devti.gui.chat.message.ChatActionType
-import cc.unitmesh.devti.gui.chat.NormalChatCodingPanel
+import cc.unitmesh.devti.gui.AutoDevToolWindowFactory.AutoDevToolUtil
 import cc.unitmesh.devti.gui.chat.ChatCodingService
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.gui.chat.message.ChatContext
+import cc.unitmesh.devti.intentions.action.getElementToAction
 import cc.unitmesh.devti.provider.ContextPrompter
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.presentationText
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -15,7 +16,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.IndexNotReadyException
-import cc.unitmesh.devti.intentions.action.getElementToAction
+import com.intellij.openapi.wm.ToolWindowManager
 
 class CodeCompleteChatAction : AnAction() {
 
@@ -58,7 +59,7 @@ class CodeCompleteChatAction : AnAction() {
 
                 val actionType = ChatActionType.CODE_COMPLETE
                 val chatCodingService = ChatCodingService(actionType, project)
-                val toolWindowManager = AutoDevToolWindowFactory.getToolWindow(project) ?: run {
+                val toolWindowManager = ToolWindowManager.getInstance(project).getToolWindow(AutoDevToolUtil.ID) ?: run {
                     logger.warn("Tool window not found")
                     return@runReadAction
                 }
