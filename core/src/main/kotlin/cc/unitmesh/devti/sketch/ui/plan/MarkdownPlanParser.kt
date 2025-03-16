@@ -19,18 +19,22 @@ import org.intellij.markdown.parser.MarkdownParser
  *
  * ```markdown
  * 1. 领域模型重构：
- *   - 将BlogPost实体合并到Blog聚合根，建立完整的领域对象
- *   - 添加领域行为方法（发布、审核、评论等）
+ *   - [✓] 将BlogPost实体合并到Blog聚合根，建立完整的领域对象
+ *   - [*] 添加领域行为方法（发布、审核、评论等）
+ *   - [!] 修复数据模型冲突
+ *   - [ ] 实现新增的领域服务
  * 2. 分层结构调整：
- *   - 清理entity层冗余对象
+ *   - [ ] 清理entity层冗余对象
  * ```
 */
 object MarkdownPlanParser {
     private val LOG = logger<MarkdownPlanParser>()
     private val ROOT_ELEMENT_TYPE = IElementType("ROOT")
     private val CHECKMARK = "✓"
-    private val GITHUB_TODO_PATTERN = Regex("^\\s*-\\s*\\[\\s*([xX]?)\\s*\\]\\s*(.*)")
-    private val GITHUB_TODO_CHECKED = listOf("x", "X")
+    private val GITHUB_TODO_PATTERN = Regex("^\\s*-\\s*\\[\\s*([xX!*✓]?)\\s*\\]\\s*(.*)")
+    private val GITHUB_TODO_COMPLETED = listOf("x", "X", "✓")
+    private val GITHUB_TODO_FAILED = listOf("!")
+    private val GITHUB_TODO_IN_PROGRESS = listOf("*")
 
     /**
      * 解析markdown文本为计划项列表
@@ -199,13 +203,13 @@ object MarkdownPlanParser {
                     // Extract the task text and preserve the checkbox status
                     val checkState = githubTodoMatch.groupValues[1]
                     val todoText = githubTodoMatch.groupValues[2].trim()
-                    val isCompleted = checkState in GITHUB_TODO_CHECKED
                     
-                    // Add the task with the proper completion marker
-                    val formattedTask = if (isCompleted) {
-                        "[$CHECKMARK] $todoText"
-                    } else {
-                        "[ ] $todoText"
+                    // Determine task status based on marker
+                    val formattedTask = when {
+                        checkState in GITHUB_TODO_COMPLETED -> "[✓] $todoText"
+                        checkState in GITHUB_TODO_FAILED -> "[!] $todoText"
+                        checkState in GITHUB_TODO_IN_PROGRESS -> "[*] $todoText"
+                        else -> "[ ] $todoText"
                     }
                     
                     itemsList.add(PlanTask.fromText(formattedTask))

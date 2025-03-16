@@ -5,6 +5,8 @@ import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.observer.agent.PlanList
+import cc.unitmesh.devti.observer.agent.PlanTask
+import cc.unitmesh.devti.observer.agent.TaskStatus
 import cc.unitmesh.devti.observer.plan.PlanBoard
 import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
 import cc.unitmesh.devti.sketch.ui.plan.MarkdownPlanParser
@@ -119,18 +121,34 @@ class PlanSketch(
                     border = JBUI.Borders.empty()
                 }
 
-                val checkbox = JBCheckBox().apply {
-                    isSelected = task.completed
-                    addActionListener {
-                        task.completed = isSelected
+                // First create task label with appropriate styling based on status
+                val taskLabel = createStyledTaskLabel(task)
+
+                // Create a custom status indicator based on task status
+                val statusIcon = when (task.status) {
+                    TaskStatus.COMPLETED -> JLabel(AllIcons.Actions.Checked)
+                    TaskStatus.FAILED -> JLabel(AllIcons.General.Error)
+                    TaskStatus.IN_PROGRESS -> JLabel(AllIcons.Actions.Execute) 
+                    TaskStatus.TODO -> JBCheckBox().apply {
+                        isSelected = task.completed
+                        addActionListener {
+                            task.completed = isSelected
+                            if (isSelected) {
+                                task.updateStatus(TaskStatus.COMPLETED)
+                            } else {
+                                task.updateStatus(TaskStatus.TODO)
+                            }
+                            updateTaskLabel(taskLabel, task)
+                        }
+                        isBorderPainted = false
+                        isContentAreaFilled = false
                     }
-                    isBorderPainted = false
-                    isContentAreaFilled = false
                 }
+                
+                taskPanel.add(statusIcon)
 
-                taskPanel.add(checkbox)
-
-                if (!task.completed) {
+                // Add execute button for incomplete tasks
+                if (task.status == TaskStatus.TODO || task.status == TaskStatus.IN_PROGRESS) {
                     val executeButton = JButton(AllIcons.Actions.Execute).apply {
                         border = BorderFactory.createEmptyBorder()
                         preferredSize = Dimension(24, 24)
@@ -145,29 +163,81 @@ class PlanSketch(
 
                     taskPanel.add(executeButton)
                 }
-
-                val taskLabel = JLabel(if (task.completed) 
-                    "<html><strike>${task.description}</strike></html>" 
-                    else task.description
-                ).apply {
-                    border = JBUI.Borders.emptyLeft(5)
-                }
-                
-                checkbox.addActionListener {
-                    taskLabel.text = if (checkbox.isSelected)
-                        "<html><strike>${task.description}</strike></html>"
-                    else
-                        task.description
-                }
                 
                 taskPanel.add(taskLabel)
-
+                
+                // Add context menu for changing task status
+                val taskPopupMenu = JPopupMenu()
+                val markCompletedItem = JMenuItem("Mark as Completed [✓]")
+                val markInProgressItem = JMenuItem("Mark as In Progress [*]")
+                val markFailedItem = JMenuItem("Mark as Failed [!]")
+                val markTodoItem = JMenuItem("Mark as Todo [ ]")
+                
+                markCompletedItem.addActionListener {
+                    task.updateStatus(TaskStatus.COMPLETED)
+                    updateTaskLabel(taskLabel, task)
+                    contentPanel.revalidate()
+                    contentPanel.repaint()
+                }
+                
+                markInProgressItem.addActionListener {
+                    task.updateStatus(TaskStatus.IN_PROGRESS)
+                    updateTaskLabel(taskLabel, task)
+                    contentPanel.revalidate()
+                    contentPanel.repaint()
+                }
+                
+                markFailedItem.addActionListener {
+                    task.updateStatus(TaskStatus.FAILED)
+                    updateTaskLabel(taskLabel, task)
+                    contentPanel.revalidate()
+                    contentPanel.repaint()
+                }
+                
+                markTodoItem.addActionListener {
+                    task.updateStatus(TaskStatus.TODO)
+                    updateTaskLabel(taskLabel, task)
+                    contentPanel.revalidate()
+                    contentPanel.repaint()
+                }
+                
+                taskPopupMenu.add(markCompletedItem)
+                taskPopupMenu.add(markInProgressItem)
+                taskPopupMenu.add(markFailedItem)
+                taskPopupMenu.add(markTodoItem)
+                
+                taskLabel.componentPopupMenu = taskPopupMenu
+                
                 contentPanel.add(taskPanel)
             }
 
             if (index < planLists.size - 1) {
                 contentPanel.add(Box.createVerticalStrut(8))
             }
+        }
+    }
+
+    // Helper method to create a styled task label based on status
+    private fun createStyledTaskLabel(task: PlanTask): JLabel {
+        val labelText = when (task.status) {
+            TaskStatus.COMPLETED -> "<html><strike>${task.description}</strike></html>"
+            TaskStatus.FAILED -> "<html><span style='color:red'>${task.description}</span></html>"
+            TaskStatus.IN_PROGRESS -> "<html><span style='color:blue;font-style:italic'>${task.description}</span></html>"
+            TaskStatus.TODO -> task.description
+        }
+        
+        return JLabel(labelText).apply {
+            border = JBUI.Borders.emptyLeft(5)
+        }
+    }
+    
+    // Helper method to update the task label based on current status
+    private fun updateTaskLabel(label: JLabel, task: PlanTask) {
+        label.text = when (task.status) {
+            TaskStatus.COMPLETED -> "<html><strike>${task.description}</strike></html>"
+            TaskStatus.FAILED -> "<html><span style='color:red'>${task.description}</span></html>"
+            TaskStatus.IN_PROGRESS -> "<html><span style='color:blue;font-style:italic'>${task.description}</span></html>"
+            TaskStatus.TODO -> task.description
         }
     }
 
@@ -186,11 +256,12 @@ class PlanSketch(
 
     fun updatePlan(newPlanItems: List<PlanList>) {
         if (newPlanItems.isNotEmpty()) {
-            val completionState = mutableMapOf<String, Boolean>()
+            // Save current states of all tasks
+            val taskStateMap = mutableMapOf<String, Pair<Boolean, TaskStatus>>()
 
             planLists.forEach { planItem ->
                 planItem.planTasks.forEach { task ->
-                    completionState[task.description] = task.completed
+                    taskStateMap[task.description] = Pair(task.completed, task.status)
                 }
             }
 
@@ -201,9 +272,10 @@ class PlanSketch(
                 planLists.add(newItem)
 
                 newItem.planTasks.forEach { task ->
-                    val savedCompletionState = completionState[task.description]
-                    if (savedCompletionState != null) {
-                        task.completed = savedCompletionState
+                    // Restore saved states if available
+                    taskStateMap[task.description]?.let { (completed, status) ->
+                        task.completed = completed
+                        task.status = status
                     }
                 }
             }
