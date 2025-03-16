@@ -66,7 +66,7 @@ object MarkdownPlanParser {
      * @param content markdown格式的计划文本
      * @return 解析得到的执行计划列表
      */
-    fun interpretPlan(content: String): List<AgentPlan> {
+    fun interpretPlan(content: String): List<AgentTaskEntry> {
         try {
             val documentTree = parseMarkdownDocument(content)
             return extractPlanStructure(documentTree, content)
@@ -86,8 +86,8 @@ object MarkdownPlanParser {
     /**
      * 从文档结构中提取计划
      */
-    private fun extractPlanStructure(documentNode: ASTNode, content: String): List<AgentPlan> {
-        val planSections = mutableListOf<AgentPlan>()
+    private fun extractPlanStructure(documentNode: ASTNode, content: String): List<AgentTaskEntry> {
+        val planSections = mutableListOf<AgentTaskEntry>()
         val topLevelSections = findTopLevelSections(documentNode)
 
         if (topLevelSections.isNotEmpty()) {
@@ -124,14 +124,14 @@ object MarkdownPlanParser {
     private fun interpretSimplePlanStructure(
         sectionListNode: ASTNode,
         content: String,
-        planSections: MutableList<AgentPlan>
+        planSections: MutableList<AgentTaskEntry>
     ) {
         val sectionVisitor = PlanSectionVisitor(content)
         sectionListNode.children.forEach { item ->
             if (item.type == MarkdownElementTypes.LIST_ITEM) {
                 val sectionInfo = sectionVisitor.extractBasicSectionInfo(item)
                 if (sectionInfo != null) {
-                    planSections.add(AgentPlan(sectionInfo.title, emptyList(), sectionInfo.completed))
+                    planSections.add(AgentTaskEntry(sectionInfo.title, emptyList(), sectionInfo.completed))
                 }
             }
         }
@@ -143,7 +143,7 @@ object MarkdownPlanParser {
     private fun interpretDetailedPlanStructure(
         documentNode: ASTNode,
         content: String,
-        planSections: MutableList<AgentPlan>
+        planSections: MutableList<AgentTaskEntry>
     ) {
         val planStructureInterpreter = DetailedPlanStructureInterpreter(content)
         planStructureInterpreter.interpretDocument(documentNode, planSections)
@@ -205,16 +205,16 @@ object MarkdownPlanParser {
         /**
          * 解析整个文档结构，提取计划章节
          */
-        fun interpretDocument(documentNode: ASTNode, planSections: MutableList<AgentPlan>) {
+        fun interpretDocument(documentNode: ASTNode, planSections: MutableList<AgentTaskEntry>) {
             documentNode.accept(object : RecursiveVisitor() {
                 override fun visitNode(node: ASTNode) {
                     when (node.type) {
                         MarkdownElementTypes.ORDERED_LIST -> {
                             processOrderedList(node, planSections)
                             // 跳过递归以避免重复处理
-                        }
+                    }
 
-                        MarkdownElementTypes.UNORDERED_LIST -> {
+                    MarkdownElementTypes.UNORDERED_LIST -> {
                             processUnorderedList(node)
                             // 跳过递归以避免重复处理
                         }
@@ -231,7 +231,7 @@ object MarkdownPlanParser {
         /**
          * 处理有序列表（章节列表）
          */
-        private fun processOrderedList(listNode: ASTNode, planSections: MutableList<AgentPlan>) {
+        private fun processOrderedList(listNode: ASTNode, planSections: MutableList<AgentTaskEntry>) {
             listNode.children.forEach { item ->
                 if (item.type == MarkdownElementTypes.LIST_ITEM) {
                     val sectionInfo = sectionVisitor.extractDetailedSectionInfo(item)
@@ -249,7 +249,7 @@ object MarkdownPlanParser {
 
                         // 处理子任务列表
                         item.children.forEach { childNode ->
-                            if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
+                    if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
                                 processUnorderedList(childNode)
                             }
                         }
@@ -270,9 +270,9 @@ object MarkdownPlanParser {
         /**
          * 完成当前章节处理并添加到计划列表
          */
-        private fun finalizeCurrentSection(planSections: MutableList<AgentPlan>) {
+        private fun finalizeCurrentSection(planSections: MutableList<AgentTaskEntry>) {
             currentSection?.let { section ->
-                val plan = AgentPlan(
+                val plan = AgentTaskEntry(
                     section.title,
                     section.tasks,
                     section.completed,
@@ -292,7 +292,7 @@ object MarkdownPlanParser {
         /**
          * 从无序列表中提取任务项
          */
-        fun extractTasks(listNode: ASTNode, taskList: MutableList<PlanTask>) {
+        fun extractTasks(listNode: ASTNode, taskList: MutableList<AgentPlanStep>) {
             listNode.children.forEach { item ->
                 if (item.type != MarkdownElementTypes.LIST_ITEM) return@forEach
 
@@ -309,7 +309,7 @@ object MarkdownPlanParser {
                     val description = taskMatch.groupValues[2].trim()
 
                     // 创建任务对象
-                    val task = PlanTask(
+                    val task = AgentPlanStep(
                         description,
                         TaskMarkers.isCompleted(statusMarker),
                         TaskMarkers.determineStatus(statusMarker)
@@ -320,13 +320,13 @@ object MarkdownPlanParser {
                     // 处理普通列表项作为任务
                     val cleanDescription = taskLine.replace(PatternMatcher.UNORDERED_ITEM_CLEANER, "").trim()
                     if (cleanDescription.isNotEmpty()) {
-                        taskList.add(PlanTask(cleanDescription, false, TaskStatus.TODO))
+                        taskList.add(AgentPlanStep(cleanDescription, false, TaskStatus.TODO))
                     }
                 }
 
                 // 处理嵌套任务
                 item.children.forEach { childNode ->
-                    if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
+                            if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
                         extractTasks(childNode, taskList)
                     }
                 }
@@ -339,7 +339,7 @@ object MarkdownPlanParser {
         val title: String,
         var completed: Boolean,
         var status: TaskStatus,
-        val tasks: MutableList<PlanTask> = mutableListOf()
+        val tasks: MutableList<AgentPlanStep> = mutableListOf()
     )
 
     // 领域模型 - 基本章节信息
@@ -356,5 +356,5 @@ object MarkdownPlanParser {
     )
 
     // 为保持向后兼容性，提供parse方法的别名
-    fun parse(content: String): List<AgentPlan> = interpretPlan(content)
+    fun parse(content: String): List<AgentTaskEntry> = interpretPlan(content)
 }

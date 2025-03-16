@@ -14,27 +14,27 @@ enum class PlanPhase {
 }
 
 @Serializable
-data class AgentPlan(
+data class AgentTaskEntry(
     val title: String,
-    val tasks: List<PlanTask>,
+    val steps: List<AgentPlanStep>,
     var completed: Boolean = false,
     var status: TaskStatus = TaskStatus.TODO,
     var phase: PlanPhase = PlanPhase.PLAN
 ) {
     fun updateCompletionStatus() {
-        if (tasks.isEmpty()) return
+        if (steps.isEmpty()) return
 
         if (this.status == TaskStatus.COMPLETED) {
             completed = true
             return
         }
 
-        completed = tasks.all { it.status == TaskStatus.COMPLETED }
+        completed = steps.all { it.status == TaskStatus.COMPLETED }
 
         status = when {
-            tasks.all { it.status == TaskStatus.COMPLETED } -> TaskStatus.COMPLETED
-            tasks.any { it.status == TaskStatus.FAILED } -> TaskStatus.FAILED
-            tasks.any { it.status == TaskStatus.IN_PROGRESS } -> TaskStatus.IN_PROGRESS
+            steps.all { it.status == TaskStatus.COMPLETED } -> TaskStatus.COMPLETED
+            steps.any { it.status == TaskStatus.FAILED } -> TaskStatus.FAILED
+            steps.any { it.status == TaskStatus.IN_PROGRESS } -> TaskStatus.IN_PROGRESS
             else -> TaskStatus.TODO
         }
     }
@@ -74,7 +74,7 @@ data class AgentPlan(
         when (phase) {
             PlanPhase.PLAN -> {
                 // 计划阶段：任务准备就绪但尚未开始
-                tasks.forEach {
+                steps.forEach {
                     if (it.status == TaskStatus.TODO) {
                         // 保持任务为TODO状态
                     }
@@ -83,7 +83,7 @@ data class AgentPlan(
 
             PlanPhase.DO -> {
                 // 执行阶段：将任务状态更新为进行中
-                tasks.forEach {
+                steps.forEach {
                     if (it.status == TaskStatus.TODO) {
                         it.updateStatus(TaskStatus.IN_PROGRESS)
                     }
@@ -98,7 +98,7 @@ data class AgentPlan(
             PlanPhase.ACT -> {
                 // 行动阶段：基于检查结果采取行动
                 // 失败的任务可以在这里重置为TODO以便重试
-                tasks.forEach {
+                steps.forEach {
                     if (it.status == TaskStatus.FAILED) {
                         it.updateStatus(TaskStatus.TODO)
                     }

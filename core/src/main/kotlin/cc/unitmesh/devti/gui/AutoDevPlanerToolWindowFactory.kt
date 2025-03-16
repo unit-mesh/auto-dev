@@ -1,6 +1,6 @@
 package cc.unitmesh.devti.gui
 
-import cc.unitmesh.devti.observer.plan.AgentPlan
+import cc.unitmesh.devti.observer.plan.AgentTaskEntry
 import cc.unitmesh.devti.observer.plan.PlanUpdateListener
 import cc.unitmesh.devti.sketch.ui.PlanSketch
 import com.intellij.openapi.Disposable
@@ -56,7 +56,7 @@ class AutoDevPlanerTooWindow(val project: Project) : SimpleToolWindowPanel(true,
         add(planSketch)
 
         connection.subscribe(PlanUpdateListener.TOPIC, object : PlanUpdateListener {
-            override fun onPlanUpdate(items: MutableList<AgentPlan>) {
+            override fun onPlanUpdate(items: MutableList<AgentTaskEntry>) {
                 planSketch.updatePlan(items)
             }
         })

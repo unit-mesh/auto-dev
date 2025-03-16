@@ -20,8 +20,8 @@ class MarkdownPlanParserTest {
         // Then
         Assertions.assertThat(planItems).hasSize(1)
         Assertions.assertThat(planItems[0].title).isEqualTo("领域模型重构：")
-        Assertions.assertThat(planItems[0].tasks).hasSize(2)
-        Assertions.assertThat(planItems[0].tasks.map { it.step }).containsExactly(
+        Assertions.assertThat(planItems[0].steps).hasSize(2)
+        Assertions.assertThat(planItems[0].steps.map { it.step }).containsExactly(
             "将BlogPost实体合并到Blog聚合根，建立完整的领域对象",
             "添加领域行为方法（发布、审核、评论等）"
         )
@@ -44,16 +44,16 @@ class MarkdownPlanParserTest {
         // Then
         Assertions.assertThat(planItems).hasSize(4)
         Assertions.assertThat(planItems[0].title).isEqualTo("在 BlogRepository 中添加基于作者的删除方法")
-        Assertions.assertThat(planItems[0].tasks).isEmpty()
+        Assertions.assertThat(planItems[0].steps).isEmpty()
         Assertions.assertThat(planItems[0].completed).isFalse()
         Assertions.assertThat(planItems[1].title).isEqualTo("在 BlogService 中实现批量删除逻辑")
-        Assertions.assertThat(planItems[1].tasks).isEmpty()
+        Assertions.assertThat(planItems[1].steps).isEmpty()
         Assertions.assertThat(planItems[1].completed).isFalse()
         Assertions.assertThat(planItems[2].title).isEqualTo("在 BlogController 中添加 DELETE 端点")
-        Assertions.assertThat(planItems[2].tasks).isEmpty()
+        Assertions.assertThat(planItems[2].steps).isEmpty()
         Assertions.assertThat(planItems[2].completed).isFalse()
         Assertions.assertThat(planItems[3].title).isEqualTo("确保数据库表结构与实体类映射正确")
-        Assertions.assertThat(planItems[3].tasks).isEmpty()
+        Assertions.assertThat(planItems[3].steps).isEmpty()
         Assertions.assertThat(planItems[3].completed).isFalse()
     }
 
@@ -83,16 +83,16 @@ class MarkdownPlanParserTest {
         // 如果有第一项，验证其内容
         if (planItems.isNotEmpty()) {
             Assertions.assertThat(planItems[0].title).isEqualTo("领域模型重构：")
-            if (planItems[0].tasks.isNotEmpty()) {
-                Assertions.assertThat(planItems[0].tasks[0].step).contains("将BlogPost实体合并到Blog聚合根")
+            if (planItems[0].steps.isNotEmpty()) {
+                Assertions.assertThat(planItems[0].steps[0].step).contains("将BlogPost实体合并到Blog聚合根")
             }
         }
 
         // 如果成功解析了两项，则验证第二项
         if (planItems.size >= 2) {
             Assertions.assertThat(planItems[1].title).isEqualTo("分层结构调整：")
-            if (planItems[1].tasks.isNotEmpty()) {
-                Assertions.assertThat(planItems[1].tasks[0].step).contains("清理entity层冗余对象")
+            if (planItems[1].steps.isNotEmpty()) {
+                Assertions.assertThat(planItems[1].steps[0].step).contains("清理entity层冗余对象")
             }
         }
 
@@ -100,15 +100,15 @@ class MarkdownPlanParserTest {
         try {
             Assertions.assertThat(planItems).hasSize(2)
             Assertions.assertThat(planItems[0].title).isEqualTo("领域模型重构：")
-            Assertions.assertThat(planItems[0].tasks).hasSize(2)
-            Assertions.assertThat(planItems[0].tasks.map { it.step }).containsExactly(
+            Assertions.assertThat(planItems[0].steps).hasSize(2)
+            Assertions.assertThat(planItems[0].steps.map { it.step }).containsExactly(
                 "将BlogPost实体合并到Blog聚合根，建立完整的领域对象",
                 "添加领域行为方法（发布、审核、评论等）"
             )
             Assertions.assertThat(planItems[0].completed).isFalse()
             Assertions.assertThat(planItems[1].title).isEqualTo("分层结构调整：")
-            Assertions.assertThat(planItems[1].tasks).hasSize(1)
-            Assertions.assertThat(planItems[1].tasks.map { it.step }).containsExactly("清理entity层冗余对象")
+            Assertions.assertThat(planItems[1].steps).hasSize(1)
+            Assertions.assertThat(planItems[1].steps.map { it.step }).containsExactly("清理entity层冗余对象")
             Assertions.assertThat(planItems[1].completed).isFalse()
         } catch (e: Exception) {
             println("严格测试失败: ${e.message}")
@@ -154,9 +154,9 @@ class MarkdownPlanParserTest {
         // Then
         Assertions.assertThat(planItems).hasSize(2)
         Assertions.assertThat(planItems[0].title).isEqualTo("第一章节")
-        Assertions.assertThat(planItems[0].tasks.map { it.step }).containsExactly("任务1", "任务2")
+        Assertions.assertThat(planItems[0].steps.map { it.step }).containsExactly("任务1", "任务2")
         Assertions.assertThat(planItems[1].title).isEqualTo("第二章节")
-        Assertions.assertThat(planItems[1].tasks.map { it.step }).containsExactly("任务3")
+        Assertions.assertThat(planItems[1].steps.map { it.step }).containsExactly("任务3")
     }
 
     @Test
@@ -216,18 +216,18 @@ class MarkdownPlanParserTest {
         Assertions.assertThat(planItems).hasSize(7)
         Assertions.assertThat(planItems[0].title).isEqualTo("分析现有代码结构 ✓")
         Assertions.assertThat(planItems[0].completed).isFalse()
-        Assertions.assertThat(planItems[0].tasks).hasSize(1)
-        Assertions.assertThat(planItems[0].tasks[0].step).isEqualTo("确认Blog相关实体、控制器、服务层结构 ✓")
-        Assertions.assertThat(planItems[0].tasks[0].completed).isFalse()
+        Assertions.assertThat(planItems[0].steps).hasSize(1)
+        Assertions.assertThat(planItems[0].steps[0].step).isEqualTo("确认Blog相关实体、控制器、服务层结构 ✓")
+        Assertions.assertThat(planItems[0].steps[0].completed).isFalse()
         Assertions.assertThat(planItems[1].title).isEqualTo("确定功能实现路径")
         Assertions.assertThat(planItems[1].completed).isFalse()
-        Assertions.assertThat(planItems[1].tasks).hasSize(3)
-        Assertions.assertThat(planItems[1].tasks.map { it.step }).containsExactly(
+        Assertions.assertThat(planItems[1].steps).hasSize(3)
+        Assertions.assertThat(planItems[1].steps.map { it.step }).containsExactly(
             "数据库层：BlogRepository添加根据作者删除方法 ✓",
             "服务层：BlogService添加删除逻辑 ✓",
             "控制层：BlogController添加新端点 ✓"
         )
-        Assertions.assertThat(planItems[1].tasks.all { it.completed }).isFalse()
+        Assertions.assertThat(planItems[1].steps.all { it.completed }).isFalse()
     }
 
     @Test
@@ -264,8 +264,8 @@ class MarkdownPlanParserTest {
         Assertions.assertThat(planItems[0].title).isEqualTo("**分析现有代码结构**：")
         Assertions.assertThat(planItems[0].completed).isFalse()
         // 测试 GitHub 风格复选框任务
-        Assertions.assertThat(planItems[2].tasks).hasSize(6)
-        Assertions.assertThat(planItems[2].tasks.map { it.step }).containsExactly(
+        Assertions.assertThat(planItems[2].steps).hasSize(6)
+        Assertions.assertThat(planItems[2].steps.map { it.step }).containsExactly(
             "在 BlogRepository 添加按作者删除的方法",
             "扩展 BlogService 添加 deleteByAuthor 方法",
             "在 BlogController 添加新的 DELETE 端点",
@@ -273,7 +273,7 @@ class MarkdownPlanParserTest {
             "添加 Swagger 接口文档注解",
             "补充单元测试"
         )
-        Assertions.assertThat(planItems[2].tasks.all { !it.completed }).isTrue()
+        Assertions.assertThat(planItems[2].steps.all { !it.completed }).isTrue()
     }
 
     @Test
@@ -305,22 +305,22 @@ class MarkdownPlanParserTest {
         Assertions.assertThat(planItems[0].title).isEqualTo("添加根据作者删除博客功能")
 
         // 验证主任务数量
-        Assertions.assertThat(planItems[0].tasks.size).isGreaterThanOrEqualTo(5)
+        Assertions.assertThat(planItems[0].steps.size).isGreaterThanOrEqualTo(5)
 
         // 验证第一个任务是完成状态
-        val firstTask = planItems[0].tasks.find { it.step.contains("分析项目结构") }
+        val firstTask = planItems[0].steps.find { it.step.contains("分析项目结构") }
         Assertions.assertThat(firstTask).isNotNull
         Assertions.assertThat(firstTask!!.completed).isTrue()
         Assertions.assertThat(firstTask.status).isEqualTo(TaskStatus.COMPLETED)
 
         // 验证第二个任务是进行中状态
-        val secondTask = planItems[0].tasks.find { it.step.contains("实现数据访问层") }
+        val secondTask = planItems[0].steps.find { it.step.contains("实现数据访问层") }
         Assertions.assertThat(secondTask).isNotNull
         Assertions.assertThat(secondTask!!.completed).isFalse()
         Assertions.assertThat(secondTask.status).isEqualTo(TaskStatus.IN_PROGRESS)
 
         // 验证嵌套任务被正确解析
-        val nestedTasks = planItems[0].tasks.filter {
+        val nestedTasks = planItems[0].steps.filter {
             it.step.contains("BlogController")
                     || it.step.contains("BlogService")
                     || it.step.contains("BlogRepository")

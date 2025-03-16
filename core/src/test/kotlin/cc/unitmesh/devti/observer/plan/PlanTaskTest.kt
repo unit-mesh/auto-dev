@@ -11,7 +11,7 @@ class PlanTaskTest {
         val text = "[✓] Complete the project"
 
         // when
-        val task = PlanTask.fromText(text)
+        val task = AgentPlanStep.fromText(text)
 
         // then
         assertThat(task.step).isEqualTo("Complete the project")
@@ -25,7 +25,7 @@ class PlanTaskTest {
         val text = "[!] Fix the bug"
 
         // when
-        val task = PlanTask.fromText(text)
+        val task = AgentPlanStep.fromText(text)
 
         // then
         assertThat(task.step).isEqualTo("Fix the bug")
@@ -39,7 +39,7 @@ class PlanTaskTest {
         val text = "[*] Implement feature"
 
         // when
-        val task = PlanTask.fromText(text)
+        val task = AgentPlanStep.fromText(text)
 
         // then
         assertThat(task.step).isEqualTo("Implement feature")
@@ -53,7 +53,7 @@ class PlanTaskTest {
         val text = "[ ] Write tests"
 
         // when
-        val task = PlanTask.fromText(text)
+        val task = AgentPlanStep.fromText(text)
 
         // then
         assertThat(task.step).isEqualTo("Write tests")
@@ -67,7 +67,7 @@ class PlanTaskTest {
         val text = "Write documentation"
 
         // when
-        val task = PlanTask.fromText(text)
+        val task = AgentPlanStep.fromText(text)
 
         // then
         assertThat(task.step).isEqualTo("Write documentation")
@@ -78,7 +78,7 @@ class PlanTaskTest {
     @Test
     fun should_convert_task_to_text_with_completed_status() {
         // given
-        val task = PlanTask("Complete the project", true, TaskStatus.COMPLETED)
+        val task = AgentPlanStep("Complete the project", true, TaskStatus.COMPLETED)
 
         // when
         val text = task.toText()
@@ -90,7 +90,7 @@ class PlanTaskTest {
     @Test
     fun should_convert_task_to_text_with_failed_status() {
         // given
-        val task = PlanTask("Fix the bug", false, TaskStatus.FAILED)
+        val task = AgentPlanStep("Fix the bug", false, TaskStatus.FAILED)
 
         // when
         val text = task.toText()
@@ -102,7 +102,7 @@ class PlanTaskTest {
     @Test
     fun should_convert_task_to_text_with_in_progress_status() {
         // given
-        val task = PlanTask("Implement feature", false, TaskStatus.IN_PROGRESS)
+        val task = AgentPlanStep("Implement feature", false, TaskStatus.IN_PROGRESS)
 
         // when
         val text = task.toText()
@@ -114,7 +114,7 @@ class PlanTaskTest {
     @Test
     fun should_convert_task_to_text_with_todo_status() {
         // given
-        val task = PlanTask("Write tests", false, TaskStatus.TODO)
+        val task = AgentPlanStep("Write tests", false, TaskStatus.TODO)
 
         // when
         val text = task.toText()
@@ -126,7 +126,7 @@ class PlanTaskTest {
     @Test
     fun should_update_task_status_to_completed() {
         // given
-        val task = PlanTask("Complete the project", false, TaskStatus.TODO)
+        val task = AgentPlanStep("Complete the project", false, TaskStatus.TODO)
 
         // when
         task.updateStatus(TaskStatus.COMPLETED)
@@ -139,7 +139,7 @@ class PlanTaskTest {
     @Test
     fun should_update_task_status_to_failed() {
         // given
-        val task = PlanTask("Fix the bug", false, TaskStatus.TODO)
+        val task = AgentPlanStep("Fix the bug", false, TaskStatus.TODO)
 
         // when
         task.updateStatus(TaskStatus.FAILED)
@@ -152,7 +152,7 @@ class PlanTaskTest {
     @Test
     fun should_update_task_status_to_in_progress() {
         // given
-        val task = PlanTask("Implement feature", false, TaskStatus.TODO)
+        val task = AgentPlanStep("Implement feature", false, TaskStatus.TODO)
 
         // when
         task.updateStatus(TaskStatus.IN_PROGRESS)
@@ -165,7 +165,7 @@ class PlanTaskTest {
     @Test
     fun should_update_task_status_to_todo() {
         // given
-        val task = PlanTask("Write tests", false, TaskStatus.COMPLETED)
+        val task = AgentPlanStep("Write tests", false, TaskStatus.COMPLETED)
 
         // when
         task.updateStatus(TaskStatus.TODO)

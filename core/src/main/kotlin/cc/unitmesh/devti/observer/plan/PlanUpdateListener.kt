@@ -5,7 +5,7 @@ import java.util.*
 
 @FunctionalInterface
 interface PlanUpdateListener: EventListener {
-    fun onPlanUpdate(items: MutableList<AgentPlan>)
+    fun onPlanUpdate(items: MutableList<AgentTaskEntry>)
 
     companion object {
         @Topic.AppLevel

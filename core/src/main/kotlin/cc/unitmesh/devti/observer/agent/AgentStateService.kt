@@ -3,7 +3,7 @@ package cc.unitmesh.devti.observer.agent
 import cc.unitmesh.devti.agent.tool.AgentTool
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.llms.custom.Message
-import cc.unitmesh.devti.observer.plan.AgentPlan
+import cc.unitmesh.devti.observer.plan.AgentTaskEntry
 import cc.unitmesh.devti.observer.plan.PlanUpdateListener
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
@@ -51,7 +51,7 @@ class AgentStateService {
         return state.messages
     }
 
-    fun updatePlan(items: MutableList<AgentPlan>) {
+    fun updatePlan(items: MutableList<AgentTaskEntry>) {
         this.state.plan = items
         ApplicationManager.getApplication().messageBus
             .syncPublisher(PlanUpdateListener.TOPIC)
@@ -65,7 +65,7 @@ class AgentStateService {
             .onPlanUpdate(mutableListOf())
     }
 
-    fun getPlan(): MutableList<AgentPlan> {
+    fun getPlan(): MutableList<AgentTaskEntry> {
         return state.plan
     }
 }
