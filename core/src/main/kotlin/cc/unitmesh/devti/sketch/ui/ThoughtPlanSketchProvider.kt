@@ -9,7 +9,7 @@ import cc.unitmesh.devti.observer.plan.PlanTask
 import cc.unitmesh.devti.observer.plan.TaskStatus
 import cc.unitmesh.devti.observer.plan.PlanBoard
 import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
-import cc.unitmesh.devti.sketch.ui.plan.MarkdownPlanParser
+import cc.unitmesh.devti.observer.plan.MarkdownPlanParser
 import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
 import com.intellij.openapi.actionSystem.ActionManager

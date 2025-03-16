@@ -32,11 +32,16 @@ object RunTestUtil {
         } else {
             ""
         }
+        val errorMsg = if (test.errorMessage.isNullOrBlank()) {
+            ""
+        } else {
+            """## ErrorMessage:
+               |```
+               |${test.errorMessage}
+               |```""".trimMargin()
+        }
         val prompt = """Help me fix follow test issue:
-                                   |## ErrorMessage:
-                                   |```
-                                   |${test.errorMessage}
-                                   |```
+                                   |$errorMsg
                                    |## stacktrace details: 
                                    |${test.stacktrace}
                                    |

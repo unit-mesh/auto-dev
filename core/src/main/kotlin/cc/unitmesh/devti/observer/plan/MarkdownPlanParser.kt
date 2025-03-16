@@ -1,8 +1,5 @@
-package cc.unitmesh.devti.sketch.ui.plan
+package cc.unitmesh.devti.observer.plan
 
-import cc.unitmesh.devti.observer.plan.AgentPlan
-import cc.unitmesh.devti.observer.plan.PlanTask
-import cc.unitmesh.devti.observer.plan.TaskStatus
 import com.intellij.openapi.diagnostic.logger
 import org.intellij.markdown.IElementType
 import org.intellij.markdown.MarkdownElementTypes
@@ -61,13 +58,13 @@ object MarkdownPlanParser {
         } else {
             processSectionedList(node, content, agentPlans)
         }
-        
+
         return agentPlans
     }
-    
+
     private fun findTopLevelOrderedLists(node: ASTNode): List<ASTNode> {
         val orderedLists = mutableListOf<ASTNode>()
-        
+
         node.children.forEach { child ->
             if (child.type == MarkdownElementTypes.ORDERED_LIST) {
                 orderedLists.add(child)
@@ -115,7 +112,7 @@ object MarkdownPlanParser {
 
                                 // Check for section status marker like "1. Section Title [✓]"
                                 val sectionStatusMatch = "^(\\d+)\\.\\s*(.+?)(?:\\s*\\[(.)\\])?$".toRegex().find(listItemFirstLine)
-                                
+
                                 if (sectionStatusMatch != null) {
                                     // Save previous section if exists
                                     if (currentSectionTitle.isNotEmpty()) {
@@ -126,17 +123,17 @@ object MarkdownPlanParser {
                                             currentSectionCompleted,
                                             currentSectionStatus
                                         )
-                                        
+
                                         // Update section completion status based on tasks
                                         newAgentPlan.updateCompletionStatus()
-                                        
+
                                         agentPlans.add(newAgentPlan)
                                         currentSectionItems = mutableListOf()
                                     }
 
                                     // Extract the title without any status marker
                                     currentSectionTitle = sectionStatusMatch.groupValues[2].trim()
-                                    
+
                                     // Check for section status marker
                                     val statusMarker = sectionStatusMatch.groupValues.getOrNull(3)
                                     currentSectionCompleted = statusMarker == "✓" || statusMarker == "x" || statusMarker == "X"
@@ -181,17 +178,17 @@ object MarkdownPlanParser {
                 currentSectionCompleted,
                 currentSectionStatus
             )
-            
+
             // Update section completion status based on tasks
             newAgentPlan.updateCompletionStatus()
-            
+
             agentPlans.add(newAgentPlan)
         }
     }
 
     private fun isFlatOrderedList(node: ASTNode, content: String): Boolean {
         var hasNestedLists = false
-        
+
         node.children.forEach { listItemNode ->
             if (listItemNode.type == MarkdownElementTypes.LIST_ITEM) {
                 listItemNode.children.forEach { childNode ->
@@ -201,7 +198,7 @@ object MarkdownPlanParser {
                 }
             }
         }
-        
+
         return !hasNestedLists
     }
 
@@ -216,29 +213,48 @@ object MarkdownPlanParser {
                 } else {
                     taskText
                 }
-                
+
                 // Check for GitHub style TODO
                 val githubTodoMatch = GITHUB_TODO_PATTERN.find(taskFirstLine)
                 if (githubTodoMatch != null) {
                     // Extract the task text and preserve the checkbox status
                     val checkState = githubTodoMatch.groupValues[1]
                     val todoText = githubTodoMatch.groupValues[2].trim()
-                    
+
                     // Determine task status based on marker
-                    val formattedTask = when {
-                        checkState in GITHUB_TODO_COMPLETED -> "[✓] $todoText"
-                        checkState in GITHUB_TODO_FAILED -> "[!] $todoText"
-                        checkState in GITHUB_TODO_IN_PROGRESS -> "[*] $todoText"
-                        else -> "[ ] $todoText"
+                    val task = when {
+                        checkState in GITHUB_TODO_COMPLETED -> PlanTask(todoText, true, TaskStatus.COMPLETED)
+                        checkState in GITHUB_TODO_FAILED -> PlanTask(todoText, false, TaskStatus.FAILED)
+                        checkState in GITHUB_TODO_IN_PROGRESS -> PlanTask(todoText, false, TaskStatus.IN_PROGRESS)
+                        else -> PlanTask(todoText, false, TaskStatus.TODO)
                     }
-                    
-                    itemsList.add(PlanTask.fromText(formattedTask))
+
+                    itemsList.add(task)
+
+                    // Process nested tasks if any
+                    taskItemNode.children.forEach { childNode ->
+                        if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
+                            val nestedTasks = mutableListOf<PlanTask>()
+                            processTaskItems(childNode, content, nestedTasks)
+                            // Add nested tasks to the list
+                            itemsList.addAll(nestedTasks)
+                        }
+                    }
                 } else {
-                    // Process task text and retain the checkmark in the text (original behavior)
+                    // Process task text without checkbox
                     val cleanTaskText = taskFirstLine.replace(Regex("^[\\-\\*]\\s+"), "").trim()
                     if (cleanTaskText.isNotEmpty()) {
-                        // If there's no explicit checkbox, treat as completed
-                        itemsList.add(PlanTask(cleanTaskText, true, TaskStatus.COMPLETED))
+                        itemsList.add(PlanTask(cleanTaskText, false, TaskStatus.TODO))
+
+                        // Process nested tasks if any
+                        taskItemNode.children.forEach { childNode ->
+                            if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
+                                val nestedTasks = mutableListOf<PlanTask>()
+                                processTaskItems(childNode, content, nestedTasks)
+                                // Add nested tasks to the list
+                                itemsList.addAll(nestedTasks)
+                            }
+                        }
                     }
                 }
             }
