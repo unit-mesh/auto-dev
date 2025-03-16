@@ -26,6 +26,7 @@ data class AgentTaskEntry(
 
         if (this.status == TaskStatus.COMPLETED) {
             completed = true
+            steps.forEach { it.completed = true }
             return
         }
 
@@ -36,6 +37,10 @@ data class AgentTaskEntry(
             steps.any { it.status == TaskStatus.FAILED } -> TaskStatus.FAILED
             steps.any { it.status == TaskStatus.IN_PROGRESS } -> TaskStatus.IN_PROGRESS
             else -> TaskStatus.TODO
+        }
+
+        if (completed) {
+            status = TaskStatus.COMPLETED
         }
     }
 

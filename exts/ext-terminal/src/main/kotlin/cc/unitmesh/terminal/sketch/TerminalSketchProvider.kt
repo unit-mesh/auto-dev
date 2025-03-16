@@ -111,7 +111,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
                         try {
                             val output = terminalWidget!!::class.java.getMethod("getText")
                                 .invoke(terminalWidget) as String
-                            sendToSketch(project, output)
+                            sendToSketch(project, "Help me to solve this issue:\n```bash\n$output\n```\n")
                         } catch (e: Exception) {
                             AutoDevNotifications.notify(project, "Failed to send to Sketch")
                         }

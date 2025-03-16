@@ -20,7 +20,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBPanel
-import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.Wrapper
 import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
@@ -49,12 +48,12 @@ class PlanSketch(
     private val project: Project,
     private var content: String,
     private var agentTaskItems: MutableList<AgentTaskEntry>,
-    private val isInPopup: Boolean = false
+    private val isInToolwindow: Boolean = false
 ) : JBPanel<PlanSketch>(BorderLayout()), ExtensionLangSketch {
     private val panel = JBPanel<PlanSketch>(BorderLayout())
     private val contentPanel = JBPanel<PlanSketch>().apply {
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
-        border = JBEmptyBorder(JBUI.insets(8))
+        border = JBEmptyBorder(JBUI.insets(4))
     }
 
     private val actionGroup = DefaultActionGroup(createToolbar(project))
@@ -86,7 +85,7 @@ class PlanSketch(
     }
 
     private val toolbarPanel = JPanel(BorderLayout()).apply {
-        if (!isInPopup) {
+        if (!isInToolwindow) {
             add(titleLabel, BorderLayout.WEST)
             add(toolbar.component, BorderLayout.EAST)
         }
@@ -99,34 +98,20 @@ class PlanSketch(
     init {
         createPlanUI()
 
-        val scrollPane = JBScrollPane(contentPanel)
-        panel.add(scrollPane, BorderLayout.CENTER)
         panel.add(toolbarWrapper, BorderLayout.NORTH)
 
-        add(panel, BorderLayout.CENTER)
+        if (isInToolwindow) {
+            border = JBUI.Borders.empty(8)
+        }
+
+        add(contentPanel, BorderLayout.CENTER)
     }
 
     private fun createPlanUI() {
         agentTaskItems.forEachIndexed { index, planItem ->
-            val titlePanel = JBPanel<JBPanel<*>>(FlowLayout(FlowLayout.LEFT)).apply {
-                border = JBUI.Borders.empty()
+            val titlePanel = JBPanel<JBPanel<*>>(FlowLayout(FlowLayout.LEFT, 2, 0)).apply {
+                border = JBUI.Borders.empty(2)
             }
-
-            val executeTaskButton = JButton(AllIcons.Actions.Execute).apply {
-                border = BorderFactory.createEmptyBorder()
-                isOpaque = true
-                preferredSize = Dimension(24, 24)
-                toolTipText = "Execute Task"
-
-                addActionListener {
-                    AutoDevToolWindowFactory.sendToSketchToolWindow(project, ChatActionType.SKETCH) { ui, _ ->
-                        val allSteps = planItem.steps.joinToString("\n") { it.step }
-                        ui.sendInput(AutoDevBundle.message("sketch.plan.finish.task") + allSteps)
-                    }
-                }
-            }
-
-            titlePanel.add(executeTaskButton)
 
             // Check if all tasks in the section are completed
             updateSectionCompletionStatus(planItem)
@@ -146,19 +131,35 @@ class PlanSketch(
             }
 
             val sectionLabel = JLabel(titleText)
-            sectionLabel.border = JBUI.Borders.empty()
+            sectionLabel.border = JBUI.Borders.emptyLeft(2)
+
+            if (planItem.status == TaskStatus.TODO && planItem.completed == false) {
+                val executeTaskButton = JButton(AllIcons.Actions.Execute).apply {
+                    border = BorderFactory.createEmptyBorder()
+                    isOpaque = true
+                    preferredSize = Dimension(20, 20)
+                    toolTipText = "Execute Task"
+
+                    addActionListener {
+                        AutoDevToolWindowFactory.sendToSketchToolWindow(project, ChatActionType.SKETCH) { ui, _ ->
+                            val allSteps = planItem.steps.joinToString("\n") { it.step }
+                            ui.sendInput(AutoDevBundle.message("sketch.plan.finish.task") + allSteps)
+                        }
+                    }
+                }
+                titlePanel.add(executeTaskButton)
+            }
+
             titlePanel.add(sectionLabel)
             contentPanel.add(titlePanel)
 
             planItem.steps.forEachIndexed { taskIndex, task ->
-                val taskPanel = JBPanel<JBPanel<*>>(FlowLayout(FlowLayout.LEFT)).apply {
-                    border = JBUI.Borders.empty()
+                val taskPanel = JBPanel<JBPanel<*>>(FlowLayout(FlowLayout.LEFT, 2, 0)).apply {
+                    border = JBUI.Borders.empty(1, 16, 1, 0)
                 }
 
-                // First create task label with appropriate styling based on status
                 val taskLabel = createStyledTaskLabel(task)
 
-                // Create a custom status indicator based on task status
                 val statusIcon = when (task.status) {
                     TaskStatus.COMPLETED -> JLabel(AllIcons.Actions.Checked)
                     TaskStatus.FAILED -> JLabel(AllIcons.General.Error)
@@ -193,7 +194,7 @@ class PlanSketch(
                     val executeButton = JButton(AllIcons.Actions.Execute).apply {
                         border = BorderFactory.createEmptyBorder()
                         isOpaque = true
-                        preferredSize = Dimension(24, 24)
+                        preferredSize = Dimension(20, 20)
                         toolTipText = "Execute"
 
                         addActionListener {
@@ -318,7 +319,7 @@ class PlanSketch(
     }
 
     override fun onComplete(context: String) {
-        if (!isInPopup) {
+        if (!isInToolwindow) {
             val agentPlans = MarkdownPlanParser.parse(content).toMutableList()
             updatePlan(agentPlans)
             project.getService(AgentStateService::class.java).updatePlan(agentPlans)
