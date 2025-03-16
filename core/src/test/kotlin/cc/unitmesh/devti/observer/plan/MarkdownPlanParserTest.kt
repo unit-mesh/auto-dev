@@ -1,10 +1,10 @@
 package cc.unitmesh.devti.observer.plan
 
+import junit.framework.TestCase.assertEquals
 import org.assertj.core.api.Assertions
 import org.junit.Test
 
 class MarkdownPlanParserTest {
-
     @Test
     fun should_parse_markdown_with_single_section_and_tasks() {
         // Given
@@ -74,7 +74,7 @@ class MarkdownPlanParserTest {
         // 添加调试信息以查看更多细节
         println("解析后的计划项数量: ${planItems.size}")
         planItems.forEachIndexed { index, item ->
-            println("第${index+1}项: $item")
+            println("第${index + 1}项: $item")
         }
 
         // 进行更宽松的测试断言，先确保基本功能可用
@@ -234,26 +234,26 @@ class MarkdownPlanParserTest {
     fun should_return_correct_items() {
         // Given
         val markdownContent = """
-1. **分析现有代码结构**：
-   - BlogService 中的 `deleteBlog` 方法目前只支持按 ID 删除
-   - BlogPost 实体类中的 author 字段类型为 String，但 DTO 中的 author 是 Author 对象类型，存在映射不一致
-   - Repository 层使用 CrudRepository 需要扩展自定义删除方法
-
-2. **数据库字段确认**：
-   - 需要确认 BlogPost 表实际存储的 author 字段类型（当前代码显示为 String 类型）
-
-3. **功能实现步骤**：
-   - [ ] 在 BlogRepository 添加按作者删除的方法
-   - [ ] 扩展 BlogService 添加 deleteByAuthor 方法
-   - [ ] 在 BlogController 添加新的 DELETE 端点
-   - [ ] 修复 DTO 与实体类的 author 字段类型一致性
-   - [ ] 添加 Swagger 接口文档注解
-   - [ ] 补充单元测试
-
-4. **异常处理**：
-   - 处理不存在的作者删除请求
-   - 添加事务管理注解
-   - 统一返回结果格式
+        1. **分析现有代码结构**：
+           - BlogService 中的 `deleteBlog` 方法目前只支持按 ID 删除
+           - BlogPost 实体类中的 author 字段类型为 String，但 DTO 中的 author 是 Author 对象类型，存在映射不一致
+           - Repository 层使用 CrudRepository 需要扩展自定义删除方法
+        
+        2. **数据库字段确认**：
+           - 需要确认 BlogPost 表实际存储的 author 字段类型（当前代码显示为 String 类型）
+        
+        3. **功能实现步骤**：
+           - [ ] 在 BlogRepository 添加按作者删除的方法
+           - [ ] 扩展 BlogService 添加 deleteByAuthor 方法
+           - [ ] 在 BlogController 添加新的 DELETE 端点
+           - [ ] 修复 DTO 与实体类的 author 字段类型一致性
+           - [ ] 添加 Swagger 接口文档注解
+           - [ ] 补充单元测试
+        
+        4. **异常处理**：
+           - 处理不存在的作者删除请求
+           - 添加事务管理注解
+           - 统一返回结果格式
         """.trimIndent()
 
         // When
@@ -320,10 +320,26 @@ class MarkdownPlanParserTest {
         Assertions.assertThat(secondTask.status).isEqualTo(TaskStatus.IN_PROGRESS)
 
         // 验证嵌套任务被正确解析
-        val nestedTasks = planItems[0].tasks.filter { it.step.contains("BlogController")
-                                                  || it.step.contains("BlogService")
-                                                  || it.step.contains("BlogRepository")
-                                                  || it.step.contains("BlogPost") }
+        val nestedTasks = planItems[0].tasks.filter {
+            it.step.contains("BlogController")
+                    || it.step.contains("BlogService")
+                    || it.step.contains("BlogRepository")
+                    || it.step.contains("BlogPost")
+        }
         Assertions.assertThat(nestedTasks).isNotEmpty()
+    }
+
+    @Test
+    fun should_support_error_status_in_section_title() {
+        val content = """
+        1. [✓] 数据库表结构确认
+            - `blog_post` 表已存在 `category` 字段
+        2. [*] 更新领域对象
+        """.trimIndent()
+        val plans = MarkdownPlanParser.parse(content)
+        assertEquals(2, plans.size)
+        assertEquals(TaskStatus.COMPLETED, plans[0].status)
+        assertEquals("数据库表结构确认", plans[0].title)
+        assertEquals(TaskStatus.IN_PROGRESS, plans[1].status)
     }
 }

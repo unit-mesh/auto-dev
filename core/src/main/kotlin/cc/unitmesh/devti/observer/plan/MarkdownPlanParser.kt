@@ -112,7 +112,7 @@ object MarkdownPlanParser {
 
                                 // Check for section status marker like "1. Section Title [✓]"
                                 val sectionStatusMatch =
-                                    "^(\\d+)\\.\\s*(.+?)(?:\\s*\\[(.)\\])?$".toRegex().find(listItemFirstLine)
+                                    "^(\\d+)\\.\\s*(?:\\[([xX!*✓]?)\\]\\s*)?(.+?)(?:\\s*\\[([xX!*✓]?)\\])?$".toRegex().find(listItemFirstLine)
 
                                 if (sectionStatusMatch != null) {
                                     // Save previous section if exists
@@ -133,16 +133,18 @@ object MarkdownPlanParser {
                                     }
 
                                     // Extract the title without any status marker
-                                    currentSectionTitle = sectionStatusMatch.groupValues[2].trim()
+                                    currentSectionTitle = sectionStatusMatch.groupValues[3].trim()
 
-                                    // Check for section status marker
-                                    val statusMarker = sectionStatusMatch.groupValues.getOrNull(3)
-                                    currentSectionCompleted =
-                                        statusMarker == "✓" || statusMarker == "x" || statusMarker == "X"
+                                    // Check for section status marker (either at start or end)
+                                    val startStatusMarker = sectionStatusMatch.groupValues[2]
+                                    val endStatusMarker = sectionStatusMatch.groupValues[4]
+                                    val statusMarker = if (startStatusMarker.isNotEmpty()) startStatusMarker else endStatusMarker
+                                    
+                                    currentSectionCompleted = statusMarker in GITHUB_TODO_COMPLETED
                                     currentSectionStatus = when (statusMarker) {
-                                        "✓", "x", "X" -> TaskStatus.COMPLETED
-                                        "!" -> TaskStatus.FAILED
-                                        "*" -> TaskStatus.IN_PROGRESS
+                                        in GITHUB_TODO_COMPLETED -> TaskStatus.COMPLETED
+                                        in GITHUB_TODO_FAILED -> TaskStatus.FAILED
+                                        in GITHUB_TODO_IN_PROGRESS -> TaskStatus.IN_PROGRESS
                                         else -> TaskStatus.TODO
                                     }
 
@@ -226,10 +228,10 @@ object MarkdownPlanParser {
                     val todoText = githubTodoMatch.groupValues[2].trim()
 
                     // Determine task status based on marker
-                    val task = when {
-                        checkState in GITHUB_TODO_COMPLETED -> PlanTask(todoText, true, TaskStatus.COMPLETED)
-                        checkState in GITHUB_TODO_FAILED -> PlanTask(todoText, false, TaskStatus.FAILED)
-                        checkState in GITHUB_TODO_IN_PROGRESS -> PlanTask(todoText, false, TaskStatus.IN_PROGRESS)
+                    val task = when (checkState) {
+                        in GITHUB_TODO_COMPLETED -> PlanTask(todoText, true, TaskStatus.COMPLETED)
+                        in GITHUB_TODO_FAILED -> PlanTask(todoText, false, TaskStatus.FAILED)
+                        in GITHUB_TODO_IN_PROGRESS -> PlanTask(todoText, false, TaskStatus.IN_PROGRESS)
                         else -> PlanTask(todoText, false, TaskStatus.TODO)
                     }
 
