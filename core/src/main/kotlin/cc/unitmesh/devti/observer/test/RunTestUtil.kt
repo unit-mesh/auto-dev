@@ -69,7 +69,7 @@ object RunTestUtil {
             if (!textRange.contains(highlighter.range!!)) return@forEach
 
             val hyperlinkInfo = EditorHyperlinkSupport.getHyperlinkInfo(highlighter) as? FileHyperlinkInfo ?: return@forEach
-            val descriptor = hyperlinkInfo.descriptor ?: return@forEach
+            val descriptor = runReadAction { hyperlinkInfo.descriptor } ?: return@forEach
             val virtualFile = descriptor.file
 
             if (runReadAction { project.isInProject(virtualFile) }) {

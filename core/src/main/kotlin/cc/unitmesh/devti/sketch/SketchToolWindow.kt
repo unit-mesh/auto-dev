@@ -144,8 +144,10 @@ open class SketchToolWindow(
 
         if (showInput) {
             ApplicationManager.getApplication().invokeLater {
-                AutoDevCoroutineScope.scope(project).launch {
-                    setupListener()
+                runInEdt {
+                    AutoDevCoroutineScope.scope(project).launch {
+                        setupListener()
+                    }
                 }
             }
         }
