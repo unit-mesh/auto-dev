@@ -112,6 +112,22 @@ class PlanSketch(
                 border = JBUI.Borders.empty()
             }
 
+            val executeTaskButton = JButton(AllIcons.Actions.Execute).apply {
+                border = BorderFactory.createEmptyBorder()
+                isOpaque = true
+                preferredSize = Dimension(24, 24)
+                toolTipText = "Execute Task"
+
+                addActionListener {
+                    AutoDevToolWindowFactory.sendToSketchToolWindow(project, ChatActionType.SKETCH) { ui, _ ->
+                        val allSteps = planItem.steps.joinToString("\n") { it.step }
+                        ui.sendInput(AutoDevBundle.message("sketch.plan.finish.task") + allSteps)
+                    }
+                }
+            }
+
+            titlePanel.add(executeTaskButton)
+
             // Check if all tasks in the section are completed
             updateSectionCompletionStatus(planItem)
 
@@ -146,7 +162,7 @@ class PlanSketch(
                 val statusIcon = when (task.status) {
                     TaskStatus.COMPLETED -> JLabel(AllIcons.Actions.Checked)
                     TaskStatus.FAILED -> JLabel(AllIcons.General.Error)
-                    TaskStatus.IN_PROGRESS -> JLabel(AllIcons.Actions.Execute)
+                    TaskStatus.IN_PROGRESS -> JLabel(AllIcons.Toolwindows.ToolWindowBuild)
                     TaskStatus.TODO -> JBCheckBox().apply {
                         isSelected = task.completed
                         addActionListener {
