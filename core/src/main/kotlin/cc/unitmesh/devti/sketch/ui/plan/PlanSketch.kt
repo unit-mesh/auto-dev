@@ -34,10 +34,6 @@ class PlanController(
             }
             
             contentPanel.add(sectionPanel)
-            
-            if (index < agentTaskItems.size - 1) {
-                contentPanel.add(Box.createVerticalStrut(8))
-            }
         }
         
         contentPanel.revalidate()

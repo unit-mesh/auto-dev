@@ -27,11 +27,10 @@ class TaskPanel(
     private val task: AgentPlanStep,
     private val onStatusChange: () -> Unit
 ) : JBPanel<JBPanel<*>>(FlowLayout(FlowLayout.LEFT, 2, 0)) {
-
     private val taskLabel: JLabel
 
     init {
-        border = JBUI.Borders.empty(1, 16, 1, 0)
+        border = JBUI.Borders.empty(4, 16, 4, 0)
         taskLabel = createStyledTaskLabel()
 
         val statusIcon = createStatusIcon()
@@ -42,6 +41,8 @@ class TaskPanel(
         }
 
         add(taskLabel)
+
+        background = JBUI.CurrentTheme.ToolWindow.background()
         setupContextMenu()
     }
 

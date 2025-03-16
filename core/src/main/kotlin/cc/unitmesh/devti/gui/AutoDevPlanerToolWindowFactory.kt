@@ -14,6 +14,9 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.openapi.wm.ex.ToolWindowManagerListener
+import com.intellij.ui.dsl.builder.panel
+import com.intellij.util.ui.JBUI
+import java.awt.BorderLayout
 import java.util.concurrent.atomic.AtomicBoolean
 
 class AutoDevPlanerToolWindowFactory : ToolWindowFactory, ToolWindowManagerListener, DumbAware {
@@ -53,7 +56,15 @@ class AutoDevPlanerTooWindow(val project: Project) : SimpleToolWindowPanel(true,
     var planSketch: PlanSketch = PlanSketch(project, "", mutableListOf(), true)
 
     init {
-        add(planSketch)
+        val planPanel = panel {
+            row {
+                cell(planSketch).resizableColumn()
+            }
+        }.apply {
+            border = JBUI.Borders.empty(8)
+        }
+
+        add(planPanel, BorderLayout.CENTER)
 
         connection.subscribe(PlanUpdateListener.TOPIC, object : PlanUpdateListener {
             override fun onPlanUpdate(items: MutableList<AgentTaskEntry>) {
