@@ -33,6 +33,10 @@ object MarkdownPlanParser {
     private val GITHUB_TODO_COMPLETED = listOf("x", "X", "✓")
     private val GITHUB_TODO_FAILED = listOf("!")
     private val GITHUB_TODO_IN_PROGRESS = listOf("*")
+    
+    // 提取为常量并添加注释，增强语义性
+    /** 匹配有序列表项的标题和状态标记，例如 "1. [x] 标题" 或 "1. 标题 [x]" */
+    private val SECTION_HEADER_PATTERN = Regex("^(\\d+)\\.\\s*(?:\\[([xX!*✓]?)\\]\\s*)?(.+?)(?:\\s*\\[([xX!*✓]?)\\])?$")
 
     /**
      * 解析markdown文本为计划项列表
@@ -101,74 +105,42 @@ object MarkdownPlanParser {
                     MarkdownElementTypes.ORDERED_LIST -> {
                         node.children.forEach { listItemNode ->
                             if (listItemNode.type == MarkdownElementTypes.LIST_ITEM) {
-                                // Extract just the first line for the section title
-                                val listItemFullText = listItemNode.getTextInNode(content).toString().trim()
-                                val firstLineEnd = listItemFullText.indexOf('\n')
-                                val listItemFirstLine = if (firstLineEnd > 0) {
-                                    listItemFullText.substring(0, firstLineEnd).trim()
-                                } else {
-                                    listItemFullText
-                                }
-
-                                // Check for section status marker like "1. Section Title [✓]"
-                                val sectionStatusMatch =
-                                    "^(\\d+)\\.\\s*(?:\\[([xX!*✓]?)\\]\\s*)?(.+?)(?:\\s*\\[([xX!*✓]?)\\])?$".toRegex().find(listItemFirstLine)
-
-                                if (sectionStatusMatch != null) {
-                                    // Save previous section if exists
+                                // 处理计划项的标题行
+                                val sectionHeaderInfo = extractSectionHeaderInfo(listItemNode, content)
+                                
+                                if (sectionHeaderInfo != null) {
+                                    // 保存之前的计划章节（如果存在）
                                     if (currentSectionTitle.isNotEmpty()) {
-                                        // Create new PlanList with stored data
-                                        val newAgentPlan = AgentPlan(
+                                        finalizeSectionAndAddToPlan(
+                                            agentPlans,
                                             currentSectionTitle,
-                                            currentSectionItems.toList(),
+                                            currentSectionItems,
                                             currentSectionCompleted,
                                             currentSectionStatus
                                         )
-
-                                        // Update section completion status based on tasks
-                                        newAgentPlan.updateCompletionStatus()
-
-                                        agentPlans.add(newAgentPlan)
                                         currentSectionItems = mutableListOf()
                                     }
 
-                                    // Extract the title without any status marker
-                                    currentSectionTitle = sectionStatusMatch.groupValues[3].trim()
+                                    // 设置当前章节的标题和状态
+                                    currentSectionTitle = sectionHeaderInfo.title
+                                    currentSectionCompleted = sectionHeaderInfo.completed
+                                    currentSectionStatus = sectionHeaderInfo.status
 
-                                    // Check for section status marker (either at start or end)
-                                    val startStatusMarker = sectionStatusMatch.groupValues[2]
-                                    val endStatusMarker = sectionStatusMatch.groupValues[4]
-                                    val statusMarker = if (startStatusMarker.isNotEmpty()) startStatusMarker else endStatusMarker
-                                    
-                                    currentSectionCompleted = statusMarker in GITHUB_TODO_COMPLETED
-                                    currentSectionStatus = when (statusMarker) {
-                                        in GITHUB_TODO_COMPLETED -> TaskStatus.COMPLETED
-                                        in GITHUB_TODO_FAILED -> TaskStatus.FAILED
-                                        in GITHUB_TODO_IN_PROGRESS -> TaskStatus.IN_PROGRESS
-                                        else -> TaskStatus.TODO
-                                    }
-
-                                    // Process child nodes for tasks
-                                    listItemNode.children.forEach { childNode ->
-                                        if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
-                                            processTaskItems(childNode, content, currentSectionItems)
-                                        }
-                                    }
+                                    // 处理子任务列表
+                                    processNestedTaskLists(listItemNode, content, currentSectionItems)
                                 }
                             }
                         }
-                        // Skip recursive processing for ORDERED_LIST nodes since we've already processed them
-                        // Don't call super.visitNode for this type to avoid double-processing
+                        // 跳过递归处理以避免重复
                     }
 
                     MarkdownElementTypes.UNORDERED_LIST -> {
                         processTaskItems(node, content, currentSectionItems)
-                        // Skip recursive processing for UNORDERED_LIST nodes
-                        // Don't call super.visitNode for this type to avoid double-processing
+                        // 跳过递归处理以避免重复
                     }
 
                     else -> {
-                        // Only continue recursion for other node types
+                        // 仅对其他节点类型继续递归
                         super.visitNode(node)
                     }
                 }
@@ -177,19 +149,83 @@ object MarkdownPlanParser {
 
         // 添加最后一个章节（如果有）
         if (currentSectionTitle.isNotEmpty()) {
-            // Create new PlanList with stored data
-            val newAgentPlan = AgentPlan(
+            finalizeSectionAndAddToPlan(
+                agentPlans,
                 currentSectionTitle,
-                currentSectionItems.toList(),
+                currentSectionItems,
                 currentSectionCompleted,
                 currentSectionStatus
             )
-
-            // Update section completion status based on tasks
-            newAgentPlan.updateCompletionStatus()
-
-            agentPlans.add(newAgentPlan)
         }
+    }
+
+    /**
+     * 从列表项节点中提取章节标题和状态信息
+     * @return 包含标题、完成状态和任务状态的数据类，如果不匹配则返回null
+     */
+    private fun extractSectionHeaderInfo(listItemNode: ASTNode, content: String): SectionHeaderInfo? {
+        val listItemFullText = listItemNode.getTextInNode(content).toString().trim()
+        val firstLineEnd = listItemFullText.indexOf('\n')
+        val headerLine = if (firstLineEnd > 0) {
+            listItemFullText.substring(0, firstLineEnd).trim()
+        } else {
+            listItemFullText
+        }
+
+        val headerMatch = SECTION_HEADER_PATTERN.find(headerLine)
+        
+        return headerMatch?.let {
+            // 提取不带状态标记的标题
+            val title = it.groupValues[3].trim()
+            
+            // 获取状态标记（可能在开头或结尾）
+            val startStatusMarker = it.groupValues[2]
+            val endStatusMarker = it.groupValues[4]
+            val statusMarker = if (startStatusMarker.isNotEmpty()) startStatusMarker else endStatusMarker
+            
+            val completed = statusMarker in GITHUB_TODO_COMPLETED
+            val status = determineTaskStatus(statusMarker)
+            
+            SectionHeaderInfo(title, completed, status)
+        }
+    }
+    
+    /**
+     * 根据状态标记确定任务状态
+     */
+    private fun determineTaskStatus(statusMarker: String): TaskStatus {
+        return when (statusMarker) {
+            in GITHUB_TODO_COMPLETED -> TaskStatus.COMPLETED
+            in GITHUB_TODO_FAILED -> TaskStatus.FAILED
+            in GITHUB_TODO_IN_PROGRESS -> TaskStatus.IN_PROGRESS
+            else -> TaskStatus.TODO
+        }
+    }
+    
+    /**
+     * 处理列表项中的嵌套任务列表
+     */
+    private fun processNestedTaskLists(listItemNode: ASTNode, content: String, tasks: MutableList<PlanTask>) {
+        listItemNode.children.forEach { childNode ->
+            if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
+                processTaskItems(childNode, content, tasks)
+            }
+        }
+    }
+    
+    /**
+     * 完成章节处理并添加到计划列表中
+     */
+    private fun finalizeSectionAndAddToPlan(
+        plans: MutableList<AgentPlan>,
+        title: String,
+        tasks: List<PlanTask>,
+        completed: Boolean,
+        status: TaskStatus
+    ) {
+        val plan = AgentPlan(title, tasks.toList(), completed, status)
+        plan.updateCompletionStatus()
+        plans.add(plan)
     }
 
     private fun isFlatOrderedList(node: ASTNode, content: String): Boolean {
@@ -263,4 +299,13 @@ object MarkdownPlanParser {
             }
         }
     }
+
+    /**
+     * 用于存储章节标题和状态信息的数据类
+     */
+    private data class SectionHeaderInfo(
+        val title: String,
+        val completed: Boolean,
+        val status: TaskStatus
+    )
 }
