@@ -25,7 +25,7 @@ class MarkdownPlanParserTest {
             "将BlogPost实体合并到Blog聚合根，建立完整的领域对象",
             "添加领域行为方法（发布、审核、评论等）"
         )
-        assertThat(planItems[0].completed).isFalse()
+        assertThat(planItems[0].completed).isTrue()
     }
 
     @Test
@@ -105,7 +105,7 @@ class MarkdownPlanParserTest {
                 "将BlogPost实体合并到Blog聚合根，建立完整的领域对象",
                 "添加领域行为方法（发布、审核、评论等）"
             )
-            assertThat(planItems[0].completed).isFalse()
+            assertThat(planItems[0].completed).isTrue()
             assertThat(planItems[1].title).isEqualTo("分层结构调整：")
             assertThat(planItems[1].tasks).hasSize(1)
             assertThat(planItems[1].tasks.map { it.step }).containsExactly("清理entity层冗余对象")
@@ -214,7 +214,7 @@ class MarkdownPlanParserTest {
 
         // Then
         assertThat(planItems).hasSize(7)
-        assertThat(planItems[0].title).isEqualTo("分析现有代码结构")
+        assertThat(planItems[0].title).isEqualTo("分析现有代码结构 ✓")
         assertThat(planItems[0].completed).isTrue()
         assertThat(planItems[0].tasks).hasSize(1)
         assertThat(planItems[0].tasks[0].step).isEqualTo("确认Blog相关实体、控制器、服务层结构")
@@ -262,7 +262,7 @@ class MarkdownPlanParserTest {
         // Then
         assertThat(planItems).hasSize(4)
         assertThat(planItems[0].title).isEqualTo("**分析现有代码结构**：")
-        assertThat(planItems[0].completed).isFalse()
+        assertThat(planItems[0].completed).isTrue()
         // 测试 GitHub 风格复选框任务
         assertThat(planItems[2].tasks).hasSize(6)
         assertThat(planItems[2].tasks.map { it.step }).containsExactly(
