@@ -16,6 +16,7 @@ import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.openapi.wm.ex.ToolWindowManagerListener
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
+import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -61,7 +62,11 @@ class AutoDevPlanerTooWindow(val project: Project) : SimpleToolWindowPanel(true,
                 cell(planSketch).resizableColumn()
             }
         }.apply {
-            border = JBUI.Borders.empty(8)
+            border = JBUI.Borders.compound(
+                JBUI.Borders.customLine(UIUtil.getBoundsColor(), 0, 0, 1, 0),
+                JBUI.Borders.empty(8)
+            )
+            background = JBUI.CurrentTheme.ToolWindow.background()
         }
 
         add(planPanel, BorderLayout.CENTER)

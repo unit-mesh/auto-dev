@@ -42,7 +42,6 @@ class TaskPanel(
 
         add(taskLabel)
 
-        background = JBUI.CurrentTheme.ToolWindow.background()
         setupContextMenu()
     }
 
