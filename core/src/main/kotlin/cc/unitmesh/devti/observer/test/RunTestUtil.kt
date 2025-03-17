@@ -60,10 +60,14 @@ object RunTestUtil {
      * (content.component.components.firstOrNull() as? NonOpaquePanel)?.components?.firstOrNull { it is JBRunnerTabs }
      *```
      */
-    private fun collectConsoleRelatedCode(project: Project): List<String>? {
+    fun collectConsoleRelatedCode(project: Project): List<String>? {
         val content = RunContentManager.getInstance(project).selectedContent ?: return null
         val executionConsole = content.executionConsole ?: return null
         val consoleViewImpl: ConsoleViewImpl = getConsoleView(executionConsole) ?: return null
+        return collectConsoleRelatedContent(project, consoleViewImpl)
+    }
+
+    fun collectConsoleRelatedContent(project: Project, consoleViewImpl: ConsoleViewImpl): List<String>? {
         val editor = consoleViewImpl.editor ?: return null
 
         val textRange = TextRange(0, editor.document.textLength)
@@ -73,7 +77,8 @@ object RunTestUtil {
         highlighters.forEach { highlighter ->
             if (!textRange.contains(highlighter.range!!)) return@forEach
 
-            val hyperlinkInfo = EditorHyperlinkSupport.getHyperlinkInfo(highlighter) as? FileHyperlinkInfo ?: return@forEach
+            val hyperlinkInfo =
+                EditorHyperlinkSupport.getHyperlinkInfo(highlighter) as? FileHyperlinkInfo ?: return@forEach
             val descriptor = runReadAction { hyperlinkInfo.descriptor } ?: return@forEach
             val virtualFile = descriptor.file
 
@@ -103,7 +108,7 @@ object RunTestUtil {
         }
     }
 
-    private fun getConsoleView(executionConsole: ExecutionConsole): ConsoleViewImpl? {
+    fun getConsoleView(executionConsole: ExecutionConsole): ConsoleViewImpl? {
         when (executionConsole) {
             is ConsoleViewImpl -> {
                 return executionConsole

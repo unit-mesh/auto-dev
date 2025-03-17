@@ -19,8 +19,10 @@ class JavaRefactoringTool : RefactoringTool {
 
         val elementInfo = runReadAction { getElementInfo(path, null) } ?: return null
         val searchScope = ProjectScope.getProjectScope(project)
-        val javaFiles: List<PsiJavaFile> = FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
-            .mapNotNull { runReadAction { PsiManager.getInstance(project).findFile(it) as? PsiJavaFile } }
+        val javaFiles: List<PsiJavaFile> = runReadAction {
+            FileTypeIndex.getFiles(JavaFileType.INSTANCE, searchScope)
+                .mapNotNull { PsiManager.getInstance(project).findFile(it) as? PsiJavaFile }
+        }
 
         val className = elementInfo.className
         val packageName = elementInfo.pkgName
@@ -67,31 +69,32 @@ class JavaRefactoringTool : RefactoringTool {
         return true
     }
 
-    private fun searchPsiElementByName(refactorInstElement: RefactorInstElement, sourceName: String): PsiNamedElement? = runReadAction {
-        when {
-            refactorInstElement.isMethod -> {
-                val className = refactorInstElement.className
-                val javaFile = this.lookupFile(sourceName) as? PsiJavaFile ?: return@runReadAction null
+    private fun searchPsiElementByName(refactorInstElement: RefactorInstElement, sourceName: String): PsiNamedElement? =
+        runReadAction {
+            when {
+                refactorInstElement.isMethod -> {
+                    val className = refactorInstElement.className
+                    val javaFile = this.lookupFile(sourceName) as? PsiJavaFile ?: return@runReadAction null
 
-                val psiMethod: PsiMethod =
-                    javaFile.classes.firstOrNull { it.name == className }
-                        ?.methods?.firstOrNull { it.name == refactorInstElement.methodName }
-                        ?: return@runReadAction null
+                    val psiMethod: PsiMethod =
+                        javaFile.classes.firstOrNull { it.name == className }
+                            ?.methods?.firstOrNull { it.name == refactorInstElement.methodName }
+                            ?: return@runReadAction null
 
-                psiMethod
-            }
+                    psiMethod
+                }
 
-            refactorInstElement.isClass -> {
-                val javaFile = this.lookupFile(sourceName) as? PsiJavaFile ?: return@runReadAction null
-                javaFile.classes.firstOrNull { it.name == refactorInstElement.className }
-            }
+                refactorInstElement.isClass -> {
+                    val javaFile = this.lookupFile(sourceName) as? PsiJavaFile ?: return@runReadAction null
+                    javaFile.classes.firstOrNull { it.name == refactorInstElement.className }
+                }
 
-            else -> {
-                val javaFile = this.lookupFile(sourceName) as? PsiJavaFile ?: return@runReadAction null
-                javaFile
+                else -> {
+                    val javaFile = this.lookupFile(sourceName) as? PsiJavaFile ?: return@runReadAction null
+                    javaFile
+                }
             }
         }
-    }
 
     /**
      * input will be canonicalName#methodName or just methodName
