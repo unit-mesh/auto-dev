@@ -20,9 +20,12 @@ import com.intellij.psi.PsiManager
  * @param myProject the Project in which the file operations are performed
  * @param prop the property string containing the file name and optional line range
  *
+ * In JetBrins Junie early version, only return 300 lines of file content with a comments for others.
+ * In Cursor and Windsurf, will fetch 30 lines and structure the content with a code block.
  */
 class FileInsCommand(private val myProject: Project, private val prop: String) : InsCommand {
     override val commandName: BuiltinCommand = BuiltinCommand.FILE
+    private val MAX_LINES = 300
 
     override suspend fun execute(): String? {
         val range: LineInfo? = LineInfo.fromString(prop)
@@ -50,16 +53,7 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
 
         val lang = PsiManager.getInstance(myProject).findFile(virtualFile)?.language?.displayName ?: ""
 
-        val fileContent = if (range == null) {
-            content
-        } else {
-            try {
-                content.split("\n").slice(range.startLine - 1 until range.endLine)
-                    .joinToString("\n")
-            } catch (e: StringIndexOutOfBoundsException) {
-                content
-            }
-        }
+        val fileContent = splitLines(range, content)
 
         val realPath = virtualFile.relativePath(myProject)
 
@@ -69,6 +63,33 @@ class FileInsCommand(private val myProject: Project, private val prop: String) :
         output.append(fileContent)
         output.append("\n```\n")
         return output.toString()
+    }
+
+    private fun splitLines(range: LineInfo?, content: String): String {
+        val lines = content.lines()
+        val currentSize = lines.size
+        return if (range == null) {
+            limitMaxSize(currentSize, content)
+        } else {
+            try {
+                lines.slice(range.startLine - 1 until range.endLine)
+                    .joinToString("\n")
+            } catch (e: StringIndexOutOfBoundsException) {
+                limitMaxSize(currentSize, content)
+            }
+        }
+    }
+
+    private fun limitMaxSize(size: Int, content: String): String {
+        return if (size > MAX_LINES) {
+            val code = content.split("\n")
+                .slice(0 until MAX_LINES)
+                .joinToString("\n")
+
+            "File too long, only show first $MAX_LINES lines.\n$code\nUse `filename#L300-L600` to get more lines."
+        } else {
+            content
+        }
     }
 }
 
