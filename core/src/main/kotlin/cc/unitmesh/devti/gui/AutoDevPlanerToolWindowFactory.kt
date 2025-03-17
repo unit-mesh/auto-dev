@@ -6,6 +6,7 @@ import cc.unitmesh.devti.observer.plan.MarkdownPlanParser
 import cc.unitmesh.devti.observer.plan.PlanUpdateListener
 import cc.unitmesh.devti.sketch.ui.plan.PlanSketch
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
@@ -33,6 +34,7 @@ class AutoDevPlanerToolWindowFactory : ToolWindowFactory, ToolWindowManagerListe
         val manager = toolWindow.contentManager
         manager.addContent(manager.factory.createContent(panel, null, false).apply { isCloseable = false })
         project.messageBus.connect(manager).subscribe(ToolWindowManagerListener.TOPIC, this)
+        toolWindow.setTitleActions(listOfNotNull(ActionUtil.getAction("AutoDevPlanner.ToolWindow.TitleActions")))
     }
 
     override fun stateChanged(manager: ToolWindowManager) {

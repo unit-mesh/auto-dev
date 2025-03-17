@@ -212,9 +212,9 @@ object MarkdownPlanParser {
                         MarkdownElementTypes.ORDERED_LIST -> {
                             processOrderedList(node, planSections)
                             // 跳过递归以避免重复处理
-                    }
+                        }
 
-                    MarkdownElementTypes.UNORDERED_LIST -> {
+                        MarkdownElementTypes.UNORDERED_LIST -> {
                             processUnorderedList(node)
                             // 跳过递归以避免重复处理
                         }
@@ -249,7 +249,7 @@ object MarkdownPlanParser {
 
                         // 处理子任务列表
                         item.children.forEach { childNode ->
-                    if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
+                            if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
                                 processUnorderedList(childNode)
                             }
                         }
@@ -326,7 +326,7 @@ object MarkdownPlanParser {
 
                 // 处理嵌套任务
                 item.children.forEach { childNode ->
-                            if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
+                    if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
                         extractTasks(childNode, taskList)
                     }
                 }
@@ -357,4 +357,14 @@ object MarkdownPlanParser {
 
     // 为保持向后兼容性，提供parse方法的别名
     fun parse(content: String): List<AgentTaskEntry> = interpretPlan(content)
+    fun formatPlanToMarkdown(entries: MutableList<AgentTaskEntry>): String {
+        val stringBuilder = StringBuilder()
+        entries.forEachIndexed { index, entry ->
+            stringBuilder.append("${index + 1}. ${entry.title}\n")
+            entry.steps.forEach { step ->
+                stringBuilder.append("  - [${if (step.completed) "x" else " "}] ${step.step}\n")
+            }
+        }
+        return stringBuilder.toString()
+    }
 }

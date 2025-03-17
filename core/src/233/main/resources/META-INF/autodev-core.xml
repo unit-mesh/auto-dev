@@ -417,5 +417,11 @@
             <reference id="cc.unitmesh.devti.QuickAssistant"/>
             <reference id="cc.unitmesh.devti.EditSettings"/>
         </group>
+
+        <group id="AutoDevPlanner.ToolWindow.TitleActions">
+            <action id="ReviewPlan" icon="AllIcons.General.InspectionsEye"
+                    class="cc.unitmesh.devti.observer.plan.PlanReviewAction"/>
+            <separator/>
+        </group>
     </actions>
 </idea-plugin>

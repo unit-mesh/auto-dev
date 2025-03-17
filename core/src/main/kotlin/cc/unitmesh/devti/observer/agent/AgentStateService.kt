@@ -47,7 +47,7 @@ class AgentStateService {
         return intention
     }
 
-    fun allMessages(): List<Message> {
+    fun getAllMessages(): List<Message> {
         return state.messages
     }
 

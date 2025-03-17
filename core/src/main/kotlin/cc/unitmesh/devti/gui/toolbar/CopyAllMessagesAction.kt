@@ -47,7 +47,7 @@ class CopyAllMessagesAction : AnAction("Copy All Messages", "Copy all messages",
 
     private fun copyMessages(project: Project?) {
         val agentStateService = project?.getService(AgentStateService::class.java) ?: return
-        var allText = agentStateService.allMessages().joinToString("\n") { it.content }
+        var allText = agentStateService.getAllMessages().joinToString("\n") { it.content }
         val selection = StringSelection(allText)
         val clipboard = Toolkit.getDefaultToolkit().systemClipboard
         clipboard.setContents(selection, null)
