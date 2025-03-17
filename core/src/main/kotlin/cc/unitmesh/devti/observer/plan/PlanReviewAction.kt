@@ -1,11 +1,21 @@
 // filepath: /Volumes/source/ai/autocrud/core/src/main/kotlin/cc/unitmesh/devti/observer/plan/PlanReviewAction.kt
 package cc.unitmesh.devti.observer.plan
 
+import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.observer.agent.AgentStateService
+import cc.unitmesh.devti.statusbar.AutoDevStatus
+import cc.unitmesh.devti.statusbar.AutoDevStatusService
+import cc.unitmesh.devti.template.GENIUS_CODE
+import cc.unitmesh.devti.template.TemplateRender
+import cc.unitmesh.devti.util.AutoDevCoroutineScope
+import cc.unitmesh.devti.util.parser.CodeFence
+import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import org.intellij.markdown.IElementType
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.intellij.markdown.MarkdownElementTypes
 import org.intellij.markdown.ast.ASTNode
 import org.intellij.markdown.ast.accept
@@ -22,12 +32,40 @@ class PlanReviewAction : AnAction() {
         val agentStateService = project.getService(AgentStateService::class.java)
 
         val currentPlan = agentStateService.getPlan()
+        val issue = agentStateService.buildOriginIntention() ?: ""
         val plan = MarkdownPlanParser.formatPlanToMarkdown(currentPlan)
 
-        /// call llm to evaluate the plan
         val allMessages = agentStateService.getAllMessages()
-        val withOutCode = allMessages.map {
-            removeAllMarkdownCode(it.content)
+        val withoutCodeMsgs = allMessages.map {
+            it.copy(role = it.role, content = removeAllMarkdownCode(it.content))
+        }
+
+        val templateRender = TemplateRender(GENIUS_CODE)
+        val systemPrompt = templateRender.getTemplate("plan-reviewer.vm")
+        val history = withoutCodeMsgs.joinToString {
+            "# Role ${it.role}\nMessage:\n${it.content}"
+        }
+
+        val stream = LlmFactory.create(project).stream(history, systemPrompt)
+        AutoDevCoroutineScope.scope(project).launch {
+            val llmResult = StringBuilder()
+            AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress, "review the plan")
+            runBlocking {
+                stream.collect {
+                    llmResult.append(it)
+                }
+            }
+
+            val result = llmResult.toString()
+            AutoDevStatusService.notifyApplication(AutoDevStatus.Done, "review the plan")
+            AutoDevNotifications.notify(project, result)
+            val plan = CodeFence.parseAll(result).firstOrNull {
+                it.originLanguage == "plan"
+            }
+
+            if (plan !== null) {
+                agentStateService.updatePlan(result)
+            }
         }
     }
 }
@@ -68,7 +106,7 @@ fun removeAllMarkdownCode(markdownContent: String): String {
 private fun extractCodeFenceLanguage(node: ASTNode, markdownContent: String): String {
     val nodeText = node.getTextInNode(markdownContent).toString()
     val firstLine = nodeText.lines().firstOrNull() ?: ""
-    
+
     val languageMatch = Regex("^```(.*)$").find(firstLine.trim())
     return languageMatch?.groupValues?.getOrNull(1)?.trim() ?: ""
 }

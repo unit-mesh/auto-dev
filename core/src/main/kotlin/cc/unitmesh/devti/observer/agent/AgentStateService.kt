@@ -4,6 +4,7 @@ import cc.unitmesh.devti.agent.tool.AgentTool
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.llms.custom.Message
 import cc.unitmesh.devti.observer.plan.AgentTaskEntry
+import cc.unitmesh.devti.observer.plan.MarkdownPlanParser
 import cc.unitmesh.devti.observer.plan.PlanUpdateListener
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
@@ -56,6 +57,11 @@ class AgentStateService {
         ApplicationManager.getApplication().messageBus
             .syncPublisher(PlanUpdateListener.TOPIC)
             .onPlanUpdate(items)
+    }
+
+    fun updatePlan(content: String) {
+        val planItems = MarkdownPlanParser.parse(content)
+        updatePlan(planItems.toMutableList())
     }
 
     fun resetState() {

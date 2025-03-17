@@ -36,7 +36,7 @@ open class SketchInputListener(
     override val templateRender: TemplateRender get() = TemplateRender(GENIUS_CODE)
     open var systemPrompt = ""
     open var planPrompt = ""
-    val planTemplate = templateRender.getTemplate("plan.devin")
+    val planTemplate = templateRender.getTemplate("plan.vm")
 
     open suspend fun setup() {
         systemPrompt = templateRender.renderTemplate(template, SketchRunContext.create(project, null, ""))

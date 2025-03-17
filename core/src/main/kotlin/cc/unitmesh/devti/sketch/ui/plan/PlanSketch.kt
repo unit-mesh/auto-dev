@@ -8,6 +8,7 @@ import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import com.intellij.lang.Language
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBPanel
+import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
@@ -16,6 +17,7 @@ import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.ScrollPaneConstants
 
 /**
  * Controller class for managing the plan data and UI updates
@@ -96,7 +98,14 @@ class PlanSketch(
         }
         
         planController.renderPlan()
-        add(contentPanel, BorderLayout.CENTER)
+        
+        val scrollPane = JBScrollPane(contentPanel).apply {
+            verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
+            horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+            border = null
+        }
+        
+        add(scrollPane, BorderLayout.CENTER)
 
         minimumSize = Dimension(200, 0)
         background = JBUI.CurrentTheme.ToolWindow.background()
@@ -130,3 +139,4 @@ class PlanSketch(
     
     override fun dispose() {}
 }
+
