@@ -17,6 +17,7 @@ class EditPlanAction : AnAction() {
 
         AutoDevPlanerTooWindow.showPlanEditor(project, planString) { newPlan ->
             if (newPlan.isNotEmpty()) {
+                /// todo: modify old messages
                 AutoDevToolWindowFactory.sendToSketchToolWindow(project, ChatActionType.CHAT) { ui, _ ->
                     ui.setInput("Please follow the new plan to complete the task:\n# Plan\n```plan\n$newPlan\n```")
                 }

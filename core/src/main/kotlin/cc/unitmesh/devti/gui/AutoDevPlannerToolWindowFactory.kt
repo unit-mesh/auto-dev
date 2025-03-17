@@ -74,36 +74,11 @@ class AutoDevPlannerToolWindowFactory : ToolWindowFactory, ToolWindowManagerList
 }
 
 class AutoDevPlanerTooWindow(val project: Project) : SimpleToolWindowPanel(true, true), Disposable {
-    override fun getName(): @NlsActions.ActionText String? = "AutoDev Planer"
+    override fun getName(): String = "AutoDev Planer"
     var connection = ApplicationManager.getApplication().messageBus.connect(this)
-
-    var content = """1. 分析当前Blog功能结构（✓）
-   - 当前Blog功能分散在entity(BlogPost)、service、controller层，采用贫血模型
-   - domain.Blog类存在但未充分使用，需要明确领域模型边界
-
-2. 建立领域模型（*）
-   a. 定义Blog聚合根（进行中）
-   b. 创建Value Object（标题、内容等）
-   c. 定义领域服务接口
-   d. 实现业务规则（如发布校验、状态转换）
-
-3. 重构数据持久层
-   - 将BlogRepository改为面向领域模型
-   - 移除BlogPost实体与数据库的直接映射
-
-4. 调整应用层
-   - 重写BlogService使用领域模型
-   - 修改BlogController适配DTO转换
-
-5. 业务逻辑迁移
-   - 将Service中的CRUD逻辑转移到Blog领域对象
-   - 实现领域事件机制（如博客发布事件）
-
-6. 验证测试
-   - 修改现有测试用例
-   - 添加领域模型单元测试"""
+    var content = ""
     var planSketch: PlanSketch = PlanSketch(project, content, MarkdownPlanParser.parse(content).toMutableList(), true)
-    
+
     private var markdownEditor: MarkdownLanguageField? = null
     private val contentPanel = JPanel(BorderLayout())
     private var isEditorMode = false
@@ -122,7 +97,7 @@ class AutoDevPlanerTooWindow(val project: Project) : SimpleToolWindowPanel(true,
             }
         })
     }
-    
+
     private fun createPlanPanel(): JPanel {
         return panel {
             row {
@@ -141,13 +116,13 @@ class AutoDevPlanerTooWindow(val project: Project) : SimpleToolWindowPanel(true,
 
     private fun switchToEditorView() {
         if (isEditorMode) return
-        
+
         if (markdownEditor == null) {
             markdownEditor = MarkdownLanguageField(project, content, "Edit your plan here...", "plan.md")
         } else {
             markdownEditor?.text = content
         }
-        
+
         val buttonPanel = JPanel(BorderLayout())
         val buttonsBox = Box.createHorizontalBox().apply {
             add(JButton("Save").apply {
@@ -166,32 +141,32 @@ class AutoDevPlanerTooWindow(val project: Project) : SimpleToolWindowPanel(true,
         }
         buttonPanel.add(buttonsBox, BorderLayout.EAST)
         buttonPanel.border = JBUI.Borders.empty(5)
-        
+
         contentPanel.removeAll()
         val editorPanel = JPanel(BorderLayout())
         editorPanel.add(JBScrollPane(markdownEditor), BorderLayout.CENTER)
         editorPanel.add(buttonPanel, BorderLayout.SOUTH)
-        
+
         contentPanel.add(editorPanel, BorderLayout.CENTER)
         contentPanel.revalidate()
         contentPanel.repaint()
-        
+
         isEditorMode = true
     }
-    
+
     private fun switchToPlanView(newContent: String? = null) {
         if (newContent != null && newContent != content) {
             content = newContent
-            
+
             val parsedItems = MarkdownPlanParser.parse(newContent).toMutableList()
             planSketch.updatePlan(parsedItems)
         }
-        
+
         contentPanel.removeAll()
         contentPanel.add(planPanel, BorderLayout.CENTER)
         contentPanel.revalidate()
         contentPanel.repaint()
-        
+
         isEditorMode = false
     }
 
@@ -201,11 +176,12 @@ class AutoDevPlanerTooWindow(val project: Project) : SimpleToolWindowPanel(true,
 
     companion object {
         fun showPlanEditor(project: Project, planText: String, callback: (String) -> Unit) {
-            val toolWindow = ToolWindowManager.getInstance(project).getToolWindow(AutoDevPlannerToolWindowFactory.PlANNER_ID)
+            val toolWindow =
+                ToolWindowManager.getInstance(project).getToolWindow(AutoDevPlannerToolWindowFactory.PlANNER_ID)
             if (toolWindow != null) {
                 val content = toolWindow.contentManager.getContent(0)
                 val plannerWindow = content?.component as? AutoDevPlanerTooWindow
-                
+
                 plannerWindow?.let {
                     it.currentCallback = callback
                     if (planText.isNotEmpty() && planText != it.content) {
