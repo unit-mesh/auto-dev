@@ -41,7 +41,6 @@ class TaskPanel(
         }
 
         add(taskLabel)
-
         setupContextMenu()
     }
 

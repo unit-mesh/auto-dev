@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.gui
 
 import cc.unitmesh.devti.observer.plan.AgentTaskEntry
+import cc.unitmesh.devti.observer.plan.MarkdownPlanParser
 import cc.unitmesh.devti.observer.plan.PlanUpdateListener
 import cc.unitmesh.devti.sketch.ui.plan.PlanSketch
 import com.intellij.openapi.Disposable
@@ -54,7 +55,30 @@ class AutoDevPlanerTooWindow(val project: Project) : SimpleToolWindowPanel(true,
     override fun getName(): @NlsActions.ActionText String? = "AutoDev Planer"
     var connection = ApplicationManager.getApplication().messageBus.connect(this)
 
-    var planSketch: PlanSketch = PlanSketch(project, "", mutableListOf(), true)
+    val content = """1. 更新实体类 BlogPost
+    - [✓] 添加 category 字段
+    - [✓] 更新构造函数
+    - [✓] 添加 getter 和 setter
+
+2. 更新 DTO 类 CreateBlogRequest
+    - [✓] 添加 category 字段
+
+3. 更新 BlogService
+    - [✓] 确保 createBlog 方法正确处理 category 字段
+
+4. 更新 BlogRepository
+    - [✓] 添加 findByCategory 方法
+
+5. 更新 BlogController
+    - [✓] 添加按 category 查询的 API 端点
+    - [✓] 更新 Swagger 文档
+
+6. 测试验证
+    - [ ] 编写 Postman 测试用例
+    - [ ] 创建带 category 参数的集成测试
+    - [ ] 验证空分类场景处理
+"""
+    var planSketch: PlanSketch = PlanSketch(project, content, MarkdownPlanParser.parse(content).toMutableList(), true)
 
     init {
         val planPanel = panel {

@@ -33,13 +33,14 @@ class SectionPanel(
         val titlePanel = createSectionTitlePanel()
         add(titlePanel)
 
-        // Add all tasks in this section
         planItem.steps.forEach { task ->
             add(TaskPanel(project, task) {
                 updateSectionStatus()
                 onStatusChange()
             })
         }
+
+        revalidate()
     }
 
     private fun createSectionTitlePanel(): JPanel {
