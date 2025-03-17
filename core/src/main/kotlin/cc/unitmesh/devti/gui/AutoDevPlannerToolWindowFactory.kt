@@ -167,7 +167,6 @@ class AutoDevPlanerTooWindow(val project: Project) : SimpleToolWindowPanel(true,
         buttonPanel.add(buttonsBox, BorderLayout.EAST)
         buttonPanel.border = JBUI.Borders.empty(5)
         
-        // Switch views
         contentPanel.removeAll()
         val editorPanel = JPanel(BorderLayout())
         editorPanel.add(JBScrollPane(markdownEditor), BorderLayout.CENTER)
@@ -212,6 +211,7 @@ class AutoDevPlanerTooWindow(val project: Project) : SimpleToolWindowPanel(true,
                     if (planText.isNotEmpty() && planText != it.content) {
                         it.content = planText
                     }
+
                     it.switchToEditorView()
                     toolWindow.show()
                 }
