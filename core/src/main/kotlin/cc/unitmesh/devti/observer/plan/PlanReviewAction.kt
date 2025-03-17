@@ -32,7 +32,6 @@ class PlanReviewAction : AnAction() {
         val agentStateService = project.getService(AgentStateService::class.java)
 
         val currentPlan = agentStateService.getPlan()
-        val issue = agentStateService.buildOriginIntention() ?: ""
         val plan = MarkdownPlanParser.formatPlanToMarkdown(currentPlan)
 
         val allMessages = agentStateService.getAllMessages()
@@ -44,7 +43,8 @@ class PlanReviewAction : AnAction() {
         val systemPrompt = templateRender.getTemplate("plan-reviewer.vm")
         val history = withoutCodeMsgs.joinToString {
             "# Role ${it.role}\nMessage:\n${it.content}"
-        }
+        } + "\nLastPlan: \n$plan\n"
+
 
         val stream = LlmFactory.create(project).stream(history, systemPrompt)
         AutoDevCoroutineScope.scope(project).launch {
@@ -64,7 +64,7 @@ class PlanReviewAction : AnAction() {
             }
 
             if (plan !== null) {
-                agentStateService.updatePlan(result)
+                agentStateService.updatePlan(plan.text)
             }
         }
     }

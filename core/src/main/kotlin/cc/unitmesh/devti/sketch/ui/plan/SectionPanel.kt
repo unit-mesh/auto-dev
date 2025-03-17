@@ -1,3 +1,4 @@
+// filepath: /Volumes/source/ai/autocrud/core/src/main/kotlin/cc/unitmesh/devti/sketch/ui/plan/SectionPanel.kt
 package cc.unitmesh.devti.sketch.ui.plan
 
 import cc.unitmesh.devti.AutoDevBundle
@@ -31,14 +32,21 @@ class SectionPanel(
     init {
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
         background = JBUI.CurrentTheme.ToolWindow.background()
+        
+        alignmentX = LEFT_ALIGNMENT
+        maximumSize = Dimension(Int.MAX_VALUE, Int.MAX_VALUE)
+        
         val titlePanel = createSectionTitlePanel()
         add(titlePanel)
 
         planItem.steps.forEach { task ->
-            add(TaskPanel(project, task) {
+            val taskPanel = TaskPanel(project, task) {
                 updateSectionStatus()
                 onStatusChange()
-            })
+            }
+
+            taskPanel.alignmentX = LEFT_ALIGNMENT
+            add(taskPanel)
         }
 
         revalidate()

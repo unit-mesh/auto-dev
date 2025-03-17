@@ -20,10 +20,12 @@ import javax.swing.JPanel
  * Toolbar factory for creating the plan sketch toolbar
  */
 class PlanToolbarFactory(private val project: Project) {
-    fun createToolbar(): JComponent {
+    fun createToolbar(component: JComponent): JComponent {
         val actionGroup = DefaultActionGroup(createToolbarActions())
         val toolbar = ActionManager.getInstance()
-            .createActionToolbar("PlanSketch", actionGroup, true)
+            .createActionToolbar("PlanSketch", actionGroup, true).apply {
+                this.targetComponent = component
+            }
 
         val titleLabel = JLabel("Thought Plan").apply {
             border = JBUI.Borders.empty(0, 10)

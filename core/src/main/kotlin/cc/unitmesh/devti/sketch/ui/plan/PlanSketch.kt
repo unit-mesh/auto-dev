@@ -1,3 +1,4 @@
+// filepath: /Volumes/source/ai/autocrud/core/src/main/kotlin/cc/unitmesh/devti/sketch/ui/plan/PlanSketch.kt
 package cc.unitmesh.devti.sketch.ui.plan
 
 import cc.unitmesh.devti.observer.agent.AgentStateService
@@ -38,6 +39,9 @@ class PlanController(
             
             contentPanel.add(sectionPanel)
         }
+        
+        // Add a vertical glue to push content up when there's extra space
+        contentPanel.add(Box.createVerticalGlue())
         
         contentPanel.revalidate()
         contentPanel.repaint()
@@ -86,6 +90,9 @@ class PlanSketch(
 ) : JBPanel<PlanSketch>(BorderLayout(JBUI.scale(8), 0)), ExtensionLangSketch {
     private val contentPanel = JPanel().apply {
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
+        // Ensure content panel takes maximum width but doesn't force height
+        maximumSize = Dimension(Int.MAX_VALUE, Int.MAX_VALUE)
+        alignmentX = LEFT_ALIGNMENT
     }
     
     private val toolbarFactory = PlanToolbarFactory(project)
@@ -93,7 +100,7 @@ class PlanSketch(
     
     init {
         if (!isInToolwindow) {
-            add(toolbarFactory.createToolbar(), BorderLayout.NORTH)
+            add(toolbarFactory.createToolbar(this), BorderLayout.NORTH)
             border = JBUI.Borders.empty(8)
         }
         
@@ -103,9 +110,18 @@ class PlanSketch(
             verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
             horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
             border = null
+            
+            // Make sure viewport tracks width but not height
+            viewport.isOpaque = false
+            viewport.view = contentPanel
         }
         
-        add(scrollPane, BorderLayout.CENTER)
+        // Use a wrapper panel to ensure proper scroll behavior
+        val wrapperPanel = JPanel(BorderLayout())
+        wrapperPanel.add(scrollPane, BorderLayout.CENTER)
+        wrapperPanel.background = JBUI.CurrentTheme.ToolWindow.background()
+        
+        add(wrapperPanel, BorderLayout.CENTER)
 
         minimumSize = Dimension(200, 0)
         background = JBUI.CurrentTheme.ToolWindow.background()
@@ -139,4 +155,3 @@ class PlanSketch(
     
     override fun dispose() {}
 }
-
