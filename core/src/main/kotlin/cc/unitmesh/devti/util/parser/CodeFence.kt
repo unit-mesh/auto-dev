@@ -1,3 +1,4 @@
+// filepath: /Volumes/source/ai/autocrud/core/src/main/kotlin/cc/unitmesh/devti/util/parser/CodeFence.kt
 package cc.unitmesh.devti.util.parser
 
 import com.intellij.lang.Language
@@ -113,7 +114,7 @@ class CodeFence(
                 parseMarkdownContent(remainingContent, codeFences)
             }
 
-            return codeFences.filter { it.text.isNotEmpty() }
+            return codeFences.filter { it.text.isNotEmpty() || (!it.isComplete && it.originLanguage == "DevIn") }
         }
         
         val devinRegexBlock = Regex("(?<=^|\\n)```devin\\n([\\s\\S]*?)\\n```\\n")
@@ -315,3 +316,4 @@ class CodeFence(
 private fun IntRange.length(): Int {
     return (this.endInclusive - this.start) + 1
 }
+

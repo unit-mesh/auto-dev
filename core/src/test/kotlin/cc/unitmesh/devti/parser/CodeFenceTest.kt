@@ -625,4 +625,33 @@ Index: src/main/java/cc/unitmesh/untitled/demo/repository/BlogRepository.java
 
         assertEquals("DevIn", codeFences[4].originLanguage)
     }
+
+    fun testShouldResolveContinueDevinBlock() {
+        val content = """
+            我将更新 `CreateBlogRequest` 和 `CreateBlogResponse` 以匹配新的领域模型。
+            
+            <devin>
+            /patch:src/main/java/cc/unitmesh/untitled/demo/dto/CreateBlogRequest.java
+            ```patch
+            Index: src/main/java/cc/unitmesh/untitled/demo/dto/CreateBlogRequest.java
+            --- src/main/java/cc/unitmesh/untitled/demo/dto/CreateBlogRequest.java
+            +++ src/main/java/cc/unitmesh/untitled/demo/dto/CreateBlogRequest.java
+            @@ -1,7 +1,7 @@
+             package cc.unitmesh.untitled.demo.dto;
+            
+            -import cc.unitmesh.untitled.demo.entity.Author;
+             import lombok.Data;
+            +import cc.unitmesh.untitled.demo.domain.Author;
+            
+             @Data
+             public class CreateBlogRequest {
+            ```
+            </devin>
+            
+            <devin>
+        """.trimIndent()
+
+        val codeFences = CodeFence.parseAll(content)
+        assertEquals(3, codeFences.size)
+    }
 }
