@@ -58,7 +58,7 @@
                     order="after Structure"
                     icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                     secondary="true"
-                    factoryClass="cc.unitmesh.devti.gui.AutoDevPlanerToolWindowFactory"/>
+                    factoryClass="cc.unitmesh.devti.gui.AutoDevPlannerToolWindowFactory"/>
 
         <notificationGroup id="AutoDev.notify" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
                            key="name"/>

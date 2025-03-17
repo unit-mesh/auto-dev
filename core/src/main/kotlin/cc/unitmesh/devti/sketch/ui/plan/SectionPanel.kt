@@ -1,4 +1,3 @@
-// filepath: /Volumes/source/ai/autocrud/core/src/main/kotlin/cc/unitmesh/devti/sketch/ui/plan/SectionPanel.kt
 package cc.unitmesh.devti.sketch.ui.plan
 
 import cc.unitmesh.devti.AutoDevBundle
@@ -28,14 +27,11 @@ class SectionPanel(
     private val planItem: AgentTaskEntry,
     private val onStatusChange: () -> Unit
 ) : JBPanel<JBPanel<*>>(BorderLayout()) {
-
     init {
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
         background = JBUI.CurrentTheme.ToolWindow.background()
-        
-        alignmentX = LEFT_ALIGNMENT
-        maximumSize = Dimension(Int.MAX_VALUE, Int.MAX_VALUE)
-        
+        border = JBUI.Borders.empty(2, 0)
+
         val titlePanel = createSectionTitlePanel()
         add(titlePanel)
 
@@ -45,11 +41,8 @@ class SectionPanel(
                 onStatusChange()
             }
 
-            taskPanel.alignmentX = LEFT_ALIGNMENT
             add(taskPanel)
         }
-
-        revalidate()
     }
 
     private fun createSectionTitlePanel(): JPanel {
@@ -85,15 +78,14 @@ class SectionPanel(
     private fun createExecuteSectionButton(): JButton {
         return JButton(AllIcons.Actions.Execute).apply {
             border = BorderFactory.createEmptyBorder()
-
             preferredSize = Dimension(20, 20)
             toolTipText = "Execute Task"
             background = JBUI.CurrentTheme.ToolWindow.background()
 
             addActionListener {
                 AutoDevToolWindowFactory.Companion.sendToSketchToolWindow(project, ChatActionType.SKETCH) { ui, _ ->
-                    val allSteps = planItem.steps.joinToString("\n") { it.step }
-                    ui.sendInput(AutoDevBundle.message("sketch.plan.finish.task") + allSteps)
+                    val content = planItem.title + "\n" + planItem.steps.joinToString("\n") { "   - " + it.step }
+                    ui.sendInput(AutoDevBundle.message("sketch.plan.finish.task") + content)
                 }
             }
         }

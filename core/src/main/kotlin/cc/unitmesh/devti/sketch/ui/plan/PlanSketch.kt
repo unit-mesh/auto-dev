@@ -1,4 +1,3 @@
-// filepath: /Volumes/source/ai/autocrud/core/src/main/kotlin/cc/unitmesh/devti/sketch/ui/plan/PlanSketch.kt
 package cc.unitmesh.devti.sketch.ui.plan
 
 import cc.unitmesh.devti.observer.agent.AgentStateService
@@ -10,7 +9,7 @@ import com.intellij.lang.Language
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
-import com.intellij.util.ui.JBEmptyBorder
+import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -24,43 +23,39 @@ import javax.swing.ScrollPaneConstants
  * Controller class for managing the plan data and UI updates
  */
 class PlanController(
-    private val project: Project, 
+    private val project: Project,
     private val contentPanel: JPanel,
     private var agentTaskItems: MutableList<AgentTaskEntry>
 ) {
     fun renderPlan() {
         contentPanel.removeAll()
-        
         agentTaskItems.forEachIndexed { index, planItem ->
             val sectionPanel = SectionPanel(project, index, planItem) {
                 contentPanel.revalidate()
                 contentPanel.repaint()
             }
-            
+
             contentPanel.add(sectionPanel)
         }
-        
-        // Add a vertical glue to push content up when there's extra space
-        contentPanel.add(Box.createVerticalGlue())
-        
+
         contentPanel.revalidate()
         contentPanel.repaint()
     }
-    
+
     fun updatePlan(newPlanItems: List<AgentTaskEntry>) {
         if (newPlanItems.isEmpty()) {
             return
         }
-        
+
         val taskStateMap = mutableMapOf<String, Pair<Boolean, TaskStatus>>()
         agentTaskItems.forEach { planItem ->
             planItem.steps.forEach { task ->
                 taskStateMap[task.step] = Pair(task.completed, task.status)
             }
         }
-        
+
         agentTaskItems.clear()
-        
+
         newPlanItems.forEach { newItem ->
             agentTaskItems.add(newItem)
             newItem.steps.forEach { task ->
@@ -70,10 +65,10 @@ class PlanController(
                 }
             }
         }
-        
+
         renderPlan()
     }
-    
+
     fun savePlanToService() {
         project.getService(AgentStateService::class.java).updatePlan(agentTaskItems)
     }
@@ -88,30 +83,24 @@ class PlanSketch(
     private var agentTaskItems: MutableList<AgentTaskEntry>,
     private val isInToolwindow: Boolean = false
 ) : JBPanel<PlanSketch>(BorderLayout(JBUI.scale(8), 0)), ExtensionLangSketch {
-    private val contentPanel = JPanel().apply {
-        layout = BoxLayout(this, BoxLayout.Y_AXIS)
-        // Ensure content panel takes maximum width but doesn't force height
-        maximumSize = Dimension(Int.MAX_VALUE, Int.MAX_VALUE)
-        alignmentX = LEFT_ALIGNMENT
-    }
-    
+    private val contentPanel = JPanel(VerticalLayout(JBUI.scale(0)))
+    val scrollPane: JBScrollPane
     private val toolbarFactory = PlanToolbarFactory(project)
     private val planController = PlanController(project, contentPanel, agentTaskItems)
-    
+
     init {
         if (!isInToolwindow) {
             add(toolbarFactory.createToolbar(this), BorderLayout.NORTH)
             border = JBUI.Borders.empty(8)
         }
-        
+
         planController.renderPlan()
-        
-        val scrollPane = JBScrollPane(contentPanel).apply {
+
+        scrollPane = JBScrollPane(contentPanel).apply {
             verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
             horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
-            border = null
-            
-            // Make sure viewport tracks width but not height
+            border = JBUI.Borders.empty()
+
             viewport.isOpaque = false
             viewport.view = contentPanel
         }
@@ -128,15 +117,15 @@ class PlanSketch(
     }
 
     override fun getExtensionName(): String = "ThoughtPlan"
-    
+
     override fun getViewText(): String = content
-    
+
     override fun updateViewText(text: String, complete: Boolean) {
         this.content = text
         val agentPlans = MarkdownPlanParser.parse(text)
         planController.updatePlan(agentPlans)
     }
-    
+
     override fun onComplete(context: String) {
         if (!isInToolwindow) {
             val agentPlans = MarkdownPlanParser.parse(content).toMutableList()
@@ -144,14 +133,15 @@ class PlanSketch(
             planController.savePlanToService()
         }
     }
-    
+
     fun updatePlan(newPlanItems: List<AgentTaskEntry>) {
         planController.updatePlan(newPlanItems)
     }
-    
+
     override fun getComponent(): JComponent = this
-    
+
     override fun updateLanguage(language: Language?, originLanguage: String?) {}
-    
+
     override fun dispose() {}
 }
+

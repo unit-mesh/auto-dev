@@ -23,7 +23,7 @@ import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
 import java.util.concurrent.atomic.AtomicBoolean
 
-class AutoDevPlanerToolWindowFactory : ToolWindowFactory, ToolWindowManagerListener, DumbAware {
+class AutoDevPlannerToolWindowFactory : ToolWindowFactory, ToolWindowManagerListener, DumbAware {
     private val orientation = AtomicBoolean(true)
 
     override fun createToolWindowContent(
@@ -58,7 +58,31 @@ class AutoDevPlanerTooWindow(val project: Project) : SimpleToolWindowPanel(true,
     override fun getName(): @NlsActions.ActionText String? = "AutoDev Planer"
     var connection = ApplicationManager.getApplication().messageBus.connect(this)
 
-    val content = ""
+    val content = """1. 分析当前Blog功能结构（✓）
+   - 当前Blog功能分散在entity(BlogPost)、service、controller层，采用贫血模型
+   - domain.Blog类存在但未充分使用，需要明确领域模型边界
+
+2. 建立领域模型（*）
+   a. 定义Blog聚合根（进行中）
+   b. 创建Value Object（标题、内容等）
+   c. 定义领域服务接口
+   d. 实现业务规则（如发布校验、状态转换）
+
+3. 重构数据持久层
+   - 将BlogRepository改为面向领域模型
+   - 移除BlogPost实体与数据库的直接映射
+
+4. 调整应用层
+   - 重写BlogService使用领域模型
+   - 修改BlogController适配DTO转换
+
+5. 业务逻辑迁移
+   - 将Service中的CRUD逻辑转移到Blog领域对象
+   - 实现领域事件机制（如博客发布事件）
+
+6. 验证测试
+   - 修改现有测试用例
+   - 添加领域模型单元测试"""
     var planSketch: PlanSketch = PlanSketch(project, content, MarkdownPlanParser.parse(content).toMutableList(), true)
 
     init {
