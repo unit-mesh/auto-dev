@@ -43,9 +43,7 @@ class PlanController(
     }
 
     fun updatePlan(newPlanItems: List<AgentTaskEntry>) {
-        if (newPlanItems.isEmpty()) {
-            return
-        }
+        if (newPlanItems.isEmpty()) return
 
         val taskStateMap = mutableMapOf<String, Pair<Boolean, TaskStatus>>()
         agentTaskItems.forEach { planItem ->
@@ -58,12 +56,7 @@ class PlanController(
 
         newPlanItems.forEach { newItem ->
             agentTaskItems.add(newItem)
-            newItem.steps.forEach { task ->
-                taskStateMap[task.step]?.let { (completed, status) ->
-                    task.completed = completed
-                    task.status = status
-                }
-            }
+            newItem.updateCompletionStatus()
         }
 
         renderPlan()

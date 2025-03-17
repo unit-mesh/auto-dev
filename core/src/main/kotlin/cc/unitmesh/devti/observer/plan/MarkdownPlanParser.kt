@@ -362,7 +362,7 @@ object MarkdownPlanParser {
         entries.forEachIndexed { index, entry ->
             stringBuilder.append("${index + 1}. ${entry.title}\n")
             entry.steps.forEach { step ->
-                stringBuilder.append("  - [${if (step.completed) "x" else " "}] ${step.step}\n")
+                stringBuilder.append("   - [${if (step.completed) "x" else " "}] ${step.step}\n")
             }
         }
         return stringBuilder.toString()

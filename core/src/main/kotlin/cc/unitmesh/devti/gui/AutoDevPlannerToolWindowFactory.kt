@@ -37,6 +37,9 @@ import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.FontMetrics
 import javax.swing.JComponent
+import javax.swing.JPanel
+import javax.swing.JButton
+import javax.swing.Box
 import java.util.concurrent.atomic.AtomicBoolean
 
 class AutoDevPlannerToolWindowFactory : ToolWindowFactory, ToolWindowManagerListener, DumbAware {
@@ -74,7 +77,7 @@ class AutoDevPlanerTooWindow(val project: Project) : SimpleToolWindowPanel(true,
     override fun getName(): @NlsActions.ActionText String? = "AutoDev Planer"
     var connection = ApplicationManager.getApplication().messageBus.connect(this)
 
-    val content = """1. 分析当前Blog功能结构（✓）
+    var content = """1. 分析当前Blog功能结构（✓）
    - 当前Blog功能分散在entity(BlogPost)、service、controller层，采用贫血模型
    - domain.Blog类存在但未充分使用，需要明确领域模型边界
 
@@ -100,9 +103,28 @@ class AutoDevPlanerTooWindow(val project: Project) : SimpleToolWindowPanel(true,
    - 修改现有测试用例
    - 添加领域模型单元测试"""
     var planSketch: PlanSketch = PlanSketch(project, content, MarkdownPlanParser.parse(content).toMutableList(), true)
+    
+    private var markdownEditor: MarkdownLanguageField? = null
+    private val contentPanel = JPanel(BorderLayout())
+    private var isEditorMode = false
+    private var currentCallback: ((String) -> Unit)? = null
+    private val planPanel: JPanel by lazy { createPlanPanel() }
 
     init {
-        val planPanel = panel {
+        contentPanel.add(planPanel, BorderLayout.CENTER)
+        add(contentPanel, BorderLayout.CENTER)
+
+        connection.subscribe(PlanUpdateListener.TOPIC, object : PlanUpdateListener {
+            override fun onPlanUpdate(items: MutableList<AgentTaskEntry>) {
+                if (!isEditorMode) {
+                    planSketch.updatePlan(items)
+                }
+            }
+        })
+    }
+    
+    private fun createPlanPanel(): JPanel {
+        return panel {
             row {
                 cell(planSketch)
                     .fullWidth()
@@ -115,48 +137,85 @@ class AutoDevPlanerTooWindow(val project: Project) : SimpleToolWindowPanel(true,
             )
             background = JBUI.CurrentTheme.ToolWindow.background()
         }
+    }
 
-        add(planPanel, BorderLayout.CENTER)
-
-        connection.subscribe(PlanUpdateListener.TOPIC, object : PlanUpdateListener {
-            override fun onPlanUpdate(items: MutableList<AgentTaskEntry>) {
-                planSketch.updatePlan(items)
-            }
-        })
+    private fun switchToEditorView() {
+        if (isEditorMode) return
+        
+        if (markdownEditor == null) {
+            markdownEditor = MarkdownLanguageField(project, content, "Edit your plan here...", "plan.md")
+        } else {
+            markdownEditor?.text = content
+        }
+        
+        val buttonPanel = JPanel(BorderLayout())
+        val buttonsBox = Box.createHorizontalBox().apply {
+            add(JButton("Save").apply {
+                addActionListener {
+                    val newContent = markdownEditor?.text ?: ""
+                    switchToPlanView(newContent)
+                    currentCallback?.invoke(newContent)
+                }
+            })
+            add(Box.createHorizontalStrut(10))
+            add(JButton("Cancel").apply {
+                addActionListener {
+                    switchToPlanView()
+                }
+            })
+        }
+        buttonPanel.add(buttonsBox, BorderLayout.EAST)
+        buttonPanel.border = JBUI.Borders.empty(5)
+        
+        // Switch views
+        contentPanel.removeAll()
+        val editorPanel = JPanel(BorderLayout())
+        editorPanel.add(JBScrollPane(markdownEditor), BorderLayout.CENTER)
+        editorPanel.add(buttonPanel, BorderLayout.SOUTH)
+        
+        contentPanel.add(editorPanel, BorderLayout.CENTER)
+        contentPanel.revalidate()
+        contentPanel.repaint()
+        
+        isEditorMode = true
+    }
+    
+    private fun switchToPlanView(newContent: String? = null) {
+        if (newContent != null && newContent != content) {
+            content = newContent
+            
+            val parsedItems = MarkdownPlanParser.parse(newContent).toMutableList()
+            planSketch.updatePlan(parsedItems)
+        }
+        
+        contentPanel.removeAll()
+        contentPanel.add(planPanel, BorderLayout.CENTER)
+        contentPanel.revalidate()
+        contentPanel.repaint()
+        
+        isEditorMode = false
     }
 
     override fun dispose() {
-
+        markdownEditor = null
     }
 
     companion object {
         fun showPlanEditor(project: Project, planText: String, callback: (String) -> Unit) {
-            val dialog = object : DialogWrapper(project) {
-                private val markdownEditor =
-                    MarkdownLanguageField(project, planText, "Edit your plan here...", "plan.md")
-
-                init {
-                    title = "Edit Plan"
-                    // Ensure the text is properly set
-                    if (markdownEditor.text.isEmpty() && planText.isNotEmpty()) {
-                        markdownEditor.text = planText
+            val toolWindow = ToolWindowManager.getInstance(project).getToolWindow(AutoDevPlannerToolWindowFactory.PlANNER_ID)
+            if (toolWindow != null) {
+                val content = toolWindow.contentManager.getContent(0)
+                val plannerWindow = content?.component as? AutoDevPlanerTooWindow
+                
+                plannerWindow?.let {
+                    it.currentCallback = callback
+                    if (planText.isNotEmpty() && planText != it.content) {
+                        it.content = planText
                     }
-                    init()
-                }
-
-                override fun createCenterPanel(): JComponent {
-                    val panel = JBScrollPane(markdownEditor)
-                    panel.preferredSize = Dimension(800, 600)
-                    return panel
-                }
-
-                override fun doOKAction() {
-                    super.doOKAction()
-                    callback(markdownEditor.text)
+                    it.switchToEditorView()
+                    toolWindow.show()
                 }
             }
-
-            dialog.show()
         }
     }
 }
@@ -188,14 +247,10 @@ private class MarkdownLanguageField(
             val scheme = EditorColorsUtil.getColorSchemeForBackground(this.colorsScheme.defaultBackground)
             this.colorsScheme = this.createBoundColorSchemeDelegate(scheme)
 
-            val metrics: FontMetrics = getFontMetrics(font)
-            val columnWidth = metrics.charWidth('m')
-            isOneLineMode = false
-            preferredSize = Dimension(50 * columnWidth, 30 * metrics.height)
-
             settings.isLineNumbersShown = true
-            settings.isLineMarkerAreaShown = true
-            settings.isFoldingOutlineShown = true
+            settings.isLineMarkerAreaShown = false
+            settings.isFoldingOutlineShown = false
+            settings.isUseSoftWraps = true
         }
     }
 }
