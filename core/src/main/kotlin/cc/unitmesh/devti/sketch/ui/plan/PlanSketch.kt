@@ -83,7 +83,6 @@ class PlanSketch(
 ) : JBPanel<PlanSketch>(BorderLayout(JBUI.scale(8), 0)), ExtensionLangSketch {
     private val contentPanel = JPanel().apply {
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
-        border = JBEmptyBorder(JBUI.insets(4))
     }
     
     private val toolbarFactory = PlanToolbarFactory(project)
@@ -97,6 +96,8 @@ class PlanSketch(
         
         planController.renderPlan()
         add(contentPanel, BorderLayout.CENTER)
+
+        background = JBUI.CurrentTheme.ToolWindow.background()
     }
 
     override fun getExtensionName(): String = "ThoughtPlan"

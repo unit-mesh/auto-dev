@@ -31,6 +31,7 @@ class TaskPanel(
 
     init {
         border = JBUI.Borders.empty(4, 16, 4, 0)
+        background = JBUI.CurrentTheme.ToolWindow.background()
         taskLabel = createStyledTaskLabel()
 
         val statusIcon = createStatusIcon()

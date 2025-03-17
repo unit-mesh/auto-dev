@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.gui
 
+import cc.unitmesh.devti.inline.fullWidth
 import cc.unitmesh.devti.observer.plan.AgentTaskEntry
 import cc.unitmesh.devti.observer.plan.MarkdownPlanParser
 import cc.unitmesh.devti.observer.plan.PlanUpdateListener
@@ -83,7 +84,9 @@ class AutoDevPlanerTooWindow(val project: Project) : SimpleToolWindowPanel(true,
     init {
         val planPanel = panel {
             row {
-                cell(planSketch).resizableColumn()
+                cell(planSketch)
+                    .fullWidth()
+                    .resizableColumn()
             }
         }.apply {
             border = JBUI.Borders.compound(

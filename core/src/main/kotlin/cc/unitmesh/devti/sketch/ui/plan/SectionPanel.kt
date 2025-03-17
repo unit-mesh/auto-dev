@@ -30,6 +30,7 @@ class SectionPanel(
 
     init {
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
+        background = JBUI.CurrentTheme.ToolWindow.background()
         val titlePanel = createSectionTitlePanel()
         add(titlePanel)
 
@@ -46,9 +47,9 @@ class SectionPanel(
     private fun createSectionTitlePanel(): JPanel {
         val titlePanel = JBPanel<JBPanel<*>>(FlowLayout(FlowLayout.LEFT, 2, 0)).apply {
             border = JBUI.Borders.empty(2)
+            background = JBUI.CurrentTheme.ToolWindow.background()
         }
 
-        // Add execute button for todo sections
         if (planItem.status == TaskStatus.TODO && !planItem.completed) {
             titlePanel.add(createExecuteSectionButton())
         }
@@ -76,9 +77,10 @@ class SectionPanel(
     private fun createExecuteSectionButton(): JButton {
         return JButton(AllIcons.Actions.Execute).apply {
             border = BorderFactory.createEmptyBorder()
-            isOpaque = true
+
             preferredSize = Dimension(20, 20)
             toolTipText = "Execute Task"
+            background = JBUI.CurrentTheme.ToolWindow.background()
 
             addActionListener {
                 AutoDevToolWindowFactory.Companion.sendToSketchToolWindow(project, ChatActionType.SKETCH) { ui, _ ->
