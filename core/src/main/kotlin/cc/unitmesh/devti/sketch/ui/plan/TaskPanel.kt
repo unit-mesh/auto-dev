@@ -13,6 +13,7 @@ import com.intellij.util.ui.JBUI
 import java.awt.Dimension
 import java.awt.FlowLayout
 import javax.swing.BorderFactory
+import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JLabel
@@ -26,10 +27,11 @@ class TaskPanel(
     private val project: Project,
     private val task: AgentPlanStep,
     private val onStatusChange: () -> Unit
-) : JBPanel<JBPanel<*>>(FlowLayout(FlowLayout.LEFT, 2, 0)) {
+) : JBPanel<TaskPanel>() {
     private val taskLabel: JLabel
 
     init {
+        layout = BoxLayout(this, BoxLayout.X_AXIS)
         border = JBUI.Borders.empty(4, 16, 4, 0)
         background = JBUI.CurrentTheme.ToolWindow.background()
         taskLabel = createStyledTaskLabel()
@@ -67,9 +69,9 @@ class TaskPanel(
     private fun createExecuteButton(): JButton {
         return JButton(AllIcons.Actions.Execute).apply {
             border = BorderFactory.createEmptyBorder()
-            isOpaque = true
             preferredSize = Dimension(20, 20)
             toolTipText = "Execute"
+            background = JBUI.CurrentTheme.ToolWindow.background()
 
             addActionListener {
                 AutoDevToolWindowFactory.Companion.sendToSketchToolWindow(project, ChatActionType.SKETCH) { ui, _ ->
@@ -81,16 +83,16 @@ class TaskPanel(
 
     private fun createStyledTaskLabel(): JLabel {
         val labelText = getLabelTextByStatus()
-        return JLabel(labelText).apply {
+        return JLabel("<html>$labelText</html>").apply {
             border = JBUI.Borders.emptyLeft(5)
         }
     }
 
     private fun getLabelTextByStatus(): String {
         return when (task.status) {
-            TaskStatus.COMPLETED -> "<html><strike>${task.step}</strike></html>"
-            TaskStatus.FAILED -> "<html><span style='color:red'>${task.step}</span></html>"
-            TaskStatus.IN_PROGRESS -> "<html><span style='color:blue;font-style:italic'>${task.step}</span></html>"
+            TaskStatus.COMPLETED -> "<strike>${task.step}</strike>"
+            TaskStatus.FAILED -> "<span style='color:red'>${task.step}</span>"
+            TaskStatus.IN_PROGRESS -> "<span style='color:blue;font-style:italic'>${task.step}</span>"
             TaskStatus.TODO -> task.step
         }
     }

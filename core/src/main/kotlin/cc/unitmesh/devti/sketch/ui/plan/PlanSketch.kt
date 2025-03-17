@@ -11,6 +11,7 @@ import com.intellij.ui.components.JBPanel
 import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
+import java.awt.Dimension
 import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JComponent
@@ -97,6 +98,7 @@ class PlanSketch(
         planController.renderPlan()
         add(contentPanel, BorderLayout.CENTER)
 
+        minimumSize = Dimension(200, 0)
         background = JBUI.CurrentTheme.ToolWindow.background()
     }
 
