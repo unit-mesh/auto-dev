@@ -1,3 +1,4 @@
+// filepath: /Volumes/source/ai/autocrud/core/src/main/kotlin/cc/unitmesh/devti/gui/AutoDevPlannerToolWindowFactory.kt
 package cc.unitmesh.devti.gui
 
 import cc.unitmesh.devti.inline.fullWidth
@@ -12,6 +13,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.ui.Splittable
+import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.util.NlsActions
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
@@ -20,7 +22,21 @@ import com.intellij.openapi.wm.ex.ToolWindowManagerListener
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
+import com.intellij.lang.Language
+import com.intellij.openapi.editor.Document
+import com.intellij.openapi.editor.colors.EditorColorsUtil
+import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.fileTypes.PlainTextLanguage
+import com.intellij.psi.PsiFile
+import com.intellij.ui.LanguageTextField
+import com.intellij.ui.components.JBScrollPane
+import com.intellij.lang.LanguageUtil
+import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.fileTypes.FileTypeManager
 import java.awt.BorderLayout
+import java.awt.Dimension
+import java.awt.FontMetrics
+import javax.swing.JComponent
 import java.util.concurrent.atomic.AtomicBoolean
 
 class AutoDevPlannerToolWindowFactory : ToolWindowFactory, ToolWindowManagerListener, DumbAware {
@@ -112,4 +128,75 @@ class AutoDevPlanerTooWindow(val project: Project) : SimpleToolWindowPanel(true,
     override fun dispose() {
 
     }
+
+    companion object {
+        fun showPlanEditor(project: Project, planText: String, callback: (String) -> Unit) {
+            val dialog = object : DialogWrapper(project) {
+                private val markdownEditor =
+                    MarkdownLanguageField(project, planText, "Edit your plan here...", "plan.md")
+
+                init {
+                    title = "Edit Plan"
+                    // Ensure the text is properly set
+                    if (markdownEditor.text.isEmpty() && planText.isNotEmpty()) {
+                        markdownEditor.text = planText
+                    }
+                    init()
+                }
+
+                override fun createCenterPanel(): JComponent {
+                    val panel = JBScrollPane(markdownEditor)
+                    panel.preferredSize = Dimension(800, 600)
+                    return panel
+                }
+
+                override fun doOKAction() {
+                    super.doOKAction()
+                    callback(markdownEditor.text)
+                }
+            }
+
+            dialog.show()
+        }
+    }
 }
+
+private class MarkdownLanguageField(
+    private val myProject: Project?,
+    val value: String,
+    private val placeholder: String,
+    private val fileName: String
+) : LanguageTextField(
+    LanguageUtil.getFileTypeLanguage(FileTypeManager.getInstance().getFileTypeByExtension("md")), myProject, value,
+    object : SimpleDocumentCreator() {
+        override fun createDocument(value: String?, language: Language?, project: Project?): Document {
+            return createDocument(value, language, project, this)
+        }
+
+        override fun customizePsiFile(file: PsiFile?) {
+            file?.name = fileName
+        }
+    }
+) {
+    override fun createEditor(): EditorEx {
+        return super.createEditor().apply {
+            setShowPlaceholderWhenFocused(true)
+            setHorizontalScrollbarVisible(true)
+            setVerticalScrollbarVisible(true)
+            setPlaceholder(placeholder)
+
+            val scheme = EditorColorsUtil.getColorSchemeForBackground(this.colorsScheme.defaultBackground)
+            this.colorsScheme = this.createBoundColorSchemeDelegate(scheme)
+
+            val metrics: FontMetrics = getFontMetrics(font)
+            val columnWidth = metrics.charWidth('m')
+            isOneLineMode = false
+            preferredSize = Dimension(50 * columnWidth, 30 * metrics.height)
+
+            settings.isLineNumbersShown = true
+            settings.isLineMarkerAreaShown = true
+            settings.isFoldingOutlineShown = true
+        }
+    }
+}
+

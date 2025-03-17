@@ -421,6 +421,8 @@
         <group id="AutoDevPlanner.ToolWindow.TitleActions">
             <action id="ReviewPlan" icon="AllIcons.General.InspectionsEye"
                     class="cc.unitmesh.devti.observer.plan.PlanReviewAction"/>
+            <action id="EditPlan" icon="AllIcons.Actions.EditScheme"
+                    class="cc.unitmesh.devti.observer.plan.EditPlanAction"/>
             <separator/>
         </group>
     </actions>

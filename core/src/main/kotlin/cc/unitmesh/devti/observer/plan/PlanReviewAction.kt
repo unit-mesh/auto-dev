@@ -1,4 +1,3 @@
-// filepath: /Volumes/source/ai/autocrud/core/src/main/kotlin/cc/unitmesh/devti/observer/plan/PlanReviewAction.kt
 package cc.unitmesh.devti.observer.plan
 
 import cc.unitmesh.devti.AutoDevNotifications
@@ -10,7 +9,6 @@ import cc.unitmesh.devti.template.GENIUS_CODE
 import cc.unitmesh.devti.template.TemplateRender
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.util.parser.CodeFence
-import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
