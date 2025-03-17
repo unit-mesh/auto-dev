@@ -53,7 +53,7 @@ Here is the rule you should follow:
 
 For each step, document your reasoning process inside `plan` code block. Include:
 
-1. Updated plan with step progress indicators (`[✓]` for completed, `[!]` for failed, `[*]` for in-progress).
+1. Updated plan with step progress indicators (`[✓]` for completed or you are working this step, `[!]` for failed, `[*]` for in-progress).
 2. No code should be written inside the plan, just the task and steps summary.
 
 For example:

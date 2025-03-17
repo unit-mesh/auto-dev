@@ -17,12 +17,6 @@
 > 🧙‍AutoDev: The AI-powered coding wizard with multilingual support 🌐, auto code generation 🏗️, and a helpful
 > bug-slaying assistant 🐞! Customizable prompts 🎨 and a magic Auto Dev/Testing/Document/Agent feature 🧪 included! 🚀
 
-VSCode Version: [https://github.com/unit-mesh/auto-dev-vscode](https://github.com/unit-mesh/auto-dev-vscode)
-
-[Quick Start →](https://ide.unitmesh.cc/quick-start)
-
-🆕🆕🆕: New AI agent language: [https://github.com/phodal/shire](https://github.com/phodal/shire)
-
 ## AutoDev 2.0 Sketch - the Cursor Composer in Intellij IDEA
 
 Video demo (YouTube) — English
@@ -43,12 +37,19 @@ developer experience within the IDE.
 | **Go Playground Sketch`*`** | Go Playground with bidirectional code preview/edit                                                           | ![](https://unitmesh.cc/auto-dev/sketch-go-playground.png)       |
 | **Mermaid Sketch`*`**       | Real-time flowchart preview/edit with bidirectional binding                                                  | ![](https://shire.run/images/shire-sketch-mermaid.png)           |
 | **PlantUML Sketch`*`**      | UML diagram editor with bidirectional code-diagram synchronization                                           | ![](https://shire.run/images/shire-sketch-plantuml.png)          |
+| **PlanSketch `**            | Display AutoDev Planner planning for resovling code issues                                                   | ![](https://unitmesh.cc/auto-dev/autodev-plan-sketch.png)        |
 
 `*` means requires additional plugin installation.
 
 ### Unite Your Dev Ecosystem, Create Your AI Copilot
 
-![Inline Chat](https://shire.run/images/shire-ecology-system.png)
+VSCode Version: [https://github.com/unit-mesh/auto-dev-vscode](https://github.com/unit-mesh/auto-dev-vscode)
+
+[Quick Start →](https://ide.unitmesh.cc/quick-start)
+
+🆕🆕🆕: New AI agent language: [https://github.com/phodal/shire](https://github.com/phodal/shire)
+
+![Dev Ecosystem](https://shire.run/images/shire-ecology-system.png)
 
 ### Demos
 
