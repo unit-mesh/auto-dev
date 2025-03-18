@@ -52,4 +52,7 @@ object AutoDevIcons {
 
     @JvmField
     val TOOLCHAIN: Icon = IconLoader.getIcon("/icons/toolchain.svg", AutoDevIcons::class.java)
+
+    @JvmField
+    val REVIEWER: Icon = IconLoader.getIcon("/icons/reviewer.svg", AutoDevIcons::class.java)
 }

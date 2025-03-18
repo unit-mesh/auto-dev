@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.observer.plan
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.gui.AutoDevPlanerTooWindow
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
@@ -7,7 +8,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import cc.unitmesh.devti.observer.agent.AgentStateService
 
-class EditPlanAction : AnAction() {
+class EditPlanAction : AnAction(AutoDevBundle.message("sketch.plan.edit")) {
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
 

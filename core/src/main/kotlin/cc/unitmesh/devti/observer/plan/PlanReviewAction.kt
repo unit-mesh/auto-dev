@@ -1,5 +1,7 @@
 package cc.unitmesh.devti.observer.plan
 
+import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.llms.LlmFactory
 import cc.unitmesh.devti.observer.agent.AgentStateService
@@ -22,7 +24,7 @@ import org.intellij.markdown.ast.visitors.RecursiveVisitor
 import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
 import org.intellij.markdown.parser.MarkdownParser
 
-class PlanReviewAction : AnAction() {
+class PlanReviewAction : AnAction(AutoDevBundle.message("sketch.plan.review"), null, AutoDevIcons.REVIEWER) {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun actionPerformed(anActionEvent: AnActionEvent) {
