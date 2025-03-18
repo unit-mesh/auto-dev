@@ -48,8 +48,10 @@ class PlanReviewAction : AnAction(AutoDevBundle.message("sketch.plan.review"), n
 
         val stream = LlmFactory.create(project).stream(history, systemPrompt)
         AutoDevCoroutineScope.scope(project).launch {
-            val llmResult = StringBuilder()
+            AutoDevNotifications.notify(project, AutoDevBundle.message("sketch.plan.reviewing"))
             AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress, "review the plan")
+
+            val llmResult = StringBuilder()
             runBlocking {
                 stream.collect {
                     llmResult.append(it)
@@ -57,8 +59,9 @@ class PlanReviewAction : AnAction(AutoDevBundle.message("sketch.plan.review"), n
             }
 
             val result = llmResult.toString()
-            AutoDevStatusService.notifyApplication(AutoDevStatus.Done, "review the plan")
             AutoDevNotifications.notify(project, result)
+            AutoDevStatusService.notifyApplication(AutoDevStatus.Done, "review the plan")
+
             val plan = CodeFence.parseAll(result).firstOrNull {
                 it.originLanguage == "plan"
             }

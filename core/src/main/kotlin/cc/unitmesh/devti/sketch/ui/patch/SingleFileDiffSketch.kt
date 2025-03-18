@@ -148,7 +148,7 @@ class SingleFileDiffSketch(
 
         val applyButton = JButton("Apply").apply {
             icon = AllIcons.Actions.RunAll
-            toolTipText = AutoDevBundle.message("sketch.patch.action.runDiff.tooltip")
+            toolTipText = AutoDevBundle.message("sketch.patch.action.applyDiff.tooltip")
             isEnabled = appliedPatch?.status == ApplyPatchStatus.SUCCESS
 
             addActionListener {

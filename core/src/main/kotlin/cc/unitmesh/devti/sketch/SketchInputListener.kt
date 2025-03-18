@@ -39,8 +39,9 @@ open class SketchInputListener(
     val planTemplate = templateRender.getTemplate("plan.vm")
 
     open suspend fun setup() {
-        systemPrompt = templateRender.renderTemplate(template, SketchRunContext.create(project, null, ""))
-        planPrompt = templateRender.renderTemplate(planTemplate, SketchRunContext.create(project, null, ""))
+        val customContext = SketchRunContext.create(project, null, "")
+        systemPrompt = templateRender.renderTemplate(template, customContext)
+        planPrompt = templateRender.renderTemplate(planTemplate, customContext)
         toolWindow.addSystemPrompt(systemPrompt)
     }
 
@@ -68,7 +69,7 @@ open class SketchInputListener(
         return when {
             chatCodingService.getAllMessages().size == 3 && LlmConfig.hasPlanModel() -> {
                 val intention = project.getService(AgentStateService::class.java).buildOriginIntention() ?: ""
-                planPrompt.replace("<user.question>issue_description</user.question>", intention)
+                planPrompt.replace("<user.question>user.question</user.question>", "<user.question>$intention</user.question>")
             }
             else -> {
                 systemPrompt

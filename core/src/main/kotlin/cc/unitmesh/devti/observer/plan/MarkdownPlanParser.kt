@@ -11,10 +11,22 @@ import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
 import org.intellij.markdown.parser.MarkdownParser
 
 /**
- * Markdown计划解析器，负责将markdown格式的计划文本解析为结构化的执行计划
+ * The `MarkdownPlanParser` is a Kotlin object designed to parse markdown-formatted task plans into structured data.
+ * It processes markdown content, identifies tasks and sections, and organizes them into a hierarchical structure
+ * that can be used for further processing or display. The parser supports both simple and detailed task structures,
+ * allowing for flexible markdown formatting.
  *
- * 示例：
+ * ### Key Features:
+ * - **Task Status Parsing**: Recognizes task status markers such as `[✓]` (completed), `[x]` (completed), `[!]` (failed),
+ *   and `[*]` (in progress). Tasks without a marker are considered `TODO`.
+ * - **Section Hierarchy**: Parses ordered lists (e.g., `1.`, `2.`) as sections and unordered lists (e.g., `-`, `*`) as tasks
+ *   within those sections.
+ * - **Flexible Input**: Handles both simple (flat) and detailed (nested) markdown structures.
+ * - **Error Handling**: Logs warnings if parsing fails, ensuring graceful degradation.
+ * - **Markdown Output**: Provides a method to format structured task entries back into markdown format.
  *
+ * ### Usage Example:
+ * Given the following markdown content:
  * ```markdown
  * 1. 领域模型重构：
  *   - [✓] 将BlogPost实体合并到Blog聚合根，建立完整的领域对象
@@ -23,6 +35,56 @@ import org.intellij.markdown.parser.MarkdownParser
  *   - [ ] 实现新增的领域服务
  * 2. 分层结构调整：
  *   - [ ] 清理entity层冗余对象
+ * ```
+ * The parser will produce a structured list of `AgentTaskEntry` objects, each containing:
+ * - A title (e.g., "领域模型重构").
+ * - A list of `AgentPlanStep` objects representing tasks (e.g., "将BlogPost实体合并到Blog聚合根").
+ * - Status information for each task (e.g., `COMPLETED`, `IN_PROGRESS`, `FAILED`, or `TODO`).
+ *
+ * ### Methods:
+ * - **`interpretPlan(content: String): List<AgentTaskEntry>`**: Parses the provided markdown content and returns a list of
+ *   structured task entries.
+ * - **`parse(content: String): List<AgentTaskEntry>`**: Alias for `interpretPlan`, providing the same functionality.
+ * - **`formatPlanToMarkdown(entries: MutableList<AgentTaskEntry>): String`**: Converts a list of structured task entries
+ *   back into markdown format.
+ *
+ * ### Internal Components:
+ * - **`TaskMarkers`**: Handles task status markers and determines the status of tasks based on the marker.
+ * - **`PatternMatcher`**: Provides regex patterns for identifying tasks and sections in markdown content.
+ * - **`PlanSectionVisitor`**: Extracts section and task information from markdown nodes.
+ * - **`DetailedPlanStructureInterpreter`**: Processes nested markdown structures and builds the task hierarchy.
+ * - **`TaskExtractor`**: Extracts tasks from unordered lists and assigns their status and description.
+ *
+ * ### Notes:
+ * - The parser uses the `MarkdownParser` from the `org.intellij.markdown` library to build an abstract syntax tree (AST)
+ *   of the markdown content.
+ * - It supports GitHub Flavored Markdown (GFM) syntax.
+ * - The parser is designed to be robust and handle edge cases, such as missing markers or malformed markdown.
+ *
+ * ### Example Output:
+ * For the example markdown above, the output might look like:
+ * ```kotlin
+ * listOf(
+ *     AgentTaskEntry(
+ *         title = "领域模型重构",
+ *         steps = listOf(
+ *             AgentPlanStep(step = "将BlogPost实体合并到Blog聚合根", completed = true, status = TaskStatus.COMPLETED),
+ *             AgentPlanStep(step = "添加领域行为方法（发布、审核、评论等）", completed = false, status = TaskStatus.IN_PROGRESS),
+ *             AgentPlanStep(step = "修复数据模型冲突", completed = false, status = TaskStatus.FAILED),
+ *             AgentPlanStep(step = "实现新增的领域服务", completed = false, status = TaskStatus.TODO)
+ *         ),
+ *         completed = false,
+ *         status = TaskStatus.IN_PROGRESS
+ *     ),
+ *     AgentTaskEntry(
+ *         title = "分层结构调整",
+ *         steps = listOf(
+ *             AgentPlanStep(step = "清理entity层冗余对象", completed = false, status = TaskStatus.TODO)
+ *         ),
+ *         completed = false,
+ *         status = TaskStatus.TODO
+ *     )
+ * )
  * ```
  */
 object MarkdownPlanParser {
