@@ -1,3 +1,4 @@
+// filepath: /Volumes/source/ai/autocrud/core/src/main/kotlin/cc/unitmesh/devti/sketch/ui/plan/TaskStepPanel.kt
 package cc.unitmesh.devti.sketch.ui.plan
 
 import cc.unitmesh.devti.AutoDevBundle
@@ -89,26 +90,33 @@ class TaskStepPanel(
 
     private fun createStyledTaskLabel(): JEditorPane {
         val labelText = getLabelTextByStatus()
-        val editorKit = HTMLEditorKit()
-        val styleSheet = StyleSheet()
-        styleSheet.addRule("a { color: #FF0000; text-decoration: underline red; }")
-        styleSheet.addRule("a:hover { color: #FF0000; }")
-        editorKit.styleSheet = styleSheet
-
-        val document = HTMLDocument()
-        document.putProperty("IgnoreCharsetDirective", true)
-        project.basePath?.let {
-            val url: String? = LocalFileSystem.getInstance().findFileByPath(it)?.url
-            document.putProperty("Base", url)
-        }
 
         return JEditorPane().apply {
+            contentType = "text/html"
+
+            val editorKit = HTMLEditorKit()
+            val styleSheet = StyleSheet()
+            styleSheet.addRule("a { color: #3366CC; text-decoration: underline; }")
+            styleSheet.addRule("a:hover { color: #3366CC; }")
+            editorKit.styleSheet = styleSheet
+
             this.editorKit = editorKit
-            this.document = document
-            text = "<html>$labelText</html>"
+
+            // Get the document after setting the editorKit to ensure proper connection
+            val document = this.document as HTMLDocument
+            document.putProperty("IgnoreCharsetDirective", true)
+            project.basePath?.let {
+                val url: String? = LocalFileSystem.getInstance().findFileByPath(it)?.url
+                document.putProperty("Base", url)
+            }
+
             border = JBUI.Borders.emptyLeft(5)
             isEditable = false
             background = JBUI.CurrentTheme.ToolWindow.background()
+
+            // Set text after stylesheet is applied
+            text = "<html>$labelText</html>"
+
             addHyperlinkListener { e ->
                 if (e.eventType == HyperlinkEvent.EventType.ACTIVATED) {
                     val filePath = e.url?.path ?: e.description

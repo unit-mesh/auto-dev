@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.observer.plan
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.gui.AutoDevPlanerTooWindow
+import cc.unitmesh.devti.gui.AutoDevPlannerToolWindow
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import com.intellij.openapi.actionSystem.AnAction
@@ -16,7 +16,7 @@ class EditPlanAction : AnAction(AutoDevBundle.message("sketch.plan.edit")) {
         val currentPlan = agentStateService.getPlan()
         val planString = MarkdownPlanParser.formatPlanToMarkdown(currentPlan)
 
-        AutoDevPlanerTooWindow.showPlanEditor(project, planString) { newPlan ->
+        AutoDevPlannerToolWindow.showPlanEditor(project, planString) { newPlan ->
             if (newPlan.isNotEmpty()) {
                 /// todo: modify old messages
                 AutoDevToolWindowFactory.sendToSketchToolWindow(project, ChatActionType.CHAT) { ui, _ ->

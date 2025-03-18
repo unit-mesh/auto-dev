@@ -42,7 +42,7 @@ class AutoDevPlannerToolWindowFactory : ToolWindowFactory, ToolWindowManagerList
         project: Project,
         toolWindow: ToolWindow
     ) {
-        val panel = AutoDevPlanerTooWindow(project)
+        val panel = AutoDevPlannerToolWindow(project)
         val manager = toolWindow.contentManager
         manager.addContent(manager.factory.createContent(panel, null, false).apply { isCloseable = false })
         project.messageBus.connect(manager).subscribe(ToolWindowManagerListener.TOPIC, this)
@@ -66,45 +66,10 @@ class AutoDevPlannerToolWindowFactory : ToolWindowFactory, ToolWindowManagerList
     }
 }
 
-class AutoDevPlanerTooWindow(val project: Project) : SimpleToolWindowPanel(true, true), Disposable {
-    override fun getName(): String = "AutoDev Planer"
+class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(true, true), Disposable {
+    override fun getName(): String = "AutoDev Planner"
     var connection = ApplicationManager.getApplication().messageBus.connect(this)
-    var content = """
-1. 更新数据库表结构
-    - [*] 确定 BlogPost 表是否需要新增 category 列（通过 JPA 实体类变更自动生成）
-    - [ ] 检查是否存在数据库迁移脚本（当前无 Flyway/Liquibase 痕迹）
-    - [ ] 确认是否需要手动执行 ALTER TABLE 语句
-
-2. 更新实体类与 DTO
-    - [*] 修改 [BlogPost.java](src/main/java/cc/unitmesh/untitled/demo/entity/BlogPost.java) 添加 category 字段
-    - [ ] 更新 [CreateBlogRequest.java](src/main/java/cc/unitmesh/untitled/demo/dto/CreateBlogRequest.java) 包含 category 参数
-    - [ ] 验证实体类与 DTO 的字段映射关系
-
-3. 持久层改造
-    - [*] 在 [BlogRepository.java](src/main/java/cc/unitmesh/untitled/demo/repository/BlogRepository.java) 添加查询方法
-    - [ ] 确定使用派生查询（findByCategory）还是 @Query 注解方式
-    - [ ] 检查 MeetingRepository 是否误扩展了 BlogPost 实体（需确认是否设计错误）
-
-4. 业务逻辑层扩展
-    - [*] 在 [BlogService.java](src/main/java/cc/unitmesh/untitled/demo/service/BlogService.java) 添加 getBlogsByCategory 方法
-    - [ ] 处理空分类/默认分类等边界情况
-    - [ ] 验证事务传播特性
-
-5. 接口层开发
-    - [*] 在 [BlogController.java](src/main/java/cc/unitmesh/untitled/demo/controller/BlogController.java) 添加新端点
-    - [ ] 设计 RESTful 路径（建议 /blogs/category/{category}）
-    - [ ] 添加 Swagger 文档注解
-
-6. 数据一致性验证
-    - [ ] 检查现有博客数据的 category 字段默认值
-    - [ ] 验证更新操作时的 category 字段维护
-    - [ ] 确保查询结果排序一致性（添加 @OrderBy 注解）
-
-7. 测试验证
-    - [ ] 编写集成测试验证完整流程
-    - [ ] 添加 Controller 层单元测试
-    - [ ] 验证 SQL 查询性能（通过 EXPLAIN 分析）
-"""
+    var content = ""
     var planLangSketch: PlanLangSketch = PlanLangSketch(project, content, MarkdownPlanParser.parse(content).toMutableList(), true)
 
     private var markdownEditor: MarkdownLanguageField? = null
@@ -208,7 +173,7 @@ class AutoDevPlanerTooWindow(val project: Project) : SimpleToolWindowPanel(true,
                 ToolWindowManager.getInstance(project).getToolWindow(AutoDevPlannerToolWindowFactory.PlANNER_ID)
             if (toolWindow != null) {
                 val content = toolWindow.contentManager.getContent(0)
-                val plannerWindow = content?.component as? AutoDevPlanerTooWindow
+                val plannerWindow = content?.component as? AutoDevPlannerToolWindow
 
                 plannerWindow?.let {
                     it.currentCallback = callback
