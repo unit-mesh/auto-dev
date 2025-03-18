@@ -15,7 +15,7 @@ enum class AutoDevStatus {
             return when (this) {
                 WAITING -> AutoDevIcons.DARK
                 Ready -> AutoDevIcons.AI_COPILOT
-                InProgress -> AutoDevIcons.IntProgress
+                InProgress -> AutoDevIcons.InProgress
                 Error -> AutoDevIcons.ERROR
                 Done -> AutoDevIcons.AI_COPILOT
             }

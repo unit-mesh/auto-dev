@@ -1,6 +1,9 @@
+// filepath: /Volumes/source/ai/autocrud/core/src/main/kotlin/cc/unitmesh/devti/sketch/ui/patch/SingleFileDiffSketch.kt
 package cc.unitmesh.devti.sketch.ui.patch
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.AutoDevIcons
+import cc.unitmesh.devti.settings.coder.coderSetting
 import cc.unitmesh.devti.sketch.lint.SketchCodeInspection
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.template.context.TemplateContext
@@ -14,8 +17,10 @@ import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diff.impl.patch.ApplyPatchStatus
+import com.intellij.openapi.diff.impl.patch.PatchHunk
 import com.intellij.openapi.diff.impl.patch.PatchLine
 import com.intellij.openapi.diff.impl.patch.TextFilePatch
+import com.intellij.openapi.diff.impl.patch.TextPatchBuilder
 import com.intellij.openapi.diff.impl.patch.apply.GenericPatchApplier
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -33,6 +38,7 @@ import com.intellij.util.LocalTimeCounter
 import java.awt.BorderLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.nio.charset.Charset
 import javax.swing.BorderFactory
 import javax.swing.JButton
 import javax.swing.JComponent
@@ -42,14 +48,14 @@ import javax.swing.JPanel
 class SingleFileDiffSketch(
     private val myProject: Project,
     private val currentFile: VirtualFile,
-    val patch: TextFilePatch,
+    var patch: TextFilePatch,
     val viewDiffAction: () -> Unit
 ) : LangSketch {
     private val mainPanel: JPanel = JPanel(VerticalLayout(5))
     private val myHeaderPanel: JPanel = JPanel(BorderLayout())
     private var patchActionPanel: JPanel? = null
     private val oldCode = currentFile.readText()
-    private val appliedPatch = try {
+    private var appliedPatch = try {
         GenericPatchApplier.apply(oldCode, patch.hunks)
     } catch (e: Exception) {
         logger<SingleFileDiffSketch>().warn("Failed to apply patch: ${patch.beforeFileName}", e)
@@ -57,6 +63,7 @@ class SingleFileDiffSketch(
     }
 
     private val newCode = appliedPatch?.patchedText ?: ""
+    private val isAutoRepair = myProject.coderSetting.state.enableAutoRepairDiff
 
     init {
         val contentPanel = JPanel(BorderLayout())
@@ -132,6 +139,25 @@ class SingleFileDiffSketch(
         ApplicationManager.getApplication().executeOnPooledThread {
             lintCheckForNewCode(currentFile)
         }
+
+        if (isAutoRepair) {
+            ApplicationManager.getApplication().executeOnPooledThread {
+                applyDiffRepairSuggestionSync(myProject, oldCode, newCode, { fixedCode ->
+                    createPatchFromCode(oldCode, fixedCode)?.let { patch ->
+                        this@SingleFileDiffSketch.patch = patch
+                        appliedPatch = try {
+                            GenericPatchApplier.apply(oldCode, patch.hunks)
+                        } catch (e: Exception) {
+                            logger<SingleFileDiffSketch>().warn("Failed to apply patch: ${patch.beforeFileName}", e)
+                            null
+                        }
+
+                        this.mainPanel.revalidate()
+                        this.mainPanel.repaint()
+                    }
+                });
+            }
+        }
     }
 
     private fun createActionButtons(): List<JButton> {
@@ -171,7 +197,12 @@ class SingleFileDiffSketch(
         }
 
         val repairButton = JButton("Repair").apply {
-            icon = AllIcons.Toolwindows.ToolWindowBuild
+            icon = if (isAutoRepair) {
+                AutoDevIcons.InProgress
+            } else {
+                AllIcons.Toolwindows.ToolWindowBuild
+            }
+
             toolTipText = AutoDevBundle.message("sketch.patch.action.repairDiff.tooltip")
             isEnabled = appliedPatch?.status != ApplyPatchStatus.SUCCESS
             foreground = if (isEnabled) JBColor(0xFF0000, 0xFF0000) else JPanel().background
@@ -223,3 +254,14 @@ data class DiffRepairContext(
 fun VirtualFile.readText(): String {
     return VfsUtilCore.loadText(this)
 }
+
+fun createPatchFromCode(oldCode: String, newCode: String): TextFilePatch? {
+    val buildPatchHunks: List<PatchHunk> = TextPatchBuilder.buildPatchHunks(oldCode, newCode)
+    val textFilePatch = TextFilePatch(Charset.defaultCharset())
+    buildPatchHunks.forEach { hunk ->
+        textFilePatch.addHunk(hunk)
+    }
+
+    return textFilePatch
+}
+

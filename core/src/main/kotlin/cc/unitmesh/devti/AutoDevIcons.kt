@@ -24,7 +24,7 @@ object AutoDevIcons {
     val COMMAND: Icon = IconLoader.getIcon("/icons/devins-command.svg", AutoDevIcons::class.java)
 
     @JvmField
-    val IntProgress = AnimatedIcon.Default()
+    val InProgress = AnimatedIcon.Default()
 
     @JvmField
     val Send: Icon = IconLoader.getIcon("/icons/send.svg", AutoDevIcons::class.java)

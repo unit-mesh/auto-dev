@@ -61,7 +61,7 @@ class CustomizeConfigurable(val project: Project) : BoundConfigurable(AutoDevBun
                     }
                 }
 
-            link(AutoDevBundle.message("open documents"), {
+            link(AutoDevBundle.message("custom.agent.open.documents"), {
                 BrowserUtil.browse("https://ide.unitmesh.cc/agent/custom-ai-agent")
             })
         }

@@ -24,6 +24,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
     private val enableObserver = JCheckBox()
     private val teamPromptsField = JTextField()
     private val trimCodeBeforeSend = JCheckBox()
+    private val enableAutoRepairDiff = JCheckBox()
 
 
     val settings = project.service<AutoDevCoderSettingService>()
@@ -102,6 +103,15 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 )
         }
 
+        row(jLabel("settings.autodev.coder.enableAutoRepairDiff")) {
+            fullWidthCell(enableAutoRepairDiff)
+                .bind(
+                    componentGet = { it.isSelected },
+                    componentSet = { component, value -> component.isSelected = value },
+                    prop = state::enableAutoRepairDiff.toMutableProperty()
+                )
+        }
+
         row(jLabel("settings.external.team.prompts.path")) {
             fullWidthCell(teamPromptsField)
                 .bind(
@@ -122,6 +132,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                 it.teamPromptsDir = state.teamPromptsDir
                 it.enableExportAsMcpServer = state.enableExportAsMcpServer
                 it.enableObserver = state.enableObserver
+                it.enableAutoRepairDiff = state.enableAutoRepairDiff
             }
         }
     }

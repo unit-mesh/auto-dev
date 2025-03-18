@@ -41,3 +41,30 @@ fun applyDiffRepairSuggestion(project: Project, editor: Editor, oldCode: String,
         }
     }
 }
+
+fun applyDiffRepairSuggestionSync(
+    project: Project,
+    oldCode: String,
+    patchedCode: String,
+    callback: (newContent: String) -> Unit
+) {
+    val templateRender = TemplateRender(GENIUS_CODE)
+    val template = templateRender.getTemplate("repair-diff.vm")
+
+    val intention = project.getService(AgentStateService::class.java).buildOriginIntention()
+
+    templateRender.context = DiffRepairContext(intention, patchedCode, oldCode)
+    val prompt = templateRender.renderTemplate(template)
+
+    val flow: Flow<String> = LlmFactory.create(project, ModelType.FastApply).stream(prompt, "", false)
+    AutoDevCoroutineScope.Companion.scope(project).launch {
+        val suggestion = StringBuilder()
+        flow.cancellable().collect { char ->
+            suggestion.append(char)
+            return@collect
+        }
+
+        val code = CodeFence.Companion.parse(suggestion.toString())
+        callback.invoke(code.text)
+    }
+}
