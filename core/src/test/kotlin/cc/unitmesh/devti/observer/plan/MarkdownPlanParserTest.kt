@@ -342,4 +342,116 @@ class MarkdownPlanParserTest {
         assertEquals("数据库表结构确认", plans[0].title)
         assertEquals(TaskStatus.IN_PROGRESS, plans[1].status)
     }
+
+    @Test
+    fun should_parse_code_file_links_in_tasks() {
+        // Given
+        val markdownContent = """
+            1. 分析现有代码结构并识别重构点
+               - [x] 发现 Blog 功能分散在 entity/service/dto 中，存在贫血模型特征（业务逻辑在Service层）
+               - [x] 识别出关键类：[Blog.java](src/main/java/cc/unitmesh/untitled/demo/domain/Blog.java) 是贫血模型，[BlogPost.java](src/main/java/cc/unitmesh/untitled/demo/entity/BlogPost.java) 存在重复概念
+               - [x] 确认当前分层架构不符合 DDD 规范（Repository 直接依赖 Spring Data）
+        """.trimIndent()
+
+        // When
+        val planItems = MarkdownPlanParser.parse(markdownContent)
+
+        // Then
+        Assertions.assertThat(planItems).hasSize(1)
+        Assertions.assertThat(planItems[0].title).isEqualTo("分析现有代码结构并识别重构点")
+        Assertions.assertThat(planItems[0].steps).hasSize(3)
+
+        // 验证第一个任务没有代码文件链接
+        val firstTask = planItems[0].steps[0]
+        Assertions.assertThat(firstTask.codeFileLinks).isEmpty()
+        Assertions.assertThat(firstTask.step).isEqualTo("发现 Blog 功能分散在 entity/service/dto 中，存在贫血模型特征（业务逻辑在Service层）")
+
+        // 验证第二个任务包含两个代码文件链接
+        val secondTask = planItems[0].steps[1]
+        Assertions.assertThat(secondTask.codeFileLinks).hasSize(2)
+        Assertions.assertThat(secondTask.codeFileLinks[0].displayText).isEqualTo("Blog.java")
+        Assertions.assertThat(secondTask.codeFileLinks[0].filePath).isEqualTo("src/main/java/cc/unitmesh/untitled/demo/domain/Blog.java")
+        Assertions.assertThat(secondTask.codeFileLinks[1].displayText).isEqualTo("BlogPost.java")
+        Assertions.assertThat(secondTask.codeFileLinks[1].filePath).isEqualTo("src/main/java/cc/unitmesh/untitled/demo/entity/BlogPost.java")
+
+        // 验证第三个任务没有代码文件链接
+        val thirdTask = planItems[0].steps[2]
+        Assertions.assertThat(thirdTask.codeFileLinks).isEmpty()
+        Assertions.assertThat(thirdTask.step).isEqualTo("确认当前分层架构不符合 DDD 规范（Repository 直接依赖 Spring Data）")
+    }
+
+    @Test
+    fun should_preserve_code_file_links_when_formatting_to_markdown() {
+        // Given
+        val markdownContent = """
+            1. 代码重构计划
+               - [ ] 重构 [UserService.java](src/main/java/com/example/service/UserService.java) 中的用户认证逻辑
+               - [x] 优化 [DatabaseConfig.java](src/main/java/com/example/config/DatabaseConfig.java) 的连接池配置
+        """.trimIndent()
+
+        // When
+        val planItems = MarkdownPlanParser.parse(markdownContent)
+        val formattedMarkdown = MarkdownPlanParser.formatPlanToMarkdown(planItems.toMutableList())
+
+        // Then
+        Assertions.assertThat(formattedMarkdown).contains("[UserService.java](src/main/java/com/example/service/UserService.java)")
+        Assertions.assertThat(formattedMarkdown).contains("[DatabaseConfig.java](src/main/java/com/example/config/DatabaseConfig.java)")
+    }
+
+    @Test
+    fun should_handle_code_file_links_with_special_characters() {
+        // Given
+        val markdownContent = """
+            1. 特殊字符测试
+               - [ ] 检查 [User-DTO.java](src/main/java/com/example/dto/User-DTO.java) 中的字段命名
+               - [ ] 验证 [AuthService.java](src/main/java/com/example/service/AuthService.java) 的认证逻辑
+        """.trimIndent()
+
+        // When
+        val planItems = MarkdownPlanParser.parse(markdownContent)
+
+        // Then
+        Assertions.assertThat(planItems).hasSize(1)
+        Assertions.assertThat(planItems[0].steps).hasSize(2)
+
+        val firstTask = planItems[0].steps[0]
+        Assertions.assertThat(firstTask.codeFileLinks).hasSize(1)
+        Assertions.assertThat(firstTask.codeFileLinks[0].displayText).isEqualTo("User-DTO.java")
+        Assertions.assertThat(firstTask.codeFileLinks[0].filePath).isEqualTo("src/main/java/com/example/dto/User-DTO.java")
+
+        val secondTask = planItems[0].steps[1]
+        Assertions.assertThat(secondTask.codeFileLinks).hasSize(1)
+        Assertions.assertThat(secondTask.codeFileLinks[0].displayText).isEqualTo("AuthService.java")
+        Assertions.assertThat(secondTask.codeFileLinks[0].filePath).isEqualTo("src/main/java/com/example/service/AuthService.java")
+    }
+
+    @Test
+    fun should_handle_multiple_code_file_links_in_single_task() {
+        // Given
+        val markdownContent = """
+            1. 多文件关联分析
+               - [ ] 分析 [Controller.java](src/main/java/com/example/Controller.java) 和 [Service.java](src/main/java/com/example/Service.java) 之间的依赖关系
+               - [ ] 检查 [Repository.java](src/main/java/com/example/Repository.java) 的实现
+        """.trimIndent()
+
+        // When
+        val planItems = MarkdownPlanParser.parse(markdownContent)
+
+        // Then
+        Assertions.assertThat(planItems).hasSize(1)
+        Assertions.assertThat(planItems[0].steps).hasSize(2)
+
+        val firstTask = planItems[0].steps[0]
+        Assertions.assertThat(firstTask.codeFileLinks).hasSize(2)
+        Assertions.assertThat(firstTask.codeFileLinks.map { it.displayText }).containsExactly("Controller.java", "Service.java")
+        Assertions.assertThat(firstTask.codeFileLinks.map { it.filePath }).containsExactly(
+            "src/main/java/com/example/Controller.java",
+            "src/main/java/com/example/Service.java"
+        )
+
+        val secondTask = planItems[0].steps[1]
+        Assertions.assertThat(secondTask.codeFileLinks).hasSize(1)
+        Assertions.assertThat(secondTask.codeFileLinks[0].displayText).isEqualTo("Repository.java")
+        Assertions.assertThat(secondTask.codeFileLinks[0].filePath).isEqualTo("src/main/java/com/example/Repository.java")
+    }
 }

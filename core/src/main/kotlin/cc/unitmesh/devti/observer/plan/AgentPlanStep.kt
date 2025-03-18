@@ -8,13 +8,15 @@ import kotlinx.serialization.Serializable
  * @property completed 任务是否已完成
  * @property status 任务状态（COMPLETED, FAILED, IN_PROGRESS, TODO）
  * @property subSteps 子任务列表，用于支持嵌套任务结构
+ * @property codeFileLinks 代码文件链接列表
  */
 @Serializable
 class AgentPlanStep(
     val step: String,
     var completed: Boolean = false,
     var status: TaskStatus = TaskStatus.TODO,
-    var subSteps: MutableList<AgentPlanStep> = mutableListOf()
+    var subSteps: MutableList<AgentPlanStep> = mutableListOf(),
+    var codeFileLinks: List<CodeFileLink> = emptyList()
 ) {
     companion object {
         private val COMPLETED_PATTERN = Regex("^\\[(✓|x|X)\\]\\s*(.*)")

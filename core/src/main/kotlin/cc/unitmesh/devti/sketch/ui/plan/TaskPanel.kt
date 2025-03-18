@@ -7,18 +7,23 @@ import cc.unitmesh.devti.observer.plan.AgentPlanStep
 import cc.unitmesh.devti.observer.plan.TaskStatus
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBPanel
 import com.intellij.util.ui.JBUI
 import java.awt.Dimension
-import java.awt.FlowLayout
 import javax.swing.BorderFactory
 import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JComponent
+import javax.swing.JEditorPane
 import javax.swing.JLabel
 import javax.swing.JMenuItem
 import javax.swing.JPopupMenu
+import javax.swing.event.HyperlinkEvent
+import javax.swing.text.html.HTMLDocument
+import javax.swing.text.html.HTMLEditorKit
+import javax.swing.text.html.StyleSheet
 
 /**
  * Task Panel UI Component responsible for rendering and handling interactions for a single task
@@ -28,7 +33,7 @@ class TaskPanel(
     private val task: AgentPlanStep,
     private val onStatusChange: () -> Unit
 ) : JBPanel<TaskPanel>() {
-    private val taskLabel: JLabel
+    private val taskLabel: JEditorPane
 
     init {
         layout = BoxLayout(this, BoxLayout.X_AXIS)
@@ -81,19 +86,56 @@ class TaskPanel(
         }
     }
 
-    private fun createStyledTaskLabel(): JLabel {
+    private fun createStyledTaskLabel(): JEditorPane {
         val labelText = getLabelTextByStatus()
-        return JLabel("<html>$labelText</html>").apply {
+        val editorKit = HTMLEditorKit()
+        val styleSheet = StyleSheet()
+        styleSheet.addRule("a { color: #4A90E2; text-decoration: none; }")
+        styleSheet.addRule("a:hover { text-decoration: underline; }")
+        editorKit.styleSheet = styleSheet
+
+        val document = HTMLDocument()
+        document.putProperty("IgnoreCharsetDirective", true)
+        project.basePath?.let {
+            val url: String? = LocalFileSystem.getInstance().findFileByPath(it)?.url
+            document.putProperty("Base", url)
+        }
+
+        return JEditorPane().apply {
+            this.editorKit = editorKit
+            this.document = document
+            text = "<html>$labelText</html>"
             border = JBUI.Borders.emptyLeft(5)
+            isEditable = false
+            background = JBUI.CurrentTheme.ToolWindow.background()
+            addHyperlinkListener { e ->
+                if (e.eventType == HyperlinkEvent.EventType.ACTIVATED) {
+                    val url = e.url
+                    val filePath = url.path
+                    val virtualFile = LocalFileSystem.getInstance().findFileByPath(filePath)
+                    if (virtualFile != null) {
+                        com.intellij.openapi.fileEditor.FileEditorManager.getInstance(project)
+                            .openFile(virtualFile, true)
+                    }
+                }
+            }
         }
     }
 
     private fun getLabelTextByStatus(): String {
+        var text = task.step
+        task.codeFileLinks.forEach { link ->
+            text = text.replace(
+                "[${link.displayText}](${link.filePath})",
+                "<a href='${link.filePath}'>${link.displayText}</a>"
+            )
+        }
+
         return when (task.status) {
-            TaskStatus.COMPLETED -> "<strike>${task.step}</strike>"
-            TaskStatus.FAILED -> "<span style='color:red'>${task.step}</span>"
-            TaskStatus.IN_PROGRESS -> "<span style='color:blue;font-style:italic'>${task.step}</span>"
-            TaskStatus.TODO -> task.step
+            TaskStatus.COMPLETED -> "<strike>$text</strike>"
+            TaskStatus.FAILED -> "<span style='color:red'>$text</span>"
+            TaskStatus.IN_PROGRESS -> "<span style='color:blue;font-style:italic'>$text</span>"
+            TaskStatus.TODO -> text
         }
     }
 

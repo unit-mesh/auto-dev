@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.observer.plan
 
 import com.intellij.openapi.diagnostic.logger
+import kotlinx.serialization.Serializable
 import org.intellij.markdown.IElementType
 import org.intellij.markdown.MarkdownElementTypes
 import org.intellij.markdown.ast.ASTNode
@@ -113,6 +114,7 @@ object MarkdownPlanParser {
         val TASK_PATTERN = Regex("^\\s*-\\s*\\[\\s*([xX!*✓]?)\\s*\\]\\s*(.*)")
         val SECTION_PATTERN = Regex("^(\\d+)\\.\\s*(?:\\[([xX!*✓]?)\\]\\s*)?(.+?)(?:\\s*\\[([xX!*✓]?)\\])?$")
         val UNORDERED_ITEM_CLEANER = Regex("^[\\-\\*]\\s+")
+        val CODE_FILE_LINK = Regex("\\[(.*?)\\]\\((.*?)\\)")
     }
 
     fun interpretPlan(content: String): List<AgentTaskEntry> {
@@ -294,17 +296,29 @@ object MarkdownPlanParser {
                 if (taskMatch != null) {
                     val statusMarker = taskMatch.groupValues[1]
                     val description = taskMatch.groupValues[2].trim()
+
+                    // Extract code file links from the description
+                    val codeFileLinks = extractCodeFileLinks(description)
                     val task = AgentPlanStep(
                         description,
                         TaskMarkers.isCompleted(statusMarker),
-                        TaskMarkers.determineStatus(statusMarker)
+                        TaskMarkers.determineStatus(statusMarker),
+                        codeFileLinks = codeFileLinks
                     )
 
                     taskList.add(task)
                 } else {
                     val cleanDescription = taskLine.replace(PatternMatcher.UNORDERED_ITEM_CLEANER, "").trim()
                     if (cleanDescription.isNotEmpty()) {
-                        taskList.add(AgentPlanStep(cleanDescription, false, TaskStatus.TODO))
+                        val codeFileLinks = extractCodeFileLinks(cleanDescription)
+                        taskList.add(
+                            AgentPlanStep(
+                                cleanDescription,
+                                false,
+                                TaskStatus.TODO,
+                                codeFileLinks = codeFileLinks
+                            )
+                        )
                     }
                 }
                 item.children.forEach { childNode ->
@@ -314,6 +328,19 @@ object MarkdownPlanParser {
                 }
             }
         }
+
+        private fun extractCodeFileLinks(text: String): List<CodeFileLink> {
+            val links = mutableListOf<CodeFileLink>()
+            val matches = PatternMatcher.CODE_FILE_LINK.findAll(text)
+
+            matches.forEach { match ->
+                val displayText = match.groupValues[1]
+                val filePath = match.groupValues[2]
+                links.add(CodeFileLink(displayText, filePath))
+            }
+
+            return links
+        }
     }
 
     fun parse(content: String): List<AgentTaskEntry> = interpretPlan(content)
@@ -322,7 +349,19 @@ object MarkdownPlanParser {
         entries.forEachIndexed { index, entry ->
             stringBuilder.append("${index + 1}. ${entry.title}\n")
             entry.steps.forEach { step ->
-                stringBuilder.append("   - [${if (step.completed) "x" else " "}] ${step.step}\n")
+                val stepText = if (step.codeFileLinks.isNotEmpty()) {
+                    var text = step.step
+                    step.codeFileLinks.forEach { link ->
+                        text = text.replace(
+                            "[${link.displayText}](${link.filePath})",
+                            "[${link.displayText}](${link.filePath})"
+                        )
+                    }
+                    text
+                } else {
+                    step.step
+                }
+                stringBuilder.append("   - [${if (step.completed) "x" else " "}] $stepText\n")
             }
         }
         return stringBuilder.toString()
@@ -346,4 +385,10 @@ data class DetailedSectionInfo(
     val title: String,
     val completed: Boolean,
     val status: TaskStatus
+)
+
+@Serializable
+data class CodeFileLink(
+    val displayText: String,
+    val filePath: String
 )
