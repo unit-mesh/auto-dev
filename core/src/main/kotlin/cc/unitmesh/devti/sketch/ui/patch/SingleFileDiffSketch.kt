@@ -37,6 +37,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.panels.HorizontalLayout
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.LocalTimeCounter
+import com.intellij.util.concurrency.annotations.RequiresWriteLock
 import java.awt.BorderLayout
 import java.awt.EventQueue.invokeLater
 import java.awt.event.MouseAdapter
@@ -287,3 +288,8 @@ fun createPatchFromCode(oldCode: String, newCode: String): TextFilePatch? {
     return textFilePatch
 }
 
+
+@RequiresWriteLock
+fun VirtualFile.writeText(content: String) {
+    VfsUtilCore.saveText(this, content)
+}
