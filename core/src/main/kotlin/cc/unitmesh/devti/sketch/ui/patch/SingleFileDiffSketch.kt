@@ -1,4 +1,3 @@
-// filepath: /Volumes/source/ai/autocrud/core/src/main/kotlin/cc/unitmesh/devti/sketch/ui/patch/SingleFileDiffSketch.kt
 package cc.unitmesh.devti.sketch.ui.patch
 
 import cc.unitmesh.devti.AutoDevBundle
