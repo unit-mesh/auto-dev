@@ -13,6 +13,7 @@ import com.intellij.lang.Language
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
@@ -37,6 +38,7 @@ import com.intellij.ui.components.panels.HorizontalLayout
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.LocalTimeCounter
 import java.awt.BorderLayout
+import java.awt.EventQueue.invokeLater
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.nio.charset.Charset
@@ -158,7 +160,10 @@ class SingleFileDiffSketch(
                             null
                         }
 
-                        currentFile.writeText(fixedCode)
+                        invokeLater {
+                            currentFile.writeText(fixedCode)
+                        }
+
                         createActionButtons(currentFile, appliedPatch, patch).let { actions ->
                             actionPanel.removeAll()
                             actions.forEach { button ->
