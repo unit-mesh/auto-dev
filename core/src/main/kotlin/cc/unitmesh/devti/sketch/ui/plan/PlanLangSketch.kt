@@ -41,7 +41,12 @@ class PlanController(
     }
 
     fun updatePlan(newPlanItems: List<AgentTaskEntry>) {
-        if (newPlanItems.isEmpty()) return
+        if (newPlanItems.isEmpty()) {
+            contentPanel.removeAll()
+            contentPanel.revalidate()
+            contentPanel.repaint()
+            return
+        }
 
         val taskStateMap = mutableMapOf<String, Pair<Boolean, TaskStatus>>()
         agentTaskItems.forEach { planItem ->
