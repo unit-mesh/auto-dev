@@ -14,6 +14,7 @@ import cc.unitmesh.devti.util.parser.CodeFence
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.project.Project
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.intellij.markdown.MarkdownElementTypes
@@ -29,48 +30,73 @@ class PlanReviewAction : AnAction(AutoDevBundle.message("sketch.plan.review"), n
 
     override fun actionPerformed(anActionEvent: AnActionEvent) {
         val project = anActionEvent.project ?: return
-        val agentStateService = project.getService(AgentStateService::class.java)
+        reviewPlan(project)
+    }
+}
 
-        val currentPlan = agentStateService.getPlan()
-        val plan = MarkdownPlanParser.formatPlanToMarkdown(currentPlan)
+fun reviewPlan(project: Project, isBlockingMode: Boolean = false): String {
+    val agentStateService = project.getService(AgentStateService::class.java)
 
-        val allMessages = agentStateService.getAllMessages()
-        val withoutCodeMsgs = allMessages.map {
-            it.copy(role = it.role, content = removeAllMarkdownCode(it.content))
+    val currentPlan = agentStateService.getPlan()
+    val plan = MarkdownPlanParser.formatPlanToMarkdown(currentPlan)
+
+    val allMessages = agentStateService.getAllMessages()
+    val withoutCodeMsgs = allMessages.map {
+        it.copy(role = it.role, content = removeAllMarkdownCode(it.content))
+    }
+
+    val templateRender = TemplateRender(GENIUS_CODE)
+    val systemPrompt = templateRender.getTemplate("plan-reviewer.vm")
+    val history = withoutCodeMsgs.joinToString {
+        "# Role ${it.role}\nMessage:\n${it.content}"
+    } + "\nLastPlan: \n$plan\n"
+
+    val stream = LlmFactory.create(project).stream(history, systemPrompt)
+    val llmResult = StringBuilder()
+    var planText = ""
+
+    if (isBlockingMode) {
+        runBlocking {
+            stream.collect {
+                llmResult.append(it)
+            }
         }
 
-        val templateRender = TemplateRender(GENIUS_CODE)
-        val systemPrompt = templateRender.getTemplate("plan-reviewer.vm")
-        val history = withoutCodeMsgs.joinToString {
-            "# Role ${it.role}\nMessage:\n${it.content}"
-        } + "\nLastPlan: \n$plan\n"
+        val result = llmResult.toString()
+        val plan = CodeFence.parseAll(result).firstOrNull {
+            it.originLanguage == "plan"
+        }
 
+        return plan?.text ?: result
+    }
 
-        val stream = LlmFactory.create(project).stream(history, systemPrompt)
-        AutoDevCoroutineScope.scope(project).launch {
-            AutoDevNotifications.notify(project, AutoDevBundle.message("sketch.plan.reviewing"))
-            AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress, "review the plan")
+    AutoDevCoroutineScope.scope(project).launch {
+        AutoDevNotifications.notify(project, AutoDevBundle.message("sketch.plan.reviewing"))
+        AutoDevStatusService.notifyApplication(AutoDevStatus.InProgress, "review the plan")
 
-            val llmResult = StringBuilder()
-            runBlocking {
-                stream.collect {
-                    llmResult.append(it)
-                }
+        runBlocking {
+            stream.collect {
+                llmResult.append(it)
             }
+        }
 
-            val result = llmResult.toString()
-            AutoDevNotifications.notify(project, result)
-            AutoDevStatusService.notifyApplication(AutoDevStatus.Done, "review the plan")
+        val result = llmResult.toString()
+        AutoDevNotifications.notify(project, result)
+        AutoDevStatusService.notifyApplication(AutoDevStatus.Done, "review the plan")
 
-            val plan = CodeFence.parseAll(result).firstOrNull {
-                it.originLanguage == "plan"
-            }
+        val plan = CodeFence.parseAll(result).firstOrNull {
+            it.originLanguage == "plan"
+        }
 
-            if (plan !== null) {
-                agentStateService.updatePlan(plan.text)
-            }
+        if (plan !== null) {
+            planText = plan.text
+            agentStateService.updatePlan(plan.text)
+        } else {
+            planText = result
         }
     }
+
+    return planText
 }
 
 /**

@@ -2,10 +2,17 @@ package cc.unitmesh.devti.mcp.host
 
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
+import cc.unitmesh.devti.observer.agent.AgentStateService
+import cc.unitmesh.devti.observer.plan.reviewPlan
 import cc.unitmesh.devti.sketch.AutoSketchMode
+import cc.unitmesh.devti.sketch.AutoSketchModeListener
+import cc.unitmesh.devti.util.parser.CodeFence
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import kotlinx.serialization.Serializable
 import com.intellij.openapi.application.runInEdt
+import com.intellij.openapi.util.Disposer
+import java.util.concurrent.CompletableFuture
 
 @Serializable
 data class IssueArgs(val issue: String)
@@ -31,6 +38,34 @@ class IssueEvaluateTool : AbstractMcpTool<IssueArgs>() {
             }
         }
 
-        return Response("Start analysis in IDEA")
+        val hintDisposable = Disposer.newDisposable()
+        val future = CompletableFuture<String>()
+        val connection = ApplicationManager.getApplication().messageBus.connect(hintDisposable)
+        connection.subscribe(AutoSketchModeListener.TOPIC, object : AutoSketchModeListener {
+            override fun done() {
+                val messages = project.getService(AgentStateService::class.java).getAllMessages()
+                var plan: String = ""
+                messages.lastOrNull()?.content?.also {
+                    plan = CodeFence.parseAll(it).firstOrNull {
+                        it.originLanguage == "plan"
+                    }?.text ?: ""
+                }
+
+                if (plan.isNotEmpty()) {
+                    future.complete(plan)
+                } else {
+                    val messages = project.getService(AgentStateService::class.java).getAllMessages()
+                    if (messages.isNotEmpty()) {
+                        val plan = reviewPlan(project, isBlockingMode = true)
+                        future.complete(plan)
+                    } else {
+                        future.completeExceptionally(throw Exception("Failure to analysis"))
+                    }
+                }
+            }
+        })
+
+
+        return Response(future.get())
     }
 }

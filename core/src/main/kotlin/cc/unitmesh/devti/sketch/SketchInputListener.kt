@@ -124,4 +124,8 @@ open class SketchInputListener(
     override fun dispose() {
         connection.disconnect()
     }
+
+    fun stop() {
+        TODO("Not yet implemented")
+    }
 }

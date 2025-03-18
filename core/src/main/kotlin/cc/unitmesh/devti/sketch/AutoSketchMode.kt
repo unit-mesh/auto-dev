@@ -5,6 +5,7 @@ import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.provider.devins.LanguageProcessor
 import cc.unitmesh.devti.provider.toolchain.ToolchainFunctionProvider
 import cc.unitmesh.devti.util.parser.CodeFence
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -43,7 +44,12 @@ class AutoSketchMode(val project: Project) {
             project.getService(AgentStateService::class.java).addTools(commands)
         }
 
-        if (allCode.isEmpty()) return
+        if (allCode.isEmpty()) {
+            ApplicationManager.getApplication().messageBus
+                .syncPublisher(AutoSketchModeListener.TOPIC)
+                .done()
+            return
+        }
 
         val allCodeText = allCode.map { it.text }.distinct().joinToString("\n")
         if (allCodeText.trim().isEmpty()) {
