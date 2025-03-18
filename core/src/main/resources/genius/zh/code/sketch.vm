@@ -133,7 +133,7 @@ Index: src/main/index.html
 // the test code
 ```
 </devin>
-// step 4.2, run test code
+现在，你可以执行代码
 <devin>
 /run:src/test/test_routes.py
 </devin>
@@ -141,15 +141,15 @@ Index: src/main/index.html
 # 第五步. 运行应用程序，测试和验证
 现在，我将启动 Flask 服务器并运行我们的应用程序。我将生成 Intellj IDEA 的 .http 代码帮你进行 API 测试；你可以尝试在网站上上传和搜索照片，
 看看是否一切正常。
-   // step 5.1, 启动、测试应用程序，验证代码变更
+
 ```http
 // the http code
 ```
-// step 5.2, 启动应用程序
+启动应用程序
 ```bash
 ./gradlew :bootRun
 ```
-// 给出对应的变更信息
+我将根据代码的变化生成提交信息：
 <devin>
 /commit
 ```markdown

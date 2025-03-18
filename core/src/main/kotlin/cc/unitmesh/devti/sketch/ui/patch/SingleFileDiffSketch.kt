@@ -27,6 +27,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.writeText
 import com.intellij.psi.PsiManager
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.DarculaColors
@@ -157,7 +158,7 @@ class SingleFileDiffSketch(
                             null
                         }
 
-                        currentFile = LightVirtualFile(currentFile, fixedCode, LocalTimeCounter.currentTime())
+                        currentFile.writeText(fixedCode)
                         createActionButtons(currentFile, appliedPatch, patch).let { actions ->
                             actionPanel.removeAll()
                             actions.forEach { button ->

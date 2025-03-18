@@ -654,4 +654,49 @@ Index: src/main/java/cc/unitmesh/untitled/demo/repository/BlogRepository.java
         val codeFences = CodeFence.parseAll(content)
         assertEquals(3, codeFences.size)
     }
+
+    fun testShouldResolveContinueDevinBlock2() {
+        val content = """
+            <devin>
+            /write:src/main/java/cc/unitmesh/untitled/demo/domain/valueobjects/BlogPost.java
+            ```java
+            package cc.unitmesh.untitled.demo.domain.valueobjects;
+            
+            public class BlogPost {
+                private String title;
+                private String content;
+            
+                public BlogPost(String title, String content) {
+                    this.title = title;
+                    this.content = content;
+                }
+            
+                // Getters and setters
+            }
+            ```
+            </devin>
+            
+            <devin>
+            /write:src/main/java/cc/unitmesh/untitled/demo/domain/valueobjects/Author.java
+            ```java
+            package cc.unitmesh.untitled.demo.domain.valueobjects;
+            
+            public class Author {
+                private String name;
+            
+                public Author(String name) {
+                    this.name = name;
+                }
+            
+                // Getters and setters
+            }
+            ```
+            </devin>
+            
+            <devin>
+        """.trimIndent()
+
+        val codeFences = CodeFence.parseAll(content)
+        assertEquals(3, codeFences.size)
+    }
 }
