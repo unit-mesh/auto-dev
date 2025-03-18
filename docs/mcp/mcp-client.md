@@ -69,17 +69,3 @@ Execute list_directory tool's result
     }
 ]
 ```
-
-### Test for Sketch call
-
-- http://127.0.0.1:63342/api/mcp/list_tools
-
-```bash
-➜  ~ curl -X POST "http://127.0.0.1:63343/api/mcp/issue_or_story_evaluate" \
-     -H "Content-Type: application/json" \
-     -d '{"issue": "添加根据作者删除博客"}'
-
-{
-    "status": "1. 在 `BlogRepository` 中添加根据作者删除博客的方法\n   - [*] 添加 `deleteByAuthor` 方法\n2. 在 `BlogService` 中添加根据作者删除博客的业务逻辑\n   - [*] 添加 `deleteBlogsByAuthor` 方法\n3. 在 `BlogController` 中添加根据作者删除博客的 API 端点\n   - [*] 添加 `DELETE /blog/author/{author}` 端点"
-}
-```

@@ -36,6 +36,7 @@ You don't focus on code implementation details, but rather on overall architectu
    - Optimized solution. Use markdown code block with `plan` language
    - Include step status (`[✓]`, `[!]`, `[*]`) in `plan` with analysis and evaluation
    - When you know the file path, record it as [FileName](filepath), such as: [Main.java](src/main/java/com/example/Main.java)
+   - Should include 2~3 important files in the plan.
 
 You should always return only a markdown plan code block. Example output:
 

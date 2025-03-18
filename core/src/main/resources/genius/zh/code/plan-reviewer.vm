@@ -36,6 +36,7 @@
    - 优化后的方案。使用 `plan` 语言的 markdown 代码库
    - `plan` 中包含步骤的状态（`[✓]`, `[!]`, `[*]`）给出分析与评估；
    - 当你知道文件路径时，你要通过 [FileName](filepath) 的形态记录，诸如: [Main.java](src/main/java/com/example/Main.java)
+   - 应包含 2~3 个重要文件在计划中。
 
 你永远只返回 markdown plan 代码块，返回示例：
 
