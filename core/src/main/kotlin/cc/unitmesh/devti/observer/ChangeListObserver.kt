@@ -1,6 +1,5 @@
 package cc.unitmesh.devti.observer
 
-import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.provider.observer.AgentObserver
 import com.intellij.openapi.Disposable

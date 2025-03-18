@@ -38,6 +38,7 @@ class HostMcpToolManager {
             ExecuteActionByIdTool(),
             GetProgressIndicatorsTool(),
             WaitTool(),
+            IssueEvaluateTool(),
         )
     }
 }
