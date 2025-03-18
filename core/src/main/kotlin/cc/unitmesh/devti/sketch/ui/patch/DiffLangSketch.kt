@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.sketch.ui.patch
 
 import cc.unitmesh.devti.AutoDevBundle
+import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.util.findFile
@@ -72,6 +73,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
                     }
 
                     addActionListener {
+                        this@apply.icon = AutoDevIcons.InProgress
                         applyDiffRepairSuggestion(myProject, editor, editor.document.text, patchContent)
                     }
                 }

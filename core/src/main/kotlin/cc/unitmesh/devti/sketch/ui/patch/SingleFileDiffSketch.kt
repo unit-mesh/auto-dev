@@ -197,14 +197,15 @@ class SingleFileDiffSketch(
         }
 
         val repairButton = JButton("Repair").apply {
-            icon = if (isAutoRepair) {
+            val isFailedPatch = appliedPatch?.status != ApplyPatchStatus.SUCCESS
+            isEnabled = isFailedPatch
+            icon = if (isAutoRepair && isFailedPatch) {
                 AutoDevIcons.InProgress
             } else {
                 AllIcons.Toolwindows.ToolWindowBuild
             }
 
             toolTipText = AutoDevBundle.message("sketch.patch.action.repairDiff.tooltip")
-            isEnabled = appliedPatch?.status != ApplyPatchStatus.SUCCESS
             foreground = if (isEnabled) JBColor(0xFF0000, 0xFF0000) else JPanel().background
 
             addActionListener {
