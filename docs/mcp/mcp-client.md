@@ -67,3 +67,17 @@ Execute list_directory tool's result
     }
 ]
 ```
+
+### Test for Sketch call
+
+- http://127.0.0.1:63342/api/mcp/list_tools
+
+
+```bash
+➜  ~ curl -X POST "http://127.0.0.1:63343/api/mcp/issue_or_story_evaluate" \
+>      -H "Content-Type: application/json" \
+>      -d '{"issue": "重构 blog 为 DDD 服务"}'
+{
+    "error": "Failed to execute tool issue_or_story_evaluate, message Access is allowed from Event Dispatch Thread (EDT) only; see https://jb.gg/ij-platform-threading for details\nCurrent thread: Thread[Netty Builtin Server 3,5,main] 496134154 (EventQueue.isDispatchThread()=false)\nSystemEventQueueThread: Thread[AWT-EventQueue-0,6,main] 321680684"
+}
+```

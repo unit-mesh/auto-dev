@@ -351,12 +351,14 @@ open class SketchToolWindow(
 
     fun sendInput(text: String) {
         inputSection.text += "\n" + text
-        inputSection.send()
+        ApplicationManager.getApplication().invokeLater {
+            inputSection.send()
+        }
     }
 
     fun scrollToBottom() {
         if (!isUserScrolling) {
-            SwingUtilities.invokeLater {
+            ApplicationManager.getApplication().invokeLater {
                 val verticalScrollBar = scrollPanel.verticalScrollBar
                 verticalScrollBar.value = verticalScrollBar.maximum
             }

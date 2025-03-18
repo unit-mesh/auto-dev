@@ -4,6 +4,7 @@ import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import com.intellij.openapi.project.Project
 import kotlinx.serialization.Serializable
+import com.intellij.openapi.application.runInEdt
 
 @Serializable
 data class IssueArgs(val issue: String)
@@ -22,8 +23,10 @@ class IssueEvaluateTool : AbstractMcpTool<IssueArgs>() {
     ): Response {
         val issue = args.issue
 
-        AutoDevToolWindowFactory.Companion.sendToSketchToolWindow(project, ChatActionType.SKETCH) { ui, _ ->
-            ui.sendInput(issue)
+        runInEdt {
+            AutoDevToolWindowFactory.Companion.sendToSketchToolWindow(project, ChatActionType.SKETCH) { ui, _ ->
+                ui.sendInput(issue)
+            }
         }
 
         return Response("Start analysis in IDEA")
