@@ -2,6 +2,7 @@ package cc.unitmesh.devti.mcp.host
 
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
+import cc.unitmesh.devti.sketch.AutoSketchMode
 import com.intellij.openapi.project.Project
 import kotlinx.serialization.Serializable
 import com.intellij.openapi.application.runInEdt
@@ -24,6 +25,7 @@ class IssueEvaluateTool : AbstractMcpTool<IssueArgs>() {
         val issue = args.issue
 
         runInEdt {
+            AutoSketchMode.getInstance(project).isEnable = true
             AutoDevToolWindowFactory.Companion.sendToSketchToolWindow(project, ChatActionType.SKETCH) { ui, _ ->
                 ui.sendInput(issue)
             }
