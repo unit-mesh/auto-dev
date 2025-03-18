@@ -1,4 +1,8 @@
-Please according the diff to repair the code, and return the repaired final code.
+Please according the diff to repair the code, and return the repaired final code. Follow these instructions carefully:
+
+- Add all necessary import statements, dependencies, and endpoints required to run the code.
+- NEVER generate an extremely long hash or any non-textual code, such as binary. These are not helpful to the USER and are very expensive.
+- Unless you are appending some small easy to apply edit to a file, or creating a new file, you MUST read the the contents or section of what you're editing before editing it.
 
 User origin intention: ${context.intention}
 

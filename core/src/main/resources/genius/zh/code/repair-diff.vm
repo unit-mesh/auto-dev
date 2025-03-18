@@ -1,13 +1,13 @@
-请根据我的原始代码和失败的 patch，生成最终的完整代码。
+Please according the diff to repair the code, and return the repaired final code. Follow these instructions carefully:
 
-用户的原始意图是: ${context.intention}
+- Add all necessary import statements, dependencies, and endpoints required to run the code.
+- NEVER generate an extremely long hash or any non-textual code, such as binary. These are not helpful to the USER and are very expensive.
+- Unless you are appending some small easy to apply edit to a file, or creating a new file, you MUST read the the contents or section of what you're editing before editing it.
 
-Here is the original code:
+User origin intention: ${context.intention}
 
-${context.oldCode}
+Here is the original code: ${context.oldCode}
 
 Here is the failed patched context:
 
 ${context.patchedCode}
-
-请返回应用 patch 后的最终代码。
