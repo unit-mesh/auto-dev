@@ -51,6 +51,7 @@ developer experience within the IDE.
 | **Go Playground Sketch`*`** | Go Playground with bidirectional code preview/edit                                                           | ![](https://unitmesh.cc/auto-dev/sketch-go-playground.png)       |
 | **Mermaid Sketch`*`**       | Real-time flowchart preview/edit with bidirectional binding                                                  | ![](https://shire.run/images/shire-sketch-mermaid.png)           |
 | **PlantUML Sketch`*`**      | UML diagram editor with bidirectional code-diagram synchronization                                           | ![](https://shire.run/images/shire-sketch-plantuml.png)          |
+| **PlanSketch**              | Display AutoDev Planner planning for resovling code issues                                                   | ![](https://unitmesh.cc/auto-dev/autodev-plan-sketch.png)        |
 
 `*` means requires additional plugin installation.
 
@@ -121,7 +122,7 @@ AutoDev fine-tune models:
 
 | name          | model download (HuggingFace)                                    | model download (OpenBayes)                                                          |
 |---------------|-----------------------------------------------------------------|-------------------------------------------------------------------------------------|
-| DeepSeek 6.7B | [AutoDev Coder](https://huggingface.co/unit-mesh/autodev-coder) | AutoDev Coder](https://openbayes.com/console/phodal/models/rCmer1KQSgp/9/overview) |
+| DeepSeek 6.7B | [AutoDev Coder](https://huggingface.co/unit-mesh/autodev-coder) | [AutoDev Coder](https://openbayes.com/console/phodal/models/rCmer1KQSgp/9/overview) |
 
 ### Language Support (for Fine-tuning)
 

@@ -47,7 +47,7 @@ import javax.swing.JPanel
 
 class SingleFileDiffSketch(
     private val myProject: Project,
-    private val currentFile: VirtualFile,
+    private var currentFile: VirtualFile,
     var patch: TextFilePatch,
     val viewDiffAction: () -> Unit
 ) : LangSketch {
@@ -62,12 +62,20 @@ class SingleFileDiffSketch(
         null
     }
 
+    private val actionPanel = JPanel(HorizontalLayout(4)).apply {
+        isOpaque = true
+    }
+
     private val newCode = appliedPatch?.patchedText ?: ""
     private val isAutoRepair = myProject.coderSetting.state.enableAutoRepairDiff
 
     init {
         val contentPanel = JPanel(BorderLayout())
-        val actions = createActionButtons()
+        val actions = createActionButtons(
+            this@SingleFileDiffSketch.currentFile,
+            this@SingleFileDiffSketch.appliedPatch,
+            this@SingleFileDiffSketch.patch
+        )
         val filepathLabel = JBLabel(currentFile.name).apply {
             icon = currentFile.fileType.icon
             border = BorderFactory.createEmptyBorder(2, 10, 2, 10)
@@ -115,11 +123,8 @@ class SingleFileDiffSketch(
             }
         }
 
-        val actionPanel = JPanel(HorizontalLayout(4)).apply {
-            isOpaque = true
-            actions.forEach { button ->
-                add(button)
-            }
+        actions.forEach { button ->
+            actionPanel.add(button)
         }
 
         patchActionPanel = JPanel(BorderLayout()).apply {
@@ -152,8 +157,12 @@ class SingleFileDiffSketch(
                             null
                         }
 
-                        actions.forEach { button ->
-                            button.repaint()
+                        currentFile = LightVirtualFile(currentFile, fixedCode, LocalTimeCounter.currentTime())
+                        createActionButtons(currentFile, appliedPatch, patch).let { actions ->
+                            actionPanel.removeAll()
+                            actions.forEach { button ->
+                                actionPanel.add(button)
+                            }
                         }
 
                         this.mainPanel.revalidate()
@@ -164,7 +173,9 @@ class SingleFileDiffSketch(
         }
     }
 
-    private fun createActionButtons(): List<JButton> {
+    private fun createActionButtons(
+        file: VirtualFile, appliedPatch: GenericPatchApplier.AppliedPatch?, filePatch: TextFilePatch
+    ): List<JButton> {
         val viewButton = JButton("View").apply {
             icon = AllIcons.Actions.ListChanges
             toolTipText = AutoDevBundle.message("sketch.patch.action.viewDiff.tooltip")
@@ -182,9 +193,9 @@ class SingleFileDiffSketch(
             isEnabled = appliedPatch?.status == ApplyPatchStatus.SUCCESS
 
             addActionListener {
-                val document = FileDocumentManager.getInstance().getDocument(currentFile)
+                val document = FileDocumentManager.getInstance().getDocument(file)
                 if (document == null) {
-                    logger<SingleFileDiffSketch>().error("Document is null for file: ${currentFile.path}")
+                    logger<SingleFileDiffSketch>().error("Document is null for file: ${file.path}")
                     return@addActionListener
                 }
 
@@ -192,8 +203,8 @@ class SingleFileDiffSketch(
                     WriteCommandAction.runWriteCommandAction(myProject) {
                         document.setText(appliedPatch!!.patchedText)
 
-                        if (currentFile is DiffVirtualFileBase) {
-                            FileEditorManager.getInstance(myProject).closeFile(currentFile)
+                        if (file is DiffVirtualFileBase) {
+                            FileEditorManager.getInstance(myProject).closeFile(file)
                         }
                     }
                 }, "ApplyPatch", null)
@@ -213,13 +224,13 @@ class SingleFileDiffSketch(
             foreground = if (isEnabled) JBColor(0xFF0000, 0xFF0000) else JPanel().background
 
             addActionListener {
-                FileEditorManager.getInstance(myProject).openFile(currentFile, true)
+                FileEditorManager.getInstance(myProject).openFile(file, true)
                 val editor = FileEditorManager.getInstance(myProject).selectedTextEditor ?: return@addActionListener
 
-                val failurePatch = if (patch.hunks.size > 1) {
-                    patch.hunks.joinToString("\n") { it.text }
+                val failurePatch = if (filePatch.hunks.size > 1) {
+                    filePatch.hunks.joinToString("\n") { it.text }
                 } else {
-                    patch.singleHunkPatchText
+                    filePatch.singleHunkPatchText
                 }
 
                 applyDiffRepairSuggestion(myProject, editor, oldCode, failurePatch)

@@ -101,7 +101,12 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
 
                     else -> {
                         val content = patch.singleHunkPatchText
-                        val virtualFile = LightVirtualFile("ErrorPatchFile", content)
+                        val virtualFile = if (patch.beforeFileName != null) {
+                            LightVirtualFile(patch.beforeFileName!!, content)
+                        } else {
+                            LightVirtualFile("", content)
+                        }
+
                         SingleFileDiffSketch(myProject, virtualFile, patch, ::handleViewDiffAction)
                     }
                 }
