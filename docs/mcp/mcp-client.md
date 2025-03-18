@@ -27,9 +27,11 @@ parent: MCP
 
 ### MCP as DevIns
 
-In AutoDev, the MCP tool will be converted to DevIns instruction. For example, the `read_multiple_files` tool will be converted to:
+In AutoDev, the MCP tool will be converted to DevIns instruction. For example, the `read_multiple_files` tool will be
+converted to:
 
 ```xml
+
 <tool>name: read_multiple_files, desc: Read the contents of multiple files simultaneously. This is more efficient than
     reading files one by one when you need to analyze or compare multiple files. Each file's content is returned with
     its path as a reference. Failed reads for individual files won't stop the entire operation. Only works within
@@ -72,12 +74,12 @@ Execute list_directory tool's result
 
 - http://127.0.0.1:63342/api/mcp/list_tools
 
-
 ```bash
 ➜  ~ curl -X POST "http://127.0.0.1:63343/api/mcp/issue_or_story_evaluate" \
->      -H "Content-Type: application/json" \
->      -d '{"issue": "重构 blog 为 DDD 服务"}'
+     -H "Content-Type: application/json" \
+     -d '{"issue": "添加根据作者删除博客"}'
+
 {
-    "error": "Failed to execute tool issue_or_story_evaluate, message Access is allowed from Event Dispatch Thread (EDT) only; see https://jb.gg/ij-platform-threading for details\nCurrent thread: Thread[Netty Builtin Server 3,5,main] 496134154 (EventQueue.isDispatchThread()=false)\nSystemEventQueueThread: Thread[AWT-EventQueue-0,6,main] 321680684"
+    "status": "1. 在 `BlogRepository` 中添加根据作者删除博客的方法\n   - [*] 添加 `deleteByAuthor` 方法\n2. 在 `BlogService` 中添加根据作者删除博客的业务逻辑\n   - [*] 添加 `deleteBlogsByAuthor` 方法\n3. 在 `BlogController` 中添加根据作者删除博客的 API 端点\n   - [*] 添加 `DELETE /blog/author/{author}` 端点"
 }
 ```
