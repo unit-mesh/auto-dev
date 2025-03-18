@@ -11,7 +11,6 @@
         <notificationGroup id="AutoDev.notification.group" displayType="STICKY_BALLOON" bundle="messages.AutoDevBundle"
                            key="name"/>
 
-
         <applicationConfigurable parentId="tools" instance="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                                  id="cc.unitmesh.devti.settings.AutoDevSettingsConfigurable"
                                  displayName="AutoDev"/>
@@ -36,8 +35,6 @@
         <applicationService
                 serviceInterface="cc.unitmesh.devti.inlay.codecomplete.LLMInlayManager"
                 serviceImplementation="cc.unitmesh.devti.inlay.codecomplete.LLMInlayManagerImpl"/>
-
-        <!--        <postStartupActivity implementation="cc.unitmesh.devti.update.AutoDevUpdateStartupActivity"/>-->
 
         <typedHandler order="first, before completionAutoPopup"
                       implementation="cc.unitmesh.devti.inlay.TypeOverHandler"/>
@@ -181,10 +178,10 @@
         <!-- Lang Sketch Provider -->
         <extensionPoint qualifiedName="cc.unitmesh.langSketchProvider"
                         interface="cc.unitmesh.devti.sketch.ui.LanguageSketchProvider"
-                        dynamic="true" />
+                        dynamic="true"/>
         <extensionPoint qualifiedName="cc.unitmesh.sketchToolchainProvider"
                         interface="cc.unitmesh.devti.sketch.SketchToolchainProvider"
-                        dynamic="true" />
+                        dynamic="true"/>
 
         <extensionPoint qualifiedName="cc.unitmesh.relatedClassProvider"
                         beanClass="com.intellij.lang.LanguageExtensionPoint" dynamic="true">
@@ -251,6 +248,8 @@
             <categoryKey>intention.category.llm</categoryKey>
         </autoDevIntention>
 
+        <chatContextProvider implementation="cc.unitmesh.devti.provider.context.IdeVersionChatContextProvider"/>
+
         <langSketchProvider implementation="cc.unitmesh.devti.sketch.ui.patch.DiffLangSketchProvider"/>
         <langSketchProvider implementation="cc.unitmesh.devti.sketch.ui.webview.WebpageSketchProvider"/>
         <langSketchProvider implementation="cc.unitmesh.devti.sketch.ui.openapi.OpenAPISketchProvider"/>
@@ -266,6 +265,7 @@
 
         <agentObserver implementation="cc.unitmesh.devti.observer.TestAgentObserver" />
         <agentObserver implementation="cc.unitmesh.devti.observer.BuiltTaskAgentObserver" />
+        <agentObserver implementation="cc.unitmesh.devti.observer.AddDependencyAgentObserver" />
         <agentObserver implementation="cc.unitmesh.devti.observer.ChangeListObserver" />
     </extensions>
 
@@ -280,14 +280,14 @@
         <action id="cc.unitmesh.devti.inlayCompleteCode"
                 class="cc.unitmesh.devti.actions.completion.InlayCompleteCodeAction"
                 text="Inlay Complete Code (AutoDev)"
-                description="Inlay complete code!" >
+                description="Inlay complete code!">
             <keyboard-shortcut keymap="$default" first-keystroke="alt PERIOD"/>
             <add-to-group group-id="ShowIntentionsGroup" relative-to-action="ShowIntentionActions" anchor="after"/>
         </action>
         <action id="cc.unitmesh.devti.disposeInlayCompleteCode"
                 class="cc.unitmesh.devti.actions.completion.InlayCompleteCodeDisposedAction"
                 text="Disposed Inlay Complete Code"
-                description="Disposed Inlay complete code!" >
+                description="Disposed Inlay complete code!">
             <keyboard-shortcut keymap="$default" first-keystroke="ESCAPE"/>
         </action>
 
@@ -353,7 +353,6 @@
 
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
-
         <group id="AutoDev.ToolWindow.Snippet.DependenciesToolbar">
             <action id="AutoDev.ToolWindow.Snippet.DependenciesLabelAction"
                     class="cc.unitmesh.devti.gui.snippet.AutoDevDependenciesLabelAction"/>
@@ -398,7 +397,7 @@
                 icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
                 class="cc.unitmesh.devti.actions.chat.AutoTestInMenuAction">
 
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="ProjectViewPopupMenuRefactoringGroup" />
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="ProjectViewPopupMenuRefactoringGroup"/>
             <add-to-group group-id="RefactoringMenu" anchor="last"/>
             <add-to-group group-id="EditorTabPopupMenu" anchor="last"/>
         </action>
@@ -412,6 +411,14 @@
         <group id="autodev.statusBarPopup">
             <reference id="cc.unitmesh.devti.QuickAssistant"/>
             <reference id="cc.unitmesh.devti.EditSettings"/>
+        </group>
+
+        <group id="AutoDevPlanner.ToolWindow.TitleActions">
+            <action id="ReviewPlan" icon="cc.unitmesh.devti.AutoDevIcons.REVIEWER"
+                    class="cc.unitmesh.devti.observer.plan.PlanReviewAction"/>
+            <action id="EditPlan" icon="AllIcons.Actions.EditScheme"
+                    class="cc.unitmesh.devti.observer.plan.EditPlanAction"/>
+            <separator/>
         </group>
     </actions>
 </idea-plugin>
