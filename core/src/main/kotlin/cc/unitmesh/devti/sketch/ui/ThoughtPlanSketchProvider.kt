@@ -2,7 +2,7 @@ package cc.unitmesh.devti.sketch.ui
 
 import cc.unitmesh.devti.observer.plan.MarkdownPlanParser
 import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
-import cc.unitmesh.devti.sketch.ui.plan.PlanSketch
+import cc.unitmesh.devti.sketch.ui.plan.PlanLangSketch
 import com.intellij.openapi.project.Project
 
 class ThoughtPlanSketchProvider : LanguageSketchProvider {
@@ -11,7 +11,7 @@ class ThoughtPlanSketchProvider : LanguageSketchProvider {
     override fun create(project: Project, content: String): ExtensionLangSketch {
         val planItems = MarkdownPlanParser.parse(content)
         if (planItems.isNotEmpty()) {
-            return PlanSketch(project, content, planItems.toMutableList())
+            return PlanLangSketch(project, content, planItems.toMutableList())
         }
 
         return object : CodeHighlightSketch(project, content, null), ExtensionLangSketch {

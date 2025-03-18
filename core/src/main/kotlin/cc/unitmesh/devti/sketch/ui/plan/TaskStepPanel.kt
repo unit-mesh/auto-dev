@@ -6,6 +6,7 @@ import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.observer.plan.AgentPlanStep
 import cc.unitmesh.devti.observer.plan.TaskStatus
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.ui.components.JBCheckBox
@@ -28,11 +29,11 @@ import javax.swing.text.html.StyleSheet
 /**
  * Task Panel UI Component responsible for rendering and handling interactions for a single task
  */
-class TaskPanel(
+class TaskStepPanel(
     private val project: Project,
     private val task: AgentPlanStep,
     private val onStatusChange: () -> Unit
-) : JBPanel<TaskPanel>() {
+) : JBPanel<TaskStepPanel>() {
     private val taskLabel: JEditorPane
 
     init {
@@ -90,8 +91,8 @@ class TaskPanel(
         val labelText = getLabelTextByStatus()
         val editorKit = HTMLEditorKit()
         val styleSheet = StyleSheet()
-        styleSheet.addRule("a { color: #4A90E2; text-decoration: none; }")
-        styleSheet.addRule("a:hover { text-decoration: underline; }")
+        styleSheet.addRule("a { color: #FF0000; text-decoration: underline red; }")
+        styleSheet.addRule("a:hover { color: #FF0000; }")
         editorKit.styleSheet = styleSheet
 
         val document = HTMLDocument()
@@ -110,12 +111,11 @@ class TaskPanel(
             background = JBUI.CurrentTheme.ToolWindow.background()
             addHyperlinkListener { e ->
                 if (e.eventType == HyperlinkEvent.EventType.ACTIVATED) {
-                    val url = e.url
-                    val filePath = url.path
-                    val virtualFile = LocalFileSystem.getInstance().findFileByPath(filePath)
+                    val filePath = e.url?.path ?: e.description
+                    val realPath = project.basePath + "/" + filePath
+                    val virtualFile = LocalFileSystem.getInstance().findFileByPath(realPath)
                     if (virtualFile != null) {
-                        com.intellij.openapi.fileEditor.FileEditorManager.getInstance(project)
-                            .openFile(virtualFile, true)
+                        FileEditorManager.getInstance(project).openFile(virtualFile, true)
                     }
                 }
             }

@@ -21,7 +21,7 @@ import javax.swing.JPanel
 /**
  * Section Panel UI Component responsible for rendering and handling interactions for a plan section
  */
-class SectionPanel(
+class TaskSectionPanel(
     private val project: Project,
     private val index: Int,
     private val planItem: AgentTaskEntry,
@@ -36,12 +36,12 @@ class SectionPanel(
         add(titlePanel)
 
         planItem.steps.forEach { task ->
-            val taskPanel = TaskPanel(project, task) {
+            val taskStepPanel = TaskStepPanel(project, task) {
                 updateSectionStatus()
                 onStatusChange()
             }
 
-            add(taskPanel)
+            add(taskStepPanel)
         }
     }
 

@@ -13,8 +13,6 @@ import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
 import java.awt.Dimension
-import javax.swing.Box
-import javax.swing.BoxLayout
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.ScrollPaneConstants
@@ -30,12 +28,12 @@ class PlanController(
     fun renderPlan() {
         contentPanel.removeAll()
         agentTaskItems.forEachIndexed { index, planItem ->
-            val sectionPanel = SectionPanel(project, index, planItem) {
+            val taskSectionPanel = TaskSectionPanel(project, index, planItem) {
                 contentPanel.revalidate()
                 contentPanel.repaint()
             }
 
-            contentPanel.add(sectionPanel)
+            contentPanel.add(taskSectionPanel)
         }
 
         contentPanel.revalidate()
@@ -70,12 +68,12 @@ class PlanController(
 /**
  * Main PlanSketch class that integrates all components
  */
-class PlanSketch(
+class PlanLangSketch(
     private val project: Project,
     private var content: String,
     private var agentTaskItems: MutableList<AgentTaskEntry>,
     private val isInToolwindow: Boolean = false
-) : JBPanel<PlanSketch>(BorderLayout(JBUI.scale(8), 0)), ExtensionLangSketch {
+) : JBPanel<PlanLangSketch>(BorderLayout(JBUI.scale(8), 0)), ExtensionLangSketch {
     private val contentPanel = JPanel(VerticalLayout(JBUI.scale(0)))
     val scrollPane: JBScrollPane
     private val toolbarFactory = PlanToolbarFactory(project)
