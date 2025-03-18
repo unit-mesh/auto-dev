@@ -13,22 +13,16 @@ import com.intellij.lang.Language
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
-import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.diff.impl.patch.ApplyPatchStatus
-import com.intellij.openapi.diff.impl.patch.PatchHunk
-import com.intellij.openapi.diff.impl.patch.PatchLine
-import com.intellij.openapi.diff.impl.patch.TextFilePatch
-import com.intellij.openapi.diff.impl.patch.TextPatchBuilder
+import com.intellij.openapi.diff.impl.patch.*
 import com.intellij.openapi.diff.impl.patch.apply.GenericPatchApplier
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.writeText
 import com.intellij.psi.PsiManager
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.DarculaColors
@@ -42,6 +36,7 @@ import java.awt.BorderLayout
 import java.awt.EventQueue.invokeLater
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.io.IOException
 import java.nio.charset.Charset
 import javax.swing.BorderFactory
 import javax.swing.JButton
@@ -291,5 +286,13 @@ fun createPatchFromCode(oldCode: String, newCode: String): TextFilePatch? {
 
 @RequiresWriteLock
 fun VirtualFile.writeText(content: String) {
-    VfsUtilCore.saveText(this, content)
+    saveText(this, content)
+}
+
+@Throws(IOException::class)
+fun saveText(file: VirtualFile, text: String) {
+    val charset = file.getCharset()
+    file.getOutputStream(file).use { stream ->
+        stream.write(text.toByteArray(charset))
+    }
 }
