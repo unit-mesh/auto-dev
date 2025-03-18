@@ -140,7 +140,7 @@ class SingleFileDiffSketch(
             lintCheckForNewCode(currentFile)
         }
 
-        if (isAutoRepair) {
+        if (isAutoRepair && appliedPatch?.status != ApplyPatchStatus.SUCCESS) {
             ApplicationManager.getApplication().executeOnPooledThread {
                 applyDiffRepairSuggestionSync(myProject, oldCode, newCode, { fixedCode ->
                     createPatchFromCode(oldCode, fixedCode)?.let { patch ->
@@ -150,6 +150,10 @@ class SingleFileDiffSketch(
                         } catch (e: Exception) {
                             logger<SingleFileDiffSketch>().warn("Failed to apply patch: ${patch.beforeFileName}", e)
                             null
+                        }
+
+                        actions.forEach { button ->
+                            button.repaint()
                         }
 
                         this.mainPanel.revalidate()
