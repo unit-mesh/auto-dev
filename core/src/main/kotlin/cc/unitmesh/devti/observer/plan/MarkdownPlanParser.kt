@@ -28,11 +28,9 @@ import org.intellij.markdown.parser.MarkdownParser
 object MarkdownPlanParser {
     private val logger = logger<MarkdownPlanParser>()
 
-    // 文档解析相关
     private val markdownRootType = IElementType("ROOT")
     private val markdownFlavor = GFMFlavourDescriptor()
 
-    // 任务状态标记
     private object TaskMarkers {
         val CHECKMARK = "✓"
         val COMPLETED = listOf("x", "X", "✓")
@@ -49,23 +47,12 @@ object MarkdownPlanParser {
         fun isCompleted(marker: String): Boolean = marker in COMPLETED
     }
 
-    // 领域特定的模式匹配器
     private object PatternMatcher {
-        /** 匹配任务项，例如 "- [x] 任务描述" */
         val TASK_PATTERN = Regex("^\\s*-\\s*\\[\\s*([xX!*✓]?)\\s*\\]\\s*(.*)")
-
-        /** 匹配计划章节，例如 "1. [x] 章节标题" 或 "1. 章节标题 [x]" */
         val SECTION_PATTERN = Regex("^(\\d+)\\.\\s*(?:\\[([xX!*✓]?)\\]\\s*)?(.+?)(?:\\s*\\[([xX!*✓]?)\\])?$")
-
-        /** 提取无序列表项的内容，去掉前缀 */
         val UNORDERED_ITEM_CLEANER = Regex("^[\\-\\*]\\s+")
     }
 
-    /**
-     * 解析markdown文本为结构化执行计划
-     * @param content markdown格式的计划文本
-     * @return 解析得到的执行计划列表
-     */
     fun interpretPlan(content: String): List<AgentTaskEntry> {
         try {
             val documentTree = parseMarkdownDocument(content)
@@ -76,16 +63,11 @@ object MarkdownPlanParser {
         }
     }
 
-    /**
-     * 解析Markdown文档结构
-     */
+
     private fun parseMarkdownDocument(content: String): ASTNode {
         return MarkdownParser(markdownFlavor).parse(markdownRootType, content)
     }
 
-    /**
-     * 从文档结构中提取计划
-     */
     private fun extractPlanStructure(documentNode: ASTNode, content: String): List<AgentTaskEntry> {
         val planSections = mutableListOf<AgentTaskEntry>()
         val topLevelSections = findTopLevelSections(documentNode)
@@ -101,16 +83,10 @@ object MarkdownPlanParser {
         return planSections
     }
 
-    /**
-     * 查找文档中的顶级章节列表
-     */
     private fun findTopLevelSections(documentNode: ASTNode): List<ASTNode> {
         return documentNode.children.filter { it.type == MarkdownElementTypes.ORDERED_LIST }
     }
 
-    /**
-     * 判断是否为简单计划结构（无子任务的简单列表）
-     */
     private fun isSimplePlanStructure(sectionNode: ASTNode, content: String): Boolean {
         return sectionNode.children.none { listItem ->
             listItem.type == MarkdownElementTypes.LIST_ITEM &&
@@ -118,9 +94,6 @@ object MarkdownPlanParser {
         }
     }
 
-    /**
-     * 解析简单计划结构（仅包含章节标题的列表）
-     */
     private fun interpretSimplePlanStructure(
         sectionListNode: ASTNode,
         content: String,
@@ -137,9 +110,6 @@ object MarkdownPlanParser {
         }
     }
 
-    /**
-     * 解析详细计划结构（包含子任务的复杂结构）
-     */
     private fun interpretDetailedPlanStructure(
         documentNode: ASTNode,
         content: String,
@@ -149,13 +119,7 @@ object MarkdownPlanParser {
         planStructureInterpreter.interpretDocument(documentNode, planSections)
     }
 
-    /**
-     * 访问者类，用于解析计划章节信息
-     */
     private class PlanSectionVisitor(private val documentContent: String) {
-        /**
-         * 提取基础章节信息（无任务）
-         */
         fun extractBasicSectionInfo(sectionNode: ASTNode): BasicSectionInfo? {
             val sectionText = sectionNode.getTextInNode(documentContent).toString().trim()
             val titleMatch = "^(\\d+)\\.\\s*(.+?)(?:\\s*${TaskMarkers.CHECKMARK})?$".toRegex().find(sectionText)
@@ -167,9 +131,6 @@ object MarkdownPlanParser {
             }
         }
 
-        /**
-         * 从列表项节点中提取完整章节信息
-         */
         fun extractDetailedSectionInfo(listItemNode: ASTNode): DetailedSectionInfo? {
             val fullText = listItemNode.getTextInNode(documentContent).toString().trim()
             val firstLineEnd = fullText.indexOf('\n')
@@ -177,10 +138,8 @@ object MarkdownPlanParser {
 
             val headerMatch = PatternMatcher.SECTION_PATTERN.find(headerLine) ?: return null
 
-            // 提取章节标题和状态
             val title = headerMatch.groupValues[3].trim()
 
-            // 获取状态标记（可能在开头或结尾）
             val startMarker = headerMatch.groupValues[2]
             val endMarker = headerMatch.groupValues[4]
             val statusMarker = if (startMarker.isNotEmpty()) startMarker else endMarker
@@ -192,31 +151,21 @@ object MarkdownPlanParser {
         }
     }
 
-    /**
-     * 详细计划结构解析器
-     */
     private class DetailedPlanStructureInterpreter(private val documentContent: String) {
         private val sectionVisitor = PlanSectionVisitor(documentContent)
         private val taskExtractor = TaskExtractor(documentContent)
-
-        // 当前正在处理的章节信息
         private var currentSection: MutableSectionContext? = null
 
-        /**
-         * 解析整个文档结构，提取计划章节
-         */
         fun interpretDocument(documentNode: ASTNode, planSections: MutableList<AgentTaskEntry>) {
             documentNode.accept(object : RecursiveVisitor() {
                 override fun visitNode(node: ASTNode) {
                     when (node.type) {
                         MarkdownElementTypes.ORDERED_LIST -> {
                             processOrderedList(node, planSections)
-                            // 跳过递归以避免重复处理
                         }
 
                         MarkdownElementTypes.UNORDERED_LIST -> {
                             processUnorderedList(node)
-                            // 跳过递归以避免重复处理
                         }
 
                         else -> super.visitNode(node)
@@ -224,30 +173,21 @@ object MarkdownPlanParser {
                 }
             })
 
-            // 处理最后一个章节（如果存在）
             finalizeCurrentSection(planSections)
         }
 
-        /**
-         * 处理有序列表（章节列表）
-         */
         private fun processOrderedList(listNode: ASTNode, planSections: MutableList<AgentTaskEntry>) {
             listNode.children.forEach { item ->
                 if (item.type == MarkdownElementTypes.LIST_ITEM) {
                     val sectionInfo = sectionVisitor.extractDetailedSectionInfo(item)
 
                     if (sectionInfo != null) {
-                        // 完成前一章节的处理
                         finalizeCurrentSection(planSections)
-
-                        // 创建新的章节上下文
                         currentSection = MutableSectionContext(
                             title = sectionInfo.title,
                             completed = sectionInfo.completed,
                             status = sectionInfo.status
                         )
-
-                        // 处理子任务列表
                         item.children.forEach { childNode ->
                             if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
                                 processUnorderedList(childNode)
@@ -258,18 +198,12 @@ object MarkdownPlanParser {
             }
         }
 
-        /**
-         * 处理无序列表（任务列表）
-         */
         private fun processUnorderedList(listNode: ASTNode) {
             currentSection?.let { section ->
                 taskExtractor.extractTasks(listNode, section.tasks)
             }
         }
 
-        /**
-         * 完成当前章节处理并添加到计划列表
-         */
         private fun finalizeCurrentSection(planSections: MutableList<AgentTaskEntry>) {
             currentSection?.let { section ->
                 val plan = AgentTaskEntry(
@@ -285,13 +219,7 @@ object MarkdownPlanParser {
         }
     }
 
-    /**
-     * 任务提取器
-     */
     private class TaskExtractor(private val documentContent: String) {
-        /**
-         * 从无序列表中提取任务项
-         */
         fun extractTasks(listNode: ASTNode, taskList: MutableList<AgentPlanStep>) {
             listNode.children.forEach { item ->
                 if (item.type != MarkdownElementTypes.LIST_ITEM) return@forEach
@@ -300,15 +228,10 @@ object MarkdownPlanParser {
                 val firstLineEnd = taskText.indexOf('\n')
                 val taskLine = if (firstLineEnd > 0) taskText.substring(0, firstLineEnd).trim() else taskText
 
-                // 尝试匹配GitHub风格的任务项
                 val taskMatch = PatternMatcher.TASK_PATTERN.find(taskLine)
-
                 if (taskMatch != null) {
-                    // 提取任务描述和状态
                     val statusMarker = taskMatch.groupValues[1]
                     val description = taskMatch.groupValues[2].trim()
-
-                    // 创建任务对象
                     val task = AgentPlanStep(
                         description,
                         TaskMarkers.isCompleted(statusMarker),
@@ -317,14 +240,11 @@ object MarkdownPlanParser {
 
                     taskList.add(task)
                 } else {
-                    // 处理普通列表项作为任务
                     val cleanDescription = taskLine.replace(PatternMatcher.UNORDERED_ITEM_CLEANER, "").trim()
                     if (cleanDescription.isNotEmpty()) {
                         taskList.add(AgentPlanStep(cleanDescription, false, TaskStatus.TODO))
                     }
                 }
-
-                // 处理嵌套任务
                 item.children.forEach { childNode ->
                     if (childNode.type == MarkdownElementTypes.UNORDERED_LIST) {
                         extractTasks(childNode, taskList)
@@ -334,28 +254,6 @@ object MarkdownPlanParser {
         }
     }
 
-    // 领域模型 - 表示章节上下文的可变数据结构
-    private data class MutableSectionContext(
-        val title: String,
-        var completed: Boolean,
-        var status: TaskStatus,
-        val tasks: MutableList<AgentPlanStep> = mutableListOf()
-    )
-
-    // 领域模型 - 基本章节信息
-    private data class BasicSectionInfo(
-        val title: String,
-        val completed: Boolean
-    )
-
-    // 领域模型 - 详细章节信息
-    private data class DetailedSectionInfo(
-        val title: String,
-        val completed: Boolean,
-        val status: TaskStatus
-    )
-
-    // 为保持向后兼容性，提供parse方法的别名
     fun parse(content: String): List<AgentTaskEntry> = interpretPlan(content)
     fun formatPlanToMarkdown(entries: MutableList<AgentTaskEntry>): String {
         val stringBuilder = StringBuilder()
@@ -368,3 +266,22 @@ object MarkdownPlanParser {
         return stringBuilder.toString()
     }
 }
+
+
+data class MutableSectionContext(
+    val title: String,
+    var completed: Boolean,
+    var status: TaskStatus,
+    val tasks: MutableList<AgentPlanStep> = mutableListOf()
+)
+
+data class BasicSectionInfo(
+    val title: String,
+    val completed: Boolean
+)
+
+data class DetailedSectionInfo(
+    val title: String,
+    val completed: Boolean,
+    val status: TaskStatus
+)
