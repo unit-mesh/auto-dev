@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Custom AI Agent Quickstart
-parent: AI Agent
+parent: Agent
 nav_order: 3
 ---
 

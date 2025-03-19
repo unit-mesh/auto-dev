@@ -1,7 +1,7 @@
 ---
 layout: default
-title: AI Agent Server 
-parent: AI Agent
+title: AI Agent Server
+parent: Agent
 nav_order: 6
 ---
 

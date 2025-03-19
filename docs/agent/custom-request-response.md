@@ -1,7 +1,7 @@
 ---
 layout: default
-title: Custom Request/Response 
-parent: AI Agent
+title: Custom Request/Response
+parent: Agent
 nav_order: 5
 ---
 

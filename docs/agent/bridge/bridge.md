@@ -3,7 +3,7 @@ layout: default
 title: AutoDev Bridge
 nav_order: 2
 has_children: true
-parent: agent
+parent: Agent
 permalink: /bridge
 ---
 
