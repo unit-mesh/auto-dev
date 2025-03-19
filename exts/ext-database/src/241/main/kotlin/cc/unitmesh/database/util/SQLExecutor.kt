@@ -134,6 +134,13 @@ object SQLExecutor {
                     future.complete(result.toString())
                 }
             }
+
+            override fun afterLastRowAdded(
+                context: GridDataRequest.Context,
+                total: Int
+            ) {
+                future.complete(result.toString())
+            }
         })
 
         val request =

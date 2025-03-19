@@ -44,9 +44,10 @@ class JavaRefactoringTool : RefactoringTool {
                     val methodName = elementInfo.methodName
                     val className = elementInfo.className
 
-                    val psiMethod: PsiMethod? =
+                    val psiMethod: PsiMethod? = runReadAction {
                         psiFile.classes.firstOrNull { it.name == className }
                             ?.methods?.firstOrNull { it.name == methodName }
+                    }
 
                     psiMethod ?: psiFile
                 } else {

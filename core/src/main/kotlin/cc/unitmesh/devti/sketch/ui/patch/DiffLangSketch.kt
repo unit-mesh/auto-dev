@@ -5,8 +5,10 @@ import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.util.findFile
+import cc.unitmesh.devti.util.whenDisposed
 import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.UndoConfirmationPolicy
@@ -14,6 +16,7 @@ import com.intellij.openapi.command.undo.UndoManager
 import com.intellij.openapi.diff.impl.patch.PatchReader
 import com.intellij.openapi.diff.impl.patch.TextFilePatch
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.FileEditorProvider
 import com.intellij.openapi.fileEditor.TextEditor
@@ -199,7 +202,9 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
             MyApplyPatchFromClipboardDialog(myProject, patchContent).show()
             return
         } else {
-            showSingleDiff(this@DiffLangSketch.myProject, this@DiffLangSketch.patchContent) { handleAcceptAction() }
+            showSingleDiff(this@DiffLangSketch.myProject, this@DiffLangSketch.patchContent, this) {
+                handleAcceptAction()
+            }
         }
     }
 
@@ -214,7 +219,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
     override fun dispose() {}
 }
 
-fun showSingleDiff(project: Project, patchContent: String, handleAccept: (() -> Unit)?) {
+fun showSingleDiff(project: Project, patchContent: String, disposable: Disposable, handleAccept: (() -> Unit)?) {
     val editorProvider = FileEditorProvider.EP_FILE_EDITOR_PROVIDER.extensionList.firstOrNull {
         it.javaClass.simpleName == "DiffPatchFileEditorProvider" || it.javaClass.simpleName == "DiffEditorProvider"
     }
@@ -222,6 +227,11 @@ fun showSingleDiff(project: Project, patchContent: String, handleAccept: (() -> 
     if (editorProvider != null) {
         val virtualFile = LightVirtualFile("AutoDev-Diff-Lang.diff", patchContent)
         val editor = editorProvider.createEditor(project, virtualFile)
+
+        disposable.whenDisposed {
+            editor.dispose()
+        }
+
         object : DialogWrapper(project) {
             init {
                 title = "Diff Preview"

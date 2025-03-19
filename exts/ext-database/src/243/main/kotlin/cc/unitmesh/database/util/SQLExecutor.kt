@@ -140,7 +140,7 @@ object SQLExecutor {
             object : com.intellij.database.datagrid.DataRequest.QueryRequest(session, query,
                 newConstraints(dataSource.dbms), null) {}
         messageBus.dataProducer.processRequest(request)
-        return future.get()
+        return future.get(5, java.util.concurrent.TimeUnit.SECONDS)
     }
 
     private fun createConsole(project: Project, file: LightVirtualFile): JdbcConsole? {

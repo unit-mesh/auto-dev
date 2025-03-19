@@ -140,41 +140,44 @@ class SingleFileDiffSketch(
         mainPanel.add(myHeaderPanel)
         mainPanel.add(contentPanel)
 
-        ApplicationManager.getApplication().executeOnPooledThread {
+        ApplicationManager.getApplication().invokeLater {
             lintCheckForNewCode(currentFile)
         }
 
         if (isAutoRepair && appliedPatch?.status != ApplyPatchStatus.SUCCESS) {
-            ApplicationManager.getApplication().executeOnPooledThread {
-                applyDiffRepairSuggestionSync(myProject, oldCode, newCode, { fixedCode ->
-                    createPatchFromCode(oldCode, fixedCode)?.let { patch ->
-                        this@SingleFileDiffSketch.patch = patch
-                        appliedPatch = try {
-                            GenericPatchApplier.apply(oldCode, patch.hunks)
-                        } catch (e: Exception) {
-                            logger<SingleFileDiffSketch>().warn("Failed to apply patch: ${patch.beforeFileName}", e)
-                            null
-                        }
-
-                        invokeLater {
-                            runWriteAction {
-                                currentFile.writeText(fixedCode)
-                            }
-                        }
-
-                        createActionButtons(currentFile, appliedPatch, patch).let { actions ->
-                            actionPanel.removeAll()
-                            actions.forEach { button ->
-                                actionPanel.add(button)
-                            }
-                        }
-
-                        this.mainPanel.revalidate()
-                        this.mainPanel.repaint()
-                    }
-                });
+            ApplicationManager.getApplication().invokeLater {
+                try {
+                    executeAutoRepair()
+                } catch (e: Exception) {
+                    logger<SingleFileDiffSketch>().error("Failed to execute auto repair", e)
+                }
             }
         }
+    }
+
+    private fun executeAutoRepair() {
+        applyDiffRepairSuggestionSync(myProject, oldCode, newCode, { fixedCode ->
+            createPatchFromCode(oldCode, fixedCode)?.let { patch ->
+                this@SingleFileDiffSketch.patch = patch
+                appliedPatch = try {
+                    GenericPatchApplier.apply(oldCode, patch.hunks)
+                } catch (e: Exception) {
+                    logger<SingleFileDiffSketch>().warn("Failed to apply patch: ${patch.beforeFileName}", e)
+                    null
+                }
+
+                val file = LightVirtualFile(currentFile, fixedCode, LocalTimeCounter.currentTime())
+                createActionButtons(file, appliedPatch, patch).let { actions ->
+                    actionPanel.removeAll()
+                    actions.forEach { button ->
+                        actionPanel.add(button)
+                    }
+                }
+
+                this.mainPanel.revalidate()
+                this.mainPanel.repaint()
+            }
+        })
     }
 
     private fun createActionButtons(
@@ -293,8 +296,10 @@ fun VirtualFile.writeText(content: String) {
 
 @Throws(IOException::class)
 fun saveText(file: VirtualFile, text: String) {
-    val charset = file.getCharset()
-    file.getOutputStream(file).use { stream ->
-        stream.write(text.toByteArray(charset))
+    val charset = file.charset
+    runWriteAction {
+        file.getOutputStream(file).use { stream ->
+            stream.write(text.toByteArray(charset))
+        }
     }
 }

@@ -65,8 +65,10 @@ class AutoDevInlineChatPanel(val editor: Editor) : JPanel(GridBagLayout()), Edit
                 }
             }
 
-            panelView.resize()
-            panelView.onFinish(suggestion.toString())
+            invokeLater {
+                panelView.resize()
+                panelView.onFinish(suggestion.toString())
+            }
         }
 
         panelView
