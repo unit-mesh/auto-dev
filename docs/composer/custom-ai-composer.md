@@ -1,8 +1,8 @@
 ---
 layout: default
-title: AI Composer Sketch View
+title: Sketch Quick start
 parent: AutoDev Sketch/Composer
-nav_order: 3
+nav_order: 1
 ---
 
 # Tips

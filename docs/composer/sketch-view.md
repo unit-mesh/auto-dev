@@ -44,4 +44,24 @@ make diagram creation simple and intuitive.
 PlantUML Sketch offers powerful support for UML diagrams, enabling seamless creation and modification of various UML
 diagrams with a bidirectionally bound code editor.
 
-![](https://shire.run/images/shire-sketch-plantuml.png)  
+![](https://shire.run/images/shire-sketch-plantuml.png)
+
+### **Dependency Sketch`*`**
+
+Security-builtin vulnerable dependency checker                                                       
+
+![](https://unitmesh.cc/auto-dev/sketch-security-dependency.png)
+
+OpenAPI Sketch provides a bidirectional code-OpenAPI synchronization editor, allowing you to edit OpenAPI
+
+![](https://unitmesh.cc/auto-dev/sketch-openapi.png)
+
+### **Thought Process Sketch**
+
+Display AutoDev Planner planning for resolving code issues                                                
+
+![](https://unitmesh.cc/auto-dev/autodev-plan-sketch.png) 
+
+### **Markdown Preview Sketch**
+
+Markdown Preview Sketch provides a real-time preview and editing capabilities for markdown, just for render only.
