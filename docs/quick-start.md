@@ -7,12 +7,18 @@ permalink: /quick-start
 
 # Usage
 
-As we mentioned in LICENSE issue at the beginning of this project, JetBrains has reasonable grounds to consider 
-the plugin to be the content infringing their own IP right.
-So, since 2024.4, AutoDev was unavailable in the JetBrains Plugin Repository, you can download from 
-[Releases](https://github.com/unit-mesh/auto-dev/releases)
+**Install the plugin from JetBrains Marketplace**
 
 ~~1. Install from JetBrains Plugin Repository: [AutoDev](https://plugins.jetbrains.com/plugin/21520-autodev)~~
+
+**Custom repository**
+
+1. Click `Settings` -> `Plugins` -> `Marketplace` -> `Manage Plugin Repositories`
+2. Add the following URL to the list:
+   - https://plugin.unitmesh.cc/updatePlugins.xml
+
+**Download from GitHub Releases**
+
 1. Download from [Releases](https://github.com/unit-mesh/auto-dev/releases)
    - AutoDev-*-222.zip, for version 2022.2~2023.2
    - AutoDev-*-233.zip, for version 2023.3~2023.3
