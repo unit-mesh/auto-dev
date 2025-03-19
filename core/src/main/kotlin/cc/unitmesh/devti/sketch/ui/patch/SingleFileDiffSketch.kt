@@ -11,6 +11,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.CommandProcessor
@@ -20,6 +21,10 @@ import com.intellij.openapi.diff.impl.patch.*
 import com.intellij.openapi.diff.impl.patch.apply.GenericPatchApplier
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
@@ -33,7 +38,6 @@ import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.LocalTimeCounter
 import com.intellij.util.concurrency.annotations.RequiresWriteLock
 import java.awt.BorderLayout
-import java.awt.EventQueue.invokeLater
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.IOException
@@ -141,17 +145,18 @@ class SingleFileDiffSketch(
         mainPanel.add(contentPanel)
 
         ApplicationManager.getApplication().invokeLater {
-            lintCheckForNewCode(currentFile)
-        }
+            val task = object : Task.Backgroundable(myProject, "Analysis code style", false) {
+                override fun run(indicator: ProgressIndicator) {
+                    lintCheckForNewCode(currentFile)
 
-        if (isAutoRepair && appliedPatch?.status != ApplyPatchStatus.SUCCESS) {
-            ApplicationManager.getApplication().invokeLater {
-                try {
-                    executeAutoRepair()
-                } catch (e: Exception) {
-                    logger<SingleFileDiffSketch>().error("Failed to execute auto repair", e)
+                    if (isAutoRepair && appliedPatch?.status != ApplyPatchStatus.SUCCESS) {
+                        executeAutoRepair()
+                    }
                 }
             }
+
+            ProgressManager.getInstance()
+                .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
         }
     }
 
@@ -166,8 +171,11 @@ class SingleFileDiffSketch(
                     null
                 }
 
-                val file = LightVirtualFile(currentFile, fixedCode, LocalTimeCounter.currentTime())
-                createActionButtons(file, appliedPatch, patch).let { actions ->
+                WriteAction.compute<Unit, Throwable> {
+                    currentFile.writeText(fixedCode)
+                }
+
+                createActionButtons(currentFile, appliedPatch, patch).let { actions ->
                     actionPanel.removeAll()
                     actions.forEach { button ->
                         actionPanel.add(button)
@@ -256,6 +264,7 @@ class SingleFileDiffSketch(
     override fun updateLanguage(language: Language?, originLanguage: String?) {}
 
     fun lintCheckForNewCode(currentFile: VirtualFile) {
+
         if (newCode.isEmpty()) return
         val newFile = LightVirtualFile(currentFile, newCode, LocalTimeCounter.currentTime())
         val psiFile = runReadAction { PsiManager.getInstance(myProject).findFile(newFile) } ?: return
