@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.sketch.ui.code
 
+import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.AutoDevSnippetFile
 import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
@@ -162,6 +163,8 @@ open class CodeHighlightSketch(
                 add(sketch, BorderLayout.SOUTH)
                 return
             }
+
+            return
         }
 
         val codes = CodeFence.parseAll(editorFragment!!.editor.document.text)
@@ -333,7 +336,7 @@ open class CodeHighlightSketch(
  * Add Write Command Action
  */
 private fun CodeHighlightSketch.processWriteCommand(currentText: String) {
-    val button = JButton("Write to file", AllIcons.Actions.MenuSaveall).apply {
+    val button = JButton(AutoDevBundle.message("sketch.write.to.file"), AllIcons.Actions.MenuSaveall).apply {
         preferredSize = JBUI.size(120, 30)
 
         addActionListener {
