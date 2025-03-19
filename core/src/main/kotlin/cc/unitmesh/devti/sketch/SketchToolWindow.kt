@@ -362,6 +362,12 @@ open class SketchToolWindow(
         }
     }
 
+    fun putText(text: String) {
+        runInEdt {
+            inputSection.text = text
+        }
+    }
+
     fun scrollToBottom() {
         if (!isUserScrolling) {
             ApplicationManager.getApplication().invokeLater {

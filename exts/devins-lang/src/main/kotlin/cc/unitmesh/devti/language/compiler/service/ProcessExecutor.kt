@@ -15,7 +15,11 @@
  */
 package cc.unitmesh.devti.language.compiler.service
 
+import cc.unitmesh.devti.AutoDevNotifications
+import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
+import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import com.intellij.execution.configurations.PtyCommandLine
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.text.Strings
 import kotlinx.coroutines.CoroutineDispatcher
@@ -27,6 +31,7 @@ import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.OutputStream
+import java.io.StringWriter
 import java.io.Writer
 import kotlin.text.Charsets.UTF_8
 
@@ -45,6 +50,27 @@ object ProcessExecutor {
         stdOutput.await()
         errOutput.await()
         exitCode.await()
+    }
+
+    internal suspend fun executeCodeInIdeaTask(project: Project, code: String, dispatcher: CoroutineDispatcher): String? {
+        val outputWriter = StringWriter()
+        val errWriter = StringWriter()
+
+        outputWriter.use {
+            val exitCode = ProcessExecutor.exec(code, outputWriter, errWriter, dispatcher)
+            val stdOutput = outputWriter.toString()
+            val errOutput = errWriter.toString()
+
+            return if (exitCode == 0) {
+                AutoDevNotifications.notify(project, "Shell command $code executed successfully")
+                stdOutput
+            } else {
+                AutoDevToolWindowFactory.Companion.sendToSketchToolWindow(project, ChatActionType.SKETCH) { ui, _ ->
+                    ui.putText("Error executing shell command: \n```bash\n$errOutput\n```")
+                }
+                "Error executing shell command: $errOutput"
+            }
+        }
     }
 
     /**

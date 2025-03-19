@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.language.compiler.service
 
+import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.provider.RunService
@@ -47,7 +48,7 @@ class ShellRunService : RunService {
             val task = object : Task.Backgroundable(project, "Running shell command") {
                 override fun run(indicator: ProgressIndicator) {
                     runBlocking(taskExecutor.asCoroutineDispatcher()) {
-                        val result = executeCodeInIdeaTask(project, code, taskExecutor.asCoroutineDispatcher())
+                        val result = ProcessExecutor.executeCodeInIdeaTask(project, code, taskExecutor.asCoroutineDispatcher())
                         future.complete(result ?: "")
                     }
                 }
@@ -67,27 +68,6 @@ class ShellRunService : RunService {
         }
 
         return "Running shell command: ${virtualFile.path}"
-    }
-
-    private suspend fun executeCodeInIdeaTask(project: Project, code: String, dispatcher: CoroutineDispatcher): String? {
-        val outputWriter = StringWriter()
-        val errWriter = StringWriter()
-
-        outputWriter.use {
-            val exitCode = ProcessExecutor.exec(code, outputWriter, errWriter, dispatcher)
-            val stdOutput = outputWriter.toString()
-            val errOutput = errWriter.toString()
-
-            return if (exitCode == 0) {
-                stdOutput
-            } else {
-                AutoDevToolWindowFactory.Companion.sendToSketchToolWindow(project, ChatActionType.SKETCH) { ui, _ ->
-                    ui.sendInput(errOutput)
-                }
-
-                "Error executing shell command: $errOutput"
-            }
-        }
     }
 
     override fun runConfigurationClass(project: Project): Class<out RunProfile> = ShRunConfiguration::class.java
