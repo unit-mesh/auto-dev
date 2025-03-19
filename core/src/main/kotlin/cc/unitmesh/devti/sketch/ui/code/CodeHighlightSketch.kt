@@ -35,7 +35,6 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import cc.unitmesh.devti.util.whenDisposed
-import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.panels.VerticalLayout
@@ -73,7 +72,7 @@ open class CodeHighlightSketch(
     }
 
     private fun String?.isNotNullOrEmpty(): Boolean {
-        return this != null && this.isNotEmpty()
+        return this != null && this.trim().isNotEmpty()
     }
 
     fun initEditor(text: String, fileName: String? = null) {
@@ -119,7 +118,7 @@ open class CodeHighlightSketch(
     }
 
     override fun updateViewText(text: String, complete: Boolean) {
-        if (!hasSetupAction && text.isNotEmpty()) {
+        if (!hasSetupAction && text.trim().isNotEmpty()) {
             initEditor(text)
         }
 
@@ -152,9 +151,9 @@ open class CodeHighlightSketch(
 
         val currentText = getViewText()
         if (currentText.startsWith("/" + BuiltinCommand.WRITE.commandName + ":")) {
-            processWriteCommand(currentText)
-            /// get fileName after : and before \n
             val fileName = currentText.lines().firstOrNull()?.substringAfter(":")
+            processWriteCommand(currentText, fileName)
+            /// get fileName after : and before \n
             if (BuildSystemProvider.isDeclarePackageFile(fileName)) {
                 val ext = fileName?.substringAfterLast(".")
                 val parse = CodeFence.parse(editorFragment!!.editor.document.text)
@@ -335,7 +334,7 @@ open class CodeHighlightSketch(
 /**
  * Add Write Command Action
  */
-private fun CodeHighlightSketch.processWriteCommand(currentText: String) {
+private fun CodeHighlightSketch.processWriteCommand(currentText: String, fileName: String?) {
     val button = JButton(AutoDevBundle.message("sketch.write.to.file"), AllIcons.Actions.MenuSaveall).apply {
         preferredSize = JBUI.size(120, 30)
 
@@ -345,7 +344,8 @@ private fun CodeHighlightSketch.processWriteCommand(currentText: String) {
             val file = ScratchRootType.getInstance()
                 .createScratchFile(project, newFileName, language, currentText)
 
-            this.text = "Written to $newFileName"
+            this.text = "Written to $fileName"
+            this.isEnabled = false
 
             if (file == null) return@addActionListener
 

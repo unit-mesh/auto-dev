@@ -41,6 +41,7 @@ import com.intellij.util.ui.UIUtil
 import kotlinx.coroutines.launch
 import org.jetbrains.annotations.NonNls
 import java.awt.BorderLayout
+import java.awt.EventQueue.invokeLater
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import javax.swing.*
@@ -104,6 +105,16 @@ open class SketchToolWindow(
     var handleCancel: ((String) -> Unit)? = null
 
     private val processListeners = mutableListOf<SketchProcessListener>()
+    private val blockViews: MutableList<LangSketch> = mutableListOf()
+    private fun initializePreAllocatedBlocks(project: Project) {
+        repeat(32) {
+            runInEdt {
+                val codeBlockViewer = CodeHighlightSketch(project, "", PlainTextLanguage.INSTANCE)
+                blockViews.add(codeBlockViewer)
+                myList.add(codeBlockViewer)
+            }
+        }
+    }
 
     init {
         if (showInput) {
@@ -151,6 +162,7 @@ open class SketchToolWindow(
         }
 
         setContent(contentPanel)
+        initializePreAllocatedBlocks(project)
     }
 
     private suspend fun setupListener() {
@@ -189,7 +201,6 @@ open class SketchToolWindow(
 
     fun onStart() {
         beforeRun()
-        initializePreAllocatedBlocks(project)
         progressBar.isVisible = true
     }
 
@@ -212,17 +223,6 @@ open class SketchToolWindow(
 
     fun afterRun() {
         processListeners.forEach { it.onAfter() }
-    }
-
-    private val blockViews: MutableList<LangSketch> = mutableListOf()
-    private fun initializePreAllocatedBlocks(project: Project) {
-        repeat(32) {
-            runInEdt {
-                val codeBlockViewer = CodeHighlightSketch(project, "", PlainTextLanguage.INSTANCE)
-                blockViews.add(codeBlockViewer)
-                myList.add(codeBlockViewer)
-            }
-        }
     }
 
     override fun dispose() {
@@ -303,7 +303,7 @@ open class SketchToolWindow(
                         }
                     }
                 } else {
-                    val codeBlockViewer = CodeHighlightSketch(project, codeFence.text, PlainTextLanguage.INSTANCE)
+                    val codeBlockViewer = CodeHighlightSketch(project, "", PlainTextLanguage.INSTANCE)
                     blockViews.add(codeBlockViewer)
                     myList.add(codeBlockViewer.getComponent())
                 }
@@ -321,7 +321,10 @@ open class SketchToolWindow(
 
             myList.revalidate()
             myList.repaint()
+        }
 
+
+        invokeLater {
             scrollToBottom()
         }
     }
@@ -347,6 +350,9 @@ open class SketchToolWindow(
         if (AutoSketchMode.getInstance(project).isEnable && !isInterrupted) {
             AutoSketchMode.getInstance(project).start(text, this@SketchToolWindow.inputListener)
         }
+
+        this.revalidate()
+        this.repaint()
     }
 
     fun sendInput(text: String) {
