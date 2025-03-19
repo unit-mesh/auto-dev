@@ -1,8 +1,8 @@
 ---
 layout: default
-title: AI Agent Quickstart
+title: Custom AI Agent Quickstart
 parent: AI Agent
-nav_order: 1
+nav_order: 3
 ---
 
 AutoDev@1.7.0

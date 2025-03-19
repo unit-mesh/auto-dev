@@ -1,8 +1,9 @@
 ---
 layout: default
-title: AutoDev Bridge - Legacy Migration
-nav_order: 5
+title: AutoDev Bridge
+nav_order: 2
 has_children: true
+parent: agent
 permalink: /bridge
 ---
 

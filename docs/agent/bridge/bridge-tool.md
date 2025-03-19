@@ -3,6 +3,7 @@ layout: default
 title: Bridge Tools
 parent: AutoDev Bridge - Legacy Migration
 nav_order: 1
+permalink: /bridge/bridge-tool
 ---
 
 ## AutoDev Bridge Tools 

@@ -1,7 +1,7 @@
 ---
 layout: default
 title: AI Composer Sketch View
-parent: AutoDev AI Composer
+parent: AutoDev Sketch/Composer
 nav_order: 3
 ---
 

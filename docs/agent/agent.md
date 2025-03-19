@@ -1,6 +1,6 @@
 ---
 layout: default
-title: AI Agent
+title: Agent
 nav_order: 5
 has_children: true
 ---

@@ -2,7 +2,7 @@
 layout: default
 title: AI Agent Server 
 parent: AI Agent
-nav_order: 3
+nav_order: 6
 ---
 
 AI Agent Server will be used to communicate with the AI Agent. It will be used to send the request and receive the response

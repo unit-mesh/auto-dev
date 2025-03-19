@@ -1,6 +1,6 @@
 ---
 layout: default
-title: AI Agent Response Action
+title: Custom AI Agent Response Action
 parent: AI Agent
 nav_order: 2
 ---
