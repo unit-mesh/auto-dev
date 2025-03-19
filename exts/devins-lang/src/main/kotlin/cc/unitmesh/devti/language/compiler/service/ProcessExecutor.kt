@@ -19,6 +19,7 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import com.intellij.execution.configurations.PtyCommandLine
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.text.Strings
@@ -35,29 +36,13 @@ import java.io.StringWriter
 import java.io.Writer
 import kotlin.text.Charsets.UTF_8
 
-object ProcessExecutor {
-    suspend fun exec(shellScript: String,
-                     stdWriter: Writer,
-                     errWriter: Writer,
-                     dispatcher: CoroutineDispatcher): Int = withContext(dispatcher) {
-        val process = createProcess(shellScript)
-
-
-        val errOutput = async { consumeProcessOutput(process.errorStream, errWriter, process, dispatcher) }
-        val stdOutput = async { consumeProcessOutput(process.inputStream, stdWriter, process, dispatcher) }
-
-        val exitCode = async { process.waitFor() }
-        stdOutput.await()
-        errOutput.await()
-        exitCode.await()
-    }
-
-    internal suspend fun executeCodeInIdeaTask(project: Project, code: String, dispatcher: CoroutineDispatcher): String? {
+class ProcessExecutor(val project: Project) {
+    suspend fun executeCode(project: Project, code: String, dispatcher: CoroutineDispatcher): String? {
         val outputWriter = StringWriter()
         val errWriter = StringWriter()
 
         outputWriter.use {
-            val exitCode = ProcessExecutor.exec(code, outputWriter, errWriter, dispatcher)
+            val exitCode = exec(code, outputWriter, errWriter, dispatcher)
             val stdOutput = outputWriter.toString()
             val errOutput = errWriter.toString()
 
@@ -72,6 +57,25 @@ object ProcessExecutor {
             }
         }
     }
+
+    /**
+     * Base on SqliteCliClientImpl
+     */
+    suspend fun exec(shellScript: String,
+                     stdWriter: Writer,
+                     errWriter: Writer,
+                     dispatcher: CoroutineDispatcher): Int = withContext(dispatcher) {
+        val process = createProcess(shellScript)
+
+        val errOutput = async { consumeProcessOutput(process.errorStream, errWriter, process, dispatcher) }
+        val stdOutput = async { consumeProcessOutput(process.inputStream, stdWriter, process, dispatcher) }
+
+        val exitCode = async { process.waitFor() }
+        stdOutput.await()
+        errOutput.await()
+        exitCode.await()
+    }
+
 
     /**
      * for share process
@@ -93,11 +97,6 @@ object ProcessExecutor {
         val basedir = ProjectManager.getInstance().openProjects.firstOrNull()?.basePath
         val commandLine = PtyCommandLine()
         commandLine.withConsoleMode(false)
-//        commandLine.withExePath("/bin/bash")
-//            .withParameters("-c", formatCommand(shellScript))
-//            .withCharset(UTF_8)
-//            .withRedirectErrorStream(true)
-
         commandLine.withUnixOpenTtyToPreserveOutputAfterTermination(true)
         commandLine.withInitialColumns(240)
         commandLine.withInitialRows(80)
@@ -119,7 +118,6 @@ object ProcessExecutor {
         return "{ $command; EXIT_CODE=$?; } 2>&1 && echo \"EXIT_CODE: ${'$'}EXIT_CODE\""
     }
 
-    // Feeds input lines to the process' outputStream
     private fun feedProcessInput(outputStream: OutputStream, inputLines: List<String>) {
         outputStream.writer(UTF_8).use { writer ->
             inputLines.forEach { line ->
@@ -129,7 +127,6 @@ object ProcessExecutor {
         }
     }
 
-    // Consumes output stream as the process is being executed - otherwise on Windows the process would block when the output buffer is full.
     private suspend fun consumeProcessOutput(source: InputStream?,
                                              outputWriter: Writer,
                                              process: Process,

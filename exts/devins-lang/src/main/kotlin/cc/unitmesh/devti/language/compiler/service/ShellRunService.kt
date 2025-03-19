@@ -1,8 +1,5 @@
 package cc.unitmesh.devti.language.compiler.service
 
-import cc.unitmesh.devti.AutoDevNotifications
-import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
-import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import cc.unitmesh.devti.provider.RunService
 import cc.unitmesh.devti.sketch.ui.patch.readText
 import com.intellij.execution.RunManager
@@ -22,11 +19,9 @@ import com.intellij.sh.psi.ShFile
 import com.intellij.sh.run.ShConfigurationType
 import com.intellij.sh.run.ShRunConfiguration
 import com.intellij.sh.run.ShRunner
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.ide.PooledThreadExecutor
-import java.io.StringWriter
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
@@ -48,7 +43,8 @@ class ShellRunService : RunService {
             val task = object : Task.Backgroundable(project, "Running shell command") {
                 override fun run(indicator: ProgressIndicator) {
                     runBlocking(taskExecutor.asCoroutineDispatcher()) {
-                        val result = ProcessExecutor.executeCodeInIdeaTask(project, code, taskExecutor.asCoroutineDispatcher())
+                        val executor = ProcessExecutor(project)
+                        val result = executor.executeCode(project, code, taskExecutor.asCoroutineDispatcher())
                         future.complete(result ?: "")
                     }
                 }
