@@ -183,7 +183,7 @@ open class CustomSSEProcessor(private val project: Project) {
 }
 
 @Serializable
-data class Message(val role: String, val content: String)
+data class Message(val role: String, var content: String)
 
 @Serializable
 data class CustomRequest(val messages: List<Message>)
