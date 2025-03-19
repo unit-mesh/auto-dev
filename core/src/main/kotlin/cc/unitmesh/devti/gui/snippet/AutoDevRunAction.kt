@@ -7,6 +7,7 @@ import cc.unitmesh.devti.provider.RunService
 import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.json.JsonLanguage
 import com.intellij.openapi.actionSystem.ActionUpdateThread
+import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.application.runWriteAction
@@ -22,7 +23,7 @@ import java.io.File
 import java.io.IOException
 
 
-class AutoDevRunAction : DumbAwareAction(AutoDevBundle.message("autodev.run.action")) {
+class AutoDevRunAction : AnAction(AutoDevBundle.message("autodev.run.action")) {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
 
     override fun update(e: AnActionEvent) {
