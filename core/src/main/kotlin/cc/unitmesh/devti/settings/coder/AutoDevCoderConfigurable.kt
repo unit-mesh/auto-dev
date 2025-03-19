@@ -4,12 +4,17 @@ import cc.unitmesh.devti.AutoDevBundle
 import cc.unitmesh.devti.fullWidthCell
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.jLabel
 import cc.unitmesh.devti.settings.locale.LanguageChangedCallback.tips
+import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
+import com.intellij.ui.HyperlinkLabel
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.builder.toMutableProperty
+import org.jetbrains.builtInWebServer.BuiltInServerOptions
+import java.net.InetAddress
+import java.net.NetworkInterface
 import javax.swing.JCheckBox
 import javax.swing.JTextField
 
@@ -65,6 +70,15 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                     componentSet = { component, value -> component.isSelected = value },
                     prop = state::enableExportAsMcpServer.toMutableProperty()
                 )
+
+            comment("<html><font color='red'>* ${AutoDevBundle.message("settings.autodev.coder.requires.restart")}</font></html>")
+
+            val port = BuiltInServerOptions.getInstance().builtInServerPort
+            val hostname = InetAddress.getLoopbackAddress().hostAddress
+            val serverUrl = "http://$hostname:$port/api/mcp/list_tools"
+            val portLabel = HyperlinkLabel(serverUrl)
+            portLabel.setHyperlinkTarget(serverUrl)
+            cell(portLabel)
         }
 
         row(jLabel("settings.autodev.coder.enableObserver")) {
@@ -137,4 +151,3 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
         }
     }
 }
-
