@@ -5,57 +5,60 @@ nav_order: 2
 permalink: /quick-start
 ---
 
-# Usage
+# Installation and Setup
 
-**Install the plugin from JetBrains Marketplace**
+## Option 1: JetBrains Marketplace
 
-~~1. Install from JetBrains Plugin Repository: [AutoDev](https://plugins.jetbrains.com/plugin/21520-autodev)~~
+~~Install directly from JetBrains Plugin Repository: [AutoDev](https://plugins.jetbrains.com/plugin/21520-autodev)~~
 
-**Custom repository**
+## Option 2: Custom Repository
 
-1. Click `Settings` -> `Plugins` -> `Marketplace` -> `Manage Plugin Repositories`
-2. Add the following URL to the list:
-   - https://plugin.unitmesh.cc/updatePlugins.xml
+1. Go to `Settings` → `Plugins` → `Marketplace` → `Manage Plugin Repositories`
+2. Add the following URL:
+   ```
+   https://plugin.unitmesh.cc/updatePlugins.xml
+   ```
 
-**Download from GitHub Releases**
+## Option 3: GitHub Releases
 
-1. Download from [Releases](https://github.com/unit-mesh/auto-dev/releases)
-   - AutoDev-*-222.zip, for version 2022.2~2023.2
-   - AutoDev-*-233.zip, for version 2023.3~2023.3
-   - AutoDev-*-241.zip, for version 2024.1~
-2. Configure GitHub Token (optional) and OpenAI config in `Settings` -> `Tools` -> `AutoDev`
+1. Download the appropriate version from [GitHub Releases](https://github.com/unit-mesh/auto-dev/releases)
+   - AutoDev-*-222.zip — For versions 2022.2 to 2023.2
+   - AutoDev-*-233.zip — For version 2023.3
+   - AutoDev-*-241.zip — For version 2024.1 and newer
+2. Install the plugin from disk in the JetBrains IDE
 
-### Custom Config / OpenAI compatible (Old before 2.0.0-beta.4)
+## Configuration
 
-Tested: 零一万物（[#94](https://github.com/unit-mesh/auto-dev/issues/94)）, 月之暗面（Moonshot
-AI）、深度求索（Deepseek [#96](https://github.com/unit-mesh/auto-dev/issues/96)），ChatGLM(#90)
+After installation, configure the plugin in `Settings` → `Tools` → `AutoDev`
 
-1. open AutoDev Config in `Settings` -> `Tools` -> `AutoDev`.
-2. fill `LLM Server Address`, for example:
+### Legacy Configuration (Before 2.0.0-beta.4)
+
+Supported providers: 零一万物（[#94](https://github.com/unit-mesh/auto-dev/issues/94)）, Moonshot AI, Deepseek ([#96](https://github.com/unit-mesh/auto-dev/issues/96)), ChatGLM(#90)
+
+1. Open AutoDev Config in `Settings` → `Tools` → `AutoDev`
+2. Configure `LLM Server Address`, examples:
    - Deepseek: `https://api.deepseek.com/chat/completions`
    - OpenAI: `https://api.openai.com/v1/chat/completions`
-3. fill `LLM Key` if needed, aka `API Key`.
-4. config `Custom Response Format` by [JsonPath](https://github.com/json-path/JsonPath), for example
+3. Enter your `LLM Key` (API Key)
+4. Set `Custom Response Format` using [JsonPath](https://github.com/json-path/JsonPath), example:
    - `$.choices[0].delta.content`
-5. config `Custom Request Format`, for example:
+5. Configure `Custom Request Format`, example:
    - `{ "customFields": {"model": "deepseek-chat", "stream": true }}`
-6. Apply and OK.
 
-for more, see in [Customize LLM Server](/custom/llm-server)
+For more details, see [Customize LLM Server](/custom/llm-server)
 
-### New Config (2.0.0-beta.4+)
+### Current Configuration (2.0.0-beta.4+)
 
-modelType: `["Default", "Plan", "Act", "Completion", "Embedding", "FastApply", "Others"]`
+Available model types:
+- `Default`: Used for all cases if not specified
+- `Plan`: For reasoning and planning (recommended: DeepSeek R1)
+- `Act`: For action execution (e.g., DeepSeek V3, Qwen 72B)
+- `Completion`: For code completion
+- `Embedding`: For embedding functions (e.g., sentence-transformers/all-MiniLM-L6-v2)
+- `FastApply`: For fix patch generation (e.g., Kortix/FastApply-1.5B-v1.0)
+- `Others`: Generic placeholder
 
-- Default: the default model for all cases if not specified
-- Plan: for reasoning, planning, etc, like: `DeepSeek R1`, recommend to use Best Model
-- Act: for action, like: `DeepSeek V3`, `Qwen 72B` etc
-- Completion: for code completion, not support FIM yet.
-- Embedding: for embedding, like: `sentence-transformers/all-MiniLM-L6-v2`
-- FastApply: for fix patch generate issue, like: `Kortix/FastApply-1.5B-v1.0`
-- Others: just a placeholder, no special treatment
-
-Examples:
+Configuration examples:
 
 ```json
 [
@@ -96,8 +99,9 @@ Examples:
 ]
 ```
 
-- URL: the LLM Server Address with `/chat/completions`
-- Auth: the auth info, `Bearer` only, `token` is the API Key
-- RequestFormat: the request format, like: `{"customFields": {"model": "deepseek-chat", "stream": true }}`
-- ResponseFormat: the response format, like: `$.choices[0].delta.content`
-- ModelType: the model type, see above
+Configuration fields:
+- **URL**: LLM Server Address with endpoint path
+- **Auth**: Authentication information (currently Bearer token only)
+- **RequestFormat**: JSON structure for API requests
+- **ResponseFormat**: JsonPath to extract content from responses
+- **ModelType**: Type of model (see list above)
