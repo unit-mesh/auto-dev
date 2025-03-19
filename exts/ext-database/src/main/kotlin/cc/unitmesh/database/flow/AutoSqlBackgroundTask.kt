@@ -1,7 +1,7 @@
 package cc.unitmesh.database.flow
 
 import cc.unitmesh.devti.AutoDevBundle
-import cc.unitmesh.devti.util.parser.parseCodeFromString
+import cc.unitmesh.devti.util.parser.MarkdownCodeHelper
 import com.intellij.lang.Language
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
@@ -47,7 +47,7 @@ class AutoSqlBackgroundTask(
         val sqlScript = flow.design(tableNames)[0]
 
         try {
-            val sqlCode = parseCodeFromString(sqlScript).first()
+            val sqlCode = MarkdownCodeHelper.parseCodeFromString(sqlScript).first()
             val sqlFile = runReadAction {
                 PsiFileFactory.getInstance(project).createFileFromText("temp.sql", language, sqlCode)
                         as SqlFile
@@ -56,7 +56,7 @@ class AutoSqlBackgroundTask(
             val errors = sqlFile.verifySqlElement()
             if (errors.isNotEmpty()) {
                 val response = flow.fix(errors.joinToString("\n"))
-                val code = parseCodeFromString(response).last()
+                val code = MarkdownCodeHelper.parseCodeFromString(response).last()
                 writeToFile(code, indicator)
             }
         } catch (e: Exception) {
@@ -70,7 +70,7 @@ class AutoSqlBackgroundTask(
     private fun writeToFile(sqlScript: String, indicator: ProgressIndicator) {
         WriteCommandAction.runWriteCommandAction(project, "Gen SQL", "cc.unitmesh.livingDoc", {
             editor.document.insertString(editor.caretModel.offset, "\n")
-            val code = parseCodeFromString(sqlScript).first()
+            val code = MarkdownCodeHelper.parseCodeFromString(sqlScript).first()
             editor.document.insertString(editor.caretModel.offset + "\n".length, code)
         })
     }

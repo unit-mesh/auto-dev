@@ -17,7 +17,7 @@ import cc.unitmesh.devti.statusbar.AutoDevStatus
 import cc.unitmesh.devti.statusbar.AutoDevStatusService
 import cc.unitmesh.devti.template.GENIUS_CODE
 import cc.unitmesh.devti.template.TemplateRender
-import cc.unitmesh.devti.util.parser.parseCodeFromString
+import cc.unitmesh.devti.util.parser.MarkdownCodeHelper
 import com.intellij.lang.LanguageCommenters
 import com.intellij.openapi.application.*
 import com.intellij.openapi.command.WriteCommandAction
@@ -182,7 +182,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
 
             flow.collect {
                 suggestion.append(it)
-                val codeBlocks = parseCodeFromString(suggestion.toString())
+                val codeBlocks = MarkdownCodeHelper.parseCodeFromString(suggestion.toString())
                 codeBlocks.forEach {
                     WriteCommandAction.writeCommandAction(project).compute<Any, RuntimeException> {
                         editor?.document?.replaceString(0, editor.document.textLength, it)
@@ -206,7 +206,7 @@ class TestCodeGenTask(val request: TestCodeGenRequest, displayMessage: String) :
         val modifier = CodeModifierProvider().modifier(context.language)
             ?: throw IllegalStateException("Unsupported language: ${context.language}")
 
-        val codeBlocks = parseCodeFromString(suggestion.toString())
+        val codeBlocks = MarkdownCodeHelper.parseCodeFromString(suggestion.toString())
         codeBlocks.forEach {
             modifier.insertTestCode(context.outputFile, project, it)
         }

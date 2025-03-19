@@ -6,13 +6,17 @@ import cc.unitmesh.devti.llms.custom.Message
 import cc.unitmesh.devti.observer.plan.AgentTaskEntry
 import cc.unitmesh.devti.observer.plan.MarkdownPlanParser
 import cc.unitmesh.devti.observer.plan.PlanUpdateListener
+import cc.unitmesh.devti.settings.AutoDevSettingsState
+import cc.unitmesh.devti.settings.customize.customizeSetting
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.Change
 
 @Service(Service.Level.PROJECT)
-class AgentStateService {
+class AgentStateService(val project: Project) {
+    val maxToken = AutoDevSettingsState.maxTokenLength
     var state: AgentState = AgentState()
 
     fun addTools(tools: List<BuiltinCommand>) {
@@ -26,14 +30,6 @@ class AgentStateService {
     fun updateChanges(changes: Collection<Change?>?) {
         val allChanges = changes?.filterNotNull()?.map { it } ?: emptyList()
         state.changes = allChanges.toMutableList()
-    }
-
-    /**
-     * Call some LLM to compress it or use some other method to compress the history
-     */
-    fun processMessages(messages: List<Message>): List<Message> {
-        state.messages = messages
-        return messages
     }
 
     fun buildOriginIntention(): String? {
@@ -50,6 +46,14 @@ class AgentStateService {
 
     fun getAllMessages(): List<Message> {
         return state.messages
+    }
+
+    /**
+     * Call some LLM to compress it or use some other method to compress the history
+     */
+    fun processMessages(messages: List<Message>): List<Message> {
+        state.messages = messages
+        return messages
     }
 
     fun updatePlan(items: MutableList<AgentTaskEntry>) {
