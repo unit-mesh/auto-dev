@@ -39,6 +39,11 @@ fun reviewPlan(project: Project, isBlockingMode: Boolean = false): String {
         it.copy(role = it.role, content = MarkdownCodeHelper.removeAllMarkdownCode(it.content))
     }
 
+    if (plan.isEmpty()) {
+        AutoDevNotifications.warn(project, AutoDevBundle.message("sketch.plan.empty"))
+        return ""
+    }
+
     val templateRender = TemplateRender(GENIUS_CODE)
     val systemPrompt = templateRender.getTemplate("plan-reviewer.vm")
     val history = withoutCodeMsgs.joinToString {

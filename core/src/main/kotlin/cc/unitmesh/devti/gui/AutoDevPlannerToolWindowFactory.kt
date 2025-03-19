@@ -121,6 +121,10 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
             add(JButton("Save").apply {
                 addActionListener {
                     val newContent = markdownEditor?.text ?: ""
+                    if (newContent == content) {
+                        return@addActionListener
+                    }
+
                     switchToPlanView(newContent)
                     currentCallback?.invoke(newContent)
                 }
