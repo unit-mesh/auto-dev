@@ -146,7 +146,7 @@ Index: src/main/index.html
 // the http code
 ```
 
-   启动应用程序
+启动应用程序
 
 ```bash
 ./gradlew :bootRun
