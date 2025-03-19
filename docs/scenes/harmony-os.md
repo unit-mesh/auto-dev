@@ -1,9 +1,11 @@
 ---
 layout: default
-title: HarmonyOS
+title: HarmonyOS [Deprecated]
 nav_order: 5
 parent: Scenes
 ---
+
+Deprecated: This page is deprecated and will be removed in the future.
 
 - Scene: HarmonyOS
 

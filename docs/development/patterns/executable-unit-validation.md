@@ -3,6 +3,7 @@ layout: default
 title: Executable Unit Validation
 nav_order: 4
 parent: Design Patterns
+permalink: /patterns/executable-unit-validation
 ---
 
 Executable unit validation refers to the process of testing and verifying the generated code to ensure that it can be

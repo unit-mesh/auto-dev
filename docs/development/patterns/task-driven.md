@@ -3,6 +3,7 @@ layout: default
 title: Task Driven
 nav_order: 3
 parent: Design Patterns
+permalink: /patterns/task-driven
 ---
 
 In issue [#79](https://github.com/unit-mesh/auto-dev/issues/79), we defined the concept of "task-driven AI generation"

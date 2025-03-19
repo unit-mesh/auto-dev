@@ -4,6 +4,7 @@ title: Legacy Migration
 nav_order: 1
 parent: Scenes
 ---
+
 ## AI-Assisted Legacy System Migration
 
 Building upon the experience accumulated in our "[System Refactoring and Migration Guide](https://migration.ink/)," we have developed a series of AI capabilities within AutoDev to aid developers in accelerating the transformation of legacy systems.

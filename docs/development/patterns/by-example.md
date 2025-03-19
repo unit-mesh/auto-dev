@@ -3,6 +3,7 @@ layout: default
 title: By Example
 nav_order: 1
 parent: Design Patterns
+permalink: /patterns/by-example
 ---
 
 > Finding example content as context to generate as input for the generative AI, based on current user habits.

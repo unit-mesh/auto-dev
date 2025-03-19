@@ -3,6 +3,7 @@ layout: default
 title: Unit Driven
 nav_order: 2
 parent: Design Patterns
+permalink: /patterns/unit-driven
 ---
 
 > "Unit-driven AI generation" is a method or concept that emphasizes the use of artificial intelligence (AI) generation
