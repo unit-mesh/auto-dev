@@ -228,10 +228,6 @@ fun showSingleDiff(project: Project, patchContent: String, disposable: Disposabl
         val virtualFile = LightVirtualFile("AutoDev-Diff-Lang.diff", patchContent)
         val editor = editorProvider.createEditor(project, virtualFile)
 
-        disposable.whenDisposed {
-            editor.dispose()
-        }
-
         object : DialogWrapper(project) {
             init {
                 title = "Diff Preview"

@@ -15,15 +15,53 @@ object MarkdownViewer {
         jEditorPane.setContentType("text/html")
         val htmlEditorKit = HTMLEditorKitBuilder().build()
 
-//        val backgroundColor = UIUtil.getPanelBackground()
-//
-//        val editorFontName = EditorColorsManager.getInstance().schemeForCurrentUITheme.editorFontName
-//        val editorFontSize = EditorColorsManager.getInstance().schemeForCurrentUITheme.editorFontSize
-//        val fontFamilyAndSize = "font-family:'" + editorFontName + "'; font-size:" + editorFontSize + "pt;"
+        val backgroundColor = UIUtil.getPanelBackground()
+        val backgroundColorHex = ColorUtil.toHex(backgroundColor)
 
-        htmlEditorKit.getStyleSheet().addRule("code { background-color: #fff; }")
-        htmlEditorKit.getStyleSheet().addRule("p { margin-top: 1px }")
+        val editorFontName = EditorColorsManager.getInstance().schemeForCurrentUITheme.editorFontName
+        val editorFontSize = EditorColorsManager.getInstance().schemeForCurrentUITheme.editorFontSize
+        val fontFamilyAndSize = "font-family:'" + editorFontName + "'; font-size:" + editorFontSize + "pt;"
 
+        val cssRules = """
+            body { $fontFamilyAndSize margin: 8px; line-height: 1.5; }
+            p { margin-top: 0.8em; margin-bottom: 0.8em; }
+            
+            /* Headings */
+            h1 { font-size: 1.6em; margin-top: 1em; margin-bottom: 0.6em; font-weight: bold; }
+            h2 { font-size: 1.4em; margin-top: 0.9em; margin-bottom: 0.5em; font-weight: bold; }
+            h3 { font-size: 1.2em; margin-top: 0.8em; margin-bottom: 0.4em; font-weight: bold; }
+            h4, h5, h6 { font-size: 1.1em; margin-top: 0.7em; margin-bottom: 0.3em; font-weight: bold; }
+            
+            /* Code blocks */
+            pre { background-color: #f5f5f5; border-radius: 4px; padding: 8px; overflow-x: auto; margin: 1em 0; }
+            code { font-family: 'JetBrains Mono', Consolas, monospace; background-color: #f5f5f5; padding: 2px 4px; border-radius: 3px; font-size: 0.9em; }
+            
+            /* Lists */
+            ul, ol { margin-top: 0.5em; margin-bottom: 0.5em; padding-left: 2em; }
+            li { margin: 0.3em 0; }
+            
+            /* Blockquotes */
+            blockquote { border-left: 4px solid #ddd; padding-left: 1em; margin-left: 0; margin-right: 0; color: #777; }
+            
+            /* Tables */
+            table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+            th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }
+            th { background-color: #f2f2f2; }
+            
+            /* Links */
+            a { color: #2196F3; text-decoration: none; }
+            a:hover { text-decoration: underline; }
+            
+            /* Horizontal rule */
+            hr { border: 0; height: 1px; background-color: #ddd; margin: 1em 0; }
+            
+            /* Inline elements */
+            strong, b { font-weight: bold; }
+            em, i { font-style: italic; }
+        """.trimIndent()
+        
+        htmlEditorKit.styleSheet.addRule(cssRules)
+        
         jEditorPane.also {
             it.editorKit = htmlEditorKit
             it.isEditable = false
@@ -45,5 +83,4 @@ object MarkdownViewer {
         jEditorPane.addHyperlinkListener(BrowserHyperlinkListener.INSTANCE);
         return jEditorPane
     }
-
 }

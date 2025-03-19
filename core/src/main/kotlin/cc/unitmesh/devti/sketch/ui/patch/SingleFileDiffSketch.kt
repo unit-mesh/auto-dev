@@ -12,6 +12,7 @@ import com.intellij.lang.Language
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.WriteAction
+import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.CommandProcessor
@@ -171,8 +172,10 @@ class SingleFileDiffSketch(
                     null
                 }
 
-                WriteAction.compute<Unit, Throwable> {
-                    currentFile.writeText(fixedCode)
+                runInEdt {
+                    WriteAction.compute<Unit, Throwable> {
+                        currentFile.writeText(fixedCode)
+                    }
                 }
 
                 createActionButtons(currentFile, appliedPatch, patch).let { actions ->
@@ -220,6 +223,8 @@ class SingleFileDiffSketch(
 
                         if (file is DiffVirtualFileBase) {
                             FileEditorManager.getInstance(myProject).closeFile(file)
+                        } else{
+                            FileEditorManager.getInstance(myProject).openFile(file, true)
                         }
                     }
                 }, "ApplyPatch", null)
