@@ -1,5 +1,3 @@
-// filepath: /Volumes/source/ai/autocrud/exts/ext-terminal/src/main/kotlin/cc/unitmesh/terminal/sketch/TerminalSketchProvider.kt
-// File: TerminalSketchProvider.kt
 package cc.unitmesh.terminal.sketch
 
 import cc.unitmesh.devti.AutoDevIcons
@@ -178,13 +176,15 @@ class TerminalSketchProvider : LanguageSketchProvider {
                 content = text
             }
 
-            override fun onDoneStream(allText: String) {
-                if (content.lines().size > 1) return
-
-                titleLabel.text = "Terminal - ($content)"
+            override fun onComplete(code: String) {
                 ApplicationManager.getApplication().invokeLater {
                     terminalWidget!!.terminalStarter?.sendString(content, false)
                 }
+            }
+
+            override fun onDoneStream(allText: String) {
+                if (content.lines().size > 1) return
+                titleLabel.text = "Terminal - ($content)"
             }
 
             override fun getComponent(): JComponent = mainPanel!!

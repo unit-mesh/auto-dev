@@ -87,40 +87,37 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
                 return@invokeLater
             }
 
-            filePatches.forEachIndexed { _, patch ->
-                val diffPanel = when {
-                    patch.beforeFileName != null -> {
-                        val originFile = myProject.findFile(patch.beforeFileName!!) ?: return@forEachIndexed
-                        SingleFileDiffSketch(myProject, originFile, patch, ::handleViewDiffAction).apply {
-                           this.onComplete("")
-                        }
-                    }
-
-                    patch.afterFileName != null -> {
-                        val content = patch.singleHunkPatchText
-                        val virtualFile = LightVirtualFile(patch.afterFileName!!, content)
-                        SingleFileDiffSketch(myProject, virtualFile, patch, ::handleViewDiffAction).apply {
-                            this.onComplete("")
-                        }
-                    }
-
-                    else -> {
-                        val content = patch.singleHunkPatchText
-                        val virtualFile = if (patch.beforeFileName != null) {
-                            LightVirtualFile(patch.beforeFileName!!, content)
-                        } else {
-                            LightVirtualFile("", content)
-                        }
-
-                        SingleFileDiffSketch(myProject, virtualFile, patch, ::handleViewDiffAction).apply {
-                            this.onComplete("")
-                        }
-                    }
+            filePatches.forEach { patch ->
+                val diffPanel = createDiffPanel(patch)
+                if (diffPanel != null) {
+                    mainPanel.add(diffPanel.getComponent())
+                    mainPanel.revalidate()
                 }
-
-                mainPanel.add(diffPanel.getComponent())
-                mainPanel.revalidate()
             }
+        }
+    }
+
+    private fun createDiffPanel(patch: TextFilePatch): SingleFileDiffSketch? {
+        return when {
+            patch.beforeFileName != null -> {
+                val originFile = myProject.findFile(patch.beforeFileName!!) ?: return null
+                createSingleFileDiffSketch(originFile, patch)
+            }
+            patch.afterFileName != null -> {
+                val virtualFile = LightVirtualFile(patch.afterFileName!!, patch.singleHunkPatchText)
+                createSingleFileDiffSketch(virtualFile, patch)
+            }
+            else -> {
+                val fileName = patch.beforeFileName ?: ""
+                val virtualFile = LightVirtualFile(fileName, patch.singleHunkPatchText)
+                createSingleFileDiffSketch(virtualFile, patch)
+            }
+        }
+    }
+
+    private fun createSingleFileDiffSketch(virtualFile: VirtualFile, patch: TextFilePatch): SingleFileDiffSketch {
+        return SingleFileDiffSketch(myProject, virtualFile, patch, ::handleViewDiffAction).apply {
+            this.onComplete("")
         }
     }
 
