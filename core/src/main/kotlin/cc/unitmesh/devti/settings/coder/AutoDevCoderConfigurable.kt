@@ -71,7 +71,7 @@ class AutoDevCoderConfigurable(private val project: Project) : BoundConfigurable
                     prop = state::enableExportAsMcpServer.toMutableProperty()
                 )
 
-            comment("<html><font color='red'>* ${AutoDevBundle.message("settings.autodev.coder.requires.restart")}</font></html>")
+            comment("<font color='red'>* ${AutoDevBundle.message("settings.autodev.coder.requires.restart")}</font>")
 
             val port = BuiltInServerOptions.getInstance().builtInServerPort
             val hostname = InetAddress.getLoopbackAddress().hostAddress
