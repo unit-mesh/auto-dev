@@ -24,7 +24,6 @@ object MarkdownWebViewer {
 
         val cssRules = """
             body { $fontFamilyAndSize margin: 2px 0px; line-height: 1.5; }
-            p { margin-top: 0.4em; margin-bottom: 0.4em; }
             
             /* Headings */
             h1 { font-size: 1.6em; font-weight: bold; }

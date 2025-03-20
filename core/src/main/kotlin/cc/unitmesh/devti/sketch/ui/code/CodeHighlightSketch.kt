@@ -7,8 +7,8 @@ import cc.unitmesh.devti.devin.dataprovider.BuiltinCommand
 import cc.unitmesh.devti.provider.BuildSystemProvider
 import cc.unitmesh.devti.provider.RunService
 import cc.unitmesh.devti.sketch.ui.LangSketch
-import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import cc.unitmesh.devti.util.parser.CodeFence
+import cc.unitmesh.devti.util.whenDisposed
 import com.intellij.icons.AllIcons
 import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.lang.Language
@@ -34,7 +34,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
-import cc.unitmesh.devti.util.whenDisposed
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.panels.VerticalLayout
@@ -54,7 +53,7 @@ open class CodeHighlightSketch(
     val editorLineThreshold: Int = 6,
     val fileName: String? = null,
     val withLeftRightBorder: Boolean = true
-) : JBPanel<CodeHighlightSketch>(BorderLayout()), DataProvider, LangSketch, Disposable {
+) : JBPanel<CodeHighlightSketch>(VerticalLayout(4)), DataProvider, LangSketch, Disposable {
     private val devinLineThreshold = 10
     private val minDevinLineThreshold = 1
     private var isDevIns = false
@@ -87,8 +86,6 @@ open class CodeHighlightSketch(
             JBEmptyBorder(8, 0, 0, 0)
         }
 
-        layout = BorderLayout(JBUI.scale(8), 0)
-
         editor.component.isOpaque = true
 
         if (ideaLanguage?.displayName == "DevIn") {
@@ -98,7 +95,7 @@ open class CodeHighlightSketch(
             editorFragment = EditorFragment(editor, editorLineThreshold, previewEditor)
         }
 
-        add(editorFragment!!.getContent(), BorderLayout.CENTER)
+        add(editorFragment!!.getContent())
 
         val isDeclarePackageFile = BuildSystemProvider.isDeclarePackageFile(fileName)
         if (textLanguage != null && textLanguage?.lowercase() != "markdown" && ideaLanguage != PlainTextLanguage.INSTANCE) {
@@ -153,59 +150,33 @@ open class CodeHighlightSketch(
         if (currentText.startsWith("/" + BuiltinCommand.WRITE.commandName + ":")) {
             val fileName = currentText.lines().firstOrNull()?.substringAfter(":")
             processWriteCommand(currentText, fileName)
-            /// get fileName after : and before \n
             if (BuildSystemProvider.isDeclarePackageFile(fileName)) {
                 val ext = fileName?.substringAfterLast(".")
                 val parse = CodeFence.parse(editorFragment!!.editor.document.text)
                 val language = if (ext != null) CodeFence.findLanguage(ext) else ideaLanguage
                 val sketch = CodeHighlightSketch(project, parse.text, language, editorLineThreshold, fileName)
-                add(sketch, BorderLayout.SOUTH)
-                return
+                add(sketch)
             }
-
-            return
         }
-
-        val codes = CodeFence.parseAll(editorFragment!!.editor.document.text)
-        val blockedPanel = JPanel(VerticalLayout(JBUI.scale(0)))
-
-        codes.forEach { code ->
-            var panel: JComponent? = null
-            when (code.originLanguage) {
-                "diff", "patch" -> {
-                    val langSketch = LanguageSketchProvider.provide("patch")?.create(project, code.text) ?: return
-                    panel = langSketch.getComponent()
-                    langSketch.onDoneStream(allText)
-                }
-
-                "html" -> {
-                    val langSketch = LanguageSketchProvider.provide("html")?.create(project, code.text) ?: return
-                    panel = langSketch.getComponent()
-                    langSketch.onDoneStream(allText)
-                }
-
-                "bash", "shell" -> {
-                    val langSketch = LanguageSketchProvider.provide("shell")?.create(project, code.text) ?: return
-                    panel = langSketch.getComponent()
-                    langSketch.onDoneStream(allText)
-                }
-            }
-
-            if (panel == null) return@forEach
-
-            panel.border = JBEmptyBorder(4)
-            blockedPanel.add(panel)
-        }
-
-        add(blockedPanel, BorderLayout.SOUTH)
 
         editorFragment?.updateExpandCollapseLabel()
+    }
+
+    override fun getComponent(): JComponent = this
+
+    private var hasSetupRenderView = false
+
+    override fun addOrUpdateRenderView(component: JComponent) {
+        if (hasSetupRenderView) {
+            return
+        } else {
+            add(component)
+            hasSetupRenderView = true
+        }
 
         revalidate()
         repaint()
     }
-
-    override fun getComponent(): JComponent = this
 
     override fun getData(dataId: String): Any? = null
 

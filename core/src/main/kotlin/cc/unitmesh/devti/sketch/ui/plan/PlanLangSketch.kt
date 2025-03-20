@@ -122,7 +122,7 @@ class PlanLangSketch(
         planController.updatePlan(agentPlans)
     }
 
-    override fun onComplete(context: String) {
+    override fun onComplete(code: String) {
         if (!isInToolwindow) {
             val agentPlans = MarkdownPlanParser.parse(content).toMutableList()
             planController.updatePlan(agentPlans)

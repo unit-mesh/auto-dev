@@ -36,6 +36,7 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.dsl.builder.Row
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import kotlinx.coroutines.launch
@@ -298,6 +299,12 @@ open class SketchToolWindow(
                         oldComponent.dispose()
                     } else {
                         blockViews[index].apply {
+                            if (codeFence.originLanguage == "DevIn" && codeFence.isComplete) {
+                                createRenderSketch(codeFence)?.also {
+                                    this@apply.addOrUpdateRenderView(it)
+                                }
+                            }
+
                             updateLanguage(codeFence.language, codeFence.originLanguage)
                             updateViewText(codeFence.text, codeFence.isComplete)
                         }
@@ -327,6 +334,51 @@ open class SketchToolWindow(
         invokeLater {
             scrollToBottom()
         }
+    }
+
+    fun createRenderSketch(code: CodeFence): JComponent? {
+        val codes = CodeFence.parseAll(code.text)
+
+        val panels = codes.map { code ->
+            var panel: JComponent? = null
+            when (code.originLanguage) {
+                "diff", "patch" -> {
+                    val langSketch = LanguageSketchProvider.provide("patch")?.create(project, code.text)
+                        ?: return@map null
+                    panel = langSketch.getComponent()
+                    langSketch.onComplete(code.text)
+                }
+
+                "html" -> {
+                    val langSketch = LanguageSketchProvider.provide("html")?.create(project, code.text)
+                        ?: return@map null
+                    panel = langSketch.getComponent()
+                    langSketch.onComplete(code.text)
+                }
+
+                "bash", "shell" -> {
+                    val langSketch = LanguageSketchProvider.provide("shell")?.create(project, code.text)
+                        ?: return@map null
+                    panel = langSketch.getComponent()
+                    langSketch.onComplete(code.text)
+                }
+            }
+
+            if (panel == null) return@map null
+
+            panel.border = JBEmptyBorder(4)
+            panel
+        }.filterNotNull()
+
+        if (panels.isEmpty()) return null
+
+        val blockedPanel = JPanel(VerticalLayout(JBUI.scale(0))).apply {
+            this.isOpaque = true
+            this.border = JBEmptyBorder(4)
+            panels.forEach { this.add(it) }
+        }
+
+        return blockedPanel
     }
 
     fun onFinish(text: String) {

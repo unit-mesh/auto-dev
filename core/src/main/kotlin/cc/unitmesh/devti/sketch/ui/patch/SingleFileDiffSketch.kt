@@ -178,7 +178,7 @@ class SingleFileDiffSketch(
 
                         if (file is DiffVirtualFileBase) {
                             FileEditorManager.getInstance(myProject).closeFile(file)
-                        } else{
+                        } else {
                             FileEditorManager.getInstance(myProject).openFile(file, true)
                         }
                     }
@@ -223,20 +223,10 @@ class SingleFileDiffSketch(
 
     override fun updateLanguage(language: Language?, originLanguage: String?) {}
 
-    override fun onComplete(context: String) {
-        ApplicationManager.getApplication().invokeLater {
-            val task = object : Task.Backgroundable(myProject, "Analysis code style", false) {
-                override fun run(indicator: ProgressIndicator) {
-                    lintCheckForNewCode(currentFile)
-
-                    if (isAutoRepair && appliedPatch?.status != ApplyPatchStatus.SUCCESS) {
-                        executeAutoRepair()
-                    }
-                }
-            }
-
-            ProgressManager.getInstance()
-                .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+    override fun onComplete(code: String) {
+        lintCheckForNewCode(currentFile)
+        if (isAutoRepair && appliedPatch?.status != ApplyPatchStatus.SUCCESS) {
+            executeAutoRepair()
         }
     }
 

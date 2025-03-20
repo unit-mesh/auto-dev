@@ -6,7 +6,6 @@ import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ActionToolbar
-import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.colors.EditorColorsListener
 import com.intellij.openapi.editor.colors.EditorColorsManager
@@ -18,14 +17,15 @@ import javax.swing.JComponent
 interface LangSketch : Disposable {
     fun getViewText(): String
     fun updateViewText(text: String, complete: Boolean)
-    fun getComponent(): JComponent
     fun updateLanguage(language: Language?, originLanguage: String?)
 
+    fun getComponent(): JComponent
+    fun addOrUpdateRenderView(component: JComponent) {}
     /**
      * !important, the done update text will return all text in the editor
      */
     fun onDoneStream(allText: String) {}
-    fun onComplete(context: String) {}
+    fun onComplete(code: String) {}
 
     fun setupActionBar(project: Project, editor: Editor, isDeclarePackageFile: Boolean) {
         val toolbar = collectActionBar(isDeclarePackageFile) ?: return

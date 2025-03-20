@@ -32,21 +32,21 @@ fun Project.isInProject(virtualFile: VirtualFile): Boolean {
 
 fun Project.findFile(filename: String): VirtualFile? {
     ApplicationManager.getApplication().assertReadAccessAllowed()
-    val future = CompletableFuture<VirtualFile?>()
+//    val future = CompletableFuture<VirtualFile?>()
+//
+//    val task = object : Task.Backgroundable(this, "Searching for file", false) {
+//        override fun run(indicator: com.intellij.openapi.progress.ProgressIndicator) {
+//            val file = runReadAction {
+//                FilenameIndex.getVirtualFilesByName(filename, ProjectScope.getProjectScope(this@findFile)).firstOrNull()
+//            }
+//            future.complete(file)
+//        }
+//    }
+//
+//    ProgressManager.getInstance()
+//        .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
 
-    val task = object : Task.Backgroundable(this, "Searching for file", false) {
-        override fun run(indicator: com.intellij.openapi.progress.ProgressIndicator) {
-            val file = runReadAction {
-                FilenameIndex.getVirtualFilesByName(filename, ProjectScope.getProjectScope(this@findFile)).firstOrNull()
-            }
-            future.complete(file)
-        }
-    }
-
-    ProgressManager.getInstance()
-        .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
-
-    return future.get()
+    return FilenameIndex.getVirtualFilesByName(filename, ProjectScope.getProjectScope(this@findFile)).firstOrNull()
 }
 
 fun Project.findFileByPath(path: String): VirtualFile? {
