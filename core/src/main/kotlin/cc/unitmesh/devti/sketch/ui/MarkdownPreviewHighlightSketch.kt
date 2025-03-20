@@ -7,6 +7,7 @@ import com.intellij.ide.BrowserUtil
 import com.intellij.lang.Language
 import com.intellij.openapi.project.Project
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.util.ui.JBUI
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.JComponent
@@ -39,7 +40,7 @@ class MarkdownPreviewHighlightSketch(val project: Project, val text: String) : E
             cell(editorPane).fullWidth()
         }.resizableRow()
     }.apply {
-        border = javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8)
+        border = JBUI.Borders.empty(0, 8)
     }
 
     override fun updateViewText(text: String, complete: Boolean) {
@@ -51,6 +52,10 @@ class MarkdownPreviewHighlightSketch(val project: Project, val text: String) : E
 
     override fun getComponent(): JComponent {
         return previewPanel
+    }
+
+    override fun onComplete(code: String) {
+        println(convertMarkdownToHtml(code))
     }
 
     override fun updateLanguage(language: Language?, originLanguage: String?) {}

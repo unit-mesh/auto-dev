@@ -333,7 +333,7 @@ private fun CodeHighlightSketch.processWriteCommand(currentText: String, fileNam
     panel.layout = BoxLayout(panel, BoxLayout.X_AXIS)
     panel.add(button)
 
-    add(panel, BorderLayout.SOUTH)
+    add(panel)
 }
 
 @RequiresReadLock

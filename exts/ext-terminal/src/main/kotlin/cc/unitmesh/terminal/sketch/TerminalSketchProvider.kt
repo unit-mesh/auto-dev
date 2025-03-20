@@ -177,14 +177,14 @@ class TerminalSketchProvider : LanguageSketchProvider {
             }
 
             override fun onComplete(code: String) {
-                ApplicationManager.getApplication().invokeLater {
-                    terminalWidget!!.terminalStarter?.sendString(content, false)
-                }
+                titleLabel.text = "Terminal - ($content)"
             }
 
             override fun onDoneStream(allText: String) {
                 if (content.lines().size > 1) return
-                titleLabel.text = "Terminal - ($content)"
+                ApplicationManager.getApplication().invokeLater {
+                    terminalWidget!!.terminalStarter?.sendString(content, false)
+                }
             }
 
             override fun getComponent(): JComponent = mainPanel!!

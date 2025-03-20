@@ -58,6 +58,10 @@ object SQLExecutor {
                 result = executeSql(project, dataSource, sql) ?: "Error"
             }
 
+            if (result.trim().isEmpty()) {
+                result = "ShireError[Database]: No result for $sql"
+            }
+
             return result
         } else {
             try {
@@ -147,7 +151,7 @@ object SQLExecutor {
             object : com.intellij.database.datagrid.DataRequest.QueryRequest(session, query,
                 newConstraints(dataSource.dbms), null) {}
         messageBus.dataProducer.processRequest(request)
-        return future.get(5, java.util.concurrent.TimeUnit.SECONDS)
+        return future.get(30, java.util.concurrent.TimeUnit.SECONDS)
     }
 
     private fun createConsole(project: Project, file: LightVirtualFile): JdbcConsole? {

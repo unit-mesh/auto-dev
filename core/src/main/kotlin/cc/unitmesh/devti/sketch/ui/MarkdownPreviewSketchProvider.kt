@@ -4,7 +4,8 @@ import com.intellij.openapi.project.Project
 
 class MarkdownPreviewSketchProvider : LanguageSketchProvider {
     override fun isSupported(lang: String): Boolean {
-        return lang.lowercase() == "markdown"
+//        return lang.lowercase() == "markdown"
+        return false
     }
 
     override fun create(project: Project, content: String): ExtensionLangSketch = MarkdownPreviewHighlightSketch(project, content)

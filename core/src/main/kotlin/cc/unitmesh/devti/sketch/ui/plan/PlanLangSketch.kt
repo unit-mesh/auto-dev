@@ -101,7 +101,6 @@ class PlanLangSketch(
             viewport.view = contentPanel
         }
         
-        // Use a wrapper panel to ensure proper scroll behavior
         val wrapperPanel = JPanel(BorderLayout())
         wrapperPanel.add(scrollPane, BorderLayout.CENTER)
         wrapperPanel.background = JBUI.CurrentTheme.ToolWindow.background()
@@ -109,7 +108,6 @@ class PlanLangSketch(
         add(wrapperPanel, BorderLayout.CENTER)
 
         minimumSize = Dimension(200, 0)
-        background = JBUI.CurrentTheme.ToolWindow.background()
     }
 
     override fun getExtensionName(): String = "ThoughtPlan"
