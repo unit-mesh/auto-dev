@@ -254,7 +254,7 @@
         <langSketchProvider implementation="cc.unitmesh.devti.sketch.ui.webview.WebpageSketchProvider"/>
         <langSketchProvider implementation="cc.unitmesh.devti.sketch.ui.openapi.OpenAPISketchProvider"/>
         <langSketchProvider implementation="cc.unitmesh.devti.sketch.ui.MarkdownPreviewSketchProvider"/>
-        <langSketchProvider implementation="cc.unitmesh.devti.sketch.ui.ThoughtPlanSketchProvider"/>
+        <langSketchProvider implementation="cc.unitmesh.devti.sketch.ui.PlanSketchProvider"/>
 
         <toolchainFunctionProvider implementation="cc.unitmesh.devti.bridge.archview.ComponentViewFunctionProvider"/>
         <toolchainFunctionProvider implementation="cc.unitmesh.devti.bridge.archview.ContainerViewFunctionProvider"/>

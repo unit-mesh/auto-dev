@@ -61,7 +61,7 @@ class AutoDevPlannerToolWindowFactory : ToolWindowFactory, ToolWindowManagerList
     }
 
     companion object {
-        val PlANNER_ID = "AutoDevPlaner"
+        val PlANNER_ID = "AutoDevPlanner"
     }
 }
 
