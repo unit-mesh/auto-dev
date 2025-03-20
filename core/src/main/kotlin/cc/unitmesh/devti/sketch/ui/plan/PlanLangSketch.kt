@@ -138,8 +138,6 @@ class PlanLangSketch(
 
     override fun getComponent(): JComponent = this
 
-    override fun updateLanguage(language: Language?, originLanguage: String?) {}
-
     override fun dispose() {}
 }
 

@@ -10,6 +10,7 @@ import com.intellij.diff.editor.DiffVirtualFileBase
 import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
 import com.intellij.lang.annotation.HighlightSeverity
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runReadAction
@@ -21,6 +22,10 @@ import com.intellij.openapi.diff.impl.patch.*
 import com.intellij.openapi.diff.impl.patch.apply.GenericPatchApplier
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
@@ -216,8 +221,6 @@ class SingleFileDiffSketch(
 
     override fun getComponent(): JComponent = mainPanel
 
-    override fun updateLanguage(language: Language?, originLanguage: String?) {}
-
     private var isRepaired = false
     override fun onComplete(code: String) {
         if (isRepaired) return
@@ -226,7 +229,17 @@ class SingleFileDiffSketch(
         }
 
         isRepaired = true
-        lintCheckForNewCode(currentFile)
+
+        ApplicationManager.getApplication().invokeLater {
+            val task = object : Task.Backgroundable(myProject, "Analysis code style", false) {
+                override fun run(indicator: ProgressIndicator) {
+                    lintCheckForNewCode(currentFile)
+                }
+            }
+
+            ProgressManager.getInstance()
+                .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+        }
     }
 
     fun lintCheckForNewCode(currentFile: VirtualFile) {

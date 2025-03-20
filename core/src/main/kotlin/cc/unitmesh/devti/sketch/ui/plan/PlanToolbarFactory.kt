@@ -1,5 +1,6 @@
 package cc.unitmesh.devti.sketch.ui.plan
 
+import cc.unitmesh.devti.gui.AutoDevPlannerToolWindow
 import cc.unitmesh.devti.gui.AutoDevPlannerToolWindowFactory
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
@@ -48,12 +49,17 @@ class PlanToolbarFactory(private val project: Project) {
             override fun displayTextInToolbar(): Boolean = true
 
             override fun actionPerformed(e: AnActionEvent) {
+                val toolWindowManager = ToolWindowManager.Companion.getInstance(project)
                 val toolWindow =
-                    ToolWindowManager.Companion.getInstance(project).getToolWindow(AutoDevPlannerToolWindowFactory.Companion.PlANNER_ID)
+                    toolWindowManager.getToolWindow(AutoDevPlannerToolWindowFactory.Companion.PlANNER_ID)
                         ?: return
 
+                val codingPanel =
+                    toolWindow.contentManager.component.components?.filterIsInstance<AutoDevPlannerToolWindow>()
+                        ?.firstOrNull()
+
                 toolWindow.activate {
-                    // todo
+                    codingPanel?.switchToPlanView()
                 }
             }
         }

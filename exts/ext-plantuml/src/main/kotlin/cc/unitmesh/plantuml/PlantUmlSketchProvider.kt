@@ -72,7 +72,5 @@ class PlantUmlSketch(private val project: Project, private val virtualFile: Virt
 
     override fun getComponent(): JComponent = mainPanel
 
-    override fun updateLanguage(language: Language?, originLanguage: String?) = Unit
-
     override fun dispose() = Unit
 }

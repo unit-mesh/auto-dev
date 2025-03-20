@@ -150,7 +150,7 @@ class AutoDevPlannerToolWindow(val project: Project) : SimpleToolWindowPanel(tru
         isEditorMode = true
     }
 
-    private fun switchToPlanView(newContent: String? = null) {
+    fun switchToPlanView(newContent: String? = null) {
         if (newContent != null && newContent != content) {
             content = newContent
 

@@ -62,6 +62,5 @@ class WebpageLangSketch(val project: Project, var htmlCode: String) : ExtensionL
     }
 
     override fun getComponent(): JComponent = mainPanel
-    override fun updateLanguage(language: Language?, originLanguage: String?) {}
     override fun dispose() {}
 }

@@ -99,7 +99,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
 
     private fun createDiffPanel(patch: TextFilePatch): SingleFileDiffSketch? {
         return when {
-            patch.singleHunkPatchText == null -> {
+            patch.hasNoModifiedContent() -> {
                 createErrorSketch(patch)
             }
             patch.beforeFileName != null -> {
@@ -232,7 +232,6 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
     }
 
     override fun getComponent(): JComponent = mainPanel
-    override fun updateLanguage(language: Language?, originLanguage: String?) {}
     override fun dispose() {}
 }
 

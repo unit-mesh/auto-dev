@@ -100,7 +100,7 @@ open class CodeHighlightSketch(
         val isDeclarePackageFile = BuildSystemProvider.isDeclarePackageFile(fileName)
         if (textLanguage != null && textLanguage?.lowercase() != "markdown" && ideaLanguage != PlainTextLanguage.INSTANCE) {
             setupActionBar(project, editor, isDeclarePackageFile)
-        } else{
+        } else {
             editorFragment?.editor?.backgroundColor = JBColor.PanelBackground
             editorFragment?.editor?.setBorder(JBEmptyBorder(0, 0, 0, 0))
         }
@@ -111,7 +111,7 @@ open class CodeHighlightSketch(
     }
 
     override fun updateLanguage(language: Language?, originLanguage: String?) {
-        if (ideaLanguage == null || ideaLanguage == PlainTextLanguage.INSTANCE) {
+        if (ideaLanguage == null || ideaLanguage == PlainTextLanguage.INSTANCE || ideaLanguage?.displayName == "Markdown") {
             ideaLanguage = language
             textLanguage = originLanguage
         }

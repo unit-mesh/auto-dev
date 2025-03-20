@@ -70,7 +70,6 @@ abstract class FileEditorPreviewSketch(
 //        )
 //    }
 
-    override fun updateLanguage(language: Language?, originLanguage: String?) {}
     override fun dispose() {}
 
     companion object {

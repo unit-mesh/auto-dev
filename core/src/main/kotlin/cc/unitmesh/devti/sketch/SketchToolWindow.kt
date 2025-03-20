@@ -294,7 +294,7 @@ open class SketchToolWindow(
                         oldComponent.dispose()
                     } else {
                         blockViews[index].apply {
-                            val originLanguage = codeFence.originLanguage
+                            var originLanguage = codeFence.originLanguage
                             if (originLanguage == "DevIn" && codeFence.isComplete && this.hasRenderView() == false) {
                                 createRenderSketch(codeFence)?.also {
                                     this@apply.addOrUpdateRenderView(it)
@@ -303,9 +303,11 @@ open class SketchToolWindow(
 
                             //// simple fix for langauge error
                             var language = codeFence.language
-                            if (codeFence.text.contains("\n```\n") && codeFence.text.startsWith("/")) {
-                                if(language.displayName == "Markdown") {
+                            if (codeFence.text.contains("\n```") && codeFence.text.startsWith("/")) {
+                                if (language.displayName == "Markdown") {
+                                    println("Try to fix language error")
                                     language = findLanguage("DevIn")
+                                    originLanguage = "DevIn"
                                 }
                             }
 
