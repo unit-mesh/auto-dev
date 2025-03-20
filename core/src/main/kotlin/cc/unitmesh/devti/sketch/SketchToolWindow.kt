@@ -286,10 +286,10 @@ open class SketchToolWindow(
                         langSketch?.onComplete(codeFence.text)
                     }
 
-                    val isCanHtml = codeFence.language.displayName.lowercase() == "markdown"
-                    if (isCanHtml && codeFence.isComplete && blockViews[index] !is ExtensionLangSketch) {
-                        langSketch = MarkdownPreviewHighlightSketch(project, codeFence.text)
-                    }
+//                    val isCanHtml = codeFence.language.displayName.lowercase() == "markdown"
+//                    if (isCanHtml && codeFence.isComplete && blockViews[index] !is ExtensionLangSketch) {
+//                        langSketch = MarkdownPreviewHighlightSketch(project, codeFence.text)
+//                    }
 
                     if (langSketch != null) {
                         val oldComponent = blockViews[index]

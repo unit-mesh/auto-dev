@@ -177,6 +177,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
             }
 
             override fun onComplete(code: String) {
+                codeSketch.updateViewText(code, true)
                 titleLabel.text = "Terminal - ($content)"
             }
 
