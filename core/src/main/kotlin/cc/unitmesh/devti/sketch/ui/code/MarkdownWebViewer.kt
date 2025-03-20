@@ -23,10 +23,9 @@ object MarkdownWebViewer {
         val fontFamilyAndSize = "font-family:'" + editorFontName + "'; font-size:" + editorFontSize + "pt;"
 
         val cssRules = """
-            body { $fontFamilyAndSize margin: 8px; line-height: 1.5; }
+            body { $fontFamilyAndSize line-height: 1.5; }
             p { margin-top: 0.8em; margin-bottom: 0.8em; }
             
-            /* Headings */
             h1 { font-size: 1.6em; margin-top: 1em; margin-bottom: 0.6em; font-weight: bold; }
             h2 { font-size: 1.4em; margin-top: 0.9em; margin-bottom: 0.5em; font-weight: bold; }
             h3 { font-size: 1.2em; margin-top: 0.8em; margin-bottom: 0.4em; font-weight: bold; }

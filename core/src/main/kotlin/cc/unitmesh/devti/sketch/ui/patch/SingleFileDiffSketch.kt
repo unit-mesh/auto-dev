@@ -144,51 +144,6 @@ class SingleFileDiffSketch(
 
         mainPanel.add(myHeaderPanel)
         mainPanel.add(contentPanel)
-
-        ApplicationManager.getApplication().invokeLater {
-            val task = object : Task.Backgroundable(myProject, "Analysis code style", false) {
-                override fun run(indicator: ProgressIndicator) {
-                    lintCheckForNewCode(currentFile)
-
-                    if (isAutoRepair && appliedPatch?.status != ApplyPatchStatus.SUCCESS) {
-                        executeAutoRepair()
-                    }
-                }
-            }
-
-            ProgressManager.getInstance()
-                .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
-        }
-    }
-
-    private fun executeAutoRepair() {
-        applyDiffRepairSuggestionSync(myProject, oldCode, newCode, { fixedCode ->
-            createPatchFromCode(oldCode, fixedCode)?.let { patch ->
-                this@SingleFileDiffSketch.patch = patch
-                appliedPatch = try {
-                    GenericPatchApplier.apply(oldCode, patch.hunks)
-                } catch (e: Exception) {
-                    logger<SingleFileDiffSketch>().warn("Failed to apply patch: ${patch.beforeFileName}", e)
-                    null
-                }
-
-                runInEdt {
-                    WriteAction.compute<Unit, Throwable> {
-                        currentFile.writeText(fixedCode)
-                    }
-                }
-
-                createActionButtons(currentFile, appliedPatch, patch).let { actions ->
-                    actionPanel.removeAll()
-                    actions.forEach { button ->
-                        actionPanel.add(button)
-                    }
-                }
-
-                this.mainPanel.revalidate()
-                this.mainPanel.repaint()
-            }
-        })
     }
 
     private fun createActionButtons(
@@ -268,8 +223,24 @@ class SingleFileDiffSketch(
 
     override fun updateLanguage(language: Language?, originLanguage: String?) {}
 
-    fun lintCheckForNewCode(currentFile: VirtualFile) {
+    override fun onComplete(context: String) {
+        ApplicationManager.getApplication().invokeLater {
+            val task = object : Task.Backgroundable(myProject, "Analysis code style", false) {
+                override fun run(indicator: ProgressIndicator) {
+                    lintCheckForNewCode(currentFile)
 
+                    if (isAutoRepair && appliedPatch?.status != ApplyPatchStatus.SUCCESS) {
+                        executeAutoRepair()
+                    }
+                }
+            }
+
+            ProgressManager.getInstance()
+                .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+        }
+    }
+
+    fun lintCheckForNewCode(currentFile: VirtualFile) {
         if (newCode.isEmpty()) return
         val newFile = LightVirtualFile(currentFile, newCode, LocalTimeCounter.currentTime())
         val psiFile = runReadAction { PsiManager.getInstance(myProject).findFile(newFile) } ?: return
@@ -278,6 +249,37 @@ class SingleFileDiffSketch(
             SketchCodeInspection.showErrors(errors, this@SingleFileDiffSketch.mainPanel)
         }
     }
+
+    private fun executeAutoRepair() {
+        applyDiffRepairSuggestionSync(myProject, oldCode, newCode, { fixedCode ->
+            createPatchFromCode(oldCode, fixedCode)?.let { patch ->
+                this@SingleFileDiffSketch.patch = patch
+                appliedPatch = try {
+                    GenericPatchApplier.apply(oldCode, patch.hunks)
+                } catch (e: Exception) {
+                    logger<SingleFileDiffSketch>().warn("Failed to apply patch: ${patch.beforeFileName}", e)
+                    null
+                }
+
+                runInEdt {
+                    WriteAction.compute<Unit, Throwable> {
+                        currentFile.writeText(fixedCode)
+                    }
+                }
+
+                createActionButtons(currentFile, appliedPatch, patch).let { actions ->
+                    actionPanel.removeAll()
+                    actions.forEach { button ->
+                        actionPanel.add(button)
+                    }
+                }
+
+                this.mainPanel.revalidate()
+                this.mainPanel.repaint()
+            }
+        })
+    }
+
 
     override fun dispose() {}
 }
