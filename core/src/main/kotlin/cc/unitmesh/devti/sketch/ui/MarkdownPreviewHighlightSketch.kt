@@ -45,9 +45,10 @@ class MarkdownPreviewHighlightSketch(val project: Project, val text: String) : E
 
     override fun updateViewText(text: String, complete: Boolean) {
         editorPane.text = convertMarkdownToHtml(text)
+        this.context = text
+
         editorPane.invalidate()
         editorPane.repaint()
-        this.context = text
     }
 
     override fun getComponent(): JComponent {
