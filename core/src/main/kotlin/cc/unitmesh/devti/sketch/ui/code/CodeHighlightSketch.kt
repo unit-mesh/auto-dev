@@ -111,10 +111,6 @@ open class CodeHighlightSketch(
     }
 
     override fun updateLanguage(language: Language?, originLanguage: String?) {
-//        if(ideaLanguage?.displayName == "Markdown" && language?.displayName != "Markdown") {
-//            return
-//        }
-
         if (ideaLanguage == null || ideaLanguage == PlainTextLanguage.INSTANCE) {
             ideaLanguage = language
             textLanguage = originLanguage
@@ -172,6 +168,10 @@ open class CodeHighlightSketch(
     override fun getComponent(): JComponent = this
 
     private var hasSetupRenderView = false
+
+    override fun hasRenderView(): Boolean {
+        return hasSetupRenderView
+    }
 
     override fun addOrUpdateRenderView(component: JComponent) {
         if (hasSetupRenderView) {

@@ -18,6 +18,7 @@ import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.util.parser.CodeFence
+import cc.unitmesh.devti.util.parser.CodeFence.Companion.findLanguage
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ActionToolbar
@@ -293,17 +294,22 @@ open class SketchToolWindow(
                         oldComponent.dispose()
                     } else {
                         blockViews[index].apply {
-                            if (codeFence.originLanguage == "DevIn" && codeFence.isComplete) {
+                            val originLanguage = codeFence.originLanguage
+                            if (originLanguage == "DevIn" && codeFence.isComplete && this.hasRenderView() == false) {
                                 createRenderSketch(codeFence)?.also {
                                     this@apply.addOrUpdateRenderView(it)
                                 }
                             }
-//
-//                            if (codeFence.text.contains("```") && codeFence.text.startsWith("/")) {
-//                                println(codeFence.text)
-//                            }
 
-                            updateLanguage(codeFence.language, codeFence.originLanguage)
+                            //// simple fix for langauge error
+                            var language = codeFence.language
+                            if (codeFence.text.contains("\n```\n") && codeFence.text.startsWith("/")) {
+                                if(language.displayName == "Markdown") {
+                                    language = findLanguage("DevIn")
+                                }
+                            }
+
+                            updateLanguage(language, originLanguage)
                             updateViewText(codeFence.text, codeFence.isComplete)
                         }
                     }

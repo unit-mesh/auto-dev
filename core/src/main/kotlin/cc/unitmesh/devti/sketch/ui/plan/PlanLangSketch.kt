@@ -120,11 +120,15 @@ class PlanLangSketch(
         planController.updatePlan(agentPlans)
     }
 
+    private var hasUpdated = false
     override fun onComplete(code: String) {
+        if (hasUpdated) return
         if (!isInToolwindow) {
             val agentPlans = MarkdownPlanParser.parse(content).toMutableList()
             planController.updatePlan(agentPlans)
             planController.savePlanToService()
+
+            hasUpdated = true
         }
     }
 

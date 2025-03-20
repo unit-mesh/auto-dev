@@ -21,6 +21,7 @@ interface LangSketch : Disposable {
 
     fun getComponent(): JComponent
     fun addOrUpdateRenderView(component: JComponent) {}
+    fun hasRenderView(): Boolean = false
     /**
      * !important, the done update text will return all text in the editor
      */

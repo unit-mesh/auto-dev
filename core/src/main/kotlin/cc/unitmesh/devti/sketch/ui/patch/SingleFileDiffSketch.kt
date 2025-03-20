@@ -218,12 +218,15 @@ class SingleFileDiffSketch(
 
     override fun updateLanguage(language: Language?, originLanguage: String?) {}
 
+    private var isRepaired = false
     override fun onComplete(code: String) {
+        if (isRepaired) return
         if (isAutoRepair && appliedPatch?.status != ApplyPatchStatus.SUCCESS) {
             executeAutoRepair()
         }
 
-//        lintCheckForNewCode(currentFile)
+        isRepaired = true
+        lintCheckForNewCode(currentFile)
     }
 
     fun lintCheckForNewCode(currentFile: VirtualFile) {

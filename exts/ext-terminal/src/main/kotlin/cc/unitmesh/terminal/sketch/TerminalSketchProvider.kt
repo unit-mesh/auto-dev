@@ -176,9 +176,13 @@ class TerminalSketchProvider : LanguageSketchProvider {
                 content = text
             }
 
+            private var hasSent = false
             override fun onComplete(code: String) {
+                if (hasSent) return
                 codeSketch.updateViewText(code, true)
                 titleLabel.text = "Terminal - ($content)"
+
+                hasSent = true
             }
 
             override fun onDoneStream(allText: String) {
