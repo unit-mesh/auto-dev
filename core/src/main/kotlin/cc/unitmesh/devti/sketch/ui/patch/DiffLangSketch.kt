@@ -75,7 +75,7 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
 
                     addActionListener {
                         this@apply.icon = AutoDevIcons.InProgress
-                        applyDiffRepairSuggestion(myProject, editor, editor.document.text, patchContent)
+                        DiffRepair.applyDiffRepairSuggestion(myProject, editor, editor.document.text, patchContent)
                     }
                 }
 
@@ -100,13 +100,15 @@ class DiffLangSketch(private val myProject: Project, private var patchContent: S
     private fun createDiffPanel(patch: TextFilePatch): SingleFileDiffSketch? {
         return when {
             patch.beforeFileName != null -> {
-                val originFile = myProject.findFile(patch.beforeFileName!!) ?: return null
+                val originFile = LightVirtualFile(patch.beforeFileName!!, patch.singleHunkPatchText)
                 createSingleFileDiffSketch(originFile, patch)
             }
+
             patch.afterFileName != null -> {
                 val virtualFile = LightVirtualFile(patch.afterFileName!!, patch.singleHunkPatchText)
                 createSingleFileDiffSketch(virtualFile, patch)
             }
+
             else -> {
                 val fileName = patch.beforeFileName ?: ""
                 val virtualFile = LightVirtualFile(fileName, patch.singleHunkPatchText)

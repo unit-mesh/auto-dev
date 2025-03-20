@@ -16,55 +16,57 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.launch
 
-fun applyDiffRepairSuggestion(project: Project, editor: Editor, oldCode: String, patchedCode: String) {
-    val templateRender = TemplateRender(GENIUS_CODE)
-    val template = templateRender.getTemplate("repair-diff.vm")
+object DiffRepair {
+    fun applyDiffRepairSuggestion(project: Project, editor: Editor, oldCode: String, patchedCode: String) {
+        val templateRender = TemplateRender(GENIUS_CODE)
+        val template = templateRender.getTemplate("repair-diff.vm")
 
-    val intention = project.getService(AgentStateService::class.java).buildOriginIntention()
+        val intention = project.getService(AgentStateService::class.java).buildOriginIntention()
 
-    templateRender.context = DiffRepairContext(intention, patchedCode, oldCode)
-    val prompt = templateRender.renderTemplate(template)
+        templateRender.context = DiffRepairContext(intention, patchedCode, oldCode)
+        val prompt = templateRender.renderTemplate(template)
 
-    val flow: Flow<String> = LlmFactory.create(project, ModelType.FastApply).stream(prompt, "", false)
-    AutoDevCoroutineScope.Companion.scope(project).launch {
-        val suggestion = StringBuilder()
-        flow.cancellable().collect { char ->
-            suggestion.append(char)
-            val code = CodeFence.Companion.parse(suggestion.toString())
-            if (code.text.isNotEmpty()) {
-                ApplicationManager.getApplication().invokeLater({
-                    runWriteAction {
-                        editor.document.setText(code.text)
-                    }
-                }, ModalityState.defaultModalityState())
+        val flow: Flow<String> = LlmFactory.create(project, ModelType.FastApply).stream(prompt, "", false)
+        AutoDevCoroutineScope.Companion.scope(project).launch {
+            val suggestion = StringBuilder()
+            flow.cancellable().collect { char ->
+                suggestion.append(char)
+                val code = CodeFence.Companion.parse(suggestion.toString())
+                if (code.text.isNotEmpty()) {
+                    ApplicationManager.getApplication().invokeLater({
+                        runWriteAction {
+                            editor.document.setText(code.text)
+                        }
+                    }, ModalityState.defaultModalityState())
+                }
             }
         }
     }
-}
 
-fun applyDiffRepairSuggestionSync(
-    project: Project,
-    oldCode: String,
-    patchedCode: String,
-    callback: (newContent: String) -> Unit
-) {
-    val templateRender = TemplateRender(GENIUS_CODE)
-    val template = templateRender.getTemplate("repair-diff.vm")
+    fun applyDiffRepairSuggestionSync(
+        project: Project,
+        oldCode: String,
+        patchedCode: String,
+        callback: (newContent: String) -> Unit
+    ) {
+        val templateRender = TemplateRender(GENIUS_CODE)
+        val template = templateRender.getTemplate("repair-diff.vm")
 
-    val intention = project.getService(AgentStateService::class.java).buildOriginIntention()
+        val intention = project.getService(AgentStateService::class.java).buildOriginIntention()
 
-    templateRender.context = DiffRepairContext(intention, patchedCode, oldCode)
-    val prompt = templateRender.renderTemplate(template)
+        templateRender.context = DiffRepairContext(intention, patchedCode, oldCode)
+        val prompt = templateRender.renderTemplate(template)
 
-    val flow: Flow<String> = LlmFactory.create(project, ModelType.FastApply).stream(prompt, "", false)
-    AutoDevCoroutineScope.Companion.scope(project).launch {
-        val suggestion = StringBuilder()
-        flow.cancellable().collect { char ->
-            suggestion.append(char)
-            return@collect
+        val flow: Flow<String> = LlmFactory.create(project, ModelType.FastApply).stream(prompt, "", false)
+        AutoDevCoroutineScope.Companion.scope(project).launch {
+            val suggestion = StringBuilder()
+            flow.cancellable().collect { char ->
+                suggestion.append(char)
+                return@collect
+            }
+
+            val code = CodeFence.Companion.parse(suggestion.toString())
+            callback.invoke(code.text)
         }
-
-        val code = CodeFence.Companion.parse(suggestion.toString())
-        callback.invoke(code.text)
     }
 }

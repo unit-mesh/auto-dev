@@ -10,7 +10,6 @@ import com.intellij.diff.editor.DiffVirtualFileBase
 import com.intellij.icons.AllIcons
 import com.intellij.lang.Language
 import com.intellij.lang.annotation.HighlightSeverity
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.application.runInEdt
 import com.intellij.openapi.application.runReadAction
@@ -22,10 +21,6 @@ import com.intellij.openapi.diff.impl.patch.*
 import com.intellij.openapi.diff.impl.patch.apply.GenericPatchApplier
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.Task
-import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
@@ -208,7 +203,7 @@ class SingleFileDiffSketch(
                     filePatch.singleHunkPatchText
                 }
 
-                applyDiffRepairSuggestion(myProject, editor, oldCode, failurePatch)
+                DiffRepair.applyDiffRepairSuggestion(myProject, editor, oldCode, failurePatch)
             }
         }
 
@@ -241,33 +236,33 @@ class SingleFileDiffSketch(
     }
 
     private fun executeAutoRepair() {
-        applyDiffRepairSuggestionSync(myProject, oldCode, newCode, { fixedCode ->
-            createPatchFromCode(oldCode, fixedCode)?.let { patch ->
-                this@SingleFileDiffSketch.patch = patch
-                appliedPatch = try {
-                    GenericPatchApplier.apply(oldCode, patch.hunks)
-                } catch (e: Exception) {
-                    logger<SingleFileDiffSketch>().warn("Failed to apply patch: ${patch.beforeFileName}", e)
-                    null
-                }
-
-                runInEdt {
-                    WriteAction.compute<Unit, Throwable> {
-                        currentFile.writeText(fixedCode)
+        DiffRepair.applyDiffRepairSuggestionSync(myProject, oldCode, newCode, { fixedCode: String ->
+                createPatchFromCode(oldCode, fixedCode)?.let { patch ->
+                    this.patch = patch
+                    appliedPatch = try {
+                        GenericPatchApplier.apply(oldCode, patch.hunks)
+                    } catch (e: Exception) {
+                        logger<SingleFileDiffSketch>().warn("Failed to apply patch: ${patch.beforeFileName}", e)
+                        null
                     }
-                }
 
-                createActionButtons(currentFile, appliedPatch, patch).let { actions ->
-                    actionPanel.removeAll()
-                    actions.forEach { button ->
-                        actionPanel.add(button)
+                    runInEdt {
+                        WriteAction.compute<Unit, Throwable> {
+                            currentFile.writeText(fixedCode)
+                        }
                     }
-                }
 
-                this.mainPanel.revalidate()
-                this.mainPanel.repaint()
-            }
-        })
+                    createActionButtons(currentFile, appliedPatch, patch).let { actions ->
+                        actionPanel.removeAll()
+                        actions.forEach { button ->
+                            actionPanel.add(button)
+                        }
+                    }
+
+                    mainPanel.revalidate()
+                    mainPanel.repaint()
+                }
+            })
     }
 
 
