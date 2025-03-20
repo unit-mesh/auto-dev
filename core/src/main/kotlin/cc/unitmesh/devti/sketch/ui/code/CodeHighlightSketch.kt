@@ -35,6 +35,7 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.intellij.testFramework.LightVirtualFile
+import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.concurrency.annotations.RequiresReadLock
@@ -100,6 +101,9 @@ open class CodeHighlightSketch(
         val isDeclarePackageFile = BuildSystemProvider.isDeclarePackageFile(fileName)
         if (textLanguage != null && textLanguage?.lowercase() != "markdown" && ideaLanguage != PlainTextLanguage.INSTANCE) {
             setupActionBar(project, editor, isDeclarePackageFile)
+        } else{
+            editorFragment?.editor?.backgroundColor = JBColor.PanelBackground
+            editorFragment?.editor?.setBorder(JBEmptyBorder(0, 0, 0, 0))
         }
     }
 
