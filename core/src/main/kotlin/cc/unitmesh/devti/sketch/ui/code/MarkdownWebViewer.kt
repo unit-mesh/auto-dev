@@ -9,7 +9,7 @@ import com.intellij.util.ui.UIUtil
 import javax.swing.JEditorPane
 import javax.swing.text.DefaultCaret
 
-object MarkdownViewer {
+object MarkdownWebViewer {
     fun createBaseComponent(): JEditorPane {
         val jEditorPane = JEditorPane()
         jEditorPane.setContentType("text/html")

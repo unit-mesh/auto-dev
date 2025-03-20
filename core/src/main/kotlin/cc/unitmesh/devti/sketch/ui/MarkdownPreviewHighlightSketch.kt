@@ -1,7 +1,7 @@
 package cc.unitmesh.devti.sketch.ui
 
 import cc.unitmesh.devti.fullWidth
-import cc.unitmesh.devti.sketch.ui.code.MarkdownViewer
+import cc.unitmesh.devti.sketch.ui.code.MarkdownWebViewer
 import cc.unitmesh.devti.util.parser.convertMarkdownToHtml
 import com.intellij.ide.BrowserUtil
 import com.intellij.lang.Language
@@ -18,7 +18,7 @@ class MarkdownPreviewHighlightSketch(val project: Project, val text: String) : E
 
     private var context = text
 
-    val webviewPanel = MarkdownViewer.createBaseComponent()
+    val webviewPanel = MarkdownWebViewer.createBaseComponent()
 
     private val editorPane = webviewPanel.apply {
         addHyperlinkListener {

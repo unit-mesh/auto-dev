@@ -1,3 +1,4 @@
+// filepath: /Volumes/source/ai/autocrud/exts/ext-terminal/src/main/kotlin/cc/unitmesh/terminal/sketch/TerminalSketchProvider.kt
 // File: TerminalSketchProvider.kt
 package cc.unitmesh.terminal.sketch
 
@@ -62,7 +63,9 @@ class TerminalSketchProvider : LanguageSketchProvider {
             val codePanel = JPanel(BorderLayout()).apply {
                 add(codeSketch.getComponent(), BorderLayout.CENTER)
             }
-            val collapsibleCodePanel = CollapsiblePanel("Shell Code", codePanel)
+            
+            val isSingleLine = content.lines().filter { it.trim().isNotEmpty() }.size <= 1
+            val collapsibleCodePanel = CollapsiblePanel("Shell Code", codePanel, initiallyCollapsed = isSingleLine)
 
             val toolbarPanel = JPanel(BorderLayout()).apply {
                 add(titleLabel, BorderLayout.WEST)
