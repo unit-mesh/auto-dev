@@ -23,15 +23,15 @@ object MarkdownWebViewer {
         val fontFamilyAndSize = "font-family:'" + editorFontName + "'; font-size:" + editorFontSize + "pt;"
 
         val cssRules = """
-            body { $fontFamilyAndSize line-height: 1.5; }
-            p { margin-top: 0.8em; margin-bottom: 0.8em; }
+            body { $fontFamilyAndSize margin: 2px 0px; line-height: 1.5; }
+            p { margin-top: 0.4em; margin-bottom: 0.4em; }
             
-            h1 { font-size: 1.6em; margin-top: 1em; margin-bottom: 0.6em; font-weight: bold; }
-            h2 { font-size: 1.4em; margin-top: 0.9em; margin-bottom: 0.5em; font-weight: bold; }
-            h3 { font-size: 1.2em; margin-top: 0.8em; margin-bottom: 0.4em; font-weight: bold; }
-            h4, h5, h6 { font-size: 1.1em; margin-top: 0.7em; margin-bottom: 0.3em; font-weight: bold; }
+            /* Headings */
+            h1 { font-size: 1.6em; font-weight: bold; }
+            h2 { font-size: 1.4em; font-weight: bold; }
+            h3 { font-size: 1.2em; font-weight: bold; }
+            h4, h5, h6 { font-size: 1.1em; font-weight: bold; }
             
-            /* Code blocks */
             pre { background-color: #f5f5f5; border-radius: 4px; padding: 8px; overflow-x: auto; margin: 1em 0; }
             code { font-family: 'JetBrains Mono', Consolas, monospace; background-color: #f5f5f5; padding: 2px 4px; border-radius: 3px; font-size: 0.9em; }
             
