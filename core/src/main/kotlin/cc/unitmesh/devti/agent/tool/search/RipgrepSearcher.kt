@@ -132,7 +132,7 @@ object RipgrepSearcher {
             grouped.computeIfAbsent(relPath) { k: String? -> ArrayList<RipgrepSearchResult?>() }!!.add(result)
         }
 
-        output.append("Total results: ").append(results.size).append("\n\n")
+        output.append("Total results: ").append(results.size).append("\n```bash\n")
         for (entry in grouped.entries) {
             output.append("## filepath: ").append(entry.key).append("\n")
             val filePath = Paths.get(basePath, entry.key)
@@ -160,6 +160,7 @@ object RipgrepSearcher {
             output.append("\n")
         }
 
+        output.append("```\n")
         return output.toString()
     }
 

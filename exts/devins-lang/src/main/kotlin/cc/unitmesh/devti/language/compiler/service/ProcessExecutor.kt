@@ -19,7 +19,6 @@ import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import com.intellij.execution.configurations.PtyCommandLine
-import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.text.Strings
