@@ -17,29 +17,18 @@ import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.launch
 
 object DiffRepair {
+    private const val TEMPLATE_NAME = "repair-diff.vm"
+
     fun applyDiffRepairSuggestion(project: Project, editor: Editor, oldCode: String, patchedCode: String) {
-        val templateRender = TemplateRender(GENIUS_CODE)
-        val template = templateRender.getTemplate("repair-diff.vm")
+        val prompt = createDiffRepairPrompt(project, oldCode, patchedCode)
+        val flow = LlmFactory.create(project, ModelType.FastApply).stream(prompt, "You are professional program", false)
 
-        val intention = project.getService(AgentStateService::class.java).buildOriginIntention()
-
-        templateRender.context = DiffRepairContext(intention, patchedCode, oldCode)
-        val prompt = templateRender.renderTemplate(template)
-
-        val flow: Flow<String> = LlmFactory.create(project, ModelType.FastApply).stream(prompt, "", false)
-        AutoDevCoroutineScope.Companion.scope(project).launch {
-            val suggestion = StringBuilder()
-            flow.cancellable().collect { char ->
-                suggestion.append(char)
-                val code = CodeFence.Companion.parse(suggestion.toString())
-                if (code.text.isNotEmpty()) {
-                    ApplicationManager.getApplication().invokeLater({
-                        runWriteAction {
-                            editor.document.setText(code.text)
-                        }
-                    }, ModalityState.defaultModalityState())
+        processStreamRealtime(project, flow) { code ->
+            ApplicationManager.getApplication().invokeLater({
+                runWriteAction {
+                    editor.document.setText(code)
                 }
-            }
+            }, ModalityState.defaultModalityState())
         }
     }
 
@@ -49,24 +38,45 @@ object DiffRepair {
         patchedCode: String,
         callback: (newContent: String) -> Unit
     ) {
+        val prompt = createDiffRepairPrompt(project, oldCode, patchedCode)
+        val flow = LlmFactory.create(project, ModelType.FastApply).stream(prompt, "You are professional program", false)
+
+        processStreamBatch(project, flow) { result ->
+            callback.invoke(result)
+        }
+    }
+    
+    private fun createDiffRepairPrompt(project: Project, oldCode: String, patchedCode: String): String {
         val templateRender = TemplateRender(GENIUS_CODE)
-        val template = templateRender.getTemplate("repair-diff.vm")
-
+        val template = templateRender.getTemplate(TEMPLATE_NAME)
         val intention = project.getService(AgentStateService::class.java).buildOriginIntention()
-
+        
         templateRender.context = DiffRepairContext(intention, patchedCode, oldCode)
-        val prompt = templateRender.renderTemplate(template)
+        return templateRender.renderTemplate(template)
+    }
 
-        val flow: Flow<String> = LlmFactory.create(project, ModelType.FastApply).stream(prompt, "", false)
+    private fun processStreamRealtime(project: Project, flow: Flow<String>, onCodeChange: (String) -> Unit) {
         AutoDevCoroutineScope.Companion.scope(project).launch {
             val suggestion = StringBuilder()
             flow.cancellable().collect { char ->
                 suggestion.append(char)
-                return@collect
+                val code = CodeFence.Companion.parse(suggestion.toString())
+                if (code.text.isNotEmpty()) {
+                    onCodeChange(code.text)
+                }
             }
-
+        }
+    }
+    
+    private fun processStreamBatch(project: Project, flow: Flow<String>, onComplete: (String) -> Unit) {
+        AutoDevCoroutineScope.Companion.scope(project).launch {
+            val suggestion = StringBuilder()
+            flow.cancellable().collect { char ->
+                suggestion.append(char)
+            }
+            
             val code = CodeFence.Companion.parse(suggestion.toString())
-            callback.invoke(code.text)
+            onComplete(code.text)
         }
     }
 }
