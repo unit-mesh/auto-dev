@@ -27,8 +27,10 @@ class JavaRefactoringTool : RefactoringTool {
         val className = elementInfo.className
         val packageName = elementInfo.pkgName
 
-        val sourceFile = javaFiles.firstOrNull {
-            it.packageName == packageName && it.name == "$className.java"
+        val sourceFile = runReadAction {
+            javaFiles.firstOrNull {
+                it.packageName == packageName && it.name == "$className.java"
+            }
         } ?: return null
 
         return sourceFile
