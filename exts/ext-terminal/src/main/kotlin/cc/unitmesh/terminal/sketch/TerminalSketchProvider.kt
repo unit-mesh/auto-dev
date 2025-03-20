@@ -1,3 +1,4 @@
+// File: TerminalSketchProvider.kt
 package cc.unitmesh.terminal.sketch
 
 import cc.unitmesh.devti.AutoDevIcons
@@ -40,9 +41,6 @@ import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
 
-/**
- * TerminalSketch provide a support for `bash` and `shell` language in terminal.
- */
 class TerminalSketchProvider : LanguageSketchProvider {
     override fun isSupported(lang: String): Boolean = lang == "bash" || lang == "shell"
 
@@ -61,6 +59,10 @@ class TerminalSketchProvider : LanguageSketchProvider {
             }
 
             val codeSketch = CodeHighlightSketch(project, content, CodeFence.findLanguage("bash"))
+            val codePanel = JPanel(BorderLayout()).apply {
+                add(codeSketch.getComponent(), BorderLayout.CENTER)
+            }
+            val collapsibleCodePanel = CollapsiblePanel("Shell Code", codePanel)
 
             val toolbarPanel = JPanel(BorderLayout()).apply {
                 add(titleLabel, BorderLayout.WEST)
@@ -83,7 +85,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
                 mainPanel = object : JPanel(VerticalLayout(JBUI.scale(0))) {
                     init {
                         add(toolbarWrapper)
-                        add(codeSketch.getComponent())
+                        add(collapsibleCodePanel)
                         add(terminalWidget!!.component)
                     }
                 }
@@ -176,22 +178,16 @@ class TerminalSketchProvider : LanguageSketchProvider {
             }
 
             override fun onDoneStream(allText: String) {
-                var isAlreadySent = false
                 if (content.lines().size > 1) return
 
                 titleLabel.text = "Terminal - ($content)"
-
                 ApplicationManager.getApplication().invokeLater {
                     terminalWidget!!.terminalStarter?.sendString(content, false)
                 }
-
-                isAlreadySent = true
             }
 
             override fun getComponent(): JComponent = mainPanel!!
-
             override fun updateLanguage(language: Language?, originLanguage: String?) {}
-
             override fun dispose() {
                 codeSketch.dispose()
             }
@@ -225,7 +221,7 @@ class FrontendWebViewServerFilter(val project: Project, val mainPanel: JPanel) :
                 loadURL(url)
             }
 
-            var additionalPanel = JPanel(BorderLayout()).apply {
+            val additionalPanel = JPanel(BorderLayout()).apply {
                 add(webViewWindow.component, BorderLayout.CENTER)
             }
 
@@ -235,7 +231,6 @@ class FrontendWebViewServerFilter(val project: Project, val mainPanel: JPanel) :
         }
 
         isAlreadyStart = true
-
         return null
     }
 }
