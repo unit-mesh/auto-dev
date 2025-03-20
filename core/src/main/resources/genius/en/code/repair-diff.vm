@@ -11,3 +11,5 @@ Here is the original code: ${context.oldCode}
 Here is the failed patched context:
 
 ${context.patchedCode}
+
+Just return code which based original code and the diff, do not add any other content.
