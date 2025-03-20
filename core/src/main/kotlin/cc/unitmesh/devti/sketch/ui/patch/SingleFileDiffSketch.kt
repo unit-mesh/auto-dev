@@ -43,7 +43,6 @@ import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JPanel
 
-
 class SingleFileDiffSketch(
     private val myProject: Project,
     private var currentFile: VirtualFile,
@@ -142,7 +141,7 @@ class SingleFileDiffSketch(
     }
 
     private fun createActionButtons(
-        file: VirtualFile, appliedPatch: GenericPatchApplier.AppliedPatch?, filePatch: TextFilePatch
+        file: VirtualFile, appliedPatch: GenericPatchApplier.AppliedPatch?, filePatch: TextFilePatch, isRepaired: Boolean = false
     ): List<JButton> {
         val viewButton = JButton("View").apply {
             icon = AllIcons.Actions.ListChanges
@@ -181,7 +180,8 @@ class SingleFileDiffSketch(
             }
         }
 
-        val repairButton = JButton("Repair").apply {
+        val text = if (isRepaired) { "Repaired" } else { "Repair" }
+        val repairButton = JButton(text).apply {
             val isFailedPatch = appliedPatch?.status != ApplyPatchStatus.SUCCESS
             isEnabled = isFailedPatch
             icon = if (isAutoRepair && isFailedPatch) {
@@ -252,7 +252,7 @@ class SingleFileDiffSketch(
                         }
                     }
 
-                    createActionButtons(currentFile, appliedPatch, patch).let { actions ->
+                    createActionButtons(currentFile, appliedPatch, patch, isRepaired = true).let { actions ->
                         actionPanel.removeAll()
                         actions.forEach { button ->
                             actionPanel.add(button)

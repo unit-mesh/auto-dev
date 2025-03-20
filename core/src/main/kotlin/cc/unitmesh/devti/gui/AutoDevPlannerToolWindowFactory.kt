@@ -1,4 +1,3 @@
-// filepath: /Volumes/source/ai/autocrud/core/src/main/kotlin/cc/unitmesh/devti/gui/AutoDevPlannerToolWindowFactory.kt
 package cc.unitmesh.devti.gui
 
 import cc.unitmesh.devti.inline.fullWidth
