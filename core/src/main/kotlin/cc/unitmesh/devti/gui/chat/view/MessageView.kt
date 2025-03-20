@@ -108,11 +108,6 @@ class MessageView(val project: Project, val message: String, val role: ChatRole,
                             ?.create(project, codeFence.text)
                     }
 
-                    val isCanHtml = codeFence.language.displayName.lowercase() == "markdown"
-                    if (isCanHtml && codeFence.isComplete && blockViews[index] !is ExtensionLangSketch) {
-                        langSketch = MarkdownPreviewHighlightSketch(project, codeFence.text)
-                    }
-
                     if (langSketch != null) {
                         val oldComponent = blockViews[index]
                         blockViews[index] = langSketch

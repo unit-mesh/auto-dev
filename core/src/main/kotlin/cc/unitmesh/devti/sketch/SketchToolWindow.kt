@@ -15,11 +15,9 @@ import cc.unitmesh.devti.observer.agent.AgentStateService
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
-import cc.unitmesh.devti.sketch.ui.MarkdownPreviewHighlightSketch
 import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
 import cc.unitmesh.devti.util.AutoDevCoroutineScope
 import cc.unitmesh.devti.util.parser.CodeFence
-import cc.unitmesh.devti.util.parser.convertMarkdownToHtml
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ActionToolbar
@@ -285,11 +283,6 @@ open class SketchToolWindow(
 
                         langSketch?.onComplete(codeFence.text)
                     }
-
-//                    val isCanHtml = codeFence.language.displayName.lowercase() == "markdown"
-//                    if (isCanHtml && codeFence.isComplete && blockViews[index] !is ExtensionLangSketch) {
-//                        langSketch = MarkdownPreviewHighlightSketch(project, codeFence.text)
-//                    }
 
                     if (langSketch != null) {
                         val oldComponent = blockViews[index]

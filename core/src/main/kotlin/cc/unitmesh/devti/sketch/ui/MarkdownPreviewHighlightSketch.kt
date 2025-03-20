@@ -54,10 +54,6 @@ class MarkdownPreviewHighlightSketch(val project: Project, val text: String) : E
         return previewPanel
     }
 
-    override fun onComplete(code: String) {
-        println(convertMarkdownToHtml(code))
-    }
-
     override fun updateLanguage(language: Language?, originLanguage: String?) {}
 
     override fun dispose() {
