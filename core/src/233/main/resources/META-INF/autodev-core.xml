@@ -56,7 +56,7 @@
         <toolWindow id="AutoDevPlaner"
                     anchor="left"
                     order="after Structure"
-                    icon="cc.unitmesh.devti.AutoDevIcons.AI_COPILOT"
+                    icon="cc.unitmesh.devti.AutoDevIcons.PLANNER"
                     secondary="true"
                     factoryClass="cc.unitmesh.devti.gui.AutoDevPlannerToolWindowFactory"/>
 
