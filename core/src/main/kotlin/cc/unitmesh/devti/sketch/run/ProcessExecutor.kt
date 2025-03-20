@@ -13,30 +13,57 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cc.unitmesh.devti.language.compiler.service
+package cc.unitmesh.devti.sketch.run
 
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.gui.AutoDevToolWindowFactory
 import cc.unitmesh.devti.gui.chat.message.ChatActionType
 import com.intellij.execution.configurations.PtyCommandLine
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
+import com.intellij.openapi.progress.impl.BackgroundableProcessIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.text.Strings
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
+import org.jetbrains.ide.PooledThreadExecutor
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.OutputStream
 import java.io.StringWriter
 import java.io.Writer
-import kotlin.text.Charsets.UTF_8
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
 class ProcessExecutor(val project: Project) {
-    suspend fun executeCode(project: Project, code: String, dispatcher: CoroutineDispatcher): String? {
+    fun executeCode(code: String): String? {
+        val taskExecutor = PooledThreadExecutor.INSTANCE
+        val future: CompletableFuture<String?> = CompletableFuture()
+        val task = object : Task.Backgroundable(project, "Running shell command") {
+            override fun run(indicator: ProgressIndicator) {
+                runBlocking(taskExecutor.asCoroutineDispatcher()) {
+                    val executor = ProcessExecutor(project)
+                    val result = executor.executeCode(code, taskExecutor.asCoroutineDispatcher())
+                    future.complete(result ?: "")
+                }
+            }
+        }
+
+        ProgressManager.getInstance()
+            .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
+
+        return future.get(120, TimeUnit.SECONDS)
+    }
+
+    suspend fun executeCode(code: String, dispatcher: CoroutineDispatcher): String? {
         val outputWriter = StringWriter()
         val errWriter = StringWriter()
 
@@ -60,10 +87,12 @@ class ProcessExecutor(val project: Project) {
     /**
      * Base on SqliteCliClientImpl
      */
-    suspend fun exec(shellScript: String,
-                     stdWriter: Writer,
-                     errWriter: Writer,
-                     dispatcher: CoroutineDispatcher): Int = withContext(dispatcher) {
+    suspend fun exec(
+        shellScript: String,
+        stdWriter: Writer,
+        errWriter: Writer,
+        dispatcher: CoroutineDispatcher
+    ): Int = withContext(dispatcher) {
         val process = createProcess(shellScript)
 
         val errOutput = async { consumeProcessOutput(process.errorStream, errWriter, process, dispatcher) }
@@ -118,7 +147,7 @@ class ProcessExecutor(val project: Project) {
     }
 
     private fun feedProcessInput(outputStream: OutputStream, inputLines: List<String>) {
-        outputStream.writer(UTF_8).use { writer ->
+        outputStream.writer(Charsets.UTF_8).use { writer ->
             inputLines.forEach { line ->
                 writer.write(line + System.lineSeparator())
                 writer.flush()
@@ -126,27 +155,27 @@ class ProcessExecutor(val project: Project) {
         }
     }
 
-    private suspend fun consumeProcessOutput(source: InputStream?,
-                                             outputWriter: Writer,
-                                             process: Process,
-                                             dispatcher: CoroutineDispatcher) = withContext(dispatcher) {
+    private suspend fun consumeProcessOutput(
+        source: InputStream?,
+        outputWriter: Writer,
+        process: Process,
+        dispatcher: CoroutineDispatcher
+    ) = withContext(dispatcher) {
         if (source == null) return@withContext
 
         var isFirstLine = true
-        BufferedReader(InputStreamReader(source, UTF_8.name())).use { reader ->
+        BufferedReader(InputStreamReader(source, Charsets.UTF_8.name())).use { reader ->
             do {
                 val line = reader.readLine()
                 if (Strings.isNotEmpty(line)) {
                     if (!isFirstLine) outputWriter.append(System.lineSeparator())
                     isFirstLine = false
                     outputWriter.append(line)
-                }
-                else {
+                } else {
                     yield()
                 }
                 ensureActive()
-            }
-            while (process.isAlive || line != null)
+            } while (process.isAlive || line != null)
         }
     }
 }

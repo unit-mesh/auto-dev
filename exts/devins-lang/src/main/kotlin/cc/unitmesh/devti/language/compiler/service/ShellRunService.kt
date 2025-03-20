@@ -1,6 +1,7 @@
 package cc.unitmesh.devti.language.compiler.service
 
 import cc.unitmesh.devti.provider.RunService
+import cc.unitmesh.devti.sketch.run.ProcessExecutor
 import cc.unitmesh.devti.sketch.ui.patch.readText
 import com.intellij.execution.RunManager
 import com.intellij.execution.configurations.RunConfiguration
@@ -38,22 +39,7 @@ class ShellRunService : RunService {
 
         val code = virtualFile.readText()
         if (isFromToolAction) {
-            val taskExecutor = PooledThreadExecutor.INSTANCE
-            val future: CompletableFuture<String?> = CompletableFuture()
-            val task = object : Task.Backgroundable(project, "Running shell command") {
-                override fun run(indicator: ProgressIndicator) {
-                    runBlocking(taskExecutor.asCoroutineDispatcher()) {
-                        val executor = ProcessExecutor(project)
-                        val result = executor.executeCode(project, code, taskExecutor.asCoroutineDispatcher())
-                        future.complete(result ?: "")
-                    }
-                }
-            }
-
-            ProgressManager.getInstance()
-                .runProcessWithProgressAsynchronously(task, BackgroundableProcessIndicator(task))
-
-            return future.get(120, TimeUnit.SECONDS)
+            return ProcessExecutor(project).executeCode(code)
         }
 
         val shRunner = ApplicationManager.getApplication().getService(ShRunner::class.java)

@@ -4,6 +4,7 @@ import cc.unitmesh.devti.AutoDevIcons
 import cc.unitmesh.devti.AutoDevNotifications
 import cc.unitmesh.devti.sketch.ui.WebViewWindow
 import cc.unitmesh.devti.sketch.SketchToolWindow
+import cc.unitmesh.devti.sketch.run.ProcessExecutor
 import cc.unitmesh.devti.sketch.ui.ExtensionLangSketch
 import cc.unitmesh.devti.sketch.ui.LanguageSketchProvider
 import cc.unitmesh.devti.sketch.ui.code.CodeHighlightSketch
@@ -92,7 +93,13 @@ class TerminalSketchProvider : LanguageSketchProvider {
             }
 
             fun createConsoleActions(): List<AnAction> {
-                val clearAction = object : AnAction("Clear", "Clear Terminal", AllIcons.Actions.GC) {
+                val executeAction = object : AnAction("Execute", "Execute command", AllIcons.Actions.Execute) {
+                    override fun actionPerformed(e: AnActionEvent) {
+                        ProcessExecutor(project).executeCode(getViewText())
+                    }
+                }
+
+                val clearAction = object : AnAction("Clear", "Clear terminal", AllIcons.Actions.GC) {
                     override fun actionPerformed(e: AnActionEvent) {
                         terminalWidget?.terminalStarter?.sendString("clear\n", false)
                     }
@@ -106,7 +113,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
                     }
                 }
 
-                val sendAction = object : AnAction("Send to Chat", "Send to Chat", AutoDevIcons.Send) {
+                val sendAction = object : AnAction("Send to Chat", "Send to chat", AutoDevIcons.Send) {
                     override fun actionPerformed(e: AnActionEvent) {
                         try {
                             val output = terminalWidget!!::class.java.getMethod("getText")
@@ -126,7 +133,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
                     }
                 }
 
-                return listOf(copyAction, clearAction, sendAction, popupAction)
+                return listOf(executeAction, copyAction, clearAction, sendAction, popupAction)
             }
 
             private fun executePopup(terminalWidget: JBTerminalWidget?, project: Project): MouseAdapter =
