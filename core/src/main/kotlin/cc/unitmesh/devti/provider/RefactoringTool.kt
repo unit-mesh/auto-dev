@@ -5,6 +5,8 @@ import com.intellij.codeInspection.MoveToPackageFix
 import com.intellij.lang.Language
 import com.intellij.lang.LanguageExtension
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.runInEdt
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.logger
@@ -22,6 +24,7 @@ import com.intellij.refactoring.rename.naming.AutomaticRenamerFactory
 import com.intellij.refactoring.util.CommonRefactoringUtil
 import com.intellij.usageView.UsageInfo
 import com.intellij.util.ThrowableRunnable
+import com.intellij.vcs.log.runInEdtAsync
 
 /**
  * RefactoringTool is an interface that defines operations for performing various code refactoring tasks.
@@ -57,9 +60,11 @@ interface RefactoringTool {
      * the deletion was performed and considered safe.
      */
     fun safeDelete(element: PsiElement): Boolean {
-        val delete = SafeDeleteFix(element)
+        val delete = runReadAction { SafeDeleteFix(element) }
         try {
-            delete.invoke(element.project, element.containingFile, element, element)
+            runInEdt {
+                delete.invoke(element.project, element.containingFile, element, element)
+            }
         } catch (e: Exception) {
             logger<RefactoringTool>().error("Failed to delete element: ${e.message}")
             return false
@@ -96,7 +101,7 @@ interface RefactoringTool {
 
             if (!ProgressManager.getInstance().runProcessWithProgressSynchronously(
                     runnable, RefactoringBundle.message("searching.for.variables"), true, myProject
-            )
+                )
             ) {
                 return
             }

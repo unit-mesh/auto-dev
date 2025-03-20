@@ -298,6 +298,10 @@ open class SketchToolWindow(
                                     this@apply.addOrUpdateRenderView(it)
                                 }
                             }
+//
+//                            if (codeFence.text.contains("```") && codeFence.text.startsWith("/")) {
+//                                println(codeFence.text)
+//                            }
 
                             updateLanguage(codeFence.language, codeFence.originLanguage)
                             updateViewText(codeFence.text, codeFence.isComplete)

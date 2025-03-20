@@ -41,7 +41,6 @@ import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.concurrency.annotations.RequiresReadLock
 import com.intellij.util.ui.JBEmptyBorder
 import com.intellij.util.ui.JBUI
-import java.awt.BorderLayout
 import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JComponent
@@ -112,6 +111,10 @@ open class CodeHighlightSketch(
     }
 
     override fun updateLanguage(language: Language?, originLanguage: String?) {
+//        if(ideaLanguage?.displayName == "Markdown" && language?.displayName != "Markdown") {
+//            return
+//        }
+
         if (ideaLanguage == null || ideaLanguage == PlainTextLanguage.INSTANCE) {
             ideaLanguage = language
             textLanguage = originLanguage
