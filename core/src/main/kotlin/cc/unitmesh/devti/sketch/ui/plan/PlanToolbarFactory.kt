@@ -2,6 +2,8 @@ package cc.unitmesh.devti.sketch.ui.plan
 
 import cc.unitmesh.devti.gui.AutoDevPlannerToolWindow
 import cc.unitmesh.devti.gui.AutoDevPlannerToolWindowFactory
+import cc.unitmesh.devti.observer.agent.AgentStateService
+import cc.unitmesh.devti.observer.plan.MarkdownPlanParser
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
@@ -59,7 +61,11 @@ class PlanToolbarFactory(private val project: Project) {
                         ?.firstOrNull()
 
                 toolWindow.activate {
-                    codingPanel?.switchToPlanView()
+                    val agentStateService = project.getService(AgentStateService::class.java)
+                    val currentPlan = agentStateService.getPlan()
+                    val planString = MarkdownPlanParser.formatPlanToMarkdown(currentPlan)
+
+                    codingPanel?.switchToPlanView(planString)
                 }
             }
         }
