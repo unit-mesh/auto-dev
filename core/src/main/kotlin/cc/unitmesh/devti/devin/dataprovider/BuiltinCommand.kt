@@ -60,7 +60,8 @@ enum class BuiltinCommand(
         "Execute a shell command and collect (ProcessBuild) the result",
         AllIcons.Debugger.Console,
         true,
-        true
+        true,
+        enableInSketch = false
     ),
     COMMIT("commit", "Do commit with current workspace with some messages.", AllIcons.Vcs.CommitNode, false),
     BROWSE("browse", "Fetch the content of a given URL.", AllIcons.Toolwindows.WebToolWindow, false, true),
