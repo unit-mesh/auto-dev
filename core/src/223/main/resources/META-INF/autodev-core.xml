@@ -363,13 +363,13 @@
                     class="cc.unitmesh.devti.gui.snippet.AutoDevLanguageLabelAction"/>
 
             <action id="AutoDev.ToolWindow.Snippet.CopyToClipboard"
-                    icon="AllIcons.Actions.Copy"
+                    icon="cc.unitmesh.devti.AutoDevIcons.Copy"
                     class="cc.unitmesh.devti.gui.snippet.AutoDevCopyToClipboardAction"/>
             <action id="AutoDev.ToolWindow.Snippet.InsertCode"
                     icon="cc.unitmesh.devti.AutoDevIcons.InsertCode"
                     class="cc.unitmesh.devti.gui.snippet.AutoDevInsertCodeAction"/>
             <action id="AutoDev.ToolWindow.Snippet.RunDevIns"
-                    icon="AllIcons.Actions.Execute"
+                    icon="cc.unitmesh.devti.AutoDevIcons.Run"
                     class="cc.unitmesh.devti.gui.snippet.AutoDevRunAction"/>
         </group>
 

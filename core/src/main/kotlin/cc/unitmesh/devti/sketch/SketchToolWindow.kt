@@ -289,11 +289,7 @@ open class SketchToolWindow(
 
                     val isCanHtml = codeFence.language.displayName.lowercase() == "markdown"
                     if (isCanHtml && codeFence.isComplete && blockViews[index] !is ExtensionLangSketch) {
-                        langSketch = if (codeFence.text.contains("\n```") && codeFence.text.startsWith("/")) {
-                            MarkdownPreviewHighlightSketch(project, codeFence.text)
-                        } else {
-                            MarkdownPreviewHighlightSketch(project, codeFence.text)
-                        }
+                        langSketch = MarkdownPreviewHighlightSketch(project, codeFence.text)
                     }
 
                     if (langSketch != null) {
@@ -315,10 +311,10 @@ open class SketchToolWindow(
                             var language = codeFence.language
                             /// in stream API, the <devin> maybe split, like `<dev`, `<devin` or `<devin>`,
                             /// so we need to check the language again
-                            if (language.displayName == "Markdown" && codeFence.text.startsWith("<devin>")) {
+                            if (codeFence.language.displayName == "Markdown" && codeFence.text.startsWith("/")) {
                                 logger<SketchToolWindow>().warn("Try to fix language error")
                                 language = findLanguage("DevIn")
-                                originLanguage = "DevIn"
+                                originLanguage = "devin"
                             }
 
                             updateLanguage(language, originLanguage)

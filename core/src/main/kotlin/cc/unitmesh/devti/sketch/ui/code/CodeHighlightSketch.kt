@@ -111,7 +111,10 @@ open class CodeHighlightSketch(
     }
 
     override fun updateLanguage(language: Language?, originLanguage: String?) {
-        if (ideaLanguage == null || ideaLanguage == PlainTextLanguage.INSTANCE || ideaLanguage?.displayName == "Markdown") {
+        if (originLanguage == "devin") {
+            ideaLanguage = Language.findLanguageByID("DevIn")
+            textLanguage = "devin"
+        } else if (ideaLanguage == null || ideaLanguage == PlainTextLanguage.INSTANCE) {
             ideaLanguage = language
             textLanguage = originLanguage
         }
