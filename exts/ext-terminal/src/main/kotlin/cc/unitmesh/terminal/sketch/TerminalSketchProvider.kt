@@ -113,36 +113,76 @@ class TerminalSketchProvider : LanguageSketchProvider {
                 val executeAction = object :
                     AnAction("Execute", AutoDevBundle.message("sketch.terminal.execute"), AllIcons.Actions.Execute) {
                     override fun actionPerformed(e: AnActionEvent) {
+                        // Using our standalone writer to update UI in real-time
+                        val stdWriter = UIUpdatingWriter(
+                            onTextUpdate = { text, complete -> 
+                                resultSketch.updateViewText(text, complete)
+                            },
+                            onPanelUpdate = { title, _ ->
+                                collapsibleResultPanel.setTitle(title)
+                            },
+                            checkCollapsed = { 
+                                collapsibleResultPanel.isCollapsed() 
+                            },
+                            expandPanel = { 
+                                collapsibleResultPanel.expand() 
+                            }
+                        )
+                        
+                        val errWriter = UIUpdatingWriter(
+                            onTextUpdate = { text, complete -> 
+                                resultSketch.updateViewText(text, complete)
+                            },
+                            onPanelUpdate = { title, _ ->
+                                collapsibleResultPanel.setTitle(title)
+                            },
+                            checkCollapsed = { 
+                                collapsibleResultPanel.isCollapsed() 
+                            },
+                            expandPanel = { 
+                                collapsibleResultPanel.expand() 
+                            }
+                        )
+                        
+                        // Reset result and prepare UI for execution
+                        resultSketch.updateViewText("", true)
+                        stdWriter.setExecuting(true)
+                        
                         AutoDevCoroutineScope.scope(project).launch {
                             val executor = ProcessExecutor(project)
-                            val runResult = executor.executeCode(
-                                getViewText(),
-                                PooledThreadExecutor.INSTANCE.asCoroutineDispatcher()
-                            )
-
-                            ApplicationManager.getApplication().invokeLater {
-                                val resultText = if (runResult.exitCode != 0) {
-                                    "${runResult.stdOutput}\n${runResult.errOutput}".trim()
-                                } else {
-                                    runResult.stdOutput
+                            try {
+                                // Direct call to exec instead of executeCode
+                                val exitCode = executor.exec(
+                                    getViewText(), 
+                                    stdWriter, 
+                                    errWriter,
+                                    PooledThreadExecutor.INSTANCE.asCoroutineDispatcher()
+                                )
+                                
+                                // Execution finished
+                                ApplicationManager.getApplication().invokeLater {
+                                    stdWriter.setExecuting(false)
+                                    
+                                    // Ensure result panel is expanded
+                                    if (collapsibleResultPanel.isCollapsed()) {
+                                        collapsibleResultPanel.expand()
+                                    }
                                 }
-
-                                resultSketch.updateViewText(resultText, true)
-
-                                if (collapsibleResultPanel.isCollapsed()) {
-                                    collapsibleResultPanel.expand()
-                                }
-
-                                if (runResult.exitCode != 0) {
-                                    collapsibleResultPanel.setTitle("Execution Results (Error: ${runResult.exitCode})")
-                                } else {
-                                    collapsibleResultPanel.setTitle("Execution Results")
+                            } catch (ex: Exception) {
+                                ApplicationManager.getApplication().invokeLater {
+                                    stdWriter.setExecuting(false)
+                                    resultSketch.updateViewText(
+                                        "${stdWriter.getContent()}\nError: ${ex.message}", 
+                                        true
+                                    )
+                                    collapsibleResultPanel.setTitle("Execution Results (Error)")
                                 }
                             }
                         }
                     }
                 }
 
+                // ... existing code for other actions ...
                 val copyAction = object :
                     AnAction("Copy", AutoDevBundle.message("sketch.terminal.copy.text"), AllIcons.Actions.Copy) {
                     override fun actionPerformed(e: AnActionEvent) {
@@ -181,6 +221,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
                 return listOf(executeAction, copyAction, sendAction, popupAction)
             }
 
+            // ... existing code ...
             private fun executePopup(terminalWidget: JBTerminalWidget?, project: Project): MouseAdapter =
                 object : MouseAdapter() {
                     override fun mouseClicked(e: MouseEvent?) {
@@ -240,7 +281,7 @@ class TerminalSketchProvider : LanguageSketchProvider {
             override fun updateLanguage(language: Language?, originLanguage: String?) {}
             override fun dispose() {
                 codeSketch.dispose()
-                resultSketch.dispose()  // Make sure to dispose resultSketch
+                resultSketch.dispose()
             }
         }
     }
