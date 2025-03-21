@@ -295,7 +295,7 @@ class NormalChatCodingPanel(private val chatCodingService: ChatCodingService, va
     }
 
     fun setInput(trimMargin: String) {
-        inputSection.text = trimMargin
+        inputSection.text = trimMargin.trim()
         this.focusInput()
     }
 
