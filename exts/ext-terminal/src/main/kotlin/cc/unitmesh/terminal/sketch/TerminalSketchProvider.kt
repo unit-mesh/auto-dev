@@ -112,76 +112,7 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
     }
 
     fun createConsoleActions(): List<AnAction> {
-        val executeAction = object :
-            AnAction("Execute", AutoDevBundle.message("sketch.terminal.execute"), AllIcons.Actions.Execute) {
-            override fun actionPerformed(e: AnActionEvent) {
-                val stdWriter = UIUpdatingWriter(
-                    onTextUpdate = { text, complete ->
-                        resultSketch.updateViewText(text, complete)
-                    },
-                    onPanelUpdate = { title, _ ->
-                        collapsibleResultPanel.setTitle(title)
-                    },
-                    checkCollapsed = {
-                        collapsibleResultPanel.isCollapsed()
-                    },
-                    expandPanel = {
-                        collapsibleResultPanel.expand()
-                    }
-                )
-
-                val errWriter = UIUpdatingWriter(
-                    onTextUpdate = { text, complete ->
-                        resultSketch.updateViewText(text, complete)
-                    },
-                    onPanelUpdate = { title, _ ->
-                        collapsibleResultPanel.setTitle(title)
-                    },
-                    checkCollapsed = {
-                        collapsibleResultPanel.isCollapsed()
-                    },
-                    expandPanel = {
-                        collapsibleResultPanel.expand()
-                    }
-                )
-
-                // Reset result and prepare UI for execution
-                resultSketch.updateViewText("", true)
-                stdWriter.setExecuting(true)
-
-                AutoDevCoroutineScope.scope(project).launch {
-                    val executor = ProcessExecutor(project)
-                    try {
-                        // Direct call to exec instead of executeCode
-                        val exitCode = executor.exec(
-                            getViewText(),
-                            stdWriter,
-                            errWriter,
-                            PooledThreadExecutor.INSTANCE.asCoroutineDispatcher()
-                        )
-
-                        // Execution finished
-                        ApplicationManager.getApplication().invokeLater {
-                            stdWriter.setExecuting(false)
-
-                            // Ensure result panel is expanded
-                            if (collapsibleResultPanel.isCollapsed()) {
-                                collapsibleResultPanel.expand()
-                            }
-                        }
-                    } catch (ex: Exception) {
-                        ApplicationManager.getApplication().invokeLater {
-                            stdWriter.setExecuting(false)
-                            resultSketch.updateViewText(
-                                "${stdWriter.getContent()}\nError: ${ex.message}",
-                                true
-                            )
-                            collapsibleResultPanel.setTitle("Execution Results (Error)")
-                        }
-                    }
-                }
-            }
-        }
+        val executeAction = TerminalExecuteAction()
 
         val copyAction = object :
             AnAction("Copy", AutoDevBundle.message("sketch.terminal.copy.text"), AllIcons.Actions.Copy) {
@@ -283,6 +214,67 @@ class TerminalLangSketch(val project: Project, var content: String) : ExtensionL
         resultSketch.dispose()
     }
 
+    inner class TerminalExecuteAction :
+        AnAction("Execute", AutoDevBundle.message("sketch.terminal.execute"), AllIcons.Actions.Execute) {
+        override fun actionPerformed(e: AnActionEvent) {
+            val stdWriter = UIUpdatingWriter(
+                onTextUpdate = { text, complete ->
+                    resultSketch.updateViewText(text, complete)
+                },
+                onPanelUpdate = { title, _ ->
+                    collapsibleResultPanel.setTitle(title)
+                },
+                checkCollapsed = {
+                    collapsibleResultPanel.isCollapsed()
+                },
+                expandPanel = {
+                    collapsibleResultPanel.expand()
+                }
+            )
+
+            val errWriter = UIUpdatingWriter(
+                onTextUpdate = { text, complete ->
+                    resultSketch.updateViewText(text, complete)
+                },
+                onPanelUpdate = { title, _ ->
+                    collapsibleResultPanel.setTitle(title)
+                },
+                checkCollapsed = {
+                    collapsibleResultPanel.isCollapsed()
+                },
+                expandPanel = {
+                    collapsibleResultPanel.expand()
+                }
+            )
+
+            resultSketch.updateViewText("", true)
+            stdWriter.setExecuting(true)
+
+            AutoDevCoroutineScope.scope(project).launch {
+                val executor = ProcessExecutor(project)
+                try {
+                    val dispatcher = PooledThreadExecutor.INSTANCE.asCoroutineDispatcher()
+                    executor.exec(getViewText(), stdWriter, errWriter, dispatcher)
+                    ApplicationManager.getApplication().invokeLater {
+                        stdWriter.setExecuting(false)
+                        if (collapsibleResultPanel.isCollapsed()) {
+                            collapsibleResultPanel.expand()
+                        }
+                    }
+                } catch (ex: Exception) {
+                    ApplicationManager.getApplication().invokeLater {
+                        stdWriter.setExecuting(false)
+                        resultSketch.updateViewText(
+                            "${stdWriter.getContent()}\nError: ${ex.message}",
+                            true
+                        )
+
+                        collapsibleResultPanel.setTitle("Execution Results (Error)")
+                    }
+                }
+            }
+        }
+    }
 
     private fun sendToSketch(project: Project, output: String) {
         val contentManager = ToolWindowManager.getInstance(project).getToolWindow("AutoDev")?.contentManager
